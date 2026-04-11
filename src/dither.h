@@ -96,6 +96,17 @@ struct sixel_dither {
     int interframe_spatial_diffuse; /* parsed interframe spatial diffusion */
     int interframe_noise_strength_override; /* CLI strength override flag */
     int interframe_noise_strength_u8; /* parsed interframe noise strength */
+    int bluenoise_strength_override; /* CLI bluenoise strength flag */
+    float bluenoise_strength;       /* parsed bluenoise strength */
+    int bluenoise_phase_override;   /* CLI bluenoise phase flag */
+    int bluenoise_phase_x;          /* parsed bluenoise phase x offset */
+    int bluenoise_phase_y;          /* parsed bluenoise phase y offset */
+    int bluenoise_seed_override;    /* CLI bluenoise seed flag */
+    int bluenoise_seed;             /* parsed bluenoise seed */
+    int bluenoise_channel_override; /* CLI bluenoise channel flag */
+    int bluenoise_channel_rgb;      /* non-zero for rgb channel mode */
+    int bluenoise_size_override;    /* CLI bluenoise size flag */
+    int bluenoise_size;             /* parsed bluenoise tile size */
     int quality_mode;               /* quality of histogram */
     int requested_quality_mode;     /* original quality mode request */
     int keycolor;                   /* background color */

@@ -121,6 +121,12 @@ typedef struct {
     int size;
 } sixel_bluenoise_conf_float32_t;
 
+static float positional_mask_blue_with_conf_float32(
+    sixel_bluenoise_conf_float32_t const *conf,
+    int x,
+    int y,
+    int c);
+
 static sixel_bluenoise_conf_float32_t g_sixel_bn_conf_float32;
 #if !SIXEL_ENABLE_THREADS
 /*
@@ -446,8 +452,48 @@ sixel_bluenoise_conf_init_from_env_float32(void)
 #endif
 }
 
+/*
+ * Apply per-dither CLI overrides on top of cached environment defaults.
+ * The phase override has priority over seed, mirroring env semantics.
+ */
+static void
+sixel_bluenoise_conf_apply_dither_overrides_float32(
+    sixel_bluenoise_conf_float32_t *conf,
+    sixel_dither_t const *dither)
+{
+    unsigned int hash;
+
+    hash = 0U;
+    if (conf == NULL || dither == NULL) {
+        return;
+    }
+
+    if (dither->bluenoise_strength_override != 0) {
+        conf->strength = dither->bluenoise_strength;
+    }
+    if (dither->bluenoise_channel_override != 0) {
+        conf->per_channel = (dither->bluenoise_channel_rgb != 0) ? 1 : 0;
+    }
+    if (dither->bluenoise_size_override != 0
+            && dither->bluenoise_size == SIXEL_BN_W) {
+        conf->size = SIXEL_BN_W;
+    }
+    if (dither->bluenoise_phase_override != 0) {
+        conf->ox = dither->bluenoise_phase_x;
+        conf->oy = dither->bluenoise_phase_y;
+    } else if (dither->bluenoise_seed_override != 0) {
+        hash = sixel_bn_hash32_float32((unsigned int)dither->bluenoise_seed);
+        conf->ox = (int)(hash & 63U);
+        conf->oy = (int)((hash >> 8) & 63U);
+    }
+}
+
 static float
-sixel_bluenoise_tri_float32(int x, int y, int c)
+sixel_bluenoise_tri_with_conf_float32(
+    sixel_bluenoise_conf_float32_t const *conf,
+    int x,
+    int y,
+    int c)
 {
     /* Triangular noise blends two samples from the same tile. */
     static int const channel_offset_x[3] = { 17, 34, 51 };
@@ -464,9 +510,13 @@ sixel_bluenoise_tri_float32(int x, int y, int c)
     float u;
     float v;
 
-    ox = g_sixel_bn_conf_float32.ox;
-    oy = g_sixel_bn_conf_float32.oy;
-    per_channel = g_sixel_bn_conf_float32.per_channel;
+    if (conf == NULL) {
+        return 0.0f;
+    }
+
+    ox = conf->ox;
+    oy = conf->oy;
+    per_channel = conf->per_channel;
     channel_x = 0;
     channel_y = 0;
     if (per_channel != 0 && c >= 0 && c < 3) {
@@ -485,10 +535,34 @@ sixel_bluenoise_tri_float32(int x, int y, int c)
 }
 
 static float
+sixel_bluenoise_tri_float32(int x, int y, int c)
+{
+    return sixel_bluenoise_tri_with_conf_float32(&g_sixel_bn_conf_float32,
+                                                 x,
+                                                 y,
+                                                 c);
+}
+
+static float
 positional_mask_blue_float32(int x, int y, int c)
 {
     return sixel_bluenoise_tri_float32(x, y, c)
         * g_sixel_bn_conf_float32.strength;
+}
+
+static float
+positional_mask_blue_with_conf_float32(
+    sixel_bluenoise_conf_float32_t const *conf,
+    int x,
+    int y,
+    int c)
+{
+    if (conf == NULL) {
+        return 0.0f;
+    }
+
+    return sixel_bluenoise_tri_with_conf_float32(conf, x, y, c)
+        * conf->strength;
 }
 
 SIXELSTATUS
@@ -518,12 +592,18 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
     int use_transparent_fence;
     int is_transparent;
     size_t absolute_index;
+    sixel_bluenoise_conf_float32_t bluenoise_conf;
+    int use_bluenoise_conf;
+    float noise;
 
     palette_float = NULL;
     new_palette_float = NULL;
     float_depth = 0;
     quantized = NULL;
     lookup_wants_float = 0;
+    bluenoise_conf = g_sixel_bn_conf_float32;
+    use_bluenoise_conf = 0;
+    noise = 0.0f;
 
     if (dither == NULL || context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -546,6 +626,10 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
         break;
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
         sixel_bluenoise_conf_init_from_env_float32();
+        bluenoise_conf = g_sixel_bn_conf_float32;
+        sixel_bluenoise_conf_apply_dither_overrides_float32(&bluenoise_conf,
+                                                            dither);
+        use_bluenoise_conf = 1;
         f_mask = positional_mask_blue_float32;
         break;
     default:
@@ -630,8 +714,17 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                 for (d = 0; d < context->depth; ++d) {
                     float val;
 
+                    if (use_bluenoise_conf != 0) {
+                        noise = positional_mask_blue_with_conf_float32(
+                            &bluenoise_conf,
+                            x,
+                            y,
+                            d);
+                    } else {
+                        noise = f_mask(x, y, d);
+                    }
                     val = context->pixels_float[pos * context->depth + d]
-                        + f_mask(x, y, d) * jitter_scale;
+                        + noise * jitter_scale;
                     val = sixel_pixelformat_float_channel_clamp(
                         context->pixelformat,
                         d,
@@ -778,8 +871,17 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                 for (d = 0; d < context->depth; ++d) {
                     float val;
 
+                    if (use_bluenoise_conf != 0) {
+                        noise = positional_mask_blue_with_conf_float32(
+                            &bluenoise_conf,
+                            x,
+                            y,
+                            d);
+                    } else {
+                        noise = f_mask(x, y, d);
+                    }
                     val = context->pixels_float[pos * context->depth + d]
-                        + f_mask(x, y, d) * jitter_scale;
+                        + noise * jitter_scale;
                     val = sixel_pixelformat_float_channel_clamp(
                         context->pixelformat,
                         d,

@@ -32,6 +32,13 @@ _diffusiontype() {
     'a_dither[positionally stable arithmetic dither]' \
     'x_dither[positionally stable arithmetic xor based dither]' \
     'bluenoise[tileable blue-noise ordered dither]' \
+    'bluenoise:strength=0.055[bluenoise amplitude override]' \
+    'bluenoise:phase=10,20[bluenoise tile phase override]' \
+    'bluenoise:seed=123[bluenoise phase seed override]' \
+    'bluenoise:channel=mono[bluenoise mono channel mode]' \
+    'bluenoise:channel=rgb[bluenoise per-channel rgb mode]' \
+    'bluenoise:size=64[bluenoise tile size (embedded)]' \
+    'bluenoise:channel=rgb:scan=serpentine[rgb channel mode + scan override]' \
     'lso2[libsixel method based on variable error diffusion]' \
     'interframe[interframe error diffusion (palette path only)]' \
     'interframe:scan=serpentine[interframe with serpentine scan]' \

@@ -76,6 +76,17 @@ struct sixel_encoder {
     int interframe_spatial_diffuse;
     int interframe_noise_strength_override;
     int interframe_noise_strength_u8;
+    int bluenoise_strength_override;
+    float bluenoise_strength;
+    int bluenoise_phase_override;
+    int bluenoise_phase_x;
+    int bluenoise_phase_y;
+    int bluenoise_seed_override;
+    int bluenoise_seed;
+    int bluenoise_channel_override;
+    int bluenoise_channel_rgb;
+    int bluenoise_size_override;
+    int bluenoise_size;
     int method_for_scan;
     int method_for_largest;
     int method_for_rep;

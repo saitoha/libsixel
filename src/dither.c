@@ -1484,6 +1484,17 @@ sixel_dither_new(
     (*ppdither)->interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
     (*ppdither)->interframe_noise_strength_override = 0;
     (*ppdither)->interframe_noise_strength_u8 = 0;
+    (*ppdither)->bluenoise_strength_override = 0;
+    (*ppdither)->bluenoise_strength = 0.055f;
+    (*ppdither)->bluenoise_phase_override = 0;
+    (*ppdither)->bluenoise_phase_x = 0;
+    (*ppdither)->bluenoise_phase_y = 0;
+    (*ppdither)->bluenoise_seed_override = 0;
+    (*ppdither)->bluenoise_seed = 0;
+    (*ppdither)->bluenoise_channel_override = 0;
+    (*ppdither)->bluenoise_channel_rgb = 0;
+    (*ppdither)->bluenoise_size_override = 0;
+    (*ppdither)->bluenoise_size = 64;
     (*ppdither)->quality_mode = quality_mode;
     (*ppdither)->requested_quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;

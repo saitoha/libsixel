@@ -103,6 +103,12 @@ typedef struct {
     int size;
 } sixel_bluenoise_conf_8bit_t;
 
+static float positional_mask_blue_with_conf_8bit(
+    sixel_bluenoise_conf_8bit_t const *conf,
+    int x,
+    int y,
+    int c);
+
 static sixel_bluenoise_conf_8bit_t g_sixel_bn_conf_8bit;
 #if !SIXEL_ENABLE_THREADS
 /* See g_sixel_pos_inited_8bit above for why this flag is single-thread only. */
@@ -428,8 +434,47 @@ sixel_bluenoise_conf_init_from_env_8bit(void)
 #endif
 }
 
+/*
+ * Apply per-dither CLI overrides on top of cached environment defaults.
+ * The phase override has priority over seed, mirroring env semantics.
+ */
+static void
+sixel_bluenoise_conf_apply_dither_overrides_8bit(
+    sixel_bluenoise_conf_8bit_t *conf,
+    sixel_dither_t const *dither)
+{
+    unsigned int hash;
+
+    hash = 0U;
+    if (conf == NULL || dither == NULL) {
+        return;
+    }
+
+    if (dither->bluenoise_strength_override != 0) {
+        conf->strength = dither->bluenoise_strength;
+    }
+    if (dither->bluenoise_channel_override != 0) {
+        conf->per_channel = (dither->bluenoise_channel_rgb != 0) ? 1 : 0;
+    }
+    if (dither->bluenoise_size_override != 0
+            && dither->bluenoise_size == SIXEL_BN_W) {
+        conf->size = SIXEL_BN_W;
+    }
+    if (dither->bluenoise_phase_override != 0) {
+        conf->ox = dither->bluenoise_phase_x;
+        conf->oy = dither->bluenoise_phase_y;
+    } else if (dither->bluenoise_seed_override != 0) {
+        hash = sixel_bn_hash32_8bit((unsigned int)dither->bluenoise_seed);
+        conf->ox = (int)(hash & 63U);
+        conf->oy = (int)((hash >> 8) & 63U);
+    }
+}
+
 static float
-sixel_bluenoise_tri_8bit(int x, int y, int c)
+sixel_bluenoise_tri_with_conf_8bit(sixel_bluenoise_conf_8bit_t const *conf,
+                                   int x,
+                                   int y,
+                                   int c)
 {
     /* Triangular noise blends two samples from the same tile. */
     static int const channel_offset_x[3] = { 17, 34, 51 };
@@ -446,9 +491,13 @@ sixel_bluenoise_tri_8bit(int x, int y, int c)
     float u;
     float v;
 
-    ox = g_sixel_bn_conf_8bit.ox;
-    oy = g_sixel_bn_conf_8bit.oy;
-    per_channel = g_sixel_bn_conf_8bit.per_channel;
+    if (conf == NULL) {
+        return 0.0f;
+    }
+
+    ox = conf->ox;
+    oy = conf->oy;
+    per_channel = conf->per_channel;
     channel_x = 0;
     channel_y = 0;
     if (per_channel != 0 && c >= 0 && c < 3) {
@@ -464,6 +513,12 @@ sixel_bluenoise_tri_8bit(int x, int y, int c)
     v = (sixel_bn_mask(ix1, iy1) + 1.0f) * 0.5f;
 
     return (u + v) - 1.0f;
+}
+
+static float
+sixel_bluenoise_tri_8bit(int x, int y, int c)
+{
+    return sixel_bluenoise_tri_with_conf_8bit(&g_sixel_bn_conf_8bit, x, y, c);
 }
 
 static float
@@ -487,6 +542,19 @@ positional_mask_blue_8bit(int x, int y, int c)
         * g_sixel_bn_conf_8bit.strength;
 }
 
+static float
+positional_mask_blue_with_conf_8bit(sixel_bluenoise_conf_8bit_t const *conf,
+                                    int x,
+                                    int y,
+                                    int c)
+{
+    if (conf == NULL) {
+        return 0.0f;
+    }
+
+    return sixel_bluenoise_tri_with_conf_8bit(conf, x, y, c) * conf->strength;
+}
+
 SIXELSTATUS
 sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
                                    sixel_dither_context_t *context)
@@ -507,10 +575,16 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     int use_transparent_fence;
     int is_transparent;
     size_t absolute_index;
+    sixel_bluenoise_conf_8bit_t bluenoise_conf;
+    int use_bluenoise_conf;
+    float noise;
 
     palette_float = NULL;
     new_palette_float = NULL;
     float_depth = 0;
+    bluenoise_conf = g_sixel_bn_conf_8bit;
+    use_bluenoise_conf = 0;
+    noise = 0.0f;
 
     if (dither == NULL || context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -533,6 +607,10 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
         break;
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
         sixel_bluenoise_conf_init_from_env_8bit();
+        bluenoise_conf = g_sixel_bn_conf_8bit;
+        sixel_bluenoise_conf_apply_dither_overrides_8bit(&bluenoise_conf,
+                                                         dither);
+        use_bluenoise_conf = 1;
         f_mask = positional_mask_blue_8bit;
         break;
     default:
@@ -607,8 +685,17 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
                 for (d = 0; d < context->depth; ++d) {
                     int val;
 
+                    if (use_bluenoise_conf != 0) {
+                        noise = positional_mask_blue_with_conf_8bit(
+                            &bluenoise_conf,
+                            x,
+                            y,
+                            d);
+                    } else {
+                        noise = f_mask(x, y, d);
+                    }
                     val = context->pixels[pos * context->depth + d]
-                        + (int)(f_mask(x, y, d) * 32.0f);
+                        + (int)(noise * 32.0f);
                     /*
                      * The clamp keeps values within the byte range so the
                      * cast to unsigned char is lossless and silences MSVC
@@ -725,8 +812,17 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
                 for (d = 0; d < context->depth; ++d) {
                     int val;
 
+                    if (use_bluenoise_conf != 0) {
+                        noise = positional_mask_blue_with_conf_8bit(
+                            &bluenoise_conf,
+                            x,
+                            y,
+                            d);
+                    } else {
+                        noise = f_mask(x, y, d);
+                    }
                     val = context->pixels[pos * context->depth + d]
-                        + (int)(f_mask(x, y, d) * 32.0f);
+                        + (int)(noise * 32.0f);
                     /*
                      * The clamp keeps values within the byte range so the
                      * cast to unsigned char is lossless and silences MSVC

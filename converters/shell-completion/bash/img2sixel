@@ -431,6 +431,13 @@ _img2sixel()
                                    a_dither \
                                    x_dither \
                                    bluenoise \
+                                   bluenoise:strength=0.055 \
+                                   bluenoise:phase=10,20 \
+                                   bluenoise:seed=123 \
+                                   bluenoise:channel=mono \
+                                   bluenoise:channel=rgb \
+                                   bluenoise:size=64 \
+                                   bluenoise:channel=rgb:scan=serpentine \
                                    lso2 \
                                    interframe \
                                    interframe:scan=serpentine \

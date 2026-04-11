@@ -895,6 +895,15 @@ static sixel_suboption_choice_t const g_option_choices_diffusion_scan[] = {
     { "raster", SIXEL_SCAN_RASTER }
 };
 
+static sixel_suboption_choice_t const g_option_choices_bluenoise_channel[] = {
+    { "mono", 0 },
+    { "rgb", 1 }
+};
+
+static sixel_suboption_choice_t const g_option_choices_bluenoise_size[] = {
+    { "64", 64 }
+};
+
 static sixel_suboption_choice_t const
 g_option_choices_interframe_diffusion[] = {
     { "auto", SIXEL_DIFFUSE_FS },
@@ -1007,6 +1016,60 @@ static sixel_suboption_key_t const g_subkeys_diffusion_stbn[] = {
     }
 };
 
+static sixel_suboption_key_t const g_subkeys_diffusion_bluenoise[] = {
+    {
+        "strength",
+        NULL,
+        "SIXEL_DITHER_BLUENOISE_STRENGTH",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "phase",
+        NULL,
+        "SIXEL_DITHER_BLUENOISE_PHASE",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "seed",
+        NULL,
+        "SIXEL_DITHER_BLUENOISE_SEED",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "channel",
+        NULL,
+        "SIXEL_DITHER_BLUENOISE_CHANNEL",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_bluenoise_channel,
+        sizeof(g_option_choices_bluenoise_channel)
+        / sizeof(g_option_choices_bluenoise_channel[0])
+    },
+    {
+        "size",
+        NULL,
+        "SIXEL_DITHER_BLUENOISE_SIZE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_bluenoise_size,
+        sizeof(g_option_choices_bluenoise_size)
+        / sizeof(g_option_choices_bluenoise_size[0])
+    },
+    {
+        "scan",
+        NULL,
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_diffusion_scan,
+        sizeof(g_option_choices_diffusion_scan)
+        / sizeof(g_option_choices_diffusion_scan[0])
+    }
+};
+
 enum {
     /*
      * Keep this as an enum constant so static initializers stay valid on
@@ -1023,7 +1086,10 @@ enum {
               / sizeof(g_subkeys_diffusion_sierra[0])),
     G_SUBKEYS_DIFFUSION_STBN_COUNT =
         (int)(sizeof(g_subkeys_diffusion_stbn)
-              / sizeof(g_subkeys_diffusion_stbn[0]))
+              / sizeof(g_subkeys_diffusion_stbn[0])),
+    G_SUBKEYS_DIFFUSION_BLUENOISE_COUNT =
+        (int)(sizeof(g_subkeys_diffusion_bluenoise)
+              / sizeof(g_subkeys_diffusion_bluenoise[0]))
 };
 
 static sixel_option_value_schema_t const g_schema_diffusion_values[] = {
@@ -1090,8 +1156,8 @@ static sixel_option_value_schema_t const g_schema_diffusion_values[] = {
     {
         "bluenoise",
         SIXEL_DIFFUSE_BLUENOISE_DITHER,
-        g_subkeys_diffusion_scan,
-        G_SUBKEYS_DIFFUSION_SCAN_COUNT
+        g_subkeys_diffusion_bluenoise,
+        G_SUBKEYS_DIFFUSION_BLUENOISE_COUNT
     },
     {
         "lso2",
@@ -3471,6 +3537,23 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         context->encoder->interframe_noise_strength_override;
     context->dither->interframe_noise_strength_u8 =
         context->encoder->interframe_noise_strength_u8;
+    context->dither->bluenoise_strength_override =
+        context->encoder->bluenoise_strength_override;
+    context->dither->bluenoise_strength = context->encoder->bluenoise_strength;
+    context->dither->bluenoise_phase_override =
+        context->encoder->bluenoise_phase_override;
+    context->dither->bluenoise_phase_x = context->encoder->bluenoise_phase_x;
+    context->dither->bluenoise_phase_y = context->encoder->bluenoise_phase_y;
+    context->dither->bluenoise_seed_override =
+        context->encoder->bluenoise_seed_override;
+    context->dither->bluenoise_seed = context->encoder->bluenoise_seed;
+    context->dither->bluenoise_channel_override =
+        context->encoder->bluenoise_channel_override;
+    context->dither->bluenoise_channel_rgb =
+        context->encoder->bluenoise_channel_rgb;
+    context->dither->bluenoise_size_override =
+        context->encoder->bluenoise_size_override;
+    context->dither->bluenoise_size = context->encoder->bluenoise_size;
     sixel_dither_set_diffusion_scan(context->dither,
                                     context->encoder->method_for_scan);
 
@@ -5642,6 +5725,17 @@ sixel_encoder_new(
     (*ppencoder)->interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
     (*ppencoder)->interframe_noise_strength_override = 0;
     (*ppencoder)->interframe_noise_strength_u8 = 0;
+    (*ppencoder)->bluenoise_strength_override = 0;
+    (*ppencoder)->bluenoise_strength = 0.055f;
+    (*ppencoder)->bluenoise_phase_override = 0;
+    (*ppencoder)->bluenoise_phase_x = 0;
+    (*ppencoder)->bluenoise_phase_y = 0;
+    (*ppencoder)->bluenoise_seed_override = 0;
+    (*ppencoder)->bluenoise_seed = 0;
+    (*ppencoder)->bluenoise_channel_override = 0;
+    (*ppencoder)->bluenoise_channel_rgb = 0;
+    (*ppencoder)->bluenoise_size_override = 0;
+    (*ppencoder)->bluenoise_size = 64;
     (*ppencoder)->method_for_scan       = SIXEL_SCAN_AUTO;
     (*ppencoder)->method_for_largest    = SIXEL_LARGE_AUTO;
     (*ppencoder)->method_for_rep        = SIXEL_REP_AUTO;
@@ -6244,6 +6338,119 @@ sixel_encoder_parse_interframe_noise_strength_text(
         scaled = 255.0;
     }
     *strength_u8_out = (int)(scaled + 0.5);
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_parse_bluenoise_strength_text(
+    char const *text,
+    float *strength_out)
+{
+    char *endptr;
+    double parsed;
+
+    endptr = NULL;
+    parsed = 0.0;
+    if (text == NULL || strength_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtod(text, &endptr);
+    if (endptr == text ||
+            endptr == NULL ||
+            endptr[0] != '\0' ||
+            errno != 0) {
+        sixel_helper_set_additional_message(
+            "-d bluenoise:strength must be a floating point value.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *strength_out = (float)parsed;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_parse_bluenoise_seed_text(char const *text, int *seed_out)
+{
+    long parsed;
+    char *endptr;
+
+    parsed = 0L;
+    endptr = NULL;
+    if (text == NULL || seed_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtol(text, &endptr, 10);
+    if (endptr == text ||
+            endptr == NULL ||
+            endptr[0] != '\0' ||
+            errno == ERANGE ||
+            parsed > (long)INT_MAX ||
+            parsed < (long)INT_MIN) {
+        sixel_helper_set_additional_message(
+            "-d bluenoise:seed must be a 32-bit signed integer.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *seed_out = (int)parsed;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_parse_bluenoise_phase_text(char const *text,
+                                         int *phase_x_out,
+                                         int *phase_y_out)
+{
+    char *endptr;
+    char const *comma;
+    long parsed_x;
+    long parsed_y;
+
+    endptr = NULL;
+    comma = NULL;
+    parsed_x = 0L;
+    parsed_y = 0L;
+    if (text == NULL || phase_x_out == NULL || phase_y_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    comma = strchr(text, ',');
+    if (comma == NULL) {
+        sixel_helper_set_additional_message(
+            "-d bluenoise:phase must be in form X,Y.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed_x = strtol(text, &endptr, 10);
+    if (endptr == text ||
+            endptr != comma ||
+            errno == ERANGE ||
+            parsed_x > (long)INT_MAX ||
+            parsed_x < (long)INT_MIN) {
+        sixel_helper_set_additional_message(
+            "-d bluenoise:phase must be in form X,Y.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed_y = strtol(comma + 1, &endptr, 10);
+    if (endptr == comma + 1 ||
+            endptr == NULL ||
+            endptr[0] != '\0' ||
+            errno == ERANGE ||
+            parsed_y > (long)INT_MAX ||
+            parsed_y < (long)INT_MIN) {
+        sixel_helper_set_additional_message(
+            "-d bluenoise:phase must be in form X,Y.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *phase_x_out = (int)parsed_x;
+    *phase_y_out = (int)parsed_y;
     return SIXEL_OK;
 }
 
@@ -7103,6 +7310,127 @@ sixel_encoder_resolve_interframe_suboptions(
             }
             *has_noise_strength_override = 1;
             *noise_strength_u8 = resolved_strength_u8;
+        }
+        ++index;
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_resolve_bluenoise_suboptions(
+    sixel_option_argument_resolution_t const *resolution,
+    int *has_strength_override,
+    float *strength,
+    int *has_phase_override,
+    int *phase_x,
+    int *phase_y,
+    int *has_seed_override,
+    int *seed,
+    int *has_channel_override,
+    int *channel_rgb,
+    int *has_size_override,
+    int *size)
+{
+    SIXELSTATUS status;
+    size_t index;
+    sixel_suboption_assignment_t const *assignment;
+    int resolved_choice;
+    float resolved_strength;
+    int resolved_phase_x;
+    int resolved_phase_y;
+    int resolved_seed;
+
+    status = SIXEL_OK;
+    index = 0u;
+    assignment = NULL;
+    resolved_choice = 0;
+    resolved_strength = 0.055f;
+    resolved_phase_x = 0;
+    resolved_phase_y = 0;
+    resolved_seed = 0;
+    if (resolution == NULL ||
+            has_strength_override == NULL ||
+            strength == NULL ||
+            has_phase_override == NULL ||
+            phase_x == NULL ||
+            phase_y == NULL ||
+            has_seed_override == NULL ||
+            seed == NULL ||
+            has_channel_override == NULL ||
+            channel_rgb == NULL ||
+            has_size_override == NULL ||
+            size == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *has_strength_override = 0;
+    *strength = resolved_strength;
+    *has_phase_override = 0;
+    *phase_x = 0;
+    *phase_y = 0;
+    *has_seed_override = 0;
+    *seed = 0;
+    *has_channel_override = 0;
+    *channel_rgb = 0;
+    *has_size_override = 0;
+    *size = 64;
+    if (resolution->resolved_base_value != SIXEL_DIFFUSE_BLUENOISE_DITHER) {
+        return SIXEL_OK;
+    }
+
+    while (index < resolution->assignment_count) {
+        assignment = resolution->assignments + index;
+        if (assignment->resolved_key_name != NULL
+                && strcmp(assignment->resolved_key_name, "strength") == 0) {
+            status = sixel_encoder_parse_bluenoise_strength_text(
+                assignment->resolved_value_text,
+                &resolved_strength);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            *has_strength_override = 1;
+            *strength = resolved_strength;
+        } else if (assignment->resolved_key_name != NULL
+                && strcmp(assignment->resolved_key_name, "phase") == 0) {
+            status = sixel_encoder_parse_bluenoise_phase_text(
+                assignment->resolved_value_text,
+                &resolved_phase_x,
+                &resolved_phase_y);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            *has_phase_override = 1;
+            *phase_x = resolved_phase_x;
+            *phase_y = resolved_phase_y;
+        } else if (assignment->resolved_key_name != NULL
+                && strcmp(assignment->resolved_key_name, "seed") == 0) {
+            status = sixel_encoder_parse_bluenoise_seed_text(
+                assignment->resolved_value_text,
+                &resolved_seed);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            *has_seed_override = 1;
+            *seed = resolved_seed;
+        } else if (assignment->resolved_key_name != NULL
+                && strcmp(assignment->resolved_key_name, "channel") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            *has_channel_override = 1;
+            *channel_rgb = resolved_choice;
+        } else if (assignment->resolved_key_name != NULL
+                && strcmp(assignment->resolved_key_name, "size") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            *has_size_override = 1;
+            *size = resolved_choice;
         }
         ++index;
     }
@@ -8093,6 +8421,17 @@ sixel_encoder_setopt(
     int interframe_spatial_diffuse;
     int interframe_noise_strength_override;
     int interframe_noise_strength_u8;
+    int bluenoise_strength_override;
+    float bluenoise_strength;
+    int bluenoise_phase_override;
+    int bluenoise_phase_x;
+    int bluenoise_phase_y;
+    int bluenoise_seed_override;
+    int bluenoise_seed;
+    int bluenoise_channel_override;
+    int bluenoise_channel_rgb;
+    int bluenoise_size_override;
+    int bluenoise_size;
     int diffusion_scan;
     sixel_option_argument_resolution_t const *q_resolution;
     size_t q_index;
@@ -8138,6 +8477,17 @@ sixel_encoder_setopt(
     interframe_spatial_diffuse = SIXEL_DIFFUSE_FS;
     interframe_noise_strength_override = 0;
     interframe_noise_strength_u8 = 0;
+    bluenoise_strength_override = 0;
+    bluenoise_strength = 0.055f;
+    bluenoise_phase_override = 0;
+    bluenoise_phase_x = 0;
+    bluenoise_phase_y = 0;
+    bluenoise_seed_override = 0;
+    bluenoise_seed = 0;
+    bluenoise_channel_override = 0;
+    bluenoise_channel_rgb = 0;
+    bluenoise_size_override = 0;
+    bluenoise_size = 64;
     diffusion_scan = SIXEL_SCAN_AUTO;
     q_resolution = NULL;
     q_index = 0u;
@@ -8284,6 +8634,21 @@ sixel_encoder_setopt(
             &interframe_spatial_diffuse,
             &interframe_noise_strength_override,
             &interframe_noise_strength_u8);
+        if (SIXEL_SUCCEEDED(status)) {
+            status = sixel_encoder_resolve_bluenoise_suboptions(
+                &d_resolution,
+                &bluenoise_strength_override,
+                &bluenoise_strength,
+                &bluenoise_phase_override,
+                &bluenoise_phase_x,
+                &bluenoise_phase_y,
+                &bluenoise_seed_override,
+                &bluenoise_seed,
+                &bluenoise_channel_override,
+                &bluenoise_channel_rgb,
+                &bluenoise_size_override,
+                &bluenoise_size);
+        }
         sixel_option_free_argument_resolution(&d_resolution);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -8299,6 +8664,17 @@ sixel_encoder_setopt(
         encoder->interframe_noise_strength_override
             = interframe_noise_strength_override;
         encoder->interframe_noise_strength_u8 = interframe_noise_strength_u8;
+        encoder->bluenoise_strength_override = bluenoise_strength_override;
+        encoder->bluenoise_strength = bluenoise_strength;
+        encoder->bluenoise_phase_override = bluenoise_phase_override;
+        encoder->bluenoise_phase_x = bluenoise_phase_x;
+        encoder->bluenoise_phase_y = bluenoise_phase_y;
+        encoder->bluenoise_seed_override = bluenoise_seed_override;
+        encoder->bluenoise_seed = bluenoise_seed;
+        encoder->bluenoise_channel_override = bluenoise_channel_override;
+        encoder->bluenoise_channel_rgb = bluenoise_channel_rgb;
+        encoder->bluenoise_size_override = bluenoise_size_override;
+        encoder->bluenoise_size = bluenoise_size;
         break;
     case SIXEL_OPTFLAG_FIND_LARGEST:  /* f */
         if (value != NULL) {
