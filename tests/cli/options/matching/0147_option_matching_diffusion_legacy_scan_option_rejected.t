@@ -22,10 +22,25 @@ msg=$(
     exit 0
 }
 
-test "${msg#*invalid option*}" != "${msg}" || {
-    echo "not ok" 1 - "missing invalid-option diagnostic for legacy -y"
+test "${msg#*invalid option*}" != "${msg}" && {
+    echo "ok" 1 - "legacy -y scan option is rejected"
     exit 0
 }
 
-echo "ok" 1 - "legacy -y scan option is rejected"
+test "${msg#*unknown option*}" != "${msg}" && {
+    echo "ok" 1 - "legacy -y scan option is rejected"
+    exit 0
+}
+
+test "${msg#*illegal option*}" != "${msg}" && {
+    echo "ok" 1 - "legacy -y scan option is rejected"
+    exit 0
+}
+
+test "${msg#*unrecognized option*}" != "${msg}" && {
+    echo "ok" 1 - "legacy -y scan option is rejected"
+    exit 0
+}
+
+echo "not ok" 1 - "missing option-rejection diagnostic for legacy -y"
 exit 0

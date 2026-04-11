@@ -32,5 +32,15 @@ test "${msg#*unknown option*}" != "${msg}" && {
     exit 0
 }
 
+test "${msg#*illegal option*}" != "${msg}" && {
+    echo "ok" 1 - "removed -Y option is rejected"
+    exit 0
+}
+
+test "${msg#*unrecognized option*}" != "${msg}" && {
+    echo "ok" 1 - "removed -Y option is rejected"
+    exit 0
+}
+
 echo "not ok" 1 - "missing option-rejection diagnostic for removed -Y"
 exit 0
