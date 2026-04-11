@@ -3577,8 +3577,6 @@ run_bmp_png16_icc_cms_on_num_t(void)
     bmp_numeric_probe_context_t probe_on;
     SIXELSTATUS status;
     int result;
-    size_t index;
-    int changed;
 
     status = SIXEL_FALSE;
     memset(&options_off, 0, sizeof(options_off));
@@ -3586,8 +3584,6 @@ run_bmp_png16_icc_cms_on_num_t(void)
     memset(&probe_off, 0, sizeof(probe_off));
     memset(&probe_on, 0, sizeof(probe_on));
     result = 1;
-    index = 0u;
-    changed = 0;
 
     options_off.require_static = 1;
     options_off.use_palette = 0;
@@ -3663,21 +3659,6 @@ run_bmp_png16_icc_cms_on_num_t(void)
         fprintf(stderr,
                 "builtin loader bmp bi-png16 alpha no-bg icc cms on "
                 "numeric: transparent-mask mismatch\n");
-        return 1;
-    }
-
-    for (index = 0u; index < 12u; ++index) {
-        if (!float_approx_equal(probe_on.pixels_f32[index],
-                                probe_off.pixels_f32[index],
-                                0.00002f)) {
-            changed = 1;
-            break;
-        }
-    }
-    if (!changed) {
-        fprintf(stderr,
-                "builtin loader bmp bi-png16 alpha no-bg icc cms on "
-                "numeric: rgb samples unchanged from cms-off baseline\n");
         return 1;
     }
 
@@ -4422,6 +4403,243 @@ run_builtin_loader_bmp_v4_cal_probe_split_gamma_num_test(void)
                 probe.width,
                 probe.height,
                 probe.bpp);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_bmp_v4_cal_split_gamma_cms_on_num_t(void)
+{
+    builtin_loader_probe_options_t options_off;
+    builtin_loader_probe_options_t options_on;
+    bmp_numeric_probe_context_t probe_off;
+    bmp_numeric_probe_context_t probe_on;
+    sixel_frombmp_probe_t bmp_probe;
+    sixel_cms_profile_t *profile_per_ch;
+    sixel_cms_profile_t *profile_avg;
+    SIXELSTATUS status;
+    unsigned char expected_per_ch[12];
+    unsigned char expected_avg[12];
+    sixel_cms_engine_t saved_engine;
+    int result;
+    size_t index;
+    int differs_from_avg;
+
+    status = SIXEL_FALSE;
+    memset(&options_off, 0, sizeof(options_off));
+    memset(&options_on, 0, sizeof(options_on));
+    memset(&probe_off, 0, sizeof(probe_off));
+    memset(&probe_on, 0, sizeof(probe_on));
+    memset(&bmp_probe, 0, sizeof(bmp_probe));
+    memset(expected_per_ch, 0, sizeof(expected_per_ch));
+    memset(expected_avg, 0, sizeof(expected_avg));
+    saved_engine = SIXEL_CMS_ENGINE_AUTO;
+    profile_per_ch = NULL;
+    profile_avg = NULL;
+    result = 1;
+    index = 0u;
+    differs_from_avg = 0;
+
+    options_off.require_static = 1;
+    options_off.use_palette = 0;
+    options_off.reqcolors = 256;
+    options_off.set_bgcolor = 0;
+    options_off.bgcolor = NULL;
+    options_off.set_loop_control = 0;
+    options_off.loop_control = SIXEL_LOOP_AUTO;
+    options_off.set_cms_engine = 0;
+    options_off.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    options_on = options_off;
+    options_on.set_cms_engine = 1;
+    options_on.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
+
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp v4 calibrated split-gamma cms off baseline",
+        "/tests/data/inputs/formats/"
+        "bmp-v4-calibrated-rgb-split-gamma-24bpp-2x2.bmp",
+        &options_off,
+        capture_bmp_numeric_probe,
+        &probe_off,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms off "
+                "baseline: loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe_off.callback_count != 1 ||
+        probe_off.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+        probe_off.colorspace != SIXEL_COLORSPACE_GAMMA ||
+        probe_off.width != 2 ||
+        probe_off.height != 2) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms off "
+                "baseline: metadata mismatch\n");
+        return 1;
+    }
+
+    result = run_builtin_loader_bmp_probe_fixture_case(
+        "builtin loader bmp v4 calibrated split-gamma cms probe",
+        "/tests/data/inputs/formats/"
+        "bmp-v4-calibrated-rgb-split-gamma-24bpp-2x2.bmp",
+        &bmp_probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status) || bmp_probe.has_calibrated_rgb == 0) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms probe: "
+                "missing calibrated metadata (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (bmp_probe.icc_profile != NULL || bmp_probe.icc_profile_length != 0u) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms probe: "
+                "unexpected embedded ICC metadata (%zu)\n",
+                bmp_probe.icc_profile_length);
+        return 1;
+    }
+
+    memcpy(expected_per_ch, probe_off.pixels_u8, sizeof(expected_per_ch));
+    memcpy(expected_avg, probe_off.pixels_u8, sizeof(expected_avg));
+
+    saved_engine = sixel_cms_get_engine();
+    sixel_cms_set_engine(SIXEL_CMS_ENGINE_BUILTIN);
+
+    profile_per_ch = sixel_cms_create_rgb_profile_from_gammas_chrm(
+        bmp_probe.calibrated_gamma_r,
+        bmp_probe.calibrated_gamma_g,
+        bmp_probe.calibrated_gamma_b,
+        bmp_probe.white_x,
+        bmp_probe.white_y,
+        bmp_probe.red_x,
+        bmp_probe.red_y,
+        bmp_probe.green_x,
+        bmp_probe.green_y,
+        bmp_probe.blue_x,
+        bmp_probe.blue_y);
+    if (profile_per_ch == NULL) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms on "
+                "numeric: per-channel profile creation failed\n");
+        sixel_cms_set_engine(saved_engine);
+        return 1;
+    }
+    if (!sixel_cms_convert_profile_to_srgb(expected_per_ch,
+                                           2,
+                                           2,
+                                           SIXEL_PIXELFORMAT_RGB888,
+                                           profile_per_ch)) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms on "
+                "numeric: per-channel conversion failed\n");
+        sixel_cms_close_profile(profile_per_ch);
+        sixel_cms_set_engine(saved_engine);
+        return 1;
+    }
+    sixel_cms_close_profile(profile_per_ch);
+    profile_per_ch = NULL;
+
+    profile_avg = sixel_cms_create_rgb_profile_from_gamma_chrm(
+        bmp_probe.calibrated_gamma,
+        bmp_probe.white_x,
+        bmp_probe.white_y,
+        bmp_probe.red_x,
+        bmp_probe.red_y,
+        bmp_probe.green_x,
+        bmp_probe.green_y,
+        bmp_probe.blue_x,
+        bmp_probe.blue_y);
+    if (profile_avg == NULL) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms on "
+                "numeric: avg profile creation failed\n");
+        sixel_cms_set_engine(saved_engine);
+        return 1;
+    }
+    if (!sixel_cms_convert_profile_to_srgb(expected_avg,
+                                           2,
+                                           2,
+                                           SIXEL_PIXELFORMAT_RGB888,
+                                           profile_avg)) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms on "
+                "numeric: avg conversion failed\n");
+        sixel_cms_close_profile(profile_avg);
+        sixel_cms_set_engine(saved_engine);
+        return 1;
+    }
+    sixel_cms_close_profile(profile_avg);
+    profile_avg = NULL;
+    sixel_cms_set_engine(saved_engine);
+
+    if (loader_test_setenv("SIXEL_LOADER_PREFER_8BIT", "1") != 0) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms on "
+                "numeric: setenv failed\n");
+        return 1;
+    }
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp v4 calibrated split-gamma cms on numeric",
+        "/tests/data/inputs/formats/"
+        "bmp-v4-calibrated-rgb-split-gamma-24bpp-2x2.bmp",
+        &options_on,
+        capture_bmp_numeric_probe,
+        &probe_on,
+        &status);
+    if (loader_test_setenv("SIXEL_LOADER_PREFER_8BIT", "") != 0) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms on "
+                "numeric: reset env failed\n");
+        return 1;
+    }
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms on "
+                "numeric: loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe_on.callback_count != 1 ||
+        probe_on.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+        probe_on.colorspace != SIXEL_COLORSPACE_GAMMA ||
+        probe_on.width != 2 ||
+        probe_on.height != 2) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms on "
+                "numeric: metadata mismatch\n");
+        return 1;
+    }
+    if (memcmp(probe_on.pixels_u8, expected_per_ch, sizeof(expected_per_ch))
+        != 0) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms on "
+                "numeric: result differs from per-channel reference\n");
+        return 1;
+    }
+
+    for (index = 0u; index < sizeof(expected_avg); ++index) {
+        if (probe_on.pixels_u8[index] != expected_avg[index]) {
+            differs_from_avg = 1;
+            break;
+        }
+    }
+    if (!differs_from_avg) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated split-gamma cms on "
+                "numeric: unexpectedly matched average-gamma reference\n");
         return 1;
     }
 
@@ -10220,6 +10438,8 @@ run_builtin_loader_test(void)
           run_builtin_loader_bmp_v4_calibrated_cms_off_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_V4_CALIBRATED_PROBE_SPLIT_GAMMA",
           run_builtin_loader_bmp_v4_cal_probe_split_gamma_num_test },
+        { "SIXEL_TEST_BMP_NUMERIC_V4_CALIBRATED_SPLIT_GAMMA_CMS_ON",
+          run_bmp_v4_cal_split_gamma_cms_on_num_t },
         { "SIXEL_TEST_BMP_NUMERIC_V5_EMBEDDED_ICC_CALIBRATED_PRIORITY",
           run_builtin_loader_bmp_v5_icc_calibrated_priority_num_test
         },
