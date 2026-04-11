@@ -48,6 +48,9 @@
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif
+#if HAVE_MATH_H
+# include <math.h>
+#endif
 
 #include <tiffio.h>
 
@@ -216,7 +219,7 @@ tiff_photometric_allows_embedded_icc(uint16_t photometric,
                                      int high_precision_path)
 {
     if (photometric == PHOTOMETRIC_CIELAB) {
-        return 0;
+        return high_precision_path ? 1 : 0;
     }
     if (high_precision_path) {
         return 1;
@@ -333,6 +336,61 @@ tiff_clamp_unit(double value)
     return value;
 }
 
+static double
+tiff_clamp_lab_ab(double value)
+{
+    if (value < -1.5) {
+        return -1.5;
+    }
+    if (value > 1.5) {
+        return 1.5;
+    }
+    return value;
+}
+
+static double
+tiff_normalize_lab_l_sample(double sample)
+{
+#if HAVE_MATH_H
+    if (!isfinite(sample)) {
+        return 0.0;
+    }
+#endif
+    if (sample > 1.0) {
+        sample /= 100.0;
+    }
+    return tiff_clamp_unit(sample);
+}
+
+static double
+tiff_normalize_lab_ab_sample(double sample)
+{
+#if HAVE_MATH_H
+    if (!isfinite(sample)) {
+        return 0.0;
+    }
+#endif
+    if (sample < -1.5 || sample > 1.5) {
+        sample /= 128.0;
+    }
+    return tiff_clamp_lab_ab(sample);
+}
+
+static double
+tiff_decode_lab_u16_l(uint16_t value)
+{
+    return tiff_clamp_unit((double)value / 65535.0);
+}
+
+static double
+tiff_decode_lab_u16_ab(uint16_t value)
+{
+    double normalized;
+
+    normalized = (double)value / 65535.0;
+    return tiff_clamp_lab_ab((normalized - 0.5) * 2.0);
+}
+
 static int
 tiff_orientation_is_supported(uint16_t orientation)
 {
@@ -389,6 +447,7 @@ static int
 tiff_convert_embedded_icc_to_srgb_float32(float *pixels,
                                           int width,
                                           int height,
+                                          int pixelformat,
                                           void const *profile,
                                           uint32_t profile_length)
 {
@@ -414,10 +473,11 @@ tiff_convert_embedded_icc_to_srgb_float32(float *pixels,
         (unsigned char *)pixels,
         width,
         height,
-        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        pixelformat,
         (unsigned char const *)profile,
         (size_t)profile_length);
     if (!converted &&
+        pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 &&
         sixel_icc_parse_profile(profile, (size_t)profile_length, &parsed_profile)) {
         parsed = 1;
         if (parsed_profile.kind == SIXEL_ICC_PROFILE_KIND_RGB
@@ -564,11 +624,12 @@ tiff_memory_unmap(thandle_t handle, tdata_t data, toff_t size)
 }
 
 /*
- * Decode selected high-precision TIFF layouts directly into RGB float32.
+ * Decode selected high-precision TIFF layouts directly into float32 buffers.
  *
  * Supported source layouts:
  *   - RGB/Gray integer (16-bit, contiguous, no alpha)
  *   - RGB/Gray float32 (SampleFormat=IEEEFP, contiguous, no alpha)
+ *   - CIELAB integer/float32 (16-bit or float32, contiguous, no alpha)
  *
  * The function returns SIXEL_FALSE for unsupported combinations so callers can
  * safely fall back to TIFFReadRGBAImageOriented().
@@ -610,13 +671,18 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     float const *row_f32;
     double unit;
     double rgb_unit[3];
+    double lab_unit[3];
     int cms_converted;
+    int float_colorspace;
+    int float_pixelformat;
     enum {
         TIFF_DECODE_UNSUPPORTED = 0,
         TIFF_DECODE_RGB_UINT,
         TIFF_DECODE_GRAY_UINT,
         TIFF_DECODE_RGB_FLOAT32,
-        TIFF_DECODE_GRAY_FLOAT32
+        TIFF_DECODE_GRAY_FLOAT32,
+        TIFF_DECODE_LAB_UINT,
+        TIFF_DECODE_LAB_FLOAT32
     } decode_mode;
 
     status = SIXEL_FALSE;
@@ -647,7 +713,12 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     rgb_unit[0] = 0.0;
     rgb_unit[1] = 0.0;
     rgb_unit[2] = 0.0;
+    lab_unit[0] = 0.0;
+    lab_unit[1] = 0.0;
+    lab_unit[2] = 0.0;
     cms_converted = 0;
+    float_colorspace = SIXEL_COLORSPACE_GAMMA;
+    float_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     decode_mode = TIFF_DECODE_UNSUPPORTED;
 
     if (result == NULL || ppixelformat == NULL ||
@@ -719,11 +790,27 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
             decode_mode = TIFF_DECODE_GRAY_UINT;
         }
         break;
+    case PHOTOMETRIC_CIELAB:
+        if (samples_per_pixel < 3u || samples_per_pixel > 3u) {
+            return SIXEL_FALSE;
+        }
+        if (sample_format == SAMPLEFORMAT_IEEEFP && bits_per_sample == 32u) {
+            decode_mode = TIFF_DECODE_LAB_FLOAT32;
+        } else if (sample_format == SAMPLEFORMAT_UINT &&
+                   bits_per_sample == 16u) {
+            decode_mode = TIFF_DECODE_LAB_UINT;
+        }
+        break;
     default:
         break;
     }
     if (decode_mode == TIFF_DECODE_UNSUPPORTED) {
         return SIXEL_FALSE;
+    }
+    if (decode_mode == TIFF_DECODE_LAB_UINT ||
+        decode_mode == TIFF_DECODE_LAB_FLOAT32) {
+        float_colorspace = SIXEL_COLORSPACE_CIELAB;
+        float_pixelformat = SIXEL_PIXELFORMAT_CIELABFLOAT32;
     }
 
     if ((size_t)width > SIZE_MAX / (size_t)samples_per_pixel) {
@@ -733,6 +820,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
     switch (decode_mode) {
     case TIFF_DECODE_RGB_FLOAT32:
     case TIFF_DECODE_GRAY_FLOAT32:
+    case TIFF_DECODE_LAB_FLOAT32:
         if (row_sample_count > SIZE_MAX / sizeof(float)) {
             return SIXEL_BAD_INTEGER_OVERFLOW;
         }
@@ -740,6 +828,7 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
         break;
     case TIFF_DECODE_RGB_UINT:
     case TIFF_DECODE_GRAY_UINT:
+    case TIFF_DECODE_LAB_UINT:
         if (bits_per_sample == 16u) {
             if (row_sample_count > SIZE_MAX / sizeof(uint16_t)) {
                 return SIXEL_BAD_INTEGER_OVERFLOW;
@@ -831,14 +920,36 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
                 rgb_unit[1] = unit;
                 rgb_unit[2] = unit;
                 break;
+            case TIFF_DECODE_LAB_UINT:
+                lab_unit[0] = tiff_decode_lab_u16_l(row_u16[src_base + 0u]);
+                lab_unit[1] = tiff_decode_lab_u16_ab(row_u16[src_base + 1u]);
+                lab_unit[2] = tiff_decode_lab_u16_ab(row_u16[src_base + 2u]);
+                break;
+            case TIFF_DECODE_LAB_FLOAT32:
+                lab_unit[0] = tiff_normalize_lab_l_sample(
+                    (double)row_f32[src_base + 0u]);
+                lab_unit[1] = tiff_normalize_lab_ab_sample(
+                    (double)row_f32[src_base + 1u]);
+                lab_unit[2] = tiff_normalize_lab_ab_sample(
+                    (double)row_f32[src_base + 2u]);
+                break;
             default:
                 status = SIXEL_FALSE;
                 goto cleanup;
             }
 
-            float_pixels[dst_base + 0u] = (float)tiff_clamp_unit(rgb_unit[0]);
-            float_pixels[dst_base + 1u] = (float)tiff_clamp_unit(rgb_unit[1]);
-            float_pixels[dst_base + 2u] = (float)tiff_clamp_unit(rgb_unit[2]);
+            if (float_colorspace == SIXEL_COLORSPACE_CIELAB) {
+                float_pixels[dst_base + 0u] = (float)lab_unit[0];
+                float_pixels[dst_base + 1u] = (float)lab_unit[1];
+                float_pixels[dst_base + 2u] = (float)lab_unit[2];
+            } else {
+                float_pixels[dst_base + 0u] =
+                    (float)tiff_clamp_unit(rgb_unit[0]);
+                float_pixels[dst_base + 1u] =
+                    (float)tiff_clamp_unit(rgb_unit[1]);
+                float_pixels[dst_base + 2u] =
+                    (float)tiff_clamp_unit(rgb_unit[2]);
+            }
         }
     }
 
@@ -848,12 +959,22 @@ tiff_try_load_high_precision(unsigned char      /* out */ **result,
             float_pixels,
             (int)width,
             (int)height,
+            float_pixelformat,
             icc_profile,
             icc_profile_length);
     }
 
     if (cms_converted) {
         status = tiff_convert_rgbf32_gamma_to_linear(float_pixels, pixel_count);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    } else if (float_colorspace == SIXEL_COLORSPACE_CIELAB) {
+        status = sixel_helper_convert_colorspace((unsigned char *)float_pixels,
+                                                 float_bytes,
+                                                 float_pixelformat,
+                                                 SIXEL_COLORSPACE_CIELAB,
+                                                 SIXEL_COLORSPACE_GAMMA);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }

@@ -101,12 +101,17 @@ Resulting precedence rule:
     behavior close to lcms2 builds.
   - fallback ICC application scope is intentionally limited:
     - RGBA decode path applies ICC only for RGB/Gray-like photometric inputs.
-    - high-precision float path applies ICC for non-`PHOTOMETRIC_CIELAB` only.
-    - `PHOTOMETRIC_CIELAB` skips embedded ICC in no-lcms fallback paths.
+    - high-precision path applies ICC for RGB/Gray and high-precision
+      `PHOTOMETRIC_CIELAB`.
+    - `PHOTOMETRIC_CIELAB` in 8-bit RGBA fallback remains matrix-based and skips
+      embedded ICC in no-lcms mode.
 - CIELab alignment:
   - For `PHOTOMETRIC_CIELAB`, loader normalizes whitepoint to D50-like
     `(x=0.34567, y=0.35850)` before libtiff RGBA decode so output grouping
     matches CoreGraphics expectations.
+  - CoreGraphics-baseline 8-bit Lab matrix behavior is preserved.
+  - Embedded Lab ICC application is enabled only for high-precision CIELAB
+    decode (16-bit/float32) in the no-lcms builtin path.
 
 ## `cms` Axis Policy
 
@@ -126,9 +131,10 @@ Observed result on current fixtures:
 - RGB: `cms=0` outputs align with `icc0` reference behavior.
 - Lab: all combinations collapse to one group, so `cms=0/1` both match the
   single Lab reference group.
-  - In no-lcms builds this also reflects the explicit policy that CIELAB
-    decode paths keep CoreGraphics-aligned baseline conversion and do not apply
-    embedded ICC transforms in fallback mode.
+  - In no-lcms builds, 8-bit CIELAB keeps the CoreGraphics-aligned matrix
+    baseline without embedded ICC transforms.
+  - High-precision CIELAB (16-bit/float32) is the only no-lcms path where
+    embedded Lab ICC is applied.
 - Grayscale: all combinations collapse to one group, so `cms=0/1` both match the
   single grayscale reference group.
 - Palette: `cms=0` outputs align with `icc0` reference behavior.
