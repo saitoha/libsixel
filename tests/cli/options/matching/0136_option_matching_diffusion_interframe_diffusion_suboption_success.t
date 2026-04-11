@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying -d stbn accepts noise_strength suboption.
+# TAP test verifying -d interframe accepts diffusion suboption.
 
 set -eux
 
@@ -12,12 +12,12 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -d stbn:source=mask:noise_strength=0.50 \
+    -d interframe:diffusion=atkinson \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o /dev/null || {
-    echo "not ok" 1 - "stbn noise_strength suboption was rejected"
+    echo "not ok" 1 - "interframe diffusion suboption was rejected"
     exit 0
 }
 
-echo "ok" 1 - "stbn noise_strength suboption is accepted"
+echo "ok" 1 - "interframe diffusion suboption is accepted"
 exit 0

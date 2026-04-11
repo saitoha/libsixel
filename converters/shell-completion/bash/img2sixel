@@ -440,12 +440,12 @@ _img2sixel()
                                    stbn:source=hash \
                                    stbn:source=mask \
                                    stbn:source=pmj \
-                                   stbn:noise_strength=0.055 \
+                                   stbn:strength=0.055 \
                                    stbn:source=mask:diffusion=sierra2 \
                                    stbn:source=pmj:diffusion=atkinson \
-                                   stbn:source=hash:noise_strength=0.055 \
-                                   stbn:source=mask:noise_strength=0.50 \
-                                   stbn:source=pmj:noise_strength=0.50' -- "$cur" ) )
+                                   stbn:source=hash:strength=0.055 \
+                                   stbn:source=mask:strength=0.50 \
+                                   stbn:source=pmj:strength=0.50' -- "$cur" ) )
         return 0
         ;;
     -y|--diffusion-scan)

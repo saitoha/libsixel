@@ -41,10 +41,10 @@ _diffusiontype() {
     'stbn:source=pmj[PMJ source]' \
     'stbn:source=mask:diffusion=sierra2[mask source + Sierra Two-row]' \
     'stbn:source=pmj:diffusion=atkinson[pmj source + Atkinson]' \
-    'stbn:noise_strength=0.055[STBN/PMJ noise strength override]' \
-    'stbn:source=hash:noise_strength=0.055[hash source + noise override]' \
-    'stbn:source=mask:noise_strength=0.50[mask source + noise override]' \
-    'stbn:source=pmj:noise_strength=0.50[pmj source + noise override]'
+    'stbn:strength=0.055[STBN/PMJ noise strength override]' \
+    'stbn:source=hash:strength=0.055[hash source + noise override]' \
+    'stbn:source=mask:strength=0.50[mask source + noise override]' \
+    'stbn:source=pmj:strength=0.50[pmj source + noise override]'
 }
 
 _scantype() {

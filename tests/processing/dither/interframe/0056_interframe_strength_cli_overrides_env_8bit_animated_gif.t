@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring CLI noise_strength overrides env for 8bit interframe.
+# TAP test ensuring CLI strength overrides env for 8bit interframe.
 
 set -eux
 
@@ -62,17 +62,17 @@ cli_override_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d stbn:source=mask:noise_strength=0.50 -p 16 \
+        -d stbn:source=mask:strength=0.50 -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "cli interframe noise_strength override encode failed"
+    echo "not ok" 1 - "cli interframe strength override encode failed"
     exit 0
 }
 
 test "${cli_override_output}" != "${diffusion_output}" || {
-    echo "not ok" 1 - "cli noise_strength override did not take effect"
+    echo "not ok" 1 - "cli strength override did not take effect"
     exit 0
 }
 
-echo "ok" 1 - "cli noise_strength override wins over env settings"
+echo "ok" 1 - "cli strength override wins over env settings"
 exit 0

@@ -284,9 +284,9 @@ sub-option:
 \fBsource=SOURCE\fP -> \fBhash\fP, \fBmask\fP, or \fBpmj\fP (default hash)
 .br
 \fBdiffusion=KERNEL\fP -> \fBauto\fP, \fBnone\fP, \fBfs\fP, \fBatkinson\fP, \fBjajuni\fP, \fBstucki\fP,
-\fBburkes\fP, \fBsierra1\fP, \fBsierra2\fP, or \fBsierra3\fP
+\fBburkes\fP, \fBsierra1\fP, \fBsierra2\fP, or \fBsierra3\fP (default none)
 .br
-\fBnoise_strength=VALUE\fP -> floating value in 0.0-2.0 (default 0.055)
+\fBstrength=VALUE\fP -> floating value in 0.0-2.0 (default 0.055)
 .br
 \fBinterframe\fP and \fBstbn\fP ignore \-Y and are not available with \-I.
 .TP 5
@@ -961,13 +961,15 @@ integers.
 set interframe spatial diffusion kernel for \fB\-d interframe\fP or
 \fB\-d stbn\fP.
 Accepts auto, none, fs, atkinson, jajuni, stucki, burkes, sierra1,
-sierra2, or sierra3. Defaults to fs.
+sierra2, or sierra3.
+When unset, \fB\-d interframe\fP defaults to fs and \fB\-d stbn\fP defaults
+to none.
 .TP 5
 .B SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH
 .br
 set interframe STBN/PMJ noise strength for \fB\-d stbn\fP.
 Accepts 0.0-2.0; defaults to 0.055.
-Overridden by \fB\-d stbn:noise_strength=VALUE\fP.
+Overridden by \fB\-d stbn:strength=VALUE\fP.
 .TP 5
 .B SIXEL_DITHER_BLUENOISE_STRENGTH
 .br

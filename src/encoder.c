@@ -953,7 +953,7 @@ static sixel_suboption_key_t const g_subkeys_diffusion_stbn[] = {
         / sizeof(g_option_choices_interframe_diffusion[0])
     },
     {
-        "noise_strength",
+        "strength",
         NULL,
         SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH_ENVVAR,
         SIXEL_SUBOPTION_VALUE_FREE,
@@ -6202,7 +6202,7 @@ sixel_encoder_parse_interframe_noise_strength_text(
             parsed < 0.0 ||
             parsed > 2.0) {
         sixel_helper_set_additional_message(
-            "-d stbn:noise_strength must be in range 0.0-2.0.");
+            "-d stbn:strength must be in range 0.0-2.0.");
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -6212,6 +6212,21 @@ sixel_encoder_parse_interframe_noise_strength_text(
     }
     *strength_u8_out = (int)(scaled + 0.5);
     return SIXEL_OK;
+}
+
+static int
+sixel_encoder_resolve_stbn_default_spatial_diffuse(void)
+{
+    char const *value;
+    int resolved;
+
+    value = sixel_compat_getenv(SIXEL_DITHER_INTERFRAME_DIFFUSION_ENVVAR);
+    resolved = sixel_interframe_spatial_diffuse_from_string(value);
+    if (resolved == SIXEL_INTERFRAME_SPATIAL_DIFFUSE_UNSET) {
+        return SIXEL_DIFFUSE_NONE;
+    }
+
+    return resolved;
 }
 
 static SIXELSTATUS
@@ -6975,6 +6990,13 @@ sixel_encoder_resolve_interframe_suboptions(
     } else if (base_name != NULL && strcmp(base_name, "stbn") == 0) {
         *has_strategy_override = 1;
         *strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_HASH;
+        /*
+         * Keep stbn defaults explicit: absent diffusion suboption means
+         * diffusion=none unless the shared interframe diffusion envvar
+         * explicitly requests another kernel.
+         */
+        *has_spatial_diffuse_override = 1;
+        *spatial_diffuse = sixel_encoder_resolve_stbn_default_spatial_diffuse();
         resolved_choice = sixel_interframe_strategy_token_from_env_common();
         if (sixel_interframe_strategy_method_from_token(resolved_choice)
                 == SIXEL_INTERFRAME_METHOD_STBN) {
@@ -7005,7 +7027,7 @@ sixel_encoder_resolve_interframe_suboptions(
             *has_spatial_diffuse_override = 1;
             *spatial_diffuse = resolved_spatial_diffuse;
         } else if (assignment->resolved_key_name != NULL &&
-                strcmp(assignment->resolved_key_name, "noise_strength") == 0) {
+                strcmp(assignment->resolved_key_name, "strength") == 0) {
             status = sixel_encoder_parse_interframe_noise_strength_text(
                 assignment->resolved_value_text,
                 &resolved_strength_u8);

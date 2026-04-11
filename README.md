@@ -604,9 +604,9 @@ Options:
                                            -> auto, none, fs,
                                               atkinson, jajuni,
                                               stucki, burkes,
-                                              sierra1, sierra2,
-                                              or sierra3
-                                 noise_strength=VALUE
+                                              sierra1, sierra2, or
+                                              sierra3 (default none)
+                                 strength=VALUE
                                            -> float in 0.0-2.0
                                               (default 0.055)
                            interframe and stbn ignore -Y and are

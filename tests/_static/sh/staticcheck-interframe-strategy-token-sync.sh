@@ -72,6 +72,7 @@ cat > "$expected_float32_tests" <<'EOF'
 0051_interframe_pmj_source_changes_output_vs_stbn_hash_float32_builtin_apng.t
 0053_interframe_strategy_cli_pmj_resets_across_size_change_float32_builtin_mixed.t
 0055_interframe_pmj_strength_zero_matches_diffusion_float32_builtin_apng.t
+0058_interframe_diffusion_suboption_changes_output_vs_fs_float32_animated_gif.t
 EOF
 
 cat > "$expected_8bit_mask_tests" <<'EOF'
@@ -113,6 +114,12 @@ fi
 if ! grep -F -- "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH" "$source_file_h" \
         >/dev/null 2>&1; then
     echo "# src/dither-interframe-method.h: missing noise strength env macro" \
+        >> "$missing"
+    status=1
+fi
+if ! grep -F -- "SIXEL_DITHER_INTERFRAME_DIFFUSION" "$source_file_h" \
+        >/dev/null 2>&1; then
+    echo "# src/dither-interframe-method.h: missing interframe diffusion env macro" \
         >> "$missing"
     status=1
 fi
@@ -184,45 +191,103 @@ else
     fi
 fi
 
-test_path="$src_root/tests/cli/options/matching/0133_option_matching_diffusion_stbn_noise_strength_suboption_success.t"
+test_path="$src_root/tests/cli/options/matching/0133_option_matching_diffusion_stbn_strength_suboption_success.t"
 if test ! -f "$test_path"; then
-    echo "# tests/cli/options/matching: missing noise_strength success coverage test" \
+    echo "# tests/cli/options/matching: missing strength success coverage test" \
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "stbn:source=mask:noise_strength=" \
+    if ! grep -F -- "stbn:source=mask:strength=" \
             "$test_path" >/dev/null 2>&1; then
-        echo "# tests/cli/options/matching: 0133 must exercise noise_strength suboption" \
+        echo "# tests/cli/options/matching: 0133 must exercise strength suboption" \
             >> "$missing"
         status=1
     fi
 fi
 
-test_path="$src_root/tests/cli/options/matching/0134_option_matching_diffusion_non_stbn_rejects_noise_strength_suboption.t"
+test_path="$src_root/tests/cli/options/matching/0134_option_matching_diffusion_non_stbn_rejects_strength_suboption.t"
 if test ! -f "$test_path"; then
-    echo "# tests/cli/options/matching: missing non-interframe noise_strength rejection test" \
+    echo "# tests/cli/options/matching: missing non-interframe strength rejection test" \
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "fs:noise_strength=" "$test_path" >/dev/null 2>&1 \
+    if ! grep -F -- "fs:strength=" "$test_path" >/dev/null 2>&1 \
             || ! grep -F -- "unknown suboption key" "$test_path" \
             >/dev/null 2>&1; then
-        echo "# tests/cli/options/matching: 0134 must reject noise_strength outside stbn" \
+        echo "# tests/cli/options/matching: 0134 must reject strength outside stbn" \
             >> "$missing"
         status=1
     fi
 fi
 
-test_path="$src_root/tests/cli/options/matching/0135_option_matching_diffusion_stbn_noise_strength_invalid_value.t"
+test_path="$src_root/tests/cli/options/matching/0135_option_matching_diffusion_stbn_strength_invalid_value.t"
 if test ! -f "$test_path"; then
-    echo "# tests/cli/options/matching: missing invalid noise_strength value test" \
+    echo "# tests/cli/options/matching: missing invalid strength value test" \
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "stbn:noise_strength=invalid" "$test_path" \
+    if ! grep -F -- "stbn:strength=invalid" "$test_path" \
             >/dev/null 2>&1 \
             || ! grep -F -- "0.0-2.0" "$test_path" >/dev/null 2>&1; then
-        echo "# tests/cli/options/matching: 0135 must validate noise_strength range diagnostics" \
+        echo "# tests/cli/options/matching: 0135 must validate strength range diagnostics" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$src_root/tests/cli/options/matching/0136_option_matching_diffusion_interframe_diffusion_suboption_success.t"
+if test ! -f "$test_path"; then
+    echo "# tests/cli/options/matching: missing interframe diffusion suboption success test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "interframe:diffusion=" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0136 must exercise interframe:diffusion=..." \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$src_root/tests/cli/options/matching/0137_option_matching_diffusion_stbn_diffusion_suboption_success.t"
+if test ! -f "$test_path"; then
+    echo "# tests/cli/options/matching: missing stbn diffusion suboption success test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "stbn:source=mask:diffusion=" "$test_path" \
+            >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0137 must exercise stbn diffusion suboption" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$src_root/tests/cli/options/matching/0138_option_matching_diffusion_non_interframe_rejects_diffusion_suboption.t"
+if test ! -f "$test_path"; then
+    echo "# tests/cli/options/matching: missing non-interframe diffusion rejection test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "fs:diffusion=" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "unknown suboption key" "$test_path" \
+            >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0138 must reject diffusion outside interframe/stbn" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$src_root/tests/cli/options/matching/0139_option_matching_diffusion_interframe_diffusion_unknown_value.t"
+if test ! -f "$test_path"; then
+    echo "# tests/cli/options/matching: missing interframe diffusion unknown-value test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "interframe:diffusion=invalid-kernel" "$test_path" \
+            >/dev/null 2>&1 \
+            || ! grep -F -- "unknown suboption value" "$test_path" \
+            >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0139 must validate diffusion unknown-value diagnostics" \
             >> "$missing"
         status=1
     fi
@@ -657,17 +722,65 @@ else
     fi
 fi
 
-test_path="$interframe_tests_dir/0056_interframe_noise_strength_cli_overrides_env_8bit_animated_gif.t"
+test_path="$interframe_tests_dir/0056_interframe_strength_cli_overrides_env_8bit_animated_gif.t"
 if test ! -f "$test_path"; then
-    echo "# tests/processing/dither/interframe: missing cli noise_strength override coverage test" \
+    echo "# tests/processing/dither/interframe: missing cli strength override coverage test" \
         >> "$missing"
     status=1
 else
     if ! grep -F -- "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH=0" "$test_path" \
             >/dev/null 2>&1 \
-            || ! grep -F -- "stbn:source=mask:noise_strength=" \
+            || ! grep -F -- "stbn:source=mask:strength=" \
             "$test_path" >/dev/null 2>&1; then
-        echo "# tests/processing/dither/interframe: 0056 must cover cli/env noise_strength precedence" \
+        echo "# tests/processing/dither/interframe: 0056 must cover cli/env strength precedence" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$interframe_tests_dir/0057_interframe_diffusion_suboption_changes_output_vs_fs_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/interframe: missing 8bit interframe diffusion suboption effect test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "-d interframe:diffusion=atkinson -p 16" "$test_path" \
+            >/dev/null 2>&1 \
+            || ! grep -F -- "test \"\${atkinson_output}\" != \"\${fs_output}\"" \
+            "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/interframe: 0057 must enforce interframe diffusion suboption effect" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$interframe_tests_dir/0058_interframe_diffusion_suboption_changes_output_vs_fs_float32_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/interframe: missing float32 interframe diffusion suboption effect test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "-d interframe:diffusion=atkinson -p 16" \
+            "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "test \"\${atkinson_output}\" != \"\${fs_output}\"" \
+            "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/interframe: 0058 must enforce float32 interframe diffusion suboption effect" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$interframe_tests_dir/0059_interframe_stbn_default_diffusion_matches_none_8bit_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/interframe: missing stbn default diffusion=none coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "-d stbn -p 16" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "-d stbn:diffusion=none -p 16" \
+            "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/interframe: 0059 must compare stbn default with diffusion=none" \
             >> "$missing"
         status=1
     fi

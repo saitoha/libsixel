@@ -396,8 +396,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "          source=SOURCE         -> hash, mask, or pmj (default hash)\n"
         "          diffusion=KERNEL      -> auto, none, fs, atkinson, jajuni,\n"
         "                                   stucki, burkes, sierra1, sierra2,\n"
-        "                                   or sierra3\n"
-        "          noise_strength=VALUE  -> float in 0.0-2.0 (default 0.055)\n"
+        "                                   or sierra3 (default none)\n"
+        "          strength=VALUE  -> float in 0.0-2.0 (default 0.055)\n"
         "    interframe and stbn ignore -Y and are not available with -I.\n"
     },
     {
@@ -833,13 +833,14 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_DITHER_INTERFRAME_DIFFUSION",
         "set interframe spatial diffusion kernel for -d interframe or -d stbn.\n"
         "Accepts auto, none, fs, atkinson, jajuni, stucki, burkes,\n"
-        "sierra1, sierra2, or sierra3. Defaults to fs."
+        "sierra1, sierra2, or sierra3.\n"
+        "When unset, -d interframe defaults to fs and -d stbn defaults to none."
     },
     {
         "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH",
         "set interframe STBN/PMJ noise strength for -d stbn.\n"
         "Accepts 0.0-2.0; defaults to 0.055.\n"
-        "Overridden by -d stbn:noise_strength=VALUE."
+        "Overridden by -d stbn:strength=VALUE."
     },
     {
         "SIXEL_PLANNER_RESIZE_PRECISION_MODE",
