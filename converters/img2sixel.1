@@ -956,16 +956,27 @@ a multiple of six scanlines.
 set overlap between adjacent dither bands to smooth seams. Accepts non-negative
 integers.
 .TP 5
+.B SIXEL_DITHER_STBN_SOURCE
+.br
+set STBN source override for \fB\-d stbn\fP.
+Accepts stbn-hash (default), stbn-mask, or pmj.
+.TP 5
 .B SIXEL_DITHER_INTERFRAME_DIFFUSION
 .br
-set interframe spatial diffusion kernel for \fB\-d interframe\fP or
-\fB\-d stbn\fP.
+set interframe spatial diffusion kernel for \fB\-d interframe\fP.
 Accepts auto, none, fs, atkinson, jajuni, stucki, burkes, sierra1,
 sierra2, or sierra3.
-When unset, \fB\-d interframe\fP defaults to fs and \fB\-d stbn\fP defaults
-to none.
+When unset, \fB\-d interframe\fP defaults to fs.
 .TP 5
-.B SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH
+.B SIXEL_DITHER_STBN_DIFFUSION
+.br
+set STBN spatial diffusion kernel for \fB\-d stbn\fP.
+Accepts auto, none, fs, atkinson, jajuni, stucki, burkes, sierra1,
+sierra2, or sierra3.
+When unset, \fB\-d stbn\fP defaults to none.
+Overridden by \fB\-d stbn:diffusion=KERNEL\fP.
+.TP 5
+.B SIXEL_DITHER_STBN_STRENGTH
 .br
 set interframe STBN/PMJ noise strength for \fB\-d stbn\fP.
 Accepts 0.0-2.0; defaults to 0.055.

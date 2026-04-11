@@ -47,10 +47,16 @@
 #define SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_MASK 3
 #define SIXEL_INTERFRAME_STRATEGY_TOKEN_PMJ       4
 
-#define SIXEL_DITHER_INTERFRAME_STRATEGY_ENVVAR \
-    "SIXEL_DITHER_INTERFRAME_STRATEGY"
-#define SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH_ENVVAR \
-    "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH"
+#define SIXEL_DITHER_INTERFRAME_DIFFUSION_ENVVAR \
+    "SIXEL_DITHER_INTERFRAME_DIFFUSION"
+#define SIXEL_DITHER_STBN_SOURCE_ENVVAR \
+    "SIXEL_DITHER_STBN_SOURCE"
+#define SIXEL_DITHER_STBN_DIFFUSION_ENVVAR \
+    "SIXEL_DITHER_STBN_DIFFUSION"
+#define SIXEL_DITHER_STBN_STRENGTH_ENVVAR \
+    "SIXEL_DITHER_STBN_STRENGTH"
+
+#define SIXEL_INTERFRAME_SPATIAL_DIFFUSE_UNSET (-1)
 
 #define SIXEL_INTERFRAME_VARERR_SCALE_SHIFT 12
 #define SIXEL_INTERFRAME_VARERR_SCALE \
@@ -106,6 +112,16 @@ sixel_interframe_strategy_token_from_string(char const *value);
 
 int
 sixel_interframe_strategy_method_from_token(int strategy_token);
+
+int
+sixel_interframe_spatial_diffuse_from_string(char const *value);
+
+int
+sixel_interframe_spatial_diffuse_from_env_common(void);
+
+int
+sixel_interframe_spatial_diffuse_from_dither_or_env_common(
+    sixel_dither_t const *dither);
 
 int
 sixel_interframe_strategy_token_from_env_common(void);

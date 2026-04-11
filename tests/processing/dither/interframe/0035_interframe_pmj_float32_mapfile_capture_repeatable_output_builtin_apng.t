@@ -28,7 +28,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 first_capture_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=pmj \
+    SIXEL_DITHER_STBN_SOURCE=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \
@@ -43,7 +43,7 @@ first_capture_output=$(
 }
 
 second_capture_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=pmj \
+    SIXEL_DITHER_STBN_SOURCE=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \

@@ -937,7 +937,7 @@ static sixel_suboption_key_t const g_subkeys_diffusion_stbn[] = {
     {
         "source",
         NULL,
-        SIXEL_DITHER_INTERFRAME_STRATEGY_ENVVAR,
+        SIXEL_DITHER_STBN_SOURCE_ENVVAR,
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_stbn_source,
         sizeof(g_option_choices_stbn_source)
@@ -946,7 +946,7 @@ static sixel_suboption_key_t const g_subkeys_diffusion_stbn[] = {
     {
         "diffusion",
         NULL,
-        SIXEL_DITHER_INTERFRAME_DIFFUSION_ENVVAR,
+        SIXEL_DITHER_STBN_DIFFUSION_ENVVAR,
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_interframe_diffusion,
         sizeof(g_option_choices_interframe_diffusion)
@@ -955,7 +955,7 @@ static sixel_suboption_key_t const g_subkeys_diffusion_stbn[] = {
     {
         "strength",
         NULL,
-        SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH_ENVVAR,
+        SIXEL_DITHER_STBN_STRENGTH_ENVVAR,
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
@@ -6220,7 +6220,7 @@ sixel_encoder_resolve_stbn_default_spatial_diffuse(void)
     char const *value;
     int resolved;
 
-    value = sixel_compat_getenv(SIXEL_DITHER_INTERFRAME_DIFFUSION_ENVVAR);
+    value = sixel_compat_getenv(SIXEL_DITHER_STBN_DIFFUSION_ENVVAR);
     resolved = sixel_interframe_spatial_diffuse_from_string(value);
     if (resolved == SIXEL_INTERFRAME_SPATIAL_DIFFUSE_UNSET) {
         return SIXEL_DIFFUSE_NONE;

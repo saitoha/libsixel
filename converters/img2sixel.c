@@ -825,19 +825,27 @@ static cli_env_help_t const g_env_help_table[] = {
         "enables it while 0, off, false, or no keep the 8-bit pipeline."
     },
     {
-        "SIXEL_DITHER_INTERFRAME_STRATEGY",
+        "SIXEL_DITHER_STBN_SOURCE",
         "internal STBN source override used by -d stbn.\n"
         "Accepts stbn-hash (default), stbn-mask, or pmj."
     },
     {
         "SIXEL_DITHER_INTERFRAME_DIFFUSION",
-        "set interframe spatial diffusion kernel for -d interframe or -d stbn.\n"
+        "set interframe spatial diffusion kernel for -d interframe.\n"
         "Accepts auto, none, fs, atkinson, jajuni, stucki, burkes,\n"
         "sierra1, sierra2, or sierra3.\n"
-        "When unset, -d interframe defaults to fs and -d stbn defaults to none."
+        "When unset, -d interframe defaults to fs."
     },
     {
-        "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH",
+        "SIXEL_DITHER_STBN_DIFFUSION",
+        "set STBN spatial diffusion kernel for -d stbn.\n"
+        "Accepts auto, none, fs, atkinson, jajuni, stucki, burkes,\n"
+        "sierra1, sierra2, or sierra3.\n"
+        "When unset, -d stbn defaults to none.\n"
+        "Overridden by -d stbn:diffusion=KERNEL."
+    },
+    {
+        "SIXEL_DITHER_STBN_STRENGTH",
         "set interframe STBN/PMJ noise strength for -d stbn.\n"
         "Accepts 0.0-2.0; defaults to 0.055.\n"
         "Overridden by -d stbn:strength=VALUE."

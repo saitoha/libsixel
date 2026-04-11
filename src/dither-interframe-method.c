@@ -32,6 +32,49 @@
 #include "compat_stub.h"
 #include "dither-interframe-method.h"
 
+static int
+sixel_interframe_is_supported_spatial_diffuse(int method_for_diffuse)
+{
+    switch (method_for_diffuse) {
+    case SIXEL_DIFFUSE_NONE:
+    case SIXEL_DIFFUSE_FS:
+    case SIXEL_DIFFUSE_ATKINSON:
+    case SIXEL_DIFFUSE_JAJUNI:
+    case SIXEL_DIFFUSE_STUCKI:
+    case SIXEL_DIFFUSE_BURKES:
+    case SIXEL_DIFFUSE_SIERRA1:
+    case SIXEL_DIFFUSE_SIERRA2:
+    case SIXEL_DIFFUSE_SIERRA3:
+        return 1;
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+static int
+sixel_interframe_spatial_diffuse_from_env_named(char const *envvar,
+                                                 int fallback)
+{
+    char const *value;
+    int resolved;
+
+    value = NULL;
+    resolved = SIXEL_INTERFRAME_SPATIAL_DIFFUSE_UNSET;
+
+    if (envvar == NULL) {
+        return fallback;
+    }
+
+    value = sixel_compat_getenv(envvar);
+    resolved = sixel_interframe_spatial_diffuse_from_string(value);
+    if (!sixel_interframe_is_supported_spatial_diffuse(resolved)) {
+        resolved = fallback;
+    }
+    return resolved;
+}
+
 int
 sixel_interframe_strategy_token_from_string(char const *value)
 {
@@ -75,11 +118,89 @@ sixel_interframe_strategy_method_from_token(int strategy_token)
 }
 
 int
+sixel_interframe_spatial_diffuse_from_string(char const *value)
+{
+    if (value == NULL) {
+        return SIXEL_INTERFRAME_SPATIAL_DIFFUSE_UNSET;
+    }
+    if (strcmp(value, "auto") == 0) {
+        return SIXEL_DIFFUSE_FS;
+    }
+    if (strcmp(value, "none") == 0) {
+        return SIXEL_DIFFUSE_NONE;
+    }
+    if (strcmp(value, "fs") == 0) {
+        return SIXEL_DIFFUSE_FS;
+    }
+    if (strcmp(value, "atkinson") == 0) {
+        return SIXEL_DIFFUSE_ATKINSON;
+    }
+    if (strcmp(value, "jajuni") == 0) {
+        return SIXEL_DIFFUSE_JAJUNI;
+    }
+    if (strcmp(value, "stucki") == 0) {
+        return SIXEL_DIFFUSE_STUCKI;
+    }
+    if (strcmp(value, "burkes") == 0) {
+        return SIXEL_DIFFUSE_BURKES;
+    }
+    if (strcmp(value, "sierra1") == 0) {
+        return SIXEL_DIFFUSE_SIERRA1;
+    }
+    if (strcmp(value, "sierra2") == 0) {
+        return SIXEL_DIFFUSE_SIERRA2;
+    }
+    if (strcmp(value, "sierra3") == 0) {
+        return SIXEL_DIFFUSE_SIERRA3;
+    }
+
+    return SIXEL_INTERFRAME_SPATIAL_DIFFUSE_UNSET;
+}
+
+int
+sixel_interframe_spatial_diffuse_from_env_common(void)
+{
+    return sixel_interframe_spatial_diffuse_from_env_named(
+        SIXEL_DITHER_INTERFRAME_DIFFUSION_ENVVAR,
+        SIXEL_DIFFUSE_FS);
+}
+
+int
+sixel_interframe_spatial_diffuse_from_dither_or_env_common(
+    sixel_dither_t const *dither)
+{
+    int resolved;
+    int strategy_token;
+    int strategy_method;
+
+    if (dither != NULL && dither->interframe_spatial_diffuse_override != 0) {
+        resolved = dither->interframe_spatial_diffuse;
+        if (sixel_interframe_is_supported_spatial_diffuse(resolved)) {
+            return resolved;
+        }
+    }
+
+    strategy_token = sixel_interframe_strategy_token_from_dither_or_env_common(
+        dither);
+    strategy_method = sixel_interframe_strategy_method_from_token(
+        strategy_token);
+    if (strategy_method == SIXEL_INTERFRAME_METHOD_STBN) {
+        return sixel_interframe_spatial_diffuse_from_env_named(
+            SIXEL_DITHER_STBN_DIFFUSION_ENVVAR,
+            SIXEL_DIFFUSE_NONE);
+    }
+
+    return sixel_interframe_spatial_diffuse_from_env_named(
+        SIXEL_DITHER_INTERFRAME_DIFFUSION_ENVVAR,
+        SIXEL_DIFFUSE_FS);
+}
+
+int
 sixel_interframe_strategy_token_from_env_common(void)
 {
     char const *value;
 
-    value = sixel_compat_getenv(SIXEL_DITHER_INTERFRAME_STRATEGY_ENVVAR);
+    value = sixel_compat_getenv(SIXEL_DITHER_STBN_SOURCE_ENVVAR);
     return sixel_interframe_strategy_token_from_string(value);
 }
 

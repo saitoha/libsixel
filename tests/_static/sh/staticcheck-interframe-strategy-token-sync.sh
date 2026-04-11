@@ -105,21 +105,39 @@ cat > "$expected_8bit_mask_cli_tests" <<'EOF'
 0049_interframe_strategy_cli_stbn_mask_resets_across_size_change_builtin_mixed.t
 EOF
 
-if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY" "$source_file_h" \
+if ! grep -F -- "SIXEL_DITHER_STBN_SOURCE" "$source_file_h" \
         >/dev/null 2>&1; then
     echo "# src/dither-interframe-method.h: missing env var macro name" \
         >> "$missing"
     status=1
 fi
-if ! grep -F -- "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH" "$source_file_h" \
+if ! grep -F -- "SIXEL_DITHER_STBN_STRENGTH" "$source_file_h" \
         >/dev/null 2>&1; then
     echo "# src/dither-interframe-method.h: missing noise strength env macro" \
+        >> "$missing"
+    status=1
+fi
+if ! grep -F -- "SIXEL_DITHER_STBN_DIFFUSION" "$source_file_h" \
+        >/dev/null 2>&1; then
+    echo "# src/dither-interframe-method.h: missing stbn diffusion env macro" \
         >> "$missing"
     status=1
 fi
 if ! grep -F -- "SIXEL_DITHER_INTERFRAME_DIFFUSION" "$source_file_h" \
         >/dev/null 2>&1; then
     echo "# src/dither-interframe-method.h: missing interframe diffusion env macro" \
+        >> "$missing"
+    status=1
+fi
+if grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY" \
+        "$source_file_h" "$source_file_c" >/dev/null 2>&1; then
+    echo "# src/dither-interframe-method: removed old interframe strategy env name" \
+        >> "$missing"
+    status=1
+fi
+if grep -F -- "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH" \
+        "$source_file_h" "$source_file_c" >/dev/null 2>&1; then
+    echo "# src/dither-interframe-method: removed old interframe noise env name" \
         >> "$missing"
     status=1
 fi
@@ -150,7 +168,7 @@ while IFS= read -r token; do
         status=1
     fi
     if ! find "$interframe_tests_dir" -type f -name '*.t' -exec \
-            grep -F "SIXEL_DITHER_INTERFRAME_STRATEGY=$token" {} + >/dev/null 2>&1; then
+            grep -F "SIXEL_DITHER_STBN_SOURCE=$token" {} + >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: missing strategy token use: $token" \
             >> "$missing"
         status=1
@@ -362,7 +380,7 @@ while IFS= read -r test_name; do
         status=1
         continue
     fi
-    if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=stbn-mask" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=stbn-mask" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: missing stbn-mask strategy in $test_name" \
             >> "$missing"
         status=1
@@ -383,7 +401,7 @@ while IFS= read -r test_name; do
         status=1
         continue
     fi
-    if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=pmj" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: missing pmj strategy in $test_name" \
             >> "$missing"
         status=1
@@ -409,7 +427,7 @@ while IFS= read -r test_name; do
             >> "$missing"
         status=1
     fi
-    if grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=pmj" "$test_path" >/dev/null 2>&1; then
+    if grep -F -- "SIXEL_DITHER_STBN_SOURCE=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: unexpected env-based pmj in $test_name" \
             >> "$missing"
         status=1
@@ -435,7 +453,7 @@ while IFS= read -r test_name; do
             >> "$missing"
         status=1
     fi
-    if grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=pmj" "$test_path" >/dev/null 2>&1; then
+    if grep -F -- "SIXEL_DITHER_STBN_SOURCE=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: unexpected env-based pmj in $test_name" \
             >> "$missing"
         status=1
@@ -461,7 +479,7 @@ while IFS= read -r test_name; do
             >> "$missing"
         status=1
     fi
-    if grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=stbn-mask" "$test_path" >/dev/null 2>&1; then
+    if grep -F -- "SIXEL_DITHER_STBN_SOURCE=stbn-mask" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: unexpected env-based stbn-mask in $test_name" \
             >> "$missing"
         status=1
@@ -575,7 +593,7 @@ if test ! -f "$test_path"; then
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=pmj" "$test_path" \
+    if ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=pmj" "$test_path" \
             >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0034 must exercise pmj strategy" \
             >> "$missing"
@@ -589,9 +607,9 @@ if test ! -f "$test_path"; then
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=pmj" "$test_path" \
+    if ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=pmj" "$test_path" \
             >/dev/null 2>&1 \
-            || ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=stbn-hash" "$test_path" \
+            || ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=stbn-hash" "$test_path" \
             >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0050 must compare pmj and stbn-hash" \
             >> "$missing"
@@ -611,9 +629,9 @@ if test ! -f "$test_path"; then
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=pmj" "$test_path" \
+    if ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=pmj" "$test_path" \
             >/dev/null 2>&1 \
-            || ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=stbn-hash" "$test_path" \
+            || ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=stbn-hash" "$test_path" \
             >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0051 must compare pmj and stbn-hash" \
             >> "$missing"
@@ -633,8 +651,8 @@ else
 fi
 
 test_path="$interframe_tests_dir/0012_interframe_stbn_placeholder_matches_diffusion_builtin_apng.t"
-if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1 \
-        || ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=stbn" "$test_path" >/dev/null 2>&1; then
+if ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=diffusion" "$test_path" >/dev/null 2>&1 \
+        || ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=stbn" "$test_path" >/dev/null 2>&1; then
     echo "# tests/processing/dither/interframe: 0012 must keep 8bit stbn=diffusion coverage" \
         >> "$missing"
     status=1
@@ -646,8 +664,8 @@ if grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
 fi
 
 test_path="$interframe_tests_dir/0014_interframe_stbn_mask_source_changes_output_vs_hash_animated_gif.t"
-if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=stbn-mask" "$test_path" >/dev/null 2>&1 \
-        || ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=stbn-hash" "$test_path" >/dev/null 2>&1; then
+if ! grep -F -- "-d stbn:source=mask -p 16" "$test_path" >/dev/null 2>&1 \
+        || ! grep -F -- "-d stbn:source=hash -p 16" "$test_path" >/dev/null 2>&1; then
     echo "# tests/processing/dither/interframe: 0014 must keep 8bit stbn-mask!=stbn-hash coverage" \
         >> "$missing"
     status=1
@@ -659,8 +677,8 @@ if grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
 fi
 
 test_path="$interframe_tests_dir/0021_interframe_stbn_hash_changes_output_vs_diffusion_float32_animated_gif.t"
-if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=stbn-hash" "$test_path" >/dev/null 2>&1 \
-        || ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1; then
+if ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=stbn-hash" "$test_path" >/dev/null 2>&1 \
+        || ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=diffusion" "$test_path" >/dev/null 2>&1; then
     echo "# tests/processing/dither/interframe: 0021 must keep float32 stbn-hash!=diffusion coverage" \
         >> "$missing"
     status=1
@@ -672,8 +690,8 @@ if ! grep -F -- "--precision=float32" "$test_path" >/dev/null 2>&1; then
 fi
 
 test_path="$interframe_tests_dir/0023_interframe_stbn_mask_source_changes_output_vs_hash_float32_animated_gif.t"
-if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=stbn-mask" "$test_path" >/dev/null 2>&1 \
-        || ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=stbn-hash" "$test_path" >/dev/null 2>&1; then
+if ! grep -F -- "-d stbn:source=mask -p 16" "$test_path" >/dev/null 2>&1 \
+        || ! grep -F -- "-d stbn:source=hash -p 16" "$test_path" >/dev/null 2>&1; then
     echo "# tests/processing/dither/interframe: 0023 must keep float32 stbn-mask!=stbn-hash coverage" \
         >> "$missing"
     status=1
@@ -690,7 +708,7 @@ if test ! -f "$test_path"; then
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1 \
+    if ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=diffusion" "$test_path" >/dev/null 2>&1 \
             || ! grep -F -- "stbn:source=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0038 must cover env/cli precedence for pmj" \
             >> "$missing"
@@ -714,7 +732,7 @@ else
             >> "$missing"
         status=1
     fi
-    if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1 \
+    if ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=diffusion" "$test_path" >/dev/null 2>&1 \
             || ! grep -F -- "stbn:source=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0041 must cover float32 env/cli precedence for pmj" \
             >> "$missing"
@@ -728,7 +746,7 @@ if test ! -f "$test_path"; then
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH=0" "$test_path" \
+    if ! grep -F -- "SIXEL_DITHER_STBN_STRENGTH=0" "$test_path" \
             >/dev/null 2>&1 \
             || ! grep -F -- "stbn:source=mask:strength=" \
             "$test_path" >/dev/null 2>&1; then
@@ -786,6 +804,23 @@ else
     fi
 fi
 
+test_path="$interframe_tests_dir/0060_interframe_stbn_diffusion_env_isolated_from_interframe_diffusion_8bit_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/interframe: missing stbn diffusion env split coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "SIXEL_DITHER_INTERFRAME_DIFFUSION=atkinson" \
+            "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "SIXEL_DITHER_STBN_DIFFUSION=atkinson" \
+            "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "-d stbn -p 16" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/interframe: 0060 must enforce stbn/interframe diffusion env split" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
 test_path="$interframe_tests_dir/0044_interframe_strategy_cli_diffusion_matches_default_8bit_animated_gif.t"
 if test ! -f "$test_path"; then
     echo "# tests/processing/dither/interframe: missing 8bit interframe env-override guard test" \
@@ -793,7 +828,7 @@ if test ! -f "$test_path"; then
     status=1
 else
     if ! grep -F -- "-d interframe -p 16" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=" "$test_path" \
+            || ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=" "$test_path" \
             >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0044 must verify interframe ignores env source override" \
             >> "$missing"
@@ -813,7 +848,7 @@ if test ! -f "$test_path"; then
     status=1
 else
     if ! grep -F -- "-d interframe -p 16" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=" "$test_path" \
+            || ! grep -F -- "SIXEL_DITHER_STBN_SOURCE=" "$test_path" \
             >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0045 must verify interframe ignores env source override" \
             >> "$missing"
@@ -838,7 +873,7 @@ else
             >> "$missing"
         status=1
     fi
-    if grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=stbn" "$test_path" >/dev/null 2>&1; then
+    if grep -F -- "SIXEL_DITHER_STBN_SOURCE=stbn" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0046 must use CLI path without env override" \
             >> "$missing"
         status=1
@@ -862,7 +897,7 @@ else
             >> "$missing"
         status=1
     fi
-    if grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=stbn" "$test_path" >/dev/null 2>&1; then
+    if grep -F -- "SIXEL_DITHER_STBN_SOURCE=stbn" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0047 must use CLI path without env override" \
             >> "$missing"
         status=1

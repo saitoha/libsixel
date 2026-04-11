@@ -25,12 +25,11 @@ echo "1..1"
 set -v
 
 hash_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=stbn-hash \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \
         -L builtin -ldisable \
-        -d interframe -p 16 \
+        -d stbn:source=hash -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "interframe stbn-hash float32 encode failed"
@@ -38,12 +37,11 @@ hash_output=$(
 }
 
 mask_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=stbn-mask \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \
         -L builtin -ldisable \
-        -d interframe -p 16 \
+        -d stbn:source=mask -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "interframe stbn-mask float32 encode failed"

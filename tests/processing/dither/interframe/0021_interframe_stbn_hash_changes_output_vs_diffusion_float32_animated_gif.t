@@ -26,7 +26,7 @@ echo "1..1"
 set -v
 
 diffusion_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=diffusion \
+    SIXEL_DITHER_STBN_SOURCE=diffusion \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \
@@ -40,7 +40,7 @@ diffusion_output=$(
 }
 
 stbn_hash_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=stbn-hash \
+    SIXEL_DITHER_STBN_SOURCE=stbn-hash \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \

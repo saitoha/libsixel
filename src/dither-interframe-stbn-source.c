@@ -69,7 +69,7 @@ sixel_interframe_noise_strength_u8_from_env_common(void)
     scaled = 0.0;
     parsed = 0;
 
-    text = sixel_compat_getenv(SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH_ENVVAR);
+    text = sixel_compat_getenv(SIXEL_DITHER_STBN_STRENGTH_ENVVAR);
     if (text != NULL) {
         parsed = sixel_interframe_parse_noise_strength_common(text, &strength);
         if (parsed == 0) {

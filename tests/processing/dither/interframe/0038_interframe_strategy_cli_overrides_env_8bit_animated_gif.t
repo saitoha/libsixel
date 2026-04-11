@@ -25,7 +25,7 @@ echo "1..1"
 set -v
 
 diffusion_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=diffusion \
+    SIXEL_DITHER_STBN_SOURCE=diffusion \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \
@@ -38,7 +38,7 @@ diffusion_output=$(
 }
 
 env_pmj_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=pmj \
+    SIXEL_DITHER_STBN_SOURCE=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \
@@ -51,7 +51,7 @@ env_pmj_output=$(
 }
 
 cli_override_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=diffusion \
+    SIXEL_DITHER_STBN_SOURCE=diffusion \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \

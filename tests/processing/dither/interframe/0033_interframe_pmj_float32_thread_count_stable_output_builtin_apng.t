@@ -31,7 +31,7 @@ echo "1..1"
 set -v
 
 single_thread_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=pmj \
+    SIXEL_DITHER_STBN_SOURCE=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \
@@ -45,7 +45,7 @@ single_thread_output=$(
 }
 
 multi_thread_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=pmj \
+    SIXEL_DITHER_STBN_SOURCE=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=2 \
         --precision=float32 \

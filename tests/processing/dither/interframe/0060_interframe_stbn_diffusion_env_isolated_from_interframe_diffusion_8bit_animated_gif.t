@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring float32 stbn source option overrides env source.
+# TAP test ensuring stbn diffusion env is isolated from interframe diffusion.
 
 set -eux
 
@@ -12,7 +12,6 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
-    --precision=float32 \
     -L builtin \
     -ldisable \
     -S -T 0 \
@@ -25,57 +24,53 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 echo "1..1"
 set -v
 
-diffusion_output=$(
-    SIXEL_DITHER_STBN_SOURCE=diffusion \
+stbn_default_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        --precision=float32 \
-        -L builtin \
-        -ldisable \
-        -d interframe -p 16 \
-        "${input_gif}"
-) || {
-    echo "not ok" 1 - "float32 interframe diffusion baseline encode failed"
-    exit 0
-}
-
-env_hash_output=$(
-    SIXEL_DITHER_STBN_SOURCE=stbn-hash \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        --precision=float32 \
         -L builtin \
         -ldisable \
         -d stbn -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 stbn env source=hash encode failed"
+    echo "not ok" 1 - "8bit stbn default encode failed"
     exit 0
 }
 
-cli_override_output=$(
-    SIXEL_DITHER_STBN_SOURCE=diffusion \
+stbn_with_interframe_env_output=$(
+    SIXEL_DITHER_INTERFRAME_DIFFUSION=atkinson \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
-        --precision=float32 \
         -L builtin \
         -ldisable \
-        -d stbn:source=hash -p 16 \
+        -d stbn -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 stbn cli source=hash encode failed"
+    echo "not ok" 1 - "8bit stbn encode with interframe diffusion env failed"
     exit 0
 }
 
-test "${env_hash_output}" != "${diffusion_output}" || {
-    echo "not ok" 1 - "float32 stbn-hash env output matched diffusion"
+stbn_with_stbn_env_output=$(
+    SIXEL_DITHER_STBN_DIFFUSION=atkinson \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 \
+        -L builtin \
+        -ldisable \
+        -d stbn -p 16 \
+        "${input_gif}"
+) || {
+    echo "not ok" 1 - "8bit stbn encode with stbn diffusion env failed"
     exit 0
 }
 
-test "${cli_override_output}" = "${env_hash_output}" || {
-    echo "not ok" 1 - "cli source override did not take precedence"
+test "${stbn_with_interframe_env_output}" = "${stbn_default_output}" || {
+    echo "not ok" 1 - "stbn output changed by interframe diffusion env"
     exit 0
 }
 
-echo "ok" 1 - "float32 stbn source option overrides env source"
+test "${stbn_with_stbn_env_output}" != "${stbn_default_output}" || {
+    echo "not ok" 1 - "stbn diffusion env did not affect stbn output"
+    exit 0
+}
+
+echo "ok" 1 - "stbn diffusion env is isolated from interframe diffusion env"
 exit 0

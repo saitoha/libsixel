@@ -37,8 +37,8 @@ diffusion_output=$(
 }
 
 env_zero_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=stbn-mask \
-    SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH=0 \
+    SIXEL_DITHER_STBN_SOURCE=stbn-mask \
+    SIXEL_DITHER_STBN_STRENGTH=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \
@@ -56,8 +56,8 @@ test "${env_zero_output}" = "${diffusion_output}" || {
 }
 
 cli_override_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=diffusion \
-    SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH=0 \
+    SIXEL_DITHER_STBN_SOURCE=diffusion \
+    SIXEL_DITHER_STBN_STRENGTH=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \

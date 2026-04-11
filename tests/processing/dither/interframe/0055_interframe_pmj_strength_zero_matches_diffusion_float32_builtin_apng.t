@@ -37,7 +37,7 @@ diffusion_output=$(
 }
 
 pmj_zero_output=$(
-    SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH=0 \
+    SIXEL_DITHER_STBN_STRENGTH=0 \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \

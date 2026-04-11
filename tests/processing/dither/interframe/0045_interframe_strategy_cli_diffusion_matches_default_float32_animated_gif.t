@@ -39,7 +39,7 @@ default_output=$(
 }
 
 env_override_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=mask \
+    SIXEL_DITHER_STBN_SOURCE=mask \
         ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
             --threads=1 \
             --precision=float32 \

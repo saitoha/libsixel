@@ -37,7 +37,7 @@ default_output=$(
 }
 
 env_override_output=$(
-    SIXEL_DITHER_INTERFRAME_STRATEGY=pmj \
+    SIXEL_DITHER_STBN_SOURCE=pmj \
         ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
             --threads=1 \
             -L builtin \
