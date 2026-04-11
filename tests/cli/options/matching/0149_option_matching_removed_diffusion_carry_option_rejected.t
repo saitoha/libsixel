@@ -22,10 +22,15 @@ msg=$(
     exit 0
 }
 
-test "${msg#*invalid option*}" != "${msg}" || {
-    echo "not ok" 1 - "missing invalid-option diagnostic for removed -Y"
+test "${msg#*invalid option*}" != "${msg}" && {
+    echo "ok" 1 - "removed -Y option is rejected"
     exit 0
 }
 
-echo "ok" 1 - "removed -Y option is rejected"
+test "${msg#*unknown option*}" != "${msg}" && {
+    echo "ok" 1 - "removed -Y option is rejected"
+    exit 0
+}
+
+echo "not ok" 1 - "missing option-rejection diagnostic for removed -Y"
 exit 0
