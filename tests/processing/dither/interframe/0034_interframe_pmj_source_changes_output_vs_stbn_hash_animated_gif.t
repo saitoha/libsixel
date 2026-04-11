@@ -25,11 +25,12 @@ echo "1..1"
 set -v
 
 stbn_hash_output=$(
+    SIXEL_DITHER_STBN_SOURCE=stbn-hash \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d stbn:source=hash -p 16 \
+        -d stbn -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "stbn hash encode failed"
@@ -37,11 +38,12 @@ stbn_hash_output=$(
 }
 
 pmj_output=$(
+    SIXEL_DITHER_STBN_SOURCE=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d stbn:source=pmj -p 16 \
+        -d stbn -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "stbn pmj encode failed"
