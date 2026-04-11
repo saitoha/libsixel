@@ -1288,6 +1288,42 @@ end:
 }
 
 static int
+sixel_builtin_bmp_open_embedded_icc_rgb_profile(
+    unsigned char const *icc_profile,
+    size_t icc_profile_length,
+    sixel_cms_profile_t **pprofile)
+{
+    sixel_cms_profile_t *src_profile;
+    sixel_cms_color_space_t src_colorspace;
+
+    src_profile = NULL;
+    src_colorspace = SIXEL_CMS_COLORSPACE_UNKNOWN;
+    if (pprofile == NULL ||
+        icc_profile == NULL ||
+        icc_profile_length == 0u) {
+        return -1;
+    }
+    *pprofile = NULL;
+
+    src_profile = sixel_cms_open_profile_from_mem(icc_profile,
+                                                  icc_profile_length);
+    if (src_profile == NULL) {
+        return -1;
+    }
+    src_colorspace = sixel_cms_get_color_space(src_profile);
+    if (src_colorspace != SIXEL_CMS_COLORSPACE_RGB) {
+        /*
+         * RGB/RGBA BMP pixel streams can only consume RGB source profiles.
+         * Non-RGB profiles are non-applicable mismatches, not hard failures.
+         */
+        sixel_cms_close_profile(src_profile);
+        return 0;
+    }
+    *pprofile = src_profile;
+    return 1;
+}
+
+static int
 sixel_builtin_apply_bmp_icc_to_rgba_channels(
     sixel_frame_t *frame,
     unsigned char const *icc_profile,
@@ -1298,12 +1334,16 @@ sixel_builtin_apply_bmp_icc_to_rgba_channels(
     size_t rgb_size;
     size_t index;
     int converted;
+    int icc_applicability;
+    sixel_cms_profile_t *src_profile;
 
     rgb_pixels = NULL;
     pixel_count = 0u;
     rgb_size = 0u;
     index = 0u;
     converted = 0;
+    icc_applicability = 0;
+    src_profile = NULL;
     if (frame == NULL ||
         frame->pixels.u8ptr == NULL ||
         frame->allocator == NULL ||
@@ -1317,8 +1357,21 @@ sixel_builtin_apply_bmp_icc_to_rgba_channels(
         return 0;
     }
 
+    icc_applicability = sixel_builtin_bmp_open_embedded_icc_rgb_profile(
+        icc_profile,
+        icc_profile_length,
+        &src_profile);
+    if (icc_applicability < 0) {
+        loader_trace_message("builtin BMP: embedded ICC conversion failed");
+        return 0;
+    }
+    if (icc_applicability == 0) {
+        return 0;
+    }
+
     pixel_count = (size_t)frame->width * (size_t)frame->height;
     if (pixel_count > SIZE_MAX / 3u) {
+        sixel_cms_close_profile(src_profile);
         return 0;
     }
     rgb_size = pixel_count * 3u;
@@ -1328,6 +1381,7 @@ sixel_builtin_apply_bmp_icc_to_rgba_channels(
         loader_trace_message(
             "builtin BMP: skipping embedded ICC conversion "
             "(temporary RGB allocation failed)");
+        sixel_cms_close_profile(src_profile);
         return 0;
     }
 
@@ -1337,13 +1391,14 @@ sixel_builtin_apply_bmp_icc_to_rgba_channels(
         rgb_pixels[index * 3u + 2u] = frame->pixels.u8ptr[index * 4u + 2u];
     }
 
-    converted = sixel_cms_convert_to_srgb_with_profile_bytes(
+    converted = sixel_cms_convert_profile_to_srgb(
         rgb_pixels,
         frame->width,
         frame->height,
         SIXEL_PIXELFORMAT_RGB888,
-        icc_profile,
-        icc_profile_length);
+        src_profile);
+    sixel_cms_close_profile(src_profile);
+    src_profile = NULL;
     if (!converted) {
         loader_trace_message("builtin BMP: embedded ICC conversion failed");
         sixel_allocator_free(frame->allocator, rgb_pixels);
@@ -5183,9 +5238,11 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     int cms_converted;
     int cmyk_converted;
     int target_pixelformat;
+    int bmp_icc_applicability;
     size_t pixel_count;
     size_t rgb_size;
     unsigned char *rgb_pixels;
+    sixel_cms_profile_t *bmp_icc_src_profile;
     uint16_t *pixels16;
     int nwrite;
     char message[80];
@@ -5214,9 +5271,11 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     cms_converted = 0;
     cmyk_converted = 0;
     target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    bmp_icc_applicability = 0;
     pixel_count = 0u;
     rgb_size = 0u;
     rgb_pixels = NULL;
+    bmp_icc_src_profile = NULL;
     pixels16 = NULL;
     nwrite = 0;
     message[0] = '\0';
@@ -5433,16 +5492,26 @@ sixel_builtin_load_nonpng_rgb8_fallback(
             frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
             frame->colorspace = SIXEL_COLORSPACE_GAMMA;
             if (enable_cms != 0) {
+                bmp_icc_applicability = 0;
                 if (bmp_icc_profile != NULL &&
                     bmp_icc_profile_length != 0u) {
-                    cms_converted =
-                        sixel_cms_convert_to_srgb_with_profile_bytes(
+                    bmp_icc_applicability =
+                        sixel_builtin_bmp_open_embedded_icc_rgb_profile(
+                            bmp_icc_profile,
+                            bmp_icc_profile_length,
+                            &bmp_icc_src_profile);
+                    if (bmp_icc_applicability > 0) {
+                        cms_converted = sixel_cms_convert_profile_to_srgb(
                             pixels,
                             frame->width,
                             frame->height,
                             SIXEL_PIXELFORMAT_RGB888,
-                            bmp_icc_profile,
-                            bmp_icc_profile_length);
+                            bmp_icc_src_profile);
+                        sixel_cms_close_profile(bmp_icc_src_profile);
+                        bmp_icc_src_profile = NULL;
+                    } else {
+                        cms_converted = 0;
+                    }
                 } else if (bmp_probe.has_calibrated_rgb != 0) {
                     cms_converted =
                         sixel_builtin_apply_bmp_calibrated_rgb_to_rgb8(
@@ -5455,7 +5524,8 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                 }
                 if (!cms_converted) {
                     if (bmp_icc_profile != NULL &&
-                        bmp_icc_profile_length != 0u) {
+                        bmp_icc_profile_length != 0u &&
+                        bmp_icc_applicability != 0) {
                         loader_trace_message(
                             "builtin BMP: embedded ICC conversion failed");
                     }
