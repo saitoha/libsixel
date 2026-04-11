@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify clbl=1 stroke-composite path does not emit clbl=0 defer trace.
+# Verify clbl=1 path defers interior overlays to clipping-group composite.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -15,9 +15,9 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
 command_status=0
+input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
@@ -29,15 +29,11 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed clbl=1*}" != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not parse clbl=1"
+test "${trace_output#*builtin PSD: clbl=1; deferring interior overlays to clipped group composite*}" \
+    != "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite did not defer clbl=1 interior overlays"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: clbl=0; deferring interior effects to clipped group composite*}" = "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite unexpectedly emitted clbl=0 defer trace"
-    exit 0
-}
-
-echo "ok" 1 - "effects/stroke-composite keeps clbl=1 no-defer trace contract"
+echo "ok" 1 - "effects/stroke-composite keeps clbl=1 interior-overlay defer trace"
 exit 0

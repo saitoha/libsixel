@@ -308,6 +308,16 @@ Key points used by this roadmap:
   - Merged-vs-fallback selection now includes a narrow `clbl=1 + infx=0`
     vector/effects subset so stroke-composite parity work can proceed
     without broad fallback expansion.
+  - Effect-object trace coverage is extended for stroke-composite parity work:
+    `OrGl/IrGl/ChFX/DrSh/IrSh` are traced as distinct parsed objects, and
+    `ebbl/bevl` now records bevel highlight/shadow channels separately
+    (inactive-object traces included for deterministic diagnostics).
+  - PASS trace representatives are expanded for the effect subset contract:
+    `1380` (`clbl=1` no `clbl=0` defer trace), `1381` (`infx=0` keeps stroke),
+    `1384` (`clbl=1` deferred interior overlays keep explicit stroke), and
+    `1410..1413` (bevel highlight/shadow split, OrGl/ChFX distinct parsing,
+    `infx=0` interior-only suppression contract, and `clbl=1` deferred-stroke
+    preservation contract).
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:

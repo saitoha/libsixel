@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify infx=0 stroke-composite path does not emit interior-skip trace.
+# Verify infx=0 suppresses interior effects without removing stroke output.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -21,8 +21,7 @@ command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
-    -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
-    command_status=$?
+    -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
     echo "not ok" 1 - "effects/stroke-composite decode failed"
@@ -34,14 +33,15 @@ test "${trace_output#*builtin PSD: parsed infx=0*}" != "${trace_output}" || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: infx=0; skipping interior effects in layer fallback*}" = "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite unexpectedly emitted infx skip trace"
+test "${trace_output#*builtin PSD: infx=0; skipping interior effects in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite unexpectedly skipped all interiors"
     exit 0
 }
 
 test "${trace_output#*builtin PSD: applying effect stroke in layer fallback*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not keep stroke when infx=0"
+    echo "not ok" 1 - "effects/stroke-composite lost stroke with infx=0"
     exit 0
 }
 
