@@ -12,14 +12,14 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d sie "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d st "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null 2>&1) && {
     echo "not ok" 1 - "ambiguous prefix unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in
-    *'ambiguous prefix "sie"'*)
+    *'ambiguous prefix "st"'*)
         ;;
     *)
         echo "not ok" 1 - "missing diagnostic for ambiguous prefix"

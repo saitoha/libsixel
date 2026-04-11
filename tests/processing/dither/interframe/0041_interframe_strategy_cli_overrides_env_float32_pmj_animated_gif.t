@@ -32,10 +32,10 @@ diffusion_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
+        -d stbn -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 interframe diffusion baseline encode failed"
+    echo "not ok" 1 - "float32 stbn diffusion baseline encode failed"
     exit 0
 }
 
@@ -46,10 +46,10 @@ env_pmj_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
+        -d stbn -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 interframe pmj env encode failed"
+    echo "not ok" 1 - "float32 stbn pmj env encode failed"
     exit 0
 }
 

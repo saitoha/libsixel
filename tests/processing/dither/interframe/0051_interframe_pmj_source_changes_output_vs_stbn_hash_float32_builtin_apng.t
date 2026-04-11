@@ -26,30 +26,28 @@ echo "1..1"
 set -v
 
 hash_output=$(
-    SIXEL_DITHER_STBN_SOURCE=stbn-hash \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
+        -d stbn:source=hash -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "interframe stbn-hash float32 APNG encode failed"
+    echo "not ok" 1 - "stbn hash float32 APNG encode failed"
     exit 0
 }
 
 pmj_output=$(
-    SIXEL_DITHER_STBN_SOURCE=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "interframe pmj float32 APNG encode failed"
+    echo "not ok" 1 - "stbn pmj float32 APNG encode failed"
     exit 0
 }
 

@@ -15,7 +15,7 @@ set -v
 esc_char=$(printf '\033')
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_STATUS_FORCE_COLORS=1 \
-    -d sie "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+    -d st "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null 2>&1) && {
     echo "not ok" 1 - "force colors diagnostic unexpectedly succeeded"
     exit 0

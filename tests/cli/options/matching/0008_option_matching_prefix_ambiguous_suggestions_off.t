@@ -13,14 +13,14 @@ echo "1..1"
 set -v
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_OPTION_PREFIX_SUGGESTIONS=0 \
-    -d sie "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+    -d st "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null 2>&1) && {
     echo "not ok" 1 - "ambiguous prefix unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in
-    *'ambiguous prefix "sie".'*)
+    *'ambiguous prefix "st".'*)
         ;;
     *)
         echo "not ok" 1 - "ambiguity diagnostic still contains candidate list"

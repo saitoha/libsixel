@@ -26,7 +26,6 @@ echo "1..1"
 set -v
 
 diffusion_output=$(
-    SIXEL_DITHER_STBN_SOURCE=diffusion \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \
@@ -40,16 +39,15 @@ diffusion_output=$(
 }
 
 stbn_hash_output=$(
-    SIXEL_DITHER_STBN_SOURCE=stbn-hash \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
+        -d stbn:source=hash -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "interframe stbn-hash float32 encode failed"
+    echo "not ok" 1 - "stbn hash float32 encode failed"
     exit 0
 }
 

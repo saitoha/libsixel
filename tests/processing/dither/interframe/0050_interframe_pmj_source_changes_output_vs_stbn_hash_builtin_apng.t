@@ -25,28 +25,26 @@ echo "1..1"
 set -v
 
 hash_output=$(
-    SIXEL_DITHER_STBN_SOURCE=stbn-hash \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
+        -d stbn:source=hash -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "interframe stbn-hash 8bit APNG encode failed"
+    echo "not ok" 1 - "stbn hash 8bit APNG encode failed"
     exit 0
 }
 
 pmj_output=$(
-    SIXEL_DITHER_STBN_SOURCE=pmj \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "interframe pmj 8bit APNG encode failed"
+    echo "not ok" 1 - "stbn pmj 8bit APNG encode failed"
     exit 0
 }
 
