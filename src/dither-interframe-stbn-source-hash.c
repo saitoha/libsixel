@@ -22,6 +22,10 @@
  * SOFTWARE.
  */
 
+#if defined(HAVE_CONFIG_H)
+# include "config.h"
+#endif
+
 #include <stdint.h>
 #include "dither-interframe-stbn-source-hash.h"
 

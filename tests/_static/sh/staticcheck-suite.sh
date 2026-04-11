@@ -26,7 +26,7 @@ TOP_BUILDDIR=${TOP_BUILDDIR:-$build_root}
 ARTIFACT_ROOT=${ARTIFACT_ROOT:-$build_root/tests/_artifacts}
 export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 
-total=32
+total=34
 index=0
 pass_count=0
 skip_count=0
@@ -172,6 +172,10 @@ run_case_tap "staticcheck-c-size-max-header" \
     "$src_root/tests/_static/sh/staticcheck-c-size-max-header.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-c-identifier-significant-length" \
+    "$src_root/tests/_static/sh/staticcheck-c-identifier-significant-length.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-makefile-recipes" \
     "$src_root/tests/_static/sh/staticcheck-makefile-recipes.sh" \
     "$src_root" || fail_and_exit $?
@@ -210,6 +214,10 @@ run_case_tap "staticcheck-interframe-c-h-pair-sync" \
 
 run_case_tap "staticcheck-interframe-no-compat-getenv-symbol" \
     "$src_root/tests/_static/sh/staticcheck-interframe-no-compat-getenv-symbol.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-src-config-first-include" \
+    "$src_root/tests/_static/sh/staticcheck-src-config-first-include.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-gd-policy-wrapper-sync" \
