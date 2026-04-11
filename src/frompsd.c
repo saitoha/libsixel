@@ -13808,6 +13808,7 @@ sixel_builtin_psd_parse_layer_extra_data(
     int merged_legacy_effects;
     int parsed_legacy_binary_effects;
     int allow_legacy_inactive_completion;
+    int legacy_has_feature_records;
     int has_vstk_payload;
     sixel_builtin_psd_layer_record_t legacy_effects;
     sixel_builtin_psd_layer_record_t legacy_binary_effects;
@@ -13831,6 +13832,7 @@ sixel_builtin_psd_parse_layer_extra_data(
     merged_legacy_effects = 0;
     parsed_legacy_binary_effects = 0;
     allow_legacy_inactive_completion = 0;
+    legacy_has_feature_records = 0;
     has_vstk_payload = 0;
     sixel_builtin_psd_layer_record_init(&legacy_effects);
     sixel_builtin_psd_layer_record_init(&legacy_binary_effects);
@@ -14040,6 +14042,29 @@ sixel_builtin_psd_parse_layer_extra_data(
                         &legacy_effects,
                         &legacy_binary_effects);
                 }
+                legacy_has_feature_records =
+                    sixel_builtin_psd_legacy_lrfx_has_record(
+                        buffer + cursor,
+                        key_length,
+                        "oglw") != 0 ||
+                    sixel_builtin_psd_legacy_lrfx_has_record(
+                        buffer + cursor,
+                        key_length,
+                        "iglw") != 0 ||
+                    sixel_builtin_psd_legacy_lrfx_has_record(
+                        buffer + cursor,
+                        key_length,
+                        "bevl") != 0 ||
+                    sixel_builtin_psd_legacy_lrfx_has_record(
+                        buffer + cursor,
+                        key_length,
+                        "sofi") != 0;
+                if (legacy_has_feature_records != 0) {
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: legacy lrFX contains glow/bevel/"
+                        "sofi records");
+                }
                 if (allow_legacy_inactive_completion != 0) {
                     merged_legacy_effects =
                         sixel_builtin_psd_merge_missing_legacy_effects(
@@ -14054,27 +14079,6 @@ sixel_builtin_psd_parse_layer_extra_data(
                         "builtin PSD: merging legacy lrFX effects missing "
                         "from lfx2");
                 } else {
-                    if (sixel_builtin_psd_legacy_lrfx_has_record(
-                            buffer + cursor,
-                            key_length,
-                            "oglw") != 0 ||
-                        sixel_builtin_psd_legacy_lrfx_has_record(
-                            buffer + cursor,
-                            key_length,
-                            "iglw") != 0 ||
-                        sixel_builtin_psd_legacy_lrfx_has_record(
-                            buffer + cursor,
-                            key_length,
-                            "bevl") != 0 ||
-                        sixel_builtin_psd_legacy_lrfx_has_record(
-                            buffer + cursor,
-                            key_length,
-                            "sofi") != 0) {
-                        sixel_trace_topic_message(
-                            "psd_decode",
-                            "builtin PSD: legacy lrFX contains glow/bevel/"
-                            "sofi records");
-                    }
                     sixel_trace_topic_message(
                         "psd_decode",
                         "builtin PSD: ignoring legacy lrFX when lfx2 is "

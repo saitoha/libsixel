@@ -34,11 +34,17 @@ test "${trace_output#*builtin PSD: legacy lrFX contains glow/bevel/sofi records*
     exit 0
 }
 
-test "${trace_output#*builtin PSD: ignoring legacy lrFX when lfx2 is present*}" \
+test "${trace_output#*builtin PSD: merging legacy lrFX effects missing from lfx2*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not keep lrFX ignore contract"
+    echo "not ok" 1 - "effects/stroke-composite did not merge legacy lrFX effects"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite reports legacy lrFX presence"
+test "${trace_output#*builtin PSD: ignoring legacy lrFX when lfx2 is present*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite unexpectedly ignored legacy lrFX"
+    exit 0
+}
+
+echo "ok" 1 - "effects/stroke-composite reports and merges legacy lrFX records"
 exit 0
