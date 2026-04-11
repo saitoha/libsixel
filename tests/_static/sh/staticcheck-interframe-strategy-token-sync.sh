@@ -129,6 +129,12 @@ if ! grep -F -- "SIXEL_DITHER_STBN_SCENE_CUT_RESET" "$source_file_h" \
         >> "$missing"
     status=1
 fi
+if ! grep -F -- "SIXEL_DITHER_STBN_SCENE_DETECT" "$source_file_h" \
+        >/dev/null 2>&1; then
+    echo "# src/dither-interframe-method.h: missing stbn scene_detect env macro" \
+        >> "$missing"
+    status=1
+fi
 if ! grep -F -- "SIXEL_DITHER_STBN_ALPHA_GUARD" "$source_file_h" \
         >/dev/null 2>&1; then
     echo "# src/dither-interframe-method.h: missing stbn alpha_guard env macro" \
@@ -358,6 +364,7 @@ while IFS='|' read -r test_name key_token; do
 done <<'EOF'
 0162_option_matching_diffusion_stbn_motion_adapt_suboption_success.t|motion_adapt
 0165_option_matching_diffusion_stbn_scene_cut_reset_suboption_success.t|scene_cut_reset
+0178_option_matching_diffusion_stbn_scene_detect_suboption_success.t|scene_detect
 0168_option_matching_diffusion_stbn_alpha_guard_suboption_success.t|alpha_guard
 0171_option_matching_diffusion_stbn_perceptual_weight_suboption_success.t|perceptual_weight
 0174_option_matching_diffusion_stbn_fastpath_suboption_success.t|fastpath
@@ -382,6 +389,7 @@ while IFS='|' read -r test_name key_token; do
 done <<'EOF'
 0163_option_matching_diffusion_stbn_motion_adapt_invalid_value.t|motion_adapt
 0166_option_matching_diffusion_stbn_scene_cut_reset_invalid_value.t|scene_cut_reset
+0179_option_matching_diffusion_stbn_scene_detect_invalid_value.t|scene_detect
 0169_option_matching_diffusion_stbn_alpha_guard_invalid_value.t|alpha_guard
 0172_option_matching_diffusion_stbn_perceptual_weight_invalid_value.t|perceptual_weight
 0175_option_matching_diffusion_stbn_fastpath_invalid_value.t|fastpath
@@ -406,6 +414,7 @@ while IFS='|' read -r test_name key_token; do
 done <<'EOF'
 0164_option_matching_diffusion_non_stbn_rejects_motion_adapt_suboption.t|motion_adapt
 0167_option_matching_diffusion_non_stbn_rejects_scene_cut_reset_suboption.t|scene_cut_reset
+0180_option_matching_diffusion_non_stbn_rejects_scene_detect_suboption.t|scene_detect
 0170_option_matching_diffusion_non_stbn_rejects_alpha_guard_suboption.t|alpha_guard
 0173_option_matching_diffusion_non_stbn_rejects_perceptual_weight_suboption.t|perceptual_weight
 0176_option_matching_diffusion_non_stbn_rejects_fastpath_suboption.t|fastpath
@@ -422,6 +431,54 @@ else
             || ! grep -F -- "stbn:motion_adapt=1" "$test_path" \
             >/dev/null 2>&1; then
         echo "# tests/cli/options/matching: 0177 must verify cli motion_adapt overrides env" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$src_root/tests/cli/options/matching/0181_option_matching_diffusion_stbn_cli_scene_detect_overrides_env_invalid.t"
+if test ! -f "$test_path"; then
+    echo "# tests/cli/options/matching: missing stbn scene_detect cli override test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "SIXEL_DITHER_STBN_SCENE_DETECT=2" "$test_path" \
+            >/dev/null 2>&1 \
+            || ! grep -F -- "stbn:scene_detect=1" "$test_path" \
+            >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0181 must verify cli scene_detect overrides env" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$interframe_tests_dir/0071_interframe_stbn_scene_detect_changes_output_8bit_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/interframe: missing 8bit scene_detect coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "scene_detect=1" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "test \"\${detect_output}\" != \"\${base_output}\"" \
+            "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/interframe: 0071 must enforce scene_detect output change" \
+            >> "$missing"
+        status=1
+    fi
+fi
+
+test_path="$interframe_tests_dir/0072_interframe_stbn_scene_detect_changes_output_float32_animated_gif.t"
+if test ! -f "$test_path"; then
+    echo "# tests/processing/dither/interframe: missing float32 scene_detect coverage test" \
+        >> "$missing"
+    status=1
+else
+    if ! grep -F -- "scene_detect=1" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "--precision=float32" "$test_path" \
+            >/dev/null 2>&1 \
+            || ! grep -F -- "test \"\${detect_output}\" != \"\${base_output}\"" \
+            "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/interframe: 0072 must enforce float32 scene_detect output change" \
             >> "$missing"
         status=1
     fi

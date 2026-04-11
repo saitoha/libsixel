@@ -1038,6 +1038,15 @@ static sixel_suboption_key_t const g_subkeys_diffusion_stbn[] = {
         / sizeof(g_option_choices_toggle_01[0])
     },
     {
+        "scene_detect",
+        NULL,
+        SIXEL_DITHER_STBN_SCENE_DETECT_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_toggle_01,
+        sizeof(g_option_choices_toggle_01)
+        / sizeof(g_option_choices_toggle_01[0])
+    },
+    {
         "alpha_guard",
         NULL,
         SIXEL_DITHER_STBN_ALPHA_GUARD_ENVVAR,
@@ -3595,6 +3604,10 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         context->encoder->stbn_scene_cut_reset_override;
     context->dither->stbn_scene_cut_reset_enabled =
         context->encoder->stbn_scene_cut_reset_enabled;
+    context->dither->stbn_scene_detect_override =
+        context->encoder->stbn_scene_detect_override;
+    context->dither->stbn_scene_detect_enabled =
+        context->encoder->stbn_scene_detect_enabled;
     context->dither->stbn_alpha_guard_override =
         context->encoder->stbn_alpha_guard_override;
     context->dither->stbn_alpha_guard_enabled =
@@ -5799,6 +5812,8 @@ sixel_encoder_new(
     (*ppencoder)->stbn_motion_adapt_enabled = 0;
     (*ppencoder)->stbn_scene_cut_reset_override = 0;
     (*ppencoder)->stbn_scene_cut_reset_enabled = 0;
+    (*ppencoder)->stbn_scene_detect_override = 0;
+    (*ppencoder)->stbn_scene_detect_enabled = 0;
     (*ppencoder)->stbn_alpha_guard_override = 0;
     (*ppencoder)->stbn_alpha_guard_enabled = 0;
     (*ppencoder)->stbn_perceptual_weight_override = 0;
@@ -7303,6 +7318,8 @@ sixel_encoder_resolve_interframe_suboptions(
     int *motion_adapt_enabled,
     int *has_scene_cut_reset_override,
     int *scene_cut_reset_enabled,
+    int *has_scene_detect_override,
+    int *scene_detect_enabled,
     int *has_alpha_guard_override,
     int *alpha_guard_enabled,
     int *has_perceptual_weight_override,
@@ -7336,6 +7353,8 @@ sixel_encoder_resolve_interframe_suboptions(
             motion_adapt_enabled == NULL ||
             has_scene_cut_reset_override == NULL ||
             scene_cut_reset_enabled == NULL ||
+            has_scene_detect_override == NULL ||
+            scene_detect_enabled == NULL ||
             has_alpha_guard_override == NULL ||
             alpha_guard_enabled == NULL ||
             has_perceptual_weight_override == NULL ||
@@ -7355,6 +7374,8 @@ sixel_encoder_resolve_interframe_suboptions(
     *motion_adapt_enabled = 0;
     *has_scene_cut_reset_override = 0;
     *scene_cut_reset_enabled = 0;
+    *has_scene_detect_override = 0;
+    *scene_detect_enabled = 0;
     *has_alpha_guard_override = 0;
     *alpha_guard_enabled = 0;
     *has_perceptual_weight_override = 0;
@@ -7438,6 +7459,15 @@ sixel_encoder_resolve_interframe_suboptions(
             }
             *has_scene_cut_reset_override = 1;
             *scene_cut_reset_enabled = resolved_choice;
+        } else if (assignment->resolved_key_name != NULL &&
+                strcmp(assignment->resolved_key_name, "scene_detect") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                return SIXEL_BAD_ARGUMENT;
+            }
+            *has_scene_detect_override = 1;
+            *scene_detect_enabled = resolved_choice;
         } else if (assignment->resolved_key_name != NULL &&
                 strcmp(assignment->resolved_key_name, "alpha_guard") == 0) {
             if (!sixel_encoder_resolve_suboption_choice_value(
@@ -8581,6 +8611,8 @@ sixel_encoder_setopt(
     int stbn_motion_adapt_enabled;
     int stbn_scene_cut_reset_override;
     int stbn_scene_cut_reset_enabled;
+    int stbn_scene_detect_override;
+    int stbn_scene_detect_enabled;
     int stbn_alpha_guard_override;
     int stbn_alpha_guard_enabled;
     int stbn_perceptual_weight_override;
@@ -8647,6 +8679,8 @@ sixel_encoder_setopt(
     stbn_motion_adapt_enabled = 0;
     stbn_scene_cut_reset_override = 0;
     stbn_scene_cut_reset_enabled = 0;
+    stbn_scene_detect_override = 0;
+    stbn_scene_detect_enabled = 0;
     stbn_alpha_guard_override = 0;
     stbn_alpha_guard_enabled = 0;
     stbn_perceptual_weight_override = 0;
@@ -8814,6 +8848,8 @@ sixel_encoder_setopt(
             &stbn_motion_adapt_enabled,
             &stbn_scene_cut_reset_override,
             &stbn_scene_cut_reset_enabled,
+            &stbn_scene_detect_override,
+            &stbn_scene_detect_enabled,
             &stbn_alpha_guard_override,
             &stbn_alpha_guard_enabled,
             &stbn_perceptual_weight_override,
@@ -8854,6 +8890,8 @@ sixel_encoder_setopt(
         encoder->stbn_motion_adapt_enabled = stbn_motion_adapt_enabled;
         encoder->stbn_scene_cut_reset_override = stbn_scene_cut_reset_override;
         encoder->stbn_scene_cut_reset_enabled = stbn_scene_cut_reset_enabled;
+        encoder->stbn_scene_detect_override = stbn_scene_detect_override;
+        encoder->stbn_scene_detect_enabled = stbn_scene_detect_enabled;
         encoder->stbn_alpha_guard_override = stbn_alpha_guard_override;
         encoder->stbn_alpha_guard_enabled = stbn_alpha_guard_enabled;
         encoder->stbn_perceptual_weight_override

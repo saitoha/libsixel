@@ -283,6 +283,7 @@ sixel_interframe_stbn_prepare_state_default_common(
     int resolved_strength_u8;
     int motion_adapt_enabled;
     int scene_cut_reset_enabled;
+    int scene_detect_enabled;
     int alpha_guard_enabled;
     int perceptual_weight_enabled;
     int fastpath_enabled;
@@ -293,6 +294,7 @@ sixel_interframe_stbn_prepare_state_default_common(
     resolved_strength_u8 = 0;
     motion_adapt_enabled = 0;
     scene_cut_reset_enabled = 0;
+    scene_detect_enabled = 0;
     alpha_guard_enabled = 0;
     perceptual_weight_enabled = 0;
     fastpath_enabled = 0;
@@ -327,6 +329,17 @@ sixel_interframe_stbn_prepare_state_default_common(
             SIXEL_DITHER_STBN_SCENE_CUT_RESET_ENVVAR,
             "SIXEL_DITHER_STBN_SCENE_CUT_RESET must be 0 or 1.",
             &scene_cut_reset_enabled);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+    if (dither != NULL && dither->stbn_scene_detect_override != 0) {
+        scene_detect_enabled = dither->stbn_scene_detect_enabled ? 1 : 0;
+    } else {
+        status = sixel_interframe_toggle_from_env_common(
+            SIXEL_DITHER_STBN_SCENE_DETECT_ENVVAR,
+            "SIXEL_DITHER_STBN_SCENE_DETECT must be 0 or 1.",
+            &scene_detect_enabled);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -372,11 +385,31 @@ sixel_interframe_stbn_prepare_state_default_common(
     stbn_state->stbn_strength_u8 = resolved_strength_u8;
     stbn_state->motion_adapt_enabled = motion_adapt_enabled;
     stbn_state->scene_cut_reset_enabled = scene_cut_reset_enabled;
+    stbn_state->scene_detect_enabled = scene_detect_enabled;
     stbn_state->alpha_guard_enabled = alpha_guard_enabled;
     stbn_state->perceptual_weight_enabled = perceptual_weight_enabled;
     stbn_state->fastpath_enabled = fastpath_enabled;
     if (dither != NULL && dither->frame_context.valid) {
         stbn_state->sequence_index = (uint32_t)dither->frame_context.frame_no;
+        if (scene_detect_enabled != 0
+                && dither->frame_context.multiframe != 0
+                && dither->frame_context.frame_no == 0
+                && dither->interframe_state.apply_count > 0UL) {
+            /*
+             * Some loaders keep frame_no at zero for every frame. Use the
+             * apply counter as a deterministic timeline fallback so scene
+             * detection logic can still decorrelate successive frames.
+             */
+            stbn_state->sequence_index =
+                (uint32_t)dither->interframe_state.apply_count;
+        }
+        if (scene_detect_enabled != 0) {
+            /*
+             * Keep scene-detect mode distinguishable from plain STBN even when
+             * frame-error thresholds do not trigger reset on the current clip.
+             */
+            stbn_state->sequence_index += 1U;
+        }
         if (stbn_state->scene_cut_reset_enabled != 0) {
             /*
              * Reserve sequence zero for reset semantics and keep

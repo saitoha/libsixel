@@ -80,6 +80,8 @@ struct sixel_encoder {
     int stbn_motion_adapt_enabled;
     int stbn_scene_cut_reset_override;
     int stbn_scene_cut_reset_enabled;
+    int stbn_scene_detect_override;
+    int stbn_scene_detect_enabled;
     int stbn_alpha_guard_override;
     int stbn_alpha_guard_enabled;
     int stbn_perceptual_weight_override;

@@ -442,6 +442,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                   (default 0)\n"
         "          scene_cut_reset=0|1   -> reset carry at frame boundaries\n"
         "                                   (default 0)\n"
+        "          scene_detect=0|1      -> reset on scene-change detection\n"
+        "                                   (default 0)\n"
         "          alpha_guard=0|1       -> suppress stbn near alpha edges\n"
         "                                   (default 0)\n"
         "          perceptual_weight=0|1 -> apply perceptual channel weights\n"
@@ -891,6 +893,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_DITHER_STBN_SCENE_CUT_RESET",
         "toggle stbn scene-cut reset for -d stbn (0 or 1).\n"
         "Overridden by -d stbn:scene_cut_reset=0|1."
+    },
+    {
+        "SIXEL_DITHER_STBN_SCENE_DETECT",
+        "toggle stbn scene detection for -d stbn (0 or 1).\n"
+        "Overridden by -d stbn:scene_detect=0|1."
     },
     {
         "SIXEL_DITHER_STBN_ALPHA_GUARD",

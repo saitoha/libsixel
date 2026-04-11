@@ -74,6 +74,7 @@ typedef struct sixel_interframe_stbn_state_common {
     int stbn_strength_u8;
     int motion_adapt_enabled;
     int scene_cut_reset_enabled;
+    int scene_detect_enabled;
     int alpha_guard_enabled;
     int perceptual_weight_enabled;
     int fastpath_enabled;

@@ -461,6 +461,7 @@ _img2sixel()
                                    stbn:source=pmj:strength=0.50 \
                                    stbn:motion_adapt=1 \
                                    stbn:scene_cut_reset=1 \
+                                   stbn:scene_detect=1 \
                                    stbn:alpha_guard=1 \
                                    stbn:perceptual_weight=1 \
                                    stbn:fastpath=1 \

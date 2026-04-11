@@ -1488,6 +1488,8 @@ sixel_dither_new(
     (*ppdither)->stbn_motion_adapt_enabled = 0;
     (*ppdither)->stbn_scene_cut_reset_override = 0;
     (*ppdither)->stbn_scene_cut_reset_enabled = 0;
+    (*ppdither)->stbn_scene_detect_override = 0;
+    (*ppdither)->stbn_scene_detect_enabled = 0;
     (*ppdither)->stbn_alpha_guard_override = 0;
     (*ppdither)->stbn_alpha_guard_enabled = 0;
     (*ppdither)->stbn_perceptual_weight_override = 0;

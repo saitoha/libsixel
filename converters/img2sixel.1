@@ -346,6 +346,8 @@ sub-option:
 .br
 \fBscene_cut_reset=0|1\fP -> reset carry at frame boundaries (default 0)
 .br
+\fBscene_detect=0|1\fP -> reset on scene-change detection (default 0)
+.br
 \fBalpha_guard=0|1\fP -> suppress stbn near alpha edges (default 0)
 .br
 \fBperceptual_weight=0|1\fP -> apply perceptual channel weights (default 0)
@@ -1031,6 +1033,11 @@ Overridden by \fB\-d stbn:motion_adapt=0|1\fP.
 .br
 toggle stbn scene-cut reset for \fB\-d stbn\fP (0 or 1).
 Overridden by \fB\-d stbn:scene_cut_reset=0|1\fP.
+.TP 5
+.B SIXEL_DITHER_STBN_SCENE_DETECT
+.br
+toggle stbn scene detection for \fB\-d stbn\fP (0 or 1).
+Overridden by \fB\-d stbn:scene_detect=0|1\fP.
 .TP 5
 .B SIXEL_DITHER_STBN_ALPHA_GUARD
 .br

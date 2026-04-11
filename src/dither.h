@@ -100,6 +100,8 @@ struct sixel_dither {
     int stbn_motion_adapt_enabled;  /* parsed motion adapt toggle */
     int stbn_scene_cut_reset_override; /* CLI scene-cut reset override */
     int stbn_scene_cut_reset_enabled; /* parsed scene-cut reset toggle */
+    int stbn_scene_detect_override; /* CLI scene-detect override flag */
+    int stbn_scene_detect_enabled;  /* parsed scene-detect toggle */
     int stbn_alpha_guard_override; /* CLI alpha guard override flag */
     int stbn_alpha_guard_enabled;  /* parsed alpha guard toggle */
     int stbn_perceptual_weight_override; /* CLI perceptual weight override */
