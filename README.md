@@ -560,38 +560,26 @@ Options:
                            COMPLEXIONSCORE must be 1 or more.
 -g, --ignore-delay         render GIF animation without delay
 -S, --static               render animated GIF as a static image
--d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE
-                           choose diffusion method which used
-                           with -p option (color reduction)
-                           DIFFUSIONTYPE is one of them:
-                             auto     -> choose diffusion type
-                                         automatically (default)
-                             none     -> do not diffuse
-                             fs       -> Floyd-Steinberg method
-                             atkinson -> Bill Atkinson's method
-                             jajuni   -> Jarvis, Judice & Ninke
-                             stucki   -> Stucki's method
-                             burkes   -> Burkes' method
-                             sierra1  -> Sierra Lite method
-                             sierra2  -> Sierra Two-row method
-                             sierra3  -> Sierra-3 method
-                             a_dither -> positionally stable
-                                         arithmetic dither
-                             x_dither -> positionally stable
-                                         arithmetic xor based dither
-                             bluenoise -> tileable blue-noise ordered
-                                          dither
-                             lso2     -> libsixel method based on
-                                         variable error diffusion
-                                         tables, optimized for size
-                             interframe
-                                         -> interframe error diffusion
-                                            (palette path; ignores -Y;
-                                            not available with -I)
-                             stbn[:source=SOURCE]
-                                         -> interframe STBN/PMJ source
-                                            selection (SOURCE: hash,
-                                            mask, pmj)
+-d DIFFUSION, --diffusion=DIFFUSION
+                           choose diffusion method used with -p
+                           option (color reduction).
+                           DIFFUSION accepts auto, none, fs,
+                           atkinson, jajuni, stucki, burkes,
+                           sierra1, sierra2, sierra3, a_dither,
+                           x_dither, bluenoise, lso2, interframe,
+                           or stbn.
+                             interframe -> interframe error
+                                           diffusion (palette path only)
+                             stbn       -> interframe STBN/PMJ
+                                           source selection
+                           stbn accepts suboptions using
+                           stbn:key=value[:key=value...].
+                             source         -> hash, mask, or pmj
+                                               (default hash)
+                             noise_strength -> float in 0.0-2.0
+                                               (default 0.055)
+                           interframe and stbn ignore -Y and are
+                           not available with -I.
 -y SCANTYPE, --diffusion-scan=SCANTYPE
                            choose scan order for error diffusion
                            SCANTYPE is one of them:

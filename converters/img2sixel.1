@@ -237,56 +237,26 @@ render GIF animation without delay.
 .B \-S, \-\-static
 render animated GIF as a static image.
 .TP 5
-.B \-d \fIDIFFUSIONTYPE\fP, \-\-diffusion=\fIDIFFUSIONTYPE\fP
-choose diffusion method which used with color reduction.
+.B \-d \fIDIFFUSION\fP, \-\-diffusion=\fIDIFFUSION\fP
+choose diffusion method used with color reduction.
 .br
-\fIDIFFUSIONTYPE\fP is one of them:
+\fIDIFFUSION\fP accepts \fBauto\fP, \fBnone\fP, \fBfs\fP, \fBatkinson\fP,
+\fBjajuni\fP, \fBstucki\fP, \fBburkes\fP, \fBsierra1\fP, \fBsierra2\fP,
+\fBsierra3\fP, \fBa_dither\fP, \fBx_dither\fP, \fBbluenoise\fP, \fBlso2\fP,
+\fBinterframe\fP, or \fBstbn\fP.
 .br
-auto     -> choose diffusion type automatically (default)
+\fBinterframe\fP selects interframe error diffusion (palette path only).
 .br
-none     -> do not diffuse
+\fBstbn\fP selects interframe STBN/PMJ source dithering.
 .br
-fs       -> Floyd-Steinberg method
+\fBstbn\fP accepts suboptions using
+\fBstbn:key=value[:key=value...]\fP.
 .br
-atkinson -> Bill Atkinson's method
+\fBsource\fP: \fBhash\fP, \fBmask\fP, or \fBpmj\fP (default hash).
 .br
-jajuni   -> Jarvis, Judice & Ninke
+\fBnoise_strength\fP: floating value in 0.0-2.0 (default 0.055).
 .br
-stucki   -> Stucki's method
-.br
-burkes   -> Burkes' method
-.br
-sierra1  -> Sierra Lite method
-.br
-sierra2  -> Sierra Two-row method
-.br
-sierra3  -> Sierra-3 method
-.br
-a_dither -> positionally stable arithmetic dither
-.br
-x_dither -> positionally stable arithmetic xor based dither
-.br
-bluenoise -> tileable blue-noise ordered dither
-.br
-lso2     -> libsixel method based on variable error diffusion tables,
-.br
-            optimized for size
-.br
-interframe
-.br
-            -> interframe error diffusion
-.br
-stbn[:source=SOURCE][:noise_strength=VALUE]
-.br
-            -> interframe STBN/PMJ source selection
-.br
-SOURCE: hash, mask, pmj
-.br
-VALUE: 0.0-2.0 (default 0.055)
-.br
-source=... and noise_strength=... are valid only for stbn.
-.br
-ignores \-Y; not available with \-I
+\fBinterframe\fP and \fBstbn\fP ignore \-Y and are not available with \-I.
 .TP 5
 .B \-y \fISCANTYPE\fP, \-\-diffusion\-scan=\fISCANTYPE\fP
 choose scan order for error diffusion.
