@@ -29,7 +29,7 @@ single_thread_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -Qauto:animation_mode=1 -d fs -p 16 \
+        -Qauto:animation_mode=1:scene_cut_threshold=1 -d fs \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "animation_mode single-thread encode failed"
@@ -38,10 +38,10 @@ single_thread_output=$(
 
 multi_thread_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=2 \
+        --threads=3 \
         -L builtin \
         -ldisable \
-        -Qauto:animation_mode=1 -d fs -p 16 \
+        -Qauto:animation_mode=1:scene_cut_threshold=1 -d fs \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "animation_mode multi-thread encode failed"
