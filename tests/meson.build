@@ -682,6 +682,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-c-identifier-significant-length',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-c-identifier-significant-length.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-makefile-recipes',
     [meson.current_source_dir() / '_static/sh/staticcheck-makefile-recipes.sh',
       meson.project_source_root()],

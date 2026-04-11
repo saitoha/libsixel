@@ -11150,7 +11150,7 @@ sixel_builtin_psd_parse_layer_effects_payload_descriptor_at(
 }
 
 static int
-sixel_builtin_psd_layer_effects_payload_has_descriptor_block2_header(
+sixel_psd_lfx_has_desc_blk2_hdr(
     unsigned char const *data,
     size_t key_length)
 {
@@ -11181,7 +11181,7 @@ sixel_builtin_psd_parse_layer_effects_payload_descriptor(
     int allow_bevel_proxy)
 {
     int parsed;
-    if (sixel_builtin_psd_layer_effects_payload_has_descriptor_block2_header(
+    if (sixel_psd_lfx_has_desc_blk2_hdr(
             data,
             key_length)) {
         parsed = sixel_builtin_psd_parse_layer_effects_payload_descriptor_at(
