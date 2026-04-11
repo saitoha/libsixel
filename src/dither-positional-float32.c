@@ -601,7 +601,11 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
     float_depth = 0;
     quantized = NULL;
     lookup_wants_float = 0;
-    bluenoise_conf = g_sixel_bn_conf_float32;
+    bluenoise_conf.strength = 0.055f;
+    bluenoise_conf.ox = 0;
+    bluenoise_conf.oy = 0;
+    bluenoise_conf.per_channel = 0;
+    bluenoise_conf.size = SIXEL_BN_W;
     use_bluenoise_conf = 0;
     noise = 0.0f;
 

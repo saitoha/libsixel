@@ -26,7 +26,7 @@ TOP_BUILDDIR=${TOP_BUILDDIR:-$build_root}
 ARTIFACT_ROOT=${ARTIFACT_ROOT:-$build_root/tests/_artifacts}
 export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 
-total=35
+total=36
 index=0
 pass_count=0
 skip_count=0
@@ -166,6 +166,10 @@ run_case_tap "staticcheck-private-includes" \
 
 run_case_tap "staticcheck-src-no-direct-getenv" \
     "$src_root/tests/_static/sh/staticcheck-src-no-direct-getenv.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-positional-bluenoise-threadsafe-init" \
+    sh "$src_root/tests/_static/sh/staticcheck-positional-bluenoise-threadsafe-init.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-c-size-max-header" \
