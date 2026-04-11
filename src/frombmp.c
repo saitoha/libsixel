@@ -2432,12 +2432,15 @@ sixel_bmp_decode_truecolor(sixel_bmp_decode_info_t const *info,
                            int *pcomp)
 {
     unsigned char const *buffer;
+    unsigned char const *src_row;
+    unsigned char const *src_cursor;
+    unsigned char *dst_row;
+    unsigned char *dst_cursor;
     size_t row_offset;
     size_t source_row;
+    size_t src_step;
     size_t x;
     size_t y;
-    size_t dst_offset;
-    size_t src_offset;
     unsigned int value;
     unsigned int alpha_or;
     unsigned int alpha_and;
@@ -2449,6 +2452,7 @@ sixel_bmp_decode_truecolor(sixel_bmp_decode_info_t const *info,
     int gcount;
     int bcount;
     int alpha_count;
+    int fast_bgra32;
     int comp;
     size_t pixel_count;
     size_t index;
@@ -2456,10 +2460,9 @@ sixel_bmp_decode_truecolor(sixel_bmp_decode_info_t const *info,
     buffer = NULL;
     row_offset = 0u;
     source_row = 0u;
+    src_step = 0u;
     x = 0u;
     y = 0u;
-    dst_offset = 0u;
-    src_offset = 0u;
     value = 0u;
     alpha_or = 0u;
     alpha_and = 0xffu;
@@ -2471,6 +2474,7 @@ sixel_bmp_decode_truecolor(sixel_bmp_decode_info_t const *info,
     gcount = 0;
     bcount = 0;
     alpha_count = 0;
+    fast_bgra32 = 0;
     comp = 3;
     pixel_count = 0u;
     index = 0u;
@@ -2480,6 +2484,10 @@ sixel_bmp_decode_truecolor(sixel_bmp_decode_info_t const *info,
     }
 
     buffer = info->chunk->buffer;
+    src_row = NULL;
+    src_cursor = NULL;
+    dst_row = NULL;
+    dst_cursor = NULL;
     comp = info->has_alpha_mask != 0 ? 4 : 3;
     if (info->bpp == 16 || info->bpp == 32) {
         rshift = sixel_bmp_high_bit(info->red_mask) - 7;
@@ -2499,55 +2507,92 @@ sixel_bmp_decode_truecolor(sixel_bmp_decode_info_t const *info,
             }
         }
     }
+    /*
+     * BI_RGB/BI_BITFIELDS 32bpp commonly store little-endian BGRA bytes with
+     * canonical byte-wide masks. Handle this hot path without bit extraction.
+     */
+    if (info->bpp == 32 &&
+        info->red_mask == 0x00ff0000u &&
+        info->green_mask == 0x0000ff00u &&
+        info->blue_mask == 0x000000ffu &&
+        (info->has_alpha_mask == 0 || info->alpha_mask == 0xff000000u)) {
+        fast_bgra32 = 1;
+    }
 
     for (y = 0u; y < (size_t)info->height; ++y) {
         source_row = info->top_down
             ? y
             : (size_t)info->height - 1u - y;
         row_offset = info->pixel_offset + source_row * info->row_stride;
+        src_row = buffer + row_offset;
+        dst_row = pixels + y * (size_t)info->width * (size_t)comp;
 
+        if (info->bpp == 24) {
+            src_cursor = src_row;
+            dst_cursor = dst_row;
+            for (x = 0u; x < (size_t)info->width; ++x) {
+                dst_cursor[0u] = src_cursor[2u];
+                dst_cursor[1u] = src_cursor[1u];
+                dst_cursor[2u] = src_cursor[0u];
+                src_cursor += 3u;
+                dst_cursor += (size_t)comp;
+            }
+            continue;
+        }
+        if (fast_bgra32 != 0) {
+            src_cursor = src_row;
+            dst_cursor = dst_row;
+            for (x = 0u; x < (size_t)info->width; ++x) {
+                dst_cursor[0u] = src_cursor[2u];
+                dst_cursor[1u] = src_cursor[1u];
+                dst_cursor[2u] = src_cursor[0u];
+                if (comp == 4) {
+                    dst_cursor[3u] = src_cursor[3u];
+                    alpha_or |= dst_cursor[3u];
+                    alpha_and &= dst_cursor[3u];
+                }
+                src_cursor += 4u;
+                dst_cursor += (size_t)comp;
+            }
+            continue;
+        }
+
+        src_step = info->bpp == 16 ? 2u : 4u;
+        src_cursor = src_row;
+        dst_cursor = dst_row;
         for (x = 0u; x < (size_t)info->width; ++x) {
-            dst_offset = (y * (size_t)info->width + x) * (size_t)comp;
-            if (info->bpp == 24) {
-                src_offset = row_offset + x * 3u;
-                pixels[dst_offset + 0u] = buffer[src_offset + 2u];
-                pixels[dst_offset + 1u] = buffer[src_offset + 1u];
-                pixels[dst_offset + 2u] = buffer[src_offset + 0u];
-                continue;
-            }
-
             if (info->bpp == 16) {
-                src_offset = row_offset + x * 2u;
-                value = (unsigned int)buffer[src_offset + 0u]
-                    | ((unsigned int)buffer[src_offset + 1u] << 8u);
+                value = (unsigned int)src_cursor[0u]
+                    | ((unsigned int)src_cursor[1u] << 8u);
             } else {
-                src_offset = row_offset + x * 4u;
-                value = (unsigned int)buffer[src_offset + 0u]
-                    | ((unsigned int)buffer[src_offset + 1u] << 8u)
-                    | ((unsigned int)buffer[src_offset + 2u] << 16u)
-                    | ((unsigned int)buffer[src_offset + 3u] << 24u);
+                value = (unsigned int)src_cursor[0u]
+                    | ((unsigned int)src_cursor[1u] << 8u)
+                    | ((unsigned int)src_cursor[2u] << 16u)
+                    | ((unsigned int)src_cursor[3u] << 24u);
             }
+            src_cursor += src_step;
 
-            pixels[dst_offset + 0u] = (unsigned char)sixel_bmp_shift_signed(
+            dst_cursor[0u] = (unsigned char)sixel_bmp_shift_signed(
                 value & info->red_mask,
                 rshift,
                 rcount);
-            pixels[dst_offset + 1u] = (unsigned char)sixel_bmp_shift_signed(
+            dst_cursor[1u] = (unsigned char)sixel_bmp_shift_signed(
                 value & info->green_mask,
                 gshift,
                 gcount);
-            pixels[dst_offset + 2u] = (unsigned char)sixel_bmp_shift_signed(
+            dst_cursor[2u] = (unsigned char)sixel_bmp_shift_signed(
                 value & info->blue_mask,
                 bshift,
                 bcount);
             if (comp == 4) {
-                pixels[dst_offset + 3u] = (unsigned char)sixel_bmp_shift_signed(
+                dst_cursor[3u] = (unsigned char)sixel_bmp_shift_signed(
                     value & info->alpha_mask,
                     ashift,
                     alpha_count);
-                alpha_or |= pixels[dst_offset + 3u];
-                alpha_and &= pixels[dst_offset + 3u];
+                alpha_or |= dst_cursor[3u];
+                alpha_and &= dst_cursor[3u];
             }
+            dst_cursor += (size_t)comp;
         }
     }
 
