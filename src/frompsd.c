@@ -10634,6 +10634,19 @@ sixel_builtin_psd_parse_effect_glow_object(
         }
     }
     *pcursor = cursor;
+    if (has_color == 0 &&
+        effect_kind == SIXEL_BUILTIN_PSD_EFFECT_GLOW_CHFX &&
+        opacity > 0.0f &&
+        size_px > 0.0f) {
+        /*
+         * Choke effect descriptors can omit explicit color payload and rely on
+         * default black semantics. Keep this subset active for fallback.
+         */
+        has_color = 1;
+        glow_rgb[0] = 0.0f;
+        glow_rgb[1] = 0.0f;
+        glow_rgb[2] = 0.0f;
+    }
     if (enabled == 0 || has_color == 0 || opacity <= 0.0f || size_px <= 0.0f) {
         sixel_trace_topic_message(
             "psd_decode",
