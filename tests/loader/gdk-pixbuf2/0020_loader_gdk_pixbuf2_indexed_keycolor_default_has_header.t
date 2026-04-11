@@ -22,7 +22,7 @@ output_text=''
 
 output_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L gdk-pixbuf2! \
-    -d fs -y raster \
+    -d fs:scan=raster \
     "${input_png}")" || {
     echo "not ok 1 - gdk-pixbuf2 indexed+tRNS render failed"
     exit 0
