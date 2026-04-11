@@ -318,6 +318,10 @@ Key points used by this roadmap:
     `1410..1413` (bevel highlight/shadow split, OrGl/ChFX distinct parsing,
     `infx=0` interior-only suppression contract, and `clbl=1` deferred-stroke
     preservation contract).
+  - Legacy `lrFX` supplementation is now enabled when `lfx2` keeps
+    `OrGl/ChFX/bevl` inactive: missing active channels are backfilled in the
+    effect model, and trace contract `1452` fixes the
+    `merging legacy lrFX effects missing from lfx2` behavior.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:
