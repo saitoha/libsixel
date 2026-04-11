@@ -108,6 +108,7 @@ typedef struct sixel_bmp_decode_info {
     unsigned int blue_mask;
     unsigned int alpha_mask;
     int has_alpha_mask;
+    int has_explicit_alpha;
     int palette_count;
     unsigned char palette[SIXEL_BMP_MAX_PALETTE][4];
     size_t pixel_offset;
@@ -1212,6 +1213,17 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
             return sixel_bmp_fail("builtin BMP: invalid alpha mask");
         }
         info->has_alpha_mask = info->alpha_mask != 0u ? 1 : 0;
+        /*
+         * Distinguish explicit alpha definitions from default BI_RGB masks.
+         * Hybrid strict policy keeps legacy all-zero alpha rescue only for
+         * non-explicit alpha sources.
+         */
+        info->has_explicit_alpha =
+            (info->alpha_mask != 0u &&
+             (compression == SIXEL_BMP_COMPRESSION_BITFIELDS ||
+              compression == SIXEL_BMP_COMPRESSION_ALPHABITFIELDS))
+            ? 1
+            : 0;
     }
 
     if (sixel_bmp_uses_palette(info->compression, bpp)) {
@@ -2525,9 +2537,9 @@ sixel_bmp_decode_truecolor(sixel_bmp_decode_info_t const *info,
         pixel_count = (size_t)info->width * (size_t)info->height;
         /*
          * Legacy BMP files often leave alpha bytes as zero.
-         * Treat all-zero alpha as opaque to match stb_image behavior.
+         * Keep that opaque rescue only for non-explicit alpha sources.
          */
-        if (alpha_or == 0u) {
+        if (alpha_or == 0u && info->has_explicit_alpha == 0) {
             for (index = 0u; index < pixel_count; ++index) {
                 pixels[index * 4u + 3u] = 0xffu;
             }

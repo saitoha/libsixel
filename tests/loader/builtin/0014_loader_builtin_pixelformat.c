@@ -5664,6 +5664,152 @@ run_builtin_loader_bmp_fail_v2_zero_color_masks_numeric_test(void)
         sizeof(payload));
 }
 
+#define BMP_NUM_I40_A0_MAX_BMP_SIZE 256u
+#define BMP_NUM_I40_A0_DIB_SIZE 40u
+#define BMP_NUM_I40_A0_MASK_SIZE 16u
+#define BMP_NUM_I40_A0_PIXEL_OFFSET \
+    (14u + BMP_NUM_I40_A0_DIB_SIZE + BMP_NUM_I40_A0_MASK_SIZE)
+
+static int
+bmp_num_mk_i40_a0_bf(unsigned char *bmp,
+                     size_t bmp_capacity,
+                     unsigned int compression,
+                     unsigned char const *payload,
+                     size_t payload_size,
+                     size_t *bmp_size)
+{
+    size_t file_size;
+    uint32_t file_size_u32;
+
+    file_size = 0u;
+    file_size_u32 = 0u;
+    if (bmp == NULL || payload == NULL || bmp_size == NULL) {
+        return 0;
+    }
+    if (BMP_NUM_I40_A0_PIXEL_OFFSET > SIZE_MAX - payload_size) {
+        return 0;
+    }
+    file_size = BMP_NUM_I40_A0_PIXEL_OFFSET + payload_size;
+    if (file_size > bmp_capacity || file_size > 0xffffffffu ||
+        payload_size > 0xffffffffu) {
+        return 0;
+    }
+
+    file_size_u32 = (uint32_t)file_size;
+    memset(bmp, 0, file_size);
+    bmp[0] = 0x42u;
+    bmp[1] = 0x4du;
+    bmp_numeric_write_u32le(bmp, 2u, file_size_u32);
+    bmp_numeric_write_u32le(bmp, 10u, (uint32_t)BMP_NUM_I40_A0_PIXEL_OFFSET);
+    bmp_numeric_write_u32le(bmp, 14u, BMP_NUM_I40_A0_DIB_SIZE);
+    bmp_numeric_write_u32le(bmp, 18u, 2u);
+    bmp_numeric_write_u32le(bmp, 22u, 2u);
+    bmp_numeric_write_u16le(bmp, 26u, 1u);
+    bmp_numeric_write_u16le(bmp, 28u, 32u);
+    bmp_numeric_write_u32le(bmp, 30u, (uint32_t)compression);
+    bmp_numeric_write_u32le(bmp, 34u, (uint32_t)payload_size);
+    bmp_numeric_write_u32le(bmp, 38u, 0x00000b13u);
+    bmp_numeric_write_u32le(bmp, 42u, 0x00000b13u);
+    bmp_numeric_write_u32le(bmp, 54u, 0x00ff0000u);
+    bmp_numeric_write_u32le(bmp, 58u, 0x0000ff00u);
+    bmp_numeric_write_u32le(bmp, 62u, 0x000000ffu);
+    bmp_numeric_write_u32le(bmp, 66u, 0xff000000u);
+    memcpy(bmp + BMP_NUM_I40_A0_PIXEL_OFFSET, payload, payload_size);
+    *bmp_size = file_size;
+    return 1;
+}
+
+static int
+run_bmp_i40_a0_mask_case(char const *label, unsigned int compression)
+{
+    static unsigned char const payload[16] = {
+        0x33u, 0x22u, 0x11u, 0x00u, 0x66u, 0x55u, 0x44u, 0x00u,
+        0x99u, 0x88u, 0x77u, 0x00u, 0xccu, 0xbbu, 0xaau, 0x00u
+    };
+    static unsigned char const expected_rgb[12] = {
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const expected_mask[4] = {
+        1u, 1u, 1u, 1u
+    };
+    unsigned char bmp[BMP_NUM_I40_A0_MAX_BMP_SIZE];
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    size_t bmp_size;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    memset(bmp, 0, sizeof(bmp));
+    bmp_size = 0u;
+    result = 1;
+
+    if (!bmp_num_mk_i40_a0_bf(bmp,
+                              sizeof(bmp),
+                              compression,
+                              payload,
+                              sizeof(payload),
+                              &bmp_size)) {
+        fprintf(stderr, "%s: failed to build INFO40 all-zero alpha BMP\n",
+                label);
+        return 1;
+    }
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    result = run_builtin_loader_probe_buffer_case(label,
+                                                  bmp,
+                                                  bmp_size,
+                                                  &options,
+                                                  capture_bmp_numeric_probe,
+                                                  &probe,
+                                                  &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: loader failed (%d)\n", label, (int)status);
+        return 1;
+    }
+    return verify_bmp_rgb_mask_probe(label,
+                                     &probe,
+                                     2,
+                                     2,
+                                     expected_rgb,
+                                     sizeof(expected_rgb),
+                                     expected_mask,
+                                     sizeof(expected_mask));
+}
+
+static int
+run_bmp_i40_abf_a0_mask_num_t(void)
+{
+    return run_bmp_i40_a0_mask_case(
+        "builtin loader bmp info40 alphabitfields all-zero alpha "
+        "mask no-bg numeric",
+        6u);
+}
+
+static int
+run_bmp_i40_bf_a0_mask_num_t(void)
+{
+    return run_bmp_i40_a0_mask_case(
+        "builtin loader bmp info40 bitfields explicit all-zero alpha "
+        "mask no-bg numeric",
+        3u);
+}
+
 #define BMP_NUM_OS2S_MAX_BMP_SIZE 2048u
 
 static int
@@ -10602,6 +10748,11 @@ run_builtin_loader_test(void)
           run_bmp_i40_win_c14_fail_t },
         { "SIXEL_TEST_BMP_NUMERIC_INFO40_WINDOWS_COMP15_FAIL",
           run_bmp_i40_win_c15_fail_t
+        },
+        { "SIXEL_TEST_BMP_NUMERIC_INFO40_ABF_ALLZERO_ALPHA_MASK_NO_BG",
+          run_bmp_i40_abf_a0_mask_num_t },
+        { "SIXEL_TEST_BMP_NUMERIC_INFO40_BF_A0_EXPLICIT_MASK_NO_BG",
+          run_bmp_i40_bf_a0_mask_num_t
         }
     };
     static builtin_loader_env_dispatch_entry_t const tga_env_dispatch[] = {
