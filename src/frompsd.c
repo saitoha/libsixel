@@ -11386,6 +11386,26 @@ sixel_builtin_psd_merge_missing_legacy_effects(
 }
 
 static int
+sixel_builtin_psd_legacy_lrfx_has_record(
+    unsigned char const *data,
+    size_t key_length,
+    char const key[5])
+{
+    size_t cursor;
+
+    if (data == NULL || key == NULL || key_length < 12u) {
+        return 0;
+    }
+    for (cursor = 0u; cursor + 12u <= key_length; ++cursor) {
+        if (memcmp(data + cursor, "8BIM", 4u) == 0 &&
+            memcmp(data + cursor + 4u, key, 4u) == 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static int
 sixel_builtin_psd_parse_vector_stroke_content_object(
     unsigned char const *data,
     size_t data_length,
@@ -13388,6 +13408,27 @@ sixel_builtin_psd_parse_layer_extra_data(
                         "builtin PSD: merging legacy lrFX effects missing "
                         "from lfx2");
                 } else {
+                    if (sixel_builtin_psd_legacy_lrfx_has_record(
+                            buffer + cursor,
+                            key_length,
+                            "oglw") != 0 ||
+                        sixel_builtin_psd_legacy_lrfx_has_record(
+                            buffer + cursor,
+                            key_length,
+                            "iglw") != 0 ||
+                        sixel_builtin_psd_legacy_lrfx_has_record(
+                            buffer + cursor,
+                            key_length,
+                            "bevl") != 0 ||
+                        sixel_builtin_psd_legacy_lrfx_has_record(
+                            buffer + cursor,
+                            key_length,
+                            "sofi") != 0) {
+                        sixel_trace_topic_message(
+                            "psd_decode",
+                            "builtin PSD: legacy lrFX contains glow/bevel/"
+                            "sofi records");
+                    }
                     sixel_trace_topic_message(
                         "psd_decode",
                         "builtin PSD: ignoring legacy lrFX when lfx2 is "
