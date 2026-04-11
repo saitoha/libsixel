@@ -753,6 +753,18 @@ loader_apply_component_options(sixel_loader_component_t *component,
         return status;
     }
 
+    suboption_value = suboptions->builtin_bmp_info40_mode;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_BMP_INFO40_MODE,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_load_file: failed to apply loader option "
+            "'builtin-bmp-info40-mode'.");
+        return status;
+    }
+
     suboption_value = suboptions->libjpeg_enable_orientation;
     status = sixel_loader_component_setopt(
         component,

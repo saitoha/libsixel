@@ -48,6 +48,7 @@ SIXELSTATUS load_with_builtin(
     int                        start_frame_no_set,
     int                        start_frame_no,
     int                        enable_cms,
+    int                        bmp_info40_mode,
     sixel_load_image_function  fn_load,
     void                      *context);
 

@@ -167,6 +167,7 @@ typedef struct sixel_loader_builtin_component {
     int start_frame_no;
     int enable_cms;
     int cms_engine;
+    int bmp_info40_mode;
 } sixel_loader_builtin_component_t;
 
 void *
@@ -1135,6 +1136,113 @@ sixel_builtin_apply_bmp_alpha_policy(
     }
     frame->transparent = -1;
     frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    status = SIXEL_OK;
+
+end:
+    sixel_allocator_free(frame->allocator, transparent_mask);
+    sixel_allocator_free(frame->allocator, float_pixels);
+    return status;
+}
+
+static SIXELSTATUS
+sixel_builtin_apply_bmp_png16_no_bg_policy(
+    sixel_frame_t *frame,
+    uint16_t const *pixels16)
+{
+    SIXELSTATUS status;
+    float *float_pixels;
+    unsigned char *transparent_mask;
+    size_t pixel_count;
+    size_t float_count;
+    size_t float_size;
+    size_t index;
+    float alpha_unit;
+    int has_zero_alpha;
+
+    status = SIXEL_FALSE;
+    float_pixels = NULL;
+    transparent_mask = NULL;
+    pixel_count = 0u;
+    float_count = 0u;
+    float_size = 0u;
+    index = 0u;
+    alpha_unit = 0.0f;
+    has_zero_alpha = 0;
+    if (frame == NULL ||
+        frame->allocator == NULL ||
+        pixels16 == NULL ||
+        frame->width <= 0 ||
+        frame->height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
+    if (pixel_count > SIZE_MAX / 3u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    float_count = pixel_count * 3u;
+    if (float_count > SIZE_MAX / sizeof(float)) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    float_size = float_count * sizeof(float);
+    float_pixels = (float *)sixel_allocator_malloc(frame->allocator,
+                                                   float_size);
+    if (float_pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin BMP: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    transparent_mask = (unsigned char *)sixel_allocator_malloc(
+        frame->allocator,
+        pixel_count);
+    if (transparent_mask == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin BMP: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    /*
+     * Keep the no-bg policy semantics: collapse partial alpha against black,
+     * but preserve fully transparent pixels in a side-channel mask.
+     */
+    for (index = 0u; index < pixel_count; ++index) {
+        alpha_unit = (float)pixels16[index * 4u + 3u] / 65535.0f;
+        if (pixels16[index * 4u + 3u] == 0u) {
+            transparent_mask[index] = 1u;
+            has_zero_alpha = 1;
+        } else {
+            transparent_mask[index] = 0u;
+        }
+        float_pixels[index * 3u + 0u] =
+            ((float)pixels16[index * 4u + 0u] / 65535.0f) * alpha_unit;
+        float_pixels[index * 3u + 1u] =
+            ((float)pixels16[index * 4u + 1u] / 65535.0f) * alpha_unit;
+        float_pixels[index * 3u + 2u] =
+            ((float)pixels16[index * 4u + 2u] / 65535.0f) * alpha_unit;
+    }
+
+    if (frame->transparent_mask != NULL) {
+        sixel_allocator_free(frame->allocator, frame->transparent_mask);
+        frame->transparent_mask = NULL;
+        frame->transparent_mask_size = 0u;
+    }
+    sixel_frame_set_pixels_float32(frame, float_pixels);
+    float_pixels = NULL;
+    if (has_zero_alpha != 0) {
+        frame->transparent_mask = transparent_mask;
+        frame->transparent_mask_size = pixel_count;
+        frame->alpha_zero_is_transparent = 1;
+        transparent_mask = NULL;
+    } else {
+        frame->alpha_zero_is_transparent = 0;
+    }
+    frame->transparent = -1;
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     frame->colorspace = SIXEL_COLORSPACE_GAMMA;
     status = SIXEL_OK;
 
@@ -3439,6 +3547,20 @@ sixel_loader_builtin_setopt(sixel_loader_component_t *component,
         sixel_helper_set_loader_cms_engine(int_value != NULL ? *int_value : -1);
 #endif
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_BMP_INFO40_MODE:
+        int_value = (int const *)value;
+        if (int_value == NULL) {
+            self->bmp_info40_mode =
+                SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO;
+            return SIXEL_OK;
+        }
+        if (*int_value != SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO &&
+            *int_value != SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_WINDOWS &&
+            *int_value != SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_OS2) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        self->bmp_info40_mode = *int_value;
+        return SIXEL_OK;
     default:
         return SIXEL_OK;
     }
@@ -3485,6 +3607,7 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
                                self->start_frame_no_set,
                                self->start_frame_no,
                                self->enable_cms,
+                               self->bmp_info40_mode,
                                fn_load,
                                context);
 #if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
@@ -3542,6 +3665,7 @@ sixel_loader_builtin_new(sixel_allocator_t *allocator,
     self->start_frame_no = INT_MIN;
     self->enable_cms = 0;
     self->cms_engine = -1;
+    self->bmp_info40_mode = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO;
 
     *ppcomponent = &self->base;
     return SIXEL_OK;
@@ -3557,6 +3681,7 @@ typedef struct sixel_builtin_load_request {
     int start_frame_no_set;
     int start_frame_no_override;
     int enable_cms;
+    int bmp_info40_mode;
     sixel_load_image_function fn_load;
     void *callback_context;
 } sixel_builtin_load_request_t;
@@ -4968,7 +5093,8 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     stbi__context *stb_context,
     unsigned char *bgcolor,
     int is_pic,
-    int enable_cms
+    int enable_cms,
+    int bmp_info40_mode
 #if HAVE_LCMS2
     ,
     int is_tiff,
@@ -5001,6 +5127,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     size_t pixel_count;
     size_t rgb_size;
     unsigned char *rgb_pixels;
+    uint16_t *pixels16;
     int nwrite;
     char message[80];
 #if HAVE_LCMS2
@@ -5031,6 +5158,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     pixel_count = 0u;
     rgb_size = 0u;
     rgb_pixels = NULL;
+    pixels16 = NULL;
     nwrite = 0;
     message[0] = '\0';
 #if HAVE_LCMS2
@@ -5048,7 +5176,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     }
 #endif
     if (chunk_is_bmp(chunk)) {
-        status = sixel_frombmp_probe(chunk, &bmp_probe);
+        status = sixel_frombmp_probe(chunk, &bmp_probe, bmp_info40_mode);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -5097,6 +5225,30 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                                                          enable_cms,
                                                          bgcolor);
                 }
+                if (bmp_png_payload_is_16bit != 0 && enable_cms == 0) {
+                    pixels16 = stbi_load_16_from_memory(
+                        payload_chunk.buffer,
+                        (int)payload_chunk.size,
+                        &frame->width,
+                        &frame->height,
+                        &payload_depth,
+                        4);
+                    if (pixels16 == NULL) {
+                        sixel_helper_set_additional_message(
+                            stbi_failure_reason());
+                        return SIXEL_STBI_ERROR;
+                    }
+                    status = sixel_builtin_apply_bmp_png16_no_bg_policy(
+                        frame,
+                        pixels16);
+                    stbi_image_free(pixels16);
+                    pixels16 = NULL;
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                    frame->loop_count = 1;
+                    return SIXEL_OK;
+                }
                 stbi__start_mem(stb_context,
                                 payload_chunk.buffer,
                                 (int)payload_chunk.size);
@@ -5134,7 +5286,8 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                                     &bmp_comp,
                                     &bmp_is_cmyk,
                                     &bmp_icc_profile,
-                                    &bmp_icc_profile_length);
+                                    &bmp_icc_profile_length,
+                                    bmp_info40_mode);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -5372,6 +5525,7 @@ sixel_builtin_load_nonpng_single_frame(
     int fuse_palette,
     unsigned char *bgcolor,
     int enable_cms,
+    int bmp_info40_mode,
     int is_jpeg,
     int is_psd,
     int is_pic,
@@ -5459,7 +5613,8 @@ sixel_builtin_load_nonpng_single_frame(
         stb_context,
         bgcolor,
         is_pic,
-        enable_cms
+        enable_cms,
+        bmp_info40_mode
 #if HAVE_LCMS2
         ,
         is_tiff,
@@ -5562,6 +5717,7 @@ sixel_builtin_load_stbi_nonpng_path(
         load_request->fuse_palette,
         load_request->bgcolor,
         load_request->enable_cms,
+        load_request->bmp_info40_mode,
         is_jpeg,
         is_psd,
         is_pic,
@@ -5667,6 +5823,7 @@ load_with_builtin(
     int start_frame_no_set,
     int start_frame_no_override,
     int enable_cms,
+    int bmp_info40_mode,
     sixel_load_image_function fn_load,
     void *context)
 {
@@ -5717,6 +5874,7 @@ load_with_builtin(
     load_request.start_frame_no_set = start_frame_no_set;
     load_request.start_frame_no_override = start_frame_no_override;
     load_request.enable_cms = enable_cms;
+    load_request.bmp_info40_mode = bmp_info40_mode;
     load_request.fn_load = fn_load;
     load_request.callback_context = context;
     memset(&load_context, 0, sizeof(load_context));

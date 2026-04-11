@@ -280,6 +280,46 @@ loader_manager_parse_orientation(char const *text,
 }
 
 static int
+loader_manager_parse_builtin_bmp_info40_mode(char const *text,
+                                             size_t length,
+                                             int *value_out,
+                                             int allow_numeric)
+{
+    if (text == NULL || value_out == NULL || length == 0u) {
+        return 0;
+    }
+    if (loader_manager_span_equals_nocase(text, length, "auto")) {
+        *value_out = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO;
+        return 1;
+    }
+    if (loader_manager_span_equals_nocase(text, length, "windows")) {
+        *value_out = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_WINDOWS;
+        return 1;
+    }
+    if (loader_manager_span_equals_nocase(text, length, "os2")) {
+        *value_out = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_OS2;
+        return 1;
+    }
+    if (allow_numeric &&
+        loader_manager_span_equals_nocase(text, length, "0")) {
+        *value_out = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO;
+        return 1;
+    }
+    if (allow_numeric &&
+        loader_manager_span_equals_nocase(text, length, "1")) {
+        *value_out = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_WINDOWS;
+        return 1;
+    }
+    if (allow_numeric &&
+        loader_manager_span_equals_nocase(text, length, "2")) {
+        *value_out = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_OS2;
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 loader_manager_read_env_orientation(char const *name, int fallback_value)
 {
     char const *env_value;
@@ -299,6 +339,33 @@ loader_manager_read_env_orientation(char const *name, int fallback_value)
                                           strlen(env_value),
                                           &parsed_value,
                                           1)) {
+        return fallback_value;
+    }
+
+    return parsed_value;
+}
+
+static int
+loader_manager_read_env_builtin_bmp_info40_mode(char const *name,
+                                                int fallback_value)
+{
+    char const *env_value;
+    int parsed_value;
+
+    env_value = NULL;
+    parsed_value = fallback_value;
+    if (name == NULL) {
+        return fallback_value;
+    }
+
+    env_value = sixel_compat_getenv(name);
+    if (env_value == NULL || env_value[0] == '\0') {
+        return fallback_value;
+    }
+    if (!loader_manager_parse_builtin_bmp_info40_mode(env_value,
+                                                       strlen(env_value),
+                                                       &parsed_value,
+                                                       1)) {
         return fallback_value;
     }
 
@@ -498,6 +565,10 @@ loader_manager_init_loader_suboptions(
     suboptions->builtin_cms_engine = loader_manager_read_env_cms_engine(
         "SIXEL_LOADER_BUILTIN_CMS_ENGINE",
         default_cms_engine);
+    suboptions->builtin_bmp_info40_mode =
+        loader_manager_read_env_builtin_bmp_info40_mode(
+            "SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE",
+            SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO);
 #if HAVE_WIC
     suboptions->wic_ico_minsize = loader_manager_read_wic_ico_minsize_from_env(
         0);
@@ -624,6 +695,14 @@ loader_manager_resolve_loader_suboptions(
                                                        value_length,
                                                        &parsed_value)) {
                 suboptions->builtin_cms_engine = parsed_value;
+            } else if (strcmp(item->base_def->name, "builtin") == 0 &&
+                       strcmp(key_name, "bmp_info40_mode") == 0 &&
+                       loader_manager_parse_builtin_bmp_info40_mode(
+                           value_text,
+                           value_length,
+                           &parsed_value,
+                           0)) {
+                suboptions->builtin_bmp_info40_mode = parsed_value;
             }
             ++assignment_index;
         }

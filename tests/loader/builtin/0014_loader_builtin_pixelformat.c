@@ -797,6 +797,32 @@ bmp_numeric_compose_expected_linear_u16(float out_rgb[12],
     }
 }
 
+static void
+bmp_numeric_compose_expected_gamma_u16_black(float out_rgb[12],
+                                             uint16_t const rgba16[16])
+{
+    size_t index;
+    int channel;
+    float alpha_unit;
+    float src_gamma;
+
+    index = 0u;
+    channel = 0;
+    alpha_unit = 0.0f;
+    src_gamma = 0.0f;
+    if (out_rgb == NULL || rgba16 == NULL) {
+        return;
+    }
+    for (index = 0u; index < 4u; ++index) {
+        alpha_unit = (float)rgba16[index * 4u + 3u] / 65535.0f;
+        for (channel = 0; channel < 3; ++channel) {
+            src_gamma = (float)rgba16[index * 4u + (size_t)channel]
+                / 65535.0f;
+            out_rgb[index * 3u + (size_t)channel] = src_gamma * alpha_unit;
+        }
+    }
+}
+
 static int
 verify_bmp_float_probe(char const *label,
                        bmp_numeric_probe_context_t const *probe,
@@ -2394,7 +2420,9 @@ run_builtin_loader_bmp_probe_fixture_case(char const *label,
         goto cleanup;
     }
 
-    status = sixel_frombmp_probe(chunk, probe_out);
+    status = sixel_frombmp_probe(chunk,
+                                 probe_out,
+                                 SIXEL_FROMBMP_INFO40_MODE_AUTO);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: frombmp probe failed (%d)\n", label, (int)status);
         goto cleanup;
@@ -3127,15 +3155,25 @@ end:
 static int
 run_builtin_loader_bmp_bi_png16_alpha_mask_no_bg_numeric_test(void)
 {
+    static uint16_t const src_rgba16_topdown[16] = {
+        0x1234u, 0xabcdu, 0x4000u, 0xffffu,
+        0x2222u, 0xeeeeu, 0x0100u, 0x8000u,
+        0xffffu, 0x1111u, 0x3333u, 0x4000u,
+        0x5555u, 0x9999u, 0xddddu, 0x0000u
+    };
     static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
     builtin_loader_probe_options_t options;
     bmp_numeric_probe_context_t probe;
     SIXELSTATUS status;
+    float expected_rgb[12];
+    size_t index;
     int result;
 
     status = SIXEL_FALSE;
     memset(&options, 0, sizeof(options));
     memset(&probe, 0, sizeof(probe));
+    memset(expected_rgb, 0, sizeof(expected_rgb));
+    index = 0u;
     result = 1;
 
     options.require_static = 1;
@@ -3172,7 +3210,7 @@ run_builtin_loader_bmp_bi_png16_alpha_mask_no_bg_numeric_test(void)
                 probe.callback_count);
         return 1;
     }
-    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
         probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
         fprintf(stderr,
                 "builtin loader bmp bi-png16 alpha mask no-bg numeric: "
@@ -3204,6 +3242,21 @@ run_builtin_loader_bmp_bi_png16_alpha_mask_no_bg_numeric_test(void)
                 "builtin loader bmp bi-png16 alpha mask no-bg numeric: "
                 "transparent-mask samples mismatch\n");
         return 1;
+    }
+    bmp_numeric_compose_expected_gamma_u16_black(expected_rgb,
+                                                 src_rgba16_topdown);
+    for (index = 0u; index < 12u; ++index) {
+        if (!float_approx_equal(probe.pixels_f32[index],
+                                expected_rgb[index],
+                                0.00002f)) {
+            fprintf(stderr,
+                    "builtin loader bmp bi-png16 alpha mask no-bg numeric: "
+                    "sample %zu mismatch (actual=%0.8f expected=%0.8f)\n",
+                    index,
+                    probe.pixels_f32[index],
+                    expected_rgb[index]);
+            return 1;
+        }
     }
 
     return 0;
@@ -4920,6 +4973,455 @@ run_builtin_loader_bmp_fail_v2_zero_color_masks_numeric_test(void)
         sizeof(payload));
 }
 
+#define BMP_NUM_OS2S_MAX_BMP_SIZE 2048u
+
+static int
+bmp_num_build_os2s_bmp(unsigned char *bmp,
+                       size_t bmp_cap,
+                       unsigned int dib_size,
+                       int width,
+                       int height_signed,
+                       unsigned int bpp,
+                       unsigned int comp,
+                       unsigned int image_size,
+                       unsigned int colors_used,
+                       unsigned char const *palette,
+                       size_t palette_size,
+                       unsigned char const *payload,
+                       size_t payload_size,
+                       size_t *bmp_size)
+{
+    size_t pixel_off;
+    size_t file_size;
+    size_t hdr_size;
+    uint32_t file_u32;
+    uint32_t off_u32;
+
+    pixel_off = 0u;
+    file_size = 0u;
+    hdr_size = 0u;
+    file_u32 = 0u;
+    off_u32 = 0u;
+    if (bmp == NULL || payload == NULL || bmp_size == NULL) {
+        return 0;
+    }
+    if (width <= 0 || height_signed == 0) {
+        return 0;
+    }
+    if (dib_size != 16u &&
+        dib_size != 24u &&
+        dib_size != 32u &&
+        dib_size != 40u &&
+        dib_size != 64u) {
+        return 0;
+    }
+    hdr_size = 14u + (size_t)dib_size;
+    if (hdr_size > SIZE_MAX - palette_size) {
+        return 0;
+    }
+    pixel_off = hdr_size + palette_size;
+    if (pixel_off > SIZE_MAX - payload_size) {
+        return 0;
+    }
+    file_size = pixel_off + payload_size;
+    if (file_size > bmp_cap || file_size > 0xffffffffu ||
+        pixel_off > 0xffffffffu) {
+        return 0;
+    }
+
+    file_u32 = (uint32_t)file_size;
+    off_u32 = (uint32_t)pixel_off;
+    memset(bmp, 0, file_size);
+    bmp[0] = 0x42u;
+    bmp[1] = 0x4du;
+    bmp_numeric_write_u32le(bmp, 2u, file_u32);
+    bmp_numeric_write_u32le(bmp, 10u, off_u32);
+    bmp_numeric_write_u32le(bmp, 14u, dib_size);
+    bmp_numeric_write_u32le(bmp, 18u, (uint32_t)(unsigned int)width);
+    bmp_numeric_write_u32le(bmp, 22u, (uint32_t)height_signed);
+    bmp_numeric_write_u16le(bmp, 26u, 1u);
+    bmp_numeric_write_u16le(bmp, 28u, bpp);
+    if (dib_size >= 20u) {
+        bmp_numeric_write_u32le(bmp, 30u, comp);
+    }
+    if (dib_size >= 24u) {
+        bmp_numeric_write_u32le(bmp, 34u, image_size);
+    }
+    if (dib_size >= 28u) {
+        bmp_numeric_write_u32le(bmp, 38u, 0x00000b13u);
+    }
+    if (dib_size >= 32u) {
+        bmp_numeric_write_u32le(bmp, 42u, 0x00000b13u);
+    }
+    if (dib_size >= 36u) {
+        bmp_numeric_write_u32le(bmp, 46u, colors_used);
+    }
+    if (palette_size != 0u && palette != NULL) {
+        memcpy(bmp + hdr_size, palette, palette_size);
+    }
+    memcpy(bmp + pixel_off, payload, payload_size);
+    *bmp_size = file_size;
+    return 1;
+}
+
+static int
+run_bmp_os2s_rgb_case(char const *label,
+                      unsigned int dib_size,
+                      int width,
+                      int height_signed,
+                      unsigned int bpp,
+                      unsigned int comp,
+                      unsigned int image_size,
+                      unsigned int colors_used,
+                      unsigned char const *palette,
+                      size_t palette_size,
+                      unsigned char const *payload,
+                      size_t payload_size,
+                      unsigned char const *expected_rgb,
+                      size_t expected_rgb_size)
+{
+    unsigned char bmp[BMP_NUM_OS2S_MAX_BMP_SIZE];
+    size_t bmp_size;
+    int height;
+
+    bmp_size = 0u;
+    height = 0;
+    memset(bmp, 0, sizeof(bmp));
+    if (!bmp_num_build_os2s_bmp(bmp,
+                                sizeof(bmp),
+                                dib_size,
+                                width,
+                                height_signed,
+                                bpp,
+                                comp,
+                                image_size,
+                                colors_used,
+                                palette,
+                                palette_size,
+                                payload,
+                                payload_size,
+                                &bmp_size)) {
+        fprintf(stderr, "%s: failed to build OS/2 short BMP\n", label);
+        return 1;
+    }
+    height = height_signed < 0 ? -height_signed : height_signed;
+    return run_builtin_loader_bmp_rgb_buffer_case(label,
+                                                  bmp,
+                                                  bmp_size,
+                                                  width,
+                                                  height,
+                                                  expected_rgb,
+                                                  expected_rgb_size);
+}
+
+static int
+run_bmp_os2s_fail_case(char const *label,
+                       unsigned int dib_size,
+                       int width,
+                       int height_signed,
+                       unsigned int bpp,
+                       unsigned int comp,
+                       unsigned int image_size,
+                       unsigned int colors_used,
+                       unsigned char const *palette,
+                       size_t palette_size,
+                       unsigned char const *payload,
+                       size_t payload_size)
+{
+    unsigned char bmp[BMP_NUM_OS2S_MAX_BMP_SIZE];
+    size_t bmp_size;
+
+    bmp_size = 0u;
+    memset(bmp, 0, sizeof(bmp));
+    if (!bmp_num_build_os2s_bmp(bmp,
+                                sizeof(bmp),
+                                dib_size,
+                                width,
+                                height_signed,
+                                bpp,
+                                comp,
+                                image_size,
+                                colors_used,
+                                palette,
+                                palette_size,
+                                payload,
+                                payload_size,
+                                &bmp_size)) {
+        fprintf(stderr, "%s: failed to build OS/2 short BMP\n", label);
+        return 1;
+    }
+    return run_builtin_loader_bmp_expect_fail_buffer_case(label,
+                                                          bmp,
+                                                          bmp_size);
+}
+
+static int
+run_bmp_os2s16_rgb24_num_t(void)
+{
+    static unsigned char const payload[] = {
+        0xffu, 0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0x00u, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu
+    };
+
+    if (loader_test_setenv("SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE", "") != 0) {
+        return 1;
+    }
+    return run_bmp_os2s_rgb_case(
+        "builtin loader bmp os2 short16 rgb24 numeric",
+        16u,
+        2,
+        2,
+        24u,
+        0u,
+        (unsigned int)sizeof(payload),
+        0u,
+        NULL,
+        0u,
+        payload,
+        sizeof(payload),
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_bmp_os2s24_rle8_num_t(void)
+{
+    static unsigned char const payload[] = {
+        0x01u, 0x02u, 0x01u, 0x03u, 0x00u, 0x00u, 0x01u, 0x01u,
+        0x01u, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u
+    };
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0xffu, 0x00u, 0x00u, 0x00u, 0xffu
+    };
+    unsigned char palette[256u * 4u];
+
+    if (loader_test_setenv("SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE", "") != 0) {
+        return 1;
+    }
+    memset(palette, 0, sizeof(palette));
+    palette[4u + 2u] = 0xffu;
+    palette[8u + 1u] = 0xffu;
+    palette[12u + 0u] = 0xffu;
+    return run_bmp_os2s_rgb_case(
+        "builtin loader bmp os2 short24 rle8 numeric",
+        24u,
+        2,
+        2,
+        8u,
+        1u,
+        (unsigned int)sizeof(payload),
+        0u,
+        palette,
+        sizeof(palette),
+        payload,
+        sizeof(payload),
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_bmp_os2s32_rle4_num_t(void)
+{
+    static unsigned char const payload[] = {
+        0x02u, 0x23u, 0x00u, 0x00u, 0x02u, 0x10u, 0x00u, 0x00u,
+        0x00u, 0x01u
+    };
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0xffu, 0x00u, 0x00u, 0x00u, 0xffu
+    };
+    unsigned char palette[16u * 4u];
+
+    if (loader_test_setenv("SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE", "") != 0) {
+        return 1;
+    }
+    memset(palette, 0, sizeof(palette));
+    palette[4u + 2u] = 0xffu;
+    palette[8u + 1u] = 0xffu;
+    palette[12u + 0u] = 0xffu;
+    return run_bmp_os2s_rgb_case(
+        "builtin loader bmp os2 short32 rle4 numeric",
+        32u,
+        2,
+        2,
+        4u,
+        2u,
+        (unsigned int)sizeof(payload),
+        0u,
+        palette,
+        sizeof(palette),
+        payload,
+        sizeof(payload),
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_bmp_i40_auto_huff_num_t(void)
+{
+    static unsigned char const palette[] = {
+        0xffu, 0xffu, 0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const payload[] = {
+        0x35u, 0xc0u, 0x04u, 0x74u, 0x00u, 0x20u
+    };
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0xffu, 0xffu, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
+    };
+
+    if (loader_test_setenv("SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE",
+                           "auto") != 0) {
+        return 1;
+    }
+    return run_bmp_os2s_rgb_case(
+        "builtin loader bmp info40 auto huffman1d numeric",
+        40u,
+        2,
+        2,
+        1u,
+        3u,
+        (unsigned int)sizeof(payload),
+        2u,
+        palette,
+        sizeof(palette),
+        payload,
+        sizeof(payload),
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_bmp_i40_win_huff_fail_t(void)
+{
+    static unsigned char const palette[] = {
+        0xffu, 0xffu, 0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const payload[] = {
+        0x35u, 0xc0u, 0x04u, 0x74u, 0x00u, 0x20u
+    };
+
+    if (loader_test_setenv("SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE",
+                           "windows") != 0) {
+        return 1;
+    }
+    return run_bmp_os2s_fail_case(
+        "builtin loader bmp info40 windows huffman1d fail numeric",
+        40u,
+        2,
+        2,
+        1u,
+        3u,
+        (unsigned int)sizeof(payload),
+        2u,
+        palette,
+        sizeof(palette),
+        payload,
+        sizeof(payload));
+}
+
+static int
+run_bmp_i40_os2_huff_num_t(void)
+{
+    static unsigned char const palette[] = {
+        0xffu, 0xffu, 0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const payload[] = {
+        0x35u, 0xc0u, 0x04u, 0x74u, 0x00u, 0x20u
+    };
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0xffu, 0xffu, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
+    };
+
+    if (loader_test_setenv("SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE",
+                           "os2") != 0) {
+        return 1;
+    }
+    return run_bmp_os2s_rgb_case(
+        "builtin loader bmp info40 os2 huffman1d numeric",
+        40u,
+        2,
+        2,
+        1u,
+        3u,
+        (unsigned int)sizeof(payload),
+        2u,
+        palette,
+        sizeof(palette),
+        payload,
+        sizeof(payload),
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_bmp_i40_auto_r24_num_t(void)
+{
+    static unsigned char const payload[] = {
+        0x01u, 0xffu, 0x00u, 0x00u, 0x01u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x00u, 0xffu, 0x01u, 0x00u,
+        0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u
+    };
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u
+    };
+
+    if (loader_test_setenv("SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE",
+                           "auto") != 0) {
+        return 1;
+    }
+    return run_bmp_os2s_rgb_case(
+        "builtin loader bmp info40 auto rle24 numeric",
+        40u,
+        2,
+        2,
+        24u,
+        4u,
+        (unsigned int)sizeof(payload),
+        0u,
+        NULL,
+        0u,
+        payload,
+        sizeof(payload),
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_bmp_i40_win_r24_fail_t(void)
+{
+    static unsigned char const payload[] = {
+        0x01u, 0xffu, 0x00u, 0x00u, 0x01u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x01u, 0x00u, 0x00u, 0xffu, 0x01u, 0x00u,
+        0xffu, 0x00u, 0x00u, 0x00u, 0x00u, 0x01u
+    };
+
+    if (loader_test_setenv("SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE",
+                           "windows") != 0) {
+        return 1;
+    }
+    return run_bmp_os2s_fail_case(
+        "builtin loader bmp info40 windows rle24 fail numeric",
+        40u,
+        2,
+        2,
+        24u,
+        4u,
+        (unsigned int)sizeof(payload),
+        0u,
+        NULL,
+        0u,
+        payload,
+        sizeof(payload));
+}
+
 static int
 bmp_numeric_append_huffman_bits(unsigned char *payload,
                                 size_t payload_capacity,
@@ -5623,6 +6125,8 @@ run_builtin_loader_probe_buffer_case(char const *label,
     unsigned char const *bgcolor;
     int loop_control;
     int cms_engine;
+    char const *info40_mode_text;
+    int info40_mode;
     int result;
 
     status = SIXEL_FALSE;
@@ -5636,6 +6140,8 @@ run_builtin_loader_probe_buffer_case(char const *label,
     bgcolor = NULL;
     loop_control = SIXEL_LOOP_AUTO;
     cms_engine = SIXEL_CMS_ENGINE_NONE;
+    info40_mode_text = NULL;
+    info40_mode = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO;
     result = 1;
     if (load_status_out != NULL) {
         *load_status_out = SIXEL_FALSE;
@@ -5713,6 +6219,30 @@ run_builtin_loader_probe_buffer_case(char const *label,
             component,
             SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE,
             &cms_engine);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
+    info40_mode_text =
+        loader_test_getenv("SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE");
+    if (info40_mode_text != NULL && info40_mode_text[0] != '\0') {
+        if (strcmp(info40_mode_text, "auto") == 0) {
+            info40_mode = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO;
+        } else if (strcmp(info40_mode_text, "windows") == 0) {
+            info40_mode = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_WINDOWS;
+        } else if (strcmp(info40_mode_text, "os2") == 0) {
+            info40_mode = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_OS2;
+        } else {
+            fprintf(stderr,
+                    "%s: invalid info40 mode env '%s'\n",
+                    label,
+                    info40_mode_text);
+            goto cleanup;
+        }
+        status = sixel_loader_component_setopt(
+            component,
+            SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_BMP_INFO40_MODE,
+            &info40_mode);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
@@ -9290,6 +9820,23 @@ run_builtin_loader_test(void)
           run_builtin_loader_bmp_fail_v2_truncated_masks_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_FAIL_V2_ZERO_COLOR_MASKS",
           run_builtin_loader_bmp_fail_v2_zero_color_masks_numeric_test
+        },
+        { "SIXEL_TEST_BMP_NUMERIC_OS2_SHORT16_RGB24",
+          run_bmp_os2s16_rgb24_num_t },
+        { "SIXEL_TEST_BMP_NUMERIC_OS2_SHORT24_RLE8",
+          run_bmp_os2s24_rle8_num_t },
+        { "SIXEL_TEST_BMP_NUMERIC_OS2_SHORT32_RLE4",
+          run_bmp_os2s32_rle4_num_t },
+        { "SIXEL_TEST_BMP_NUMERIC_INFO40_AUTO_HUFFMAN1D",
+          run_bmp_i40_auto_huff_num_t },
+        { "SIXEL_TEST_BMP_NUMERIC_INFO40_WINDOWS_HUFFMAN1D_FAIL",
+          run_bmp_i40_win_huff_fail_t },
+        { "SIXEL_TEST_BMP_NUMERIC_INFO40_OS2_HUFFMAN1D",
+          run_bmp_i40_os2_huff_num_t },
+        { "SIXEL_TEST_BMP_NUMERIC_INFO40_AUTO_RLE24",
+          run_bmp_i40_auto_r24_num_t },
+        { "SIXEL_TEST_BMP_NUMERIC_INFO40_WINDOWS_RLE24_FAIL",
+          run_bmp_i40_win_r24_fail_t
         }
     };
     static builtin_loader_env_dispatch_entry_t const tga_env_dispatch[] = {

@@ -50,6 +50,10 @@ extern "C" {
 #define SIXEL_FROMBMP_DIB_FAMILY_WINDOWS 1
 #define SIXEL_FROMBMP_DIB_FAMILY_OS2     2
 
+#define SIXEL_FROMBMP_INFO40_MODE_AUTO    0
+#define SIXEL_FROMBMP_INFO40_MODE_WINDOWS 1
+#define SIXEL_FROMBMP_INFO40_MODE_OS2     2
+
 typedef struct sixel_frombmp_probe {
     int width;
     int height;
@@ -91,12 +95,14 @@ sixel_frombmp_load(
     int *pcomp,
     int *pis_cmyk,
     unsigned char const **picc_profile,
-    size_t *picc_profile_length);
+    size_t *picc_profile_length,
+    int info40_mode);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frombmp_probe(
     sixel_chunk_t const *chunk,
-    sixel_frombmp_probe_t *probe);
+    sixel_frombmp_probe_t *probe,
+    int info40_mode);
 
 #ifdef __cplusplus
 }

@@ -28,6 +28,7 @@
 
 #include "loader-order-schema.h"
 #include "cms.h"
+#include "loader-common.h"
 
 #include <limits.h>
 #if HAVE_STDIO_H
@@ -58,6 +59,13 @@ static sixel_suboption_choice_t const g_suboption_choices_loader_cms_engine[] = 
     { "builtin", SIXEL_CMS_ENGINE_BUILTIN },
     { "lcms2", SIXEL_CMS_ENGINE_LCMS2 },
     { "colorsync", SIXEL_CMS_ENGINE_COLORSYNC }
+};
+
+static sixel_suboption_choice_t const
+g_suboption_choices_loader_builtin_bmp_info40_mode[] = {
+    { "auto", SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO },
+    { "windows", SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_WINDOWS },
+    { "os2", SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_OS2 }
 };
 
 #if HAVE_LIBPNG || HAVE_JPEG || HAVE_WEBP || HAVE_COREGRAPHICS
@@ -174,6 +182,15 @@ static sixel_suboption_key_t const g_subkeys_loader_builtin_enable_cms[] = {
         g_suboption_choices_loader_cms_engine,
         sizeof(g_suboption_choices_loader_cms_engine)
             / sizeof(g_suboption_choices_loader_cms_engine[0])
+    },
+    {
+        "bmp_info40_mode",
+        NULL,
+        "SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_builtin_bmp_info40_mode,
+        sizeof(g_suboption_choices_loader_builtin_bmp_info40_mode)
+            / sizeof(g_suboption_choices_loader_builtin_bmp_info40_mode[0])
     }
 };
 

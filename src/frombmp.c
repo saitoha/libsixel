@@ -48,6 +48,9 @@
 #include "frombmp.h"
 
 #define SIXEL_BMP_DIB_CORE      12u
+#define SIXEL_BMP_DIB_OS2SHORT16 16u
+#define SIXEL_BMP_DIB_OS2SHORT24 24u
+#define SIXEL_BMP_DIB_OS2SHORT32 32u
 #define SIXEL_BMP_DIB_INFO      40u
 #define SIXEL_BMP_DIB_V2        52u
 #define SIXEL_BMP_DIB_OS2V2     64u
@@ -73,6 +76,13 @@
 
 #define SIXEL_BMP_DIB_FAMILY_WINDOWS SIXEL_FROMBMP_DIB_FAMILY_WINDOWS
 #define SIXEL_BMP_DIB_FAMILY_OS2     SIXEL_FROMBMP_DIB_FAMILY_OS2
+
+#define SIXEL_BMP_INFO40_MODE_AUTO \
+    SIXEL_FROMBMP_INFO40_MODE_AUTO
+#define SIXEL_BMP_INFO40_MODE_WINDOWS \
+    SIXEL_FROMBMP_INFO40_MODE_WINDOWS
+#define SIXEL_BMP_INFO40_MODE_OS2 \
+    SIXEL_FROMBMP_INFO40_MODE_OS2
 
 #define SIXEL_BMP_MAX_PALETTE 256u
 
@@ -353,6 +363,73 @@ sixel_bmp_map_compression(int dib_family,
 
     *compression_out = compression;
     return SIXEL_OK;
+}
+
+static int
+sixel_bmp_dib_has_field(unsigned int dib_size,
+                        unsigned int field_offset,
+                        unsigned int field_size)
+{
+    if (field_size == 0u) {
+        return 0;
+    }
+    if (field_offset > UINT_MAX - field_size) {
+        return 0;
+    }
+    return dib_size >= field_offset + field_size ? 1 : 0;
+}
+
+static int
+sixel_bmp_normalize_info40_mode(int info40_mode)
+{
+    if (info40_mode == SIXEL_BMP_INFO40_MODE_WINDOWS ||
+        info40_mode == SIXEL_BMP_INFO40_MODE_OS2) {
+        return info40_mode;
+    }
+    return SIXEL_BMP_INFO40_MODE_AUTO;
+}
+
+static int
+sixel_bmp_info40_is_os2_candidate(unsigned char const *buffer,
+                                  size_t size,
+                                  size_t pixel_offset,
+                                  unsigned int bpp,
+                                  unsigned int compression_raw,
+                                  int info40_mode)
+{
+    int normalized_mode;
+
+    normalized_mode = SIXEL_BMP_INFO40_MODE_AUTO;
+    if (buffer == NULL) {
+        return 0;
+    }
+    normalized_mode = sixel_bmp_normalize_info40_mode(info40_mode);
+    if (normalized_mode == SIXEL_BMP_INFO40_MODE_WINDOWS) {
+        return 0;
+    }
+    if (normalized_mode == SIXEL_BMP_INFO40_MODE_OS2) {
+        return 1;
+    }
+
+    /*
+     * Auto mode keeps Windows semantics unless the tuple matches an
+     * OS/2-only compression usage.
+     */
+    if (compression_raw == 3u && bpp == 1u) {
+        return 1;
+    }
+    if (compression_raw == 4u && bpp == 24u) {
+        if (pixel_offset > size || size - pixel_offset < 2u) {
+            return 1;
+        }
+        if (buffer[pixel_offset] == 0xffu &&
+            buffer[pixel_offset + 1u] == 0xd8u) {
+            return 0;
+        }
+        return 1;
+    }
+
+    return 0;
 }
 
 static int
@@ -795,7 +872,8 @@ sixel_bmp_parse_v5_embedded_profile(
 
 static SIXELSTATUS
 sixel_bmp_parse_header(sixel_chunk_t const *chunk,
-                       sixel_bmp_decode_info_t *info)
+                       sixel_bmp_decode_info_t *info,
+                       int info40_mode)
 {
     unsigned char const *buffer;
     size_t size;
@@ -863,6 +941,9 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
         return sixel_bmp_fail("builtin BMP: malformed header fields");
     }
     if (dib_size != SIXEL_BMP_DIB_CORE &&
+        dib_size != SIXEL_BMP_DIB_OS2SHORT16 &&
+        dib_size != SIXEL_BMP_DIB_OS2SHORT24 &&
+        dib_size != SIXEL_BMP_DIB_OS2SHORT32 &&
         dib_size != SIXEL_BMP_DIB_INFO &&
         dib_size != SIXEL_BMP_DIB_V2 &&
         dib_size != SIXEL_BMP_DIB_OS2V2 &&
@@ -903,9 +984,21 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
             return sixel_bmp_fail("builtin BMP: malformed INFO dimensions");
         }
         if (!sixel_bmp_read_u16le(buffer, size, 26u, &planes) ||
-            !sixel_bmp_read_u16le(buffer, size, 28u, &bpp) ||
-            !sixel_bmp_read_u32le(buffer, size, 30u, &compression_raw) ||
-            !sixel_bmp_read_u32le(buffer, size, 34u, &image_size_u32) ||
+            !sixel_bmp_read_u16le(buffer, size, 28u, &bpp)) {
+            return sixel_bmp_fail("builtin BMP: malformed INFO fields");
+        }
+        compression_raw = 0u;
+        image_size_u32 = 0u;
+        colors_used = 0u;
+        if (sixel_bmp_dib_has_field(dib_size, 16u, 4u) &&
+            !sixel_bmp_read_u32le(buffer, size, 30u, &compression_raw)) {
+            return sixel_bmp_fail("builtin BMP: malformed INFO fields");
+        }
+        if (sixel_bmp_dib_has_field(dib_size, 20u, 4u) &&
+            !sixel_bmp_read_u32le(buffer, size, 34u, &image_size_u32)) {
+            return sixel_bmp_fail("builtin BMP: malformed INFO fields");
+        }
+        if (sixel_bmp_dib_has_field(dib_size, 32u, 4u) &&
             !sixel_bmp_read_u32le(buffer, size, 46u, &colors_used)) {
             return sixel_bmp_fail("builtin BMP: malformed INFO fields");
         }
@@ -916,7 +1009,19 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
         info->width = width_s32;
         info->height = height_s32 < 0 ? -height_s32 : height_s32;
         palette_entry_size = 4u;
-        if (dib_size == SIXEL_BMP_DIB_OS2V2) {
+        if (dib_size == SIXEL_BMP_DIB_OS2V2 ||
+            dib_size == SIXEL_BMP_DIB_OS2SHORT16 ||
+            dib_size == SIXEL_BMP_DIB_OS2SHORT24 ||
+            dib_size == SIXEL_BMP_DIB_OS2SHORT32) {
+            dib_family = SIXEL_BMP_DIB_FAMILY_OS2;
+        } else if (dib_size == SIXEL_BMP_DIB_INFO &&
+                   sixel_bmp_info40_is_os2_candidate(
+                       buffer,
+                       size,
+                       (size_t)pixel_offset_u32,
+                       bpp,
+                       compression_raw,
+                       info40_mode)) {
             dib_family = SIXEL_BMP_DIB_FAMILY_OS2;
         } else {
             dib_family = SIXEL_BMP_DIB_FAMILY_WINDOWS;
@@ -2436,7 +2541,8 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
                    int *pcomp,
                    int *pis_cmyk,
                    unsigned char const **picc_profile,
-                   size_t *picc_profile_length)
+                   size_t *picc_profile_length,
+                   int info40_mode)
 {
     SIXELSTATUS status;
     sixel_bmp_decode_info_t info;
@@ -2473,7 +2579,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
         *picc_profile_length = 0u;
     }
 
-    status = sixel_bmp_parse_header(chunk, &info);
+    status = sixel_bmp_parse_header(chunk, &info, info40_mode);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -2589,7 +2695,8 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
 SIXELSTATUS
 sixel_frombmp_probe(
     sixel_chunk_t const *chunk,
-    sixel_frombmp_probe_t *probe)
+    sixel_frombmp_probe_t *probe,
+    int info40_mode)
 {
     SIXELSTATUS status;
     sixel_bmp_decode_info_t info;
@@ -2601,7 +2708,7 @@ sixel_frombmp_probe(
     }
 
     memset(probe, 0, sizeof(*probe));
-    status = sixel_bmp_parse_header(chunk, &info);
+    status = sixel_bmp_parse_header(chunk, &info, info40_mode);
     if (SIXEL_FAILED(status)) {
         return status;
     }
