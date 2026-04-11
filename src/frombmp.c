@@ -52,13 +52,27 @@
 #define SIXEL_BMP_DIB_V3        56u
 #define SIXEL_BMP_DIB_V4        108u
 #define SIXEL_BMP_DIB_V5        124u
+#define SIXEL_BMP_FILE_HEADER_SIZE 14u
 
-#define SIXEL_BMP_COMPRESSION_RGB       0u
-#define SIXEL_BMP_COMPRESSION_RLE8      1u
-#define SIXEL_BMP_COMPRESSION_RLE4      2u
-#define SIXEL_BMP_COMPRESSION_BITFIELDS 3u
+#define SIXEL_BMP_COMPRESSION_RGB       SIXEL_FROMBMP_COMPRESSION_RGB
+#define SIXEL_BMP_COMPRESSION_RLE8      SIXEL_FROMBMP_COMPRESSION_RLE8
+#define SIXEL_BMP_COMPRESSION_RLE4      SIXEL_FROMBMP_COMPRESSION_RLE4
+#define SIXEL_BMP_COMPRESSION_BITFIELDS SIXEL_FROMBMP_COMPRESSION_BITFIELDS
+#define SIXEL_BMP_COMPRESSION_JPEG      SIXEL_FROMBMP_COMPRESSION_JPEG
+#define SIXEL_BMP_COMPRESSION_PNG       SIXEL_FROMBMP_COMPRESSION_PNG
+#define SIXEL_BMP_COMPRESSION_ALPHABITFIELDS \
+    SIXEL_FROMBMP_COMPRESSION_ALPHABITFIELDS
+#define SIXEL_BMP_COMPRESSION_CMYK      SIXEL_FROMBMP_COMPRESSION_CMYK
 
 #define SIXEL_BMP_MAX_PALETTE 256u
+
+#define SIXEL_BMP_V5_CSTYPE_OFFSET        56u
+#define SIXEL_BMP_V4_ENDPOINTS_OFFSET     60u
+#define SIXEL_BMP_V4_GAMMA_RED_OFFSET     96u
+#define SIXEL_BMP_V4_GAMMA_GREEN_OFFSET  100u
+#define SIXEL_BMP_V4_GAMMA_BLUE_OFFSET   104u
+#define SIXEL_BMP_V5_PROFILE_DATA_OFFSET 112u
+#define SIXEL_BMP_V5_PROFILE_SIZE_OFFSET 116u
 
 typedef struct sixel_bmp_decode_info {
     sixel_chunk_t const *chunk;
@@ -66,6 +80,7 @@ typedef struct sixel_bmp_decode_info {
     int height;
     int top_down;
     int bpp;
+    int is_cmyk;
     unsigned int compression;
     unsigned int red_mask;
     unsigned int green_mask;
@@ -75,7 +90,21 @@ typedef struct sixel_bmp_decode_info {
     int palette_count;
     unsigned char palette[SIXEL_BMP_MAX_PALETTE][4];
     size_t pixel_offset;
+    size_t payload_size;
     size_t row_stride;
+    unsigned char const *payload;
+    unsigned char const *icc_profile;
+    size_t icc_profile_length;
+    int has_calibrated_rgb;
+    double calibrated_gamma;
+    double white_x;
+    double white_y;
+    double red_x;
+    double red_y;
+    double green_x;
+    double green_y;
+    double blue_x;
+    double blue_y;
 } sixel_bmp_decode_info_t;
 
 static SIXELSTATUS
@@ -134,6 +163,73 @@ sixel_bmp_read_s32le(unsigned char const *buffer,
     }
     /* Keep the two's-complement bit pattern when decoding signed fields. */
     *value = (int)(int32_t)u32;
+    return 1;
+}
+
+static int
+sixel_bmp_read_fxpt2dot30(unsigned char const *buffer,
+                          size_t size,
+                          size_t offset,
+                          double *value)
+{
+    int signed_value;
+
+    signed_value = 0;
+    if (value == NULL) {
+        return 0;
+    }
+    if (!sixel_bmp_read_s32le(buffer, size, offset, &signed_value)) {
+        return 0;
+    }
+    *value = (double)signed_value / 1073741824.0;
+    return 1;
+}
+
+static int
+sixel_bmp_read_u16dot16(unsigned char const *buffer,
+                        size_t size,
+                        size_t offset,
+                        double *value)
+{
+    unsigned int u32_value;
+
+    u32_value = 0u;
+    if (value == NULL) {
+        return 0;
+    }
+    if (!sixel_bmp_read_u32le(buffer, size, offset, &u32_value)) {
+        return 0;
+    }
+    *value = (double)u32_value / 65536.0;
+    return 1;
+}
+
+static int
+sixel_bmp_xyz_to_xy(double x,
+                    double y,
+                    double z,
+                    double *x_out,
+                    double *y_out)
+{
+    double sum;
+
+    sum = 0.0;
+    if (x_out == NULL || y_out == NULL) {
+        return 0;
+    }
+
+    sum = x + y + z;
+    if (sum <= 0.0) {
+        return 0;
+    }
+
+    *x_out = x / sum;
+    *y_out = y / sum;
+    if (*x_out <= 0.0 || *x_out >= 1.0 ||
+        *y_out <= 0.0 || *y_out >= 1.0 ||
+        *x_out + *y_out >= 1.0) {
+        return 0;
+    }
     return 1;
 }
 
@@ -211,6 +307,63 @@ sixel_bmp_set_default_masks(sixel_bmp_decode_info_t *info)
     }
 }
 
+static int
+sixel_bmp_is_compressed_payload(unsigned int compression)
+{
+    return compression == SIXEL_BMP_COMPRESSION_JPEG ||
+        compression == SIXEL_BMP_COMPRESSION_PNG;
+}
+
+static int
+sixel_bmp_uses_palette(unsigned int compression, unsigned int bpp)
+{
+    if (compression == SIXEL_BMP_COMPRESSION_RGB ||
+        compression == SIXEL_BMP_COMPRESSION_RLE8 ||
+        compression == SIXEL_BMP_COMPRESSION_RLE4) {
+        return bpp < 16u;
+    }
+    return 0;
+}
+
+static SIXELSTATUS
+sixel_bmp_validate_compressed_payload(sixel_bmp_decode_info_t const *info)
+{
+    static unsigned char const png_signature[8] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
+    unsigned char const *payload;
+    size_t payload_size;
+
+    payload = NULL;
+    payload_size = 0u;
+    if (info == NULL || info->payload == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    payload = info->payload;
+    payload_size = info->payload_size;
+    if (payload_size == 0u) {
+        return sixel_bmp_fail("builtin BMP: compressed payload is empty");
+    }
+
+    if (info->compression == SIXEL_BMP_COMPRESSION_JPEG) {
+        if (payload_size < 2u ||
+            payload[0] != 0xffu ||
+            payload[1] != 0xd8u) {
+            return sixel_bmp_fail("builtin BMP: invalid JPEG payload");
+        }
+        return SIXEL_OK;
+    }
+    if (info->compression == SIXEL_BMP_COMPRESSION_PNG) {
+        if (payload_size < sizeof(png_signature) ||
+            memcmp(payload, png_signature, sizeof(png_signature)) != 0) {
+            return sixel_bmp_fail("builtin BMP: invalid PNG payload");
+        }
+        return SIXEL_OK;
+    }
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 sixel_bmp_compute_row_stride(int width, int bpp, size_t *row_stride)
 {
@@ -286,6 +439,252 @@ sixel_bmp_parse_palette(sixel_bmp_decode_info_t *info,
 }
 
 static SIXELSTATUS
+sixel_bmp_parse_calibrated_v4v5(
+    sixel_bmp_decode_info_t *info,
+    unsigned char const *buffer,
+    size_t size)
+{
+    static unsigned char const calibrated_signature[4] = {
+        0x00u, 0x00u, 0x00u, 0x00u
+    };
+    size_t dib_offset;
+    unsigned char const *cs_type;
+    double red_x;
+    double red_y;
+    double red_z;
+    double green_x;
+    double green_y;
+    double green_z;
+    double blue_x;
+    double blue_y;
+    double blue_z;
+    double white_xyz_x;
+    double white_xyz_y;
+    double white_xyz_z;
+    double red_xy_x;
+    double red_xy_y;
+    double green_xy_x;
+    double green_xy_y;
+    double blue_xy_x;
+    double blue_xy_y;
+    double white_xy_x;
+    double white_xy_y;
+    double gamma_r;
+    double gamma_g;
+    double gamma_b;
+    double gamma_avg;
+
+    dib_offset = 0u;
+    cs_type = NULL;
+    red_x = 0.0;
+    red_y = 0.0;
+    red_z = 0.0;
+    green_x = 0.0;
+    green_y = 0.0;
+    green_z = 0.0;
+    blue_x = 0.0;
+    blue_y = 0.0;
+    blue_z = 0.0;
+    white_xyz_x = 0.0;
+    white_xyz_y = 0.0;
+    white_xyz_z = 0.0;
+    red_xy_x = 0.0;
+    red_xy_y = 0.0;
+    green_xy_x = 0.0;
+    green_xy_y = 0.0;
+    blue_xy_x = 0.0;
+    blue_xy_y = 0.0;
+    white_xy_x = 0.0;
+    white_xy_y = 0.0;
+    gamma_r = 0.0;
+    gamma_g = 0.0;
+    gamma_b = 0.0;
+    gamma_avg = 0.0;
+    if (info == NULL || buffer == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    dib_offset = SIXEL_BMP_FILE_HEADER_SIZE;
+    cs_type = buffer + dib_offset + SIXEL_BMP_V5_CSTYPE_OFFSET;
+    if (memcmp(cs_type, calibrated_signature, 4u) != 0) {
+        return SIXEL_OK;
+    }
+
+    if (!sixel_bmp_read_fxpt2dot30(
+            buffer,
+            size,
+            dib_offset + SIXEL_BMP_V4_ENDPOINTS_OFFSET + 0u,
+            &red_x) ||
+        !sixel_bmp_read_fxpt2dot30(
+            buffer,
+            size,
+            dib_offset + SIXEL_BMP_V4_ENDPOINTS_OFFSET + 4u,
+            &red_y) ||
+        !sixel_bmp_read_fxpt2dot30(
+            buffer,
+            size,
+            dib_offset + SIXEL_BMP_V4_ENDPOINTS_OFFSET + 8u,
+            &red_z) ||
+        !sixel_bmp_read_fxpt2dot30(
+            buffer,
+            size,
+            dib_offset + SIXEL_BMP_V4_ENDPOINTS_OFFSET + 12u,
+            &green_x) ||
+        !sixel_bmp_read_fxpt2dot30(
+            buffer,
+            size,
+            dib_offset + SIXEL_BMP_V4_ENDPOINTS_OFFSET + 16u,
+            &green_y) ||
+        !sixel_bmp_read_fxpt2dot30(
+            buffer,
+            size,
+            dib_offset + SIXEL_BMP_V4_ENDPOINTS_OFFSET + 20u,
+            &green_z) ||
+        !sixel_bmp_read_fxpt2dot30(
+            buffer,
+            size,
+            dib_offset + SIXEL_BMP_V4_ENDPOINTS_OFFSET + 24u,
+            &blue_x) ||
+        !sixel_bmp_read_fxpt2dot30(
+            buffer,
+            size,
+            dib_offset + SIXEL_BMP_V4_ENDPOINTS_OFFSET + 28u,
+            &blue_y) ||
+        !sixel_bmp_read_fxpt2dot30(
+            buffer,
+            size,
+            dib_offset + SIXEL_BMP_V4_ENDPOINTS_OFFSET + 32u,
+            &blue_z) ||
+        !sixel_bmp_read_u16dot16(
+            buffer,
+            size,
+            dib_offset + SIXEL_BMP_V4_GAMMA_RED_OFFSET,
+            &gamma_r) ||
+        !sixel_bmp_read_u16dot16(
+            buffer,
+            size,
+            dib_offset + SIXEL_BMP_V4_GAMMA_GREEN_OFFSET,
+            &gamma_g) ||
+        !sixel_bmp_read_u16dot16(
+            buffer,
+            size,
+            dib_offset + SIXEL_BMP_V4_GAMMA_BLUE_OFFSET,
+            &gamma_b)) {
+        return sixel_bmp_fail("builtin BMP: malformed calibrated RGB fields");
+    }
+
+    white_xyz_x = red_x + green_x + blue_x;
+    white_xyz_y = red_y + green_y + blue_y;
+    white_xyz_z = red_z + green_z + blue_z;
+    if (!sixel_bmp_xyz_to_xy(red_x, red_y, red_z, &red_xy_x, &red_xy_y) ||
+        !sixel_bmp_xyz_to_xy(green_x,
+                             green_y,
+                             green_z,
+                             &green_xy_x,
+                             &green_xy_y) ||
+        !sixel_bmp_xyz_to_xy(blue_x,
+                             blue_y,
+                             blue_z,
+                             &blue_xy_x,
+                             &blue_xy_y) ||
+        !sixel_bmp_xyz_to_xy(white_xyz_x,
+                             white_xyz_y,
+                             white_xyz_z,
+                             &white_xy_x,
+                             &white_xy_y)) {
+        return SIXEL_OK;
+    }
+    if (gamma_r <= 0.0 || gamma_g <= 0.0 || gamma_b <= 0.0) {
+        return SIXEL_OK;
+    }
+
+    /*
+     * cms.c profile synthesis takes a single gamma value for RGB.
+     * Use the channel average when calibrated gamma is available.
+     */
+    gamma_avg = (gamma_r + gamma_g + gamma_b) / 3.0;
+    if (gamma_avg <= 0.0) {
+        return SIXEL_OK;
+    }
+
+    info->has_calibrated_rgb = 1;
+    info->calibrated_gamma = gamma_avg;
+    info->white_x = white_xy_x;
+    info->white_y = white_xy_y;
+    info->red_x = red_xy_x;
+    info->red_y = red_xy_y;
+    info->green_x = green_xy_x;
+    info->green_y = green_xy_y;
+    info->blue_x = blue_xy_x;
+    info->blue_y = blue_xy_y;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_bmp_parse_v5_embedded_profile(
+    sixel_bmp_decode_info_t *info,
+    unsigned char const *buffer,
+    size_t size)
+{
+    size_t dib_offset;
+    unsigned char const *cs_type;
+    unsigned int profile_data_u32;
+    unsigned int profile_size_u32;
+    size_t profile_offset;
+    size_t profile_size;
+
+    dib_offset = 0u;
+    cs_type = NULL;
+    profile_data_u32 = 0u;
+    profile_size_u32 = 0u;
+    profile_offset = 0u;
+    profile_size = 0u;
+    if (info == NULL || buffer == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    dib_offset = SIXEL_BMP_FILE_HEADER_SIZE;
+    cs_type = buffer + dib_offset + SIXEL_BMP_V5_CSTYPE_OFFSET;
+    if (memcmp(cs_type, "MBED", 4u) != 0) {
+        /*
+         * PROFILE_LINKED and other CSType values are not interpreted in the
+         * builtin BMP path. Decode pixels and continue without ICC.
+         */
+        return SIXEL_OK;
+    }
+
+    if (!sixel_bmp_read_u32le(buffer,
+                              size,
+                              dib_offset + SIXEL_BMP_V5_PROFILE_DATA_OFFSET,
+                              &profile_data_u32) ||
+        !sixel_bmp_read_u32le(buffer,
+                              size,
+                              dib_offset + SIXEL_BMP_V5_PROFILE_SIZE_OFFSET,
+                              &profile_size_u32)) {
+        return sixel_bmp_fail("builtin BMP: malformed V5 profile fields");
+    }
+    if (profile_size_u32 == 0u) {
+        return sixel_bmp_fail("builtin BMP: invalid embedded ICC size");
+    }
+
+    /*
+     * BITMAPV5HEADER stores profile offsets from the beginning of the DIB
+     * header in file-backed BMP streams.
+     */
+    profile_offset = dib_offset + (size_t)profile_data_u32;
+    profile_size = (size_t)profile_size_u32;
+    if (profile_offset < dib_offset ||
+        profile_offset > size ||
+        profile_size > size - profile_offset) {
+        return sixel_bmp_fail("builtin BMP: embedded ICC range is invalid");
+    }
+
+    info->icc_profile = buffer + profile_offset;
+    info->icc_profile_length = profile_size;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_bmp_parse_header(sixel_chunk_t const *chunk,
                        sixel_bmp_decode_info_t *info)
 {
@@ -297,6 +696,7 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
     unsigned int planes;
     unsigned int bpp;
     unsigned int compression;
+    unsigned int image_size_u32;
     unsigned int colors_used;
     int width_s32;
     int height_s32;
@@ -305,6 +705,7 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
     size_t palette_entry_size;
     size_t max_palette_entries;
     size_t mask_offset;
+    size_t payload_size;
     SIXELSTATUS status;
 
     buffer = NULL;
@@ -315,6 +716,7 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
     planes = 0u;
     bpp = 0u;
     compression = 0u;
+    image_size_u32 = 0u;
     colors_used = 0u;
     width_s32 = 0;
     height_s32 = 0;
@@ -323,15 +725,13 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
     palette_entry_size = 0u;
     max_palette_entries = 0u;
     mask_offset = 0u;
+    payload_size = 0u;
     status = SIXEL_OK;
     if (chunk == NULL || info == NULL || chunk->buffer == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    /*
-     * Parse only fields required for pixel reconstruction.
-     * V4/V5 color-management metadata is intentionally ignored here.
-     */
+    /* Parse only fields required for pixel reconstruction. */
     memset(info, 0, sizeof(*info));
     info->chunk = chunk;
     buffer = chunk->buffer;
@@ -375,6 +775,7 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
             return sixel_bmp_fail("builtin BMP: malformed CORE fields");
         }
         compression = SIXEL_BMP_COMPRESSION_RGB;
+        image_size_u32 = 0u;
         colors_used = 0u;
         info->top_down = 0;
         palette_entry_size = 3u;
@@ -386,6 +787,7 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
         if (!sixel_bmp_read_u16le(buffer, size, 26u, &planes) ||
             !sixel_bmp_read_u16le(buffer, size, 28u, &bpp) ||
             !sixel_bmp_read_u32le(buffer, size, 30u, &compression) ||
+            !sixel_bmp_read_u32le(buffer, size, 34u, &image_size_u32) ||
             !sixel_bmp_read_u32le(buffer, size, 46u, &colors_used)) {
             return sixel_bmp_fail("builtin BMP: malformed INFO fields");
         }
@@ -404,16 +806,20 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
     if (planes != 1u) {
         return sixel_bmp_fail("builtin BMP: unsupported plane count");
     }
-    if (bpp != 1u && bpp != 4u && bpp != 8u &&
-        bpp != 16u && bpp != 24u && bpp != 32u) {
-        return sixel_bmp_fail("builtin BMP: unsupported bit depth");
-    }
-
     if (compression != SIXEL_BMP_COMPRESSION_RGB &&
         compression != SIXEL_BMP_COMPRESSION_RLE8 &&
         compression != SIXEL_BMP_COMPRESSION_RLE4 &&
-        compression != SIXEL_BMP_COMPRESSION_BITFIELDS) {
+        compression != SIXEL_BMP_COMPRESSION_BITFIELDS &&
+        compression != SIXEL_BMP_COMPRESSION_ALPHABITFIELDS &&
+        compression != SIXEL_BMP_COMPRESSION_JPEG &&
+        compression != SIXEL_BMP_COMPRESSION_PNG &&
+        compression != SIXEL_BMP_COMPRESSION_CMYK) {
         return sixel_bmp_fail("builtin BMP: unsupported compression mode");
+    }
+    if (!sixel_bmp_is_compressed_payload(compression) &&
+        bpp != 1u && bpp != 4u && bpp != 8u &&
+        bpp != 16u && bpp != 24u && bpp != 32u) {
+        return sixel_bmp_fail("builtin BMP: unsupported bit depth");
     }
     if (compression == SIXEL_BMP_COMPRESSION_RLE8 && bpp != 8u) {
         return sixel_bmp_fail("builtin BMP: RLE8 requires 8bpp");
@@ -426,15 +832,47 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
         return sixel_bmp_fail(
             "builtin BMP: BI_BITFIELDS requires 16/32bpp");
     }
+    if (compression == SIXEL_BMP_COMPRESSION_ALPHABITFIELDS &&
+        bpp != 16u && bpp != 32u) {
+        return sixel_bmp_fail(
+            "builtin BMP: BI_ALPHABITFIELDS requires 16/32bpp");
+    }
+    if (compression == SIXEL_BMP_COMPRESSION_CMYK &&
+        bpp != 32u) {
+        return sixel_bmp_fail("builtin BMP: BI_CMYK requires 32bpp");
+    }
 
     info->bpp = (int)bpp;
+    info->is_cmyk = compression == SIXEL_BMP_COMPRESSION_CMYK ? 1 : 0;
     info->compression = compression;
     info->pixel_offset = (size_t)pixel_offset_u32;
+    info->payload = buffer + info->pixel_offset;
+    if (sixel_bmp_is_compressed_payload(compression)) {
+        if (image_size_u32 != 0u) {
+            payload_size = (size_t)image_size_u32;
+            if (payload_size > size - info->pixel_offset) {
+                return sixel_bmp_fail(
+                    "builtin BMP: compressed payload range is invalid");
+            }
+        } else {
+            payload_size = size - info->pixel_offset;
+        }
+        info->payload_size = payload_size;
+        status = sixel_bmp_validate_compressed_payload(info);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    } else {
+        info->payload_size = 0u;
+    }
 
     sixel_bmp_set_default_masks(info);
-    if (info->bpp == 16 || info->bpp == 32) {
+    if (!sixel_bmp_is_compressed_payload(info->compression) &&
+        info->compression != SIXEL_BMP_COMPRESSION_CMYK &&
+        (info->bpp == 16 || info->bpp == 32)) {
         if (dib_size == SIXEL_BMP_DIB_INFO) {
-            if (compression == SIXEL_BMP_COMPRESSION_BITFIELDS) {
+            if (compression == SIXEL_BMP_COMPRESSION_BITFIELDS ||
+                compression == SIXEL_BMP_COMPRESSION_ALPHABITFIELDS) {
                 mask_offset = 14u + SIXEL_BMP_DIB_INFO;
                 if (!sixel_bmp_read_u32le(buffer, size, mask_offset + 0u,
                                           &info->red_mask) ||
@@ -444,13 +882,22 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
                                           &info->blue_mask)) {
                     return sixel_bmp_fail("builtin BMP: truncated masks");
                 }
-                info->alpha_mask = 0u;
-                if ((size_t)pixel_offset_u32 >= mask_offset + 16u &&
-                    size >= mask_offset + 16u) {
-                    (void)sixel_bmp_read_u32le(buffer,
-                                               size,
-                                               mask_offset + 12u,
-                                               &info->alpha_mask);
+                if (compression == SIXEL_BMP_COMPRESSION_ALPHABITFIELDS) {
+                    if (!sixel_bmp_read_u32le(buffer,
+                                              size,
+                                              mask_offset + 12u,
+                                              &info->alpha_mask)) {
+                        return sixel_bmp_fail("builtin BMP: truncated masks");
+                    }
+                } else {
+                    info->alpha_mask = 0u;
+                    if ((size_t)pixel_offset_u32 >= mask_offset + 16u &&
+                        size >= mask_offset + 16u) {
+                        (void)sixel_bmp_read_u32le(buffer,
+                                                   size,
+                                                   mask_offset + 12u,
+                                                   &info->alpha_mask);
+                    }
                 }
             }
         } else if (dib_size == SIXEL_BMP_DIB_V3 ||
@@ -467,7 +914,8 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
                                       &info->alpha_mask)) {
                 return sixel_bmp_fail("builtin BMP: malformed mask fields");
             }
-            if (compression != SIXEL_BMP_COMPRESSION_BITFIELDS) {
+            if (compression != SIXEL_BMP_COMPRESSION_BITFIELDS &&
+                compression != SIXEL_BMP_COMPRESSION_ALPHABITFIELDS) {
                 sixel_bmp_set_default_masks(info);
             }
         }
@@ -476,10 +924,14 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
             info->blue_mask == 0u) {
             return sixel_bmp_fail("builtin BMP: invalid color masks");
         }
+        if (compression == SIXEL_BMP_COMPRESSION_ALPHABITFIELDS &&
+            info->alpha_mask == 0u) {
+            return sixel_bmp_fail("builtin BMP: invalid alpha mask");
+        }
         info->has_alpha_mask = info->alpha_mask != 0u ? 1 : 0;
     }
 
-    if (info->bpp < 16) {
+    if (sixel_bmp_uses_palette(info->compression, bpp)) {
         palette_offset = 14u + (size_t)dib_size;
         if (palette_offset > (size_t)pixel_offset_u32) {
             return sixel_bmp_fail("builtin BMP: invalid palette offset");
@@ -507,7 +959,9 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
     }
 
     if (info->compression == SIXEL_BMP_COMPRESSION_RGB ||
-        info->compression == SIXEL_BMP_COMPRESSION_BITFIELDS) {
+        info->compression == SIXEL_BMP_COMPRESSION_BITFIELDS ||
+        info->compression == SIXEL_BMP_COMPRESSION_ALPHABITFIELDS ||
+        info->compression == SIXEL_BMP_COMPRESSION_CMYK) {
         status = sixel_bmp_compute_row_stride(info->width,
                                               info->bpp,
                                               &info->row_stride);
@@ -521,6 +975,19 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
             info->row_stride * (size_t)info->height
                 > size - info->pixel_offset) {
             return sixel_bmp_fail("builtin BMP: truncated pixel data");
+        }
+    }
+
+    if (dib_size == SIXEL_BMP_DIB_V4 || dib_size == SIXEL_BMP_DIB_V5) {
+        status = sixel_bmp_parse_calibrated_v4v5(info, buffer, size);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+    if (dib_size == SIXEL_BMP_DIB_V5) {
+        status = sixel_bmp_parse_v5_embedded_profile(info, buffer, size);
+        if (SIXEL_FAILED(status)) {
+            return status;
         }
     }
 
@@ -589,7 +1056,10 @@ sixel_bmp_decode_rle8_indices(sixel_bmp_decode_info_t const *info,
     offset = info->pixel_offset;
     x = 0;
     y = info->top_down ? 0 : info->height - 1;
-    /* RLE stream coordinates move downward for top-down BMP, upward otherwise. */
+    /*
+     * RLE stream coordinates move downward for top-down BMP,
+     * upward otherwise.
+     */
     step = info->top_down ? 1 : -1;
 
     while (offset < size) {
@@ -707,7 +1177,10 @@ sixel_bmp_decode_rle4_indices(sixel_bmp_decode_info_t const *info,
     offset = info->pixel_offset;
     x = 0;
     y = info->top_down ? 0 : info->height - 1;
-    /* RLE stream coordinates move downward for top-down BMP, upward otherwise. */
+    /*
+     * RLE stream coordinates move downward for top-down BMP,
+     * upward otherwise.
+     */
     step = info->top_down ? 1 : -1;
 
     while (offset < size) {
@@ -923,6 +1396,45 @@ sixel_bmp_decode_indexed_rle(sixel_bmp_decode_info_t const *info,
     return status;
 }
 
+static SIXELSTATUS
+sixel_bmp_decode_cmyk(sixel_bmp_decode_info_t const *info,
+                      unsigned char *pixels)
+{
+    unsigned char const *buffer;
+    size_t row_offset;
+    size_t source_row;
+    size_t x;
+    size_t y;
+    size_t dst_offset;
+    size_t src_offset;
+
+    buffer = NULL;
+    row_offset = 0u;
+    source_row = 0u;
+    x = 0u;
+    y = 0u;
+    dst_offset = 0u;
+    src_offset = 0u;
+    if (info == NULL || pixels == NULL || info->chunk == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    buffer = info->chunk->buffer;
+    for (y = 0u; y < (size_t)info->height; ++y) {
+        source_row = info->top_down ? y : (size_t)info->height - 1u - y;
+        row_offset = info->pixel_offset + source_row * info->row_stride;
+        for (x = 0u; x < (size_t)info->width; ++x) {
+            src_offset = row_offset + x * 4u;
+            dst_offset = (y * (size_t)info->width + x) * 4u;
+            pixels[dst_offset + 0u] = buffer[src_offset + 0u];
+            pixels[dst_offset + 1u] = buffer[src_offset + 1u];
+            pixels[dst_offset + 2u] = buffer[src_offset + 2u];
+            pixels[dst_offset + 3u] = buffer[src_offset + 3u];
+        }
+    }
+    return SIXEL_OK;
+}
+
 static void
 sixel_bmp_drop_alpha_inplace(unsigned char *pixels, size_t pixel_count)
 {
@@ -1091,7 +1603,10 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
                    unsigned char **ppixels,
                    int *pwidth,
                    int *pheight,
-                   int *pcomp)
+                   int *pcomp,
+                   int *pis_cmyk,
+                   unsigned char const **picc_profile,
+                   size_t *picc_profile_length)
 {
     SIXELSTATUS status;
     sixel_bmp_decode_info_t info;
@@ -1111,6 +1626,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
         pwidth == NULL ||
         pheight == NULL ||
         pcomp == NULL ||
+        pis_cmyk == NULL ||
         chunk->allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1119,17 +1635,44 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
     *pwidth = 0;
     *pheight = 0;
     *pcomp = 0;
+    *pis_cmyk = 0;
+    if (picc_profile != NULL) {
+        *picc_profile = NULL;
+    }
+    if (picc_profile_length != NULL) {
+        *picc_profile_length = 0u;
+    }
 
     status = sixel_bmp_parse_header(chunk, &info);
     if (SIXEL_FAILED(status)) {
         return status;
+    }
+    if (sixel_bmp_is_compressed_payload(info.compression)) {
+        return sixel_bmp_fail(
+            "builtin BMP: compressed payload requires probe decode path");
     }
     if ((size_t)info.width > SIZE_MAX / (size_t)info.height) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
 
     pixel_count = (size_t)info.width * (size_t)info.height;
-    if (info.bpp < 16) {
+    if (info.is_cmyk != 0) {
+        comp = 4;
+        if (pixel_count > SIZE_MAX / 4u) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+        buffer_size = pixel_count * 4u;
+        pixels = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+                                                         buffer_size);
+        if (pixels == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        status = sixel_bmp_decode_cmyk(&info, pixels);
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(chunk->allocator, pixels);
+            return status;
+        }
+    } else if (info.bpp < 16) {
         comp = 3;
         if (pixel_count > SIZE_MAX / 3u) {
             return SIXEL_BAD_INTEGER_OVERFLOW;
@@ -1195,6 +1738,55 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
     *pwidth = info.width;
     *pheight = info.height;
     *pcomp = comp;
+    *pis_cmyk = info.is_cmyk;
+    if (picc_profile != NULL) {
+        *picc_profile = info.icc_profile;
+    }
+    if (picc_profile_length != NULL) {
+        *picc_profile_length = info.icc_profile_length;
+    }
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_frombmp_probe(
+    sixel_chunk_t const *chunk,
+    sixel_frombmp_probe_t *probe)
+{
+    SIXELSTATUS status;
+    sixel_bmp_decode_info_t info;
+
+    status = SIXEL_FALSE;
+    memset(&info, 0, sizeof(info));
+    if (chunk == NULL || probe == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    memset(probe, 0, sizeof(*probe));
+    status = sixel_bmp_parse_header(chunk, &info);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    probe->width = info.width;
+    probe->height = info.height;
+    probe->bpp = info.bpp;
+    probe->is_cmyk = info.is_cmyk;
+    probe->compression = info.compression;
+    probe->payload = info.payload;
+    probe->payload_size = info.payload_size;
+    probe->icc_profile = info.icc_profile;
+    probe->icc_profile_length = info.icc_profile_length;
+    probe->has_calibrated_rgb = info.has_calibrated_rgb;
+    probe->calibrated_gamma = info.calibrated_gamma;
+    probe->white_x = info.white_x;
+    probe->white_y = info.white_y;
+    probe->red_x = info.red_x;
+    probe->red_y = info.red_y;
+    probe->green_x = info.green_x;
+    probe->green_y = info.green_y;
+    probe->blue_x = info.blue_x;
+    probe->blue_y = info.blue_y;
     return SIXEL_OK;
 }
 

@@ -1144,6 +1144,414 @@ end:
     return status;
 }
 
+static int
+sixel_builtin_apply_bmp_icc_to_rgba_channels(
+    sixel_frame_t *frame,
+    unsigned char const *icc_profile,
+    size_t icc_profile_length)
+{
+    unsigned char *rgb_pixels;
+    size_t pixel_count;
+    size_t rgb_size;
+    size_t index;
+    int converted;
+
+    rgb_pixels = NULL;
+    pixel_count = 0u;
+    rgb_size = 0u;
+    index = 0u;
+    converted = 0;
+    if (frame == NULL ||
+        frame->pixels.u8ptr == NULL ||
+        frame->allocator == NULL ||
+        frame->width <= 0 ||
+        frame->height <= 0 ||
+        icc_profile == NULL ||
+        icc_profile_length == 0u) {
+        return 0;
+    }
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return 0;
+    }
+
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
+    if (pixel_count > SIZE_MAX / 3u) {
+        return 0;
+    }
+    rgb_size = pixel_count * 3u;
+    rgb_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
+                                                         rgb_size);
+    if (rgb_pixels == NULL) {
+        loader_trace_message(
+            "builtin BMP: skipping embedded ICC conversion "
+            "(temporary RGB allocation failed)");
+        return 0;
+    }
+
+    for (index = 0u; index < pixel_count; ++index) {
+        rgb_pixels[index * 3u + 0u] = frame->pixels.u8ptr[index * 4u + 0u];
+        rgb_pixels[index * 3u + 1u] = frame->pixels.u8ptr[index * 4u + 1u];
+        rgb_pixels[index * 3u + 2u] = frame->pixels.u8ptr[index * 4u + 2u];
+    }
+
+    converted = sixel_cms_convert_to_srgb_with_profile_bytes(
+        rgb_pixels,
+        frame->width,
+        frame->height,
+        SIXEL_PIXELFORMAT_RGB888,
+        icc_profile,
+        icc_profile_length);
+    if (!converted) {
+        loader_trace_message("builtin BMP: embedded ICC conversion failed");
+        sixel_allocator_free(frame->allocator, rgb_pixels);
+        return 0;
+    }
+
+    for (index = 0u; index < pixel_count; ++index) {
+        frame->pixels.u8ptr[index * 4u + 0u] = rgb_pixels[index * 3u + 0u];
+        frame->pixels.u8ptr[index * 4u + 1u] = rgb_pixels[index * 3u + 1u];
+        frame->pixels.u8ptr[index * 4u + 2u] = rgb_pixels[index * 3u + 2u];
+    }
+
+    sixel_allocator_free(frame->allocator, rgb_pixels);
+    return 1;
+}
+
+static int
+sixel_builtin_apply_bmp_calibrated_rgb_to_rgb8(
+    unsigned char *rgb_pixels,
+    int width,
+    int height,
+    sixel_frombmp_probe_t const *bmp_probe)
+{
+    sixel_cms_profile_t *src_profile;
+    int converted;
+
+    src_profile = NULL;
+    converted = 0;
+    if (rgb_pixels == NULL ||
+        width <= 0 ||
+        height <= 0 ||
+        bmp_probe == NULL ||
+        bmp_probe->has_calibrated_rgb == 0) {
+        return 0;
+    }
+
+    src_profile = sixel_cms_create_rgb_profile_from_gamma_chrm(
+        bmp_probe->calibrated_gamma,
+        bmp_probe->white_x,
+        bmp_probe->white_y,
+        bmp_probe->red_x,
+        bmp_probe->red_y,
+        bmp_probe->green_x,
+        bmp_probe->green_y,
+        bmp_probe->blue_x,
+        bmp_probe->blue_y);
+    if (src_profile == NULL) {
+        loader_trace_message(
+            "builtin BMP: calibrated profile creation failed");
+        return 0;
+    }
+
+    converted = sixel_cms_convert_profile_to_srgb(
+        rgb_pixels,
+        width,
+        height,
+        SIXEL_PIXELFORMAT_RGB888,
+        src_profile);
+    sixel_cms_close_profile(src_profile);
+    if (!converted) {
+        loader_trace_message(
+            "builtin BMP: calibrated RGB conversion failed");
+    }
+    return converted;
+}
+
+static int
+sixel_builtin_apply_bmp_calibrated_to_rgba_channels(
+    sixel_frame_t *frame,
+    sixel_frombmp_probe_t const *bmp_probe)
+{
+    unsigned char *rgb_pixels;
+    size_t pixel_count;
+    size_t rgb_size;
+    size_t index;
+    int converted;
+
+    rgb_pixels = NULL;
+    pixel_count = 0u;
+    rgb_size = 0u;
+    index = 0u;
+    converted = 0;
+    if (frame == NULL ||
+        frame->pixels.u8ptr == NULL ||
+        frame->allocator == NULL ||
+        frame->width <= 0 ||
+        frame->height <= 0 ||
+        bmp_probe == NULL ||
+        bmp_probe->has_calibrated_rgb == 0) {
+        return 0;
+    }
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return 0;
+    }
+
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
+    if (pixel_count > SIZE_MAX / 3u) {
+        return 0;
+    }
+    rgb_size = pixel_count * 3u;
+    rgb_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
+                                                         rgb_size);
+    if (rgb_pixels == NULL) {
+        loader_trace_message(
+            "builtin BMP: skipping calibrated conversion "
+            "(temporary RGB allocation failed)");
+        return 0;
+    }
+
+    for (index = 0u; index < pixel_count; ++index) {
+        rgb_pixels[index * 3u + 0u] = frame->pixels.u8ptr[index * 4u + 0u];
+        rgb_pixels[index * 3u + 1u] = frame->pixels.u8ptr[index * 4u + 1u];
+        rgb_pixels[index * 3u + 2u] = frame->pixels.u8ptr[index * 4u + 2u];
+    }
+    converted = sixel_builtin_apply_bmp_calibrated_rgb_to_rgb8(
+        rgb_pixels,
+        frame->width,
+        frame->height,
+        bmp_probe);
+    if (!converted) {
+        sixel_allocator_free(frame->allocator, rgb_pixels);
+        return 0;
+    }
+
+    for (index = 0u; index < pixel_count; ++index) {
+        frame->pixels.u8ptr[index * 4u + 0u] = rgb_pixels[index * 3u + 0u];
+        frame->pixels.u8ptr[index * 4u + 1u] = rgb_pixels[index * 3u + 1u];
+        frame->pixels.u8ptr[index * 4u + 2u] = rgb_pixels[index * 3u + 2u];
+    }
+    sixel_allocator_free(frame->allocator, rgb_pixels);
+    return 1;
+}
+
+static void
+sixel_builtin_bmp_convert_cmyk8_to_rgb8_device(unsigned char *rgb_pixels,
+                                                unsigned char const
+                                                    *cmyk_pixels,
+                                                size_t pixel_count)
+{
+    size_t index;
+    unsigned int c;
+    unsigned int m;
+    unsigned int y;
+    unsigned int k;
+    unsigned int c_term;
+    unsigned int m_term;
+    unsigned int y_term;
+
+    index = 0u;
+    c = 0u;
+    m = 0u;
+    y = 0u;
+    k = 0u;
+    c_term = 0u;
+    m_term = 0u;
+    y_term = 0u;
+    if (rgb_pixels == NULL || cmyk_pixels == NULL) {
+        return;
+    }
+
+    for (index = 0u; index < pixel_count; ++index) {
+        c = (unsigned int)cmyk_pixels[index * 4u + 0u];
+        m = (unsigned int)cmyk_pixels[index * 4u + 1u];
+        y = (unsigned int)cmyk_pixels[index * 4u + 2u];
+        k = (unsigned int)cmyk_pixels[index * 4u + 3u];
+        c_term = (255u - c) * (255u - k);
+        m_term = (255u - m) * (255u - k);
+        y_term = (255u - y) * (255u - k);
+        rgb_pixels[index * 3u + 0u] = (unsigned char)((c_term + 127u) / 255u);
+        rgb_pixels[index * 3u + 1u] = (unsigned char)((m_term + 127u) / 255u);
+        rgb_pixels[index * 3u + 2u] = (unsigned char)((y_term + 127u) / 255u);
+    }
+}
+
+static unsigned char
+sixel_builtin_cms_clamp_unit_to_u8(float value)
+{
+    double unit;
+
+    unit = (double)value;
+    if (!(unit > 0.0)) {
+        return 0u;
+    }
+    if (unit >= 1.0) {
+        return 255u;
+    }
+    return (unsigned char)(unit * 255.0 + 0.5);
+}
+
+static int
+sixel_builtin_bmp_convert_cmyk8_to_rgb8_icc(unsigned char *rgb_pixels,
+                                             unsigned char const *cmyk_pixels,
+                                             size_t pixel_count,
+                                             unsigned char const *icc_profile,
+                                             size_t icc_profile_length)
+{
+    sixel_cms_profile_t *src_profile;
+    sixel_cms_profile_t *dst_profile;
+    sixel_cms_transform_t *transform;
+    float *rgb_float;
+    size_t float_count;
+    size_t float_size;
+    size_t index;
+    int converted;
+
+    src_profile = NULL;
+    dst_profile = NULL;
+    transform = NULL;
+    rgb_float = NULL;
+    float_count = 0u;
+    float_size = 0u;
+    index = 0u;
+    converted = 0;
+    if (rgb_pixels == NULL ||
+        cmyk_pixels == NULL ||
+        pixel_count == 0u ||
+        icc_profile == NULL ||
+        icc_profile_length == 0u) {
+        return 0;
+    }
+    if (pixel_count > SIZE_MAX / 3u) {
+        return 0;
+    }
+    float_count = pixel_count * 3u;
+    if (float_count > SIZE_MAX / sizeof(float)) {
+        return 0;
+    }
+    float_size = float_count * sizeof(float);
+    rgb_float = (float *)malloc(float_size);
+    if (rgb_float == NULL) {
+        return 0;
+    }
+
+    src_profile = sixel_cms_open_profile_from_mem(icc_profile,
+                                                   icc_profile_length);
+    if (src_profile == NULL) {
+        goto cleanup;
+    }
+    dst_profile = sixel_cms_create_srgb_profile();
+    if (dst_profile == NULL) {
+        goto cleanup;
+    }
+    transform = sixel_cms_create_transform(src_profile,
+                                           SIXEL_CMS_PIXELFORMAT_CMYK_8,
+                                           dst_profile,
+                                           SIXEL_CMS_PIXELFORMAT_RGB_F32,
+                                           SIXEL_CMS_TRANSFORM_DEFAULT);
+    if (transform == NULL) {
+        goto cleanup;
+    }
+
+    converted = sixel_cms_do_transform(transform,
+                                       cmyk_pixels,
+                                       rgb_float,
+                                       pixel_count);
+    if (converted) {
+        for (index = 0u; index < pixel_count; ++index) {
+            rgb_pixels[index * 3u + 0u] =
+                sixel_builtin_cms_clamp_unit_to_u8(
+                    rgb_float[index * 3u + 0u]);
+            rgb_pixels[index * 3u + 1u] =
+                sixel_builtin_cms_clamp_unit_to_u8(
+                    rgb_float[index * 3u + 1u]);
+            rgb_pixels[index * 3u + 2u] =
+                sixel_builtin_cms_clamp_unit_to_u8(
+                    rgb_float[index * 3u + 2u]);
+        }
+    }
+
+cleanup:
+    free(rgb_float);
+    sixel_cms_delete_transform(transform);
+    sixel_cms_close_profile(dst_profile);
+    sixel_cms_close_profile(src_profile);
+    if (!converted) {
+        loader_trace_message("builtin BMP: CMYK ICC conversion failed");
+    }
+    return converted;
+}
+
+static int
+sixel_builtin_bmp_has_compressed_payload(unsigned int compression)
+{
+    return compression == SIXEL_FROMBMP_COMPRESSION_JPEG ||
+        compression == SIXEL_FROMBMP_COMPRESSION_PNG;
+}
+
+static int
+sixel_builtin_apply_bmp_png_colorspace_to_rgba_channels(
+    sixel_frame_t *frame,
+    unsigned char const *payload,
+    size_t payload_size)
+{
+    unsigned char *rgb_pixels;
+    size_t pixel_count;
+    size_t rgb_size;
+    size_t index;
+
+    rgb_pixels = NULL;
+    pixel_count = 0u;
+    rgb_size = 0u;
+    index = 0u;
+    if (frame == NULL ||
+        frame->allocator == NULL ||
+        frame->pixels.u8ptr == NULL ||
+        frame->width <= 0 ||
+        frame->height <= 0 ||
+        payload == NULL ||
+        payload_size == 0u) {
+        return 0;
+    }
+    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        return 0;
+    }
+
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
+    if (pixel_count > SIZE_MAX / 3u) {
+        return 0;
+    }
+    rgb_size = pixel_count * 3u;
+    rgb_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
+                                                         rgb_size);
+    if (rgb_pixels == NULL) {
+        loader_trace_message(
+            "builtin BMP: skipping embedded PNG colorspace fallback "
+            "(temporary RGB allocation failed)");
+        return 0;
+    }
+
+    for (index = 0u; index < pixel_count; ++index) {
+        rgb_pixels[index * 3u + 0u] = frame->pixels.u8ptr[index * 4u + 0u];
+        rgb_pixels[index * 3u + 1u] = frame->pixels.u8ptr[index * 4u + 1u];
+        rgb_pixels[index * 3u + 2u] = frame->pixels.u8ptr[index * 4u + 2u];
+    }
+
+    sixel_frompng_apply_colorspace_fallback(rgb_pixels,
+                                            frame->width,
+                                            frame->height,
+                                            payload,
+                                            payload_size,
+                                            frame->allocator);
+    for (index = 0u; index < pixel_count; ++index) {
+        frame->pixels.u8ptr[index * 4u + 0u] = rgb_pixels[index * 3u + 0u];
+        frame->pixels.u8ptr[index * 4u + 1u] = rgb_pixels[index * 3u + 1u];
+        frame->pixels.u8ptr[index * 4u + 2u] = rgb_pixels[index * 3u + 2u];
+    }
+
+    sixel_allocator_free(frame->allocator, rgb_pixels);
+    return 1;
+}
+
 typedef union _fn_pointer {
     sixel_load_image_function fn;
     void *                    p;
@@ -4558,10 +4966,27 @@ sixel_builtin_load_nonpng_rgb8_fallback(
 {
     SIXELSTATUS status;
     unsigned char *pixels;
+    unsigned char *payload_icc_profile;
+    unsigned char const *bmp_icc_profile;
+    unsigned char const *bmp_payload;
+    size_t bmp_icc_profile_length;
+    size_t bmp_payload_size;
+    size_t payload_icc_profile_length;
+    sixel_frombmp_probe_t bmp_probe;
+    sixel_chunk_t payload_chunk;
+    stbi__result_info payload_ri;
     int depth;
+    int payload_depth;
     int req_comp;
     int tga_truecolor_alpha;
     int bmp_comp;
+    int bmp_is_cmyk;
+    int cms_converted;
+    int cmyk_converted;
+    int target_pixelformat;
+    size_t pixel_count;
+    size_t rgb_size;
+    unsigned char *rgb_pixels;
     int nwrite;
     char message[80];
 #if HAVE_LCMS2
@@ -4570,10 +4995,27 @@ sixel_builtin_load_nonpng_rgb8_fallback(
 
     status = SIXEL_OK;
     pixels = NULL;
+    payload_icc_profile = NULL;
+    bmp_icc_profile = NULL;
+    bmp_payload = NULL;
+    bmp_icc_profile_length = 0u;
+    bmp_payload_size = 0u;
+    payload_icc_profile_length = 0u;
+    memset(&bmp_probe, 0, sizeof(bmp_probe));
+    memset(&payload_chunk, 0, sizeof(payload_chunk));
+    payload_ri = (stbi__result_info){ 0 };
     depth = 0;
+    payload_depth = 0;
     req_comp = 3;
     tga_truecolor_alpha = 0;
     bmp_comp = 0;
+    bmp_is_cmyk = 0;
+    cms_converted = 0;
+    cmyk_converted = 0;
+    target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    pixel_count = 0u;
+    rgb_size = 0u;
+    rgb_pixels = NULL;
     nwrite = 0;
     message[0] = '\0';
 #if HAVE_LCMS2
@@ -4589,28 +5031,201 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     if (icc_profile == NULL || icc_profile_length == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-#else
-    (void)enable_cms;
 #endif
     if (chunk_is_bmp(chunk)) {
+        status = sixel_frombmp_probe(chunk, &bmp_probe);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (sixel_builtin_bmp_has_compressed_payload(bmp_probe.compression)) {
+            bmp_payload = bmp_probe.payload;
+            bmp_payload_size = bmp_probe.payload_size;
+            if (bmp_payload == NULL ||
+                bmp_payload_size == 0u ||
+                bmp_payload_size > (size_t)INT_MAX) {
+                sixel_helper_set_additional_message(
+                    "builtin BMP: compressed payload range is invalid");
+                return SIXEL_STBI_ERROR;
+            }
+
+            payload_chunk.buffer = (unsigned char *)bmp_payload;
+            payload_chunk.size = bmp_payload_size;
+            payload_chunk.max_size = bmp_payload_size;
+            payload_chunk.allocator = chunk->allocator;
+
+            if (bmp_probe.compression == SIXEL_FROMBMP_COMPRESSION_JPEG) {
+                stbi__start_mem(stb_context,
+                                payload_chunk.buffer,
+                                (int)payload_chunk.size);
+                status = sixel_builtin_load_jpeg_float32(
+                    &payload_chunk,
+                    frame,
+                    stb_context,
+                    &payload_ri,
+                    enable_cms,
+                    &payload_icc_profile,
+                    &payload_icc_profile_length);
+                sixel_allocator_free(chunk->allocator, payload_icc_profile);
+                return status;
+            }
+            if (bmp_probe.compression == SIXEL_FROMBMP_COMPRESSION_PNG) {
+                stbi__start_mem(stb_context,
+                                payload_chunk.buffer,
+                                (int)payload_chunk.size);
+                pixels = stbi__load_and_postprocess_8bit(stb_context,
+                                                         &frame->width,
+                                                         &frame->height,
+                                                         &payload_depth,
+                                                         4);
+                if (pixels == NULL) {
+                    sixel_helper_set_additional_message(
+                        stbi_failure_reason());
+                    return SIXEL_STBI_ERROR;
+                }
+                sixel_frame_set_pixels(frame, pixels);
+                frame->loop_count = 1;
+                frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+                frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+                if (enable_cms != 0) {
+                    (void)
+                        sixel_builtin_apply_bmp_png_colorspace_to_rgba_channels(
+                            frame,
+                            bmp_payload,
+                            bmp_payload_size);
+                }
+                return sixel_builtin_apply_bmp_alpha_policy(frame, bgcolor);
+            }
+            sixel_helper_set_additional_message(
+                "builtin BMP: unsupported compressed payload mode");
+            return SIXEL_STBI_ERROR;
+        }
         status = sixel_frombmp_load(chunk,
                                     &pixels,
                                     &frame->width,
                                     &frame->height,
-                                    &bmp_comp);
+                                    &bmp_comp,
+                                    &bmp_is_cmyk,
+                                    &bmp_icc_profile,
+                                    &bmp_icc_profile_length);
         if (SIXEL_FAILED(status)) {
             return status;
+        }
+        if (bmp_is_cmyk != 0) {
+            if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+                sixel_allocator_free(chunk->allocator, pixels);
+                return SIXEL_BAD_INTEGER_OVERFLOW;
+            }
+            pixel_count = (size_t)frame->width * (size_t)frame->height;
+            if (pixel_count > SIZE_MAX / 3u) {
+                sixel_allocator_free(chunk->allocator, pixels);
+                return SIXEL_BAD_INTEGER_OVERFLOW;
+            }
+            rgb_size = pixel_count * 3u;
+            rgb_pixels = (unsigned char *)sixel_allocator_malloc(
+                chunk->allocator,
+                rgb_size);
+            if (rgb_pixels == NULL) {
+                sixel_allocator_free(chunk->allocator, pixels);
+                sixel_helper_set_additional_message(
+                    "builtin BMP: sixel_allocator_malloc() failed.");
+                return SIXEL_BAD_ALLOCATION;
+            }
+
+            cmyk_converted = 0;
+            if (enable_cms != 0 &&
+                bmp_icc_profile != NULL &&
+                bmp_icc_profile_length != 0u) {
+                cmyk_converted = sixel_builtin_bmp_convert_cmyk8_to_rgb8_icc(
+                    rgb_pixels,
+                    pixels,
+                    pixel_count,
+                    bmp_icc_profile,
+                    bmp_icc_profile_length);
+            }
+            if (!cmyk_converted) {
+                sixel_builtin_bmp_convert_cmyk8_to_rgb8_device(
+                    rgb_pixels,
+                    pixels,
+                    pixel_count);
+            }
+
+            sixel_allocator_free(chunk->allocator, pixels);
+            pixels = rgb_pixels;
+            rgb_pixels = NULL;
+            sixel_frame_set_pixels(frame, pixels);
+            frame->loop_count = 1;
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+            if (enable_cms != 0 && cmyk_converted) {
+                target_pixelformat = loader_cms_target_pixelformat();
+                status = sixel_frame_set_pixelformat(frame,
+                                                     target_pixelformat);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+            }
+            return SIXEL_OK;
         }
         sixel_frame_set_pixels(frame, pixels);
         frame->loop_count = 1;
         if (bmp_comp == 4) {
             frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
             frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+            if (enable_cms != 0) {
+                if (bmp_icc_profile != NULL &&
+                    bmp_icc_profile_length != 0u) {
+                    (void)sixel_builtin_apply_bmp_icc_to_rgba_channels(
+                        frame,
+                        bmp_icc_profile,
+                        bmp_icc_profile_length);
+                } else if (bmp_probe.has_calibrated_rgb != 0) {
+                    (void)sixel_builtin_apply_bmp_calibrated_to_rgba_channels(
+                        frame,
+                        &bmp_probe);
+                }
+            }
             return sixel_builtin_apply_bmp_alpha_policy(frame, bgcolor);
         }
         if (bmp_comp == 3) {
             frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
             frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+            if (enable_cms != 0) {
+                if (bmp_icc_profile != NULL &&
+                    bmp_icc_profile_length != 0u) {
+                    cms_converted =
+                        sixel_cms_convert_to_srgb_with_profile_bytes(
+                            pixels,
+                            frame->width,
+                            frame->height,
+                            SIXEL_PIXELFORMAT_RGB888,
+                            bmp_icc_profile,
+                            bmp_icc_profile_length);
+                } else if (bmp_probe.has_calibrated_rgb != 0) {
+                    cms_converted =
+                        sixel_builtin_apply_bmp_calibrated_rgb_to_rgb8(
+                            pixels,
+                            frame->width,
+                            frame->height,
+                            &bmp_probe);
+                } else {
+                    cms_converted = 0;
+                }
+                if (!cms_converted) {
+                    if (bmp_icc_profile != NULL &&
+                        bmp_icc_profile_length != 0u) {
+                        loader_trace_message(
+                            "builtin BMP: embedded ICC conversion failed");
+                    }
+                } else {
+                    target_pixelformat = loader_cms_target_pixelformat();
+                    status = sixel_frame_set_pixelformat(
+                        frame,
+                        target_pixelformat);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                }
+            }
             return SIXEL_OK;
         }
         nwrite = snprintf(message,

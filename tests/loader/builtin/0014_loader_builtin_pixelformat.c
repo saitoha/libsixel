@@ -148,6 +148,12 @@ run_builtin_loader_probe_buffer_case(char const *label,
                                      void *callback_context,
                                      SIXELSTATUS *load_status_out);
 
+static int
+verify_bmp_float_probe_metadata(char const *label,
+                                bmp_numeric_probe_context_t const *probe,
+                                int expected_width,
+                                int expected_height);
+
 static SIXELSTATUS
 capture_pic_rgba_alpha_probe(sixel_frame_t *frame, void *data)
 {
@@ -2574,6 +2580,1182 @@ run_builtin_loader_bmp_fail_unsupported_compression_numeric_test(void)
     return run_builtin_loader_bmp_expect_fail_case(
         "builtin loader bmp fail unsupported compression numeric",
         "/tests/data/inputs/formats/bmp-bad-unsupported-compression.bmp");
+}
+
+static int
+verify_bmp_rgbfloat32_probe_metadata(char const *label,
+                                     bmp_numeric_probe_context_t const *probe,
+                                     int expected_width,
+                                     int expected_height)
+{
+    if (label == NULL || probe == NULL) {
+        return 1;
+    }
+    if (probe->callback_count != 1) {
+        fprintf(stderr, "%s: callback count mismatch (%d)\n",
+                label,
+                probe->callback_count);
+        return 1;
+    }
+    if (probe->pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        fprintf(stderr, "%s: pixelformat mismatch (%d)\n",
+                label,
+                probe->pixelformat);
+        return 1;
+    }
+    if (probe->colorspace != SIXEL_COLORSPACE_GAMMA) {
+        fprintf(stderr, "%s: colorspace mismatch (%d)\n",
+                label,
+                probe->colorspace);
+        return 1;
+    }
+    if (probe->width != expected_width || probe->height != expected_height) {
+        fprintf(stderr, "%s: geometry mismatch (%dx%d)\n",
+                label,
+                probe->width,
+                probe->height);
+        return 1;
+    }
+    if (probe->alpha_zero_is_transparent != 0 ||
+        probe->has_transparent_mask != 0 ||
+        probe->transparent_mask_size != 0u) {
+        fprintf(stderr, "%s: unexpected transparent metadata\n", label);
+        return 1;
+    }
+    return 0;
+}
+
+static int
+run_builtin_loader_bmp_bi_jpeg_cms_off_numeric_test(void)
+{
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp bi-jpeg cms off numeric",
+        "/tests/data/inputs/formats/bmp-info40-bi-jpeg-embedded-esrgb.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp bi-jpeg cms off numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+
+    return verify_bmp_rgbfloat32_probe_metadata(
+        "builtin loader bmp bi-jpeg cms off numeric",
+        &probe,
+        64,
+        64);
+}
+
+static int
+run_builtin_loader_bmp_bi_jpeg_cms_on_numeric_test(void)
+{
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 1;
+    options.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
+
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp bi-jpeg cms on numeric",
+        "/tests/data/inputs/formats/bmp-info40-bi-jpeg-embedded-esrgb.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp bi-jpeg cms on numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+
+    return verify_bmp_rgbfloat32_probe_metadata(
+        "builtin loader bmp bi-jpeg cms on numeric",
+        &probe,
+        64,
+        64);
+}
+
+static int
+run_builtin_loader_bmp_bi_png_alpha_bgcolor_numeric_test(void)
+{
+    static unsigned char const src_rgba_topdown[16] = {
+        0xffu, 0x00u, 0x00u, 0xffu, 0x00u, 0xffu, 0x00u, 0x80u,
+        0x00u, 0x00u, 0xffu, 0x40u, 0xffu, 0xffu, 0xffu, 0x00u
+    };
+    static unsigned char const bgcolor_u8[3] = { 0x20u, 0x40u, 0x80u };
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    float expected_linear[12];
+    float bg_linear[3];
+    int result;
+    int channel;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    memset(expected_linear, 0, sizeof(expected_linear));
+    memset(bg_linear, 0, sizeof(bg_linear));
+    result = 1;
+    channel = 0;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 1;
+    options.bgcolor = bgcolor_u8;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp bi-png alpha bgcolor numeric",
+        "/tests/data/inputs/formats/bmp-info40-bi-png-rgba-2x2.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        goto end;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp bi-png alpha bgcolor numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        result = 1;
+        goto end;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        bg_linear[channel] = (float)bgcolor_u8[channel] / 255.0f;
+    }
+    bmp_numeric_compose_expected_linear(expected_linear,
+                                        src_rgba_topdown,
+                                        bg_linear);
+    result = verify_bmp_float_probe(
+        "builtin loader bmp bi-png alpha bgcolor numeric",
+        &probe,
+        expected_linear,
+        0.00001f);
+
+end:
+    sixel_helper_set_loader_background_colorspace(-1);
+    return result;
+}
+
+static int
+run_builtin_loader_bmp_bi_png_alpha_mask_no_bg_numeric_test(void)
+{
+    static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp bi-png alpha mask no-bg numeric",
+        "/tests/data/inputs/formats/bmp-info40-bi-png-rgba-2x2.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp bi-png alpha mask no-bg numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader bmp bi-png alpha mask no-bg numeric: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+        probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+        fprintf(stderr,
+                "builtin loader bmp bi-png alpha mask no-bg numeric: "
+                "unexpected format/colorspace (%d, %d)\n",
+                probe.pixelformat,
+                probe.colorspace);
+        return 1;
+    }
+    if (probe.width != 2 || probe.height != 2) {
+        fprintf(stderr,
+                "builtin loader bmp bi-png alpha mask no-bg numeric: "
+                "geometry mismatch (%dx%d)\n",
+                probe.width,
+                probe.height);
+        return 1;
+    }
+    if (probe.alpha_zero_is_transparent != 1 ||
+        probe.has_transparent_mask != 1 ||
+        probe.transparent_mask_size < sizeof(expected_mask)) {
+        fprintf(stderr,
+                "builtin loader bmp bi-png alpha mask no-bg numeric: "
+                "transparent-mask metadata mismatch\n");
+        return 1;
+    }
+    if (memcmp(probe.transparent_mask,
+               expected_mask,
+               sizeof(expected_mask)) != 0) {
+        fprintf(stderr,
+                "builtin loader bmp bi-png alpha mask no-bg numeric: "
+                "transparent-mask samples mismatch\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_bmp_bi_png_opaque_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu
+    };
+
+    return run_builtin_loader_bmp_rgb_fixture_case(
+        "builtin loader bmp bi-png opaque numeric",
+        "/tests/data/inputs/formats/bmp-info40-bi-png-rgb-2x2.bmp",
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_bi_png_linked_outer_inner_icc_numeric_test(void)
+{
+    static unsigned char const bgcolor_u8[3] = { 0x20u, 0x40u, 0x80u };
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 1;
+    options.bgcolor = bgcolor_u8;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 1;
+    options.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
+
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp bi-png linked outer inner icc numeric",
+        "/tests/data/inputs/formats/bmp-v5-bi-png-linked-inner-icc.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp bi-png linked outer inner icc numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+
+    return verify_bmp_float_probe_metadata(
+        "builtin loader bmp bi-png linked outer inner icc numeric",
+        &probe,
+        93,
+        14);
+}
+
+static int
+run_builtin_loader_bmp_fail_bi_jpeg_invalid_payload_numeric_test(void)
+{
+    return run_builtin_loader_bmp_expect_fail_case(
+        "builtin loader bmp fail bi-jpeg invalid payload numeric",
+        "/tests/data/inputs/formats/bmp-bad-bi-jpeg-invalid-payload.bmp");
+}
+
+static int
+run_builtin_loader_bmp_fail_bi_png_payload_range_numeric_test(void)
+{
+    return run_builtin_loader_bmp_expect_fail_case(
+        "builtin loader bmp fail bi-png payload range numeric",
+        "/tests/data/inputs/formats/bmp-bad-bi-png-payload-range.bmp");
+}
+
+static int
+verify_bmp_float_probe_metadata(char const *label,
+                                bmp_numeric_probe_context_t const *probe,
+                                int expected_width,
+                                int expected_height)
+{
+    if (label == NULL || probe == NULL) {
+        return 1;
+    }
+    if (probe->callback_count != 1) {
+        fprintf(stderr, "%s: callback count mismatch (%d)\n",
+                label,
+                probe->callback_count);
+        return 1;
+    }
+    if (probe->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        fprintf(stderr, "%s: pixelformat mismatch (%d)\n",
+                label,
+                probe->pixelformat);
+        return 1;
+    }
+    if (probe->colorspace != SIXEL_COLORSPACE_LINEAR) {
+        fprintf(stderr, "%s: colorspace mismatch (%d)\n",
+                label,
+                probe->colorspace);
+        return 1;
+    }
+    if (probe->width != expected_width || probe->height != expected_height) {
+        fprintf(stderr, "%s: geometry mismatch (%dx%d)\n",
+                label,
+                probe->width,
+                probe->height);
+        return 1;
+    }
+    if (probe->alpha_zero_is_transparent != 0) {
+        fprintf(stderr, "%s: alpha_zero_is_transparent mismatch (%d)\n",
+                label,
+                probe->alpha_zero_is_transparent);
+        return 1;
+    }
+    if (probe->has_transparent_mask != 0 ||
+        probe->transparent_mask_size != 0u) {
+        fprintf(stderr, "%s: unexpected transparent mask (%d, %zu)\n",
+                label,
+                probe->has_transparent_mask,
+                probe->transparent_mask_size);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_bmp_v5_embedded_icc_rgb_cms_on_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu
+    };
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+    int target_pixelformat;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+    target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 1;
+    options.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
+
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp v5 embedded icc rgb cms on numeric",
+        "/tests/data/inputs/formats/bmp-v5-embedded-icc-rgb-2x2.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc rgb cms on numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+
+    target_pixelformat = loader_cms_target_pixelformat();
+    if (target_pixelformat == SIXEL_PIXELFORMAT_RGB888) {
+        return verify_bmp_rgb_probe(
+            "builtin loader bmp v5 embedded icc rgb cms on numeric",
+            &probe,
+            2,
+            2,
+            expected_rgb,
+            sizeof(expected_rgb));
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc rgb cms on numeric: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != target_pixelformat) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc rgb cms on numeric: "
+                "target pixelformat mismatch (%d != %d)\n",
+                probe.pixelformat,
+                target_pixelformat);
+        return 1;
+    }
+    if (probe.width != 2 || probe.height != 2) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc rgb cms on numeric: "
+                "geometry mismatch (%dx%d)\n",
+                probe.width,
+                probe.height);
+        return 1;
+    }
+    if (probe.alpha_zero_is_transparent != 0 ||
+        probe.has_transparent_mask != 0 ||
+        probe.transparent_mask_size != 0u) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc rgb cms on numeric: "
+                "unexpected transparency metadata\n");
+        return 1;
+    }
+    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(probe.pixelformat)) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc rgb cms on numeric: "
+                "unexpected non-float pixelformat (%d)\n",
+                probe.pixelformat);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_bmp_v5_embedded_icc_rgb_cms_off_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu
+    };
+
+    return run_builtin_loader_bmp_rgb_fixture_case(
+        "builtin loader bmp v5 embedded icc rgb cms off numeric",
+        "/tests/data/inputs/formats/bmp-v5-embedded-icc-rgb-2x2.bmp",
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_v5_embedded_icc_rgba_bgcolor_numeric_test(void)
+{
+    static unsigned char const bgcolor_u8[3] = { 0x20u, 0x40u, 0x80u };
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 1;
+    options.bgcolor = bgcolor_u8;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 1;
+    options.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
+
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp v5 embedded icc rgba bgcolor numeric",
+        "/tests/data/inputs/formats/bmp-v5-embedded-icc-rgba-2x2.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        goto end;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc rgba bgcolor numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        result = 1;
+        goto end;
+    }
+    result = verify_bmp_float_probe_metadata(
+        "builtin loader bmp v5 embedded icc rgba bgcolor numeric",
+        &probe,
+        2,
+        2);
+
+end:
+    sixel_helper_set_loader_background_colorspace(-1);
+    return result;
+}
+
+static int
+run_builtin_loader_bmp_v5_embedded_icc_rgba_mask_no_bg_numeric_test(void)
+{
+    static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 1;
+    options.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
+
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp v5 embedded icc rgba mask no-bg numeric",
+        "/tests/data/inputs/formats/bmp-v5-embedded-icc-rgba-2x2.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc rgba mask no-bg numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc rgba mask no-bg numeric: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+        probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc rgba mask no-bg numeric: "
+                "unexpected format/colorspace (%d, %d)\n",
+                probe.pixelformat,
+                probe.colorspace);
+        return 1;
+    }
+    if (probe.width != 2 || probe.height != 2) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc rgba mask no-bg numeric: "
+                "geometry mismatch (%dx%d)\n",
+                probe.width,
+                probe.height);
+        return 1;
+    }
+    if (probe.alpha_zero_is_transparent != 1 ||
+        probe.has_transparent_mask != 1 ||
+        probe.transparent_mask_size < sizeof(expected_mask)) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc rgba mask no-bg numeric: "
+                "transparent-mask metadata mismatch\n");
+        return 1;
+    }
+    if (memcmp(probe.transparent_mask,
+               expected_mask,
+               sizeof(expected_mask)) != 0) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc rgba mask no-bg numeric: "
+                "transparent-mask samples mismatch\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_bmp_v5_linked_profile_ignored_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu
+    };
+
+    return run_builtin_loader_bmp_rgb_fixture_case(
+        "builtin loader bmp v5 linked profile ignored numeric",
+        "/tests/data/inputs/formats/bmp-v5-linked-profile-2x2.bmp",
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_fail_v5_embedded_icc_range_numeric_test(void)
+{
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 1;
+    options.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
+
+    sixel_helper_set_additional_message(NULL);
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp fail v5 embedded icc range numeric",
+        "/tests/data/inputs/formats/bmp-bad-v5-embedded-icc-range.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp fail v5 embedded icc range numeric: "
+                "unexpected success\n");
+        return 1;
+    }
+    if (probe.callback_count != 0) {
+        fprintf(stderr,
+                "builtin loader bmp fail v5 embedded icc range numeric: "
+                "unexpected callback (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_bmp_alphabitfields_bgcolor_numeric_test(void)
+{
+    static unsigned char const src_rgba_topdown[16] = {
+        0xffu, 0x00u, 0x00u, 0xffu, 0x00u, 0xffu, 0x00u, 0x80u,
+        0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu, 0x00u, 0x00u
+    };
+    static unsigned char const bgcolor_u8[3] = { 0x20u, 0x40u, 0x80u };
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    float expected_linear[12];
+    float bg_linear[3];
+    int result;
+    int channel;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    memset(expected_linear, 0, sizeof(expected_linear));
+    memset(bg_linear, 0, sizeof(bg_linear));
+    result = 1;
+    channel = 0;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 1;
+    options.bgcolor = bgcolor_u8;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_LINEAR);
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp alphabitfields bgcolor numeric",
+        "/tests/data/inputs/formats/bmp-info40-alphabitfields-rgba-2x2.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    sixel_helper_set_loader_background_colorspace(-1);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp alphabitfields bgcolor numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        bg_linear[channel] = (float)bgcolor_u8[channel] / 255.0f;
+    }
+    bmp_numeric_compose_expected_linear(expected_linear,
+                                        src_rgba_topdown,
+                                        bg_linear);
+
+    return verify_bmp_float_probe(
+        "builtin loader bmp alphabitfields bgcolor numeric",
+        &probe,
+        expected_linear,
+        0.00001f);
+}
+
+static int
+run_builtin_loader_bmp_alphabitfields_mask_no_bg_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0x7fu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 0;
+    options.cms_engine = SIXEL_CMS_ENGINE_NONE;
+
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp alphabitfields mask no-bg numeric",
+        "/tests/data/inputs/formats/bmp-info40-alphabitfields-rgba-2x2.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp alphabitfields mask no-bg numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+
+    return verify_bmp_rgb_mask_probe(
+        "builtin loader bmp alphabitfields mask no-bg numeric",
+        &probe,
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb),
+        expected_mask,
+        sizeof(expected_mask));
+}
+
+static int
+run_builtin_loader_bmp_fail_alphabitfields_invalid_alpha_mask_numeric_test(void)
+{
+    return run_builtin_loader_bmp_expect_fail_case(
+        "builtin loader bmp fail alphabitfields invalid alpha mask numeric",
+        "/tests/data/inputs/formats/"
+        "bmp-bad-info40-alphabitfields-zero-alpha-mask.bmp");
+}
+
+static int
+run_builtin_loader_bmp_v4_calibrated_cms_on_numeric_test(void)
+{
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 1;
+    options.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
+
+    if (loader_test_setenv("SIXEL_LOADER_PREFER_8BIT", "1") != 0) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated cms on numeric: "
+                "setenv failed\n");
+        return 1;
+    }
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp v4 calibrated cms on numeric",
+        "/tests/data/inputs/formats/bmp-v4-calibrated-rgb-24bpp-2x2.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (loader_test_setenv("SIXEL_LOADER_PREFER_8BIT", "") != 0) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated cms on numeric: "
+                "reset env failed\n");
+        return 1;
+    }
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated cms on numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1 ||
+        probe.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+        probe.colorspace != SIXEL_COLORSPACE_GAMMA ||
+        probe.width != 2 ||
+        probe.height != 2) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated cms on numeric: "
+                "metadata mismatch\n");
+        return 1;
+    }
+    if (probe.has_transparent_mask != 0 ||
+        probe.transparent_mask_size != 0u ||
+        probe.alpha_zero_is_transparent != 0) {
+        fprintf(stderr,
+                "builtin loader bmp v4 calibrated cms on numeric: "
+                "unexpected transparency metadata\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_bmp_v4_calibrated_cms_off_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0x80u, 0x40u, 0x20u, 0xffu, 0x00u, 0x00u,
+        0x00u, 0xffu, 0x00u, 0x00u, 0x00u, 0xffu
+    };
+
+    return run_builtin_loader_bmp_rgb_fixture_case(
+        "builtin loader bmp v4 calibrated cms off numeric",
+        "/tests/data/inputs/formats/bmp-v4-calibrated-rgb-24bpp-2x2.bmp",
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_v5_embedded_icc_calibrated_priority_numeric_test(void)
+{
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 1;
+    options.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
+
+    if (loader_test_setenv("SIXEL_LOADER_PREFER_8BIT", "1") != 0) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc calibrated priority "
+                "numeric: setenv failed\n");
+        return 1;
+    }
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp v5 embedded icc calibrated priority numeric",
+        "/tests/data/inputs/formats/"
+        "bmp-v5-embedded-icc-calibrated-rgb-2x2.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (loader_test_setenv("SIXEL_LOADER_PREFER_8BIT", "") != 0) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc calibrated priority "
+                "numeric: reset env failed\n");
+        return 1;
+    }
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc calibrated priority "
+                "numeric: loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1 ||
+        probe.pixelformat != SIXEL_PIXELFORMAT_RGB888 ||
+        probe.colorspace != SIXEL_COLORSPACE_GAMMA ||
+        probe.width != 2 ||
+        probe.height != 2) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc calibrated priority "
+                "numeric: metadata mismatch\n");
+        return 1;
+    }
+    if (probe.has_transparent_mask != 0 ||
+        probe.transparent_mask_size != 0u ||
+        probe.alpha_zero_is_transparent != 0) {
+        fprintf(stderr,
+                "builtin loader bmp v5 embedded icc calibrated priority "
+                "numeric: unexpected transparency metadata\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_bmp_cmyk_cms_off_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0xffu, 0xffu, 0x00u, 0xffu, 0xffu,
+        0xffu, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u
+    };
+
+    return run_builtin_loader_bmp_rgb_fixture_case(
+        "builtin loader bmp cmyk cms off numeric",
+        "/tests/data/inputs/formats/bmp-info40-cmyk-32bpp-2x2.bmp",
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_cmyk_topdown_numeric_test(void)
+{
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0xffu, 0xffu, 0x00u, 0x00u, 0x00u,
+        0x00u, 0xffu, 0xffu, 0xffu, 0x00u, 0xffu
+    };
+
+    return run_builtin_loader_bmp_rgb_fixture_case(
+        "builtin loader bmp cmyk topdown numeric",
+        "/tests/data/inputs/formats/bmp-info40-cmyk-32bpp-topdown-2x2.bmp",
+        2,
+        2,
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_builtin_loader_bmp_cmyk_embedded_icc_cms_on_numeric_test(void)
+{
+    builtin_loader_probe_options_t options;
+    bmp_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+    int target_pixelformat;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+    result = 1;
+    target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_bgcolor = 0;
+    options.bgcolor = NULL;
+    options.set_loop_control = 0;
+    options.loop_control = SIXEL_LOOP_AUTO;
+    options.set_cms_engine = 1;
+    options.cms_engine = SIXEL_CMS_ENGINE_BUILTIN;
+
+    if (loader_test_setenv("SIXEL_LOADER_PREFER_8BIT", "") != 0) {
+        fprintf(stderr,
+                "builtin loader bmp cmyk embedded icc cms on numeric: "
+                "setenv failed\n");
+        return 1;
+    }
+    result = run_builtin_loader_probe_case(
+        "builtin loader bmp cmyk embedded icc cms on numeric",
+        "/tests/data/inputs/formats/bmp-v5-cmyk-embedded-icc-2x2.bmp",
+        &options,
+        capture_bmp_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader bmp cmyk embedded icc cms on numeric: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr,
+                "builtin loader bmp cmyk embedded icc cms on numeric: "
+                "callback count mismatch (%d)\n",
+                probe.callback_count);
+        return 1;
+    }
+    target_pixelformat = loader_cms_target_pixelformat();
+    if (probe.pixelformat != target_pixelformat) {
+        fprintf(stderr,
+                "builtin loader bmp cmyk embedded icc cms on numeric: "
+                "pixelformat mismatch (%d != %d)\n",
+                probe.pixelformat,
+                target_pixelformat);
+        return 1;
+    }
+    if (probe.width != 2 || probe.height != 2) {
+        fprintf(stderr,
+                "builtin loader bmp cmyk embedded icc cms on numeric: "
+                "geometry mismatch (%dx%d)\n",
+                probe.width,
+                probe.height);
+        return 1;
+    }
+    if (probe.has_transparent_mask != 0 ||
+        probe.transparent_mask_size != 0u ||
+        probe.alpha_zero_is_transparent != 0) {
+        fprintf(stderr,
+                "builtin loader bmp cmyk embedded icc cms on numeric: "
+                "unexpected transparency metadata\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_bmp_fail_cmyk_requires_32bpp_numeric_test(void)
+{
+    return run_builtin_loader_bmp_expect_fail_case(
+        "builtin loader bmp fail cmyk requires 32bpp numeric",
+        "/tests/data/inputs/formats/bmp-bad-info40-cmyk-24bpp.bmp");
 }
 
 static SIXELSTATUS
@@ -6191,7 +7373,57 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_BMP_NUMERIC_FAIL_RLE8_ABSOLUTE_OVERFLOW",
           run_builtin_loader_bmp_fail_rle8_absolute_overflow_numeric_test },
         { "SIXEL_TEST_BMP_NUMERIC_FAIL_UNSUPPORTED_COMPRESSION",
-          run_builtin_loader_bmp_fail_unsupported_compression_numeric_test }
+          run_builtin_loader_bmp_fail_unsupported_compression_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_BI_JPEG_CMS_OFF",
+          run_builtin_loader_bmp_bi_jpeg_cms_off_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_BI_JPEG_CMS_ON",
+          run_builtin_loader_bmp_bi_jpeg_cms_on_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_BI_PNG_ALPHA_BGCOLOR",
+          run_builtin_loader_bmp_bi_png_alpha_bgcolor_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_BI_PNG_ALPHA_MASK_NO_BG",
+          run_builtin_loader_bmp_bi_png_alpha_mask_no_bg_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_BI_PNG_OPAQUE",
+          run_builtin_loader_bmp_bi_png_opaque_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_BI_PNG_LINKED_OUTER_INNER_ICC",
+          run_builtin_loader_bmp_bi_png_linked_outer_inner_icc_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_BI_JPEG_INVALID_PAYLOAD",
+          run_builtin_loader_bmp_fail_bi_jpeg_invalid_payload_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_BI_PNG_PAYLOAD_RANGE",
+          run_builtin_loader_bmp_fail_bi_png_payload_range_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_V5_EMBEDDED_ICC_RGB_CMS_ON",
+          run_builtin_loader_bmp_v5_embedded_icc_rgb_cms_on_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_V5_EMBEDDED_ICC_RGB_CMS_OFF",
+          run_builtin_loader_bmp_v5_embedded_icc_rgb_cms_off_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_V5_EMBEDDED_ICC_RGBA_BGCOLOR",
+          run_builtin_loader_bmp_v5_embedded_icc_rgba_bgcolor_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_V5_EMBEDDED_ICC_RGBA_MASK_NO_BG",
+          run_builtin_loader_bmp_v5_embedded_icc_rgba_mask_no_bg_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_V5_LINKED_PROFILE_IGNORED",
+          run_builtin_loader_bmp_v5_linked_profile_ignored_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_V5_EMBEDDED_ICC_RANGE",
+          run_builtin_loader_bmp_fail_v5_embedded_icc_range_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_ALPHABITFIELDS_BGCOLOR_FLOAT32",
+          run_builtin_loader_bmp_alphabitfields_bgcolor_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_ALPHABITFIELDS_MASK_NO_BG",
+          run_builtin_loader_bmp_alphabitfields_mask_no_bg_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_ALPHABITFIELDS_INVALID_ALPHA_MASK",
+          run_builtin_loader_bmp_fail_alphabitfields_invalid_alpha_mask_numeric_test
+        },
+        { "SIXEL_TEST_BMP_NUMERIC_V4_CALIBRATED_CMS_ON",
+          run_builtin_loader_bmp_v4_calibrated_cms_on_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_V4_CALIBRATED_CMS_OFF",
+          run_builtin_loader_bmp_v4_calibrated_cms_off_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_V5_EMBEDDED_ICC_CALIBRATED_PRIORITY",
+          run_builtin_loader_bmp_v5_embedded_icc_calibrated_priority_numeric_test
+        },
+        { "SIXEL_TEST_BMP_NUMERIC_CMYK_CMS_OFF",
+          run_builtin_loader_bmp_cmyk_cms_off_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_CMYK_TOPDOWN",
+          run_builtin_loader_bmp_cmyk_topdown_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_CMYK_EMBEDDED_ICC_CMS_ON",
+          run_builtin_loader_bmp_cmyk_embedded_icc_cms_on_numeric_test },
+        { "SIXEL_TEST_BMP_NUMERIC_FAIL_CMYK_REQUIRES_32BPP",
+          run_builtin_loader_bmp_fail_cmyk_requires_32bpp_numeric_test }
     };
     static builtin_loader_env_dispatch_entry_t const tga_env_dispatch[] = {
         { "SIXEL_TEST_TGA_NUMERIC_RGBA_ALPHA_MASK_BGCOLOR",

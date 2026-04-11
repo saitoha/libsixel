@@ -25,6 +25,7 @@
 #ifndef LIBSIXEL_FROMBMP_H
 #define LIBSIXEL_FROMBMP_H
 
+#include <stddef.h>
 #include <sixel.h>
 
 #include "chunk.h"
@@ -32,6 +33,37 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define SIXEL_FROMBMP_COMPRESSION_RGB        0u
+#define SIXEL_FROMBMP_COMPRESSION_RLE8       1u
+#define SIXEL_FROMBMP_COMPRESSION_RLE4       2u
+#define SIXEL_FROMBMP_COMPRESSION_BITFIELDS  3u
+#define SIXEL_FROMBMP_COMPRESSION_JPEG       4u
+#define SIXEL_FROMBMP_COMPRESSION_PNG        5u
+#define SIXEL_FROMBMP_COMPRESSION_ALPHABITFIELDS 6u
+#define SIXEL_FROMBMP_COMPRESSION_CMYK       11u
+
+typedef struct sixel_frombmp_probe {
+    int width;
+    int height;
+    int bpp;
+    int is_cmyk;
+    unsigned int compression;
+    unsigned char const *payload;
+    size_t payload_size;
+    unsigned char const *icc_profile;
+    size_t icc_profile_length;
+    int has_calibrated_rgb;
+    double calibrated_gamma;
+    double white_x;
+    double white_y;
+    double red_x;
+    double red_y;
+    double green_x;
+    double green_y;
+    double blue_x;
+    double blue_y;
+} sixel_frombmp_probe_t;
 
 /*
  * Decode BMP from an in-memory chunk.
@@ -45,7 +77,15 @@ sixel_frombmp_load(
     unsigned char **ppixels,
     int *pwidth,
     int *pheight,
-    int *pcomp);
+    int *pcomp,
+    int *pis_cmyk,
+    unsigned char const **picc_profile,
+    size_t *picc_profile_length);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frombmp_probe(
+    sixel_chunk_t const *chunk,
+    sixel_frombmp_probe_t *probe);
 
 #ifdef __cplusplus
 }
