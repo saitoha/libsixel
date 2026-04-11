@@ -18814,8 +18814,10 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     int allow_pixel_layer_decode_skip;
     size_t composed_layer_count;
     size_t skipped_pixel_layer_decode_count;
+    size_t clip_alpha_index;
     int pending_overlay_interior_enabled;
     int pending_overlay_defer_stroke;
+    int traced_clip_sibling_harden;
     int apply_effects_subset;
     sixel_builtin_psd_layer_record_t pending_overlay_layer;
     SIXELSTATUS status;
@@ -18844,8 +18846,10 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     allow_pixel_layer_decode_skip = 0;
     composed_layer_count = 0u;
     skipped_pixel_layer_decode_count = 0u;
+    clip_alpha_index = 0u;
     pending_overlay_interior_enabled = 1;
     pending_overlay_defer_stroke = 0;
+    traced_clip_sibling_harden = 0;
     apply_effects_subset = 0;
     memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
     status = SIXEL_FALSE;
@@ -19566,6 +19570,30 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             sixel_builtin_psd_soften_layer_alpha_edges(
                 effective_composite_layer,
                 &src_layer);
+        }
+        if (apply_clipping != 0 &&
+            effective_composite_layer->has_vector_mask != 0 &&
+            effective_composite_layer->effect_stroke_from_vector_style != 0 &&
+            effective_composite_layer->has_effect_solid_overlay == 0 &&
+            effective_composite_layer->has_effect_gradient_overlay == 0) {
+            /*
+             * Vector-style clipping siblings without overlay effects can leak
+             * base-layer stroke halos through fractional alpha ramps.
+             * Harden this narrow subset before compositing.
+             */
+            if (traced_clip_sibling_harden == 0) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: hardening vector-style clipping sibling "
+                    "alpha in layer fallback");
+                traced_clip_sibling_harden = 1;
+            }
+            for (clip_alpha_index = 0u;
+                 clip_alpha_index < src_layer.pixel_count;
+                 ++clip_alpha_index) {
+                src_layer.alpha[clip_alpha_index] =
+                    src_layer.alpha[clip_alpha_index] >= 0.5f ? 1.0f : 0.0f;
+            }
         }
         sixel_builtin_psd_composite_layer_over(canvas_rgb_premul,
                                                canvas_alpha,
