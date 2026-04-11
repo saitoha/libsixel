@@ -3165,7 +3165,16 @@ sixel_dither_apply_palette_with_mode(
 
     method_for_scan = dither->method_for_scan;
     if (method_for_scan == SIXEL_SCAN_AUTO) {
-        method_for_scan = SIXEL_SCAN_RASTER;
+        /*
+         * Keep scan defaults deterministic by diffusion family:
+         * - LSO2 prefers serpentine for its variable-coefficient kernel.
+         * - All other diffusion families default to raster.
+         */
+        if (dither->method_for_diffuse == SIXEL_DIFFUSE_LSO2) {
+            method_for_scan = SIXEL_SCAN_SERPENTINE;
+        } else {
+            method_for_scan = SIXEL_SCAN_RASTER;
+        }
     }
 
     palette->lut_policy = dither->lut_policy;

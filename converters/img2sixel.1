@@ -246,7 +246,7 @@ choose diffusion method used with color reduction.
 .br
 sub-option:
 .br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 \fBnone\fP -> do not diffuse
 .br
@@ -254,31 +254,31 @@ sub-option:
 .br
 sub-option:
 .br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 \fBatkinson\fP -> Bill Atkinson's method
 .br
 sub-option:
 .br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 \fBjajuni\fP -> Jarvis, Judice & Ninke
 .br
 sub-option:
 .br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 \fBstucki\fP -> Stucki's method
 .br
 sub-option:
 .br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 \fBburkes\fP -> Burkes' method
 .br
 sub-option:
 .br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 \fBsierra\fP -> Sierra diffusion family
 .br
@@ -286,19 +286,19 @@ sub-option:
 .br
 \fBvariant=LEVEL\fP -> \fB1\fP, \fB2\fP, or \fB3\fP (default \fB1\fP)
 .br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 \fBa_dither\fP -> positionally stable arithmetic dither
 .br
 sub-option:
 .br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 \fBx_dither\fP -> positionally stable arithmetic xor based dither
 .br
 sub-option:
 .br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 \fBbluenoise\fP -> tileable blue-noise ordered dither
 .br
@@ -314,13 +314,13 @@ sub-option:
 .br
 \fBsize=SIZE\fP -> \fB64\fP (embedded tile size)
 .br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 \fBlso2\fP -> libsixel variable error diffusion tables
 .br
 sub-option:
 .br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default serpentine)
 .br
 \fBinterframe\fP -> interframe error diffusion (palette path only)
 .br
@@ -329,7 +329,7 @@ sub-option:
 \fBdiffusion=KERNEL\fP -> \fBauto\fP, \fBnone\fP, \fBfs\fP, \fBatkinson\fP, \fBjajuni\fP, \fBstucki\fP,
 \fBburkes\fP, \fBsierra1\fP, \fBsierra2\fP, or \fBsierra3\fP
 .br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .br
 \fBstbn\fP -> interframe STBN/PMJ source selection
 .br
@@ -342,7 +342,7 @@ sub-option:
 .br
 \fBstrength=VALUE\fP -> floating value in 0.0-2.0 (default 0.055)
 .br
-\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default auto)
+\fBscan=SCANTYPE\fP -> \fBauto\fP, \fBraster\fP, or \fBserpentine\fP (default raster)
 .TP 5
 .B \-f \fIFINDTYPE\fP, \-\-find\-largest=\fIFINDTYPE\fP
 choose method for finding the largest dimension of median
