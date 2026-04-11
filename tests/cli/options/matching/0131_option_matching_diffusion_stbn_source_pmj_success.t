@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying -d interframe accepts strategy=pmj.
+# TAP test verifying -d stbn accepts source=pmj.
 
 set -eux
 
@@ -12,12 +12,12 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -d interframe:strategy=pmj \
+    -d stbn:source=pmj \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o /dev/null || {
-    echo "not ok" 1 - "interframe strategy=pmj was rejected"
+    echo "not ok" 1 - "stbn source=pmj was rejected"
     exit 0
 }
 
-echo "ok" 1 - "interframe strategy=pmj is accepted"
+echo "ok" 1 - "stbn source=pmj is accepted"
 exit 0

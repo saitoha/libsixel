@@ -31,17 +31,14 @@ _diffusiontype() {
     'bluenoise[tileable blue-noise ordered dither]' \
     'lso2[libsixel method based on variable error diffusion]' \
     'interframe[interframe error diffusion (palette path; ignores -Y)]' \
-    'interframe:noise_strength=0.055[interframe noise strength override]' \
-    'interframe:strategy=diffusion[interframe strategy override]' \
-    'interframe:strategy=diffusion:noise_strength=0.055[interframe strategy+noise override]' \
-    'interframe:strategy=stbn[interframe strategy override]' \
-    'interframe:strategy=stbn:noise_strength=0.055[interframe strategy+noise override]' \
-    'interframe:strategy=stbn-hash[interframe strategy override]' \
-    'interframe:strategy=stbn-hash:noise_strength=0.055[interframe strategy+noise override]' \
-    'interframe:strategy=stbn-mask[interframe strategy override]' \
-    'interframe:strategy=stbn-mask:noise_strength=0.50[interframe strategy+noise override]' \
-    'interframe:strategy=pmj[interframe strategy override]' \
-    'interframe:strategy=pmj:noise_strength=0.50[interframe strategy+noise override]'
+    'stbn[interframe STBN source selector (default source=hash)]' \
+    'stbn:source=hash[STBN hash source]' \
+    'stbn:source=mask[STBN mask-table source]' \
+    'stbn:source=pmj[PMJ source]' \
+    'stbn:noise_strength=0.055[STBN/PMJ noise strength override]' \
+    'stbn:source=hash:noise_strength=0.055[hash source + noise override]' \
+    'stbn:source=mask:noise_strength=0.50[mask source + noise override]' \
+    'stbn:source=pmj:noise_strength=0.50[pmj source + noise override]'
 }
 
 _scantype() {

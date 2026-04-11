@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring 8bit interframe strategy suboption overrides env strategy.
+# TAP test ensuring 8bit stbn source option overrides env source.
 
 set -eux
 
@@ -43,10 +43,10 @@ env_pmj_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
+        -d stbn -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "8bit interframe pmj env encode failed"
+    echo "not ok" 1 - "8bit stbn env source=pmj encode failed"
     exit 0
 }
 
@@ -56,10 +56,10 @@ cli_override_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "8bit interframe pmj cli override encode failed"
+    echo "not ok" 1 - "8bit stbn cli source=pmj encode failed"
     exit 0
 }
 
@@ -69,9 +69,9 @@ test "${env_pmj_output}" != "${diffusion_output}" || {
 }
 
 test "${cli_override_output}" = "${env_pmj_output}" || {
-    echo "not ok" 1 - "8bit cli strategy override did not take precedence"
+    echo "not ok" 1 - "8bit cli source override did not take precedence"
     exit 0
 }
 
-echo "ok" 1 - "8bit interframe strategy cli override wins over env"
+echo "ok" 1 - "8bit stbn source option overrides env source"
 exit 0

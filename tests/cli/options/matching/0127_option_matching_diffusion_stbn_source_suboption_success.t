@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying -d interframe accepts strategy suboptions.
+# TAP test verifying -d stbn accepts source suboptions.
 
 set -eux
 
@@ -12,12 +12,12 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -d interframe:strategy=stbn-mask \
+    -d stbn:source=mask \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o /dev/null || {
-    echo "not ok" 1 - "interframe strategy suboption was rejected"
+    echo "not ok" 1 - "stbn source suboption was rejected"
     exit 0
 }
 
-echo "ok" 1 - "interframe strategy suboption is accepted"
+echo "ok" 1 - "stbn source suboption is accepted"
 exit 0

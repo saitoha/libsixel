@@ -62,7 +62,7 @@ cli_override_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=stbn-mask:noise_strength=0.50 -p 16 \
+        -d stbn:source=mask:noise_strength=0.50 -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "cli interframe noise_strength override encode failed"

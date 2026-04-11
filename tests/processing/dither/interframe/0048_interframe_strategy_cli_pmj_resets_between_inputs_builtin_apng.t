@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring CLI strategy=pmj resets state between input files.
+# TAP test ensuring CLI source=pmj resets state between input files.
 
 set -eux
 
@@ -29,10 +29,10 @@ combined_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_apng}" "${input_apng}"
 ) || {
-    echo "not ok" 1 - "interframe strategy=pmj two-input encode failed"
+    echo "not ok" 1 - "interframe source=pmj two-input encode failed"
     exit 0
 }
 
@@ -41,18 +41,18 @@ single_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "interframe strategy=pmj single-input encode failed"
+    echo "not ok" 1 - "interframe source=pmj single-input encode failed"
     exit 0
 }
 
 expected_output="${single_output}${single_output}"
 test "${combined_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "strategy=pmj state leaked across input boundary"
+    echo "not ok" 1 - "source=pmj state leaked across input boundary"
     exit 0
 }
 
-echo "ok" 1 - "strategy=pmj resets between input files"
+echo "ok" 1 - "source=pmj resets between input files"
 exit 0

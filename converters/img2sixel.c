@@ -386,12 +386,13 @@ static cli_option_help_t const g_option_help_table[] = {
         "      x_dither -> positionally stable arithmetic xor based dither\n"
         "      bluenoise -> tileable blue-noise ordered dither\n"
         "      lso2     -> libsixel method based on variable error diffusion tables, optimized for\n"
-        "      interframe[:strategy=MODE][:noise_strength=VALUE]\n"
+        "      interframe\n"
         "          -> interframe error diffusion\n"
-        "          MODE: diffusion, stbn, stbn-hash, stbn-mask, pmj\n"
+        "      stbn[:source=SOURCE][:noise_strength=VALUE]\n"
+        "          -> interframe STBN/PMJ source selection\n"
+        "          SOURCE: hash, mask, pmj\n"
         "          VALUE: 0.0-2.0 (default 0.055)\n"
-        "          strategy=... and noise_strength=... are valid only for\n"
-        "          interframe.\n"
+        "          source=... and noise_strength=... are valid only for stbn.\n"
         "          ignores -Y; not available with -I\n"
         "      size\n"
     },
@@ -412,7 +413,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      auto   -> choose carry mode automatically\n"
         "      direct -> write error back to pixel data immediately\n"
         "      carry  -> accumulate error in workspace buffers\n"
-        "    note: ignored when -d interframe is selected\n"
+        "    note: ignored when -d interframe or -d stbn is selected\n"
     },
     {
         'f',
@@ -821,14 +822,14 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_DITHER_INTERFRAME_STRATEGY",
-        "internal interframe strategy override for -d interframe.\n"
-        "Accepts diffusion (default), stbn, stbn-hash, stbn-mask, or pmj."
+        "internal STBN source override used by -d stbn.\n"
+        "Accepts stbn-hash (default), stbn-mask, or pmj."
     },
     {
         "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH",
-        "set interframe STBN/PMJ noise strength for -d interframe.\n"
+        "set interframe STBN/PMJ noise strength for -d stbn.\n"
         "Accepts 0.0-2.0; defaults to 0.055.\n"
-        "Overridden by -d interframe:noise_strength=VALUE."
+        "Overridden by -d stbn:noise_strength=VALUE."
     },
     {
         "SIXEL_PLANNER_RESIZE_PRECISION_MODE",

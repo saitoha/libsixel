@@ -31,10 +31,10 @@ stbn_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=stbn -p 16 \
+        -d stbn -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 interframe strategy=stbn encode failed"
+    echo "not ok" 1 - "float32 interframe stbn encode failed"
     exit 0
 }
 
@@ -44,10 +44,10 @@ stbn_hash_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=stbn-hash -p 16 \
+        -d stbn:source=hash -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 interframe strategy=stbn-hash encode failed"
+    echo "not ok" 1 - "float32 interframe source=hash encode failed"
     exit 0
 }
 

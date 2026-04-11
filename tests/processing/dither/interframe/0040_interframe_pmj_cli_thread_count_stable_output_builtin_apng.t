@@ -34,7 +34,7 @@ single_thread_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "8bit pmj cli single-thread encode failed"
@@ -46,7 +46,7 @@ multi_thread_output=$(
         --threads=2 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "8bit pmj cli multi-thread encode failed"

@@ -42,7 +42,7 @@ pmj_zero_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj --precision=float32 -p 16 \
+        -d stbn:source=pmj --precision=float32 -p 16 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "float32 interframe pmj strength=0 APNG encode failed"

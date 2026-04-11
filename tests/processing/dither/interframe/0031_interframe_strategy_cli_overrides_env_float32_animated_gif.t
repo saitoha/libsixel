@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring interframe strategy suboption overrides env strategy.
+# TAP test ensuring float32 stbn source option overrides env source.
 
 set -eux
 
@@ -46,10 +46,10 @@ env_hash_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
+        -d stbn -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 interframe stbn-hash env encode failed"
+    echo "not ok" 1 - "float32 stbn env source=hash encode failed"
     exit 0
 }
 
@@ -60,10 +60,10 @@ cli_override_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=stbn-hash -p 16 \
+        -d stbn:source=hash -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 interframe stbn-hash cli override encode failed"
+    echo "not ok" 1 - "float32 stbn cli source=hash encode failed"
     exit 0
 }
 
@@ -73,9 +73,9 @@ test "${env_hash_output}" != "${diffusion_output}" || {
 }
 
 test "${cli_override_output}" = "${env_hash_output}" || {
-    echo "not ok" 1 - "cli strategy override did not take precedence"
+    echo "not ok" 1 - "cli source override did not take precedence"
     exit 0
 }
 
-echo "ok" 1 - "interframe strategy cli override wins over env"
+echo "ok" 1 - "float32 stbn source option overrides env source"
 exit 0

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring 8bit strategy=diffusion matches default interframe output.
+# TAP test ensuring 8bit -d interframe ignores STBN source env overrides.
 
 set -eux
 
@@ -36,22 +36,23 @@ default_output=$(
     exit 0
 }
 
-strategy_diffusion_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        -L builtin \
-        -ldisable \
-        -d interframe:strategy=diffusion -p 16 \
-        "${input_gif}"
+env_override_output=$(
+    SIXEL_DITHER_INTERFRAME_STRATEGY=pmj \
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+            --threads=1 \
+            -L builtin \
+            -ldisable \
+            -d interframe -p 16 \
+            "${input_gif}"
 ) || {
-    echo "not ok" 1 - "8bit interframe strategy=diffusion encode failed"
+    echo "not ok" 1 - "8bit interframe encode with env override failed"
     exit 0
 }
 
-test "${strategy_diffusion_output}" = "${default_output}" || {
-    echo "not ok" 1 - "8bit strategy=diffusion output differs from default"
+test "${env_override_output}" = "${default_output}" || {
+    echo "not ok" 1 - "8bit interframe output changed by env source override"
     exit 0
 }
 
-echo "ok" 1 - "8bit strategy=diffusion matches default interframe output"
+echo "ok" 1 - "8bit interframe output ignores env source override"
 exit 0

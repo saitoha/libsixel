@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring float32 CLI strategy=pmj resets across size change.
+# TAP test ensuring float32 CLI source=pmj resets across size change.
 
 set -eux
 
@@ -44,10 +44,10 @@ combined_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_apng}" "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 strategy=pmj combined mixed-size encode failed"
+    echo "not ok" 1 - "float32 source=pmj combined mixed-size encode failed"
     exit 0
 }
 
@@ -57,10 +57,10 @@ animated_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "float32 strategy=pmj animated APNG encode failed"
+    echo "not ok" 1 - "float32 source=pmj animated APNG encode failed"
     exit 0
 }
 
@@ -70,18 +70,18 @@ single_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "float32 strategy=pmj single GIF encode failed"
+    echo "not ok" 1 - "float32 source=pmj single GIF encode failed"
     exit 0
 }
 
 expected_output="${animated_output}${single_output}"
 test "${combined_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "float32 strategy=pmj state leaked across size change"
+    echo "not ok" 1 - "float32 source=pmj state leaked across size change"
     exit 0
 }
 
-echo "ok" 1 - "float32 strategy=pmj resets across size change"
+echo "ok" 1 - "float32 source=pmj resets across size change"
 exit 0

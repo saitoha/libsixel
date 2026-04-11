@@ -29,10 +29,10 @@ stbn_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=stbn -p 16 \
+        -d stbn -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "8bit interframe strategy=stbn encode failed"
+    echo "not ok" 1 - "8bit interframe stbn encode failed"
     exit 0
 }
 
@@ -41,10 +41,10 @@ stbn_hash_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=stbn-hash -p 16 \
+        -d stbn:source=hash -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "8bit interframe strategy=stbn-hash encode failed"
+    echo "not ok" 1 - "8bit interframe source=hash encode failed"
     exit 0
 }
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring CLI strategy=pmj resets before size-changing input.
+# TAP test ensuring CLI source=pmj resets before size-changing input.
 
 set -eux
 
@@ -41,10 +41,10 @@ combined_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_apng}" "${input_gif}"
 ) || {
-    echo "not ok" 1 - "strategy=pmj combined mixed-size encode failed"
+    echo "not ok" 1 - "source=pmj combined mixed-size encode failed"
     exit 0
 }
 
@@ -53,10 +53,10 @@ animated_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "strategy=pmj animated APNG encode failed"
+    echo "not ok" 1 - "source=pmj animated APNG encode failed"
     exit 0
 }
 
@@ -65,18 +65,18 @@ single_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "strategy=pmj single GIF encode failed"
+    echo "not ok" 1 - "source=pmj single GIF encode failed"
     exit 0
 }
 
 expected_output="${animated_output}${single_output}"
 test "${combined_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "strategy=pmj state leaked across size change"
+    echo "not ok" 1 - "source=pmj state leaked across size change"
     exit 0
 }
 
-echo "ok" 1 - "strategy=pmj resets across size change"
+echo "ok" 1 - "source=pmj resets across size change"
 exit 0

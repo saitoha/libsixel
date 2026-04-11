@@ -151,46 +151,46 @@ while IFS= read -r token; do
 done < "$expected_tokens"
 
 if ! find "$interframe_tests_dir" -type f -name '*.t' -exec \
-        grep -F -- "-d interframe:strategy=" {} + \
+        grep -F -- "-d stbn:source=" {} + \
         >/dev/null 2>&1; then
-    echo "# tests/processing/dither/interframe: missing CLI strategy suboption coverage" \
+    echo "# tests/processing/dither/interframe: missing CLI stbn source coverage" \
         >> "$missing"
     status=1
 fi
 
-test_path="$src_root/tests/cli/options/matching/0130_option_matching_diffusion_interframe_strategy_unknown_key.t"
+test_path="$src_root/tests/cli/options/matching/0130_option_matching_diffusion_stbn_source_unknown_key.t"
 if test ! -f "$test_path"; then
-    echo "# tests/cli/options/matching: missing unknown strategy key coverage test" \
+    echo "# tests/cli/options/matching: missing unknown source key coverage test" \
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "interframe:mode=" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "stbn:mode=" "$test_path" >/dev/null 2>&1; then
         echo "# tests/cli/options/matching: 0130 must exercise unknown key path" \
             >> "$missing"
         status=1
     fi
 fi
 
-test_path="$src_root/tests/cli/options/matching/0131_option_matching_diffusion_interframe_strategy_pmj_success.t"
+test_path="$src_root/tests/cli/options/matching/0131_option_matching_diffusion_stbn_source_pmj_success.t"
 if test ! -f "$test_path"; then
-    echo "# tests/cli/options/matching: missing strategy=pmj success coverage test" \
+    echo "# tests/cli/options/matching: missing source=pmj success coverage test" \
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "interframe:strategy=pmj" "$test_path" >/dev/null 2>&1; then
-        echo "# tests/cli/options/matching: 0131 must exercise strategy=pmj" \
+    if ! grep -F -- "stbn:source=pmj" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/cli/options/matching: 0131 must exercise source=pmj" \
             >> "$missing"
         status=1
     fi
 fi
 
-test_path="$src_root/tests/cli/options/matching/0133_option_matching_diffusion_interframe_noise_strength_suboption_success.t"
+test_path="$src_root/tests/cli/options/matching/0133_option_matching_diffusion_stbn_noise_strength_suboption_success.t"
 if test ! -f "$test_path"; then
     echo "# tests/cli/options/matching: missing noise_strength success coverage test" \
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "interframe:strategy=stbn-mask:noise_strength=" \
+    if ! grep -F -- "stbn:source=mask:noise_strength=" \
             "$test_path" >/dev/null 2>&1; then
         echo "# tests/cli/options/matching: 0133 must exercise noise_strength suboption" \
             >> "$missing"
@@ -198,28 +198,28 @@ else
     fi
 fi
 
-test_path="$src_root/tests/cli/options/matching/0134_option_matching_diffusion_non_interframe_rejects_noise_strength_suboption.t"
+test_path="$src_root/tests/cli/options/matching/0134_option_matching_diffusion_non_stbn_rejects_noise_strength_suboption.t"
 if test ! -f "$test_path"; then
     echo "# tests/cli/options/matching: missing non-interframe noise_strength rejection test" \
         >> "$missing"
     status=1
 else
     if ! grep -F -- "fs:noise_strength=" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "supported only for interframe" "$test_path" \
+            || ! grep -F -- "unknown suboption key" "$test_path" \
             >/dev/null 2>&1; then
-        echo "# tests/cli/options/matching: 0134 must reject noise_strength outside interframe" \
+        echo "# tests/cli/options/matching: 0134 must reject noise_strength outside stbn" \
             >> "$missing"
         status=1
     fi
 fi
 
-test_path="$src_root/tests/cli/options/matching/0135_option_matching_diffusion_interframe_noise_strength_invalid_value.t"
+test_path="$src_root/tests/cli/options/matching/0135_option_matching_diffusion_stbn_noise_strength_invalid_value.t"
 if test ! -f "$test_path"; then
     echo "# tests/cli/options/matching: missing invalid noise_strength value test" \
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "interframe:noise_strength=invalid" "$test_path" \
+    if ! grep -F -- "stbn:noise_strength=invalid" "$test_path" \
             >/dev/null 2>&1 \
             || ! grep -F -- "0.0-2.0" "$test_path" >/dev/null 2>&1; then
         echo "# tests/cli/options/matching: 0135 must validate noise_strength range diagnostics" \
@@ -280,8 +280,9 @@ while IFS= read -r test_name; do
             >> "$missing"
         status=1
     fi
-    if ! grep -F -- "-d interframe" "$test_path" >/dev/null 2>&1; then
-        echo "# tests/processing/dither/interframe: missing interframe mode in $test_name" \
+    if ! grep -F -- "-d interframe" "$test_path" >/dev/null 2>&1 \
+            && ! grep -F -- "-d stbn" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/interframe: missing interframe or stbn mode in $test_name" \
             >> "$missing"
         status=1
     fi
@@ -338,8 +339,8 @@ while IFS= read -r test_name; do
         status=1
         continue
     fi
-    if ! grep -F -- "interframe:strategy=pmj" "$test_path" >/dev/null 2>&1; then
-        echo "# tests/processing/dither/interframe: missing cli strategy=pmj in $test_name" \
+    if ! grep -F -- "stbn:source=pmj" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/interframe: missing cli source=pmj in $test_name" \
             >> "$missing"
         status=1
     fi
@@ -364,8 +365,8 @@ while IFS= read -r test_name; do
         status=1
         continue
     fi
-    if ! grep -F -- "interframe:strategy=pmj" "$test_path" >/dev/null 2>&1; then
-        echo "# tests/processing/dither/interframe: missing cli strategy=pmj in $test_name" \
+    if ! grep -F -- "stbn:source=pmj" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/interframe: missing cli source=pmj in $test_name" \
             >> "$missing"
         status=1
     fi
@@ -390,8 +391,8 @@ while IFS= read -r test_name; do
         status=1
         continue
     fi
-    if ! grep -F -- "interframe:strategy=stbn-mask" "$test_path" >/dev/null 2>&1; then
-        echo "# tests/processing/dither/interframe: missing cli strategy=stbn-mask in $test_name" \
+    if ! grep -F -- "stbn:source=mask" "$test_path" >/dev/null 2>&1; then
+        echo "# tests/processing/dither/interframe: missing cli source=mask in $test_name" \
             >> "$missing"
         status=1
     fi
@@ -625,7 +626,7 @@ if test ! -f "$test_path"; then
     status=1
 else
     if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "interframe:strategy=pmj" "$test_path" >/dev/null 2>&1; then
+            || ! grep -F -- "stbn:source=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0038 must cover env/cli precedence for pmj" \
             >> "$missing"
         status=1
@@ -649,7 +650,7 @@ else
         status=1
     fi
     if ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=diffusion" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "interframe:strategy=pmj" "$test_path" >/dev/null 2>&1; then
+            || ! grep -F -- "stbn:source=pmj" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0041 must cover float32 env/cli precedence for pmj" \
             >> "$missing"
         status=1
@@ -664,7 +665,7 @@ if test ! -f "$test_path"; then
 else
     if ! grep -F -- "SIXEL_DITHER_INTERFRAME_NOISE_STRENGTH=0" "$test_path" \
             >/dev/null 2>&1 \
-            || ! grep -F -- "interframe:strategy=stbn-mask:noise_strength=" \
+            || ! grep -F -- "stbn:source=mask:noise_strength=" \
             "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0056 must cover cli/env noise_strength precedence" \
             >> "$missing"
@@ -674,13 +675,14 @@ fi
 
 test_path="$interframe_tests_dir/0044_interframe_strategy_cli_diffusion_matches_default_8bit_animated_gif.t"
 if test ! -f "$test_path"; then
-    echo "# tests/processing/dither/interframe: missing 8bit strategy=diffusion cli/default equivalence test" \
+    echo "# tests/processing/dither/interframe: missing 8bit interframe env-override guard test" \
         >> "$missing"
     status=1
 else
     if ! grep -F -- "-d interframe -p 16" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "interframe:strategy=diffusion" "$test_path" >/dev/null 2>&1; then
-        echo "# tests/processing/dither/interframe: 0044 must compare default interframe vs strategy=diffusion" \
+            || ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=" "$test_path" \
+            >/dev/null 2>&1; then
+        echo "# tests/processing/dither/interframe: 0044 must verify interframe ignores env source override" \
             >> "$missing"
         status=1
     fi
@@ -693,13 +695,14 @@ fi
 
 test_path="$interframe_tests_dir/0045_interframe_strategy_cli_diffusion_matches_default_float32_animated_gif.t"
 if test ! -f "$test_path"; then
-    echo "# tests/processing/dither/interframe: missing float32 strategy=diffusion cli/default equivalence test" \
+    echo "# tests/processing/dither/interframe: missing float32 interframe env-override guard test" \
         >> "$missing"
     status=1
 else
     if ! grep -F -- "-d interframe -p 16" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "interframe:strategy=diffusion" "$test_path" >/dev/null 2>&1; then
-        echo "# tests/processing/dither/interframe: 0045 must compare default interframe vs strategy=diffusion" \
+            || ! grep -F -- "SIXEL_DITHER_INTERFRAME_STRATEGY=" "$test_path" \
+            >/dev/null 2>&1; then
+        echo "# tests/processing/dither/interframe: 0045 must verify interframe ignores env source override" \
             >> "$missing"
         status=1
     fi
@@ -716,8 +719,8 @@ if test ! -f "$test_path"; then
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "interframe:strategy=stbn -p 16" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "interframe:strategy=stbn-hash -p 16" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "stbn -p 16" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "stbn:source=hash -p 16" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0046 must compare CLI stbn and stbn-hash" \
             >> "$missing"
         status=1
@@ -740,8 +743,8 @@ if test ! -f "$test_path"; then
         >> "$missing"
     status=1
 else
-    if ! grep -F -- "interframe:strategy=stbn -p 16" "$test_path" >/dev/null 2>&1 \
-            || ! grep -F -- "interframe:strategy=stbn-hash -p 16" "$test_path" >/dev/null 2>&1; then
+    if ! grep -F -- "stbn -p 16" "$test_path" >/dev/null 2>&1 \
+            || ! grep -F -- "stbn:source=hash -p 16" "$test_path" >/dev/null 2>&1; then
         echo "# tests/processing/dither/interframe: 0047 must compare CLI stbn and stbn-hash" \
             >> "$missing"
         status=1

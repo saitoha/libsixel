@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring float32 PMJ CLI strategy override wins over env.
+# TAP test ensuring float32 PMJ CLI source override wins over env.
 
 set -eux
 
@@ -60,7 +60,7 @@ cli_override_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "float32 interframe pmj cli override encode failed"

@@ -883,23 +883,21 @@ static sixel_option_choice_t const g_option_choices_builtin_palette[] = {
     { "gray8", SIXEL_BUILTIN_G8 }
 };
 
-static sixel_suboption_choice_t const g_option_choices_interframe_strategy[] = {
-    { "diffusion", SIXEL_INTERFRAME_STRATEGY_TOKEN_DIFFUSION },
-    { "stbn", SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_HASH },
-    { "stbn-hash", SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_HASH },
-    { "stbn-mask", SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_MASK },
+static sixel_suboption_choice_t const g_option_choices_stbn_source[] = {
+    { "hash", SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_HASH },
+    { "mask", SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_MASK },
     { "pmj", SIXEL_INTERFRAME_STRATEGY_TOKEN_PMJ }
 };
 
-static sixel_suboption_key_t const g_subkeys_diffusion_interframe[] = {
+static sixel_suboption_key_t const g_subkeys_diffusion_stbn[] = {
     {
-        "strategy",
+        "source",
         NULL,
         SIXEL_DITHER_INTERFRAME_STRATEGY_ENVVAR,
         SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_option_choices_interframe_strategy,
-        sizeof(g_option_choices_interframe_strategy)
-        / sizeof(g_option_choices_interframe_strategy[0])
+        g_option_choices_stbn_source,
+        sizeof(g_option_choices_stbn_source)
+        / sizeof(g_option_choices_stbn_source[0])
     },
     {
         "noise_strength",
@@ -916,101 +914,107 @@ enum {
      * Keep this as an enum constant so static initializers stay valid on
      * strict compilers (MSVC/pcc reject file-scope const objects here).
      */
-    G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT =
-        (int)(sizeof(g_subkeys_diffusion_interframe)
-              / sizeof(g_subkeys_diffusion_interframe[0]))
+    G_SUBKEYS_DIFFUSION_STBN_COUNT =
+        (int)(sizeof(g_subkeys_diffusion_stbn)
+              / sizeof(g_subkeys_diffusion_stbn[0]))
 };
 
 static sixel_option_value_schema_t const g_schema_diffusion_values[] = {
     {
         "auto",
         SIXEL_DIFFUSE_AUTO,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "none",
         SIXEL_DIFFUSE_NONE,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "fs",
         SIXEL_DIFFUSE_FS,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "atkinson",
         SIXEL_DIFFUSE_ATKINSON,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "jajuni",
         SIXEL_DIFFUSE_JAJUNI,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "stucki",
         SIXEL_DIFFUSE_STUCKI,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "burkes",
         SIXEL_DIFFUSE_BURKES,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "sierra1",
         SIXEL_DIFFUSE_SIERRA1,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "sierra2",
         SIXEL_DIFFUSE_SIERRA2,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "sierra3",
         SIXEL_DIFFUSE_SIERRA3,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "a_dither",
         SIXEL_DIFFUSE_A_DITHER,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "x_dither",
         SIXEL_DIFFUSE_X_DITHER,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "bluenoise",
         SIXEL_DIFFUSE_BLUENOISE_DITHER,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "lso2",
         SIXEL_DIFFUSE_LSO2,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
     },
     {
         "interframe",
         SIXEL_DIFFUSE_INTERFRAME,
-        g_subkeys_diffusion_interframe,
-        G_SUBKEYS_DIFFUSION_INTERFRAME_COUNT
+        NULL,
+        0
+    },
+    {
+        "stbn",
+        SIXEL_DIFFUSE_INTERFRAME,
+        g_subkeys_diffusion_stbn,
+        G_SUBKEYS_DIFFUSION_STBN_COUNT
     }
 };
 
@@ -6145,7 +6149,7 @@ sixel_encoder_parse_interframe_noise_strength_text(
             parsed < 0.0 ||
             parsed > 2.0) {
         sixel_helper_set_additional_message(
-            "-d interframe:noise_strength must be in range 0.0-2.0.");
+            "-d stbn:noise_strength must be in range 0.0-2.0.");
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -6820,14 +6824,6 @@ sixel_encoder_parse_diffusion_argument(
         return status;
     }
 
-    if (resolution->resolved_base_value != SIXEL_DIFFUSE_INTERFRAME
-            && resolution->assignment_count > 0u) {
-        sixel_helper_set_additional_message(
-            "-d suboptions are supported only for interframe.");
-        sixel_option_free_argument_resolution(resolution);
-        return SIXEL_BAD_ARGUMENT;
-    }
-
     return SIXEL_OK;
 }
 
@@ -6842,12 +6838,14 @@ sixel_encoder_resolve_interframe_suboptions(
     SIXELSTATUS status;
     size_t index;
     sixel_suboption_assignment_t const *assignment;
+    char const *base_name;
     int resolved_choice;
     int resolved_strength_u8;
 
     status = SIXEL_OK;
     index = 0u;
     assignment = NULL;
+    base_name = NULL;
     resolved_choice = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
     resolved_strength_u8 = 0;
     if (resolution == NULL ||
@@ -6862,10 +6860,32 @@ sixel_encoder_resolve_interframe_suboptions(
     *strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_NONE;
     *has_noise_strength_override = 0;
     *noise_strength_u8 = 0;
+    if (resolution->resolved_base_value != SIXEL_DIFFUSE_INTERFRAME) {
+        return SIXEL_OK;
+    }
+
+    if (resolution->base_def != NULL) {
+        base_name = resolution->base_def->name;
+    }
+    if (base_name != NULL && strcmp(base_name, "interframe") == 0) {
+        *has_strategy_override = 1;
+        *strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_DIFFUSION;
+    } else if (base_name != NULL && strcmp(base_name, "stbn") == 0) {
+        *has_strategy_override = 1;
+        *strategy_token = SIXEL_INTERFRAME_STRATEGY_TOKEN_STBN_HASH;
+        resolved_choice = sixel_interframe_strategy_token_from_env_common();
+        if (sixel_interframe_strategy_method_from_token(resolved_choice)
+                == SIXEL_INTERFRAME_METHOD_STBN) {
+            *strategy_token = resolved_choice;
+        }
+    } else {
+        return SIXEL_OK;
+    }
+
     while (index < resolution->assignment_count) {
         assignment = resolution->assignments + index;
         if (assignment->resolved_key_name != NULL
-                && strcmp(assignment->resolved_key_name, "strategy") == 0) {
+                && strcmp(assignment->resolved_key_name, "source") == 0) {
             if (!sixel_encoder_resolve_suboption_choice_value(
                     assignment,
                     &resolved_choice)) {

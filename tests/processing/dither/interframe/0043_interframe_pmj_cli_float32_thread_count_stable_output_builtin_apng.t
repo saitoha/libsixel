@@ -36,7 +36,7 @@ single_thread_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "float32 pmj cli single-thread encode failed"
@@ -49,7 +49,7 @@ multi_thread_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=pmj -p 16 \
+        -d stbn:source=pmj -p 16 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "float32 pmj cli multi-thread encode failed"

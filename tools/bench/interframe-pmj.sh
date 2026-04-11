@@ -3,7 +3,7 @@
 #
 # Interframe PMJ micro benchmark for local optimization checks.
 # Output format:
-#   strategy<TAB>precision<TAB>threads<TAB>elapsed_ms
+#   mode<TAB>precision<TAB>threads<TAB>elapsed_ms
 
 set -eu
 
@@ -30,11 +30,11 @@ if ! test -f "${input_image}"; then
 fi
 
 mkdir -p "${output_dir}"
-printf "strategy\tprecision\tthreads\telapsed_ms\n" > "${output_file}"
+printf "mode\tprecision\tthreads\telapsed_ms\n" > "${output_file}"
 
 for precision in 8bit float32; do
     for threads in 1 2; do
-        for strategy in diffusion stbn-hash stbn-mask pmj; do
+        for mode in interframe stbn:source=hash stbn:source=mask stbn:source=pmj; do
             run=1
             while test "${run}" -le "${runs}"; do
                 start_ms=$(
@@ -42,14 +42,14 @@ for precision in 8bit float32; do
                 )
                 if test "${precision}" = "float32"; then
                     "${img2sixel_bin}" \
-                        -d "interframe:strategy=${strategy}" \
+                        -d "${mode}" \
                         --precision=float32 \
                         -p 16 \
                         --threads="${threads}" \
                         "${input_image}" >/dev/null
                 else
                     "${img2sixel_bin}" \
-                        -d "interframe:strategy=${strategy}" \
+                        -d "${mode}" \
                         -p 16 \
                         --threads="${threads}" \
                         "${input_image}" >/dev/null
@@ -60,7 +60,7 @@ for precision in 8bit float32; do
                 elapsed_ms=$((end_ms - start_ms))
 
                 printf "%s\t%s\t%s\t%s\n" \
-                    "${strategy}" \
+                    "${mode}" \
                     "${precision}" \
                     "${threads}" \
                     "${elapsed_ms}" >> "${output_file}"

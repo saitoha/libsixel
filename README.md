@@ -584,10 +584,14 @@ Options:
                              lso2     -> libsixel method based on
                                          variable error diffusion
                                          tables, optimized for size
-                             interframe[:strategy=MODE]
+                             interframe
                                          -> interframe error diffusion
                                             (palette path; ignores -Y;
                                             not available with -I)
+                             stbn[:source=SOURCE]
+                                         -> interframe STBN/PMJ source
+                                            selection (SOURCE: hash,
+                                            mask, pmj)
 -y SCANTYPE, --diffusion-scan=SCANTYPE
                            choose scan order for error diffusion
                            SCANTYPE is one of them:
@@ -604,7 +608,7 @@ Options:
                              carry  -> accumulate error in workspace
                                        buffers before applying
                            note: ignored when -d interframe
-                                 is selected
+                                 or -d stbn is selected
 -f FINDTYPE, --find-largest=FINDTYPE
                            choose method for finding the largest
                            dimension of median cut boxes for

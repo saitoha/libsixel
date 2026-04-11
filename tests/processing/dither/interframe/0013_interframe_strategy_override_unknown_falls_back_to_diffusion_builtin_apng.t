@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring unknown interframe strategy override falls back to diffusion.
+# TAP test ensuring unknown interframe source override falls back to diffusion.
 
 set -eux
 
@@ -51,9 +51,9 @@ unknown_output=$(
 }
 
 test "${unknown_output}" = "${diffusion_output}" || {
-    echo "not ok" 1 - "unknown strategy override changed diffusion output"
+    echo "not ok" 1 - "unknown source override changed diffusion output"
     exit 0
 }
 
-echo "ok" 1 - "unknown strategy override falls back to diffusion"
+echo "ok" 1 - "unknown source override falls back to diffusion"
 exit 0

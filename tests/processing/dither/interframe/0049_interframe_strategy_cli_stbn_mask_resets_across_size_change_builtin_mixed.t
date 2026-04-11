@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring CLI strategy=stbn-mask resets before size-changing input.
+# TAP test ensuring CLI source=mask resets before size-changing input.
 
 set -eux
 
@@ -41,10 +41,10 @@ combined_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=stbn-mask -p 16 \
+        -d stbn:source=mask -p 16 \
         "${input_apng}" "${input_gif}"
 ) || {
-    echo "not ok" 1 - "strategy=stbn-mask combined encode failed"
+    echo "not ok" 1 - "source=mask combined encode failed"
     exit 0
 }
 
@@ -53,10 +53,10 @@ animated_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=stbn-mask -p 16 \
+        -d stbn:source=mask -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "strategy=stbn-mask animated encode failed"
+    echo "not ok" 1 - "source=mask animated encode failed"
     exit 0
 }
 
@@ -65,18 +65,18 @@ single_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d interframe:strategy=stbn-mask -p 16 \
+        -d stbn:source=mask -p 16 \
         "${input_gif}"
 ) || {
-    echo "not ok" 1 - "strategy=stbn-mask single encode failed"
+    echo "not ok" 1 - "source=mask single encode failed"
     exit 0
 }
 
 expected_output="${animated_output}${single_output}"
 test "${combined_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "strategy=stbn-mask state leaked across size change"
+    echo "not ok" 1 - "source=mask state leaked across size change"
     exit 0
 }
 
-echo "ok" 1 - "strategy=stbn-mask resets across size change"
+echo "ok" 1 - "source=mask resets across size change"
 exit 0
