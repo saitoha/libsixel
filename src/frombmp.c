@@ -46,6 +46,7 @@
 #include "allocator.h"
 #include "chunk.h"
 #include "frombmp.h"
+#include "frombmp-internal.h"
 
 #define SIXEL_BMP_DIB_CORE      12u
 #define SIXEL_BMP_DIB_OS2SHORT16 16u
@@ -84,8 +85,6 @@
 #define SIXEL_BMP_INFO40_MODE_OS2 \
     SIXEL_FROMBMP_INFO40_MODE_OS2
 
-#define SIXEL_BMP_MAX_PALETTE 256u
-
 #define SIXEL_BMP_V5_CSTYPE_OFFSET        56u
 #define SIXEL_BMP_V4_ENDPOINTS_OFFSET     60u
 #define SIXEL_BMP_V4_GAMMA_RED_OFFSET     96u
@@ -93,44 +92,6 @@
 #define SIXEL_BMP_V4_GAMMA_BLUE_OFFSET   104u
 #define SIXEL_BMP_V5_PROFILE_DATA_OFFSET 112u
 #define SIXEL_BMP_V5_PROFILE_SIZE_OFFSET 116u
-
-typedef struct sixel_bmp_decode_info {
-    sixel_chunk_t const *chunk;
-    int width;
-    int height;
-    int top_down;
-    int bpp;
-    int is_cmyk;
-    int dib_family;
-    unsigned int compression;
-    unsigned int red_mask;
-    unsigned int green_mask;
-    unsigned int blue_mask;
-    unsigned int alpha_mask;
-    int has_alpha_mask;
-    int has_explicit_alpha;
-    int palette_count;
-    unsigned char palette[SIXEL_BMP_MAX_PALETTE][4];
-    size_t pixel_offset;
-    size_t payload_size;
-    size_t row_stride;
-    unsigned char const *payload;
-    unsigned char const *icc_profile;
-    size_t icc_profile_length;
-    int has_calibrated_rgb;
-    double calibrated_gamma;
-    double calibrated_gamma_r;
-    double calibrated_gamma_g;
-    double calibrated_gamma_b;
-    double white_x;
-    double white_y;
-    double red_x;
-    double red_y;
-    double green_x;
-    double green_y;
-    double blue_x;
-    double blue_y;
-} sixel_bmp_decode_info_t;
 
 static SIXELSTATUS
 sixel_bmp_fail(char const *message)
@@ -881,7 +842,7 @@ sixel_bmp_parse_v5_embedded_profile(
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
+SIXELSTATUS
 sixel_bmp_parse_header(sixel_chunk_t const *chunk,
                        sixel_bmp_decode_info_t *info,
                        int info40_mode)
@@ -2711,53 +2672,6 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
     if (picc_profile_length != NULL) {
         *picc_profile_length = info.icc_profile_length;
     }
-    return SIXEL_OK;
-}
-
-SIXELSTATUS
-sixel_frombmp_probe(
-    sixel_chunk_t const *chunk,
-    sixel_frombmp_probe_t *probe,
-    int info40_mode)
-{
-    SIXELSTATUS status;
-    sixel_bmp_decode_info_t info;
-
-    status = SIXEL_FALSE;
-    memset(&info, 0, sizeof(info));
-    if (chunk == NULL || probe == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    memset(probe, 0, sizeof(*probe));
-    status = sixel_bmp_parse_header(chunk, &info, info40_mode);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    probe->width = info.width;
-    probe->height = info.height;
-    probe->bpp = info.bpp;
-    probe->is_cmyk = info.is_cmyk;
-    probe->dib_family = info.dib_family;
-    probe->compression = info.compression;
-    probe->payload = info.payload;
-    probe->payload_size = info.payload_size;
-    probe->icc_profile = info.icc_profile;
-    probe->icc_profile_length = info.icc_profile_length;
-    probe->has_calibrated_rgb = info.has_calibrated_rgb;
-    probe->calibrated_gamma = info.calibrated_gamma;
-    probe->calibrated_gamma_r = info.calibrated_gamma_r;
-    probe->calibrated_gamma_g = info.calibrated_gamma_g;
-    probe->calibrated_gamma_b = info.calibrated_gamma_b;
-    probe->white_x = info.white_x;
-    probe->white_y = info.white_y;
-    probe->red_x = info.red_x;
-    probe->red_y = info.red_y;
-    probe->green_x = info.green_x;
-    probe->green_y = info.green_y;
-    probe->blue_x = info.blue_x;
-    probe->blue_y = info.blue_y;
     return SIXEL_OK;
 }
 
