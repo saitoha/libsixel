@@ -11396,7 +11396,6 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         return 0;
     }
     if (layer->has_effect_orgl == 0 &&
-        layer->eff_orgl_seen == 0 &&
         legacy->has_effect_orgl != 0) {
         layer->has_effect_orgl = 1;
         layer->effect_orgl_rgb[0] = legacy->effect_orgl_rgb[0];
@@ -11408,7 +11407,6 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         merged = 1;
     }
     if (layer->has_effect_irgl == 0 &&
-        layer->eff_irgl_seen == 0 &&
         legacy->has_effect_irgl != 0) {
         layer->has_effect_irgl = 1;
         layer->effect_irgl_rgb[0] = legacy->effect_irgl_rgb[0];
@@ -11420,7 +11418,6 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         merged = 1;
     }
     if (layer->has_effect_chfx == 0 &&
-        layer->eff_chfx_seen == 0 &&
         legacy->has_effect_chfx != 0) {
         layer->has_effect_chfx = 1;
         layer->effect_chfx_rgb[0] = legacy->effect_chfx_rgb[0];
@@ -11432,7 +11429,6 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         merged = 1;
     }
     if (layer->has_effect_drsh == 0 &&
-        layer->eff_drsh_seen == 0 &&
         legacy->has_effect_drsh != 0) {
         layer->has_effect_drsh = 1;
         layer->effect_drsh_rgb[0] = legacy->effect_drsh_rgb[0];
@@ -11444,7 +11440,6 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         merged = 1;
     }
     if (layer->has_effect_irsh == 0 &&
-        layer->eff_irsh_seen == 0 &&
         legacy->has_effect_irsh != 0) {
         layer->has_effect_irsh = 1;
         layer->effect_irsh_rgb[0] = legacy->effect_irsh_rgb[0];
@@ -11456,7 +11451,6 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         merged = 1;
     }
     if (layer->has_effect_bevel == 0 &&
-        layer->eff_bevl_seen == 0 &&
         legacy->has_effect_bevel != 0) {
         layer->has_effect_bevel = 1;
         layer->effect_bevel_highlight_rgb[0] =
