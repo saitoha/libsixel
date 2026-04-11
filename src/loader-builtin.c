@@ -4981,6 +4981,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     int tga_truecolor_alpha;
     int bmp_comp;
     int bmp_is_cmyk;
+    int bmp_png_payload_is_16bit;
     int cms_converted;
     int cmyk_converted;
     int target_pixelformat;
@@ -5010,6 +5011,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     tga_truecolor_alpha = 0;
     bmp_comp = 0;
     bmp_is_cmyk = 0;
+    bmp_png_payload_is_16bit = 0;
     cms_converted = 0;
     cmyk_converted = 0;
     target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -5069,6 +5071,19 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                 return status;
             }
             if (bmp_probe.compression == SIXEL_FROMBMP_COMPRESSION_PNG) {
+                bmp_png_payload_is_16bit = stbi_is_16_bit_from_memory(
+                    payload_chunk.buffer,
+                    (int)payload_chunk.size);
+                if (bmp_png_payload_is_16bit != 0 && bgcolor != NULL) {
+                    /*
+                     * Keep 16-bit precision for BI_PNG when explicit
+                     * background composition is requested.
+                     */
+                    return sixel_frompng_load_nonindexed(&payload_chunk,
+                                                         frame,
+                                                         enable_cms,
+                                                         bgcolor);
+                }
                 stbi__start_mem(stb_context,
                                 payload_chunk.buffer,
                                 (int)payload_chunk.size);
