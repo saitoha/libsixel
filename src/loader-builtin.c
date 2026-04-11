@@ -1656,18 +1656,13 @@ sixel_builtin_bmp_convert_cmyk8_to_rgb8_icc(unsigned char *rgb_pixels,
         goto cleanup;
     }
     src_colorspace = sixel_cms_get_color_space(src_profile);
-    if (src_colorspace == SIXEL_CMS_COLORSPACE_RGB ||
-        src_colorspace == SIXEL_CMS_COLORSPACE_GRAY ||
-        src_colorspace == SIXEL_CMS_COLORSPACE_LAB) {
+    if (src_colorspace != SIXEL_CMS_COLORSPACE_CMYK) {
         /*
          * CMYK BMP pixels can only consume CMYK source profiles.
-         * Known non-CMYK domains are non-applicable mismatches.
+         * Any non-CMYK profile domain is a non-applicable mismatch.
          * They should not be reported as conversion failures.
          */
         trace_conversion_failure = 0;
-        goto cleanup;
-    }
-    if (src_colorspace != SIXEL_CMS_COLORSPACE_CMYK) {
         goto cleanup;
     }
     dst_profile = sixel_cms_create_srgb_profile();
