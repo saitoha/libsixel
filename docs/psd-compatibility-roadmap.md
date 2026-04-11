@@ -346,6 +346,14 @@ Key points used by this roadmap:
     For `clbl=1` stroke-composite stacks, `infx=0` interior-glow suppression
     is narrowed to `clbl=0` subsets only; PASS trace representatives
     `1468..1470` lock the bridge/suppression contracts.
+  - Legacy `lrFX` glow parsing (`oglw/iglw`) now uses payload-length/version
+    fallback for enabled/opacity tail bytes and v2 alternative color blocks.
+    Inactive glow targets seen in `lfx2` can now opt into legacy completion
+    (while keeping active `lfx2` channels intact), and PASS trace
+    representatives `1472..1474` lock v2 `iglw` inactive safety,
+    shape-fx2 merge/no-ignore, and active-channel preservation contracts.
+    Inactive `ebbl` targets now follow the same completion gate, guarded by
+    trace representative `1475`.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:

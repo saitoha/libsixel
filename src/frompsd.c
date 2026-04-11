@@ -1694,6 +1694,38 @@ sixel_builtin_psd_layer_has_active_effects(
 }
 
 static int
+sixel_builtin_psd_layer_has_inactive_effect_targets(
+    sixel_builtin_psd_layer_record_t const *layer)
+{
+    if (layer == NULL) {
+        return 0;
+    }
+    if (layer->eff_orgl_seen != 0 && layer->has_effect_orgl == 0) {
+        return 1;
+    }
+    if (layer->eff_irgl_seen != 0 && layer->has_effect_irgl == 0) {
+        return 1;
+    }
+    if (layer->eff_chfx_seen != 0 && layer->has_effect_chfx == 0) {
+        return 1;
+    }
+    if (layer->eff_drsh_seen != 0 && layer->has_effect_drsh == 0) {
+        return 1;
+    }
+    if (layer->eff_irsh_seen != 0 && layer->has_effect_irsh == 0) {
+        return 1;
+    }
+    /*
+     * Bevel channels can also be completed from legacy lrFX records when the
+     * lfx2 bevel object is present but inactive.
+     */
+    if (layer->eff_bevl_seen != 0 && layer->has_effect_bevel == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+static int
 sixel_builtin_psd_is_optional_mask_channel(
     sixel_builtin_psd_layer_record_t const *layer,
     int channel_index)
@@ -11783,6 +11815,135 @@ sixel_builtin_psd_legacy_lrfx_read_rgb_color(
     return 1;
 }
 
+static void
+sixel_builtin_psd_legacy_lrfx_read_enabled_opacity(
+    unsigned char const *payload,
+    size_t payload_length,
+    unsigned int version,
+    int *out_enabled,
+    float *out_opacity)
+{
+    size_t enabled_offsets[6];
+    size_t opacity_offsets[6];
+    size_t candidate_count;
+    size_t i;
+    int enabled;
+    float opacity;
+
+    memset(enabled_offsets, 0, sizeof(enabled_offsets));
+    memset(opacity_offsets, 0, sizeof(opacity_offsets));
+    candidate_count = 0u;
+    i = 0u;
+    enabled = 0;
+    opacity = 0.0f;
+    if (out_enabled == NULL || out_opacity == NULL) {
+        return;
+    }
+    *out_enabled = 0;
+    *out_opacity = 0.0f;
+    if (payload == NULL) {
+        return;
+    }
+
+    if (payload_length > 31u) {
+        enabled_offsets[candidate_count] = 30u;
+        opacity_offsets[candidate_count] = 31u;
+        ++candidate_count;
+        enabled_offsets[candidate_count] = 31u;
+        opacity_offsets[candidate_count] = 30u;
+        ++candidate_count;
+    }
+    if (version >= 2u && payload_length > 32u &&
+        payload[30] == 0u && payload[31] == 0u) {
+        /*
+         * Version-2 payloads can carry a reserved zero pair in v1 slots.
+         * Only in that narrow case, probe the v2 tail bytes.
+         */
+        enabled_offsets[candidate_count] = 32u;
+        opacity_offsets[candidate_count] = 33u;
+        ++candidate_count;
+    }
+
+    /*
+     * Legacy lrFX writers differ in byte order for the enabled/opacity tail.
+     * Prefer any active pair first, then keep the first candidate as fallback.
+     */
+    for (i = 0u; i < candidate_count; ++i) {
+        enabled = payload[enabled_offsets[i]] != 0 ? 1 : 0;
+        opacity = sixel_builtin_psd_clamp01(
+            (float)payload[opacity_offsets[i]] / 255.0f);
+        if (i == 0u) {
+            *out_enabled = enabled;
+            *out_opacity = opacity;
+        }
+        if (enabled != 0 && opacity > 0.0f) {
+            *out_enabled = 1;
+            *out_opacity = opacity;
+            return;
+        }
+    }
+}
+
+static int
+sixel_builtin_psd_legacy_lrfx_read_v2_alt_color(
+    unsigned char const *payload,
+    size_t payload_length,
+    float out_rgb[3])
+{
+    size_t candidate_offsets[6];
+    size_t candidate_count;
+    size_t candidate_offset;
+    size_t i;
+    size_t j;
+    int duplicate;
+
+    memset(candidate_offsets, 0, sizeof(candidate_offsets));
+    candidate_count = 0u;
+    candidate_offset = 0u;
+    i = 0u;
+    j = 0u;
+    duplicate = 0;
+    if (payload == NULL || out_rgb == NULL || payload_length <= 32u) {
+        return 0;
+    }
+
+    candidate_offsets[candidate_count] = 32u;
+    ++candidate_count;
+    if (payload_length > 33u) {
+        candidate_offsets[candidate_count] = 33u;
+        ++candidate_count;
+    }
+    if (payload_length > 34u) {
+        candidate_offsets[candidate_count] = 34u;
+        ++candidate_count;
+    }
+    if (payload_length >= 42u) {
+        candidate_offsets[candidate_count] = payload_length - 10u;
+        ++candidate_count;
+    }
+
+    for (i = 0u; i < candidate_count; ++i) {
+        candidate_offset = candidate_offsets[i];
+        duplicate = 0;
+        for (j = 0u; j < i; ++j) {
+            if (candidate_offsets[j] == candidate_offset) {
+                duplicate = 1;
+                break;
+            }
+        }
+        if (duplicate != 0 || candidate_offset + 10u > payload_length) {
+            continue;
+        }
+        if (sixel_builtin_psd_legacy_lrfx_read_rgb_color(
+                payload + candidate_offset,
+                payload_length - candidate_offset,
+                out_rgb) != 0) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static int
 sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     unsigned char const *data,
@@ -11808,8 +11969,6 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     int parsed;
     sixel_builtin_psd_layer_blend_mode_t mode0;
     sixel_builtin_psd_layer_blend_mode_t mode1;
-    int alt_enabled;
-    float alt_opacity;
 
     cursor = 0u;
     effect_count = 0u;
@@ -11837,8 +11996,6 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     parsed = 0;
     mode0 = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     mode1 = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
-    alt_enabled = 0;
-    alt_opacity = 0.0f;
 
     if (data == NULL || layer == NULL || key_length < 4u) {
         return 0;
@@ -11883,30 +12040,21 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                     22u,
                     SIXEL_BUILTIN_PSD_BLEND_SCREEN,
                     &mode0);
-                enabled = payload[30] != 0 ? 1 : 0;
-                opacity0 = sixel_builtin_psd_clamp01(
-                    (float)payload[31] / 255.0f);
-                if (version >= 2u && payload_length >= 42u) {
-                    /*
-                     * Some version-2 writers store opacity/enabled in
-                     * swapped byte order compared to version-1 payloads.
-                     */
-                    alt_enabled = payload[31] != 0 ? 1 : 0;
-                    alt_opacity = sixel_builtin_psd_clamp01(
-                        (float)payload[30] / 255.0f);
-                    if ((enabled == 0 || opacity0 <= 0.0f) &&
-                        alt_enabled != 0 &&
-                        alt_opacity > 0.0f) {
-                        enabled = 1;
-                        opacity0 = alt_opacity;
-                    }
-                    if (sixel_builtin_psd_legacy_lrfx_read_rgb_color(
-                            payload + 32u,
-                            payload_length - 32u,
+                sixel_builtin_psd_legacy_lrfx_read_enabled_opacity(
+                    payload,
+                    payload_length,
+                    version,
+                    &enabled,
+                    &opacity0);
+                if (version >= 2u && payload_length > 32u) {
+                    if (sixel_builtin_psd_legacy_lrfx_read_v2_alt_color(
+                            payload,
+                            payload_length,
                             rgb1) != 0) {
                         rgb0[0] = rgb1[0];
                         rgb0[1] = rgb1[1];
                         rgb0[2] = rgb1[2];
+                        has_color0 = 1;
                     }
                 }
                 if (enabled != 0 && has_color0 != 0 && opacity0 > 0.0f &&
@@ -14168,7 +14316,9 @@ sixel_builtin_psd_parse_layer_extra_data(
                     has_vstk_payload = 1;
                 }
                 allow_legacy_inactive_completion =
-                    has_vstk_payload != 0;
+                    has_vstk_payload != 0 ||
+                    sixel_builtin_psd_layer_has_inactive_effect_targets(
+                        layer) != 0;
                 (void)sixel_builtin_psd_parse_layer_effects_payload_loose(
                     buffer + cursor,
                     key_length,
@@ -17099,7 +17249,14 @@ sixel_builtin_psd_layer_interior_effects_enabled(
     if (layer->has_blend_interior_effects != 0 &&
         layer->blend_interior_effects_enabled == 0 &&
         has_pixel_channels == 0) {
-        if (layer->has_vector_stroke_style != 0 &&
+        if (layer->clipping != 0u) {
+            /*
+             * Clipped children in stroke-composite style stacks keep infx=0
+             * semantics for interior overlays; preserve vector-style fill
+             * color on those layers instead of forcing SoFi/GrFl.
+             */
+            enabled = 0;
+        } else if (layer->has_vector_stroke_style != 0 &&
             (layer->has_effect_stroke != 0 ||
              layer->has_effect_solid_overlay != 0 ||
              layer->has_effect_gradient_overlay != 0)) {
