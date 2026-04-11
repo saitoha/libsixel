@@ -760,13 +760,33 @@ sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
                                         size_t size,
                                         sixel_allocator_t *allocator)
 {
-    (void)sixel_frompng_apply_colorspace_fallback_internal(pixels,
-                                                           width,
-                                                           height,
-                                                           SIXEL_PIXELFORMAT_RGB888,
-                                                           buffer,
-                                                           size,
-                                                           allocator);
+    (void)sixel_frompng_apply_colorspace_fallback_internal(
+        pixels,
+        width,
+        height,
+        SIXEL_PIXELFORMAT_RGB888,
+        buffer,
+        size,
+        allocator);
+}
+
+int
+sixel_frompng_apply_colorspace_fallback_pixelformat(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char const *buffer,
+    size_t size,
+    sixel_allocator_t *allocator)
+{
+    return sixel_frompng_apply_colorspace_fallback_internal(pixels,
+                                                            width,
+                                                            height,
+                                                            pixelformat,
+                                                            buffer,
+                                                            size,
+                                                            allocator);
 }
 #else
 static int
@@ -790,6 +810,13 @@ sixel_frompng_apply_gama_to_srgb_u8(unsigned char *pixels,
                                     int apply_chrm_matrix,
                                     double source_to_srgb[3][3]);
 
+static void
+sixel_frompng_apply_gama_to_srgb_float32(float *pixels,
+                                         size_t pixel_count,
+                                         double file_gamma,
+                                         int apply_chrm_matrix,
+                                         double source_to_srgb[3][3]);
+
 void
 sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
                                         int width,
@@ -797,6 +824,26 @@ sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
                                         unsigned char const *buffer,
                                         size_t size,
                                         sixel_allocator_t *allocator)
+{
+    (void)sixel_frompng_apply_colorspace_fallback_pixelformat(
+        pixels,
+        width,
+        height,
+        SIXEL_PIXELFORMAT_RGB888,
+        buffer,
+        size,
+        allocator);
+}
+
+int
+sixel_frompng_apply_colorspace_fallback_pixelformat(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char const *buffer,
+    size_t size,
+    sixel_allocator_t *allocator)
 {
     size_t pixel_count;
     int has_srgb_chunk;
@@ -812,14 +859,18 @@ sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
     int has_icc_profile;
 
     if (pixels == NULL || width <= 0 || height <= 0 || buffer == NULL) {
-        return;
+        return 0;
+    }
+    if (pixelformat != SIXEL_PIXELFORMAT_RGB888 &&
+        pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        return 0;
     }
     if ((size_t)width > SIZE_MAX / (size_t)height) {
-        return;
+        return 0;
     }
     pixel_count = (size_t)width * (size_t)height;
     if (pixel_count > SIZE_MAX / 3u) {
-        return;
+        return 0;
     }
 
     has_srgb_chunk = 0;
@@ -842,14 +893,20 @@ sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
                                              &has_iccp_chunk,
                                              &has_chrm_chunk,
                                              source_chrm_xy)) {
-        return;
+        return 0;
     }
 
     if (has_iccp_chunk &&
         !(has_srgb_chunk && has_chrm_chunk) &&
         sixel_icc_parse_png_iccp(buffer, size, &icc_profile)) {
         has_icc_profile = 1;
-        if (sixel_icc_apply_rgb_u8(pixels, pixel_count, &icc_profile)) {
+        if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+            if (sixel_icc_apply_rgb_float32((float *)pixels,
+                                            pixel_count,
+                                            &icc_profile)) {
+                cms_applied = 1;
+            }
+        } else if (sixel_icc_apply_rgb_u8(pixels, pixel_count, &icc_profile)) {
             cms_applied = 1;
         }
     }
@@ -863,11 +920,22 @@ sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
                 sixel_frompng_build_chrm_to_srgb_matrix(source_chrm_xy,
                                                         source_to_srgb_matrix);
         }
-        sixel_frompng_apply_gama_to_srgb_u8(pixels,
-                                            pixel_count,
-                                            file_gamma,
-                                            apply_chrm_matrix,
-                                            source_to_srgb_matrix);
+        if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+            sixel_frompng_apply_gama_to_srgb_float32(
+                (float *)pixels,
+                pixel_count,
+                file_gamma,
+                apply_chrm_matrix,
+                source_to_srgb_matrix);
+        } else {
+            sixel_frompng_apply_gama_to_srgb_u8(
+                pixels,
+                pixel_count,
+                file_gamma,
+                apply_chrm_matrix,
+                source_to_srgb_matrix);
+        }
+        cms_applied = 1;
     }
 
     if (has_icc_profile) {
@@ -875,6 +943,7 @@ sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
     }
 
     (void)allocator;
+    return cms_applied;
 }
 #endif  /* HAVE_LCMS2 */
 

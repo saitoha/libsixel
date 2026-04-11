@@ -44,6 +44,16 @@ sixel_frompng_apply_colorspace_fallback(unsigned char *pixels,
                                         size_t size,
                                         sixel_allocator_t *allocator);
 
+int
+sixel_frompng_apply_colorspace_fallback_pixelformat(
+    unsigned char *pixels,
+    int width,
+    int height,
+    int pixelformat,
+    unsigned char const *buffer,
+    size_t size,
+    sixel_allocator_t *allocator);
+
 SIXELSTATUS
 sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                               sixel_frame_t *frame,

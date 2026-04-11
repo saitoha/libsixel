@@ -1148,7 +1148,10 @@ end:
 static SIXELSTATUS
 sixel_builtin_apply_bmp_png16_no_bg_policy(
     sixel_frame_t *frame,
-    uint16_t const *pixels16)
+    uint16_t const *pixels16,
+    int enable_cms,
+    unsigned char const *payload,
+    size_t payload_size)
 {
     SIXELSTATUS status;
     float *float_pixels;
@@ -1159,6 +1162,7 @@ sixel_builtin_apply_bmp_png16_no_bg_policy(
     size_t index;
     float alpha_unit;
     int has_zero_alpha;
+    int cms_converted;
 
     status = SIXEL_FALSE;
     float_pixels = NULL;
@@ -1169,11 +1173,16 @@ sixel_builtin_apply_bmp_png16_no_bg_policy(
     index = 0u;
     alpha_unit = 0.0f;
     has_zero_alpha = 0;
+    cms_converted = 0;
     if (frame == NULL ||
         frame->allocator == NULL ||
         pixels16 == NULL ||
         frame->width <= 0 ||
         frame->height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (enable_cms != 0 &&
+        (payload == NULL || payload_size == 0u)) {
         return SIXEL_BAD_ARGUMENT;
     }
     if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
@@ -1207,11 +1216,10 @@ sixel_builtin_apply_bmp_png16_no_bg_policy(
     }
 
     /*
-     * Keep the no-bg policy semantics: collapse partial alpha against black,
-     * but preserve fully transparent pixels in a side-channel mask.
+     * Build non-premultiplied RGB first, so optional PNG colorspace
+     * conversion runs against source color values before alpha scaling.
      */
     for (index = 0u; index < pixel_count; ++index) {
-        alpha_unit = (float)pixels16[index * 4u + 3u] / 65535.0f;
         if (pixels16[index * 4u + 3u] == 0u) {
             transparent_mask[index] = 1u;
             has_zero_alpha = 1;
@@ -1219,11 +1227,38 @@ sixel_builtin_apply_bmp_png16_no_bg_policy(
             transparent_mask[index] = 0u;
         }
         float_pixels[index * 3u + 0u] =
-            ((float)pixels16[index * 4u + 0u] / 65535.0f) * alpha_unit;
+            (float)pixels16[index * 4u + 0u] / 65535.0f;
         float_pixels[index * 3u + 1u] =
-            ((float)pixels16[index * 4u + 1u] / 65535.0f) * alpha_unit;
+            (float)pixels16[index * 4u + 1u] / 65535.0f;
         float_pixels[index * 3u + 2u] =
-            ((float)pixels16[index * 4u + 2u] / 65535.0f) * alpha_unit;
+            (float)pixels16[index * 4u + 2u] / 65535.0f;
+    }
+
+    if (enable_cms != 0) {
+        cms_converted = sixel_frompng_apply_colorspace_fallback_pixelformat(
+            (unsigned char *)float_pixels,
+            frame->width,
+            frame->height,
+            SIXEL_PIXELFORMAT_RGBFLOAT32,
+            payload,
+            payload_size,
+            frame->allocator);
+        if (!cms_converted) {
+            loader_trace_message(
+                "builtin BMP: embedded PNG colorspace fallback "
+                "did not convert RGBFLOAT32 path");
+        }
+    }
+
+    /*
+     * Keep the no-bg policy semantics: collapse partial alpha against black,
+     * but preserve fully transparent pixels in a side-channel mask.
+     */
+    for (index = 0u; index < pixel_count; ++index) {
+        alpha_unit = (float)pixels16[index * 4u + 3u] / 65535.0f;
+        float_pixels[index * 3u + 0u] *= alpha_unit;
+        float_pixels[index * 3u + 1u] *= alpha_unit;
+        float_pixels[index * 3u + 2u] *= alpha_unit;
     }
 
     if (frame->transparent_mask != NULL) {
@@ -5249,7 +5284,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                                                          enable_cms,
                                                          bgcolor);
                 }
-                if (bmp_png_payload_is_16bit != 0 && enable_cms == 0) {
+                if (bmp_png_payload_is_16bit != 0) {
                     pixels16 = stbi_load_16_from_memory(
                         payload_chunk.buffer,
                         (int)payload_chunk.size,
@@ -5264,7 +5299,10 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                     }
                     status = sixel_builtin_apply_bmp_png16_no_bg_policy(
                         frame,
-                        pixels16);
+                        pixels16,
+                        enable_cms,
+                        bmp_payload,
+                        bmp_payload_size);
                     stbi_image_free(pixels16);
                     pixels16 = NULL;
                     if (SIXEL_FAILED(status)) {
