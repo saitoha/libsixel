@@ -2441,18 +2441,22 @@ stbi_inline static stbi_uc stbi__clamp(int x)
 #define stbi__f2f(x)  ((int) (((x) * 4096 + 0.5)))
 #define stbi__fsh(x)  ((x) * 4096)
 
+/* Use a wider accumulator to avoid UB on malformed JPEG IDCT inputs. */
+typedef long long stbi__idct_int;
+#define stbi__idct_mul(x, c) ((x) * (stbi__idct_int)stbi__f2f(c))
+
 // derived from jidctint -- DCT_ISLOW
 #define STBI__IDCT_1D(s0,s1,s2,s3,s4,s5,s6,s7) \
-   int t0,t1,t2,t3,p1,p2,p3,p4,p5,x0,x1,x2,x3; \
+   stbi__idct_int t0,t1,t2,t3,p1,p2,p3,p4,p5,x0,x1,x2,x3; \
    p2 = s2;                                    \
    p3 = s6;                                    \
-   p1 = (p2+p3) * stbi__f2f(0.5411961f);       \
-   t2 = p1 + p3*stbi__f2f(-1.847759065f);      \
-   t3 = p1 + p2*stbi__f2f( 0.765366865f);      \
+   p1 = stbi__idct_mul((p2 + p3), 0.5411961f); \
+   t2 = p1 + stbi__idct_mul(p3, -1.847759065f); \
+   t3 = p1 + stbi__idct_mul(p2,  0.765366865f); \
    p2 = s0;                                    \
    p3 = s4;                                    \
-   t0 = stbi__fsh(p2+p3);                      \
-   t1 = stbi__fsh(p2-p3);                      \
+   t0 = (stbi__idct_int)stbi__fsh(p2+p3);      \
+   t1 = (stbi__idct_int)stbi__fsh(p2-p3);      \
    x0 = t0+t3;                                 \
    x3 = t0-t3;                                 \
    x1 = t1+t2;                                 \
@@ -2465,23 +2469,33 @@ stbi_inline static stbi_uc stbi__clamp(int x)
    p4 = t1+t3;                                 \
    p1 = t0+t3;                                 \
    p2 = t1+t2;                                 \
-   p5 = (p3+p4)*stbi__f2f( 1.175875602f);      \
-   t0 = t0*stbi__f2f( 0.298631336f);           \
-   t1 = t1*stbi__f2f( 2.053119869f);           \
-   t2 = t2*stbi__f2f( 3.072711026f);           \
-   t3 = t3*stbi__f2f( 1.501321110f);           \
-   p1 = p5 + p1*stbi__f2f(-0.899976223f);      \
-   p2 = p5 + p2*stbi__f2f(-2.562915447f);      \
-   p3 = p3*stbi__f2f(-1.961570560f);           \
-   p4 = p4*stbi__f2f(-0.390180644f);           \
+   p5 = stbi__idct_mul((p3 + p4),  1.175875602f); \
+   t0 = stbi__idct_mul(t0,  0.298631336f); \
+   t1 = stbi__idct_mul(t1,  2.053119869f); \
+   t2 = stbi__idct_mul(t2,  3.072711026f); \
+   t3 = stbi__idct_mul(t3,  1.501321110f); \
+   p1 = p5 + stbi__idct_mul(p1, -0.899976223f); \
+   p2 = p5 + stbi__idct_mul(p2, -2.562915447f); \
+   p3 = stbi__idct_mul(p3, -1.961570560f); \
+   p4 = stbi__idct_mul(p4, -0.390180644f); \
    t3 += p1+p4;                                \
    t2 += p2+p3;                                \
    t1 += p2+p4;                                \
    t0 += p1+p3;
 
+stbi_inline static stbi_uc stbi__clamp_ll(stbi__idct_int x)
+{
+   if ((unsigned long long)x > 255ull) {
+      if (x < 0) return 0;
+      return 255;
+   }
+   return stbi__clamp((int)x);
+}
+
 static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])
 {
-   int i,val[64],*v=val;
+   int i;
+   stbi__idct_int val[64],*v=val;
    stbi_uc *o;
    short *d = data;
 
@@ -2494,7 +2508,7 @@ static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])
          //    (1|2|3|4|5|6|7)==0          0     seconds
          //    all separate               -0.047 seconds
          //    1 && 2|3 && 4|5 && 6|7:    -0.047 seconds
-         int dcterm = d[0]*4;
+         stbi__idct_int dcterm = d[0]*4;
          v[0] = v[8] = v[16] = v[24] = v[32] = v[40] = v[48] = v[56] = dcterm;
       } else {
          STBI__IDCT_1D(d[ 0],d[ 8],d[16],d[24],d[32],d[40],d[48],d[56])
@@ -2513,10 +2527,10 @@ static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])
    }
 
    for (i=0, v=val, o=out; i < 8; ++i,v+=8,o+=out_stride) {
-      int y0;
-      int y1;
-      int y2;
-      int y3;
+      stbi__idct_int y0;
+      stbi__idct_int y1;
+      stbi__idct_int y2;
+      stbi__idct_int y3;
       // no fast case since the first 1D IDCT spread components out
       STBI__IDCT_1D(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7])
       // constants scaled things up by 1<<12, plus we had 1<<2 from first
@@ -2531,14 +2545,14 @@ static void stbi__idct_block(stbi_uc *out, int out_stride, short data[64])
       y3 = x3 + 65536 + (128 << 17);
       // tried computing the shifts into temps, or'ing the temps to see
       // if any were out of range, but that was slower
-      o[0] = stbi__clamp((y0 + t3) >> 17);
-      o[7] = stbi__clamp((y0 - t3) >> 17);
-      o[1] = stbi__clamp((y1 + t2) >> 17);
-      o[6] = stbi__clamp((y1 - t2) >> 17);
-      o[2] = stbi__clamp((y2 + t1) >> 17);
-      o[5] = stbi__clamp((y2 - t1) >> 17);
-      o[3] = stbi__clamp((y3 + t0) >> 17);
-      o[4] = stbi__clamp((y3 - t0) >> 17);
+      o[0] = stbi__clamp_ll((y0 + t3) >> 17);
+      o[7] = stbi__clamp_ll((y0 - t3) >> 17);
+      o[1] = stbi__clamp_ll((y1 + t2) >> 17);
+      o[6] = stbi__clamp_ll((y1 - t2) >> 17);
+      o[2] = stbi__clamp_ll((y2 + t1) >> 17);
+      o[5] = stbi__clamp_ll((y2 - t1) >> 17);
+      o[3] = stbi__clamp_ll((y3 + t0) >> 17);
+      o[4] = stbi__clamp_ll((y3 - t0) >> 17);
    }
 }
 
@@ -2553,12 +2567,13 @@ static stbi__uint16 stbi__clamp_16(int x, int max_value)
 
 static void stbi__idct_block_16(stbi__uint16 *out, int out_stride, short data[64], int precision)
 {
-   int i,val[64],*v=val;
+   int i;
+   stbi__idct_int val[64],*v=val;
    stbi__uint16 *o;
    short *d = data;
    int center;
    int max_value;
-   int round_bias;
+   stbi__idct_int round_bias;
 
    if (precision < 8 || precision > 12) {
       precision = 8;
@@ -2571,7 +2586,7 @@ static void stbi__idct_block_16(stbi__uint16 *out, int out_stride, short data[64
    for (i=0; i < 8; ++i,++d, ++v) {
       if (d[ 8]==0 && d[16]==0 && d[24]==0 && d[32]==0
            && d[40]==0 && d[48]==0 && d[56]==0) {
-         int dcterm = d[0]*4;
+         stbi__idct_int dcterm = d[0]*4;
          v[0] = v[8] = v[16] = v[24] = v[32] = v[40] = v[48] = v[56] = dcterm;
       } else {
          STBI__IDCT_1D(d[ 0],d[ 8],d[16],d[24],d[32],d[40],d[48],d[56])
@@ -2588,10 +2603,10 @@ static void stbi__idct_block_16(stbi__uint16 *out, int out_stride, short data[64
    }
 
    for (i=0, v=val, o=out; i < 8; ++i,v+=8,o+=out_stride) {
-      int y0;
-      int y1;
-      int y2;
-      int y3;
+      stbi__idct_int y0;
+      stbi__idct_int y1;
+      stbi__idct_int y2;
+      stbi__idct_int y3;
       STBI__IDCT_1D(v[0],v[1],v[2],v[3],v[4],v[5],v[6],v[7])
       y0 = x0 + round_bias;
       y1 = x1 + round_bias;
