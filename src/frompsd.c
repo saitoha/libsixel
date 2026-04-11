@@ -17331,7 +17331,13 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     &traced_vector_mask_glow);
             }
             if (suppress_bevel_glow_proxy == 0 &&
-                has_named_bevel != 0) {
+                has_named_bevel != 0 &&
+                layer->has_effect_stroke != 0) {
+                /*
+                 * Keep bevel proxy passes tied to explicit stroke-bearing
+                 * layers. This avoids spreading bevel glow into siblings that
+                 * only carry deferred overlay content.
+                 */
                 if (layer->effect_bevel_highlight_opacity > 0.0f) {
                     sixel_builtin_psd_apply_named_glow_effect(
                         layer,
