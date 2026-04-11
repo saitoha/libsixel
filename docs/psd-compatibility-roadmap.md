@@ -336,6 +336,10 @@ Key points used by this roadmap:
     limited to `clbl=0` layers, and trace representative `1459` fixes the
     `clbl=1` deferred-stroke preservation contract on
     `effects/stroke-composite.psd`.
+  - Deferred clipping-group effects now apply clip-weighted opacity/coverage
+    in the composite pass (`SoFi`, `GrFl`, `FrFX`), and PASS trace
+    representatives `1464..1467` lock clip-weighted contracts while
+    `1318` remains XFAIL.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:

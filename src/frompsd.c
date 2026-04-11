@@ -17636,12 +17636,18 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
     size_t x;
     size_t y;
     float overlay_opacity;
+    float clip_weight;
+    float effective_opacity;
     sixel_builtin_psd_layer_blend_mode_t effect_mode;
+    int traced_clip_weighted;
 
     x = 0u;
     y = 0u;
     overlay_opacity = 0.0f;
+    clip_weight = 0.0f;
+    effective_opacity = 0.0f;
     effect_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    traced_clip_weighted = 0;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL || layer == NULL ||
         layer->has_effect_solid_overlay == 0 ||
@@ -17669,12 +17675,26 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
             float blended_b;
 
             idx = row_offset + x;
-            if (clip_alpha_map[idx] <= 0.0f) {
+            clip_weight = sixel_builtin_psd_clamp_alpha_float32(
+                clip_alpha_map[idx]);
+            if (clip_weight <= 0.0f) {
                 continue;
             }
             alpha = sixel_builtin_psd_clamp_alpha_float32(canvas_alpha[idx]);
             if (alpha <= 0.0f) {
                 continue;
+            }
+            effective_opacity = sixel_builtin_psd_clamp01(
+                overlay_opacity * clip_weight);
+            if (effective_opacity <= 0.0f) {
+                continue;
+            }
+            if (traced_clip_weighted == 0) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: applying clip-weighted deferred "
+                    "solid overlay in layer fallback");
+                traced_clip_weighted = 1;
             }
             base_r = sixel_builtin_psd_clamp01(
                 canvas_rgb_premul[idx * 3u + 0u] / alpha);
@@ -17686,15 +17706,15 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
                 blended_r = sixel_builtin_psd_blend_channel_gamma(
                     base_r,
                     layer->effect_solid_overlay_rgb[0],
-                    overlay_opacity);
+                    effective_opacity);
                 blended_g = sixel_builtin_psd_blend_channel_gamma(
                     base_g,
                     layer->effect_solid_overlay_rgb[1],
-                    overlay_opacity);
+                    effective_opacity);
                 blended_b = sixel_builtin_psd_blend_channel_gamma(
                     base_b,
                     layer->effect_solid_overlay_rgb[2],
-                    overlay_opacity);
+                    effective_opacity);
             } else {
                 sixel_builtin_psd_blend_rgb(base_r,
                                             base_g,
@@ -17707,14 +17727,14 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
                                             &blended_g,
                                             &blended_b);
                 blended_r = sixel_builtin_psd_clamp01(
-                    base_r * (1.0f - overlay_opacity) +
-                    blended_r * overlay_opacity);
+                    base_r * (1.0f - effective_opacity) +
+                    blended_r * effective_opacity);
                 blended_g = sixel_builtin_psd_clamp01(
-                    base_g * (1.0f - overlay_opacity) +
-                    blended_g * overlay_opacity);
+                    base_g * (1.0f - effective_opacity) +
+                    blended_g * effective_opacity);
                 blended_b = sixel_builtin_psd_clamp01(
-                    base_b * (1.0f - overlay_opacity) +
-                    blended_b * overlay_opacity);
+                    base_b * (1.0f - effective_opacity) +
+                    blended_b * effective_opacity);
             }
             canvas_rgb_premul[idx * 3u + 0u] =
                 sixel_builtin_psd_clamp01(blended_r * alpha);
@@ -17742,16 +17762,19 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     float gradient_alpha;
     float gradient_rgb[3];
     float alpha;
+    float clip_weight;
     float base_r;
     float base_g;
     float base_b;
     float blended_r;
     float blended_g;
     float blended_b;
+    float effective_gradient_alpha;
     sixel_builtin_psd_layer_blend_mode_t effect_mode;
     sixel_builtin_psd_layer_record_t gradient_layer;
     int local_x;
     int local_y;
+    int traced_clip_weighted;
 
     x = 0u;
     y = 0u;
@@ -17762,16 +17785,19 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     gradient_rgb[1] = 0.0f;
     gradient_rgb[2] = 0.0f;
     alpha = 0.0f;
+    clip_weight = 0.0f;
     base_r = 0.0f;
     base_g = 0.0f;
     base_b = 0.0f;
     blended_r = 0.0f;
     blended_g = 0.0f;
     blended_b = 0.0f;
+    effective_gradient_alpha = 0.0f;
     effect_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     memset(&gradient_layer, 0, sizeof(gradient_layer));
     local_x = 0;
     local_y = 0;
+    traced_clip_weighted = 0;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL || layer == NULL ||
         layer->has_effect_gradient_overlay == 0 ||
@@ -17814,7 +17840,9 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
             size_t idx;
 
             idx = row_offset + x;
-            if (clip_alpha_map[idx] <= 0.0f) {
+            clip_weight = sixel_builtin_psd_clamp_alpha_float32(
+                clip_alpha_map[idx]);
+            if (clip_weight <= 0.0f) {
                 continue;
             }
             local_x = (int)x - layer->left;
@@ -17839,8 +17867,17 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
                 &gradient_alpha);
             gradient_alpha = sixel_builtin_psd_clamp_alpha_float32(
                 gradient_alpha * gradient_opacity);
-            if (gradient_alpha <= 0.0f) {
+            effective_gradient_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                gradient_alpha * clip_weight);
+            if (effective_gradient_alpha <= 0.0f) {
                 continue;
+            }
+            if (traced_clip_weighted == 0) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: applying clip-weighted deferred "
+                    "gradient overlay in layer fallback");
+                traced_clip_weighted = 1;
             }
             base_r = sixel_builtin_psd_clamp01(
                 canvas_rgb_premul[idx * 3u + 0u] / alpha);
@@ -17852,15 +17889,15 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
                 blended_r = sixel_builtin_psd_blend_channel_gamma(
                     base_r,
                     gradient_rgb[0],
-                    gradient_alpha);
+                    effective_gradient_alpha);
                 blended_g = sixel_builtin_psd_blend_channel_gamma(
                     base_g,
                     gradient_rgb[1],
-                    gradient_alpha);
+                    effective_gradient_alpha);
                 blended_b = sixel_builtin_psd_blend_channel_gamma(
                     base_b,
                     gradient_rgb[2],
-                    gradient_alpha);
+                    effective_gradient_alpha);
             } else {
                 sixel_builtin_psd_blend_rgb(base_r,
                                             base_g,
@@ -17873,14 +17910,14 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
                                             &blended_g,
                                             &blended_b);
                 blended_r = sixel_builtin_psd_clamp01(
-                    base_r * (1.0f - gradient_alpha) +
-                    blended_r * gradient_alpha);
+                    base_r * (1.0f - effective_gradient_alpha) +
+                    blended_r * effective_gradient_alpha);
                 blended_g = sixel_builtin_psd_clamp01(
-                    base_g * (1.0f - gradient_alpha) +
-                    blended_g * gradient_alpha);
+                    base_g * (1.0f - effective_gradient_alpha) +
+                    blended_g * effective_gradient_alpha);
                 blended_b = sixel_builtin_psd_clamp01(
-                    base_b * (1.0f - gradient_alpha) +
-                    blended_b * gradient_alpha);
+                    base_b * (1.0f - effective_gradient_alpha) +
+                    blended_b * effective_gradient_alpha);
             }
             canvas_rgb_premul[idx * 3u + 0u] =
                 sixel_builtin_psd_clamp01(blended_r * alpha);
@@ -17908,8 +17945,12 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     float stroke_opacity;
     float stroke_size;
     float stroke_rgb[3];
+    float clip_weight;
+    float neighbor_clip_weight;
+    float effective_stroke_alpha;
     int stroke_position;
     sixel_builtin_psd_layer_blend_mode_t effect_mode;
+    int traced_clip_weighted;
 
     x = 0u;
     y = 0u;
@@ -17920,8 +17961,12 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     stroke_rgb[0] = 0.0f;
     stroke_rgb[1] = 0.0f;
     stroke_rgb[2] = 0.0f;
+    clip_weight = 0.0f;
+    neighbor_clip_weight = 0.0f;
+    effective_stroke_alpha = 0.0f;
     stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
     effect_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    traced_clip_weighted = 0;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL || layer == NULL ||
         layer->has_effect_stroke == 0 || canvas_width == 0u ||
@@ -17977,11 +18022,13 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                 local_y >= (int)layer->height) {
                 continue;
             }
-            if (clip_alpha_map[idx] <= 0.0f) {
+            clip_weight = sixel_builtin_psd_clamp_alpha_float32(
+                clip_alpha_map[idx]);
+            if (clip_weight <= 0.0f) {
                 continue;
             }
             source_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                canvas_alpha[idx]);
+                canvas_alpha[idx] * clip_weight);
             if (source_alpha <= 0.0f) {
                 continue;
             }
@@ -18008,13 +18055,13 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     }
                     neighbor_index =
                         (size_t)ny * (size_t)canvas_width + (size_t)nx;
-                    if (clip_alpha_map[neighbor_index] <= 0.0f) {
-                        neighbor_alpha = 0.0f;
-                    } else {
-                        neighbor_alpha =
-                            sixel_builtin_psd_clamp_alpha_float32(
-                                canvas_alpha[neighbor_index]);
-                    }
+                    neighbor_clip_weight =
+                        sixel_builtin_psd_clamp_alpha_float32(
+                            clip_alpha_map[neighbor_index]);
+                    neighbor_alpha =
+                        sixel_builtin_psd_clamp_alpha_float32(
+                            canvas_alpha[neighbor_index] *
+                            neighbor_clip_weight);
                     if (neighbor_alpha > max_alpha) {
                         max_alpha = neighbor_alpha;
                     }
@@ -18041,8 +18088,17 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             }
             stroke_alpha = sixel_builtin_psd_clamp_alpha_float32(
                 stroke_coverage * stroke_opacity);
-            if (stroke_alpha <= 0.0f) {
+            effective_stroke_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                stroke_alpha * clip_weight);
+            if (effective_stroke_alpha <= 0.0f) {
                 continue;
+            }
+            if (traced_clip_weighted == 0) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: applying clip-weighted deferred "
+                    "effect stroke in layer fallback");
+                traced_clip_weighted = 1;
             }
             base_alpha = sixel_builtin_psd_clamp_alpha_float32(
                 canvas_alpha[idx]);
@@ -18062,15 +18118,15 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                 blended_r = sixel_builtin_psd_blend_channel_gamma(
                     base_r,
                     stroke_rgb[0],
-                    stroke_alpha);
+                    effective_stroke_alpha);
                 blended_g = sixel_builtin_psd_blend_channel_gamma(
                     base_g,
                     stroke_rgb[1],
-                    stroke_alpha);
+                    effective_stroke_alpha);
                 blended_b = sixel_builtin_psd_blend_channel_gamma(
                     base_b,
                     stroke_rgb[2],
-                    stroke_alpha);
+                    effective_stroke_alpha);
             } else {
                 sixel_builtin_psd_blend_rgb(base_r,
                                             base_g,
@@ -18083,17 +18139,17 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                                             &blended_g,
                                             &blended_b);
                 blended_r = sixel_builtin_psd_clamp01(
-                    base_r * (1.0f - stroke_alpha) +
-                    blended_r * stroke_alpha);
+                    base_r * (1.0f - effective_stroke_alpha) +
+                    blended_r * effective_stroke_alpha);
                 blended_g = sixel_builtin_psd_clamp01(
-                    base_g * (1.0f - stroke_alpha) +
-                    blended_g * stroke_alpha);
+                    base_g * (1.0f - effective_stroke_alpha) +
+                    blended_g * effective_stroke_alpha);
                 blended_b = sixel_builtin_psd_clamp01(
-                    base_b * (1.0f - stroke_alpha) +
-                    blended_b * stroke_alpha);
+                    base_b * (1.0f - effective_stroke_alpha) +
+                    blended_b * effective_stroke_alpha);
             }
             base_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                base_alpha + stroke_alpha * (1.0f - base_alpha));
+                base_alpha + effective_stroke_alpha * (1.0f - base_alpha));
             canvas_alpha[idx] = base_alpha;
             canvas_rgb_premul[idx * 3u + 0u] =
                 sixel_builtin_psd_clamp01(blended_r * base_alpha);
