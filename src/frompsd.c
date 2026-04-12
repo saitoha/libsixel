@@ -11479,6 +11479,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             outer_glow_inactive = 0;
         }
         merged = 1;
+        sixel_trace_topic_message(
+            "psd_decode",
+            "builtin PSD: merged legacy OrGl effect payload");
     }
     if (layer->has_effect_irgl == 0 &&
         legacy->has_effect_irgl != 0) {
@@ -11503,6 +11506,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             inner_glow_inactive = 0;
         }
         merged = 1;
+        sixel_trace_topic_message(
+            "psd_decode",
+            "builtin PSD: merged legacy IrGl effect payload");
     }
     if (layer->has_effect_chfx == 0 &&
         legacy->has_effect_chfx != 0) {
@@ -11527,6 +11533,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             inner_glow_inactive = 0;
         }
         merged = 1;
+        sixel_trace_topic_message(
+            "psd_decode",
+            "builtin PSD: merged legacy ChFX effect payload");
     }
     if (layer->has_effect_drsh == 0 &&
         legacy->has_effect_drsh != 0) {
@@ -12088,6 +12097,9 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                 if (enabled != 0 && has_color0 != 0 && opacity0 > 0.0f &&
                     size_px > 0.0f) {
                     if (memcmp(key, "oglw", 4u) == 0) {
+                        sixel_trace_topic_message(
+                            "psd_decode",
+                            "builtin PSD: legacy oglw active in lrFX payload");
                         layer->has_effect_orgl = 1;
                         layer->effect_orgl_rgb[0] = rgb0[0];
                         layer->effect_orgl_rgb[1] = rgb0[1];
@@ -12103,6 +12115,9 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                         layer->effect_outer_glow_size = size_px;
                         layer->effect_outer_glow_mode = mode0;
                     } else {
+                        sixel_trace_topic_message(
+                            "psd_decode",
+                            "builtin PSD: legacy iglw active in lrFX payload");
                         layer->has_effect_irgl = 1;
                         layer->effect_irgl_rgb[0] = rgb0[0];
                         layer->effect_irgl_rgb[1] = rgb0[1];
