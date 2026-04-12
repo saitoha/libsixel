@@ -309,6 +309,9 @@ static int sixel_encoder_frame_get_transparent_mask_pixels(
 static void sixel_encoder_bind_frame_transparent_mask(
     sixel_dither_t *dither,
     sixel_frame_t const *frame);
+static SIXELSTATUS sixel_encoder_promote_pal8_transparent_for_geometry(
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame);
 
 #define SIXEL_ENCODER_FRAME_PIPELINE_CAPACITY 4
 #define SIXEL_TRACE_TOPIC_ENCODE_HANDOFF "encode_handoff"
@@ -2201,6 +2204,142 @@ sixel_encoder_bind_frame_transparent_mask(
                                                     frame->transparent_mask,
                                                     pixel_count,
                                                     dither->keycolor);
+}
+
+/*
+ * Promote PAL8 frames with transparent key indices before geometry filters.
+ * Clip/resize work on RGB payloads, so the transparent key is converted to a
+ * side mask to keep transparency aligned with transformed pixels.
+ */
+static SIXELSTATUS
+sixel_encoder_promote_pal8_transparent_for_geometry(
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame)
+{
+    SIXELSTATUS status;
+    unsigned char *indices;
+    unsigned char *mask;
+    size_t pixel_count;
+    size_t index;
+    int clip_active;
+    int scale_active;
+    int transparent_index;
+    int ncolors;
+    int has_transparent;
+    unsigned char palette_index;
+
+    status = SIXEL_OK;
+    indices = NULL;
+    mask = NULL;
+    pixel_count = 0u;
+    index = 0u;
+    clip_active = 0;
+    scale_active = 0;
+    transparent_index = -1;
+    ncolors = 0;
+    has_transparent = 0;
+    palette_index = 0u;
+
+    if (encoder == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (frame->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    clip_active = (encoder->clipwidth > 0 && encoder->clipheight > 0)
+        ? 1
+        : 0;
+    scale_active = (encoder->pixelwidth >= 0
+                    || encoder->pixelheight >= 0
+                    || encoder->percentwidth >= 0
+                    || encoder->percentheight >= 0)
+        ? 1
+        : 0;
+    if (clip_active == 0 && scale_active == 0) {
+        return SIXEL_OK;
+    }
+
+    if (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_PAL8) {
+        return SIXEL_OK;
+    }
+
+    transparent_index = sixel_frame_get_transparent(frame);
+    if (transparent_index < 0 || transparent_index >= SIXEL_PALETTE_MAX) {
+        return SIXEL_OK;
+    }
+
+    if (sixel_frame_get_width(frame) <= 0 ||
+        sixel_frame_get_height(frame) <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)sixel_frame_get_width(frame)
+        > SIZE_MAX / (size_t)sixel_frame_get_height(frame)) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)sixel_frame_get_width(frame) *
+                  (size_t)sixel_frame_get_height(frame);
+
+    indices = sixel_frame_get_pixels(frame);
+    if (indices == NULL || sixel_frame_get_palette(frame) == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_promote_pal8_transparent_for_geometry: "
+            "indexed frame payload is missing.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    mask = (unsigned char *)sixel_allocator_malloc(frame->allocator,
+                                                   pixel_count);
+    if (mask == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_promote_pal8_transparent_for_geometry: "
+            "sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    ncolors = sixel_frame_get_ncolors(frame);
+    for (index = 0u; index < pixel_count; ++index) {
+        palette_index = indices[index];
+        if (ncolors > 0 && (int)palette_index >= ncolors) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_promote_pal8_transparent_for_geometry: "
+                "palette index out of range.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        if ((int)palette_index == transparent_index) {
+            mask[index] = 1u;
+            has_transparent = 1;
+        } else {
+            mask[index] = 0u;
+        }
+    }
+
+    status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGB888);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    if (frame->transparent_mask != NULL) {
+        sixel_allocator_free(frame->allocator, frame->transparent_mask);
+        frame->transparent_mask = NULL;
+        frame->transparent_mask_size = 0u;
+    }
+    if (has_transparent != 0) {
+        frame->transparent_mask = mask;
+        frame->transparent_mask_size = pixel_count;
+        frame->alpha_zero_is_transparent = 1;
+        mask = NULL;
+    } else {
+        frame->alpha_zero_is_transparent = 0;
+    }
+    frame->transparent = (-1);
+    frame->ncolors = (-1);
+    status = SIXEL_OK;
+
+end:
+    sixel_allocator_free(frame->allocator, mask);
+    return status;
 }
 
 /*
@@ -6453,6 +6592,13 @@ sixel_encoder_encode_frame(
     planner = context.planner;
     if (planner != NULL) {
         sixel_encoding_planner_reset_for_frame(planner);
+    }
+
+    status = sixel_encoder_promote_pal8_transparent_for_geometry(
+        encoder,
+        context.frame);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     /*

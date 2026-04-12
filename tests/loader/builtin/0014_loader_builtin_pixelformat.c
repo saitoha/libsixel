@@ -17,6 +17,8 @@
  * - PIC RGBA callback keeps alpha-zero mask and applies bgcolor blend
  * - TGA RGBA callback keeps alpha-zero mask and returns RGB888
  * - TGA indexed RGBA callback keeps PAL8 and collapses transparent index
+ * - Frame clip/resize keep transparent mask geometry in sync
+ * - Mask resize follows resampling method and stays binary after thresholding
  */
 
 #include <math.h>
@@ -663,6 +665,236 @@ run_builtin_loader_tga_pal_rgba_transparent_index_numeric_test(void)
     }
 
     return 0;
+}
+
+static int
+init_frame_rgb_mask_probe(sixel_allocator_t *allocator,
+                          sixel_frame_t **ppframe,
+                          unsigned char const *mask_source)
+{
+    static unsigned char const source_pixels[12] = {
+        0xffu, 0x00u, 0x00u,
+        0xffu, 0x00u, 0x00u,
+        0xffu, 0x00u, 0x00u,
+        0xffu, 0x00u, 0x00u
+    };
+    SIXELSTATUS status;
+    sixel_frame_t *frame;
+    unsigned char *pixels;
+    unsigned char *mask;
+
+    status = SIXEL_FALSE;
+    frame = NULL;
+    pixels = NULL;
+    mask = NULL;
+    if (allocator == NULL || ppframe == NULL || mask_source == NULL) {
+        return 1;
+    }
+    *ppframe = NULL;
+
+    status = sixel_frame_new(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
+        return 1;
+    }
+
+    pixels = (unsigned char *)sixel_allocator_malloc(allocator, 12u);
+    if (pixels == NULL) {
+        fprintf(stderr,
+                "frame rgb mask probe: pixel allocation failed\n");
+        goto end;
+    }
+    memcpy(pixels, source_pixels, sizeof(source_pixels));
+
+    status = sixel_frame_init(frame,
+                              pixels,
+                              4,
+                              1,
+                              SIXEL_PIXELFORMAT_RGB888,
+                              NULL,
+                              (-1));
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "frame rgb mask probe: frame init failed (%d)\n",
+                (int)status);
+        goto end;
+    }
+    pixels = NULL;
+
+    mask = (unsigned char *)sixel_allocator_malloc(allocator, 4u);
+    if (mask == NULL) {
+        fprintf(stderr,
+                "frame rgb mask probe: mask allocation failed\n");
+        goto end;
+    }
+    memcpy(mask, mask_source, 4u);
+    frame->transparent_mask = mask;
+    frame->transparent_mask_size = 4u;
+    frame->alpha_zero_is_transparent = 1;
+    mask = NULL;
+
+    *ppframe = frame;
+    frame = NULL;
+    status = SIXEL_OK;
+
+end:
+    sixel_allocator_free(allocator, pixels);
+    sixel_allocator_free(allocator, mask);
+    sixel_frame_unref(frame);
+    return SIXEL_SUCCEEDED(status) ? 0 : 1;
+}
+
+static int
+run_builtin_loader_frame_mask_geometry_numeric_test(void)
+{
+    static unsigned char const clip_mask_source[4] = {
+        1u, 0u, 1u, 0u
+    };
+    static unsigned char const scale_mask_source[4] = {
+        1u, 1u, 0u, 0u
+    };
+    static unsigned char const clip_expected_mask[2] = {
+        0u, 1u
+    };
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_frame_t *frame_clip;
+    sixel_frame_t *frame_nearest;
+    sixel_frame_t *frame_bilinear;
+    size_t index;
+    int nearest_transparent_count;
+    int bilinear_transparent_count;
+    int mask_diff_found;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    frame_clip = NULL;
+    frame_nearest = NULL;
+    frame_bilinear = NULL;
+    index = 0u;
+    nearest_transparent_count = 0;
+    bilinear_transparent_count = 0;
+    mask_diff_found = 0;
+
+    status = sixel_allocator_new(&allocator, malloc, calloc, realloc, free);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "frame mask geometry numeric: allocator init failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+
+    if (init_frame_rgb_mask_probe(allocator,
+                                  &frame_clip,
+                                  clip_mask_source) != 0) {
+        fprintf(stderr,
+                "frame mask geometry numeric: clip frame init failed\n");
+        goto end;
+    }
+    status = sixel_frame_clip(frame_clip, 1, 0, 2, 1);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "frame mask geometry numeric: clip failed (%d)\n",
+                (int)status);
+        goto end;
+    }
+    if (frame_clip->transparent_mask == NULL ||
+        frame_clip->transparent_mask_size != 2u) {
+        fprintf(stderr,
+                "frame mask geometry numeric: clipped mask shape mismatch\n");
+        goto end;
+    }
+    if (memcmp(frame_clip->transparent_mask,
+               clip_expected_mask,
+               sizeof(clip_expected_mask)) != 0) {
+        fprintf(stderr,
+                "frame mask geometry numeric: clipped mask value mismatch\n");
+        goto end;
+    }
+    if (frame_clip->alpha_zero_is_transparent == 0) {
+        fprintf(stderr,
+                "frame mask geometry numeric: clip alpha flag mismatch\n");
+        goto end;
+    }
+
+    if (init_frame_rgb_mask_probe(allocator,
+                                  &frame_nearest,
+                                  scale_mask_source) != 0 ||
+        init_frame_rgb_mask_probe(allocator,
+                                  &frame_bilinear,
+                                  scale_mask_source) != 0) {
+        fprintf(stderr,
+                "frame mask geometry numeric: resize frame init failed\n");
+        goto end;
+    }
+
+    status = sixel_frame_resize(frame_nearest, 7, 1, SIXEL_RES_NEAREST);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "frame mask geometry numeric: nearest resize failed (%d)\n",
+                (int)status);
+        goto end;
+    }
+    status = sixel_frame_resize(frame_bilinear, 7, 1, SIXEL_RES_BILINEAR);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "frame mask geometry numeric: bilinear resize failed (%d)\n",
+                (int)status);
+        goto end;
+    }
+
+    if (frame_nearest->transparent_mask == NULL ||
+        frame_bilinear->transparent_mask == NULL ||
+        frame_nearest->transparent_mask_size != 7u ||
+        frame_bilinear->transparent_mask_size != 7u) {
+        fprintf(stderr,
+                "frame mask geometry numeric: resized mask shape mismatch\n");
+        goto end;
+    }
+
+    for (index = 0u; index < 7u; ++index) {
+        if (frame_nearest->transparent_mask[index] > 1u ||
+            frame_bilinear->transparent_mask[index] > 1u) {
+            fprintf(stderr,
+                    "frame mask geometry numeric: mask is not binary\n");
+            goto end;
+        }
+        if (frame_nearest->transparent_mask[index] != 0u) {
+            nearest_transparent_count += 1;
+        }
+        if (frame_bilinear->transparent_mask[index] != 0u) {
+            bilinear_transparent_count += 1;
+        }
+        if (frame_nearest->transparent_mask[index] !=
+            frame_bilinear->transparent_mask[index]) {
+            mask_diff_found = 1;
+        }
+    }
+
+    if (nearest_transparent_count <= 0 || bilinear_transparent_count <= 0) {
+        fprintf(stderr,
+                "frame mask geometry numeric: transparent pixels lost\n");
+        goto end;
+    }
+    if (frame_nearest->alpha_zero_is_transparent == 0 ||
+        frame_bilinear->alpha_zero_is_transparent == 0) {
+        fprintf(stderr,
+                "frame mask geometry numeric: resize alpha flag mismatch\n");
+        goto end;
+    }
+    if (mask_diff_found == 0) {
+        fprintf(stderr,
+                "frame mask geometry numeric: resampling did not alter mask\n");
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    sixel_frame_unref(frame_clip);
+    sixel_frame_unref(frame_nearest);
+    sixel_frame_unref(frame_bilinear);
+    sixel_allocator_unref(allocator);
+    return SIXEL_SUCCEEDED(status) ? 0 : 1;
 }
 
 #include "tests/loader/builtin/0014_loader_builtin_pixelformat_bmp.inc.c"
@@ -4566,6 +4798,10 @@ run_builtin_loader_test(void)
         { "SIXEL_TEST_PIC_NUMERIC_RGBA_ALPHA_MASK_BGCOLOR",
           run_builtin_loader_pic_rgba_alpha_mask_bgcolor_numeric_test }
     };
+    static builtin_loader_env_dispatch_entry_t const frame_env_dispatch[] = {
+        { "SIXEL_TEST_FRAME_NUMERIC_TRANSPARENT_MASK_GEOMETRY",
+          run_builtin_loader_frame_mask_geometry_numeric_test }
+    };
     static builtin_loader_env_dispatch_group_t const env_dispatch_groups[] = {
         {
             hdr_env_dispatch,
@@ -4590,6 +4826,10 @@ run_builtin_loader_test(void)
         {
             psd_env_dispatch,
             sizeof(psd_env_dispatch) / sizeof(psd_env_dispatch[0])
+        },
+        {
+            frame_env_dispatch,
+            sizeof(frame_env_dispatch) / sizeof(frame_env_dispatch[0])
         }
     };
     char const *expected_cms_pixelformat_text;
@@ -4609,6 +4849,11 @@ run_builtin_loader_test(void)
         sizeof(env_dispatch_groups) / sizeof(env_dispatch_groups[0]));
     if (dispatch_result >= 0) {
         return dispatch_result;
+    }
+
+    result = run_builtin_loader_frame_mask_geometry_numeric_test();
+    if (result != 0) {
+        return result;
     }
 
     result = run_loader_component_case("builtin loader rgba8",

@@ -63,6 +63,26 @@ sixel_frame_validate_size(char const *context,
                           size_t *pixel_total,
                           size_t *byte_total,
                           int *depth_bytes);
+static SIXELSTATUS
+sixel_frame_resize_transparent_mask(
+    sixel_frame_t *frame,
+    int src_width,
+    int src_height,
+    int dst_width,
+    int dst_height,
+    int method_for_resampling,
+    unsigned char **pmask_out,
+    size_t *pmask_size_out,
+    int *phas_transparent_out);
+static SIXELSTATUS
+clip(unsigned char *pixels,
+     int sx,
+     int sy,
+     int pixelformat,
+     int cx,
+     int cy,
+     int cw,
+     int ch);
 
 
 /*
@@ -1129,6 +1149,165 @@ sixel_frame_float_pixelformat_for_colorspace(int colorspace)
 }
 
 static SIXELSTATUS
+sixel_frame_resize_transparent_mask(
+    sixel_frame_t *frame,
+    int src_width,
+    int src_height,
+    int dst_width,
+    int dst_height,
+    int method_for_resampling,
+    unsigned char **pmask_out,
+    size_t *pmask_size_out,
+    int *phas_transparent_out)
+{
+    SIXELSTATUS status;
+    unsigned char *src_mask;
+    unsigned char *src_rgb;
+    unsigned char *dst_rgb;
+    unsigned char *dst_mask;
+    size_t src_pixel_count;
+    size_t dst_pixel_count;
+    size_t src_rgb_size;
+    size_t dst_rgb_size;
+    size_t index;
+    unsigned char value;
+    int has_transparent;
+
+    status = SIXEL_OK;
+    src_mask = NULL;
+    src_rgb = NULL;
+    dst_rgb = NULL;
+    dst_mask = NULL;
+    src_pixel_count = 0u;
+    dst_pixel_count = 0u;
+    src_rgb_size = 0u;
+    dst_rgb_size = 0u;
+    index = 0u;
+    value = 0u;
+    has_transparent = 0;
+
+    if (pmask_out == NULL || pmask_size_out == NULL
+        || phas_transparent_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *pmask_out = NULL;
+    *pmask_size_out = 0u;
+    *phas_transparent_out = 0;
+
+    if (frame == NULL || frame->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (frame->transparent_mask == NULL || frame->transparent_mask_size == 0u) {
+        return SIXEL_OK;
+    }
+
+    if (src_width <= 0 || src_height <= 0 ||
+        dst_width <= 0 || dst_height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)src_width > SIZE_MAX / (size_t)src_height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    if ((size_t)dst_width > SIZE_MAX / (size_t)dst_height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    src_pixel_count = (size_t)src_width * (size_t)src_height;
+    dst_pixel_count = (size_t)dst_width * (size_t)dst_height;
+
+    /*
+     * The mask must have one byte per source pixel. If the size drifted from
+     * geometry metadata, discard the stale mask and continue without alpha.
+     */
+    if (frame->transparent_mask_size != src_pixel_count) {
+        sixel_allocator_free(frame->allocator, frame->transparent_mask);
+        frame->transparent_mask = NULL;
+        frame->transparent_mask_size = 0u;
+        frame->alpha_zero_is_transparent = 0;
+        return SIXEL_OK;
+    }
+    if (src_pixel_count > SIZE_MAX / 3u || dst_pixel_count > SIZE_MAX / 3u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    src_rgb_size = src_pixel_count * 3u;
+    dst_rgb_size = dst_pixel_count * 3u;
+
+    src_rgb = (unsigned char *)sixel_allocator_malloc(frame->allocator,
+                                                      src_rgb_size);
+    if (src_rgb == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize_transparent_mask: "
+            "sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    dst_rgb = (unsigned char *)sixel_allocator_malloc(frame->allocator,
+                                                      dst_rgb_size);
+    if (dst_rgb == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize_transparent_mask: "
+            "sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    dst_mask = (unsigned char *)sixel_allocator_malloc(frame->allocator,
+                                                       dst_pixel_count);
+    if (dst_mask == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize_transparent_mask: "
+            "sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    src_mask = frame->transparent_mask;
+    for (index = 0u; index < src_pixel_count; ++index) {
+        value = src_mask[index] != 0u ? 0xffu : 0u;
+        src_rgb[index * 3u + 0u] = value;
+        src_rgb[index * 3u + 1u] = value;
+        src_rgb[index * 3u + 2u] = value;
+    }
+
+    status = sixel_helper_scale_image(dst_rgb,
+                                      src_rgb,
+                                      src_width,
+                                      src_height,
+                                      SIXEL_PIXELFORMAT_RGB888,
+                                      dst_width,
+                                      dst_height,
+                                      method_for_resampling,
+                                      frame->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    for (index = 0u; index < dst_pixel_count; ++index) {
+        value = dst_rgb[index * 3u + 0u];
+        if (value >= 128u) {
+            dst_mask[index] = 1u;
+            has_transparent = 1;
+        } else {
+            dst_mask[index] = 0u;
+        }
+    }
+
+    if (has_transparent != 0) {
+        *pmask_out = dst_mask;
+        *pmask_size_out = dst_pixel_count;
+        *phas_transparent_out = 1;
+        dst_mask = NULL;
+    }
+    status = SIXEL_OK;
+
+end:
+    sixel_allocator_free(frame->allocator, src_rgb);
+    sixel_allocator_free(frame->allocator, dst_rgb);
+    sixel_allocator_free(frame->allocator, dst_mask);
+
+    return status;
+}
+
+static SIXELSTATUS
 sixel_frame_promote_to_float32(sixel_frame_t *frame)
 {
     float *float_pixels;
@@ -1284,14 +1463,22 @@ sixel_frame_resize(
     SIXELSTATUS status = SIXEL_FALSE;
     size_t size;
     unsigned char *scaled_frame = NULL;
+    unsigned char *old_pixels;
+    unsigned char *resized_mask;
     size_t unused_pixel_total;
+    size_t resized_mask_size;
     int unused_depth_bytes;
+    int has_transparent;
 
     sixel_frame_ref(frame);
 
     size = 0u;
+    old_pixels = NULL;
+    resized_mask = NULL;
     unused_pixel_total = 0u;
+    resized_mask_size = 0u;
     unused_depth_bytes = 0;
+    has_transparent = 0;
 
     /* check parameters */
     if (width <= 0) {
@@ -1362,8 +1549,36 @@ sixel_frame_resize(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    sixel_allocator_free(frame->allocator, frame->pixels.u8ptr);
+
+    status = sixel_frame_resize_transparent_mask(
+        frame,
+        frame->width,
+        frame->height,
+        width,
+        height,
+        method_for_resampling,
+        &resized_mask,
+        &resized_mask_size,
+        &has_transparent);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    old_pixels = frame->pixels.u8ptr;
     frame->pixels.u8ptr = scaled_frame;
+    scaled_frame = NULL;
+    sixel_allocator_free(frame->allocator, old_pixels);
+    old_pixels = NULL;
+    if (frame->transparent_mask != NULL) {
+        sixel_allocator_free(frame->allocator, frame->transparent_mask);
+        frame->transparent_mask = NULL;
+        frame->transparent_mask_size = 0u;
+    }
+    frame->transparent_mask = resized_mask;
+    frame->transparent_mask_size = resized_mask_size;
+    frame->alpha_zero_is_transparent = has_transparent != 0 ? 1 : 0;
+    resized_mask = NULL;
+    resized_mask_size = 0u;
     frame->width = width;
     frame->height = height;
 
@@ -1371,6 +1586,10 @@ out:
     status = SIXEL_OK;
 
 end:
+    sixel_allocator_free(frame->allocator, resized_mask);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(frame->allocator, scaled_frame);
+    }
     sixel_frame_unref(frame);
 
     return status;
@@ -1394,17 +1613,25 @@ sixel_frame_resize_float32(
     size_t pixel_total;
     size_t size;
     float *scaled_frame;
+    float *old_pixels;
+    unsigned char *resized_mask;
     int depth;
     int depth_bytes;
     int target_pixelformat;
+    size_t resized_mask_size;
+    int has_transparent;
 
     status = SIXEL_FALSE;
     scaled_frame = NULL;
+    old_pixels = NULL;
+    resized_mask = NULL;
     pixel_total = 0u;
     size = 0u;
     depth = 0;
     depth_bytes = 0;
     target_pixelformat = frame->pixelformat;
+    resized_mask_size = 0u;
+    has_transparent = 0;
 
     sixel_frame_ref(frame);
 
@@ -1506,8 +1733,35 @@ sixel_frame_resize_float32(
         goto end;
     }
 
-    sixel_allocator_free(frame->allocator, frame->pixels.f32ptr);
+    status = sixel_frame_resize_transparent_mask(
+        frame,
+        frame->width,
+        frame->height,
+        width,
+        height,
+        method_for_resampling,
+        &resized_mask,
+        &resized_mask_size,
+        &has_transparent);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    old_pixels = frame->pixels.f32ptr;
     frame->pixels.f32ptr = scaled_frame;
+    scaled_frame = NULL;
+    sixel_allocator_free(frame->allocator, old_pixels);
+    old_pixels = NULL;
+    if (frame->transparent_mask != NULL) {
+        sixel_allocator_free(frame->allocator, frame->transparent_mask);
+        frame->transparent_mask = NULL;
+        frame->transparent_mask_size = 0u;
+    }
+    frame->transparent_mask = resized_mask;
+    frame->transparent_mask_size = resized_mask_size;
+    frame->alpha_zero_is_transparent = has_transparent != 0 ? 1 : 0;
+    resized_mask = NULL;
+    resized_mask_size = 0u;
     frame->width = width;
     frame->height = height;
 
@@ -1515,7 +1769,8 @@ out:
     status = SIXEL_OK;
 
 end:
-    if (SIXEL_FAILED(status) && scaled_frame != NULL) {
+    sixel_allocator_free(frame->allocator, resized_mask);
+    if (SIXEL_FAILED(status)) {
         sixel_allocator_free(frame->allocator, scaled_frame);
     }
     sixel_frame_unref(frame);
@@ -1523,6 +1778,88 @@ end:
     return status;
 }
 
+
+static SIXELSTATUS
+sixel_frame_clip_transparent_mask(
+    sixel_frame_t *frame,
+    int src_width,
+    int src_height,
+    int clip_x,
+    int clip_y,
+    int clip_width,
+    int clip_height)
+{
+    SIXELSTATUS status;
+    size_t src_pixel_count;
+    size_t dst_pixel_count;
+    size_t index;
+    int has_transparent;
+
+    status = SIXEL_OK;
+    src_pixel_count = 0u;
+    dst_pixel_count = 0u;
+    index = 0u;
+    has_transparent = 0;
+
+    if (frame == NULL || frame->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (frame->transparent_mask == NULL || frame->transparent_mask_size == 0u) {
+        frame->alpha_zero_is_transparent = 0;
+        return SIXEL_OK;
+    }
+    if (src_width <= 0 || src_height <= 0
+        || clip_width <= 0 || clip_height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)src_width > SIZE_MAX / (size_t)src_height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    if ((size_t)clip_width > SIZE_MAX / (size_t)clip_height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    src_pixel_count = (size_t)src_width * (size_t)src_height;
+    dst_pixel_count = (size_t)clip_width * (size_t)clip_height;
+
+    if (frame->transparent_mask_size != src_pixel_count) {
+        sixel_allocator_free(frame->allocator, frame->transparent_mask);
+        frame->transparent_mask = NULL;
+        frame->transparent_mask_size = 0u;
+        frame->alpha_zero_is_transparent = 0;
+        return SIXEL_OK;
+    }
+
+    status = clip(frame->transparent_mask,
+                  src_width,
+                  src_height,
+                  SIXEL_PIXELFORMAT_G8,
+                  clip_x,
+                  clip_y,
+                  clip_width,
+                  clip_height);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    for (index = 0u; index < dst_pixel_count; ++index) {
+        if (frame->transparent_mask[index] != 0u) {
+            has_transparent = 1;
+            break;
+        }
+    }
+
+    if (has_transparent == 0) {
+        sixel_allocator_free(frame->allocator, frame->transparent_mask);
+        frame->transparent_mask = NULL;
+        frame->transparent_mask_size = 0u;
+        frame->alpha_zero_is_transparent = 0;
+    } else {
+        frame->transparent_mask_size = dst_pixel_count;
+        frame->alpha_zero_is_transparent = 1;
+    }
+
+    return SIXEL_OK;
+}
 
 static SIXELSTATUS
 clip(unsigned char *pixels,
@@ -1592,10 +1929,14 @@ sixel_frame_clip(
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *normalized_pixels;
     unsigned char *raw_pixels;
+    int src_width;
+    int src_height;
 
     sixel_frame_ref(frame);
 
     raw_pixels = frame->pixels.u8ptr;
+    src_width = frame->width;
+    src_height = frame->height;
 
     /* check parameters */
     if (width <= 0) {
@@ -1659,6 +2000,17 @@ sixel_frame_clip(
                   y,
                   width,
                   height);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_frame_clip_transparent_mask(frame,
+                                               src_width,
+                                               src_height,
+                                               x,
+                                               y,
+                                               width,
+                                               height);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
