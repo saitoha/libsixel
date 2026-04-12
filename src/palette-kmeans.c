@@ -2853,6 +2853,36 @@ sixel_kmeans_center_distance_sq(double const *centers,
     return distance_sq;
 }
 
+static double
+sixel_kmeans_sample_center_distance_sq(double const *samples,
+                                       unsigned int sample_index,
+                                       double const *centers,
+                                       unsigned int center_index)
+{
+    unsigned int channel;
+    size_t sample_base;
+    size_t center_base;
+    double diff;
+    double distance_sq;
+
+    channel = 0u;
+    sample_base = 0u;
+    center_base = 0u;
+    diff = 0.0;
+    distance_sq = 0.0;
+    if (samples == NULL || centers == NULL) {
+        return 0.0;
+    }
+    sample_base = (size_t)sample_index * 3u;
+    center_base = (size_t)center_index * 3u;
+    for (channel = 0u; channel < 3u; ++channel) {
+        diff = samples[sample_base + channel]
+            - centers[center_base + channel];
+        distance_sq += diff * diff;
+    }
+    return distance_sq;
+}
+
 static void
 sixel_kmeans_compute_half_center_distances(double const *centers,
                                            unsigned int k,
@@ -3091,7 +3121,6 @@ sixel_kmeans_assign_samples_full_elkan(double const *centers,
     double distance;
     double best_distance_sq;
     double second_distance_sq;
-    double diff;
 
     sample_index = 0u;
     center_index = 0u;
@@ -3105,7 +3134,6 @@ sixel_kmeans_assign_samples_full_elkan(double const *centers,
     distance = 0.0;
     best_distance_sq = 0.0;
     second_distance_sq = 0.0;
-    diff = 0.0;
     if (centers == NULL || samples == NULL || membership == NULL
             || distance_cache == NULL || cluster_weights == NULL
             || accum == NULL || upper_bounds == NULL
@@ -3135,21 +3163,18 @@ sixel_kmeans_assign_samples_full_elkan(double const *centers,
             continue;
         }
         best_index = 0u;
-        best_distance_sq = 0.0;
-        for (channel = 0u; channel < 3u; ++channel) {
-            diff = samples[sample_index * 3u + channel]
-                - centers[channel];
-            best_distance_sq += diff * diff;
-        }
+        best_distance_sq = sixel_kmeans_sample_center_distance_sq(samples,
+                                                                  sample_index,
+                                                                  centers,
+                                                                  0u);
         lower_matrix[matrix_base] = sqrt(best_distance_sq);
         second_distance_sq = DBL_MAX;
         for (center_index = 1u; center_index < k; ++center_index) {
-            distance_sq = 0.0;
-            for (channel = 0u; channel < 3u; ++channel) {
-                diff = samples[sample_index * 3u + channel]
-                    - centers[center_index * 3u + channel];
-                distance_sq += diff * diff;
-            }
+            distance_sq = sixel_kmeans_sample_center_distance_sq(
+                samples,
+                sample_index,
+                centers,
+                center_index);
             distance = sqrt(distance_sq);
             lower_matrix[matrix_base + center_index] = distance;
             if (distance_sq < best_distance_sq) {
