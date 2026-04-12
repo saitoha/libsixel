@@ -11871,6 +11871,7 @@ sixel_builtin_psd_legacy_lrfx_read_enabled_opacity(
     unsigned char const *payload,
     size_t payload_length,
     unsigned int version,
+    int allow_v2_enabled_opacity_shift,
     int *out_enabled,
     float *out_opacity)
 {
@@ -11904,11 +11905,19 @@ sixel_builtin_psd_legacy_lrfx_read_enabled_opacity(
         opacity_offsets[candidate_count] = 30u;
         ++candidate_count;
     }
-    if (version >= 2u && payload_length > 33u &&
-        payload[30] == 0u && payload[31] == 0u) {
+    if (allow_v2_enabled_opacity_shift != 0 &&
+        version >= 2u && payload_length > 32u) {
         /*
-         * Version-2 payloads can carry a reserved zero pair in v1 slots.
-         * Only in that narrow case, probe the v2 tail bytes.
+         * Version-2 payloads can shift the enabled byte after the
+         * opacity byte (...., opacity, enabled, reserved).
+         */
+        enabled_offsets[candidate_count] = 32u;
+        opacity_offsets[candidate_count] = 31u;
+        ++candidate_count;
+    }
+    if (version >= 2u && payload_length > 33u) {
+        /*
+         * Some writers place both enabled/opacity in the v2 tail.
          */
         enabled_offsets[candidate_count] = 32u;
         opacity_offsets[candidate_count] = 33u;
@@ -12095,6 +12104,7 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                     payload,
                     payload_length,
                     version,
+                    memcmp(key, "oglw", 4u) == 0 ? 1 : 0,
                     &enabled,
                     &opacity0);
                 if (version >= 2u && payload_length > 32u) {
