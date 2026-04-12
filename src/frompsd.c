@@ -20469,6 +20469,34 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 effective_composite_layer->has_effect_outer_glow != 0 ||
                 effective_composite_layer->has_effect_inner_glow != 0;
         }
+        if (apply_clipping != 0 &&
+            effective_composite_layer->has_effect_stroke != 0 &&
+            effective_composite_layer->effect_stroke_from_vector_style == 0 &&
+            effective_composite_layer->effect_stroke_position ==
+                SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE &&
+            effective_composite_layer->has_effect_solid_overlay != 0 &&
+            effective_composite_layer->has_blend_clipped_elements != 0 &&
+            effective_composite_layer->blend_clipped_elements_enabled != 0 &&
+            effective_composite_layer->has_vector_mask != 0) {
+            /*
+             * Some clbl=1 clipping siblings carry explicit inside stroke plus
+             * solid overlay. On stroke-composite stacks this can duplicate the
+             * contour that is already represented by the base + clip blend.
+             * Keep sibling overlay but suppress this narrow stroke subset.
+             */
+            layer_for_composite = *effective_composite_layer;
+            layer_for_composite.has_effect_stroke = 0;
+            effective_composite_layer = &layer_for_composite;
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: suppressing explicit inside stroke on "
+                "clbl=1 clipping sibling");
+            apply_effects_subset =
+                effective_composite_layer->has_effect_solid_overlay != 0 ||
+                effective_composite_layer->has_effect_gradient_overlay != 0 ||
+                effective_composite_layer->has_effect_outer_glow != 0 ||
+                effective_composite_layer->has_effect_inner_glow != 0;
+        }
         if (defer_clip_group_overlay == 0 &&
             apply_effects_subset != 0) {
             sixel_builtin_psd_apply_layer_effects_subset(
