@@ -1603,6 +1603,20 @@ sixel_builtin_cms_clamp_unit_to_u8(float value)
 }
 
 static int
+sixel_builtin_icc_header_declares_cmyk(unsigned char const *icc_profile,
+                                       size_t icc_profile_length)
+{
+    if (icc_profile == NULL || icc_profile_length < 20u) {
+        return 0;
+    }
+    /*
+     * ICC header bytes 16..19 encode the data colorspace signature.
+     * CMYK pixel streams can only consume "CMYK" profiles.
+     */
+    return memcmp(icc_profile + 16u, "CMYK", 4u) == 0 ? 1 : 0;
+}
+
+static int
 sixel_builtin_bmp_convert_cmyk8_to_rgb8_icc(unsigned char *rgb_pixels,
                                              unsigned char const *cmyk_pixels,
                                              size_t pixel_count,
@@ -1619,6 +1633,7 @@ sixel_builtin_bmp_convert_cmyk8_to_rgb8_icc(unsigned char *rgb_pixels,
     size_t index;
     int converted;
     int trace_conversion_failure;
+    int header_declares_cmyk;
 
     src_profile = NULL;
     dst_profile = NULL;
@@ -1630,6 +1645,7 @@ sixel_builtin_bmp_convert_cmyk8_to_rgb8_icc(unsigned char *rgb_pixels,
     index = 0u;
     converted = 0;
     trace_conversion_failure = 1;
+    header_declares_cmyk = 0;
     if (rgb_pixels == NULL ||
         cmyk_pixels == NULL ||
         pixel_count == 0u ||
@@ -1638,6 +1654,17 @@ sixel_builtin_bmp_convert_cmyk8_to_rgb8_icc(unsigned char *rgb_pixels,
         return 0;
     }
     if (pixel_count > SIZE_MAX / 3u) {
+        return 0;
+    }
+    header_declares_cmyk = sixel_builtin_icc_header_declares_cmyk(
+        icc_profile,
+        icc_profile_length);
+    if (header_declares_cmyk == 0) {
+        /*
+         * Non-CMYK ICC domains are non-applicable for CMYK BMP pixels.
+         * Skip conversion quietly so backend-specific parser behavior
+         * cannot misclassify unknown profiles as conversion failures.
+         */
         return 0;
     }
     float_count = pixel_count * 3u;
