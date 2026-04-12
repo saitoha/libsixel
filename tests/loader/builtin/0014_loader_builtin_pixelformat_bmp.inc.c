@@ -5517,6 +5517,74 @@ run_bmp_i40_2bpp_pal_num_t(void)
 }
 
 static int
+run_bmp_i40_2bpp_pal_topdown_num_t(void)
+{
+    static unsigned char const palette[] = {
+        0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0xffu, 0x00u, 0x00u,
+        0xffu, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const payload[] = {
+        0x60u, 0x00u, 0x00u, 0x00u,
+        0xc0u, 0x00u, 0x00u, 0x00u
+    };
+    static unsigned char const expected_rgb[12] = {
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u
+    };
+
+    if (loader_test_setenv("SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE", "") != 0) {
+        return 1;
+    }
+    return run_bmp_os2s_rgb_case(
+        "builtin loader bmp info40 2bpp palette topdown numeric",
+        40u,
+        2,
+        -2,
+        2u,
+        0u,
+        (unsigned int)sizeof(payload),
+        0u,
+        palette,
+        sizeof(palette),
+        payload,
+        sizeof(payload),
+        expected_rgb,
+        sizeof(expected_rgb));
+}
+
+static int
+run_bmp_i40_fail_2bpp_pal_ovf_t(void)
+{
+    static unsigned char const palette[] = {
+        0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0xffu, 0x00u
+    };
+    static unsigned char const payload[] = {
+        0xc0u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u
+    };
+
+    if (loader_test_setenv("SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE", "") != 0) {
+        return 1;
+    }
+    return run_bmp_os2s_fail_case(
+        "builtin loader bmp fail info40 2bpp palette overflow numeric",
+        40u,
+        2,
+        2,
+        2u,
+        0u,
+        (unsigned int)sizeof(payload),
+        2u,
+        palette,
+        sizeof(palette),
+        payload,
+        sizeof(payload));
+}
+
+static int
 run_bmp_i40_win_huff_fail_t(void)
 {
     static unsigned char const palette[] = {
