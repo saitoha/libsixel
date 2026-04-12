@@ -363,6 +363,11 @@ _quantizemodel() {
                      "${prefix}${key}=32" \
                      "${prefix}${key}=64"
           return 0
+        elif [[ ${key} == prune ]]; then
+          compadd -- "${prefix}${key}=auto" \
+                     "${prefix}${key}=none" \
+                     "${prefix}${key}=hamerly"
+          return 0
         elif [[ ${key} == animation_mode ]]; then
           compadd -- "${prefix}${key}=0" \
                      "${prefix}${key}=1"
@@ -401,6 +406,7 @@ _quantizemodel() {
                    "${prefix}d=" "${prefix}softdist=" \
                    "${prefix}r=" "${prefix}autoratio=" \
                    "${prefix}f=" "${prefix}feedback=" \
+                   "${prefix}prune=" \
                    "${prefix}s=" "${prefix}seed=" \
                    "${prefix}restarts=" \
                    "${prefix}iter=" "${prefix}iter_max=" \
@@ -465,6 +471,13 @@ _quantizemodel() {
                      "${prefix}${key}=64" \
                      "${prefix}${key}=128" \
                      "${prefix}${key}=256"
+          return 0
+        elif [[ ${key} == prune ]]; then
+          compadd -- "${prefix}${key}=auto" \
+                     "${prefix}${key}=elkan" \
+                     "${prefix}${key}=hamerly" \
+                     "${prefix}${key}=yinyang" \
+                     "${prefix}${key}=triangle-inequality"
           return 0
         elif [[ ${key} == prune_mass ]]; then
           compadd -- "${prefix}${key}=0.900" \
@@ -534,6 +547,7 @@ _quantizemodel() {
                    "${prefix}histbits=" \
                    "${prefix}point_budget=" \
                    "${prefix}rare_keep=" \
+                   "${prefix}prune=" \
                    "${prefix}prune_mass=" \
                    "${prefix}clara_trials=" "${prefix}clara_sample=" \
                    "${prefix}clarans_local=" \

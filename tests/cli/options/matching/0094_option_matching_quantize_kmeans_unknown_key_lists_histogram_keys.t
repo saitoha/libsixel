@@ -27,7 +27,7 @@ test "${msg#*unknown suboption key*}" != "${msg}" || {
 valid_keys_line=${msg#*valid keys: }
 valid_keys_line=${valid_keys_line%%.*}
 
-test "${valid_keys_line#*binning*mapping*autoratio*feedback*}" \
+test "${valid_keys_line#*binning*mapping*autoratio*feedback*prune*}" \
     != "${valid_keys_line}" || {
     echo "not ok" 1 - "missing histogram key list in unknown key diagnostic"
     printf '%s\n' '--- stderr ---' >&2

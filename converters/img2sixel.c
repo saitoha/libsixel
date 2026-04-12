@@ -250,6 +250,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :feedback=MODE (:f=MODE) residual histogram feedback:\n"
         "              off -> disable feedback (default)\n"
         "              on  -> enable feedback\n"
+        "          :prune=POLICY k-means pruning policy:\n"
+        "              auto    -> choose Hamerly pruning (default)\n"
+        "              none    -> disable pruning\n"
+        "              hamerly -> use upper/lower-bound pruning\n"
         "          :seed=VALUE (:s=VALUE) uint32 random seed (0-4294967295).\n"
         "          :restarts=COUNT restart count (1-32, default 1).\n"
         "          :iter=COUNT Lloyd iteration cap (1-100). takes precedence over\n"
@@ -275,6 +279,12 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           randomized neighbor search\n"
         "              bandit    -> BanditPAM:\n"
         "                           bandit swap pruning\n"
+        "          :prune=POLICY medoids pruning profile:\n"
+        "              auto                -> use elkan profile (default)\n"
+        "              triangle-inequality -> cutoff-only profile\n"
+        "              hamerly             -> cutoff + cheap bound\n"
+        "              elkan               -> hamerly + cache profile\n"
+        "              yinyang             -> elkan + aggressive bandit prune\n"
         "          :seed=VALUE (:s=VALUE) uint32 random seed (0-4294967295, default 1).\n"
         "          :iter=COUNT PAM iteration cap (1-64).\n"
         "          :sample=COUNT candidate cap hint (0 or 64-1048576).\n"
@@ -1312,6 +1322,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "(default off)."
     },
     {
+        "SIXEL_PALETTE_KMEANS_PRUNE",
+        "k-means pruning policy: auto, none, or hamerly.\n"
+        "Default auto maps to hamerly."
+    },
+    {
         "SIXEL_PALETTE_KMEANS_SEED",
         "default uint32 random seed for k-means (0-4294967295).\n"
         "when set, runs become reproducible."
@@ -1348,6 +1363,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_PALETTE_KMEDOIDS_ALGO",
         "default k-medoids solver when -Q medoids omits :algo.\n"
         "Accepts auto, pam, sample, random, or bandit."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_PRUNE",
+        "k-medoids pruning profile: auto, elkan, hamerly,\n"
+        "yinyang, or triangle-inequality.\n"
+        "Default auto maps to elkan."
     },
     {
         "SIXEL_PALETTE_KMEDOIDS_SEED",

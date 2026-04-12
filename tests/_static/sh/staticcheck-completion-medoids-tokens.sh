@@ -20,10 +20,11 @@ status=0
 
 for token in \
     medoids algo= seed= iter= sample= \
-    histbits= point_budget= rare_keep= prune_mass= \
+    histbits= point_budget= rare_keep= prune= prune_mass= \
     clara_trials= clara_sample= clarans_local= clarans_neighbors= \
     bandit_iter= bandit_candidates= bandit_batch= \
-    auto pam sample random bandit
+    auto elkan hamerly yinyang triangle-inequality \
+    pam sample random bandit
 do
     case "$bash_text" in
         *"$token"*)

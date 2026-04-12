@@ -207,6 +207,11 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
+                elif [[ ${quant_key} == prune ]]; then
+                    for quant_candidate in auto none hamerly; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
                 elif [[ ${quant_key} == s || ${quant_key} == seed ]]; then
                     for quant_candidate in 1 7 42 256; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
@@ -278,7 +283,7 @@ _img2sixel()
                 i= inittype= t= threshold= \
                 b= binning= n= binbits= m= mapping= \
                 d= softdist= r= autoratio= \
-                f= feedback= s= seed= restarts= \
+                f= feedback= prune= s= seed= restarts= \
                 iter= iter_max= miniter= polish_iter= \
                 feedback_slots= feedback_interval= \
                 animation_mode= scene_cut_threshold= \
@@ -327,6 +332,12 @@ _img2sixel()
                     done
                 elif [[ ${quant_key} == rare_keep ]]; then
                     for quant_candidate in 0 16 64 128 256; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == prune ]]; then
+                    for quant_candidate in \
+                        auto elkan hamerly yinyang triangle-inequality; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
@@ -389,7 +400,7 @@ _img2sixel()
             quant_prefix="${cur%${quant_item}}"
             for quant_candidate in \
                 a= algo= s= seed= iter= sample= \
-                histbits= point_budget= rare_keep= prune_mass= \
+                histbits= point_budget= rare_keep= prune= prune_mass= \
                 clara_trials= clara_sample= \
                 clarans_local= clarans_neighbors= \
                 bandit_iter= bandit_candidates= bandit_batch= \

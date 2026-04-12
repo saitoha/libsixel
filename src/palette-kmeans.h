@@ -67,6 +67,12 @@ typedef enum sixel_kmeans_feedback_mode {
     SIXEL_PALETTE_KMEANS_FEEDBACK_ON,
 } sixel_kmeans_feedback_mode;
 
+typedef enum sixel_kmeans_prune_policy {
+    SIXEL_PALETTE_KMEANS_PRUNE_AUTO = 0,
+    SIXEL_PALETTE_KMEANS_PRUNE_NONE,
+    SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY,
+} sixel_kmeans_prune_policy;
+
 SIXELSTATUS
 sixel_palette_build_kmeans(sixel_palette_t *palette,
                            unsigned char const *data,
@@ -188,6 +194,13 @@ sixel_set_kmeans_feedback_mode_override(int enabled,
 
 SIXEL_INTERNAL_API sixel_kmeans_feedback_mode
 sixel_get_kmeans_feedback_mode(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmeans_prune_policy_override(int enabled,
+                                       sixel_kmeans_prune_policy policy);
+
+SIXEL_INTERNAL_API sixel_kmeans_prune_policy
+sixel_get_kmeans_prune_policy(void);
 
 SIXEL_INTERNAL_API void
 sixel_set_kmeans_feedback_slots_override(int enabled,

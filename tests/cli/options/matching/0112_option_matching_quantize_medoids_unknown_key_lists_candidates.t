@@ -28,7 +28,7 @@ test "${msg#*unknown suboption key*}" != "${msg}" || {
 valid_keys_line=${msg#*valid keys: }
 valid_keys_line=${valid_keys_line%%.*}
 
-test "${valid_keys_line#*algo*seed*iter*sample*histbits*point_budget*rare_keep*prune_mass*}" != "${valid_keys_line}" || {
+test "${valid_keys_line#*algo*seed*iter*sample*histbits*point_budget*rare_keep*prune*prune_mass*}" != "${valid_keys_line}" || {
     echo "not ok" 1 - "missing medoids key candidate list"
     exit 0
 }

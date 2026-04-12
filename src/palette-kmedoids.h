@@ -47,6 +47,14 @@ typedef enum sixel_kmedoids_algo {
     SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO,
 } sixel_kmedoids_algo_t;
 
+typedef enum sixel_kmedoids_prune_policy {
+    SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO = 0,
+    SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN,
+    SIXEL_PALETTE_KMEDOIDS_PRUNE_HAMERLY,
+    SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG,
+    SIXEL_PALETTE_KMEDOIDS_PRUNE_TRIANGLE_INEQUALITY,
+} sixel_kmedoids_prune_policy_t;
+
 SIXELSTATUS
 sixel_palette_build_kmedoids(sixel_palette_t *palette,
                              unsigned char const *data,
@@ -75,6 +83,13 @@ sixel_set_kmedoids_algo_override(int enabled,
 
 SIXEL_INTERNAL_API sixel_kmedoids_algo_t
 sixel_get_kmedoids_algo(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_prune_policy_override(int enabled,
+                                         sixel_kmedoids_prune_policy_t policy);
+
+SIXEL_INTERNAL_API sixel_kmedoids_prune_policy_t
+sixel_get_kmedoids_prune_policy(void);
 
 SIXEL_INTERNAL_API void
 sixel_set_kmedoids_seed_override(int enabled,

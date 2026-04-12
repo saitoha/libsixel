@@ -403,6 +403,8 @@ typedef int SIXELSTATUS;
                                                       integer in 1-1048576
                                                     feedback (or f):
                                                       off, on
+                                                    prune:
+                                                      auto, none, hamerly
                                                     seed (or s):
                                                       integer in 0-4294967295
                                                     restarts:
@@ -427,6 +429,10 @@ typedef int SIXELSTATUS;
                                                     algo:
                                                       auto, pam, sample,
                                                       random, bandit
+                                                    prune:
+                                                      auto, elkan, hamerly,
+                                                      yinyang,
+                                                      triangle-inequality
                                                     seed:
                                                       integer in 0-4294967295
                                                     iter:

@@ -125,6 +125,10 @@ static SIXEL_TLS int sixel_kmedoids_point_budget_override_enabled = 0;
 static SIXEL_TLS unsigned int sixel_kmedoids_point_budget_override_value = 0u;
 static SIXEL_TLS int sixel_kmedoids_rare_keep_override_enabled = 0;
 static SIXEL_TLS unsigned int sixel_kmedoids_rare_keep_override_value = 0u;
+static SIXEL_TLS int sixel_kmedoids_prune_policy_override_enabled = 0;
+static SIXEL_TLS sixel_kmedoids_prune_policy_t
+    sixel_kmedoids_prune_policy_override_value
+        = SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO;
 static SIXEL_TLS int sixel_kmedoids_prune_mass_override_enabled = 0;
 static SIXEL_TLS double sixel_kmedoids_prune_mass_override_value = 0.0;
 static SIXEL_TLS double const *sixel_kmedoids_distance_cache = NULL;
@@ -276,6 +280,14 @@ typedef struct sixel_kmedoids_point_weight_rank {
     double weight;
 } sixel_kmedoids_point_weight_rank_t;
 
+typedef struct sixel_kmedoids_prune_profile {
+    sixel_kmedoids_prune_policy_t policy;
+    int enable_cheap_bound;
+    int enable_row_cache;
+    int enable_bandit_prune;
+    int aggressive_bandit_prune;
+} sixel_kmedoids_prune_profile_t;
+
 static uint32_t
 sixel_kmedoids_rng_next(uint32_t *state);
 
@@ -327,6 +339,21 @@ sixel_kmedoids_swap_cost_with_cutoff_row_generation(
     int *early_stop_out);
 
 static double
+sixel_kmedoids_swap_cost_prefix_with_cutoff(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int prefix_count,
+    unsigned int const *nearest_slot,
+    double const *nearest_dist,
+    double const *second_dist,
+    unsigned int replace_slot,
+    unsigned int candidate_point,
+    unsigned int const *order,
+    double cutoff,
+    int *early_stop_out);
+
+static double
 sixel_kmedoids_swap_cost_prefix_with_cutoff_row_generation(
     double const *points,
     double const *weights,
@@ -343,6 +370,37 @@ sixel_kmedoids_swap_cost_prefix_with_cutoff_row_generation(
     unsigned int const *order,
     double cutoff,
     int *early_stop_out);
+
+static double
+sixel_kmedoids_swap_cost_ordered_with_row(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int const *nearest_slot,
+    double const *nearest_dist,
+    double const *second_dist,
+    unsigned int replace_slot,
+    unsigned int candidate_point,
+    double *candidate_dist_row,
+    uint32_t *candidate_generation_row,
+    uint32_t candidate_row_epoch,
+    unsigned int const *order,
+    double cutoff,
+    int enable_cutoff,
+    int *early_stop_out);
+
+static double
+sixel_kmedoids_swap_cost_with_cutoff(double const *points,
+                                     double const *weights,
+                                     unsigned int point_count,
+                                     unsigned int const *nearest_slot,
+                                     double const *nearest_dist,
+                                     double const *second_dist,
+                                     unsigned int replace_slot,
+                                     unsigned int candidate_point,
+                                     unsigned int const *order,
+                                     double cutoff,
+                                     int *early_stop_out);
 
 static void
 sixel_kmedoids_clarans_candidate_epoch_next(
@@ -461,6 +519,7 @@ sixel_kmedoids_clarans_evaluate_candidate_slots(
     double cutoff,
     unsigned int cheap_prefix_count,
     int enable_cheap_bound,
+    int enable_row_cache,
     unsigned int *best_slot_out,
     double *best_cost_out,
     unsigned int *evaluated_pairs_out);
@@ -2295,6 +2354,7 @@ sixel_kmedoids_clarans_evaluate_candidate_slots(
     double cutoff,
     unsigned int cheap_prefix_count,
     int enable_cheap_bound,
+    int enable_row_cache,
     unsigned int *best_slot_out,
     double *best_cost_out,
     unsigned int *evaluated_pairs_out)
@@ -2349,6 +2409,12 @@ sixel_kmedoids_clarans_evaluate_candidate_slots(
             || slot_orders == NULL) {
         return 0;
     }
+    if (enable_row_cache
+            && (cache_size == 0u || cache_keys == NULL || cache_rows == NULL
+                || cache_generation == NULL || cache_row_epoch == NULL
+                || cache_epoch_next == NULL || cache_slot_next == NULL)) {
+        return 0;
+    }
     if (residual_order != NULL && damage_scores != NULL
             && slot_dirty != NULL && slot_generation != NULL
             && slot_generation_id != 0u
@@ -2360,20 +2426,22 @@ sixel_kmedoids_clarans_evaluate_candidate_slots(
      * Candidate-centric evaluation reuses one cached distance row across
      * multiple slot probes while preserving per-pair dedupe semantics.
      */
-    candidate_dist_row = sixel_kmedoids_clarans_get_candidate_distance_row(
-        point_count,
-        candidate,
-        cache_size,
-        cache_keys,
-        cache_rows,
-        cache_generation,
-        cache_row_epoch,
-        cache_epoch_next,
-        cache_slot_next,
-        &candidate_generation_row,
-        &candidate_row_epoch);
-    if (candidate_dist_row == NULL) {
-        return 0;
+    if (enable_row_cache) {
+        candidate_dist_row = sixel_kmedoids_clarans_get_candidate_distance_row(
+            point_count,
+            candidate,
+            cache_size,
+            cache_keys,
+            cache_rows,
+            cache_generation,
+            cache_row_epoch,
+            cache_epoch_next,
+            cache_slot_next,
+            &candidate_generation_row,
+            &candidate_row_epoch);
+        if (candidate_dist_row == NULL) {
+            return 0;
+        }
     }
     for (probe_index = 0u; probe_index < slot_count; ++probe_index) {
         slot = slots[probe_index];
@@ -2419,8 +2487,26 @@ sixel_kmedoids_clarans_evaluate_candidate_slots(
                 bound_prefix_count = point_count;
             }
             bound_stop = 0;
-            bound_cost =
-                sixel_kmedoids_swap_cost_prefix_with_cutoff_row_generation(
+            if (enable_row_cache) {
+                bound_cost =
+                    sixel_kmedoids_swap_cost_prefix_with_cutoff_row_generation(
+                        points,
+                        weights,
+                        point_count,
+                        bound_prefix_count,
+                        nearest_slot,
+                        nearest_dist,
+                        second_dist,
+                        slot,
+                        candidate,
+                        candidate_dist_row,
+                        candidate_generation_row,
+                        candidate_row_epoch,
+                        order_row,
+                        best_cost,
+                        &bound_stop);
+            } else {
+                bound_cost = sixel_kmedoids_swap_cost_prefix_with_cutoff(
                     points,
                     weights,
                     point_count,
@@ -2430,12 +2516,10 @@ sixel_kmedoids_clarans_evaluate_candidate_slots(
                     second_dist,
                     slot,
                     candidate,
-                    candidate_dist_row,
-                    candidate_generation_row,
-                    candidate_row_epoch,
                     order_row,
                     best_cost,
                     &bound_stop);
+            }
             if (bound_stop) {
                 run_strict = 0;
                 swap_cost = bound_cost;
@@ -2445,21 +2529,36 @@ sixel_kmedoids_clarans_evaluate_candidate_slots(
             continue;
         }
 
-        swap_cost = sixel_kmedoids_swap_cost_with_cutoff_row_generation(
-            points,
-            weights,
-            point_count,
-            nearest_slot,
-            nearest_dist,
-            second_dist,
-            slot,
-            candidate,
-            candidate_dist_row,
-            candidate_generation_row,
-            candidate_row_epoch,
-            order_row,
-            best_cost,
-            NULL);
+        if (enable_row_cache) {
+            swap_cost = sixel_kmedoids_swap_cost_with_cutoff_row_generation(
+                points,
+                weights,
+                point_count,
+                nearest_slot,
+                nearest_dist,
+                second_dist,
+                slot,
+                candidate,
+                candidate_dist_row,
+                candidate_generation_row,
+                candidate_row_epoch,
+                order_row,
+                best_cost,
+                NULL);
+        } else {
+            swap_cost = sixel_kmedoids_swap_cost_with_cutoff(
+                points,
+                weights,
+                point_count,
+                nearest_slot,
+                nearest_dist,
+                second_dist,
+                slot,
+                candidate,
+                order_row,
+                best_cost,
+                NULL);
+        }
         if (swap_cost + 1.0e-12 < best_cost) {
             best_cost = swap_cost;
             best_slot = slot;
@@ -3247,6 +3346,126 @@ sixel_kmedoids_rng_unit(uint32_t *state)
 
     raw = sixel_kmedoids_rng_next(state);
     return ((double)raw) / 4294967295.0;
+}
+
+static char const *
+sixel_kmedoids_prune_policy_to_string(sixel_kmedoids_prune_policy_t policy)
+{
+    switch (policy) {
+    case SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN:
+        return "elkan";
+    case SIXEL_PALETTE_KMEDOIDS_PRUNE_HAMERLY:
+        return "hamerly";
+    case SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG:
+        return "yinyang";
+    case SIXEL_PALETTE_KMEDOIDS_PRUNE_TRIANGLE_INEQUALITY:
+        return "triangle-inequality";
+    case SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO:
+    default:
+        return "auto";
+    }
+}
+
+static sixel_kmedoids_prune_policy_t
+sixel_kmedoids_resolve_prune_policy(sixel_kmedoids_prune_policy_t policy)
+{
+    switch (policy) {
+    case SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO:
+    case SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN:
+        return SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
+    case SIXEL_PALETTE_KMEDOIDS_PRUNE_HAMERLY:
+        return SIXEL_PALETTE_KMEDOIDS_PRUNE_HAMERLY;
+    case SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG:
+        return SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG;
+    case SIXEL_PALETTE_KMEDOIDS_PRUNE_TRIANGLE_INEQUALITY:
+        return SIXEL_PALETTE_KMEDOIDS_PRUNE_TRIANGLE_INEQUALITY;
+    default:
+        return SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
+    }
+}
+
+void
+sixel_set_kmedoids_prune_policy_override(int enabled,
+                                         sixel_kmedoids_prune_policy_t policy)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
+    sixel_kmedoids_prune_policy_override_enabled = enabled ? 1 : 0;
+    sixel_kmedoids_prune_policy_override_value = policy;
+    sixel_kmedoids_override_lock_release(lock_acquired);
+}
+
+SIXEL_INTERNAL_API sixel_kmedoids_prune_policy_t
+sixel_get_kmedoids_prune_policy(void)
+{
+    char const *env_value;
+    static int loaded = 0;
+    static sixel_kmedoids_prune_policy_t cached
+        = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
+    sixel_kmedoids_prune_policy_t parsed;
+    sixel_kmedoids_prune_policy_t resolved;
+
+    env_value = NULL;
+    parsed = SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO;
+    resolved = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
+    if (sixel_kmedoids_prune_policy_override_enabled) {
+        return sixel_kmedoids_resolve_prune_policy(
+            sixel_kmedoids_prune_policy_override_value);
+    }
+    if (loaded) {
+        return cached;
+    }
+    loaded = 1;
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEDOIDS_PRUNE");
+    if (env_value != NULL && env_value[0] != '\0') {
+        if (sixel_compat_strcasecmp(env_value, "auto") == 0) {
+            parsed = SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO;
+        } else if (sixel_compat_strcasecmp(env_value, "elkan") == 0) {
+            parsed = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
+        } else if (sixel_compat_strcasecmp(env_value, "hamerly") == 0) {
+            parsed = SIXEL_PALETTE_KMEDOIDS_PRUNE_HAMERLY;
+        } else if (sixel_compat_strcasecmp(env_value, "yinyang") == 0) {
+            parsed = SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG;
+        } else if (sixel_compat_strcasecmp(env_value,
+                                           "triangle-inequality") == 0) {
+            parsed = SIXEL_PALETTE_KMEDOIDS_PRUNE_TRIANGLE_INEQUALITY;
+        }
+    }
+    resolved = sixel_kmedoids_resolve_prune_policy(parsed);
+    cached = resolved;
+    sixel_debugf("k-medoids prune policy: %s",
+                 sixel_kmedoids_prune_policy_to_string(parsed));
+    return cached;
+}
+
+static void
+sixel_kmedoids_build_prune_profile(
+    sixel_kmedoids_prune_policy_t policy,
+    sixel_kmedoids_prune_profile_t *profile)
+{
+    if (profile == NULL) {
+        return;
+    }
+    profile->policy = sixel_kmedoids_resolve_prune_policy(policy);
+    profile->enable_cheap_bound = 0;
+    profile->enable_row_cache = 0;
+    profile->enable_bandit_prune = 0;
+    profile->aggressive_bandit_prune = 0;
+
+    if (profile->policy == SIXEL_PALETTE_KMEDOIDS_PRUNE_HAMERLY
+            || profile->policy == SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN
+            || profile->policy == SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG) {
+        profile->enable_cheap_bound = 1;
+    }
+    if (profile->policy == SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN
+            || profile->policy == SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG) {
+        profile->enable_row_cache = 1;
+    }
+    if (profile->policy == SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG) {
+        profile->enable_bandit_prune = 1;
+        profile->aggressive_bandit_prune = 1;
+    }
 }
 
 static const char *
@@ -5727,6 +5946,44 @@ sixel_kmedoids_swap_cost_ordered_with_row(
 }
 
 static double
+sixel_kmedoids_swap_cost_prefix_with_cutoff(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int prefix_count,
+    unsigned int const *nearest_slot,
+    double const *nearest_dist,
+    double const *second_dist,
+    unsigned int replace_slot,
+    unsigned int candidate_point,
+    unsigned int const *order,
+    double cutoff,
+    int *early_stop_out)
+{
+    unsigned int bounded_count;
+
+    bounded_count = prefix_count;
+    if (bounded_count > point_count) {
+        bounded_count = point_count;
+    }
+    return sixel_kmedoids_swap_cost_ordered_with_row(points,
+                                                     weights,
+                                                     bounded_count,
+                                                     nearest_slot,
+                                                     nearest_dist,
+                                                     second_dist,
+                                                     replace_slot,
+                                                     candidate_point,
+                                                     NULL,
+                                                     NULL,
+                                                     0u,
+                                                     order,
+                                                     cutoff,
+                                                     1,
+                                                     early_stop_out);
+}
+
+static double
 sixel_kmedoids_swap_cost_with_cutoff(double const *points,
                                      double const *weights,
                                      unsigned int point_count,
@@ -6846,6 +7103,7 @@ sixel_kmedoids_test_clarans_candidate_batch_best(
         cutoff,
         0u,
         0,
+        1,
         best_slot_out,
         best_cost_out,
         evaluated_pairs_out);
@@ -8275,6 +8533,7 @@ sixel_kmedoids_run_clarans(double const *points,
                            unsigned int *medoids_out,
                            double *cost_out,
                            unsigned int *iterations_out,
+                           sixel_kmedoids_prune_profile_t const *prune_profile,
                            sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -8387,6 +8646,8 @@ sixel_kmedoids_run_clarans(double const *points,
     double current_cost;
     double best_cost;
     unsigned int iter_total;
+    sixel_kmedoids_prune_profile_t resolved_profile;
+    int enable_row_cache;
 
     status = SIXEL_BAD_ARGUMENT;
     current_medoids = NULL;
@@ -8498,6 +8759,12 @@ sixel_kmedoids_run_clarans(double const *points,
     current_cost = 0.0;
     best_cost = 0.0;
     iter_total = 0u;
+    resolved_profile.policy = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
+    resolved_profile.enable_cheap_bound = 1;
+    resolved_profile.enable_row_cache = 1;
+    resolved_profile.enable_bandit_prune = 0;
+    resolved_profile.aggressive_bandit_prune = 0;
+    enable_row_cache = 1;
 
     if (cost_out != NULL) {
         *cost_out = 0.0;
@@ -8509,6 +8776,11 @@ sixel_kmedoids_run_clarans(double const *points,
             || medoids_out == NULL || allocator == NULL) {
         return status;
     }
+    if (prune_profile != NULL) {
+        resolved_profile = *prune_profile;
+    }
+    cheap_bound_enabled = resolved_profile.enable_cheap_bound ? 1 : 0;
+    enable_row_cache = resolved_profile.enable_row_cache ? 1 : 0;
 
     current_medoids = (unsigned int *)sixel_allocator_malloc(
         allocator,
@@ -8563,32 +8835,36 @@ sixel_kmedoids_run_clarans(double const *points,
     if (hot_slot_limit == 0u) {
         hot_slot_limit = 1u;
     }
-    clarans_cache_size = sixel_kmedoids_clarans_candidate_cache_size(
-        point_count,
-        k);
     cheap_prefix_count = sixel_kmedoids_clarans_cheap_prefix_count(
         point_count);
-    cache_cells64 = (uint64_t)clarans_cache_size * (uint64_t)point_count;
-    if (cache_cells64 == 0u
-            || cache_cells64
-                > ((uint64_t)SIZE_MAX / (uint64_t)sizeof(double))
-            || cache_cells64
-                > ((uint64_t)SIZE_MAX / (uint64_t)sizeof(uint32_t))) {
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
+    clarans_cache_size = 0u;
+    if (enable_row_cache) {
+        clarans_cache_size = sixel_kmedoids_clarans_candidate_cache_size(
+            point_count,
+            k);
+        cache_cells64 = (uint64_t)clarans_cache_size
+                      * (uint64_t)point_count;
+        if (cache_cells64 == 0u
+                || cache_cells64
+                    > ((uint64_t)SIZE_MAX / (uint64_t)sizeof(double))
+                || cache_cells64
+                    > ((uint64_t)SIZE_MAX / (uint64_t)sizeof(uint32_t))) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        candidate_cache_keys = (unsigned int *)sixel_allocator_malloc(
+            allocator,
+            (size_t)clarans_cache_size * sizeof(unsigned int));
+        candidate_cache_rows = (double *)sixel_allocator_malloc(
+            allocator,
+            (size_t)cache_cells64 * sizeof(double));
+        candidate_cache_generation = (uint32_t *)sixel_allocator_malloc(
+            allocator,
+            (size_t)cache_cells64 * sizeof(uint32_t));
+        candidate_cache_row_epoch = (uint32_t *)sixel_allocator_malloc(
+            allocator,
+            (size_t)clarans_cache_size * sizeof(uint32_t));
     }
-    candidate_cache_keys = (unsigned int *)sixel_allocator_malloc(
-        allocator,
-        (size_t)clarans_cache_size * sizeof(unsigned int));
-    candidate_cache_rows = (double *)sixel_allocator_malloc(
-        allocator,
-        (size_t)cache_cells64 * sizeof(double));
-    candidate_cache_generation = (uint32_t *)sixel_allocator_malloc(
-        allocator,
-        (size_t)cache_cells64 * sizeof(uint32_t));
-    candidate_cache_row_epoch = (uint32_t *)sixel_allocator_malloc(
-        allocator,
-        (size_t)clarans_cache_size * sizeof(uint32_t));
     slot_cells64 = (uint64_t)k * (uint64_t)point_count;
     if (slot_cells64 > 0u
             && slot_cells64
@@ -8678,10 +8954,6 @@ sixel_kmedoids_run_clarans(double const *points,
             || eval_scores == NULL || eval_rank == NULL
             || nearest_slot == NULL || nearest_dist == NULL
             || second_dist == NULL || second_slot == NULL
-            || candidate_cache_keys == NULL
-            || candidate_cache_rows == NULL
-            || candidate_cache_generation == NULL
-            || candidate_cache_row_epoch == NULL
             || slot_orders == NULL
             || slot_dirty == NULL || slot_generation == NULL
             || slot_damage_scores == NULL || slot_rank_work == NULL
@@ -8698,6 +8970,11 @@ sixel_kmedoids_run_clarans(double const *points,
             || candidate_seen_count == NULL
             || candidate_seen_epoch == NULL
             || candidate_exhausted_epoch == NULL
+            || (enable_row_cache
+                && (candidate_cache_keys == NULL
+                    || candidate_cache_rows == NULL
+                    || candidate_cache_generation == NULL
+                    || candidate_cache_row_epoch == NULL))
             || non_medoids_pos == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
@@ -8824,6 +9101,14 @@ sixel_kmedoids_run_clarans(double const *points,
     eval_delta_threshold = point_count / 8u;
     if (eval_delta_threshold < 64u) {
         eval_delta_threshold = 64u;
+    }
+    if (cheap_bound_enabled && weights != NULL) {
+        for (index = 0u; index < point_count; ++index) {
+            if (weights[index] < 0.0) {
+                cheap_bound_enabled = 0;
+                break;
+            }
+        }
     }
     if (weights != NULL) {
         for (index = 0u; index < point_count; ++index) {
@@ -9092,6 +9377,7 @@ sixel_kmedoids_run_clarans(double const *points,
                     current_cost,
                     cheap_prefix_count,
                     cheap_bound_enabled,
+                    enable_row_cache,
                     &best_candidate_slot,
                     &candidate_best_cost,
                     &evaluated_pairs);
@@ -9520,6 +9806,7 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
                                        unsigned int *active,
                                        unsigned int *active_count,
                                        unsigned int batch_limit,
+                                       int aggressive_prune,
                                        unsigned int cache_size,
                                        unsigned int *cache_keys,
                                        double *cache_rows,
@@ -9538,6 +9825,7 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
     unsigned int batch_size;
     unsigned int batch_ceiling;
     unsigned int hash_capacity;
+    unsigned int target_active;
     unsigned int index;
     unsigned int keep;
     unsigned int base;
@@ -9556,6 +9844,7 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
     batch_size = 0u;
     batch_ceiling = 0u;
     hash_capacity = 0u;
+    target_active = 0u;
     index = 0u;
     keep = 0u;
     base = 0u;
@@ -9581,7 +9870,11 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
         return status;
     }
 
-    if (*active_count <= 4u || point_count == 0u) {
+    target_active = aggressive_prune ? 2u : 4u;
+    if (target_active < 1u) {
+        target_active = 1u;
+    }
+    if (*active_count <= target_active || point_count == 0u) {
         return SIXEL_OK;
     }
     if (batch_limit == 0u) {
@@ -9625,10 +9918,14 @@ sixel_kmedoids_bandit_prune_candidates(double const *points,
         batch_size = 64u;
     }
 
-    while (*active_count > 4u) {
-        keep = *active_count / 2u;
-        if (keep < 4u) {
-            keep = 4u;
+    while (*active_count > target_active) {
+        if (aggressive_prune) {
+            keep = (*active_count + 2u) / 3u;
+        } else {
+            keep = *active_count / 2u;
+        }
+        if (keep < target_active) {
+            keep = target_active;
         }
 
         base = point_count - batch_size;
@@ -9737,6 +10034,8 @@ sixel_kmedoids_run_banditpam(double const *points,
                              unsigned int *medoids_io,
                              double *cost_io,
                              unsigned int *iterations_out,
+                             sixel_kmedoids_prune_profile_t const
+                                 *prune_profile,
                              sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -9790,6 +10089,8 @@ sixel_kmedoids_run_banditpam(double const *points,
     unsigned int pair_capacity;
     unsigned int pair_mask;
     unsigned int bandit_cache_size;
+    unsigned int cheap_prefix_count;
+    unsigned int bound_prefix_count;
     unsigned int cache_slot_next;
     unsigned int pair_slot;
     unsigned int probe_count;
@@ -9807,11 +10108,19 @@ sixel_kmedoids_run_banditpam(double const *points,
     uint32_t candidate_row_epoch;
     double current_cost;
     double swap_cost;
+    double bound_cost;
     double best_cost;
     double *candidate_dist_row;
+    int cheap_bound_enabled;
+    int enable_row_cache;
+    int enable_bandit_prune;
+    int aggressive_bandit_prune;
+    int run_strict;
+    int bound_stop;
     int eval_full_refresh;
     int current_assigned;
     int pair_seen;
+    sixel_kmedoids_prune_profile_t resolved_profile;
 
     status = SIXEL_BAD_ARGUMENT;
     eval_order = NULL;
@@ -9864,6 +10173,8 @@ sixel_kmedoids_run_banditpam(double const *points,
     pair_capacity = 0u;
     pair_mask = 0u;
     bandit_cache_size = 0u;
+    cheap_prefix_count = 0u;
+    bound_prefix_count = 0u;
     cache_slot_next = 0u;
     pair_slot = 0u;
     probe_count = 0u;
@@ -9881,11 +10192,23 @@ sixel_kmedoids_run_banditpam(double const *points,
     candidate_row_epoch = 0u;
     current_cost = 0.0;
     swap_cost = 0.0;
+    bound_cost = 0.0;
     best_cost = 0.0;
     candidate_dist_row = NULL;
+    cheap_bound_enabled = 1;
+    enable_row_cache = 1;
+    enable_bandit_prune = 0;
+    aggressive_bandit_prune = 0;
+    run_strict = 1;
+    bound_stop = 0;
     eval_full_refresh = 0;
     current_assigned = 0;
     pair_seen = 0;
+    resolved_profile.policy = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
+    resolved_profile.enable_cheap_bound = 1;
+    resolved_profile.enable_row_cache = 1;
+    resolved_profile.enable_bandit_prune = 0;
+    resolved_profile.aggressive_bandit_prune = 0;
 
     if (iterations_out != NULL) {
         *iterations_out = 0u;
@@ -9894,6 +10217,22 @@ sixel_kmedoids_run_banditpam(double const *points,
             || medoids_io == NULL || cost_io == NULL || rng_state == NULL
             || allocator == NULL) {
         return status;
+    }
+    if (prune_profile != NULL) {
+        resolved_profile = *prune_profile;
+    }
+    cheap_bound_enabled = resolved_profile.enable_cheap_bound ? 1 : 0;
+    enable_row_cache = resolved_profile.enable_row_cache ? 1 : 0;
+    enable_bandit_prune = resolved_profile.enable_bandit_prune ? 1 : 0;
+    aggressive_bandit_prune = resolved_profile.aggressive_bandit_prune ? 1 : 0;
+    if (enable_bandit_prune) {
+        enable_row_cache = 1;
+    }
+    if (cheap_bound_enabled) {
+        cheap_prefix_count = sixel_kmedoids_clarans_cheap_prefix_count(
+            point_count);
+    } else {
+        cheap_prefix_count = 0u;
     }
 
     nearest_slot = (unsigned int *)sixel_allocator_malloc(
@@ -9994,24 +10333,30 @@ sixel_kmedoids_run_banditpam(double const *points,
     pair_generation = (uint32_t *)sixel_allocator_malloc(
         allocator,
         (size_t)pair_capacity * sizeof(uint32_t));
-    bandit_cache_size = 8u;
-    cache_cells64 = (uint64_t)bandit_cache_size * (uint64_t)point_count;
-    if (cache_cells64 > ((uint64_t)SIZE_MAX / (uint64_t)sizeof(double))) {
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
+    bandit_cache_size = 0u;
+    if (enable_row_cache || enable_bandit_prune) {
+        bandit_cache_size = 8u;
+        cache_cells64 = (uint64_t)bandit_cache_size
+                      * (uint64_t)point_count;
+        if (cache_cells64 > ((uint64_t)SIZE_MAX / (uint64_t)sizeof(double))
+                || cache_cells64
+                    > ((uint64_t)SIZE_MAX / (uint64_t)sizeof(uint32_t))) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        candidate_cache_keys = (unsigned int *)sixel_allocator_malloc(
+            allocator,
+            (size_t)bandit_cache_size * sizeof(unsigned int));
+        candidate_cache_rows = (double *)sixel_allocator_malloc(
+            allocator,
+            (size_t)cache_cells64 * sizeof(double));
+        candidate_cache_generation = (uint32_t *)sixel_allocator_malloc(
+            allocator,
+            (size_t)cache_cells64 * sizeof(uint32_t));
+        candidate_cache_row_epoch = (uint32_t *)sixel_allocator_malloc(
+            allocator,
+            (size_t)bandit_cache_size * sizeof(uint32_t));
     }
-    candidate_cache_keys = (unsigned int *)sixel_allocator_malloc(
-        allocator,
-        (size_t)bandit_cache_size * sizeof(unsigned int));
-    candidate_cache_rows = (double *)sixel_allocator_malloc(
-        allocator,
-        (size_t)cache_cells64 * sizeof(double));
-    candidate_cache_generation = (uint32_t *)sixel_allocator_malloc(
-        allocator,
-        (size_t)cache_cells64 * sizeof(uint32_t));
-    candidate_cache_row_epoch = (uint32_t *)sixel_allocator_malloc(
-        allocator,
-        (size_t)bandit_cache_size * sizeof(uint32_t));
     if (nearest_slot == NULL || nearest_dist == NULL || second_dist == NULL
             || second_slot == NULL || flags == NULL || non_medoids == NULL
             || eval_order == NULL || eval_positions == NULL
@@ -10023,10 +10368,11 @@ sixel_kmedoids_run_banditpam(double const *points,
             || hot_points == NULL || hot_slots == NULL
             || pair_hash == NULL
             || pair_generation == NULL
-            || candidate_cache_keys == NULL
-            || candidate_cache_rows == NULL
-            || candidate_cache_generation == NULL
-            || candidate_cache_row_epoch == NULL) {
+            || ((enable_row_cache || enable_bandit_prune)
+                && (candidate_cache_keys == NULL
+                    || candidate_cache_rows == NULL
+                    || candidate_cache_generation == NULL
+                    || candidate_cache_row_epoch == NULL))) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
@@ -10034,15 +10380,17 @@ sixel_kmedoids_run_banditpam(double const *points,
         pair_generation[index] = 0u;
     }
     pair_generation_id = 1u;
-    for (index = 0u; index < bandit_cache_size; ++index) {
-        candidate_cache_keys[index] = UINT_MAX;
-        candidate_cache_row_epoch[index] = 0u;
-    }
-    cache_cell_count = (size_t)cache_cells64;
-    for (cache_cell_index = 0u;
-            cache_cell_index < cache_cell_count;
-            ++cache_cell_index) {
-        candidate_cache_generation[cache_cell_index] = 0u;
+    if (bandit_cache_size > 0u) {
+        for (index = 0u; index < bandit_cache_size; ++index) {
+            candidate_cache_keys[index] = UINT_MAX;
+            candidate_cache_row_epoch[index] = 0u;
+        }
+        cache_cell_count = (size_t)cache_cells64;
+        for (cache_cell_index = 0u;
+                cache_cell_index < cache_cell_count;
+                ++cache_cell_index) {
+            candidate_cache_generation[cache_cell_index] = 0u;
+        }
     }
     cache_epoch_next = 0u;
     cache_slot_next = 0u;
@@ -10188,31 +10536,34 @@ sixel_kmedoids_run_banditpam(double const *points,
             active[index] = index;
         }
 
-        status = sixel_kmedoids_bandit_prune_candidates(
-            points,
-            weights,
-            point_count,
-            nearest_slot,
-            nearest_dist,
-            second_dist,
-            hot_points,
-            hot_point_count,
-            candidate_slots,
-            candidate_points,
-            active,
-            &active_count,
-            batch_limit,
-            bandit_cache_size,
-            candidate_cache_keys,
-            candidate_cache_rows,
-            candidate_cache_generation,
-            candidate_cache_row_epoch,
-            &cache_epoch_next,
-            &cache_slot_next,
-            rng_state,
-            allocator);
-        if (SIXEL_FAILED(status)) {
-            goto end;
+        if (enable_bandit_prune) {
+            status = sixel_kmedoids_bandit_prune_candidates(
+                points,
+                weights,
+                point_count,
+                nearest_slot,
+                nearest_dist,
+                second_dist,
+                hot_points,
+                hot_point_count,
+                candidate_slots,
+                candidate_points,
+                active,
+                &active_count,
+                batch_limit,
+                aggressive_bandit_prune,
+                bandit_cache_size,
+                candidate_cache_keys,
+                candidate_cache_rows,
+                candidate_cache_generation,
+                candidate_cache_row_epoch,
+                &cache_epoch_next,
+                &cache_slot_next,
+                rng_state,
+                allocator);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
         }
 
         best_cost = current_cost;
@@ -10221,20 +10572,71 @@ sixel_kmedoids_run_banditpam(double const *points,
         for (index = 0u; index < active_count; ++index) {
             slot = candidate_slots[active[index]];
             candidate = candidate_points[active[index]];
-            candidate_dist_row =
-                sixel_kmedoids_clarans_get_candidate_distance_row(
-                    point_count,
-                    candidate,
-                    bandit_cache_size,
-                    candidate_cache_keys,
-                    candidate_cache_rows,
-                    candidate_cache_generation,
-                    candidate_cache_row_epoch,
-                    &cache_epoch_next,
-                    &cache_slot_next,
-                    &candidate_generation_row,
-                    &candidate_row_epoch);
-            if (candidate_dist_row != NULL) {
+            candidate_dist_row = NULL;
+            candidate_generation_row = NULL;
+            candidate_row_epoch = 0u;
+            if (enable_row_cache && bandit_cache_size > 0u) {
+                candidate_dist_row =
+                    sixel_kmedoids_clarans_get_candidate_distance_row(
+                        point_count,
+                        candidate,
+                        bandit_cache_size,
+                        candidate_cache_keys,
+                        candidate_cache_rows,
+                        candidate_cache_generation,
+                        candidate_cache_row_epoch,
+                        &cache_epoch_next,
+                        &cache_slot_next,
+                        &candidate_generation_row,
+                        &candidate_row_epoch);
+            }
+            run_strict = 1;
+            if (cheap_bound_enabled && cheap_prefix_count > 0u
+                    && cheap_prefix_count < point_count) {
+                bound_prefix_count = cheap_prefix_count;
+                if (bound_prefix_count > point_count) {
+                    bound_prefix_count = point_count;
+                }
+                bound_stop = 0;
+                if (candidate_dist_row != NULL) {
+                    bound_cost =
+                    sixel_kmedoids_swap_cost_prefix_with_cutoff_row_generation(
+                        points,
+                        weights,
+                        point_count,
+                        bound_prefix_count,
+                        nearest_slot,
+                        nearest_dist,
+                        second_dist,
+                        slot,
+                        candidate,
+                        candidate_dist_row,
+                        candidate_generation_row,
+                        candidate_row_epoch,
+                        eval_order,
+                        best_cost,
+                        &bound_stop);
+                } else {
+                    bound_cost = sixel_kmedoids_swap_cost_prefix_with_cutoff(
+                        points,
+                        weights,
+                        point_count,
+                        bound_prefix_count,
+                        nearest_slot,
+                        nearest_dist,
+                        second_dist,
+                        slot,
+                        candidate,
+                        eval_order,
+                        best_cost,
+                        &bound_stop);
+                }
+                if (bound_stop) {
+                    run_strict = 0;
+                    swap_cost = bound_cost;
+                }
+            }
+            if (run_strict && candidate_dist_row != NULL) {
                 swap_cost = sixel_kmedoids_swap_cost_with_cutoff_row_generation(
                     points,
                     weights,
@@ -10251,18 +10653,20 @@ sixel_kmedoids_run_banditpam(double const *points,
                     best_cost,
                     NULL);
             } else {
-                swap_cost = sixel_kmedoids_swap_cost_with_cutoff(
-                    points,
-                    weights,
-                    point_count,
-                    nearest_slot,
-                    nearest_dist,
-                    second_dist,
-                    slot,
-                    candidate,
-                    eval_order,
-                    best_cost,
-                    NULL);
+                if (run_strict) {
+                    swap_cost = sixel_kmedoids_swap_cost_with_cutoff(
+                        points,
+                        weights,
+                        point_count,
+                        nearest_slot,
+                        nearest_dist,
+                        second_dist,
+                        slot,
+                        candidate,
+                        eval_order,
+                        best_cost,
+                        NULL);
+                }
             }
             if (swap_cost < best_cost) {
                 best_cost = swap_cost;
@@ -10479,6 +10883,8 @@ build_palette_kmedoids(unsigned char **result,
     unsigned int point_count;
     sixel_kmedoids_algo_t algo;
     sixel_kmedoids_algo_t resolved_algo;
+    sixel_kmedoids_prune_policy_t prune_policy;
+    sixel_kmedoids_prune_profile_t prune_profile;
     uint32_t seed;
     uint32_t rng_state;
     unsigned int pam_iterations;
@@ -10576,6 +10982,12 @@ build_palette_kmedoids(unsigned char **result,
     point_count = 0u;
     algo = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
     resolved_algo = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
+    prune_policy = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
+    prune_profile.policy = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
+    prune_profile.enable_cheap_bound = 1;
+    prune_profile.enable_row_cache = 1;
+    prune_profile.enable_bandit_prune = 0;
+    prune_profile.aggressive_bandit_prune = 0;
     seed = 1u;
     rng_state = 1u;
     pam_iterations = 0u;
@@ -10800,6 +11212,8 @@ build_palette_kmedoids(unsigned char **result,
     histbits = sixel_get_kmedoids_histbits();
     rare_keep = sixel_get_kmedoids_rare_keep();
     prune_mass = sixel_get_kmedoids_prune_mass();
+    prune_policy = sixel_get_kmedoids_prune_policy();
+    sixel_kmedoids_build_prune_profile(prune_policy, &prune_profile);
     status = sixel_kmedoids_collect_samples(data,
                                             length,
                                             channels,
@@ -10984,7 +11398,8 @@ build_palette_kmedoids(unsigned char **result,
     (void)sixel_compat_snprintf(log_detail,
                                 sizeof(log_detail),
                                 "samples=%u unique=%u k=%u algo=%s/%s seed=%u "
-                                "histbits=%u budget=%u prune=%.3f",
+                                "histbits=%u budget=%u prune=%s "
+                                "prune_mass=%.3f",
                                 sample_count,
                                 point_count,
                                 k,
@@ -10993,6 +11408,8 @@ build_palette_kmedoids(unsigned char **result,
                                 seed,
                                 histbits,
                                 point_budget,
+                                sixel_kmedoids_prune_policy_to_string(
+                                    prune_policy),
                                 prune_mass);
     sixel_palette_kmedoids_log_finish(logger,
                                       job_init,
@@ -11076,6 +11493,7 @@ build_palette_kmedoids(unsigned char **result,
                                                 medoids,
                                                 &solution_cost,
                                                 &iteration_count,
+                                                &prune_profile,
                                                 allocator);
             total_iterations += iteration_count;
         }
@@ -11105,6 +11523,7 @@ build_palette_kmedoids(unsigned char **result,
                                                   medoids,
                                                   &solution_cost,
                                                   &iteration_count,
+                                                  &prune_profile,
                                                   allocator);
             total_iterations += iteration_count;
         }

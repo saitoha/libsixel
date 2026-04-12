@@ -32,6 +32,16 @@ test "${msg#*medoids -> k-medoids clustering.*sub-option:*:algo=NAME*}" != "${ms
     exit 0
 }
 
+test "${msg#*kmeans   -> k-means clustering.*:prune=POLICY*}" != "${msg}" || {
+    echo "not ok" 1 - "missing kmeans prune suboption in -H"
+    exit 0
+}
+
+test "${msg#*medoids -> k-medoids clustering.*:prune=POLICY*}" != "${msg}" || {
+    echo "not ok" 1 - "missing medoids prune suboption in -H"
+    exit 0
+}
+
 test "${msg#*kmeans   -> k-means clustering.*medoids -> k-medoids clustering.*}" != "${msg}" || {
     echo "not ok" 1 - "kmeans/medoids blocks are out of order"
     exit 0

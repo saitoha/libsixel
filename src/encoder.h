@@ -120,6 +120,8 @@ struct sixel_encoder {
     unsigned int quantize_model_kmeans_autoratio;
     int quantize_model_kmeans_feedback_override;
     int quantize_model_kmeans_feedback_mode;
+    int quantize_model_kmeans_prune_override;
+    int quantize_model_kmeans_prune_policy;
     int quantize_model_kmeans_seed_override;
     unsigned int quantize_model_kmeans_seed;
     int quantize_model_kmeans_restarts_override;
@@ -138,6 +140,8 @@ struct sixel_encoder {
     unsigned int quantize_model_kmeans_feedback_interval;
     int quantize_model_kmedoids_algo_override;
     int quantize_model_kmedoids_algo;
+    int quantize_model_kmedoids_prune_override;
+    int quantize_model_kmedoids_prune_policy;
     int quantize_model_kmedoids_seed_override;
     unsigned int quantize_model_kmedoids_seed;
     int quantize_model_kmedoids_iter_override;

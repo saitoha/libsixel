@@ -114,6 +114,10 @@ static SIXEL_TLS int sixel_kmeans_feedback_mode_override_enabled = 0;
 static SIXEL_TLS sixel_kmeans_feedback_mode
     sixel_kmeans_feedback_mode_override_value
         = SIXEL_PALETTE_KMEANS_FEEDBACK_OFF;
+static SIXEL_TLS int sixel_kmeans_prune_policy_override_enabled = 0;
+static SIXEL_TLS sixel_kmeans_prune_policy
+    sixel_kmeans_prune_policy_override_value
+        = SIXEL_PALETTE_KMEANS_PRUNE_AUTO;
 static SIXEL_TLS int sixel_kmeans_feedback_slots_override_enabled = 0;
 static SIXEL_TLS unsigned int sixel_kmeans_feedback_slots_override_value = 1u;
 static SIXEL_TLS int sixel_kmeans_feedback_interval_override_enabled = 0;
@@ -1027,6 +1031,84 @@ sixel_get_kmeans_feedback_mode(void)
         }
     }
 
+    return cached;
+}
+
+static char const *
+sixel_kmeans_prune_policy_to_string(sixel_kmeans_prune_policy policy)
+{
+    switch (policy) {
+    case SIXEL_PALETTE_KMEANS_PRUNE_NONE:
+        return "none";
+    case SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY:
+        return "hamerly";
+    case SIXEL_PALETTE_KMEANS_PRUNE_AUTO:
+    default:
+        return "auto";
+    }
+}
+
+static sixel_kmeans_prune_policy
+sixel_kmeans_resolve_prune_policy(sixel_kmeans_prune_policy policy)
+{
+    switch (policy) {
+    case SIXEL_PALETTE_KMEANS_PRUNE_AUTO:
+    case SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY:
+        return SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
+    case SIXEL_PALETTE_KMEANS_PRUNE_NONE:
+        return SIXEL_PALETTE_KMEANS_PRUNE_NONE;
+    default:
+        return SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
+    }
+}
+
+void
+sixel_set_kmeans_prune_policy_override(int enabled,
+                                       sixel_kmeans_prune_policy policy)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kmeans_override_lock_acquire();
+    sixel_kmeans_prune_policy_override_enabled = enabled ? 1 : 0;
+    sixel_kmeans_prune_policy_override_value = policy;
+    sixel_kmeans_override_lock_release(lock_acquired);
+}
+
+SIXEL_INTERNAL_API sixel_kmeans_prune_policy
+sixel_get_kmeans_prune_policy(void)
+{
+    char const *env_value;
+    static int loaded = 0;
+    static sixel_kmeans_prune_policy cached
+        = SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
+    sixel_kmeans_prune_policy parsed;
+    sixel_kmeans_prune_policy resolved;
+
+    env_value = NULL;
+    parsed = SIXEL_PALETTE_KMEANS_PRUNE_AUTO;
+    resolved = SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
+    if (sixel_kmeans_prune_policy_override_enabled) {
+        return sixel_kmeans_resolve_prune_policy(
+            sixel_kmeans_prune_policy_override_value);
+    }
+    if (loaded) {
+        return cached;
+    }
+    loaded = 1;
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_PRUNE");
+    if (env_value != NULL && env_value[0] != '\0') {
+        if (sixel_compat_strcasecmp(env_value, "none") == 0) {
+            parsed = SIXEL_PALETTE_KMEANS_PRUNE_NONE;
+        } else if (sixel_compat_strcasecmp(env_value, "hamerly") == 0) {
+            parsed = SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
+        } else if (sixel_compat_strcasecmp(env_value, "auto") == 0) {
+            parsed = SIXEL_PALETTE_KMEANS_PRUNE_AUTO;
+        }
+    }
+    resolved = sixel_kmeans_resolve_prune_policy(parsed);
+    cached = resolved;
+    sixel_debugf("k-means prune policy: %s",
+                 sixel_kmeans_prune_policy_to_string(parsed));
     return cached;
 }
 
@@ -2737,6 +2819,293 @@ cleanup:
 }
 
 static double
+sixel_kmeans_center_distance_sq(double const *centers,
+                                unsigned int left,
+                                unsigned int right)
+{
+    unsigned int channel;
+    double diff;
+    double distance_sq;
+
+    channel = 0u;
+    diff = 0.0;
+    distance_sq = 0.0;
+    if (centers == NULL) {
+        return 0.0;
+    }
+    for (channel = 0u; channel < 3u; ++channel) {
+        diff = centers[(size_t)left * 3u + channel]
+            - centers[(size_t)right * 3u + channel];
+        distance_sq += diff * diff;
+    }
+    return distance_sq;
+}
+
+static void
+sixel_kmeans_compute_half_center_distances(double const *centers,
+                                           unsigned int k,
+                                           double *half_center_dist)
+{
+    unsigned int left;
+    unsigned int right;
+    double distance_sq;
+    double min_distance;
+
+    left = 0u;
+    right = 0u;
+    distance_sq = 0.0;
+    min_distance = 0.0;
+    if (centers == NULL || half_center_dist == NULL || k == 0u) {
+        return;
+    }
+    if (k == 1u) {
+        half_center_dist[0u] = 0.0;
+        return;
+    }
+    for (left = 0u; left < k; ++left) {
+        min_distance = DBL_MAX;
+        for (right = 0u; right < k; ++right) {
+            if (right == left) {
+                continue;
+            }
+            distance_sq = sixel_kmeans_center_distance_sq(centers,
+                                                          left,
+                                                          right);
+            if (distance_sq < min_distance) {
+                min_distance = distance_sq;
+            }
+        }
+        if (min_distance == DBL_MAX) {
+            half_center_dist[left] = 0.0;
+        } else {
+            half_center_dist[left] = 0.5 * sqrt(min_distance);
+        }
+    }
+}
+
+static double
+sixel_kmeans_assign_samples_full_second(double const *centers,
+                                        unsigned int k,
+                                        double const *samples,
+                                        double const *weights,
+                                        unsigned int sample_count,
+                                        unsigned int *membership,
+                                        double *distance_cache,
+                                        double *cluster_weights,
+                                        double *accum,
+                                        double *upper_bounds,
+                                        double *lower_bounds)
+{
+    unsigned int sample_index;
+    unsigned int center_index;
+    unsigned int channel;
+    unsigned int best_index;
+    size_t sum_index;
+    double objective;
+    double sample_weight;
+    double distance_sq;
+    double best_distance_sq;
+    double second_distance_sq;
+    double diff;
+
+    sample_index = 0u;
+    center_index = 0u;
+    channel = 0u;
+    best_index = 0u;
+    sum_index = 0u;
+    objective = 0.0;
+    sample_weight = 0.0;
+    distance_sq = 0.0;
+    best_distance_sq = 0.0;
+    second_distance_sq = 0.0;
+    diff = 0.0;
+    if (centers == NULL || samples == NULL || membership == NULL
+            || distance_cache == NULL || cluster_weights == NULL
+            || accum == NULL || upper_bounds == NULL
+            || lower_bounds == NULL) {
+        return 0.0;
+    }
+    for (center_index = 0u; center_index < k; ++center_index) {
+        cluster_weights[center_index] = 0.0;
+    }
+    for (sum_index = 0u; sum_index < (size_t)k * 3u; ++sum_index) {
+        accum[sum_index] = 0.0;
+    }
+    for (sample_index = 0u; sample_index < sample_count; ++sample_index) {
+        sample_weight = 1.0;
+        if (weights != NULL) {
+            sample_weight = weights[sample_index];
+        }
+        if (sample_weight <= 0.0) {
+            membership[sample_index] = 0u;
+            distance_cache[sample_index] = 0.0;
+            upper_bounds[sample_index] = 0.0;
+            lower_bounds[sample_index] = 0.0;
+            continue;
+        }
+        best_index = 0u;
+        best_distance_sq = 0.0;
+        for (channel = 0u; channel < 3u; ++channel) {
+            diff = samples[sample_index * 3u + channel]
+                - centers[channel];
+            best_distance_sq += diff * diff;
+        }
+        second_distance_sq = DBL_MAX;
+        for (center_index = 1u; center_index < k; ++center_index) {
+            distance_sq = 0.0;
+            for (channel = 0u; channel < 3u; ++channel) {
+                diff = samples[sample_index * 3u + channel]
+                    - centers[center_index * 3u + channel];
+                distance_sq += diff * diff;
+            }
+            if (distance_sq < best_distance_sq) {
+                second_distance_sq = best_distance_sq;
+                best_distance_sq = distance_sq;
+                best_index = center_index;
+            } else if (distance_sq < second_distance_sq) {
+                second_distance_sq = distance_sq;
+            }
+        }
+        if (k < 2u || second_distance_sq == DBL_MAX) {
+            second_distance_sq = best_distance_sq;
+        }
+        membership[sample_index] = best_index;
+        upper_bounds[sample_index] = sqrt(best_distance_sq);
+        lower_bounds[sample_index] = sqrt(second_distance_sq);
+        distance_cache[sample_index] = best_distance_sq * sample_weight;
+        objective += distance_cache[sample_index];
+        cluster_weights[best_index] += sample_weight;
+        for (channel = 0u; channel < 3u; ++channel) {
+            accum[(size_t)best_index * 3u + channel] +=
+                samples[sample_index * 3u + channel] * sample_weight;
+        }
+    }
+    return objective;
+}
+
+static double
+sixel_kmeans_assign_samples_hamerly(double const *centers,
+                                    unsigned int k,
+                                    double const *samples,
+                                    double const *weights,
+                                    unsigned int sample_count,
+                                    unsigned int *membership,
+                                    double *distance_cache,
+                                    double *cluster_weights,
+                                    double *accum,
+                                    double *upper_bounds,
+                                    double *lower_bounds,
+                                    double const *half_center_dist)
+{
+    unsigned int sample_index;
+    unsigned int center_index;
+    unsigned int channel;
+    unsigned int best_index;
+    size_t sum_index;
+    double objective;
+    double sample_weight;
+    double diff;
+    double distance_sq;
+    double best_distance_sq;
+    double second_distance_sq;
+    double upper;
+    double lower;
+    double skip_limit;
+
+    sample_index = 0u;
+    center_index = 0u;
+    channel = 0u;
+    best_index = 0u;
+    sum_index = 0u;
+    objective = 0.0;
+    sample_weight = 0.0;
+    diff = 0.0;
+    distance_sq = 0.0;
+    best_distance_sq = 0.0;
+    second_distance_sq = 0.0;
+    upper = 0.0;
+    lower = 0.0;
+    skip_limit = 0.0;
+    if (centers == NULL || samples == NULL || membership == NULL
+            || distance_cache == NULL || cluster_weights == NULL
+            || accum == NULL || upper_bounds == NULL
+            || lower_bounds == NULL || half_center_dist == NULL) {
+        return 0.0;
+    }
+    for (center_index = 0u; center_index < k; ++center_index) {
+        cluster_weights[center_index] = 0.0;
+    }
+    for (sum_index = 0u; sum_index < (size_t)k * 3u; ++sum_index) {
+        accum[sum_index] = 0.0;
+    }
+    for (sample_index = 0u; sample_index < sample_count; ++sample_index) {
+        sample_weight = 1.0;
+        if (weights != NULL) {
+            sample_weight = weights[sample_index];
+        }
+        if (sample_weight <= 0.0) {
+            membership[sample_index] = 0u;
+            distance_cache[sample_index] = 0.0;
+            upper_bounds[sample_index] = 0.0;
+            lower_bounds[sample_index] = 0.0;
+            continue;
+        }
+        best_index = membership[sample_index];
+        if (best_index >= k) {
+            best_index = 0u;
+        }
+        best_distance_sq = 0.0;
+        for (channel = 0u; channel < 3u; ++channel) {
+            diff = samples[sample_index * 3u + channel]
+                - centers[(size_t)best_index * 3u + channel];
+            best_distance_sq += diff * diff;
+        }
+        upper = sqrt(best_distance_sq);
+        upper_bounds[sample_index] = upper;
+        lower = lower_bounds[sample_index];
+        skip_limit = half_center_dist[best_index];
+        if (lower > skip_limit) {
+            skip_limit = lower;
+        }
+        if (upper > skip_limit) {
+            second_distance_sq = DBL_MAX;
+            for (center_index = 0u; center_index < k; ++center_index) {
+                if (center_index == best_index) {
+                    continue;
+                }
+                distance_sq = 0.0;
+                for (channel = 0u; channel < 3u; ++channel) {
+                    diff = samples[sample_index * 3u + channel]
+                        - centers[(size_t)center_index * 3u + channel];
+                    distance_sq += diff * diff;
+                }
+                if (distance_sq < best_distance_sq) {
+                    second_distance_sq = best_distance_sq;
+                    best_distance_sq = distance_sq;
+                    best_index = center_index;
+                } else if (distance_sq < second_distance_sq) {
+                    second_distance_sq = distance_sq;
+                }
+            }
+            if (k < 2u || second_distance_sq == DBL_MAX) {
+                second_distance_sq = best_distance_sq;
+            }
+            membership[sample_index] = best_index;
+            upper_bounds[sample_index] = sqrt(best_distance_sq);
+            lower_bounds[sample_index] = sqrt(second_distance_sq);
+        }
+        distance_cache[sample_index] = best_distance_sq * sample_weight;
+        objective += distance_cache[sample_index];
+        cluster_weights[best_index] += sample_weight;
+        for (channel = 0u; channel < 3u; ++channel) {
+            accum[(size_t)best_index * 3u + channel] +=
+                samples[sample_index * 3u + channel] * sample_weight;
+        }
+    }
+    return objective;
+}
+
+static double
 sixel_kmeans_assign_samples(double const *centers,
                             unsigned int k,
                             double const *samples,
@@ -2900,6 +3269,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     unsigned int iteration;
     unsigned int restart_count;
     unsigned int restart_index;
+    unsigned int hamerly_initialized;
+    unsigned int refine_hamerly_initialized;
     unsigned int min_iterations;
     unsigned int iter_override;
     unsigned int iter_cap;
@@ -2933,12 +3304,19 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     double *centers;
     double *distance_cache;
     double *best_centers;
+    double *upper_bounds;
+    double *lower_bounds;
+    double *half_center_dist;
+    double *center_shift;
+    double *center_prev;
     double best_distance;
     double distance;
     double diff;
     double update;
     double farthest_distance;
     double delta;
+    double center_move_sq;
+    double max_center_shift;
     double objective;
     double best_objective;
     double lloyd_threshold;
@@ -2958,6 +3336,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     sixel_kmeans_mapping_mode mapping_mode;
     sixel_kmeans_softdist_mode softdist_mode;
     sixel_kmeans_feedback_mode feedback_mode;
+    sixel_kmeans_prune_policy prune_policy;
     unsigned long *merge_weights;
     double *cluster_weights;
     double *accum;
@@ -2970,6 +3349,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     int resolved_merge;
     int iter_enabled;
     int seed_enabled;
+    int hamerly_active;
     unsigned int overshoot;
     unsigned int refine_iterations;
     int cluster_total;
@@ -3039,6 +3419,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     iteration = 0U;
     restart_count = 1U;
     restart_index = 0U;
+    hamerly_initialized = 0U;
+    refine_hamerly_initialized = 0U;
     min_iterations = 0U;
     iter_override = 0U;
     iter_cap = 0U;
@@ -3072,6 +3454,11 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     centers = NULL;
     distance_cache = NULL;
     best_centers = NULL;
+    upper_bounds = NULL;
+    lower_bounds = NULL;
+    half_center_dist = NULL;
+    center_shift = NULL;
+    center_prev = NULL;
     merge_weights = NULL;
     cluster_weights = NULL;
     accum = NULL;
@@ -3084,6 +3471,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     farthest_distance = 0.0;
     farthest_base = 0U;
     delta = 0.0;
+    center_move_sq = 0.0;
+    max_center_shift = 0.0;
     objective = 0.0;
     best_objective = 0.0;
     lloyd_threshold = 0.0;
@@ -3137,6 +3526,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     mapping_mode = SIXEL_PALETTE_KMEANS_MAPPING_UNIFORM;
     softdist_mode = SIXEL_PALETTE_KMEANS_SOFTDIST_TRILINEAR;
     feedback_mode = SIXEL_PALETTE_KMEANS_FEEDBACK_OFF;
+    prune_policy = SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
+    hamerly_active = 0;
 
     if (result != NULL) {
         *result = NULL;
@@ -3281,6 +3672,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     softdist_mode = sixel_get_kmeans_softdist_mode();
     autoratio = sixel_get_kmeans_autoratio();
     feedback_mode = sixel_get_kmeans_feedback_mode();
+    prune_policy = sixel_get_kmeans_prune_policy();
     restart_count = sixel_get_kmeans_restarts();
     feedback_slots = sixel_get_kmeans_feedback_slots();
     feedback_interval = sixel_get_kmeans_feedback_interval();
@@ -3290,6 +3682,10 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     polish_iterations = sixel_get_kmeans_polish_iter();
     seed_value = sixel_get_kmeans_seed();
     seed_enabled = sixel_get_kmeans_seed_enabled();
+    hamerly_active = 0;
+    if (prune_policy == SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY) {
+        hamerly_active = 1;
+    }
     if (restart_count < 1u) {
         restart_count = 1u;
     }
@@ -3427,6 +3823,24 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
+    if (hamerly_active) {
+        upper_bounds = (double *)sixel_allocator_malloc(
+            allocator, (size_t)work_sample_count * sizeof(double));
+        lower_bounds = (double *)sixel_allocator_malloc(
+            allocator, (size_t)work_sample_count * sizeof(double));
+        half_center_dist = (double *)sixel_allocator_malloc(
+            allocator, (size_t)k * sizeof(double));
+        center_shift = (double *)sixel_allocator_malloc(
+            allocator, (size_t)k * sizeof(double));
+        center_prev = (double *)sixel_allocator_malloc(
+            allocator, (size_t)k * 3u * sizeof(double));
+        if (upper_bounds == NULL || lower_bounds == NULL
+                || half_center_dist == NULL || center_shift == NULL
+                || center_prev == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+    }
     if (restart_count > 1u) {
         best_centers = (double *)sixel_allocator_malloc(
             allocator, (size_t)k * 3u * sizeof(double));
@@ -3494,10 +3908,11 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     iterate_start = init_stop;
     (void)snprintf(log_detail,
                    sizeof(log_detail),
-                   "samples=%u k=%u init=%s restarts=%u",
+                   "samples=%u k=%u init=%s prune=%s restarts=%u",
                    work_sample_count,
                    k,
                    sixel_kmeans_init_type_to_string(init_type),
+                   sixel_kmeans_prune_policy_to_string(prune_policy),
                    restart_count);
     sixel_palette_kmeans_log_finish(logger,
                                     job_init,
@@ -3507,6 +3922,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                                     log_detail);
     best_objective = 0.0;
     for (restart_index = 0u; restart_index < restart_count; ++restart_index) {
+        hamerly_initialized = 0u;
         if (seed_enabled) {
             restart_seed =
                 seed_value + (uint32_t)(0x9e3779b9u * restart_index);
@@ -3550,46 +3966,86 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             for (index = 0u; index < k * 3u; ++index) {
                 accum[index] = 0.0;
             }
-            for (sample_index = 0u; sample_index < work_sample_count;
-                    ++sample_index) {
-                sample_weight = 1.0;
-                if (work_weights != NULL) {
-                    sample_weight = work_weights[sample_index];
+            if (hamerly_active) {
+                memcpy(center_prev,
+                       centers,
+                       (size_t)k * 3u * sizeof(double));
+                if (hamerly_initialized == 0u) {
+                    objective = sixel_kmeans_assign_samples_full_second(
+                        centers,
+                        k,
+                        work_samples,
+                        work_weights,
+                        work_sample_count,
+                        membership,
+                        distance_cache,
+                        cluster_weights,
+                        accum,
+                        upper_bounds,
+                        lower_bounds);
+                    hamerly_initialized = 1u;
+                } else {
+                    sixel_kmeans_compute_half_center_distances(
+                        centers,
+                        k,
+                        half_center_dist);
+                    objective = sixel_kmeans_assign_samples_hamerly(
+                        centers,
+                        k,
+                        work_samples,
+                        work_weights,
+                        work_sample_count,
+                        membership,
+                        distance_cache,
+                        cluster_weights,
+                        accum,
+                        upper_bounds,
+                        lower_bounds,
+                        half_center_dist);
                 }
-                if (sample_weight <= 0.0) {
-                    distance_cache[sample_index] = 0.0;
-                    membership[sample_index] = 0u;
-                    continue;
-                }
-                best_index = 0u;
-                distance = 0.0;
-                for (channel = 0u; channel < 3u; ++channel) {
-                    diff = work_samples[sample_index * 3u + channel]
-                        - centers[channel];
-                    distance += diff * diff;
-                }
-                best_distance = distance;
-                for (center_index = 1u; center_index < k;
-                        ++center_index) {
+            } else {
+                for (sample_index = 0u; sample_index < work_sample_count;
+                        ++sample_index) {
+                    sample_weight = 1.0;
+                    if (work_weights != NULL) {
+                        sample_weight = work_weights[sample_index];
+                    }
+                    if (sample_weight <= 0.0) {
+                        distance_cache[sample_index] = 0.0;
+                        membership[sample_index] = 0u;
+                        continue;
+                    }
+                    best_index = 0u;
                     distance = 0.0;
                     for (channel = 0u; channel < 3u; ++channel) {
                         diff = work_samples[sample_index * 3u + channel]
-                            - centers[center_index * 3u + channel];
+                            - centers[channel];
                         distance += diff * diff;
                     }
-                    if (distance < best_distance) {
-                        best_distance = distance;
-                        best_index = center_index;
+                    best_distance = distance;
+                    for (center_index = 1u; center_index < k;
+                            ++center_index) {
+                        distance = 0.0;
+                        for (channel = 0u; channel < 3u; ++channel) {
+                            diff = work_samples[sample_index * 3u + channel]
+                                - centers[center_index * 3u + channel];
+                            distance += diff * diff;
+                        }
+                        if (distance < best_distance) {
+                            best_distance = distance;
+                            best_index = center_index;
+                        }
                     }
-                }
-                membership[sample_index] = best_index;
-                distance_cache[sample_index] = best_distance * sample_weight;
-                cluster_weights[best_index] += sample_weight;
-                channel_sum = accum + (size_t)best_index * 3u;
-                for (channel = 0u; channel < 3u; ++channel) {
-                    channel_sum[channel] +=
-                        work_samples[sample_index * 3u + channel]
-                        * sample_weight;
+                    membership[sample_index] = best_index;
+                    distance_cache[sample_index]
+                        = best_distance * sample_weight;
+                    cluster_weights[best_index] += sample_weight;
+                    channel_sum = accum + (size_t)best_index * 3u;
+                    for (channel = 0u; channel < 3u; ++channel) {
+                        channel_sum[channel] +=
+                            work_samples[sample_index * 3u + channel]
+                            * sample_weight;
+                    }
                 }
             }
             for (center_index = 0u; center_index < k; ++center_index) {
@@ -3638,6 +4094,10 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                         * farthest_sample_weight;
                 }
                 distance_cache[farthest_index] = 0.0;
+                if (hamerly_active) {
+                    upper_bounds[farthest_index] = 0.0;
+                    lower_bounds[farthest_index] = 0.0;
+                }
             }
             delta = 0.0;
             for (center_index = 0u; center_index < k; ++center_index) {
@@ -3688,6 +4148,43 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                     &delta);
                 if (SIXEL_FAILED(status)) {
                     goto end;
+                }
+            }
+            if (hamerly_active) {
+                max_center_shift = 0.0;
+                for (center_index = 0u; center_index < k; ++center_index) {
+                    center_move_sq = 0.0;
+                    for (channel = 0u; channel < 3u; ++channel) {
+                        diff = center_prev[(size_t)center_index * 3u + channel]
+                            - centers[(size_t)center_index * 3u + channel];
+                        center_move_sq += diff * diff;
+                    }
+                    center_shift[center_index] = sqrt(center_move_sq);
+                    if (center_shift[center_index] > max_center_shift) {
+                        max_center_shift = center_shift[center_index];
+                    }
+                }
+                for (sample_index = 0u; sample_index < work_sample_count;
+                        ++sample_index) {
+                    sample_weight = 1.0;
+                    if (work_weights != NULL) {
+                        sample_weight = work_weights[sample_index];
+                    }
+                    if (sample_weight <= 0.0) {
+                        upper_bounds[sample_index] = 0.0;
+                        lower_bounds[sample_index] = 0.0;
+                        continue;
+                    }
+                    best_index = membership[sample_index];
+                    if (best_index >= k) {
+                        best_index = 0u;
+                    }
+                    upper_bounds[sample_index] += center_shift[best_index];
+                    if (lower_bounds[sample_index] > max_center_shift) {
+                        lower_bounds[sample_index] -= max_center_shift;
+                    } else {
+                        lower_bounds[sample_index] = 0.0;
+                    }
                 }
             }
 
@@ -3869,6 +4366,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                     / cluster_weight;
             }
         }
+        refine_hamerly_initialized = 0u;
         for (iteration = 0U; iteration < refine_iterations; ++iteration) {
             ++merge_iterations;
             for (index = 0U; index < k; ++index) {
@@ -3877,45 +4375,88 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             for (index = 0U; index < k * 3U; ++index) {
                 accum[index] = 0.0;
             }
-            for (sample_index = 0U; sample_index < work_sample_count;
-                    ++sample_index) {
-                sample_weight = 1.0;
-                if (work_weights != NULL) {
-                    sample_weight = work_weights[sample_index];
+            if (hamerly_active) {
+                memcpy(center_prev,
+                       centers,
+                       (size_t)k * 3u * sizeof(double));
+                if (refine_hamerly_initialized == 0u) {
+                    objective = sixel_kmeans_assign_samples_full_second(
+                        centers,
+                        k,
+                        work_samples,
+                        work_weights,
+                        work_sample_count,
+                        membership,
+                        distance_cache,
+                        cluster_weights,
+                        accum,
+                        upper_bounds,
+                        lower_bounds);
+                    refine_hamerly_initialized = 1u;
+                } else {
+                    sixel_kmeans_compute_half_center_distances(
+                        centers,
+                        k,
+                        half_center_dist);
+                    objective = sixel_kmeans_assign_samples_hamerly(
+                        centers,
+                        k,
+                        work_samples,
+                        work_weights,
+                        work_sample_count,
+                        membership,
+                        distance_cache,
+                        cluster_weights,
+                        accum,
+                        upper_bounds,
+                        lower_bounds,
+                        half_center_dist);
                 }
-                if (sample_weight <= 0.0) {
-                    distance_cache[sample_index] = 0.0;
-                    membership[sample_index] = 0U;
-                    continue;
-                }
-                best_index = 0U;
-                best_distance = 0.0;
-                for (channel = 0U; channel < 3U; ++channel) {
-                    diff = (double)work_samples[sample_index * 3U + channel]
-                        - centers[channel];
-                    best_distance += diff * diff;
-                }
-                for (center_index = 1U; center_index < k;
-                        ++center_index) {
-                    distance = 0.0;
+            } else {
+                for (sample_index = 0U; sample_index < work_sample_count;
+                        ++sample_index) {
+                    sample_weight = 1.0;
+                    if (work_weights != NULL) {
+                        sample_weight = work_weights[sample_index];
+                    }
+                    if (sample_weight <= 0.0) {
+                        distance_cache[sample_index] = 0.0;
+                        membership[sample_index] = 0U;
+                        continue;
+                    }
+                    best_index = 0U;
+                    best_distance = 0.0;
                     for (channel = 0U; channel < 3U; ++channel) {
-                        diff = (double)work_samples[sample_index * 3U + channel]
-                            - centers[center_index * 3U + channel];
-                        distance += diff * diff;
+                        diff =
+                            (double)work_samples[sample_index * 3U + channel]
+                            - centers[channel];
+                        best_distance += diff * diff;
                     }
-                    if (distance < best_distance) {
-                        best_distance = distance;
-                        best_index = center_index;
+                    for (center_index = 1U; center_index < k;
+                            ++center_index) {
+                        distance = 0.0;
+                        for (channel = 0U; channel < 3U; ++channel) {
+                            diff =
+                                (double)work_samples[
+                                    sample_index * 3U + channel]
+                                - centers[center_index * 3U + channel];
+                            distance += diff * diff;
+                        }
+                        if (distance < best_distance) {
+                            best_distance = distance;
+                            best_index = center_index;
+                        }
                     }
-                }
-                membership[sample_index] = best_index;
-                distance_cache[sample_index] = best_distance * sample_weight;
-                cluster_weights[best_index] += sample_weight;
-                channel_sum = accum + (size_t)best_index * 3U;
-                for (channel = 0U; channel < 3U; ++channel) {
-                    channel_sum[channel] +=
-                        work_samples[sample_index * 3U + channel]
-                        * sample_weight;
+                    membership[sample_index] = best_index;
+                    distance_cache[sample_index]
+                        = best_distance * sample_weight;
+                    cluster_weights[best_index] += sample_weight;
+                    channel_sum = accum + (size_t)best_index * 3U;
+                    for (channel = 0U; channel < 3U; ++channel) {
+                        channel_sum[channel] +=
+                            work_samples[sample_index * 3U + channel]
+                            * sample_weight;
+                    }
                 }
             }
             for (center_index = 0U; center_index < k; ++center_index) {
@@ -3964,6 +4505,10 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                         * farthest_sample_weight;
                 }
                 distance_cache[farthest_index] = 0.0;
+                if (hamerly_active) {
+                    upper_bounds[farthest_index] = 0.0;
+                    lower_bounds[farthest_index] = 0.0;
+                }
             }
             delta = 0.0;
             for (center_index = 0U; center_index < k; ++center_index) {
@@ -4002,6 +4547,44 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                     &delta);
                 if (SIXEL_FAILED(status)) {
                     goto end;
+                }
+            }
+            if (hamerly_active) {
+                max_center_shift = 0.0;
+                for (center_index = 0U; center_index < k; ++center_index) {
+                    center_move_sq = 0.0;
+                    for (channel = 0U; channel < 3U; ++channel) {
+                        diff =
+                            center_prev[(size_t)center_index * 3u + channel]
+                            - centers[(size_t)center_index * 3u + channel];
+                        center_move_sq += diff * diff;
+                    }
+                    center_shift[center_index] = sqrt(center_move_sq);
+                    if (center_shift[center_index] > max_center_shift) {
+                        max_center_shift = center_shift[center_index];
+                    }
+                }
+                for (sample_index = 0U; sample_index < work_sample_count;
+                        ++sample_index) {
+                    sample_weight = 1.0;
+                    if (work_weights != NULL) {
+                        sample_weight = work_weights[sample_index];
+                    }
+                    if (sample_weight <= 0.0) {
+                        upper_bounds[sample_index] = 0.0;
+                        lower_bounds[sample_index] = 0.0;
+                        continue;
+                    }
+                    best_index = membership[sample_index];
+                    if (best_index >= k) {
+                        best_index = 0u;
+                    }
+                    upper_bounds[sample_index] += center_shift[best_index];
+                    if (lower_bounds[sample_index] > max_center_shift) {
+                        lower_bounds[sample_index] -= max_center_shift;
+                    } else {
+                        lower_bounds[sample_index] = 0.0;
+                    }
                 }
             }
             if (delta <= lloyd_threshold) {
@@ -4259,6 +4842,21 @@ end:
     }
     if (best_centers != NULL) {
         sixel_allocator_free(allocator, best_centers);
+    }
+    if (upper_bounds != NULL) {
+        sixel_allocator_free(allocator, upper_bounds);
+    }
+    if (lower_bounds != NULL) {
+        sixel_allocator_free(allocator, lower_bounds);
+    }
+    if (half_center_dist != NULL) {
+        sixel_allocator_free(allocator, half_center_dist);
+    }
+    if (center_shift != NULL) {
+        sixel_allocator_free(allocator, center_shift);
+    }
+    if (center_prev != NULL) {
+        sixel_allocator_free(allocator, center_prev);
     }
     if (samples != NULL) {
         sixel_allocator_free(allocator, samples);
