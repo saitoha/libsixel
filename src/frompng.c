@@ -2680,7 +2680,6 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                 double fallback_gamma;
                 double source_chrm_xy[8];
                 double source_to_srgb_matrix[3][3];
-                size_t pixel_count;
                 int has_chrm;
                 int apply_chrm_matrix;
                 int has_iccp_chunk;
@@ -2799,7 +2798,6 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                 double fallback_gamma;
                 double source_chrm_xy[8];
                 double source_to_srgb_matrix[3][3];
-                size_t pixel_count;
                 int has_chrm;
                 int apply_chrm_matrix;
                 int has_iccp_chunk;
