@@ -26,7 +26,7 @@ TOP_BUILDDIR=${TOP_BUILDDIR:-$build_root}
 ARTIFACT_ROOT=${ARTIFACT_ROOT:-$build_root/tests/_artifacts}
 export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 
-total=36
+total=37
 index=0
 pass_count=0
 skip_count=0
@@ -186,6 +186,10 @@ run_case_tap "staticcheck-makefile-recipes" \
 
 run_case_tap "staticcheck-src-makefile-dist-sources-sync" \
     "$src_root/tests/_static/sh/staticcheck-src-makefile-dist-sources-sync.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-test-inc-extra-dist-sync" \
+    "$src_root/tests/_static/sh/staticcheck-test-inc-extra-dist-sync.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-meson-palette-sources" \

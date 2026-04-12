@@ -345,6 +345,7 @@ AM_LOG_FLAGS =
 	staticcheck-test-runner-amalgamation-defines-sync \
 	staticcheck-makefile-recipes \
 	staticcheck-src-makefile-dist-sources-sync \
+	staticcheck-test-inc-extra-dist-sync \
 	staticcheck-meson-palette-sources \
 	staticcheck-kmedoids-suboption-env-sync \
 	staticcheck-completion-medoids-tokens \
@@ -377,6 +378,7 @@ staticcheck-test-runner-dllexport \
 staticcheck-test-runner-amalgamation-defines-sync \
 staticcheck-makefile-recipes \
 staticcheck-src-makefile-dist-sources-sync \
+staticcheck-test-inc-extra-dist-sync \
 staticcheck-meson-palette-sources \
 staticcheck-kmedoids-suboption-env-sync \
 staticcheck-completion-medoids-tokens \
@@ -514,6 +516,16 @@ staticcheck-src-makefile-dist-sources-sync:
 		--trs-file staticcheck-src-makefile-dist-sources-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-src-makefile-dist-sources-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-test-inc-extra-dist-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-test-inc-extra-dist-sync" \
+		--log-file staticcheck-test-inc-extra-dist-sync.log \
+		--trs-file staticcheck-test-inc-extra-dist-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-test-inc-extra-dist-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-meson-palette-sources:
@@ -1327,6 +1339,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-src-makefile-dist-sources-sync.sh \
+    _static/sh/staticcheck-test-inc-extra-dist-sync.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
     _static/sh/staticcheck-completion-medoids-tokens.sh \
