@@ -26,6 +26,13 @@ def _lighten(color: Tuple[float, float, float], factor: float) -> Tuple[float,
     return tuple(channel + (1.0 - channel) * factor for channel in color)
 
 
+def _darken(color: Tuple[float, float, float],
+            factor: float) -> Tuple[float, float, float]:
+    """Darken a color towards black by the given factor."""
+
+    return tuple(channel * (1.0 - factor) for channel in color)
+
+
 class ParallelEvent:
     def __init__(self, record: Dict[str, object]):
         self.ts = float(record.get("ts", 0.0))
@@ -124,28 +131,33 @@ def _row_key(worker: str,
     return (worker, thread, key_frame_no, key_loop_no)
 
 
-def _resolve_frame_mode(events: List[ParallelEvent], frame_mode: str) -> bool:
-    """Decide whether rows should be split by frame metadata."""
+def _resolve_frame_render_mode(events: List[ParallelEvent],
+                               frame_mode: str) -> Tuple[bool, bool]:
+    """Resolve frame rendering as (split_rows_by_frame, annotate_frames)."""
 
-    if frame_mode == "on":
-        return True
-    if frame_mode == "off":
-        return False
     unique_frames = {
         (event.loop_no, event.frame_no)
         for event in events
         if event.frame_no >= 0
     }
-    return len(unique_frames) > 1
+    has_multi_frames = len(unique_frames) > 1
+
+    if frame_mode == "off":
+        return (False, False)
+    if frame_mode == "on":
+        return (True, True)
+    if frame_mode == "compact":
+        return (False, True)
+    return (has_multi_frames, has_multi_frames)
 
 
 def _impute_missing_frame_metadata(events: List[ParallelEvent],
                                    frame_mode: str) -> None:
-    """Fill missing frame metadata so frame-mode rendering does not mix rows.
+    """Fill missing frame metadata so frame-aware rendering stays coherent.
 
     Many modules still emit timeline events without frame metadata.  In
-    ``frame_mode=on`` we infer missing values from nearby events to keep one
-    consistent frame-grouped view instead of mixing frame and non-frame rows.
+    frame-aware modes we infer missing values from nearby events so one chart
+    does not mix tagged and untagged spans.
     """
 
     forward_thread_frame: Dict[int, Tuple[int, int, int]] = {}
@@ -153,7 +165,9 @@ def _impute_missing_frame_metadata(events: List[ParallelEvent],
     forward_global_frame: Tuple[int, int, int] = None
     backward_global_frame: Tuple[int, int, int] = None
 
-    if frame_mode != "on":
+    if frame_mode == "off":
+        return
+    if not any(event.frame_no >= 0 for event in events):
         return
 
     for event in events:
@@ -199,6 +213,47 @@ def _impute_missing_frame_metadata(events: List[ParallelEvent],
             event.multiframe = inferred[2]
 
 
+def _update_row_frame_bounds(
+    row_frame_bounds: Dict[Tuple[str, int, int, int], Tuple[int, int, int,
+                                                            int]],
+    row_key: Tuple[str, int, int, int],
+    frame_no: int,
+    loop_no: int,
+) -> None:
+    """Track (min_loop, min_frame, max_loop, max_frame) for each row."""
+
+    current = row_frame_bounds.get(row_key)
+    if frame_no < 0:
+        return
+    if current is None:
+        row_frame_bounds[row_key] = (loop_no, frame_no, loop_no, frame_no)
+        return
+
+    min_loop, min_frame, max_loop, max_frame = current
+    if (loop_no, frame_no) < (min_loop, min_frame):
+        min_loop = loop_no
+        min_frame = frame_no
+    if (loop_no, frame_no) > (max_loop, max_frame):
+        max_loop = loop_no
+        max_frame = frame_no
+    row_frame_bounds[row_key] = (min_loop, min_frame, max_loop, max_frame)
+
+
+def _frame_variant_color(color: Tuple[float, float, float],
+                         frame_no: int,
+                         loop_no: int) -> Tuple[float, float, float]:
+    """Apply a deterministic frame-specific tint while preserving role hue."""
+
+    phase = 0
+    if frame_no < 0:
+        return color
+
+    phase = (frame_no + loop_no * 11) % 6
+    if phase < 3:
+        return _lighten(color, 0.08 + 0.08 * phase)
+    return _darken(color, 0.08 + 0.06 * (phase - 3))
+
+
 def render(
     events: List[ParallelEvent],
     output: str,
@@ -222,7 +277,9 @@ def render(
     if not summary_events:
         print("No events found in the selected time window")
         return
-    split_by_frame = _resolve_frame_mode(summary_events, frame_mode)
+    split_by_frame, annotate_frames = _resolve_frame_render_mode(
+        summary_events,
+        frame_mode)
 
     try:
         import matplotlib.pyplot as plt
@@ -235,9 +292,11 @@ def render(
     job_hint: Dict[Tuple[str, int, int, int], int] = {}
     first_ts: Dict[Tuple[str, int, int, int], float] = {}
     primary_role: Dict[Tuple[str, int, int, int], str] = {}
+    row_frame_bounds: Dict[Tuple[str, int, int, int], Tuple[int, int, int,
+                                                             int]] = {}
     for event in events:
-        span_frame_no = event.frame_no if split_by_frame else -1
-        span_loop_no = event.loop_no if split_by_frame else -1
+        span_frame_no = event.frame_no if annotate_frames else -1
+        span_loop_no = event.loop_no if annotate_frames else -1
         key = (event.worker,
                event.role,
                event.thread,
@@ -255,6 +314,10 @@ def render(
                            event.frame_no,
                            event.loop_no,
                            split_by_frame)
+        _update_row_frame_bounds(row_frame_bounds,
+                                 row_key,
+                                 event.frame_no,
+                                 event.loop_no)
         if row_key not in job_hint and event.worker == "decoder" and \
                 event.job >= 0:
             job_hint[row_key] = event.job
@@ -263,7 +326,7 @@ def render(
             primary_role[row_key] = event.role
 
     threads: Dict[Tuple[str, int, int, int],
-                  List[Tuple[float, float, str, int]]] = {}
+                  List[Tuple[float, float, str, int, int, int]]] = {}
     if lifetime_only:
         row_spans: Dict[Tuple[str, int, int, int], Tuple[float, float]] = {}
         for (worker, _role, thread, job, frame_no, loop_no), \
@@ -292,7 +355,7 @@ def render(
             role = primary_role.get(row_key, "")
             if row_key not in threads:
                 threads[row_key] = []
-            threads[row_key].append((start, duration, role, -1))
+            threads[row_key].append((start, duration, role, -1, -1, -1))
     else:
         # Collapse decode/copy phases per thread so one row shows the full
         # worker activity while keeping per-role colors.
@@ -316,7 +379,8 @@ def render(
             duration = max(0.0, end - start)
             if row_key not in threads:
                 threads[row_key] = []
-            threads[row_key].append((start, duration, role, job))
+            threads[row_key].append((start, duration, role, job,
+                                     frame_no, loop_no))
 
     for key in threads:
         threads[key].sort(key=lambda item: item[0])
@@ -357,7 +421,7 @@ def render(
     role_color: Dict[Tuple[str, str], Tuple[float, float, float]] = {}
     for row_key in threads:
         worker = row_key[0]
-        seen_roles = set(role for _, _, role, _ in threads[row_key])
+        seen_roles = set(role for _, _, role, _, _, _ in threads[row_key])
         for role in seen_roles:
             base = flow_palette.get(worker, (0.2, 0.2, 0.2))
             shade = role_palette.get(role, 0.6)
@@ -378,10 +442,14 @@ def render(
         spans_for_thread = threads[row]
         segments = []
         colors = []
-        for start, duration, role, _ in spans_for_thread:
+        for start, duration, role, _, frame_no, loop_no in spans_for_thread:
             span = (start, duration if duration > 0 else 1e-6)
             segments.append(span)
-            colors.append(role_color.get((worker, role), (0.2, 0.2, 0.2)))
+            base = role_color.get((worker, role), (0.2, 0.2, 0.2))
+            if annotate_frames:
+                colors.append(_frame_variant_color(base, frame_no, loop_no))
+            else:
+                colors.append(base)
         ax.broken_barh(segments,
                        (idx - 0.4, 0.8),
                        facecolors=colors,
@@ -394,8 +462,17 @@ def render(
         label = worker
         if worker == "decoder":
             label = f"{worker} #{slot}"
-        if frame_no >= 0:
+        if split_by_frame and frame_no >= 0:
             label = f"{label} [L{loop_no} F{frame_no}]"
+        elif annotate_frames:
+            bounds = row_frame_bounds.get((worker, slot, frame_no, loop_no))
+            if bounds is not None:
+                min_loop, min_frame, max_loop, max_frame = bounds
+                if (min_loop, min_frame) == (max_loop, max_frame):
+                    label = f"{label} [L{min_loop} F{min_frame}]"
+                else:
+                    label = (f"{label} [L{min_loop} F{min_frame}.."
+                             f"L{max_loop} F{max_frame}]")
         ylabels.append(label)
     ax.set_yticks(yticks)
     ax.set_yticklabels(ylabels)
@@ -406,6 +483,8 @@ def render(
         ax.set_xlim(left, right)
     if split_by_frame:
         ax.set_title("Parallel pipeline timeline (grouped by frame/thread)")
+    elif annotate_frames:
+        ax.set_title("Parallel pipeline timeline (thread rows, frame-colored)")
     else:
         ax.set_title("Parallel pipeline timeline (grouped by thread)")
     ax.grid(True, axis="x", linestyle=":", linewidth=0.5)
@@ -481,12 +560,13 @@ def main() -> None:
     )
     parser.add_argument(
         "--frame-mode",
-        choices=["auto", "off", "on"],
+        choices=["auto", "off", "on", "compact"],
         default="auto",
         help=(
             "Frame grouping policy: 'auto' enables frame rows when logs "
-            "contain multiple frame IDs, 'on' always groups by frame, and "
-            "'off' keeps legacy worker/thread grouping"
+            "contain multiple frame IDs, 'on' always splits rows by frame, "
+            "'compact' keeps one row per thread and colors spans by frame, "
+            "and 'off' keeps legacy worker/thread grouping"
         ),
     )
     args = parser.parse_args()
