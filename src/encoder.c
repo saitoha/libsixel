@@ -382,6 +382,9 @@ typedef struct sixel_palette_async_job {
     int sixel_reversible;
     int quantize_model;
     int force_palette;
+    int frame_no;
+    int loop_no;
+    int multiframe;
     int started;
     int finished;
 } sixel_palette_async_job_t;
@@ -4493,6 +4496,7 @@ sixel_encoder_palette_job_thread(void *priv)
     SIXELSTATUS status;
     sixel_dither_t *local;
     int preserve_alpha_key;
+    sixel_logger_t *logger;
 
     job = (sixel_palette_async_job_t *)priv;
     if (job == NULL) {
@@ -4501,6 +4505,17 @@ sixel_encoder_palette_job_thread(void *priv)
     status = SIXEL_BAD_ARGUMENT;
     local = NULL;
     preserve_alpha_key = 0;
+    logger = NULL;
+
+    if (job != NULL) {
+        logger = job->logger;
+    }
+    if (logger != NULL) {
+        sixel_logger_set_frame_context(logger,
+                                       job->frame_no,
+                                       job->loop_no,
+                                       job->multiframe);
+    }
 
     if (job != NULL && job->encoder != NULL && job->sample_frame != NULL) {
         preserve_alpha_key = sixel_encoder_frame_preserves_alpha_key(
@@ -4528,6 +4543,9 @@ sixel_encoder_palette_job_thread(void *priv)
 
     if (SIXEL_FAILED(status) && local != NULL) {
         sixel_dither_unref(local);
+    }
+    if (logger != NULL) {
+        sixel_logger_clear_frame_context(logger);
     }
 
     return 0;
@@ -4561,6 +4579,9 @@ sixel_encoder_palette_job_init(sixel_palette_async_job_t *job,
     job->sixel_reversible = 0;
     job->quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
     job->force_palette = 0;
+    job->frame_no = 0;
+    job->loop_no = 0;
+    job->multiframe = 0;
     job->started = 0;
     job->finished = 0;
 
@@ -4626,6 +4647,9 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
     job->sixel_reversible = encoder->sixel_reversible;
     job->quantize_model = encoder->quantize_model;
     job->force_palette = encoder->force_palette;
+    job->frame_no = sixel_frame_get_frame_no(frame);
+    job->loop_no = sixel_frame_get_loop_no(frame);
+    job->multiframe = sixel_frame_get_multiframe(frame);
 
     status = sixel_encoder_copy_samples(encoder,
                                         frame,
@@ -6221,6 +6245,12 @@ sixel_encoder_encode_frame(
         context.delay = sixel_frame_get_delay(frame);
         context.multiframe = sixel_frame_get_multiframe(frame);
     }
+    if (encoder != NULL && encoder->logger != NULL) {
+        sixel_logger_set_frame_context(encoder->logger,
+                                       context.frame_no,
+                                       context.loop_no,
+                                       context.multiframe);
+    }
 
     if (encoder != NULL) {
         /*
@@ -6332,6 +6362,9 @@ sixel_encoder_encode_frame(
 
 
 end:
+    if (encoder != NULL && encoder->logger != NULL) {
+        sixel_logger_clear_frame_context(encoder->logger);
+    }
     sixel_encoder_filter_plan_teardown(&context.pre_plan);
     sixel_encoder_filter_plan_teardown(&context.post_plan);
     if (context.palette_job_initialized != 0) {

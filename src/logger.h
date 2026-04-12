@@ -31,6 +31,8 @@
 
 #include "threading.h"
 
+#define SIXEL_LOGGER_FRAME_CONTEXT_SLOTS 64
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -46,6 +48,18 @@ typedef struct sixel_logger {
     int mutex_ready;
     int active;
     double started_at;
+    /*
+     * Keep frame metadata per logging thread so animated pipeline workers can
+     * stamp each event with frame/loop context without adding parameters to
+     * every log call site.
+     */
+    struct {
+        unsigned long long thread_id;
+        int frame_no;
+        int loop_no;
+        int multiframe;
+        int active;
+    } frame_contexts[SIXEL_LOGGER_FRAME_CONTEXT_SLOTS];
 } sixel_logger_t;
 
 void sixel_logger_init(sixel_logger_t *logger);
@@ -60,6 +74,11 @@ void sixel_logger_logf(sixel_logger_t *logger,
                        char const *event,
                        int job_id,
                        ...);
+void sixel_logger_set_frame_context(sixel_logger_t *logger,
+                                    int frame_no,
+                                    int loop_no,
+                                    int multiframe);
+void sixel_logger_clear_frame_context(sixel_logger_t *logger);
 
 #ifdef __cplusplus
 }

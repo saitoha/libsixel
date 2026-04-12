@@ -105,6 +105,10 @@ sixel_dither_interframe_finish_apply(sixel_dither_t *dither,
 static void
 sixel_dither_cleanup_apply_hints(sixel_dither_t *dither);
 
+static int
+sixel_dither_logger_set_frame_context(sixel_logger_t *logger,
+                                      sixel_dither_t const *dither);
+
 
 /*
  * Promote an RGB888 buffer to RGBFLOAT32 by normalising each channel to the
@@ -158,6 +162,23 @@ sixel_dither_promote_rgb888_to_float32(float **out_pixels,
 
     *out_pixels = buffer;
     return status;
+}
+
+static int
+sixel_dither_logger_set_frame_context(sixel_logger_t *logger,
+                                      sixel_dither_t const *dither)
+{
+    if (logger == NULL || dither == NULL) {
+        return 0;
+    }
+    if (dither->frame_context.valid == 0) {
+        return 0;
+    }
+    sixel_logger_set_frame_context(logger,
+                                   dither->frame_context.frame_no,
+                                   dither->frame_context.loop_no,
+                                   dither->frame_context.multiframe);
+    return 1;
 }
 
 /*
@@ -948,6 +969,7 @@ sixel_dither_parallel_worker(tp_job_t job,
     SIXELSTATUS status;
     sixel_parallel_dither_state_t *state;
     sixel_lut_t *local_lut;
+    int restore_context;
 
     plan = (sixel_parallel_dither_plan_t *)userdata;
     if (plan == NULL) {
@@ -993,6 +1015,9 @@ sixel_dither_parallel_worker(tp_job_t job,
     }
 
     if (plan->logger != NULL) {
+        restore_context = sixel_dither_logger_set_frame_context(
+            plan->logger,
+            plan->dither);
         sixel_logger_logf(plan->logger,
                           "worker",
                           "dither",
@@ -1005,11 +1030,15 @@ sixel_dither_parallel_worker(tp_job_t job,
                           in1,
                           "prepare rows=%d",
                           rows);
+        if (restore_context != 0) {
+            sixel_logger_clear_frame_context(plan->logger);
+        }
     }
 
     local_ncolors = plan->reqcolor;
     state = (sixel_parallel_dither_state_t *)workspace;
     local_lut = plan->lut;
+    restore_context = 0;
     if (local_lut == NULL && state != NULL) {
         if (state->lut_initialized == 0) {
             status = sixel_lut_new(&state->lut,
@@ -1089,6 +1118,9 @@ sixel_dither_parallel_worker(tp_job_t job,
                                      plan->dither,
                                      plan->pixelformat);
     if (plan->logger != NULL) {
+        restore_context = sixel_dither_logger_set_frame_context(
+            plan->logger,
+            plan->dither);
         sixel_logger_logf(plan->logger,
                           "worker",
                           "dither",
@@ -1102,6 +1134,9 @@ sixel_dither_parallel_worker(tp_job_t job,
                           "status=%d rows=%d",
                           status,
                           rows);
+        if (restore_context != 0) {
+            sixel_logger_clear_frame_context(plan->logger);
+        }
     }
     if (copy != NULL) {
         free(copy);
