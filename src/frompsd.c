@@ -14478,6 +14478,32 @@ sixel_builtin_psd_parse_layer_extra_data(
             allow_legacy_inactive_completion = 1;
         }
         if (pending_legacy_has_feature_records != 0) {
+            /*
+             * Keep inactive parse traces deterministic when lfx2+lrFX are
+             * merged. Some toolchains can reach this merge point without
+             * emitting the original inactive parse trace from descriptor
+             * traversal.
+             */
+            if ((layer->has_effect_irgl == 0 ||
+                 layer->effect_irgl_opacity <= 0.0f ||
+                 layer->effect_irgl_size <= 0.0f) &&
+                (pending_legacy_effects.has_effect_irgl != 0 ||
+                 pending_legacy_effects.has_effect_inner_glow != 0)) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: parsed IrGl effect object in layer "
+                    "effects (inactive)");
+            }
+            if ((layer->has_effect_bevel == 0 ||
+                 layer->effect_bevel_size <= 0.0f ||
+                 (layer->effect_bevel_highlight_opacity <= 0.0f &&
+                  layer->effect_bevel_shadow_opacity <= 0.0f)) &&
+                pending_legacy_effects.has_effect_bevel != 0) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: parsed ebbl bevel object in layer "
+                    "effects (inactive)");
+            }
             sixel_trace_topic_message(
                 "psd_decode",
                 "builtin PSD: legacy lrFX contains glow/bevel/"
@@ -19844,6 +19870,22 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     layer_for_composite.has_effect_inner_glow != 0;
             }
             if (apply_effects_without_overlay != 0) {
+                if (layer_for_composite.has_blend_clipped_elements != 0 &&
+                    layer_for_composite.blend_clipped_elements_enabled != 0) {
+                    /*
+                     * In clbl=1 deferred interior-overlay groups, keep
+                     * interior glow/choke and bevel-shadow off the base pass.
+                     * These passes are prone to double-accumulation around
+                     * clipped cutouts before deferred overlays are blended.
+                     */
+                    sixel_trace_topic_message(
+                        "psd_decode",
+                        "builtin PSD: suppressing clbl=1 deferred base "
+                        "interior glow/choke/bevel-shadow");
+                    layer_for_composite.has_effect_irgl = 0;
+                    layer_for_composite.has_effect_chfx = 0;
+                    layer_for_composite.effect_bevel_shadow_opacity = 0.0f;
+                }
                 sixel_builtin_psd_apply_layer_effects_subset(
                     &layer_for_composite,
                     &src_layer);
