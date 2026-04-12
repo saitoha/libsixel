@@ -479,7 +479,7 @@ loader_transparent_policy(void)
     return policy;
 }
 
-int
+SIXEL_INTERNAL_API int
 loader_background_policy(void)
 {
     int policy;

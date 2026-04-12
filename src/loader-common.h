@@ -88,7 +88,11 @@ loader_background_colorspace(void);
 int loader_cms_prefer_8bit(void);
 int loader_cms_target_colorspace(void);
 int loader_transparent_policy(void);
-int loader_background_policy(void);
+/*
+ * Keep this exported: the test runner references this helper via the shared
+ * libsixel DLL on Windows builds.
+ */
+SIXEL_INTERNAL_API int loader_background_policy(void);
 /* Keep this exported: test runners call it via the shared libsixel DLL. */
 SIXEL_INTERNAL_API int loader_cms_target_pixelformat(void);
 void sixel_helper_set_loader_cms_engine(int engine);

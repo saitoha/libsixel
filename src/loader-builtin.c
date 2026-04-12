@@ -5518,6 +5518,7 @@ sixel_builtin_load_nonpng_single_frame(
     if (status != SIXEL_FALSE) {
         goto end;
     }
+#if HAVE_LCMS2
     status = sixel_builtin_load_nonpng_rgb8_fallback(
         chunk,
         chunk_size,
@@ -5527,14 +5528,22 @@ sixel_builtin_load_nonpng_single_frame(
         bgcolor_source,
         is_pic,
         enable_cms,
-        bmp_info40_mode
-#if HAVE_LCMS2
-        ,
+        bmp_info40_mode,
         is_tiff,
         icc_profile,
-        icc_profile_length
+        icc_profile_length);
+#else
+    status = sixel_builtin_load_nonpng_rgb8_fallback(
+        chunk,
+        chunk_size,
+        frame,
+        stb_context,
+        bgcolor,
+        bgcolor_source,
+        is_pic,
+        enable_cms,
+        bmp_info40_mode);
 #endif
-    );
 
 end:
     *psd_transparent_mask = mask;
@@ -5626,10 +5635,18 @@ sixel_builtin_load_stbi_nonpng_path(
     unsigned char **psd_transparent_mask,
     size_t *psd_transparent_mask_size)
 {
+    SIXELSTATUS status;
+
     if (load_request == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    return sixel_builtin_load_nonpng_single_frame(
+
+    /*
+     * Keep LCMS and non-LCMS call sites split out so older PCC versions
+     * avoid internal failures on mixed preprocessor argument lists.
+     */
+#if HAVE_LCMS2
+    status = sixel_builtin_load_nonpng_single_frame(
         load_request->chunk,
         chunk_size,
         frame,
@@ -5643,13 +5660,33 @@ sixel_builtin_load_stbi_nonpng_path(
         is_jpeg,
         is_psd,
         is_pic,
-#if HAVE_LCMS2
         is_tiff,
-#endif
         icc_profile,
         icc_profile_length,
         psd_transparent_mask,
         psd_transparent_mask_size);
+#else
+    status = sixel_builtin_load_nonpng_single_frame(
+        load_request->chunk,
+        chunk_size,
+        frame,
+        stb_context,
+        ri,
+        load_request->fuse_palette,
+        load_request->bgcolor,
+        load_request->bgcolor_source,
+        load_request->enable_cms,
+        load_request->bmp_info40_mode,
+        is_jpeg,
+        is_psd,
+        is_pic,
+        icc_profile,
+        icc_profile_length,
+        psd_transparent_mask,
+        psd_transparent_mask_size);
+#endif
+
+    return status;
 }
 
 static SIXELSTATUS
