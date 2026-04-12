@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify lrFX inactive completion keeps bevel highlight application active on
-# effects/stroke-composite hardcase.
+# Verify lrFX inactive completion keeps bevel highlight channel diagnostics
+# while highlight remains inactive on effects/stroke-composite hardcase.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -36,11 +36,17 @@ test "${trace_output#*builtin PSD: merging legacy lrFX effects missing from lfx2
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying bevel highlight in layer fallback*}" \
+test "${trace_output#*builtin PSD: parsed bevel highlight channel in layer effects*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not apply bevel highlight after inactive completion"
+    echo "not ok" 1 - "effects/stroke-composite lost bevel highlight channel parse trace"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite applies bevel highlight after lrFX inactive completion"
+test "${trace_output#*builtin PSD: applying bevel highlight in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite unexpectedly applied bevel highlight"
+    exit 0
+}
+
+echo "ok" 1 - "effects/stroke-composite keeps bevel highlight channel diagnostics on lrFX inactive completion"
 exit 0

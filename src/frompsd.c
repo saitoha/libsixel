@@ -1477,6 +1477,16 @@ typedef enum sixel_builtin_psd_effect_glow_kind {
 } sixel_builtin_psd_effect_glow_kind_t;
 
 enum {
+    SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE = 0,
+    SIXEL_BUILTIN_PSD_GLOW_SOURCE_CENTER = 1
+};
+
+enum {
+    SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_UP = 1,
+    SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_DOWN = -1
+};
+
+enum {
     SIXEL_BUILTIN_PSD_KNOCKOUT_NONE = 0,
     SIXEL_BUILTIN_PSD_KNOCKOUT_SHALLOW = 1,
     SIXEL_BUILTIN_PSD_KNOCKOUT_DEEP = 2
@@ -1620,30 +1630,51 @@ typedef struct sixel_builtin_psd_layer_record {
     float effect_outer_glow_opacity;
     float effect_outer_glow_size;
     sixel_builtin_psd_layer_blend_mode_t effect_outer_glow_mode;
+    int effect_outer_glow_source;
+    float effect_outer_glow_choke;
+    float effect_outer_glow_range;
     float effect_inner_glow_rgb[3];
     float effect_inner_glow_opacity;
     float effect_inner_glow_size;
     sixel_builtin_psd_layer_blend_mode_t effect_inner_glow_mode;
+    int effect_inner_glow_source;
+    float effect_inner_glow_choke;
+    float effect_inner_glow_range;
     float effect_orgl_rgb[3];
     float effect_orgl_opacity;
     float effect_orgl_size;
     sixel_builtin_psd_layer_blend_mode_t effect_orgl_mode;
+    int effect_orgl_source;
+    float effect_orgl_choke;
+    float effect_orgl_range;
     float effect_irgl_rgb[3];
     float effect_irgl_opacity;
     float effect_irgl_size;
     sixel_builtin_psd_layer_blend_mode_t effect_irgl_mode;
+    int effect_irgl_source;
+    float effect_irgl_choke;
+    float effect_irgl_range;
     float effect_chfx_rgb[3];
     float effect_chfx_opacity;
     float effect_chfx_size;
     sixel_builtin_psd_layer_blend_mode_t effect_chfx_mode;
+    int effect_chfx_source;
+    float effect_chfx_choke;
+    float effect_chfx_range;
     float effect_drsh_rgb[3];
     float effect_drsh_opacity;
     float effect_drsh_size;
     sixel_builtin_psd_layer_blend_mode_t effect_drsh_mode;
+    int effect_drsh_source;
+    float effect_drsh_choke;
+    float effect_drsh_range;
     float effect_irsh_rgb[3];
     float effect_irsh_opacity;
     float effect_irsh_size;
     sixel_builtin_psd_layer_blend_mode_t effect_irsh_mode;
+    int effect_irsh_source;
+    float effect_irsh_choke;
+    float effect_irsh_range;
     float effect_bevel_highlight_rgb[3];
     float effect_bevel_highlight_opacity;
     sixel_builtin_psd_layer_blend_mode_t effect_bevel_highlight_mode;
@@ -1651,6 +1682,10 @@ typedef struct sixel_builtin_psd_layer_record {
     float effect_bevel_shadow_opacity;
     sixel_builtin_psd_layer_blend_mode_t effect_bevel_shadow_mode;
     float effect_bevel_size;
+    float effect_bevel_angle_deg;
+    float effect_bevel_altitude_deg;
+    float effect_bevel_depth;
+    int effect_bevel_direction;
 } sixel_builtin_psd_layer_record_t;
 
 typedef struct sixel_builtin_psd_layer_model {
@@ -1749,37 +1784,65 @@ sixel_builtin_psd_apply_lfx2_inactive_effect_overrides(
         return;
     }
     if (layer->eff_orgl_seen != 0 &&
-        layer->eff_orgl_active == 0) {
+        layer->eff_orgl_active == 0 &&
+        (layer->effect_orgl_opacity <= 0.0f ||
+         layer->effect_orgl_size <= 0.0f)) {
         layer->has_effect_orgl = 0;
         layer->effect_orgl_opacity = 0.0f;
         layer->effect_orgl_size = 0.0f;
+        layer->effect_orgl_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+        layer->effect_orgl_choke = 0.0f;
+        layer->effect_orgl_range = 1.0f;
     }
     if (layer->eff_irgl_seen != 0 &&
-        layer->eff_irgl_active == 0) {
+        layer->eff_irgl_active == 0 &&
+        (layer->effect_irgl_opacity <= 0.0f ||
+         layer->effect_irgl_size <= 0.0f)) {
         layer->has_effect_irgl = 0;
         layer->effect_irgl_opacity = 0.0f;
         layer->effect_irgl_size = 0.0f;
+        layer->effect_irgl_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+        layer->effect_irgl_choke = 0.0f;
+        layer->effect_irgl_range = 1.0f;
     }
     if (layer->eff_chfx_seen != 0 &&
-        layer->eff_chfx_active == 0) {
+        layer->eff_chfx_active == 0 &&
+        (layer->effect_chfx_opacity <= 0.0f ||
+         layer->effect_chfx_size <= 0.0f)) {
         layer->has_effect_chfx = 0;
         layer->effect_chfx_opacity = 0.0f;
         layer->effect_chfx_size = 0.0f;
+        layer->effect_chfx_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+        layer->effect_chfx_choke = 0.0f;
+        layer->effect_chfx_range = 1.0f;
     }
     if (layer->eff_drsh_seen != 0 &&
-        layer->eff_drsh_active == 0) {
+        layer->eff_drsh_active == 0 &&
+        (layer->effect_drsh_opacity <= 0.0f ||
+         layer->effect_drsh_size <= 0.0f)) {
         layer->has_effect_drsh = 0;
         layer->effect_drsh_opacity = 0.0f;
         layer->effect_drsh_size = 0.0f;
+        layer->effect_drsh_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+        layer->effect_drsh_choke = 0.0f;
+        layer->effect_drsh_range = 1.0f;
     }
     if (layer->eff_irsh_seen != 0 &&
-        layer->eff_irsh_active == 0) {
+        layer->eff_irsh_active == 0 &&
+        (layer->effect_irsh_opacity <= 0.0f ||
+         layer->effect_irsh_size <= 0.0f)) {
         layer->has_effect_irsh = 0;
         layer->effect_irsh_opacity = 0.0f;
         layer->effect_irsh_size = 0.0f;
+        layer->effect_irsh_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+        layer->effect_irsh_choke = 0.0f;
+        layer->effect_irsh_range = 1.0f;
     }
     if (layer->eff_bevl_seen != 0 &&
-        layer->eff_bevl_active == 0) {
+        layer->eff_bevl_active == 0 &&
+        (layer->effect_bevel_size <= 0.0f ||
+         (layer->effect_bevel_highlight_opacity <= 0.0f &&
+          layer->effect_bevel_shadow_opacity <= 0.0f))) {
         layer->has_effect_bevel = 0;
         layer->effect_bevel_size = 0.0f;
         layer->effect_bevel_highlight_opacity = 0.0f;
@@ -1812,11 +1875,17 @@ sixel_builtin_psd_apply_lfx2_inactive_effect_overrides(
         layer->has_effect_outer_glow = 0;
         layer->effect_outer_glow_opacity = 0.0f;
         layer->effect_outer_glow_size = 0.0f;
+        layer->effect_outer_glow_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+        layer->effect_outer_glow_choke = 0.0f;
+        layer->effect_outer_glow_range = 1.0f;
     }
     if (has_inner_source == 0) {
         layer->has_effect_inner_glow = 0;
         layer->effect_inner_glow_opacity = 0.0f;
         layer->effect_inner_glow_size = 0.0f;
+        layer->effect_inner_glow_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+        layer->effect_inner_glow_choke = 0.0f;
+        layer->effect_inner_glow_range = 1.0f;
     }
 }
 
@@ -9980,6 +10049,93 @@ sixel_builtin_psd_normalize_descriptor_opacity(double value)
     return 1.0f;
 }
 
+static float
+sixel_builtin_psd_normalize_descriptor_percentage(double value)
+{
+    if (value <= 0.0) {
+        return 0.0f;
+    }
+    if (value <= 1.0) {
+        return sixel_builtin_psd_clamp01((float)value);
+    }
+    if (value <= 100.0) {
+        return sixel_builtin_psd_clamp01((float)(value / 100.0));
+    }
+    return 1.0f;
+}
+
+static int
+sixel_builtin_psd_effect_glow_source_from_enum(
+    char const enum_value[5],
+    int *out_source)
+{
+    char key[5];
+    size_t i;
+
+    key[0] = '\0';
+    key[1] = '\0';
+    key[2] = '\0';
+    key[3] = '\0';
+    key[4] = '\0';
+    if (enum_value == NULL || out_source == NULL) {
+        return 0;
+    }
+    for (i = 0u; i < 4u; ++i) {
+        unsigned char ch;
+
+        ch = (unsigned char)enum_value[i];
+        if (ch >= 'A' && ch <= 'Z') {
+            ch = (unsigned char)(ch - 'A' + 'a');
+        }
+        key[i] = (char)ch;
+    }
+    if (memcmp(key, "cntr", 4u) == 0 ||
+        memcmp(key, "ctrs", 4u) == 0 ||
+        memcmp(key, "srcc", 4u) == 0) {
+        *out_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_CENTER;
+    } else {
+        *out_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+    }
+    return 1;
+}
+
+static int
+sixel_builtin_psd_effect_bevel_direction_from_enum(
+    char const enum_value[5],
+    int *out_direction)
+{
+    char key[5];
+    size_t i;
+
+    key[0] = '\0';
+    key[1] = '\0';
+    key[2] = '\0';
+    key[3] = '\0';
+    key[4] = '\0';
+    if (enum_value == NULL || out_direction == NULL) {
+        return 0;
+    }
+    for (i = 0u; i < 4u; ++i) {
+        unsigned char ch;
+
+        ch = (unsigned char)enum_value[i];
+        if (ch >= 'A' && ch <= 'Z') {
+            ch = (unsigned char)(ch - 'A' + 'a');
+        }
+        key[i] = (char)ch;
+    }
+    if (memcmp(key, "out ", 4u) == 0 ||
+        memcmp(key, "up  ", 4u) == 0) {
+        *out_direction = SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_UP;
+    } else if (memcmp(key, "in  ", 4u) == 0 ||
+               memcmp(key, "dwn ", 4u) == 0) {
+        *out_direction = SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_DOWN;
+    } else {
+        *out_direction = SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_UP;
+    }
+    return 1;
+}
+
 static int
 sixel_builtin_psd_effect_blend_mode_from_descriptor_enum(
     char const enum_value[5],
@@ -10638,6 +10794,9 @@ sixel_builtin_psd_parse_effect_glow_object(
     float glow_rgb[3];
     float opacity;
     float size_px;
+    int glow_source;
+    float glow_choke;
+    float glow_range;
     char const *effect_name;
     char key[5];
     char type[5];
@@ -10655,6 +10814,9 @@ sixel_builtin_psd_parse_effect_glow_object(
     glow_rgb[2] = 0.0f;
     opacity = 1.0f;
     size_px = 0.0f;
+    glow_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+    glow_choke = 0.0f;
+    glow_range = 1.0f;
     effect_name = "effect";
     memset(key, 0, sizeof(key));
     memset(type, 0, sizeof(type));
@@ -10742,6 +10904,17 @@ sixel_builtin_psd_parse_effect_glow_object(
                 &blend_mode);
             continue;
         }
+        if (memcmp(key, "glwS", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_enum_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         enum_value)) {
+            sixel_builtin_psd_effect_glow_source_from_enum(
+                enum_value,
+                &glow_source);
+            continue;
+        }
         if ((memcmp(key, "blur", 4u) == 0 ||
              memcmp(key, "Sz  ", 4u) == 0) &&
             sixel_builtin_psd_descriptor_read_numeric_value(data,
@@ -10756,6 +10929,28 @@ sixel_builtin_psd_parse_effect_glow_object(
             } else {
                 size_px = (float)numeric;
             }
+            continue;
+        }
+        if ((memcmp(key, "Ckmt", 4u) == 0 ||
+             memcmp(key, "chok", 4u) == 0) &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            glow_choke = sixel_builtin_psd_normalize_descriptor_percentage(
+                numeric);
+            continue;
+        }
+        if ((memcmp(key, "Inpr", 4u) == 0 ||
+             memcmp(key, "rang", 4u) == 0) &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            glow_range = sixel_builtin_psd_normalize_descriptor_percentage(
+                numeric);
             continue;
         }
         if (memcmp(key, "Clr ", 4u) == 0 &&
@@ -10808,6 +11003,13 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->eff_irsh_seen = 1;
         break;
     }
+    if (glow_source != SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE ||
+        glow_choke > 0.0f || glow_range < 0.999f) {
+        sixel_trace_topic_message(
+            "psd_decode",
+            "builtin PSD: parsed %s glow source/choke/range semantics",
+            effect_name);
+    }
     if (enabled == 0 || has_color == 0 || opacity <= 0.0f || size_px <= 0.0f) {
         sixel_trace_topic_message(
             "psd_decode",
@@ -10826,6 +11028,9 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_orgl_opacity = opacity;
         layer->effect_orgl_size = size_px;
         layer->effect_orgl_mode = blend_mode;
+        layer->effect_orgl_source = glow_source;
+        layer->effect_orgl_choke = glow_choke;
+        layer->effect_orgl_range = glow_range;
         layer->has_effect_outer_glow = 1;
         layer->effect_outer_glow_rgb[0] = glow_rgb[0];
         layer->effect_outer_glow_rgb[1] = glow_rgb[1];
@@ -10833,6 +11038,9 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_outer_glow_opacity = opacity;
         layer->effect_outer_glow_size = size_px;
         layer->effect_outer_glow_mode = blend_mode;
+        layer->effect_outer_glow_source = glow_source;
+        layer->effect_outer_glow_choke = glow_choke;
+        layer->effect_outer_glow_range = glow_range;
         break;
     case SIXEL_BUILTIN_PSD_EFFECT_GLOW_IRGL:
         layer->eff_irgl_active = 1;
@@ -10843,6 +11051,9 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_irgl_opacity = opacity;
         layer->effect_irgl_size = size_px;
         layer->effect_irgl_mode = blend_mode;
+        layer->effect_irgl_source = glow_source;
+        layer->effect_irgl_choke = glow_choke;
+        layer->effect_irgl_range = glow_range;
         layer->has_effect_inner_glow = 1;
         layer->effect_inner_glow_rgb[0] = glow_rgb[0];
         layer->effect_inner_glow_rgb[1] = glow_rgb[1];
@@ -10850,6 +11061,9 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_inner_glow_opacity = opacity;
         layer->effect_inner_glow_size = size_px;
         layer->effect_inner_glow_mode = blend_mode;
+        layer->effect_inner_glow_source = glow_source;
+        layer->effect_inner_glow_choke = glow_choke;
+        layer->effect_inner_glow_range = glow_range;
         break;
     case SIXEL_BUILTIN_PSD_EFFECT_GLOW_CHFX:
         layer->eff_chfx_active = 1;
@@ -10860,6 +11074,9 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_chfx_opacity = opacity;
         layer->effect_chfx_size = size_px;
         layer->effect_chfx_mode = blend_mode;
+        layer->effect_chfx_source = glow_source;
+        layer->effect_chfx_choke = glow_choke;
+        layer->effect_chfx_range = glow_range;
         layer->has_effect_inner_glow = 1;
         layer->effect_inner_glow_rgb[0] = glow_rgb[0];
         layer->effect_inner_glow_rgb[1] = glow_rgb[1];
@@ -10867,6 +11084,9 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_inner_glow_opacity = opacity;
         layer->effect_inner_glow_size = size_px;
         layer->effect_inner_glow_mode = blend_mode;
+        layer->effect_inner_glow_source = glow_source;
+        layer->effect_inner_glow_choke = glow_choke;
+        layer->effect_inner_glow_range = glow_range;
         break;
     case SIXEL_BUILTIN_PSD_EFFECT_GLOW_DRSH:
         layer->eff_drsh_active = 1;
@@ -10877,6 +11097,9 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_drsh_opacity = opacity;
         layer->effect_drsh_size = size_px;
         layer->effect_drsh_mode = blend_mode;
+        layer->effect_drsh_source = glow_source;
+        layer->effect_drsh_choke = glow_choke;
+        layer->effect_drsh_range = glow_range;
         layer->has_effect_outer_glow = 1;
         layer->effect_outer_glow_rgb[0] = glow_rgb[0];
         layer->effect_outer_glow_rgb[1] = glow_rgb[1];
@@ -10884,6 +11107,9 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_outer_glow_opacity = opacity;
         layer->effect_outer_glow_size = size_px;
         layer->effect_outer_glow_mode = blend_mode;
+        layer->effect_outer_glow_source = glow_source;
+        layer->effect_outer_glow_choke = glow_choke;
+        layer->effect_outer_glow_range = glow_range;
         break;
     case SIXEL_BUILTIN_PSD_EFFECT_GLOW_IRSH:
         layer->eff_irsh_active = 1;
@@ -10894,6 +11120,9 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_irsh_opacity = opacity;
         layer->effect_irsh_size = size_px;
         layer->effect_irsh_mode = blend_mode;
+        layer->effect_irsh_source = glow_source;
+        layer->effect_irsh_choke = glow_choke;
+        layer->effect_irsh_range = glow_range;
         layer->has_effect_inner_glow = 1;
         layer->effect_inner_glow_rgb[0] = glow_rgb[0];
         layer->effect_inner_glow_rgb[1] = glow_rgb[1];
@@ -10901,6 +11130,9 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_inner_glow_opacity = opacity;
         layer->effect_inner_glow_size = size_px;
         layer->effect_inner_glow_mode = blend_mode;
+        layer->effect_inner_glow_source = glow_source;
+        layer->effect_inner_glow_choke = glow_choke;
+        layer->effect_inner_glow_range = glow_range;
         break;
     }
     sixel_trace_topic_message(
@@ -10930,6 +11162,10 @@ sixel_builtin_psd_parse_effect_bevel_object(
     float highlight_opacity;
     float shadow_opacity;
     float size_px;
+    float angle_deg;
+    float altitude_deg;
+    float depth;
+    int direction;
     char key[5];
     char type[5];
     char enum_value[5];
@@ -10952,6 +11188,10 @@ sixel_builtin_psd_parse_effect_bevel_object(
     highlight_opacity = 0.0f;
     shadow_opacity = 0.0f;
     size_px = 0.0f;
+    angle_deg = 120.0f;
+    altitude_deg = 30.0f;
+    depth = 1.0f;
+    direction = SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_UP;
     memset(key, 0, sizeof(key));
     memset(type, 0, sizeof(type));
     memset(enum_value, 0, sizeof(enum_value));
@@ -11065,6 +11305,63 @@ sixel_builtin_psd_parse_effect_bevel_object(
                 sixel_builtin_psd_normalize_descriptor_opacity(numeric);
             continue;
         }
+        if ((memcmp(key, "lagl", 4u) == 0 ||
+             memcmp(key, "Angl", 4u) == 0) &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            if (numeric <= -360.0) {
+                angle_deg = -360.0f;
+            } else if (numeric >= 360.0) {
+                angle_deg = 360.0f;
+            } else {
+                angle_deg = (float)numeric;
+            }
+            continue;
+        }
+        if ((memcmp(key, "Lald", 4u) == 0 ||
+             memcmp(key, "hght", 4u) == 0) &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            if (numeric <= 0.0) {
+                altitude_deg = 0.0f;
+            } else if (numeric >= 90.0) {
+                altitude_deg = 90.0f;
+            } else {
+                altitude_deg = (float)numeric;
+            }
+            continue;
+        }
+        if ((memcmp(key, "Scl ", 4u) == 0 ||
+             memcmp(key, "dpth", 4u) == 0) &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            depth = sixel_builtin_psd_normalize_descriptor_percentage(
+                numeric);
+            if (depth <= 0.0f) {
+                depth = 0.01f;
+            }
+            continue;
+        }
+        if (memcmp(key, "bvlD", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_enum_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         enum_value)) {
+            sixel_builtin_psd_effect_bevel_direction_from_enum(
+                enum_value,
+                &direction);
+            continue;
+        }
         if ((memcmp(key, "blur", 4u) == 0 ||
              memcmp(key, "srgR", 4u) == 0) &&
             sixel_builtin_psd_descriptor_read_numeric_value(data,
@@ -11090,7 +11387,19 @@ sixel_builtin_psd_parse_effect_bevel_object(
         }
     }
     *pcursor = cursor;
+    layer->effect_bevel_angle_deg = angle_deg;
+    layer->effect_bevel_altitude_deg = altitude_deg;
+    layer->effect_bevel_depth = depth;
+    layer->effect_bevel_direction = direction;
     layer->eff_bevl_seen = 1;
+    if (fabsf(angle_deg - 120.0f) >= 0.001f ||
+        fabsf(altitude_deg - 30.0f) >= 0.001f ||
+        fabsf(depth - 1.0f) >= 0.001f ||
+        direction != SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_UP) {
+        sixel_trace_topic_message(
+            "psd_decode",
+            "builtin PSD: parsed bevel lighting semantics");
+    }
     if (enabled == 0 || size_px <= 0.0f) {
         if (has_highlight_color != 0) {
             sixel_trace_topic_message(
@@ -11125,6 +11434,9 @@ sixel_builtin_psd_parse_effect_bevel_object(
         layer->effect_outer_glow_opacity = highlight_opacity;
         layer->effect_outer_glow_size = size_px;
         layer->effect_outer_glow_mode = highlight_mode;
+        layer->effect_outer_glow_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+        layer->effect_outer_glow_choke = 0.0f;
+        layer->effect_outer_glow_range = 1.0f;
     }
     if (has_shadow_color != 0 && shadow_opacity > 0.0f) {
         layer->effect_bevel_shadow_rgb[0] = shadow_rgb[0];
@@ -11139,6 +11451,9 @@ sixel_builtin_psd_parse_effect_bevel_object(
         layer->effect_inner_glow_opacity = shadow_opacity;
         layer->effect_inner_glow_size = size_px;
         layer->effect_inner_glow_mode = shadow_mode;
+        layer->effect_inner_glow_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+        layer->effect_inner_glow_choke = 0.0f;
+        layer->effect_inner_glow_range = 1.0f;
     }
     sixel_trace_topic_message(
         "psd_decode",
@@ -11591,6 +11906,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_orgl_opacity = legacy->effect_orgl_opacity;
         layer->effect_orgl_size = legacy->effect_orgl_size;
         layer->effect_orgl_mode = legacy->effect_orgl_mode;
+        layer->effect_orgl_source = legacy->effect_orgl_source;
+        layer->effect_orgl_choke = legacy->effect_orgl_choke;
+        layer->effect_orgl_range = legacy->effect_orgl_range;
         orgl_inactive = 0;
         if (allow_glow_proxy_backfill != 0 &&
             outer_glow_inactive != 0 &&
@@ -11603,6 +11921,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             layer->effect_outer_glow_opacity = layer->effect_orgl_opacity;
             layer->effect_outer_glow_size = layer->effect_orgl_size;
             layer->effect_outer_glow_mode = layer->effect_orgl_mode;
+            layer->effect_outer_glow_source = layer->effect_orgl_source;
+            layer->effect_outer_glow_choke = layer->effect_orgl_choke;
+            layer->effect_outer_glow_range = layer->effect_orgl_range;
             outer_glow_inactive = 0;
         }
         merged = 1;
@@ -11619,6 +11940,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_irgl_opacity = legacy->effect_irgl_opacity;
         layer->effect_irgl_size = legacy->effect_irgl_size;
         layer->effect_irgl_mode = legacy->effect_irgl_mode;
+        layer->effect_irgl_source = legacy->effect_irgl_source;
+        layer->effect_irgl_choke = legacy->effect_irgl_choke;
+        layer->effect_irgl_range = legacy->effect_irgl_range;
         irgl_inactive = 0;
         if (allow_glow_proxy_backfill != 0 &&
             inner_glow_inactive != 0 &&
@@ -11631,6 +11955,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             layer->effect_inner_glow_opacity = layer->effect_irgl_opacity;
             layer->effect_inner_glow_size = layer->effect_irgl_size;
             layer->effect_inner_glow_mode = layer->effect_irgl_mode;
+            layer->effect_inner_glow_source = layer->effect_irgl_source;
+            layer->effect_inner_glow_choke = layer->effect_irgl_choke;
+            layer->effect_inner_glow_range = layer->effect_irgl_range;
             inner_glow_inactive = 0;
         }
         merged = 1;
@@ -11647,6 +11974,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_chfx_opacity = legacy->effect_chfx_opacity;
         layer->effect_chfx_size = legacy->effect_chfx_size;
         layer->effect_chfx_mode = legacy->effect_chfx_mode;
+        layer->effect_chfx_source = legacy->effect_chfx_source;
+        layer->effect_chfx_choke = legacy->effect_chfx_choke;
+        layer->effect_chfx_range = legacy->effect_chfx_range;
         chfx_inactive = 0;
         if (allow_glow_proxy_backfill != 0 &&
             inner_glow_inactive != 0 &&
@@ -11659,6 +11989,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             layer->effect_inner_glow_opacity = layer->effect_chfx_opacity;
             layer->effect_inner_glow_size = layer->effect_chfx_size;
             layer->effect_inner_glow_mode = layer->effect_chfx_mode;
+            layer->effect_inner_glow_source = layer->effect_chfx_source;
+            layer->effect_inner_glow_choke = layer->effect_chfx_choke;
+            layer->effect_inner_glow_range = layer->effect_chfx_range;
             inner_glow_inactive = 0;
         }
         merged = 1;
@@ -11675,6 +12008,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_drsh_opacity = legacy->effect_drsh_opacity;
         layer->effect_drsh_size = legacy->effect_drsh_size;
         layer->effect_drsh_mode = legacy->effect_drsh_mode;
+        layer->effect_drsh_source = legacy->effect_drsh_source;
+        layer->effect_drsh_choke = legacy->effect_drsh_choke;
+        layer->effect_drsh_range = legacy->effect_drsh_range;
         drsh_inactive = 0;
         if (allow_glow_proxy_backfill != 0 &&
             outer_glow_inactive != 0 &&
@@ -11687,6 +12023,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             layer->effect_outer_glow_opacity = layer->effect_drsh_opacity;
             layer->effect_outer_glow_size = layer->effect_drsh_size;
             layer->effect_outer_glow_mode = layer->effect_drsh_mode;
+            layer->effect_outer_glow_source = layer->effect_drsh_source;
+            layer->effect_outer_glow_choke = layer->effect_drsh_choke;
+            layer->effect_outer_glow_range = layer->effect_drsh_range;
             outer_glow_inactive = 0;
         }
         merged = 1;
@@ -11700,6 +12039,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_irsh_opacity = legacy->effect_irsh_opacity;
         layer->effect_irsh_size = legacy->effect_irsh_size;
         layer->effect_irsh_mode = legacy->effect_irsh_mode;
+        layer->effect_irsh_source = legacy->effect_irsh_source;
+        layer->effect_irsh_choke = legacy->effect_irsh_choke;
+        layer->effect_irsh_range = legacy->effect_irsh_range;
         irsh_inactive = 0;
         if (allow_glow_proxy_backfill != 0 &&
             inner_glow_inactive != 0 &&
@@ -11712,6 +12054,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             layer->effect_inner_glow_opacity = layer->effect_irsh_opacity;
             layer->effect_inner_glow_size = layer->effect_irsh_size;
             layer->effect_inner_glow_mode = layer->effect_irsh_mode;
+            layer->effect_inner_glow_source = layer->effect_irsh_source;
+            layer->effect_inner_glow_choke = layer->effect_irsh_choke;
+            layer->effect_inner_glow_range = layer->effect_irsh_range;
             inner_glow_inactive = 0;
         }
         merged = 1;
@@ -11736,6 +12081,10 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             legacy->effect_bevel_shadow_opacity;
         layer->effect_bevel_shadow_mode = legacy->effect_bevel_shadow_mode;
         layer->effect_bevel_size = legacy->effect_bevel_size;
+        layer->effect_bevel_angle_deg = legacy->effect_bevel_angle_deg;
+        layer->effect_bevel_altitude_deg = legacy->effect_bevel_altitude_deg;
+        layer->effect_bevel_depth = legacy->effect_bevel_depth;
+        layer->effect_bevel_direction = legacy->effect_bevel_direction;
         if (allow_glow_proxy_backfill != 0 &&
             outer_glow_inactive != 0 &&
             layer->effect_bevel_highlight_opacity > 0.0f &&
@@ -11752,6 +12101,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             layer->effect_outer_glow_size = layer->effect_bevel_size;
             layer->effect_outer_glow_mode =
                 layer->effect_bevel_highlight_mode;
+            layer->effect_outer_glow_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+            layer->effect_outer_glow_choke = 0.0f;
+            layer->effect_outer_glow_range = 1.0f;
             outer_glow_inactive = 0;
         }
         if (allow_glow_proxy_backfill != 0 &&
@@ -11769,6 +12121,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
                 layer->effect_bevel_shadow_opacity;
             layer->effect_inner_glow_size = layer->effect_bevel_size;
             layer->effect_inner_glow_mode = layer->effect_bevel_shadow_mode;
+            layer->effect_inner_glow_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+            layer->effect_inner_glow_choke = 0.0f;
+            layer->effect_inner_glow_range = 1.0f;
             inner_glow_inactive = 0;
         }
         merged = 1;
@@ -11782,6 +12137,29 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         if (layer->effect_bevel_size <= 0.0f &&
             legacy->effect_bevel_size > 0.0f) {
             layer->effect_bevel_size = legacy->effect_bevel_size;
+            merged = 1;
+        }
+        if (fabsf(layer->effect_bevel_angle_deg - 120.0f) < 0.001f &&
+            fabsf(legacy->effect_bevel_angle_deg - 120.0f) >= 0.001f) {
+            layer->effect_bevel_angle_deg = legacy->effect_bevel_angle_deg;
+            merged = 1;
+        }
+        if (fabsf(layer->effect_bevel_altitude_deg - 30.0f) < 0.001f &&
+            fabsf(legacy->effect_bevel_altitude_deg - 30.0f) >= 0.001f) {
+            layer->effect_bevel_altitude_deg =
+                legacy->effect_bevel_altitude_deg;
+            merged = 1;
+        }
+        if (fabsf(layer->effect_bevel_depth - 1.0f) < 0.001f &&
+            fabsf(legacy->effect_bevel_depth - 1.0f) >= 0.001f) {
+            layer->effect_bevel_depth = legacy->effect_bevel_depth;
+            merged = 1;
+        }
+        if (layer->effect_bevel_direction ==
+                SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_UP &&
+            legacy->effect_bevel_direction ==
+                SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_DOWN) {
+            layer->effect_bevel_direction = legacy->effect_bevel_direction;
             merged = 1;
         }
         if (layer->effect_bevel_highlight_opacity <= 0.0f &&
@@ -11811,6 +12189,10 @@ sixel_builtin_psd_merge_missing_legacy_effects(
                 layer->effect_outer_glow_size = layer->effect_bevel_size;
                 layer->effect_outer_glow_mode =
                     layer->effect_bevel_highlight_mode;
+                layer->effect_outer_glow_source =
+                    SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+                layer->effect_outer_glow_choke = 0.0f;
+                layer->effect_outer_glow_range = 1.0f;
                 outer_glow_inactive = 0;
             }
             merged = 1;
@@ -11842,6 +12224,10 @@ sixel_builtin_psd_merge_missing_legacy_effects(
                 layer->effect_inner_glow_size = layer->effect_bevel_size;
                 layer->effect_inner_glow_mode =
                     layer->effect_bevel_shadow_mode;
+                layer->effect_inner_glow_source =
+                    SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+                layer->effect_inner_glow_choke = 0.0f;
+                layer->effect_inner_glow_range = 1.0f;
                 inner_glow_inactive = 0;
             }
             merged = 1;
@@ -11858,6 +12244,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_outer_glow_opacity = legacy->effect_outer_glow_opacity;
         layer->effect_outer_glow_size = legacy->effect_outer_glow_size;
         layer->effect_outer_glow_mode = legacy->effect_outer_glow_mode;
+        layer->effect_outer_glow_source = legacy->effect_outer_glow_source;
+        layer->effect_outer_glow_choke = legacy->effect_outer_glow_choke;
+        layer->effect_outer_glow_range = legacy->effect_outer_glow_range;
         outer_glow_inactive = 0;
         merged = 1;
     }
@@ -11872,6 +12261,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_inner_glow_opacity = legacy->effect_inner_glow_opacity;
         layer->effect_inner_glow_size = legacy->effect_inner_glow_size;
         layer->effect_inner_glow_mode = legacy->effect_inner_glow_mode;
+        layer->effect_inner_glow_source = legacy->effect_inner_glow_source;
+        layer->effect_inner_glow_choke = legacy->effect_inner_glow_choke;
+        layer->effect_inner_glow_range = legacy->effect_inner_glow_range;
         inner_glow_inactive = 0;
         merged = 1;
     }
@@ -11892,6 +12284,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             layer->effect_orgl_opacity = layer->effect_outer_glow_opacity;
             layer->effect_orgl_size = layer->effect_outer_glow_size;
             layer->effect_orgl_mode = layer->effect_outer_glow_mode;
+            layer->effect_orgl_source = layer->effect_outer_glow_source;
+            layer->effect_orgl_choke = layer->effect_outer_glow_choke;
+            layer->effect_orgl_range = layer->effect_outer_glow_range;
             merged = 1;
         }
         if ((layer->has_effect_irgl == 0 || irgl_inactive != 0) &&
@@ -11905,6 +12300,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             layer->effect_irgl_opacity = layer->effect_inner_glow_opacity;
             layer->effect_irgl_size = layer->effect_inner_glow_size;
             layer->effect_irgl_mode = layer->effect_inner_glow_mode;
+            layer->effect_irgl_source = layer->effect_inner_glow_source;
+            layer->effect_irgl_choke = layer->effect_inner_glow_choke;
+            layer->effect_irgl_range = layer->effect_inner_glow_range;
             merged = 1;
         }
         if ((layer->has_effect_chfx == 0 || chfx_inactive != 0) &&
@@ -11918,6 +12316,9 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             layer->effect_chfx_opacity = layer->effect_inner_glow_opacity;
             layer->effect_chfx_size = layer->effect_inner_glow_size;
             layer->effect_chfx_mode = layer->effect_inner_glow_mode;
+            layer->effect_chfx_source = layer->effect_inner_glow_source;
+            layer->effect_chfx_choke = layer->effect_inner_glow_choke;
+            layer->effect_chfx_range = layer->effect_inner_glow_range;
             merged = 1;
         }
     }
@@ -12348,6 +12749,10 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                         layer->effect_orgl_opacity = opacity0;
                         layer->effect_orgl_size = size_px;
                         layer->effect_orgl_mode = mode0;
+                        layer->effect_orgl_source =
+                            SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+                        layer->effect_orgl_choke = 0.0f;
+                        layer->effect_orgl_range = 1.0f;
                         layer->has_effect_outer_glow = 1;
                         layer->effect_outer_glow_rgb[0] = rgb0[0];
                         layer->effect_outer_glow_rgb[1] = rgb0[1];
@@ -12355,6 +12760,10 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                         layer->effect_outer_glow_opacity = opacity0;
                         layer->effect_outer_glow_size = size_px;
                         layer->effect_outer_glow_mode = mode0;
+                        layer->effect_outer_glow_source =
+                            SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+                        layer->effect_outer_glow_choke = 0.0f;
+                        layer->effect_outer_glow_range = 1.0f;
                     } else {
                         sixel_trace_topic_message(
                             "psd_decode",
@@ -12366,6 +12775,10 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                         layer->effect_irgl_opacity = opacity0;
                         layer->effect_irgl_size = size_px;
                         layer->effect_irgl_mode = mode0;
+                        layer->effect_irgl_source =
+                            SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+                        layer->effect_irgl_choke = 0.0f;
+                        layer->effect_irgl_range = 1.0f;
                         layer->has_effect_inner_glow = 1;
                         layer->effect_inner_glow_rgb[0] = rgb0[0];
                         layer->effect_inner_glow_rgb[1] = rgb0[1];
@@ -12373,6 +12786,10 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                         layer->effect_inner_glow_opacity = opacity0;
                         layer->effect_inner_glow_size = size_px;
                         layer->effect_inner_glow_mode = mode0;
+                        layer->effect_inner_glow_source =
+                            SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+                        layer->effect_inner_glow_choke = 0.0f;
+                        layer->effect_inner_glow_range = 1.0f;
                     }
                     parsed = 1;
                 }
@@ -12445,6 +12862,11 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                     (opacity0 > 0.0f || opacity1 > 0.0f)) {
                     layer->has_effect_bevel = 1;
                     layer->effect_bevel_size = size_px;
+                    layer->effect_bevel_angle_deg = 120.0f;
+                    layer->effect_bevel_altitude_deg = 30.0f;
+                    layer->effect_bevel_depth = 1.0f;
+                    layer->effect_bevel_direction =
+                        SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_UP;
                     if (opacity0 > 0.0f) {
                         layer->effect_bevel_highlight_rgb[0] =
                             has_color0 != 0 ? rgb0[0] : 1.0f;
@@ -12464,6 +12886,10 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                         layer->effect_outer_glow_opacity = opacity0;
                         layer->effect_outer_glow_size = size_px;
                         layer->effect_outer_glow_mode = mode0;
+                        layer->effect_outer_glow_source =
+                            SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+                        layer->effect_outer_glow_choke = 0.0f;
+                        layer->effect_outer_glow_range = 1.0f;
                     }
                     if (opacity1 > 0.0f) {
                         layer->effect_bevel_shadow_rgb[0] =
@@ -12484,6 +12910,10 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                         layer->effect_inner_glow_opacity = opacity1;
                         layer->effect_inner_glow_size = size_px;
                         layer->effect_inner_glow_mode = mode1;
+                        layer->effect_inner_glow_source =
+                            SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+                        layer->effect_inner_glow_choke = 0.0f;
+                        layer->effect_inner_glow_range = 1.0f;
                     }
                     parsed = 1;
                 }
@@ -13390,42 +13820,63 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->effect_outer_glow_opacity = 1.0f;
     layer->effect_outer_glow_size = 0.0f;
     layer->effect_outer_glow_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    layer->effect_outer_glow_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+    layer->effect_outer_glow_choke = 0.0f;
+    layer->effect_outer_glow_range = 1.0f;
     layer->effect_inner_glow_rgb[0] = 0.0f;
     layer->effect_inner_glow_rgb[1] = 0.0f;
     layer->effect_inner_glow_rgb[2] = 0.0f;
     layer->effect_inner_glow_opacity = 1.0f;
     layer->effect_inner_glow_size = 0.0f;
     layer->effect_inner_glow_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    layer->effect_inner_glow_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+    layer->effect_inner_glow_choke = 0.0f;
+    layer->effect_inner_glow_range = 1.0f;
     layer->effect_orgl_rgb[0] = 0.0f;
     layer->effect_orgl_rgb[1] = 0.0f;
     layer->effect_orgl_rgb[2] = 0.0f;
     layer->effect_orgl_opacity = 1.0f;
     layer->effect_orgl_size = 0.0f;
     layer->effect_orgl_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    layer->effect_orgl_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+    layer->effect_orgl_choke = 0.0f;
+    layer->effect_orgl_range = 1.0f;
     layer->effect_irgl_rgb[0] = 0.0f;
     layer->effect_irgl_rgb[1] = 0.0f;
     layer->effect_irgl_rgb[2] = 0.0f;
     layer->effect_irgl_opacity = 1.0f;
     layer->effect_irgl_size = 0.0f;
     layer->effect_irgl_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    layer->effect_irgl_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+    layer->effect_irgl_choke = 0.0f;
+    layer->effect_irgl_range = 1.0f;
     layer->effect_chfx_rgb[0] = 0.0f;
     layer->effect_chfx_rgb[1] = 0.0f;
     layer->effect_chfx_rgb[2] = 0.0f;
     layer->effect_chfx_opacity = 1.0f;
     layer->effect_chfx_size = 0.0f;
     layer->effect_chfx_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    layer->effect_chfx_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+    layer->effect_chfx_choke = 0.0f;
+    layer->effect_chfx_range = 1.0f;
     layer->effect_drsh_rgb[0] = 0.0f;
     layer->effect_drsh_rgb[1] = 0.0f;
     layer->effect_drsh_rgb[2] = 0.0f;
     layer->effect_drsh_opacity = 1.0f;
     layer->effect_drsh_size = 0.0f;
     layer->effect_drsh_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    layer->effect_drsh_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+    layer->effect_drsh_choke = 0.0f;
+    layer->effect_drsh_range = 1.0f;
     layer->effect_irsh_rgb[0] = 0.0f;
     layer->effect_irsh_rgb[1] = 0.0f;
     layer->effect_irsh_rgb[2] = 0.0f;
     layer->effect_irsh_opacity = 1.0f;
     layer->effect_irsh_size = 0.0f;
     layer->effect_irsh_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    layer->effect_irsh_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+    layer->effect_irsh_choke = 0.0f;
+    layer->effect_irsh_range = 1.0f;
     layer->effect_bevel_highlight_rgb[0] = 0.0f;
     layer->effect_bevel_highlight_rgb[1] = 0.0f;
     layer->effect_bevel_highlight_rgb[2] = 0.0f;
@@ -13437,6 +13888,10 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->effect_bevel_shadow_opacity = 0.0f;
     layer->effect_bevel_shadow_mode = SIXEL_BUILTIN_PSD_BLEND_MULTIPLY;
     layer->effect_bevel_size = 0.0f;
+    layer->effect_bevel_angle_deg = 120.0f;
+    layer->effect_bevel_altitude_deg = 30.0f;
+    layer->effect_bevel_depth = 1.0f;
+    layer->effect_bevel_direction = SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_UP;
     layer->fill_solid_rgb[0] = 0.0f;
     layer->fill_solid_rgb[1] = 0.0f;
     layer->fill_solid_rgb[2] = 0.0f;
@@ -17427,7 +17882,140 @@ sixel_builtin_psd_apply_glow_effect(
     float glow_opacity,
     float glow_size,
     sixel_builtin_psd_layer_blend_mode_t glow_mode,
-    int is_inner)
+    int is_inner,
+    int source_center,
+    float glow_choke,
+    float glow_range);
+
+static float
+sixel_builtin_psd_effect_shape_coverage(
+    float source_alpha,
+    float min_alpha,
+    float max_alpha,
+    int is_inner,
+    int source_center,
+    float effect_choke,
+    float effect_range)
+{
+    float coverage;
+    float center_coverage;
+    float power;
+
+    coverage = 0.0f;
+    center_coverage = 0.0f;
+    power = 1.0f;
+    source_alpha = sixel_builtin_psd_clamp_alpha_float32(source_alpha);
+    min_alpha = sixel_builtin_psd_clamp_alpha_float32(min_alpha);
+    max_alpha = sixel_builtin_psd_clamp_alpha_float32(max_alpha);
+    effect_choke = sixel_builtin_psd_clamp01(effect_choke);
+    effect_range = sixel_builtin_psd_clamp01(effect_range);
+    if (is_inner != 0) {
+        coverage = source_alpha - min_alpha;
+        if (source_center != 0) {
+            center_coverage = source_alpha * (1.0f - min_alpha);
+            if (center_coverage > coverage) {
+                coverage = center_coverage;
+            }
+        }
+    } else {
+        coverage = max_alpha - source_alpha;
+    }
+    coverage = sixel_builtin_psd_clamp_alpha_float32(coverage);
+    if (coverage <= 0.0f) {
+        return 0.0f;
+    }
+    if (effect_choke > 0.0f && effect_choke < 1.0f) {
+        coverage = sixel_builtin_psd_clamp_alpha_float32(
+            (coverage - effect_choke) / (1.0f - effect_choke));
+    } else if (effect_choke >= 1.0f) {
+        coverage = 1.0f;
+    }
+    if (coverage <= 0.0f) {
+        return 0.0f;
+    }
+    if (effect_range < 0.999f) {
+        power = 1.0f + (1.0f - effect_range) * 2.0f;
+        coverage = sixel_builtin_psd_clamp01(powf(coverage, power));
+    }
+    return sixel_builtin_psd_clamp_alpha_float32(coverage);
+}
+
+static void
+sixel_builtin_psd_adjust_bevel_effect_params(
+    sixel_builtin_psd_layer_record_t const *layer,
+    float *highlight_opacity,
+    float *shadow_opacity,
+    float *effect_size)
+{
+    float depth;
+    float angle_dev;
+    float altitude_dev;
+    float highlight_scale;
+    float shadow_scale;
+    float size_scale;
+    float swap_value;
+
+    depth = 1.0f;
+    angle_dev = 0.0f;
+    altitude_dev = 0.0f;
+    highlight_scale = 1.0f;
+    shadow_scale = 1.0f;
+    size_scale = 1.0f;
+    swap_value = 0.0f;
+    if (layer == NULL || highlight_opacity == NULL || shadow_opacity == NULL ||
+        effect_size == NULL) {
+        return;
+    }
+    depth = layer->effect_bevel_depth;
+    if (depth <= 0.0f) {
+        depth = 0.01f;
+    } else if (depth > 4.0f) {
+        depth = 4.0f;
+    }
+    angle_dev = fabsf(layer->effect_bevel_angle_deg - 120.0f) / 180.0f;
+    if (angle_dev > 1.0f) {
+        angle_dev = 1.0f;
+    }
+    altitude_dev = fabsf(layer->effect_bevel_altitude_deg - 30.0f) / 90.0f;
+    if (altitude_dev > 1.0f) {
+        altitude_dev = 1.0f;
+    }
+    highlight_scale = sixel_builtin_psd_clamp01(
+        depth * (1.0f - angle_dev * 0.30f - altitude_dev * 0.25f));
+    shadow_scale = sixel_builtin_psd_clamp01(
+        depth * (1.0f - altitude_dev * 0.10f));
+    if (layer->effect_bevel_direction ==
+        SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_DOWN) {
+        swap_value = highlight_scale;
+        highlight_scale = shadow_scale;
+        shadow_scale = swap_value;
+    }
+    *highlight_opacity = sixel_builtin_psd_clamp01(
+        (*highlight_opacity) * highlight_scale);
+    *shadow_opacity = sixel_builtin_psd_clamp01(
+        (*shadow_opacity) * shadow_scale);
+    size_scale = sixel_builtin_psd_clamp01(0.75f + depth * 0.25f);
+    if (*effect_size > 0.0f) {
+        *effect_size *= size_scale;
+        if (*effect_size > 128.0f) {
+            *effect_size = 128.0f;
+        }
+    }
+}
+
+static void
+sixel_builtin_psd_apply_glow_effect(
+    sixel_builtin_psd_layer_buffers_t *src,
+    unsigned int width,
+    unsigned int height,
+    float const glow_rgb[3],
+    float glow_opacity,
+    float glow_size,
+    sixel_builtin_psd_layer_blend_mode_t glow_mode,
+    int is_inner,
+    int source_center,
+    float glow_choke,
+    float glow_range)
 {
     size_t i;
     int radius;
@@ -17504,11 +18092,14 @@ sixel_builtin_psd_apply_glow_effect(
                 }
             }
         }
-        if (is_inner != 0) {
-            coverage = source_alpha - min_alpha;
-        } else {
-            coverage = max_alpha - source_alpha;
-        }
+        coverage = sixel_builtin_psd_effect_shape_coverage(
+            source_alpha,
+            min_alpha,
+            max_alpha,
+            is_inner,
+            source_center,
+            glow_choke,
+            glow_range);
         if (coverage <= 0.0f) {
             continue;
         }
@@ -17581,6 +18172,9 @@ sixel_builtin_psd_apply_named_glow_effect(
     float glow_size,
     sixel_builtin_psd_layer_blend_mode_t glow_mode,
     int is_inner,
+    int source_center,
+    float glow_choke,
+    float glow_range,
     char const *effect_trace,
     int *ptraced_vector_mask_glow)
 {
@@ -17610,7 +18204,10 @@ sixel_builtin_psd_apply_named_glow_effect(
         glow_opacity,
         glow_size,
         glow_mode,
-        is_inner);
+        is_inner,
+        source_center,
+        glow_choke,
+        glow_range);
 }
 
 static int
@@ -17697,6 +18294,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
     float stroke_opacity;
     float stroke_size;
     float stroke_rgb[3];
+    float bevel_highlight_opacity;
+    float bevel_shadow_opacity;
+    float bevel_effect_size;
     int stroke_position;
     sixel_builtin_psd_layer_blend_mode_t effect_mode;
     sixel_builtin_psd_layer_record_t gradient_layer;
@@ -17737,6 +18337,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
     stroke_rgb[0] = 0.0f;
     stroke_rgb[1] = 0.0f;
     stroke_rgb[2] = 0.0f;
+    bevel_highlight_opacity = 0.0f;
+    bevel_shadow_opacity = 0.0f;
+    bevel_effect_size = 0.0f;
     stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
     effect_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     memset(&gradient_layer, 0, sizeof(gradient_layer));
@@ -18021,6 +18624,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     layer->effect_drsh_size,
                     layer->effect_drsh_mode,
                     0,
+                    layer->effect_drsh_source,
+                    layer->effect_drsh_choke,
+                    layer->effect_drsh_range,
                     "builtin PSD: applying drop shadow effect in layer "
                     "fallback",
                     &traced_vector_mask_glow);
@@ -18034,6 +18640,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     layer->effect_orgl_size,
                     layer->effect_orgl_mode,
                     0,
+                    layer->effect_orgl_source,
+                    layer->effect_orgl_choke,
+                    layer->effect_orgl_range,
                     "builtin PSD: applying outer glow effect in layer fallback",
                     &traced_vector_mask_glow);
             }
@@ -18047,6 +18656,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     layer->effect_irsh_size,
                     layer->effect_irsh_mode,
                     1,
+                    layer->effect_irsh_source,
+                    layer->effect_irsh_choke,
+                    layer->effect_irsh_range,
                     "builtin PSD: applying inner shadow effect in layer "
                     "fallback",
                     &traced_vector_mask_glow);
@@ -18061,6 +18673,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     layer->effect_irgl_size,
                     layer->effect_irgl_mode,
                     1,
+                    layer->effect_irgl_source,
+                    layer->effect_irgl_choke,
+                    layer->effect_irgl_range,
                     "builtin PSD: applying inner glow effect in layer fallback",
                     &traced_vector_mask_glow);
             }
@@ -18074,6 +18689,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     layer->effect_chfx_size,
                     layer->effect_chfx_mode,
                     1,
+                    layer->effect_chfx_source,
+                    layer->effect_chfx_choke,
+                    layer->effect_chfx_range,
                     "builtin PSD: applying choke effect in layer fallback",
                     &traced_vector_mask_glow);
             }
@@ -18081,35 +18699,49 @@ sixel_builtin_psd_apply_layer_effects_subset(
                 has_named_bevel != 0 &&
                 (layer->has_effect_stroke != 0 ||
                  has_explicit_bevel_channels != 0)) {
+                bevel_highlight_opacity = layer->effect_bevel_highlight_opacity;
+                bevel_shadow_opacity = layer->effect_bevel_shadow_opacity;
+                bevel_effect_size = layer->effect_bevel_size;
+                sixel_builtin_psd_adjust_bevel_effect_params(
+                    layer,
+                    &bevel_highlight_opacity,
+                    &bevel_shadow_opacity,
+                    &bevel_effect_size);
                 /*
                  * Keep bevel proxy passes tied to explicit stroke-bearing
                  * layers. Deferred clbl=1 paths can temporarily clear
                  * has_effect_stroke while still carrying explicit bevel
                  * channels, so accept either signal to preserve bevel passes.
                  */
-                if (layer->effect_bevel_highlight_opacity > 0.0f) {
+                if (bevel_highlight_opacity > 0.0f) {
                     sixel_builtin_psd_apply_named_glow_effect(
                         layer,
                         src,
                         layer->effect_bevel_highlight_rgb,
-                        layer->effect_bevel_highlight_opacity,
-                        layer->effect_bevel_size,
+                        bevel_highlight_opacity,
+                        bevel_effect_size,
                         layer->effect_bevel_highlight_mode,
                         0,
+                        SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE,
+                        0.0f,
+                        1.0f,
                         "builtin PSD: applying bevel highlight in layer "
                         "fallback",
                         &traced_vector_mask_glow);
                 }
                 if (interior_glow_effects_enabled != 0 &&
-                    layer->effect_bevel_shadow_opacity > 0.0f) {
+                    bevel_shadow_opacity > 0.0f) {
                     sixel_builtin_psd_apply_named_glow_effect(
                         layer,
                         src,
                         layer->effect_bevel_shadow_rgb,
-                        layer->effect_bevel_shadow_opacity,
-                        layer->effect_bevel_size,
+                        bevel_shadow_opacity,
+                        bevel_effect_size,
                         layer->effect_bevel_shadow_mode,
                         1,
+                        SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE,
+                        0.0f,
+                        1.0f,
                         "builtin PSD: applying bevel shadow in layer fallback",
                         &traced_vector_mask_glow);
                 }
@@ -18125,6 +18757,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     layer->effect_outer_glow_size,
                     layer->effect_outer_glow_mode,
                     0,
+                    layer->effect_outer_glow_source,
+                    layer->effect_outer_glow_choke,
+                    layer->effect_outer_glow_range,
                     "builtin PSD: applying outer glow effect in layer fallback",
                     &traced_vector_mask_glow);
             }
@@ -18139,6 +18774,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     layer->effect_inner_glow_size,
                     layer->effect_inner_glow_mode,
                     1,
+                    layer->effect_inner_glow_source,
+                    layer->effect_inner_glow_choke,
+                    layer->effect_inner_glow_range,
                     "builtin PSD: applying inner glow effect in layer fallback",
                     &traced_vector_mask_glow);
             }
@@ -18728,6 +19366,9 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     float effect_size,
     sixel_builtin_psd_layer_blend_mode_t effect_mode,
     float effect_edge_bias,
+    int effect_source_center,
+    float effect_choke,
+    float effect_range,
     char const *effect_trace,
     int *ptraced_clip_weighted,
     int *ptraced_effect)
@@ -18775,6 +19416,8 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     }
     effect_opacity = sixel_builtin_psd_clamp01(effect_opacity);
     effect_edge_bias = sixel_builtin_psd_clamp01(effect_edge_bias);
+    effect_choke = sixel_builtin_psd_clamp01(effect_choke);
+    effect_range = sixel_builtin_psd_clamp01(effect_range);
     if (effect_opacity <= 0.0f || effect_size <= 0.0f) {
         return;
     }
@@ -18866,7 +19509,14 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
                     }
                 }
             }
-            coverage = source_alpha - min_alpha;
+            coverage = sixel_builtin_psd_effect_shape_coverage(
+                source_alpha,
+                min_alpha,
+                source_alpha,
+                1,
+                effect_source_center,
+                effect_choke,
+                effect_range);
             if (coverage <= 0.0f) {
                 continue;
             }
@@ -18971,11 +19621,17 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
     int traced_inner_glow;
     int traced_choke;
     int traced_bevel_shadow;
+    float bevel_highlight_opacity;
+    float bevel_shadow_opacity;
+    float bevel_effect_size;
 
     traced_clip_weighted = 0;
     traced_inner_glow = 0;
     traced_choke = 0;
     traced_bevel_shadow = 0;
+    bevel_highlight_opacity = 0.0f;
+    bevel_shadow_opacity = 0.0f;
+    bevel_effect_size = 0.0f;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL || layer == NULL) {
         return;
@@ -19003,6 +19659,9 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
             layer->effect_irgl_size,
             layer->effect_irgl_mode,
             0.70f,
+            layer->effect_irgl_source,
+            layer->effect_irgl_choke,
+            layer->effect_irgl_range,
             "builtin PSD: applying inner glow effect in layer fallback",
             &traced_clip_weighted,
             &traced_inner_glow);
@@ -19023,6 +19682,9 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
             layer->effect_chfx_size,
             layer->effect_chfx_mode,
             0.90f,
+            layer->effect_chfx_source,
+            layer->effect_chfx_choke,
+            layer->effect_chfx_range,
             "builtin PSD: applying choke effect in layer fallback",
             &traced_clip_weighted,
             &traced_choke);
@@ -19030,6 +19692,17 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
     if (layer->has_effect_bevel != 0 &&
         layer->effect_bevel_shadow_opacity > 0.0f &&
         layer->effect_bevel_size > 0.0f) {
+        bevel_highlight_opacity = layer->effect_bevel_highlight_opacity;
+        bevel_shadow_opacity = layer->effect_bevel_shadow_opacity;
+        bevel_effect_size = layer->effect_bevel_size;
+        sixel_builtin_psd_adjust_bevel_effect_params(
+            layer,
+            &bevel_highlight_opacity,
+            &bevel_shadow_opacity,
+            &bevel_effect_size);
+        if (bevel_shadow_opacity <= 0.0f || bevel_effect_size <= 0.0f) {
+            return;
+        }
         sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
             canvas_rgb_premul,
             canvas_alpha,
@@ -19039,10 +19712,13 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
             canvas_height,
             layer,
             layer->effect_bevel_shadow_rgb,
-            layer->effect_bevel_shadow_opacity,
-            layer->effect_bevel_size,
+            bevel_shadow_opacity,
+            bevel_effect_size,
             layer->effect_bevel_shadow_mode,
             0.45f,
+            SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE,
+            0.0f,
+            1.0f,
             "builtin PSD: applying bevel shadow in layer fallback",
             &traced_clip_weighted,
             &traced_bevel_shadow);

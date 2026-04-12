@@ -364,6 +364,14 @@ Key points used by this roadmap:
     shape-fx2 merge/no-ignore, and active-channel preservation contracts.
     Inactive `ebbl` targets now follow the same completion gate, guarded by
     trace representative `1475`.
+  - `lfx2` inactive override now clears named glow/bevel channels only when
+    those channels still have no active payload, so legacy `lrFX` completion
+    can survive into subset/deferred effect application paths.
+  - PASS trace representatives `1500..1503` now lock:
+    `blend-and-clipping` `OrGl/IrGl` source/choke/range semantics,
+    `blend-and-clipping` bevel lighting semantics, and
+    `stroke-composite` deferred stroke semantics
+    (clbl=1 defer + base silhouette + clip-weighted deferred stroke).
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:
