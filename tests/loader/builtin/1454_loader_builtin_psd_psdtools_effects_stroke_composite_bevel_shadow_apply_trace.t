@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify stroke-composite applies bevel highlight/shadow after
-# lfx2 inactive + lrFX complement.
+# Verify stroke-composite keeps bevel highlight inactive while
+# applying bevel shadow after lfx2 inactive + lrFX complement.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -30,9 +30,9 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying bevel highlight in layer fallback*}" \
+test "${trace_output#*builtin PSD: parsed bevel highlight channel in layer effects*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not apply bevel highlight"
+    echo "not ok" 1 - "effects/stroke-composite missed bevel highlight channel parse trace"
     exit 0
 }
 
@@ -42,5 +42,11 @@ test "${trace_output#*builtin PSD: applying bevel shadow in layer fallback*}" \
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite applies bevel highlight/shadow"
+test "${trace_output#*builtin PSD: applying bevel highlight in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite unexpectedly applied bevel highlight"
+    exit 0
+}
+
+echo "ok" 1 - "effects/stroke-composite keeps bevel highlight inactive and applies bevel shadow"
 exit 0
