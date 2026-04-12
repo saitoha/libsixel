@@ -1031,6 +1031,20 @@ static cli_env_help_t const g_env_help_table[] = {
         "Ignored when background color comes from OSC11 query."
     },
     {
+        "SIXEL_BACKGROUND_POLICY",
+        "choose background priority for builtin PNG/APNG/GIF composition.\n"
+        "file_first (default) prefers file background over -B/SIXEL_BGCOLOR.\n"
+        "explicit_first prefers -B/SIXEL_BGCOLOR over file background.\n"
+        "Invalid or empty values fall back to file_first."
+    },
+    {
+        "SIXEL_TRANSPARENT_POLICY",
+        "control builtin non-PAL alpha normalization.\n"
+        "composite (default) and transparent both composite semi-alpha when\n"
+        "a background is available; transparent keeps alpha==0 source RGB.\n"
+        "Invalid or empty values fall back to composite."
+    },
+    {
         "SIXEL_LOADER_ORIENTATION",
         "default EXIF orientation handling for libjpeg/libpng/libwebp.\n"
         "Accepts on/off (preferred) and 1/0 aliases. Defaults to on."
