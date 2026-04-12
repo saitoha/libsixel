@@ -18333,11 +18333,21 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     float stroke_rgb[3];
     float clip_weight;
     float neighbor_clip_weight;
+    float stroke_radius_sq;
+    float coverage_weight_denom;
+    float stroke_soft_outside_sum;
+    float stroke_soft_inside_sum;
+    float stroke_soft_weight_sum;
+    float spatial_weight;
+    float neighbor_delta_outside;
+    float neighbor_delta_inside;
     float effective_stroke_alpha;
     int stroke_position;
     sixel_builtin_psd_layer_blend_mode_t effect_mode;
     int traced_clip_weighted;
     int traced_base_silhouette_coverage;
+    int traced_fractional_coverage;
+    int traced_source_gate_split;
     int use_clip_weight;
     int use_base_silhouette_coverage;
 
@@ -18352,11 +18362,21 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     stroke_rgb[2] = 0.0f;
     clip_weight = 0.0f;
     neighbor_clip_weight = 0.0f;
+    stroke_radius_sq = 0.0f;
+    coverage_weight_denom = 0.0f;
+    stroke_soft_outside_sum = 0.0f;
+    stroke_soft_inside_sum = 0.0f;
+    stroke_soft_weight_sum = 0.0f;
+    spatial_weight = 0.0f;
+    neighbor_delta_outside = 0.0f;
+    neighbor_delta_inside = 0.0f;
     effective_stroke_alpha = 0.0f;
     stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
     effect_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     traced_clip_weighted = 0;
     traced_base_silhouette_coverage = 0;
+    traced_fractional_coverage = 0;
+    traced_source_gate_split = 0;
     use_clip_weight = 0;
     use_base_silhouette_coverage = 0;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
@@ -18384,6 +18404,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     } else if (stroke_radius > 32) {
         stroke_radius = 32;
     }
+    stroke_radius_sq = (float)(stroke_radius * stroke_radius);
+    coverage_weight_denom = stroke_radius_sq + 1.0f;
     for (y = 0u; y < (size_t)canvas_height; ++y) {
         size_t row_offset;
 
@@ -18400,6 +18422,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             float stroke_coverage;
             float stroke_outside_coverage;
             float stroke_inside_coverage;
+            float stroke_hard_outside_coverage;
+            float stroke_hard_inside_coverage;
             float stroke_alpha;
             float base_alpha;
             float base_r;
@@ -18437,6 +18461,9 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             }
             max_alpha = 0.0f;
             min_alpha = 1.0f;
+            stroke_soft_outside_sum = 0.0f;
+            stroke_soft_inside_sum = 0.0f;
+            stroke_soft_weight_sum = 0.0f;
             for (dy = -stroke_radius; dy <= stroke_radius; ++dy) {
                 int ny;
 
@@ -18458,8 +18485,9 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     }
                     neighbor_index =
                         (size_t)ny * (size_t)canvas_width + (size_t)nx;
-                    neighbor_clip_weight = sixel_builtin_psd_clamp_alpha_float32(
-                        clip_alpha_map[neighbor_index]);
+                    neighbor_clip_weight =
+                        sixel_builtin_psd_clamp_alpha_float32(
+                            clip_alpha_map[neighbor_index]);
                     if (use_base_silhouette_coverage != 0) {
                         neighbor_alpha =
                             sixel_builtin_psd_clamp_alpha_float32(
@@ -18480,10 +18508,41 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     if (neighbor_alpha < min_alpha) {
                         min_alpha = neighbor_alpha;
                     }
+                    if (use_base_silhouette_coverage != 0) {
+                        spatial_weight = 1.0f -
+                            ((float)(dx * dx + dy * dy) /
+                             coverage_weight_denom);
+                        if (spatial_weight <= 0.0f) {
+                            continue;
+                        }
+                        neighbor_delta_outside =
+                            neighbor_alpha - source_alpha;
+                        if (neighbor_delta_outside > 0.0f) {
+                            stroke_soft_outside_sum +=
+                                neighbor_delta_outside * spatial_weight;
+                        }
+                        neighbor_delta_inside = source_alpha - neighbor_alpha;
+                        if (neighbor_delta_inside > 0.0f) {
+                            stroke_soft_inside_sum +=
+                                neighbor_delta_inside * spatial_weight;
+                        }
+                        stroke_soft_weight_sum += spatial_weight;
+                    }
                 }
             }
-            stroke_outside_coverage = max_alpha - source_alpha;
-            stroke_inside_coverage = source_alpha - min_alpha;
+            stroke_hard_outside_coverage = max_alpha - source_alpha;
+            stroke_hard_inside_coverage = source_alpha - min_alpha;
+            if (use_base_silhouette_coverage != 0 &&
+                stroke_soft_weight_sum > 0.0f) {
+                stroke_outside_coverage = stroke_hard_outside_coverage;
+                stroke_inside_coverage = sixel_builtin_psd_clamp01(
+                    stroke_hard_inside_coverage * 0.80f +
+                    (stroke_soft_inside_sum / stroke_soft_weight_sum) *
+                    0.20f);
+            } else {
+                stroke_outside_coverage = stroke_hard_outside_coverage;
+                stroke_inside_coverage = stroke_hard_inside_coverage;
+            }
             if (stroke_position ==
                 SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
                 stroke_coverage = stroke_inside_coverage;
@@ -18516,6 +18575,25 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     "builtin PSD: applying deferred stroke with base "
                     "silhouette coverage in layer fallback");
                 traced_base_silhouette_coverage = 1;
+            }
+            if (use_base_silhouette_coverage != 0 &&
+                traced_fractional_coverage == 0) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: applying fractional silhouette "
+                    "coverage for deferred effect stroke in layer "
+                    "fallback");
+                traced_fractional_coverage = 1;
+            }
+            if (use_base_silhouette_coverage != 0 &&
+                use_clip_weight != 0 &&
+                traced_source_gate_split == 0) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: separating deferred stroke "
+                    "coverage source and clip gate in layer "
+                    "fallback");
+                traced_source_gate_split = 1;
             }
             if (use_clip_weight != 0 && traced_clip_weighted == 0) {
                 sixel_trace_topic_message(
