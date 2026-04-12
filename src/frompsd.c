@@ -12003,6 +12003,7 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     float opacity1;
     float size_px;
     int enabled;
+    int oglw_v2_implicit_enabled;
     int has_color0;
     int has_color1;
     int has_feature_records;
@@ -12031,6 +12032,7 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     opacity1 = 0.0f;
     size_px = 0.0f;
     enabled = 0;
+    oglw_v2_implicit_enabled = 0;
     has_color0 = 0;
     has_color1 = 0;
     has_feature_records = 0;
@@ -12074,6 +12076,7 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
             opacity0 = 0.0f;
             size_px = 0.0f;
             enabled = 0;
+            oglw_v2_implicit_enabled = 0;
             mode0 = SIXEL_BUILTIN_PSD_BLEND_SCREEN;
             if (payload_length >= 32u) {
                 version = sixel_builtin_read_u32be(payload);
@@ -12097,6 +12100,26 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                     memcmp(key, "oglw", 4u) == 0 ? 1 : 0,
                     &enabled,
                     &opacity0);
+                if (enabled == 0 &&
+                    memcmp(key, "oglw", 4u) == 0 &&
+                    layer->has_vector_stroke_style != 0 &&
+                    version >= 2u &&
+                    has_color0 != 0 &&
+                    opacity0 > 0.0f &&
+                    size_px > 0.0f &&
+                    payload_length > 32u &&
+                    payload[30u] == 0u &&
+                    payload[31u] != 0u &&
+                    payload[32u] == 0u) {
+                    /*
+                     * Some v2 lrFX writers leave oglw enabled byte as zero
+                     * while storing effective opacity in byte[31]. Activate
+                     * only this narrow vector-stroke signature and keep iglw
+                     * contract.
+                     */
+                    enabled = 1;
+                    oglw_v2_implicit_enabled = 1;
+                }
                 if (version >= 2u && payload_length > 32u) {
                     if (sixel_builtin_psd_legacy_lrfx_read_v2_alt_color(
                             payload,
@@ -12111,6 +12134,12 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                 if (enabled != 0 && has_color0 != 0 && opacity0 > 0.0f &&
                     size_px > 0.0f) {
                     if (memcmp(key, "oglw", 4u) == 0) {
+                        if (oglw_v2_implicit_enabled != 0) {
+                            sixel_trace_topic_message(
+                                "psd_decode",
+                                "builtin PSD: accepting lrFX v2 "
+                                "oglw implicit enabled signature");
+                        }
                         sixel_trace_topic_message(
                             "psd_decode",
                             "builtin PSD: legacy oglw active in lrFX payload");
