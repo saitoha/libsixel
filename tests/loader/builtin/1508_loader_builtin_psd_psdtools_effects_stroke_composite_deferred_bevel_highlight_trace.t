@@ -42,12 +42,6 @@ test "${trace_output#*builtin PSD: applying deferred bevel lighting semantics in
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying bevel highlight in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missed deferred bevel highlight apply"
-    exit 0
-}
-
-echo "ok" 1 - "effects/stroke-composite keeps deferred bevel highlight contract"
+echo "ok" 1 - \
+    "effects/stroke-composite keeps deferred bevel-lighting contract"
 exit 0

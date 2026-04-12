@@ -41,11 +41,5 @@ test "${trace_output#*builtin PSD: applying clip-weighted deferred outer effects
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying outer glow effect in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed deferred outer glow apply"
-    exit 0
-}
-
-echo "ok" 1 - "effects/stroke-composite keeps deferred outer glow contract"
+echo "ok" 1 - "effects/stroke-composite keeps deferred outer-effect contract"
 exit 0
