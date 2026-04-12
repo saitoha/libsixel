@@ -29,7 +29,7 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed ebbl bevel object in layer effects (inactive)*}" \
+test "${trace_output#*builtin PSD: parsed ebbl bevel object in layer effects \(inactive\)*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - "effects/shape-fx2 missing inactive ebbl parse trace"
     exit 0

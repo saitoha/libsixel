@@ -41,7 +41,7 @@ test "${trace_output#*builtin PSD: parsed GrFl effect object in layer effects*}"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed GrFl effect object in layer effects (inactive)*}" \
+test "${trace_output#*builtin PSD: parsed GrFl effect object in layer effects \(inactive\)*}" \
     = "${trace_output}" || {
     echo "not ok" 1 - "effects/stroke-composite regressed GrFl into inactive state"
     exit 0

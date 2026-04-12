@@ -43,7 +43,7 @@ test "${trace_output#*builtin PSD: ignoring legacy lrFX when lfx2 is present*}" 
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed IrGl effect object in layer effects (inactive)*}" \
+test "${trace_output#*builtin PSD: parsed IrGl effect object in layer effects \(inactive\)*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - "effects/shape-fx2 did not keep IrGl inactive trace contract"
     exit 0

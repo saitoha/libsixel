@@ -37,7 +37,7 @@ test "${trace_output#*builtin PSD: merging legacy lrFX effects missing from lfx2
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed IrGl effect object in layer effects (inactive)*}" \
+test "${trace_output#*builtin PSD: parsed IrGl effect object in layer effects \(inactive\)*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - "effects/stroke-composite lost IrGl inactive parse trace"
     exit 0
