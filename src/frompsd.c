@@ -18314,6 +18314,61 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     }
 }
 
+static float
+sixel_builtin_psd_sample_alpha_cross_kernel(
+    float const *alpha_map,
+    unsigned int width,
+    unsigned int height,
+    size_t x,
+    size_t y)
+{
+    size_t idx;
+    float weighted_sum;
+    float total_weight;
+    float sample_alpha;
+
+    idx = 0u;
+    weighted_sum = 0.0f;
+    total_weight = 0.0f;
+    sample_alpha = 0.0f;
+    if (alpha_map == NULL || width == 0u || height == 0u ||
+        x >= (size_t)width || y >= (size_t)height) {
+        return 0.0f;
+    }
+    idx = y * (size_t)width + x;
+    sample_alpha = sixel_builtin_psd_clamp_alpha_float32(alpha_map[idx]);
+    weighted_sum += sample_alpha * 0.50f;
+    total_weight += 0.50f;
+    if (x > 0u) {
+        sample_alpha = sixel_builtin_psd_clamp_alpha_float32(
+            alpha_map[idx - 1u]);
+        weighted_sum += sample_alpha * 0.125f;
+        total_weight += 0.125f;
+    }
+    if (x + 1u < (size_t)width) {
+        sample_alpha = sixel_builtin_psd_clamp_alpha_float32(
+            alpha_map[idx + 1u]);
+        weighted_sum += sample_alpha * 0.125f;
+        total_weight += 0.125f;
+    }
+    if (y > 0u) {
+        sample_alpha = sixel_builtin_psd_clamp_alpha_float32(
+            alpha_map[idx - (size_t)width]);
+        weighted_sum += sample_alpha * 0.125f;
+        total_weight += 0.125f;
+    }
+    if (y + 1u < (size_t)height) {
+        sample_alpha = sixel_builtin_psd_clamp_alpha_float32(
+            alpha_map[idx + (size_t)width]);
+        weighted_sum += sample_alpha * 0.125f;
+        total_weight += 0.125f;
+    }
+    if (total_weight <= 0.0f) {
+        return 0.0f;
+    }
+    return sixel_builtin_psd_clamp_alpha_float32(weighted_sum / total_weight);
+}
+
 static void
 sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     float *canvas_rgb_premul,
@@ -18490,8 +18545,12 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                             clip_alpha_map[neighbor_index]);
                     if (use_base_silhouette_coverage != 0) {
                         neighbor_alpha =
-                            sixel_builtin_psd_clamp_alpha_float32(
-                                stroke_coverage_alpha_map[neighbor_index]);
+                            sixel_builtin_psd_sample_alpha_cross_kernel(
+                                stroke_coverage_alpha_map,
+                                canvas_width,
+                                canvas_height,
+                                (size_t)nx,
+                                (size_t)ny);
                     } else if (use_clip_weight != 0) {
                         neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
                             canvas_alpha[neighbor_index] *
