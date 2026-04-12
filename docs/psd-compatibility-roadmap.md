@@ -372,6 +372,12 @@ Key points used by this roadmap:
     `blend-and-clipping` bevel lighting semantics, and
     `stroke-composite` deferred stroke semantics
     (clbl=1 defer + base silhouette + clip-weighted deferred stroke).
+  - `1318`-focused PASS trace representatives `1504..1506` now lock:
+    bevel channel parse + shadow apply,
+    deferred bevel-lighting semantics, and
+    glow source/choke/range parse with `clbl=1` deferred interior contracts.
+    `1318` remains XFAIL, but the latest local score improved to
+    `MS-SSIM 0.957603` without widening fallback heuristics.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:

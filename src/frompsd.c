@@ -18004,6 +18004,79 @@ sixel_builtin_psd_adjust_bevel_effect_params(
 }
 
 static void
+sixel_builtin_psd_bevel_semantics(
+    sixel_builtin_psd_layer_record_t const *layer,
+    int is_highlight,
+    int *psource_center,
+    float *pchoke,
+    float *prange,
+    float *pedge_bias)
+{
+    float depth;
+    float depth_norm;
+    float altitude_norm;
+    float angle_norm;
+    float choke;
+    float range;
+    float edge_bias;
+    int source_center;
+    int direction;
+
+    depth = 1.0f;
+    depth_norm = 0.25f;
+    altitude_norm = 0.33333334f;
+    angle_norm = 0.0f;
+    choke = 0.0f;
+    range = 1.0f;
+    edge_bias = is_highlight != 0 ? 0.65f : 0.45f;
+    source_center = 0;
+    direction = SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_UP;
+
+    if (psource_center == NULL || pchoke == NULL || prange == NULL) {
+        return;
+    }
+    if (layer != NULL) {
+        depth = layer->effect_bevel_depth;
+        if (depth <= 0.01f) {
+            depth = 0.01f;
+        } else if (depth >= 4.0f) {
+            depth = 4.0f;
+        }
+        depth_norm = (depth - 0.01f) / 3.99f;
+        altitude_norm = sixel_builtin_psd_clamp01(
+            layer->effect_bevel_altitude_deg / 90.0f);
+        angle_norm = sixel_builtin_psd_clamp01(
+            fabsf(layer->effect_bevel_angle_deg - 120.0f) / 180.0f);
+        direction = layer->effect_bevel_direction;
+    }
+    if (is_highlight != 0) {
+        source_center =
+            direction == SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_DOWN ? 1 : 0;
+        choke = sixel_builtin_psd_clamp01(
+            0.05f + depth_norm * 0.25f + (1.0f - altitude_norm) * 0.15f);
+        range = sixel_builtin_psd_clamp01(
+            1.0f - (depth_norm * 0.20f + angle_norm * 0.10f));
+        edge_bias = sixel_builtin_psd_clamp01(
+            0.55f + depth_norm * 0.25f - altitude_norm * 0.10f);
+    } else {
+        source_center =
+            direction == SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_DOWN ? 0 : 1;
+        choke = sixel_builtin_psd_clamp01(
+            0.10f + depth_norm * 0.35f + (1.0f - altitude_norm) * 0.20f);
+        range = sixel_builtin_psd_clamp01(
+            1.0f - (depth_norm * 0.30f + angle_norm * 0.20f));
+        edge_bias = sixel_builtin_psd_clamp01(
+            0.45f + depth_norm * 0.25f - altitude_norm * 0.10f);
+    }
+    *psource_center = source_center;
+    *pchoke = choke;
+    *prange = range;
+    if (pedge_bias != NULL) {
+        *pedge_bias = edge_bias;
+    }
+}
+
+static void
 sixel_builtin_psd_apply_glow_effect(
     sixel_builtin_psd_layer_buffers_t *src,
     unsigned int width,
@@ -18193,6 +18266,12 @@ sixel_builtin_psd_apply_named_glow_effect(
             "in layer fallback");
         *ptraced_vector_mask_glow = 1;
     }
+    if (source_center != 0 || glow_choke > 0.0f || glow_range < 0.999f) {
+        sixel_trace_topic_message(
+            "psd_decode",
+            "builtin PSD: applying glow source/choke/range semantics "
+            "in layer fallback");
+    }
     if (effect_trace != NULL && effect_trace[0] != '\0') {
         sixel_trace_topic_message("psd_decode", effect_trace);
     }
@@ -18297,6 +18376,13 @@ sixel_builtin_psd_apply_layer_effects_subset(
     float bevel_highlight_opacity;
     float bevel_shadow_opacity;
     float bevel_effect_size;
+    int bevel_highlight_source_center;
+    int bevel_shadow_source_center;
+    float bevel_highlight_choke;
+    float bevel_shadow_choke;
+    float bevel_highlight_range;
+    float bevel_shadow_range;
+    int traced_bevel_lighting_semantics;
     int stroke_position;
     sixel_builtin_psd_layer_blend_mode_t effect_mode;
     sixel_builtin_psd_layer_record_t gradient_layer;
@@ -18340,6 +18426,13 @@ sixel_builtin_psd_apply_layer_effects_subset(
     bevel_highlight_opacity = 0.0f;
     bevel_shadow_opacity = 0.0f;
     bevel_effect_size = 0.0f;
+    bevel_highlight_source_center = 0;
+    bevel_shadow_source_center = 0;
+    bevel_highlight_choke = 0.0f;
+    bevel_shadow_choke = 0.0f;
+    bevel_highlight_range = 1.0f;
+    bevel_shadow_range = 1.0f;
+    traced_bevel_lighting_semantics = 0;
     stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
     effect_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     memset(&gradient_layer, 0, sizeof(gradient_layer));
@@ -18707,6 +18800,20 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     &bevel_highlight_opacity,
                     &bevel_shadow_opacity,
                     &bevel_effect_size);
+                sixel_builtin_psd_bevel_semantics(
+                    layer,
+                    1,
+                    &bevel_highlight_source_center,
+                    &bevel_highlight_choke,
+                    &bevel_highlight_range,
+                    NULL);
+                sixel_builtin_psd_bevel_semantics(
+                    layer,
+                    0,
+                    &bevel_shadow_source_center,
+                    &bevel_shadow_choke,
+                    &bevel_shadow_range,
+                    NULL);
                 /*
                  * Keep bevel proxy passes tied to explicit stroke-bearing
                  * layers. Deferred clbl=1 paths can temporarily clear
@@ -18714,6 +18821,16 @@ sixel_builtin_psd_apply_layer_effects_subset(
                  * channels, so accept either signal to preserve bevel passes.
                  */
                 if (bevel_highlight_opacity > 0.0f) {
+                    if (traced_bevel_lighting_semantics == 0 &&
+                        (bevel_highlight_source_center != 0 ||
+                         bevel_highlight_choke > 0.0f ||
+                         bevel_highlight_range < 0.999f)) {
+                        sixel_trace_topic_message(
+                            "psd_decode",
+                            "builtin PSD: applying bevel lighting semantics "
+                            "in layer fallback");
+                        traced_bevel_lighting_semantics = 1;
+                    }
                     sixel_builtin_psd_apply_named_glow_effect(
                         layer,
                         src,
@@ -18722,15 +18839,25 @@ sixel_builtin_psd_apply_layer_effects_subset(
                         bevel_effect_size,
                         layer->effect_bevel_highlight_mode,
                         0,
-                        SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE,
-                        0.0f,
-                        1.0f,
+                        bevel_highlight_source_center,
+                        bevel_highlight_choke,
+                        bevel_highlight_range,
                         "builtin PSD: applying bevel highlight in layer "
                         "fallback",
                         &traced_vector_mask_glow);
                 }
                 if (interior_glow_effects_enabled != 0 &&
                     bevel_shadow_opacity > 0.0f) {
+                    if (traced_bevel_lighting_semantics == 0 &&
+                        (bevel_shadow_source_center != 0 ||
+                         bevel_shadow_choke > 0.0f ||
+                         bevel_shadow_range < 0.999f)) {
+                        sixel_trace_topic_message(
+                            "psd_decode",
+                            "builtin PSD: applying bevel lighting semantics "
+                            "in layer fallback");
+                        traced_bevel_lighting_semantics = 1;
+                    }
                     sixel_builtin_psd_apply_named_glow_effect(
                         layer,
                         src,
@@ -18739,9 +18866,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
                         bevel_effect_size,
                         layer->effect_bevel_shadow_mode,
                         1,
-                        SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE,
-                        0.0f,
-                        1.0f,
+                        bevel_shadow_source_center,
+                        bevel_shadow_choke,
+                        bevel_shadow_range,
                         "builtin PSD: applying bevel shadow in layer fallback",
                         &traced_vector_mask_glow);
                 }
@@ -19621,17 +19748,27 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
     int traced_inner_glow;
     int traced_choke;
     int traced_bevel_shadow;
+    int traced_deferred_bevel_lighting_semantics;
+    int bevel_shadow_source_center;
     float bevel_highlight_opacity;
     float bevel_shadow_opacity;
     float bevel_effect_size;
+    float bevel_shadow_choke;
+    float bevel_shadow_range;
+    float bevel_shadow_edge_bias;
 
     traced_clip_weighted = 0;
     traced_inner_glow = 0;
     traced_choke = 0;
     traced_bevel_shadow = 0;
+    traced_deferred_bevel_lighting_semantics = 0;
+    bevel_shadow_source_center = 0;
     bevel_highlight_opacity = 0.0f;
     bevel_shadow_opacity = 0.0f;
     bevel_effect_size = 0.0f;
+    bevel_shadow_choke = 0.0f;
+    bevel_shadow_range = 1.0f;
+    bevel_shadow_edge_bias = 0.45f;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL || layer == NULL) {
         return;
@@ -19700,8 +19837,26 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
             &bevel_highlight_opacity,
             &bevel_shadow_opacity,
             &bevel_effect_size);
+        sixel_builtin_psd_bevel_semantics(
+            layer,
+            0,
+            &bevel_shadow_source_center,
+            &bevel_shadow_choke,
+            &bevel_shadow_range,
+            &bevel_shadow_edge_bias);
         if (bevel_shadow_opacity <= 0.0f || bevel_effect_size <= 0.0f) {
             return;
+        }
+        if (traced_deferred_bevel_lighting_semantics == 0 &&
+            (bevel_shadow_source_center != 0 ||
+             bevel_shadow_choke > 0.0f ||
+             bevel_shadow_range < 0.999f ||
+             fabsf(bevel_shadow_edge_bias - 0.45f) >= 0.001f)) {
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: applying deferred bevel lighting semantics "
+                "in layer fallback");
+            traced_deferred_bevel_lighting_semantics = 1;
         }
         sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
             canvas_rgb_premul,
@@ -19715,10 +19870,10 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
             bevel_shadow_opacity,
             bevel_effect_size,
             layer->effect_bevel_shadow_mode,
-            0.45f,
-            SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE,
-            0.0f,
-            1.0f,
+            bevel_shadow_edge_bias,
+            bevel_shadow_source_center,
+            bevel_shadow_choke,
+            bevel_shadow_range,
             "builtin PSD: applying bevel shadow in layer fallback",
             &traced_clip_weighted,
             &traced_bevel_shadow);
