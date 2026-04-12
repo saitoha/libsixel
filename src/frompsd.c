@@ -18535,10 +18535,17 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             if (use_base_silhouette_coverage != 0 &&
                 stroke_soft_weight_sum > 0.0f) {
                 stroke_outside_coverage = stroke_hard_outside_coverage;
-                stroke_inside_coverage = sixel_builtin_psd_clamp01(
-                    stroke_hard_inside_coverage * 0.80f +
-                    (stroke_soft_inside_sum / stroke_soft_weight_sum) *
-                    0.20f);
+                stroke_inside_coverage = stroke_hard_inside_coverage;
+                if (source_alpha > 0.001f && source_alpha < 0.999f) {
+                    stroke_outside_coverage = sixel_builtin_psd_clamp01(
+                        stroke_hard_outside_coverage * 0.92f +
+                        (stroke_soft_outside_sum / stroke_soft_weight_sum) *
+                        0.08f);
+                    stroke_inside_coverage = sixel_builtin_psd_clamp01(
+                        stroke_hard_inside_coverage * 0.92f +
+                        (stroke_soft_inside_sum / stroke_soft_weight_sum) *
+                        0.08f);
+                }
             } else {
                 stroke_outside_coverage = stroke_hard_outside_coverage;
                 stroke_inside_coverage = stroke_hard_inside_coverage;
