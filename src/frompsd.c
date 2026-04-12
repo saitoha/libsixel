@@ -19204,7 +19204,6 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             if (use_outside_background_map != 0 &&
                 stroke_position ==
                 SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE &&
-                source_alpha < 0.5f &&
                 outside_background_map[idx] == 0u) {
                 continue;
             }
