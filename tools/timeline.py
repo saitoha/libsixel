@@ -139,6 +139,66 @@ def _resolve_frame_mode(events: List[ParallelEvent], frame_mode: str) -> bool:
     return len(unique_frames) > 1
 
 
+def _impute_missing_frame_metadata(events: List[ParallelEvent],
+                                   frame_mode: str) -> None:
+    """Fill missing frame metadata so frame-mode rendering does not mix rows.
+
+    Many modules still emit timeline events without frame metadata.  In
+    ``frame_mode=on`` we infer missing values from nearby events to keep one
+    consistent frame-grouped view instead of mixing frame and non-frame rows.
+    """
+
+    forward_thread_frame: Dict[int, Tuple[int, int, int]] = {}
+    backward_thread_frame: Dict[int, Tuple[int, int, int]] = {}
+    forward_global_frame: Tuple[int, int, int] = None
+    backward_global_frame: Tuple[int, int, int] = None
+
+    if frame_mode != "on":
+        return
+
+    for event in events:
+        if event.frame_no >= 0:
+            forward_thread_frame[event.thread] = (
+                event.frame_no,
+                event.loop_no,
+                event.multiframe,
+            )
+            forward_global_frame = (
+                event.frame_no,
+                event.loop_no,
+                event.multiframe,
+            )
+            continue
+        inferred = forward_thread_frame.get(event.thread)
+        if inferred is None:
+            inferred = forward_global_frame
+        if inferred is not None:
+            event.frame_no = inferred[0]
+            event.loop_no = inferred[1]
+            event.multiframe = inferred[2]
+
+    for event in reversed(events):
+        if event.frame_no >= 0:
+            backward_thread_frame[event.thread] = (
+                event.frame_no,
+                event.loop_no,
+                event.multiframe,
+            )
+            backward_global_frame = (
+                event.frame_no,
+                event.loop_no,
+                event.multiframe,
+            )
+            continue
+        inferred = backward_thread_frame.get(event.thread)
+        if inferred is None:
+            inferred = backward_global_frame
+        if inferred is not None:
+            event.frame_no = inferred[0]
+            event.loop_no = inferred[1]
+            event.multiframe = inferred[2]
+
+
 def render(
     events: List[ParallelEvent],
     output: str,
@@ -149,6 +209,7 @@ def render(
     frame_mode: str = "auto",
 ) -> None:
     events = sorted(events, key=lambda item: item.ts)
+    _impute_missing_frame_metadata(events, frame_mode)
     visible_events = []
     for event in events:
         if start_time is not None and event.ts < start_time:
