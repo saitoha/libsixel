@@ -1551,6 +1551,12 @@ typedef struct sixel_builtin_psd_layer_record {
     int eff_drsh_seen;
     int eff_irsh_seen;
     int eff_bevl_seen;
+    int eff_orgl_active;
+    int eff_irgl_active;
+    int eff_chfx_active;
+    int eff_drsh_active;
+    int eff_irsh_active;
+    int eff_bevl_active;
     int effect_stroke_position;
     int effect_stroke_from_vector_style;
     int has_vector_stroke_style;
@@ -1728,6 +1734,90 @@ sixel_builtin_psd_layer_has_inactive_effect_targets(
         }
     }
     return 0;
+}
+
+static void
+sixel_builtin_psd_apply_lfx2_inactive_effect_overrides(
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    int has_outer_source;
+    int has_inner_source;
+
+    has_outer_source = 0;
+    has_inner_source = 0;
+    if (layer == NULL) {
+        return;
+    }
+    if (layer->eff_orgl_seen != 0 &&
+        layer->eff_orgl_active == 0) {
+        layer->has_effect_orgl = 0;
+        layer->effect_orgl_opacity = 0.0f;
+        layer->effect_orgl_size = 0.0f;
+    }
+    if (layer->eff_irgl_seen != 0 &&
+        layer->eff_irgl_active == 0) {
+        layer->has_effect_irgl = 0;
+        layer->effect_irgl_opacity = 0.0f;
+        layer->effect_irgl_size = 0.0f;
+    }
+    if (layer->eff_chfx_seen != 0 &&
+        layer->eff_chfx_active == 0) {
+        layer->has_effect_chfx = 0;
+        layer->effect_chfx_opacity = 0.0f;
+        layer->effect_chfx_size = 0.0f;
+    }
+    if (layer->eff_drsh_seen != 0 &&
+        layer->eff_drsh_active == 0) {
+        layer->has_effect_drsh = 0;
+        layer->effect_drsh_opacity = 0.0f;
+        layer->effect_drsh_size = 0.0f;
+    }
+    if (layer->eff_irsh_seen != 0 &&
+        layer->eff_irsh_active == 0) {
+        layer->has_effect_irsh = 0;
+        layer->effect_irsh_opacity = 0.0f;
+        layer->effect_irsh_size = 0.0f;
+    }
+    if (layer->eff_bevl_seen != 0 &&
+        layer->eff_bevl_active == 0) {
+        layer->has_effect_bevel = 0;
+        layer->effect_bevel_size = 0.0f;
+        layer->effect_bevel_highlight_opacity = 0.0f;
+        layer->effect_bevel_shadow_opacity = 0.0f;
+    }
+    has_outer_source =
+        (layer->has_effect_orgl != 0 &&
+         layer->effect_orgl_opacity > 0.0f &&
+         layer->effect_orgl_size > 0.0f) ||
+        (layer->has_effect_drsh != 0 &&
+         layer->effect_drsh_opacity > 0.0f &&
+         layer->effect_drsh_size > 0.0f) ||
+        (layer->has_effect_bevel != 0 &&
+         layer->effect_bevel_highlight_opacity > 0.0f &&
+         layer->effect_bevel_size > 0.0f);
+    has_inner_source =
+        (layer->has_effect_irgl != 0 &&
+         layer->effect_irgl_opacity > 0.0f &&
+         layer->effect_irgl_size > 0.0f) ||
+        (layer->has_effect_chfx != 0 &&
+         layer->effect_chfx_opacity > 0.0f &&
+         layer->effect_chfx_size > 0.0f) ||
+        (layer->has_effect_irsh != 0 &&
+         layer->effect_irsh_opacity > 0.0f &&
+         layer->effect_irsh_size > 0.0f) ||
+        (layer->has_effect_bevel != 0 &&
+         layer->effect_bevel_shadow_opacity > 0.0f &&
+         layer->effect_bevel_size > 0.0f);
+    if (has_outer_source == 0) {
+        layer->has_effect_outer_glow = 0;
+        layer->effect_outer_glow_opacity = 0.0f;
+        layer->effect_outer_glow_size = 0.0f;
+    }
+    if (has_inner_source == 0) {
+        layer->has_effect_inner_glow = 0;
+        layer->effect_inner_glow_opacity = 0.0f;
+        layer->effect_inner_glow_size = 0.0f;
+    }
 }
 
 static int
@@ -10728,6 +10818,7 @@ sixel_builtin_psd_parse_effect_glow_object(
     }
     switch (effect_kind) {
     case SIXEL_BUILTIN_PSD_EFFECT_GLOW_ORGL:
+        layer->eff_orgl_active = 1;
         layer->has_effect_orgl = 1;
         layer->effect_orgl_rgb[0] = glow_rgb[0];
         layer->effect_orgl_rgb[1] = glow_rgb[1];
@@ -10744,6 +10835,7 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_outer_glow_mode = blend_mode;
         break;
     case SIXEL_BUILTIN_PSD_EFFECT_GLOW_IRGL:
+        layer->eff_irgl_active = 1;
         layer->has_effect_irgl = 1;
         layer->effect_irgl_rgb[0] = glow_rgb[0];
         layer->effect_irgl_rgb[1] = glow_rgb[1];
@@ -10760,6 +10852,7 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_inner_glow_mode = blend_mode;
         break;
     case SIXEL_BUILTIN_PSD_EFFECT_GLOW_CHFX:
+        layer->eff_chfx_active = 1;
         layer->has_effect_chfx = 1;
         layer->effect_chfx_rgb[0] = glow_rgb[0];
         layer->effect_chfx_rgb[1] = glow_rgb[1];
@@ -10776,6 +10869,7 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_inner_glow_mode = blend_mode;
         break;
     case SIXEL_BUILTIN_PSD_EFFECT_GLOW_DRSH:
+        layer->eff_drsh_active = 1;
         layer->has_effect_drsh = 1;
         layer->effect_drsh_rgb[0] = glow_rgb[0];
         layer->effect_drsh_rgb[1] = glow_rgb[1];
@@ -10792,6 +10886,7 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_outer_glow_mode = blend_mode;
         break;
     case SIXEL_BUILTIN_PSD_EFFECT_GLOW_IRSH:
+        layer->eff_irsh_active = 1;
         layer->has_effect_irsh = 1;
         layer->effect_irsh_rgb[0] = glow_rgb[0];
         layer->effect_irsh_rgb[1] = glow_rgb[1];
@@ -11015,6 +11110,7 @@ sixel_builtin_psd_parse_effect_bevel_object(
         return 1;
     }
     layer->has_effect_bevel = 1;
+    layer->eff_bevl_active = 1;
     layer->effect_bevel_size = size_px;
     if (has_highlight_color != 0 && highlight_opacity > 0.0f) {
         layer->effect_bevel_highlight_rgb[0] = highlight_rgb[0];
@@ -12055,6 +12151,7 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     size_t key_length,
     sixel_builtin_psd_layer_record_t *layer,
     int allow_bevel_proxy,
+    int allow_implicit_glow_enable,
     int *out_has_feature_records)
 {
     size_t cursor;
@@ -12071,6 +12168,7 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     float size_px;
     int enabled;
     int v2_implicit_enabled;
+    int allow_implicit_glow_enable_local;
     int has_color0;
     int has_color1;
     int has_feature_records;
@@ -12100,6 +12198,7 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     size_px = 0.0f;
     enabled = 0;
     v2_implicit_enabled = 0;
+    allow_implicit_glow_enable_local = 1;
     has_color0 = 0;
     has_color1 = 0;
     has_feature_records = 0;
@@ -12113,6 +12212,12 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     if (data == NULL || layer == NULL || key_length < 4u) {
         return 0;
     }
+    allow_implicit_glow_enable_local =
+        allow_implicit_glow_enable != 0 &&
+        layer->eff_orgl_seen == 0 &&
+        layer->eff_irgl_seen == 0 &&
+        layer->eff_chfx_seen == 0 &&
+        layer->eff_bevl_seen == 0;
     effect_count = (size_t)sixel_builtin_read_u16be_as_u16(data + 2u);
     cursor = 4u;
     for (effect_index = 0u; effect_index < effect_count; ++effect_index) {
@@ -12170,6 +12275,7 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                 if (enabled == 0 &&
                     (memcmp(key, "oglw", 4u) == 0 ||
                      memcmp(key, "iglw", 4u) == 0) &&
+                    allow_implicit_glow_enable_local != 0 &&
                     layer->has_vector_stroke_style != 0 &&
                     version >= 2u &&
                     has_color0 != 0 &&
@@ -12190,6 +12296,7 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                 }
                 if (enabled == 0 &&
                     memcmp(key, "oglw", 4u) == 0 &&
+                    allow_implicit_glow_enable_local != 0 &&
                     has_color0 != 0 &&
                     opacity0 > 0.0f &&
                     size_px > 0.0f &&
@@ -13235,6 +13342,12 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->eff_drsh_seen = 0;
     layer->eff_irsh_seen = 0;
     layer->eff_bevl_seen = 0;
+    layer->eff_orgl_active = 0;
+    layer->eff_irgl_active = 0;
+    layer->eff_chfx_active = 0;
+    layer->eff_drsh_active = 0;
+    layer->eff_irsh_active = 0;
+    layer->eff_bevl_active = 0;
     layer->effect_stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
     layer->effect_stroke_from_vector_style = 0;
     layer->has_vector_stroke_style = 0;
@@ -14459,23 +14572,33 @@ sixel_builtin_psd_parse_layer_extra_data(
                     key_length,
                     layer,
                     1,
+                    has_object_based_effects == 0 ? 1 : 0,
                     NULL);
             } else {
                 sixel_builtin_psd_layer_record_init(&legacy_effects);
                 sixel_builtin_psd_layer_record_init(&legacy_binary_effects);
+                legacy_effects.eff_orgl_seen = layer->eff_orgl_seen;
+                legacy_effects.eff_irgl_seen = layer->eff_irgl_seen;
+                legacy_effects.eff_chfx_seen = layer->eff_chfx_seen;
+                legacy_effects.eff_bevl_seen = layer->eff_bevl_seen;
+                legacy_binary_effects.eff_orgl_seen = layer->eff_orgl_seen;
+                legacy_binary_effects.eff_irgl_seen = layer->eff_irgl_seen;
+                legacy_binary_effects.eff_chfx_seen = layer->eff_chfx_seen;
+                legacy_binary_effects.eff_bevl_seen = layer->eff_bevl_seen;
                 has_vstk_payload = layer->has_vector_stroke_style != 0 ||
                     has_vstk_block_key != 0;
-                (void)sixel_builtin_psd_parse_layer_effects_payload_loose(
-                    buffer + cursor,
-                    key_length,
-                    &legacy_effects,
-                    1);
+                /*
+                 * When lfx2 is present, prefer the dedicated lrFX parser
+                 * over loose descriptor probing to avoid re-activating
+                 * ambiguous legacy payloads.
+                 */
                 parsed_legacy_binary_effects =
                     sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                         buffer + cursor,
                         key_length,
                         &legacy_binary_effects,
                         1,
+                        0,
                         &legacy_has_feature_records);
                 if (parsed_legacy_binary_effects != 0) {
                     (void)sixel_builtin_psd_merge_missing_legacy_effects(
@@ -14569,6 +14692,46 @@ sixel_builtin_psd_parse_layer_extra_data(
         return SIXEL_STBI_ERROR;
     }
     if (has_pending_legacy_merge != 0) {
+        if (has_object_based_effects != 0 &&
+            pending_legacy_has_lrfx_payload != 0 &&
+            pending_legacy_lrfx_length > 0u &&
+            pending_legacy_lrfx_offset <= extra_end &&
+            pending_legacy_lrfx_length <=
+                extra_end - pending_legacy_lrfx_offset) {
+            /*
+             * lfx2 may appear after lrFX in the extra-data stream.
+             * Re-parse the legacy payload once with implicit glow activation
+             * disabled so lfx2 presence suppresses oglw/iglw heuristics
+             * regardless of on-disk key ordering.
+             */
+            sixel_builtin_psd_layer_record_init(&pending_legacy_retry_effects);
+            sixel_builtin_psd_layer_record_init(&legacy_binary_effects);
+            pending_legacy_retry_effects.eff_orgl_seen = layer->eff_orgl_seen;
+            pending_legacy_retry_effects.eff_irgl_seen = layer->eff_irgl_seen;
+            pending_legacy_retry_effects.eff_chfx_seen = layer->eff_chfx_seen;
+            pending_legacy_retry_effects.eff_bevl_seen = layer->eff_bevl_seen;
+            legacy_binary_effects.eff_orgl_seen = layer->eff_orgl_seen;
+            legacy_binary_effects.eff_irgl_seen = layer->eff_irgl_seen;
+            legacy_binary_effects.eff_chfx_seen = layer->eff_chfx_seen;
+            legacy_binary_effects.eff_bevl_seen = layer->eff_bevl_seen;
+            pending_legacy_retry_effects.has_vector_stroke_style =
+                pending_legacy_has_vstk_payload != 0 ? 1 : 0;
+            parsed_legacy_retry_effects =
+                sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
+                    buffer + pending_legacy_lrfx_offset,
+                    pending_legacy_lrfx_length,
+                    &legacy_binary_effects,
+                    1,
+                    0,
+                    &legacy_has_feature_records);
+            if (parsed_legacy_retry_effects != 0) {
+                (void)sixel_builtin_psd_merge_missing_legacy_effects(
+                    &pending_legacy_retry_effects,
+                    &legacy_binary_effects);
+            }
+            pending_legacy_effects = pending_legacy_retry_effects;
+            pending_legacy_has_feature_records = legacy_has_feature_records;
+        }
         if (pending_legacy_has_lrfx_payload != 0 &&
             pending_legacy_has_vstk_payload != 0 &&
             (pending_legacy_effects.has_effect_orgl == 0 ||
@@ -14586,12 +14749,21 @@ sixel_builtin_psd_parse_layer_extra_data(
              */
             pending_legacy_retry_effects = pending_legacy_effects;
             pending_legacy_retry_effects.has_vector_stroke_style = 1;
+            pending_legacy_retry_effects.eff_orgl_seen =
+                layer->eff_orgl_seen;
+            pending_legacy_retry_effects.eff_irgl_seen =
+                layer->eff_irgl_seen;
+            pending_legacy_retry_effects.eff_chfx_seen =
+                layer->eff_chfx_seen;
+            pending_legacy_retry_effects.eff_bevl_seen =
+                layer->eff_bevl_seen;
             parsed_legacy_retry_effects =
                 sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                     buffer + pending_legacy_lrfx_offset,
                     pending_legacy_lrfx_length,
                     &pending_legacy_retry_effects,
                     1,
+                    0,
                     NULL);
             if (parsed_legacy_retry_effects != 0) {
                 (void)sixel_builtin_psd_merge_missing_legacy_effects(
@@ -14662,6 +14834,7 @@ sixel_builtin_psd_parse_layer_extra_data(
                 "present");
         }
     }
+    sixel_builtin_psd_apply_lfx2_inactive_effect_overrides(layer);
     return SIXEL_OK;
 }
 
@@ -18542,7 +18715,7 @@ sixel_builtin_psd_sample_alpha_cross_kernel(
     size_t y);
 
 static void
-sixel_builtin_psd_apply_deferred_inner_effect_to_canvas_with_clip(
+sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     float *canvas_rgb_premul,
     float *canvas_alpha,
     float const *clip_alpha_map,
@@ -18785,7 +18958,7 @@ sixel_builtin_psd_apply_deferred_inner_effect_to_canvas_with_clip(
 }
 
 static void
-sixel_builtin_psd_apply_deferred_interior_effects_to_canvas_with_clip(
+sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
     float *canvas_rgb_premul,
     float *canvas_alpha,
     float const *clip_alpha_map,
@@ -18817,7 +18990,7 @@ sixel_builtin_psd_apply_deferred_interior_effects_to_canvas_with_clip(
     if (layer->has_effect_irgl != 0 &&
         layer->effect_irgl_opacity > 0.0f &&
         layer->effect_irgl_size > 0.0f) {
-        sixel_builtin_psd_apply_deferred_inner_effect_to_canvas_with_clip(
+        sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
             canvas_rgb_premul,
             canvas_alpha,
             clip_alpha_map,
@@ -18837,7 +19010,7 @@ sixel_builtin_psd_apply_deferred_interior_effects_to_canvas_with_clip(
     if (layer->has_effect_chfx != 0 &&
         layer->effect_chfx_opacity > 0.0f &&
         layer->effect_chfx_size > 0.0f) {
-        sixel_builtin_psd_apply_deferred_inner_effect_to_canvas_with_clip(
+        sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
             canvas_rgb_premul,
             canvas_alpha,
             clip_alpha_map,
@@ -18857,7 +19030,7 @@ sixel_builtin_psd_apply_deferred_interior_effects_to_canvas_with_clip(
     if (layer->has_effect_bevel != 0 &&
         layer->effect_bevel_shadow_opacity > 0.0f &&
         layer->effect_bevel_size > 0.0f) {
-        sixel_builtin_psd_apply_deferred_inner_effect_to_canvas_with_clip(
+        sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
             canvas_rgb_premul,
             canvas_alpha,
             clip_alpha_map,
@@ -19972,7 +20145,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     info->width,
                     info->height,
                     &pending_overlay_layer);
-                sixel_builtin_psd_apply_deferred_interior_effects_to_canvas_with_clip(
+                sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
                     canvas_rgb_premul,
                     canvas_alpha,
                     clip_alpha_map,
@@ -20649,7 +20822,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 info->width,
                 info->height,
                 &pending_overlay_layer);
-            sixel_builtin_psd_apply_deferred_interior_effects_to_canvas_with_clip(
+            sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
                 canvas_rgb_premul,
                 canvas_alpha,
                 clip_alpha_map,
