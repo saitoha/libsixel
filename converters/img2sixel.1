@@ -182,6 +182,10 @@ Supported k-medoids suboptions:
 .br
 \fBprune_mass\fP: floating value in 0.900-1.000.
 .br
+\fBauction\fP: 0 or 1 (default 0).
+.br
+\fBauction_shortlist\fP: integer value in 2-8 (default 4).
+.br
 \fBclara_trials\fP: integer value in 1-32.
 .br
 \fBclara_sample\fP: 0 or integer value in 64-1048576.
@@ -1358,6 +1362,14 @@ reserve low-frequency histogram bins before mass pruning (0-1024, default 64).
 .br
 retain cumulative histogram mass before medoids solving (0.900-1.000,
 default 0.995).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_AUCTION
+.br
+enable capacity-aware auction reassignment in medoids (0 or 1, default 0).
+.TP 5
+.B SIXEL_PALETTE_KMEDOIDS_AUCTION_SHORTLIST
+.br
+set auction shortlist width per point in medoids (2-8, default 4).
 .TP 5
 .B SIXEL_PALETTE_KMEDOIDS_CLARA_TRIALS
 .br

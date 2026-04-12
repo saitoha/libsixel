@@ -452,6 +452,10 @@ typedef int SIXELSTATUS;
                                                       integer in 8-4096
                                                     bandit_batch:
                                                       integer in 8-4096
+                                                    auction:
+                                                      0 or 1
+                                                    auction_shortlist:
+                                                      integer in 2-8
                                                 */
 #define SIXEL_OPTFLAG_CROP              ('c')  /* -c REGION, --crop=REGION:
                                                   crop source image to fit the

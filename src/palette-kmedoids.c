@@ -127,6 +127,11 @@ static SIXEL_TLS int sixel_kmedoids_rare_keep_override_enabled = 0;
 static SIXEL_TLS unsigned int sixel_kmedoids_rare_keep_override_value = 0u;
 static SIXEL_TLS int sixel_kmedoids_prune_mass_override_enabled = 0;
 static SIXEL_TLS double sixel_kmedoids_prune_mass_override_value = 0.0;
+static SIXEL_TLS int sixel_kmedoids_auction_override_enabled = 0;
+static SIXEL_TLS int sixel_kmedoids_auction_override_value = 0;
+static SIXEL_TLS int sixel_kmedoids_auction_shortlist_override_enabled = 0;
+static SIXEL_TLS unsigned int
+    sixel_kmedoids_auction_shortlist_override_value = 4u;
 static SIXEL_TLS double const *sixel_kmedoids_distance_cache = NULL;
 static SIXEL_TLS unsigned int sixel_kmedoids_distance_cache_size = 0u;
 static SIXEL_TLS unsigned int
@@ -941,6 +946,42 @@ sixel_kmedoids_parse_env_double(char const *env_name,
     }
 
     return parsed;
+}
+
+static int
+sixel_kmedoids_parse_env_bool(char const *env_name,
+                              int fallback)
+{
+    char const *env_value;
+
+    env_value = NULL;
+    if (env_name == NULL || env_name[0] == '\0') {
+        return fallback ? 1 : 0;
+    }
+
+    env_value = sixel_compat_getenv(env_name);
+    if (env_value == NULL || env_value[0] == '\0') {
+        return fallback ? 1 : 0;
+    }
+
+    if (sixel_compat_strcasecmp(env_value, "1") == 0
+            || sixel_compat_strcasecmp(env_value, "true") == 0
+            || sixel_compat_strcasecmp(env_value, "yes") == 0
+            || sixel_compat_strcasecmp(env_value, "on") == 0
+            || sixel_compat_strcasecmp(env_value, "enable") == 0
+            || sixel_compat_strcasecmp(env_value, "enabled") == 0) {
+        return 1;
+    }
+    if (sixel_compat_strcasecmp(env_value, "0") == 0
+            || sixel_compat_strcasecmp(env_value, "false") == 0
+            || sixel_compat_strcasecmp(env_value, "no") == 0
+            || sixel_compat_strcasecmp(env_value, "off") == 0
+            || sixel_compat_strcasecmp(env_value, "disable") == 0
+            || sixel_compat_strcasecmp(env_value, "disabled") == 0) {
+        return 0;
+    }
+
+    return fallback ? 1 : 0;
 }
 
 static int
@@ -3976,6 +4017,86 @@ sixel_get_kmedoids_prune_mass(void)
     return cached;
 }
 
+void
+sixel_set_kmedoids_auction_override(int enabled,
+                                    int auction_enabled)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
+    sixel_kmedoids_auction_override_enabled = enabled ? 1 : 0;
+    sixel_kmedoids_auction_override_value = auction_enabled ? 1 : 0;
+    sixel_kmedoids_override_lock_release(lock_acquired);
+}
+
+static int
+sixel_kmedoids_get_auction_from_env(void)
+{
+    static int loaded = 0;
+    static int cached = 0;
+
+    if (loaded) {
+        return cached;
+    }
+    loaded = 1;
+    cached = sixel_kmedoids_parse_env_bool(
+        "SIXEL_PALETTE_KMEDOIDS_AUCTION",
+        0);
+    return cached;
+}
+
+SIXEL_INTERNAL_API int
+sixel_get_kmedoids_auction(void)
+{
+    if (sixel_kmedoids_auction_override_enabled) {
+        return sixel_kmedoids_auction_override_value ? 1 : 0;
+    }
+    return sixel_kmedoids_get_auction_from_env();
+}
+
+void
+sixel_set_kmedoids_auction_shortlist_override(int enabled,
+                                              unsigned int shortlist)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kmedoids_override_lock_acquire();
+    sixel_kmedoids_auction_shortlist_override_enabled = enabled ? 1 : 0;
+    sixel_kmedoids_auction_shortlist_override_value = shortlist;
+    sixel_kmedoids_override_lock_release(lock_acquired);
+}
+
+static unsigned int
+sixel_kmedoids_get_auction_shortlist_from_env(void)
+{
+    static int loaded = 0;
+    static unsigned int cached = 4u;
+
+    if (loaded) {
+        return cached;
+    }
+    loaded = 1;
+    cached = sixel_kmedoids_parse_env_uint(
+        "SIXEL_PALETTE_KMEDOIDS_AUCTION_SHORTLIST",
+        4u,
+        2u,
+        8u,
+        0);
+    return cached;
+}
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_auction_shortlist(void)
+{
+    if (sixel_kmedoids_auction_shortlist_override_enabled) {
+        return sixel_kmedoids_clamp_uint(
+            sixel_kmedoids_auction_shortlist_override_value,
+            2u,
+            8u);
+    }
+    return sixel_kmedoids_get_auction_shortlist_from_env();
+}
+
 /*
  * Keep this helper name k-medoids specific so amalgamation builds can include
  * palette-kmeans.c in the same translation unit without static symbol
@@ -5324,6 +5445,625 @@ sixel_kmedoids_choose_initial_kpp(double const *points,
     }
 
     return SIXEL_OK;
+}
+
+static void
+sixel_kmedoids_auction_fill_counts(unsigned int point_count,
+                                   unsigned int k,
+                                   unsigned int *seat_offsets)
+{
+    unsigned int slot;
+    unsigned int base;
+    unsigned int remain;
+    unsigned int count;
+
+    slot = 0u;
+    base = 0u;
+    remain = 0u;
+    count = 0u;
+    if (seat_offsets == NULL || k == 0u) {
+        return;
+    }
+
+    base = point_count / k;
+    remain = point_count % k;
+    count = 0u;
+    seat_offsets[0u] = 0u;
+    for (slot = 0u; slot < k; ++slot) {
+        count = base;
+        if (slot < remain) {
+            count += 1u;
+        }
+        seat_offsets[slot + 1u] = seat_offsets[slot] + count;
+    }
+}
+
+static int64_t
+sixel_kmedoids_auction_scaled_cost(double distance,
+                                   double weight)
+{
+    double scaled;
+
+    scaled = 0.0;
+    if (!isfinite(distance) || distance < 0.0) {
+        return 0;
+    }
+    if (!isfinite(weight) || weight < 0.0) {
+        return 0;
+    }
+
+    scaled = distance * weight * 1024.0;
+    if (!isfinite(scaled) || scaled < 0.0) {
+        return 0;
+    }
+    if (scaled > (double)(INT64_MAX / 4)) {
+        return (INT64_MAX / 4);
+    }
+    return (int64_t)(scaled + 0.5);
+}
+
+static unsigned int
+sixel_kmedoids_auction_pick_cheapest_seat(unsigned int slot,
+                                          unsigned int const *seat_offsets,
+                                          int64_t const *seat_price)
+{
+    unsigned int seat;
+    unsigned int begin;
+    unsigned int end;
+    unsigned int best;
+    int64_t best_price;
+
+    seat = 0u;
+    begin = 0u;
+    end = 0u;
+    best = UINT_MAX;
+    best_price = INT64_MAX;
+    if (seat_offsets == NULL || seat_price == NULL) {
+        return UINT_MAX;
+    }
+
+    begin = seat_offsets[slot];
+    end = seat_offsets[slot + 1u];
+    if (begin >= end) {
+        return UINT_MAX;
+    }
+    best = begin;
+    best_price = seat_price[begin];
+    for (seat = begin + 1u; seat < end; ++seat) {
+        if (seat_price[seat] < best_price) {
+            best_price = seat_price[seat];
+            best = seat;
+        }
+    }
+    return best;
+}
+
+/*
+ * Rebalance assignments with a capacity-constrained auction stage.
+ * The solver uses seat duplication (q_i seats per slot) and epsilon
+ * scaling, while restricting each point to a short candidate list.
+ */
+static SIXELSTATUS
+sixel_kmedoids_assign_points_auction(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int const *medoids,
+    unsigned int k,
+    unsigned int shortlist_count,
+    unsigned int *nearest_slot,
+    double *nearest_dist,
+    double *second_dist,
+    unsigned int *second_slot,
+    double *cluster_weights,
+    double *cluster_sums,
+    double *cost_out,
+    sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    unsigned int point_index;
+    unsigned int slot;
+    unsigned int index;
+    unsigned int seat;
+    unsigned int candidate_count;
+    unsigned int candidate_slot;
+    unsigned int candidate_seat;
+    unsigned int best_seat;
+    unsigned int second_seat;
+    unsigned int displaced_point;
+    unsigned int assigned_slot;
+    unsigned int queue_point;
+    unsigned int queue_head;
+    unsigned int queue_tail;
+    unsigned int queue_count;
+    unsigned int queue_capacity;
+    unsigned int temp_slot[8];
+    int64_t temp_cost[8];
+    unsigned int temp_count;
+    unsigned int insert_pos;
+    unsigned int cell_index;
+    unsigned int channel;
+    unsigned int *seat_offsets;
+    unsigned int *seat_owner;
+    unsigned int *seat_slot;
+    int64_t *seat_price;
+    unsigned int *point_seat;
+    unsigned int *queue;
+    unsigned char *queued;
+    unsigned int *candidate_slots;
+    int64_t *candidate_costs;
+    unsigned int *candidate_counts;
+    uint64_t cell_count64;
+    uint64_t step_count;
+    uint64_t step_limit;
+    int64_t max_cost;
+    int64_t epsilon;
+    int64_t best_value;
+    int64_t second_value;
+    int64_t candidate_value;
+    int64_t weight_cost;
+    int64_t joined_cost;
+    int64_t spread;
+    int64_t increment;
+    double assigned_distance;
+    double distance;
+    double weight;
+    double cost;
+    size_t row_offset;
+    int done;
+
+    status = SIXEL_BAD_ARGUMENT;
+    point_index = 0u;
+    slot = 0u;
+    index = 0u;
+    seat = 0u;
+    candidate_count = 0u;
+    candidate_slot = 0u;
+    candidate_seat = 0u;
+    best_seat = UINT_MAX;
+    second_seat = UINT_MAX;
+    displaced_point = UINT_MAX;
+    assigned_slot = 0u;
+    queue_point = 0u;
+    queue_head = 0u;
+    queue_tail = 0u;
+    queue_count = 0u;
+    queue_capacity = 0u;
+    temp_count = 0u;
+    insert_pos = 0u;
+    cell_index = 0u;
+    channel = 0u;
+    seat_offsets = NULL;
+    seat_owner = NULL;
+    seat_slot = NULL;
+    seat_price = NULL;
+    point_seat = NULL;
+    queue = NULL;
+    queued = NULL;
+    candidate_slots = NULL;
+    candidate_costs = NULL;
+    candidate_counts = NULL;
+    cell_count64 = 0u;
+    step_count = 0u;
+    step_limit = 0u;
+    max_cost = 0;
+    epsilon = 1;
+    best_value = INT64_MIN;
+    second_value = INT64_MIN;
+    candidate_value = INT64_MIN;
+    weight_cost = 0;
+    joined_cost = 0;
+    spread = 0;
+    increment = 0;
+    assigned_distance = 0.0;
+    distance = 0.0;
+    weight = 1.0;
+    cost = 0.0;
+    row_offset = 0u;
+    done = 0;
+
+    if (points == NULL || medoids == NULL || allocator == NULL
+            || point_count == 0u || k == 0u) {
+        if (cost_out != NULL) {
+            *cost_out = 0.0;
+        }
+        return status;
+    }
+
+    if (shortlist_count < 1u) {
+        shortlist_count = 1u;
+    }
+    if (shortlist_count > 8u) {
+        shortlist_count = 8u;
+    }
+    if (shortlist_count > k) {
+        shortlist_count = k;
+    }
+    if (shortlist_count == 0u) {
+        shortlist_count = 1u;
+    }
+
+    cell_count64 = (uint64_t)point_count * (uint64_t)shortlist_count;
+    if (cell_count64 == 0u
+            || cell_count64
+                > ((uint64_t)SIZE_MAX / (uint64_t)sizeof(unsigned int))
+            || cell_count64
+                > ((uint64_t)SIZE_MAX / (uint64_t)sizeof(int64_t))) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    seat_offsets = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)(k + 1u) * sizeof(unsigned int));
+    seat_owner = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(unsigned int));
+    seat_slot = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(unsigned int));
+    seat_price = (int64_t *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(int64_t));
+    point_seat = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(unsigned int));
+    queue = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(unsigned int));
+    queued = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(unsigned char));
+    candidate_slots = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)cell_count64 * sizeof(unsigned int));
+    candidate_costs = (int64_t *)sixel_allocator_malloc(
+        allocator,
+        (size_t)cell_count64 * sizeof(int64_t));
+    candidate_counts = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(unsigned int));
+    if (seat_offsets == NULL || seat_owner == NULL || seat_slot == NULL
+            || seat_price == NULL || point_seat == NULL || queue == NULL
+            || queued == NULL || candidate_slots == NULL
+            || candidate_costs == NULL || candidate_counts == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    sixel_kmedoids_auction_fill_counts(point_count, k, seat_offsets);
+    if (seat_offsets[k] != point_count) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    for (seat = 0u; seat < point_count; ++seat) {
+        seat_price[seat] = 0;
+        seat_owner[seat] = UINT_MAX;
+    }
+    for (slot = 0u; slot < k; ++slot) {
+        for (seat = seat_offsets[slot];
+                seat < seat_offsets[slot + 1u];
+                ++seat) {
+            seat_slot[seat] = slot;
+        }
+    }
+
+    for (point_index = 0u; point_index < point_count; ++point_index) {
+        weight = 1.0;
+        if (weights != NULL && isfinite(weights[point_index])) {
+            weight = weights[point_index];
+        }
+        if (weight < 0.0) {
+            weight = 0.0;
+        }
+
+        temp_count = 0u;
+        for (slot = 0u; slot < k; ++slot) {
+            distance = sixel_kmedoids_distance_sq(points,
+                                                  point_index,
+                                                  medoids[slot]);
+            weight_cost = sixel_kmedoids_auction_scaled_cost(distance,
+                                                             weight);
+            if (weight_cost > max_cost) {
+                max_cost = weight_cost;
+            }
+
+            if (temp_count < shortlist_count) {
+                insert_pos = temp_count;
+                temp_count += 1u;
+            } else {
+                if (weight_cost > temp_cost[temp_count - 1u]) {
+                    continue;
+                }
+                if (weight_cost == temp_cost[temp_count - 1u]
+                        && slot >= temp_slot[temp_count - 1u]) {
+                    continue;
+                }
+                insert_pos = temp_count - 1u;
+            }
+
+            temp_slot[insert_pos] = slot;
+            temp_cost[insert_pos] = weight_cost;
+            while (insert_pos > 0u) {
+                if (temp_cost[insert_pos - 1u] < temp_cost[insert_pos]) {
+                    break;
+                }
+                if (temp_cost[insert_pos - 1u] == temp_cost[insert_pos]
+                        && temp_slot[insert_pos - 1u]
+                            < temp_slot[insert_pos]) {
+                    break;
+                }
+                candidate_slot = temp_slot[insert_pos - 1u];
+                temp_slot[insert_pos - 1u] = temp_slot[insert_pos];
+                temp_slot[insert_pos] = candidate_slot;
+                weight_cost = temp_cost[insert_pos - 1u];
+                temp_cost[insert_pos - 1u] = temp_cost[insert_pos];
+                temp_cost[insert_pos] = weight_cost;
+                insert_pos -= 1u;
+            }
+        }
+
+        if (temp_count == 0u) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        candidate_counts[point_index] = temp_count;
+        row_offset = (size_t)point_index * (size_t)shortlist_count;
+        for (index = 0u; index < temp_count; ++index) {
+            candidate_slots[row_offset + index] = temp_slot[index];
+            candidate_costs[row_offset + index] = temp_cost[index];
+        }
+    }
+
+    if (max_cost > 0) {
+        epsilon = max_cost / 16;
+        if (epsilon < 1) {
+            epsilon = 1;
+        }
+    }
+
+    done = 0;
+    queue_capacity = point_count;
+    while (!done) {
+        for (seat = 0u; seat < point_count; ++seat) {
+            seat_owner[seat] = UINT_MAX;
+        }
+        for (point_index = 0u; point_index < point_count; ++point_index) {
+            point_seat[point_index] = UINT_MAX;
+            queued[point_index] = 0u;
+        }
+
+        queue_head = 0u;
+        queue_tail = 0u;
+        queue_count = 0u;
+        for (point_index = 0u; point_index < point_count; ++point_index) {
+            queue[queue_tail] = point_index;
+            queue_tail = (queue_tail + 1u) % queue_capacity;
+            queue_count += 1u;
+            queued[point_index] = 1u;
+        }
+
+        step_limit = (uint64_t)point_count
+                   * (uint64_t)(shortlist_count + 1u)
+                   * 64u;
+        step_count = 0u;
+
+        while (queue_count > 0u) {
+            if (step_count >= step_limit) {
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+            step_count += 1u;
+
+            queue_point = queue[queue_head];
+            queue_head = (queue_head + 1u) % queue_capacity;
+            queue_count -= 1u;
+            queued[queue_point] = 0u;
+            if (point_seat[queue_point] != UINT_MAX) {
+                continue;
+            }
+
+            row_offset = (size_t)queue_point * (size_t)shortlist_count;
+            best_seat = UINT_MAX;
+            second_seat = UINT_MAX;
+            best_value = INT64_MIN;
+            second_value = INT64_MIN;
+            candidate_count = candidate_counts[queue_point];
+            for (index = 0u; index < candidate_count; ++index) {
+                candidate_slot = candidate_slots[row_offset + index];
+                candidate_seat = sixel_kmedoids_auction_pick_cheapest_seat(
+                    candidate_slot,
+                    seat_offsets,
+                    seat_price);
+                if (candidate_seat == UINT_MAX) {
+                    continue;
+                }
+                weight_cost = candidate_costs[row_offset + index];
+                if (weight_cost < 0) {
+                    weight_cost = 0;
+                }
+                if (seat_price[candidate_seat] > INT64_MAX - weight_cost) {
+                    joined_cost = INT64_MAX;
+                } else {
+                    joined_cost = seat_price[candidate_seat] + weight_cost;
+                }
+                candidate_value = -joined_cost;
+                if (best_seat == UINT_MAX
+                        || candidate_value > best_value
+                        || (candidate_value == best_value
+                            && candidate_seat < best_seat)) {
+                    second_value = best_value;
+                    second_seat = best_seat;
+                    best_value = candidate_value;
+                    best_seat = candidate_seat;
+                    continue;
+                }
+                if (second_seat == UINT_MAX
+                        || candidate_value > second_value
+                        || (candidate_value == second_value
+                            && candidate_seat < second_seat)) {
+                    second_value = candidate_value;
+                    second_seat = candidate_seat;
+                }
+            }
+
+            if (best_seat == UINT_MAX) {
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+            if (second_seat == UINT_MAX) {
+                if (best_value <= INT64_MIN + epsilon) {
+                    second_value = INT64_MIN;
+                } else {
+                    second_value = best_value - epsilon;
+                }
+            }
+
+            if (best_value <= second_value) {
+                spread = 0;
+            } else {
+                spread = best_value - second_value;
+            }
+            if (spread > INT64_MAX - epsilon) {
+                increment = INT64_MAX;
+            } else {
+                increment = spread + epsilon;
+            }
+            if (increment < epsilon) {
+                increment = epsilon;
+            }
+            if (seat_price[best_seat] > INT64_MAX - increment) {
+                seat_price[best_seat] = INT64_MAX;
+            } else {
+                seat_price[best_seat] += increment;
+            }
+
+            displaced_point = seat_owner[best_seat];
+            seat_owner[best_seat] = queue_point;
+            point_seat[queue_point] = best_seat;
+            if (displaced_point != UINT_MAX) {
+                point_seat[displaced_point] = UINT_MAX;
+                if (!queued[displaced_point]) {
+                    queue[queue_tail] = displaced_point;
+                    queue_tail = (queue_tail + 1u) % queue_capacity;
+                    queue_count += 1u;
+                    queued[displaced_point] = 1u;
+                }
+            }
+        }
+
+        done = 1;
+        for (point_index = 0u; point_index < point_count; ++point_index) {
+            if (point_seat[point_index] == UINT_MAX) {
+                done = 0;
+                break;
+            }
+        }
+        if (done && epsilon <= 1) {
+            break;
+        }
+        if (epsilon <= 1) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        epsilon /= 4;
+        if (epsilon < 1) {
+            epsilon = 1;
+        }
+    }
+
+    if (cluster_weights != NULL) {
+        for (slot = 0u; slot < k; ++slot) {
+            cluster_weights[slot] = 0.0;
+        }
+    }
+    if (cluster_sums != NULL) {
+        for (slot = 0u; slot < k * 3u; ++slot) {
+            cluster_sums[slot] = 0.0;
+        }
+    }
+
+    cost = 0.0;
+    for (point_index = 0u; point_index < point_count; ++point_index) {
+        seat = point_seat[point_index];
+        if (seat >= point_count) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        assigned_slot = seat_slot[seat];
+        assigned_distance = sixel_kmedoids_distance_sq(points,
+                                                       point_index,
+                                                       medoids[assigned_slot]);
+
+        if (nearest_slot != NULL) {
+            nearest_slot[point_index] = assigned_slot;
+        }
+        if (nearest_dist != NULL) {
+            nearest_dist[point_index] = assigned_distance;
+        }
+        if (second_dist != NULL) {
+            second_dist[point_index] = assigned_distance;
+        }
+        if (second_slot != NULL) {
+            second_slot[point_index] = assigned_slot;
+        }
+
+        weight = 1.0;
+        if (weights != NULL && isfinite(weights[point_index])) {
+            weight = weights[point_index];
+        }
+        if (weight < 0.0) {
+            weight = 0.0;
+        }
+        cost += assigned_distance * weight;
+        if (cluster_weights != NULL) {
+            cluster_weights[assigned_slot] += weight;
+        }
+        if (cluster_sums != NULL) {
+            cell_index = assigned_slot * 3u;
+            for (channel = 0u; channel < 3u; ++channel) {
+                cluster_sums[cell_index + channel]
+                    += points[point_index * 3u + channel] * weight;
+            }
+        }
+    }
+    if (cost_out != NULL) {
+        *cost_out = cost;
+    }
+    status = SIXEL_OK;
+
+end:
+    if (candidate_counts != NULL) {
+        sixel_allocator_free(allocator, candidate_counts);
+    }
+    if (candidate_costs != NULL) {
+        sixel_allocator_free(allocator, candidate_costs);
+    }
+    if (candidate_slots != NULL) {
+        sixel_allocator_free(allocator, candidate_slots);
+    }
+    if (queued != NULL) {
+        sixel_allocator_free(allocator, queued);
+    }
+    if (queue != NULL) {
+        sixel_allocator_free(allocator, queue);
+    }
+    if (point_seat != NULL) {
+        sixel_allocator_free(allocator, point_seat);
+    }
+    if (seat_price != NULL) {
+        sixel_allocator_free(allocator, seat_price);
+    }
+    if (seat_slot != NULL) {
+        sixel_allocator_free(allocator, seat_slot);
+    }
+    if (seat_owner != NULL) {
+        sixel_allocator_free(allocator, seat_owner);
+    }
+    if (seat_offsets != NULL) {
+        sixel_allocator_free(allocator, seat_offsets);
+    }
+    return status;
 }
 
 static void
@@ -10843,6 +11583,8 @@ build_palette_kmedoids(unsigned char **result,
     size_t cache_right;
     unsigned int auto_sample_size;
     unsigned int auto_candidate_cap;
+    unsigned int auction_shortlist;
+    int auction_enabled;
     int run_second_polish;
     int override_lock_acquired;
 
@@ -10945,6 +11687,8 @@ build_palette_kmedoids(unsigned char **result,
     cache_right = 0u;
     auto_sample_size = 0u;
     auto_candidate_cap = 0u;
+    auction_shortlist = 0u;
+    auction_enabled = 0;
     run_second_polish = 0;
     override_lock_acquired = 0;
 
@@ -11085,6 +11829,8 @@ build_palette_kmedoids(unsigned char **result,
     histbits = sixel_get_kmedoids_histbits();
     rare_keep = sixel_get_kmedoids_rare_keep();
     prune_mass = sixel_get_kmedoids_prune_mass();
+    auction_enabled = sixel_get_kmedoids_auction();
+    auction_shortlist = sixel_get_kmedoids_auction_shortlist();
     status = sixel_kmedoids_collect_samples(data,
                                             length,
                                             channels,
@@ -11513,18 +12259,40 @@ build_palette_kmedoids(unsigned char **result,
         goto end;
     }
 
-    sixel_kmedoids_assign_points(points,
-                                 weights,
-                                 point_count,
-                                 medoids,
-                                 k,
-                                 nearest_slot,
-                                 nearest_dist,
-                                 second_dist,
-                                 NULL,
-                                 cluster_weights,
-                                 cluster_sums,
-                                 &solution_cost);
+    if (auction_enabled && k > 1u && point_count > 1u) {
+        status = sixel_kmedoids_assign_points_auction(
+            points,
+            weights,
+            point_count,
+            medoids,
+            k,
+            auction_shortlist,
+            nearest_slot,
+            nearest_dist,
+            second_dist,
+            NULL,
+            cluster_weights,
+            cluster_sums,
+            &solution_cost,
+            allocator);
+    } else {
+        status = SIXEL_BAD_ARGUMENT;
+    }
+    if (SIXEL_FAILED(status)) {
+        sixel_kmedoids_assign_points(points,
+                                     weights,
+                                     point_count,
+                                     medoids,
+                                     k,
+                                     nearest_slot,
+                                     nearest_dist,
+                                     second_dist,
+                                     NULL,
+                                     cluster_weights,
+                                     cluster_sums,
+                                     &solution_cost);
+        status = SIXEL_OK;
+    }
 
     for (slot = 0u; slot < k; ++slot) {
         final_centers[slot * 3u + 0u] = points[medoids[slot] * 3u + 0u];

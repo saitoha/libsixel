@@ -174,6 +174,20 @@ sixel_set_kmedoids_prune_mass_override(int enabled,
 SIXEL_INTERNAL_API double
 sixel_get_kmedoids_prune_mass(void);
 
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_auction_override(int enabled,
+                                    int auction_enabled);
+
+SIXEL_INTERNAL_API int
+sixel_get_kmedoids_auction(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kmedoids_auction_shortlist_override(int enabled,
+                                              unsigned int shortlist);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kmedoids_auction_shortlist(void);
+
 SIXEL_INTERNAL_API double
 sixel_kmedoids_test_swap_cost_cutoff(double const *points,
                                      double const *weights,

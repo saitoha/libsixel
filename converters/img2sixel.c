@@ -289,6 +289,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :histbits=BITS histogram bits/channel (3-6).\n"
         "          :rare_keep=COUNT keep low-frequency bins (0-1024).\n"
         "          :prune_mass=RATIO retain cumulative mass (0.900-1.000).\n"
+        "          :auction=0|1 enable capacity-aware auction\n"
+        "          reassignment (default 0).\n"
+        "          :auction_shortlist=COUNT auction shortlist width\n"
+        "          (2-8, default 4).\n"
         "          :clara_trials=COUNT CLARA trial count (1-32).\n"
         "          :clara_sample=COUNT CLARA sample size (0 or 64-1048576).\n"
         "          :clarans_local=COUNT CLARANS local searches (1-32).\n"
@@ -1423,6 +1427,16 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_PALETTE_KMEDOIDS_PRUNE_MASS",
         "retain cumulative histogram mass before medoids solve.\n"
         "Accepts 0.900-1.000, default 0.995."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_AUCTION",
+        "enable capacity-aware auction reassignment in medoids.\n"
+        "Accepts 0 or 1, default 0."
+    },
+    {
+        "SIXEL_PALETTE_KMEDOIDS_AUCTION_SHORTLIST",
+        "set auction shortlist width per point in medoids.\n"
+        "Accepts 2-8, default 4."
     },
     {
         "SIXEL_PALETTE_LUMIN_FACTOR_R",

@@ -21,6 +21,7 @@ status=0
 for token in \
     medoids algo= seed= iter= sample= \
     histbits= point_budget= rare_keep= prune_mass= \
+    auction= auction_shortlist= \
     clara_trials= clara_sample= clarans_local= clarans_neighbors= \
     bandit_iter= bandit_candidates= bandit_batch= \
     auto \

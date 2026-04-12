@@ -481,6 +481,17 @@ _quantizemodel() {
                      "${prefix}${key}=0.995" \
                      "${prefix}${key}=1.000"
           return 0
+        elif [[ ${key} == auction ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1"
+          return 0
+        elif [[ ${key} == auction_shortlist ]]; then
+          compadd -- "${prefix}${key}=2" \
+                     "${prefix}${key}=3" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=6" \
+                     "${prefix}${key}=8"
+          return 0
         elif [[ ${key} == clara_trials || ${key} == clarans_local ]]; then
           compadd -- "${prefix}${key}=3" \
                      "${prefix}${key}=5" \
@@ -543,6 +554,8 @@ _quantizemodel() {
                    "${prefix}point_budget=" \
                    "${prefix}rare_keep=" \
                    "${prefix}prune_mass=" \
+                   "${prefix}auction=" \
+                   "${prefix}auction_shortlist=" \
                    "${prefix}clara_trials=" "${prefix}clara_sample=" \
                    "${prefix}clarans_local=" \
                    "${prefix}clarans_neighbors=" \

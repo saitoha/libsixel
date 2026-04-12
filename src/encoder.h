@@ -168,6 +168,10 @@ struct sixel_encoder {
     unsigned int quantize_model_kmedoids_rare_keep;
     int quantize_model_kmedoids_prune_mass_override;
     double quantize_model_kmedoids_prune_mass;
+    int quantize_model_kmedoids_auction_override;
+    int quantize_model_kmedoids_auction;
+    int quantize_model_kmedoids_auction_shortlist_override;
+    unsigned int quantize_model_kmedoids_auction_shortlist;
     int quantize_model_merge_override;
     int quantize_model_merge_mode;
     int quantize_model_merge_oversplit_override;

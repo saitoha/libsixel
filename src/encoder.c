@@ -1680,6 +1680,23 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
         0u
     },
     {
+        "auction",
+        NULL,
+        "SIXEL_PALETTE_KMEDOIDS_AUCTION",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_toggle_01,
+        sizeof(g_option_choices_toggle_01)
+        / sizeof(g_option_choices_toggle_01[0])
+    },
+    {
+        "auction_shortlist",
+        NULL,
+        "SIXEL_PALETTE_KMEDOIDS_AUCTION_SHORTLIST",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
         "animation_mode",
         NULL,
         SIXEL_PALETTE_ANIMATION_MODE_ENVVAR,
@@ -5754,6 +5771,12 @@ sixel_encoder_prepare_palette(
     sixel_set_kmedoids_prune_mass_override(
         encoder->quantize_model_kmedoids_prune_mass_override,
         encoder->quantize_model_kmedoids_prune_mass);
+    sixel_set_kmedoids_auction_override(
+        encoder->quantize_model_kmedoids_auction_override,
+        encoder->quantize_model_kmedoids_auction);
+    sixel_set_kmedoids_auction_shortlist_override(
+        encoder->quantize_model_kmedoids_auction_shortlist_override,
+        encoder->quantize_model_kmedoids_auction_shortlist);
     status = sixel_dither_initialize(*dither,
                                      palette_pixels,
                                      sixel_frame_get_width(palette_frame),
@@ -5808,6 +5831,8 @@ sixel_encoder_prepare_palette(
     sixel_set_kmedoids_point_budget_override(0, 0u);
     sixel_set_kmedoids_rare_keep_override(0, 0u);
     sixel_set_kmedoids_prune_mass_override(0, 0.0);
+    sixel_set_kmedoids_auction_override(0, 0);
+    sixel_set_kmedoids_auction_shortlist_override(0, 4u);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
         goto end;
@@ -6864,6 +6889,10 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kmedoids_rare_keep = 0u;
     (*ppencoder)->quantize_model_kmedoids_prune_mass_override = 0;
     (*ppencoder)->quantize_model_kmedoids_prune_mass = 0.0;
+    (*ppencoder)->quantize_model_kmedoids_auction_override = 0;
+    (*ppencoder)->quantize_model_kmedoids_auction = 0;
+    (*ppencoder)->quantize_model_kmedoids_auction_shortlist_override = 0;
+    (*ppencoder)->quantize_model_kmedoids_auction_shortlist = 4u;
     (*ppencoder)->quantize_model_merge_override = 0;
     (*ppencoder)->quantize_model_merge_mode = SIXEL_FINAL_MERGE_AUTO;
     (*ppencoder)->quantize_model_merge_oversplit_override = 0;
@@ -8143,6 +8172,26 @@ sixel_encoder_validate_quantize_model_resolution(
             status = sixel_encoder_parse_kmedoids_prune_mass_text(
                 assignment->resolved_value_text,
                 &parsed_double);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "auction") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                sixel_helper_set_additional_message(
+                    "invalid -Q auction resolution.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "auction_shortlist") == 0) {
+            status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                2u,
+                8u,
+                0,
+                "auction_shortlist",
+                &parsed_uint);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
@@ -9676,6 +9725,8 @@ sixel_encoder_setopt(
     unsigned int q_point_budget;
     unsigned int q_rare_keep;
     double q_prune_mass;
+    int q_auction;
+    unsigned int q_auction_shortlist;
     int q_animation_mode;
     double q_scene_cut_threshold;
     sixel_suboption_assignment_t const *q_assignment;
@@ -9746,6 +9797,8 @@ sixel_encoder_setopt(
     q_point_budget = 0u;
     q_rare_keep = 0u;
     q_prune_mass = 0.0;
+    q_auction = 0;
+    q_auction_shortlist = 0u;
     q_animation_mode = 0;
     q_scene_cut_threshold = 0.0;
     q_assignment = NULL;
@@ -10003,6 +10056,8 @@ sixel_encoder_setopt(
         encoder->quantize_model_kmedoids_point_budget_override = 0;
         encoder->quantize_model_kmedoids_rare_keep_override = 0;
         encoder->quantize_model_kmedoids_prune_mass_override = 0;
+        encoder->quantize_model_kmedoids_auction_override = 0;
+        encoder->quantize_model_kmedoids_auction_shortlist_override = 0;
         encoder->quantize_model_merge_override = 0;
         encoder->quantize_model_merge_oversplit_override = 0;
         encoder->quantize_model_merge_lloyd_override = 0;
@@ -10456,6 +10511,33 @@ sixel_encoder_setopt(
                 }
                 encoder->quantize_model_kmedoids_prune_mass_override = 1;
                 encoder->quantize_model_kmedoids_prune_mass = q_prune_mass;
+            } else if (q_key != NULL && strcmp(q_key, "auction") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &q_auction)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q auction resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmedoids_auction_override = 1;
+                encoder->quantize_model_kmedoids_auction = q_auction;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "auction_shortlist") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    2u,
+                    8u,
+                    0,
+                    "auction_shortlist",
+                    &q_auction_shortlist);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmedoids_auction_shortlist_override = 1;
+                encoder->quantize_model_kmedoids_auction_shortlist
+                    = q_auction_shortlist;
             } else if (q_key != NULL && strcmp(q_key, "merge") == 0) {
                 if (!sixel_encoder_resolve_suboption_choice_value(
                         q_assignment,
