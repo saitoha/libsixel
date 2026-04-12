@@ -20397,7 +20397,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 &src_layer);
             pre_softened_alpha_edges = 1;
         }
-        if (defer_clip_group_overlay != 0 &&
+        if (apply_clipping == 0 &&
+            defer_clip_group_overlay != 0 &&
             (pending_overlay_defer_stroke != 0 ||
              (effective_composite_layer->has_blend_clipped_elements != 0 &&
               effective_composite_layer->blend_clipped_elements_enabled != 0 &&
