@@ -83,6 +83,88 @@
 #define SIXEL_FROMPSD_MAX_CHANNELS 56u
 #define SIXEL_FROMPSD_MAX_DIMENSION 300000u
 
+#if defined(_MSC_VER)
+# define SIXEL_PSD_TRACE_TLS __declspec(thread)
+# define SIXEL_PSD_TRACE_TLS_AVAILABLE 1
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
+    && !defined(__PCC__)
+# define SIXEL_PSD_TRACE_TLS _Thread_local
+# define SIXEL_PSD_TRACE_TLS_AVAILABLE 1
+#elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
+# define SIXEL_PSD_TRACE_TLS __thread
+# define SIXEL_PSD_TRACE_TLS_AVAILABLE 1
+#else
+# define SIXEL_PSD_TRACE_TLS
+# define SIXEL_PSD_TRACE_TLS_AVAILABLE 0
+#endif
+
+#define SIXEL_PSD_TRACE_SEEN_MAX 256u
+
+#if SIXEL_PSD_TRACE_TLS_AVAILABLE
+static SIXEL_PSD_TRACE_TLS uint64_t
+sixel_builtin_psd_trace_seen_hashes[SIXEL_PSD_TRACE_SEEN_MAX];
+static SIXEL_PSD_TRACE_TLS unsigned int
+sixel_builtin_psd_trace_seen_count;
+#endif
+
+static void
+sixel_builtin_psd_trace_reset(void)
+{
+#if SIXEL_PSD_TRACE_TLS_AVAILABLE
+    sixel_builtin_psd_trace_seen_count = 0u;
+#endif
+}
+
+static int
+sixel_builtin_psd_trace_seen(char const *message)
+{
+    uint64_t hash;
+    unsigned int i;
+
+    hash = 0u;
+    i = 0u;
+#if SIXEL_PSD_TRACE_TLS_AVAILABLE
+    if (message == NULL) {
+        return 0;
+    }
+    hash = 1469598103934665603ull;
+    for (; message[i] != '\0'; ++i) {
+        hash ^= (uint64_t)(unsigned char)message[i];
+        hash *= 1099511628211ull;
+    }
+    i = 0u;
+    for (i = 0u; i < sixel_builtin_psd_trace_seen_count; ++i) {
+        if (sixel_builtin_psd_trace_seen_hashes[i] == hash) {
+            return 1;
+        }
+    }
+    if (sixel_builtin_psd_trace_seen_count < SIXEL_PSD_TRACE_SEEN_MAX) {
+        sixel_builtin_psd_trace_seen_hashes[
+            sixel_builtin_psd_trace_seen_count] = hash;
+        ++sixel_builtin_psd_trace_seen_count;
+    }
+#else
+    (void)hash;
+    (void)message;
+#endif
+    return 0;
+}
+
+static void
+sixel_builtin_psd_trace_emit(char const *topic,
+                             char const *message)
+{
+    if (topic != NULL &&
+        strcmp(topic, "psd_decode") == 0 &&
+        sixel_builtin_psd_trace_seen(message) != 0) {
+        return;
+    }
+    sixel_trace_topic_message(topic, message);
+}
+
+#define sixel_trace_topic_message(topic, message) \
+    sixel_builtin_psd_trace_emit((topic), (message))
+
 int stbi_zlib_decode_buffer(char *obuffer,
                             int olen,
                             char const *ibuffer,
@@ -1266,6 +1348,7 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     section_length = 0u;
     layer_mask_length_field_size = 0u;
     is_psb_alias = 0;
+    sixel_builtin_psd_trace_reset();
     if (chunk == NULL || chunk->buffer == NULL || info == NULL ||
         chunk->size < 30u) {
         return 0;
@@ -10798,6 +10881,7 @@ sixel_builtin_psd_parse_effect_glow_object(
     float glow_choke;
     float glow_range;
     char const *effect_name;
+    char trace_message[128];
     char key[5];
     char type[5];
     char enum_value[5];
@@ -10818,6 +10902,7 @@ sixel_builtin_psd_parse_effect_glow_object(
     glow_choke = 0.0f;
     glow_range = 1.0f;
     effect_name = "effect";
+    trace_message[0] = '\0';
     memset(key, 0, sizeof(key));
     memset(type, 0, sizeof(type));
     memset(enum_value, 0, sizeof(enum_value));
@@ -11005,17 +11090,21 @@ sixel_builtin_psd_parse_effect_glow_object(
     }
     if (glow_source != SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE ||
         glow_choke > 0.0f || glow_range < 0.999f) {
-        sixel_trace_topic_message(
-            "psd_decode",
+        (void)snprintf(
+            trace_message,
+            sizeof(trace_message),
             "builtin PSD: parsed %s glow source/choke/range semantics",
             effect_name);
+        sixel_trace_topic_message("psd_decode", trace_message);
     }
     if (enabled == 0 || has_color == 0 || opacity <= 0.0f || size_px <= 0.0f) {
-        sixel_trace_topic_message(
-            "psd_decode",
+        (void)snprintf(
+            trace_message,
+            sizeof(trace_message),
             "builtin PSD: parsed %s effect object in layer effects "
             "(inactive)",
             effect_name);
+        sixel_trace_topic_message("psd_decode", trace_message);
         return 1;
     }
     switch (effect_kind) {
@@ -11135,10 +11224,12 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->effect_inner_glow_range = glow_range;
         break;
     }
-    sixel_trace_topic_message(
-        "psd_decode",
+    (void)snprintf(
+        trace_message,
+        sizeof(trace_message),
         "builtin PSD: parsed %s effect object in layer effects",
         effect_name);
+    sixel_trace_topic_message("psd_decode", trace_message);
     return 1;
 }
 

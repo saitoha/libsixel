@@ -14,6 +14,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
+set +x
 
 trace_output=''
 command_status=0

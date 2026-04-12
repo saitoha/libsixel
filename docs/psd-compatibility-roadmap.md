@@ -38,6 +38,12 @@ Key points used by this roadmap:
 
 - Decoder path is `src/frompsd.c` custom composite decoder (no PSD decode
   fallback to `stb_image`).
+- PSD trace performance policy:
+  - `psd_decode` topic suppresses repeated identical messages within one decode
+    so trace-contract tests keep presence/absence semantics without log-volume
+    amplification.
+  - stroke-composite trace tests avoid xtrace expansion of captured trace text
+    and route decode output to `/dev/null` when image bytes are not asserted.
 - Signature/version policy:
   - `8BPS` supports version `1/2` per existing parser policy.
   - `8BPB` is accepted only with `version=2`; `8BPB+version!=2` is rejected as
