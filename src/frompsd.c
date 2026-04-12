@@ -11739,51 +11739,6 @@ sixel_builtin_psd_merge_missing_legacy_effects(
 }
 
 static int
-sixel_builtin_psd_legacy_lrfx_has_feature_record(
-    unsigned char const *data,
-    size_t key_length)
-{
-    size_t cursor;
-    size_t effect_count;
-    size_t effect_index;
-    size_t payload_length;
-
-    effect_count = 0u;
-    effect_index = 0u;
-    payload_length = 0u;
-    cursor = 0u;
-    if (data == NULL || key_length < 4u) {
-        return 0;
-    }
-
-    effect_count = (size_t)sixel_builtin_read_u16be_as_u16(data + 2u);
-    cursor = 4u;
-    /*
-     * Scan only lrFX effect record headers. This avoids false positives from
-     * payload bytes that accidentally contain "8BIMxxxx" sequences.
-     */
-    for (effect_index = 0u; effect_index < effect_count; ++effect_index) {
-        if (cursor + 12u > key_length ||
-            memcmp(data + cursor, "8BIM", 4u) != 0) {
-            break;
-        }
-        if (memcmp(data + cursor + 4u, "oglw", 4u) == 0 ||
-            memcmp(data + cursor + 4u, "iglw", 4u) == 0 ||
-            memcmp(data + cursor + 4u, "bevl", 4u) == 0 ||
-            memcmp(data + cursor + 4u, "sofi", 4u) == 0) {
-            return 1;
-        }
-        payload_length = sixel_builtin_read_u32be_size(data + cursor + 8u);
-        cursor += 12u;
-        if (payload_length > key_length - cursor) {
-            break;
-        }
-        cursor += payload_length;
-    }
-    return 0;
-}
-
-static int
 sixel_builtin_psd_legacy_lrfx_mode_from_payload(
     unsigned char const *data,
     size_t data_length,
@@ -12009,7 +11964,8 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     unsigned char const *data,
     size_t key_length,
     sixel_builtin_psd_layer_record_t *layer,
-    int allow_bevel_proxy)
+    int allow_bevel_proxy,
+    int *out_has_feature_records)
 {
     size_t cursor;
     size_t effect_count;
@@ -12026,6 +11982,7 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     int enabled;
     int has_color0;
     int has_color1;
+    int has_feature_records;
     int parsed;
     sixel_builtin_psd_layer_blend_mode_t mode0;
     sixel_builtin_psd_layer_blend_mode_t mode1;
@@ -12053,10 +12010,14 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
     enabled = 0;
     has_color0 = 0;
     has_color1 = 0;
+    has_feature_records = 0;
     parsed = 0;
     mode0 = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     mode1 = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
 
+    if (out_has_feature_records != NULL) {
+        *out_has_feature_records = 0;
+    }
     if (data == NULL || layer == NULL || key_length < 4u) {
         return 0;
     }
@@ -12069,6 +12030,12 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
         }
         memcpy(key, data + cursor + 4u, 4u);
         key[4] = '\0';
+        if (memcmp(key, "oglw", 4u) == 0 ||
+            memcmp(key, "iglw", 4u) == 0 ||
+            memcmp(key, "bevl", 4u) == 0 ||
+            memcmp(key, "sofi", 4u) == 0) {
+            has_feature_records = 1;
+        }
         payload_length = sixel_builtin_read_u32be_size(data + cursor + 8u);
         cursor += 12u;
         if (payload_length > key_length - cursor) {
@@ -12309,6 +12276,9 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
             }
         }
         cursor += payload_length;
+    }
+    if (out_has_feature_records != NULL) {
+        *out_has_feature_records = has_feature_records;
     }
     return parsed;
 }
@@ -14329,7 +14299,8 @@ sixel_builtin_psd_parse_layer_extra_data(
                     buffer + cursor,
                     key_length,
                     layer,
-                    1);
+                    1,
+                    NULL);
             } else {
                 sixel_builtin_psd_layer_record_init(&legacy_effects);
                 sixel_builtin_psd_layer_record_init(&legacy_binary_effects);
@@ -14345,16 +14316,13 @@ sixel_builtin_psd_parse_layer_extra_data(
                         buffer + cursor,
                         key_length,
                         &legacy_binary_effects,
-                        1);
+                        1,
+                        &legacy_has_feature_records);
                 if (parsed_legacy_binary_effects != 0) {
                     (void)sixel_builtin_psd_merge_missing_legacy_effects(
                         &legacy_effects,
                         &legacy_binary_effects);
                 }
-                legacy_has_feature_records =
-                    sixel_builtin_psd_legacy_lrfx_has_feature_record(
-                        buffer + cursor,
-                        key_length);
                 has_pending_legacy_merge = 1;
                 pending_legacy_effects = legacy_effects;
                 pending_legacy_has_feature_records =
