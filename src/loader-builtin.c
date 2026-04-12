@@ -1288,6 +1288,33 @@ end:
 }
 
 static int
+sixel_builtin_icc_header_declares_signature(unsigned char const *icc_profile,
+                                            size_t icc_profile_length,
+                                            char const *signature)
+{
+    if (icc_profile == NULL ||
+        signature == NULL ||
+        icc_profile_length < 20u) {
+        return 0;
+    }
+    /*
+     * ICC header bytes 16..19 encode the data colorspace signature.
+     * We use this quick check to avoid backend-specific parser behavior
+     * when the profile domain is clearly non-applicable.
+     */
+    return memcmp(icc_profile + 16u, signature, 4u) == 0 ? 1 : 0;
+}
+
+static int
+sixel_builtin_icc_header_declares_rgb(unsigned char const *icc_profile,
+                                      size_t icc_profile_length)
+{
+    return sixel_builtin_icc_header_declares_signature(icc_profile,
+                                                       icc_profile_length,
+                                                       "RGB ");
+}
+
+static int
 sixel_builtin_bmp_open_embedded_icc_rgb_profile(
     unsigned char const *icc_profile,
     size_t icc_profile_length,
@@ -1304,6 +1331,10 @@ sixel_builtin_bmp_open_embedded_icc_rgb_profile(
         return -1;
     }
     *pprofile = NULL;
+    if (sixel_builtin_icc_header_declares_rgb(icc_profile,
+                                              icc_profile_length) == 0) {
+        return 0;
+    }
 
     src_profile = sixel_cms_open_profile_from_mem(icc_profile,
                                                   icc_profile_length);
@@ -1606,14 +1637,9 @@ static int
 sixel_builtin_icc_header_declares_cmyk(unsigned char const *icc_profile,
                                        size_t icc_profile_length)
 {
-    if (icc_profile == NULL || icc_profile_length < 20u) {
-        return 0;
-    }
-    /*
-     * ICC header bytes 16..19 encode the data colorspace signature.
-     * CMYK pixel streams can only consume "CMYK" profiles.
-     */
-    return memcmp(icc_profile + 16u, "CMYK", 4u) == 0 ? 1 : 0;
+    return sixel_builtin_icc_header_declares_signature(icc_profile,
+                                                       icc_profile_length,
+                                                       "CMYK");
 }
 
 static int
