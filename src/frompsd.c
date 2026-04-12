@@ -11429,11 +11429,15 @@ sixel_builtin_psd_merge_missing_legacy_effects(
     int merged;
     int outer_glow_inactive;
     int inner_glow_inactive;
+    int orgl_inactive;
+    int chfx_inactive;
     int allow_glow_proxy_backfill;
 
     merged = 0;
     outer_glow_inactive = 0;
     inner_glow_inactive = 0;
+    orgl_inactive = 0;
+    chfx_inactive = 0;
     allow_glow_proxy_backfill = 0;
     if (layer == NULL || legacy == NULL) {
         return 0;
@@ -11456,7 +11460,15 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->has_effect_inner_glow == 0 ||
         layer->effect_inner_glow_opacity <= 0.0f ||
         layer->effect_inner_glow_size <= 0.0f;
-    if (layer->has_effect_orgl == 0 &&
+    orgl_inactive =
+        layer->has_effect_orgl == 0 ||
+        layer->effect_orgl_opacity <= 0.0f ||
+        layer->effect_orgl_size <= 0.0f;
+    chfx_inactive =
+        layer->has_effect_chfx == 0 ||
+        layer->effect_chfx_opacity <= 0.0f ||
+        layer->effect_chfx_size <= 0.0f;
+    if ((layer->has_effect_orgl == 0 || orgl_inactive != 0) &&
         legacy->has_effect_orgl != 0) {
         layer->has_effect_orgl = 1;
         layer->effect_orgl_rgb[0] = legacy->effect_orgl_rgb[0];
@@ -11465,6 +11477,7 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_orgl_opacity = legacy->effect_orgl_opacity;
         layer->effect_orgl_size = legacy->effect_orgl_size;
         layer->effect_orgl_mode = legacy->effect_orgl_mode;
+        orgl_inactive = 0;
         if (allow_glow_proxy_backfill != 0 &&
             outer_glow_inactive != 0 &&
             layer->effect_orgl_opacity > 0.0f &&
@@ -11510,7 +11523,7 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             "psd_decode",
             "builtin PSD: merged legacy IrGl effect payload");
     }
-    if (layer->has_effect_chfx == 0 &&
+    if ((layer->has_effect_chfx == 0 || chfx_inactive != 0) &&
         legacy->has_effect_chfx != 0) {
         layer->has_effect_chfx = 1;
         layer->effect_chfx_rgb[0] = legacy->effect_chfx_rgb[0];
@@ -11519,6 +11532,7 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_chfx_opacity = legacy->effect_chfx_opacity;
         layer->effect_chfx_size = legacy->effect_chfx_size;
         layer->effect_chfx_mode = legacy->effect_chfx_mode;
+        chfx_inactive = 0;
         if (allow_glow_proxy_backfill != 0 &&
             inner_glow_inactive != 0 &&
             layer->effect_chfx_opacity > 0.0f &&
@@ -17703,11 +17717,13 @@ sixel_builtin_psd_apply_layer_effects_subset(
             }
             if (suppress_bevel_glow_proxy == 0 &&
                 has_named_bevel != 0 &&
-                layer->has_effect_stroke != 0) {
+                (layer->has_effect_stroke != 0 ||
+                 has_explicit_bevel_channels != 0)) {
                 /*
                  * Keep bevel proxy passes tied to explicit stroke-bearing
-                 * layers. This avoids spreading bevel glow into siblings that
-                 * only carry deferred overlay content.
+                 * layers. Deferred clbl=1 paths can temporarily clear
+                 * has_effect_stroke while still carrying explicit bevel
+                 * channels, so accept either signal to preserve bevel passes.
                  */
                 if (layer->effect_bevel_highlight_opacity > 0.0f) {
                     sixel_builtin_psd_apply_named_glow_effect(
