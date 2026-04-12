@@ -18,6 +18,8 @@ rest_after_first=''
 rest_after_second=''
 first_palette_prefix=''
 second_palette_prefix=''
+frame_scan=''
+frame_token=''
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
@@ -63,10 +65,67 @@ test "${rest_after_second}" != "${rest_after_first}" || {
     exit 0
 }
 
-first_palette_prefix=$(printf '%s' "${first_frame}" \
-    | sed -E 's/(#[0-9]+[^0-9;].*)$//')
-second_palette_prefix=$(printf '%s' "${second_frame}" \
-    | sed -E 's/(#[0-9]+[^0-9;].*)$//')
+first_palette_prefix=''
+frame_scan="${first_frame}"
+while :; do
+    case "${frame_scan}" in
+        *'#'*)
+            frame_token=${frame_scan#*#}
+            frame_token=${frame_token%%#*}
+            case "${frame_token}" in
+                *';2;'*)
+                    first_palette_prefix="${first_palette_prefix}#${frame_token}"
+                    ;;
+                *)
+                    break
+                    ;;
+            esac
+            frame_scan=${frame_scan#*#}
+            case "${frame_scan}" in
+                *'#'*)
+                    frame_scan=${frame_scan#*#}
+                    ;;
+                *)
+                    break
+                    ;;
+            esac
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
+second_palette_prefix=''
+frame_scan="${second_frame}"
+while :; do
+    case "${frame_scan}" in
+        *'#'*)
+            frame_token=${frame_scan#*#}
+            frame_token=${frame_token%%#*}
+            case "${frame_token}" in
+                *';2;'*)
+                    second_palette_prefix="${second_palette_prefix}#${frame_token}"
+                    ;;
+                *)
+                    break
+                    ;;
+            esac
+            frame_scan=${frame_scan#*#}
+            case "${frame_scan}" in
+                *'#'*)
+                    frame_scan=${frame_scan#*#}
+                    ;;
+                *)
+                    break
+                    ;;
+            esac
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
 
 test "${first_palette_prefix}" = "${second_palette_prefix}" || {
     echo "not ok" 1 - "animation_mode changed palette below scene cut threshold"

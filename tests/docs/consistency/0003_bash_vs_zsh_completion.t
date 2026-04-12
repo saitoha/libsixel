@@ -7,6 +7,12 @@ bash_opts="${ARTIFACT_LOCAL_DIR}/options-bash.txt"
 zsh_opts="${ARTIFACT_LOCAL_DIR}/options-zsh.txt"
 bash_sorted="${ARTIFACT_LOCAL_DIR}/options-bash-sorted.txt"
 zsh_sorted="${ARTIFACT_LOCAL_DIR}/options-zsh-sorted.txt"
+bash_line=''
+bash_trimmed=''
+bash_short=''
+zsh_line=''
+zsh_tail=''
+zsh_short=''
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n";
@@ -23,10 +29,26 @@ printf '1..1\n'
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-LC_ALL=C sed -n "/ --[0-9a-zA-Z_@=~%?]/{
-    /' /d
-    s/.* \\(-.\\) .*/\\1/p
-}" "${TOP_SRCDIR}/converters/shell-completion/bash/img2sixel" >"${bash_opts}" || {
+: > "${bash_opts}"
+while IFS= read -r bash_line || test -n "${bash_line}"; do
+    case "${bash_line}" in
+        *" --"[0-9a-zA-Z_@=~%?]*)
+            case "${bash_line}" in
+                *"'"\ *)
+                    ;;
+                *)
+                    bash_trimmed=${bash_line#"${bash_line%%[![:space:]]*}"}
+                    case "${bash_trimmed}" in
+                        -?*" --"*)
+                            bash_short=${bash_trimmed%% *}
+                            printf '%s\n' "${bash_short}" >> "${bash_opts}"
+                            ;;
+                    esac
+                    ;;
+            esac
+            ;;
+    esac
+done < "${TOP_SRCDIR}/converters/shell-completion/bash/img2sixel" || {
     echo "not ok" 1 - "failed to parse bash completion"
     exit 0
 }
@@ -36,8 +58,22 @@ LC_ALL=C sort "${bash_opts}" >"${bash_sorted}" || {
     exit 0
 }
 
-LC_ALL=C sed -n '/{-/s/.*{-\([^,}]*\).*/-\1/p' \
-    "${TOP_SRCDIR}/converters/shell-completion/zsh/_img2sixel" >"${zsh_opts}" || {
+: > "${zsh_opts}"
+while IFS= read -r zsh_line || test -n "${zsh_line}"; do
+    case "${zsh_line}" in
+        *"{-"*",--"*)
+            zsh_tail=${zsh_line#*"{-"}
+            zsh_short=${zsh_tail%%,*}
+            case "${zsh_short}" in
+                '')
+                    ;;
+                *)
+                    printf -- '-%s\n' "${zsh_short}" >> "${zsh_opts}"
+                    ;;
+            esac
+            ;;
+    esac
+done < "${TOP_SRCDIR}/converters/shell-completion/zsh/_img2sixel" || {
     echo "not ok" 1 - "failed to parse zsh completion"
     exit 0
 }
