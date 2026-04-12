@@ -19167,15 +19167,6 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             }
             clip_weight = sixel_builtin_psd_clamp_alpha_float32(
                 clip_alpha_map[idx]);
-            /*
-             * Deferred clbl=1 stroke uses clip alpha as a final gate.
-             * Keep this gate binary to reduce contour leakage into cutout
-             * interiors with antialiased clip edges.
-             */
-            if (use_base_silhouette_coverage != 0 &&
-                use_clip_weight != 0) {
-                clip_weight = clip_weight >= 0.5f ? 1.0f : 0.0f;
-            }
             if (clip_weight <= 0.0f) {
                 continue;
             }
