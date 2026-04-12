@@ -1028,7 +1028,7 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
         return sixel_bmp_fail("builtin BMP: unsupported compression mode");
     }
     if (!sixel_bmp_is_compressed_payload(compression) &&
-        bpp != 1u && bpp != 4u && bpp != 8u &&
+        bpp != 1u && bpp != 2u && bpp != 4u && bpp != 8u &&
         bpp != 16u && bpp != 24u && bpp != 32u) {
         return sixel_bmp_fail("builtin BMP: unsupported bit depth");
     }
@@ -1248,66 +1248,6 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
     }
 
     return SIXEL_OK;
-}
-
-static int
-sixel_bmp_prepare_index_span(sixel_bmp_decode_info_t const *info,
-                             int x,
-                             int y,
-                             unsigned int count,
-                             size_t *offset)
-{
-    size_t span_offset;
-
-    span_offset = 0u;
-    if (info == NULL) {
-        return 0;
-    }
-    if (count == 0u) {
-        if (offset != NULL) {
-            *offset = 0u;
-        }
-        return 1;
-    }
-    if (y < 0 || y >= info->height || x < 0 || x > info->width) {
-        return 0;
-    }
-    if ((unsigned int)(info->width - x) < count) {
-        return 0;
-    }
-    if ((size_t)info->width != 0u &&
-        (size_t)y > SIZE_MAX / (size_t)info->width) {
-        return 0;
-    }
-    span_offset = (size_t)y * (size_t)info->width + (size_t)x;
-    if (offset != NULL) {
-        *offset = span_offset;
-    }
-    return 1;
-}
-
-static int
-sixel_bmp_put_index_run(sixel_bmp_decode_info_t const *info,
-                        unsigned char *indices,
-                        int *x,
-                        int y,
-                        unsigned char index,
-                        unsigned int count)
-{
-    size_t span_offset;
-
-    span_offset = 0u;
-    if (info == NULL || indices == NULL || x == NULL) {
-        return 0;
-    }
-    if (!sixel_bmp_prepare_index_span(info, *x, y, count, &span_offset)) {
-        return 0;
-    }
-    if (count != 0u) {
-        memset(indices + span_offset, index, (size_t)count);
-        *x += (int)count;
-    }
-    return 1;
 }
 
 static int
@@ -1797,8 +1737,8 @@ sixel_bmp_consume_huffman1d_eol(unsigned char const *buffer,
 }
 
 static SIXELSTATUS
-sixel_bmp_decode_huffman1d_indices(sixel_bmp_decode_info_t const *info,
-                                   unsigned char *indices)
+sixel_bmp_decode_huffman1d_rgb(sixel_bmp_decode_info_t const *info,
+                               unsigned char *pixels)
 {
     SIXELSTATUS status;
     unsigned char const *buffer;
@@ -1821,7 +1761,7 @@ sixel_bmp_decode_huffman1d_indices(sixel_bmp_decode_info_t const *info,
     black_run = 0;
     row = 0;
     run_length = 0u;
-    if (info == NULL || indices == NULL || info->chunk == NULL) {
+    if (info == NULL || pixels == NULL || info->chunk == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (info->palette_count < 2) {
@@ -1853,12 +1793,12 @@ sixel_bmp_decode_huffman1d_indices(sixel_bmp_decode_info_t const *info,
                 return sixel_bmp_fail(
                     "builtin BMP: HUFFMAN1D write overflow");
             }
-            if (!sixel_bmp_put_index_run(info,
-                                         indices,
-                                         &x,
-                                         y,
-                                         (unsigned char)black_run,
-                                         run_length)) {
+            if (!sixel_bmp_put_palette_rgb_run(info,
+                                               pixels,
+                                               &x,
+                                               y,
+                                               (unsigned int)black_run,
+                                               run_length)) {
                 return sixel_bmp_fail(
                     "builtin BMP: HUFFMAN1D write overflow");
             }
@@ -2548,40 +2488,6 @@ sixel_bmp_decode_rle24_rgb(sixel_bmp_decode_info_t const *info,
 }
 
 static SIXELSTATUS
-sixel_bmp_convert_indices_to_rgb(sixel_bmp_decode_info_t const *info,
-                                 unsigned char const *indices,
-                                 unsigned char *pixels)
-{
-    size_t x;
-    size_t y;
-    size_t offset;
-    unsigned int palette_index;
-
-    x = 0u;
-    y = 0u;
-    offset = 0u;
-    palette_index = 0u;
-    if (info == NULL || indices == NULL || pixels == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    for (y = 0u; y < (size_t)info->height; ++y) {
-        for (x = 0u; x < (size_t)info->width; ++x) {
-            offset = y * (size_t)info->width + x;
-            palette_index = (unsigned int)indices[offset];
-            if (palette_index >= (unsigned int)info->palette_count) {
-                return sixel_bmp_fail("builtin BMP: palette index overflow");
-            }
-            pixels[offset * 3u + 0u] = info->palette[palette_index][0];
-            pixels[offset * 3u + 1u] = info->palette[palette_index][1];
-            pixels[offset * 3u + 2u] = info->palette[palette_index][2];
-        }
-    }
-
-    return SIXEL_OK;
-}
-
-static SIXELSTATUS
 sixel_bmp_decode_indexed_uncompressed(sixel_bmp_decode_info_t const *info,
                                       unsigned char *pixels)
 {
@@ -2614,6 +2520,10 @@ sixel_bmp_decode_indexed_uncompressed(sixel_bmp_decode_info_t const *info,
         for (x = 0u; x < (size_t)info->width; ++x) {
             if (info->bpp == 8) {
                 palette_index = (unsigned int)buffer[row_offset + x];
+            } else if (info->bpp == 2) {
+                packed = buffer[row_offset + (x >> 2u)];
+                palette_index = (unsigned int)
+                    ((packed >> (6u - ((x & 3u) << 1u))) & 0x03u);
             } else if (info->bpp == 4) {
                 packed = buffer[row_offset + (x >> 1u)];
                 if ((x & 1u) == 0u) {
@@ -2645,13 +2555,6 @@ static SIXELSTATUS
 sixel_bmp_decode_indexed_rle(sixel_bmp_decode_info_t const *info,
                              unsigned char *pixels)
 {
-    SIXELSTATUS status;
-    unsigned char *indices;
-    size_t pixel_count;
-
-    status = SIXEL_FALSE;
-    indices = NULL;
-    pixel_count = 0u;
     if (info == NULL || pixels == NULL || info->chunk == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2660,25 +2563,7 @@ sixel_bmp_decode_indexed_rle(sixel_bmp_decode_info_t const *info,
     } else if (sixel_bmp_is_rle4_family(info->compression)) {
         return sixel_bmp_decode_rle4_rgb(info, pixels);
     } else if (sixel_bmp_is_huffman1d_family(info->compression)) {
-        if ((size_t)info->width > SIZE_MAX / (size_t)info->height) {
-            return SIXEL_BAD_INTEGER_OVERFLOW;
-        }
-        pixel_count = (size_t)info->width * (size_t)info->height;
-        indices = (unsigned char *)sixel_allocator_malloc(
-            info->chunk->allocator,
-            pixel_count);
-        if (indices == NULL) {
-            return SIXEL_BAD_ALLOCATION;
-        }
-        memset(indices, 0, pixel_count);
-        status = sixel_bmp_decode_huffman1d_indices(info, indices);
-        if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(info->chunk->allocator, indices);
-            return status;
-        }
-        status = sixel_bmp_convert_indices_to_rgb(info, indices, pixels);
-        sixel_allocator_free(info->chunk->allocator, indices);
-        return status;
+        return sixel_bmp_decode_huffman1d_rgb(info, pixels);
     } else {
         return sixel_bmp_fail("builtin BMP: unsupported indexed compression");
     }

@@ -4453,6 +4453,8 @@ run_builtin_loader_test(void)
           run_bmp_os2s32_rle4_num_t },
         { "SIXEL_TEST_BMP_NUMERIC_INFO40_AUTO_HUFFMAN1D",
           run_bmp_i40_auto_huff_num_t },
+        { "SIXEL_TEST_BMP_NUMERIC_INFO40_2BPP_PALETTE",
+          run_bmp_i40_2bpp_pal_num_t },
         { "SIXEL_TEST_BMP_NUMERIC_INFO40_WINDOWS_HUFFMAN1D_FAIL",
           run_bmp_i40_win_huff_fail_t },
         { "SIXEL_TEST_BMP_NUMERIC_INFO40_OS2_HUFFMAN1D",
