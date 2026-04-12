@@ -378,6 +378,10 @@ Key points used by this roadmap:
     glow source/choke/range parse with `clbl=1` deferred interior contracts.
     `1318` remains XFAIL, but the latest local score improved to
     `MS-SSIM 0.957603` without widening fallback heuristics.
+  - `1318` deferred outer-effect semantics are now represented by
+    PASS traces `1507..1509`: clip-weighted deferred outer-effect pass,
+    deferred bevel-highlight apply, and non-regression for
+    `clbl=1` deferred interior suppression plus deferred stroke contracts.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:

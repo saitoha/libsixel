@@ -18520,11 +18520,15 @@ sixel_builtin_psd_apply_layer_effects_subset(
     if (layer->has_blend_clipped_elements != 0 &&
         layer->blend_clipped_elements_enabled != 0 &&
         layer->has_effect_stroke == 0 &&
-        has_active_named_glow == 0) {
+        (has_active_named_glow != 0 ||
+         layer->has_effect_outer_glow != 0 ||
+         (has_named_bevel != 0 &&
+          layer->effect_bevel_highlight_opacity > 0.0f &&
+          layer->effect_bevel_size > 0.0f))) {
         /*
-         * clbl=1 non-stroke layers can encode glow records that should stay
-         * inside deferred interior overlay passes. Skip direct glow passes in
-         * this narrow subset to avoid expanding clipped silhouettes.
+         * clbl=1 non-stroke layers keep outer glow/bevel-highlight in the
+         * deferred clipped-group pass to avoid expanding clipped silhouettes
+         * during the base-layer effect pass.
          */
         suppress_clbl_nonstroke_glow = 1;
     }
@@ -19493,6 +19497,7 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     float effect_size,
     sixel_builtin_psd_layer_blend_mode_t effect_mode,
     float effect_edge_bias,
+    int is_inner_effect,
     int effect_source_center,
     float effect_choke,
     float effect_range,
@@ -19640,7 +19645,7 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
                 source_alpha,
                 min_alpha,
                 source_alpha,
-                1,
+                is_inner_effect,
                 effect_source_center,
                 effect_choke,
                 effect_range);
@@ -19735,6 +19740,215 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
 }
 
 static void
+sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
+    float *canvas_rgb_premul,
+    float *canvas_alpha,
+    float const *clip_alpha_map,
+    float const *outer_coverage_alpha_map,
+    unsigned int canvas_width,
+    unsigned int canvas_height,
+    sixel_builtin_psd_layer_record_t const *layer)
+{
+    int traced_clip_weighted;
+    int traced_outer_glow;
+    int traced_drop_shadow;
+    int traced_bevel_highlight;
+    int traced_deferred_bevel_lighting_semantics;
+    int bevel_highlight_source_center;
+    float bevel_highlight_opacity;
+    float bevel_shadow_opacity;
+    float bevel_effect_size;
+    float bevel_highlight_choke;
+    float bevel_highlight_range;
+    float bevel_highlight_edge_bias;
+    float outer_rgb[3];
+    float outer_opacity;
+    float outer_size;
+    sixel_builtin_psd_layer_blend_mode_t outer_mode;
+    int outer_source;
+    float outer_choke;
+    float outer_range;
+    int has_outer_glow_effect;
+
+    traced_clip_weighted = 0;
+    traced_outer_glow = 0;
+    traced_drop_shadow = 0;
+    traced_bevel_highlight = 0;
+    traced_deferred_bevel_lighting_semantics = 0;
+    bevel_highlight_source_center = 0;
+    bevel_highlight_opacity = 0.0f;
+    bevel_shadow_opacity = 0.0f;
+    bevel_effect_size = 0.0f;
+    bevel_highlight_choke = 0.0f;
+    bevel_highlight_range = 1.0f;
+    bevel_highlight_edge_bias = 0.65f;
+    outer_rgb[0] = 0.0f;
+    outer_rgb[1] = 0.0f;
+    outer_rgb[2] = 0.0f;
+    outer_opacity = 0.0f;
+    outer_size = 0.0f;
+    outer_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    outer_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
+    outer_choke = 0.0f;
+    outer_range = 1.0f;
+    has_outer_glow_effect = 0;
+    if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
+        clip_alpha_map == NULL || layer == NULL) {
+        return;
+    }
+    if (layer->has_blend_clipped_elements == 0 ||
+        layer->blend_clipped_elements_enabled == 0) {
+        return;
+    }
+    if (layer->has_effect_drsh != 0 &&
+        layer->effect_drsh_opacity > 0.0f &&
+        layer->effect_drsh_size > 0.0f) {
+        if (traced_clip_weighted == 0) {
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: applying clip-weighted deferred "
+                "outer effects in layer fallback");
+            traced_clip_weighted = 1;
+        }
+        sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
+            canvas_rgb_premul,
+            canvas_alpha,
+            clip_alpha_map,
+            outer_coverage_alpha_map,
+            canvas_width,
+            canvas_height,
+            layer,
+            layer->effect_drsh_rgb,
+            layer->effect_drsh_opacity,
+            layer->effect_drsh_size,
+            layer->effect_drsh_mode,
+            0.55f,
+            0,
+            layer->effect_drsh_source,
+            layer->effect_drsh_choke,
+            layer->effect_drsh_range,
+            "builtin PSD: applying drop shadow effect in layer fallback",
+            NULL,
+            &traced_drop_shadow);
+    }
+    if (layer->has_effect_orgl != 0 &&
+        layer->effect_orgl_opacity > 0.0f &&
+        layer->effect_orgl_size > 0.0f) {
+        outer_rgb[0] = layer->effect_orgl_rgb[0];
+        outer_rgb[1] = layer->effect_orgl_rgb[1];
+        outer_rgb[2] = layer->effect_orgl_rgb[2];
+        outer_opacity = layer->effect_orgl_opacity;
+        outer_size = layer->effect_orgl_size;
+        outer_mode = layer->effect_orgl_mode;
+        outer_source = layer->effect_orgl_source;
+        outer_choke = layer->effect_orgl_choke;
+        outer_range = layer->effect_orgl_range;
+        has_outer_glow_effect = 1;
+    } else if (layer->has_effect_outer_glow != 0 &&
+               layer->effect_outer_glow_opacity > 0.0f &&
+               layer->effect_outer_glow_size > 0.0f) {
+        outer_rgb[0] = layer->effect_outer_glow_rgb[0];
+        outer_rgb[1] = layer->effect_outer_glow_rgb[1];
+        outer_rgb[2] = layer->effect_outer_glow_rgb[2];
+        outer_opacity = layer->effect_outer_glow_opacity;
+        outer_size = layer->effect_outer_glow_size;
+        outer_mode = layer->effect_outer_glow_mode;
+        outer_source = layer->effect_outer_glow_source;
+        outer_choke = layer->effect_outer_glow_choke;
+        outer_range = layer->effect_outer_glow_range;
+        has_outer_glow_effect = 1;
+    }
+    if (has_outer_glow_effect != 0) {
+        if (traced_clip_weighted == 0) {
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: applying clip-weighted deferred "
+                "outer effects in layer fallback");
+            traced_clip_weighted = 1;
+        }
+        sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
+            canvas_rgb_premul,
+            canvas_alpha,
+            clip_alpha_map,
+            outer_coverage_alpha_map,
+            canvas_width,
+            canvas_height,
+            layer,
+            outer_rgb,
+            outer_opacity,
+            outer_size,
+            outer_mode,
+            0.55f,
+            0,
+            outer_source,
+            outer_choke,
+            outer_range,
+            "builtin PSD: applying outer glow effect in layer fallback",
+            NULL,
+            &traced_outer_glow);
+    }
+    if (layer->has_effect_bevel != 0 &&
+        layer->effect_bevel_highlight_opacity > 0.0f &&
+        layer->effect_bevel_size > 0.0f) {
+        bevel_highlight_opacity = layer->effect_bevel_highlight_opacity;
+        bevel_shadow_opacity = layer->effect_bevel_shadow_opacity;
+        bevel_effect_size = layer->effect_bevel_size;
+        sixel_builtin_psd_adjust_bevel_effect_params(
+            layer,
+            &bevel_highlight_opacity,
+            &bevel_shadow_opacity,
+            &bevel_effect_size);
+        if (bevel_highlight_opacity > 0.0f && bevel_effect_size > 0.0f) {
+            sixel_builtin_psd_bevel_semantics(
+                layer,
+                1,
+                &bevel_highlight_source_center,
+                &bevel_highlight_choke,
+                &bevel_highlight_range,
+                &bevel_highlight_edge_bias);
+            if (traced_deferred_bevel_lighting_semantics == 0 &&
+                (bevel_highlight_source_center != 0 ||
+                 bevel_highlight_choke > 0.0f ||
+                 bevel_highlight_range < 0.999f ||
+                 fabsf(bevel_highlight_edge_bias - 0.65f) >= 0.001f)) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: applying deferred bevel lighting "
+                    "semantics in layer fallback");
+                traced_deferred_bevel_lighting_semantics = 1;
+            }
+            if (traced_clip_weighted == 0) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: applying clip-weighted deferred "
+                    "outer effects in layer fallback");
+                traced_clip_weighted = 1;
+            }
+            sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
+                canvas_rgb_premul,
+                canvas_alpha,
+                clip_alpha_map,
+                outer_coverage_alpha_map,
+                canvas_width,
+                canvas_height,
+                layer,
+                layer->effect_bevel_highlight_rgb,
+                bevel_highlight_opacity,
+                bevel_effect_size,
+                layer->effect_bevel_highlight_mode,
+                bevel_highlight_edge_bias,
+                0,
+                bevel_highlight_source_center,
+                bevel_highlight_choke,
+                bevel_highlight_range,
+                "builtin PSD: applying bevel highlight in layer fallback",
+                NULL,
+                &traced_bevel_highlight);
+        }
+    }
+}
+
+static void
 sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
     float *canvas_rgb_premul,
     float *canvas_alpha,
@@ -19796,6 +20010,7 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
             layer->effect_irgl_size,
             layer->effect_irgl_mode,
             0.70f,
+            1,
             layer->effect_irgl_source,
             layer->effect_irgl_choke,
             layer->effect_irgl_range,
@@ -19819,6 +20034,7 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
             layer->effect_chfx_size,
             layer->effect_chfx_mode,
             0.90f,
+            1,
             layer->effect_chfx_source,
             layer->effect_chfx_choke,
             layer->effect_chfx_range,
@@ -19871,6 +20087,7 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
             bevel_effect_size,
             layer->effect_bevel_shadow_mode,
             bevel_shadow_edge_bias,
+            1,
             bevel_shadow_source_center,
             bevel_shadow_choke,
             bevel_shadow_range,
@@ -20976,6 +21193,16 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     info->width,
                     info->height,
                     &pending_overlay_layer);
+                sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
+                    canvas_rgb_premul,
+                    canvas_alpha,
+                    clip_alpha_map,
+                    pending_overlay_stroke_coverage_valid != 0
+                        ? pending_overlay_stroke_coverage_map
+                        : NULL,
+                    info->width,
+                    info->height,
+                    &pending_overlay_layer);
                 sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
                     canvas_rgb_premul,
                     canvas_alpha,
@@ -21650,6 +21877,16 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 canvas_rgb_premul,
                 canvas_alpha,
                 clip_alpha_map,
+                info->width,
+                info->height,
+                &pending_overlay_layer);
+            sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
+                canvas_rgb_premul,
+                canvas_alpha,
+                clip_alpha_map,
+                pending_overlay_stroke_coverage_valid != 0
+                    ? pending_overlay_stroke_coverage_map
+                    : NULL,
                 info->width,
                 info->height,
                 &pending_overlay_layer);
