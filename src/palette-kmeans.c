@@ -2884,6 +2884,50 @@ sixel_kmeans_sample_center_distance_sq(double const *samples,
 }
 
 static void
+sixel_kmeans_fill_lower_matrix_from_samples(double const *centers,
+                                            unsigned int k,
+                                            double const *samples,
+                                            double const *weights,
+                                            unsigned int sample_count,
+                                            double *lower_matrix)
+{
+    unsigned int sample_index;
+    unsigned int center_index;
+    size_t matrix_base;
+    double sample_weight;
+    double distance_sq;
+
+    sample_index = 0u;
+    center_index = 0u;
+    matrix_base = 0u;
+    sample_weight = 0.0;
+    distance_sq = 0.0;
+    if (centers == NULL || samples == NULL || lower_matrix == NULL) {
+        return;
+    }
+    for (sample_index = 0u; sample_index < sample_count; ++sample_index) {
+        matrix_base = (size_t)sample_index * (size_t)k;
+        sample_weight = 1.0;
+        if (weights != NULL) {
+            sample_weight = weights[sample_index];
+        }
+        if (sample_weight <= 0.0) {
+            for (center_index = 0u; center_index < k; ++center_index) {
+                lower_matrix[matrix_base + center_index] = 0.0;
+            }
+            continue;
+        }
+        for (center_index = 0u; center_index < k; ++center_index) {
+            distance_sq = sixel_kmeans_sample_center_distance_sq(samples,
+                                                                 sample_index,
+                                                                 centers,
+                                                                 center_index);
+            lower_matrix[matrix_base + center_index] = sqrt(distance_sq);
+        }
+    }
+}
+
+static void
 sixel_kmeans_compute_half_center_distances(double const *centers,
                                            unsigned int k,
                                            double *half_center_dist)
@@ -3096,6 +3140,19 @@ sixel_kmeans_update_yinyang_group_bounds_from_matrix(
 }
 
 static double
+sixel_kmeans_assign_samples_full_second(double const *centers,
+                                        unsigned int k,
+                                        double const *samples,
+                                        double const *weights,
+                                        unsigned int sample_count,
+                                        unsigned int *membership,
+                                        double *distance_cache,
+                                        double *cluster_weights,
+                                        double *accum,
+                                        double *upper_bounds,
+                                        double *lower_bounds);
+
+static double
 sixel_kmeans_assign_samples_full_elkan(double const *centers,
                                        unsigned int k,
                                        double const *samples,
@@ -3109,96 +3166,39 @@ sixel_kmeans_assign_samples_full_elkan(double const *centers,
                                        double *lower_bounds,
                                        double *lower_matrix)
 {
-    unsigned int sample_index;
-    unsigned int center_index;
-    unsigned int channel;
-    unsigned int best_index;
-    size_t sum_index;
-    size_t matrix_base;
     double objective;
-    double sample_weight;
-    double distance_sq;
-    double distance;
-    double best_distance_sq;
-    double second_distance_sq;
 
-    sample_index = 0u;
-    center_index = 0u;
-    channel = 0u;
-    best_index = 0u;
-    sum_index = 0u;
-    matrix_base = 0u;
     objective = 0.0;
-    sample_weight = 0.0;
-    distance_sq = 0.0;
-    distance = 0.0;
-    best_distance_sq = 0.0;
-    second_distance_sq = 0.0;
     if (centers == NULL || samples == NULL || membership == NULL
             || distance_cache == NULL || cluster_weights == NULL
             || accum == NULL || upper_bounds == NULL
             || lower_bounds == NULL || lower_matrix == NULL) {
         return 0.0;
     }
-    for (center_index = 0u; center_index < k; ++center_index) {
-        cluster_weights[center_index] = 0.0;
-    }
-    for (sum_index = 0u; sum_index < (size_t)k * 3u; ++sum_index) {
-        accum[sum_index] = 0.0;
-    }
-    for (sample_index = 0u; sample_index < sample_count; ++sample_index) {
-        sample_weight = 1.0;
-        if (weights != NULL) {
-            sample_weight = weights[sample_index];
-        }
-        matrix_base = (size_t)sample_index * (size_t)k;
-        if (sample_weight <= 0.0) {
-            membership[sample_index] = 0u;
-            distance_cache[sample_index] = 0.0;
-            upper_bounds[sample_index] = 0.0;
-            lower_bounds[sample_index] = 0.0;
-            for (center_index = 0u; center_index < k; ++center_index) {
-                lower_matrix[matrix_base + center_index] = 0.0;
-            }
-            continue;
-        }
-        best_index = 0u;
-        best_distance_sq = sixel_kmeans_sample_center_distance_sq(samples,
-                                                                  sample_index,
-                                                                  centers,
-                                                                  0u);
-        lower_matrix[matrix_base] = sqrt(best_distance_sq);
-        second_distance_sq = DBL_MAX;
-        for (center_index = 1u; center_index < k; ++center_index) {
-            distance_sq = sixel_kmeans_sample_center_distance_sq(
-                samples,
-                sample_index,
-                centers,
-                center_index);
-            distance = sqrt(distance_sq);
-            lower_matrix[matrix_base + center_index] = distance;
-            if (distance_sq < best_distance_sq) {
-                second_distance_sq = best_distance_sq;
-                best_distance_sq = distance_sq;
-                best_index = center_index;
-            } else if (distance_sq < second_distance_sq) {
-                second_distance_sq = distance_sq;
-            }
-        }
-        if (k < 2u || second_distance_sq == DBL_MAX) {
-            second_distance_sq = best_distance_sq;
-        }
-        membership[sample_index] = best_index;
-        upper_bounds[sample_index] = sqrt(best_distance_sq);
-        lower_bounds[sample_index] = sqrt(second_distance_sq);
-        distance_cache[sample_index] = best_distance_sq * sample_weight;
-        objective += distance_cache[sample_index];
-        cluster_weights[best_index] += sample_weight;
-        for (channel = 0u; channel < 3u; ++channel) {
-            accum[(size_t)best_index * 3u + channel] +=
-                samples[sample_index * 3u + channel] * sample_weight;
-        }
-    }
+
+    /*
+     * Use the stable full-second assignment path, then populate the per-center
+     * lower matrix from exact sample/center distances for the first Elkan
+     * iteration.  This keeps behavior identical while avoiding PCC ICEs on the
+     * previous monolithic implementation.
+     */
+    objective = sixel_kmeans_assign_samples_full_second(centers,
+                                                        k,
+                                                        samples,
+                                                        weights,
+                                                        sample_count,
+                                                        membership,
+                                                        distance_cache,
+                                                        cluster_weights,
+                                                        accum,
+                                                        upper_bounds,
+                                                        lower_bounds);
+    sixel_kmeans_fill_lower_matrix_from_samples(centers,
+                                                k,
+                                                samples,
+                                                weights,
+                                                sample_count,
+                                                lower_matrix);
     return objective;
 }
 
