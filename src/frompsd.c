@@ -12189,8 +12189,7 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                     v2_implicit_enabled = 1;
                 }
                 if (enabled == 0 &&
-                    (memcmp(key, "oglw", 4u) == 0 ||
-                     memcmp(key, "iglw", 4u) == 0) &&
+                    memcmp(key, "oglw", 4u) == 0 &&
                     has_color0 != 0 &&
                     opacity0 > 0.0f &&
                     size_px > 0.0f &&
@@ -14249,9 +14248,14 @@ sixel_builtin_psd_parse_layer_extra_data(
     int has_pending_legacy_merge;
     int pending_legacy_has_feature_records;
     int pending_legacy_has_vstk_payload;
+    int pending_legacy_has_lrfx_payload;
+    int parsed_legacy_retry_effects;
+    size_t pending_legacy_lrfx_offset;
+    size_t pending_legacy_lrfx_length;
     sixel_builtin_psd_layer_record_t legacy_effects;
     sixel_builtin_psd_layer_record_t legacy_binary_effects;
     sixel_builtin_psd_layer_record_t pending_legacy_effects;
+    sixel_builtin_psd_layer_record_t pending_legacy_retry_effects;
     uint32_t flag_value;
     char key[5];
 
@@ -14277,9 +14281,14 @@ sixel_builtin_psd_parse_layer_extra_data(
     has_pending_legacy_merge = 0;
     pending_legacy_has_feature_records = 0;
     pending_legacy_has_vstk_payload = 0;
+    pending_legacy_has_lrfx_payload = 0;
+    parsed_legacy_retry_effects = 0;
+    pending_legacy_lrfx_offset = 0u;
+    pending_legacy_lrfx_length = 0u;
     sixel_builtin_psd_layer_record_init(&legacy_effects);
     sixel_builtin_psd_layer_record_init(&legacy_binary_effects);
     sixel_builtin_psd_layer_record_init(&pending_legacy_effects);
+    sixel_builtin_psd_layer_record_init(&pending_legacy_retry_effects);
     flag_value = 0u;
     key[0] = '\0';
     key[1] = '\0';
@@ -14478,6 +14487,9 @@ sixel_builtin_psd_parse_layer_extra_data(
                 pending_legacy_has_feature_records =
                     legacy_has_feature_records;
                 pending_legacy_has_vstk_payload = has_vstk_payload;
+                pending_legacy_lrfx_offset = cursor;
+                pending_legacy_lrfx_length = key_length;
+                pending_legacy_has_lrfx_payload = 1;
             }
         } else if (memcmp(key, "vstk", 4u) == 0) {
             has_vstk_block_key = 1;
@@ -14557,6 +14569,36 @@ sixel_builtin_psd_parse_layer_extra_data(
         return SIXEL_STBI_ERROR;
     }
     if (has_pending_legacy_merge != 0) {
+        if (pending_legacy_has_lrfx_payload != 0 &&
+            pending_legacy_has_vstk_payload != 0 &&
+            (pending_legacy_effects.has_effect_orgl == 0 ||
+             pending_legacy_effects.effect_orgl_opacity <= 0.0f ||
+             pending_legacy_effects.effect_orgl_size <= 0.0f) &&
+            pending_legacy_lrfx_length > 0u &&
+            pending_legacy_lrfx_offset <= extra_end &&
+            pending_legacy_lrfx_length <=
+                extra_end - pending_legacy_lrfx_offset) {
+            /*
+             * lrFX can appear before vstk. Retry legacy parsing once the
+             * final key scan confirms vector-stroke payload presence so
+             * narrow oglw implicit-enabled signatures are not lost by
+             * key-ordering alone.
+             */
+            pending_legacy_retry_effects = pending_legacy_effects;
+            pending_legacy_retry_effects.has_vector_stroke_style = 1;
+            parsed_legacy_retry_effects =
+                sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
+                    buffer + pending_legacy_lrfx_offset,
+                    pending_legacy_lrfx_length,
+                    &pending_legacy_retry_effects,
+                    1,
+                    NULL);
+            if (parsed_legacy_retry_effects != 0) {
+                (void)sixel_builtin_psd_merge_missing_legacy_effects(
+                    &pending_legacy_effects,
+                    &pending_legacy_retry_effects);
+            }
+        }
         allow_legacy_inactive_completion =
             pending_legacy_has_vstk_payload != 0 ||
             sixel_builtin_psd_layer_has_inactive_effect_targets(layer) != 0;
