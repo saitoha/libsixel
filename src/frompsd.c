@@ -17334,6 +17334,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     int use_split_glow_effects;
     int has_explicit_bevel_channels;
     int has_named_bevel;
+    int has_active_named_glow;
     float stroke_opacity;
     float stroke_size;
     float stroke_rgb[3];
@@ -17371,6 +17372,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
     use_split_glow_effects = 0;
     has_explicit_bevel_channels = 0;
     has_named_bevel = 0;
+    has_active_named_glow = 0;
     stroke_opacity = 0.0f;
     stroke_size = 0.0f;
     stroke_rgb[0] = 0.0f;
@@ -17410,10 +17412,28 @@ sixel_builtin_psd_apply_layer_effects_subset(
     if (has_explicit_bevel_channels != 0) {
         has_named_bevel = 1;
     }
+    if ((layer->has_effect_orgl != 0 &&
+         layer->effect_orgl_opacity > 0.0f &&
+         layer->effect_orgl_size > 0.0f) ||
+        (layer->has_effect_irgl != 0 &&
+         layer->effect_irgl_opacity > 0.0f &&
+         layer->effect_irgl_size > 0.0f) ||
+        (layer->has_effect_chfx != 0 &&
+         layer->effect_chfx_opacity > 0.0f &&
+         layer->effect_chfx_size > 0.0f) ||
+        (layer->has_effect_drsh != 0 &&
+         layer->effect_drsh_opacity > 0.0f &&
+         layer->effect_drsh_size > 0.0f) ||
+        (layer->has_effect_irsh != 0 &&
+         layer->effect_irsh_opacity > 0.0f &&
+         layer->effect_irsh_size > 0.0f)) {
+        has_active_named_glow = 1;
+    }
     if (use_split_glow_effects != 0 &&
         layer->has_blend_clipped_elements != 0 &&
         layer->blend_clipped_elements_enabled != 0 &&
-        layer->has_effect_stroke == 0) {
+        layer->has_effect_stroke == 0 &&
+        has_active_named_glow == 0) {
         /*
          * clbl=1 non-stroke layers in blend/clipping fixtures can carry
          * inactive split-glow records that should not expand alpha.
@@ -17444,7 +17464,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
     }
     if (layer->has_blend_clipped_elements != 0 &&
         layer->blend_clipped_elements_enabled != 0 &&
-        layer->has_effect_stroke == 0) {
+        layer->has_effect_stroke == 0 &&
+        has_active_named_glow == 0) {
         /*
          * clbl=1 non-stroke layers can encode glow records that should stay
          * inside deferred interior overlay passes. Skip direct glow passes in
@@ -19123,7 +19144,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             limit = -1;
         }
     }
-
     canvas_rgb_premul = (float *)sixel_allocator_malloc(
         chunk->allocator,
         pixel_count * 3u * sizeof(float));
