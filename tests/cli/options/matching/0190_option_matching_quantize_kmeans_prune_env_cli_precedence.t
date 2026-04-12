@@ -29,6 +29,22 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -Qkmeans:prune=elkan \
+    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
+    -o/dev/null >/dev/null 2>&1 || {
+    echo "not ok" 1 - "cli-only prune=elkan was rejected"
+    exit 0
+}
+
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -Qkmeans:prune=yinyang \
+    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
+    -o/dev/null >/dev/null 2>&1 || {
+    echo "not ok" 1 - "cli-only prune=yinyang was rejected"
+    exit 0
+}
+
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_PALETTE_KMEANS_PRUNE=none" \
     -Qkmeans:prune=invalid \

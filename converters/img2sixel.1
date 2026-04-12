@@ -130,7 +130,8 @@ Supported k-means suboptions:
 .br
 \fBfeedback\fP (or short key \fBf\fP): \fBoff\fP or \fBon\fP.
 .br
-\fBprune\fP: \fBauto\fP, \fBnone\fP, or \fBhamerly\fP.
+\fBprune\fP: \fBauto\fP, \fBnone\fP, \fBhamerly\fP, \fBelkan\fP, or
+\fByinyang\fP.
 .br
 \fBseed\fP (or short key \fBs\fP): integer value in 0-4294967295.
 .br
@@ -1293,8 +1294,8 @@ k-means residual histogram feedback switch: off or on (default off).
 .TP 5
 .B SIXEL_PALETTE_KMEANS_PRUNE
 .br
-k-means pruning policy: auto, none, or hamerly. Default auto maps to
-hamerly.
+k-means pruning policy: auto, none, hamerly, elkan, or yinyang. Default auto
+maps to hamerly.
 .TP 5
 .B SIXEL_PALETTE_KMEANS_SEED
 .br

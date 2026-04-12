@@ -1042,6 +1042,10 @@ sixel_kmeans_prune_policy_to_string(sixel_kmeans_prune_policy policy)
         return "none";
     case SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY:
         return "hamerly";
+    case SIXEL_PALETTE_KMEANS_PRUNE_ELKAN:
+        return "elkan";
+    case SIXEL_PALETTE_KMEANS_PRUNE_YINYANG:
+        return "yinyang";
     case SIXEL_PALETTE_KMEANS_PRUNE_AUTO:
     default:
         return "auto";
@@ -1057,6 +1061,10 @@ sixel_kmeans_resolve_prune_policy(sixel_kmeans_prune_policy policy)
         return SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
     case SIXEL_PALETTE_KMEANS_PRUNE_NONE:
         return SIXEL_PALETTE_KMEANS_PRUNE_NONE;
+    case SIXEL_PALETTE_KMEANS_PRUNE_ELKAN:
+        return SIXEL_PALETTE_KMEANS_PRUNE_ELKAN;
+    case SIXEL_PALETTE_KMEANS_PRUNE_YINYANG:
+        return SIXEL_PALETTE_KMEANS_PRUNE_YINYANG;
     default:
         return SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
     }
@@ -1101,6 +1109,10 @@ sixel_get_kmeans_prune_policy(void)
             parsed = SIXEL_PALETTE_KMEANS_PRUNE_NONE;
         } else if (sixel_compat_strcasecmp(env_value, "hamerly") == 0) {
             parsed = SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
+        } else if (sixel_compat_strcasecmp(env_value, "elkan") == 0) {
+            parsed = SIXEL_PALETTE_KMEANS_PRUNE_ELKAN;
+        } else if (sixel_compat_strcasecmp(env_value, "yinyang") == 0) {
+            parsed = SIXEL_PALETTE_KMEANS_PRUNE_YINYANG;
         } else if (sixel_compat_strcasecmp(env_value, "auto") == 0) {
             parsed = SIXEL_PALETTE_KMEANS_PRUNE_AUTO;
         }
@@ -2883,6 +2895,851 @@ sixel_kmeans_compute_half_center_distances(double const *centers,
     }
 }
 
+/*
+ * Build both the per-center minimum half distance and the pairwise half
+ * distance matrix used by Elkan pruning.  The matrix stores
+ * 0.5 * ||c_i - c_j|| for every center pair.
+ */
+static void
+sixel_kmeans_compute_half_center_distance_matrix(double const *centers,
+                                                 unsigned int k,
+                                                 double *half_center_dist,
+                                                 double *half_center_matrix)
+{
+    unsigned int left;
+    unsigned int right;
+    size_t base;
+    double distance_sq;
+    double half_distance;
+    double min_distance;
+
+    left = 0u;
+    right = 0u;
+    base = 0u;
+    distance_sq = 0.0;
+    half_distance = 0.0;
+    min_distance = 0.0;
+    if (centers == NULL || half_center_dist == NULL
+            || half_center_matrix == NULL || k == 0u) {
+        return;
+    }
+    if (k == 1u) {
+        half_center_dist[0u] = 0.0;
+        half_center_matrix[0u] = 0.0;
+        return;
+    }
+    for (left = 0u; left < k; ++left) {
+        min_distance = DBL_MAX;
+        base = (size_t)left * (size_t)k;
+        for (right = 0u; right < k; ++right) {
+            if (left == right) {
+                half_center_matrix[base + right] = 0.0;
+                continue;
+            }
+            distance_sq = sixel_kmeans_center_distance_sq(centers,
+                                                          left,
+                                                          right);
+            half_distance = 0.5 * sqrt(distance_sq);
+            half_center_matrix[base + right] = half_distance;
+            if (half_distance < min_distance) {
+                min_distance = half_distance;
+            }
+        }
+        if (min_distance == DBL_MAX) {
+            half_center_dist[left] = 0.0;
+        } else {
+            half_center_dist[left] = min_distance;
+        }
+    }
+}
+
+static unsigned int
+sixel_kmeans_yinyang_group_count(unsigned int k)
+{
+    unsigned int groups;
+
+    groups = 1u;
+    if (k == 0u) {
+        return 1u;
+    }
+    groups = k / 8u;
+    if (k >= 2u && groups < 2u) {
+        groups = 2u;
+    }
+    if (groups > 32u) {
+        groups = 32u;
+    }
+    if (groups > k) {
+        groups = k;
+    }
+    if (groups == 0u) {
+        groups = 1u;
+    }
+    return groups;
+}
+
+static void
+sixel_kmeans_build_yinyang_groups(unsigned int k,
+                                  unsigned int group_count,
+                                  unsigned int *group_offsets,
+                                  unsigned int *center_groups)
+{
+    unsigned int group_index;
+    unsigned int center_index;
+    size_t scaled;
+    unsigned int offset;
+
+    group_index = 0u;
+    center_index = 0u;
+    scaled = 0u;
+    offset = 0u;
+    if (group_offsets == NULL || center_groups == NULL
+            || k == 0u || group_count == 0u) {
+        return;
+    }
+    for (group_index = 0u; group_index <= group_count; ++group_index) {
+        scaled = (size_t)group_index * (size_t)k;
+        offset = (unsigned int)(scaled / (size_t)group_count);
+        if (offset > k) {
+            offset = k;
+        }
+        group_offsets[group_index] = offset;
+    }
+    group_offsets[group_count] = k;
+    for (group_index = 0u; group_index < group_count; ++group_index) {
+        for (center_index = group_offsets[group_index];
+                center_index < group_offsets[group_index + 1u];
+                ++center_index) {
+            center_groups[center_index] = group_index;
+        }
+    }
+}
+
+static void
+sixel_kmeans_update_yinyang_group_bounds_from_matrix(
+    unsigned int sample_count,
+    unsigned int group_count,
+    unsigned int const *group_offsets,
+    double const *lower_matrix,
+    unsigned int k,
+    double *group_lower_bounds)
+{
+    unsigned int sample_index;
+    unsigned int group_index;
+    unsigned int center_index;
+    size_t matrix_base;
+    size_t group_base;
+    double minimum;
+    double bound;
+
+    sample_index = 0u;
+    group_index = 0u;
+    center_index = 0u;
+    matrix_base = 0u;
+    group_base = 0u;
+    minimum = 0.0;
+    bound = 0.0;
+    if (group_offsets == NULL || lower_matrix == NULL
+            || group_lower_bounds == NULL || group_count == 0u
+            || k == 0u) {
+        return;
+    }
+    for (sample_index = 0u; sample_index < sample_count; ++sample_index) {
+        matrix_base = (size_t)sample_index * (size_t)k;
+        group_base = (size_t)sample_index * (size_t)group_count;
+        for (group_index = 0u; group_index < group_count; ++group_index) {
+            minimum = DBL_MAX;
+            for (center_index = group_offsets[group_index];
+                    center_index < group_offsets[group_index + 1u];
+                    ++center_index) {
+                bound = lower_matrix[matrix_base + center_index];
+                if (bound < minimum) {
+                    minimum = bound;
+                }
+            }
+            if (minimum == DBL_MAX) {
+                minimum = 0.0;
+            }
+            group_lower_bounds[group_base + group_index] = minimum;
+        }
+    }
+}
+
+static double
+sixel_kmeans_assign_samples_full_elkan(double const *centers,
+                                       unsigned int k,
+                                       double const *samples,
+                                       double const *weights,
+                                       unsigned int sample_count,
+                                       unsigned int *membership,
+                                       double *distance_cache,
+                                       double *cluster_weights,
+                                       double *accum,
+                                       double *upper_bounds,
+                                       double *lower_bounds,
+                                       double *lower_matrix)
+{
+    unsigned int sample_index;
+    unsigned int center_index;
+    unsigned int channel;
+    unsigned int best_index;
+    size_t sum_index;
+    size_t matrix_base;
+    double objective;
+    double sample_weight;
+    double distance_sq;
+    double distance;
+    double best_distance_sq;
+    double second_distance_sq;
+    double diff;
+
+    sample_index = 0u;
+    center_index = 0u;
+    channel = 0u;
+    best_index = 0u;
+    sum_index = 0u;
+    matrix_base = 0u;
+    objective = 0.0;
+    sample_weight = 0.0;
+    distance_sq = 0.0;
+    distance = 0.0;
+    best_distance_sq = 0.0;
+    second_distance_sq = 0.0;
+    diff = 0.0;
+    if (centers == NULL || samples == NULL || membership == NULL
+            || distance_cache == NULL || cluster_weights == NULL
+            || accum == NULL || upper_bounds == NULL
+            || lower_bounds == NULL || lower_matrix == NULL) {
+        return 0.0;
+    }
+    for (center_index = 0u; center_index < k; ++center_index) {
+        cluster_weights[center_index] = 0.0;
+    }
+    for (sum_index = 0u; sum_index < (size_t)k * 3u; ++sum_index) {
+        accum[sum_index] = 0.0;
+    }
+    for (sample_index = 0u; sample_index < sample_count; ++sample_index) {
+        sample_weight = 1.0;
+        if (weights != NULL) {
+            sample_weight = weights[sample_index];
+        }
+        matrix_base = (size_t)sample_index * (size_t)k;
+        if (sample_weight <= 0.0) {
+            membership[sample_index] = 0u;
+            distance_cache[sample_index] = 0.0;
+            upper_bounds[sample_index] = 0.0;
+            lower_bounds[sample_index] = 0.0;
+            for (center_index = 0u; center_index < k; ++center_index) {
+                lower_matrix[matrix_base + center_index] = 0.0;
+            }
+            continue;
+        }
+        best_index = 0u;
+        best_distance_sq = 0.0;
+        for (channel = 0u; channel < 3u; ++channel) {
+            diff = samples[sample_index * 3u + channel]
+                - centers[channel];
+            best_distance_sq += diff * diff;
+        }
+        lower_matrix[matrix_base] = sqrt(best_distance_sq);
+        second_distance_sq = DBL_MAX;
+        for (center_index = 1u; center_index < k; ++center_index) {
+            distance_sq = 0.0;
+            for (channel = 0u; channel < 3u; ++channel) {
+                diff = samples[sample_index * 3u + channel]
+                    - centers[center_index * 3u + channel];
+                distance_sq += diff * diff;
+            }
+            distance = sqrt(distance_sq);
+            lower_matrix[matrix_base + center_index] = distance;
+            if (distance_sq < best_distance_sq) {
+                second_distance_sq = best_distance_sq;
+                best_distance_sq = distance_sq;
+                best_index = center_index;
+            } else if (distance_sq < second_distance_sq) {
+                second_distance_sq = distance_sq;
+            }
+        }
+        if (k < 2u || second_distance_sq == DBL_MAX) {
+            second_distance_sq = best_distance_sq;
+        }
+        membership[sample_index] = best_index;
+        upper_bounds[sample_index] = sqrt(best_distance_sq);
+        lower_bounds[sample_index] = sqrt(second_distance_sq);
+        distance_cache[sample_index] = best_distance_sq * sample_weight;
+        objective += distance_cache[sample_index];
+        cluster_weights[best_index] += sample_weight;
+        for (channel = 0u; channel < 3u; ++channel) {
+            accum[(size_t)best_index * 3u + channel] +=
+                samples[sample_index * 3u + channel] * sample_weight;
+        }
+    }
+    return objective;
+}
+
+static double
+sixel_kmeans_assign_samples_full_yinyang(double const *centers,
+                                         unsigned int k,
+                                         double const *samples,
+                                         double const *weights,
+                                         unsigned int sample_count,
+                                         unsigned int *membership,
+                                         double *distance_cache,
+                                         double *cluster_weights,
+                                         double *accum,
+                                         double *upper_bounds,
+                                         double *lower_bounds,
+                                         double *lower_matrix,
+                                         unsigned int group_count,
+                                         unsigned int const *group_offsets,
+                                         double *group_lower_bounds)
+{
+    double objective;
+
+    objective = 0.0;
+    objective = sixel_kmeans_assign_samples_full_elkan(centers,
+                                                       k,
+                                                       samples,
+                                                       weights,
+                                                       sample_count,
+                                                       membership,
+                                                       distance_cache,
+                                                       cluster_weights,
+                                                       accum,
+                                                       upper_bounds,
+                                                       lower_bounds,
+                                                       lower_matrix);
+    sixel_kmeans_update_yinyang_group_bounds_from_matrix(sample_count,
+                                                         group_count,
+                                                         group_offsets,
+                                                         lower_matrix,
+                                                         k,
+                                                         group_lower_bounds);
+    return objective;
+}
+
+static double
+sixel_kmeans_assign_samples_elkan(double const *centers,
+                                  unsigned int k,
+                                  double const *samples,
+                                  double const *weights,
+                                  unsigned int sample_count,
+                                  unsigned int *membership,
+                                  double *distance_cache,
+                                  double *cluster_weights,
+                                  double *accum,
+                                  double *upper_bounds,
+                                  double *lower_bounds,
+                                  double *lower_matrix,
+                                  double const *half_center_dist,
+                                  double const *half_center_matrix)
+{
+    unsigned int sample_index;
+    unsigned int center_index;
+    unsigned int channel;
+    unsigned int best_index;
+    size_t sum_index;
+    size_t matrix_base;
+    size_t pair_base;
+    double objective;
+    double sample_weight;
+    double diff;
+    double distance_sq;
+    double distance;
+    double best_distance_sq;
+    double upper;
+    double lower;
+
+    sample_index = 0u;
+    center_index = 0u;
+    channel = 0u;
+    best_index = 0u;
+    sum_index = 0u;
+    matrix_base = 0u;
+    pair_base = 0u;
+    objective = 0.0;
+    sample_weight = 0.0;
+    diff = 0.0;
+    distance_sq = 0.0;
+    distance = 0.0;
+    best_distance_sq = 0.0;
+    upper = 0.0;
+    lower = 0.0;
+    if (centers == NULL || samples == NULL || membership == NULL
+            || distance_cache == NULL || cluster_weights == NULL
+            || accum == NULL || upper_bounds == NULL
+            || lower_bounds == NULL || lower_matrix == NULL
+            || half_center_dist == NULL || half_center_matrix == NULL) {
+        return 0.0;
+    }
+    for (center_index = 0u; center_index < k; ++center_index) {
+        cluster_weights[center_index] = 0.0;
+    }
+    for (sum_index = 0u; sum_index < (size_t)k * 3u; ++sum_index) {
+        accum[sum_index] = 0.0;
+    }
+    for (sample_index = 0u; sample_index < sample_count; ++sample_index) {
+        sample_weight = 1.0;
+        if (weights != NULL) {
+            sample_weight = weights[sample_index];
+        }
+        matrix_base = (size_t)sample_index * (size_t)k;
+        if (sample_weight <= 0.0) {
+            membership[sample_index] = 0u;
+            distance_cache[sample_index] = 0.0;
+            upper_bounds[sample_index] = 0.0;
+            lower_bounds[sample_index] = 0.0;
+            for (center_index = 0u; center_index < k; ++center_index) {
+                lower_matrix[matrix_base + center_index] = 0.0;
+            }
+            continue;
+        }
+        best_index = membership[sample_index];
+        if (best_index >= k) {
+            best_index = 0u;
+        }
+        best_distance_sq = 0.0;
+        for (channel = 0u; channel < 3u; ++channel) {
+            diff = samples[sample_index * 3u + channel]
+                - centers[(size_t)best_index * 3u + channel];
+            best_distance_sq += diff * diff;
+        }
+        upper = sqrt(best_distance_sq);
+        upper_bounds[sample_index] = upper;
+        lower_matrix[matrix_base + best_index] = upper;
+
+        if (upper > half_center_dist[best_index]) {
+            pair_base = (size_t)best_index * (size_t)k;
+            for (center_index = 0u; center_index < k; ++center_index) {
+                if (center_index == best_index) {
+                    continue;
+                }
+                lower = lower_matrix[matrix_base + center_index];
+                if (upper <= lower) {
+                    continue;
+                }
+                if (upper <= half_center_matrix[pair_base + center_index]) {
+                    continue;
+                }
+                distance_sq = 0.0;
+                for (channel = 0u; channel < 3u; ++channel) {
+                    diff = samples[sample_index * 3u + channel]
+                        - centers[(size_t)center_index * 3u + channel];
+                    distance_sq += diff * diff;
+                }
+                distance = sqrt(distance_sq);
+                lower_matrix[matrix_base + center_index] = distance;
+                if (distance_sq < best_distance_sq) {
+                    best_distance_sq = distance_sq;
+                    best_index = center_index;
+                    upper = distance;
+                    upper_bounds[sample_index] = upper;
+                    lower_matrix[matrix_base + best_index] = upper;
+                    pair_base = (size_t)best_index * (size_t)k;
+                }
+            }
+        }
+
+        membership[sample_index] = best_index;
+        lower = DBL_MAX;
+        for (center_index = 0u; center_index < k; ++center_index) {
+            if (center_index == best_index) {
+                continue;
+            }
+            distance = lower_matrix[matrix_base + center_index];
+            if (distance < lower) {
+                lower = distance;
+            }
+        }
+        if (k < 2u || lower == DBL_MAX) {
+            lower = upper;
+        }
+        lower_bounds[sample_index] = lower;
+        distance_cache[sample_index] = best_distance_sq * sample_weight;
+        objective += distance_cache[sample_index];
+        cluster_weights[best_index] += sample_weight;
+        for (channel = 0u; channel < 3u; ++channel) {
+            accum[(size_t)best_index * 3u + channel] +=
+                samples[sample_index * 3u + channel] * sample_weight;
+        }
+    }
+    return objective;
+}
+
+static double
+sixel_kmeans_assign_samples_yinyang(double const *centers,
+                                    unsigned int k,
+                                    double const *samples,
+                                    double const *weights,
+                                    unsigned int sample_count,
+                                    unsigned int *membership,
+                                    double *distance_cache,
+                                    double *cluster_weights,
+                                    double *accum,
+                                    double *upper_bounds,
+                                    double *lower_bounds,
+                                    double *lower_matrix,
+                                    double const *half_center_dist,
+                                    double const *half_center_matrix,
+                                    unsigned int group_count,
+                                    unsigned int const *group_offsets,
+                                    unsigned int const *center_groups,
+                                    double *group_lower_bounds)
+{
+    unsigned int sample_index;
+    unsigned int center_index;
+    unsigned int channel;
+    unsigned int best_index;
+    unsigned int best_group;
+    unsigned int group_index;
+    size_t sum_index;
+    size_t matrix_base;
+    size_t pair_base;
+    size_t group_base;
+    double objective;
+    double sample_weight;
+    double diff;
+    double distance_sq;
+    double distance;
+    double best_distance_sq;
+    double upper;
+    double lower;
+    double group_lower;
+
+    sample_index = 0u;
+    center_index = 0u;
+    channel = 0u;
+    best_index = 0u;
+    best_group = 0u;
+    group_index = 0u;
+    sum_index = 0u;
+    matrix_base = 0u;
+    pair_base = 0u;
+    group_base = 0u;
+    objective = 0.0;
+    sample_weight = 0.0;
+    diff = 0.0;
+    distance_sq = 0.0;
+    distance = 0.0;
+    best_distance_sq = 0.0;
+    upper = 0.0;
+    lower = 0.0;
+    group_lower = 0.0;
+    if (centers == NULL || samples == NULL || membership == NULL
+            || distance_cache == NULL || cluster_weights == NULL
+            || accum == NULL || upper_bounds == NULL
+            || lower_bounds == NULL || lower_matrix == NULL
+            || half_center_dist == NULL || half_center_matrix == NULL
+            || group_offsets == NULL || center_groups == NULL
+            || group_lower_bounds == NULL || group_count == 0u) {
+        return 0.0;
+    }
+    for (center_index = 0u; center_index < k; ++center_index) {
+        cluster_weights[center_index] = 0.0;
+    }
+    for (sum_index = 0u; sum_index < (size_t)k * 3u; ++sum_index) {
+        accum[sum_index] = 0.0;
+    }
+    for (sample_index = 0u; sample_index < sample_count; ++sample_index) {
+        sample_weight = 1.0;
+        if (weights != NULL) {
+            sample_weight = weights[sample_index];
+        }
+        matrix_base = (size_t)sample_index * (size_t)k;
+        group_base = (size_t)sample_index * (size_t)group_count;
+        if (sample_weight <= 0.0) {
+            membership[sample_index] = 0u;
+            distance_cache[sample_index] = 0.0;
+            upper_bounds[sample_index] = 0.0;
+            lower_bounds[sample_index] = 0.0;
+            for (center_index = 0u; center_index < k; ++center_index) {
+                lower_matrix[matrix_base + center_index] = 0.0;
+            }
+            for (group_index = 0u; group_index < group_count; ++group_index) {
+                group_lower_bounds[group_base + group_index] = 0.0;
+            }
+            continue;
+        }
+        best_index = membership[sample_index];
+        if (best_index >= k) {
+            best_index = 0u;
+        }
+        best_group = center_groups[best_index];
+        best_distance_sq = 0.0;
+        for (channel = 0u; channel < 3u; ++channel) {
+            diff = samples[sample_index * 3u + channel]
+                - centers[(size_t)best_index * 3u + channel];
+            best_distance_sq += diff * diff;
+        }
+        upper = sqrt(best_distance_sq);
+        upper_bounds[sample_index] = upper;
+        lower_matrix[matrix_base + best_index] = upper;
+
+        if (upper > half_center_dist[best_index]) {
+            pair_base = (size_t)best_index * (size_t)k;
+            for (group_index = 0u; group_index < group_count; ++group_index) {
+                if (group_index != best_group) {
+                    group_lower =
+                        group_lower_bounds[group_base + group_index];
+                    if (upper <= group_lower) {
+                        continue;
+                    }
+                }
+                for (center_index = group_offsets[group_index];
+                        center_index < group_offsets[group_index + 1u];
+                        ++center_index) {
+                    if (center_index == best_index) {
+                        continue;
+                    }
+                    lower = lower_matrix[matrix_base + center_index];
+                    if (upper <= lower) {
+                        continue;
+                    }
+                    if (upper <= half_center_matrix[
+                            pair_base + center_index]) {
+                        continue;
+                    }
+                    distance_sq = 0.0;
+                    for (channel = 0u; channel < 3u; ++channel) {
+                        diff = samples[sample_index * 3u + channel]
+                            - centers[(size_t)center_index * 3u + channel];
+                        distance_sq += diff * diff;
+                    }
+                    distance = sqrt(distance_sq);
+                    lower_matrix[matrix_base + center_index] = distance;
+                    if (distance_sq < best_distance_sq) {
+                        best_distance_sq = distance_sq;
+                        best_index = center_index;
+                        best_group = center_groups[best_index];
+                        upper = distance;
+                        upper_bounds[sample_index] = upper;
+                        lower_matrix[matrix_base + best_index] = upper;
+                        pair_base = (size_t)best_index * (size_t)k;
+                    }
+                }
+            }
+        }
+
+        membership[sample_index] = best_index;
+        lower = DBL_MAX;
+        for (center_index = 0u; center_index < k; ++center_index) {
+            if (center_index == best_index) {
+                continue;
+            }
+            distance = lower_matrix[matrix_base + center_index];
+            if (distance < lower) {
+                lower = distance;
+            }
+        }
+        if (k < 2u || lower == DBL_MAX) {
+            lower = upper;
+        }
+        lower_bounds[sample_index] = lower;
+        distance_cache[sample_index] = best_distance_sq * sample_weight;
+        objective += distance_cache[sample_index];
+        cluster_weights[best_index] += sample_weight;
+        for (channel = 0u; channel < 3u; ++channel) {
+            accum[(size_t)best_index * 3u + channel] +=
+                samples[sample_index * 3u + channel] * sample_weight;
+        }
+    }
+    sixel_kmeans_update_yinyang_group_bounds_from_matrix(sample_count,
+                                                         group_count,
+                                                         group_offsets,
+                                                         lower_matrix,
+                                                         k,
+                                                         group_lower_bounds);
+    return objective;
+}
+
+static void
+sixel_kmeans_update_elkan_bounds(unsigned int sample_count,
+                                 unsigned int k,
+                                 unsigned int const *membership,
+                                 double const *weights,
+                                 double *upper_bounds,
+                                 double *lower_bounds,
+                                 double *lower_matrix,
+                                 double const *center_shift)
+{
+    unsigned int sample_index;
+    unsigned int center_index;
+    unsigned int best_index;
+    size_t matrix_base;
+    double sample_weight;
+    double upper;
+    double lower;
+    double bound;
+
+    sample_index = 0u;
+    center_index = 0u;
+    best_index = 0u;
+    matrix_base = 0u;
+    sample_weight = 0.0;
+    upper = 0.0;
+    lower = 0.0;
+    bound = 0.0;
+    if (membership == NULL || upper_bounds == NULL || lower_bounds == NULL
+            || lower_matrix == NULL || center_shift == NULL || k == 0u) {
+        return;
+    }
+    for (sample_index = 0u; sample_index < sample_count; ++sample_index) {
+        sample_weight = 1.0;
+        if (weights != NULL) {
+            sample_weight = weights[sample_index];
+        }
+        matrix_base = (size_t)sample_index * (size_t)k;
+        if (sample_weight <= 0.0) {
+            upper_bounds[sample_index] = 0.0;
+            lower_bounds[sample_index] = 0.0;
+            for (center_index = 0u; center_index < k; ++center_index) {
+                lower_matrix[matrix_base + center_index] = 0.0;
+            }
+            continue;
+        }
+        best_index = membership[sample_index];
+        if (best_index >= k) {
+            best_index = 0u;
+        }
+        upper = upper_bounds[sample_index] + center_shift[best_index];
+        upper_bounds[sample_index] = upper;
+        lower_matrix[matrix_base + best_index] = upper;
+
+        lower = DBL_MAX;
+        for (center_index = 0u; center_index < k; ++center_index) {
+            if (center_index == best_index) {
+                continue;
+            }
+            bound = lower_matrix[matrix_base + center_index];
+            if (bound > center_shift[center_index]) {
+                bound -= center_shift[center_index];
+            } else {
+                bound = 0.0;
+            }
+            lower_matrix[matrix_base + center_index] = bound;
+            if (bound < lower) {
+                lower = bound;
+            }
+        }
+        if (k < 2u || lower == DBL_MAX) {
+            lower = upper;
+        }
+        lower_bounds[sample_index] = lower;
+    }
+}
+
+static void
+sixel_kmeans_update_yinyang_bounds(unsigned int sample_count,
+                                   unsigned int k,
+                                   unsigned int group_count,
+                                   unsigned int const *membership,
+                                   unsigned int const *center_groups,
+                                   double const *weights,
+                                   double *upper_bounds,
+                                   double *lower_bounds,
+                                   double *lower_matrix,
+                                   double *group_lower_bounds,
+                                   double const *center_shift,
+                                   double *group_shift)
+{
+    unsigned int sample_index;
+    unsigned int center_index;
+    unsigned int best_index;
+    unsigned int group_index;
+    size_t matrix_base;
+    size_t group_base;
+    double sample_weight;
+    double upper;
+    double lower;
+    double bound;
+
+    sample_index = 0u;
+    center_index = 0u;
+    best_index = 0u;
+    group_index = 0u;
+    matrix_base = 0u;
+    group_base = 0u;
+    sample_weight = 0.0;
+    upper = 0.0;
+    lower = 0.0;
+    bound = 0.0;
+    if (membership == NULL || center_groups == NULL
+            || upper_bounds == NULL || lower_bounds == NULL
+            || lower_matrix == NULL || group_lower_bounds == NULL
+            || center_shift == NULL || group_shift == NULL
+            || k == 0u || group_count == 0u) {
+        return;
+    }
+    for (group_index = 0u; group_index < group_count; ++group_index) {
+        group_shift[group_index] = 0.0;
+    }
+    for (center_index = 0u; center_index < k; ++center_index) {
+        group_index = center_groups[center_index];
+        if (group_index >= group_count) {
+            continue;
+        }
+        if (center_shift[center_index] > group_shift[group_index]) {
+            group_shift[group_index] = center_shift[center_index];
+        }
+    }
+    for (sample_index = 0u; sample_index < sample_count; ++sample_index) {
+        sample_weight = 1.0;
+        if (weights != NULL) {
+            sample_weight = weights[sample_index];
+        }
+        matrix_base = (size_t)sample_index * (size_t)k;
+        group_base = (size_t)sample_index * (size_t)group_count;
+        if (sample_weight <= 0.0) {
+            upper_bounds[sample_index] = 0.0;
+            lower_bounds[sample_index] = 0.0;
+            for (center_index = 0u; center_index < k; ++center_index) {
+                lower_matrix[matrix_base + center_index] = 0.0;
+            }
+            for (group_index = 0u; group_index < group_count; ++group_index) {
+                group_lower_bounds[group_base + group_index] = 0.0;
+            }
+            continue;
+        }
+        best_index = membership[sample_index];
+        if (best_index >= k) {
+            best_index = 0u;
+        }
+        upper = upper_bounds[sample_index] + center_shift[best_index];
+        upper_bounds[sample_index] = upper;
+        lower_matrix[matrix_base + best_index] = upper;
+
+        lower = DBL_MAX;
+        for (center_index = 0u; center_index < k; ++center_index) {
+            if (center_index == best_index) {
+                continue;
+            }
+            bound = lower_matrix[matrix_base + center_index];
+            if (bound > center_shift[center_index]) {
+                bound -= center_shift[center_index];
+            } else {
+                bound = 0.0;
+            }
+            lower_matrix[matrix_base + center_index] = bound;
+            if (bound < lower) {
+                lower = bound;
+            }
+        }
+        if (k < 2u || lower == DBL_MAX) {
+            lower = upper;
+        }
+        lower_bounds[sample_index] = lower;
+        for (group_index = 0u; group_index < group_count; ++group_index) {
+            bound = group_lower_bounds[group_base + group_index];
+            if (bound > group_shift[group_index]) {
+                bound -= group_shift[group_index];
+            } else {
+                bound = 0.0;
+            }
+            group_lower_bounds[group_base + group_index] = bound;
+        }
+    }
+}
+
 static double
 sixel_kmeans_assign_samples_full_second(double const *centers,
                                         unsigned int k,
@@ -3270,7 +4127,9 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     unsigned int restart_count;
     unsigned int restart_index;
     unsigned int hamerly_initialized;
+    unsigned int elkan_initialized;
     unsigned int refine_hamerly_initialized;
+    unsigned int refine_elkan_initialized;
     unsigned int min_iterations;
     unsigned int iter_override;
     unsigned int iter_cap;
@@ -3306,7 +4165,11 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     double *best_centers;
     double *upper_bounds;
     double *lower_bounds;
+    double *elkan_lower_bounds;
     double *half_center_dist;
+    double *half_center_matrix;
+    double *yinyang_group_lower_bounds;
+    double *yinyang_group_shift;
     double *center_shift;
     double *center_prev;
     double best_distance;
@@ -3343,6 +4206,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     double *channel_sum;
     double *merge_sums;
     size_t farthest_base;
+    size_t elkan_bound_count;
+    size_t yinyang_group_bound_count;
     unsigned char *unique_buffer;
     size_t unique_pixels;
     int apply_merge;
@@ -3350,6 +4215,11 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     int iter_enabled;
     int seed_enabled;
     int hamerly_active;
+    int elkan_active;
+    int yinyang_active;
+    unsigned int yinyang_group_count;
+    unsigned int *yinyang_group_offsets;
+    unsigned int *yinyang_center_groups;
     unsigned int overshoot;
     unsigned int refine_iterations;
     int cluster_total;
@@ -3420,7 +4290,9 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     restart_count = 1U;
     restart_index = 0U;
     hamerly_initialized = 0U;
+    elkan_initialized = 0U;
     refine_hamerly_initialized = 0U;
+    refine_elkan_initialized = 0U;
     min_iterations = 0U;
     iter_override = 0U;
     iter_cap = 0U;
@@ -3456,7 +4328,11 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     best_centers = NULL;
     upper_bounds = NULL;
     lower_bounds = NULL;
+    elkan_lower_bounds = NULL;
     half_center_dist = NULL;
+    half_center_matrix = NULL;
+    yinyang_group_lower_bounds = NULL;
+    yinyang_group_shift = NULL;
     center_shift = NULL;
     center_prev = NULL;
     merge_weights = NULL;
@@ -3470,6 +4346,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     update = 0.0;
     farthest_distance = 0.0;
     farthest_base = 0U;
+    elkan_bound_count = 0U;
+    yinyang_group_bound_count = 0U;
     delta = 0.0;
     center_move_sq = 0.0;
     max_center_shift = 0.0;
@@ -3528,6 +4406,11 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     feedback_mode = SIXEL_PALETTE_KMEANS_FEEDBACK_OFF;
     prune_policy = SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY;
     hamerly_active = 0;
+    elkan_active = 0;
+    yinyang_active = 0;
+    yinyang_group_count = 1u;
+    yinyang_group_offsets = NULL;
+    yinyang_center_groups = NULL;
 
     if (result != NULL) {
         *result = NULL;
@@ -3683,8 +4566,14 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     seed_value = sixel_get_kmeans_seed();
     seed_enabled = sixel_get_kmeans_seed_enabled();
     hamerly_active = 0;
+    elkan_active = 0;
+    yinyang_active = 0;
     if (prune_policy == SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY) {
         hamerly_active = 1;
+    } else if (prune_policy == SIXEL_PALETTE_KMEANS_PRUNE_ELKAN) {
+        elkan_active = 1;
+    } else if (prune_policy == SIXEL_PALETTE_KMEANS_PRUNE_YINYANG) {
+        yinyang_active = 1;
     }
     if (restart_count < 1u) {
         restart_count = 1u;
@@ -3823,7 +4712,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    if (hamerly_active) {
+    if (hamerly_active || elkan_active || yinyang_active) {
         upper_bounds = (double *)sixel_allocator_malloc(
             allocator, (size_t)work_sample_count * sizeof(double));
         lower_bounds = (double *)sixel_allocator_malloc(
@@ -3840,6 +4729,70 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
+    }
+    if (elkan_active || yinyang_active) {
+        if (work_sample_count > 0u
+                && k > 0u
+                && (size_t)work_sample_count > SIZE_MAX / (size_t)k) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        elkan_bound_count = (size_t)work_sample_count * (size_t)k;
+        if (elkan_bound_count > SIZE_MAX / sizeof(double)) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        elkan_lower_bounds = (double *)sixel_allocator_malloc(
+            allocator, elkan_bound_count * sizeof(double));
+        half_center_matrix = (double *)sixel_allocator_malloc(
+            allocator,
+            (size_t)k * (size_t)k * sizeof(double));
+        if (elkan_lower_bounds == NULL || half_center_matrix == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+    }
+    if (yinyang_active) {
+        yinyang_group_count = sixel_kmeans_yinyang_group_count(k);
+        if (yinyang_group_count == 0u || yinyang_group_count > k) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        if ((size_t)work_sample_count > 0u
+                && (size_t)yinyang_group_count > 0u
+                && (size_t)work_sample_count
+                    > SIZE_MAX / (size_t)yinyang_group_count) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        yinyang_group_bound_count =
+            (size_t)work_sample_count * (size_t)yinyang_group_count;
+        if (yinyang_group_bound_count > SIZE_MAX / sizeof(double)) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        yinyang_group_offsets = (unsigned int *)sixel_allocator_malloc(
+            allocator,
+            ((size_t)yinyang_group_count + 1u) * sizeof(unsigned int));
+        yinyang_center_groups = (unsigned int *)sixel_allocator_malloc(
+            allocator,
+            (size_t)k * sizeof(unsigned int));
+        yinyang_group_lower_bounds = (double *)sixel_allocator_malloc(
+            allocator,
+            yinyang_group_bound_count * sizeof(double));
+        yinyang_group_shift = (double *)sixel_allocator_malloc(
+            allocator,
+            (size_t)yinyang_group_count * sizeof(double));
+        if (yinyang_group_offsets == NULL || yinyang_center_groups == NULL
+                || yinyang_group_lower_bounds == NULL
+                || yinyang_group_shift == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        sixel_kmeans_build_yinyang_groups(k,
+                                          yinyang_group_count,
+                                          yinyang_group_offsets,
+                                          yinyang_center_groups);
     }
     if (restart_count > 1u) {
         best_centers = (double *)sixel_allocator_malloc(
@@ -3923,6 +4876,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     best_objective = 0.0;
     for (restart_index = 0u; restart_index < restart_count; ++restart_index) {
         hamerly_initialized = 0u;
+        elkan_initialized = 0u;
         if (seed_enabled) {
             restart_seed =
                 seed_value + (uint32_t)(0x9e3779b9u * restart_index);
@@ -3966,7 +4920,96 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             for (index = 0u; index < k * 3u; ++index) {
                 accum[index] = 0.0;
             }
-            if (hamerly_active) {
+            if (yinyang_active) {
+                memcpy(center_prev,
+                       centers,
+                       (size_t)k * 3u * sizeof(double));
+                if (elkan_initialized == 0u) {
+                    objective = sixel_kmeans_assign_samples_full_yinyang(
+                        centers,
+                        k,
+                        work_samples,
+                        work_weights,
+                        work_sample_count,
+                        membership,
+                        distance_cache,
+                        cluster_weights,
+                        accum,
+                        upper_bounds,
+                        lower_bounds,
+                        elkan_lower_bounds,
+                        yinyang_group_count,
+                        yinyang_group_offsets,
+                        yinyang_group_lower_bounds);
+                    elkan_initialized = 1u;
+                } else {
+                    sixel_kmeans_compute_half_center_distance_matrix(
+                        centers,
+                        k,
+                        half_center_dist,
+                        half_center_matrix);
+                    objective = sixel_kmeans_assign_samples_yinyang(
+                        centers,
+                        k,
+                        work_samples,
+                        work_weights,
+                        work_sample_count,
+                        membership,
+                        distance_cache,
+                        cluster_weights,
+                        accum,
+                        upper_bounds,
+                        lower_bounds,
+                        elkan_lower_bounds,
+                        half_center_dist,
+                        half_center_matrix,
+                        yinyang_group_count,
+                        yinyang_group_offsets,
+                        yinyang_center_groups,
+                        yinyang_group_lower_bounds);
+                }
+            } else if (elkan_active) {
+                memcpy(center_prev,
+                       centers,
+                       (size_t)k * 3u * sizeof(double));
+                if (elkan_initialized == 0u) {
+                    objective = sixel_kmeans_assign_samples_full_elkan(
+                        centers,
+                        k,
+                        work_samples,
+                        work_weights,
+                        work_sample_count,
+                        membership,
+                        distance_cache,
+                        cluster_weights,
+                        accum,
+                        upper_bounds,
+                        lower_bounds,
+                        elkan_lower_bounds);
+                    elkan_initialized = 1u;
+                } else {
+                    sixel_kmeans_compute_half_center_distance_matrix(
+                        centers,
+                        k,
+                        half_center_dist,
+                        half_center_matrix);
+                    objective = sixel_kmeans_assign_samples_elkan(
+                        centers,
+                        k,
+                        work_samples,
+                        work_weights,
+                        work_sample_count,
+                        membership,
+                        distance_cache,
+                        cluster_weights,
+                        accum,
+                        upper_bounds,
+                        lower_bounds,
+                        elkan_lower_bounds,
+                        half_center_dist,
+                        half_center_matrix);
+                }
+            } else if (hamerly_active) {
                 memcpy(center_prev,
                        centers,
                        (size_t)k * 3u * sizeof(double));
@@ -4094,9 +5137,24 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                         * farthest_sample_weight;
                 }
                 distance_cache[farthest_index] = 0.0;
-                if (hamerly_active) {
+                if (hamerly_active || elkan_active || yinyang_active) {
                     upper_bounds[farthest_index] = 0.0;
                     lower_bounds[farthest_index] = 0.0;
+                }
+                if (elkan_active || yinyang_active) {
+                    for (source = 0u; source < k; ++source) {
+                        elkan_lower_bounds[
+                            (size_t)farthest_index * (size_t)k + source] = 0.0;
+                    }
+                }
+                if (yinyang_active) {
+                    for (source = 0u; source < yinyang_group_count;
+                            ++source) {
+                        yinyang_group_lower_bounds[
+                            (size_t)farthest_index
+                            * (size_t)yinyang_group_count
+                            + source] = 0.0;
+                    }
                 }
             }
             delta = 0.0;
@@ -4150,7 +5208,47 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                     goto end;
                 }
             }
-            if (hamerly_active) {
+            if (yinyang_active) {
+                for (center_index = 0u; center_index < k; ++center_index) {
+                    center_move_sq = 0.0;
+                    for (channel = 0u; channel < 3u; ++channel) {
+                        diff = center_prev[(size_t)center_index * 3u + channel]
+                            - centers[(size_t)center_index * 3u + channel];
+                        center_move_sq += diff * diff;
+                    }
+                    center_shift[center_index] = sqrt(center_move_sq);
+                }
+                sixel_kmeans_update_yinyang_bounds(work_sample_count,
+                                                   k,
+                                                   yinyang_group_count,
+                                                   membership,
+                                                   yinyang_center_groups,
+                                                   work_weights,
+                                                   upper_bounds,
+                                                   lower_bounds,
+                                                   elkan_lower_bounds,
+                                                   yinyang_group_lower_bounds,
+                                                   center_shift,
+                                                   yinyang_group_shift);
+            } else if (elkan_active) {
+                for (center_index = 0u; center_index < k; ++center_index) {
+                    center_move_sq = 0.0;
+                    for (channel = 0u; channel < 3u; ++channel) {
+                        diff = center_prev[(size_t)center_index * 3u + channel]
+                            - centers[(size_t)center_index * 3u + channel];
+                        center_move_sq += diff * diff;
+                    }
+                    center_shift[center_index] = sqrt(center_move_sq);
+                }
+                sixel_kmeans_update_elkan_bounds(work_sample_count,
+                                                 k,
+                                                 membership,
+                                                 work_weights,
+                                                 upper_bounds,
+                                                 lower_bounds,
+                                                 elkan_lower_bounds,
+                                                 center_shift);
+            } else if (hamerly_active) {
                 max_center_shift = 0.0;
                 for (center_index = 0u; center_index < k; ++center_index) {
                     center_move_sq = 0.0;
@@ -4367,6 +5465,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             }
         }
         refine_hamerly_initialized = 0u;
+        refine_elkan_initialized = 0u;
         for (iteration = 0U; iteration < refine_iterations; ++iteration) {
             ++merge_iterations;
             for (index = 0U; index < k; ++index) {
@@ -4375,7 +5474,96 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
             for (index = 0U; index < k * 3U; ++index) {
                 accum[index] = 0.0;
             }
-            if (hamerly_active) {
+            if (yinyang_active) {
+                memcpy(center_prev,
+                       centers,
+                       (size_t)k * 3u * sizeof(double));
+                if (refine_elkan_initialized == 0u) {
+                    objective = sixel_kmeans_assign_samples_full_yinyang(
+                        centers,
+                        k,
+                        work_samples,
+                        work_weights,
+                        work_sample_count,
+                        membership,
+                        distance_cache,
+                        cluster_weights,
+                        accum,
+                        upper_bounds,
+                        lower_bounds,
+                        elkan_lower_bounds,
+                        yinyang_group_count,
+                        yinyang_group_offsets,
+                        yinyang_group_lower_bounds);
+                    refine_elkan_initialized = 1u;
+                } else {
+                    sixel_kmeans_compute_half_center_distance_matrix(
+                        centers,
+                        k,
+                        half_center_dist,
+                        half_center_matrix);
+                    objective = sixel_kmeans_assign_samples_yinyang(
+                        centers,
+                        k,
+                        work_samples,
+                        work_weights,
+                        work_sample_count,
+                        membership,
+                        distance_cache,
+                        cluster_weights,
+                        accum,
+                        upper_bounds,
+                        lower_bounds,
+                        elkan_lower_bounds,
+                        half_center_dist,
+                        half_center_matrix,
+                        yinyang_group_count,
+                        yinyang_group_offsets,
+                        yinyang_center_groups,
+                        yinyang_group_lower_bounds);
+                }
+            } else if (elkan_active) {
+                memcpy(center_prev,
+                       centers,
+                       (size_t)k * 3u * sizeof(double));
+                if (refine_elkan_initialized == 0u) {
+                    objective = sixel_kmeans_assign_samples_full_elkan(
+                        centers,
+                        k,
+                        work_samples,
+                        work_weights,
+                        work_sample_count,
+                        membership,
+                        distance_cache,
+                        cluster_weights,
+                        accum,
+                        upper_bounds,
+                        lower_bounds,
+                        elkan_lower_bounds);
+                    refine_elkan_initialized = 1u;
+                } else {
+                    sixel_kmeans_compute_half_center_distance_matrix(
+                        centers,
+                        k,
+                        half_center_dist,
+                        half_center_matrix);
+                    objective = sixel_kmeans_assign_samples_elkan(
+                        centers,
+                        k,
+                        work_samples,
+                        work_weights,
+                        work_sample_count,
+                        membership,
+                        distance_cache,
+                        cluster_weights,
+                        accum,
+                        upper_bounds,
+                        lower_bounds,
+                        elkan_lower_bounds,
+                        half_center_dist,
+                        half_center_matrix);
+                }
+            } else if (hamerly_active) {
                 memcpy(center_prev,
                        centers,
                        (size_t)k * 3u * sizeof(double));
@@ -4505,9 +5693,24 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                         * farthest_sample_weight;
                 }
                 distance_cache[farthest_index] = 0.0;
-                if (hamerly_active) {
+                if (hamerly_active || elkan_active || yinyang_active) {
                     upper_bounds[farthest_index] = 0.0;
                     lower_bounds[farthest_index] = 0.0;
+                }
+                if (elkan_active || yinyang_active) {
+                    for (source = 0u; source < k; ++source) {
+                        elkan_lower_bounds[
+                            (size_t)farthest_index * (size_t)k + source] = 0.0;
+                    }
+                }
+                if (yinyang_active) {
+                    for (source = 0u; source < yinyang_group_count;
+                            ++source) {
+                        yinyang_group_lower_bounds[
+                            (size_t)farthest_index
+                            * (size_t)yinyang_group_count
+                            + source] = 0.0;
+                    }
                 }
             }
             delta = 0.0;
@@ -4549,7 +5752,49 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                     goto end;
                 }
             }
-            if (hamerly_active) {
+            if (yinyang_active) {
+                for (center_index = 0U; center_index < k; ++center_index) {
+                    center_move_sq = 0.0;
+                    for (channel = 0U; channel < 3U; ++channel) {
+                        diff =
+                            center_prev[(size_t)center_index * 3u + channel]
+                            - centers[(size_t)center_index * 3u + channel];
+                        center_move_sq += diff * diff;
+                    }
+                    center_shift[center_index] = sqrt(center_move_sq);
+                }
+                sixel_kmeans_update_yinyang_bounds(work_sample_count,
+                                                   k,
+                                                   yinyang_group_count,
+                                                   membership,
+                                                   yinyang_center_groups,
+                                                   work_weights,
+                                                   upper_bounds,
+                                                   lower_bounds,
+                                                   elkan_lower_bounds,
+                                                   yinyang_group_lower_bounds,
+                                                   center_shift,
+                                                   yinyang_group_shift);
+            } else if (elkan_active) {
+                for (center_index = 0U; center_index < k; ++center_index) {
+                    center_move_sq = 0.0;
+                    for (channel = 0U; channel < 3U; ++channel) {
+                        diff =
+                            center_prev[(size_t)center_index * 3u + channel]
+                            - centers[(size_t)center_index * 3u + channel];
+                        center_move_sq += diff * diff;
+                    }
+                    center_shift[center_index] = sqrt(center_move_sq);
+                }
+                sixel_kmeans_update_elkan_bounds(work_sample_count,
+                                                 k,
+                                                 membership,
+                                                 work_weights,
+                                                 upper_bounds,
+                                                 lower_bounds,
+                                                 elkan_lower_bounds,
+                                                 center_shift);
+            } else if (hamerly_active) {
                 max_center_shift = 0.0;
                 for (center_index = 0U; center_index < k; ++center_index) {
                     center_move_sq = 0.0;
@@ -4849,8 +6094,26 @@ end:
     if (lower_bounds != NULL) {
         sixel_allocator_free(allocator, lower_bounds);
     }
+    if (elkan_lower_bounds != NULL) {
+        sixel_allocator_free(allocator, elkan_lower_bounds);
+    }
     if (half_center_dist != NULL) {
         sixel_allocator_free(allocator, half_center_dist);
+    }
+    if (half_center_matrix != NULL) {
+        sixel_allocator_free(allocator, half_center_matrix);
+    }
+    if (yinyang_group_lower_bounds != NULL) {
+        sixel_allocator_free(allocator, yinyang_group_lower_bounds);
+    }
+    if (yinyang_group_shift != NULL) {
+        sixel_allocator_free(allocator, yinyang_group_shift);
+    }
+    if (yinyang_group_offsets != NULL) {
+        sixel_allocator_free(allocator, yinyang_group_offsets);
+    }
+    if (yinyang_center_groups != NULL) {
+        sixel_allocator_free(allocator, yinyang_center_groups);
     }
     if (center_shift != NULL) {
         sixel_allocator_free(allocator, center_shift);

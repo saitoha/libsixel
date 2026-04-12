@@ -208,7 +208,7 @@ _img2sixel()
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
                 elif [[ ${quant_key} == prune ]]; then
-                    for quant_candidate in auto none hamerly; do
+                    for quant_candidate in auto none hamerly elkan yinyang; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done

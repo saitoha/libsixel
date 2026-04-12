@@ -1308,7 +1308,9 @@ static sixel_suboption_choice_t const g_option_choices_kmeans_feedback[] = {
 static sixel_suboption_choice_t const g_option_choices_kmeans_prune[] = {
     { "auto", SIXEL_PALETTE_KMEANS_PRUNE_AUTO },
     { "none", SIXEL_PALETTE_KMEANS_PRUNE_NONE },
-    { "hamerly", SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY }
+    { "hamerly", SIXEL_PALETTE_KMEANS_PRUNE_HAMERLY },
+    { "elkan", SIXEL_PALETTE_KMEANS_PRUNE_ELKAN },
+    { "yinyang", SIXEL_PALETTE_KMEANS_PRUNE_YINYANG }
 };
 
 static sixel_suboption_choice_t const g_option_choices_kmedoids_algo[] = {

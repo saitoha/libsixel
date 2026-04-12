@@ -254,6 +254,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "              auto    -> choose Hamerly pruning (default)\n"
         "              none    -> disable pruning\n"
         "              hamerly -> use upper/lower-bound pruning\n"
+        "              elkan   -> use per-center bound pruning\n"
+        "              yinyang -> use grouped bound pruning\n"
         "          :seed=VALUE (:s=VALUE) uint32 random seed (0-4294967295).\n"
         "          :restarts=COUNT restart count (1-32, default 1).\n"
         "          :iter=COUNT Lloyd iteration cap (1-100). takes precedence over\n"
@@ -1323,7 +1325,8 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_PALETTE_KMEANS_PRUNE",
-        "k-means pruning policy: auto, none, or hamerly.\n"
+        "k-means pruning policy: auto, none, hamerly, elkan,\n"
+        "or yinyang.\n"
         "Default auto maps to hamerly."
     },
     {

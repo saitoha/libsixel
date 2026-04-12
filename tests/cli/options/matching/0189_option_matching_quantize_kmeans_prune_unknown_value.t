@@ -31,7 +31,8 @@ test "${msg#*\"prune\"*}" != "${msg}" || {
     exit 0
 }
 
-test "${msg#*valid values*auto, none, hamerly*}" != "${msg}" || {
+test "${msg#*valid values*auto, none, hamerly, elkan, yinyang*}" \
+    != "${msg}" || {
     echo "not ok" 1 - "missing kmeans prune candidate list"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

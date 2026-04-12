@@ -366,7 +366,9 @@ _quantizemodel() {
         elif [[ ${key} == prune ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=none" \
-                     "${prefix}${key}=hamerly"
+                     "${prefix}${key}=hamerly" \
+                     "${prefix}${key}=elkan" \
+                     "${prefix}${key}=yinyang"
           return 0
         elif [[ ${key} == animation_mode ]]; then
           compadd -- "${prefix}${key}=0" \
