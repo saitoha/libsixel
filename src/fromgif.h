@@ -48,6 +48,7 @@ load_gif(
     int                 /* in */ start_frame_no,
     void                /* in */ *fn_load,     /* callback */
     void                /* in */ *context,     /* private data for callback */
+    void                /* in */ *cancel_context, /* loader cancel context */
     sixel_allocator_t   /* in */ *allocator    /* allocator object */
 );
 

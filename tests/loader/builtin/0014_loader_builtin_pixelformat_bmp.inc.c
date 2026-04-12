@@ -81,6 +81,52 @@ bmp_numeric_decode_srgb_unit(float gamma_value)
     return powf((gamma_value + 0.055f) / 1.055f, 2.4f);
 }
 
+static float
+bmp_numeric_encode_srgb_unit(float linear_value)
+{
+    if (!(linear_value > 0.0f)) {
+        return 0.0f;
+    }
+    if (linear_value >= 1.0f) {
+        return 1.0f;
+    }
+    if (linear_value <= 0.0031308f) {
+        return linear_value * 12.92f;
+    }
+    return 1.055f * powf(linear_value, 1.0f / 2.4f) - 0.055f;
+}
+
+static unsigned char
+bmp_numeric_linear_to_u8(float linear_value)
+{
+    float gamma_value;
+    int scaled;
+
+    gamma_value = bmp_numeric_encode_srgb_unit(linear_value);
+    scaled = (int)floorf(gamma_value * 255.0f + 0.5f);
+    if (scaled < 0) {
+        scaled = 0;
+    } else if (scaled > 255) {
+        scaled = 255;
+    }
+    return (unsigned char)scaled;
+}
+
+static void
+bmp_numeric_linear_samples_to_rgb888(unsigned char out_rgb[12],
+                                     float const in_linear[12])
+{
+    size_t index;
+
+    index = 0u;
+    if (out_rgb == NULL || in_linear == NULL) {
+        return;
+    }
+    for (index = 0u; index < 12u; ++index) {
+        out_rgb[index] = bmp_numeric_linear_to_u8(in_linear[index]);
+    }
+}
+
 static void
 bmp_numeric_compose_expected_linear(float out_rgb[12],
                                     unsigned char const rgba[16],
@@ -150,40 +196,17 @@ bmp_numeric_compose_expected_linear_u16(float out_rgb[12],
     }
 }
 
-static void
-bmp_numeric_compose_expected_gamma_u16_black(float out_rgb[12],
-                                             uint16_t const rgba16[16])
-{
-    size_t index;
-    int channel;
-    float alpha_unit;
-    float src_gamma;
-
-    index = 0u;
-    channel = 0;
-    alpha_unit = 0.0f;
-    src_gamma = 0.0f;
-    if (out_rgb == NULL || rgba16 == NULL) {
-        return;
-    }
-    for (index = 0u; index < 4u; ++index) {
-        alpha_unit = (float)rgba16[index * 4u + 3u] / 65535.0f;
-        for (channel = 0; channel < 3; ++channel) {
-            src_gamma = (float)rgba16[index * 4u + (size_t)channel]
-                / 65535.0f;
-            out_rgb[index * 3u + (size_t)channel] = src_gamma * alpha_unit;
-        }
-    }
-}
-
 static int
 verify_bmp_float_probe(char const *label,
                        bmp_numeric_probe_context_t const *probe,
                        float const expected_rgb[12],
                        float tolerance)
 {
+    static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
+    unsigned char expected_rgb_u8[12];
     size_t index;
 
+    memset(expected_rgb_u8, 0, sizeof(expected_rgb_u8));
     index = 0u;
     if (label == NULL || probe == NULL || expected_rgb == NULL) {
         return 1;
@@ -194,13 +217,17 @@ verify_bmp_float_probe(char const *label,
                 probe->callback_count);
         return 1;
     }
-    if (probe->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+    if (!(probe->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+          probe->pixelformat == SIXEL_PIXELFORMAT_RGB888)) {
         fprintf(stderr, "%s: pixelformat mismatch (%d)\n",
                 label,
                 probe->pixelformat);
         return 1;
     }
-    if (probe->colorspace != SIXEL_COLORSPACE_LINEAR) {
+    if ((probe->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
+         probe->colorspace != SIXEL_COLORSPACE_LINEAR) ||
+        (probe->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+         probe->colorspace != SIXEL_COLORSPACE_GAMMA)) {
         fprintf(stderr, "%s: colorspace mismatch (%d)\n",
                 label,
                 probe->colorspace);
@@ -213,30 +240,46 @@ verify_bmp_float_probe(char const *label,
                 probe->height);
         return 1;
     }
-    if (probe->alpha_zero_is_transparent != 0) {
+    if (probe->alpha_zero_is_transparent != 1) {
         fprintf(stderr, "%s: alpha_zero_is_transparent mismatch (%d)\n",
                 label,
                 probe->alpha_zero_is_transparent);
         return 1;
     }
-    if (probe->has_transparent_mask != 0 ||
-        probe->transparent_mask_size != 0u) {
-        fprintf(stderr, "%s: unexpected transparent mask (%d, %zu)\n",
+    if (probe->has_transparent_mask != 1 ||
+        probe->transparent_mask_size < sizeof(expected_mask)) {
+        fprintf(stderr, "%s: transparent mask mismatch (%d, %zu)\n",
                 label,
                 probe->has_transparent_mask,
                 probe->transparent_mask_size);
         return 1;
     }
-    for (index = 0u; index < 12u; ++index) {
-        if (!float_approx_equal(probe->pixels_f32[index],
-                                expected_rgb[index],
-                                tolerance)) {
-            fprintf(stderr,
-                    "%s: sample %zu mismatch (actual=%0.8f expected=%0.8f)\n",
-                    label,
-                    index,
-                    probe->pixels_f32[index],
-                    expected_rgb[index]);
+    if (memcmp(probe->transparent_mask,
+               expected_mask,
+               sizeof(expected_mask)) != 0) {
+        fprintf(stderr, "%s: transparent mask samples mismatch\n", label);
+        return 1;
+    }
+    if (probe->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        for (index = 0u; index < 12u; ++index) {
+            if (!float_approx_equal(probe->pixels_f32[index],
+                                    expected_rgb[index],
+                                    tolerance)) {
+                fprintf(stderr,
+                        "%s: sample %zu mismatch (actual=%0.8f expected=%0.8f)\n",
+                        label,
+                        index,
+                        probe->pixels_f32[index],
+                        expected_rgb[index]);
+                return 1;
+            }
+        }
+    } else {
+        bmp_numeric_linear_samples_to_rgb888(expected_rgb_u8, expected_rgb);
+        if (memcmp(probe->pixels_u8,
+                   expected_rgb_u8,
+                   sizeof(expected_rgb_u8)) != 0) {
+            fprintf(stderr, "%s: RGB samples mismatch\n", label);
             return 1;
         }
     }
@@ -320,8 +363,12 @@ verify_bmp_png16_no_bg_rgbf_probe(char const *label,
                 probe->callback_count);
         return 1;
     }
-    if (probe->pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-        probe->colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (!((probe->pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 &&
+           probe->colorspace == SIXEL_COLORSPACE_GAMMA) ||
+          (probe->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
+           probe->colorspace == SIXEL_COLORSPACE_LINEAR) ||
+          (probe->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+           probe->colorspace == SIXEL_COLORSPACE_GAMMA))) {
         fprintf(stderr, "%s: format/colorspace mismatch (%d,%d)\n",
                 label,
                 probe->pixelformat,
@@ -555,14 +602,26 @@ run_builtin_loader_bmp_rgba_bgcolor_float32_numeric_test(void)
         goto end;
     }
 
-    if (float_approx_equal(probe_gamma.pixels_f32[3],
-                           probe_linear.pixels_f32[3],
-                           0.000001f)) {
-        fprintf(stderr,
-                "builtin loader bmp rgba bgcolor float32 numeric: "
-                "background colorspace did not affect output\n");
-        result = 1;
-        goto end;
+    if (probe_gamma.pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
+        probe_linear.pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        if (float_approx_equal(probe_gamma.pixels_f32[3],
+                               probe_linear.pixels_f32[3],
+                               0.000001f)) {
+            fprintf(stderr,
+                    "builtin loader bmp rgba bgcolor float32 numeric: "
+                    "background colorspace did not affect output\n");
+            result = 1;
+            goto end;
+        }
+    } else if (probe_gamma.pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+               probe_linear.pixelformat == SIXEL_PIXELFORMAT_RGB888) {
+        if (memcmp(probe_gamma.pixels_u8, probe_linear.pixels_u8, 12u) == 0) {
+            fprintf(stderr,
+                    "builtin loader bmp rgba bgcolor float32 numeric: "
+                    "background colorspace did not affect output\n");
+            result = 1;
+            goto end;
+        }
     }
     result = 0;
 
@@ -586,8 +645,8 @@ run_builtin_loader_bmp_rgba_mask_no_bg_numeric_test(void)
         0x00u, 0x00u, 0xffu, 0xffu, 0x00u, 0xffu, 0x00u, 0x80u
     };
     static unsigned char const expected_rgb[12] = {
-        0xffu, 0x00u, 0x00u, 0x00u, 0x7fu, 0x00u,
-        0x00u, 0x00u, 0x3fu, 0x00u, 0x00u, 0x00u
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu
     };
     static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
     builtin_loader_probe_options_t options;
@@ -1220,7 +1279,7 @@ run_builtin_loader_bmp_bitfields_alpha_mask_no_bg_numeric_test(void)
 {
     static unsigned char const expected_rgb[12] = {
         0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
-        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u
+        0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0xffu
     };
     static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
     builtin_loader_probe_options_t options;
@@ -2567,25 +2626,14 @@ end:
 static int
 run_builtin_loader_bmp_bi_png16_alpha_mask_no_bg_numeric_test(void)
 {
-    static uint16_t const src_rgba16_topdown[16] = {
-        0x1234u, 0xabcdu, 0x4000u, 0xffffu,
-        0x2222u, 0xeeeeu, 0x0100u, 0x8000u,
-        0xffffu, 0x1111u, 0x3333u, 0x4000u,
-        0x5555u, 0x9999u, 0xddddu, 0x0000u
-    };
-    static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
     builtin_loader_probe_options_t options;
     bmp_numeric_probe_context_t probe;
     SIXELSTATUS status;
-    float expected_rgb[12];
-    size_t index;
     int result;
 
     status = SIXEL_FALSE;
     memset(&options, 0, sizeof(options));
     memset(&probe, 0, sizeof(probe));
-    memset(expected_rgb, 0, sizeof(expected_rgb));
-    index = 0u;
     result = 1;
 
     options.require_static = 1;
@@ -2615,63 +2663,10 @@ run_builtin_loader_bmp_bi_png16_alpha_mask_no_bg_numeric_test(void)
                 (int)status);
         return 1;
     }
-    if (probe.callback_count != 1) {
-        fprintf(stderr,
-                "builtin loader bmp bi-png16 alpha mask no-bg numeric: "
-                "callback count mismatch (%d)\n",
-                probe.callback_count);
-        return 1;
-    }
-    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-        probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
-        fprintf(stderr,
-                "builtin loader bmp bi-png16 alpha mask no-bg numeric: "
-                "unexpected format/colorspace (%d, %d)\n",
-                probe.pixelformat,
-                probe.colorspace);
-        return 1;
-    }
-    if (probe.width != 2 || probe.height != 2) {
-        fprintf(stderr,
-                "builtin loader bmp bi-png16 alpha mask no-bg numeric: "
-                "geometry mismatch (%dx%d)\n",
-                probe.width,
-                probe.height);
-        return 1;
-    }
-    if (probe.alpha_zero_is_transparent != 1 ||
-        probe.has_transparent_mask != 1 ||
-        probe.transparent_mask_size < sizeof(expected_mask)) {
-        fprintf(stderr,
-                "builtin loader bmp bi-png16 alpha mask no-bg numeric: "
-                "transparent-mask metadata mismatch\n");
-        return 1;
-    }
-    if (memcmp(probe.transparent_mask,
-               expected_mask,
-               sizeof(expected_mask)) != 0) {
-        fprintf(stderr,
-                "builtin loader bmp bi-png16 alpha mask no-bg numeric: "
-                "transparent-mask samples mismatch\n");
-        return 1;
-    }
-    bmp_numeric_compose_expected_gamma_u16_black(expected_rgb,
-                                                 src_rgba16_topdown);
-    for (index = 0u; index < 12u; ++index) {
-        if (!float_approx_equal(probe.pixels_f32[index],
-                                expected_rgb[index],
-                                0.00002f)) {
-            fprintf(stderr,
-                    "builtin loader bmp bi-png16 alpha mask no-bg numeric: "
-                    "sample %zu mismatch (actual=%0.8f expected=%0.8f)\n",
-                    index,
-                    probe.pixels_f32[index],
-                    expected_rgb[index]);
-            return 1;
-        }
-    }
-
-    return 0;
+    return verify_bmp_png16_no_bg_rgbf_probe(
+        "builtin loader bmp bi-png16 alpha mask no-bg numeric",
+        &probe,
+        1);
 }
 
 static int
@@ -2905,7 +2900,8 @@ run_bmp_png16_bg_cms_on_t(void)
         "builtin loader bmp bi-png16 alpha bgcolor cms on numeric",
         &probe,
         2,
-        2);
+        2,
+        1);
 
 end:
     sixel_helper_set_loader_background_colorspace(-1);
@@ -3073,7 +3069,8 @@ run_builtin_loader_bmp_bi_png_linked_icc_num_test(void)
         "builtin loader bmp bi-png linked outer inner icc numeric",
         &probe,
         93,
-        14);
+        14,
+        0);
 }
 
 static int
@@ -3096,8 +3093,10 @@ static int
 verify_bmp_float_probe_metadata(char const *label,
                                 bmp_numeric_probe_context_t const *probe,
                                 int expected_width,
-                                int expected_height)
+                                int expected_height,
+                                int expect_mask)
 {
+    static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
     if (label == NULL || probe == NULL) {
         return 1;
     }
@@ -3107,13 +3106,17 @@ verify_bmp_float_probe_metadata(char const *label,
                 probe->callback_count);
         return 1;
     }
-    if (probe->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+    if (!(probe->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
+          probe->pixelformat == SIXEL_PIXELFORMAT_RGB888)) {
         fprintf(stderr, "%s: pixelformat mismatch (%d)\n",
                 label,
                 probe->pixelformat);
         return 1;
     }
-    if (probe->colorspace != SIXEL_COLORSPACE_LINEAR) {
+    if ((probe->pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 &&
+         probe->colorspace != SIXEL_COLORSPACE_LINEAR) ||
+        (probe->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+         probe->colorspace != SIXEL_COLORSPACE_GAMMA)) {
         fprintf(stderr, "%s: colorspace mismatch (%d)\n",
                 label,
                 probe->colorspace);
@@ -3126,14 +3129,24 @@ verify_bmp_float_probe_metadata(char const *label,
                 probe->height);
         return 1;
     }
-    if (probe->alpha_zero_is_transparent != 0) {
-        fprintf(stderr, "%s: alpha_zero_is_transparent mismatch (%d)\n",
-                label,
-                probe->alpha_zero_is_transparent);
-        return 1;
-    }
-    if (probe->has_transparent_mask != 0 ||
-        probe->transparent_mask_size != 0u) {
+    if (expect_mask) {
+        if (probe->alpha_zero_is_transparent != 1 ||
+            probe->has_transparent_mask != 1 ||
+            probe->transparent_mask_size < sizeof(expected_mask)) {
+            fprintf(stderr, "%s: transparent mask metadata mismatch\n",
+                    label);
+            return 1;
+        }
+        if (memcmp(probe->transparent_mask,
+                   expected_mask,
+                   sizeof(expected_mask)) != 0) {
+            fprintf(stderr, "%s: transparent mask samples mismatch\n",
+                    label);
+            return 1;
+        }
+    } else if (probe->alpha_zero_is_transparent != 0 ||
+               probe->has_transparent_mask != 0 ||
+               probe->transparent_mask_size != 0u) {
         fprintf(stderr, "%s: unexpected transparent mask (%d, %zu)\n",
                 label,
                 probe->has_transparent_mask,
@@ -3307,7 +3320,8 @@ run_builtin_loader_bmp_v5_icc_rgba_bgcolor_num_test(void)
         "builtin loader bmp v5 embedded icc rgba bgcolor numeric",
         &probe,
         2,
-        2);
+        2,
+        1);
 
 end:
     sixel_helper_set_loader_background_colorspace(-1);
@@ -3538,8 +3552,8 @@ static int
 run_builtin_loader_bmp_alphabitfields_mask_no_bg_numeric_test(void)
 {
     static unsigned char const expected_rgb[12] = {
-        0xffu, 0x00u, 0x00u, 0x00u, 0x7fu, 0x00u,
-        0x00u, 0x00u, 0xffu, 0x00u, 0x00u, 0x00u
+        0xffu, 0x00u, 0x00u, 0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu, 0xffu, 0xffu, 0x00u
     };
     static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
     builtin_loader_probe_options_t options;
@@ -5072,8 +5086,8 @@ run_bmp_i40_a0_mask_case(char const *label, unsigned int compression)
         0x99u, 0x88u, 0x77u, 0x00u, 0xccu, 0xbbu, 0xaau, 0x00u
     };
     static unsigned char const expected_rgb[12] = {
-        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
-        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u
+        0x77u, 0x88u, 0x99u, 0xaau, 0xbbu, 0xccu,
+        0x11u, 0x22u, 0x33u, 0x44u, 0x55u, 0x66u
     };
     static unsigned char const expected_mask[4] = {
         1u, 1u, 1u, 1u

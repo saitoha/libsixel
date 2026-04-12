@@ -1888,7 +1888,8 @@ typedef struct gif_decode_request {
     int fuse_palette;
     int start_frame_no;
     sixel_fromgif_fn_pointer_t fnp;
-    void *context;
+    void *callback_context;
+    void *cancel_context;
     int stream_scan_failed;
     int fstatic;
     struct gif_replay_cache *replay_cache;
@@ -1917,7 +1918,7 @@ gif_decode_request_is_canceled(gif_decode_request_t const *request)
         return 0;
     }
 
-    return sixel_loader_callback_is_canceled(request->context);
+    return sixel_loader_callback_is_canceled(request->cancel_context);
 }
 
 static SIXELSTATUS
@@ -2779,7 +2780,7 @@ gif_decode_one_frame(gif_context_t *s,
          * skipping still begins at frame 0 for the first callback.
          */
         sixel_frame_set_frame_no(frame, progress->emitted_frame_no);
-        status = request->fnp.fn(frame, request->context);
+        status = request->fnp.fn(frame, request->callback_context);
         if (status != SIXEL_OK) {
             sixel_trace_topic_message(
                 GIF_TRACE_TOPIC,
@@ -2930,7 +2931,8 @@ gif_decode_animation_loops(gif_context_t *s,
                 sixel_frame_set_loop_count(cached_frame, current_loop_no);
                 sixel_frame_set_frame_no(cached_frame,
                                          progress.emitted_frame_no);
-                status = request->fnp.fn(cached_frame, request->context);
+                status = request->fnp.fn(cached_frame,
+                                         request->callback_context);
                 if (status != SIXEL_OK) {
                     sixel_trace_topic_message(
                         GIF_TRACE_TOPIC,
@@ -2999,6 +3001,7 @@ load_gif(
     int                 /* in */ start_frame_no,
     void                /* in */ *fn_load,     /* callback */
     void                /* in */ *context,     /* private data for callback */
+    void                /* in */ *cancel_context,
     sixel_allocator_t   /* in */ *allocator)   /* allocator object */
 {
     gif_context_t s;
@@ -3033,7 +3036,8 @@ load_gif(
     decode_request.fuse_palette = fuse_palette;
     decode_request.start_frame_no = start_frame_no;
     decode_request.fnp.p = fn_load;
-    decode_request.context = context;
+    decode_request.callback_context = context;
+    decode_request.cancel_context = cancel_context;
     decode_request.stream_scan_failed = 0;
     decode_request.fstatic = fstatic;
     decode_request.replay_cache = NULL;

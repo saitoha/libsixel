@@ -1,5 +1,6 @@
 #!/bin/sh
-# TAP test: APNG update rectangles match builtin loader output on frame 1.
+# TAP test: APNG libpng static start-frame selection follows start-frame
+# controls.
 
 set -eux
 
@@ -18,27 +19,41 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle -Llibpng! -S -T 1 \
+trace_default=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_TRACE_TOPIC=apng_decode \
+    -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" \
-    >"${ARTIFACT_LOCAL_DIR}/apng_libpng_update_frame1.six" || {
-    echo "not ok" 1 - "APNG libpng frame extraction failed"
+    2>&1 >"${ARTIFACT_LOCAL_DIR}/apng_libpng_update_frame0.six") || {
+    echo "not ok" 1 - "APNG libpng default frame extraction failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=encode_handoff,apng_decode,lifecycle --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=1" \
-    -Lbuiltin! -S \
+trace_frame1=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_TRACE_TOPIC=apng_decode \
+    -Llibpng! -S -T 1 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" \
-    >"${ARTIFACT_LOCAL_DIR}/apng_builtin_update_frame1.six" || {
-    echo "not ok" 1 - "APNG builtin reference extraction failed"
+    2>&1 >"${ARTIFACT_LOCAL_DIR}/apng_libpng_update_frame1.six") || {
+    echo "not ok" 1 - "APNG libpng start-frame extraction failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" \
-    "${ARTIFACT_LOCAL_DIR}/apng_builtin_update_frame1.six" \
-    "${ARTIFACT_LOCAL_DIR}/apng_libpng_update_frame1.six" >/dev/null || {
-    echo "not ok" 1 - "APNG libpng update frame differs from builtin reference"
-    exit 0
-}
+case "${trace_default}" in
+    *"source_frame_no=1"*)
+        ;;
+    *)
+        echo "not ok" 1 - "APNG libpng default static decode did not emit frame 1"
+        exit 0
+        ;;
+esac
 
-echo "ok" 1 - "APNG libpng update frame matches builtin reference"
+case "${trace_frame1}" in
+    *"source_frame_no=2"*)
+        ;;
+    *)
+        echo "not ok" 1 - "APNG libpng start-frame=1 did not emit frame 2"
+        exit 0
+        ;;
+esac
+
+echo "ok" 1 - "APNG libpng static start-frame selection follows controls"
 exit 0

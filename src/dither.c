@@ -2510,7 +2510,9 @@ sixel_dither_interframe_begin_apply(sixel_dither_t *dither,
         return;
     }
 
-    dither->interframe_state.apply_count += 1UL;
+    if (apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) {
+        dither->interframe_state.apply_count += 1UL;
+    }
     dither->interframe_state.last_apply_consumed =
         (apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) ? 1 : 0;
 }

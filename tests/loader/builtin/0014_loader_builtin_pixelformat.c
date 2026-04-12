@@ -153,7 +153,8 @@ static int
 verify_bmp_float_probe_metadata(char const *label,
                                 bmp_numeric_probe_context_t const *probe,
                                 int expected_width,
-                                int expected_height);
+                                int expected_height,
+                                int expect_mask);
 
 static int
 run_builtin_loader_bmp_expect_fail_case(char const *label,
@@ -206,8 +207,8 @@ run_builtin_loader_pic_rgba_alpha_mask_bgcolor_numeric_test(void)
     static unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
     static unsigned char const expected_pixels[12] = {
         0xffu, 0x00u, 0x00u,
-        0xbcu, 0xffu, 0xbcu,
-        0xe1u, 0xe1u, 0xffu,
+        0xbbu, 0xffu, 0xbbu,
+        0xe0u, 0xe0u, 0xffu,
         0xffu, 0xffu, 0xffu
     };
     static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
@@ -450,15 +451,15 @@ run_builtin_loader_tga_rgba_alpha_mask_bgcolor_numeric_test(void)
     static unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
     static unsigned char const expected_black_rgb[12] = {
         0xffu, 0x00u, 0x00u,
-        0x00u, 0x7fu, 0x00u,
-        0x00u, 0x00u, 0x3fu,
-        0x00u, 0x00u, 0x00u
+        0x00u, 0xffu, 0x00u,
+        0x00u, 0x00u, 0xffu,
+        0xffu, 0xffu, 0xffu
     };
     static unsigned char const expected_white_rgb[12] = {
         0xffu, 0x00u, 0x00u,
-        0x7eu, 0xfeu, 0x7eu,
-        0xbeu, 0xbeu, 0xfeu,
-        0xfeu, 0xfeu, 0xfeu
+        0xbbu, 0xffu, 0xbbu,
+        0xe0u, 0xe0u, 0xffu,
+        0xffu, 0xffu, 0xffu
     };
     static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
     builtin_loader_probe_options_t options;

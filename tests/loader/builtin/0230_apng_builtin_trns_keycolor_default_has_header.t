@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify builtin APNG default output contains the keycolor DCS header.
+# Verify builtin APNG RGBA default output does not depend on keycolor header.
 
 set -eux
 
@@ -35,11 +35,11 @@ case "${out_payload}" in
         ;;
 esac
 
-test "${has_header}" = 1 || {
-    echo "not ok 1 - builtin APNG default output lost keycolor DCS header"
+test "${has_header}" = 0 || {
+    echo "not ok 1 - builtin APNG RGBA default output unexpectedly has keycolor DCS header"
     exit 0
 }
 
-echo "ok 1 - builtin APNG default output keeps keycolor DCS header"
+echo "ok 1 - builtin APNG RGBA default output does not depend on keycolor header"
 
 exit 0

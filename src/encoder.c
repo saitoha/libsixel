@@ -3481,6 +3481,122 @@ cleanup:
 }
 
 static SIXELSTATUS
+sixel_encoder_capture_quantized_palette_only(
+    sixel_encoder_t *encoder,
+    sixel_dither_t *dither,
+    int width,
+    int height,
+    int colorspace)
+{
+    SIXELSTATUS status;
+    size_t quantized_pixels;
+    unsigned char *new_pixels;
+    sixel_palette_t *palette_obj;
+    unsigned char *palette_copy;
+    size_t palette_count;
+    size_t palette_bytes;
+    unsigned char *new_palette;
+    int ncolors;
+
+    status = SIXEL_OK;
+    quantized_pixels = 0u;
+    new_pixels = NULL;
+    palette_obj = NULL;
+    palette_copy = NULL;
+    palette_count = 0u;
+    palette_bytes = 0u;
+    new_palette = NULL;
+    ncolors = 0;
+    if (encoder == NULL || dither == NULL || width <= 0 || height <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_capture_quantized_palette_only: "
+            "invalid capture request.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    quantized_pixels = (size_t)width * (size_t)height;
+    if (height != 0 &&
+        quantized_pixels / (size_t)height != (size_t)width) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_capture_quantized_palette_only: "
+            "image too large.");
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    if (encoder->capture_pixels == NULL ||
+        encoder->capture_pixels_size < quantized_pixels) {
+        new_pixels = (unsigned char *)sixel_allocator_malloc(
+            encoder->allocator,
+            quantized_pixels);
+        if (new_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_capture_quantized_palette_only: "
+                "sixel_allocator_malloc() failed.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+        sixel_allocator_free(encoder->allocator, encoder->capture_pixels);
+        encoder->capture_pixels = new_pixels;
+        encoder->capture_pixels_size = quantized_pixels;
+    }
+    memset(encoder->capture_pixels, 0, quantized_pixels);
+    encoder->capture_pixel_bytes = quantized_pixels;
+
+    status = sixel_dither_get_quantized_palette(dither, &palette_obj);
+    if (SIXEL_FAILED(status) || palette_obj == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_capture_quantized_palette_only: "
+            "palette unavailable.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+    status = sixel_palette_copy_entries_8bit(
+        palette_obj,
+        &palette_copy,
+        &palette_count,
+        SIXEL_PIXELFORMAT_RGB888,
+        encoder->allocator);
+    sixel_palette_unref(palette_obj);
+    palette_obj = NULL;
+    if (SIXEL_FAILED(status) || palette_copy == NULL || palette_count == 0u) {
+        sixel_allocator_free(encoder->allocator, palette_copy);
+        sixel_helper_set_additional_message(
+            "sixel_encoder_capture_quantized_palette_only: "
+            "failed to copy palette.");
+        return SIXEL_RUNTIME_ERROR;
+    }
+    if (palette_count > (size_t)INT_MAX) {
+        sixel_allocator_free(encoder->allocator, palette_copy);
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    palette_bytes = palette_count * 3u;
+    ncolors = (int)palette_count;
+    if (encoder->capture_palette == NULL ||
+        encoder->capture_palette_size < palette_bytes) {
+        new_palette = (unsigned char *)sixel_allocator_malloc(
+            encoder->allocator,
+            palette_bytes);
+        if (new_palette == NULL) {
+            sixel_allocator_free(encoder->allocator, palette_copy);
+            sixel_helper_set_additional_message(
+                "sixel_encoder_capture_quantized_palette_only: "
+                "sixel_allocator_malloc() failed.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+        sixel_allocator_free(encoder->allocator, encoder->capture_palette);
+        encoder->capture_palette = new_palette;
+        encoder->capture_palette_size = palette_bytes;
+    }
+    memcpy(encoder->capture_palette, palette_copy, palette_bytes);
+    sixel_allocator_free(encoder->allocator, palette_copy);
+
+    encoder->capture_width = width;
+    encoder->capture_height = height;
+    encoder->capture_pixelformat = SIXEL_PIXELFORMAT_PAL8;
+    encoder->capture_colorspace = colorspace;
+    encoder->capture_ncolors = ncolors;
+    encoder->capture_valid = 1;
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_prepare_builtin_palette(
     sixel_dither_t /* out */ **dither,
     int            /* in */  builtin_palette)
@@ -5826,6 +5942,7 @@ sixel_encoder_output_without_macro(
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
     sixel_encoding_planner_t *planner;
     int quantize_animation_enabled;
+    int capture_palette_only;
 
     if (encoder == NULL) {
         sixel_helper_set_additional_message(
@@ -5836,6 +5953,7 @@ sixel_encoder_output_without_macro(
 
     planner = &encoder->planner;
     quantize_animation_enabled = 0;
+    capture_palette_only = 0;
 
     if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT) {
         quantize_animation_enabled =
@@ -5940,7 +6058,9 @@ sixel_encoder_output_without_macro(
         goto end;
     }
 
-    if (encoder->capture_quantized) {
+    capture_palette_only =
+        encoder->capture_quantized && encoder->palette_output != NULL;
+    if (encoder->capture_quantized && !capture_palette_only) {
         sixel_encoder_update_dither_frame_context(dither,
                                                   frame_no,
                                                   loop_no,
@@ -5970,6 +6090,17 @@ sixel_encoder_output_without_macro(
     status = sixel_encode(p, width, height, depth, dither, output);
     if (status != SIXEL_OK) {
         goto end;
+    }
+    if (capture_palette_only) {
+        status = sixel_encoder_capture_quantized_palette_only(
+            encoder,
+            dither,
+            width,
+            height,
+            output->colorspace);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
 end:

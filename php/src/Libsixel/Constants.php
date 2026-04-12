@@ -190,4 +190,8 @@ final class Constants
     public const SIXEL_LOADER_OPTION_CONTEXT = 9;
     public const SIXEL_LOADER_OPTION_WIC_ICO_MINSIZE = 10;
     public const SIXEL_LOADER_OPTION_START_FRAME_NO = 11;
+    public const SIXEL_LOADER_OPTION_BGCOLOR_SOURCE = 12;
+
+    public const SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT = 0;
+    public const SIXEL_LOADER_BGCOLOR_SOURCE_ENV = 1;
 }

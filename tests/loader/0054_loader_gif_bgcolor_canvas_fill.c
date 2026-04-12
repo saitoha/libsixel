@@ -131,6 +131,7 @@ run_case(char const *label,
                       INT_MIN,
                       callback.p,
                       &probe,
+                      NULL,
                       allocator);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: load_gif failed (%d)\n", label, status);

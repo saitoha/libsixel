@@ -2472,7 +2472,6 @@ sixel_builtin_apng_emit_frame(
     int loop_no,
     int multiframe,
     int emit_callback,
-    unsigned char *bgcolor,
     int alpha_zero_is_transparent,
     sixel_builtin_apng_canvas_t *canvas,
     sixel_load_image_function fn_load,
@@ -2638,13 +2637,10 @@ sixel_builtin_apng_emit_frame(
     sixel_frame_set_pixels(frame, emitted);
     emitted = NULL;
 
-    if (!frame->alpha_zero_is_transparent) {
-        status = sixel_frame_strip_alpha(frame, bgcolor);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-
+    /*
+     * Keep RGBA data untouched here so every builtin non-PAL8 path goes
+     * through the same alpha normalization policy in finalize callback.
+     */
     status = fn_load(frame, callback_context);
     sixel_trace_topic_message(
         "apng",
@@ -2709,7 +2705,6 @@ sixel_builtin_apng_emit_pending_frame(
     int source_frame_no,
     int fstatic,
     int num_frames,
-    unsigned char *bgcolor,
     int alpha_zero_is_transparent,
     sixel_builtin_apng_canvas_t *canvas,
     sixel_load_image_function fn_load,
@@ -2744,7 +2739,6 @@ sixel_builtin_apng_emit_pending_frame(
         loop_no,
         (!fstatic && num_frames > 1),
         emit_callback,
-        bgcolor,
         alpha_zero_is_transparent,
         canvas,
         fn_load,
@@ -2925,9 +2919,8 @@ sixel_builtin_apng_flush_pending_frame(
     sixel_builtin_apng_runtime_t *runtime,
     int start_frame_no,
     int fstatic,
-    unsigned char *bgcolor,
     sixel_load_image_function fn_load,
-    void *context,
+    void *callback_context,
     sixel_allocator_t *allocator,
     int *stop_after_emit)
 {
@@ -2957,11 +2950,10 @@ sixel_builtin_apng_flush_pending_frame(
         runtime->source_frame_no,
         fstatic,
         runtime->num_frames,
-        bgcolor,
         runtime->alpha_zero_is_transparent,
         canvas,
         fn_load,
-        context,
+        callback_context,
         allocator,
         &runtime->emit_callback);
     if (SIXEL_FAILED(status)) {
@@ -2995,7 +2987,7 @@ sixel_builtin_apng_process_chunk(
     int fstatic,
     int *start_frame_no,
     sixel_load_image_function fn_load,
-    void *context,
+    void *callback_context,
     int *stop_decode,
     int *stop_scan)
 {
@@ -3083,9 +3075,8 @@ sixel_builtin_apng_process_chunk(
                 runtime,
                 *start_frame_no,
                 fstatic,
-                bgcolor,
                 fn_load,
-                context,
+                callback_context,
                 pchunk->allocator,
                 &stop_after_emit);
             if (SIXEL_FAILED(status)) {
@@ -3201,7 +3192,8 @@ sixel_builtin_apng_scan_loop_chunks(
     int fstatic,
     int *start_frame_no,
     sixel_load_image_function fn_load,
-    void *context,
+    void *callback_context,
+    void *cancel_context,
     int *stop_decode)
 {
     SIXELSTATUS status;
@@ -3222,7 +3214,7 @@ sixel_builtin_apng_scan_loop_chunks(
     }
 
     while (runtime->remain >= 12u) {
-        if (sixel_loader_callback_is_canceled(context)) {
+        if (sixel_loader_callback_is_canceled(cancel_context)) {
             return SIXEL_INTERRUPTED;
         }
         stop_scan = 0;
@@ -3237,7 +3229,7 @@ sixel_builtin_apng_scan_loop_chunks(
             fstatic,
             start_frame_no,
             fn_load,
-            context,
+            callback_context,
             stop_decode,
             &stop_scan);
         if (SIXEL_FAILED(status)) {
@@ -3304,7 +3296,8 @@ sixel_builtin_load_apng_frames(
     int loop_control,
     int start_frame_no,
     sixel_load_image_function fn_load,
-    void *context)
+    void *callback_context,
+    void *cancel_context)
 {
     SIXELSTATUS status;
     sixel_builtin_apng_state_t state;
@@ -3345,7 +3338,7 @@ sixel_builtin_load_apng_frames(
     }
 
     for (;;) {
-        if (sixel_loader_callback_is_canceled(context)) {
+        if (sixel_loader_callback_is_canceled(cancel_context)) {
             status = SIXEL_INTERRUPTED;
             goto end;
         }
@@ -3367,7 +3360,8 @@ sixel_builtin_load_apng_frames(
             fstatic,
             &apng_start_frame_no,
             fn_load,
-            context,
+            callback_context,
+            cancel_context,
             &stop_decode);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -3383,9 +3377,8 @@ sixel_builtin_load_apng_frames(
             &runtime,
             apng_start_frame_no,
             fstatic,
-            bgcolor,
             fn_load,
-            context,
+            callback_context,
             pchunk->allocator,
             &stop_decode);
         if (SIXEL_FAILED(status)) {
@@ -3702,6 +3695,7 @@ typedef struct sixel_builtin_load_context {
 
 typedef struct sixel_builtin_frame_callback_context {
     sixel_builtin_load_request_t const *request;
+    void *cancel_context;
 } sixel_builtin_frame_callback_context_t;
 
 typedef enum sixel_builtin_decode_path {
@@ -3897,6 +3891,7 @@ sixel_builtin_load_gif_frames(
     status = SIXEL_OK;
     fnp.fn = NULL;
     callback_context.request = NULL;
+    callback_context.cancel_context = NULL;
     chunk_size = 0;
     if (request == NULL ||
         load_context == NULL ||
@@ -3907,6 +3902,7 @@ sixel_builtin_load_gif_frames(
 
     fnp.fn = sixel_builtin_finalize_frame_callback;
     callback_context.request = request;
+    callback_context.cancel_context = request->callback_context;
     status = sixel_builtin_chunk_size_to_int(request->chunk, &chunk_size);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -3937,6 +3933,7 @@ sixel_builtin_load_gif_frames(
                     load_context->resolved_start_frame_no,
                     fnp.p,
                     &callback_context,
+                    callback_context.cancel_context,
                     request->chunk->allocator);
 }
 
@@ -5558,9 +5555,12 @@ sixel_builtin_load_stbi_png_path(
 {
     SIXELSTATUS status;
     sixel_builtin_frame_callback_context_t callback_context;
+    int has_apng_control;
 
     status = SIXEL_FALSE;
     callback_context.request = NULL;
+    callback_context.cancel_context = NULL;
+    has_apng_control = 0;
     if (animation_handled != NULL) {
         *animation_handled = 0;
     }
@@ -5574,24 +5574,24 @@ sixel_builtin_load_stbi_png_path(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    /*
-     * Try APNG first for builtin PNG path. Regular PNG input returns
-     * SIXEL_FALSE and then falls through to existing single-frame
-     * decode logic.
-     */
-    callback_context.request = load_request;
-    status = sixel_builtin_load_apng_frames(
-        load_request->chunk,
-        load_request->fstatic,
-        load_request->bgcolor,
-        load_request->enable_cms,
-        load_request->loop_control,
-        load_context->start_frame_no,
-        sixel_builtin_finalize_frame_callback,
-        &callback_context);
-    if (status == SIXEL_OK || status == SIXEL_INTERRUPTED) {
-        *animation_handled = 1;
-        return status;
+    has_apng_control = sixel_builtin_chunk_has_apng_control(load_request->chunk);
+    if (has_apng_control != 0) {
+        callback_context.request = load_request;
+        callback_context.cancel_context = load_request->callback_context;
+        status = sixel_builtin_load_apng_frames(
+            load_request->chunk,
+            load_request->fstatic,
+            load_request->bgcolor,
+            load_request->enable_cms,
+            load_request->loop_control,
+            load_context->start_frame_no,
+            sixel_builtin_finalize_frame_callback,
+            &callback_context,
+            callback_context.cancel_context);
+        if (status == SIXEL_OK || status == SIXEL_INTERRUPTED) {
+            *animation_handled = 1;
+            return status;
+        }
     }
 
     status = sixel_builtin_load_png_single_frame(load_request->chunk,

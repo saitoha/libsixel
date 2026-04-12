@@ -17,11 +17,11 @@ printf '1..1\n'
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-# Baseline against alpha-composited reference (default black background).
+# Baseline against source RGBA after roundtrip through builtin loader.
 lsqa_floor=0.99
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
-expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/0005_rgba_png_default_black_composite.ppm"
+expected_ppm="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.six"
 output_png="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.png"
 

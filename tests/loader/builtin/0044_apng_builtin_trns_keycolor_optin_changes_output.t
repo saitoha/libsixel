@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify builtin APNG alpha keycolor is enabled by default.
+# Verify transparent policy opt-in changes builtin APNG output.
 
 set -eux
 
@@ -13,30 +13,44 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_png="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
+input_png="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background.png"
 out_default="${ARTIFACT_LOCAL_DIR}/builtin-apng-trns-keycolor-default.six"
-out_off="${ARTIFACT_LOCAL_DIR}/builtin-apng-trns-keycolor-env0.six"
+out_composite="${ARTIFACT_LOCAL_DIR}/builtin-apng-transparent-policy-composite.six"
+out_transparent="${ARTIFACT_LOCAL_DIR}/builtin-apng-transparent-policy-transparent.six"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=apng \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
               -Lbuiltin! -d fs:scan=raster \
-              "${input_png}" >"${out_default}" || {
+              -B#fff "${input_png}" >"${out_default}" || {
     echo "not ok 1 - builtin APNG default render failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_TRACE_TOPIC=apng \
-              --env SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+              --env SIXEL_TRANSPARENT_POLICY=composite \
               -Lbuiltin! -d fs:scan=raster \
-              "${input_png}" >"${out_off}" || {
-    echo "not ok 1 - builtin APNG SIXEL_LOADER_LIBPNG_USE_TRNS_KEYCOLOR=0 render failed"
+              -B#fff "${input_png}" >"${out_composite}" || {
+    echo "not ok 1 - builtin APNG composite policy render failed"
     exit 0
 }
 
-cmp -s "${out_default}" "${out_off}" && {
-    echo "not ok 1 - builtin APNG default keycolor is unexpectedly disabled"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+              --env SIXEL_TRANSPARENT_POLICY=transparent \
+              -Lbuiltin! -d fs:scan=raster \
+              -B#fff "${input_png}" >"${out_transparent}" || {
+    echo "not ok 1 - builtin APNG transparent policy render failed"
     exit 0
 }
 
-echo "ok 1 - builtin APNG alpha keycolor is enabled by default"
+cmp -s "${out_default}" "${out_composite}" || {
+    echo "not ok 1 - builtin APNG default policy is not composite"
+    exit 0
+}
+
+cmp -s "${out_default}" "${out_transparent}" && {
+    echo "not ok 1 - builtin APNG transparent policy opt-in did not change output"
+    exit 0
+}
+
+echo "ok 1 - builtin APNG transparent policy opt-in changes output"
 
 exit 0
