@@ -30,14 +30,14 @@ base_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 
 clip_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -v -Lbuiltin:cms_engine=none! -d fs:scan=raster \
-    -c2x1+1+0 "${input_png}" 2>&1 >/dev/null) || {
+    -c2x1+0+0 "${input_png}" 2>&1 >/dev/null) || {
     echo "not ok 1 - clipped pal8 transparent render failed"
     exit 0
 }
 
 clip_out=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:cms_engine=none! -d fs:scan=raster \
-    -c2x1+1+0 "${input_png}") || {
+    -c2x1+0+0 "${input_png}") || {
     echo "not ok 1 - clipped pal8 transparent sixel output failed"
     exit 0
 }
