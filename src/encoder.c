@@ -1321,17 +1321,6 @@ static sixel_suboption_choice_t const g_option_choices_kmedoids_algo[] = {
     { "bandit", SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM }
 };
 
-static sixel_suboption_choice_t const g_option_choices_kmedoids_prune[] = {
-    { "auto", SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO },
-    { "elkan", SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN },
-    { "hamerly", SIXEL_PALETTE_KMEDOIDS_PRUNE_HAMERLY },
-    { "yinyang", SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG },
-    {
-        "triangle-inequality",
-        SIXEL_PALETTE_KMEDOIDS_PRUNE_TRIANGLE_INEQUALITY
-    }
-};
-
 static sixel_suboption_choice_t const g_option_choices_quantize_merge[] = {
     { "auto", SIXEL_FINAL_MERGE_AUTO },
     { "none", SIXEL_FINAL_MERGE_NONE },
@@ -1577,15 +1566,6 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
         g_option_choices_kmedoids_algo,
         sizeof(g_option_choices_kmedoids_algo)
         / sizeof(g_option_choices_kmedoids_algo[0])
-    },
-    {
-        "prune",
-        NULL,
-        "SIXEL_PALETTE_KMEDOIDS_PRUNE",
-        SIXEL_SUBOPTION_VALUE_CHOICE,
-        g_option_choices_kmedoids_prune,
-        sizeof(g_option_choices_kmedoids_prune)
-        / sizeof(g_option_choices_kmedoids_prune[0])
     },
     {
         "seed",
@@ -5732,10 +5712,6 @@ sixel_encoder_prepare_palette(
     sixel_set_kmedoids_algo_override(
         encoder->quantize_model_kmedoids_algo_override,
         (sixel_kmedoids_algo_t)encoder->quantize_model_kmedoids_algo);
-    sixel_set_kmedoids_prune_policy_override(
-        encoder->quantize_model_kmedoids_prune_override,
-        (sixel_kmedoids_prune_policy_t)
-            encoder->quantize_model_kmedoids_prune_policy);
     sixel_set_kmedoids_seed_override(
         encoder->quantize_model_kmedoids_seed_override,
         (uint32_t)encoder->quantize_model_kmedoids_seed);
@@ -5818,9 +5794,6 @@ sixel_encoder_prepare_palette(
     sixel_set_kmedoids_algo_override(
         0,
         SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO);
-    sixel_set_kmedoids_prune_policy_override(
-        0,
-        SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO);
     sixel_set_kmedoids_seed_override(0, 1u);
     sixel_set_kmedoids_iter_override(0, 0u);
     sixel_set_kmedoids_sample_override(0, 0u);
@@ -6863,9 +6836,6 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kmedoids_algo_override = 0;
     (*ppencoder)->quantize_model_kmedoids_algo
         = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
-    (*ppencoder)->quantize_model_kmedoids_prune_override = 0;
-    (*ppencoder)->quantize_model_kmedoids_prune_policy
-        = SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO;
     (*ppencoder)->quantize_model_kmedoids_seed_override = 0;
     (*ppencoder)->quantize_model_kmedoids_seed = 1u;
     (*ppencoder)->quantize_model_kmedoids_iter_override = 0;
@@ -10019,7 +9989,6 @@ sixel_encoder_setopt(
         encoder->quantize_model_kmeans_feedback_slots_override = 0;
         encoder->quantize_model_kmeans_feedback_interval_override = 0;
         encoder->quantize_model_kmedoids_algo_override = 0;
-        encoder->quantize_model_kmedoids_prune_override = 0;
         encoder->quantize_model_kmedoids_seed_override = 0;
         encoder->quantize_model_kmedoids_iter_override = 0;
         encoder->quantize_model_kmedoids_sample_override = 0;
@@ -10179,18 +10148,6 @@ sixel_encoder_setopt(
                 }
                 encoder->quantize_model_kmedoids_algo_override = 1;
                 encoder->quantize_model_kmedoids_algo = match_value;
-            } else if (q_key != NULL && strcmp(q_key, "prune") == 0
-                    && q_model == SIXEL_QUANTIZE_MODEL_KMEDOIDS) {
-                if (!sixel_encoder_resolve_suboption_choice_value(
-                        q_assignment,
-                        &match_value)) {
-                    sixel_helper_set_additional_message(
-                        "invalid -Q prune resolution.");
-                    status = SIXEL_BAD_ARGUMENT;
-                    goto end;
-                }
-                encoder->quantize_model_kmedoids_prune_override = 1;
-                encoder->quantize_model_kmedoids_prune_policy = match_value;
             } else if (q_key != NULL && strcmp(q_key, "seed") == 0) {
                 status = sixel_encoder_parse_kmedoids_seed_text(
                     q_assignment->resolved_value_text,

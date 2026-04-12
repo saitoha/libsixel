@@ -429,10 +429,6 @@ typedef int SIXELSTATUS;
                                                     algo:
                                                       auto, pam, sample,
                                                       random, bandit
-                                                    prune:
-                                                      auto, elkan, hamerly,
-                                                      yinyang,
-                                                      triangle-inequality
                                                     seed:
                                                       integer in 0-4294967295
                                                     iter:

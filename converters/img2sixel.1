@@ -168,9 +168,6 @@ Supported k-medoids suboptions:
 \fBalgo\fP (or short key \fBa\fP): \fBauto\fP, \fBpam\fP, \fBsample\fP
 (CLARA), \fBrandom\fP (CLARANS), or \fBbandit\fP (BanditPAM).
 .br
-\fBprune\fP: \fBauto\fP, \fBelkan\fP, \fBhamerly\fP, \fByinyang\fP,
-or \fBtriangle-inequality\fP.
-.br
 \fBseed\fP (or short key \fBs\fP): integer value in 0-4294967295.
 .br
 \fBiter\fP: integer value in 1-64.
@@ -1330,11 +1327,6 @@ feedback cadence in Lloyd iterations (1-64, default 1).
 .br
 default k-medoids solver when \fB-Q medoids\fP omits \fB:algo\fP. Accepts
 auto, pam, sample, random, or bandit.
-.TP 5
-.B SIXEL_PALETTE_KMEDOIDS_PRUNE
-.br
-k-medoids pruning profile: auto, elkan, hamerly, yinyang, or
-triangle-inequality. Default auto maps to elkan.
 .TP 5
 .B SIXEL_PALETTE_KMEDOIDS_SEED
 .br

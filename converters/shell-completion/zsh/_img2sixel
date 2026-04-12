@@ -474,13 +474,6 @@ _quantizemodel() {
                      "${prefix}${key}=128" \
                      "${prefix}${key}=256"
           return 0
-        elif [[ ${key} == prune ]]; then
-          compadd -- "${prefix}${key}=auto" \
-                     "${prefix}${key}=elkan" \
-                     "${prefix}${key}=hamerly" \
-                     "${prefix}${key}=yinyang" \
-                     "${prefix}${key}=triangle-inequality"
-          return 0
         elif [[ ${key} == prune_mass ]]; then
           compadd -- "${prefix}${key}=0.900" \
                      "${prefix}${key}=0.950" \
@@ -549,7 +542,6 @@ _quantizemodel() {
                    "${prefix}histbits=" \
                    "${prefix}point_budget=" \
                    "${prefix}rare_keep=" \
-                   "${prefix}prune=" \
                    "${prefix}prune_mass=" \
                    "${prefix}clara_trials=" "${prefix}clara_sample=" \
                    "${prefix}clarans_local=" \

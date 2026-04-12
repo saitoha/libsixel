@@ -125,10 +125,6 @@ static SIXEL_TLS int sixel_kmedoids_point_budget_override_enabled = 0;
 static SIXEL_TLS unsigned int sixel_kmedoids_point_budget_override_value = 0u;
 static SIXEL_TLS int sixel_kmedoids_rare_keep_override_enabled = 0;
 static SIXEL_TLS unsigned int sixel_kmedoids_rare_keep_override_value = 0u;
-static SIXEL_TLS int sixel_kmedoids_prune_policy_override_enabled = 0;
-static SIXEL_TLS sixel_kmedoids_prune_policy_t
-    sixel_kmedoids_prune_policy_override_value
-        = SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO;
 static SIXEL_TLS int sixel_kmedoids_prune_mass_override_enabled = 0;
 static SIXEL_TLS double sixel_kmedoids_prune_mass_override_value = 0.0;
 static SIXEL_TLS double const *sixel_kmedoids_distance_cache = NULL;
@@ -281,7 +277,6 @@ typedef struct sixel_kmedoids_point_weight_rank {
 } sixel_kmedoids_point_weight_rank_t;
 
 typedef struct sixel_kmedoids_prune_profile {
-    sixel_kmedoids_prune_policy_t policy;
     int enable_cheap_bound;
     int enable_row_cache;
     int enable_bandit_prune;
@@ -3348,124 +3343,16 @@ sixel_kmedoids_rng_unit(uint32_t *state)
     return ((double)raw) / 4294967295.0;
 }
 
-static char const *
-sixel_kmedoids_prune_policy_to_string(sixel_kmedoids_prune_policy_t policy)
-{
-    switch (policy) {
-    case SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN:
-        return "elkan";
-    case SIXEL_PALETTE_KMEDOIDS_PRUNE_HAMERLY:
-        return "hamerly";
-    case SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG:
-        return "yinyang";
-    case SIXEL_PALETTE_KMEDOIDS_PRUNE_TRIANGLE_INEQUALITY:
-        return "triangle-inequality";
-    case SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO:
-    default:
-        return "auto";
-    }
-}
-
-static sixel_kmedoids_prune_policy_t
-sixel_kmedoids_resolve_prune_policy(sixel_kmedoids_prune_policy_t policy)
-{
-    switch (policy) {
-    case SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO:
-    case SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN:
-        return SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
-    case SIXEL_PALETTE_KMEDOIDS_PRUNE_HAMERLY:
-        return SIXEL_PALETTE_KMEDOIDS_PRUNE_HAMERLY;
-    case SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG:
-        return SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG;
-    case SIXEL_PALETTE_KMEDOIDS_PRUNE_TRIANGLE_INEQUALITY:
-        return SIXEL_PALETTE_KMEDOIDS_PRUNE_TRIANGLE_INEQUALITY;
-    default:
-        return SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
-    }
-}
-
-void
-sixel_set_kmedoids_prune_policy_override(int enabled,
-                                         sixel_kmedoids_prune_policy_t policy)
-{
-    int lock_acquired;
-
-    lock_acquired = sixel_kmedoids_override_lock_acquire();
-    sixel_kmedoids_prune_policy_override_enabled = enabled ? 1 : 0;
-    sixel_kmedoids_prune_policy_override_value = policy;
-    sixel_kmedoids_override_lock_release(lock_acquired);
-}
-
-SIXEL_INTERNAL_API sixel_kmedoids_prune_policy_t
-sixel_get_kmedoids_prune_policy(void)
-{
-    char const *env_value;
-    static int loaded = 0;
-    static sixel_kmedoids_prune_policy_t cached
-        = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
-    sixel_kmedoids_prune_policy_t parsed;
-    sixel_kmedoids_prune_policy_t resolved;
-
-    env_value = NULL;
-    parsed = SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO;
-    resolved = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
-    if (sixel_kmedoids_prune_policy_override_enabled) {
-        return sixel_kmedoids_resolve_prune_policy(
-            sixel_kmedoids_prune_policy_override_value);
-    }
-    if (loaded) {
-        return cached;
-    }
-    loaded = 1;
-    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEDOIDS_PRUNE");
-    if (env_value != NULL && env_value[0] != '\0') {
-        if (sixel_compat_strcasecmp(env_value, "auto") == 0) {
-            parsed = SIXEL_PALETTE_KMEDOIDS_PRUNE_AUTO;
-        } else if (sixel_compat_strcasecmp(env_value, "elkan") == 0) {
-            parsed = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
-        } else if (sixel_compat_strcasecmp(env_value, "hamerly") == 0) {
-            parsed = SIXEL_PALETTE_KMEDOIDS_PRUNE_HAMERLY;
-        } else if (sixel_compat_strcasecmp(env_value, "yinyang") == 0) {
-            parsed = SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG;
-        } else if (sixel_compat_strcasecmp(env_value,
-                                           "triangle-inequality") == 0) {
-            parsed = SIXEL_PALETTE_KMEDOIDS_PRUNE_TRIANGLE_INEQUALITY;
-        }
-    }
-    resolved = sixel_kmedoids_resolve_prune_policy(parsed);
-    cached = resolved;
-    sixel_debugf("k-medoids prune policy: %s",
-                 sixel_kmedoids_prune_policy_to_string(parsed));
-    return cached;
-}
-
 static void
-sixel_kmedoids_build_prune_profile(
-    sixel_kmedoids_prune_policy_t policy,
-    sixel_kmedoids_prune_profile_t *profile)
+sixel_kmedoids_set_default_prune_profile(sixel_kmedoids_prune_profile_t *profile)
 {
     if (profile == NULL) {
         return;
     }
-    profile->policy = sixel_kmedoids_resolve_prune_policy(policy);
-    profile->enable_cheap_bound = 0;
-    profile->enable_row_cache = 0;
+    profile->enable_cheap_bound = 1;
+    profile->enable_row_cache = 1;
     profile->enable_bandit_prune = 0;
     profile->aggressive_bandit_prune = 0;
-
-    if (profile->policy == SIXEL_PALETTE_KMEDOIDS_PRUNE_HAMERLY
-            || profile->policy == SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN
-            || profile->policy == SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG) {
-        profile->enable_cheap_bound = 1;
-    }
-    if (profile->policy == SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN
-            || profile->policy == SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG) {
-        profile->enable_row_cache = 1;
-    }
-    if (profile->policy == SIXEL_PALETTE_KMEDOIDS_PRUNE_YINYANG) {
-        profile->enable_bandit_prune = 1;
-        profile->aggressive_bandit_prune = 1;
-    }
 }
 
 static const char *
@@ -8759,11 +8646,7 @@ sixel_kmedoids_run_clarans(double const *points,
     current_cost = 0.0;
     best_cost = 0.0;
     iter_total = 0u;
-    resolved_profile.policy = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
-    resolved_profile.enable_cheap_bound = 1;
-    resolved_profile.enable_row_cache = 1;
-    resolved_profile.enable_bandit_prune = 0;
-    resolved_profile.aggressive_bandit_prune = 0;
+    sixel_kmedoids_set_default_prune_profile(&resolved_profile);
     enable_row_cache = 1;
 
     if (cost_out != NULL) {
@@ -10204,11 +10087,7 @@ sixel_kmedoids_run_banditpam(double const *points,
     eval_full_refresh = 0;
     current_assigned = 0;
     pair_seen = 0;
-    resolved_profile.policy = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
-    resolved_profile.enable_cheap_bound = 1;
-    resolved_profile.enable_row_cache = 1;
-    resolved_profile.enable_bandit_prune = 0;
-    resolved_profile.aggressive_bandit_prune = 0;
+    sixel_kmedoids_set_default_prune_profile(&resolved_profile);
 
     if (iterations_out != NULL) {
         *iterations_out = 0u;
@@ -10883,7 +10762,6 @@ build_palette_kmedoids(unsigned char **result,
     unsigned int point_count;
     sixel_kmedoids_algo_t algo;
     sixel_kmedoids_algo_t resolved_algo;
-    sixel_kmedoids_prune_policy_t prune_policy;
     sixel_kmedoids_prune_profile_t prune_profile;
     uint32_t seed;
     uint32_t rng_state;
@@ -10982,12 +10860,7 @@ build_palette_kmedoids(unsigned char **result,
     point_count = 0u;
     algo = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
     resolved_algo = SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO;
-    prune_policy = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
-    prune_profile.policy = SIXEL_PALETTE_KMEDOIDS_PRUNE_ELKAN;
-    prune_profile.enable_cheap_bound = 1;
-    prune_profile.enable_row_cache = 1;
-    prune_profile.enable_bandit_prune = 0;
-    prune_profile.aggressive_bandit_prune = 0;
+    sixel_kmedoids_set_default_prune_profile(&prune_profile);
     seed = 1u;
     rng_state = 1u;
     pam_iterations = 0u;
@@ -11212,8 +11085,6 @@ build_palette_kmedoids(unsigned char **result,
     histbits = sixel_get_kmedoids_histbits();
     rare_keep = sixel_get_kmedoids_rare_keep();
     prune_mass = sixel_get_kmedoids_prune_mass();
-    prune_policy = sixel_get_kmedoids_prune_policy();
-    sixel_kmedoids_build_prune_profile(prune_policy, &prune_profile);
     status = sixel_kmedoids_collect_samples(data,
                                             length,
                                             channels,
@@ -11408,8 +11279,7 @@ build_palette_kmedoids(unsigned char **result,
                                 seed,
                                 histbits,
                                 point_budget,
-                                sixel_kmedoids_prune_policy_to_string(
-                                    prune_policy),
+                                "elkan",
                                 prune_mass);
     sixel_palette_kmedoids_log_finish(logger,
                                       job_init,

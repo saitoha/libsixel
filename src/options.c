@@ -215,6 +215,11 @@ sixel_option_match_suboption_key(
     char *diagnostic,
     size_t diagnostic_size);
 
+static int
+sixel_option_suboption_key_token_is_removed_alias(
+    sixel_suboption_key_t const *key,
+    char const *token);
+
 static sixel_option_choice_result_t
 sixel_option_match_schema_value(
     char const *token,
@@ -1452,6 +1457,12 @@ sixel_option_match_suboption_key(
     }
 
     while (index < key_count) {
+        if (sixel_option_suboption_key_token_is_removed_alias(
+                keys + index,
+                token)) {
+            ++index;
+            continue;
+        }
         choice_count += 1u;
         if (keys[index].short_name != NULL &&
                 keys[index].short_name[0] != '\0') {
@@ -1474,6 +1485,12 @@ sixel_option_match_suboption_key(
     choice_count = 0u;
     index = 0u;
     while (index < key_count) {
+        if (sixel_option_suboption_key_token_is_removed_alias(
+                keys + index,
+                token)) {
+            ++index;
+            continue;
+        }
         if (choice_count >= capacity) {
             break;
         }
@@ -1505,6 +1522,27 @@ sixel_option_match_suboption_key(
     }
 
     return result;
+}
+
+static int
+sixel_option_suboption_key_token_is_removed_alias(
+    sixel_suboption_key_t const *key,
+    char const *token)
+{
+    if (key == NULL || key->name == NULL || token == NULL) {
+        return 0;
+    }
+
+    /*
+     * `medoids:prune` was removed and must stay rejected even though
+     * `prune_mass` remains available.
+     */
+    if (strcmp(key->name, "prune_mass") == 0
+            && strcmp(token, "prune") == 0) {
+        return 1;
+    }
+
+    return 0;
 }
 
 static int
