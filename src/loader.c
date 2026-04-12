@@ -145,6 +145,7 @@ struct sixel_loader {
     int reqcolors;
     unsigned char bgcolor[3];
     int has_bgcolor;
+    int bgcolor_source;
     int loop_control;
     int finsecure;
     int has_start_frame_no;
@@ -676,6 +677,16 @@ loader_apply_component_options(sixel_loader_component_t *component,
     }
 
     if (suboptions == NULL) {
+        status = sixel_loader_component_setopt(
+            component,
+            SIXEL_LOADER_COMPONENT_OPTION_BGCOLOR_SOURCE,
+            &loader->bgcolor_source);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_loader_load_file: failed to apply loader option "
+                "'bgcolor-source'.");
+            return status;
+        }
         return SIXEL_OK;
     }
 
@@ -839,6 +850,17 @@ loader_apply_component_options(sixel_loader_component_t *component,
         sixel_helper_set_additional_message(
             "sixel_loader_load_file: failed to apply loader option "
             "'cms-engine'.");
+        return status;
+    }
+
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_BGCOLOR_SOURCE,
+        &loader->bgcolor_source);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_load_file: failed to apply loader option "
+            "'bgcolor-source'.");
         return status;
     }
 
@@ -1371,6 +1393,7 @@ sixel_loader_new(
     loader->bgcolor[1] = 0;
     loader->bgcolor[2] = 0;
     loader->has_bgcolor = 0;
+    loader->bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
     loader->loop_control = SIXEL_LOOP_AUTO;
     loader->finsecure = 0;
     loader->has_start_frame_no = 0;
@@ -1505,7 +1528,27 @@ sixel_loader_setopt(
             loader->bgcolor[1] = color[1];
             loader->bgcolor[2] = color[2];
             loader->has_bgcolor = 1;
+            if (loader->bgcolor_source != SIXEL_LOADER_BGCOLOR_SOURCE_ENV) {
+                loader->bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
+            }
         }
+        status = SIXEL_OK;
+        break;
+    case SIXEL_LOADER_OPTION_BGCOLOR_SOURCE:
+        flag = (int const *)value;
+        if (flag == NULL) {
+            loader->bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
+            status = SIXEL_OK;
+            break;
+        }
+        if (*flag != SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT &&
+            *flag != SIXEL_LOADER_BGCOLOR_SOURCE_ENV) {
+            sixel_helper_set_additional_message(
+                "sixel_loader_setopt: bgcolor source is invalid.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        loader->bgcolor_source = *flag;
         status = SIXEL_OK;
         break;
     case SIXEL_LOADER_OPTION_LOOP_CONTROL:

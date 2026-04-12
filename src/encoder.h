@@ -225,6 +225,7 @@ struct sixel_encoder {
     int verbose;
     int has_gri_arg_limit;
     unsigned char *bgcolor;
+    int bgcolor_source;
     int outfd;
     int tile_outfd;
     int finsecure;

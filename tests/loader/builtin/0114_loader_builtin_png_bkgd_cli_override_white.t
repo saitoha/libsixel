@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: explicit -B should override embedded PNG bKGD for alpha compositing.
+# TAP test: explicit_first policy should let -B override embedded PNG bKGD.
 
 set -eux
 
@@ -26,7 +26,8 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -B#fff -Llibpng:cms_engine=none! "${input_
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -B#fff -Lbuiltin:cms_engine=none! "${input_png}" >"${output_sixel}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_BACKGROUND_POLICY=explicit_first \
+              -B#fff -Lbuiltin:cms_engine=none! "${input_png}" >"${output_sixel}" || {
     echo "not ok" 1 - "builtin bKGD cli override conversion failed"
     exit 0
 }
@@ -36,5 +37,5 @@ lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98
     exit 0
 }
 
-echo "ok" 1 - "builtin -B overrides embedded bKGD compositing (matches libpng baseline)"
+echo "ok" 1 - "builtin explicit_first policy overrides embedded bKGD (matches libpng)"
 exit 0

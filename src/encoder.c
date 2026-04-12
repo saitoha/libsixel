@@ -4958,6 +4958,12 @@ palette_cleanup:
     if (SIXEL_FAILED(status)) {
         goto end_loader;
     }
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_BGCOLOR_SOURCE,
+                                 &encoder->bgcolor_source);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
 
     status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_LOOP_CONTROL,
@@ -6620,6 +6626,7 @@ sixel_encoder_new(
     (*ppencoder)->ormode                = 0;
     (*ppencoder)->pipe_mode             = 0;
     (*ppencoder)->bgcolor               = NULL;
+    (*ppencoder)->bgcolor_source        = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
     (*ppencoder)->outfd                 = STDOUT_FILENO;
     (*ppencoder)->tile_outfd            = (-1);
     (*ppencoder)->finsecure             = 0;
@@ -6710,6 +6717,7 @@ sixel_encoder_new(
         if (SIXEL_FAILED(status)) {
             goto error;
         }
+        (*ppencoder)->bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_ENV;
     }
 
     /* evaluate environment variable ${SIXEL_COLORS} */
@@ -10264,6 +10272,7 @@ sixel_encoder_setopt(
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
+        encoder->bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
         break;
     case SIXEL_OPTFLAG_INSECURE:  /* k */
         encoder->finsecure = 1;
@@ -12305,6 +12314,12 @@ reload:
     status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_BGCOLOR,
                                  encoder->bgcolor);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_BGCOLOR_SOURCE,
+                                 &encoder->bgcolor_source);
     if (SIXEL_FAILED(status)) {
         goto load_end;
     }

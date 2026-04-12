@@ -91,6 +91,12 @@ static int builtin_enable_cms_default = 0;
 static int builtin_enable_cms = 0;
 static int loader_background_colorspace_initialized;
 static int loader_background_colorspace_value = SIXEL_COLORSPACE_GAMMA;
+static int loader_transparent_policy_initialized;
+static int loader_transparent_policy_value =
+    SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
+static int loader_background_policy_initialized;
+static int loader_background_policy_value =
+    SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
 /*
  * Per-thread temporary override used by loader.c when OSC11 provides
  * a terminal UI background color.
@@ -387,6 +393,56 @@ loader_background_initialize_colorspace(void)
     loader_background_unlock();
 }
 
+static void
+loader_initialize_transparent_policy(void)
+{
+    char const *env_value;
+
+    loader_background_lock();
+    if (loader_transparent_policy_initialized) {
+        loader_background_unlock();
+        return;
+    }
+    loader_transparent_policy_initialized = 1;
+    loader_transparent_policy_value = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
+    env_value = sixel_compat_getenv("SIXEL_TRANSPARENT_POLICY");
+    if (env_value != NULL && env_value[0] != '\0') {
+        if (strcmp(env_value, "composite") == 0) {
+            loader_transparent_policy_value =
+                SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
+        } else if (strcmp(env_value, "transparent") == 0) {
+            loader_transparent_policy_value =
+                SIXEL_LOADER_TRANSPARENT_POLICY_TRANSPARENT;
+        }
+    }
+    loader_background_unlock();
+}
+
+static void
+loader_initialize_background_policy(void)
+{
+    char const *env_value;
+
+    loader_background_lock();
+    if (loader_background_policy_initialized) {
+        loader_background_unlock();
+        return;
+    }
+    loader_background_policy_initialized = 1;
+    loader_background_policy_value = SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
+    env_value = sixel_compat_getenv("SIXEL_BACKGROUND_POLICY");
+    if (env_value != NULL && env_value[0] != '\0') {
+        if (strcmp(env_value, "file_first") == 0) {
+            loader_background_policy_value =
+                SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
+        } else if (strcmp(env_value, "explicit_first") == 0) {
+            loader_background_policy_value =
+                SIXEL_LOADER_BACKGROUND_POLICY_EXPLICIT_FIRST;
+        }
+    }
+    loader_background_unlock();
+}
+
 SIXEL_INTERNAL_API int
 loader_background_colorspace(void)
 {
@@ -408,6 +464,32 @@ loader_background_colorspace(void)
     loader_background_unlock();
 
     return override_value;
+}
+
+int
+loader_transparent_policy(void)
+{
+    int policy;
+
+    loader_initialize_transparent_policy();
+    loader_background_lock();
+    policy = loader_transparent_policy_value;
+    loader_background_unlock();
+
+    return policy;
+}
+
+int
+loader_background_policy(void)
+{
+    int policy;
+
+    loader_initialize_background_policy();
+    loader_background_lock();
+    policy = loader_background_policy_value;
+    loader_background_unlock();
+
+    return policy;
 }
 
 static void

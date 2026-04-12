@@ -58,7 +58,8 @@ SIXELSTATUS
 sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                               sixel_frame_t *frame,
                               int enable_cms,
-                              unsigned char const *bgcolor);
+                              unsigned char const *bgcolor,
+                              int bgcolor_source);
 
 #ifdef __cplusplus
 }

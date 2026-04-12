@@ -1,11 +1,11 @@
 /*
  * Verify builtin loader reports expected pixelformats:
- * - RGBA(8-bit)  -> RGBA8888 (default alpha keycolor path keeps alpha)
+ * - RGBA(8-bit)  -> RGB888 + alpha-zero transparent mask
  * - GIF(opaque, palette on) -> PAL8
  * - GIF(alpha, palette on)  -> PAL8
  * - GIF(opaque, palette off) -> RGB888
- * - GIF(alpha, palette off)  -> RGBA8888
- * - GIF(alpha, palette on, low reqcolors) -> RGBA8888 fallback
+ * - GIF(alpha, palette off)  -> RGB888 + alpha-zero transparent mask
+ * - GIF(alpha, palette on, low reqcolors) -> RGB888 fallback + mask
  * - GIF(alpha, palette on, low reqcolors + bgcolor) -> RGB888 fallback
  * - GIF(anim without NETSCAPE extension) reports multiframe metadata
  * - GIF(loop=auto/force) keeps unbounded NETSCAPE loop behavior
@@ -83,7 +83,7 @@ typedef struct pic_rgba_alpha_probe_context {
     int alpha_zero_is_transparent;
     int has_transparent_mask;
     size_t transparent_mask_size;
-    unsigned char pixels[16];
+    unsigned char pixels[12];
     unsigned char transparent_mask[4];
 } pic_rgba_alpha_probe_context_t;
 
@@ -186,7 +186,7 @@ capture_pic_rgba_alpha_probe(sixel_frame_t *frame, void *data)
     context->transparent_mask_size = frame->transparent_mask_size;
 
     if (frame->pixels.u8ptr != NULL &&
-        context->pixelformat == SIXEL_PIXELFORMAT_RGBA8888 &&
+        context->pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
         context->width == 2 &&
         context->height == 2) {
         memcpy(context->pixels, frame->pixels.u8ptr, sizeof(context->pixels));
@@ -204,19 +204,22 @@ static int
 run_builtin_loader_pic_rgba_alpha_mask_bgcolor_numeric_test(void)
 {
     static unsigned char const bgcolor_white[3] = { 0xffu, 0xffu, 0xffu };
-    static unsigned char const expected_first_three_pixels[12] = {
-        0xffu, 0x00u, 0x00u, 0xffu,
-        0x7eu, 0xfeu, 0x7eu, 0xffu,
-        0xbeu, 0xbeu, 0xfeu, 0xffu
+    static unsigned char const expected_pixels[12] = {
+        0xffu, 0x00u, 0x00u,
+        0xbcu, 0xffu, 0xbcu,
+        0xe1u, 0xe1u, 0xffu,
+        0xffu, 0xffu, 0xffu
     };
     static unsigned char const expected_mask[4] = { 0u, 0u, 0u, 1u };
     builtin_loader_probe_options_t options;
     pic_rgba_alpha_probe_context_t probe;
     SIXELSTATUS status;
     int result;
+    size_t index;
 
     status = SIXEL_FALSE;
     result = 1;
+    index = 0u;
     memset(&options, 0, sizeof(options));
     memset(&probe, 0, sizeof(probe));
 
@@ -254,7 +257,7 @@ run_builtin_loader_pic_rgba_alpha_mask_bgcolor_numeric_test(void)
                 probe.callback_count);
         return 1;
     }
-    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         fprintf(stderr,
                 "builtin loader pic rgba alpha mask/bgcolor numeric: "
                 "pixelformat mismatch (%d)\n",
@@ -293,17 +296,20 @@ run_builtin_loader_pic_rgba_alpha_mask_bgcolor_numeric_test(void)
         return 1;
     }
     if (memcmp(probe.pixels,
-               expected_first_three_pixels,
-               sizeof(expected_first_three_pixels)) != 0) {
+               expected_pixels,
+               sizeof(expected_pixels)) != 0) {
         fprintf(stderr,
                 "builtin loader pic rgba alpha mask/bgcolor numeric: "
                 "unexpected semi-alpha composite values\n");
-        return 1;
-    }
-    if (probe.pixels[15] != 0u) {
-        fprintf(stderr,
-                "builtin loader pic rgba alpha mask/bgcolor numeric: "
-                "alpha-zero pixel did not stay transparent\n");
+        fprintf(stderr, "actual:");
+        for (index = 0u; index < sizeof(probe.pixels); ++index) {
+            fprintf(stderr, " %02x", probe.pixels[index]);
+        }
+        fprintf(stderr, "\nexpected:");
+        for (index = 0u; index < sizeof(expected_pixels); ++index) {
+            fprintf(stderr, " %02x", expected_pixels[index]);
+        }
+        fprintf(stderr, "\n");
         return 1;
     }
 
@@ -4606,7 +4612,7 @@ run_builtin_loader_test(void)
 
     result = run_loader_component_case("builtin loader rgba8",
                                        RGBA_IMAGE_PATH,
-                                       SIXEL_PIXELFORMAT_RGBA8888,
+                                       SIXEL_PIXELFORMAT_RGB888,
                                        2,
                                        1,
                                        new_builtin_component_for_pixelformat_test);
@@ -4671,7 +4677,7 @@ run_builtin_loader_test(void)
     result = run_loader_component_case_with_options_ex(
         "builtin loader gif transparent rgba",
         "/tests/data/inputs/formats/gif-transparent-static.gif",
-        SIXEL_PIXELFORMAT_RGBA8888,
+        SIXEL_PIXELFORMAT_RGB888,
         8,
         8,
         1,
@@ -4689,7 +4695,7 @@ run_builtin_loader_test(void)
     result = run_loader_component_case_with_options_ex(
         "builtin loader gif transparent low-reqcolors rgba fallback",
         "/tests/data/inputs/formats/gif-transparent-static-3colors.gif",
-        SIXEL_PIXELFORMAT_RGBA8888,
+        SIXEL_PIXELFORMAT_RGB888,
         8,
         8,
         1,

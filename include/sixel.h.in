@@ -1573,6 +1573,11 @@ typedef struct sixel_loader sixel_loader_t;
 #define SIXEL_LOADER_OPTION_CONTEXT           (9)
 #define SIXEL_LOADER_OPTION_WIC_ICO_MINSIZE   (10)
 #define SIXEL_LOADER_OPTION_START_FRAME_NO    (11)
+#define SIXEL_LOADER_OPTION_BGCOLOR_SOURCE    (12)
+
+/* values for SIXEL_LOADER_OPTION_BGCOLOR_SOURCE */
+#define SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT  (0)
+#define SIXEL_LOADER_BGCOLOR_SOURCE_ENV       (1)
 
 /* create loader object */
 SIXELAPI SIXELSTATUS

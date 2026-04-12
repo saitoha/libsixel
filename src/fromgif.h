@@ -40,6 +40,7 @@ load_gif(
     unsigned char       /* in */ *buffer,
     int                 /* in */ size,
     unsigned char       /* in */ *bgcolor,
+    int                 /* in */ bgcolor_source,
     int                 /* in */ reqcolors,
     int                 /* in */ fuse_palette,
     int                 /* in */ fstatic,

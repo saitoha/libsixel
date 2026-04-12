@@ -3147,6 +3147,7 @@ load_with_gnome_thumbnailer(
                                fuse_palette,
                                reqcolors,
                                bgcolor,
+                               SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT,
                                loop_control,
                                start_frame_no_set,
                                start_frame_no,

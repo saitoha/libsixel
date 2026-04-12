@@ -162,6 +162,7 @@ typedef struct sixel_loader_builtin_component {
     int reqcolors;
     int has_bgcolor;
     unsigned char bgcolor[3];
+    int bgcolor_source;
     int loop_control;
     int start_frame_no_set;
     int start_frame_no;
@@ -934,16 +935,6 @@ convert_palette_to_rgb(
     return status;
 }
 
-static unsigned char
-sixel_builtin_blend_channel_with_bg(
-    unsigned int channel,
-    unsigned int alpha,
-    unsigned int bg_channel)
-{
-    return (unsigned char)((channel * alpha
-                            + bg_channel * (0xffu - alpha)) >> 8);
-}
-
 static float
 sixel_builtin_decode_srgb_unit(float gamma_value)
 {
@@ -957,6 +948,21 @@ sixel_builtin_decode_srgb_unit(float gamma_value)
         return gamma_value / 12.92f;
     }
     return powf((gamma_value + 0.055f) / 1.055f, 2.4f);
+}
+
+static float
+sixel_builtin_encode_srgb_unit(float linear_value)
+{
+    if (!(linear_value > 0.0f)) {
+        return 0.0f;
+    }
+    if (linear_value >= 1.0f) {
+        return 1.0f;
+    }
+    if (linear_value <= 0.0031308f) {
+        return linear_value * 12.92f;
+    }
+    return 1.055f * powf(linear_value, 1.0f / 2.4f) - 0.055f;
 }
 
 static void
@@ -986,52 +992,46 @@ sixel_builtin_fill_linear_bgcolor(float bg_linear[3],
 }
 
 static SIXELSTATUS
-sixel_builtin_apply_bmp_alpha_policy(
+sixel_builtin_normalize_rgba8888_alpha_policy(
     sixel_frame_t *frame,
-    unsigned char *bgcolor)
+    unsigned char const *bgcolor,
+    int transparent_policy)
 {
     SIXELSTATUS status;
     unsigned char *pixels;
     unsigned char *transparent_mask;
-    float *float_pixels;
     float bg_linear[3];
-    size_t pixel_count;
-    size_t float_count;
-    size_t float_size;
-    size_t index;
-    unsigned int alpha_u8;
-    unsigned int r;
-    unsigned int g;
-    unsigned int b;
     float alpha_unit;
     float inv_alpha;
-    int channel;
+    float src_linear;
+    float out_linear;
+    float out_gamma;
+    size_t pixel_count;
+    size_t index;
+    int has_background;
     int has_zero_alpha;
-    float src_gamma;
+    int channel;
 
     status = SIXEL_FALSE;
     pixels = NULL;
     transparent_mask = NULL;
-    float_pixels = NULL;
     memset(bg_linear, 0, sizeof(bg_linear));
-    pixel_count = 0u;
-    float_count = 0u;
-    float_size = 0u;
-    index = 0u;
-    alpha_u8 = 0u;
-    r = 0u;
-    g = 0u;
-    b = 0u;
     alpha_unit = 0.0f;
     inv_alpha = 0.0f;
-    channel = 0;
+    src_linear = 0.0f;
+    out_linear = 0.0f;
+    out_gamma = 0.0f;
+    pixel_count = 0u;
+    index = 0u;
+    has_background = 0;
     has_zero_alpha = 0;
-    src_gamma = 0.0f;
+    channel = 0;
     if (frame == NULL ||
         frame->allocator == NULL ||
         frame->pixels.u8ptr == NULL ||
         frame->width <= 0 ||
-        frame->height <= 0) {
+        frame->height <= 0 ||
+        frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
         return SIXEL_BAD_ARGUMENT;
     }
     if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
@@ -1040,85 +1040,46 @@ sixel_builtin_apply_bmp_alpha_policy(
     pixel_count = (size_t)frame->width * (size_t)frame->height;
     pixels = frame->pixels.u8ptr;
 
-    if (bgcolor != NULL) {
-        if (pixel_count > SIZE_MAX / 3u) {
-            return SIXEL_BAD_INTEGER_OVERFLOW;
-        }
-        float_count = pixel_count * 3u;
-        if (float_count > SIZE_MAX / sizeof(float)) {
-            return SIXEL_BAD_INTEGER_OVERFLOW;
-        }
-        float_size = float_count * sizeof(float);
-        float_pixels = (float *)sixel_allocator_malloc(frame->allocator,
-                                                       float_size);
-        if (float_pixels == NULL) {
-            sixel_helper_set_additional_message(
-                "builtin BMP: sixel_allocator_malloc() failed.");
-            return SIXEL_BAD_ALLOCATION;
-        }
-        sixel_builtin_fill_linear_bgcolor(bg_linear, bgcolor);
-
-        for (index = 0u; index < pixel_count; ++index) {
-            alpha_unit = (float)pixels[index * 4u + 3u] / 255.0f;
-            inv_alpha = 1.0f - alpha_unit;
-            for (channel = 0; channel < 3; ++channel) {
-                src_gamma = (float)pixels[index * 4u + (size_t)channel]
-                    / 255.0f;
-                float_pixels[index * 3u + (size_t)channel] =
-                    sixel_builtin_decode_srgb_unit(src_gamma) * alpha_unit
-                    + bg_linear[channel] * inv_alpha;
-            }
-        }
-
-        if (frame->transparent_mask != NULL) {
-            sixel_allocator_free(frame->allocator, frame->transparent_mask);
-            frame->transparent_mask = NULL;
-            frame->transparent_mask_size = 0u;
-        }
-        sixel_allocator_free(frame->allocator, pixels);
-        sixel_frame_set_pixels_float32(frame, float_pixels);
-        float_pixels = NULL;
-        frame->transparent = -1;
-        frame->alpha_zero_is_transparent = 0;
-        frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-        frame->colorspace = SIXEL_COLORSPACE_LINEAR;
-        status = SIXEL_OK;
-        goto end;
-    }
-
     transparent_mask = (unsigned char *)sixel_allocator_malloc(
         frame->allocator,
         pixel_count);
     if (transparent_mask == NULL) {
         sixel_helper_set_additional_message(
-            "builtin BMP: sixel_allocator_malloc() failed.");
+            "builtin: sixel_allocator_malloc() failed.");
         return SIXEL_BAD_ALLOCATION;
     }
 
+    has_background = bgcolor != NULL ? 1 : 0;
+    if (has_background != 0) {
+        sixel_builtin_fill_linear_bgcolor(bg_linear, bgcolor);
+    }
+
     for (index = 0u; index < pixel_count; ++index) {
-        alpha_u8 = pixels[index * 4u + 3u];
-        transparent_mask[index] = alpha_u8 == 0u ? 1u : 0u;
-        if (alpha_u8 == 0u) {
+        alpha_unit = (float)pixels[index * 4u + 3u] / 255.0f;
+        transparent_mask[index] = alpha_unit <= 0.0f ? 1u : 0u;
+        if (transparent_mask[index] != 0u) {
             has_zero_alpha = 1;
         }
-        if (alpha_u8 < 0xffu) {
-            r = sixel_builtin_blend_channel_with_bg(pixels[index * 4u + 0u],
-                                                    alpha_u8,
-                                                    0u);
-            g = sixel_builtin_blend_channel_with_bg(pixels[index * 4u + 1u],
-                                                    alpha_u8,
-                                                    0u);
-            b = sixel_builtin_blend_channel_with_bg(pixels[index * 4u + 2u],
-                                                    alpha_u8,
-                                                    0u);
+        if (has_background != 0 &&
+            !(transparent_policy ==
+                  SIXEL_LOADER_TRANSPARENT_POLICY_TRANSPARENT &&
+              alpha_unit <= 0.0f) &&
+            alpha_unit < 1.0f) {
+            inv_alpha = 1.0f - alpha_unit;
+            for (channel = 0; channel < 3; ++channel) {
+                src_linear = sixel_builtin_decode_srgb_unit(
+                    (float)pixels[index * 4u + (size_t)channel] / 255.0f);
+                out_linear = src_linear * alpha_unit
+                    + bg_linear[channel] * inv_alpha;
+                out_gamma = sixel_builtin_encode_srgb_unit(out_linear);
+                pixels[index * 3u + (size_t)channel] = (unsigned char)(
+                    out_gamma * 255.0f + 0.5f);
+            }
         } else {
-            r = pixels[index * 4u + 0u];
-            g = pixels[index * 4u + 1u];
-            b = pixels[index * 4u + 2u];
+            pixels[index * 3u + 0u] = pixels[index * 4u + 0u];
+            pixels[index * 3u + 1u] = pixels[index * 4u + 1u];
+            pixels[index * 3u + 2u] = pixels[index * 4u + 2u];
         }
-        pixels[index * 3u + 0u] = (unsigned char)r;
-        pixels[index * 3u + 1u] = (unsigned char)g;
-        pixels[index * 3u + 2u] = (unsigned char)b;
     }
 
     if (frame->transparent_mask != NULL) {
@@ -1139,152 +1100,27 @@ sixel_builtin_apply_bmp_alpha_policy(
     frame->colorspace = SIXEL_COLORSPACE_GAMMA;
     status = SIXEL_OK;
 
-end:
     sixel_allocator_free(frame->allocator, transparent_mask);
-    sixel_allocator_free(frame->allocator, float_pixels);
     return status;
 }
 
 static SIXELSTATUS
-sixel_builtin_apply_bmp_png16_no_bg_policy(
+sixel_builtin_apply_bmp_alpha_policy(
     sixel_frame_t *frame,
-    uint16_t const *pixels16,
-    int enable_cms,
-    unsigned char const *payload,
-    size_t payload_size)
+    unsigned char *bgcolor)
 {
-    SIXELSTATUS status;
-    float *float_pixels;
-    unsigned char *transparent_mask;
-    size_t pixel_count;
-    size_t float_count;
-    size_t float_size;
-    size_t index;
-    float alpha_unit;
-    int has_zero_alpha;
-    int cms_converted;
+    int transparent_policy;
 
-    status = SIXEL_FALSE;
-    float_pixels = NULL;
-    transparent_mask = NULL;
-    pixel_count = 0u;
-    float_count = 0u;
-    float_size = 0u;
-    index = 0u;
-    alpha_unit = 0.0f;
-    has_zero_alpha = 0;
-    cms_converted = 0;
+    transparent_policy = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
     if (frame == NULL ||
-        frame->allocator == NULL ||
-        pixels16 == NULL ||
-        frame->width <= 0 ||
-        frame->height <= 0) {
+        frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (enable_cms != 0 &&
-        (payload == NULL || payload_size == 0u)) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
 
-    pixel_count = (size_t)frame->width * (size_t)frame->height;
-    if (pixel_count > SIZE_MAX / 3u) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    float_count = pixel_count * 3u;
-    if (float_count > SIZE_MAX / sizeof(float)) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    float_size = float_count * sizeof(float);
-    float_pixels = (float *)sixel_allocator_malloc(frame->allocator,
-                                                   float_size);
-    if (float_pixels == NULL) {
-        sixel_helper_set_additional_message(
-            "builtin BMP: sixel_allocator_malloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
-    }
-    transparent_mask = (unsigned char *)sixel_allocator_malloc(
-        frame->allocator,
-        pixel_count);
-    if (transparent_mask == NULL) {
-        sixel_helper_set_additional_message(
-            "builtin BMP: sixel_allocator_malloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-
-    /*
-     * Build non-premultiplied RGB first, so optional PNG colorspace
-     * conversion runs against source color values before alpha scaling.
-     */
-    for (index = 0u; index < pixel_count; ++index) {
-        if (pixels16[index * 4u + 3u] == 0u) {
-            transparent_mask[index] = 1u;
-            has_zero_alpha = 1;
-        } else {
-            transparent_mask[index] = 0u;
-        }
-        float_pixels[index * 3u + 0u] =
-            (float)pixels16[index * 4u + 0u] / 65535.0f;
-        float_pixels[index * 3u + 1u] =
-            (float)pixels16[index * 4u + 1u] / 65535.0f;
-        float_pixels[index * 3u + 2u] =
-            (float)pixels16[index * 4u + 2u] / 65535.0f;
-    }
-
-    if (enable_cms != 0) {
-        cms_converted = sixel_frompng_apply_colorspace_fallback_pixelformat(
-            (unsigned char *)float_pixels,
-            frame->width,
-            frame->height,
-            SIXEL_PIXELFORMAT_RGBFLOAT32,
-            payload,
-            payload_size,
-            frame->allocator);
-        if (!cms_converted) {
-            loader_trace_message(
-                "builtin BMP: embedded PNG colorspace fallback "
-                "did not convert RGBFLOAT32 path");
-        }
-    }
-
-    /*
-     * Keep the no-bg policy semantics: collapse partial alpha against black,
-     * but preserve fully transparent pixels in a side-channel mask.
-     */
-    for (index = 0u; index < pixel_count; ++index) {
-        alpha_unit = (float)pixels16[index * 4u + 3u] / 65535.0f;
-        float_pixels[index * 3u + 0u] *= alpha_unit;
-        float_pixels[index * 3u + 1u] *= alpha_unit;
-        float_pixels[index * 3u + 2u] *= alpha_unit;
-    }
-
-    if (frame->transparent_mask != NULL) {
-        sixel_allocator_free(frame->allocator, frame->transparent_mask);
-        frame->transparent_mask = NULL;
-        frame->transparent_mask_size = 0u;
-    }
-    sixel_frame_set_pixels_float32(frame, float_pixels);
-    float_pixels = NULL;
-    if (has_zero_alpha != 0) {
-        frame->transparent_mask = transparent_mask;
-        frame->transparent_mask_size = pixel_count;
-        frame->alpha_zero_is_transparent = 1;
-        transparent_mask = NULL;
-    } else {
-        frame->alpha_zero_is_transparent = 0;
-    }
-    frame->transparent = -1;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-    status = SIXEL_OK;
-
-end:
-    sixel_allocator_free(frame->allocator, transparent_mask);
-    sixel_allocator_free(frame->allocator, float_pixels);
-    return status;
+    transparent_policy = loader_transparent_policy();
+    return sixel_builtin_normalize_rgba8888_alpha_policy(frame,
+                                                         bgcolor,
+                                                         transparent_policy);
 }
 
 static int
@@ -3672,6 +3508,18 @@ sixel_loader_builtin_setopt(sixel_loader_component_t *component,
         self->bgcolor[2] = bgcolor[2];
         self->has_bgcolor = 1;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_BGCOLOR_SOURCE:
+        int_value = (int const *)value;
+        if (int_value == NULL) {
+            self->bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
+            return SIXEL_OK;
+        }
+        if (*int_value != SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT &&
+            *int_value != SIXEL_LOADER_BGCOLOR_SOURCE_ENV) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        self->bgcolor_source = *int_value;
+        return SIXEL_OK;
     case SIXEL_LOADER_OPTION_LOOP_CONTROL:
         int_value = (int const *)value;
         if (int_value != NULL) {
@@ -3760,6 +3608,7 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
                                self->fuse_palette,
                                self->reqcolors,
                                bgcolor,
+                               self->bgcolor_source,
                                self->loop_control,
                                self->start_frame_no_set,
                                self->start_frame_no,
@@ -3817,6 +3666,7 @@ sixel_loader_builtin_new(sixel_allocator_t *allocator,
     self->bgcolor[0] = 0;
     self->bgcolor[1] = 0;
     self->bgcolor[2] = 0;
+    self->bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
     self->loop_control = SIXEL_LOOP_AUTO;
     self->start_frame_no_set = 0;
     self->start_frame_no = INT_MIN;
@@ -3834,6 +3684,7 @@ typedef struct sixel_builtin_load_request {
     int fuse_palette;
     int reqcolors;
     unsigned char *bgcolor;
+    int bgcolor_source;
     int loop_control;
     int start_frame_no_set;
     int start_frame_no_override;
@@ -3848,6 +3699,10 @@ typedef struct sixel_builtin_load_context {
     int resolved_start_frame_no;
     int gif_frame_count;
 } sixel_builtin_load_context_t;
+
+typedef struct sixel_builtin_frame_callback_context {
+    sixel_builtin_load_request_t const *request;
+} sixel_builtin_frame_callback_context_t;
 
 typedef enum sixel_builtin_decode_path {
     SIXEL_BUILTIN_DECODE_PATH_SIXEL = 0,
@@ -3969,13 +3824,24 @@ sixel_builtin_finalize_loaded_frame(
     sixel_frame_t *frame)
 {
     SIXELSTATUS status;
+    int transparent_policy;
 
     status = SIXEL_OK;
+    transparent_policy = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
     if (request == NULL || frame == NULL || request->fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (!frame->alpha_zero_is_transparent) {
+    transparent_policy = loader_transparent_policy();
+    if (frame->pixelformat == SIXEL_PIXELFORMAT_RGBA8888) {
+        status = sixel_builtin_normalize_rgba8888_alpha_policy(
+            frame,
+            request->bgcolor,
+            transparent_policy);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    } else if (!frame->alpha_zero_is_transparent) {
         status = sixel_frame_strip_alpha(frame, request->bgcolor);
         if (SIXEL_FAILED(status)) {
             return status;
@@ -3984,6 +3850,25 @@ sixel_builtin_finalize_loaded_frame(
 
     status = request->fn_load(frame, request->callback_context);
     return status;
+}
+
+static SIXELSTATUS
+sixel_builtin_finalize_frame_callback(
+    sixel_frame_t *frame,
+    void *data)
+{
+    sixel_builtin_frame_callback_context_t *callback_context;
+
+    callback_context = NULL;
+    if (frame == NULL || data == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    callback_context = (sixel_builtin_frame_callback_context_t *)data;
+    if (callback_context->request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return sixel_builtin_finalize_loaded_frame(callback_context->request,
+                                               frame);
 }
 
 static SIXELSTATUS
@@ -4006,10 +3891,12 @@ sixel_builtin_load_gif_frames(
 {
     SIXELSTATUS status;
     fn_pointer fnp;
+    sixel_builtin_frame_callback_context_t callback_context;
     int chunk_size;
 
     status = SIXEL_OK;
     fnp.fn = NULL;
+    callback_context.request = NULL;
     chunk_size = 0;
     if (request == NULL ||
         load_context == NULL ||
@@ -4018,7 +3905,8 @@ sixel_builtin_load_gif_frames(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    fnp.fn = request->fn_load;
+    fnp.fn = sixel_builtin_finalize_frame_callback;
+    callback_context.request = request;
     status = sixel_builtin_chunk_size_to_int(request->chunk, &chunk_size);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -4041,13 +3929,14 @@ sixel_builtin_load_gif_frames(
     return load_gif(request->chunk->buffer,
                     chunk_size,
                     request->bgcolor,
+                    request->bgcolor_source,
                     request->reqcolors,
                     request->fuse_palette,
                     request->fstatic,
                     request->loop_control,
                     load_context->resolved_start_frame_no,
                     fnp.p,
-                    request->callback_context,
+                    &callback_context,
                     request->chunk->allocator);
 }
 
@@ -4465,7 +4354,8 @@ sixel_builtin_load_png_single_frame(
     int reqcolors,
     int enable_cms,
     int png_keycolor_mode,
-    unsigned char *bgcolor)
+    unsigned char *bgcolor,
+    int bgcolor_source)
 {
     SIXELSTATUS status;
     int pal_loaded;
@@ -4521,7 +4411,11 @@ sixel_builtin_load_png_single_frame(
                                                        bgcolor,
                                                        reqcolors);
     }
-    return sixel_frompng_load_nonindexed(chunk, frame, enable_cms, bgcolor);
+    return sixel_frompng_load_nonindexed(chunk,
+                                         frame,
+                                         enable_cms,
+                                         bgcolor,
+                                         bgcolor_source);
 }
 
 static SIXELSTATUS
@@ -5049,96 +4943,18 @@ sixel_builtin_apply_pic_alpha_policy(
     sixel_frame_t *frame,
     unsigned char *bgcolor)
 {
-    SIXELSTATUS status;
-    unsigned char *transparent_mask;
-    unsigned char *pixels;
-    size_t pixel_count;
-    size_t index;
-    int has_zero_alpha;
-    unsigned int alpha;
-    unsigned int inv_alpha;
-    unsigned int r;
-    unsigned int g;
-    unsigned int b;
+    int transparent_policy;
 
-    status = SIXEL_FALSE;
-    transparent_mask = NULL;
-    pixels = NULL;
-    pixel_count = 0u;
-    index = 0u;
-    has_zero_alpha = 0;
-    alpha = 0u;
-    inv_alpha = 0u;
-    r = 0u;
-    g = 0u;
-    b = 0u;
-    if (frame == NULL || frame->allocator == NULL ||
-        frame->pixels.u8ptr == NULL ||
-        frame->width <= 0 ||
-        frame->height <= 0) {
+    transparent_policy = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
+    if (frame == NULL ||
+        frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    pixel_count = (size_t)frame->width * (size_t)frame->height;
 
-    transparent_mask = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                               pixel_count);
-    if (transparent_mask == NULL) {
-        sixel_helper_set_additional_message(
-            "builtin PIC: sixel_allocator_malloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
-    }
-
-    pixels = frame->pixels.u8ptr;
-    for (index = 0u; index < pixel_count; ++index) {
-        alpha = pixels[index * 4u + 3u];
-        transparent_mask[index] = alpha == 0u ? 1u : 0u;
-        if (alpha == 0u) {
-            has_zero_alpha = 1;
-        }
-
-        if (alpha < 0xffu) {
-            inv_alpha = 0xffu - alpha;
-            r = pixels[index * 4u + 0u];
-            g = pixels[index * 4u + 1u];
-            b = pixels[index * 4u + 2u];
-            if (bgcolor != NULL) {
-                r = (r * alpha + bgcolor[0] * inv_alpha) >> 8;
-                g = (g * alpha + bgcolor[1] * inv_alpha) >> 8;
-                b = (b * alpha + bgcolor[2] * inv_alpha) >> 8;
-            } else {
-                r = (r * alpha) >> 8;
-                g = (g * alpha) >> 8;
-                b = (b * alpha) >> 8;
-            }
-            pixels[index * 4u + 0u] = (unsigned char)r;
-            pixels[index * 4u + 1u] = (unsigned char)g;
-            pixels[index * 4u + 2u] = (unsigned char)b;
-            if (alpha > 0u) {
-                pixels[index * 4u + 3u] = 0xffu;
-            }
-        }
-    }
-
-    if (frame->transparent_mask != NULL) {
-        sixel_allocator_free(frame->allocator, frame->transparent_mask);
-        frame->transparent_mask = NULL;
-        frame->transparent_mask_size = 0u;
-    }
-    if (has_zero_alpha != 0) {
-        frame->transparent_mask = transparent_mask;
-        frame->transparent_mask_size = pixel_count;
-        frame->alpha_zero_is_transparent = 1;
-        transparent_mask = NULL;
-    } else {
-        frame->alpha_zero_is_transparent = 0;
-    }
-
-    status = SIXEL_OK;
-    sixel_allocator_free(frame->allocator, transparent_mask);
-    return status;
+    transparent_policy = loader_transparent_policy();
+    return sixel_builtin_normalize_rgba8888_alpha_policy(frame,
+                                                         bgcolor,
+                                                         transparent_policy);
 }
 
 static SIXELSTATUS
@@ -5146,108 +4962,18 @@ sixel_builtin_apply_tga_truecolor_alpha_policy(
     sixel_frame_t *frame,
     unsigned char *bgcolor)
 {
-    SIXELSTATUS status;
-    unsigned char *transparent_mask;
-    unsigned char *pixels;
-    size_t pixel_count;
-    size_t index;
-    unsigned int alpha;
-    unsigned int r;
-    unsigned int g;
-    unsigned int b;
-    unsigned int bg_r;
-    unsigned int bg_g;
-    unsigned int bg_b;
-    int has_zero_alpha;
+    int transparent_policy;
 
-    status = SIXEL_FALSE;
-    transparent_mask = NULL;
-    pixels = NULL;
-    pixel_count = 0u;
-    index = 0u;
-    alpha = 0u;
-    r = 0u;
-    g = 0u;
-    b = 0u;
-    bg_r = 0u;
-    bg_g = 0u;
-    bg_b = 0u;
-    has_zero_alpha = 0;
-    if (frame == NULL || frame->allocator == NULL ||
-        frame->pixels.u8ptr == NULL ||
-        frame->width <= 0 ||
-        frame->height <= 0) {
+    transparent_policy = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
+    if (frame == NULL ||
+        frame->pixelformat != SIXEL_PIXELFORMAT_RGBA8888) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    pixel_count = (size_t)frame->width * (size_t)frame->height;
-    if (bgcolor != NULL) {
-        bg_r = bgcolor[0];
-        bg_g = bgcolor[1];
-        bg_b = bgcolor[2];
-    }
 
-    transparent_mask = (unsigned char *)sixel_allocator_malloc(
-        frame->allocator,
-        pixel_count);
-    if (transparent_mask == NULL) {
-        sixel_helper_set_additional_message(
-            "builtin TGA: sixel_allocator_malloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
-    }
-
-    pixels = frame->pixels.u8ptr;
-    for (index = 0u; index < pixel_count; ++index) {
-        alpha = pixels[index * 4u + 3u];
-        transparent_mask[index] = alpha == 0u ? 1u : 0u;
-        if (alpha == 0u) {
-            has_zero_alpha = 1;
-        }
-        if (alpha < 0xffu) {
-            r = sixel_builtin_blend_channel_with_bg(
-                pixels[index * 4u + 0u],
-                alpha,
-                bg_r);
-            g = sixel_builtin_blend_channel_with_bg(
-                pixels[index * 4u + 1u],
-                alpha,
-                bg_g);
-            b = sixel_builtin_blend_channel_with_bg(
-                pixels[index * 4u + 2u],
-                alpha,
-                bg_b);
-        } else {
-            r = pixels[index * 4u + 0u];
-            g = pixels[index * 4u + 1u];
-            b = pixels[index * 4u + 2u];
-        }
-        pixels[index * 3u + 0u] = (unsigned char)r;
-        pixels[index * 3u + 1u] = (unsigned char)g;
-        pixels[index * 3u + 2u] = (unsigned char)b;
-    }
-
-    if (frame->transparent_mask != NULL) {
-        sixel_allocator_free(frame->allocator, frame->transparent_mask);
-        frame->transparent_mask = NULL;
-        frame->transparent_mask_size = 0u;
-    }
-    if (has_zero_alpha != 0) {
-        frame->transparent_mask = transparent_mask;
-        frame->transparent_mask_size = pixel_count;
-        frame->alpha_zero_is_transparent = 1;
-        transparent_mask = NULL;
-    } else {
-        frame->alpha_zero_is_transparent = 0;
-    }
-    frame->transparent = -1;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-
-    status = SIXEL_OK;
-    sixel_allocator_free(frame->allocator, transparent_mask);
-    return status;
+    transparent_policy = loader_transparent_policy();
+    return sixel_builtin_normalize_rgba8888_alpha_policy(frame,
+                                                         bgcolor,
+                                                         transparent_policy);
 }
 
 static int
@@ -5292,6 +5018,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     sixel_frame_t *frame,
     stbi__context *stb_context,
     unsigned char *bgcolor,
+    int bgcolor_source,
     int is_pic,
     int enable_cms,
     int bmp_info40_mode
@@ -5329,7 +5056,6 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     size_t rgb_size;
     unsigned char *rgb_pixels;
     sixel_cms_profile_t *bmp_icc_src_profile;
-    uint16_t *pixels16;
     int nwrite;
     char message[80];
 #if HAVE_LCMS2
@@ -5362,7 +5088,6 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     rgb_size = 0u;
     rgb_pixels = NULL;
     bmp_icc_src_profile = NULL;
-    pixels16 = NULL;
     nwrite = 0;
     message[0] = '\0';
 #if HAVE_LCMS2
@@ -5419,42 +5144,13 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                 bmp_png_payload_is_16bit = stbi_is_16_bit_from_memory(
                     payload_chunk.buffer,
                     (int)payload_chunk.size);
-                if (bmp_png_payload_is_16bit != 0 && bgcolor != NULL) {
-                    /*
-                     * Keep 16-bit precision for BI_PNG when explicit
-                     * background composition is requested.
-                     */
-                    return sixel_frompng_load_nonindexed(&payload_chunk,
-                                                         frame,
-                                                         enable_cms,
-                                                         bgcolor);
-                }
                 if (bmp_png_payload_is_16bit != 0) {
-                    pixels16 = stbi_load_16_from_memory(
-                        payload_chunk.buffer,
-                        (int)payload_chunk.size,
-                        &frame->width,
-                        &frame->height,
-                        &payload_depth,
-                        4);
-                    if (pixels16 == NULL) {
-                        sixel_helper_set_additional_message(
-                            stbi_failure_reason());
-                        return SIXEL_STBI_ERROR;
-                    }
-                    status = sixel_builtin_apply_bmp_png16_no_bg_policy(
+                    return sixel_frompng_load_nonindexed(
+                        &payload_chunk,
                         frame,
-                        pixels16,
                         enable_cms,
-                        bmp_payload,
-                        bmp_payload_size);
-                    stbi_image_free(pixels16);
-                    pixels16 = NULL;
-                    if (SIXEL_FAILED(status)) {
-                        return status;
-                    }
-                    frame->loop_count = 1;
-                    return SIXEL_OK;
+                        bgcolor,
+                        bgcolor_source);
                 }
                 stbi__start_mem(stb_context,
                                 payload_chunk.buffer,
@@ -5742,6 +5438,7 @@ sixel_builtin_load_nonpng_single_frame(
     stbi__result_info *ri,
     int fuse_palette,
     unsigned char *bgcolor,
+    int bgcolor_source,
     int enable_cms,
     int bmp_info40_mode,
     int is_jpeg,
@@ -5830,6 +5527,7 @@ sixel_builtin_load_nonpng_single_frame(
         frame,
         stb_context,
         bgcolor,
+        bgcolor_source,
         is_pic,
         enable_cms,
         bmp_info40_mode
@@ -5859,8 +5557,10 @@ sixel_builtin_load_stbi_png_path(
     int *animation_handled)
 {
     SIXELSTATUS status;
+    sixel_builtin_frame_callback_context_t callback_context;
 
     status = SIXEL_FALSE;
+    callback_context.request = NULL;
     if (animation_handled != NULL) {
         *animation_handled = 0;
     }
@@ -5879,14 +5579,16 @@ sixel_builtin_load_stbi_png_path(
      * SIXEL_FALSE and then falls through to existing single-frame
      * decode logic.
      */
-    status = sixel_builtin_load_apng_frames(load_request->chunk,
-                                            load_request->fstatic,
-                                            load_request->bgcolor,
-                                            load_request->enable_cms,
-                                            load_request->loop_control,
-                                            load_context->start_frame_no,
-                                            load_request->fn_load,
-                                            load_request->callback_context);
+    callback_context.request = load_request;
+    status = sixel_builtin_load_apng_frames(
+        load_request->chunk,
+        load_request->fstatic,
+        load_request->bgcolor,
+        load_request->enable_cms,
+        load_request->loop_control,
+        load_context->start_frame_no,
+        sixel_builtin_finalize_frame_callback,
+        &callback_context);
     if (status == SIXEL_OK || status == SIXEL_INTERRUPTED) {
         *animation_handled = 1;
         return status;
@@ -5901,7 +5603,8 @@ sixel_builtin_load_stbi_png_path(
                                                  load_request->reqcolors,
                                                  load_request->enable_cms,
                                                  png_keycolor_mode,
-                                                 load_request->bgcolor);
+                                                 load_request->bgcolor,
+                                                 load_request->bgcolor_source);
     return status;
 }
 
@@ -5934,6 +5637,7 @@ sixel_builtin_load_stbi_nonpng_path(
         ri,
         load_request->fuse_palette,
         load_request->bgcolor,
+        load_request->bgcolor_source,
         load_request->enable_cms,
         load_request->bmp_info40_mode,
         is_jpeg,
@@ -6037,6 +5741,7 @@ load_with_builtin(
     int fuse_palette,
     int reqcolors,
     unsigned char *bgcolor,
+    int bgcolor_source,
     int loop_control,
     int start_frame_no_set,
     int start_frame_no_override,
@@ -6088,6 +5793,7 @@ load_with_builtin(
     load_request.fuse_palette = fuse_palette;
     load_request.reqcolors = reqcolors;
     load_request.bgcolor = bgcolor;
+    load_request.bgcolor_source = bgcolor_source;
     load_request.loop_control = loop_control;
     load_request.start_frame_no_set = start_frame_no_set;
     load_request.start_frame_no_override = start_frame_no_override;

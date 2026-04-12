@@ -1,6 +1,7 @@
 /*
- * Verify GIF logical-screen background fill honors loader bgcolor when
- * compositing starts from a partially covered first frame.
+ * Verify GIF logical-screen background fill follows the configured
+ * background-selection policy when compositing starts from a partially
+ * covered first frame.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -16,6 +17,7 @@
 #include <sixel.h>
 
 #include "src/fromgif.h"
+#include "src/loader-common.h"
 
 typedef struct gif_canvas_probe {
     int calls;
@@ -121,6 +123,7 @@ run_case(char const *label,
     status = load_gif(data,
                       (int)sizeof(data),
                       (unsigned char *)bgcolor,
+                      SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT,
                       256,
                       0,
                       1,
@@ -176,11 +179,22 @@ test_loader_0054_loader_gif_bgcolor_canvas_fill(int argc, char **argv)
         0xffu, 0xffu, 0xffu,
         0xffu, 0xffu, 0xffu
     };
+    unsigned char const *expected_black_case;
+    int background_policy;
 
     (void)argc;
     (void)argv;
+    expected_black_case = NULL;
+    background_policy = SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
 
-    if (run_case("gif bgcolor black", black, expect_black) != 0) {
+    background_policy = loader_background_policy();
+    if (background_policy == SIXEL_LOADER_BACKGROUND_POLICY_EXPLICIT_FIRST) {
+        expected_black_case = expect_black;
+    } else {
+        expected_black_case = expect_white;
+    }
+
+    if (run_case("gif bgcolor black", black, expected_black_case) != 0) {
         return EXIT_FAILURE;
     }
     if (run_case("gif bgcolor white", white, expect_white) != 0) {

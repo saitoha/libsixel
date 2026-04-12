@@ -135,6 +135,8 @@ typedef struct
    int is_multiframe;
    int is_terminated;
    int preserve_transparency;
+   int bgcolor_source;
+   int background_policy;
    int stream_is_multiframe;
    int stream_frame_count_hint;
    int global_color_table_entries;
@@ -404,9 +406,37 @@ gif_resolve_composition_background_color(
     unsigned char    /* out */ *bg_a)
 {
     int preserve_transparency;
+    int has_file_background;
+    int use_file_background;
+    int use_explicit_background;
+    int policy;
 
     preserve_transparency = 0;
-    if (bgcolor != NULL) {
+    has_file_background = 0;
+    use_file_background = 0;
+    use_explicit_background = 0;
+    policy = SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
+    if (g != NULL &&
+        g->bgindex >= 0 &&
+        g->bgindex < g->global_color_table_entries) {
+        has_file_background = 1;
+        policy = g->background_policy;
+    }
+    if (policy == SIXEL_LOADER_BACKGROUND_POLICY_EXPLICIT_FIRST) {
+        if (bgcolor != NULL) {
+            use_explicit_background = 1;
+        } else if (has_file_background != 0) {
+            use_file_background = 1;
+        }
+    } else {
+        if (has_file_background != 0) {
+            use_file_background = 1;
+        } else if (bgcolor != NULL) {
+            use_explicit_background = 1;
+        }
+    }
+
+    if (use_explicit_background != 0) {
         if (bg_r != NULL) {
             *bg_r = bgcolor[0];
         }
@@ -416,8 +446,21 @@ gif_resolve_composition_background_color(
         if (bg_b != NULL) {
             *bg_b = bgcolor[2];
         }
-    } else {
+    } else if (use_file_background != 0) {
         gif_resolve_background_color(g, bg_r, bg_g, bg_b);
+        if (g != NULL && g->preserve_transparency != 0) {
+            preserve_transparency = 1;
+        }
+    } else {
+        if (bg_r != NULL) {
+            *bg_r = 0u;
+        }
+        if (bg_g != NULL) {
+            *bg_g = 0u;
+        }
+        if (bg_b != NULL) {
+            *bg_b = 0u;
+        }
         if (g != NULL && g->preserve_transparency != 0) {
             preserve_transparency = 1;
         }
@@ -1840,6 +1883,7 @@ typedef union sixel_fromgif_fn_pointer {
 
 typedef struct gif_decode_request {
     unsigned char *bgcolor;
+    int bgcolor_source;
     int reqcolors;
     int fuse_palette;
     int start_frame_no;
@@ -2461,6 +2505,7 @@ static SIXELSTATUS
 gif_prepare_decoder_state(unsigned char *buffer,
                           int size,
                           unsigned char *bgcolor,
+                          int bgcolor_source,
                           sixel_allocator_t *allocator,
                           gif_context_t *s,
                           gif_t **pg,
@@ -2543,6 +2588,8 @@ gif_prepare_decoder_state(unsigned char *buffer,
     }
     g->stream_is_multiframe = stream_info.image_count > 1 ? 1 : 0;
     g->stream_frame_count_hint = stream_info.image_count;
+    g->bgcolor_source = bgcolor_source;
+    g->background_policy = loader_background_policy();
     need_multiframe_buffers = (g->stream_is_multiframe != 0 ||
                                (stream_scan_failed != NULL &&
                                 *stream_scan_failed != 0))
@@ -2944,6 +2991,7 @@ load_gif(
     unsigned char       /* in */ *buffer,
     int                 /* in */ size,
     unsigned char       /* in */ *bgcolor,
+    int                 /* in */ bgcolor_source,
     int                 /* in */ reqcolors,
     int                 /* in */ fuse_palette,
     int                 /* in */ fstatic,
@@ -2980,6 +3028,7 @@ load_gif(
         goto end;
     }
     decode_request.bgcolor = bgcolor;
+    decode_request.bgcolor_source = bgcolor_source;
     decode_request.reqcolors = reqcolors;
     decode_request.fuse_palette = fuse_palette;
     decode_request.start_frame_no = start_frame_no;
@@ -3002,6 +3051,7 @@ load_gif(
     status = gif_prepare_decoder_state(buffer,
                                        size,
                                        bgcolor,
+                                       bgcolor_source,
                                        allocator,
                                        &s,
                                        &g,

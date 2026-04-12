@@ -54,10 +54,18 @@
     (0x1000b)
 #define SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_BMP_INFO40_MODE \
     (0x1000c)
+#define SIXEL_LOADER_COMPONENT_OPTION_BGCOLOR_SOURCE \
+    (0x1000d)
 
 #define SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO    0
 #define SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_WINDOWS 1
 #define SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_OS2     2
+
+#define SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE  0
+#define SIXEL_LOADER_TRANSPARENT_POLICY_TRANSPARENT 1
+
+#define SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST     0
+#define SIXEL_LOADER_BACKGROUND_POLICY_EXPLICIT_FIRST 1
 
 void loader_thumbnailer_initialize_size_hint(void);
 int loader_thumbnailer_get_size_hint(void);
@@ -79,6 +87,8 @@ SIXEL_INTERNAL_API int
 loader_background_colorspace(void);
 int loader_cms_prefer_8bit(void);
 int loader_cms_target_colorspace(void);
+int loader_transparent_policy(void);
+int loader_background_policy(void);
 /* Keep this exported: test runners call it via the shared libsixel DLL. */
 SIXEL_INTERNAL_API int loader_cms_target_pixelformat(void);
 void sixel_helper_set_loader_cms_engine(int engine);

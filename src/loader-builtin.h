@@ -44,6 +44,7 @@ SIXELSTATUS load_with_builtin(
     int                        fuse_palette,
     int                        reqcolors,
     unsigned char             *bgcolor,
+    int                        bgcolor_source,
     int                        loop_control,
     int                        start_frame_no_set,
     int                        start_frame_no,
