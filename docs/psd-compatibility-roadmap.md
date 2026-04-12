@@ -340,6 +340,16 @@ Key points used by this roadmap:
     in the composite pass (`SoFi`, `GrFl`, `FrFX`), and PASS trace
     representatives `1464..1467` lock clip-weighted contracts while
     `1318` remains XFAIL.
+  - `clbl=1` deferred composite now also applies clip-weighted deferred
+    interior effects (`IrGl/ChFX/bevel shadow`) using base-silhouette
+    coverage as the deferred source while keeping clip-gate separation.
+    PASS trace representatives `1489..1491` lock the deferred-interior
+    clip-weight/non-regression contracts; `1318` remains XFAIL.
+  - `1318`-focused trace representatives are further expanded with
+    `1492..1495` to lock:
+    `lrFX` inactive `OrGl/IrGl/ChFX` merge/suppression diagnostics and
+    clbl=1 deferred stroke source/gate split plus deferred interior
+    non-regression contracts.
   - Legacy `lrFX` inactive completion now synchronizes named glow effects
     (`OrGl/IrGl/ChFX/DrSh/IrSh/bevl`) to proxy glow fields
     (`outer_glow`/`inner_glow`) when proxy slots are unset/inactive.
