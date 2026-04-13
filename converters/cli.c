@@ -258,6 +258,7 @@ cli_guard_missing_argument(int short_opt,
     char const *candidate_token;
     char const *previous_token;
     int matched_token;
+    int rewind_count;
 
     if (cli_option_requires_argument(optstring, short_opt) == 0) {
         return 0;
@@ -287,6 +288,7 @@ cli_guard_missing_argument(int short_opt,
         candidate_token = NULL;
         previous_token = NULL;
         matched_token = 0;
+        rewind_count = 0;
         if (optind_ptr != NULL) {
             opt_index = *optind_ptr;
         }
@@ -299,6 +301,7 @@ cli_guard_missing_argument(int short_opt,
         if (candidate_token != NULL) {
             if (argument == candidate_token) {
                 matched_token = 1;
+                rewind_count = 1;
             } else if (strcmp(argument, candidate_token) == 0) {
                 /*
                  * Some getopt implementations copy option arguments instead
@@ -307,11 +310,13 @@ cli_guard_missing_argument(int short_opt,
                  * remains stable across platforms.
                  */
                 matched_token = 1;
+                rewind_count = 1;
             }
         }
         if (matched_token == 0 && previous_token != NULL) {
             if (argument == previous_token) {
                 matched_token = 1;
+                rewind_count = 2;
             } else if (strcmp(argument, previous_token) == 0) {
                 /*
                  * Some getopt variants can advance optind one token further
@@ -320,6 +325,7 @@ cli_guard_missing_argument(int short_opt,
                  * detection remains stable across mingw builds.
                  */
                 matched_token = 1;
+                rewind_count = 2;
             }
         }
         if (matched_token != 0) {
@@ -330,8 +336,12 @@ cli_guard_missing_argument(int short_opt,
              * interpret it as an option instead of an argument, mirroring the
              * ASCII timeline described in the converter sources.
              */
-            if (optind_ptr != NULL && *optind_ptr > 0) {
-                *optind_ptr -= 1;
+            if (optind_ptr != NULL && rewind_count > 0) {
+                if (*optind_ptr > rewind_count) {
+                    *optind_ptr -= rewind_count;
+                } else {
+                    *optind_ptr = 1;
+                }
             }
             if (report_cb != NULL) {
                 report_cb(short_opt, report_user_data);

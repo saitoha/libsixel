@@ -12,11 +12,11 @@
 typedef struct guard_result {
     int code;
     int missing_calls;
-    int rewound_optind;
+    int rewind_by;
 } guard_result_t;
 
 static int g_missing_calls;
-static int g_rewound;
+static int g_rewind_by;
 
 static int
 allows_leading_dash(int short_opt, void *user_data)
@@ -50,7 +50,7 @@ run_guard_case(char *const *argv,
 
     report_short = 0;
     g_missing_calls = 0;
-    g_rewound = 0;
+    g_rewind_by = 0;
 
     starting_optind = 0;
     if (optind_ptr != NULL) {
@@ -71,12 +71,12 @@ run_guard_case(char *const *argv,
         &report_short);
 
     if (optind_ptr != NULL
-            && *optind_ptr == starting_optind - 1
+            && *optind_ptr < starting_optind
             && allow_dash == 0) {
-        g_rewound = 1;
+        g_rewind_by = starting_optind - *optind_ptr;
     }
 
-    return (guard_result_t){ result, g_missing_calls, g_rewound };
+    return (guard_result_t){ result, g_missing_calls, g_rewind_by };
 }
 
 int
@@ -88,9 +88,11 @@ test_cli_0031_cli_guard_missing_argument(int argc, char **argv)
     };
     char argv0[] = "tool";
     char argv1[] = "-x";
+    char argv2[] = "dummy";
     char dash_value[] = "-file.six";
     char copied_option[] = "-x";
     char *args[] = { argv0, argv1, NULL };
+    char *lagged_args[] = { argv0, argv1, argv2, NULL };
     size_t table_count;
     int optind_value;
     guard_result_t result;
@@ -139,7 +141,7 @@ test_cli_0031_cli_guard_missing_argument(int argc, char **argv)
                              table_count,
                              0);
     if (result.code == -1 && result.missing_calls == 1 &&
-            result.rewound_optind != 0) {
+            result.rewind_by == 1) {
     } else {
         fprintf(stderr, "case 3: did not rewind recognised option\n");
         status = 1;
@@ -154,9 +156,24 @@ test_cli_0031_cli_guard_missing_argument(int argc, char **argv)
                              table_count,
                              0);
     if (result.code == -1 && result.missing_calls == 1 &&
-            result.rewound_optind != 0) {
+            result.rewind_by == 1) {
     } else {
         fprintf(stderr, "case 4: copied argument did not rewind\n");
+        status = 1;
+    }
+
+    optind_value = 3;
+    result = run_guard_case(lagged_args,
+                             copied_option,
+                             &optind_value,
+                             "i:",
+                             table,
+                             table_count,
+                             0);
+    if (result.code == -1 && result.missing_calls == 1 &&
+            result.rewind_by == 2) {
+    } else {
+        fprintf(stderr, "case 5: lagged optind did not rewind by two\n");
         status = 1;
     }
 
