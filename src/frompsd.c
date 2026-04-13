@@ -1751,6 +1751,9 @@ typedef struct sixel_builtin_psd_layer_record {
     int effect_drsh_source;
     float effect_drsh_choke;
     float effect_drsh_range;
+    float effect_drsh_distance_px;
+    float effect_drsh_angle_deg;
+    int effect_drsh_use_global_light;
     float effect_irsh_rgb[3];
     float effect_irsh_opacity;
     float effect_irsh_size;
@@ -1758,6 +1761,9 @@ typedef struct sixel_builtin_psd_layer_record {
     int effect_irsh_source;
     float effect_irsh_choke;
     float effect_irsh_range;
+    float effect_irsh_distance_px;
+    float effect_irsh_angle_deg;
+    int effect_irsh_use_global_light;
     float effect_bevel_highlight_rgb[3];
     float effect_bevel_highlight_opacity;
     sixel_builtin_psd_layer_blend_mode_t effect_bevel_highlight_mode;
@@ -1909,6 +1915,9 @@ sixel_builtin_psd_apply_lfx2_inactive_effect_overrides(
         layer->effect_drsh_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
         layer->effect_drsh_choke = 0.0f;
         layer->effect_drsh_range = 1.0f;
+        layer->effect_drsh_distance_px = 0.0f;
+        layer->effect_drsh_angle_deg = 120.0f;
+        layer->effect_drsh_use_global_light = 0;
     }
     if (layer->eff_irsh_seen != 0 &&
         layer->eff_irsh_active == 0 &&
@@ -1920,6 +1929,9 @@ sixel_builtin_psd_apply_lfx2_inactive_effect_overrides(
         layer->effect_irsh_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
         layer->effect_irsh_choke = 0.0f;
         layer->effect_irsh_range = 1.0f;
+        layer->effect_irsh_distance_px = 0.0f;
+        layer->effect_irsh_angle_deg = 120.0f;
+        layer->effect_irsh_use_global_light = 0;
     }
     if (layer->eff_bevl_seen != 0 &&
         layer->eff_bevl_active == 0 &&
@@ -10880,6 +10892,9 @@ sixel_builtin_psd_parse_effect_glow_object(
     int glow_source;
     float glow_choke;
     float glow_range;
+    float shadow_distance_px;
+    float shadow_angle_deg;
+    int shadow_use_global_light;
     char const *effect_name;
     char trace_message[128];
     char key[5];
@@ -10901,6 +10916,9 @@ sixel_builtin_psd_parse_effect_glow_object(
     glow_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
     glow_choke = 0.0f;
     glow_range = 1.0f;
+    shadow_distance_px = 0.0f;
+    shadow_angle_deg = 120.0f;
+    shadow_use_global_light = 0;
     effect_name = "effect";
     trace_message[0] = '\0';
     memset(key, 0, sizeof(key));
@@ -11000,6 +11018,46 @@ sixel_builtin_psd_parse_effect_glow_object(
                 &glow_source);
             continue;
         }
+        if (memcmp(key, "Dstn", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            if (numeric <= 0.0) {
+                shadow_distance_px = 0.0f;
+            } else if (numeric >= 2048.0) {
+                shadow_distance_px = 2048.0f;
+            } else {
+                shadow_distance_px = (float)numeric;
+            }
+            continue;
+        }
+        if ((memcmp(key, "lagl", 4u) == 0 ||
+             memcmp(key, "Angl", 4u) == 0) &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            if (numeric <= -360.0) {
+                shadow_angle_deg = -360.0f;
+            } else if (numeric >= 360.0) {
+                shadow_angle_deg = 360.0f;
+            } else {
+                shadow_angle_deg = (float)numeric;
+            }
+            continue;
+        }
+        if (memcmp(key, "uglg", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_bool_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         &bool_value)) {
+            shadow_use_global_light = bool_value != 0 ? 1 : 0;
+            continue;
+        }
         if ((memcmp(key, "blur", 4u) == 0 ||
              memcmp(key, "Sz  ", 4u) == 0) &&
             sixel_builtin_psd_descriptor_read_numeric_value(data,
@@ -11088,12 +11146,33 @@ sixel_builtin_psd_parse_effect_glow_object(
         layer->eff_irsh_seen = 1;
         break;
     }
+    if (effect_kind == SIXEL_BUILTIN_PSD_EFFECT_GLOW_DRSH) {
+        layer->effect_drsh_distance_px = shadow_distance_px;
+        layer->effect_drsh_angle_deg = shadow_angle_deg;
+        layer->effect_drsh_use_global_light = shadow_use_global_light;
+    } else if (effect_kind == SIXEL_BUILTIN_PSD_EFFECT_GLOW_IRSH) {
+        layer->effect_irsh_distance_px = shadow_distance_px;
+        layer->effect_irsh_angle_deg = shadow_angle_deg;
+        layer->effect_irsh_use_global_light = shadow_use_global_light;
+    }
     if (glow_source != SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE ||
         glow_choke > 0.0f || glow_range < 0.999f) {
         (void)snprintf(
             trace_message,
             sizeof(trace_message),
             "builtin PSD: parsed %s glow source/choke/range semantics",
+            effect_name);
+        sixel_trace_topic_message("psd_decode", trace_message);
+    }
+    if ((effect_kind == SIXEL_BUILTIN_PSD_EFFECT_GLOW_DRSH ||
+         effect_kind == SIXEL_BUILTIN_PSD_EFFECT_GLOW_IRSH) &&
+        (shadow_distance_px > 0.0f ||
+         fabsf(shadow_angle_deg - 120.0f) >= 0.001f ||
+         shadow_use_global_light != 0)) {
+        (void)snprintf(
+            trace_message,
+            sizeof(trace_message),
+            "builtin PSD: parsed %s shadow offset semantics in layer effects",
             effect_name);
         sixel_trace_topic_message("psd_decode", trace_message);
     }
@@ -11563,6 +11642,103 @@ sixel_builtin_psd_parse_effect_bevel_object(
 }
 
 static int
+sixel_builtin_psd_parse_effect_shadow_list(
+    unsigned char const *data,
+    size_t key_length,
+    size_t *pcursor,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    size_t obj_cursor;
+    size_t class_cursor;
+    int parsed;
+    int effect_kind;
+    char list_type[5];
+    char class_key[5];
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    obj_cursor = 0u;
+    class_cursor = 0u;
+    parsed = 0;
+    effect_kind = 0;
+    memset(list_type, 0, sizeof(list_type));
+    memset(class_key, 0, sizeof(class_key));
+    if (data == NULL || pcursor == NULL || layer == NULL) {
+        return -1;
+    }
+    cursor = *pcursor;
+    if (cursor + 4u > key_length) {
+        return -1;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        if (!sixel_builtin_psd_descriptor_read_type(
+                data,
+                key_length,
+                &cursor,
+                list_type)) {
+            return -1;
+        }
+        if (memcmp(list_type, "Objc", 4u) != 0) {
+            if (!sixel_builtin_psd_descriptor_skip_value(
+                    data,
+                    key_length,
+                    &cursor,
+                    list_type,
+                    0u)) {
+                return -1;
+            }
+            continue;
+        }
+        obj_cursor = cursor;
+        class_cursor = cursor;
+        effect_kind = 0;
+        if (sixel_builtin_psd_descriptor_skip_unicode_string(
+                data,
+                key_length,
+                &class_cursor) &&
+            sixel_builtin_psd_descriptor_read_key4(
+                data,
+                key_length,
+                &class_cursor,
+                class_key)) {
+            if (memcmp(class_key, "DrSh", 4u) == 0) {
+                effect_kind = SIXEL_BUILTIN_PSD_EFFECT_GLOW_DRSH;
+            } else if (memcmp(class_key, "IrSh", 4u) == 0) {
+                effect_kind = SIXEL_BUILTIN_PSD_EFFECT_GLOW_IRSH;
+            }
+        }
+        if (effect_kind == 0) {
+            if (!sixel_builtin_psd_descriptor_skip_value(
+                    data,
+                    key_length,
+                    &cursor,
+                    list_type,
+                    0u)) {
+                return -1;
+            }
+            continue;
+        }
+        if (sixel_builtin_psd_parse_effect_glow_object(
+                data,
+                key_length,
+                &obj_cursor,
+                layer,
+                effect_kind)) {
+            parsed = 1;
+        }
+        cursor = obj_cursor;
+    }
+    *pcursor = cursor;
+    return parsed;
+}
+
+static int
 sixel_builtin_psd_parse_layer_effects_payload_descriptor_at(
     unsigned char const *data,
     size_t key_length,
@@ -11623,6 +11799,25 @@ sixel_builtin_psd_parse_layer_effects_payload_descriptor_at(
                 &cursor,
                 type)) {
             return -1;
+        }
+        if (memcmp(type, "VlLs", 4u) == 0) {
+            int list_parsed;
+
+            list_parsed = 0;
+            obj_cursor = cursor;
+            list_parsed = sixel_builtin_psd_parse_effect_shadow_list(
+                data,
+                key_length,
+                &obj_cursor,
+                layer);
+            if (list_parsed < 0) {
+                return -1;
+            }
+            if (list_parsed > 0) {
+                parsed = 1;
+            }
+            cursor = obj_cursor;
+            continue;
         }
         if (memcmp(type, "Objc", 4u) == 0) {
             obj_cursor = cursor;
@@ -11790,6 +11985,119 @@ sixel_builtin_psd_parse_layer_effects_payload_descriptor(
 }
 
 static int
+sixel_builtin_psd_parse_layer_effects_payload_shadows_loose(
+    unsigned char const *data,
+    size_t key_length,
+    sixel_builtin_psd_layer_record_t *layer)
+{
+    size_t cursor;
+    size_t type_cursor;
+    size_t max_cursor;
+    int parsed;
+
+    cursor = 0u;
+    type_cursor = 0u;
+    max_cursor = 0u;
+    parsed = 0;
+    if (data == NULL || layer == NULL || key_length < 8u) {
+        return 0;
+    }
+    for (cursor = 0u; cursor + 8u <= key_length; ++cursor) {
+        size_t obj_cursor;
+        int list_parsed;
+
+        obj_cursor = 0u;
+        list_parsed = 0;
+        if (layer->eff_drsh_seen == 0 &&
+            cursor + sizeof("dropShadowMulti") - 1u <= key_length &&
+            memcmp(data + cursor,
+                   "dropShadowMulti",
+                   sizeof("dropShadowMulti") - 1u) == 0) {
+            type_cursor = cursor + sizeof("dropShadowMulti") - 1u;
+            max_cursor = type_cursor + 12u;
+            if (max_cursor > key_length) {
+                max_cursor = key_length;
+            }
+            for (; type_cursor + 4u <= max_cursor; ++type_cursor) {
+                if (memcmp(data + type_cursor, "VlLs", 4u) != 0) {
+                    continue;
+                }
+                obj_cursor = type_cursor + 4u;
+                list_parsed = sixel_builtin_psd_parse_effect_shadow_list(
+                    data,
+                    key_length,
+                    &obj_cursor,
+                    layer);
+                if (list_parsed > 0) {
+                    parsed = 1;
+                    cursor = obj_cursor;
+                }
+                break;
+            }
+            continue;
+        }
+        if (layer->eff_irsh_seen == 0 &&
+            cursor + sizeof("innerShadowMulti") - 1u <= key_length &&
+            memcmp(data + cursor,
+                   "innerShadowMulti",
+                   sizeof("innerShadowMulti") - 1u) == 0) {
+            type_cursor = cursor + sizeof("innerShadowMulti") - 1u;
+            max_cursor = type_cursor + 12u;
+            if (max_cursor > key_length) {
+                max_cursor = key_length;
+            }
+            for (; type_cursor + 4u <= max_cursor; ++type_cursor) {
+                if (memcmp(data + type_cursor, "VlLs", 4u) != 0) {
+                    continue;
+                }
+                obj_cursor = type_cursor + 4u;
+                list_parsed = sixel_builtin_psd_parse_effect_shadow_list(
+                    data,
+                    key_length,
+                    &obj_cursor,
+                    layer);
+                if (list_parsed > 0) {
+                    parsed = 1;
+                    cursor = obj_cursor;
+                }
+                break;
+            }
+            continue;
+        }
+        if (layer->eff_drsh_seen == 0 &&
+            memcmp(data + cursor, "DrShObjc", 8u) == 0) {
+            obj_cursor = cursor + 8u;
+            if (sixel_builtin_psd_parse_effect_glow_object(
+                    data,
+                    key_length,
+                    &obj_cursor,
+                    layer,
+                    SIXEL_BUILTIN_PSD_EFFECT_GLOW_DRSH)) {
+                parsed = 1;
+            }
+            continue;
+        }
+        if (layer->eff_irsh_seen == 0 &&
+            memcmp(data + cursor, "IrShObjc", 8u) == 0) {
+            obj_cursor = cursor + 8u;
+            if (sixel_builtin_psd_parse_effect_glow_object(
+                    data,
+                    key_length,
+                    &obj_cursor,
+                    layer,
+                    SIXEL_BUILTIN_PSD_EFFECT_GLOW_IRSH)) {
+                parsed = 1;
+            }
+            continue;
+        }
+        if (layer->eff_drsh_seen != 0 && layer->eff_irsh_seen != 0) {
+            break;
+        }
+    }
+    return parsed;
+}
+
+static int
 sixel_builtin_psd_parse_layer_effects_payload_loose(
     unsigned char const *data,
     size_t key_length,
@@ -11809,7 +12117,29 @@ sixel_builtin_psd_parse_layer_effects_payload_loose(
         layer,
         allow_bevel_proxy);
     if (parsed >= 0) {
+        /*
+         * Some lfx2 payloads encode DrSh/IrSh objects in forms that are not
+         * surfaced by the descriptor item walker key path. Keep descriptor
+         * parsing as the primary path and supplement only missing shadow
+         * records with a loose signature scan.
+         */
+        if (layer->eff_drsh_seen == 0 || layer->eff_irsh_seen == 0) {
+            if (sixel_builtin_psd_parse_layer_effects_payload_shadows_loose(
+                    data,
+                    key_length,
+                    layer) != 0) {
+                parsed = 1;
+            }
+        }
         return parsed;
+    }
+    if (layer->eff_drsh_seen == 0 || layer->eff_irsh_seen == 0) {
+        if (sixel_builtin_psd_parse_layer_effects_payload_shadows_loose(
+                data,
+                key_length,
+                layer) != 0) {
+            parsed = 1;
+        }
     }
     for (cursor = 0u; cursor + 8u <= key_length; ++cursor) {
         size_t obj_cursor;
@@ -12102,6 +12432,10 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_drsh_source = legacy->effect_drsh_source;
         layer->effect_drsh_choke = legacy->effect_drsh_choke;
         layer->effect_drsh_range = legacy->effect_drsh_range;
+        layer->effect_drsh_distance_px = legacy->effect_drsh_distance_px;
+        layer->effect_drsh_angle_deg = legacy->effect_drsh_angle_deg;
+        layer->effect_drsh_use_global_light =
+            legacy->effect_drsh_use_global_light;
         drsh_inactive = 0;
         if (allow_glow_proxy_backfill != 0 &&
             outer_glow_inactive != 0 &&
@@ -12133,6 +12467,10 @@ sixel_builtin_psd_merge_missing_legacy_effects(
         layer->effect_irsh_source = legacy->effect_irsh_source;
         layer->effect_irsh_choke = legacy->effect_irsh_choke;
         layer->effect_irsh_range = legacy->effect_irsh_range;
+        layer->effect_irsh_distance_px = legacy->effect_irsh_distance_px;
+        layer->effect_irsh_angle_deg = legacy->effect_irsh_angle_deg;
+        layer->effect_irsh_use_global_light =
+            legacy->effect_irsh_use_global_light;
         irsh_inactive = 0;
         if (allow_glow_proxy_backfill != 0 &&
             inner_glow_inactive != 0 &&
@@ -13959,6 +14297,9 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->effect_drsh_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
     layer->effect_drsh_choke = 0.0f;
     layer->effect_drsh_range = 1.0f;
+    layer->effect_drsh_distance_px = 0.0f;
+    layer->effect_drsh_angle_deg = 120.0f;
+    layer->effect_drsh_use_global_light = 0;
     layer->effect_irsh_rgb[0] = 0.0f;
     layer->effect_irsh_rgb[1] = 0.0f;
     layer->effect_irsh_rgb[2] = 0.0f;
@@ -13968,6 +14309,9 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->effect_irsh_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
     layer->effect_irsh_choke = 0.0f;
     layer->effect_irsh_range = 1.0f;
+    layer->effect_irsh_distance_px = 0.0f;
+    layer->effect_irsh_angle_deg = 120.0f;
+    layer->effect_irsh_use_global_light = 0;
     layer->effect_bevel_highlight_rgb[0] = 0.0f;
     layer->effect_bevel_highlight_rgb[1] = 0.0f;
     layer->effect_bevel_highlight_rgb[2] = 0.0f;
@@ -19574,6 +19918,14 @@ sixel_builtin_psd_sample_alpha_cross_kernel(
     size_t x,
     size_t y);
 
+static float
+sixel_builtin_psd_sample_alpha_cross_kernel_shifted(
+    float const *alpha_map,
+    unsigned int width,
+    unsigned int height,
+    float sample_x,
+    float sample_y);
+
 static int
 sixel_builtin_psd_build_alpha_distance_maps(
     float *foreground_distance_map,
@@ -19604,6 +19956,14 @@ sixel_builtin_psd_build_exterior_background_map(
     float alpha_threshold);
 
 static void
+sixel_builtin_psd_compute_shadow_offset(
+    float distance_px,
+    float angle_deg,
+    int use_global_light,
+    float *offset_x,
+    float *offset_y);
+
+static void
 sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     float *canvas_rgb_premul,
     float *canvas_alpha,
@@ -19624,6 +19984,8 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     int effect_source_center,
     float effect_choke,
     float effect_range,
+    float effect_offset_x,
+    float effect_offset_y,
     char const *effect_trace,
     int *ptraced_clip_weighted,
     int *ptraced_effect)
@@ -19648,9 +20010,14 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     float blended_r;
     float blended_g;
     float blended_b;
+    float sample_x;
+    float sample_y;
+    float neighbor_sample_x;
+    float neighbor_sample_y;
     int traced_distance_map;
     int traced_exterior_gated;
     int traced_outer_distance_band;
+    int traced_shadow_offset_semantics;
 
     x = 0u;
     y = 0u;
@@ -19672,9 +20039,14 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     blended_r = 0.0f;
     blended_g = 0.0f;
     blended_b = 0.0f;
+    sample_x = 0.0f;
+    sample_y = 0.0f;
+    neighbor_sample_x = 0.0f;
+    neighbor_sample_y = 0.0f;
     traced_distance_map = 0;
     traced_exterior_gated = 0;
     traced_outer_distance_band = 0;
+    traced_shadow_offset_semantics = 0;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL || layer == NULL || effect_rgb == NULL ||
         canvas_width == 0u || canvas_height == 0u ||
@@ -19718,20 +20090,39 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
             if (clip_weight <= 0.0f) {
                 continue;
             }
+            sample_x = (float)x - effect_offset_x;
+            sample_y = (float)y - effect_offset_y;
             if (interior_coverage_alpha_map != NULL) {
-                source_alpha = sixel_builtin_psd_sample_alpha_cross_kernel(
+                source_alpha =
+                    sixel_builtin_psd_sample_alpha_cross_kernel_shifted(
                     interior_coverage_alpha_map,
                     canvas_width,
                     canvas_height,
-                    x,
-                    y);
+                    sample_x,
+                    sample_y);
             } else {
+                source_alpha =
+                    sixel_builtin_psd_sample_alpha_cross_kernel_shifted(
+                        canvas_alpha,
+                        canvas_width,
+                        canvas_height,
+                        sample_x,
+                        sample_y);
                 source_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                    canvas_alpha[idx] * clip_weight);
+                    source_alpha * clip_weight);
             }
             if (is_inner_effect != 0 &&
                 source_alpha <= 0.0f) {
                 continue;
+            }
+            if (traced_shadow_offset_semantics == 0 &&
+                (fabsf(effect_offset_x) >= 0.001f ||
+                 fabsf(effect_offset_y) >= 0.001f)) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: applying deferred shadow offset semantics "
+                    "in layer fallback");
+                traced_shadow_offset_semantics = 1;
             }
             if (is_inner_effect == 0 &&
                 outer_background_map != NULL &&
@@ -19775,16 +20166,31 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
                         sixel_builtin_psd_clamp_alpha_float32(
                             clip_alpha_map[neighbor_index]);
                     if (interior_coverage_alpha_map != NULL) {
+                        neighbor_sample_x =
+                            (float)nx - effect_offset_x;
+                        neighbor_sample_y =
+                            (float)ny - effect_offset_y;
                         neighbor_alpha =
-                            sixel_builtin_psd_sample_alpha_cross_kernel(
+                            sixel_builtin_psd_sample_alpha_cross_kernel_shifted(
                                 interior_coverage_alpha_map,
                                 canvas_width,
                                 canvas_height,
-                                (size_t)nx,
-                                (size_t)ny);
+                                neighbor_sample_x,
+                                neighbor_sample_y);
                     } else {
+                        neighbor_sample_x =
+                            (float)nx - effect_offset_x;
+                        neighbor_sample_y =
+                            (float)ny - effect_offset_y;
+                        neighbor_alpha =
+                            sixel_builtin_psd_sample_alpha_cross_kernel_shifted(
+                                canvas_alpha,
+                                canvas_width,
+                                canvas_height,
+                                neighbor_sample_x,
+                                neighbor_sample_y);
                         neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                            canvas_alpha[neighbor_index] *
+                            neighbor_alpha *
                             neighbor_clip_weight);
                     }
                     if (neighbor_alpha < min_alpha) {
@@ -19970,6 +20376,8 @@ sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
     int outer_source;
     float outer_choke;
     float outer_range;
+    float drsh_offset_x;
+    float drsh_offset_y;
     int has_outer_glow_effect;
     size_t pixel_count;
     float *foreground_distance_map;
@@ -20000,6 +20408,8 @@ sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
     outer_source = SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE;
     outer_choke = 0.0f;
     outer_range = 1.0f;
+    drsh_offset_x = 0.0f;
+    drsh_offset_y = 0.0f;
     has_outer_glow_effect = 0;
     pixel_count = 0u;
     foreground_distance_map = NULL;
@@ -20053,6 +20463,12 @@ sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
     if (layer->has_effect_drsh != 0 &&
         layer->effect_drsh_opacity > 0.0f &&
         layer->effect_drsh_size > 0.0f) {
+        sixel_builtin_psd_compute_shadow_offset(
+            layer->effect_drsh_distance_px,
+            layer->effect_drsh_angle_deg,
+            layer->effect_drsh_use_global_light,
+            &drsh_offset_x,
+            &drsh_offset_y);
         if (traced_clip_weighted == 0) {
             sixel_trace_topic_message(
                 "psd_decode",
@@ -20080,6 +20496,8 @@ sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
             layer->effect_drsh_source,
             layer->effect_drsh_choke,
             layer->effect_drsh_range,
+            drsh_offset_x,
+            drsh_offset_y,
             "builtin PSD: applying drop shadow effect in layer fallback",
             NULL,
             &traced_drop_shadow);
@@ -20139,6 +20557,8 @@ sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
             outer_source,
             outer_choke,
             outer_range,
+            0.0f,
+            0.0f,
             "builtin PSD: applying outer glow effect in layer fallback",
             NULL,
             &traced_outer_glow);
@@ -20202,6 +20622,8 @@ sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
                 bevel_highlight_source_center,
                 bevel_highlight_choke,
                 bevel_highlight_range,
+                0.0f,
+                0.0f,
                 "builtin PSD: applying bevel highlight in layer fallback",
                 NULL,
                 &traced_bevel_highlight);
@@ -20234,6 +20656,8 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
     float bevel_shadow_choke;
     float bevel_shadow_range;
     float bevel_shadow_edge_bias;
+    float irsh_offset_x;
+    float irsh_offset_y;
     size_t pixel_count;
     float *foreground_distance_map;
     float *background_distance_map;
@@ -20251,6 +20675,8 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
     bevel_shadow_choke = 0.0f;
     bevel_shadow_range = 1.0f;
     bevel_shadow_edge_bias = 0.45f;
+    irsh_offset_x = 0.0f;
+    irsh_offset_y = 0.0f;
     pixel_count = 0u;
     foreground_distance_map = NULL;
     background_distance_map = NULL;
@@ -20313,6 +20739,8 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
             layer->effect_irgl_source,
             layer->effect_irgl_choke,
             layer->effect_irgl_range,
+            0.0f,
+            0.0f,
             "builtin PSD: applying inner glow effect in layer fallback",
             &traced_clip_weighted,
             &traced_inner_glow);
@@ -20340,6 +20768,8 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
             layer->effect_chfx_source,
             layer->effect_chfx_choke,
             layer->effect_chfx_range,
+            0.0f,
+            0.0f,
             "builtin PSD: applying choke effect in layer fallback",
             &traced_clip_weighted,
             &traced_choke);
@@ -20396,9 +20826,46 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
             bevel_shadow_source_center,
             bevel_shadow_choke,
             bevel_shadow_range,
+            0.0f,
+            0.0f,
             "builtin PSD: applying bevel shadow in layer fallback",
             &traced_clip_weighted,
             &traced_bevel_shadow);
+    }
+    if (layer->has_effect_irsh != 0 &&
+        layer->effect_irsh_opacity > 0.0f &&
+        layer->effect_irsh_size > 0.0f) {
+        sixel_builtin_psd_compute_shadow_offset(
+            layer->effect_irsh_distance_px,
+            layer->effect_irsh_angle_deg,
+            layer->effect_irsh_use_global_light,
+            &irsh_offset_x,
+            &irsh_offset_y);
+        sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
+            canvas_rgb_premul,
+            canvas_alpha,
+            clip_alpha_map,
+            interior_coverage_alpha_map,
+            distance_map_valid != 0 ? foreground_distance_map : NULL,
+            distance_map_valid != 0 ? background_distance_map : NULL,
+            NULL,
+            canvas_width,
+            canvas_height,
+            layer,
+            layer->effect_irsh_rgb,
+            layer->effect_irsh_opacity,
+            layer->effect_irsh_size,
+            layer->effect_irsh_mode,
+            0.70f,
+            1,
+            layer->effect_irsh_source,
+            layer->effect_irsh_choke,
+            layer->effect_irsh_range,
+            irsh_offset_x,
+            irsh_offset_y,
+            "builtin PSD: applying inner shadow effect in layer fallback",
+            &traced_clip_weighted,
+            NULL);
     }
     free(foreground_distance_map);
     free(background_distance_map);
@@ -20459,6 +20926,76 @@ sixel_builtin_psd_sample_alpha_cross_kernel(
     return sixel_builtin_psd_clamp_alpha_float32(weighted_sum / total_weight);
 }
 
+static float
+sixel_builtin_psd_sample_alpha_cross_kernel_shifted(
+    float const *alpha_map,
+    unsigned int width,
+    unsigned int height,
+    float sample_x,
+    float sample_y)
+{
+    int shifted_x;
+    int shifted_y;
+
+    shifted_x = 0;
+    shifted_y = 0;
+    if (alpha_map == NULL || width == 0u || height == 0u) {
+        return 0.0f;
+    }
+    shifted_x = (int)lroundf(sample_x);
+    shifted_y = (int)lroundf(sample_y);
+    if (shifted_x < 0 || shifted_y < 0 ||
+        shifted_x >= (int)width || shifted_y >= (int)height) {
+        return 0.0f;
+    }
+    return sixel_builtin_psd_sample_alpha_cross_kernel(alpha_map,
+                                                       width,
+                                                       height,
+                                                       (size_t)shifted_x,
+                                                       (size_t)shifted_y);
+}
+
+static void
+sixel_builtin_psd_compute_shadow_offset(
+    float distance_px,
+    float angle_deg,
+    int use_global_light,
+    float *offset_x,
+    float *offset_y)
+{
+    float radians;
+    float distance;
+    float angle;
+
+    radians = 0.0f;
+    distance = 0.0f;
+    angle = 0.0f;
+    if (offset_x == NULL || offset_y == NULL) {
+        return;
+    }
+    *offset_x = 0.0f;
+    *offset_y = 0.0f;
+    distance = distance_px;
+    if (distance <= 0.0f) {
+        return;
+    }
+    if (distance > 2048.0f) {
+        distance = 2048.0f;
+    }
+    angle = angle_deg;
+    if (angle <= -360.0f) {
+        angle = -360.0f;
+    } else if (angle >= 360.0f) {
+        angle = 360.0f;
+    }
+    if (use_global_light != 0 && fabsf(angle) < 0.001f) {
+        angle = 120.0f;
+    }
+    radians = angle * 0.01745329251994329577f;
+    *offset_x = cosf(radians) * distance;
+    *offset_y = -sinf(radians) * distance;
+}
+
 static int
 sixel_builtin_psd_build_alpha_distance_maps(
     float *foreground_distance_map,
@@ -20507,6 +21044,13 @@ sixel_builtin_psd_build_alpha_distance_maps(
     for (y = 0u; y < (size_t)height; ++y) {
         for (x = 0u; x < (size_t)width; ++x) {
             idx = y * (size_t)width + x;
+            /*
+             * Keep an explicit index guard for conservative analyzers.
+             * The width*height overflow check above already bounds idx.
+             */
+            if (idx >= pixel_count) {
+                continue;
+            }
             if (x > 0u) {
                 candidate = foreground_distance_map[idx - 1u] + 1.0f;
                 if (candidate < foreground_distance_map[idx]) {
@@ -20558,6 +21102,13 @@ sixel_builtin_psd_build_alpha_distance_maps(
     for (y = (size_t)height; y > 0u; --y) {
         for (x = (size_t)width; x > 0u; --x) {
             idx = (y - 1u) * (size_t)width + (x - 1u);
+            /*
+             * Mirror the forward-pass safety guard so array bounds remain
+             * explicit under static analysis.
+             */
+            if (idx >= pixel_count) {
+                continue;
+            }
             if (x < (size_t)width) {
                 candidate = foreground_distance_map[idx + 1u] + 1.0f;
                 if (candidate < foreground_distance_map[idx]) {
@@ -31546,4 +32097,5 @@ cleanup_lab32:
 /* emacs c-basic-offset: 4     */
 /* emacs End:                  */
 /* vim: set expandtab ts=4 : */
+#undef sixel_trace_topic_message
 /* EOF */

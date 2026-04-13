@@ -407,6 +407,11 @@ Key points used by this roadmap:
     `1520..1523` lock outer distance-band activation, edge-source gate usage,
     deferred bevel-lighting coexistence, and deferred interior/stroke
     non-regression contracts.
+  - Shadow semantics for `DrSh/IrSh` now keep descriptor `Dstn/lagl/uglg`
+    values in the effect model and route distance/angle offsets into deferred
+    shadow application paths. PASS representatives `1534..1537` lock
+    shadow-offset parse semantics (`DrSh/IrSh`), lrFX merge/no-ignore
+    compatibility, and `clbl/infx/vstk` non-regression contracts.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:
