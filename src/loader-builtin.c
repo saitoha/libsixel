@@ -5035,13 +5035,10 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     int bgcolor_source,
     int is_pic,
     int enable_cms,
-    int bmp_info40_mode
-#if HAVE_LCMS2
-    ,
+    int bmp_info40_mode,
     int is_tiff,
     unsigned char **icc_profile,
     size_t *icc_profile_length
-#endif
 )
 {
     SIXELSTATUS status;
@@ -5106,6 +5103,10 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     message[0] = '\0';
 #if HAVE_LCMS2
     tiff_photometric = (uint16_t)0xffffu;
+#else
+    (void)is_tiff;
+    (void)icc_profile;
+    (void)icc_profile_length;
 #endif
     if (chunk == NULL ||
         chunk_size <= 0 ||
@@ -5458,9 +5459,7 @@ sixel_builtin_load_nonpng_single_frame(
     int is_jpeg,
     int is_psd,
     int is_pic,
-#if HAVE_LCMS2
     int is_tiff,
-#endif
     unsigned char **icc_profile,
     size_t *icc_profile_length,
     unsigned char **psd_transparent_mask,
@@ -5535,7 +5534,6 @@ sixel_builtin_load_nonpng_single_frame(
     if (status != SIXEL_FALSE) {
         goto end;
     }
-#if HAVE_LCMS2
     status = sixel_builtin_load_nonpng_rgb8_fallback(
         chunk,
         chunk_size,
@@ -5549,18 +5547,6 @@ sixel_builtin_load_nonpng_single_frame(
         is_tiff,
         icc_profile,
         icc_profile_length);
-#else
-    status = sixel_builtin_load_nonpng_rgb8_fallback(
-        chunk,
-        chunk_size,
-        frame,
-        stb_context,
-        bgcolor,
-        bgcolor_source,
-        is_pic,
-        enable_cms,
-        bmp_info40_mode);
-#endif
 
 end:
     *psd_transparent_mask = mask;
@@ -5644,9 +5630,7 @@ sixel_builtin_load_stbi_nonpng_path(
     int is_jpeg,
     int is_psd,
     int is_pic,
-#if HAVE_LCMS2
     int is_tiff,
-#endif
     unsigned char **icc_profile,
     size_t *icc_profile_length,
     unsigned char **psd_transparent_mask,
@@ -5659,10 +5643,9 @@ sixel_builtin_load_stbi_nonpng_path(
     }
 
     /*
-     * Keep LCMS and non-LCMS call sites split out so older PCC versions
-     * avoid internal failures on mixed preprocessor argument lists.
+     * Keep the call shape fixed so older PCC builds avoid internal failures
+     * around long argument lists with mixed preprocessor branches.
      */
-#if HAVE_LCMS2
     status = sixel_builtin_load_nonpng_single_frame(
         load_request->chunk,
         chunk_size,
@@ -5682,26 +5665,6 @@ sixel_builtin_load_stbi_nonpng_path(
         icc_profile_length,
         psd_transparent_mask,
         psd_transparent_mask_size);
-#else
-    status = sixel_builtin_load_nonpng_single_frame(
-        load_request->chunk,
-        chunk_size,
-        frame,
-        stb_context,
-        ri,
-        load_request->fuse_palette,
-        load_request->bgcolor,
-        load_request->bgcolor_source,
-        load_request->enable_cms,
-        load_request->bmp_info40_mode,
-        is_jpeg,
-        is_psd,
-        is_pic,
-        icc_profile,
-        icc_profile_length,
-        psd_transparent_mask,
-        psd_transparent_mask_size);
-#endif
 
     return status;
 }
@@ -5717,9 +5680,7 @@ sixel_builtin_load_stbi_path(
     int is_jpeg,
     int is_psd,
     int is_pic,
-#if HAVE_LCMS2
     int is_tiff,
-#endif
     unsigned char **icc_profile,
     size_t *icc_profile_length,
     unsigned char **psd_transparent_mask,
@@ -5779,9 +5740,7 @@ sixel_builtin_load_stbi_path(
         is_jpeg,
         is_psd,
         is_pic,
-#if HAVE_LCMS2
         is_tiff,
-#endif
         icc_profile,
         icc_profile_length,
         psd_transparent_mask,
@@ -5814,6 +5773,7 @@ load_with_builtin(
     int is_jpeg;
     int is_psd;
     int is_pic;
+    int is_tiff;
     unsigned char *icc_profile;
     size_t icc_profile_length;
     unsigned char *psd_transparent_mask;
@@ -5824,9 +5784,6 @@ load_with_builtin(
     int animation_handled;
     int apply_start_frame;
     int pnm_pixelformat;
-#if HAVE_LCMS2
-    int is_tiff;
-#endif
 
     status = SIXEL_BAD_INPUT;
     pixels = NULL;
@@ -5860,18 +5817,14 @@ load_with_builtin(
     animation_handled = 0;
     apply_start_frame = 0;
     pnm_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-#if HAVE_LCMS2
     is_tiff = 0;
-#endif
 
     decode_path = sixel_builtin_detect_decode_path(load_request.chunk);
     is_png = chunk_is_png(pchunk);
     is_jpeg = chunk_is_jpeg(pchunk);
     is_psd = chunk_is_psd(pchunk);
     is_pic = chunk_is_pic(pchunk);
-#if HAVE_LCMS2
     is_tiff = chunk_is_tiff(pchunk);
-#endif
     loader_trace_message("builtin loader: decode path=%s",
                          sixel_builtin_decode_path_name(decode_path));
 
@@ -5971,9 +5924,7 @@ load_with_builtin(
                                               is_jpeg,
                                               is_psd,
                                               is_pic,
-#if HAVE_LCMS2
                                               is_tiff,
-#endif
                                               &icc_profile,
                                               &icc_profile_length,
                                               &psd_transparent_mask,
