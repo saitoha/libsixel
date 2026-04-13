@@ -412,6 +412,11 @@ Key points used by this roadmap:
     shadow application paths. PASS representatives `1534..1537` lock
     shadow-offset parse semantics (`DrSh/IrSh`), lrFX merge/no-ignore
     compatibility, and `clbl/infx/vstk` non-regression contracts.
+  - Deferred `GrFl` now normalizes descriptor percent scale on the effect path
+    and separates deferred gradient coverage-source weighting from clip-gate
+    masking in `clbl=1` paths. PASS representatives `1538..1540` lock
+    GrFl percent-scale normalization, deferred coverage/gate split, and
+    halo/stroke non-regression contracts.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:

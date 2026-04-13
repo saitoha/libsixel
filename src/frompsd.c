@@ -17067,6 +17067,25 @@ sixel_builtin_psd_fill_gradient_t(
     return sixel_builtin_psd_clamp01(t);
 }
 
+static float
+sixel_builtin_psd_effect_gradient_scale_normalized(float scale_percent)
+{
+    float scale_factor;
+
+    /*
+     * Descriptor GrFl scale is stored in percent. Normalize only effect-path
+     * overlays here so fill payload behavior remains unchanged.
+     */
+    scale_factor = scale_percent / 100.0f;
+    if (scale_factor < 0.01f) {
+        scale_factor = 0.01f;
+    }
+    if (scale_factor > 100.0f) {
+        scale_factor = 100.0f;
+    }
+    return scale_factor;
+}
+
 static int
 sixel_builtin_psd_decode_layer_channel_8bit(
     unsigned char const *data,
@@ -19048,7 +19067,16 @@ sixel_builtin_psd_apply_layer_effects_subset(
         gradient_layer.fill_gradient_reverse = layer->effect_gradient_reverse;
         gradient_layer.fill_gradient_angle_deg =
             layer->effect_gradient_angle_deg;
-        gradient_layer.fill_gradient_scale = layer->effect_gradient_scale;
+        gradient_layer.fill_gradient_scale =
+            sixel_builtin_psd_effect_gradient_scale_normalized(
+                layer->effect_gradient_scale);
+        if (fabsf(layer->effect_gradient_scale -
+                  gradient_layer.fill_gradient_scale) > 0.0001f) {
+            sixel_trace_topic_message(
+                "psd_decode",
+                "builtin PSD: normalizing GrFl percent scale for effect "
+                "gradient overlay in layer fallback");
+        }
         gradient_layer.fill_gradient_stop_count =
             layer->effect_gradient_stop_count;
         for (i = 0u; i < layer->effect_gradient_stop_count; ++i) {
@@ -19723,6 +19751,7 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     float *canvas_rgb_premul,
     float *canvas_alpha,
     float const *clip_alpha_map,
+    float const *coverage_alpha_map,
     unsigned int canvas_width,
     unsigned int canvas_height,
     sixel_builtin_psd_layer_record_t const *layer)
@@ -19741,13 +19770,16 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     float blended_r;
     float blended_g;
     float blended_b;
+    float coverage_weight;
     float effective_gradient_alpha;
     sixel_builtin_psd_layer_blend_mode_t effect_mode;
     sixel_builtin_psd_layer_record_t gradient_layer;
     int local_x;
     int local_y;
     int traced_clip_weighted;
+    int traced_coverage_gate_split;
     int use_clip_weight;
+    int use_coverage_weight;
 
     x = 0u;
     y = 0u;
@@ -19765,13 +19797,16 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     blended_r = 0.0f;
     blended_g = 0.0f;
     blended_b = 0.0f;
+    coverage_weight = 1.0f;
     effective_gradient_alpha = 0.0f;
     effect_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     memset(&gradient_layer, 0, sizeof(gradient_layer));
     local_x = 0;
     local_y = 0;
     traced_clip_weighted = 0;
+    traced_coverage_gate_split = 0;
     use_clip_weight = 0;
+    use_coverage_weight = 0;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL || layer == NULL ||
         layer->has_effect_gradient_overlay == 0 ||
@@ -19786,7 +19821,16 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     gradient_layer.fill_gradient_type = layer->effect_gradient_type;
     gradient_layer.fill_gradient_reverse = layer->effect_gradient_reverse;
     gradient_layer.fill_gradient_angle_deg = layer->effect_gradient_angle_deg;
-    gradient_layer.fill_gradient_scale = layer->effect_gradient_scale;
+    gradient_layer.fill_gradient_scale =
+        sixel_builtin_psd_effect_gradient_scale_normalized(
+            layer->effect_gradient_scale);
+    if (fabsf(layer->effect_gradient_scale -
+              gradient_layer.fill_gradient_scale) > 0.0001f) {
+        sixel_trace_topic_message(
+            "psd_decode",
+            "builtin PSD: normalizing GrFl percent scale for effect "
+            "gradient overlay in layer fallback");
+    }
     gradient_layer.fill_gradient_stop_count = layer->effect_gradient_stop_count;
     for (x = 0u; x < layer->effect_gradient_stop_count; ++x) {
         gradient_layer.fill_gradient_stop_pos[x] =
@@ -19805,6 +19849,7 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     effect_mode = layer->effect_gradient_overlay_mode;
     use_clip_weight = layer->has_blend_clipped_elements != 0 &&
         layer->blend_clipped_elements_enabled != 0 ? 1 : 0;
+    use_coverage_weight = coverage_alpha_map != NULL ? 1 : 0;
     if (gradient_opacity <= 0.0f) {
         return;
     }
@@ -19820,6 +19865,15 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
                 clip_alpha_map[idx]);
             if (clip_weight <= 0.0f) {
                 continue;
+            }
+            if (use_coverage_weight != 0) {
+                coverage_weight = sixel_builtin_psd_clamp_alpha_float32(
+                    coverage_alpha_map[idx]);
+                if (coverage_weight <= 0.0f) {
+                    continue;
+                }
+            } else {
+                coverage_weight = 1.0f;
             }
             local_x = (int)x - layer->left;
             local_y = (int)y - layer->top;
@@ -19843,6 +19897,8 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
                 &gradient_alpha);
             gradient_alpha = sixel_builtin_psd_clamp_alpha_float32(
                 gradient_alpha * gradient_opacity);
+            gradient_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                gradient_alpha * coverage_weight);
             if (use_clip_weight != 0) {
                 effective_gradient_alpha =
                     sixel_builtin_psd_clamp_alpha_float32(
@@ -19859,6 +19915,14 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
                     "builtin PSD: applying clip-weighted deferred "
                     "gradient overlay in layer fallback");
                 traced_clip_weighted = 1;
+            }
+            if (use_coverage_weight != 0 &&
+                traced_coverage_gate_split == 0) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: separating deferred gradient coverage "
+                    "source and clip gate in layer fallback");
+                traced_coverage_gate_split = 1;
             }
             base_r = sixel_builtin_psd_clamp01(
                 canvas_rgb_premul[idx * 3u + 0u] / alpha);
@@ -20065,6 +20129,15 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
         radius = 1;
     } else if (radius > 48) {
         radius = 48;
+    }
+    if (is_inner_effect == 0 &&
+        foreground_distance_map != NULL &&
+        background_distance_map != NULL) {
+        sixel_trace_topic_message(
+            "psd_decode",
+            "builtin PSD: applying deferred outer "
+            "distance-band coverage in layer fallback");
+        traced_outer_distance_band = 1;
     }
     for (y = 0u; y < (size_t)canvas_height; ++y) {
         size_t row_offset;
@@ -22266,6 +22339,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     canvas_rgb_premul,
                     canvas_alpha,
                     clip_alpha_map,
+                    pending_overlay_stroke_coverage_valid != 0
+                        ? pending_overlay_stroke_coverage_map
+                        : NULL,
                     info->width,
                     info->height,
                     &pending_overlay_layer);
@@ -22953,6 +23029,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 canvas_rgb_premul,
                 canvas_alpha,
                 clip_alpha_map,
+                pending_overlay_stroke_coverage_valid != 0
+                    ? pending_overlay_stroke_coverage_map
+                    : NULL,
                 info->width,
                 info->height,
                 &pending_overlay_layer);
