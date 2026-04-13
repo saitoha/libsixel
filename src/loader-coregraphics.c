@@ -1155,14 +1155,34 @@ coregraphics_copy_indexed_pixels(CGImageRef image,
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     needed_bytes = (size_t)height * bytes_per_row;
+    if (needed_bytes > (size_t)SIXEL_ALLOCATE_BYTES_MAX) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: indexed source row payload is too "
+            "large.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto cleanup;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > (size_t)SIXEL_ALLOCATE_BYTES_MAX) {
+        sixel_helper_set_additional_message(
+            "load_with_coregraphics: indexed image is too large.");
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
 
     provider = CGImageGetDataProvider(image);
     if (provider == NULL) {
-        return SIXEL_FALSE;
+        status = SIXEL_FALSE;
+        goto cleanup;
     }
     provider_data = CGDataProviderCopyData(provider);
     if (provider_data == NULL) {
-        return SIXEL_FALSE;
+        status = SIXEL_FALSE;
+        goto cleanup;
     }
     src = CFDataGetBytePtr(provider_data);
     data_size = (size_t)CFDataGetLength(provider_data);
@@ -1171,11 +1191,6 @@ coregraphics_copy_indexed_pixels(CGImageRef image,
         goto cleanup;
     }
 
-    if ((size_t)width > SIZE_MAX / (size_t)height) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        goto cleanup;
-    }
-    pixel_count = (size_t)width * (size_t)height;
     pixels = (unsigned char *)sixel_allocator_malloc(allocator, pixel_count);
     if (pixels == NULL) {
         sixel_helper_set_additional_message(

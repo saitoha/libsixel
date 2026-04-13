@@ -30,6 +30,18 @@ typedef struct coregraphics_animation_probe {
 #define WEBP_LOOP2_IMAGE_PATH \
     "/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
 
+/*
+ * Minimized fuzz payload that previously forced CoreGraphics indexed decoding
+ * into a 4 GiB provider copy request.
+ */
+static unsigned char const coregraphics_indexed_provider_oom_poc[33] = {
+    0x42, 0x4d, 0x28, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x0c, 0x00,
+    0x00, 0x00, 0x02, 0xff, 0xd8, 0xff, 0x01, 0x00,
+    0x01, 0x00, 0x00, 0xbf, 0xff, 0x40, 0x00, 0x00,
+    0x00
+};
+
 typedef struct coregraphics_loop_sequence_probe {
     int callback_count;
     int expected_count;
@@ -2137,6 +2149,98 @@ cleanup:
 }
 
 static int
+run_coregraphics_indexed_provider_copy_oom_reject_test(void)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_loader_component_t *component;
+    sixel_chunk_t chunk;
+    int require_static;
+    int use_palette;
+    int reqcolors;
+    loader_probe_callback_state_t callback_state;
+    coregraphics_callback_count_probe_t probe;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    component = NULL;
+    memset(&chunk, 0, sizeof(chunk));
+    require_static = 0;
+    use_palette = 1;
+    reqcolors = 256;
+    callback_state.loader = NULL;
+    callback_state.fn = NULL;
+    callback_state.context = NULL;
+    probe.callback_count = 0;
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "coregraphics: allocator initialization failed\n");
+        return 1;
+    }
+
+    status = new_coregraphics_component(allocator, &component);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "coregraphics: component init failed (%d)\n",
+                (int)status);
+        goto cleanup;
+    }
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                           &require_static);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_USE_PALETTE,
+                                           &use_palette);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQCOLORS,
+                                           &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    chunk.buffer = (unsigned char *)(uintptr_t)
+        coregraphics_indexed_provider_oom_poc;
+    chunk.size = sizeof(coregraphics_indexed_provider_oom_poc);
+    chunk.max_size = sizeof(coregraphics_indexed_provider_oom_poc);
+    chunk.source_path = NULL;
+    chunk.allocator = allocator;
+
+    callback_state.fn = capture_coregraphics_callback_count;
+    callback_state.context = &probe;
+    status = sixel_loader_component_load(component,
+                                         &chunk,
+                                         capture_frame_trampoline,
+                                         &callback_state);
+    if (status != SIXEL_BAD_INPUT) {
+        fprintf(stderr,
+                "coregraphics: expected bad-input status, got %d\n",
+                (int)status);
+        status = SIXEL_FALSE;
+        goto cleanup;
+    }
+    if (probe.callback_count != 0) {
+        fprintf(stderr,
+                "coregraphics: callback was invoked on indexed oom input\n");
+        status = SIXEL_FALSE;
+        goto cleanup;
+    }
+    status = SIXEL_OK;
+
+cleanup:
+    sixel_loader_component_unref(component);
+    sixel_allocator_unref(allocator);
+    return SIXEL_FAILED(status) ? 1 : 0;
+}
+
+static int
 run_coregraphics_cache_invalid_env_reject_test(void)
 {
     SIXELSTATUS status;
@@ -2227,6 +2331,8 @@ run_coregraphics_loader_test(void)
           run_coregraphics_huge_dimension_metadata_reject_test },
         { "SIXEL_TEST_COREGRAPHICS_CFINDEX_SIZE_OVERFLOW_REJECT",
           run_coregraphics_cfindex_size_overflow_reject_test },
+        { "SIXEL_TEST_COREGRAPHICS_INDEXED_PROVIDER_COPY_OOM_REJECT",
+          run_coregraphics_indexed_provider_copy_oom_reject_test },
         { "SIXEL_TEST_COREGRAPHICS_CACHE_INVALID_ENV_REJECT",
           run_coregraphics_cache_invalid_env_reject_test }
     };
@@ -2287,6 +2393,10 @@ run_coregraphics_loader_test(void)
         return result;
     }
     result = run_coregraphics_cfindex_size_overflow_reject_test();
+    if (result != 0) {
+        return result;
+    }
+    result = run_coregraphics_indexed_provider_copy_oom_reject_test();
     if (result != 0) {
         return result;
     }
