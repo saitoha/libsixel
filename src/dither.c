@@ -105,9 +105,11 @@ sixel_dither_interframe_finish_apply(sixel_dither_t *dither,
 static void
 sixel_dither_cleanup_apply_hints(sixel_dither_t *dither);
 
+#if SIXEL_ENABLE_THREADS
 static int
 sixel_dither_logger_set_frame_context(sixel_logger_t *logger,
                                       sixel_dither_t const *dither);
+#endif  /* SIXEL_ENABLE_THREADS */
 
 
 /*
@@ -164,6 +166,7 @@ sixel_dither_promote_rgb888_to_float32(float **out_pixels,
     return status;
 }
 
+#if SIXEL_ENABLE_THREADS
 static int
 sixel_dither_logger_set_frame_context(sixel_logger_t *logger,
                                       sixel_dither_t const *dither)
@@ -180,6 +183,7 @@ sixel_dither_logger_set_frame_context(sixel_logger_t *logger,
                                    dither->frame_context.multiframe);
     return 1;
 }
+#endif  /* SIXEL_ENABLE_THREADS */
 
 /*
  * Determine whether the selected diffusion method can reuse the float32
