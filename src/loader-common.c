@@ -262,7 +262,7 @@ loader_timeline_optional_bit(char const *role)
 }
 
 static int
-loader_timeline_next_job(void)
+loader_common_timeline_next_job(void)
 {
     int job_id;
 
@@ -1385,7 +1385,7 @@ loader_timeline_phase_start(char const *role)
 {
     int job_id;
 
-    job_id = loader_timeline_next_job();
+    job_id = loader_common_timeline_next_job();
     if (job_id < 0 || role == NULL) {
         return -1;
     }
@@ -1443,7 +1443,7 @@ loader_timeline_optional_skip_if_unmarked(char const *role)
         return;
     }
 
-    job_id = loader_timeline_next_job();
+    job_id = loader_common_timeline_next_job();
     if (job_id >= 0) {
         loader_timeline_log_event(role, "skip", job_id);
     }
