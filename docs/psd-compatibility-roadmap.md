@@ -393,6 +393,14 @@ Key points used by this roadmap:
     and interior (`IrGl`/`ChFX`/bevel shadow) deferred passes use the same
     distance-map coverage helper, and PASS representatives `1514..1516`
     lock distance-map activation plus deferred-stroke non-regression traces.
+  - Deferred outer-effect semantics now split outer/interior alpha gating
+    in the common deferred helper:
+    outer effects use clip-gate weighted alpha without source-alpha
+    multiplication, while interior effects keep source-alpha weighting.
+    For `source=edge`, deferred outer coverage is now gated by an
+    exterior-connected background map. PASS representatives `1517..1519`
+    lock outer-gate activation, deferred bevel-highlight path, and
+    clip/stroke non-regression contracts.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:
