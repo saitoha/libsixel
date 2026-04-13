@@ -1582,6 +1582,8 @@ typedef struct sixel_builtin_psd_layer_record {
     int32_t right;
     unsigned int width;
     unsigned int height;
+    unsigned int document_width;
+    unsigned int document_height;
     unsigned int channel_count;
     sixel_builtin_psd_layer_channel_entry_t
         channels[SIXEL_FROMPSD_MAX_CHANNELS];
@@ -1694,6 +1696,9 @@ typedef struct sixel_builtin_psd_layer_record {
     unsigned char effect_gradient_type;
     float effect_gradient_angle_deg;
     float effect_gradient_scale;
+    int effect_gradient_align_with_layer;
+    float effect_gradient_offset_x_percent;
+    float effect_gradient_offset_y_percent;
     int effect_gradient_reverse;
     size_t effect_gradient_stop_count;
     float effect_gradient_stop_pos[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
@@ -10483,6 +10488,93 @@ sixel_builtin_psd_parse_effect_solid_overlay_object(
 }
 
 static int
+sixel_builtin_psd_parse_descriptor_offset_percent_object(
+    unsigned char const *data,
+    size_t key_length,
+    size_t *pcursor,
+    float *out_hrzn_percent,
+    float *out_vrtc_percent)
+{
+    size_t cursor;
+    size_t item_count;
+    size_t i;
+    double numeric;
+    char key[5];
+    char type[5];
+    char class_key[5];
+
+    cursor = 0u;
+    item_count = 0u;
+    i = 0u;
+    numeric = 0.0;
+    memset(key, 0, sizeof(key));
+    memset(type, 0, sizeof(type));
+    memset(class_key, 0, sizeof(class_key));
+    if (data == NULL || pcursor == NULL) {
+        return 0;
+    }
+    cursor = *pcursor;
+    if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
+                                                          key_length,
+                                                          &cursor) ||
+        !sixel_builtin_psd_descriptor_read_key4(data,
+                                                key_length,
+                                                &cursor,
+                                                class_key)) {
+        return 0;
+    }
+    if (cursor + 4u > key_length) {
+        return 0;
+    }
+    item_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (i = 0u; i < item_count; ++i) {
+        numeric = 0.0;
+        if (!sixel_builtin_psd_descriptor_read_key4(data,
+                                                    key_length,
+                                                    &cursor,
+                                                    key) ||
+            !sixel_builtin_psd_descriptor_read_type(data,
+                                                    key_length,
+                                                    &cursor,
+                                                    type)) {
+            return 0;
+        }
+        if (memcmp(key, "Hrzn", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            if (out_hrzn_percent != NULL) {
+                *out_hrzn_percent = (float)numeric;
+            }
+            continue;
+        }
+        if (memcmp(key, "Vrtc", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            if (out_vrtc_percent != NULL) {
+                *out_vrtc_percent = (float)numeric;
+            }
+            continue;
+        }
+        if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                     key_length,
+                                                     &cursor,
+                                                     type,
+                                                     0u)) {
+            return 0;
+        }
+    }
+    *pcursor = cursor;
+    return 1;
+}
+
+static int
 sixel_builtin_psd_parse_effect_gradient_overlay_object(
     unsigned char const *data,
     size_t key_length,
@@ -10501,6 +10593,9 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
     float opacity;
     float gradient_angle_deg;
     float gradient_scale;
+    float gradient_offset_x_percent;
+    float gradient_offset_y_percent;
+    int gradient_align_with_layer;
     char key[5];
     char type[5];
     char enum_value[5];
@@ -10519,6 +10614,9 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
     opacity = 1.0f;
     gradient_angle_deg = 0.0f;
     gradient_scale = 100.0f;
+    gradient_offset_x_percent = 0.0f;
+    gradient_offset_y_percent = 0.0f;
+    gradient_align_with_layer = 1;
     memset(key, 0, sizeof(key));
     memset(type, 0, sizeof(type));
     memset(enum_value, 0, sizeof(enum_value));
@@ -10605,15 +10703,34 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
                                                             type,
                                                             &numeric)) {
             if (numeric <= 0.0) {
-                gradient_scale = 1.0f;
+                gradient_scale = 0.01f;
             } else {
-                if (numeric > 4.0) {
-                    numeric /= 100.0;
-                }
                 if (numeric > 100.0) {
                     numeric = 100.0;
                 }
                 gradient_scale = (float)numeric;
+            }
+            continue;
+        }
+        if (memcmp(key, "Algn", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_bool_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         &bool_value)) {
+            gradient_align_with_layer = bool_value != 0 ? 1 : 0;
+            continue;
+        }
+        if (memcmp(key, "Ofst", 4u) == 0 &&
+            (memcmp(type, "Objc", 4u) == 0 ||
+             memcmp(type, "GlbO", 4u) == 0)) {
+            if (!sixel_builtin_psd_parse_descriptor_offset_percent_object(
+                    data,
+                    key_length,
+                    &cursor,
+                    &gradient_offset_x_percent,
+                    &gradient_offset_y_percent)) {
+                return 0;
             }
             continue;
         }
@@ -10668,6 +10785,9 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
     layer->effect_gradient_angle_deg = gradient_angle_deg;
     layer->effect_gradient_scale = gradient_scale > 0.0f ?
         gradient_scale : 100.0f;
+    layer->effect_gradient_align_with_layer = gradient_align_with_layer;
+    layer->effect_gradient_offset_x_percent = gradient_offset_x_percent;
+    layer->effect_gradient_offset_y_percent = gradient_offset_y_percent;
     layer->effect_gradient_overlay_opacity = opacity;
     layer->effect_gradient_overlay_mode = blend_mode;
     layer->effect_gradient_stop_count = stop_count;
@@ -10683,6 +10803,18 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
         layer->effect_gradient_stop_alpha[i] =
             gradient_tmp.fill_gradient_stop_alpha[i];
     }
+    sixel_trace_topic_message(
+        "psd_decode",
+        "builtin PSD: applying GrFl alignment semantics in layer effects");
+    if (layer->effect_gradient_align_with_layer == 0) {
+        sixel_trace_topic_message(
+            "psd_decode",
+            "builtin PSD: parsed GrFl global alignment semantics in "
+            "layer effects");
+    }
+    sixel_trace_topic_message(
+        "psd_decode",
+        "builtin PSD: applying GrFl offset semantics in layer effects");
     sixel_trace_topic_message(
         "psd_decode",
         "builtin PSD: parsed GrFl effect object in layer effects");
@@ -14227,6 +14359,9 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->effect_gradient_type = 0u;
     layer->effect_gradient_angle_deg = 0.0f;
     layer->effect_gradient_scale = 100.0f;
+    layer->effect_gradient_align_with_layer = 1;
+    layer->effect_gradient_offset_x_percent = 0.0f;
+    layer->effect_gradient_offset_y_percent = 0.0f;
     layer->effect_gradient_reverse = 0;
     layer->effect_gradient_stop_count = 0u;
     layer->effect_gradient_overlay_opacity = 1.0f;
@@ -14334,6 +14469,8 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->fill_gradient_angle_deg = 0.0f;
     layer->fill_gradient_scale = 100.0f;
     layer->fill_gradient_reverse = 0;
+    layer->document_width = 0u;
+    layer->document_height = 0u;
     layer->fill_gradient_stop_count = 0u;
     layer->fill_pattern_tile = 4u;
     layer->fill_pattern_from_resource = 0;
@@ -14439,6 +14576,8 @@ sixel_builtin_psd_expand_layer_geometry_from_vector_mask_bbox(
     layer->bottom = bottom;
     layer->width = (unsigned int)(right - left);
     layer->height = (unsigned int)(bottom - top);
+    layer->document_width = info->width;
+    layer->document_height = info->height;
     return 1;
 }
 
@@ -15900,6 +16039,8 @@ sixel_builtin_psd_parse_layer_model(
         }
         layer->width = (unsigned int)(layer->right - layer->left);
         layer->height = (unsigned int)(layer->bottom - layer->top);
+        layer->document_width = info->width;
+        layer->document_height = info->height;
         if (layer->channel_count > SIXEL_FROMPSD_MAX_CHANNELS) {
             sixel_helper_set_additional_message(
                 "builtin PSD: unsupported layer fallback channels");
@@ -17009,10 +17150,12 @@ sixel_builtin_psd_fill_sample_gradient(
 }
 
 static float
-sixel_builtin_psd_fill_gradient_t(
+sixel_builtin_psd_fill_gradient_t_sampled(
     sixel_builtin_psd_layer_record_t const *layer,
-    size_t x,
-    size_t y)
+    float sample_x,
+    float sample_y,
+    float sample_width,
+    float sample_height)
 {
     static float const pi = 3.14159265358979323846f;
     float nx;
@@ -17032,11 +17175,11 @@ sixel_builtin_psd_fill_gradient_t(
     dir_y = 0.0f;
     linear_proj = 0.0f;
     t = 0.0f;
-    if (layer == NULL || layer->width == 0u || layer->height == 0u) {
+    if (layer == NULL || sample_width <= 0.0f || sample_height <= 0.0f) {
         return 0.0f;
     }
-    nx = ((float)x + 0.5f) / (float)layer->width - 0.5f;
-    ny = ((float)y + 0.5f) / (float)layer->height - 0.5f;
+    nx = sample_x / sample_width - 0.5f;
+    ny = sample_y / sample_height - 0.5f;
     scale = layer->fill_gradient_scale;
     if (scale <= 0.0f) {
         scale = 1.0f;
@@ -17068,6 +17211,23 @@ sixel_builtin_psd_fill_gradient_t(
 }
 
 static float
+sixel_builtin_psd_fill_gradient_t(
+    sixel_builtin_psd_layer_record_t const *layer,
+    size_t x,
+    size_t y)
+{
+    if (layer == NULL || layer->width == 0u || layer->height == 0u) {
+        return 0.0f;
+    }
+    return sixel_builtin_psd_fill_gradient_t_sampled(
+        layer,
+        (float)x + 0.5f,
+        (float)y + 0.5f,
+        (float)layer->width,
+        (float)layer->height);
+}
+
+static float
 sixel_builtin_psd_effect_gradient_scale_normalized(float scale_percent)
 {
     float scale_factor;
@@ -17084,6 +17244,80 @@ sixel_builtin_psd_effect_gradient_scale_normalized(float scale_percent)
         scale_factor = 100.0f;
     }
     return scale_factor;
+}
+
+static float
+sixel_builtin_psd_effect_gradient_t(
+    sixel_builtin_psd_layer_record_t const *layer,
+    float canvas_x,
+    float canvas_y,
+    float local_x,
+    float local_y,
+    unsigned int canvas_width,
+    unsigned int canvas_height)
+{
+    float sample_x;
+    float sample_y;
+    float domain_width;
+    float domain_height;
+    float offset_x;
+    float offset_y;
+    unsigned int reference_width;
+    unsigned int reference_height;
+
+    sample_x = 0.5f;
+    sample_y = 0.5f;
+    domain_width = 1.0f;
+    domain_height = 1.0f;
+    offset_x = 0.0f;
+    offset_y = 0.0f;
+    reference_width = 1u;
+    reference_height = 1u;
+    if (layer == NULL) {
+        return 0.0f;
+    }
+    if (layer->effect_gradient_align_with_layer != 0) {
+        reference_width = layer->width;
+        reference_height = layer->height;
+        sample_x = local_x + 0.5f;
+        sample_y = local_y + 0.5f;
+    } else {
+        reference_width = canvas_width;
+        reference_height = canvas_height;
+        if (reference_width == 0u) {
+            reference_width = layer->document_width;
+        }
+        if (reference_height == 0u) {
+            reference_height = layer->document_height;
+        }
+        if (reference_width == 0u) {
+            reference_width = layer->width;
+        }
+        if (reference_height == 0u) {
+            reference_height = layer->height;
+        }
+        sample_x = canvas_x + 0.5f;
+        sample_y = canvas_y + 0.5f;
+    }
+    if (reference_width == 0u) {
+        reference_width = 1u;
+    }
+    if (reference_height == 0u) {
+        reference_height = 1u;
+    }
+    domain_width = (float)reference_width;
+    domain_height = (float)reference_height;
+    offset_x = (layer->effect_gradient_offset_x_percent / 100.0f) *
+        domain_width;
+    offset_y = (layer->effect_gradient_offset_y_percent / 100.0f) *
+        domain_height;
+    sample_x -= offset_x;
+    sample_y -= offset_y;
+    return sixel_builtin_psd_fill_gradient_t_sampled(layer,
+                                                     sample_x,
+                                                     sample_y,
+                                                     domain_width,
+                                                     domain_height);
 }
 
 static int
@@ -18807,6 +19041,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
     float gradient_alpha;
     float gradient_rgb[3];
     float blended_rgb[3];
+    float global_x;
+    float global_y;
     float *original_alpha;
     size_t width;
     size_t height;
@@ -18855,6 +19091,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
     blended_rgb[0] = 0.0f;
     blended_rgb[1] = 0.0f;
     blended_rgb[2] = 0.0f;
+    global_x = 0.0f;
+    global_y = 0.0f;
     original_alpha = NULL;
     width = 0u;
     height = 0u;
@@ -19106,8 +19344,16 @@ sixel_builtin_psd_apply_layer_effects_subset(
                 }
                 x = i % width;
                 y = i / width;
-                gradient_t =
-                    sixel_builtin_psd_fill_gradient_t(&gradient_layer, x, y);
+                global_x = (float)layer->left + (float)x;
+                global_y = (float)layer->top + (float)y;
+                gradient_t = sixel_builtin_psd_effect_gradient_t(
+                    &gradient_layer,
+                    global_x,
+                    global_y,
+                    (float)x,
+                    (float)y,
+                    layer->document_width,
+                    layer->document_height);
                 sixel_builtin_psd_fill_sample_gradient(
                     &gradient_layer,
                     gradient_t,
@@ -19886,10 +20132,14 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
             if (alpha <= 0.0f) {
                 continue;
             }
-            gradient_t = sixel_builtin_psd_fill_gradient_t(
+            gradient_t = sixel_builtin_psd_effect_gradient_t(
                 &gradient_layer,
-                (size_t)local_x,
-                (size_t)local_y);
+                (float)x,
+                (float)y,
+                (float)local_x,
+                (float)local_y,
+                canvas_width,
+                canvas_height);
             sixel_builtin_psd_fill_sample_gradient(
                 &gradient_layer,
                 gradient_t,

@@ -417,6 +417,13 @@ Key points used by this roadmap:
     masking in `clbl=1` paths. PASS representatives `1538..1540` lock
     GrFl percent-scale normalization, deferred coverage/gate split, and
     halo/stroke non-regression contracts.
+  - Effect-path `GrFl` now keeps parser-side scale in descriptor percent and
+    normalizes only at apply time through a shared helper used by subset and
+    deferred paths. `Algn/Ofst(Hrzn/Vrtc)` semantics are parsed into the layer
+    effect model and applied by effect-gradient sampling, while retaining
+    existing deferred coverage/gate split contracts. PASS representatives
+    `1541..1543` lock alignment/offset trace semantics and deferred-gradient
+    non-regression.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:
