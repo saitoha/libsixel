@@ -256,6 +256,7 @@ cli_guard_missing_argument(int short_opt,
     int allows_leading_dash;
     int opt_index;
     char const *candidate_token;
+    char const *previous_token;
     int matched_token;
 
     if (cli_option_requires_argument(optstring, short_opt) == 0) {
@@ -284,12 +285,16 @@ cli_guard_missing_argument(int short_opt,
     if (recognised != 0) {
         opt_index = 0;
         candidate_token = NULL;
+        previous_token = NULL;
         matched_token = 0;
         if (optind_ptr != NULL) {
             opt_index = *optind_ptr;
         }
         if (opt_index > 0 && argv != NULL) {
             candidate_token = argv[opt_index - 1];
+        }
+        if (opt_index > 1 && argv != NULL) {
+            previous_token = argv[opt_index - 2];
         }
         if (candidate_token != NULL) {
             if (argument == candidate_token) {
@@ -304,6 +309,19 @@ cli_guard_missing_argument(int short_opt,
                 matched_token = 1;
             }
         }
+        if (matched_token == 0 && previous_token != NULL) {
+            if (argument == previous_token) {
+                matched_token = 1;
+            } else if (strcmp(argument, previous_token) == 0) {
+                /*
+                 * Some getopt variants can advance optind one token further
+                 * while still consuming the option argument from the previous
+                 * argv slot. Probe both neighboring slots so missing-argument
+                 * detection remains stable across mingw builds.
+                 */
+                matched_token = 1;
+            }
+        }
         if (matched_token != 0) {
             /*
              * getopt() stores a pointer to the original argv entry when it
@@ -312,7 +330,7 @@ cli_guard_missing_argument(int short_opt,
              * interpret it as an option instead of an argument, mirroring the
              * ASCII timeline described in the converter sources.
              */
-            if (optind_ptr != NULL) {
+            if (optind_ptr != NULL && *optind_ptr > 0) {
                 *optind_ptr -= 1;
             }
             if (report_cb != NULL) {
