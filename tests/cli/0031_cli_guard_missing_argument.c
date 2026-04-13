@@ -89,6 +89,7 @@ test_cli_0031_cli_guard_missing_argument(int argc, char **argv)
     char argv0[] = "tool";
     char argv1[] = "-x";
     char dash_value[] = "-file.six";
+    char copied_option[] = "-x";
     char *args[] = { argv0, argv1, NULL };
     size_t table_count;
     int optind_value;
@@ -141,6 +142,21 @@ test_cli_0031_cli_guard_missing_argument(int argc, char **argv)
             result.rewound_optind != 0) {
     } else {
         fprintf(stderr, "case 3: did not rewind recognised option\n");
+        status = 1;
+    }
+
+    optind_value = 2;
+    result = run_guard_case(args,
+                             copied_option,
+                             &optind_value,
+                             "i:",
+                             table,
+                             table_count,
+                             0);
+    if (result.code == -1 && result.missing_calls == 1 &&
+            result.rewound_optind != 0) {
+    } else {
+        fprintf(stderr, "case 4: copied argument did not rewind\n");
         status = 1;
     }
 

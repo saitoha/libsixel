@@ -255,6 +255,8 @@ cli_guard_missing_argument(int short_opt,
     int candidate_short_opt;
     int allows_leading_dash;
     int opt_index;
+    char const *candidate_token;
+    int matched_token;
 
     if (cli_option_requires_argument(optstring, short_opt) == 0) {
         return 0;
@@ -281,10 +283,28 @@ cli_guard_missing_argument(int short_opt,
                                            &candidate_short_opt);
     if (recognised != 0) {
         opt_index = 0;
+        candidate_token = NULL;
+        matched_token = 0;
         if (optind_ptr != NULL) {
             opt_index = *optind_ptr;
         }
-        if (opt_index > 0 && argument == argv[opt_index - 1]) {
+        if (opt_index > 0 && argv != NULL) {
+            candidate_token = argv[opt_index - 1];
+        }
+        if (candidate_token != NULL) {
+            if (argument == candidate_token) {
+                matched_token = 1;
+            } else if (strcmp(argument, candidate_token) == 0) {
+                /*
+                 * Some getopt implementations copy option arguments instead
+                 * of returning the original argv pointer. Accept the token
+                 * when the string matches so missing-argument detection
+                 * remains stable across platforms.
+                 */
+                matched_token = 1;
+            }
+        }
+        if (matched_token != 0) {
             /*
              * getopt() stores a pointer to the original argv entry when it
              * treats a standalone token as the argument.  Rewinding optind
