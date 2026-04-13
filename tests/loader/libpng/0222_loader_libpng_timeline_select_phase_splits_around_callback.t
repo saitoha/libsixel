@@ -26,7 +26,7 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}" || {
     exit 0
 }
 
-input_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+input_png="${TOP_SRCDIR}/tests/data/inputs/formats/libpng-minimal-1x1-rgba.png"
 log_file="${ARTIFACT_LOCAL_DIR}/timeline-libpng-select-callback-split.json"
 
 SIXEL_LOG_PATH="${log_file}" ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
