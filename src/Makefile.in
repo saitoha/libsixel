@@ -174,10 +174,13 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette-common-merge.h \
 	$(srcdir)/palette-common-snap.c \
 	$(srcdir)/palette-common-snap.h $(srcdir)/palette-kmeans.c \
-	$(srcdir)/palette-kmeans.h $(srcdir)/palette-kmedoids.c \
-	$(srcdir)/palette-kmedoids.h $(srcdir)/palette.c \
-	$(srcdir)/palette.h $(srcdir)/dither.c $(srcdir)/dither.h \
-	$(srcdir)/dither-common-pipeline.c \
+	$(srcdir)/palette-kmeans-assign.c \
+	$(srcdir)/palette-kmeans-assign.h \
+	$(srcdir)/palette-kmeans-build.c \
+	$(srcdir)/palette-kmeans-build.h $(srcdir)/palette-kmeans.h \
+	$(srcdir)/palette-kmedoids.c $(srcdir)/palette-kmedoids.h \
+	$(srcdir)/palette.c $(srcdir)/palette.h $(srcdir)/dither.c \
+	$(srcdir)/dither.h $(srcdir)/dither-common-pipeline.c \
 	$(srcdir)/dither-common-pipeline.h $(srcdir)/bluenoise_64x64.h \
 	$(srcdir)/dither-positional-8bit.c \
 	$(srcdir)/dither-positional-8bit.h \
@@ -294,6 +297,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-merge.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-snap.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-assign.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans-build.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmedoids.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither.lo \
@@ -505,6 +510,8 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-palette-common-merge.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-snap.Plo \
 	./$(DEPDIR)/libsixel_la-palette-heckbert.Plo \
+	./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo \
+	./$(DEPDIR)/libsixel_la-palette-kmeans-build.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmeans.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmedoids.Plo \
 	./$(DEPDIR)/libsixel_la-palette.Plo \
@@ -873,6 +880,10 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-snap.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-snap.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-assign.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-assign.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-build.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans-build.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmedoids.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmedoids.h \
@@ -1281,6 +1292,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-merge.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-snap.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-heckbert.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans-build.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmedoids.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette.Plo@am__quote@ # am--include-marker
@@ -1451,6 +1464,20 @@ libsixel_la-palette-kmeans.lo: palette-kmeans.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-kmeans.c' object='libsixel_la-palette-kmeans.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-kmeans.lo `test -f 'palette-kmeans.c' || echo '$(srcdir)/'`palette-kmeans.c
+
+libsixel_la-palette-kmeans-assign.lo: palette-kmeans-assign.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-kmeans-assign.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-kmeans-assign.Tpo -c -o libsixel_la-palette-kmeans-assign.lo `test -f 'palette-kmeans-assign.c' || echo '$(srcdir)/'`palette-kmeans-assign.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-kmeans-assign.Tpo $(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-kmeans-assign.c' object='libsixel_la-palette-kmeans-assign.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-kmeans-assign.lo `test -f 'palette-kmeans-assign.c' || echo '$(srcdir)/'`palette-kmeans-assign.c
+
+libsixel_la-palette-kmeans-build.lo: palette-kmeans-build.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-kmeans-build.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-kmeans-build.Tpo -c -o libsixel_la-palette-kmeans-build.lo `test -f 'palette-kmeans-build.c' || echo '$(srcdir)/'`palette-kmeans-build.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-kmeans-build.Tpo $(DEPDIR)/libsixel_la-palette-kmeans-build.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-kmeans-build.c' object='libsixel_la-palette-kmeans-build.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-kmeans-build.lo `test -f 'palette-kmeans-build.c' || echo '$(srcdir)/'`palette-kmeans-build.c
 
 libsixel_la-palette-kmedoids.lo: palette-kmedoids.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-kmedoids.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-kmedoids.Tpo -c -o libsixel_la-palette-kmedoids.lo `test -f 'palette-kmedoids.c' || echo '$(srcdir)/'`palette-kmedoids.c
@@ -2403,6 +2430,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-build.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmedoids.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
@@ -2558,6 +2587,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-assign.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans-build.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmedoids.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
