@@ -21,6 +21,11 @@ test -n "${ARTIFACT_LOCAL_DIR-}" || {
 echo "1..1"
 set -v
 
+mkdir -p "${ARTIFACT_LOCAL_DIR}" || {
+    echo "not ok 1 - failed to prepare ARTIFACT_LOCAL_DIR"
+    exit 0
+}
+
 input_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 log_file="${ARTIFACT_LOCAL_DIR}/timeline-libpng-required-phases.json"
 
@@ -30,19 +35,37 @@ SIXEL_LOG_PATH="${log_file}" ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-awk '
-/"worker":"loader\/libpng"/ {
-    if ($0 ~ /"role":"header\/read"/ && $0 ~ /"event":"start"/) hs = 1
-    if ($0 ~ /"role":"header\/read"/ && $0 ~ /"event":"finish"/) hf = 1
-    if ($0 ~ /"role":"decode\/pixels"/ && $0 ~ /"event":"start"/) ds = 1
-    if ($0 ~ /"role":"decode\/pixels"/ && $0 ~ /"event":"finish"/) df = 1
-    if ($0 ~ /"role":"emit\/frame"/ && $0 ~ /"event":"start"/) es = 1
-    if ($0 ~ /"role":"emit\/frame"/ && $0 ~ /"event":"finish"/) ef = 1
-}
-END {
-    exit !(hs && hf && ds && df && es && ef)
-}
-' "${log_file}" || {
+hs=0
+hf=0
+ds=0
+df=0
+es=0
+ef=0
+while IFS= read -r line; do
+    case "${line}" in
+        *'"worker":"loader/libpng"'*'"role":"header/read"'*'"event":"start"'*)
+            hs=1
+            ;;
+        *'"worker":"loader/libpng"'*'"role":"header/read"'*'"event":"finish"'*)
+            hf=1
+            ;;
+        *'"worker":"loader/libpng"'*'"role":"decode/pixels"'*'"event":"start"'*)
+            ds=1
+            ;;
+        *'"worker":"loader/libpng"'*'"role":"decode/pixels"'*'"event":"finish"'*)
+            df=1
+            ;;
+        *'"worker":"loader/libpng"'*'"role":"emit/frame"'*'"event":"start"'*)
+            es=1
+            ;;
+        *'"worker":"loader/libpng"'*'"role":"emit/frame"'*'"event":"finish"'*)
+            ef=1
+            ;;
+    esac
+    test "${hs}${hf}${ds}${df}${es}${ef}" = "111111" && break
+done < "${log_file}"
+
+test "${hs}${hf}${ds}${df}${es}${ef}" = "111111" || {
     echo "not ok 1 - required loader phases were not fully visible"
     exit 0
 }

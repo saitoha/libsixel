@@ -21,6 +21,11 @@ test -n "${ARTIFACT_LOCAL_DIR-}" || {
 echo "1..1"
 set -v
 
+mkdir -p "${ARTIFACT_LOCAL_DIR}" || {
+    echo "not ok 1 - failed to prepare ARTIFACT_LOCAL_DIR"
+    exit 0
+}
+
 input_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 log_file="${ARTIFACT_LOCAL_DIR}/timeline-libpng-select-callback-split.json"
 
@@ -30,22 +35,47 @@ SIXEL_LOG_PATH="${log_file}" ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-awk '
-/"worker":"loader\/manager"/ && /"role":"loader\/select"/ {
-    if ($0 ~ /"event":"start"/) manager_start += 1
-    if ($0 ~ /"event":"(finish|fail)"/) manager_finish += 1
+manager_start=0
+manager_finish=0
+candidate_start=0
+candidate_finish=0
+while IFS= read -r line; do
+    case "${line}" in
+        *'"worker":"loader/manager"'*'"role":"loader/select"'*'"event":"start"'*)
+            manager_start=$((manager_start + 1))
+            ;;
+        *'"worker":"loader/manager"'*'"role":"loader/select"'*'"event":"finish"'*|\
+        *'"worker":"loader/manager"'*'"role":"loader/select"'*'"event":"fail"'*)
+            manager_finish=$((manager_finish + 1))
+            ;;
+        *'"worker":"loader/libpng"'*'"role":"loader/select"'*'"event":"start"'*)
+            candidate_start=$((candidate_start + 1))
+            ;;
+        *'"worker":"loader/libpng"'*'"role":"loader/select"'*'"event":"finish"'*|\
+        *'"worker":"loader/libpng"'*'"role":"loader/select"'*'"event":"fail"'*)
+            candidate_finish=$((candidate_finish + 1))
+            ;;
+    esac
+    test "${manager_start}" -ge 2 || continue
+    test "${manager_finish}" -ge 2 || continue
+    test "${candidate_start}" -ge 2 || continue
+    test "${candidate_finish}" -ge 2 || continue
+    break
+done < "${log_file}"
+
+test "${manager_start}" -ge 2 || {
+    echo "not ok 1 - loader/select phases did not split around callback handoff"
+    exit 0
 }
-/"worker":"loader\/libpng"/ && /"role":"loader\/select"/ {
-    if ($0 ~ /"event":"start"/) candidate_start += 1
-    if ($0 ~ /"event":"(finish|fail)"/) candidate_finish += 1
+test "${manager_finish}" -ge 2 || {
+    echo "not ok 1 - loader/select phases did not split around callback handoff"
+    exit 0
 }
-END {
-    exit !(manager_start >= 2 &&
-           manager_finish >= 2 &&
-           candidate_start >= 2 &&
-           candidate_finish >= 2)
+test "${candidate_start}" -ge 2 || {
+    echo "not ok 1 - loader/select phases did not split around callback handoff"
+    exit 0
 }
-' "${log_file}" || {
+test "${candidate_finish}" -ge 2 || {
     echo "not ok 1 - loader/select phases did not split around callback handoff"
     exit 0
 }
