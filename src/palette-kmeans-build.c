@@ -41,7 +41,7 @@
 #include "timer.h"
 
 static char const *
-sixel_kmeans_init_type_to_string(sixel_kmeans_init_type init_type)
+sixel_kmeans_build_init_type_to_string(sixel_kmeans_init_type init_type)
 {
     switch (init_type) {
     case SIXEL_PALETTE_KMEANS_INIT_AUTO:
@@ -56,7 +56,7 @@ sixel_kmeans_init_type_to_string(sixel_kmeans_init_type init_type)
 }
 
 static char const *
-sixel_kmeans_prune_policy_to_string(sixel_kmeans_prune_policy policy)
+sixel_kmeans_build_prune_policy_to_string(sixel_kmeans_prune_policy policy)
 {
     switch (policy) {
     case SIXEL_PALETTE_KMEANS_PRUNE_AUTO:
@@ -2367,8 +2367,8 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
                    "samples=%u k=%u init=%s prune=%s restarts=%u",
                    work_sample_count,
                    k,
-                   sixel_kmeans_init_type_to_string(init_type),
-                   sixel_kmeans_prune_policy_to_string(prune_policy),
+                   sixel_kmeans_build_init_type_to_string(init_type),
+                   sixel_kmeans_build_prune_policy_to_string(prune_policy),
                    restart_count);
     sixel_palette_kmeans_log_finish(logger,
                                     job_init,
