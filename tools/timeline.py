@@ -318,7 +318,10 @@ def render(
         print(summarize(summary_events))
         return
 
-    spans: Dict[Tuple[str, str, int, int, int, int], Tuple[float, float]] = {}
+    spans: Dict[Tuple[str, str, int, int, int, int],
+                List[Tuple[float, float]]] = defaultdict(list)
+    open_spans: Dict[Tuple[str, str, int, int, int, int], float] = {}
+    last_ts_for_span: Dict[Tuple[str, str, int, int, int, int], float] = {}
     job_hint: Dict[Tuple[str, int, int, int], int] = {}
     first_ts: Dict[Tuple[str, int, int, int], float] = {}
     primary_role: Dict[Tuple[str, int, int, int], str] = {}
@@ -333,11 +336,23 @@ def render(
                event.job,
                span_frame_no,
                span_loop_no)
-        if key not in spans:
-            spans[key] = (event.ts, event.ts)
+        last_ts_for_span[key] = event.ts
+
+        if event.event == "start":
+            if key in open_spans:
+                spans[key].append((open_spans[key], event.ts))
+            open_spans[key] = event.ts
+        elif event.event in {"finish", "fail", "skip"}:
+            if key in open_spans:
+                spans[key].append((open_spans.pop(key), event.ts))
+            else:
+                # Keep unmatched terminal events visible as zero-length marks.
+                spans[key].append((event.ts, event.ts))
         else:
-            start, _ = spans[key]
-            spans[key] = (start, max(spans[key][1], event.ts))
+            # Stage-style diagnostics (for example encode_begin/done) remain
+            # point markers so they do not expand into full-row lifetimes.
+            spans[key].append((event.ts, event.ts))
+
         row_key = _row_key(event.worker,
                            event.thread,
                            event.job,
@@ -355,23 +370,28 @@ def render(
             first_ts[row_key] = event.ts
             primary_role[row_key] = event.role
 
+    for key, start in open_spans.items():
+        spans[key].append((start, last_ts_for_span.get(key, start)))
+
     threads: Dict[Tuple[str, int, int, int],
                   List[Tuple[float, float, str, int, int, int]]] = {}
     if lifetime_only:
         row_spans: Dict[Tuple[str, int, int, int], Tuple[float, float]] = {}
-        for (worker, _role, thread, job, frame_no, loop_no), \
-                (start, end) in spans.items():
-            row_key = _row_key(worker,
-                               thread,
-                               job,
-                               frame_no,
-                               loop_no,
-                               split_by_frame)
-            if row_key not in row_spans:
-                row_spans[row_key] = (start, end)
-            else:
-                row_start, row_end = row_spans[row_key]
-                row_spans[row_key] = (row_start, max(row_end, end))
+        for (worker, _role, thread, job, frame_no, loop_no), segments \
+                in spans.items():
+            for start, end in segments:
+                row_key = _row_key(worker,
+                                   thread,
+                                   job,
+                                   frame_no,
+                                   loop_no,
+                                   split_by_frame)
+                if row_key not in row_spans:
+                    row_spans[row_key] = (start, end)
+                else:
+                    row_start, row_end = row_spans[row_key]
+                    row_spans[row_key] = (min(row_start, start),
+                                          max(row_end, end))
         for row_key, (start, end) in row_spans.items():
             if start_time is not None and end < start_time:
                 continue
@@ -389,28 +409,29 @@ def render(
     else:
         # Collapse decode/copy phases per thread so one row shows the full
         # worker activity while keeping per-role colors.
-        for (worker, role, thread, job, frame_no, loop_no), \
-                (start, end) in spans.items():
-            row_key = _row_key(worker,
-                               thread,
-                               job,
-                               frame_no,
-                               loop_no,
-                               split_by_frame)
-            duration = max(0.0, end - start)
-            if start_time is not None and end < start_time:
-                continue
-            if end_time is not None and start > end_time:
-                continue
-            if start_time is not None:
-                start = max(start, start_time)
-            if end_time is not None:
-                end = min(end, end_time)
-            duration = max(0.0, end - start)
-            if row_key not in threads:
-                threads[row_key] = []
-            threads[row_key].append((start, duration, role, job,
-                                     frame_no, loop_no))
+        for (worker, role, thread, job, frame_no, loop_no), segments \
+                in spans.items():
+            for start, end in segments:
+                row_key = _row_key(worker,
+                                   thread,
+                                   job,
+                                   frame_no,
+                                   loop_no,
+                                   split_by_frame)
+                duration = max(0.0, end - start)
+                if start_time is not None and end < start_time:
+                    continue
+                if end_time is not None and start > end_time:
+                    continue
+                if start_time is not None:
+                    start = max(start, start_time)
+                if end_time is not None:
+                    end = min(end, end_time)
+                duration = max(0.0, end - start)
+                if row_key not in threads:
+                    threads[row_key] = []
+                threads[row_key].append((start, duration, role, job,
+                                         frame_no, loop_no))
 
     for key in threads:
         threads[key].sort(key=lambda item: item[0])

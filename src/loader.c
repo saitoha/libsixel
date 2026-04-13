@@ -165,6 +165,11 @@ struct sixel_loader {
     char log_loader_name[64];
     size_t log_input_bytes;
     int log_timeline_job_seq;
+    int timeline_manager_select_job;
+    int timeline_manager_select_open;
+    int timeline_candidate_select_job;
+    int timeline_candidate_select_open;
+    char timeline_candidate_worker[96];
 };
 
 typedef struct sixel_loader_callback_state {
@@ -524,18 +529,213 @@ loader_log_timeline_event(sixel_loader_t *loader,
                       "");
 }
 
+static void
+loader_timeline_select_phase_start(
+    sixel_loader_t *loader,
+    char const *worker,
+    int *job_id_out,
+    int *open_out)
+{
+    int job_id;
+
+    job_id = -1;
+    if (job_id_out != NULL) {
+        *job_id_out = -1;
+    }
+    if (open_out != NULL) {
+        *open_out = 0;
+    }
+    if (loader == NULL || worker == NULL || worker[0] == '\0') {
+        return;
+    }
+
+    job_id = loader_timeline_next_job(loader);
+    if (job_id < 0) {
+        return;
+    }
+
+    loader_log_timeline_event(loader,
+                              worker,
+                              "loader/select",
+                              "start",
+                              job_id);
+    if (job_id_out != NULL) {
+        *job_id_out = job_id;
+    }
+    if (open_out != NULL) {
+        *open_out = 1;
+    }
+}
+
+static void
+loader_timeline_select_phase_finish(
+    sixel_loader_t *loader,
+    char const *worker,
+    int *job_id_io,
+    int *open_io,
+    char const *event)
+{
+    int job_id;
+
+    job_id = -1;
+    if (loader == NULL || worker == NULL || worker[0] == '\0' ||
+            job_id_io == NULL || open_io == NULL ||
+            event == NULL || *open_io == 0) {
+        return;
+    }
+
+    job_id = *job_id_io;
+    if (job_id >= 0) {
+        loader_log_timeline_event(loader,
+                                  worker,
+                                  "loader/select",
+                                  event,
+                                  job_id);
+    }
+    *job_id_io = -1;
+    *open_io = 0;
+}
+
+static void
+loader_timeline_select_suspend_for_callback(
+    sixel_loader_t *loader,
+    int *resume_manager,
+    int *resume_candidate)
+{
+    if (resume_manager != NULL) {
+        *resume_manager = 0;
+    }
+    if (resume_candidate != NULL) {
+        *resume_candidate = 0;
+    }
+    if (loader == NULL) {
+        return;
+    }
+
+    if (loader->timeline_candidate_select_open != 0 &&
+            loader->timeline_candidate_worker[0] != '\0') {
+        loader_timeline_select_phase_finish(
+            loader,
+            loader->timeline_candidate_worker,
+            &loader->timeline_candidate_select_job,
+            &loader->timeline_candidate_select_open,
+            "finish");
+        if (resume_candidate != NULL) {
+            *resume_candidate = 1;
+        }
+    }
+    if (loader->timeline_manager_select_open != 0) {
+        loader_timeline_select_phase_finish(
+            loader,
+            "loader/manager",
+            &loader->timeline_manager_select_job,
+            &loader->timeline_manager_select_open,
+            "finish");
+        if (resume_manager != NULL) {
+            *resume_manager = 1;
+        }
+    }
+}
+
+static void
+loader_timeline_select_emit_immediate_failure(
+    sixel_loader_t *loader,
+    char const *worker)
+{
+    int job_id;
+    int open_flag;
+
+    job_id = -1;
+    open_flag = 0;
+    if (loader == NULL || worker == NULL || worker[0] == '\0') {
+        return;
+    }
+
+    loader_timeline_select_phase_start(loader,
+                                       worker,
+                                       &job_id,
+                                       &open_flag);
+    loader_timeline_select_phase_finish(loader,
+                                        worker,
+                                        &job_id,
+                                        &open_flag,
+                                        "fail");
+}
+
+static void
+loader_timeline_select_resume_after_callback(
+    sixel_loader_t *loader,
+    int resume_manager,
+    int resume_candidate,
+    SIXELSTATUS callback_status)
+{
+    if (loader == NULL) {
+        return;
+    }
+
+    if (SIXEL_FAILED(callback_status)) {
+        if (resume_candidate != 0 &&
+                loader->timeline_candidate_worker[0] != '\0') {
+            loader_timeline_select_emit_immediate_failure(
+                loader,
+                loader->timeline_candidate_worker);
+        }
+        if (resume_manager != 0) {
+            loader_timeline_select_emit_immediate_failure(
+                loader,
+                "loader/manager");
+        }
+        return;
+    }
+
+    if (resume_manager != 0) {
+        loader_timeline_select_phase_start(
+            loader,
+            "loader/manager",
+            &loader->timeline_manager_select_job,
+            &loader->timeline_manager_select_open);
+    }
+    if (resume_candidate != 0 &&
+            loader->timeline_candidate_worker[0] != '\0') {
+        loader_timeline_select_phase_start(
+            loader,
+            loader->timeline_candidate_worker,
+            &loader->timeline_candidate_select_job,
+            &loader->timeline_candidate_select_open);
+    }
+}
+
 static SIXELSTATUS
 loader_callback_trampoline(sixel_frame_t *frame, void *data)
 {
     sixel_loader_callback_state_t *state;
     SIXELSTATUS status;
+    int resume_manager_select;
+    int resume_candidate_select;
 
     state = (sixel_loader_callback_state_t *)data;
+    resume_manager_select = 0;
+    resume_candidate_select = 0;
     if (state == NULL || state->fn == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
+    if (state->loader != NULL) {
+        /*
+         * loader/select represents loader-side work only. Suspend these spans
+         * while control is in the downstream frame callback.
+         */
+        loader_timeline_select_suspend_for_callback(state->loader,
+                                                    &resume_manager_select,
+                                                    &resume_candidate_select);
+    }
     status = state->fn(frame, state->context);
+    if (state->loader != NULL) {
+        loader_timeline_select_resume_after_callback(state->loader,
+                                                     resume_manager_select,
+                                                     resume_candidate_select,
+                                                     status);
+    }
     if (SIXEL_FAILED(status) && state->loader != NULL) {
         state->loader->callback_failed = 1;
     }
@@ -1380,6 +1580,11 @@ sixel_loader_new(
     loader->log_loader_name[0] = '\0';
     loader->log_input_bytes = 0u;
     loader->log_timeline_job_seq = 0;
+    loader->timeline_manager_select_job = -1;
+    loader->timeline_manager_select_open = 0;
+    loader->timeline_candidate_select_job = -1;
+    loader->timeline_candidate_select_open = 0;
+    loader->timeline_candidate_worker[0] = '\0';
 
     *pploader = loader;
     status = SIXEL_OK;
@@ -1679,16 +1884,21 @@ loader_manager_trace_try_callback(char const *name, void *context)
     } else {
         trace->loader->log_loader_name[0] = '\0';
     }
-    trace->current_select_job = loader_timeline_next_job(trace->loader);
-    (void)sixel_compat_snprintf(trace->current_worker,
-                                sizeof(trace->current_worker),
+    (void)sixel_compat_snprintf(trace->loader->timeline_candidate_worker,
+                                sizeof(
+                                    trace->loader->timeline_candidate_worker),
                                 "loader/%s",
                                 backend_name);
-    loader_log_timeline_event(trace->loader,
-                              trace->current_worker,
-                              "loader/select",
-                              "start",
-                              trace->current_select_job);
+    loader_timeline_select_phase_start(
+        trace->loader,
+        trace->loader->timeline_candidate_worker,
+        &trace->loader->timeline_candidate_select_job,
+        &trace->loader->timeline_candidate_select_open);
+    trace->current_select_job = trace->loader->timeline_candidate_select_job;
+    (void)sixel_compat_snprintf(trace->current_worker,
+                                sizeof(trace->current_worker),
+                                "%s",
+                                trace->loader->timeline_candidate_worker);
     loader_trace_try(name);
 }
 
@@ -1698,33 +1908,19 @@ loader_manager_trace_result_callback(char const *name,
                                      void *context)
 {
     sixel_loader_manager_trace_context_t *trace;
-    char worker_name[96];
-    char const *backend_name;
     char const *event;
 
     trace = (sixel_loader_manager_trace_context_t *)context;
-    worker_name[0] = '\0';
-    backend_name = NULL;
     event = NULL;
-    if (trace != NULL && trace->loader != NULL && trace->current_select_job >= 0) {
-        backend_name = name != NULL ? name : "unknown";
-        if (trace->current_worker[0] != '\0') {
-            (void)sixel_compat_snprintf(worker_name,
-                                        sizeof(worker_name),
-                                        "%s",
-                                        trace->current_worker);
-        } else {
-            (void)sixel_compat_snprintf(worker_name,
-                                        sizeof(worker_name),
-                                        "loader/%s",
-                                        backend_name);
-        }
+    if (trace != NULL && trace->loader != NULL) {
         event = SIXEL_SUCCEEDED(status) ? "finish" : "fail";
-        loader_log_timeline_event(trace->loader,
-                                  worker_name,
-                                  "loader/select",
-                                  event,
-                                  trace->current_select_job);
+        loader_timeline_select_phase_finish(
+            trace->loader,
+            trace->loader->timeline_candidate_worker,
+            &trace->loader->timeline_candidate_select_job,
+            &trace->loader->timeline_candidate_select_open,
+            event);
+        trace->loader->timeline_candidate_worker[0] = '\0';
         trace->current_select_job = -1;
         trace->current_worker[0] = '\0';
     }
@@ -1764,7 +1960,6 @@ sixel_loader_load_file(
     int thread_status;
     int wait_result;
     int chunk_job_id;
-    int select_job_id;
 
     pchunk = NULL;
     plan = NULL;
@@ -1786,7 +1981,6 @@ sixel_loader_load_file(
     thread_status = SIXEL_FALSE;
     wait_result = 0;
     chunk_job_id = -1;
-    select_job_id = -1;
     sixel_option_init_argument_list_resolution(&order_resolution);
     loader_manager_init_loader_suboptions(&active_suboptions);
     loader_osc11_bg_query_job_init(&osc11_query_job);
@@ -1808,6 +2002,11 @@ sixel_loader_load_file(
     loader->log_loader_name[0] = '\0';
     loader->log_input_bytes = 0u;
     loader->log_timeline_job_seq = 0;
+    loader->timeline_manager_select_job = -1;
+    loader->timeline_manager_select_open = 0;
+    loader->timeline_candidate_select_job = -1;
+    loader->timeline_candidate_select_open = 0;
+    loader->timeline_candidate_worker[0] = '\0';
     loader->log_path[0] = '\0';
     if (filename != NULL) {
         (void)sixel_compat_snprintf(loader->log_path,
@@ -2018,12 +2217,10 @@ sixel_loader_load_file(
     option_context.suboptions = active_suboptions;
     trace_context.loader = loader;
     trace_context.input_bytes = pchunk->size;
-    select_job_id = loader_timeline_next_job(loader);
-    loader_log_timeline_event(loader,
-                              "loader/manager",
-                              "loader/select",
-                              "start",
-                              select_job_id);
+    loader_timeline_select_phase_start(loader,
+                                       "loader/manager",
+                                       &loader->timeline_manager_select_job,
+                                       &loader->timeline_manager_select_open);
     status = loader_manager_execute_chain(
         manager,
         chain,
@@ -2039,11 +2236,12 @@ sixel_loader_load_file(
         loader_manager_trace_result_callback,
         &trace_context,
         &selected_name);
-    loader_log_timeline_event(loader,
-                              "loader/manager",
-                              "loader/select",
-                              SIXEL_SUCCEEDED(status) ? "finish" : "fail",
-                              select_job_id);
+    loader_timeline_select_phase_finish(
+        loader,
+        "loader/manager",
+        &loader->timeline_manager_select_job,
+        &loader->timeline_manager_select_open,
+        SIXEL_SUCCEEDED(status) ? "finish" : "fail");
 
     if (SIXEL_FAILED(status)) {
         if (status == SIXEL_FALSE) {
