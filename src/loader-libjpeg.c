@@ -1795,7 +1795,8 @@ sixel_loader_libjpeg_load(sixel_loader_component_t *component,
     loader_timeline_callback_state_init(&timeline_state,
                                         fn_load,
                                         context,
-                                        header_job_id);
+                                        header_job_id,
+                                        decode_job_id);
 
     status = load_with_libjpeg(chunk,
                                self->enable_cms,
@@ -1811,7 +1812,7 @@ sixel_loader_libjpeg_load(sixel_loader_component_t *component,
                                &timeline_state);
 
     loader_timeline_callback_close_header(&timeline_state, status);
-    loader_timeline_phase_finish("decode/pixels", decode_job_id, status);
+    loader_timeline_callback_close_decode(&timeline_state, status);
     loader_timeline_optional_skip_if_unmarked("post/colorspace");
     loader_timeline_optional_skip_if_unmarked("post/background");
     loader_timeline_optional_skip_if_unmarked("post/icc");

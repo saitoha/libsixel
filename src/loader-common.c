@@ -1455,7 +1455,8 @@ loader_timeline_callback_state_init(
     sixel_loader_timeline_callback_state_t *state,
     sixel_load_image_function fn_load,
     void *context,
-    int header_job_id)
+    int header_job_id,
+    int decode_job_id)
 {
     if (state == NULL) {
         return;
@@ -1465,6 +1466,8 @@ loader_timeline_callback_state_init(
     state->context = context;
     state->header_job_id = header_job_id;
     state->header_closed = 0;
+    state->decode_job_id = decode_job_id;
+    state->decode_open = decode_job_id >= 0 ? 1 : 0;
 }
 
 void
@@ -1481,6 +1484,23 @@ loader_timeline_callback_close_header(
                                      status);
     }
     state->header_closed = 1;
+}
+
+void
+loader_timeline_callback_close_decode(
+    sixel_loader_timeline_callback_state_t *state,
+    SIXELSTATUS status)
+{
+    if (state == NULL || state->decode_open == 0) {
+        return;
+    }
+    if (state->decode_job_id >= 0) {
+        loader_timeline_phase_finish("decode/pixels",
+                                     state->decode_job_id,
+                                     status);
+    }
+    state->decode_open = 0;
+    state->decode_job_id = -1;
 }
 
 void *
@@ -1501,10 +1521,12 @@ loader_timeline_emit_frame_callback(sixel_frame_t *frame, void *data)
     sixel_loader_timeline_callback_state_t *state;
     SIXELSTATUS status;
     int emit_job_id;
+    int next_decode_job_id;
 
     state = (sixel_loader_timeline_callback_state_t *)data;
     status = SIXEL_BAD_ARGUMENT;
     emit_job_id = -1;
+    next_decode_job_id = -1;
     if (state == NULL || state->fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1513,9 +1535,24 @@ loader_timeline_emit_frame_callback(sixel_frame_t *frame, void *data)
         loader_timeline_callback_close_header(state, SIXEL_OK);
     }
 
+    loader_timeline_callback_close_decode(state, SIXEL_OK);
+
+    /*
+     * The loader timeline must end its decode segment before handing the
+     * frame to downstream consumers so callback work is not attributed to
+     * loader decode time.
+     */
     emit_job_id = loader_timeline_phase_start("emit/frame");
+    loader_timeline_phase_finish("emit/frame", emit_job_id, SIXEL_OK);
+
     status = state->fn_load(frame, state->context);
-    loader_timeline_phase_finish("emit/frame", emit_job_id, status);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    next_decode_job_id = loader_timeline_phase_start("decode/pixels");
+    state->decode_job_id = next_decode_job_id;
+    state->decode_open = next_decode_job_id >= 0 ? 1 : 0;
 
     return status;
 }

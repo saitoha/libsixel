@@ -3605,7 +3605,8 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
     loader_timeline_callback_state_init(&timeline_state,
                                         fn_load,
                                         context,
-                                        header_job_id);
+                                        header_job_id,
+                                        decode_job_id);
     sixel_helper_set_loader_cms_engine(self->cms_engine);
     status = load_with_builtin(chunk,
                                self->fstatic,
@@ -3624,7 +3625,7 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
     sixel_loader_builtin_lock_release(lock_acquired);
 #endif
     loader_timeline_callback_close_header(&timeline_state, status);
-    loader_timeline_phase_finish("decode/pixels", decode_job_id, status);
+    loader_timeline_callback_close_decode(&timeline_state, status);
     loader_timeline_optional_skip_if_unmarked("post/colorspace");
     loader_timeline_optional_skip_if_unmarked("post/background");
     loader_timeline_optional_skip_if_unmarked("post/icc");

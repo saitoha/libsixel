@@ -43,6 +43,8 @@ typedef struct sixel_loader_timeline_callback_state {
     void *context;
     int header_job_id;
     int header_closed;
+    int decode_job_id;
+    int decode_open;
 } sixel_loader_timeline_callback_state_t;
 
 /*
@@ -128,8 +130,12 @@ void loader_timeline_callback_state_init(
     sixel_loader_timeline_callback_state_t *state,
     sixel_load_image_function fn_load,
     void *context,
-    int header_job_id);
+    int header_job_id,
+    int decode_job_id);
 void loader_timeline_callback_close_header(
+    sixel_loader_timeline_callback_state_t *state,
+    SIXELSTATUS status);
+void loader_timeline_callback_close_decode(
     sixel_loader_timeline_callback_state_t *state,
     SIXELSTATUS status);
 void *loader_timeline_unwrap_callback_context(void *context);
