@@ -5621,54 +5621,18 @@ sixel_builtin_load_stbi_png_path(
     return status;
 }
 
-static SIXELSTATUS
-sixel_builtin_load_stbi_nonpng_path(
-    sixel_builtin_load_request_t const *load_request,
-    sixel_frame_t *frame,
-    int chunk_size,
-    stbi__context *stb_context,
-    stbi__result_info *ri,
-    int is_jpeg,
-    int is_psd,
-    int is_pic,
-    int is_tiff,
-    unsigned char **icc_profile,
-    size_t *icc_profile_length,
-    unsigned char **psd_transparent_mask,
-    size_t *psd_transparent_mask_size)
-{
-    SIXELSTATUS status;
-
-    if (load_request == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    /*
-     * Keep the call shape fixed so older PCC builds avoid internal failures
-     * around long argument lists with mixed preprocessor branches.
-     */
-    status = sixel_builtin_load_nonpng_single_frame(
-        load_request->chunk,
-        chunk_size,
-        frame,
-        stb_context,
-        ri,
-        load_request->fuse_palette,
-        load_request->bgcolor,
-        load_request->bgcolor_source,
-        load_request->enable_cms,
-        load_request->bmp_info40_mode,
-        is_jpeg,
-        is_psd,
-        is_pic,
-        is_tiff,
-        icc_profile,
-        icc_profile_length,
-        psd_transparent_mask,
-        psd_transparent_mask_size);
-
-    return status;
-}
+typedef struct sixel_builtin_stbi_route_options {
+    int is_png;
+    int is_jpeg;
+    int is_psd;
+    int is_pic;
+    int is_tiff;
+    unsigned char **icc_profile;
+    size_t *icc_profile_length;
+    unsigned char **psd_transparent_mask;
+    size_t *psd_transparent_mask_size;
+    int *animation_handled;
+} sixel_builtin_stbi_route_options_t;
 
 static SIXELSTATUS
 sixel_builtin_load_stbi_path(
@@ -5677,16 +5641,7 @@ sixel_builtin_load_stbi_path(
     sixel_frame_t **pframe,
     stbi__context *stb_context,
     stbi__result_info *ri,
-    int is_png,
-    int is_jpeg,
-    int is_psd,
-    int is_pic,
-    int is_tiff,
-    unsigned char **icc_profile,
-    size_t *icc_profile_length,
-    unsigned char **psd_transparent_mask,
-    size_t *psd_transparent_mask_size,
-    int *animation_handled)
+    sixel_builtin_stbi_route_options_t const *route)
 {
     SIXELSTATUS status;
     int chunk_size;
@@ -5701,15 +5656,16 @@ sixel_builtin_load_stbi_path(
         pframe == NULL ||
         stb_context == NULL ||
         ri == NULL ||
-        icc_profile == NULL ||
-        icc_profile_length == NULL ||
-        psd_transparent_mask == NULL ||
-        psd_transparent_mask_size == NULL ||
-        animation_handled == NULL) {
+        route == NULL ||
+        route->icc_profile == NULL ||
+        route->icc_profile_length == NULL ||
+        route->psd_transparent_mask == NULL ||
+        route->psd_transparent_mask_size == NULL ||
+        route->animation_handled == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    *animation_handled = 0;
+    *route->animation_handled = 0;
     status = sixel_builtin_prepare_frame_and_chunk_size(load_request->chunk,
                                                         pframe,
                                                         &chunk_size);
@@ -5718,7 +5674,7 @@ sixel_builtin_load_stbi_path(
     }
 
     stbi_allocator = load_request->chunk->allocator;
-    if (is_png) {
+    if (route->is_png) {
         png_keycolor_mode = sixel_builtin_png_keycolor_mode_enabled(
             load_request->chunk,
             load_request->bgcolor,
@@ -5730,22 +5686,31 @@ sixel_builtin_load_stbi_path(
                                                 stb_context,
                                                 ri,
                                                 png_keycolor_mode,
-                                                animation_handled);
+                                                route->animation_handled);
     }
-    return sixel_builtin_load_stbi_nonpng_path(
-        load_request,
-        *pframe,
+    /*
+     * Avoid a non-PNG dispatch wrapper with a long formal parameter list.
+     * Some PCC builds can hit internal compiler errors around such forms.
+     */
+    return sixel_builtin_load_nonpng_single_frame(
+        load_request->chunk,
         chunk_size,
+        *pframe,
         stb_context,
         ri,
-        is_jpeg,
-        is_psd,
-        is_pic,
-        is_tiff,
-        icc_profile,
-        icc_profile_length,
-        psd_transparent_mask,
-        psd_transparent_mask_size);
+        load_request->fuse_palette,
+        load_request->bgcolor,
+        load_request->bgcolor_source,
+        load_request->enable_cms,
+        load_request->bmp_info40_mode,
+        route->is_jpeg,
+        route->is_psd,
+        route->is_pic,
+        route->is_tiff,
+        route->icc_profile,
+        route->icc_profile_length,
+        route->psd_transparent_mask,
+        route->psd_transparent_mask_size);
 }
 
 SIXELSTATUS
@@ -5782,6 +5747,7 @@ load_with_builtin(
     sixel_builtin_load_request_t load_request;
     sixel_builtin_load_context_t load_context;
     sixel_builtin_decode_path_t decode_path;
+    sixel_builtin_stbi_route_options_t stbi_route;
     int animation_handled;
     int apply_start_frame;
     int pnm_pixelformat;
@@ -5814,6 +5780,7 @@ load_with_builtin(
     load_request.fn_load = fn_load;
     load_request.callback_context = context;
     memset(&load_context, 0, sizeof(load_context));
+    memset(&stbi_route, 0, sizeof(stbi_route));
     decode_path = SIXEL_BUILTIN_DECODE_PATH_STBI;
     animation_handled = 0;
     apply_start_frame = 0;
@@ -5826,6 +5793,16 @@ load_with_builtin(
     is_psd = chunk_is_psd(pchunk);
     is_pic = chunk_is_pic(pchunk);
     is_tiff = chunk_is_tiff(pchunk);
+    stbi_route.is_png = is_png;
+    stbi_route.is_jpeg = is_jpeg;
+    stbi_route.is_psd = is_psd;
+    stbi_route.is_pic = is_pic;
+    stbi_route.is_tiff = is_tiff;
+    stbi_route.icc_profile = &icc_profile;
+    stbi_route.icc_profile_length = &icc_profile_length;
+    stbi_route.psd_transparent_mask = &psd_transparent_mask;
+    stbi_route.psd_transparent_mask_size = &psd_transparent_mask_size;
+    stbi_route.animation_handled = &animation_handled;
     loader_trace_message("builtin loader: decode path=%s",
                          sixel_builtin_decode_path_name(decode_path));
 
@@ -5921,16 +5898,7 @@ load_with_builtin(
                                               &frame,
                                               &stb_context,
                                               &ri,
-                                              is_png,
-                                              is_jpeg,
-                                              is_psd,
-                                              is_pic,
-                                              is_tiff,
-                                              &icc_profile,
-                                              &icc_profile_length,
-                                              &psd_transparent_mask,
-                                              &psd_transparent_mask_size,
-                                              &animation_handled);
+                                              &stbi_route);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
