@@ -106,6 +106,16 @@ static int loader_cms_target_initialized;
 static int loader_cms_prefer_8bit_flag;
 static int loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
 
+typedef struct sixel_loader_timeline_scope {
+    sixel_logger_t *logger;
+    char worker[96];
+    int *job_seq;
+    unsigned int optional_mask;
+    int active;
+} sixel_loader_timeline_scope_t;
+
+static SIXEL_LOADER_TLS sixel_loader_timeline_scope_t loader_timeline_scope;
+
 #if SIXEL_ENABLE_THREADS && !SIXEL_LOADER_TLS_AVAILABLE
 # if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
     && !defined(WITH_WINPTHREAD)
@@ -227,6 +237,68 @@ loader_background_unlock(void)
 
 #define SIXEL_ENV_WIC_ICO_MINSIZE "SIXEL_LOADER_WIC_ICO_MINSIZE"
 #define SIXEL_ENV_WIC_ICO_MINSIZE_LEGACY "SIXEL_LODER_WIC_ICO_MINSIZE"
+
+#define SIXEL_LOADER_TIMELINE_OPT_COLORSPACE (1u << 0)
+#define SIXEL_LOADER_TIMELINE_OPT_BACKGROUND (1u << 1)
+#define SIXEL_LOADER_TIMELINE_OPT_ICC        (1u << 2)
+#define SIXEL_LOADER_TIMELINE_CB_MAGIC       0x534c544dU
+
+static unsigned int
+loader_timeline_optional_bit(char const *role)
+{
+    if (role == NULL) {
+        return 0u;
+    }
+    if (strcmp(role, "post/colorspace") == 0) {
+        return SIXEL_LOADER_TIMELINE_OPT_COLORSPACE;
+    }
+    if (strcmp(role, "post/background") == 0) {
+        return SIXEL_LOADER_TIMELINE_OPT_BACKGROUND;
+    }
+    if (strcmp(role, "post/icc") == 0) {
+        return SIXEL_LOADER_TIMELINE_OPT_ICC;
+    }
+    return 0u;
+}
+
+static int
+loader_timeline_next_job(void)
+{
+    int job_id;
+
+    job_id = -1;
+    if (!loader_timeline_scope.active || loader_timeline_scope.job_seq == NULL) {
+        return -1;
+    }
+    if (*loader_timeline_scope.job_seq < 0) {
+        *loader_timeline_scope.job_seq = 0;
+    }
+    job_id = *loader_timeline_scope.job_seq;
+    *loader_timeline_scope.job_seq = job_id + 1;
+    return job_id;
+}
+
+static void
+loader_timeline_log_event(char const *role, char const *event, int job_id)
+{
+    if (!loader_timeline_scope.active ||
+            loader_timeline_scope.logger == NULL ||
+            role == NULL || event == NULL || job_id < 0) {
+        return;
+    }
+
+    sixel_logger_logf(loader_timeline_scope.logger,
+                      role,
+                      loader_timeline_scope.worker,
+                      event,
+                      job_id,
+                      -1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      "");
+}
 
 static void
 loader_wic_initialize_ico_minsize(void)
@@ -1266,6 +1338,186 @@ loader_trace_is_enabled(void)
     loader_background_unlock();
 
     return trace_enabled;
+}
+
+void
+loader_timeline_scope_begin(sixel_logger_t *logger,
+                            char const *worker,
+                            int *job_seq)
+{
+    size_t worker_length;
+
+    loader_timeline_scope.logger = NULL;
+    loader_timeline_scope.worker[0] = '\0';
+    loader_timeline_scope.job_seq = NULL;
+    loader_timeline_scope.optional_mask = 0u;
+    loader_timeline_scope.active = 0;
+
+    if (logger == NULL || worker == NULL || worker[0] == '\0' ||
+            job_seq == NULL || !logger->active) {
+        return;
+    }
+
+    worker_length = strlen(worker);
+    if (worker_length >= sizeof(loader_timeline_scope.worker)) {
+        worker_length = sizeof(loader_timeline_scope.worker) - 1u;
+    }
+    memcpy(loader_timeline_scope.worker, worker, worker_length);
+    loader_timeline_scope.worker[worker_length] = '\0';
+    loader_timeline_scope.logger = logger;
+    loader_timeline_scope.job_seq = job_seq;
+    loader_timeline_scope.optional_mask = 0u;
+    loader_timeline_scope.active = 1;
+}
+
+void
+loader_timeline_scope_end(void)
+{
+    loader_timeline_scope.logger = NULL;
+    loader_timeline_scope.worker[0] = '\0';
+    loader_timeline_scope.job_seq = NULL;
+    loader_timeline_scope.optional_mask = 0u;
+    loader_timeline_scope.active = 0;
+}
+
+int
+loader_timeline_phase_start(char const *role)
+{
+    int job_id;
+
+    job_id = loader_timeline_next_job();
+    if (job_id < 0 || role == NULL) {
+        return -1;
+    }
+
+    loader_timeline_log_event(role, "start", job_id);
+    return job_id;
+}
+
+void
+loader_timeline_phase_finish(char const *role,
+                             int job_id,
+                             SIXELSTATUS status)
+{
+    char const *event;
+
+    if (role == NULL || job_id < 0 || !loader_timeline_scope.active) {
+        return;
+    }
+    event = SIXEL_SUCCEEDED(status) ? "finish" : "fail";
+    loader_timeline_log_event(role, event, job_id);
+}
+
+void
+loader_timeline_optional_mark(char const *role)
+{
+    unsigned int bit;
+    int job_id;
+
+    if (!loader_timeline_scope.active) {
+        return;
+    }
+    bit = loader_timeline_optional_bit(role);
+    if (bit == 0u || (loader_timeline_scope.optional_mask & bit) != 0u) {
+        return;
+    }
+
+    job_id = loader_timeline_phase_start(role);
+    if (job_id >= 0) {
+        loader_timeline_log_event(role, "finish", job_id);
+    }
+    loader_timeline_scope.optional_mask |= bit;
+}
+
+void
+loader_timeline_optional_skip_if_unmarked(char const *role)
+{
+    unsigned int bit;
+    int job_id;
+
+    if (!loader_timeline_scope.active) {
+        return;
+    }
+    bit = loader_timeline_optional_bit(role);
+    if (bit == 0u || (loader_timeline_scope.optional_mask & bit) != 0u) {
+        return;
+    }
+
+    job_id = loader_timeline_next_job();
+    if (job_id >= 0) {
+        loader_timeline_log_event(role, "skip", job_id);
+    }
+    loader_timeline_scope.optional_mask |= bit;
+}
+
+void
+loader_timeline_callback_state_init(
+    sixel_loader_timeline_callback_state_t *state,
+    sixel_load_image_function fn_load,
+    void *context,
+    int header_job_id)
+{
+    if (state == NULL) {
+        return;
+    }
+    state->magic = SIXEL_LOADER_TIMELINE_CB_MAGIC;
+    state->fn_load = fn_load;
+    state->context = context;
+    state->header_job_id = header_job_id;
+    state->header_closed = 0;
+}
+
+void
+loader_timeline_callback_close_header(
+    sixel_loader_timeline_callback_state_t *state,
+    SIXELSTATUS status)
+{
+    if (state == NULL || state->header_closed != 0) {
+        return;
+    }
+    if (state->header_job_id >= 0) {
+        loader_timeline_phase_finish("header/read",
+                                     state->header_job_id,
+                                     status);
+    }
+    state->header_closed = 1;
+}
+
+void *
+loader_timeline_unwrap_callback_context(void *context)
+{
+    sixel_loader_timeline_callback_state_t *state;
+
+    state = (sixel_loader_timeline_callback_state_t *)context;
+    if (state != NULL && state->magic == SIXEL_LOADER_TIMELINE_CB_MAGIC) {
+        return state->context;
+    }
+    return context;
+}
+
+SIXELSTATUS
+loader_timeline_emit_frame_callback(sixel_frame_t *frame, void *data)
+{
+    sixel_loader_timeline_callback_state_t *state;
+    SIXELSTATUS status;
+    int emit_job_id;
+
+    state = (sixel_loader_timeline_callback_state_t *)data;
+    status = SIXEL_BAD_ARGUMENT;
+    emit_job_id = -1;
+    if (state == NULL || state->fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (state->header_closed == 0) {
+        loader_timeline_callback_close_header(state, SIXEL_OK);
+    }
+
+    emit_job_id = loader_timeline_phase_start("emit/frame");
+    status = state->fn_load(frame, state->context);
+    loader_timeline_phase_finish("emit/frame", emit_job_id, status);
+
+    return status;
 }
 
 int

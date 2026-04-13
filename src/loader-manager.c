@@ -910,6 +910,8 @@ loader_manager_execute_chain(
     int skip_predicate_gate,
     sixel_load_image_function fn_load,
     void *load_context,
+    sixel_logger_t *timeline_logger,
+    int *timeline_job_seq,
     sixel_loader_manager_configure_component_fn fn_configure,
     void *configure_context,
     sixel_loader_manager_trace_try_fn fn_try,
@@ -921,11 +923,13 @@ loader_manager_execute_chain(
     sixel_loader_chain_node_t const *node;
     char const *name;
     int enforce_predicate;
+    char worker_name[96];
 
     status = SIXEL_FALSE;
     node = NULL;
     name = NULL;
     enforce_predicate = 1;
+    worker_name[0] = '\0';
     if (selected_name != NULL) {
         *selected_name = NULL;
     }
@@ -957,10 +961,20 @@ loader_manager_execute_chain(
             fn_try(name, trace_context);
         }
 
+        if (timeline_logger != NULL && timeline_job_seq != NULL) {
+            (void)sixel_compat_snprintf(worker_name,
+                                        sizeof(worker_name),
+                                        "loader/%s",
+                                        name != NULL ? name : "unknown");
+            loader_timeline_scope_begin(timeline_logger,
+                                        worker_name,
+                                        timeline_job_seq);
+        }
         status = sixel_loader_component_load(node->component,
                                              chunk,
                                              fn_load,
                                              load_context);
+        loader_timeline_scope_end();
 
         if (fn_result != NULL) {
             fn_result(name, status, trace_context);

@@ -33,8 +33,17 @@
 #include <sixel.h>
 
 #include "chunk.h"
+#include "logger.h"
 
 #define SIXEL_THUMBNAILER_DEFAULT_SIZE 512
+
+typedef struct sixel_loader_timeline_callback_state {
+    unsigned int magic;
+    sixel_load_image_function fn_load;
+    void *context;
+    int header_job_id;
+    int header_closed;
+} sixel_loader_timeline_callback_state_t;
 
 /*
  * Internal loader-component options used by the manager to pass resolved
@@ -104,6 +113,28 @@ void loader_trace_message(char const *format, ...);
 int sixel_trace_topic_is_enabled(char const *topic);
 void sixel_trace_topic_message(char const *topic,
                                char const *format, ...);
+
+void loader_timeline_scope_begin(sixel_logger_t *logger,
+                                 char const *worker,
+                                 int *job_seq);
+void loader_timeline_scope_end(void);
+int loader_timeline_phase_start(char const *role);
+void loader_timeline_phase_finish(char const *role,
+                                  int job_id,
+                                  SIXELSTATUS status);
+void loader_timeline_optional_mark(char const *role);
+void loader_timeline_optional_skip_if_unmarked(char const *role);
+void loader_timeline_callback_state_init(
+    sixel_loader_timeline_callback_state_t *state,
+    sixel_load_image_function fn_load,
+    void *context,
+    int header_job_id);
+void loader_timeline_callback_close_header(
+    sixel_loader_timeline_callback_state_t *state,
+    SIXELSTATUS status);
+void *loader_timeline_unwrap_callback_context(void *context);
+SIXELSTATUS loader_timeline_emit_frame_callback(sixel_frame_t *frame,
+                                                void *data);
 
 int chunk_is_png(sixel_chunk_t const *chunk);
 int chunk_is_jpeg(sixel_chunk_t const *chunk);

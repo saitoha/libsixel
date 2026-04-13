@@ -27,6 +27,7 @@
 #endif
 
 #include "icc-apply.h"
+#include "loader-common.h"
 
 #if HAVE_MATH_H
 #include <math.h>
@@ -1611,6 +1612,7 @@ sixel_icc_apply_rgb_u8_with_a2b_slot(
     if (pixels == NULL || pixel_count == 0u || profile == NULL) {
         return 0;
     }
+    loader_timeline_optional_mark("post/icc");
 
     for (i = 0u; i < pixel_count; ++i) {
         size_t offset;
@@ -1662,6 +1664,7 @@ sixel_icc_apply_rgb_float32_with_a2b_slot(
     if (pixels == NULL || pixel_count == 0u || profile == NULL) {
         return 0;
     }
+    loader_timeline_optional_mark("post/icc");
 
     for (i = 0u; i < pixel_count; ++i) {
         size_t offset;
@@ -1713,6 +1716,7 @@ sixel_icc_apply_gray_u8_with_a2b_slot(
     if (pixels == NULL || pixel_count == 0u || profile == NULL) {
         return 0;
     }
+    loader_timeline_optional_mark("post/icc");
 
     for (i = 0u; i < pixel_count; ++i) {
         double rgb[3];
@@ -1756,6 +1760,7 @@ sixel_icc_apply_rgb_triplet_unit_with_a2b_slot(
     unsigned int a2b_slot,
     int allow_matrix_trc_fallback)
 {
+    loader_timeline_optional_mark("post/icc");
     return sixel_icc_apply_rgb_triplet_internal(rgb,
                                                 a2b_slot,
                                                 allow_matrix_trc_fallback,
@@ -1787,6 +1792,7 @@ sixel_icc_apply_cmyk_u8_to_rgb_float32_with_a2b_slot(
         pixel_count == 0u || profile == NULL) {
         return 0;
     }
+    loader_timeline_optional_mark("post/icc");
 
     for (i = 0u; i < pixel_count; ++i) {
         size_t src_offset;
@@ -1844,6 +1850,7 @@ sixel_icc_apply_cmyk_u16_to_rgb_float32_with_a2b_slot(
         pixel_count == 0u || profile == NULL) {
         return 0;
     }
+    loader_timeline_optional_mark("post/icc");
 
     for (i = 0u; i < pixel_count; ++i) {
         size_t src_offset;
@@ -1901,6 +1908,7 @@ sixel_icc_apply_cmyk_float32_to_rgb_float32_with_a2b_slot(
         pixel_count == 0u || profile == NULL) {
         return 0;
     }
+    loader_timeline_optional_mark("post/icc");
 
     for (i = 0u; i < pixel_count; ++i) {
         size_t src_offset;

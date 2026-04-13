@@ -164,6 +164,7 @@ struct sixel_loader {
     char log_path[PATH_MAX];
     char log_loader_name[64];
     size_t log_input_bytes;
+    int log_timeline_job_seq;
 };
 
 typedef struct sixel_loader_callback_state {
@@ -181,6 +182,8 @@ typedef struct sixel_loader_component_option_context {
 typedef struct sixel_loader_manager_trace_context {
     sixel_loader_t *loader;
     size_t input_bytes;
+    int current_select_job;
+    char current_worker[96];
 } sixel_loader_manager_trace_context_t;
 
 typedef struct sixel_loader_osc11_bg_query_job {
@@ -220,8 +223,10 @@ int
 sixel_loader_callback_is_canceled(void *data)
 {
     sixel_loader_callback_state_t *state;
+    void *actual_context;
 
-    state = (sixel_loader_callback_state_t *)data;
+    actual_context = loader_timeline_unwrap_callback_context(data);
+    state = (sixel_loader_callback_state_t *)actual_context;
     if (state == NULL || state->loader == NULL ||
         state->loader->cancel_flag == NULL) {
         return 0;
@@ -471,83 +476,52 @@ loader_can_query_osc11_bgcolor(sixel_loader_t const *loader)
 
 
 
-/*
- * Emit loader stage markers.
- *
- * Loader callbacks run the downstream pipeline synchronously, so the finish
- * marker must be issued before invoking fn_load() to avoid inflating the
- * loader span. The helper keeps the formatting consistent with
- * sixel_encoder_log_stage() without depending on encoder internals.
- */
+static int
+loader_timeline_next_job(sixel_loader_t *loader)
+{
+    int job_id;
+
+    job_id = -1;
+    if (loader == NULL) {
+        return -1;
+    }
+    if (loader->log_timeline_job_seq < 0) {
+        loader->log_timeline_job_seq = 0;
+    }
+    job_id = loader->log_timeline_job_seq;
+    loader->log_timeline_job_seq = job_id + 1;
+    return job_id;
+}
+
 static void
-loader_log_stage(sixel_loader_t *loader,
-                 char const *event,
-                 char const *fmt,
-                 ...)
+loader_log_timeline_event(sixel_loader_t *loader,
+                          char const *worker,
+                          char const *role,
+                          char const *event,
+                          int job_id)
 {
     sixel_logger_t *logger;
-    char message[256];
-    va_list args;
 
     logger = NULL;
     if (loader != NULL) {
         logger = &loader->logger;
     }
-    if (logger == NULL || logger->file == NULL || !logger->active) {
+    if (logger == NULL || !logger->active ||
+            worker == NULL || role == NULL || event == NULL || job_id < 0) {
         return;
     }
 
-    message[0] = '\0';
-#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
-# if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wformat-nonliteral"
-# elif defined(__GNUC__) && !defined(__PCC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wformat-nonliteral"
-# endif
-#endif
-    va_start(args, fmt);
-    if (fmt != NULL) {
-#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
-# if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wformat-nonliteral"
-# elif defined(__GNUC__) && !defined(__PCC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wformat-nonliteral"
-# endif
-#endif
-        (void)sixel_compat_vsnprintf(message, sizeof(message), fmt, args);
-#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
-# if defined(__clang__)
-#  pragma clang diagnostic pop
-# elif defined(__GNUC__) && !defined(__PCC__)
-#  pragma GCC diagnostic pop
-# endif
-#endif
-    }
-    va_end(args);
-#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
-# if defined(__clang__)
-#  pragma clang diagnostic pop
-# elif defined(__GNUC__) && !defined(__PCC__)
-#  pragma GCC diagnostic pop
-# endif
-#endif
-
     sixel_logger_logf(logger,
-                      "worker",
-                      "loader",
+                      role,
+                      worker,
                       event,
+                      job_id,
                       -1,
-                      -1,
                       0,
                       0,
                       0,
                       0,
-                      "%s",
-                      message);
+                      "");
 }
 
 static SIXELSTATUS
@@ -555,23 +529,10 @@ loader_callback_trampoline(sixel_frame_t *frame, void *data)
 {
     sixel_loader_callback_state_t *state;
     SIXELSTATUS status;
-    sixel_loader_t *loader;
 
     state = (sixel_loader_callback_state_t *)data;
-    loader = NULL;
     if (state == NULL || state->fn == NULL) {
         return SIXEL_BAD_ARGUMENT;
-    }
-
-    loader = state->loader;
-    if (loader != NULL && loader->log_loader_finished == 0) {
-        loader_log_stage(loader,
-                         "finish",
-                         "path=%s loader=%s bytes=%zu",
-                         loader->log_path,
-                         loader->log_loader_name,
-                         loader->log_input_bytes);
-        loader->log_loader_finished = 1;
     }
 
     status = state->fn(frame, state->context);
@@ -1418,6 +1379,7 @@ sixel_loader_new(
     loader->log_path[0] = '\0';
     loader->log_loader_name[0] = '\0';
     loader->log_input_bytes = 0u;
+    loader->log_timeline_job_seq = 0;
 
     *pploader = loader;
     status = SIXEL_OK;
@@ -1700,11 +1662,13 @@ static void
 loader_manager_trace_try_callback(char const *name, void *context)
 {
     sixel_loader_manager_trace_context_t *trace;
+    char const *backend_name;
 
     trace = (sixel_loader_manager_trace_context_t *)context;
     if (trace == NULL || trace->loader == NULL) {
         return;
     }
+    backend_name = name != NULL ? name : "unknown";
 
     trace->loader->log_input_bytes = trace->input_bytes;
     if (name != NULL) {
@@ -1715,6 +1679,16 @@ loader_manager_trace_try_callback(char const *name, void *context)
     } else {
         trace->loader->log_loader_name[0] = '\0';
     }
+    trace->current_select_job = loader_timeline_next_job(trace->loader);
+    (void)sixel_compat_snprintf(trace->current_worker,
+                                sizeof(trace->current_worker),
+                                "loader/%s",
+                                backend_name);
+    loader_log_timeline_event(trace->loader,
+                              trace->current_worker,
+                              "loader/select",
+                              "start",
+                              trace->current_select_job);
     loader_trace_try(name);
 }
 
@@ -1723,7 +1697,37 @@ loader_manager_trace_result_callback(char const *name,
                                      SIXELSTATUS status,
                                      void *context)
 {
-    (void)context;
+    sixel_loader_manager_trace_context_t *trace;
+    char worker_name[96];
+    char const *backend_name;
+    char const *event;
+
+    trace = (sixel_loader_manager_trace_context_t *)context;
+    worker_name[0] = '\0';
+    backend_name = NULL;
+    event = NULL;
+    if (trace != NULL && trace->loader != NULL && trace->current_select_job >= 0) {
+        backend_name = name != NULL ? name : "unknown";
+        if (trace->current_worker[0] != '\0') {
+            (void)sixel_compat_snprintf(worker_name,
+                                        sizeof(worker_name),
+                                        "%s",
+                                        trace->current_worker);
+        } else {
+            (void)sixel_compat_snprintf(worker_name,
+                                        sizeof(worker_name),
+                                        "loader/%s",
+                                        backend_name);
+        }
+        event = SIXEL_SUCCEEDED(status) ? "finish" : "fail";
+        loader_log_timeline_event(trace->loader,
+                                  worker_name,
+                                  "loader/select",
+                                  event,
+                                  trace->current_select_job);
+        trace->current_select_job = -1;
+        trace->current_worker[0] = '\0';
+    }
     loader_trace_result(name, status);
 }
 
@@ -1759,6 +1763,8 @@ sixel_loader_load_file(
     int skip_predicate_gate;
     int thread_status;
     int wait_result;
+    int chunk_job_id;
+    int select_job_id;
 
     pchunk = NULL;
     plan = NULL;
@@ -1779,11 +1785,15 @@ sixel_loader_load_file(
     skip_predicate_gate = 0;
     thread_status = SIXEL_FALSE;
     wait_result = 0;
+    chunk_job_id = -1;
+    select_job_id = -1;
     sixel_option_init_argument_list_resolution(&order_resolution);
     loader_manager_init_loader_suboptions(&active_suboptions);
     loader_osc11_bg_query_job_init(&osc11_query_job);
     memset(&option_context, 0, sizeof(option_context));
     memset(&trace_context, 0, sizeof(trace_context));
+    trace_context.current_select_job = -1;
+    trace_context.current_worker[0] = '\0';
 
     if (loader == NULL) {
         sixel_helper_set_additional_message(
@@ -1797,6 +1807,7 @@ sixel_loader_load_file(
     loader->log_loader_finished = 0;
     loader->log_loader_name[0] = '\0';
     loader->log_input_bytes = 0u;
+    loader->log_timeline_job_seq = 0;
     loader->log_path[0] = '\0';
     if (filename != NULL) {
         (void)sixel_compat_snprintf(loader->log_path,
@@ -1804,7 +1815,6 @@ sixel_loader_load_file(
                                     "%s",
                                     filename);
     }
-    loader_log_stage(loader, "start", "path=%s", loader->log_path);
 
     memset(&callback_state, 0, sizeof(callback_state));
     callback_state.loader = loader;
@@ -1855,14 +1865,30 @@ sixel_loader_load_file(
         }
     }
 
+    chunk_job_id = loader_timeline_next_job(loader);
+    loader_log_timeline_event(loader,
+                              "loader/manager",
+                              "chunk/create",
+                              "start",
+                              chunk_job_id);
     status = sixel_chunk_new(&pchunk,
                              filename,
                              loader->finsecure,
                              loader->cancel_flag,
                              loader->allocator);
     if (status != SIXEL_OK) {
+        loader_log_timeline_event(loader,
+                                  "loader/manager",
+                                  "chunk/create",
+                                  "fail",
+                                  chunk_job_id);
         goto end;
     }
+    loader_log_timeline_event(loader,
+                              "loader/manager",
+                              "chunk/create",
+                              "finish",
+                              chunk_job_id);
 
     if (pchunk->size == 0 || (pchunk->size == 1 && *pchunk->buffer == '\n')) {
         status = SIXEL_OK;
@@ -1992,6 +2018,12 @@ sixel_loader_load_file(
     option_context.suboptions = active_suboptions;
     trace_context.loader = loader;
     trace_context.input_bytes = pchunk->size;
+    select_job_id = loader_timeline_next_job(loader);
+    loader_log_timeline_event(loader,
+                              "loader/manager",
+                              "loader/select",
+                              "start",
+                              select_job_id);
     status = loader_manager_execute_chain(
         manager,
         chain,
@@ -1999,12 +2031,19 @@ sixel_loader_load_file(
         skip_predicate_gate,
         loader_callback_trampoline,
         &callback_state,
+        &loader->logger,
+        &loader->log_timeline_job_seq,
         loader_manager_configure_component,
         &option_context,
         loader_manager_trace_try_callback,
         loader_manager_trace_result_callback,
         &trace_context,
         &selected_name);
+    loader_log_timeline_event(loader,
+                              "loader/manager",
+                              "loader/select",
+                              SIXEL_SUCCEEDED(status) ? "finish" : "fail",
+                              select_job_id);
 
     if (SIXEL_FAILED(status)) {
         if (status == SIXEL_FALSE) {

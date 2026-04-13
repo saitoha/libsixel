@@ -71,7 +71,9 @@ def summarize(events: List[ParallelEvent]) -> str:
     return "\n".join(lines)
 
 
-def _flow_sort_key(worker: str, role: str, thread: int) -> Tuple[int, str, int]:
+def _flow_sort_key(worker: str,
+                   role: str,
+                   thread: int) -> Tuple[int, str, str, int]:
     """Return a stable sort key that follows the pipeline flow.
 
     Dither comes first, followed by encode/writer roles, then everything
@@ -92,8 +94,36 @@ def _flow_sort_key(worker: str, role: str, thread: int) -> Tuple[int, str, int]:
         "pipeline": 9,
     }
 
-    rank = priority.get(worker, 10)
-    return (rank, role, thread)
+    group = worker
+    if worker.startswith("loader/"):
+        group = "loader"
+    rank = priority.get(group, 10)
+    return (rank, group, role, thread)
+
+
+def _worker_group(worker: str) -> str:
+    """Normalize worker namespace for sorting and palette lookup."""
+
+    if worker.startswith("loader/"):
+        return "loader"
+    return worker
+
+
+def _loader_worker_label(worker: str) -> str:
+    """Render loader worker labels consistently on the timeline."""
+
+    if worker.startswith("loader/"):
+        return f"loader:{worker.split('/', 1)[1]}"
+    return worker
+
+
+def _loader_worker_tint(worker: str) -> int:
+    """Return a deterministic loader tint slot for backend labels."""
+
+    backend = ""
+    if "/" in worker:
+        backend = worker.split("/", 1)[1]
+    return sum(ord(ch) for ch in backend) % 6
 
 
 def _start_sort_key(
@@ -408,6 +438,14 @@ def render(
         "io": 0.25,
         "undither": 0.45,
         "png": 0.65,
+        "chunk/create": 0.18,
+        "loader/select": 0.3,
+        "header/read": 0.45,
+        "decode/pixels": 0.58,
+        "post/colorspace": 0.7,
+        "post/background": 0.78,
+        "post/icc": 0.86,
+        "emit/frame": 0.52,
         # Palette sub-phases stay in the same hue while darkening
         # initialization and brightening merge/export.  This keeps all
         # palette bars visually grouped but shows init/merge as distinct
@@ -423,7 +461,14 @@ def render(
         worker = row_key[0]
         seen_roles = set(role for _, _, role, _, _, _ in threads[row_key])
         for role in seen_roles:
-            base = flow_palette.get(worker, (0.2, 0.2, 0.2))
+            group = _worker_group(worker)
+            base = flow_palette.get(group, (0.2, 0.2, 0.2))
+            if group == "loader" and worker.startswith("loader/"):
+                tint = _loader_worker_tint(worker)
+                if tint < 3:
+                    base = _lighten(base, 0.04 + 0.04 * tint)
+                else:
+                    base = _darken(base, 0.05 + 0.04 * (tint - 3))
             shade = role_palette.get(role, 0.6)
             role_color[(worker, role)] = _lighten(base, shade)
 
@@ -459,7 +504,7 @@ def render(
     yticks = [pos for pos in range(len(rows))]
     ylabels = []
     for worker, slot, frame_no, loop_no in rows:
-        label = worker
+        label = _loader_worker_label(worker)
         if worker == "decoder":
             label = f"{worker} #{slot}"
         if split_by_frame and frame_no >= 0:
@@ -494,9 +539,22 @@ def render(
     handles = []
     labels = []
     seen_roles = set()
-    for (worker, role), color in sorted(role_color.items(),
-                                        key=lambda item: (item[0][1],
-                                                          item[0][0])):
+    phase_priority = {
+        "chunk/create": 0,
+        "loader/select": 1,
+        "header/read": 2,
+        "decode/pixels": 3,
+        "post/colorspace": 4,
+        "post/background": 5,
+        "post/icc": 6,
+        "emit/frame": 7,
+    }
+    for (worker, role), color in sorted(
+            role_color.items(),
+            key=lambda item: (phase_priority.get(item[0][1], 100),
+                              item[0][1],
+                              _worker_group(item[0][0]),
+                              item[0][0])):
         if role in seen_roles:
             continue
         seen_roles.add(role)

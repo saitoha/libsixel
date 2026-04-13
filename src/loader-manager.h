@@ -30,6 +30,7 @@
 #include "chunk.h"
 #include "loader-chain.h"
 #include "loader-factory.h"
+#include "logger.h"
 #include "options.h"
 
 typedef struct sixel_loader_manager sixel_loader_manager_t;
@@ -128,6 +129,8 @@ loader_manager_execute_chain(
     int skip_predicate_gate,
     sixel_load_image_function fn_load,
     void *load_context,
+    sixel_logger_t *timeline_logger,
+    int *timeline_job_seq,
     sixel_loader_manager_configure_component_fn fn_configure,
     void *configure_context,
     sixel_loader_manager_trace_try_fn fn_try,

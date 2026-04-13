@@ -44,6 +44,7 @@
 #include "frame.h"
 #include "pixelformat.h"
 #include "compat_stub.h"
+#include "loader-common.h"
 #include "scale.h"
 #include "sixel_atomic.h"
 
@@ -834,6 +835,8 @@ sixel_frame_strip_alpha(
     unsigned char *src;
     unsigned char *dst;
     unsigned char alpha;
+
+    loader_timeline_optional_mark("post/background");
 
     sixel_frame_ref(frame);
 

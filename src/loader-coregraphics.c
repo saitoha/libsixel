@@ -3029,9 +3029,16 @@ sixel_loader_coregraphics_load(sixel_loader_component_t *component,
 {
     sixel_loader_coregraphics_component_t *self;
     unsigned char *bgcolor;
+    SIXELSTATUS status;
+    int header_job_id;
+    int decode_job_id;
+    sixel_loader_timeline_callback_state_t timeline_state;
 
     self = NULL;
     bgcolor = NULL;
+    status = SIXEL_FALSE;
+    header_job_id = -1;
+    decode_job_id = -1;
     if (component == NULL || chunk == NULL || fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -3041,17 +3048,32 @@ sixel_loader_coregraphics_load(sixel_loader_component_t *component,
         bgcolor = self->bgcolor;
     }
 
-    return load_with_coregraphics(chunk,
-                                  self->fstatic,
-                                  self->fuse_palette,
-                                  self->reqcolors,
-                                  self->enable_orientation,
-                                  bgcolor,
-                                  self->loop_control,
-                                  self->has_start_frame_no,
-                                  self->start_frame_no,
-                                  fn_load,
-                                  context);
+    header_job_id = loader_timeline_phase_start("header/read");
+    decode_job_id = loader_timeline_phase_start("decode/pixels");
+    loader_timeline_callback_state_init(&timeline_state,
+                                        fn_load,
+                                        context,
+                                        header_job_id);
+
+    status = load_with_coregraphics(chunk,
+                                    self->fstatic,
+                                    self->fuse_palette,
+                                    self->reqcolors,
+                                    self->enable_orientation,
+                                    bgcolor,
+                                    self->loop_control,
+                                    self->has_start_frame_no,
+                                    self->start_frame_no,
+                                    loader_timeline_emit_frame_callback,
+                                    &timeline_state);
+
+    loader_timeline_callback_close_header(&timeline_state, status);
+    loader_timeline_phase_finish("decode/pixels", decode_job_id, status);
+    loader_timeline_optional_skip_if_unmarked("post/colorspace");
+    loader_timeline_optional_skip_if_unmarked("post/background");
+    loader_timeline_optional_skip_if_unmarked("post/icc");
+
+    return status;
 }
 
 static char const *

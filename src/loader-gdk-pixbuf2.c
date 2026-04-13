@@ -88,6 +88,7 @@
 #include "allocator.h"
 #include "compat_stub.h"
 #include "frame.h"
+#include "loader-common.h"
 #include "loader-gdk-pixbuf2.h"
 #include "probe.h"
 
@@ -1593,9 +1594,16 @@ sixel_loader_gdkpixbuf2_load(sixel_loader_component_t *component,
 {
     sixel_loader_gdkpixbuf_component_t *self;
     unsigned char *bgcolor;
+    SIXELSTATUS status;
+    int header_job_id;
+    int decode_job_id;
+    sixel_loader_timeline_callback_state_t timeline_state;
 
     self = NULL;
     bgcolor = NULL;
+    status = SIXEL_FALSE;
+    header_job_id = -1;
+    decode_job_id = -1;
     if (component == NULL || chunk == NULL || fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1605,18 +1613,33 @@ sixel_loader_gdkpixbuf2_load(sixel_loader_component_t *component,
         bgcolor = self->bgcolor;
     }
 
-    return load_with_gdkpixbuf(chunk,
-                               self->fstatic,
-                               self->fuse_palette,
-                               self->reqcolors,
-                               bgcolor,
-                               self->loop_control,
-                               self->has_start_frame_no,
-                               self->start_frame_no,
-                               fn_load,
-                               context,
-                               &self->srgb_decode_lut_prepared,
-                               self->srgb_decode_lut);
+    header_job_id = loader_timeline_phase_start("header/read");
+    decode_job_id = loader_timeline_phase_start("decode/pixels");
+    loader_timeline_callback_state_init(&timeline_state,
+                                        fn_load,
+                                        context,
+                                        header_job_id);
+
+    status = load_with_gdkpixbuf(chunk,
+                                 self->fstatic,
+                                 self->fuse_palette,
+                                 self->reqcolors,
+                                 bgcolor,
+                                 self->loop_control,
+                                 self->has_start_frame_no,
+                                 self->start_frame_no,
+                                 loader_timeline_emit_frame_callback,
+                                 &timeline_state,
+                                 &self->srgb_decode_lut_prepared,
+                                 self->srgb_decode_lut);
+
+    loader_timeline_callback_close_header(&timeline_state, status);
+    loader_timeline_phase_finish("decode/pixels", decode_job_id, status);
+    loader_timeline_optional_skip_if_unmarked("post/colorspace");
+    loader_timeline_optional_skip_if_unmarked("post/background");
+    loader_timeline_optional_skip_if_unmarked("post/icc");
+
+    return status;
 }
 
 static char const *

@@ -37,6 +37,7 @@
 
 #include "colorspace.h"
 #include "cpu.h"
+#include "loader-common.h"
 #include "logger.h"
 #include "threading.h"
 #if SIXEL_ENABLE_THREADS
@@ -2775,6 +2776,8 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
             "sixel_helper_convert_colorspace: unsupported pixelformat.");
         return SIXEL_BAD_INPUT;
     }
+
+    loader_timeline_optional_mark("post/colorspace");
 
     sixel_colorspace_init_tables();
 

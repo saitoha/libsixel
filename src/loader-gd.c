@@ -780,11 +780,18 @@ sixel_loader_gd_load(sixel_loader_component_t *component,
     unsigned char *bgcolor;
     int *srgb_decode_lut_ready;
     double *srgb_decode_lut;
+    SIXELSTATUS status;
+    int header_job_id;
+    int decode_job_id;
+    sixel_loader_timeline_callback_state_t timeline_state;
 
     self = NULL;
     bgcolor = NULL;
     srgb_decode_lut_ready = NULL;
     srgb_decode_lut = NULL;
+    status = SIXEL_FALSE;
+    header_job_id = -1;
+    decode_job_id = -1;
     if (component == NULL || chunk == NULL || fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -796,14 +803,29 @@ sixel_loader_gd_load(sixel_loader_component_t *component,
     srgb_decode_lut_ready = &self->srgb_decode_lut_ready;
     srgb_decode_lut = self->srgb_decode_lut;
 
-    return load_with_gd(chunk,
-                        self->fuse_palette,
-                        self->reqcolors,
-                        bgcolor,
-                        srgb_decode_lut_ready,
-                        srgb_decode_lut,
-                        fn_load,
-                        context);
+    header_job_id = loader_timeline_phase_start("header/read");
+    decode_job_id = loader_timeline_phase_start("decode/pixels");
+    loader_timeline_callback_state_init(&timeline_state,
+                                        fn_load,
+                                        context,
+                                        header_job_id);
+
+    status = load_with_gd(chunk,
+                          self->fuse_palette,
+                          self->reqcolors,
+                          bgcolor,
+                          srgb_decode_lut_ready,
+                          srgb_decode_lut,
+                          loader_timeline_emit_frame_callback,
+                          &timeline_state);
+
+    loader_timeline_callback_close_header(&timeline_state, status);
+    loader_timeline_phase_finish("decode/pixels", decode_job_id, status);
+    loader_timeline_optional_skip_if_unmarked("post/colorspace");
+    loader_timeline_optional_skip_if_unmarked("post/background");
+    loader_timeline_optional_skip_if_unmarked("post/icc");
+
+    return status;
 }
 
 static char const *

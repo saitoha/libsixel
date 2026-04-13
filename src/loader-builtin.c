@@ -3573,6 +3573,9 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
     sixel_loader_builtin_component_t *self;
     unsigned char *bgcolor;
     SIXELSTATUS status;
+    int header_job_id;
+    int decode_job_id;
+    sixel_loader_timeline_callback_state_t timeline_state;
 #if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
     int lock_acquired;
 #endif
@@ -3580,6 +3583,8 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
     self = NULL;
     bgcolor = NULL;
     status = SIXEL_FALSE;
+    header_job_id = -1;
+    decode_job_id = -1;
 #if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
     lock_acquired = 0;
 #endif
@@ -3595,6 +3600,12 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
 #if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
     lock_acquired = sixel_loader_builtin_lock_acquire();
 #endif
+    header_job_id = loader_timeline_phase_start("header/read");
+    decode_job_id = loader_timeline_phase_start("decode/pixels");
+    loader_timeline_callback_state_init(&timeline_state,
+                                        fn_load,
+                                        context,
+                                        header_job_id);
     sixel_helper_set_loader_cms_engine(self->cms_engine);
     status = load_with_builtin(chunk,
                                self->fstatic,
@@ -3607,11 +3618,17 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
                                self->start_frame_no,
                                self->enable_cms,
                                self->bmp_info40_mode,
-                               fn_load,
-                               context);
+                               loader_timeline_emit_frame_callback,
+                               &timeline_state);
 #if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
     sixel_loader_builtin_lock_release(lock_acquired);
 #endif
+    loader_timeline_callback_close_header(&timeline_state, status);
+    loader_timeline_phase_finish("decode/pixels", decode_job_id, status);
+    loader_timeline_optional_skip_if_unmarked("post/colorspace");
+    loader_timeline_optional_skip_if_unmarked("post/background");
+    loader_timeline_optional_skip_if_unmarked("post/icc");
+
     return status;
 }
 
