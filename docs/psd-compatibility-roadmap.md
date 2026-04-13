@@ -401,6 +401,12 @@ Key points used by this roadmap:
     exterior-connected background map. PASS representatives `1517..1519`
     lock outer-gate activation, deferred bevel-highlight path, and
     clip/stroke non-regression contracts.
+  - Deferred outer effect coverage now uses an explicit outer distance-band
+    path (`foreground` distance on exterior-connected background) instead of
+    relying only on generic min/max neighbor deltas. PASS representatives
+    `1520..1523` lock outer distance-band activation, edge-source gate usage,
+    deferred bevel-lighting coexistence, and deferred interior/stroke
+    non-regression contracts.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:

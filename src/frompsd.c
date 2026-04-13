@@ -19589,6 +19589,7 @@ sixel_builtin_psd_distance_based_effect_coverage(
     float const *background_distance_map,
     size_t index,
     float source_alpha,
+    int is_inner_effect,
     float effect_size,
     int source_center,
     float effect_choke,
@@ -19649,6 +19650,7 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     float blended_b;
     int traced_distance_map;
     int traced_exterior_gated;
+    int traced_outer_distance_band;
 
     x = 0u;
     y = 0u;
@@ -19672,6 +19674,7 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     blended_b = 0.0f;
     traced_distance_map = 0;
     traced_exterior_gated = 0;
+    traced_outer_distance_band = 0;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL || layer == NULL || effect_rgb == NULL ||
         canvas_width == 0u || canvas_height == 0u ||
@@ -19803,18 +19806,23 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
             coverage = legacy_coverage;
             if (foreground_distance_map != NULL &&
                 background_distance_map != NULL &&
-                legacy_coverage > 0.0f) {
+                (legacy_coverage > 0.0f || is_inner_effect == 0)) {
                 distance_coverage =
                     sixel_builtin_psd_distance_based_effect_coverage(
                         foreground_distance_map,
                         background_distance_map,
                         idx,
                         source_alpha,
+                        is_inner_effect,
                         effect_size,
                         effect_source_center,
                         effect_choke,
                         effect_range);
-                if (distance_coverage < coverage) {
+                if (is_inner_effect != 0) {
+                    if (distance_coverage < coverage) {
+                        coverage = distance_coverage;
+                    }
+                } else if (distance_coverage > 0.0f) {
                     coverage = distance_coverage;
                 }
             }
@@ -19860,6 +19868,16 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
                     "builtin PSD: applying distance-map deferred effect "
                     "coverage in layer fallback");
                 traced_distance_map = 1;
+            }
+            if (is_inner_effect == 0 &&
+                foreground_distance_map != NULL &&
+                background_distance_map != NULL &&
+                traced_outer_distance_band == 0) {
+                sixel_trace_topic_message(
+                    "psd_decode",
+                    "builtin PSD: applying deferred outer "
+                    "distance-band coverage in layer fallback");
+                traced_outer_distance_band = 1;
             }
             if (ptraced_effect != NULL &&
                 *ptraced_effect == 0 &&
@@ -20597,6 +20615,7 @@ sixel_builtin_psd_distance_based_effect_coverage(
     float const *background_distance_map,
     size_t index,
     float source_alpha,
+    int is_inner_effect,
     float effect_size,
     int source_center,
     float effect_choke,
@@ -20618,9 +20637,10 @@ sixel_builtin_psd_distance_based_effect_coverage(
     source_alpha = sixel_builtin_psd_clamp_alpha_float32(source_alpha);
     effect_choke = sixel_builtin_psd_clamp01(effect_choke);
     effect_range = sixel_builtin_psd_clamp01(effect_range);
-    edge_distance = foreground_distance_map[index];
-    if (background_distance_map[index] < edge_distance) {
+    if (is_inner_effect != 0) {
         edge_distance = background_distance_map[index];
+    } else {
+        edge_distance = foreground_distance_map[index];
     }
     if (edge_distance > effect_size + 1.0f) {
         return 0.0f;
@@ -20628,8 +20648,15 @@ sixel_builtin_psd_distance_based_effect_coverage(
     coverage = sixel_builtin_psd_clamp01(
         (effect_size - edge_distance + 1.0f) / (effect_size + 1.0f));
     if (source_center != 0) {
-        center_coverage = sixel_builtin_psd_clamp01(
-            source_alpha * (1.0f - edge_distance / (effect_size + 1.0f)));
+        if (is_inner_effect != 0) {
+            center_coverage = sixel_builtin_psd_clamp01(
+                source_alpha *
+                (1.0f - edge_distance / (effect_size + 1.0f)));
+        } else {
+            center_coverage = sixel_builtin_psd_clamp01(
+                (1.0f - source_alpha) *
+                (1.0f - edge_distance / (effect_size + 1.0f)));
+        }
         if (center_coverage > coverage) {
             coverage = center_coverage;
         }
