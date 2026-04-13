@@ -33,10 +33,30 @@
 #include "chunk.h"
 #include "loader-component.h"
 
+typedef struct sixel_builtin_load_with_builtin_args {
+    sixel_chunk_t const       *pchunk;
+    int                        fstatic;
+    int                        fuse_palette;
+    int                        reqcolors;
+    unsigned char             *bgcolor;
+    int                        bgcolor_source;
+    int                        loop_control;
+    int                        start_frame_no_set;
+    int                        start_frame_no_override;
+    int                        enable_cms;
+    int                        bmp_info40_mode;
+    sixel_load_image_function  fn_load;
+    void                      *context;
+} sixel_builtin_load_with_builtin_args_t;
+
 SIXELSTATUS
 sixel_loader_builtin_new(
     sixel_allocator_t *allocator,
     sixel_loader_component_t **ppcomponent);
+
+SIXELSTATUS
+sixel_builtin_load_with_builtin_impl(
+    sixel_builtin_load_with_builtin_args_t const *args);
 
 SIXELSTATUS load_with_builtin(
     sixel_chunk_t const       *pchunk,

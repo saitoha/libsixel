@@ -5714,21 +5714,22 @@ sixel_builtin_load_stbi_path(
 }
 
 SIXELSTATUS
-load_with_builtin(
-    sixel_chunk_t const *pchunk,
-    int fstatic,
-    int fuse_palette,
-    int reqcolors,
-    unsigned char *bgcolor,
-    int bgcolor_source,
-    int loop_control,
-    int start_frame_no_set,
-    int start_frame_no_override,
-    int enable_cms,
-    int bmp_info40_mode,
-    sixel_load_image_function fn_load,
-    void *context)
+sixel_builtin_load_with_builtin_impl(
+    sixel_builtin_load_with_builtin_args_t const *args)
 {
+    sixel_chunk_t const *pchunk;
+    int fstatic;
+    int fuse_palette;
+    int reqcolors;
+    unsigned char *bgcolor;
+    int bgcolor_source;
+    int loop_control;
+    int start_frame_no_set;
+    int start_frame_no_override;
+    int enable_cms;
+    int bmp_info40_mode;
+    sixel_load_image_function fn_load;
+    void *context;
     SIXELSTATUS status;
     unsigned char *pixels;
     sixel_frame_t *frame;
@@ -5752,11 +5753,27 @@ load_with_builtin(
     int apply_start_frame;
     int pnm_pixelformat;
 
+    if (args == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    pchunk = args->pchunk;
+    fstatic = args->fstatic;
+    fuse_palette = args->fuse_palette;
+    reqcolors = args->reqcolors;
+    bgcolor = args->bgcolor;
+    bgcolor_source = args->bgcolor_source;
+    loop_control = args->loop_control;
+    start_frame_no_set = args->start_frame_no_set;
+    start_frame_no_override = args->start_frame_no_override;
+    enable_cms = args->enable_cms;
+    bmp_info40_mode = args->bmp_info40_mode;
+    fn_load = args->fn_load;
+    context = args->context;
     status = SIXEL_BAD_INPUT;
     pixels = NULL;
     frame = NULL;
-    stb_context = (stbi__context){ 0 };
-    ri = (stbi__result_info){ 0 };
+    memset(&stb_context, 0, sizeof(stb_context));
+    memset(&ri, 0, sizeof(ri));
     chunk_size = 0;
     is_png = 0;
     is_jpeg = 0;

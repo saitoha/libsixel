@@ -27,6 +27,7 @@
 #endif
 
 #include "loader-component.h"
+#include "loader-builtin.h"
 
 void
 sixel_loader_component_ref(sixel_loader_component_t *component)
@@ -86,6 +87,40 @@ sixel_loader_component_get_name(sixel_loader_component_t const *component)
     }
 
     return component->vtbl->name(component);
+}
+
+SIXELSTATUS
+load_with_builtin(
+    sixel_chunk_t const *pchunk,
+    int fstatic,
+    int fuse_palette,
+    int reqcolors,
+    unsigned char *bgcolor,
+    int bgcolor_source,
+    int loop_control,
+    int start_frame_no_set,
+    int start_frame_no_override,
+    int enable_cms,
+    int bmp_info40_mode,
+    sixel_load_image_function fn_load,
+    void *context)
+{
+    sixel_builtin_load_with_builtin_args_t args;
+
+    args.pchunk = pchunk;
+    args.fstatic = fstatic;
+    args.fuse_palette = fuse_palette;
+    args.reqcolors = reqcolors;
+    args.bgcolor = bgcolor;
+    args.bgcolor_source = bgcolor_source;
+    args.loop_control = loop_control;
+    args.start_frame_no_set = start_frame_no_set;
+    args.start_frame_no_override = start_frame_no_override;
+    args.enable_cms = enable_cms;
+    args.bmp_info40_mode = bmp_info40_mode;
+    args.fn_load = fn_load;
+    args.context = context;
+    return sixel_builtin_load_with_builtin_impl(&args);
 }
 
 /* emacs Local Variables:      */
