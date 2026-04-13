@@ -388,6 +388,11 @@ Key points used by this roadmap:
     PASS traces `1507..1509`: clip-weighted deferred outer-effect pass,
     deferred bevel-highlight apply, and non-regression for
     `clbl=1` deferred interior suppression plus deferred stroke contracts.
+  - Deferred effect coverage now has a distance-map path for
+    `clbl=1` clipped-group composition. Outer (`OrGl`/bevel highlight/`DrSh`)
+    and interior (`IrGl`/`ChFX`/bevel shadow) deferred passes use the same
+    distance-map coverage helper, and PASS representatives `1514..1516`
+    lock distance-map activation plus deferred-stroke non-regression traces.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:
