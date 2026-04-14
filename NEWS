@@ -5,6 +5,59 @@
   for a comprehensive view of security-fix progress, see the page below
   https://github.com/saitoha/libsixel/discussions/203
 
+* Security fix for CVE-2026-33023 (GHSA-hr25-g2j6-qjw6),
+  use-after-free in load_with_gdkpixbuf().
+  Thanks to @nicoppida
+
+* Security fix for CVE-2026-33018 (GHSA-w46f-jr9f-rgvp),
+  use-after-free in load_gif().
+  Thanks to @nicoppida
+
+* Security fix for CVE-2026-33019 (GHSA-c854-ffg9-g72c), integer
+  overflow that leads to out-of-bounds read in img2sixel.
+  Thanks to @nicoppida
+
+* Security fix for CVE-2026-33020 (GHSA-2xgm-4x47-2x2p), integer
+  overflow in write_png_to_file() that leads to heap overflow.
+  Thanks to @nicoppida
+
+* Security fix for CVE-2026-33021 (GHSA-j6m5-2cc7-3whc),
+  use-after-free in sixel_encoder_encode_bytes().
+  Thanks to @nicoppida
+
+* Security fix for #222, out-of-bounds memory access in packed pixel
+  format copy path.
+  Thanks to @xyzzy42
+
+* Security fix for #220, GIF transparent index out-of-bounds access and
+  compositing with per-frame palettes.
+  Thanks to @ShangzhiXu
+
+* Security fix for #220, integer overflow in SIXEL DCS parameter
+  handling path.
+  Thanks to @ShangzhiXu
+
+* Security fix for #220, integer overflows in resize target arithmetic,
+  encoder item5 path, and quant complexion path.
+  Thanks to @ShangzhiXu
+
+* Security fix for #220, invalid libpng cleanup path on malformed PNG
+  input.
+  Thanks to @ShangzhiXu
+
+* fix memory leak issue in GIF loader callback path (#207)
+  Thanks to @optionGo
+
+* add regression tests for issue #220
+  Thanks to @ShangzhiXu
+
+* python: fix bugs in sixel_encoder_encode_bytes
+  Thanks to @xyzzy42
+
+* build: make distcheck pass by shipping required fixtures
+
+* build: align maintainer mode default with develop
+
 * fix invalid pointer access in encoder.c (#193, #195)
   Thanks to @momo-trip, @akinomyoga
 
