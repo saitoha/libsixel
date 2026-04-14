@@ -657,22 +657,17 @@ def sixel_encoder_encode_bytes(encoder, buf, width, height, pixelformat, palette
         raise ValueError("invalid pixelformat value : %d" % pixelformat)
 
     if len(buf) < width * height * depth:
-        raise ValueError("buf.len is too short : %d < %d * %d * %d" % (buf.len, width, height, depth))
-
-    if not hasattr(buf, "readonly") or buf.readonly:
-        cbuf = c_void_p.from_buffer_copy(buf)
-    else:
-        cbuf = c_void_p.from_buffer(buf)
+        raise ValueError("buf.len is too short : %d < %d * %d * %d" % (len(buf), width, height, depth))
 
     if palette:
         cpalettelen = len(palette)
         cpalette = (c_byte * cpalettelen)(*palette)
     else:
-        cpalettelen = None
+        cpalettelen = 0
         cpalette = None
 
     _sixel.sixel_encoder_encode_bytes.restype = c_int
-    _sixel.sixel_encoder_encode.argtypes = [c_void_p, c_void_p, c_int, c_int, c_int, c_void_p, c_int]
+    _sixel.sixel_encoder_encode_bytes.argtypes = [c_void_p, c_void_p, c_int, c_int, c_int, c_void_p, c_int]
 
     status = _sixel.sixel_encoder_encode_bytes(encoder, buf, width, height, pixelformat, cpalette, cpalettelen)
     if SIXEL_FAILED(status):
