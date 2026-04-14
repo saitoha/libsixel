@@ -14,6 +14,7 @@ AC_SUBST([PACKAGE_DESCRIPTION],
 AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
+AM_MAINTAINER_MODE([disable])
 LT_INIT
 AC_CONFIG_SRCDIR([src/fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
