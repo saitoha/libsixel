@@ -129,6 +129,51 @@ arg_strdup(
 }
 
 
+/* Compute raw byte size of one frame by pixelformat and geometry.
+   Packed formats (1/2/4bpp) require ceil(width * bpp / 8) bytes per row. */
+static size_t
+sixel_encoder_compute_frame_size(
+    int pixelformat,
+    int width,
+    int height)
+{
+    size_t size = 0;
+    int bpp;
+    int depth;
+
+    if (width <= 0 || height <= 0) {
+        goto end;
+    }
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_G1:
+        bpp = 1;
+        break;
+    case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_G2:
+        bpp = 2;
+        break;
+    case SIXEL_PIXELFORMAT_PAL4:
+    case SIXEL_PIXELFORMAT_G4:
+        bpp = 4;
+        break;
+    default:
+        depth = sixel_helper_compute_depth(pixelformat);
+        if (depth <= 0) {
+            goto end;
+        }
+        size = (size_t)width * (size_t)height * (size_t)depth;
+        goto end;
+    }
+
+    size = (((size_t)width * (size_t)bpp + 7UL) / 8UL) * (size_t)height;
+
+end:
+    return size;
+}
+
+
 /* An clone function of XColorSpec() of xlib */
 static SIXELSTATUS
 sixel_parse_x_colorspec(
@@ -856,7 +901,21 @@ sixel_encoder_output_without_macro(
 
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
-    size = (size_t)(width * height * depth);
+    size = sixel_encoder_compute_frame_size(pixelformat, width, height);
+    if (size == 0) {
+        status = SIXEL_LOGIC_ERROR;
+        nwrite = sprintf(message,
+                         "sixel_encoder_output_without_macro: "
+                         "failed to compute frame size"
+                         " (%08x, %d, %d).",
+                         pixelformat,
+                         width,
+                         height);
+        if (nwrite > 0) {
+            sixel_helper_set_additional_message(message);
+        }
+        goto end;
+    }
     p = (unsigned char *)sixel_allocator_malloc(encoder->allocator, size);
     if (p == NULL) {
         sixel_helper_set_additional_message(
@@ -887,7 +946,7 @@ sixel_encoder_output_without_macro(
 #endif
 
     pixbuf = sixel_frame_get_pixels(frame);
-    memcpy(p, pixbuf, (size_t)(width * height * depth));
+    memcpy(p, pixbuf, size);
 
     if (encoder->cancel_flag && *encoder->cancel_flag) {
         goto end;
@@ -2086,6 +2145,49 @@ error:
 }
 
 
+static int
+test6(void)
+{
+    int nret = EXIT_FAILURE;
+    size_t size;
+
+    size = sixel_encoder_compute_frame_size(SIXEL_PIXELFORMAT_G1, 9, 2);
+    if (size != 4) {
+        goto error;
+    }
+
+    size = sixel_encoder_compute_frame_size(SIXEL_PIXELFORMAT_G2, 5, 3);
+    if (size != 6) {
+        goto error;
+    }
+
+    size = sixel_encoder_compute_frame_size(SIXEL_PIXELFORMAT_G4, 3, 4);
+    if (size != 8) {
+        goto error;
+    }
+
+    size = sixel_encoder_compute_frame_size(SIXEL_PIXELFORMAT_PAL1, 17, 1);
+    if (size != 3) {
+        goto error;
+    }
+
+    size = sixel_encoder_compute_frame_size(SIXEL_PIXELFORMAT_RGB888, 2, 3);
+    if (size != 18) {
+        goto error;
+    }
+
+    size = sixel_encoder_compute_frame_size(SIXEL_PIXELFORMAT_RGB888, 0, 3);
+    if (size != 0) {
+        goto error;
+    }
+
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
 SIXELAPI int
 sixel_encoder_tests_main(void)
 {
@@ -2098,7 +2200,8 @@ sixel_encoder_tests_main(void)
         test2,
         test3,
         test4,
-        test5
+        test5,
+        test6
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
