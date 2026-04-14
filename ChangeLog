@@ -1,3 +1,282 @@
+2026-04-15  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.in, aclocal.m4, configure, configure.ac,
+	converters/Makefile.in, include/Makefile.in, python/Makefile.in,
+	src/Makefile.in, tools/Makefile.in: build: align maintainer mode
+	default with develop
+
+2026-04-15  Hayaki Saito <saitoha@me.com>
+
+	* configure, configure.ac: build: bump version to 1.8.7-r1
+
+2026-03-09  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: encoder: require palette copy only for indexed
+	input
+
+2026-03-09  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: encoder: initialize frame from owned input copies
+
+2026-03-09  Hayaki Saito <saitoha@me.com>
+
+	* src/frame.c: frame: harden palette-to-rgb size handling
+
+2026-03-10  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: encoder: normalize crop clipping bounds
+
+2026-03-08  Hayaki Saito <saitoha@me.com>
+
+	* src/fromgif.c: gif: stabilize callback frame lifecycle and add
+	regression test
+
+2026-03-10  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: loader: respect frame refcount in gdk-pixbuf cleanup
+
+2026-04-14  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in: build: make distcheck pass by shipping
+	required fixtures
+
+2026-03-07  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, converters/Makefile.am,
+	converters/Makefile.in, src/quant.c: fix: guard quant complexion
+	overflow path #220
+
+2026-03-07  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, converters/Makefile.am,
+	converters/Makefile.in, src/encoder.c: fix: backport item5 integer
+	overflow mitigation #220
+
+2026-03-07  Hayaki Saito <saitoha@me.com>
+
+	* src/loader.c: fix: avoid libpng cleanup bad-free on invalid png
+	#220
+
+2026-03-07  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, converters/Makefile.am,
+	converters/Makefile.in: test: add encoder overflow regression for
+	issue-220 #220
+
+2026-03-07  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: fix: guard resize target arithmetic overflow #220
+
+2026-03-07  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, converters/Makefile.am,
+	converters/Makefile.in, src/fromsixel.c: fix: handle SIXEL DCS
+	parameter overflow #220
+
+2026-03-07  Hayaki Saito <saitoha@me.com>
+
+	* src/fromgif.c: issue #220: backport from develop, fix builtin gif
+	compositing with per-frame palettes (equivalent to 5dac2cbd1)
+
+2025-09-10  Hayaki Saito <saitoha@me.com>
+
+	* src/fromgif.c: gif: honor GCE disposal and enforce frame limits
+	(backport from develop, for #220) - apply previous frame's disposal method and reset GCE state - skip transparent pixels and preserve background when decoding - reject zero-sized or oversized frames using SIXEL_* limits - propagate errors from recursive gif_out_code calls (cherry picked from commit 205e3049730b9292ddef918fa73d29eaafbb68df)
+
+2025-09-04  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, src/fromgif.c,
+	tests/issue/207/contributor.txt: fix memory leak issue #207,
+	reported by @optionGo
+
+2026-04-14  Hayaki Saito <saitoha@me.com>
+
+	* : Merge remote-tracking branch 'remotes/origin/pr/223' into
+	release-1.8.7-r1
+
+2026-03-07  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in, converters/Makefile.am,
+	converters/Makefile.in, src/fromgif.c: Fix #220 GIF transparent
+	index OOB and add regression test
+
+2026-04-13  Trent Piepho <tpiepho@gmail.com>
+
+	* python/libsixel/__init__.py: Fix bugs in python
+	sixel_encoder_encode_bytes Data length incorrect error message uses buf.len, but this does not
+	exist, correct function is len(buf), as used on previous line.  Argument type check via ctype was setting args to the wrong function
+	from libsixel.  The palette length when no palette is specified was passed as None,
+	it should be 0.  This error is detected after argument type checking
+	is fixed.  cbuf is created from buf argument, but it's not done correctly.
+	What it does is make a pointer the address made from the first 32/64
+	bits of data in the buffer.  I.e., it makes a pointing using the
+	image pixels as if they were a pointer.  That makes a random pointer
+	to nowhere.  But cbuf is never used, so this code can just be deleted.  ctypes
+	will convert a bytes() object or various other things into the
+	correct type without help.
+
+2026-03-07  Hayaki Saito <saitoha@me.com>
+
+	* SECURITY.md: security: update security policy
+
+2026-03-07  Hayaki Saito <saitoha@me.com>
+
+	* SECURITY.md: security.md: add the section of reporting guidelines
+
+2026-03-07  Hayaki Saito <saitoha@me.com>
+
+	* SECURITY.md: security: enhance security policy with reporting
+	guidelines Expanded the security policy to include details on reporting
+	vulnerabilities, issues that should be reported publicly, and the
+	disclosure policy. Added sections on scope and supported versions
+	for clarity.
+
+2025-12-09  Hayaki Saito <saitoha@me.com>
+
+	* : Merge pull request #216 from schrmh/master Fix link to schrmh/pdfgrepSIXEL
+
+2025-10-31  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/nightly.yml: nightly: sync nightly.yml with
+	develop
+
+2025-09-28  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/nightly.yml: ci: copy nightly.yml from develop
+	to master
+
+2025-08-31  Hayaki Saito <saitoha@me.com>
+
+	* NEWS, README.md, converters/img2sixel.1: docs: update NEWS and
+	contributors list
+
+2025-08-16  Hayaki Saito <saitoha@me.com>
+
+	* package.json: Update package.json
+
+2025-08-16  Hayaki Saito <saitoha@me.com>
+
+	* Makefile.am, Makefile.in: fix package filename in vexe build
+
+2025-08-14  Hayaki Saito <saitoha@me.com>
+
+	* ChangeLog, Makefile.in, configure, configure.ac: Bump version to
+	v1.8.7 Since the script previously used to generate the ChangeLog was lost,
+	the ChangeLog was regenerated using git2cl.
+	https://github.com/lobaro/git2cl
+
+2025-08-31  Hayaki Saito <saitoha@me.com>
+
+	* : images: add map64.six for custom palette mapping (refs #169)
+
+2025-08-31  Hayaki Saito <saitoha@me.com>
+
+	* : Merge pull request #204 from max-amb/patch-1 Update NixOS link for libsixel in README
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/nightly.yml: ci: fix
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/nightly.yml: ci: more tweaks
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/nightly.yml: ci: more tweaks
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/nightly.yml: ci: tweaks
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* : commit 767bd9d94ccde9de9025b0eb092e9e3e46ff3ae5 Author: Hayaki
+	Saito <saitoha@me.com> Date:   Sat Aug 30 03:54:02 2025 +0900
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/ci.yml, .github/workflows/{build.yml =>
+	nightly.yml}: ci: create separate workflow files for nightly builds
+	(master/develop) and for ci across all branches
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml, converters/Makefile.in: ci tweak
+
+2025-08-30  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml, converters/Makefile.am: treat all
+	files under images/ as binary to prevent test failures from
+	line-ending conversion
+
+2025-08-29  Hayaki Saito <saitoha@me.com>
+
+	* src/decoder.c, src/encoder.c, src/tty.c: remove redundant includes
+
+2025-08-29  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml, config.h.in, configure,
+	configure.ac, ltmain.sh, m4/libtool.m4, src/frompnm.c: configure:
+	reliably detect nanosleep when provided by non-crt libraries (e.g.,
+	libwinpthread)
+
+2025-08-29  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml, converters/Makefile.am,
+	converters/Makefile.in: ci/windows: temporarily skip selected tests
+	to diagnose GitHub Actions-specific issues
+
+2025-08-29  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: build fix: check HAVE_NANOSLEEP macro
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml: build.yml: fix for windows, add cc:p
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml: Add ./configure to
+	--disable-dependency-tracking
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml: build.yml: install base-devel
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml: build fix for windows: add MAKE=gmake
+	to ./configure
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* .github/workflows/build.yml: build.yml: build with minimal
+	dependencies
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* converters/img2sixel.c: compat: prefer POSIX headers <unistd.h>
+	and <signal.h>; fall back to <sys/unistd.h> and <sys/signal.h> if unavailable
+
+2025-08-28  Hayaki Saito <saitoha@me.com>
+
+	* src/encoder.c: fix memory leak (#164) reported by @muetzenmann;
+	patch by @j4james
+
+2025-08-27  Hayaki Saito <saitoha@me.com>
+
+	* converters/Makefile.am, converters/Makefile.in, src/encoder.c: 
+	cli: fix scaling when one of -w/-h is a percentage and the other is
+	unset or "auto" this bug is introduced in v1.6.1
+
+2025-08-25  Kreijstal <rainb@tfwno.gf>
+
+	* .github/workflows/build.yml, autogen.sh, src/encoder.c: 
+	Feature/update ci for windows (#5) * Update CI to support Windows and create nightly releases This commit updates the GitHub Actions workflow to: - Add Windows builds for MINGW64, UCRT64, and CLANG64 using MSYS2.  - Continue building on Ubuntu and macOS.  - Use autotools for all builds.  - Create a nightly pre-release on every push to any branch.  - The workflow has been streamlined to avoid duplication of steps
+	for different operating systems.  * Update CI to support Windows and create nightly releases This commit updates the GitHub Actions workflow to: - Add Windows builds for MINGW64, UCRT64, and CLANG64 using MSYS2.  - Continue building on Ubuntu and macOS.  - Use autotools for all builds.  - Create a nightly pre-release on every push to any branch.  * Small Change * Refactor MSYS2 package installation in build.yml Updated the installation section to use a single install command for
+	MSYS2 packages.  ---------
+
 2025-08-12  Hayaki Saito <saitoha@me.com>
 
 	* : Merge pull request #140 from dthadi3/ppc64le Travis-ci: added support for ppc64le
@@ -8,8 +287,8 @@
 
 2025-08-12  Hayaki Saito <saitoha@me.com>
 
-	* : commit d0367de1629d47047ddea36b2b8797b99ead2b07 Merge: 7bc956f
-	07ab235 Author: Hayaki Saito <saitoha@me.com> Date:   Tue Aug 12
+	* : commit d0367de1629d47047ddea36b2b8797b99ead2b07 Merge: 7bc956f08
+	07ab2354d Author: Hayaki Saito <saitoha@me.com> Date:   Tue Aug 12
 	18:16:38 2025 +0900
 
 2025-08-12  Hayaki Saito <saitoha@me.com>
@@ -254,7 +533,7 @@
 	m4/libtool.m4, m4/ltoptions.m4, m4/ltversion.m4,
 	python/Makefile.in, src/Makefile.in, tools/Makefile.in: 
 	configure.ac: Remove override of $LIBJPEG_CFLAGS and $LIBJPEG_LIBS
-	set by PKG_CHECK_MODULES() Lines 559â€60 were unintentionally overwriting the values obtained
+	set by PKG_CHECK_MODULES() Lines 559â€“560 were unintentionally overwriting the values obtained
 	from PKG_CHECK_MODULES(), so this redundant assignment has been
 	removed.
 
@@ -294,8 +573,8 @@
 
 2020-01-14  Hayaki Saito <saitoha@me.com>
 
-	* : commit 51f44ded1138a7a061924a46ea51ea47e2e25eab Merge: 4a15d3c
-	3637855 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jan 13
+	* : commit 51f44ded1138a7a061924a46ea51ea47e2e25eab Merge: 4a15d3cd5
+	36378554e Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jan 13
 	21:09:03 2020 +0900
 
 2020-01-13  Hayaki Saito <saitoha@me.com>
@@ -304,8 +583,8 @@
 
 2020-01-13  Hayaki Saito <saitoha@me.com>
 
-	* : commit ee77c2f979dbccc86651a482e748fe7bf80bc89c Merge: 9c174af
-	6ee0001 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jan 13
+	* : commit ee77c2f979dbccc86651a482e748fe7bf80bc89c Merge: 9c174af3a
+	6ee0001a5 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jan 13
 	18:33:04 2020 +0900
 
 2020-01-13  Hayaki Saito <saitoha@me.com>
@@ -326,14 +605,14 @@
 
 2020-01-13  Hayaki Saito <saitoha@me.com>
 
-	* : commit 9c174af3a05df6e091d8bb48227c704843ec28ca Merge: 95b7cfd
-	cb03c94 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jan 13
+	* : commit 9c174af3a05df6e091d8bb48227c704843ec28ca Merge: 95b7cfd70
+	cb03c9403 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jan 13
 	16:06:54 2020 +0900
 
 2020-01-13  Hayaki Saito <saitoha@me.com>
 
-	* : commit d0d63860f951f920c2bddba2e223d48d0b6a9c65 Merge: 97d9fde
-	3c04aee Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jan 13
+	* : commit d0d63860f951f920c2bddba2e223d48d0b6a9c65 Merge: 97d9fde59
+	3c04aeef7 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jan 13
 	16:06:31 2020 +0900
 
 2020-01-12  Hayaki Saito <saitoha@me.com>
@@ -360,8 +639,8 @@
 
 2020-01-03  Hayaki Saito <saitoha@me.com>
 
-	* : commit 4a15d3cd552159470a275ba9002f243bb5495d84 Merge: 0355e54
-	6260951 Author: Hayaki Saito <saitoha@me.com> Date:   Fri Jan 3
+	* : commit 4a15d3cd552159470a275ba9002f243bb5495d84 Merge: 0355e54df
+	626095142 Author: Hayaki Saito <saitoha@me.com> Date:   Fri Jan 3
 	09:46:09 2020 +0900
 
 2020-01-03  Hayaki Saito <saitoha@me.com>
@@ -379,20 +658,20 @@
 
 2020-01-02  Hayaki Saito <saitoha@me.com>
 
-	* : commit 3af0afc7744a2afc8aaf68a9f2817b94cbed0a70 Merge: d3be559
-	bb65fce Author: Hayaki Saito <saitoha@me.com> Date:   Thu Jan 2
+	* : commit 3af0afc7744a2afc8aaf68a9f2817b94cbed0a70 Merge: d3be559a1
+	bb65fce3b Author: Hayaki Saito <saitoha@me.com> Date:   Thu Jan 2
 	00:54:40 2020 +0900
 
 2020-01-02  Hayaki Saito <saitoha@me.com>
 
-	* : commit 0af395e5ee7600e9a7e6fc940688a9e95a54f73b Merge: 5543354
-	854008f Author: Hayaki Saito <saitoha@me.com> Date:   Wed Jan 1
+	* : commit 0af395e5ee7600e9a7e6fc940688a9e95a54f73b Merge: 554335482
+	854008f4e Author: Hayaki Saito <saitoha@me.com> Date:   Wed Jan 1
 	08:41:51 2020 +0900
 
 2020-01-01  Hayaki Saito <saitoha@me.com>
 
-	* : commit a3be1de032b1e68dd8a82a83c52bc59a2a83801e Merge: 691e92b
-	d087730 Author: Hayaki Saito <saitoha@me.com> Date:   Wed Jan 1
+	* : commit a3be1de032b1e68dd8a82a83c52bc59a2a83801e Merge: 691e92bab
+	d08773010 Author: Hayaki Saito <saitoha@me.com> Date:   Wed Jan 1
 	08:40:27 2020 +0900
 
 2020-01-01  Hayaki Saito <saitoha@me.com>
@@ -440,8 +719,8 @@
 
 2019-12-29  Hayaki Saito <saitoha@me.com>
 
-	* : commit 6e7c634e9a8a988e1e047750cdb1eef7ff4540d6 Merge: 1c258aa
-	17518aa Author: Hayaki Saito <saitoha@me.com> Date:   Sat Dec 28
+	* : commit 6e7c634e9a8a988e1e047750cdb1eef7ff4540d6 Merge: 1c258aaa7
+	17518aa8a Author: Hayaki Saito <saitoha@me.com> Date:   Sat Dec 28
 	19:52:04 2019 +0900
 
 2019-12-28  Hayaki Saito <saitoha@me.com>
@@ -459,8 +738,8 @@
 
 2019-12-27  Hayaki Saito <saitoha@me.com>
 
-	* : commit c7424099f114e8f231aba9eea7e90695fb9890dd Merge: 020083b
-	0db802c Author: Hayaki Saito <saitoha@me.com> Date:   Fri Dec 27
+	* : commit c7424099f114e8f231aba9eea7e90695fb9890dd Merge: 020083b04
+	0db802cea Author: Hayaki Saito <saitoha@me.com> Date:   Fri Dec 27
 	23:24:47 2019 +0900
 
 2019-12-27  Hayaki Saito <saitoha@me.com>
@@ -507,14 +786,14 @@
 
 2019-12-23  Hayaki Saito <saitoha@me.com>
 
-	* : commit 2a319cec8c83041b62e8e7bc553af8a5531c39d1 Merge: 1a53713
-	c372a91 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Dec 23
+	* : commit 2a319cec8c83041b62e8e7bc553af8a5531c39d1 Merge: 1a53713e2
+	c372a91e7 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Dec 23
 	14:59:35 2019 +0900
 
 2019-12-23  Hayaki Saito <saitoha@me.com>
 
-	* : commit 9af7b843f6b1730e8c262787e297cdaf92e671bf Merge: 402e08d
-	f04992f Author: Hayaki Saito <saitoha@me.com> Date:   Mon Dec 23
+	* : commit 9af7b843f6b1730e8c262787e297cdaf92e671bf Merge: 402e08d25
+	f04992fc1 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Dec 23
 	14:57:30 2019 +0900
 
 2019-12-23  Hayaki Saito <saitoha@me.com>
@@ -559,8 +838,8 @@
 
 2019-12-21  Hayaki Saito <saitoha@me.com>
 
-	* : commit b0397adf6ad6d5482f5043d12fc9a6ab49cb2d1c Merge: dce8de9
-	b9a4175 Author: Hayaki Saito <saitoha@me.com> Date:   Sat Dec 21
+	* : commit b0397adf6ad6d5482f5043d12fc9a6ab49cb2d1c Merge: dce8de9d9
+	b9a4175c8 Author: Hayaki Saito <saitoha@me.com> Date:   Sat Dec 21
 	06:13:18 2019 +0900
 
 2019-12-20  Hayaki Saito <saitoha@me.com>
@@ -577,14 +856,14 @@
 
 2019-12-20  Hayaki Saito <saitoha@me.com>
 
-	* : commit 8f48e2e317af5407e085a0ddda85540a1904dae9 Merge: 7c86e77
-	686d234 Author: Hayaki Saito <saitoha@me.com> Date:   Thu Dec 19
+	* : commit 8f48e2e317af5407e085a0ddda85540a1904dae9 Merge: 7c86e7704
+	686d234ae Author: Hayaki Saito <saitoha@me.com> Date:   Thu Dec 19
 	07:12:46 2019 +0900
 
 2019-12-19  Hayaki Saito <saitoha@me.com>
 
-	* : commit b4151b73a0d70012196ea85ac0037bfc1f38874c Merge: d2ff593
-	49d41b1 Author: Hayaki Saito <saitoha@me.com> Date:   Thu Dec 19
+	* : commit b4151b73a0d70012196ea85ac0037bfc1f38874c Merge: d2ff59371
+	49d41b114 Author: Hayaki Saito <saitoha@me.com> Date:   Thu Dec 19
 	05:20:00 2019 +0900
 
 2019-12-19  Hayaki Saito <saitoha@me.com>
@@ -597,8 +876,8 @@
 
 2019-12-19  Hayaki Saito <saitoha@me.com>
 
-	* : commit dce8de9d97be1b5b16c36c298ea628bd458d2a9f Merge: 9e88a7c
-	6fb5579 Author: Hayaki Saito <saitoha@me.com> Date:   Thu Dec 19
+	* : commit dce8de9d97be1b5b16c36c298ea628bd458d2a9f Merge: 9e88a7c9a
+	6fb557910 Author: Hayaki Saito <saitoha@me.com> Date:   Thu Dec 19
 	02:49:19 2019 +0900
 
 2019-12-19  Hayaki Saito <saitoha@me.com>
@@ -617,14 +896,14 @@
 
 2019-12-18  Hayaki Saito <saitoha@me.com>
 
-	* : commit 9e88a7c9add116c73abb5d1a4ffdd236c1e7af1f Merge: 5ab5f35
-	7833572 Author: Hayaki Saito <saitoha@me.com> Date:   Wed Dec 18
+	* : commit 9e88a7c9add116c73abb5d1a4ffdd236c1e7af1f Merge: 5ab5f35e9
+	783357268 Author: Hayaki Saito <saitoha@me.com> Date:   Wed Dec 18
 	22:57:50 2019 +0900
 
 2019-12-18  Hayaki Saito <saitoha@me.com>
 
-	* : commit 1f1c4909f2dcd19539299f88e9f59dfbc6f3cc37 Merge: 33f00d5
-	a516125 Author: Hayaki Saito <saitoha@me.com> Date:   Wed Dec 18
+	* : commit 1f1c4909f2dcd19539299f88e9f59dfbc6f3cc37 Merge: 33f00d542
+	a51612510 Author: Hayaki Saito <saitoha@me.com> Date:   Wed Dec 18
 	22:57:02 2019 +0900
 
 2019-12-18  Hayaki Saito <saitoha@me.com>
@@ -712,8 +991,8 @@
 
 2019-12-16  Hayaki Saito <saitoha@me.com>
 
-	* : commit db0424603a7b9eecc5e575286bb54ac9dd3fc439 Merge: f5c07c7
-	cb373ab Author: Hayaki Saito <saitoha@me.com> Date:   Mon Dec 16
+	* : commit db0424603a7b9eecc5e575286bb54ac9dd3fc439 Merge: f5c07c726
+	cb373ab66 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Dec 16
 	09:17:30 2019 +0900
 
 2019-12-16  Hayaki Saito <saitoha@me.com>
@@ -743,8 +1022,8 @@
 
 2019-12-15  Hayaki Saito <saitoha@me.com>
 
-	* : commit 7ef20529252395227002d5a64ee0784c1fd1486c Merge: 70ed7ef
-	291c259 Author: Hayaki Saito <saitoha@me.com> Date:   Sun Dec 15
+	* : commit 7ef20529252395227002d5a64ee0784c1fd1486c Merge: 70ed7ef09
+	291c259a3 Author: Hayaki Saito <saitoha@me.com> Date:   Sun Dec 15
 	17:17:45 2019 +0900
 
 2019-12-15  Hayaki Saito <saitoha@me.com>
@@ -756,8 +1035,8 @@
 
 2019-12-15  Hayaki Saito <saitoha@me.com>
 
-	* : commit 9d9d1863f5c96f48d679aa666e915592c5b378d0 Merge: 2df6437
-	d2ff593 Author: Hayaki Saito <saitoha@me.com> Date:   Sun Dec 15
+	* : commit 9d9d1863f5c96f48d679aa666e915592c5b378d0 Merge: 2df64373e
+	d2ff59371 Author: Hayaki Saito <saitoha@me.com> Date:   Sun Dec 15
 	06:00:53 2019 +0900
 
 2019-12-15  Hayaki Saito <saitoha@me.com>
@@ -984,8 +1263,8 @@
 
 2019-12-13  Hayaki Saito <saitoha@me.com>
 
-	* : commit 15b372f55559f2e82889d878de6292c806cce1e8 Merge: eab5697
-	2df6437 Author: Hayaki Saito <saitoha@me.com> Date:   Fri Dec 13
+	* : commit 15b372f55559f2e82889d878de6292c806cce1e8 Merge: eab56971b
+	2df64373e Author: Hayaki Saito <saitoha@me.com> Date:   Fri Dec 13
 	01:49:01 2019 +0900
 
 2019-12-13  Hayaki Saito <saitoha@me.com>
@@ -1101,8 +1380,8 @@
 
 2018-07-23  Hayaki Saito <saitoha@me.com>
 
-	* : commit ff8aa3406959d26f1bff011ea1cfca12c377c581 Merge: eece94c
-	eae51e5 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jul 23
+	* : commit ff8aa3406959d26f1bff011ea1cfca12c377c581 Merge: eece94cc1
+	eae51e59b Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jul 23
 	02:20:59 2018 +0900
 
 2018-07-23  Hayaki Saito <saitoha@me.com>
@@ -1145,14 +1424,14 @@
 
 2018-07-23  Hayaki Saito <saitoha@me.com>
 
-	* : commit 12ea581cb90fb5857dad44916599bde36fe7f303 Merge: b898b50
-	438188c Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jul 23
+	* : commit 12ea581cb90fb5857dad44916599bde36fe7f303 Merge: b898b50ef
+	438188c1f Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jul 23
 	00:07:06 2018 +0900
 
 2018-07-23  Hayaki Saito <saitoha@me.com>
 
-	* : commit e45684d2b72fd642e995ce765a1f2afee94448a6 Merge: 147782c
-	84ed0bc Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jul 23
+	* : commit e45684d2b72fd642e995ce765a1f2afee94448a6 Merge: 147782caa
+	84ed0bc35 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jul 23
 	00:06:26 2018 +0900
 
 2018-07-22  Hayaki Saito <saitoha@me.com>
@@ -1211,14 +1490,14 @@
 
 2018-06-18  Hayaki Saito <saitoha@me.com>
 
-	* : commit 99d26738a6f754812c4a2f89b5408d02ece6f744 Merge: 545382a
-	9c8ffa6 Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 17
+	* : commit 99d26738a6f754812c4a2f89b5408d02ece6f744 Merge: 545382ad6
+	9c8ffa622 Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 17
 	10:52:11 2018 +0900
 
 2018-06-17  Hayaki Saito <saitoha@me.com>
 
-	* : commit 3865e956619dd577f5e395cad43ab4e9dadad78a Merge: 4d23955
-	60ff8bc Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 17
+	* : commit 3865e956619dd577f5e395cad43ab4e9dadad78a Merge: 4d2395548
+	60ff8bcad Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 17
 	10:43:35 2018 +0900
 
 2018-06-17  Hayaki Saito <saitoha@me.com>
@@ -1238,8 +1517,8 @@
 
 2018-06-10  Hayaki Saito <saitoha@me.com>
 
-	* : commit 6fbb8b70b21c174c6396c10aca8928866b526fe9 Merge: 49251f2
-	147782c Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 10
+	* : commit 6fbb8b70b21c174c6396c10aca8928866b526fe9 Merge: 49251f2ba
+	147782caa Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 10
 	02:19:29 2018 +0900
 
 2018-06-10  Hayaki Saito <saitoha@me.com>
@@ -1249,8 +1528,8 @@
 
 2018-06-10  Hayaki Saito <saitoha@me.com>
 
-	* : commit a0e4cf3610f5325d356e298ef272a8548e9942b7 Merge: 1484290
-	600f122 Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 10
+	* : commit a0e4cf3610f5325d356e298ef272a8548e9942b7 Merge: 14842906c
+	600f122af Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 10
 	01:31:27 2018 +0900
 
 2018-06-10  Hayaki Saito <saitoha@me.com>
@@ -1269,8 +1548,8 @@
 
 2018-06-08  Hayaki Saito <saitoha@me.com>
 
-	* : commit 1082687e543c03f97dcf761a68f162422e507beb Merge: 974c521
-	49251f2 Author: Hayaki Saito <saitoha@me.com> Date:   Thu Jun 7
+	* : commit 1082687e543c03f97dcf761a68f162422e507beb Merge: 974c52192
+	49251f2ba Author: Hayaki Saito <saitoha@me.com> Date:   Thu Jun 7
 	21:23:33 2018 +0900
 
 2018-06-07  Hayaki Saito <saitoha@me.com>
@@ -1373,8 +1652,8 @@
 
 2018-05-27  Hayaki Saito <saitoha@me.com>
 
-	* : commit 36c62466a71041fae7f2a40870b8a2f772d7bfc5 Merge: 23c9bfb
-	7c0e680 Author: Hayaki Saito <saitoha@me.com> Date:   Sun May 27
+	* : commit 36c62466a71041fae7f2a40870b8a2f772d7bfc5 Merge: 23c9bfbbb
+	7c0e68029 Author: Hayaki Saito <saitoha@me.com> Date:   Sun May 27
 	17:01:30 2018 +0900
 
 2018-05-27  Hayaki Saito <saitoha@me.com>
@@ -1388,8 +1667,8 @@
 
 2018-05-27  Hayaki Saito <saitoha@me.com>
 
-	* : commit f92132f270aa164fb8034df444fc4f79c0fb8364 Merge: 7473c24
-	77fd81e Author: Hayaki Saito <saitoha@me.com> Date:   Sun May 27
+	* : commit f92132f270aa164fb8034df444fc4f79c0fb8364 Merge: 7473c24b1
+	77fd81ea0 Author: Hayaki Saito <saitoha@me.com> Date:   Sun May 27
 	03:08:48 2018 +0900
 
 2018-05-27  Hayaki Saito <saitoha@me.com>
@@ -1449,14 +1728,14 @@
 
 2018-05-26  Hayaki Saito <saitoha@me.com>
 
-	* : commit 60ff8bcad004320f9c3f70a7a4f10b9a9329cb2a Merge: 4c591b5
-	0fb35d2 Author: Hayaki Saito <saitoha@me.com> Date:   Sat May 26
+	* : commit 60ff8bcad004320f9c3f70a7a4f10b9a9329cb2a Merge: 4c591b5a4
+	0fb35d22e Author: Hayaki Saito <saitoha@me.com> Date:   Sat May 26
 	23:44:37 2018 +0900
 
 2018-05-26  Hayaki Saito <saitoha@me.com>
 
-	* : commit e9a9543e5f26c6e418e5ed67c2d3ff0000da53d3 Merge: 6a6012d
-	8071994 Author: Hayaki Saito <saitoha@me.com> Date:   Sat May 26
+	* : commit e9a9543e5f26c6e418e5ed67c2d3ff0000da53d3 Merge: 6a6012d92
+	807199473 Author: Hayaki Saito <saitoha@me.com> Date:   Sat May 26
 	23:08:43 2018 +0900
 
 2018-05-12  Hayaki Saito <saitoha@me.com>
@@ -1560,8 +1839,8 @@
 
 2017-05-03  Hayaki Saito <saitoha@me.com>
 
-	* : commit cfc9e5f72cb8f3bcf801482f0f450b271ace95b9 Merge: 6b78cee
-	c121c9b Author: Hayaki Saito <saitoha@me.com> Date:   Wed May 3
+	* : commit cfc9e5f72cb8f3bcf801482f0f450b271ace95b9 Merge: 6b78ceef4
+	c121c9b58 Author: Hayaki Saito <saitoha@me.com> Date:   Wed May 3
 	22:06:44 2017 +0900
 
 2017-05-03  Hayaki Saito <saitoha@me.com>
@@ -1571,8 +1850,8 @@
 
 2017-05-02  Hayaki Saito <saitoha@me.com>
 
-	* : commit 6102f2528d5b1a50707e30c7e7f7e90c390bc4a8 Merge: daf3ee3
-	42f3428 Author: Hayaki Saito <saitoha@me.com> Date:   Tue May 2
+	* : commit 6102f2528d5b1a50707e30c7e7f7e90c390bc4a8 Merge: daf3ee361
+	42f34283d Author: Hayaki Saito <saitoha@me.com> Date:   Tue May 2
 	23:41:04 2017 +0900
 
 2017-05-02  Hayaki Saito <saitoha@me.com>
@@ -1610,8 +1889,8 @@
 
 2017-05-02  Hayaki Saito <saitoha@me.com>
 
-	* : commit ce7142363e5304effdf5d1f7f238cd09719d2c22 Merge: c3696df
-	57c2c88 Author: Hayaki Saito <saitoha@me.com> Date:   Tue May 2
+	* : commit ce7142363e5304effdf5d1f7f238cd09719d2c22 Merge: c3696dfc4
+	57c2c88bf Author: Hayaki Saito <saitoha@me.com> Date:   Tue May 2
 	01:11:39 2017 +0900
 
 2017-05-02  Hayaki Saito <saitoha@me.com>
@@ -1689,8 +1968,8 @@
 
 2016-12-08  Hayaki Saito <saitoha@me.com>
 
-	* : commit ea50d62dbcef60369a9d60f0a03bcb4eed44d957 Merge: 91a8d51
-	21f5869 Author: Hayaki Saito <saitoha@me.com> Date:   Thu Dec 8
+	* : commit ea50d62dbcef60369a9d60f0a03bcb4eed44d957 Merge: 91a8d5170
+	21f5869b8 Author: Hayaki Saito <saitoha@me.com> Date:   Thu Dec 8
 	00:16:24 2016 +0900
 
 2016-12-08  Hayaki Saito <saitoha@me.com>
@@ -1700,8 +1979,8 @@
 
 2016-12-08  Hayaki Saito <saitoha@me.com>
 
-	* : commit 854a185db087288558e62c6938ec1104fcaf0b49 Merge: bc9e24b
-	6d38fd2 Author: Hayaki Saito <saitoha@me.com> Date:   Thu Dec 8
+	* : commit 854a185db087288558e62c6938ec1104fcaf0b49 Merge: bc9e24b65
+	6d38fd299 Author: Hayaki Saito <saitoha@me.com> Date:   Thu Dec 8
 	00:07:03 2016 +0900
 
 2016-12-07  Hayaki Saito <saitoha@me.com>
@@ -1714,7 +1993,7 @@
 	* .travis.yml: travis: change --prefix path to /usr/local in OSX
 	build
 
-2016-10-08  Øyvind Kolås <pippin@gimp.org>
+2016-10-08  Ã˜yvind KolÃ¥s <pippin@gimp.org>
 
 	* include/sixel.h.in, src/encoder.c, src/quant.c, src/tosixel.c: add
 	positional/ordered dithers a_dither and x_dither These are dithering methods arising from searching the paramater
@@ -1735,8 +2014,8 @@
 
 2016-10-03  Hayaki Saito <saitoha@me.com>
 
-	* : commit 6d38fd299bdaa8f78f781513dd1c737dd7a4ec19 Merge: 3ccbd48
-	6a47141 Author: Hayaki Saito <saitoha@me.com> Date:   Sat Oct 1
+	* : commit 6d38fd299bdaa8f78f781513dd1c737dd7a4ec19 Merge: 3ccbd487d
+	6a47141c6 Author: Hayaki Saito <saitoha@me.com> Date:   Sat Oct 1
 	02:41:21 2016 +0900
 
 2016-10-01  Hayaki Saito <saitoha@me.com>
@@ -1814,14 +2093,14 @@
 
 2016-09-14  Hayaki Saito <saitoha@me.com>
 
-	* : commit 0a8507532ae94a0a948dde6710341fff3ce4796b Merge: 08cddbd
-	3ccbd48 Author: Hayaki Saito <saitoha@me.com> Date:   Wed Sep 14
+	* : commit 0a8507532ae94a0a948dde6710341fff3ce4796b Merge: 08cddbd49
+	3ccbd487d Author: Hayaki Saito <saitoha@me.com> Date:   Wed Sep 14
 	04:22:23 2016 +0900
 
 2016-09-14  Hayaki Saito <saitoha@me.com>
 
-	* : commit bc9e24b65ab2ca7bca87def15fef0cce93a45355 Merge: 8438385
-	08cddbd Author: Hayaki Saito <saitoha@me.com> Date:   Wed Sep 14
+	* : commit bc9e24b65ab2ca7bca87def15fef0cce93a45355 Merge: 8438385f2
+	08cddbd49 Author: Hayaki Saito <saitoha@me.com> Date:   Wed Sep 14
 	04:11:58 2016 +0900
 
 2016-09-14  Hayaki Saito <saitoha@me.com>
@@ -1830,8 +2109,8 @@
 
 2016-09-14  Hayaki Saito <saitoha@me.com>
 
-	* : commit f4c3020bd41449a1e04829a0fc8e8ba89954963d Merge: 9e29483
-	6e82dc2 Author: Hayaki Saito <saitoha@me.com> Date:   Wed Sep 14
+	* : commit f4c3020bd41449a1e04829a0fc8e8ba89954963d Merge: 9e29483a0
+	6e82dc249 Author: Hayaki Saito <saitoha@me.com> Date:   Wed Sep 14
 	03:53:16 2016 +0900
 
 2016-09-14  Hayaki Saito <saitoha@me.com>
@@ -1863,8 +2142,8 @@
 
 2016-09-09  Hayaki Saito <saitoha@me.com>
 
-	* : commit f1e64869ea7c048983a33c43506ce7f29c53ce82 Merge: 94f93e3
-	96117c3 Author: Hayaki Saito <saitoha@me.com> Date:   Fri Sep 9
+	* : commit f1e64869ea7c048983a33c43506ce7f29c53ce82 Merge: 94f93e3d8
+	96117c3df Author: Hayaki Saito <saitoha@me.com> Date:   Fri Sep 9
 	00:00:30 2016 +0900
 
 2016-09-09  Hayaki Saito <saitoha@me.com>
@@ -1888,8 +2167,8 @@
 
 2016-08-31  Hayaki Saito <saitoha@me.com>
 
-	* : commit 741c71455a59be74f9f3b6e2746bc5f3824709f0 Merge: 61ccfb6
-	3a92916 Author: Hayaki Saito <saitoha@me.com> Date:   Tue Aug 23
+	* : commit 741c71455a59be74f9f3b6e2746bc5f3824709f0 Merge: 61ccfb602
+	3a92916e1 Author: Hayaki Saito <saitoha@me.com> Date:   Tue Aug 23
 	02:25:54 2016 +0900
 
 2016-08-23  Hayaki Saito <saitoha@me.com>
@@ -1898,8 +2177,8 @@
 
 2016-08-22  Hayaki Saito <saitoha@me.com>
 
-	* : commit 55bcaec5052059f167c867576e33e6582f649e36 Merge: ea9ab16
-	e218e61 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Aug 22
+	* : commit 55bcaec5052059f167c867576e33e6582f649e36 Merge: ea9ab16d5
+	e218e6107 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Aug 22
 	12:27:44 2016 +0900
 
 2016-08-22  Hayaki Saito <saitoha@me.com>
@@ -2003,8 +2282,8 @@
 
 2016-08-03  Hayaki Saito <saitoha@me.com>
 
-	* : commit 79a0de60e29149d7429e73374f6b225e62ee6a7c Merge: 17537f5
-	44b4a1b Author: Hayaki Saito <saitoha@me.com> Date:   Wed Aug 3
+	* : commit 79a0de60e29149d7429e73374f6b225e62ee6a7c Merge: 17537f55e
+	44b4a1bbc Author: Hayaki Saito <saitoha@me.com> Date:   Wed Aug 3
 	02:05:45 2016 +0900
 
 2016-08-03  Hayaki Saito <saitoha@me.com>
@@ -2013,8 +2292,8 @@
 
 2016-08-03  Hayaki Saito <saitoha@me.com>
 
-	* : commit 401cfdcc2cbdf3b40691a5c31dabc7a67eede89d Merge: c8fb432
-	61ccfb6 Author: Hayaki Saito <saitoha@me.com> Date:   Wed Aug 3
+	* : commit 401cfdcc2cbdf3b40691a5c31dabc7a67eede89d Merge: c8fb43251
+	61ccfb602 Author: Hayaki Saito <saitoha@me.com> Date:   Wed Aug 3
 	01:55:35 2016 +0900
 
 2016-08-03  Hayaki Saito <saitoha@me.com>
@@ -2038,14 +2317,14 @@
 
 2016-06-21  Hayaki Saito <saitoha@me.com>
 
-	* : commit 7808388321756604a3eeba026a43ff1e2744ab39 Merge: fc1449e
-	78f34be Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 19
+	* : commit 7808388321756604a3eeba026a43ff1e2744ab39 Merge: fc1449e2c
+	78f34beb7 Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 19
 	03:58:07 2016 +0900
 
 2016-06-18  Hayaki Saito <saitoha@me.com>
 
-	* : commit 78f34beb774c7b118156686f30a8746ba1a90a50 Merge: e5a06ee
-	c8fb432 Author: Hayaki Saito <saitoha@me.com> Date:   Thu Jun 16
+	* : commit 78f34beb774c7b118156686f30a8746ba1a90a50 Merge: e5a06eecd
+	c8fb43251 Author: Hayaki Saito <saitoha@me.com> Date:   Thu Jun 16
 	00:19:23 2016 +0900
 
 2016-06-16  Hayaki Saito <saitoha@me.com>
@@ -2139,8 +2418,8 @@
 
 2016-06-06  Hayaki Saito <saitoha@me.com>
 
-	* : commit 9d952d93f00081c14e61d3e2aea9577922a800ff Merge: 1199cdb
-	0faa561 Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jun 6
+	* : commit 9d952d93f00081c14e61d3e2aea9577922a800ff Merge: 1199cdb02
+	0faa5616b Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jun 6
 	01:34:11 2016 +0900
 
 2016-06-06  Hayaki Saito <saitoha@me.com>
@@ -2163,8 +2442,8 @@
 
 2016-06-06  Hayaki Saito <saitoha@me.com>
 
-	* : commit d32bf87ef75c53b3764762aac1ef4dc2659f09f1 Merge: c9158fe
-	9e3cf5d Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jun 6
+	* : commit d32bf87ef75c53b3764762aac1ef4dc2659f09f1 Merge: c9158feab
+	9e3cf5d8c Author: Hayaki Saito <saitoha@me.com> Date:   Mon Jun 6
 	00:20:52 2016 +0900
 
 2016-06-06  Hayaki Saito <saitoha@me.com>
@@ -2191,14 +2470,14 @@
 
 2016-06-05  Hayaki Saito <saitoha@me.com>
 
-	* : commit c056a27de6bdc33a62c95f4228a746532c107f6e Merge: 68e2d9a
-	a7d2c90 Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 5
+	* : commit c056a27de6bdc33a62c95f4228a746532c107f6e Merge: 68e2d9aab
+	a7d2c90c8 Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 5
 	23:27:26 2016 +0900
 
 2016-06-05  Hayaki Saito <saitoha@me.com>
 
-	* : commit 251734bba4d62d9d98b8c9a298eebee9d42bd73c Merge: ff1a787
-	4214786 Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 5
+	* : commit 251734bba4d62d9d98b8c9a298eebee9d42bd73c Merge: ff1a78705
+	42147863b Author: Hayaki Saito <saitoha@me.com> Date:   Sun Jun 5
 	23:26:33 2016 +0900
 
 2016-06-05  Hayaki Saito <saitoha@me.com>
@@ -2249,8 +2528,8 @@
 
 2016-05-22  Hayaki Saito <saitoha@me.com>
 
-	* : commit 0b06a5c6df632202c944c920e69882943679c026 Merge: 6aaa589
-	ff1a787 Author: Hayaki Saito <saitoha@me.com> Date:   Sun May 22
+	* : commit 0b06a5c6df632202c944c920e69882943679c026 Merge: 6aaa589d7
+	ff1a78705 Author: Hayaki Saito <saitoha@me.com> Date:   Sun May 22
 	22:26:18 2016 +0900
 
 2016-05-22  Hayaki Saito <saitoha@me.com>
@@ -2281,8 +2560,8 @@
 
 2016-05-08  Hayaki Saito <saitoha@me.com>
 
-	* : commit a425beae55c2e5c47211b4a22a11b1bc7f4fd953 Merge: 3f3e30f
-	2c9a854 Author: Hayaki Saito <saitoha@me.com> Date:   Sun May 8
+	* : commit a425beae55c2e5c47211b4a22a11b1bc7f4fd953 Merge: 3f3e30fce
+	2c9a854b8 Author: Hayaki Saito <saitoha@me.com> Date:   Sun May 8
 	17:52:26 2016 +0900
 
 2016-05-08  Hayaki Saito <saitoha@me.com>
@@ -2325,8 +2604,8 @@
 
 2016-05-03  Hayaki Saito <user@zuse.jp>
 
-	* : commit bf4624bca02249f4a3f93b5ef75d40a490889458 Merge: 0f1acfb
-	8676e81 Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 3
+	* : commit bf4624bca02249f4a3f93b5ef75d40a490889458 Merge: 0f1acfb1a
+	8676e817c Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 3
 	22:56:54 2016 +0900
 
 2016-05-03  Hayaki Saito <user@zuse.jp>
@@ -2340,8 +2619,8 @@
 
 2016-05-03  Hayaki Saito <user@zuse.jp>
 
-	* : commit fc1449e2cff83e3a491409da3504d2c7569cdde1 Merge: 22002de
-	5342ab4 Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 3
+	* : commit fc1449e2cff83e3a491409da3504d2c7569cdde1 Merge: 22002de2a
+	5342ab4ce Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 3
 	02:29:33 2016 +0900
 
 2016-05-03  Hayaki Saito <user@zuse.jp>
@@ -2360,20 +2639,20 @@
 
 2016-05-02  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0f1acfb1a87e57ed36340c574ffc028ee681a9df Merge: 912422c
-	19f7cff Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 2
+	* : commit 0f1acfb1a87e57ed36340c574ffc028ee681a9df Merge: 912422c27
+	19f7cff9b Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 2
 	23:04:14 2016 +0900
 
 2016-05-02  Hayaki Saito <user@zuse.jp>
 
-	* : commit 1951b9f630198a56ca6fb8ff52182cb3ede5bf3c Merge: bebd4d4
-	67eded7 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 2
+	* : commit 1951b9f630198a56ca6fb8ff52182cb3ede5bf3c Merge: bebd4d4c2
+	67eded762 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 2
 	23:01:06 2016 +0900
 
 2016-05-02  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5b7fe665c41c02e0a600b74b57451fdbf7421310 Merge: 15011b4
-	e5a06ee Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 2
+	* : commit 5b7fe665c41c02e0a600b74b57451fdbf7421310 Merge: 15011b45a
+	e5a06eecd Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 2
 	22:57:36 2016 +0900
 
 2016-05-02  Hayaki Saito <user@zuse.jp>
@@ -2525,8 +2804,8 @@
 
 2016-04-03  Hayaki Saito <user@zuse.jp>
 
-	* : commit 731c234c79ce58fa8bd61b3e4c92e0b31c5e222b Merge: 660091c
-	105a1ee Author: Hayaki Saito <user@zuse.jp> Date:   Mon Mar 28
+	* : commit 731c234c79ce58fa8bd61b3e4c92e0b31c5e222b Merge: 660091c9d
+	105a1ee83 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Mar 28
 	10:33:36 2016 +0900
 
 2016-03-26  Hayaki Saito <user@zuse.jp>
@@ -2562,8 +2841,8 @@
 
 2016-03-25  Hayaki Saito <user@zuse.jp>
 
-	* : commit 44196acebdf1843d913d4c8c0eb395622e608ba8 Merge: f285f8e
-	660091c Author: Hayaki Saito <user@zuse.jp> Date:   Fri Mar 25
+	* : commit 44196acebdf1843d913d4c8c0eb395622e608ba8 Merge: f285f8eac
+	660091c9d Author: Hayaki Saito <user@zuse.jp> Date:   Fri Mar 25
 	12:57:28 2016 +0900
 
 2016-03-25  Hayaki Saito <user@zuse.jp>
@@ -2573,8 +2852,8 @@
 
 2016-03-25  Hayaki Saito <user@zuse.jp>
 
-	* : commit f285f8eace2d0618db4df8d86e9e738b15fac954 Merge: 94c65bf
-	1e240c8 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Mar 24
+	* : commit f285f8eace2d0618db4df8d86e9e738b15fac954 Merge: 94c65bfd1
+	1e240c8ec Author: Hayaki Saito <user@zuse.jp> Date:   Thu Mar 24
 	23:58:10 2016 +0900
 
 2016-03-24  Hayaki Saito <user@zuse.jp>
@@ -2602,8 +2881,8 @@
 
 2016-03-08  Hayaki Saito <user@zuse.jp>
 
-	* : commit 3ae1437c4089c54efd02d299dd4fca2aed253d2d Merge: 78113b8
-	44a3bdb Author: Hayaki Saito <user@zuse.jp> Date:   Tue Mar 8
+	* : commit 3ae1437c4089c54efd02d299dd4fca2aed253d2d Merge: 78113b8ab
+	44a3bdba7 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Mar 8
 	09:26:02 2016 +0900
 
 2016-03-07  Hayaki Saito <user@zuse.jp>
@@ -2612,8 +2891,8 @@
 
 2016-03-06  Hayaki Saito <user@zuse.jp>
 
-	* : commit 747f8184a474609e27d6f9f2450031ed3e591e45 Merge: 9615878
-	f73bc45 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Mar 6
+	* : commit 747f8184a474609e27d6f9f2450031ed3e591e45 Merge: 961587847
+	f73bc4544 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Mar 6
 	17:49:55 2016 +0900
 
 2016-03-06  Hayaki Saito <user@zuse.jp>
@@ -2627,8 +2906,8 @@
 
 2016-03-06  Hayaki Saito <user@zuse.jp>
 
-	* : commit 8db3edaad45cff98cf7161254d01b19c78dbb54d Merge: 8867e9d
-	3e878d1 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Mar 6
+	* : commit 8db3edaad45cff98cf7161254d01b19c78dbb54d Merge: 8867e9de6
+	3e878d1d8 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Mar 6
 	02:44:07 2016 +0900
 
 2016-03-06  Hayaki Saito <user@zuse.jp>
@@ -2641,8 +2920,8 @@
 
 2016-03-06  Hayaki Saito <user@zuse.jp>
 
-	* : commit 07f14f4d669a818c217eacb82411678b4a303b37 Merge: 2e42573
-	adb139d Author: Hayaki Saito <user@zuse.jp> Date:   Sun Mar 6
+	* : commit 07f14f4d669a818c217eacb82411678b4a303b37 Merge: 2e42573ba
+	adb139dd1 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Mar 6
 	02:24:55 2016 +0900
 
 2016-03-06  Hayaki Saito <user@zuse.jp>
@@ -2656,8 +2935,8 @@
 
 2016-03-05  Hayaki Saito <user@zuse.jp>
 
-	* : commit fe1adc41ffbc054b7a1b36197600596ea03c0bca Merge: f864ed6
-	bad2f09 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Mar 5
+	* : commit fe1adc41ffbc054b7a1b36197600596ea03c0bca Merge: f864ed6d1
+	bad2f0941 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Mar 5
 	03:36:55 2016 +0900
 
 2016-03-05  Hayaki Saito <user@zuse.jp>
@@ -2754,8 +3033,8 @@
 
 2016-02-21  Hayaki Saito <user@zuse.jp>
 
-	* : commit 2442facc1ef9748a027508249f45f40357cee4cc Merge: 448cfb4
-	21cf6b1 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Feb 21
+	* : commit 2442facc1ef9748a027508249f45f40357cee4cc Merge: 448cfb42a
+	21cf6b1b0 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Feb 21
 	00:49:21 2016 +0900
 
 2016-02-21  Hayaki Saito <user@zuse.jp>
@@ -2893,8 +3172,8 @@
 
 2016-02-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit 63f95edd6fc1d006c1a02e54ce3bca5618e24fcd Merge: 5a05f16
-	96ae08a Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 20
+	* : commit 63f95edd6fc1d006c1a02e54ce3bca5618e24fcd Merge: 5a05f1696
+	96ae08ae0 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 20
 	13:12:22 2016 +0900
 
 2016-02-20  Hayaki Saito <user@zuse.jp>
@@ -2921,8 +3200,8 @@
 
 2016-02-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit 1d21d189dc8d0a618e8ab7a01d0e42141833f5f0 Merge: bd4734c
-	15011b4 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Sep 6
+	* : commit 1d21d189dc8d0a618e8ab7a01d0e42141833f5f0 Merge: bd4734ca6
+	15011b45a Author: Hayaki Saito <user@zuse.jp> Date:   Sun Sep 6
 	03:04:05 2015 +0900
 
 2015-09-05  Hayaki Saito <user@zuse.jp>
@@ -2992,20 +3271,20 @@
 
 2015-08-22  Hayaki Saito <user@zuse.jp>
 
-	* : commit 7f2d6a21cd4c72349ce6f1bce0b12f222ceedd12 Merge: 8a05095
-	8983ae6 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 22
+	* : commit 7f2d6a21cd4c72349ce6f1bce0b12f222ceedd12 Merge: 8a0509529
+	8983ae677 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 22
 	02:51:06 2015 +0900
 
 2015-08-22  Hayaki Saito <user@zuse.jp>
 
-	* : commit a0f8fc43548e5e0b7b40575a10b253200f7f9143 Merge: 6bfed09
-	ea420a3 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 22
+	* : commit a0f8fc43548e5e0b7b40575a10b253200f7f9143 Merge: 6bfed0925
+	ea420a389 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 22
 	02:48:13 2015 +0900
 
 2015-08-22  Hayaki Saito <user@zuse.jp>
 
-	* : commit 6bfed0925118bc7d5a99e0d22c8e0371b0ccb32d Merge: dc8b506
-	b49f6d1 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 22
+	* : commit 6bfed0925118bc7d5a99e0d22c8e0371b0ccb32d Merge: dc8b50609
+	b49f6d1f9 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 22
 	02:31:51 2015 +0900
 
 2015-08-22  Hayaki Saito <user@zuse.jp>
@@ -3014,8 +3293,8 @@
 
 2015-08-22  Hayaki Saito <user@zuse.jp>
 
-	* : commit 8a0509529bef15054a2713fb1a4f9ed8941098f0 Merge: f6aec56
-	d3a6b82 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 22
+	* : commit 8a0509529bef15054a2713fb1a4f9ed8941098f0 Merge: f6aec561c
+	d3a6b82fa Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 22
 	02:04:09 2015 +0900
 
 2015-08-22  Hayaki Saito <user@zuse.jp>
@@ -3284,8 +3563,8 @@
 
 2015-07-18  Hayaki Saito <user@zuse.jp>
 
-	* : commit 76bee84150f01a48600c1c60504396ef49d56636 Merge: f0cedc9
-	8cf90b7 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 18
+	* : commit 76bee84150f01a48600c1c60504396ef49d56636 Merge: f0cedc943
+	8cf90b73b Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 18
 	12:40:14 2015 +0900
 
 2015-07-14  Hayaki Saito <user@zuse.jp>
@@ -3618,14 +3897,14 @@
 
 	* .gitignore, .travis.yml, Gemfile, LICENSE.txt, README.md,
 	Rakefile, ext/libsixel/extconf.rb, ext/libsixel/libsixel.c,
-	ext/libsixel/libsixel.h, images/egret.six, lib/libsixel.rb,
-	lib/libsixel/version.rb, libsixel-ruby.gemspec,
-	test/minitest_helper.rb, test/test_libsixel.rb: Initial commit
+	ext/libsixel/libsixel.h, lib/libsixel.rb, lib/libsixel/version.rb,
+	libsixel-ruby.gemspec, test/minitest_helper.rb,
+	test/test_libsixel.rb: Initial commit
 
 2015-06-16  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0ebd0c138b59c74e6543302d59edaefba41af39f Merge: 524362b
-	9d05530 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 16
+	* : commit 0ebd0c138b59c74e6543302d59edaefba41af39f Merge: 524362b8f
+	9d055301f Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 16
 	03:09:35 2015 +0900
 
 2015-06-16  Hayaki Saito <user@zuse.jp>
@@ -3639,8 +3918,8 @@
 
 2015-06-16  Hayaki Saito <user@zuse.jp>
 
-	* : commit 3f7f95a88f39273d4552f34f82b82466095bb96e Merge: f01c191
-	f5a5757 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 16
+	* : commit 3f7f95a88f39273d4552f34f82b82466095bb96e Merge: f01c19140
+	f5a575708 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 16
 	02:52:21 2015 +0900
 
 2015-06-16  Hayaki Saito <user@zuse.jp>
@@ -3653,8 +3932,8 @@
 
 2015-06-16  Hayaki Saito <user@zuse.jp>
 
-	* : commit 524362b8f309ed3b96d0e7e7217c63f9a210c50b Merge: 8301c68
-	f01c191 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 16
+	* : commit 524362b8f309ed3b96d0e7e7217c63f9a210c50b Merge: 8301c689c
+	f01c19140 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 16
 	02:29:18 2015 +0900
 
 2015-06-16  Hayaki Saito <user@zuse.jp>
@@ -3685,8 +3964,8 @@
 
 2015-06-15  Hayaki Saito <user@zuse.jp>
 
-	* : commit 45c2a5b81874674a77d68453e64a5b2abf12c365 Merge: d64c631
-	19325fc Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jun 15
+	* : commit 45c2a5b81874674a77d68453e64a5b2abf12c365 Merge: d64c631ae
+	19325fcaf Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jun 15
 	00:07:19 2015 +0900
 
 2015-06-14  Hayaki Saito <user@zuse.jp>
@@ -3727,8 +4006,8 @@
 
 2015-06-14  Hayaki Saito <user@zuse.jp>
 
-	* : commit ccb849c7788bbc37bff7cd3cb73d4020f2311419 Merge: 936147d
-	cb82222 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Jun 14
+	* : commit ccb849c7788bbc37bff7cd3cb73d4020f2311419 Merge: 936147d74
+	cb822222d Author: Hayaki Saito <user@zuse.jp> Date:   Sun Jun 14
 	13:35:04 2015 +0900
 
 2015-06-14  Hayaki Saito <user@zuse.jp>
@@ -3763,8 +4042,8 @@
 
 2015-06-13  Hayaki Saito <user@zuse.jp>
 
-	* : commit d64c631ae2c593db8ec32ce0a48c6ea15aadf11a Merge: cdb6497
-	96508aa Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jun 13
+	* : commit d64c631ae2c593db8ec32ce0a48c6ea15aadf11a Merge: cdb6497d7
+	96508aa5b Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jun 13
 	10:05:03 2015 +0900
 
 2015-06-13  Hayaki Saito <user@zuse.jp>
@@ -3791,8 +4070,8 @@
 
 2015-06-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit 936147d74b95ab09f693e752dcbc4998c3f66746 Merge: d194893
-	be2c901 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 11
+	* : commit 936147d74b95ab09f693e752dcbc4998c3f66746 Merge: d19489336
+	be2c9019c Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 11
 	00:07:46 2015 +0900
 
 2015-06-11  Hayaki Saito <user@zuse.jp>
@@ -3837,8 +4116,8 @@
 
 2015-06-09  Hayaki Saito <user@zuse.jp>
 
-	* : commit 22937f473c3dfe5b4878cc92ae59b93e301e942e Merge: 6750aa9
-	3b366f3 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 9
+	* : commit 22937f473c3dfe5b4878cc92ae59b93e301e942e Merge: 6750aa907
+	3b366f34e Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 9
 	23:24:38 2015 +0900
 
 2015-06-09  Hayaki Saito <user@zuse.jp>
@@ -3961,14 +4240,14 @@
 
 2015-05-30  Hayaki Saito <user@zuse.jp>
 
-	* : commit fac1553d23b72d9a7720854dc70ba856edbb27b6 Merge: 3be4486
-	4ec056d Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 30
+	* : commit fac1553d23b72d9a7720854dc70ba856edbb27b6 Merge: 3be44861a
+	4ec056da7 Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 30
 	20:10:42 2015 +0900
 
 2015-05-30  Hayaki Saito <user@zuse.jp>
 
-	* : commit 4ec056da77648bacac89c0690d5836c9d8c5ab46 Merge: 2f4f331
-	3b4ee00 Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 29
+	* : commit 4ec056da77648bacac89c0690d5836c9d8c5ab46 Merge: 2f4f331da
+	3b4ee00c8 Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 29
 	02:04:34 2015 +0900
 
 2015-05-29  Hayaki Saito <user@zuse.jp>
@@ -3984,10 +4263,9 @@
 2015-05-29  Hayaki Saito <user@zuse.jp>
 
 	* Build.PL, MANIFEST, MANIFEST.SKIP, META.yml, Makefile.PL, README,
-	images/egret.six, lib/Image/Sixel.pm, lib/Image/Sixel.xs,
-	lib/Image/Sixel/Decoder.pm, lib/Image/Sixel/Encoder.pm,
-	lib/Image/ppport.h, t/sixel.t: Initial commit of libsixel perl
-	interface
+	lib/Image/Sixel.pm, lib/Image/Sixel.xs, lib/Image/Sixel/Decoder.pm,
+	lib/Image/Sixel/Encoder.pm, lib/Image/ppport.h, t/sixel.t: Initial
+	commit of libsixel perl interface
 
 2015-05-29  Hayaki Saito <user@zuse.jp>
 
@@ -4009,8 +4287,8 @@
 
 2015-05-27  Hayaki Saito <user@zuse.jp>
 
-	* : commit a0fc585d0e529cbb199b960b1e64dfc29161b9d3 Merge: 9fb4868
-	f17d3fc Author: Hayaki Saito <user@zuse.jp> Date:   Wed May 27
+	* : commit a0fc585d0e529cbb199b960b1e64dfc29161b9d3 Merge: 9fb486872
+	f17d3fc93 Author: Hayaki Saito <user@zuse.jp> Date:   Wed May 27
 	22:26:32 2015 +0900
 
 2015-05-27  Hayaki Saito <user@zuse.jp>
@@ -4130,8 +4408,8 @@
 
 2015-05-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit d8f2ef47d7b54e2b15739310f9a67c8ea8688cf8 Merge: f505095
-	6054f88 Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 26
+	* : commit d8f2ef47d7b54e2b15739310f9a67c8ea8688cf8 Merge: f505095af
+	6054f88f9 Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 26
 	12:25:56 2015 +0900
 
 2015-05-26  Hayaki Saito <user@zuse.jp>
@@ -4252,8 +4530,8 @@
 
 2015-05-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit 15d9d18ffa687ef748749d152df1de2527f73e68 Merge: 725ee95
-	8854c3d Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 17
+	* : commit 15d9d18ffa687ef748749d152df1de2527f73e68 Merge: 725ee95d8
+	8854c3d19 Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 17
 	21:20:13 2015 +0900
 
 2015-05-17  Hayaki Saito <user@zuse.jp>
@@ -4276,8 +4554,8 @@
 
 2015-05-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit 53b3c1015f1ac1e4056c957cbf01e29288b7814b Merge: c6af8ab
-	fa1842f Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 17
+	* : commit 53b3c1015f1ac1e4056c957cbf01e29288b7814b Merge: c6af8ab42
+	fa1842f2d Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 17
 	17:15:52 2015 +0900
 
 2015-05-17  Hayaki Saito <user@zuse.jp>
@@ -4293,14 +4571,14 @@
 
 2015-05-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit c6af8ab422506a09e8805f6ef3befcc3dc4e674b Merge: 7084cd7
-	017f898 Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 17
+	* : commit c6af8ab422506a09e8805f6ef3befcc3dc4e674b Merge: 7084cd718
+	017f89898 Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 17
 	13:04:07 2015 +0900
 
 2015-05-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit b278cc040a8160efba9c52413143e49342864ee8 Merge: 7321672
-	df88a8e Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 17
+	* : commit b278cc040a8160efba9c52413143e49342864ee8 Merge: 732167262
+	df88a8edb Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 17
 	12:57:35 2015 +0900
 
 2015-05-17  Hayaki Saito <user@zuse.jp>
@@ -4350,8 +4628,8 @@
 
 2015-05-16  Hayaki Saito <user@zuse.jp>
 
-	* : commit 12e64b66d7646b4c40899d7f4cf3da02bccaa513 Merge: dceb700
-	2b7cd5a Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 16
+	* : commit 12e64b66d7646b4c40899d7f4cf3da02bccaa513 Merge: dceb70021
+	2b7cd5a27 Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 16
 	22:04:59 2015 +0900
 
 2015-05-16  Hayaki Saito <user@zuse.jp>
@@ -4381,8 +4659,8 @@
 
 2015-05-16  Hayaki Saito <user@zuse.jp>
 
-	* : commit dceb70021fc7956e3398b640db843625ba5e4360 Merge: f414b2f
-	1dda309 Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 16
+	* : commit dceb70021fc7956e3398b640db843625ba5e4360 Merge: f414b2f5f
+	1dda30967 Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 16
 	17:04:43 2015 +0900
 
 2015-05-16  Hayaki Saito <user@zuse.jp>
@@ -4456,8 +4734,8 @@
 
 2015-05-10  Hayaki Saito <user@zuse.jp>
 
-	* : commit 4ce3d743694a13fb4d98521f4670b87a29998927 Merge: 1e2059f
-	86d1ac4 Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 10
+	* : commit 4ce3d743694a13fb4d98521f4670b87a29998927 Merge: 1e2059ff3
+	86d1ac404 Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 10
 	22:59:21 2015 +0900
 
 2015-05-07  Hayaki Saito <user@zuse.jp>
@@ -4467,14 +4745,14 @@
 
 2015-05-05  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5928d52e079e7ec0994ee3dda3da68c9a23d9e4d Merge: 5909934
-	38dfe23 Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 5
+	* : commit 5928d52e079e7ec0994ee3dda3da68c9a23d9e4d Merge: 590993402
+	38dfe2308 Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 5
 	06:46:30 2015 +0900
 
 2015-05-05  Hayaki Saito <user@zuse.jp>
 
-	* : commit 2a6da863779aef8ec808387dfd29b64b56c5b15b Merge: 96b0a6e
-	1d92429 Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 5
+	* : commit 2a6da863779aef8ec808387dfd29b64b56c5b15b Merge: 96b0a6e52
+	1d92429d7 Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 5
 	06:45:57 2015 +0900
 
 2015-05-05  Hayaki Saito <user@zuse.jp>
@@ -4512,8 +4790,8 @@
 
 2015-05-02  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5909934026350d0b7fb6f48cc348698022478657 Merge: 09bf915
-	3375663 Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 2
+	* : commit 5909934026350d0b7fb6f48cc348698022478657 Merge: 09bf915c4
+	337566305 Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 2
 	10:17:52 2015 +0900
 
 2015-05-02  Hayaki Saito <user@zuse.jp>
@@ -4523,8 +4801,8 @@
 
 2015-05-02  Hayaki Saito <user@zuse.jp>
 
-	* : commit 09bf915c41674c5a4b00940113636311fcc776d7 Merge: ca705c7
-	fcb6f1c Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 2
+	* : commit 09bf915c41674c5a4b00940113636311fcc776d7 Merge: ca705c7a5
+	fcb6f1cfd Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 2
 	09:06:26 2015 +0900
 
 2015-05-02  Hayaki Saito <user@zuse.jp>
@@ -4601,8 +4879,8 @@
 
 2015-04-29  Hayaki Saito <user@zuse.jp>
 
-	* : commit e16b98db985585335effe3a5fc20eb7a558370e7 Merge: 5933977
-	d884229 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Apr 29
+	* : commit e16b98db985585335effe3a5fc20eb7a558370e7 Merge: 59339777a
+	d8842293c Author: Hayaki Saito <user@zuse.jp> Date:   Wed Apr 29
 	21:44:06 2015 +0900
 
 2015-04-29  Hayaki Saito <user@zuse.jp>
@@ -4612,8 +4890,8 @@
 
 2015-04-29  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5b546103737bca187198a1763314de8e27de7716 Merge: c6d4c57
-	40f3552 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Apr 29
+	* : commit 5b546103737bca187198a1763314de8e27de7716 Merge: c6d4c57c4
+	40f3552f5 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Apr 29
 	04:38:20 2015 +0900
 
 2015-04-29  Hayaki Saito <user@zuse.jp>
@@ -4748,8 +5026,8 @@
 
 2015-04-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit 923dd5980fe3e47a7cb2308dff10c48d02426440 Merge: 2459d50
-	4c97cf5 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Apr 11
+	* : commit 923dd5980fe3e47a7cb2308dff10c48d02426440 Merge: 2459d508b
+	4c97cf5f4 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Apr 11
 	23:27:47 2015 +1100
 
 2015-04-11  Hayaki Saito <user@zuse.jp>
@@ -4759,8 +5037,8 @@
 
 2015-04-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit 2459d508b1dc2c6f95de53aeaca77f32ad070b95 Merge: 5a093b7
-	00fb24e Author: Hayaki Saito <user@zuse.jp> Date:   Sat Apr 11
+	* : commit 2459d508b1dc2c6f95de53aeaca77f32ad070b95 Merge: 5a093b719
+	00fb24eaa Author: Hayaki Saito <user@zuse.jp> Date:   Sat Apr 11
 	23:22:45 2015 +1100
 
 2015-04-11  Hayaki Saito <user@zuse.jp>
@@ -4836,8 +5114,8 @@
 
 2015-04-05  Hayaki Saito <user@zuse.jp>
 
-	* : commit 662c66c3659acb21b31bc67e2c272c3c9379b0d0 Merge: fe655ec
-	6c3cd06 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Apr 5
+	* : commit 662c66c3659acb21b31bc67e2c272c3c9379b0d0 Merge: fe655ec92
+	6c3cd06dd Author: Hayaki Saito <user@zuse.jp> Date:   Sun Apr 5
 	00:21:54 2015 +0900
 
 2015-04-05  Hayaki Saito <user@zuse.jp>
@@ -4848,14 +5126,14 @@
 
 2015-04-04  Hayaki Saito <user@zuse.jp>
 
-	* : commit fe655ec92e58f03b62b7f6a3e791c08361ece4d5 Merge: 8f868c0
-	5a093b7 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Mar 25
+	* : commit fe655ec92e58f03b62b7f6a3e791c08361ece4d5 Merge: 8f868c099
+	5a093b719 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Mar 25
 	02:01:01 2015 +0900
 
 2015-03-25  Hayaki Saito <user@zuse.jp>
 
-	* : commit 79b3907aa06233bf209aba75b96bde5c6f3723bd Merge: 9b911d7
-	649d55e Author: Hayaki Saito <user@zuse.jp> Date:   Wed Mar 25
+	* : commit 79b3907aa06233bf209aba75b96bde5c6f3723bd Merge: 9b911d75e
+	649d55e6f Author: Hayaki Saito <user@zuse.jp> Date:   Wed Mar 25
 	01:57:54 2015 +0900
 
 2015-03-25  Hayaki Saito <user@zuse.jp>
@@ -4884,20 +5162,20 @@
 
 2015-03-15  Hayaki Saito <user@zuse.jp>
 
-	* : commit 960dd213f5ce96dcd17cab4db21766c7b1294970 Merge: 71ef4d0
-	fe5bcae Author: Hayaki Saito <user@zuse.jp> Date:   Sat Mar 14
+	* : commit 960dd213f5ce96dcd17cab4db21766c7b1294970 Merge: 71ef4d0d4
+	fe5bcaeb0 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Mar 14
 	14:03:54 2015 +0900
 
 2015-03-14  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5a093b719d8010d2aab8534f62ebc274deb5d33c Merge: fcfa755
-	71ef4d0 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Mar 14
+	* : commit 5a093b719d8010d2aab8534f62ebc274deb5d33c Merge: fcfa75509
+	71ef4d0d4 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Mar 14
 	11:34:17 2015 +0900
 
 2015-03-14  Hayaki Saito <user@zuse.jp>
 
-	* : commit 9f711c2ace59df1515d36e21838731375218268e Merge: 8ad1e3e
-	01e608c Author: Hayaki Saito <user@zuse.jp> Date:   Sat Mar 14
+	* : commit 9f711c2ace59df1515d36e21838731375218268e Merge: 8ad1e3e03
+	01e608c80 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Mar 14
 	11:33:07 2015 +0900
 
 2015-03-14  Hayaki Saito <user@zuse.jp>
@@ -4916,8 +5194,8 @@
 
 2015-03-13  Hayaki Saito <user@zuse.jp>
 
-	* : commit b5055b8c5f3ca7400a1c9e51c581d3936fdb3349 Merge: d1e1e84
-	dba3237 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Mar 13
+	* : commit b5055b8c5f3ca7400a1c9e51c581d3936fdb3349 Merge: d1e1e841a
+	dba3237b9 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Mar 13
 	22:39:20 2015 +0900
 
 2015-03-13  Hayaki Saito <user@zuse.jp>
@@ -4935,8 +5213,8 @@
 
 2015-03-12  Hayaki Saito <user@zuse.jp>
 
-	* : commit a70ae723a529cd19e0db67a9f05bb5d90946f3d1 Merge: 7f73585
-	a5a61cd Author: Hayaki Saito <user@zuse.jp> Date:   Tue Mar 10
+	* : commit a70ae723a529cd19e0db67a9f05bb5d90946f3d1 Merge: 7f7358573
+	a5a61cda0 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Mar 10
 	01:42:40 2015 +0900
 
 2015-03-10  Hayaki Saito <user@zuse.jp>
@@ -4949,8 +5227,8 @@
 
 2015-03-10  Hayaki Saito <user@zuse.jp>
 
-	* : commit 13610876ee933f6a242bf4d101d004fd5374cf83 Merge: 9fefcfc
-	2b66fd7 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Mar 10
+	* : commit 13610876ee933f6a242bf4d101d004fd5374cf83 Merge: 9fefcfcd6
+	2b66fd704 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Mar 10
 	00:17:51 2015 +0900
 
 2015-03-10  Hayaki Saito <user@zuse.jp>
@@ -4990,8 +5268,8 @@
 
 2015-02-28  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5aa3a30915341b67ae58e757c01bbac941db4557 Merge: c6a5a21
-	73a2244 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 28
+	* : commit 5aa3a30915341b67ae58e757c01bbac941db4557 Merge: c6a5a2156
+	73a2244be Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 28
 	17:52:57 2015 +0900
 
 2015-02-28  Hayaki Saito <user@zuse.jp>
@@ -5010,8 +5288,8 @@
 
 2015-02-27  Hayaki Saito <user@zuse.jp>
 
-	* : commit d66b63b861442e4aa701b2e7b244b6ffcb5624fb Merge: bf23ab6
-	d6ca032 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Feb 27
+	* : commit d66b63b861442e4aa701b2e7b244b6ffcb5624fb Merge: bf23ab67f
+	d6ca032af Author: Hayaki Saito <user@zuse.jp> Date:   Fri Feb 27
 	00:20:05 2015 +0900
 
 2015-02-26  Hayaki Saito <user@zuse.jp>
@@ -5079,8 +5357,8 @@
 
 2015-02-23  Hayaki Saito <user@zuse.jp>
 
-	* : commit e39c513c5b74209cf21782e5bf9479c6e8d19ff3 Merge: 7b65b63
-	83fb9d5 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Feb 23
+	* : commit e39c513c5b74209cf21782e5bf9479c6e8d19ff3 Merge: 7b65b632f
+	83fb9d562 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Feb 23
 	00:05:59 2015 +0900
 
 2015-02-23  Hayaki Saito <user@zuse.jp>
@@ -5123,8 +5401,8 @@
 
 2015-02-22  Hayaki Saito <user@zuse.jp>
 
-	* : commit cb102321924b90ebba43f442ce8786dc6cbcf26e Merge: 5f746b7
-	c7a4495 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Feb 22
+	* : commit cb102321924b90ebba43f442ce8786dc6cbcf26e Merge: 5f746b780
+	c7a4495d4 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Feb 22
 	16:38:48 2015 +0900
 
 2015-02-22  Hayaki Saito <user@zuse.jp>
@@ -5166,8 +5444,8 @@
 
 2015-02-21  Hayaki Saito <user@zuse.jp>
 
-	* : commit 3facf8403c6a88e36c80d344c7c4326fc6c86684 Merge: 1e0edab
-	11508de Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 21
+	* : commit 3facf8403c6a88e36c80d344c7c4326fc6c86684 Merge: 1e0edab11
+	11508de63 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 21
 	21:16:47 2015 +0900
 
 2015-02-21  Hayaki Saito <user@zuse.jp>
@@ -5246,8 +5524,8 @@
 
 2015-02-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 86ce1958220803a0be672a262160f55ecda5b102 Merge: 80ec152
-	30a8c02 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Feb 19
+	* : commit 86ce1958220803a0be672a262160f55ecda5b102 Merge: 80ec152c6
+	30a8c02e1 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Feb 19
 	00:39:14 2015 +0900
 
 2015-02-19  Hayaki Saito <user@zuse.jp>
@@ -5368,8 +5646,8 @@
 
 2015-02-14  Hayaki Saito <user@zuse.jp>
 
-	* : commit 9b32eb60bdbcce7ff5954fc0a971acd4d4b8106a Merge: af90ebd
-	dcc7813 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 14
+	* : commit 9b32eb60bdbcce7ff5954fc0a971acd4d4b8106a Merge: af90ebd79
+	dcc781326 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 14
 	10:47:03 2015 +0900
 
 2015-02-14  Hayaki Saito <user@zuse.jp>
@@ -5388,8 +5666,8 @@
 
 2015-02-14  Hayaki Saito <user@zuse.jp>
 
-	* : commit 2a0262ed7f28a618131842d2bb490799e84c7e47 Merge: c992e40
-	9b24a09 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 14
+	* : commit 2a0262ed7f28a618131842d2bb490799e84c7e47 Merge: c992e4027
+	9b24a09ea Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 14
 	01:30:01 2015 +0900
 
 2015-02-14  Hayaki Saito <user@zuse.jp>
@@ -5399,8 +5677,8 @@
 
 2015-02-14  Hayaki Saito <user@zuse.jp>
 
-	* : commit bdb3a5f4056639c8811a154f92a2b67b694d34aa Merge: 246af7e
-	18e1e8e Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 14
+	* : commit bdb3a5f4056639c8811a154f92a2b67b694d34aa Merge: 246af7e83
+	18e1e8e92 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 14
 	01:17:52 2015 +0900
 
 2015-02-14  Hayaki Saito <user@zuse.jp>
@@ -5410,8 +5688,8 @@
 
 2015-02-14  Hayaki Saito <user@zuse.jp>
 
-	* : commit 246af7e832b0ded903c602f5e1d3d9e6f3bea959 Merge: 27fc97e
-	a465292 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 14
+	* : commit 246af7e832b0ded903c602f5e1d3d9e6f3bea959 Merge: 27fc97ee3
+	a465292a9 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Feb 14
 	00:05:06 2015 +0900
 
 2015-02-14  Hayaki Saito <user@zuse.jp>
@@ -5499,8 +5777,8 @@
 
 2015-02-04  Hayaki Saito <user@zuse.jp>
 
-	* : commit cdc6005baf76951e77ea926282d572fa5f2a678f Merge: d01f0d9
-	c992e40 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Feb 4
+	* : commit cdc6005baf76951e77ea926282d572fa5f2a678f Merge: d01f0d934
+	c992e4027 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Feb 4
 	01:06:46 2015 +0900
 
 2015-02-04  Hayaki Saito <user@zuse.jp>
@@ -5528,8 +5806,8 @@
 
 2015-02-03  Hayaki Saito <user@zuse.jp>
 
-	* : commit c2aec28b0ef0feb2fe84152bf8beca39ba817cec Merge: 6857035
-	d01f0d9 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Feb 3
+	* : commit c2aec28b0ef0feb2fe84152bf8beca39ba817cec Merge: 68570358d
+	d01f0d934 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Feb 3
 	20:23:26 2015 +0900
 
 2015-02-03  Hayaki Saito <user@zuse.jp>
@@ -5539,14 +5817,14 @@
 
 2015-02-03  Hayaki Saito <user@zuse.jp>
 
-	* : commit d07ef004344087257b06b67a815305ad85eb5789 Merge: ea723a8
-	6a48f6a Author: Hayaki Saito <user@zuse.jp> Date:   Tue Feb 3
+	* : commit d07ef004344087257b06b67a815305ad85eb5789 Merge: ea723a823
+	6a48f6a30 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Feb 3
 	20:10:03 2015 +0900
 
 2015-02-03  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0cdef5abb6971295476ead2c1019d4cb4a1ad5b1 Merge: 68d70df
-	02d4901 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Feb 3
+	* : commit 0cdef5abb6971295476ead2c1019d4cb4a1ad5b1 Merge: 68d70dfa0
+	02d4901f0 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Feb 3
 	20:08:56 2015 +0900
 
 2015-02-02  Hayaki Saito <user@zuse.jp>
@@ -5586,8 +5864,8 @@
 
 2015-01-27  Hayaki Saito <user@zuse.jp>
 
-	* : commit 68d70dfa0904f5a363d1ec8ecdcebf625ce2a5ba Merge: 50fac51
-	1e79438 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jan 27
+	* : commit 68d70dfa0904f5a363d1ec8ecdcebf625ce2a5ba Merge: 50fac5181
+	1e79438c7 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jan 27
 	22:06:39 2015 +0900
 
 2015-01-27  Hayaki Saito <user@zuse.jp>
@@ -5620,8 +5898,8 @@
 
 2015-01-24  Hayaki Saito <user@zuse.jp>
 
-	* : commit bb96b7e8856922ecd2e7db623ab7c51bb910b837 Merge: 72985fe
-	3b6dd3e Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jan 24
+	* : commit bb96b7e8856922ecd2e7db623ab7c51bb910b837 Merge: 72985fe74
+	3b6dd3e55 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jan 24
 	00:51:04 2015 +0900
 
 2015-01-23  Hayaki Saito <user@zuse.jp>
@@ -5655,8 +5933,8 @@
 
 2014-12-30  Hayaki Saito <user@zuse.jp>
 
-	* : commit e7c1c8cf5517325f0732f4b45f60435057d95407 Merge: 0920798
-	9c996f1 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Dec 30
+	* : commit e7c1c8cf5517325f0732f4b45f60435057d95407 Merge: 0920798e5
+	9c996f14e Author: Hayaki Saito <user@zuse.jp> Date:   Tue Dec 30
 	16:46:28 2014 +0900
 
 2014-12-30  Hayaki Saito <user@zuse.jp>
@@ -5756,8 +6034,8 @@
 
 2014-12-29  Hayaki Saito <user@zuse.jp>
 
-	* : commit 72985fe74504c4850e4a09111c5f0d622c81e7ae Merge: dc8b506
-	ff8681f Author: Hayaki Saito <user@zuse.jp> Date:   Mon Dec 29
+	* : commit 72985fe74504c4850e4a09111c5f0d622c81e7ae Merge: dc8b50609
+	ff8681f5b Author: Hayaki Saito <user@zuse.jp> Date:   Mon Dec 29
 	14:17:28 2014 +0900
 
 2014-12-28  Hayaki Saito <user@zuse.jp>
@@ -5773,8 +6051,8 @@
 
 2014-12-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit 07c6fc216c281af7264767c57d9b48a3883b2cb8 Merge: 6808d4d
-	31d35e9 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Dec 26
+	* : commit 07c6fc216c281af7264767c57d9b48a3883b2cb8 Merge: 6808d4d3a
+	31d35e9fb Author: Hayaki Saito <user@zuse.jp> Date:   Fri Dec 26
 	17:25:48 2014 +0900
 
 2014-12-26  Hayaki Saito <user@zuse.jp>
@@ -5784,8 +6062,8 @@
 
 2014-12-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0920798e55007ddbb58f0780207ebde66b086b00 Merge: 97856dc
-	fc584af Author: Hayaki Saito <user@zuse.jp> Date:   Fri Dec 26
+	* : commit 0920798e55007ddbb58f0780207ebde66b086b00 Merge: 97856dcd4
+	fc584af00 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Dec 26
 	16:47:13 2014 +0900
 
 2014-12-26  Hayaki Saito <user@zuse.jp>
@@ -5803,8 +6081,8 @@
 
 2014-12-24  Hayaki Saito <user@zuse.jp>
 
-	* : commit 87a6517e424f2d92f109fe0d981dcb4e9f6ec6f3 Merge: 2e2bf54
-	31d35e9 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Dec 24
+	* : commit 87a6517e424f2d92f109fe0d981dcb4e9f6ec6f3 Merge: 2e2bf54f8
+	31d35e9fb Author: Hayaki Saito <user@zuse.jp> Date:   Wed Dec 24
 	23:46:45 2014 +0900
 
 2014-12-24  Hayaki Saito <user@zuse.jp>
@@ -5831,8 +6109,8 @@
 
 2014-12-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 40d896312e5f001484d78a92c8ffa7ab9ff22cb1 Merge: 520e21c
-	8771565 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Dec 19
+	* : commit 40d896312e5f001484d78a92c8ffa7ab9ff22cb1 Merge: 520e21cdc
+	8771565eb Author: Hayaki Saito <user@zuse.jp> Date:   Fri Dec 19
 	19:59:06 2014 +0900
 
 2014-12-19  Hayaki Saito <user@zuse.jp>
@@ -5843,14 +6121,14 @@
 
 2014-12-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 520e21cdc2471af84da0295fcda5e8f534ae51ff Merge: 6cf0fbd
-	5a88a86 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Dec 19
+	* : commit 520e21cdc2471af84da0295fcda5e8f534ae51ff Merge: 6cf0fbd8e
+	5a88a86e8 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Dec 19
 	19:50:10 2014 +0900
 
 2014-12-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0b10b3b6a0ef6df5b45c12b06e4f0ff2ce0c3e27 Merge: 15dd330
-	4bb00eb Author: Hayaki Saito <user@zuse.jp> Date:   Thu Dec 18
+	* : commit 0b10b3b6a0ef6df5b45c12b06e4f0ff2ce0c3e27 Merge: 15dd3309f
+	4bb00eba2 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Dec 18
 	21:58:24 2014 +0900
 
 2014-12-18  Hayaki Saito <user@zuse.jp>
@@ -5893,8 +6171,8 @@
 
 2014-12-07  Hayaki Saito <user@zuse.jp>
 
-	* : commit 4bb00eba20f8856171e24bf907627135ee61c321 Merge: 355c72d
-	15dd330 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Dec 7
+	* : commit 4bb00eba20f8856171e24bf907627135ee61c321 Merge: 355c72dcf
+	15dd3309f Author: Hayaki Saito <user@zuse.jp> Date:   Sun Dec 7
 	13:23:41 2014 +0900
 
 2014-12-07  Hayaki Saito <user@zuse.jp>
@@ -5908,8 +6186,8 @@
 
 2014-12-07  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5be5c766def9d907b033d1c0852fddd880bf8467 Merge: cea16d2
-	4966874 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Dec 7
+	* : commit 5be5c766def9d907b033d1c0852fddd880bf8467 Merge: cea16d2db
+	496687430 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Dec 7
 	01:22:43 2014 +0900
 
 2014-12-07  Hayaki Saito <user@zuse.jp>
@@ -5942,8 +6220,8 @@
 
 2014-12-06  Hayaki Saito <user@zuse.jp>
 
-	* : commit a9c8404c090335bbb3ad2d5358b04097d44db2b9 Merge: 7b66d02
-	495baa6 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Dec 6
+	* : commit a9c8404c090335bbb3ad2d5358b04097d44db2b9 Merge: 7b66d0228
+	495baa672 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Dec 6
 	21:57:19 2014 +0900
 
 2014-12-06  Hayaki Saito <user@zuse.jp>
@@ -6054,8 +6332,8 @@
 
 2014-12-01  Hayaki Saito <user@zuse.jp>
 
-	* : commit a454a567c15b81d32f95a37e0d2901e0c30d8832 Merge: 11837c0
-	0e33ea9 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Dec 1
+	* : commit a454a567c15b81d32f95a37e0d2901e0c30d8832 Merge: 11837c053
+	0e33ea9d7 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Dec 1
 	00:55:17 2014 +0900
 
 2014-12-01  Hayaki Saito <user@zuse.jp>
@@ -6210,8 +6488,8 @@
 
 2014-11-30  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5bdb043904dee8aed57d7945f03cf02a0eaa5e0c Merge: ccf3a76
-	f402b83 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Nov 30
+	* : commit 5bdb043904dee8aed57d7945f03cf02a0eaa5e0c Merge: ccf3a7699
+	f402b83e0 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Nov 30
 	06:39:55 2014 +0900
 
 2014-11-30  Hayaki Saito <user@zuse.jp>
@@ -6239,8 +6517,8 @@
 
 2014-11-30  Hayaki Saito <user@zuse.jp>
 
-	* : commit b551749f99d51c7176be5d65ab1db316dda792f3 Merge: 356338e
-	e40bf2d Author: Hayaki Saito <user@zuse.jp> Date:   Sun Nov 30
+	* : commit b551749f99d51c7176be5d65ab1db316dda792f3 Merge: 356338ec2
+	e40bf2d08 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Nov 30
 	05:25:49 2014 +0900
 
 2014-11-30  Hayaki Saito <user@zuse.jp>
@@ -6277,8 +6555,8 @@
 
 2014-11-30  Hayaki Saito <user@zuse.jp>
 
-	* : commit 83f142264948c9840bad799febaa301a17441bc7 Merge: 64a43e1
-	982bcfa Author: Hayaki Saito <user@zuse.jp> Date:   Sat Nov 29
+	* : commit 83f142264948c9840bad799febaa301a17441bc7 Merge: 64a43e160
+	982bcfa38 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Nov 29
 	23:13:49 2014 +0900
 
 2014-11-29  Hayaki Saito <user@zuse.jp>
@@ -6378,7 +6656,7 @@
 
 2014-11-25  Hayaki Saito <user@zuse.jp>
 
-	* images/map8.six, images/snake.six: Add test sixel images
+	* : Add test sixel images
 
 2014-11-25  Hayaki Saito <user@zuse.jp>
 
@@ -6433,8 +6711,8 @@
 
 2014-11-23  Hayaki Saito <user@zuse.jp>
 
-	* : commit 45ee315f8ba9f5f5b4345dff91db247fd67cdc5e Merge: 9a05795
-	bff83a1 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Nov 23
+	* : commit 45ee315f8ba9f5f5b4345dff91db247fd67cdc5e Merge: 9a05795f2
+	bff83a1de Author: Hayaki Saito <user@zuse.jp> Date:   Sun Nov 23
 	19:44:13 2014 +0900
 
 2014-11-23  Hayaki Saito <user@zuse.jp>
@@ -6448,8 +6726,8 @@
 
 2014-11-23  Hayaki Saito <user@zuse.jp>
 
-	* : commit e3b357f431ce3c2f3d8b02cab29cc1b56fef56f8 Merge: b8026dd
-	e0b1f1b Author: Hayaki Saito <user@zuse.jp> Date:   Sun Nov 23
+	* : commit e3b357f431ce3c2f3d8b02cab29cc1b56fef56f8 Merge: b8026dd49
+	e0b1f1b43 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Nov 23
 	00:01:57 2014 +0900
 
 2014-11-23  Hayaki Saito <user@zuse.jp>
@@ -6469,8 +6747,8 @@
 
 2014-11-22  Hayaki Saito <user@zuse.jp>
 
-	* : commit c62bf495476c841736838c960a1922ba1d062349 Merge: 6977d71
-	f3f958f Author: Hayaki Saito <user@zuse.jp> Date:   Sat Nov 22
+	* : commit c62bf495476c841736838c960a1922ba1d062349 Merge: 6977d71e4
+	f3f958f62 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Nov 22
 	23:03:15 2014 +0900
 
 2014-11-22  Hayaki Saito <user@zuse.jp>
@@ -6509,8 +6787,8 @@
 
 2014-11-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit 9a05795f2b11f4b42f37d8c56a2010de36ac5857 Merge: 38c2c9e
-	dddfcd8 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Nov 20
+	* : commit 9a05795f2b11f4b42f37d8c56a2010de36ac5857 Merge: 38c2c9e6a
+	dddfcd893 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Nov 20
 	00:29:49 2014 +0900
 
 2014-11-20  Hayaki Saito <user@zuse.jp>
@@ -6566,8 +6844,8 @@
 
 2014-11-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit 9ab93887f44778a539dbc5ccdf1c3dd9ecd46179 Merge: a5ef0e6
-	0382a2f Author: Hayaki Saito <user@zuse.jp> Date:   Mon Nov 17
+	* : commit 9ab93887f44778a539dbc5ccdf1c3dd9ecd46179 Merge: a5ef0e6b1
+	0382a2f3b Author: Hayaki Saito <user@zuse.jp> Date:   Mon Nov 17
 	20:47:50 2014 +0900
 
 2014-11-17  Hayaki Saito <user@zuse.jp>
@@ -6738,8 +7016,8 @@
 
 2014-11-13  Hayaki Saito <user@zuse.jp>
 
-	* : commit c850d5fa7348af4a3c899c999ccbe955d561a859 Merge: 22b28ea
-	1cbeab4 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Nov 13
+	* : commit c850d5fa7348af4a3c899c999ccbe955d561a859 Merge: 22b28ea8c
+	1cbeab470 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Nov 13
 	03:03:01 2014 +0900
 
 2014-11-13  Hayaki Saito <user@zuse.jp>
@@ -6770,8 +7048,8 @@
 
 2014-11-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit b027145d6250f1de7f4e0cc3c7ce709af486dea2 Merge: d7ebf33
-	83a0626 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Nov 11
+	* : commit b027145d6250f1de7f4e0cc3c7ce709af486dea2 Merge: d7ebf33d1
+	83a0626ac Author: Hayaki Saito <user@zuse.jp> Date:   Tue Nov 11
 	02:41:28 2014 +0900
 
 2014-11-11  Hayaki Saito <user@zuse.jp>
@@ -6857,8 +7135,8 @@
 
 2014-11-09  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0262a1643f834218d4ebbc4db8e291a23a6a3825 Merge: b6df2e2
-	38c2c9e Author: Hayaki Saito <user@zuse.jp> Date:   Sun Nov 9
+	* : commit 0262a1643f834218d4ebbc4db8e291a23a6a3825 Merge: b6df2e20c
+	38c2c9e6a Author: Hayaki Saito <user@zuse.jp> Date:   Sun Nov 9
 	18:47:58 2014 +0900
 
 2014-11-09  Hayaki Saito <user@zuse.jp>
@@ -6923,9 +7201,7 @@
 
 2014-11-08  Hayaki Saito <user@zuse.jp>
 
-	* images/snake-ascii.pbm, images/snake-ascii.pgm,
-	images/snake-ascii.ppm, images/snake.pgm, images/{snake.pnm =>
-	snake.ppm}: Add various ppm images for testing
+	* : Add various ppm images for testing
 
 2014-11-08  Hayaki Saito <user@zuse.jp>
 
@@ -6942,8 +7218,8 @@
 
 2014-11-08  Hayaki Saito <user@zuse.jp>
 
-	* : commit e39d007097573b63193dd19327688e2f6ffcbd7c Merge: 3b85d20
-	75688ad Author: Hayaki Saito <user@zuse.jp> Date:   Sat Nov 8
+	* : commit e39d007097573b63193dd19327688e2f6ffcbd7c Merge: 3b85d205b
+	75688ad54 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Nov 8
 	13:16:14 2014 +0900
 
 2014-11-08  Hayaki Saito <user@zuse.jp>
@@ -6957,8 +7233,8 @@
 
 2014-11-08  Hayaki Saito <user@zuse.jp>
 
-	* : commit 24103fd80682d2697e5571c61aab7c6263e85403 Merge: 3ab16cf
-	385aada Author: Hayaki Saito <user@zuse.jp> Date:   Sat Nov 8
+	* : commit 24103fd80682d2697e5571c61aab7c6263e85403 Merge: 3ab16cfd2
+	385aada9c Author: Hayaki Saito <user@zuse.jp> Date:   Sat Nov 8
 	12:37:40 2014 +0900
 
 2014-11-08  Hayaki Saito <user@zuse.jp>
@@ -7069,8 +7345,8 @@
 
 2014-11-05  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0af2f7594efed3225a8bec5816215aff1531ace5 Merge: 23f5fb6
-	f086c99 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Nov 5
+	* : commit 0af2f7594efed3225a8bec5816215aff1531ace5 Merge: 23f5fb630
+	f086c9900 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Nov 5
 	01:02:06 2014 +0900
 
 2014-11-05  Hayaki Saito <saitoha@gmail.com>
@@ -7135,8 +7411,8 @@
 
 2014-11-03  Hayaki Saito <user@zuse.jp>
 
-	* : commit 36d980004ad66f23c9b487d733a95efc3c95ad4e Merge: a104100
-	9e360f4 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Nov 3
+	* : commit 36d980004ad66f23c9b487d733a95efc3c95ad4e Merge: a1041004a
+	9e360f445 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Nov 3
 	12:23:17 2014 +0900
 
 2014-11-03  Hayaki Saito <user@zuse.jp>
@@ -7183,8 +7459,8 @@
 
 2014-11-03  Hayaki Saito <user@zuse.jp>
 
-	* : commit daef13f778123327d920cd7660e813e2188b9c89 Merge: 2311e9e
-	3706ea4 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Nov 3
+	* : commit daef13f778123327d920cd7660e813e2188b9c89 Merge: 2311e9e19
+	3706ea47a Author: Hayaki Saito <user@zuse.jp> Date:   Mon Nov 3
 	02:34:30 2014 +0900
 
 2014-11-03  Hayaki Saito <user@zuse.jp>
@@ -7265,8 +7541,8 @@
 
 2014-10-28  Hayaki Saito <user@zuse.jp>
 
-	* : commit e4d08bab64f1c9b3fdb92b798726c27584b3aec9 Merge: 318fd39
-	3706ea4 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Oct 28
+	* : commit e4d08bab64f1c9b3fdb92b798726c27584b3aec9 Merge: 318fd39ed
+	3706ea47a Author: Hayaki Saito <user@zuse.jp> Date:   Tue Oct 28
 	11:26:19 2014 +0900
 
 2014-10-27  Vertis Sidus <vrtsds@users.noreply.github.com>
@@ -7309,8 +7585,8 @@
 
 2014-10-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit 937cdd9c12c14cf837a8f74f2403107d00ff23ab Merge: cff67e3
-	6977d71 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 26
+	* : commit 937cdd9c12c14cf837a8f74f2403107d00ff23ab Merge: cff67e35b
+	6977d71e4 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 26
 	21:32:03 2014 +0900
 
 2014-10-26  Hayaki Saito <user@zuse.jp>
@@ -7334,8 +7610,8 @@
 
 2014-10-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit 50750f41d3d4d51b65b6be7e133ce5e4b3d4e7fd Merge: d569b04
-	8a5d5a8 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 26
+	* : commit 50750f41d3d4d51b65b6be7e133ce5e4b3d4e7fd Merge: d569b0456
+	8a5d5a8e9 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 26
 	21:06:06 2014 +0900
 
 2014-10-26  Hayaki Saito <user@zuse.jp>
@@ -7353,8 +7629,8 @@
 
 2014-10-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit 3109a286dac4e53536e9414a7c343163d2bbbe96 Merge: 3fb1c82
-	b5373b8 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 26
+	* : commit 3109a286dac4e53536e9414a7c343163d2bbbe96 Merge: 3fb1c82e5
+	b5373b8cd Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 26
 	20:05:36 2014 +0900
 
 2014-10-26  Hayaki Saito <user@zuse.jp>
@@ -7367,8 +7643,8 @@
 
 2014-10-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit df9be1efb6ca36bd729c90e92a82bf64c846136a Merge: e9a443e
-	3bbe122 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 26
+	* : commit df9be1efb6ca36bd729c90e92a82bf64c846136a Merge: e9a443e48
+	3bbe1224b Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 26
 	17:20:39 2014 +0900
 
 2014-10-26  Hayaki Saito <user@zuse.jp>
@@ -7382,8 +7658,8 @@
 
 2014-10-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit 24c1519dc27f2371222c86218be5b29278a189c8 Merge: df4c7fb
-	e9a443e Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 26
+	* : commit 24c1519dc27f2371222c86218be5b29278a189c8 Merge: df4c7fb2b
+	e9a443e48 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 26
 	16:56:07 2014 +0900
 
 2014-10-26  Hayaki Saito <user@zuse.jp>
@@ -7488,8 +7764,8 @@
 
 2014-10-22  Hayaki Saito <user@zuse.jp>
 
-	* : commit 8b5ea5c0f28bb246862c2e36be546dc3f8aad371 Merge: 982c299
-	614134f Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
+	* : commit 8b5ea5c0f28bb246862c2e36be546dc3f8aad371 Merge: 982c299c3
+	614134f97 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
 	23:38:09 2014 +0900
 
 2014-10-20  Hayaki Saito <user@zuse.jp>
@@ -7503,14 +7779,14 @@
 
 2014-10-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit 45fbf2d4fab1253fb0c943a7bdc17b9fc97809b6 Merge: 4319192
-	e9a443e Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
+	* : commit 45fbf2d4fab1253fb0c943a7bdc17b9fc97809b6 Merge: 431919282
+	e9a443e48 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
 	23:22:33 2014 +0900
 
 2014-10-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit 8c2a003c854ccbb9f90bfb95a6f144a9e724ea84 Merge: a84ff53
-	96322ee Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
+	* : commit 8c2a003c854ccbb9f90bfb95a6f144a9e724ea84 Merge: a84ff5301
+	96322eec8 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
 	23:21:36 2014 +0900
 
 2014-10-20  Hayaki Saito <user@zuse.jp>
@@ -7524,8 +7800,8 @@
 
 2014-10-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit e9a443e482f6c7bdfd3771a87cb403a2df064896 Merge: a9643dd
-	df4c7fb Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
+	* : commit e9a443e482f6c7bdfd3771a87cb403a2df064896 Merge: a9643dd90
+	df4c7fb2b Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
 	22:57:08 2014 +0900
 
 2014-10-20  Hayaki Saito <user@zuse.jp>
@@ -7538,8 +7814,8 @@
 
 2014-10-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit a6c8a6dd341666307232b38ec52914041e9bcfce Merge: 213a939
-	cf9d1ca Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
+	* : commit a6c8a6dd341666307232b38ec52914041e9bcfce Merge: 213a939f0
+	cf9d1ca34 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
 	05:20:12 2014 +0900
 
 2014-10-20  Hayaki Saito <user@zuse.jp>
@@ -7548,8 +7824,8 @@
 
 2014-10-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit 213a939f08a005f814d857ca44a9b942a3f5a5dd Merge: b200444
-	bf5f371 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
+	* : commit 213a939f08a005f814d857ca44a9b942a3f5a5dd Merge: b200444e4
+	bf5f371a2 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
 	05:15:57 2014 +0900
 
 2014-10-20  Hayaki Saito <user@zuse.jp>
@@ -7563,8 +7839,8 @@
 
 2014-10-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit a9643dd90c41251a22234a4f71c75a75dbe15dd9 Merge: d61633a
-	658d9fd Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
+	* : commit a9643dd90c41251a22234a4f71c75a75dbe15dd9 Merge: d61633abf
+	658d9fd8f Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 20
 	04:44:13 2014 +0900
 
 2014-10-20  Hayaki Saito <user@zuse.jp>
@@ -7585,8 +7861,8 @@
 
 2014-10-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit a5e778881a864707ed889afb61b1ce57eefa5824 Merge: 417c3d2
-	64c600a Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 19
+	* : commit a5e778881a864707ed889afb61b1ce57eefa5824 Merge: 417c3d297
+	64c600a77 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 19
 	23:12:15 2014 +0900
 
 2014-10-19  Hayaki Saito <user@zuse.jp>
@@ -7612,8 +7888,8 @@
 
 2014-10-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit 417c3d2970849489dd0dcc55dcb76e1906ce2bbb Merge: b48139d
-	82d0979 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Oct 17
+	* : commit 417c3d2970849489dd0dcc55dcb76e1906ce2bbb Merge: b48139dda
+	82d09796e Author: Hayaki Saito <user@zuse.jp> Date:   Fri Oct 17
 	22:59:38 2014 +0900
 
 2014-10-17  Hayaki Saito <user@zuse.jp>
@@ -7636,8 +7912,8 @@
 
 2014-10-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit 7ab262c52ca6dc4b6eeaf59fb067157e2e864eac Merge: 094cd76
-	d61633a Author: Hayaki Saito <user@zuse.jp> Date:   Fri Oct 17
+	* : commit 7ab262c52ca6dc4b6eeaf59fb067157e2e864eac Merge: 094cd76b7
+	d61633abf Author: Hayaki Saito <user@zuse.jp> Date:   Fri Oct 17
 	00:37:08 2014 +0900
 
 2014-10-17  Hayaki Saito <user@zuse.jp>
@@ -7647,26 +7923,26 @@
 
 2014-10-14  Hayaki Saito <user@zuse.jp>
 
-	* : commit f8834c49b00e061b3a7b0f6652af2a3d803f9b70 Merge: 2d7d1d7
-	d61633a Author: Hayaki Saito <user@zuse.jp> Date:   Tue Oct 14
+	* : commit f8834c49b00e061b3a7b0f6652af2a3d803f9b70 Merge: 2d7d1d772
+	d61633abf Author: Hayaki Saito <user@zuse.jp> Date:   Tue Oct 14
 	23:54:17 2014 +0900
 
 2014-10-14  Hayaki Saito <user@zuse.jp>
 
-	* : commit 219facdec75964baa16ef46d161db5676d7750b5 Merge: 64fee92
-	8f6181c Author: Hayaki Saito <user@zuse.jp> Date:   Tue Oct 14
+	* : commit 219facdec75964baa16ef46d161db5676d7750b5 Merge: 64fee92fa
+	8f6181c9d Author: Hayaki Saito <user@zuse.jp> Date:   Tue Oct 14
 	23:53:44 2014 +0900
 
 2014-10-14  Hayaki Saito <user@zuse.jp>
 
-	* : commit e1c256a864fbec62806869b4dbddab5740c87295 Merge: ae1bd50
-	0f62112 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Oct 14
+	* : commit e1c256a864fbec62806869b4dbddab5740c87295 Merge: ae1bd5038
+	0f6211248 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Oct 14
 	03:42:34 2014 +0900
 
 2014-10-14  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0f8948c214056f17f9709ffef284d7009dce7057 Merge: d893b67
-	0f62112 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Oct 14
+	* : commit 0f8948c214056f17f9709ffef284d7009dce7057 Merge: d893b672f
+	0f6211248 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Oct 14
 	02:54:00 2014 +0900
 
 2014-10-14  Hayaki Saito <user@zuse.jp>
@@ -7688,8 +7964,8 @@
 
 2014-10-12  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0f621124858c81a73f43b7097c81054ec981cbc6 Merge: e227124
-	4aaaf5c Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 12
+	* : commit 0f621124858c81a73f43b7097c81054ec981cbc6 Merge: e227124af
+	4aaaf5c96 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 12
 	21:37:23 2014 +0900
 
 2014-10-12  Hayaki Saito <user@zuse.jp>
@@ -7713,8 +7989,8 @@
 
 2014-10-12  Hayaki Saito <user@zuse.jp>
 
-	* : commit b6df2e20c13ad214deb500279fd378ea88896933 Merge: b38d5ef
-	fdf19b9 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 12
+	* : commit b6df2e20c13ad214deb500279fd378ea88896933 Merge: b38d5ef8f
+	fdf19b9a4 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 12
 	18:53:12 2014 +0900
 
 2014-10-12  Hayaki Saito <user@zuse.jp>
@@ -7826,8 +8102,8 @@
 
 2014-10-09  Hayaki Saito <user@zuse.jp>
 
-	* : commit 32910dbfd81acdcb1cf13ea10ff37f3d34b41628 Merge: 373133b
-	52865d0 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Oct 9
+	* : commit 32910dbfd81acdcb1cf13ea10ff37f3d34b41628 Merge: 373133bac
+	52865d079 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Oct 9
 	03:04:45 2014 +0900
 
 2014-10-09  Hayaki Saito <user@zuse.jp>
@@ -7842,8 +8118,8 @@
 
 2014-10-09  Hayaki Saito <user@zuse.jp>
 
-	* : commit 04e599d468ad840d821889e5c174cf8140e71e44 Merge: d68555d
-	41ae257 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Oct 9
+	* : commit 04e599d468ad840d821889e5c174cf8140e71e44 Merge: d68555d49
+	41ae257bd Author: Hayaki Saito <user@zuse.jp> Date:   Thu Oct 9
 	02:30:46 2014 +0900
 
 2014-10-09  Hayaki Saito <user@zuse.jp>
@@ -7853,8 +8129,8 @@
 
 2014-10-09  Hayaki Saito <user@zuse.jp>
 
-	* : commit d68555d493e038c0b652e4b11b95f7a14ef0cc7a Merge: 6384cd3
-	6fe01cb Author: Hayaki Saito <user@zuse.jp> Date:   Thu Oct 9
+	* : commit d68555d493e038c0b652e4b11b95f7a14ef0cc7a Merge: 6384cd3a2
+	6fe01cb02 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Oct 9
 	02:24:48 2014 +0900
 
 2014-10-09  Hayaki Saito <user@zuse.jp>
@@ -7864,8 +8140,8 @@
 
 2014-10-09  Hayaki Saito <user@zuse.jp>
 
-	* : commit 55185bf9cf0c31dda7635d14d00759eb83bbadd8 Merge: dc78fe6
-	4a011b1 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Oct 9
+	* : commit 55185bf9cf0c31dda7635d14d00759eb83bbadd8 Merge: dc78fe6f0
+	4a011b132 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Oct 9
 	02:07:35 2014 +0900
 
 2014-10-09  Hayaki Saito <user@zuse.jp>
@@ -7884,8 +8160,8 @@
 
 2014-10-08  Hayaki Saito <user@zuse.jp>
 
-	* : commit 56eb3d9456b1f11d7ec2e1bc74a2a812af669557 Merge: 5b49d05
-	f035034 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Oct 8
+	* : commit 56eb3d9456b1f11d7ec2e1bc74a2a812af669557 Merge: 5b49d0568
+	f035034c6 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Oct 8
 	01:35:58 2014 +0900
 
 2014-10-08  Hayaki Saito <user@zuse.jp>
@@ -7924,14 +8200,14 @@
 
 2014-10-06  Hayaki Saito <user@zuse.jp>
 
-	* : commit 44d880b5770f667b4c5d8862ba5f3ea874a25d78 Merge: 279c989
-	4cd6ec3 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 6
+	* : commit 44d880b5770f667b4c5d8862ba5f3ea874a25d78 Merge: 279c9891b
+	4cd6ec3b9 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 6
 	00:32:33 2014 +0900
 
 2014-10-06  Hayaki Saito <user@zuse.jp>
 
-	* : commit 711f0711a303d8ec339f5164e3a7439e2a5f719b Merge: c22fd51
-	279c989 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 6
+	* : commit 711f0711a303d8ec339f5164e3a7439e2a5f719b Merge: c22fd516d
+	279c9891b Author: Hayaki Saito <user@zuse.jp> Date:   Mon Oct 6
 	00:23:50 2014 +0900
 
 2014-10-06  Hayaki Saito <user@zuse.jp>
@@ -7959,8 +8235,8 @@
 
 2014-10-05  Hayaki Saito <user@zuse.jp>
 
-	* : commit 60c87ef76e020da27db58736f099aaa9c3c9c3c8 Merge: b011865
-	b500de9 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 5
+	* : commit 60c87ef76e020da27db58736f099aaa9c3c9c3c8 Merge: b01186561
+	b500de935 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 5
 	23:14:55 2014 +0900
 
 2014-10-05  Hayaki Saito <user@zuse.jp>
@@ -7970,8 +8246,8 @@
 
 2014-10-05  Hayaki Saito <user@zuse.jp>
 
-	* : commit 4de46038ff39ba3044cf4828dff6e5a82938e198 Merge: d0723ff
-	8eca1ba Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 5
+	* : commit 4de46038ff39ba3044cf4828dff6e5a82938e198 Merge: d0723ff27
+	8eca1ba19 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Oct 5
 	15:51:43 2014 +0900
 
 2014-10-02  Hayaki Saito <user@zuse.jp>
@@ -7990,8 +8266,8 @@
 
 2014-10-01  Hayaki Saito <user@zuse.jp>
 
-	* : commit 94a9cb33f2bb911cde75af5c7b15e52c8f049d62 Merge: c42ece2
-	fba7210 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Oct 1
+	* : commit 94a9cb33f2bb911cde75af5c7b15e52c8f049d62 Merge: c42ece2ae
+	fba721007 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Oct 1
 	23:34:11 2014 +0900
 
 2014-10-01  Hayaki Saito <user@zuse.jp>
@@ -8001,8 +8277,8 @@
 
 2014-10-01  Hayaki Saito <user@zuse.jp>
 
-	* : commit a4094beef159e69402fce79cd095c52fbe1715ad Merge: 772ed6a
-	d3c1241 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Oct 1
+	* : commit a4094beef159e69402fce79cd095c52fbe1715ad Merge: 772ed6a6a
+	d3c124161 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Oct 1
 	23:19:16 2014 +0900
 
 2014-10-01  Hayaki Saito <user@zuse.jp>
@@ -8011,8 +8287,8 @@
 
 2014-10-01  Hayaki Saito <user@zuse.jp>
 
-	* : commit 05ee24d08a83028b54e165404a330e56edc71993 Merge: 44534c4
-	74d7907 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Oct 1
+	* : commit 05ee24d08a83028b54e165404a330e56edc71993 Merge: 44534c43b
+	74d79070d Author: Hayaki Saito <user@zuse.jp> Date:   Wed Oct 1
 	09:35:37 2014 +0900
 
 2014-10-01  Hayaki Saito <user@zuse.jp>
@@ -8094,8 +8370,8 @@
 
 2014-09-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit 44534c43bc062aaa90f14289f0d9b51ac7a31e74 Merge: d002b7b
-	cfb7c71 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Sep 26
+	* : commit 44534c43bc062aaa90f14289f0d9b51ac7a31e74 Merge: d002b7b01
+	cfb7c714e Author: Hayaki Saito <user@zuse.jp> Date:   Fri Sep 26
 	23:05:00 2014 +0900
 
 2014-09-26  Hayaki Saito <user@zuse.jp>
@@ -8108,8 +8384,8 @@
 
 2014-09-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit 9b8079fb44325e7ea13313bedf1bd0bfd39f28d3 Merge: c9e0cd9
-	908c8eb Author: Hayaki Saito <user@zuse.jp> Date:   Fri Sep 26
+	* : commit 9b8079fb44325e7ea13313bedf1bd0bfd39f28d3 Merge: c9e0cd99a
+	908c8eb37 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Sep 26
 	22:53:14 2014 +0900
 
 2014-09-26  Hayaki Saito <user@zuse.jp>
@@ -8147,8 +8423,8 @@
 
 2014-09-24  Hayaki Saito <user@zuse.jp>
 
-	* : commit 4579aedef11b5f141d1a11e03e066efced1e472a Merge: 3ab59a7
-	1c1acc6 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Sep 24
+	* : commit 4579aedef11b5f141d1a11e03e066efced1e472a Merge: 3ab59a75f
+	1c1acc6b5 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Sep 24
 	21:58:28 2014 +0900
 
 2014-09-24  Hayaki Saito <user@zuse.jp>
@@ -8158,8 +8434,8 @@
 
 2014-09-24  Hayaki Saito <user@zuse.jp>
 
-	* : commit 3865c4aab2cd305836bf7edea28a6af841ec9893 Merge: 6074883
-	64028c9 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Sep 24
+	* : commit 3865c4aab2cd305836bf7edea28a6af841ec9893 Merge: 60748837d
+	64028c914 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Sep 24
 	21:56:00 2014 +0900
 
 2014-09-24  Hayaki Saito <user@zuse.jp>
@@ -8187,8 +8463,8 @@
 
 2014-09-24  Hayaki Saito <user@zuse.jp>
 
-	* : commit fdc1aa19cd6a3ca192eda95239568a4a56f99d84 Merge: 2f84173
-	6c42096 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Sep 23
+	* : commit fdc1aa19cd6a3ca192eda95239568a4a56f99d84 Merge: 2f84173e7
+	6c42096ba Author: Hayaki Saito <user@zuse.jp> Date:   Tue Sep 23
 	20:04:01 2014 +0900
 
 2014-09-23  Hayaki Saito <user@zuse.jp>
@@ -8222,8 +8498,8 @@
 
 2014-09-23  Hayaki Saito <user@zuse.jp>
 
-	* : commit f2cc0dd28b19794b1ced0c94f2fe281dd5e37a12 Merge: 1524e75
-	92476b0 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Sep 23
+	* : commit f2cc0dd28b19794b1ced0c94f2fe281dd5e37a12 Merge: 1524e75aa
+	92476b035 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Sep 23
 	17:18:13 2014 +0900
 
 2014-09-23  Hayaki Saito <user@zuse.jp>
@@ -8238,8 +8514,8 @@
 
 2014-09-23  Hayaki Saito <user@zuse.jp>
 
-	* : commit 07a8f3f83c5f94609de992d8e3ee9d4fc760b93b Merge: 298c404
-	f405013 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Sep 9
+	* : commit 07a8f3f83c5f94609de992d8e3ee9d4fc760b93b Merge: 298c4048f
+	f40501362 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Sep 9
 	00:08:04 2014 +0900
 
 2014-09-09  Hayaki Saito <user@zuse.jp>
@@ -8273,8 +8549,8 @@
 
 2014-08-29  Hayaki Saito <user@zuse.jp>
 
-	* : commit ac68095d891ec9b7b16b571aa7f2be2dd27ec557 Merge: efee084
-	d32e130 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Aug 29
+	* : commit ac68095d891ec9b7b16b571aa7f2be2dd27ec557 Merge: efee08430
+	d32e1306f Author: Hayaki Saito <user@zuse.jp> Date:   Fri Aug 29
 	02:49:46 2014 +0900
 
 2014-08-29  Hayaki Saito <user@zuse.jp>
@@ -8293,8 +8569,8 @@
 
 2014-08-29  Hayaki Saito <user@zuse.jp>
 
-	* : commit c87104ff74e84cdd083e9297b649d0b28cc48e97 Merge: f0ddfd8
-	399e8a2 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Aug 29
+	* : commit c87104ff74e84cdd083e9297b649d0b28cc48e97 Merge: f0ddfd8f8
+	399e8a264 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Aug 29
 	02:27:27 2014 +0900
 
 2014-08-29  Hayaki Saito <user@zuse.jp>
@@ -8309,14 +8585,14 @@
 
 2014-08-25  Hayaki Saito <user@zuse.jp>
 
-	* : commit b677c0efbc8dfee949e5efd6769a57aa42f630ff Merge: 208ccd4
-	f0ddfd8 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Aug 25
+	* : commit b677c0efbc8dfee949e5efd6769a57aa42f630ff Merge: 208ccd4c9
+	f0ddfd8f8 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Aug 25
 	17:26:38 2014 +0900
 
 2014-08-25  Hayaki Saito <user@zuse.jp>
 
-	* : commit cdd21dc929178690664eaa66f94fa4db5612ba54 Merge: 68d49d6
-	216e61b Author: Hayaki Saito <user@zuse.jp> Date:   Mon Aug 25
+	* : commit cdd21dc929178690664eaa66f94fa4db5612ba54 Merge: 68d49d6d8
+	216e61b4e Author: Hayaki Saito <user@zuse.jp> Date:   Mon Aug 25
 	13:41:05 2014 +0900
 
 2014-08-25  Hayaki Saito <user@zuse.jp>
@@ -8331,14 +8607,14 @@
 
 2014-08-25  Hayaki Saito <user@zuse.jp>
 
-	* : commit 216e61b4e3f95d952b881b12c30ba379b2cb706b Merge: cf6b1c5
-	767480e Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 24
+	* : commit 216e61b4e3f95d952b881b12c30ba379b2cb706b Merge: cf6b1c58f
+	767480e02 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 24
 	03:57:39 2014 +0900
 
 2014-08-23  Hayaki Saito <user@zuse.jp>
 
-	* : commit 8e4141d3e204ed8e1302207cb71d36d271391c4d Merge: 2b94949
-	f0ddfd8 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 23
+	* : commit 8e4141d3e204ed8e1302207cb71d36d271391c4d Merge: 2b949499e
+	f0ddfd8f8 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 23
 	18:34:30 2014 +0900
 
 2014-08-23  Hayaki Saito <user@zuse.jp>
@@ -8360,8 +8636,8 @@
 
 2014-08-21  Hayaki Saito <user@zuse.jp>
 
-	* : commit d53acd758c6209d03af06141eb262844d33dcca4 Merge: 98d3926
-	cf6b1c5 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Aug 20
+	* : commit d53acd758c6209d03af06141eb262844d33dcca4 Merge: 98d39269c
+	cf6b1c58f Author: Hayaki Saito <user@zuse.jp> Date:   Wed Aug 20
 	00:18:45 2014 +0900
 
 2014-08-20  Hayaki Saito <user@zuse.jp>
@@ -8371,8 +8647,8 @@
 
 2014-08-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit 2927e3ca94e1be715e9c92f2a0e40768cec1dede Merge: 62c4b97
-	4ef0b32 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 17
+	* : commit 2927e3ca94e1be715e9c92f2a0e40768cec1dede Merge: 62c4b97b9
+	4ef0b3214 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 17
 	20:39:02 2014 +0900
 
 2014-08-17  Hayaki Saito <user@zuse.jp>
@@ -8389,8 +8665,8 @@
 
 2014-08-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit 58038bc49bdaf0caaaa5738d895969f9f42432c0 Merge: 10b4c4a
-	96dd8dd Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 17
+	* : commit 58038bc49bdaf0caaaa5738d895969f9f42432c0 Merge: 10b4c4aa3
+	96dd8dd78 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 17
 	20:15:18 2014 +0900
 
 2014-08-17  Hayaki Saito <user@zuse.jp>
@@ -8418,8 +8694,8 @@
 
 2014-08-16  Hayaki Saito <user@zuse.jp>
 
-	* : commit 85dd98671964751c05846352da00b772c9bf776e Merge: 356c677
-	96dd8dd Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 16
+	* : commit 85dd98671964751c05846352da00b772c9bf776e Merge: 356c6779c
+	96dd8dd78 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 16
 	22:58:48 2014 +0900
 
 2014-08-16  Hayaki Saito <user@zuse.jp>
@@ -8541,20 +8817,20 @@
 
 2014-08-03  Hayaki Saito <user@zuse.jp>
 
-	* : commit 52fe8d8d37b25dd14878a60b4718845fa81f6bce Merge: 0283eca
-	4d79cba Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 3
+	* : commit 52fe8d8d37b25dd14878a60b4718845fa81f6bce Merge: 0283eca2a
+	4d79cbabb Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 3
 	20:10:28 2014 +0900
 
 2014-08-03  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0283eca2a46960fa95c80f1ea941e77212db26a9 Merge: cf24f21
-	06294a6 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 3
+	* : commit 0283eca2a46960fa95c80f1ea941e77212db26a9 Merge: cf24f219a
+	06294a6d5 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 3
 	20:08:54 2014 +0900
 
 2014-08-03  Hayaki Saito <user@zuse.jp>
 
-	* : commit cf24f219a2a7ead3a23ab69ede6f67f66aa85c4e Merge: 5488db3
-	4446293 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 3
+	* : commit cf24f219a2a7ead3a23ab69ede6f67f66aa85c4e Merge: 5488db3a4
+	44462932c Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 3
 	20:07:34 2014 +0900
 
 2014-08-03  Hayaki Saito <user@zuse.jp>
@@ -8570,8 +8846,8 @@
 
 2014-08-03  Hayaki Saito <user@zuse.jp>
 
-	* : commit 26dc91d08d6908d6310b206290fd99bc2b684ceb Merge: 143321f
-	0e860e7 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 3
+	* : commit 26dc91d08d6908d6310b206290fd99bc2b684ceb Merge: 143321f13
+	0e860e7cf Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 3
 	13:02:25 2014 +0900
 
 2014-08-03  Hayaki Saito <user@zuse.jp>
@@ -8585,8 +8861,8 @@
 
 2014-08-03  Hayaki Saito <user@zuse.jp>
 
-	* : commit 9c26252bdec58362c4d8049e3386176a390dbb1e Merge: 5df2198
-	5cda21c Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 3
+	* : commit 9c26252bdec58362c4d8049e3386176a390dbb1e Merge: 5df2198ee
+	5cda21c37 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Aug 3
 	12:49:32 2014 +0900
 
 2014-08-03  Hayaki Saito <user@zuse.jp>
@@ -8614,14 +8890,14 @@
 
 2014-08-02  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0cca6f7d250ba09e6f2d6e80ec21510ac28104f8 Merge: f6298a8
-	caf9b99 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 2
+	* : commit 0cca6f7d250ba09e6f2d6e80ec21510ac28104f8 Merge: f6298a87b
+	caf9b99cc Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 2
 	14:52:23 2014 +0900
 
 2014-08-02  Hayaki Saito <user@zuse.jp>
 
-	* : commit f6298a87ba13ffd00dcf49ef18e3a3c6c3b0866f Merge: 1cc40a0
-	c0ba421 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 2
+	* : commit f6298a87ba13ffd00dcf49ef18e3a3c6c3b0866f Merge: 1cc40a0aa
+	c0ba4218a Author: Hayaki Saito <user@zuse.jp> Date:   Sat Aug 2
 	14:49:45 2014 +0900
 
 2014-08-02  Hayaki Saito <user@zuse.jp>
@@ -8639,8 +8915,8 @@
 
 2014-07-28  Hayaki Saito <user@zuse.jp>
 
-	* : commit 1cc40a0aa395a28a2a35842c56f1546e3b19a701 Merge: ed5171e
-	56b1f05 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jul 28
+	* : commit 1cc40a0aa395a28a2a35842c56f1546e3b19a701 Merge: ed5171e0e
+	56b1f05f0 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jul 28
 	21:31:01 2014 +0900
 
 2014-07-28  Hayaki Saito <user@zuse.jp>
@@ -8670,8 +8946,8 @@
 
 2014-07-27  Hayaki Saito <user@zuse.jp>
 
-	* : commit ed5171e0e5ae10f362b39b8d6a7c6a96981d8cdf Merge: fa69940
-	f606660 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Jul 27
+	* : commit ed5171e0e5ae10f362b39b8d6a7c6a96981d8cdf Merge: fa699408a
+	f6066606a Author: Hayaki Saito <user@zuse.jp> Date:   Sun Jul 27
 	00:41:04 2014 +0900
 
 2014-07-27  Hayaki Saito <user@zuse.jp>
@@ -8712,8 +8988,8 @@
 
 2014-07-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit 59d5bcc83d5cb864345912aaeae47e3e0b9d30da Merge: 893f9b9
-	739fb37 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 26
+	* : commit 59d5bcc83d5cb864345912aaeae47e3e0b9d30da Merge: 893f9b966
+	739fb37ff Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 26
 	22:13:39 2014 +0900
 
 2014-07-26  Hayaki Saito <user@zuse.jp>
@@ -8731,8 +9007,8 @@
 
 2014-07-25  Hayaki Saito <user@zuse.jp>
 
-	* : commit 645f29b901c1768024b701937d7e4fe30255df64 Merge: 53fc926
-	f003dd4 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jul 25
+	* : commit 645f29b901c1768024b701937d7e4fe30255df64 Merge: 53fc9260e
+	f003dd40f Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jul 25
 	01:35:52 2014 +0900
 
 2014-07-25  Hayaki Saito <user@zuse.jp>
@@ -8750,8 +9026,8 @@
 
 2014-07-24  Hayaki Saito <user@zuse.jp>
 
-	* : commit ca3af047b6dc8bafd36b11fc65fad45df7b468f0 Merge: 385ebf0
-	1b62176 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jul 24
+	* : commit ca3af047b6dc8bafd36b11fc65fad45df7b468f0 Merge: 385ebf075
+	1b62176ee Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jul 24
 	09:55:21 2014 +0900
 
 2014-07-24  Hayaki Saito <user@zuse.jp>
@@ -8760,8 +9036,8 @@
 
 2014-07-24  Hayaki Saito <user@zuse.jp>
 
-	* : commit 53fc9260e25037c2ee51fc6203060a53bf4f3d66 Merge: 404339a
-	6ce3b88 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jul 24
+	* : commit 53fc9260e25037c2ee51fc6203060a53bf4f3d66 Merge: 404339ab3
+	6ce3b8885 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jul 24
 	00:07:47 2014 +0900
 
 2014-07-24  Hayaki Saito <user@zuse.jp>
@@ -8779,14 +9055,14 @@
 
 2014-07-23  Hayaki Saito <user@zuse.jp>
 
-	* : commit f4beb0cb034e6c7af9efff586c1b718d5c0be0f6 Merge: ab144ca
-	404339a Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jul 23
+	* : commit f4beb0cb034e6c7af9efff586c1b718d5c0be0f6 Merge: ab144ca6d
+	404339ab3 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jul 23
 	00:30:22 2014 +0900
 
 2014-07-23  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0481501f39e366f05e638b8a3a8fbf008c382a13 Merge: 79593d3
-	7f87bec Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jul 23
+	* : commit 0481501f39e366f05e638b8a3a8fbf008c382a13 Merge: 79593d31b
+	7f87bec1c Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jul 23
 	00:24:23 2014 +0900
 
 2014-07-23  Hayaki Saito <user@zuse.jp>
@@ -8807,14 +9083,14 @@
 
 2014-07-22  Hayaki Saito <user@zuse.jp>
 
-	* : commit ab144ca6db5e705ac1e1c0d8fd9ef3a6686a0d9a Merge: cf835b4
-	872587f Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jul 21
+	* : commit ab144ca6db5e705ac1e1c0d8fd9ef3a6686a0d9a Merge: cf835b447
+	872587f84 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jul 21
 	20:48:45 2014 +0900
 
 2014-07-21  Hayaki Saito <user@zuse.jp>
 
-	* : commit 6ef068e1146a1c5a71ee424f50ad45531539f13b Merge: 6622c5b
-	e62c505 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jul 21
+	* : commit 6ef068e1146a1c5a71ee424f50ad45531539f13b Merge: 6622c5bc7
+	e62c50536 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jul 21
 	20:16:53 2014 +0900
 
 2014-07-21  Hayaki Saito <user@zuse.jp>
@@ -8844,14 +9120,14 @@
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 4b5ab39b482c8a2510ffbc3e1a820bf868b803bc Merge: 38da57b
-	b40b528 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
+	* : commit 4b5ab39b482c8a2510ffbc3e1a820bf868b803bc Merge: 38da57b96
+	b40b52846 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
 	21:55:18 2014 +0900
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit bb0ff6e4ed979fde616ab4d356e05b4c6632366e Merge: 39b3ead
-	94fdcae Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
+	* : commit bb0ff6e4ed979fde616ab4d356e05b4c6632366e Merge: 39b3ead58
+	94fdcae6d Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
 	21:54:06 2014 +0900
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
@@ -8860,8 +9136,8 @@
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5b9c9f403ab89851c1e6c7dc2a3223b67f19e180 Merge: e499c8e
-	2c80b34 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
+	* : commit 5b9c9f403ab89851c1e6c7dc2a3223b67f19e180 Merge: e499c8e06
+	2c80b3437 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
 	21:52:36 2014 +0900
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
@@ -8876,8 +9152,8 @@
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 38da57b961b2826fd79313e53e97d131845aa54a Merge: 05b8bf9
-	39b3ead Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
+	* : commit 38da57b961b2826fd79313e53e97d131845aa54a Merge: 05b8bf9af
+	39b3ead58 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
 	21:44:35 2014 +0900
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
@@ -8891,8 +9167,8 @@
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 886c27f26b524ba3bb6ae2d7ba5ae052925c2eae Merge: 4746a4f
-	05b8bf9 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
+	* : commit 886c27f26b524ba3bb6ae2d7ba5ae052925c2eae Merge: 4746a4f8e
+	05b8bf9af Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
 	19:12:37 2014 +0900
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
@@ -8902,20 +9178,20 @@
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 4746a4f8e14fdca29630f021bb7947c8e9d249a8 Merge: fed5135
-	92d0d3b Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
+	* : commit 4746a4f8e14fdca29630f021bb7947c8e9d249a8 Merge: fed5135aa
+	92d0d3bfe Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
 	19:09:23 2014 +0900
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 588943694ad585d9d41954f7f42776b21f2d1d0a Merge: ede7d96
-	1e1a4b5 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
+	* : commit 588943694ad585d9d41954f7f42776b21f2d1d0a Merge: ede7d9691
+	1e1a4b5c0 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
 	19:08:12 2014 +0900
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0cdd8bce6b68ac327ea9d61d5cb0980109fe3b7d Merge: d2ddb36
-	3168ca0 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
+	* : commit 0cdd8bce6b68ac327ea9d61d5cb0980109fe3b7d Merge: d2ddb3609
+	3168ca06c Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
 	19:07:19 2014 +0900
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
@@ -8932,8 +9208,8 @@
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit c695232f1d367ac5457b6d153cf7bffe684525e1 Merge: 6808d4d
-	0737b55 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
+	* : commit c695232f1d367ac5457b6d153cf7bffe684525e1 Merge: 6808d4d3a
+	0737b55c3 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
 	18:56:24 2014 +0900
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
@@ -8958,8 +9234,8 @@
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit c22635a57f2e7a801e2ccd1ef6782a820057d3e6 Merge: 0ee56cb
-	03c3dad Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
+	* : commit c22635a57f2e7a801e2ccd1ef6782a820057d3e6 Merge: 0ee56cb7f
+	03c3dada9 Author: Hayaki Saito <user@zuse.jp> Date:   Sat Jul 19
 	01:21:10 2014 +0900
 
 2014-07-19  Hayaki Saito <user@zuse.jp>
@@ -8987,8 +9263,8 @@
 
 2014-07-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit fbc60619bd5e3dacdcb476d2a3d1c2b257c9a495 Merge: a5590b2
-	fed5135 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jul 17
+	* : commit fbc60619bd5e3dacdcb476d2a3d1c2b257c9a495 Merge: a5590b20e
+	fed5135aa Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jul 17
 	16:43:30 2014 +0900
 
 2014-07-17  Hayaki Saito <user@zuse.jp>
@@ -9007,8 +9283,8 @@
 
 2014-07-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit 4cf611e05c9417495c147e7fa7afa3a1f81a1e28 Merge: d810ff7
-	ab80560 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jul 17
+	* : commit 4cf611e05c9417495c147e7fa7afa3a1f81a1e28 Merge: d810ff742
+	ab80560f8 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jul 17
 	14:08:15 2014 +0900
 
 2014-07-17  Hayaki Saito <user@zuse.jp>
@@ -9017,8 +9293,8 @@
 
 2014-07-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit d810ff74218ce84d5dd6082e899ac71c3b16990b Merge: 516a3dc
-	8f50b2c Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jul 17
+	* : commit d810ff74218ce84d5dd6082e899ac71c3b16990b Merge: 516a3dcd7
+	8f50b2cff Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jul 17
 	14:05:01 2014 +0900
 
 2014-07-17  Hayaki Saito <user@zuse.jp>
@@ -9103,8 +9379,8 @@
 
 2014-07-15  Hayaki Saito <user@zuse.jp>
 
-	* : commit fed5135aa509623b3e5755f3fc97fce48a7c5346 Merge: 941bfb3
-	5cc3b05 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jul 9
+	* : commit fed5135aa509623b3e5755f3fc97fce48a7c5346 Merge: 941bfb301
+	5cc3b05f1 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jul 9
 	23:35:56 2014 +0900
 
 2014-07-09  Hayaki Saito <user@zuse.jp>
@@ -9113,8 +9389,8 @@
 
 2014-07-09  Hayaki Saito <user@zuse.jp>
 
-	* : commit 0f90b99281d7baefc9639c3da2a29157208ab0ef Merge: a0ed018
-	b76249a Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jul 9
+	* : commit 0f90b99281d7baefc9639c3da2a29157208ab0ef Merge: a0ed018d6
+	b76249a17 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jul 9
 	23:34:57 2014 +0900
 
 2014-07-09  Hayaki Saito <user@zuse.jp>
@@ -9127,8 +9403,8 @@
 
 2014-07-09  Hayaki Saito <user@zuse.jp>
 
-	* : commit ca6b282576764ea459a9a4f4e7439cd55a5049a7 Merge: 7b37878
-	33fe6d0 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jul 9
+	* : commit ca6b282576764ea459a9a4f4e7439cd55a5049a7 Merge: 7b37878bf
+	33fe6d003 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jul 9
 	15:26:45 2014 +0900
 
 2014-07-09  Hayaki Saito <user@zuse.jp>
@@ -9155,8 +9431,8 @@
 
 2014-07-09  Hayaki Saito <user@zuse.jp>
 
-	* : commit 82904eba43d0df290d1e55071db0f83ad06e69a9 Merge: 11f7d8e
-	58332a4 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jul 9
+	* : commit 82904eba43d0df290d1e55071db0f83ad06e69a9 Merge: 11f7d8e3b
+	58332a4a8 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jul 9
 	01:39:09 2014 +0900
 
 2014-07-09  Hayaki Saito <user@zuse.jp>
@@ -9170,14 +9446,14 @@
 
 2014-07-01  Hayaki Saito <user@zuse.jp>
 
-	* : commit 11f7d8e3ba3d8fe9fe71b96bd277c4c131d8767c Merge: 31a2d2d
-	822aaf9 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jul 1
+	* : commit 11f7d8e3ba3d8fe9fe71b96bd277c4c131d8767c Merge: 31a2d2d61
+	822aaf97b Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jul 1
 	21:04:47 2014 +0900
 
 2014-06-27  Hayaki Saito <user@zuse.jp>
 
-	* : commit f7e4f6cf7538d102ef60c7279576cc1741c8194a Merge: 98b717a
-	f491e7e Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 27
+	* : commit f7e4f6cf7538d102ef60c7279576cc1741c8194a Merge: 98b717aec
+	f491e7e65 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 27
 	20:05:18 2014 +0900
 
 2014-06-27  Hayaki Saito <user@zuse.jp>
@@ -9208,14 +9484,14 @@
 
 2014-06-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5c0f67c07cb0263bd4fc23f6ed1d60bfd599f635 Merge: 4c4e8b3
-	31a2d2d Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 20
+	* : commit 5c0f67c07cb0263bd4fc23f6ed1d60bfd599f635 Merge: 4c4e8b3e8
+	31a2d2d61 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 20
 	01:12:08 2014 +0900
 
 2014-06-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit 37a9313323baea7c6d3df99db7db6e28e72c8f9b Merge: 8db8f91
-	0042898 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 20
+	* : commit 37a9313323baea7c6d3df99db7db6e28e72c8f9b Merge: 8db8f9126
+	00428985a Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 20
 	01:11:15 2014 +0900
 
 2014-06-20  Hayaki Saito <user@zuse.jp>
@@ -9224,8 +9500,8 @@
 
 2014-06-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit 8db8f91267bec44be85029cd50e70c19d1c995e1 Merge: c855c4f
-	3cdd3da Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 20
+	* : commit 8db8f91267bec44be85029cd50e70c19d1c995e1 Merge: c855c4f3b
+	3cdd3da2f Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 20
 	01:06:51 2014 +0900
 
 2014-06-20  Hayaki Saito <user@zuse.jp>
@@ -9235,8 +9511,8 @@
 
 2014-06-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit c855c4f3b28b254f877783618e8927f9766acec2 Merge: 1533758
-	98c97e6 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 20
+	* : commit c855c4f3b28b254f877783618e8927f9766acec2 Merge: 153375812
+	98c97e697 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 20
 	00:31:08 2014 +0900
 
 2014-06-20  Hayaki Saito <user@zuse.jp>
@@ -9245,8 +9521,8 @@
 
 2014-06-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit f491e7e65d264b7a936c863e2f4017353ea9f22c Merge: bc60cf2
-	dbf4451 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 20
+	* : commit f491e7e65d264b7a936c863e2f4017353ea9f22c Merge: bc60cf2c2
+	dbf445159 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 20
 	00:15:08 2014 +0900
 
 2014-06-19  Hayaki Saito <user@zuse.jp>
@@ -9255,32 +9531,32 @@
 
 2014-06-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit d9311bda77ba51a1acd9d19a684a867c6ed0a01f Merge: 480c6c6
-	6808d4d Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
+	* : commit d9311bda77ba51a1acd9d19a684a867c6ed0a01f Merge: 480c6c64e
+	6808d4d3a Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
 	15:33:03 2014 +0900
 
 2014-06-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 832f23a447a5df4d376d7f1b523de18046547b12 Merge: 6d18eec
-	0115775 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
+	* : commit 832f23a447a5df4d376d7f1b523de18046547b12 Merge: 6d18eec36
+	011577509 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
 	01:20:30 2014 +0900
 
 2014-06-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit df7d6faa84a1049607176dc981176232b32254ab Merge: f5c8b27
-	0115775 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
+	* : commit df7d6faa84a1049607176dc981176232b32254ab Merge: f5c8b27e2
+	011577509 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
 	01:20:04 2014 +0900
 
 2014-06-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 6d18eec36e68d678262ad69b70d67aac42a67d8e Merge: dc6a858
-	f5c8b27 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
+	* : commit 6d18eec36e68d678262ad69b70d67aac42a67d8e Merge: dc6a858e4
+	f5c8b27e2 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
 	01:10:41 2014 +0900
 
 2014-06-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit f5c8b27e25671bf7e793316c5a93b2586fe35407 Merge: ea4f514
-	e7c7405 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
+	* : commit f5c8b27e25671bf7e793316c5a93b2586fe35407 Merge: ea4f51423
+	e7c7405a6 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
 	01:10:18 2014 +0900
 
 2014-06-19  Hayaki Saito <user@zuse.jp>
@@ -9294,14 +9570,14 @@
 
 2014-06-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 9a33a1c9e3edeab5d92efd8b9a3529a59c76a2c8 Merge: eb8234d
-	ea4f514 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
+	* : commit 9a33a1c9e3edeab5d92efd8b9a3529a59c76a2c8 Merge: eb8234d71
+	ea4f51423 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
 	00:55:11 2014 +0900
 
 2014-06-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 2f14c9eb7675555e86f23858af734c6c054448e1 Merge: 84ccd29
-	5229d3d Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
+	* : commit 2f14c9eb7675555e86f23858af734c6c054448e1 Merge: 84ccd297f
+	5229d3d8f Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
 	00:54:36 2014 +0900
 
 2014-06-19  Hayaki Saito <user@zuse.jp>
@@ -9315,20 +9591,20 @@
 
 2014-06-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 6808d4d3a612e4301c5a4a991e82e3e9a3a62879 Merge: 6327da3
-	eb8234d Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
+	* : commit 6808d4d3a612e4301c5a4a991e82e3e9a3a62879 Merge: 6327da33c
+	eb8234d71 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Jun 19
 	00:37:09 2014 +0900
 
 2014-06-18  Hayaki Saito <user@zuse.jp>
 
-	* : commit eb8234d710162df671a70cd8570f7f9c72fba18f Merge: 3a1376c
-	954e40a Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 18
+	* : commit eb8234d710162df671a70cd8570f7f9c72fba18f Merge: 3a1376cb0
+	954e40a9f Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 18
 	20:57:34 2014 +0900
 
 2014-06-18  Hayaki Saito <user@zuse.jp>
 
-	* : commit 311ba15701773cb7731058ed973aed153ba51673 Merge: 8a61078
-	bc60cf2 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 18
+	* : commit 311ba15701773cb7731058ed973aed153ba51673 Merge: 8a61078e1
+	bc60cf2c2 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 18
 	20:57:02 2014 +0900
 
 2014-06-18  Hayaki Saito <user@zuse.jp>
@@ -9356,20 +9632,20 @@
 
 2014-06-16  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5b4287ebde9c5eb2ae0b718c9a0b91880d116e68 Merge: 5634f33
-	e16f2b7 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jun 16
+	* : commit 5b4287ebde9c5eb2ae0b718c9a0b91880d116e68 Merge: 5634f3325
+	e16f2b707 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jun 16
 	00:25:28 2014 +0900
 
 2014-06-16  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5b6725583f65c8af25c4f0a72b18c812fd835f28 Merge: 52ee339
-	e499c8e Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jun 16
+	* : commit 5b6725583f65c8af25c4f0a72b18c812fd835f28 Merge: 52ee339d0
+	e499c8e06 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jun 16
 	00:12:17 2014 +0900
 
 2014-06-16  Hayaki Saito <user@zuse.jp>
 
-	* : commit cbc85d20457527a4fb803d8a8b51666703c2495c Merge: 18ca7c3
-	bc76d24 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jun 16
+	* : commit cbc85d20457527a4fb803d8a8b51666703c2495c Merge: 18ca7c38a
+	bc76d240d Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jun 16
 	00:09:29 2014 +0900
 
 2014-06-16  Hayaki Saito <user@zuse.jp>
@@ -9378,8 +9654,8 @@
 
 2014-06-15  Hayaki Saito <user@zuse.jp>
 
-	* : commit 7f5927daa87049609e84f6df103c6ff2a860af82 Merge: b8b86e7
-	21ecb5a Author: Hayaki Saito <user@zuse.jp> Date:   Sun Jun 15
+	* : commit 7f5927daa87049609e84f6df103c6ff2a860af82 Merge: b8b86e7b5
+	21ecb5ad7 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Jun 15
 	23:58:14 2014 +0900
 
 2014-06-15  Hayaki Saito <user@zuse.jp>
@@ -9442,8 +9718,8 @@
 
 2014-06-15  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5634f3325637910819258d08278654b83fc1dbd4 Merge: 08fb885
-	f56d132 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Jun 15
+	* : commit 5634f3325637910819258d08278654b83fc1dbd4 Merge: 08fb885b6
+	f56d132d6 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Jun 15
 	13:37:26 2014 +0900
 
 2014-06-15  Hayaki Saito <user@zuse.jp>
@@ -9457,8 +9733,8 @@
 
 2014-06-15  Hayaki Saito <user@zuse.jp>
 
-	* : commit 3a1376cb0ef11ad4c83876eb733ac3d1367fe71e Merge: 1c4817c
-	5cddfb0 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Jun 15
+	* : commit 3a1376cb0ef11ad4c83876eb733ac3d1367fe71e Merge: 1c4817c97
+	5cddfb0b0 Author: Hayaki Saito <user@zuse.jp> Date:   Sun Jun 15
 	13:31:00 2014 +0900
 
 2014-06-15  Hayaki Saito <user@zuse.jp>
@@ -9473,8 +9749,8 @@
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit 601bfce6fc47b95b9b83c6d14c1aecd38654faac Merge: fad4a88
-	db627a8 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
+	* : commit 601bfce6fc47b95b9b83c6d14c1aecd38654faac Merge: fad4a88eb
+	db627a8e4 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
 	21:56:52 2014 +0900
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
@@ -9487,14 +9763,14 @@
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit 4265dde2c7b9b5c1566e57ba62b4a762a7b411b3 Merge: c10c70b
-	73b1551 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
+	* : commit 4265dde2c7b9b5c1566e57ba62b4a762a7b411b3 Merge: c10c70b47
+	73b15517b Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
 	21:54:28 2014 +0900
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit 08fb885b69c5b35e2b255bf07efd17a0f80647b5 Merge: 2ca6d87
-	7775ecc Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
+	* : commit 08fb885b69c5b35e2b255bf07efd17a0f80647b5 Merge: 2ca6d87f4
+	7775ecce3 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
 	21:53:40 2014 +0900
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
@@ -9518,14 +9794,14 @@
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit ada9d3c7b6685b0cbcca76e53a366faf87f3f3e0 Merge: 654108a
-	2ca6d87 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
+	* : commit ada9d3c7b6685b0cbcca76e53a366faf87f3f3e0 Merge: 654108ada
+	2ca6d87f4 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
 	03:21:23 2014 +0900
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit 5339280bae201fe027f0a233799de829cb20132a Merge: 6b630d4
-	e26f1ae Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
+	* : commit 5339280bae201fe027f0a233799de829cb20132a Merge: 6b630d4cd
+	e26f1ae3e Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
 	03:20:49 2014 +0900
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
@@ -9535,7 +9811,7 @@
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 
-	* images/snake.pnm: Add new test image snake.pnm
+	* : Add new test image snake.pnm
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 
@@ -9543,14 +9819,14 @@
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit 654108ada56c43779c5dadb6f58c413a6bc3ea38 Merge: ce04bfe
-	9c8a783 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
+	* : commit 654108ada56c43779c5dadb6f58c413a6bc3ea38 Merge: ce04bfedb
+	9c8a783e0 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
 	02:55:13 2014 +0900
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit 6b630d4cd9d3c5b714a9c991597a2dc3f101e33c Merge: b006cd0
-	8bfec9a Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
+	* : commit 6b630d4cd9d3c5b714a9c991597a2dc3f101e33c Merge: b006cd09e
+	8bfec9a10 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
 	02:53:53 2014 +0900
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
@@ -9559,14 +9835,14 @@
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit b006cd09eb3f33b3c4c8ec15d547d249f1af259f Merge: 395c050
-	18ca7c3 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
+	* : commit b006cd09eb3f33b3c4c8ec15d547d249f1af259f Merge: 395c05058
+	18ca7c38a Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
 	02:10:58 2014 +0900
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit df6eeb206bb5d639e79eb3154ae74184f832ca4b Merge: 526e3c5
-	d2ada4e Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
+	* : commit df6eeb206bb5d639e79eb3154ae74184f832ca4b Merge: 526e3c521
+	d2ada4ee1 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
 	02:06:39 2014 +0900
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
@@ -9581,8 +9857,8 @@
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
 
-	* : commit 9389a28954fcb3364ca7a9744334cad65c67ab0f Merge: 5eccae1
-	dcac8e2 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
+	* : commit 9389a28954fcb3364ca7a9744334cad65c67ab0f Merge: 5eccae114
+	dcac8e28b Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 11
 	01:48:19 2014 +0900
 
 2014-06-11  Hayaki Saito <user@zuse.jp>
@@ -9630,8 +9906,8 @@
 
 2014-06-10  Hayaki Saito <user@zuse.jp>
 
-	* : commit 554775fcc0515d96d68d7263dde65b9a3b0b7840 Merge: ea72d61
-	759bacf Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 10
+	* : commit 554775fcc0515d96d68d7263dde65b9a3b0b7840 Merge: ea72d6127
+	759bacf33 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 10
 	22:02:53 2014 +0900
 
 2014-06-10  Hayaki Saito <user@zuse.jp>
@@ -9649,8 +9925,8 @@
 
 2014-06-10  Hayaki Saito <user@zuse.jp>
 
-	* : commit 24103b5596fb89c4811a1292d266d5e14bf44f66 Merge: 4fda42a
-	ffe304e Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 10
+	* : commit 24103b5596fb89c4811a1292d266d5e14bf44f66 Merge: 4fda42acd
+	ffe304e73 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 10
 	20:40:55 2014 +0900
 
 2014-06-10  Hayaki Saito <user@zuse.jp>
@@ -9664,8 +9940,8 @@
 
 2014-06-10  Hayaki Saito <user@zuse.jp>
 
-	* : commit aa6d8e715a9b3bd8d8ae363748eae10d8edaac21 Merge: f152213
-	dcac8e2 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 10
+	* : commit aa6d8e715a9b3bd8d8ae363748eae10d8edaac21 Merge: f15221389
+	dcac8e28b Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 10
 	19:57:27 2014 +0900
 
 2014-06-10  Hayaki Saito <user@zuse.jp>
@@ -9688,8 +9964,8 @@
 
 2014-06-10  Hayaki Saito <user@zuse.jp>
 
-	* : commit bafb0b4ace39366a27643a2b909e30117a4e35c0 Merge: 639a982
-	759bacf Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 10
+	* : commit bafb0b4ace39366a27643a2b909e30117a4e35c0 Merge: 639a9823f
+	759bacf33 Author: Hayaki Saito <user@zuse.jp> Date:   Tue Jun 10
 	18:31:29 2014 +0900
 
 2014-06-10  Hayaki Saito <user@zuse.jp>
@@ -9806,8 +10082,8 @@
 
 2014-06-09  Hayaki Saito <user@zuse.jp>
 
-	* : commit d0bd26de4cf9e63030107aacd8437de54026b387 Merge: 9864a0e
-	ea72d61 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jun 9
+	* : commit d0bd26de4cf9e63030107aacd8437de54026b387 Merge: 9864a0e48
+	ea72d6127 Author: Hayaki Saito <user@zuse.jp> Date:   Mon Jun 9
 	10:53:06 2014 +0900
 
 2014-06-09  Hayaki Saito <user@zuse.jp>
@@ -9849,20 +10125,20 @@
 
 2014-06-06  Hayaki Saito <user@zuse.jp>
 
-	* : commit 7c4cda0dff48dd4074c46474fae6eb86a3b00855 Merge: ba6de14
-	8062f9c Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 6
+	* : commit 7c4cda0dff48dd4074c46474fae6eb86a3b00855 Merge: ba6de142d
+	8062f9c15 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 6
 	02:02:14 2014 +0900
 
 2014-06-06  Hayaki Saito <user@zuse.jp>
 
-	* : commit af6a79b4325b5eeb9d57e4962c6466523f229569 Merge: 521120d
-	99f036f Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 6
+	* : commit af6a79b4325b5eeb9d57e4962c6466523f229569 Merge: 521120d23
+	99f036f30 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 6
 	02:00:40 2014 +0900
 
 2014-06-06  Hayaki Saito <user@zuse.jp>
 
-	* : commit 2bea66a68cae9a5bc031b3cb5ad7e1b21558530f Merge: 86500eb
-	b3db62f Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 6
+	* : commit 2bea66a68cae9a5bc031b3cb5ad7e1b21558530f Merge: 86500eb02
+	b3db62fa7 Author: Hayaki Saito <user@zuse.jp> Date:   Fri Jun 6
 	01:55:52 2014 +0900
 
 2014-06-06  Hayaki Saito <user@zuse.jp>
@@ -9915,8 +10191,8 @@
 
 2014-06-04  Hayaki Saito <user@zuse.jp>
 
-	* : commit a954c84c3f5f35686377994077b3dd4263ccfce4 Merge: 15c3ef1
-	a751d90 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 4
+	* : commit a954c84c3f5f35686377994077b3dd4263ccfce4 Merge: 15c3ef143
+	a751d90d6 Author: Hayaki Saito <user@zuse.jp> Date:   Wed Jun 4
 	01:11:30 2014 +0900
 
 2014-06-04  Hayaki Saito <user@zuse.jp>
@@ -9938,8 +10214,8 @@
 
 2014-05-30  Hayaki Saito <user@zuse.jp>
 
-	* : commit 15c3ef1432441271921ca63cda185a1a73b0be90 Merge: 200e4d9
-	0668fae Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 30
+	* : commit 15c3ef1432441271921ca63cda185a1a73b0be90 Merge: 200e4d964
+	0668fae47 Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 30
 	22:05:10 2014 +0900
 
 2014-05-30  Hayaki Saito <user@zuse.jp>
@@ -9953,8 +10229,8 @@
 
 2014-05-30  Hayaki Saito <user@zuse.jp>
 
-	* : commit 072c413b75f8b6073fa7bac2409be8d51a5abace Merge: f3a6df5
-	6ad119c Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 30
+	* : commit 072c413b75f8b6073fa7bac2409be8d51a5abace Merge: f3a6df5df
+	6ad119ce8 Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 30
 	21:58:26 2014 +0900
 
 2014-05-30  Hayaki Saito <user@zuse.jp>
@@ -9963,8 +10239,8 @@
 
 2014-05-30  Hayaki Saito <user@zuse.jp>
 
-	* : commit 6ad119ce8acb8735f55e883712b0e971d735d31c Merge: af58089
-	9a3027f Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 30
+	* : commit 6ad119ce8acb8735f55e883712b0e971d735d31c Merge: af5808980
+	9a3027f29 Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 30
 	17:55:44 2014 +0900
 
 2014-05-30  Hayaki Saito <user@zuse.jp>
@@ -9996,14 +10272,14 @@
 
 2014-05-30  Hayaki Saito <user@zuse.jp>
 
-	* : commit d27c3d2bc023c19372f39c27fe9a912488656cf2 Merge: a309048
-	3f168d1 Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 30
+	* : commit d27c3d2bc023c19372f39c27fe9a912488656cf2 Merge: a30904804
+	3f168d1b8 Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 30
 	16:08:41 2014 +0900
 
 2014-05-30  Hayaki Saito <user@zuse.jp>
 
-	* : commit a860f513d8e8e7c66cb8df18539cbf9cc12111e3 Merge: 6dfadf9
-	97677b2 Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 30
+	* : commit a860f513d8e8e7c66cb8df18539cbf9cc12111e3 Merge: 6dfadf9a0
+	97677b20c Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 30
 	16:07:58 2014 +0900
 
 2014-05-30  Hayaki Saito <user@zuse.jp>
@@ -10026,8 +10302,8 @@
 
 2014-05-30  Hayaki Saito <user@zuse.jp>
 
-	* : commit 6dfadf9a055e1c10e4e37037853b6d7e6099311d Merge: 95ecd0d
-	f3a6df5 Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 30
+	* : commit 6dfadf9a055e1c10e4e37037853b6d7e6099311d Merge: 95ecd0db1
+	f3a6df5df Author: Hayaki Saito <user@zuse.jp> Date:   Fri May 30
 	01:39:23 2014 +0900
 
 2014-05-30  Hayaki Saito <user@zuse.jp>
@@ -10056,8 +10332,8 @@
 
 2014-05-28  Hayaki Saito <user@zuse.jp>
 
-	* : commit f0ba0c915e56bf2bffc930df0704d8dacf597e90 Merge: b6160cc
-	970b317 Author: Hayaki Saito <user@zuse.jp> Date:   Wed May 28
+	* : commit f0ba0c915e56bf2bffc930df0704d8dacf597e90 Merge: b6160ccba
+	970b31781 Author: Hayaki Saito <user@zuse.jp> Date:   Wed May 28
 	23:07:31 2014 +0900
 
 2014-05-28  Hayaki Saito <user@zuse.jp>
@@ -10077,26 +10353,26 @@
 
 2014-05-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit 8ac4fd43c168a2536b7e4b7958f5b1d95b3b18e4 Merge: a393956
-	4393ade Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 26
+	* : commit 8ac4fd43c168a2536b7e4b7958f5b1d95b3b18e4 Merge: a39395691
+	4393adee2 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 26
 	23:34:52 2014 +0900
 
 2014-05-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit a3939569176142e3cf717a04535cc773b9405069 Merge: eb2e476
-	3976074 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 26
+	* : commit a3939569176142e3cf717a04535cc773b9405069 Merge: eb2e47685
+	3976074ed Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 26
 	23:25:14 2014 +0900
 
 2014-05-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit 3976074ed87c038461007d8df61f574683ced4a6 Merge: e9380b7
-	de150d0 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 26
+	* : commit 3976074ed87c038461007d8df61f574683ced4a6 Merge: e9380b716
+	de150d05f Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 26
 	23:24:47 2014 +0900
 
 2014-05-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit 2d0234bf06f0e29d45bd846ac5ff29ce2e3b7f25 Merge: 5154e02
-	c8bc5ca Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 26
+	* : commit 2d0234bf06f0e29d45bd846ac5ff29ce2e3b7f25 Merge: 5154e02b7
+	c8bc5caa1 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 26
 	23:23:56 2014 +0900
 
 2014-05-26  Hayaki Saito <user@zuse.jp>
@@ -10109,8 +10385,8 @@
 
 2014-05-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit e9380b716eada435554c35146304dae89e91859b Merge: 25d3e26
-	212a402 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 26
+	* : commit e9380b716eada435554c35146304dae89e91859b Merge: 25d3e265f
+	212a402fc Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 26
 	23:21:22 2014 +0900
 
 2014-05-26  Hayaki Saito <user@zuse.jp>
@@ -10128,8 +10404,8 @@
 
 2014-05-26  Hayaki Saito <user@zuse.jp>
 
-	* : commit 4ad8b4a92f75cab1aae57860f034f7b894e46bef Merge: 63b7ebc
-	6725b71 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 26
+	* : commit 4ad8b4a92f75cab1aae57860f034f7b894e46bef Merge: 63b7ebc3c
+	6725b714c Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 26
 	00:17:35 2014 +0900
 
 2014-05-26  Hayaki Saito <user@zuse.jp>
@@ -10142,20 +10418,20 @@
 
 2014-05-25  Hayaki Saito <user@zuse.jp>
 
-	* : commit 25d3e265fcb4bd04ff8bfc671098f6d3cd2b968b Merge: 0181db1
-	2e51c6a Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 25
+	* : commit 25d3e265fcb4bd04ff8bfc671098f6d3cd2b968b Merge: 0181db193
+	2e51c6a05 Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 25
 	23:16:32 2014 +0900
 
 2014-05-25  Hayaki Saito <user@zuse.jp>
 
-	* : commit bfb57ce619f49773b4b06e918b0db5bb09ac8d74 Merge: f4ab980
-	63b7ebc Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 25
+	* : commit bfb57ce619f49773b4b06e918b0db5bb09ac8d74 Merge: f4ab98016
+	63b7ebc3c Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 25
 	16:40:09 2014 +0900
 
 2014-05-25  Hayaki Saito <user@zuse.jp>
 
-	* : commit cbb6b93e2f90bd87c41916f49628eea45f45cfa9 Merge: 1075b8f
-	89f2455 Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 25
+	* : commit cbb6b93e2f90bd87c41916f49628eea45f45cfa9 Merge: 1075b8fcc
+	89f245565 Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 25
 	16:32:08 2014 +0900
 
 2014-05-25  Hayaki Saito <user@zuse.jp>
@@ -10212,8 +10488,8 @@
 
 2014-05-25  Hayaki Saito <user@zuse.jp>
 
-	* : commit 4372c64f1187b1b288c9b4f83d6b4bb4a889245b Merge: fe4b528
-	5154e02 Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 25
+	* : commit 4372c64f1187b1b288c9b4f83d6b4bb4a889245b Merge: fe4b528cd
+	5154e02b7 Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 25
 	13:12:30 2014 +0900
 
 2014-05-25  Hayaki Saito <user@zuse.jp>
@@ -10224,8 +10500,8 @@
 
 2014-05-25  Hayaki Saito <user@zuse.jp>
 
-	* : commit 85662a10b406a82583b17f699be89955c5789f90 Merge: 376fdde
-	ca46237 Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 25
+	* : commit 85662a10b406a82583b17f699be89955c5789f90 Merge: 376fddedb
+	ca4623765 Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 25
 	13:01:57 2014 +0900
 
 2014-05-25  Hayaki Saito <user@zuse.jp>
@@ -10239,8 +10515,8 @@
 
 2014-05-25  Hayaki Saito <user@zuse.jp>
 
-	* : commit bc0f4d25f698120f72dabd368178918d74db408a Merge: bd3081c
-	db739bb Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 25
+	* : commit bc0f4d25f698120f72dabd368178918d74db408a Merge: bd3081c31
+	db739bb2a Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 25
 	12:50:10 2014 +0900
 
 2014-05-25  Hayaki Saito <user@zuse.jp>
@@ -10321,8 +10597,8 @@
 
 2014-05-24  Hayaki Saito <user@zuse.jp>
 
-	* : commit bd3081c31ce73a027bc12299def072c18b61b7d2 Merge: 01383ea
-	f2598eb Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 24
+	* : commit bd3081c31ce73a027bc12299def072c18b61b7d2 Merge: 01383eac7
+	f2598ebcb Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 24
 	19:23:31 2014 +0900
 
 2014-05-24  Hayaki Saito <user@zuse.jp>
@@ -10335,14 +10611,14 @@
 
 2014-05-24  Hayaki Saito <user@zuse.jp>
 
-	* : commit 7fa7f3f16a3b48c748b50be2d8fc2e3f17a1d691 Merge: 5fd3074
-	f4ab980 Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 24
+	* : commit 7fa7f3f16a3b48c748b50be2d8fc2e3f17a1d691 Merge: 5fd307441
+	f4ab98016 Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 24
 	19:21:22 2014 +0900
 
 2014-05-24  Hayaki Saito <user@zuse.jp>
 
-	* : commit 376fddedb8c78274529ba665993668bcbe6260a7 Merge: da10973
-	869c33b Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 24
+	* : commit 376fddedb8c78274529ba665993668bcbe6260a7 Merge: da1097381
+	869c33bd2 Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 24
 	19:17:34 2014 +0900
 
 2014-05-24  Hayaki Saito <user@zuse.jp>
@@ -10364,8 +10640,8 @@
 
 2014-05-22  Hayaki Saito <user@zuse.jp>
 
-	* : commit baa056ccaff9a5cfb8235baf93c5174b59d0e142 Merge: 9318bcb
-	5532556 Author: Hayaki Saito <user@zuse.jp> Date:   Thu May 22
+	* : commit baa056ccaff9a5cfb8235baf93c5174b59d0e142 Merge: 9318bcbdf
+	55325563f Author: Hayaki Saito <user@zuse.jp> Date:   Thu May 22
 	03:32:24 2014 +0900
 
 2014-05-21  Hayaki Saito <user@zuse.jp>
@@ -10374,8 +10650,8 @@
 
 2014-05-21  Hayaki Saito <user@zuse.jp>
 
-	* : commit 408f130049f66a74b5e2b761c44700ba6bec06d9 Merge: 4555379
-	5fd3074 Author: Hayaki Saito <user@zuse.jp> Date:   Wed May 21
+	* : commit 408f130049f66a74b5e2b761c44700ba6bec06d9 Merge: 455537919
+	5fd307441 Author: Hayaki Saito <user@zuse.jp> Date:   Wed May 21
 	15:57:31 2014 +0900
 
 2014-05-21  Hayaki Saito <user@zuse.jp>
@@ -10398,8 +10674,8 @@
 
 2014-05-21  Hayaki Saito <user@zuse.jp>
 
-	* : commit 210490d69baf16830d94f3d9eb52fafddd785de0 Merge: 916ee42
-	3a51479 Author: Hayaki Saito <user@zuse.jp> Date:   Wed May 21
+	* : commit 210490d69baf16830d94f3d9eb52fafddd785de0 Merge: 916ee421d
+	3a51479df Author: Hayaki Saito <user@zuse.jp> Date:   Wed May 21
 	00:20:26 2014 +0900
 
 2014-05-21  Hayaki Saito <user@zuse.jp>
@@ -10425,8 +10701,8 @@
 
 2014-05-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit b806430a5e3fa0a6e63fcf9b7835d2556adacd16 Merge: e70a74b
-	916ee42 Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 20
+	* : commit b806430a5e3fa0a6e63fcf9b7835d2556adacd16 Merge: e70a74bd3
+	916ee421d Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 20
 	21:49:38 2014 +0900
 
 2014-05-20  Hayaki Saito <user@zuse.jp>
@@ -10464,8 +10740,8 @@
 
 2014-05-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit 91050ac4a7812944f2806103f9e4a37f5aa2ce0c Merge: bf813f6
-	a0a148e Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 20
+	* : commit 91050ac4a7812944f2806103f9e4a37f5aa2ce0c Merge: bf813f655
+	a0a148ed2 Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 20
 	03:04:42 2014 +0900
 
 2014-05-20  Hayaki Saito <user@zuse.jp>
@@ -10475,8 +10751,8 @@
 
 2014-05-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit 279819fbcfb35cac53ab5b6ea773f696400ee418 Merge: ce625b4
-	1192d9b Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 20
+	* : commit 279819fbcfb35cac53ab5b6ea773f696400ee418 Merge: ce625b48b
+	1192d9b80 Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 20
 	02:30:47 2014 +0900
 
 2014-05-20  Hayaki Saito <user@zuse.jp>
@@ -10526,8 +10802,8 @@
 
 2014-05-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit b371dbc1f9d0d58e9e7629f1dbdaca3f28aad0ca Merge: 0a3e70a
-	558501a Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 20
+	* : commit b371dbc1f9d0d58e9e7629f1dbdaca3f28aad0ca Merge: 0a3e70a01
+	558501a3f Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 20
 	01:23:48 2014 +0900
 
 2014-05-20  Hayaki Saito <user@zuse.jp>
@@ -10536,8 +10812,8 @@
 
 2014-05-20  Hayaki Saito <user@zuse.jp>
 
-	* : commit f041d4a45428c4a4f99ccbeb6a3d6bc1e9eb5a0d Merge: e7af959
-	394b695 Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 20
+	* : commit f041d4a45428c4a4f99ccbeb6a3d6bc1e9eb5a0d Merge: e7af9590f
+	394b695bb Author: Hayaki Saito <user@zuse.jp> Date:   Tue May 20
 	01:12:22 2014 +0900
 
 2014-05-20  Hayaki Saito <user@zuse.jp>
@@ -10587,8 +10863,8 @@
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit b5fe9bd8703bfbbdb799be3cdb8a7a9076e1a363 Merge: 25311d7
-	2882684 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
+	* : commit b5fe9bd8703bfbbdb799be3cdb8a7a9076e1a363 Merge: 25311d772
+	28826842b Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
 	23:17:49 2014 +0900
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
@@ -10602,8 +10878,8 @@
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 25311d77228e122455b5c66b021108533f92ed5f Merge: 4028efe
-	7831640 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
+	* : commit 25311d77228e122455b5c66b021108533f92ed5f Merge: 4028efe19
+	78316409b Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
 	20:05:53 2014 +0900
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
@@ -10622,8 +10898,8 @@
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit bf813f655564d9a8772f509cf474030765ca902b Merge: fce7264
-	bb39635 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
+	* : commit bf813f655564d9a8772f509cf474030765ca902b Merge: fce72644d
+	bb39635a9 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
 	03:51:51 2014 +0900
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
@@ -10633,8 +10909,8 @@
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit b152534f9973b7535ed23703190722700b89067f Merge: 3c44f5d
-	ae0cb23 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
+	* : commit b152534f9973b7535ed23703190722700b89067f Merge: 3c44f5dbe
+	ae0cb2364 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
 	03:41:20 2014 +0900
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
@@ -10643,8 +10919,8 @@
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 55325563f33d9c484014405a6b8c68a977523d72 Merge: d900ea6
-	4028efe Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
+	* : commit 55325563f33d9c484014405a6b8c68a977523d72 Merge: d900ea61e
+	4028efe19 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
 	03:37:10 2014 +0900
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
@@ -10658,8 +10934,8 @@
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 9671384bf821d6645148502a1d5c8a4058f9aa05 Merge: 03a6619
-	ace2ba9 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
+	* : commit 9671384bf821d6645148502a1d5c8a4058f9aa05 Merge: 03a66197d
+	ace2ba9de Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
 	01:48:39 2014 +0900
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
@@ -10683,8 +10959,8 @@
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
 
-	* : commit 77d0ab0869ff9b34203896ffaf36805414d757e1 Merge: e06ca92
-	f5a66c4 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
+	* : commit 77d0ab0869ff9b34203896ffaf36805414d757e1 Merge: e06ca920a
+	f5a66c448 Author: Hayaki Saito <user@zuse.jp> Date:   Mon May 19
 	01:11:11 2014 +0900
 
 2014-05-19  Hayaki Saito <user@zuse.jp>
@@ -10725,8 +11001,8 @@
 
 2014-05-18  Hayaki Saito <user@zuse.jp>
 
-	* : commit 29bd279437d67279850af8ed8a3a266737c18983 Merge: a22e4b3
-	7ec0cbf Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 18
+	* : commit 29bd279437d67279850af8ed8a3a266737c18983 Merge: a22e4b32e
+	7ec0cbf43 Author: Hayaki Saito <user@zuse.jp> Date:   Sun May 18
 	03:22:53 2014 +0900
 
 2014-05-18  Hayaki Saito <user@zuse.jp>
@@ -10765,8 +11041,8 @@
 
 2014-05-17  Hayaki Saito <user@zuse.jp>
 
-	* : commit a832cfcc81010fc9acce4bfb502d11b85820a9ef Merge: cc159a0
-	0d54457 Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 17
+	* : commit a832cfcc81010fc9acce4bfb502d11b85820a9ef Merge: cc159a0b8
+	0d54457bf Author: Hayaki Saito <user@zuse.jp> Date:   Sat May 17
 	22:44:10 2014 +0900
 
 2014-05-17  Hayaki Saito <user@zuse.jp>
@@ -10873,8 +11149,8 @@
 
 2014-05-14  Hayaki Saito <user@zuse.jp>
 
-	* : commit 6dc772ac97701886488dc0a1674fe7ae73f31150 Merge: 398c4a8
-	788332c Author: Hayaki Saito <user@zuse.jp> Date:   Wed May 14
+	* : commit 6dc772ac97701886488dc0a1674fe7ae73f31150 Merge: 398c4a850
+	788332cb1 Author: Hayaki Saito <user@zuse.jp> Date:   Wed May 14
 	01:16:54 2014 +0900
 
 2014-05-14  Hayaki Saito <user@zuse.jp>
@@ -11464,8 +11740,8 @@
 
 2014-04-24  Hayaki Saito <user@zuse.jp>
 
-	* : commit e1e1115d58962207c07d14b5e1da2505c61ce34b Merge: a44b3fa
-	e892201 Author: Hayaki Saito <user@zuse.jp> Date:   Thu Apr 24
+	* : commit e1e1115d58962207c07d14b5e1da2505c61ce34b Merge: a44b3fa93
+	e8922018a Author: Hayaki Saito <user@zuse.jp> Date:   Thu Apr 24
 	23:06:09 2014 +0900
 
 2014-04-24  Hayaki Saito <user@zuse.jp>
@@ -11747,8 +12023,8 @@
 
 2014-04-04  saitoha <user@zuse.jp>
 
-	* : commit 29877fd48b4e7d4a4ed3ae26118139929dcd7f23 Merge: d3fa140
-	4efd0f8 Author: saitoha <user@zuse.jp> Date:   Fri Apr 4 14:16:46
+	* : commit 29877fd48b4e7d4a4ed3ae26118139929dcd7f23 Merge: d3fa14046
+	4efd0f836 Author: saitoha <user@zuse.jp> Date:   Fri Apr 4 14:16:46
 	2014 +0900
 
 2014-04-04  saitoha <user@zuse.jp>
@@ -12094,8 +12370,8 @@
 
 2014-03-28  Hayaki Saito <user@zuse.jp>
 
-	* : commit 05857df472acd063435296958810c1e57cc58e0f Merge: 7771fd9
-	2a35f5e Author: Hayaki Saito <user@zuse.jp> Date:   Fri Mar 28
+	* : commit 05857df472acd063435296958810c1e57cc58e0f Merge: 7771fd9a9
+	2a35f5e4c Author: Hayaki Saito <user@zuse.jp> Date:   Fri Mar 28
 	22:31:45 2014 +0900
 
 2014-03-28  Hayaki Saito <user@zuse.jp>
