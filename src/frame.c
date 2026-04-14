@@ -973,12 +973,13 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     raw_pixels = frame->pixels.u8ptr;
     float_pixels = frame->pixels.f32ptr;
     source_pixels = raw_pixels;
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
 
     switch (frame->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
-        size = (size_t)(frame->width * frame->height * 4);
+        size = pixel_count * 4u;
         normalized_pixels = (unsigned char *)
             sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
@@ -1012,7 +1013,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             SIXEL_PIXELFORMAT_RGB888);
         break;
     case SIXEL_PIXELFORMAT_PAL8:
-        size = (size_t)(frame->width * frame->height * 3);
+        size = pixel_count * 3u;
         normalized_pixels = (unsigned char *)
             sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
@@ -1052,7 +1053,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_CIELABFLOAT32:
     case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
         /* normalize pixelformat */
-        size = (size_t)(frame->width * frame->height * 3);
+        size = pixel_count * 3u;
         normalized_pixels = (unsigned char *)
             sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
