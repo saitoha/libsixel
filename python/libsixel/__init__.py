@@ -1349,6 +1349,21 @@ def sixel_encoder_encode(encoder, filename):
 # encode specified pixel data to SIXEL format
 def sixel_encoder_encode_bytes(encoder, buf, width, height, pixelformat, palette):
 
+    # Keep buffer acceptance strict and deterministic.  Relying on ctypes
+    # coercion can silently accept unsupported objects (for example str) and
+    # pass unrelated memory to the C API.
+    if buf is None:
+        raise TypeError("buf must be bytes or bytearray, not None")
+    if isinstance(buf, str):
+        raise TypeError("buf must be bytes or bytearray, not str")
+    if isinstance(buf, memoryview):
+        raise TypeError("buf must be bytes or bytearray, not memoryview")
+    if not isinstance(buf, (bytes, bytearray)):
+        raise TypeError(
+            "buf must be bytes or bytearray, not "
+            + type(buf).__name__
+        )
+
     depth = sixel_helper_compute_depth(pixelformat)
 
     if depth <= 0:
