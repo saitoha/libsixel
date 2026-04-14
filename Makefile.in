@@ -189,7 +189,7 @@ am__define_uniq_tagged_files = \
     if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
   done | $(am__uniquify_input)`
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in AUTHORS \
+	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in \
 	ChangeLog NEWS README.md compile config.guess config.sub \
 	depcomp install-sh ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -401,12 +401,32 @@ zshcompletiondir = @zshcompletiondir@
 #
 SUBDIRS = include src converters tools python
 DIST_SUBDIRS = $(SUBDIRS)
+
+# Keep image fixtures in release archives for converter test coverage.
+DIST_IMAGE_FILES = $(shell cd $(srcdir) && find images -type f -print)
+# Keep converter regression PoCs referenced from converters/test_impl.
+DIST_TEST_FIXTURES = \
+	tests/issue/166/poc \
+	tests/issue/167/poc \
+	tests/issue/200/POC_img2sixel_heap_buffer_overflow \
+	tests/issue/220/poc1_gif_oob.gif \
+	tests/issue/220/poc2_sixel_dcs_signed_integer_overflow.sixel \
+	tests/issue/220/poc3_encoder_integer_overflow.gif \
+	tests/issue/220/poc5_encode_integer_overflow.gif \
+	tests/issue/220/poc6_quant_integer_overflow_8x8.png
+
 EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
-	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb
+	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb \
+	$(DIST_IMAGE_FILES) \
+	$(DIST_TEST_FIXTURES)
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
-CLEANFILES = $(builddir)/valgrind.log $(builddir)/test.log $(builddir)/unittest.log
+CLEANFILES = $(builddir)/package.json \
+	$(builddir)/valgrind.log \
+	$(builddir)/test.log \
+	$(builddir)/unittest.log
+
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

@@ -4,8 +4,23 @@
 SUBDIRS = include src converters tools python
 DIST_SUBDIRS = $(SUBDIRS)
 
+# Keep image fixtures in release archives for converter test coverage.
+DIST_IMAGE_FILES = $(shell cd $(srcdir) && find images -type f -print)
+# Keep converter regression PoCs referenced from converters/test_impl.
+DIST_TEST_FIXTURES = \
+	tests/issue/166/poc \
+	tests/issue/167/poc \
+	tests/issue/200/POC_img2sixel_heap_buffer_overflow \
+	tests/issue/220/poc1_gif_oob.gif \
+	tests/issue/220/poc2_sixel_dcs_signed_integer_overflow.sixel \
+	tests/issue/220/poc3_encoder_integer_overflow.gif \
+	tests/issue/220/poc5_encode_integer_overflow.gif \
+	tests/issue/220/poc6_quant_integer_overflow_8x8.png
+
 EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
-	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb
+	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb \
+	$(DIST_IMAGE_FILES) \
+	$(DIST_TEST_FIXTURES)
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
@@ -16,7 +31,10 @@ VPATH = @srcdir@
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = $(builddir)/libsixel.pc
 
-CLEANFILES = $(builddir)/valgrind.log $(builddir)/test.log $(builddir)/unittest.log
+CLEANFILES = $(builddir)/package.json \
+	$(builddir)/valgrind.log \
+	$(builddir)/test.log \
+	$(builddir)/unittest.log
 
 all-am:
 	cp $(builddir)/package.json.in $(builddir)/package.json
