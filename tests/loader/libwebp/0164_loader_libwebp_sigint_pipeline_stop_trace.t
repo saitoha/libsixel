@@ -33,6 +33,12 @@ test "${SIXEL_TSAN_BUILD-no}" = "yes" && test "${HAVE_APPKIT-0}" = 1 && {
     exit 0
 }
 
+build_os="${RUNTIME_ENV_BUILD_OS-unknown}"
+test "${build_os}" != "${build_os#haiku}" && {
+    printf "1..0 # SKIP Haiku signal timing is unstable for this trace test\n"
+    exit 0
+}
+
 echo "1..1"
 set -v
 
