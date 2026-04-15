@@ -1457,6 +1457,11 @@ load_png(unsigned char      /* out */ **result,
     unsigned char palette_zero_alpha_map[SIXEL_PALETTE_MAX];
     size_t pixel_count;
     size_t pixel_index;
+    size_t y;
+    size_t x;
+    unsigned char const *src_row;
+    size_t src_index;
+    size_t dst_index;
     unsigned int palette_index;
 
 #if HAVE_SETJMP && HAVE_LONGJMP
