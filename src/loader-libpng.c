@@ -1534,6 +1534,11 @@ load_png(unsigned char      /* out */ **result,
     memset(palette_zero_alpha_map, 0, sizeof(palette_zero_alpha_map));
     pixel_count = 0u;
     pixel_index = 0u;
+    y = 0u;
+    x = 0u;
+    src_row = NULL;
+    src_index = 0u;
+    dst_index = 0u;
     palette_index = 0u;
 #if HAVE_LCMS2
     icc_name = NULL;
@@ -1863,12 +1868,6 @@ load_png(unsigned char      /* out */ **result,
         unsigned char *rgb8_pixels;
         float *rgb16_pixels;
         float *dst_float_pixels;
-        size_t pixel_count;
-        size_t y;
-        size_t x;
-        size_t src_index;
-        size_t dst_index;
-        unsigned char const *src_row;
 #if HAVE_LCMS2
         int profile_conversion_kind;
         sixel_cms_profile_t *active_chunk_profile;
@@ -3060,8 +3059,6 @@ alpha_cleanup:
             if (*psx > 0 &&
                 *psy > 0 &&
                 (size_t)*psx <= SIZE_MAX / (size_t)*psy) {
-                size_t pixel_count;
-
                 pixel_count = (size_t)*psx * (size_t)*psy;
                 if (pixel_count <= SIZE_MAX / 3u) {
                     if (apply_chrm_matrix) {
@@ -3081,8 +3078,6 @@ alpha_cleanup:
             if (*psx > 0 &&
                 *psy > 0 &&
                 (size_t)*psx <= SIZE_MAX / (size_t)*psy) {
-                size_t pixel_count;
-
                 pixel_count = (size_t)*psx * (size_t)*psy;
                 if (pixel_count <= SIZE_MAX / 3u) {
                     if (apply_chrm_matrix) {
