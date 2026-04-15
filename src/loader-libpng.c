@@ -78,6 +78,12 @@
 #include "loader-libpng.h"
 #include "logger.h"
 
+#if defined(HAVE_DIAGNOSTIC_CLOBBERED) && \
+    defined(__GNUC__) && !defined(__clang__) && !defined(__PCC__)
+/* pcc rejects the GCC-specific -Wclobbered diagnostic pragma argument. */
+# define SIXEL_PNG_SUPPRESS_CLOBBERED_WARNING 1
+#endif
+
 typedef struct sixel_loader_libpng_component {
     sixel_loader_component_t base;
     sixel_allocator_t *allocator;
@@ -1369,7 +1375,7 @@ load_png(unsigned char      /* out */ **result,
     png_uint_32 png_status;
     png_structp png_ptr;
     png_infop info_ptr;
-#ifdef HAVE_DIAGNOSTIC_CLOBBERED
+#ifdef SIXEL_PNG_SUPPRESS_CLOBBERED_WARNING
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wclobbered"
 #endif
@@ -4682,7 +4688,7 @@ end:
     }
     return status;
 }
-#ifdef HAVE_DIAGNOSTIC_CLOBBERED
+#ifdef SIXEL_PNG_SUPPRESS_CLOBBERED_WARNING
 # pragma GCC diagnostic pop
 #endif
 
