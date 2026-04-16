@@ -5823,30 +5823,6 @@ jobs:
               libgd-dev
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-pcc-amalgamated_lib
-            buildtool: autotools
-            runner: ubuntu-24.04
-            setup_prefix: >-
-              CC=pcc
-            setup_options: >-
-              --enable-amalgamated-lib
-            extra_packages: >-
-              pcc
-            exec_type: bash
-
-          - label: >-
-              Autotools-ubuntu-x86_64-pcc-amalgamated_lib-amalgamated_tools
-            buildtool: autotools
-            runner: ubuntu-24.04
-            setup_prefix: >-
-              CC=pcc
-            setup_options: >-
-              --enable-amalgamated-lib
-              --enable-amalgamated-tools
-            extra_packages: >-
-              pcc
-            exec_type: bash
-
           - label: Meson-ubuntu-x86_64-pcc-static
             buildtool: meson
             runner: ubuntu-24.04
