@@ -29,6 +29,7 @@
 #if defined(__STDC_NO_ATOMICS__) || !defined(__STDC_VERSION__) || \
     __STDC_VERSION__ < 201112L
 typedef unsigned int sixel_atomic_u32_t;
+typedef int sixel_atomic_i32_t;
 
 # if defined(__GNUC__) && defined(__ATOMIC_ACQ_REL)
 #  define sixel_fence_release() __atomic_thread_fence(__ATOMIC_RELEASE)
@@ -141,6 +142,7 @@ sixel_atomic_fetch_sub_u32(sixel_atomic_u32_t *ptr,
 #else
 # include <stdatomic.h>
 typedef _Atomic unsigned int sixel_atomic_u32_t;
+typedef _Atomic int sixel_atomic_i32_t;
 # define sixel_fence_release() atomic_thread_fence(memory_order_release)
 # define sixel_fence_acquire() atomic_thread_fence(memory_order_acquire)
 static inline unsigned int

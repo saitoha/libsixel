@@ -42,16 +42,21 @@ struct sixel_frame {
     int ncolors;                    /* palette colors */
     int pixelformat;                /* one of enum pixelFormat */
     int colorspace;                 /* one of SIXEL_COLORSPACE_* */
-    int delay;                      /* delay in msec */
-    int frame_no;                   /* frame number */
-    int loop_count;                 /* loop count */
-    int multiframe;                 /* whether the image has multiple frames */
+    /*
+     * Timeline metadata can be updated by the loader while worker threads
+     * sample or quantize shared frames. Keep these fields atomic so that
+     * by-ref handoff mode remains race-free under sanitizers.
+     */
+    sixel_atomic_i32_t delay;       /* delay in msec */
+    sixel_atomic_i32_t frame_no;    /* frame number */
+    sixel_atomic_i32_t loop_count;  /* loop count */
+    sixel_atomic_i32_t multiframe;  /* frame belongs to animation sequence */
     int handoff_shareable;          /* safe to pass by ref in handoff queue */
-    int transparent;                /* -1(no transparent) or >= 0(index of transparent color) */
-    int alpha_zero_is_transparent;  /* treat alpha=0 pixels as transparent keycolor candidates */
-    unsigned char *transparent_mask; /* per-pixel transparency mask.
-                                      * 1: transparent key candidate */
-    size_t transparent_mask_size;   /* number of entries in transparent_mask */
+    int transparent;                /* -1 none, >=0 transparent palette index */
+    int alpha_zero_is_transparent;  /* alpha=0 pixels are keycolor candidates */
+    unsigned char *transparent_mask; /* per-pixel transparency mask:
+                                      * 1 marks transparent key candidates */
+    size_t transparent_mask_size;   /* entry count for transparent_mask */
     sixel_allocator_t *allocator;   /* allocator object */
 };
 

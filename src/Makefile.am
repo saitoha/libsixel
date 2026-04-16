@@ -20,6 +20,11 @@ else
 AMALGAMATION_COMPILE = $(LTCOMPILE)
 AMALGAMATION_CPPFLAGS =
 endif
+# Compile large dither units as separate translation units for libsixel
+# amalgamation to avoid compiler ICEs on very large sources.
+AMALGAMATION_CPPFLAGS += \
+        -DSIXEL_AMALGAMATION_SPLIT_DITHER=1 \
+        -DSIXEL_AMALGAMATION_SPLIT_DITHER_FIXED_FLOAT32=1
 BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 nodist_libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
 endif
@@ -37,6 +42,12 @@ lib_LTLIBRARIES = libsixel.la
 
 if WANT_AMALGAMATED_LIB
 libsixel_la_SOURCES =
+libsixel_la_SOURCES += \
+                $(srcdir)/dither.c \
+                $(srcdir)/dither.h
+libsixel_la_SOURCES += \
+                $(srcdir)/dither-fixed-float32.c \
+                $(srcdir)/dither-fixed-float32.h
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile

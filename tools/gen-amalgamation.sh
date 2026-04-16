@@ -555,6 +555,18 @@ emit_all_units() {
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" "defined(BUILD_${guard})"
                 ;;
+            src/dither.c)
+                # libsixel.amalgamation may split this unit into a dedicated
+                # object file to avoid compiler ICEs on very large sources.
+                emit_unit "${unit}" \
+                    "!defined(SIXEL_AMALGAMATION_SPLIT_DITHER)"
+                ;;
+            src/dither-fixed-float32.c)
+                # libsixel.amalgamation may split this unit into a dedicated
+                # object file to avoid compiler ICEs on very large sources.
+                emit_unit "${unit}" \
+                    "!defined(SIXEL_AMALGAMATION_SPLIT_DITHER_FIXED_FLOAT32)"
+                ;;
             *)
                 emit_unit "${unit}" ""
                 ;;
