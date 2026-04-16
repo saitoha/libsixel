@@ -1496,15 +1496,10 @@ AC_ARG_ENABLE([amalgamated-tools],
               [enable_amalgamated_tools=no])
 
 AS_IF([test "x$ac_cv_sixel_cc_is_pcc" = "xyes"], [
-  AS_IF([test "x$enable_amalgamated_lib" = "xyes"], [
-    AC_MSG_WARN(
-      [pcc does not reliably compile amalgamated libsixel; disabling --enable-amalgamated-lib])
-    enable_amalgamated_lib=no
-  ])
-  AS_IF([test "x$enable_amalgamated_tools" = "xyes"], [
-    AC_MSG_WARN(
-      [pcc does not reliably compile amalgamated tools; disabling --enable-amalgamated-tools])
-    enable_amalgamated_tools=no
+  AS_IF([test "x$enable_amalgamated_lib" = "xyes" \
+      || test "x$enable_amalgamated_tools" = "xyes"], [
+    AC_MSG_ERROR(
+      [pcc does not support --enable-amalgamated-lib or --enable-amalgamated-tools; disable those options or use another compiler])
   ])
 ])
 

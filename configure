@@ -18418,20 +18418,11 @@ fi
 if test "x$ac_cv_sixel_cc_is_pcc" = "xyes"
 then :
 
-  if test "x$enable_amalgamated_lib" = "xyes"
+  if test "x$enable_amalgamated_lib" = "xyes" \
+      || test "x$enable_amalgamated_tools" = "xyes"
 then :
 
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: pcc does not reliably compile amalgamated libsixel; disabling --enable-amalgamated-lib" >&5
-printf "%s\n" "$as_me: WARNING: pcc does not reliably compile amalgamated libsixel; disabling --enable-amalgamated-lib" >&2;}
-    enable_amalgamated_lib=no
-
-fi
-  if test "x$enable_amalgamated_tools" = "xyes"
-then :
-
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: pcc does not reliably compile amalgamated tools; disabling --enable-amalgamated-tools" >&5
-printf "%s\n" "$as_me: WARNING: pcc does not reliably compile amalgamated tools; disabling --enable-amalgamated-tools" >&2;}
-    enable_amalgamated_tools=no
+    as_fn_error $? "pcc does not support --enable-amalgamated-lib or --enable-amalgamated-tools; disable those options or use another compiler" "$LINENO" 5
 
 fi
 
