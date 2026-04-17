@@ -5823,6 +5823,68 @@ jobs:
               libgd-dev
             exec_type: bash
 
+          - label: Autotools-ubuntu-x86_64-pcc-shared-python
+            buildtool: autotools
+            runner: ubuntu-24.04
+            setup_prefix: >-
+              CC=pcc
+            setup_options: >-
+              --enable-python
+            extra_packages: >-
+              pcc
+              python3
+              python3-dev
+              python3-pip
+              python3-venv
+            pip_packages: >-
+              build
+              pytest
+            check_target: check-python
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-pcc-shared-ruby
+            buildtool: autotools
+            runner: ubuntu-24.04
+            setup_prefix: >-
+              CC=pcc
+            setup_options: >-
+              --enable-ruby
+            extra_packages: >-
+              pcc
+              ruby
+              ruby-dev
+            check_target: check-ruby
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-pcc-shared-perl
+            buildtool: autotools
+            runner: ubuntu-24.04
+            setup_prefix: >-
+              CC=pcc
+            setup_options: >-
+              --enable-perl
+            extra_packages: >-
+              pcc
+              perl
+              cpanminus
+            check_target: check-perl
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-pcc-shared-php
+            buildtool: autotools
+            runner: ubuntu-24.04
+            setup_prefix: >-
+              CC=pcc
+            setup_options: >-
+              --enable-php
+            extra_packages: >-
+              pcc
+              php-cli
+              php-ffi
+              php8.3-phpdbg
+            check_target: check-php
+            exec_type: bash
+
           - label: Meson-ubuntu-x86_64-pcc-static
             buildtool: meson
             runner: ubuntu-24.04
