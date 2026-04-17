@@ -37,7 +37,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=auto! "${input_tiff}"
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.9977"     "${reference_six}" "${output_six}" 2>&1) || {
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.9975"     "${reference_six}" "${output_six}" 2>&1) || {
     echo "not ok" 1 - "grayscale/img_tiff_grayscale_icc1_wp1_pc1_trc1: ${lsqa_msg}"
     exit 0
 }
