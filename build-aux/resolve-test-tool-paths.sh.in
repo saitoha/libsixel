@@ -14,6 +14,7 @@ fi
 
 top_builddir=$1
 key_list_file=$2
+cr=$(printf '\r')
 
 if [ ! -f "$key_list_file" ]; then
     echo "Key list not found: $key_list_file" >&2
@@ -128,6 +129,7 @@ while IFS= read -r key || [ -n "$key" ]; do
     # Trim leading spaces and tabs.
     while :; do
         case "$key" in
+            "$cr"*) key=${key#"$cr"} ;;
             ' '*) key=${key# } ;;
             '	'*) key=${key#'	'} ;;
             *) break ;;
@@ -137,6 +139,7 @@ while IFS= read -r key || [ -n "$key" ]; do
     # Trim trailing spaces and tabs.
     while :; do
         case "$key" in
+            *"$cr") key=${key%"$cr"} ;;
             *' ') key=${key% } ;;
             *'	') key=${key%'	'} ;;
             *) break ;;
