@@ -60,8 +60,8 @@ trace_summary=$(
             sleep "${watchdog_timeout}"
             kill -0 "${pid}" 2>/dev/null || exit 0
             kill -KILL "${pid}" 2>/dev/null || true
-            printf "__TIMEOUT__\n"
-        ) &
+            exit 42
+        ) >/dev/null 2>&1 &
         watchdog_pid=$!
 
         sleep 0.1
@@ -70,6 +70,7 @@ trace_summary=$(
         wait "${pid}" 2>/dev/null || true
         kill "${watchdog_pid}" 2>/dev/null || true
         wait "${watchdog_pid}" 2>/dev/null || true
+        printf "__WATCHDOG_STATUS__=%s\n" "$?"
     }
 )
 
@@ -77,7 +78,7 @@ timeout_flag=0
 handoff_flag=0
 stop_flag=0
 
-trace_remainder=${trace_summary#*__TIMEOUT__}
+trace_remainder=${trace_summary#*__WATCHDOG_STATUS__=42}
 test "${trace_remainder}" != "${trace_summary}" && timeout_flag=1
 
 trace_remainder=${trace_summary#*event=callback_handoff_decide handoff=pipeline}
