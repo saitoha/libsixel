@@ -93,6 +93,7 @@
 #include "options.h"
 #include "dither.h"
 #include "dither-interframe-method.h"
+#include "palette-kcenter.h"
 #include "palette-kmeans.h"
 #include "palette-kmedoids.h"
 #include "palette-common-merge.h"
@@ -1321,6 +1322,13 @@ static sixel_suboption_choice_t const g_option_choices_kmedoids_algo[] = {
     { "bandit", SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM }
 };
 
+static sixel_suboption_choice_t const g_option_choices_kcenter_algo[] = {
+    { "auto", SIXEL_PALETTE_KCENTER_ALGO_AUTO },
+    { "fft", SIXEL_PALETTE_KCENTER_ALGO_FFT },
+    { "swap", SIXEL_PALETTE_KCENTER_ALGO_SWAP },
+    { "hybrid", SIXEL_PALETTE_KCENTER_ALGO_HYBRID }
+};
+
 static sixel_suboption_choice_t const g_option_choices_quantize_merge[] = {
     { "auto", SIXEL_FINAL_MERGE_AUTO },
     { "none", SIXEL_FINAL_MERGE_NONE },
@@ -1739,6 +1747,107 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
     }
 };
 
+static sixel_suboption_key_t const g_subkeys_quantize_model_center[] = {
+    {
+        "algo",
+        "a",
+        "SIXEL_PALETTE_KCENTER_ALGO",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_kcenter_algo,
+        sizeof(g_option_choices_kcenter_algo)
+        / sizeof(g_option_choices_kcenter_algo[0])
+    },
+    {
+        "seed",
+        "s",
+        "SIXEL_PALETTE_KCENTER_SEED",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "restarts",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_RESTARTS",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "iter",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_ITER",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "histbits",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_HISTBITS",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "point_budget",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_POINT_BUDGET",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "prune_mass",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_PRUNE_MASS",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "animation_mode",
+        NULL,
+        SIXEL_PALETTE_ANIMATION_MODE_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "scene_cut_threshold",
+        NULL,
+        SIXEL_PALETTE_SCENE_CUT_THRESHOLD_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "merge",
+        "g",
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_quantize_merge,
+        sizeof(g_option_choices_quantize_merge)
+        / sizeof(g_option_choices_quantize_merge[0])
+    },
+    {
+        "merge_oversplit",
+        "o",
+        "SIXEL_PALETTE_OVERSPLIT_FACTOR",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "merge_lloyd",
+        "l",
+        "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    }
+};
+
 static sixel_option_value_schema_t const g_schema_quantize_model_values[] = {
     {
         "auto",
@@ -1767,6 +1876,13 @@ static sixel_option_value_schema_t const g_schema_quantize_model_values[] = {
         g_subkeys_quantize_model_kmedoids,
         sizeof(g_subkeys_quantize_model_kmedoids)
         / sizeof(g_subkeys_quantize_model_kmedoids[0])
+    },
+    {
+        "center",
+        SIXEL_QUANTIZE_MODEL_KCENTER,
+        g_subkeys_quantize_model_center,
+        sizeof(g_subkeys_quantize_model_center)
+        / sizeof(g_subkeys_quantize_model_center[0])
     }
 };
 
@@ -5777,6 +5893,27 @@ sixel_encoder_prepare_palette(
     sixel_set_kmedoids_auction_shortlist_override(
         encoder->quantize_model_kmedoids_auction_shortlist_override,
         encoder->quantize_model_kmedoids_auction_shortlist);
+    sixel_set_kcenter_algo_override(
+        encoder->quantize_model_kcenter_algo_override,
+        (sixel_kcenter_algo_t)encoder->quantize_model_kcenter_algo);
+    sixel_set_kcenter_seed_override(
+        encoder->quantize_model_kcenter_seed_override,
+        (uint32_t)encoder->quantize_model_kcenter_seed);
+    sixel_set_kcenter_restarts_override(
+        encoder->quantize_model_kcenter_restarts_override,
+        encoder->quantize_model_kcenter_restarts);
+    sixel_set_kcenter_iter_override(
+        encoder->quantize_model_kcenter_iter_override,
+        encoder->quantize_model_kcenter_iter);
+    sixel_set_kcenter_histbits_override(
+        encoder->quantize_model_kcenter_histbits_override,
+        encoder->quantize_model_kcenter_histbits);
+    sixel_set_kcenter_point_budget_override(
+        encoder->quantize_model_kcenter_point_budget_override,
+        encoder->quantize_model_kcenter_point_budget);
+    sixel_set_kcenter_prune_mass_override(
+        encoder->quantize_model_kcenter_prune_mass_override,
+        encoder->quantize_model_kcenter_prune_mass);
     status = sixel_dither_initialize(*dither,
                                      palette_pixels,
                                      sixel_frame_get_width(palette_frame),
@@ -5833,6 +5970,15 @@ sixel_encoder_prepare_palette(
     sixel_set_kmedoids_prune_mass_override(0, 0.0);
     sixel_set_kmedoids_auction_override(0, 0);
     sixel_set_kmedoids_auction_shortlist_override(0, 4u);
+    sixel_set_kcenter_algo_override(
+        0,
+        SIXEL_PALETTE_KCENTER_ALGO_AUTO);
+    sixel_set_kcenter_seed_override(0, 1u);
+    sixel_set_kcenter_restarts_override(0, 1u);
+    sixel_set_kcenter_iter_override(0, 16u);
+    sixel_set_kcenter_histbits_override(0, 5u);
+    sixel_set_kcenter_point_budget_override(0, 0u);
+    sixel_set_kcenter_prune_mass_override(0, 0.995);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
         goto end;
@@ -6893,6 +7039,21 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kmedoids_auction = 0;
     (*ppencoder)->quantize_model_kmedoids_auction_shortlist_override = 0;
     (*ppencoder)->quantize_model_kmedoids_auction_shortlist = 4u;
+    (*ppencoder)->quantize_model_kcenter_algo_override = 0;
+    (*ppencoder)->quantize_model_kcenter_algo
+        = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
+    (*ppencoder)->quantize_model_kcenter_seed_override = 0;
+    (*ppencoder)->quantize_model_kcenter_seed = 1u;
+    (*ppencoder)->quantize_model_kcenter_restarts_override = 0;
+    (*ppencoder)->quantize_model_kcenter_restarts = 1u;
+    (*ppencoder)->quantize_model_kcenter_iter_override = 0;
+    (*ppencoder)->quantize_model_kcenter_iter = 16u;
+    (*ppencoder)->quantize_model_kcenter_histbits_override = 0;
+    (*ppencoder)->quantize_model_kcenter_histbits = 5u;
+    (*ppencoder)->quantize_model_kcenter_point_budget_override = 0;
+    (*ppencoder)->quantize_model_kcenter_point_budget = 0u;
+    (*ppencoder)->quantize_model_kcenter_prune_mass_override = 0;
+    (*ppencoder)->quantize_model_kcenter_prune_mass = 0.995;
     (*ppencoder)->quantize_model_merge_override = 0;
     (*ppencoder)->quantize_model_merge_mode = SIXEL_FINAL_MERGE_AUTO;
     (*ppencoder)->quantize_model_merge_oversplit_override = 0;
@@ -7950,6 +8111,14 @@ sixel_encoder_validate_quantize_model_resolution(
             if (SIXEL_FAILED(status)) {
                 return status;
             }
+        } else if (key_name != NULL && strcmp(key_name, "algo") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                sixel_helper_set_additional_message(
+                    "invalid -Q algo resolution.");
+                return SIXEL_BAD_ARGUMENT;
+            }
         } else if (key_name != NULL && strcmp(key_name, "iter") == 0) {
             if (base_value == SIXEL_QUANTIZE_MODEL_KMEANS) {
                 status = sixel_encoder_parse_kmedoids_uint_text(
@@ -8151,7 +8320,7 @@ sixel_encoder_validate_quantize_model_resolution(
                 assignment->resolved_value_text,
                 64u,
                 16384u,
-                0,
+                base_value == SIXEL_QUANTIZE_MODEL_KCENTER,
                 "point_budget",
                 &parsed_uint);
             if (SIXEL_FAILED(status)) {
@@ -10058,6 +10227,13 @@ sixel_encoder_setopt(
         encoder->quantize_model_kmedoids_prune_mass_override = 0;
         encoder->quantize_model_kmedoids_auction_override = 0;
         encoder->quantize_model_kmedoids_auction_shortlist_override = 0;
+        encoder->quantize_model_kcenter_algo_override = 0;
+        encoder->quantize_model_kcenter_seed_override = 0;
+        encoder->quantize_model_kcenter_restarts_override = 0;
+        encoder->quantize_model_kcenter_iter_override = 0;
+        encoder->quantize_model_kcenter_histbits_override = 0;
+        encoder->quantize_model_kcenter_point_budget_override = 0;
+        encoder->quantize_model_kcenter_prune_mass_override = 0;
         encoder->quantize_model_merge_override = 0;
         encoder->quantize_model_merge_oversplit_override = 0;
         encoder->quantize_model_merge_lloyd_override = 0;
@@ -10201,8 +10377,13 @@ sixel_encoder_setopt(
                     status = SIXEL_BAD_ARGUMENT;
                     goto end;
                 }
-                encoder->quantize_model_kmedoids_algo_override = 1;
-                encoder->quantize_model_kmedoids_algo = match_value;
+                if (q_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
+                    encoder->quantize_model_kcenter_algo_override = 1;
+                    encoder->quantize_model_kcenter_algo = match_value;
+                } else {
+                    encoder->quantize_model_kmedoids_algo_override = 1;
+                    encoder->quantize_model_kmedoids_algo = match_value;
+                }
             } else if (q_key != NULL && strcmp(q_key, "seed") == 0) {
                 status = sixel_encoder_parse_kmedoids_seed_text(
                     q_assignment->resolved_value_text,
@@ -10214,6 +10395,9 @@ sixel_encoder_setopt(
                 if (q_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
                     encoder->quantize_model_kmeans_seed_override = 1;
                     encoder->quantize_model_kmeans_seed = q_seed;
+                } else if (q_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
+                    encoder->quantize_model_kcenter_seed_override = 1;
+                    encoder->quantize_model_kcenter_seed = q_seed;
                 } else {
                     encoder->quantize_model_kmedoids_seed_override = 1;
                     encoder->quantize_model_kmedoids_seed = q_seed;
@@ -10243,6 +10427,9 @@ sixel_encoder_setopt(
                 if (q_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
                     encoder->quantize_model_kmeans_iter_override = 1;
                     encoder->quantize_model_kmeans_iter = q_iter;
+                } else if (q_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
+                    encoder->quantize_model_kcenter_iter_override = 1;
+                    encoder->quantize_model_kcenter_iter = q_iter;
                 } else {
                     encoder->quantize_model_kmedoids_iter_override = 1;
                     encoder->quantize_model_kmedoids_iter = q_iter;
@@ -10302,8 +10489,13 @@ sixel_encoder_setopt(
                     status = SIXEL_BAD_ARGUMENT;
                     goto end;
                 }
-                encoder->quantize_model_kmeans_restarts_override = 1;
-                encoder->quantize_model_kmeans_restarts = q_restarts;
+                if (q_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
+                    encoder->quantize_model_kcenter_restarts_override = 1;
+                    encoder->quantize_model_kcenter_restarts = q_restarts;
+                } else {
+                    encoder->quantize_model_kmeans_restarts_override = 1;
+                    encoder->quantize_model_kmeans_restarts = q_restarts;
+                }
             } else if (q_key != NULL
                     && strcmp(q_key, "feedback_slots") == 0) {
                 status = sixel_encoder_parse_kmedoids_uint_text(
@@ -10470,23 +10662,35 @@ sixel_encoder_setopt(
                     status = SIXEL_BAD_ARGUMENT;
                     goto end;
                 }
-                encoder->quantize_model_kmedoids_histbits_override = 1;
-                encoder->quantize_model_kmedoids_histbits = q_histbits;
+                if (q_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
+                    encoder->quantize_model_kcenter_histbits_override = 1;
+                    encoder->quantize_model_kcenter_histbits = q_histbits;
+                } else {
+                    encoder->quantize_model_kmedoids_histbits_override = 1;
+                    encoder->quantize_model_kmedoids_histbits = q_histbits;
+                }
             } else if (q_key != NULL
                     && strcmp(q_key, "point_budget") == 0) {
                 status = sixel_encoder_parse_kmedoids_uint_text(
                     q_assignment->resolved_value_text,
                     64u,
                     16384u,
-                    0,
+                    q_model == SIXEL_QUANTIZE_MODEL_KCENTER,
                     "point_budget",
                     &q_point_budget);
                 if (SIXEL_FAILED(status)) {
                     status = SIXEL_BAD_ARGUMENT;
                     goto end;
                 }
-                encoder->quantize_model_kmedoids_point_budget_override = 1;
-                encoder->quantize_model_kmedoids_point_budget = q_point_budget;
+                if (q_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
+                    encoder->quantize_model_kcenter_point_budget_override = 1;
+                    encoder->quantize_model_kcenter_point_budget
+                        = q_point_budget;
+                } else {
+                    encoder->quantize_model_kmedoids_point_budget_override = 1;
+                    encoder->quantize_model_kmedoids_point_budget
+                        = q_point_budget;
+                }
             } else if (q_key != NULL && strcmp(q_key, "rare_keep") == 0) {
                 status = sixel_encoder_parse_kmedoids_uint_text(
                     q_assignment->resolved_value_text,
@@ -10509,8 +10713,14 @@ sixel_encoder_setopt(
                     status = SIXEL_BAD_ARGUMENT;
                     goto end;
                 }
-                encoder->quantize_model_kmedoids_prune_mass_override = 1;
-                encoder->quantize_model_kmedoids_prune_mass = q_prune_mass;
+                if (q_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
+                    encoder->quantize_model_kcenter_prune_mass_override = 1;
+                    encoder->quantize_model_kcenter_prune_mass = q_prune_mass;
+                } else {
+                    encoder->quantize_model_kmedoids_prune_mass_override = 1;
+                    encoder->quantize_model_kmedoids_prune_mass
+                        = q_prune_mass;
+                }
             } else if (q_key != NULL && strcmp(q_key, "auction") == 0) {
                 if (!sixel_encoder_resolve_suboption_choice_value(
                         q_assignment,

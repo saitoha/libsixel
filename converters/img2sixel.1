@@ -94,10 +94,41 @@ specify number of colors to reduce the image to (default=256).
 .TP 5
 .B \-Q \fIMODEL\fP, \-\-quantize\-model=\fIMODEL\fP
 select the palette solver. \fIMODEL\fP accepts \fBauto\fP,
-\fBheckbert\fP, \fBkmeans\fP, or \fBmedoids\fP. The \fBauto\fP setting preserves
+\fBheckbert\fP, \fBkmeans\fP, \fBmedoids\fP, or \fBcenter\fP. The
+\fBauto\fP setting preserves
 the historical Heckbert median\-cut behaviour.
 .br
 The \fBauto\fP and \fBheckbert\fP base values accept suboptions:
+.br
+\fBanimation_mode\fP: 0 or 1 (default 0).
+.br
+\fBscene_cut_threshold\fP: floating value in 0.0-1.0 (default 0.20).
+.br
+\fBmerge\fP (or short key \fBg\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
+.br
+\fBmerge_oversplit\fP (or short key \fBo\fP): floating value in 1.0-3.0.
+.br
+\fBmerge_lloyd\fP (or short key \fBl\fP): 0 or integer value in 1-30.
+.br
+The \fBcenter\fP base value accepts suboptions using
+\fBcenter:key=value[:key=value...]\fP.
+.br
+Supported k-center suboptions:
+.br
+\fBalgo\fP (or short key \fBa\fP): \fBauto\fP, \fBfft\fP, \fBswap\fP,
+or \fBhybrid\fP.
+.br
+\fBseed\fP (or short key \fBs\fP): integer value in 0-4294967295.
+.br
+\fBrestarts\fP: integer value in 1-32.
+.br
+\fBiter\fP: integer value in 1-64.
+.br
+\fBhistbits\fP: integer value in 3-6.
+.br
+\fBpoint_budget\fP: 0 or integer value in 64-16384.
+.br
+\fBprune_mass\fP: floating value in 0.900-1.000.
 .br
 \fBanimation_mode\fP: 0 or 1 (default 0).
 .br
@@ -1398,6 +1429,37 @@ override BanditPAM candidate budget (8-4096).
 .B SIXEL_PALETTE_KMEDOIDS_BANDIT_BATCH
 .br
 override BanditPAM mini-batch size (8-4096).
+.TP 5
+.B SIXEL_PALETTE_KCENTER_ALGO
+.br
+default k-center strategy when \fB-Q center\fP omits \fB:algo\fP. Accepts
+auto, fft, swap, or hybrid.
+.TP 5
+.B SIXEL_PALETTE_KCENTER_SEED
+.br
+default random seed for k-center stochastic solvers (0-4294967295).
+.TP 5
+.B SIXEL_PALETTE_KCENTER_RESTARTS
+.br
+k-center restart count (1-32, default 1).
+.TP 5
+.B SIXEL_PALETTE_KCENTER_ITER
+.br
+k-center swap iteration cap (1-64, default 16).
+.TP 5
+.B SIXEL_PALETTE_KCENTER_HISTBITS
+.br
+histogram bits per channel for center preprocessing (3-6, default 5).
+.TP 5
+.B SIXEL_PALETTE_KCENTER_POINT_BUDGET
+.br
+override k-center candidate point cap (0 or 64-16384). A value of 0 keeps the
+internal automatic budget.
+.TP 5
+.B SIXEL_PALETTE_KCENTER_PRUNE_MASS
+.br
+retain cumulative histogram mass before k-center solving (0.900-1.000,
+default 0.995).
 .TP 5
 .B SIXEL_PALETTE_LUMIN_FACTOR_R
 .br

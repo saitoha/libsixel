@@ -43,6 +43,8 @@ srcs = [
   'palette-kmeans-build.h',
   'palette-kmedoids.c',
   'palette-kmedoids.h',
+  'palette-kcenter.c',
+  'palette-kcenter.h',
   'palette.c',
   'lookup-common.c',
   'lookup-8bit.c',

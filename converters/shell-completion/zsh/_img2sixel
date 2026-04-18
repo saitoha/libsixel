@@ -572,6 +572,105 @@ _quantizemodel() {
                    "${prefix}merge_lloyd="
         return 0
       fi
+    elif [[ ${base} == c || ${base} == center* ]]; then
+      if [[ ${segment} == *=* ]]; then
+        key=${segment%%=*}
+        prefix=${current%${segment}}
+        if [[ ${key} == a || ${key} == algo ]]; then
+          compadd -- "${prefix}${key}=auto" \
+                     "${prefix}${key}=fft" \
+                     "${prefix}${key}=swap" \
+                     "${prefix}${key}=hybrid"
+          return 0
+        elif [[ ${key} == s || ${key} == seed ]]; then
+          compadd -- "${prefix}${key}=1" \
+                     "${prefix}${key}=7" \
+                     "${prefix}${key}=42" \
+                     "${prefix}${key}=256"
+          return 0
+        elif [[ ${key} == restarts ]]; then
+          compadd -- "${prefix}${key}=1" \
+                     "${prefix}${key}=2" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=8" \
+                     "${prefix}${key}=16"
+          return 0
+        elif [[ ${key} == iter ]]; then
+          compadd -- "${prefix}${key}=4" \
+                     "${prefix}${key}=8" \
+                     "${prefix}${key}=16" \
+                     "${prefix}${key}=24" \
+                     "${prefix}${key}=32" \
+                     "${prefix}${key}=64"
+          return 0
+        elif [[ ${key} == histbits ]]; then
+          compadd -- "${prefix}${key}=3" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=5" \
+                     "${prefix}${key}=6"
+          return 0
+        elif [[ ${key} == point_budget ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=64" \
+                     "${prefix}${key}=256" \
+                     "${prefix}${key}=1024" \
+                     "${prefix}${key}=4096" \
+                     "${prefix}${key}=16384"
+          return 0
+        elif [[ ${key} == prune_mass ]]; then
+          compadd -- "${prefix}${key}=0.900" \
+                     "${prefix}${key}=0.950" \
+                     "${prefix}${key}=0.980" \
+                     "${prefix}${key}=0.995" \
+                     "${prefix}${key}=1.000"
+          return 0
+        elif [[ ${key} == animation_mode ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1"
+          return 0
+        elif [[ ${key} == scene_cut_threshold ]]; then
+          compadd -- "${prefix}${key}=0.15" \
+                     "${prefix}${key}=0.20" \
+                     "${prefix}${key}=0.30"
+          return 0
+        elif [[ ${key} == merge || ${key} == g ]]; then
+          compadd -- "${prefix}${key}=auto" \
+                     "${prefix}${key}=none" \
+                     "${prefix}${key}=ward"
+          return 0
+        elif [[ ${key} == merge_oversplit || ${key} == o ]]; then
+          compadd -- "${prefix}${key}=1.2" \
+                     "${prefix}${key}=1.5" \
+                     "${prefix}${key}=1.8" \
+                     "${prefix}${key}=2.0"
+          return 0
+        elif [[ ${key} == merge_lloyd || ${key} == l ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1" \
+                     "${prefix}${key}=3" \
+                     "${prefix}${key}=5" \
+                     "${prefix}${key}=8"
+          return 0
+        fi
+      else
+        prefix=${current%${segment}}
+        compadd -- "${prefix}a=" "${prefix}algo=" \
+                   "${prefix}s=" "${prefix}seed=" \
+                   "${prefix}restarts=" \
+                   "${prefix}iter=" \
+                   "${prefix}histbits=" \
+                   "${prefix}point_budget=" \
+                   "${prefix}prune_mass=" \
+                   "${prefix}animation_mode=" \
+                   "${prefix}scene_cut_threshold=" \
+                   "${prefix}g=" \
+                   "${prefix}merge=" \
+                   "${prefix}o=" \
+                   "${prefix}merge_oversplit=" \
+                   "${prefix}l=" \
+                   "${prefix}merge_lloyd="
+        return 0
+      fi
     fi
   fi
 
@@ -580,7 +679,8 @@ _quantizemodel() {
     'auto[select solver automatically]' \
     'heckbert[Heckbert median-cut solver]' \
     'kmeans[k-means palette solver]' \
-    'medoids[k-medoids palette solver]'
+    'medoids[k-medoids palette solver]' \
+    'center[discrete k-center palette solver]'
 }
 
 

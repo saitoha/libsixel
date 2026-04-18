@@ -98,6 +98,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/palette-kmeans.h \
                 $(srcdir)/palette-kmedoids.c \
                 $(srcdir)/palette-kmedoids.h \
+                $(srcdir)/palette-kcenter.c \
+                $(srcdir)/palette-kcenter.h \
                 $(srcdir)/palette.c \
                 $(srcdir)/palette.h \
                 $(srcdir)/dither.c \

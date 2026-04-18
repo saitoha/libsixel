@@ -1,5 +1,5 @@
 #!/bin/sh
-# Emit TAP for medoids completion token presence in source scripts.
+# Emit TAP for quantize completion token presence in source scripts.
 
 set -eu
 
@@ -24,8 +24,9 @@ for token in \
     auction= auction_shortlist= \
     clara_trials= clara_sample= clarans_local= clarans_neighbors= \
     bandit_iter= bandit_candidates= bandit_batch= \
+    center fft swap hybrid restarts= \
     auto \
-    pam sample random bandit
+    pam sample random bandit fft swap hybrid
 do
     case "$bash_text" in
         *"$token"*)
@@ -47,9 +48,9 @@ do
 done
 
 if test "$status" -eq 0; then
-    echo "ok 1 - medoids completion tokens exist in source scripts"
+    echo "ok 1 - quantize completion tokens exist in source scripts"
     exit 0
 fi
 
-echo "not ok 1 - medoids completion tokens exist in source scripts"
+echo "not ok 1 - quantize completion tokens exist in source scripts"
 exit 1

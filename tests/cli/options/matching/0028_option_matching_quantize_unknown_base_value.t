@@ -26,7 +26,7 @@ test "${msg#*unknown option base value*\"zzzmodel\"*valid values*auto*}" \
     exit 0
 }
 
-test "${msg#*valid values: auto, heckbert, kmeans, medoids*}" \
+test "${msg#*valid values: auto, heckbert, kmeans, medoids, center*}" \
     != "${msg}" || {
     echo "not ok" 1 - "candidate list does not match documented values"
     printf '%s\n' '--- stderr ---' >&2
@@ -37,6 +37,14 @@ test "${msg#*valid values: auto, heckbert, kmeans, medoids*}" \
 test "${msg#*valid values: auto, heckbert, kmeans, k, medoids*}" \
     = "${msg}" || {
     echo "not ok" 1 - "unexpected explicit shorthand leaked into candidate list"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
+    exit 0
+}
+
+test "${msg#*valid values: auto, heckbert, kmeans, medoids, c, center*}" \
+    = "${msg}" || {
+    echo "not ok" 1 - "unexpected center shorthand leaked into candidate list"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
     exit 0

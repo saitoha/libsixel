@@ -305,6 +305,24 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :merge=MODE (:g=MODE) auto, none, ward\n"
         "          :merge_oversplit=FACTOR (:o=FACTOR) 1.0-3.0\n"
         "          :merge_lloyd=COUNT (:l=COUNT) 0-30\n"
+        "      center  -> discrete k-center clustering. sub-option:\n"
+        "          :algo=NAME (:a=NAME) choose center solver:\n"
+        "              auto   -> choose fft/hybrid from quality and sample budget\n"
+        "              fft    -> Gonzalez farthest-first traversal\n"
+        "              swap   -> local swap refinement from random seeds\n"
+        "              hybrid -> fft initialization + swap refinement\n"
+        "          :seed=VALUE (:s=VALUE) uint32 random seed (0-4294967295, default 1).\n"
+        "          :restarts=COUNT restart count (1-32, default 1).\n"
+        "          :iter=COUNT swap iteration cap (1-64, default 16).\n"
+        "          :histbits=BITS histogram bits/channel (3-6, default 5).\n"
+        "          :point_budget=COUNT candidate cap (0 or 64-16384, default 0=auto).\n"
+        "          :prune_mass=RATIO retain cumulative mass (0.900-1.000,\n"
+        "          default 0.995).\n"
+        "          :animation_mode=0|1 default 0\n"
+        "          :scene_cut_threshold=VALUE 0.0-1.0 default 0.20\n"
+        "          :merge=MODE (:g=MODE) auto, none, ward\n"
+        "          :merge_oversplit=FACTOR (:o=FACTOR) 1.0-3.0\n"
+        "          :merge_lloyd=COUNT (:l=COUNT) 0-30\n"
     },
     {
         'm',
@@ -1437,6 +1455,39 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_PALETTE_KMEDOIDS_AUCTION_SHORTLIST",
         "set auction shortlist width per point in medoids.\n"
         "Accepts 2-8, default 4."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_ALGO",
+        "default k-center strategy when -Q center omits :algo.\n"
+        "Accepts auto, fft, swap, or hybrid."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_SEED",
+        "default uint32 random seed for k-center stochastic paths.\n"
+        "Accepts 0-4294967295."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_RESTARTS",
+        "k-center restart count (1-32, default 1)."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_ITER",
+        "k-center swap iteration cap (1-64, default 16)."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_HISTBITS",
+        "histogram bits per channel for k-center preprocessing.\n"
+        "Accepts 3-6, default 5."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_POINT_BUDGET",
+        "override k-center candidate point cap.\n"
+        "Accepts 0 or 64-16384. 0 keeps the internal auto budget."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_PRUNE_MASS",
+        "retain cumulative histogram mass before k-center solve.\n"
+        "Accepts 0.900-1.000, default 0.995."
     },
     {
         "SIXEL_PALETTE_LUMIN_FACTOR_R",

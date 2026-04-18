@@ -20,9 +20,11 @@ trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 merge_only_keys=$tmpdir/merge_only_keys.txt
 kmeans_keys=$tmpdir/kmeans_keys.txt
 kmedoids_keys=$tmpdir/kmedoids_keys.txt
+center_keys=$tmpdir/center_keys.txt
 merge_only_pairs=$tmpdir/merge_only_pairs.tsv
 kmeans_pairs=$tmpdir/kmeans_pairs.tsv
 kmedoids_pairs=$tmpdir/kmedoids_pairs.tsv
+center_pairs=$tmpdir/center_pairs.tsv
 help_vars=$tmpdir/help_vars.txt
 missing=$tmpdir/missing.txt
 
@@ -129,10 +131,12 @@ extract_merge_pairs() {
 extract_keys g_subkeys_quantize_model_merge_only > "$merge_only_keys"
 extract_keys g_subkeys_quantize_model_kmeans > "$kmeans_keys"
 extract_keys g_subkeys_quantize_model_kmedoids > "$kmedoids_keys"
+extract_keys g_subkeys_quantize_model_center > "$center_keys"
 
 extract_merge_pairs g_subkeys_quantize_model_merge_only > "$merge_only_pairs"
 extract_merge_pairs g_subkeys_quantize_model_kmeans > "$kmeans_pairs"
 extract_merge_pairs g_subkeys_quantize_model_kmedoids > "$kmedoids_pairs"
+extract_merge_pairs g_subkeys_quantize_model_center > "$center_pairs"
 
 awk '
 /^[[:space:]]*"SIXEL_PALETTE_(ANIMATION_MODE|SCENE_CUT_THRESHOLD|OVERSPLIT_FACTOR|FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT)"/ {
@@ -158,6 +162,10 @@ for key in animation_mode scene_cut_threshold merge merge_oversplit merge_lloyd;
         echo "# kmedoids block missing merge key: $key" >> "$missing"
         status=1
     }
+    grep -Fxq "$key" "$center_keys" || {
+        echo "# center block missing merge key: $key" >> "$missing"
+        status=1
+    }
 done
 
 for pair in \
@@ -175,6 +183,10 @@ for pair in \
     }
     grep -Fxq "$pair" "$kmedoids_pairs" || {
         echo "# kmedoids block missing merge pair: $pair" >> "$missing"
+        status=1
+    }
+    grep -Fxq "$pair" "$center_pairs" || {
+        echo "# center block missing merge pair: $pair" >> "$missing"
         status=1
     }
 done

@@ -66,6 +66,7 @@
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-heckbert.h"
+#include "palette-kcenter.h"
 #include "palette-kmeans.h"
 #include "palette-kmedoids.h"
 #include "palette.h"
@@ -149,6 +150,57 @@ sixel_palette_build_kmeans_float32_dispatch(
                                               job_seq,
                                               engine_name,
                                               telemetry);
+}
+
+static SIXELSTATUS
+sixel_palette_build_kcenter_dispatch(sixel_palette_t *palette,
+                                     void const *data,
+                                     unsigned int length,
+                                     int pixelformat,
+                                     sixel_allocator_t *allocator,
+                                     sixel_logger_t *logger,
+                                     int *job_seq,
+                                     char const *engine_name,
+                                     sixel_palette_telemetry_t *telemetry)
+{
+    unsigned char const *bytes;
+
+    bytes = (unsigned char const *)data;
+    return sixel_palette_build_kcenter(palette,
+                                       bytes,
+                                       length,
+                                       pixelformat,
+                                       allocator,
+                                       logger,
+                                       job_seq,
+                                       engine_name,
+                                       telemetry);
+}
+
+static SIXELSTATUS
+sixel_palette_build_kcenter_float32_dispatch(
+    sixel_palette_t *palette,
+    void const *data,
+    unsigned int length,
+    int pixelformat,
+    sixel_allocator_t *allocator,
+    sixel_logger_t *logger,
+    int *job_seq,
+    char const *engine_name,
+    sixel_palette_telemetry_t *telemetry)
+{
+    float const *samples;
+
+    samples = (float const *)data;
+    return sixel_palette_build_kcenter_float32(palette,
+                                               samples,
+                                               length,
+                                               pixelformat,
+                                               allocator,
+                                               logger,
+                                               job_seq,
+                                               engine_name,
+                                               telemetry);
 }
 
 static SIXELSTATUS
@@ -290,6 +342,18 @@ static sixel_palette_quant_engine_t const sixel_palette_quant_engines[] = {
         SIXEL_QUANTIZE_MODEL_KMEDOIDS,
         0,
         sixel_palette_build_kmedoids_dispatch,
+    },
+    {
+        "kcenter-float32",
+        SIXEL_QUANTIZE_MODEL_KCENTER,
+        1,
+        sixel_palette_build_kcenter_float32_dispatch,
+    },
+    {
+        "kcenter-legacy",
+        SIXEL_QUANTIZE_MODEL_KCENTER,
+        0,
+        sixel_palette_build_kcenter_dispatch,
     },
     {
         "heckbert-legacy",
@@ -575,6 +639,52 @@ sixel_palette_apply_mediancut_engine(sixel_palette_t *palette,
 }
 
 /* Run k-medoids and keep the same float32-first fallback ladder. */
+static SIXELSTATUS
+sixel_palette_apply_kcenter_engines(sixel_palette_t *palette,
+                                    void const *data,
+                                    unsigned int length,
+                                    int pixelformat,
+                                    sixel_allocator_t *allocator,
+                                    int prefer_float32)
+{
+    sixel_palette_quant_engine_t const *engine;
+    SIXELSTATUS status;
+
+    engine = NULL;
+    status = SIXEL_LOGIC_ERROR;
+
+    if (prefer_float32 && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        engine = sixel_palette_quant_engine_lookup(
+            SIXEL_QUANTIZE_MODEL_KCENTER,
+            1);
+        if (engine != NULL) {
+            status = sixel_palette_quant_engine_run(engine,
+                                                    palette,
+                                                    data,
+                                                    length,
+                                                    pixelformat,
+                                                    allocator);
+            if (SIXEL_SUCCEEDED(status)) {
+                return status;
+            }
+        }
+    }
+
+    engine = sixel_palette_quant_engine_lookup(
+        SIXEL_QUANTIZE_MODEL_KCENTER,
+        0);
+    if (engine != NULL) {
+        status = sixel_palette_quant_engine_run(engine,
+                                                palette,
+                                                data,
+                                                length,
+                                                pixelformat,
+                                                allocator);
+    }
+
+    return status;
+}
+
 static SIXELSTATUS
 sixel_palette_apply_kmedoids_engines(sixel_palette_t *palette,
                                      void const *data,
@@ -1187,10 +1297,11 @@ sixel_palette_copy_entries_float32(sixel_palette_t *palette,
  * registry to pick either the legacy 8bit solvers or (in later phases) the
  * RGBFLOAT32-enabled variants.  The high-level flow is:
  *
- *   1. Honour explicit K-means requests by running the preferred engine
- *      (float32 when available, otherwise the current 8bit solver).  Failed
- *      runs fall back to Heckbert to preserve historical behaviour.
- *   2. Invoke the median-cut/Heckbert engine for every other case, including
+ *   1. Honour explicit K-means/K-center requests by running the preferred
+ *      engine (float32 when available, otherwise the current 8bit solver).
+ *      Failed runs fall back to Heckbert to preserve historical behaviour.
+ *   2. Honour explicit K-medoids requests with the same fallback ladder.
+ *   3. Invoke the median-cut/Heckbert engine for every other case, including
  *      the AUTO mode.
  *
  * Both branches share helper routines for cache management and post-processing
@@ -1240,6 +1351,19 @@ sixel_palette_generate(sixel_palette_t *palette,
                                                     pixelformat,
                                                     work_allocator,
                                                     prefer_float32);
+        if (SIXEL_SUCCEEDED(status)) {
+            ncolors = palette->entry_count;
+            origcolors = palette->original_colors;
+            depth = (unsigned int)palette->depth;
+            goto success;
+        }
+    } else if (palette->quantize_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
+        status = sixel_palette_apply_kcenter_engines(palette,
+                                                     data,
+                                                     length,
+                                                     pixelformat,
+                                                     work_allocator,
+                                                     prefer_float32);
         if (SIXEL_SUCCEEDED(status)) {
             ncolors = palette->entry_count;
             origcolors = palette->original_colors;

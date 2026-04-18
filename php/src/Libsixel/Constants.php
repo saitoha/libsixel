@@ -84,6 +84,7 @@ final class Constants
     public const SIXEL_QUANTIZE_MODEL_MEDIANCUT = 0x1;
     public const SIXEL_QUANTIZE_MODEL_KMEANS = 0x2;
     public const SIXEL_QUANTIZE_MODEL_KMEDOIDS = 0x3;
+    public const SIXEL_QUANTIZE_MODEL_KCENTER = 0x4;
 
     public const SIXEL_FINAL_MERGE_AUTO = 0x0;
     public const SIXEL_FINAL_MERGE_NONE = 0x1;

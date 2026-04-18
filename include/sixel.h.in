@@ -182,6 +182,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_QUANTIZE_MODEL_MEDIANCUT   0x1
 #define SIXEL_QUANTIZE_MODEL_KMEANS      0x2
 #define SIXEL_QUANTIZE_MODEL_KMEDOIDS    0x3
+#define SIXEL_QUANTIZE_MODEL_KCENTER     0x4
 
 /* final merge policy */
 #define SIXEL_FINAL_MERGE_AUTO        0x0  /* auto final merge (defaults to */
@@ -374,9 +375,12 @@ typedef int SIXELSTATUS;
                                                                 (default, Heckbert)
                                                     heckbert -> median-cut solver
                                                     kmeans   -> k-means solver
-                                                    medoids -> k-medoids
+                                                    medoids  -> k-medoids
                                                                 solver
-                                                  auto/heckbert/kmeans/medoids
+                                                    center   -> discrete k-center
+                                                                solver
+                                                  auto/heckbert/kmeans/medoids/
+                                                  center
                                                   share merge suboptions:
                                                     merge (or g):
                                                       auto, none, ward
@@ -456,6 +460,23 @@ typedef int SIXELSTATUS;
                                                       0 or 1
                                                     auction_shortlist:
                                                       integer in 2-8
+                                                  center accepts suboptions in:
+                                                    center:key=value[:key=value...]
+                                                  supported suboptions:
+                                                    algo (or a):
+                                                      auto, fft, swap, hybrid
+                                                    seed (or s):
+                                                      integer in 0-4294967295
+                                                    restarts:
+                                                      integer in 1-32
+                                                    iter:
+                                                      integer in 1-64
+                                                    histbits:
+                                                      integer in 3-6
+                                                    point_budget:
+                                                      0 or integer in 64-16384
+                                                    prune_mass:
+                                                      float in 0.900-1.000
                                                 */
 #define SIXEL_OPTFLAG_CROP              ('c')  /* -c REGION, --crop=REGION:
                                                   crop source image to fit the

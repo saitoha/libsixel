@@ -165,6 +165,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_IMG2SIXEL_ABORTTRACE \
     -DBUILD_TEST_0001_KMEANS_INIT \
     -DBUILD_TEST_0002_KMEDOIDS_CONSTRAINTS \
+    -DBUILD_TEST_0003_KCENTER_CONSTRAINTS \
     -DBUILD_TEST_0001_PROBE_PARSE \
     -DBUILD_TEST_0001_ICC_BUILTIN_RGB_GRAY_V4_PATHS \
     -DBUILD_TEST_0002_ICC_BUILTIN_MAB_MBA_A2B0_PATHS \
@@ -277,6 +278,7 @@ test_runner_SOURCES = test_runner.c \
     loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     quant/palette/0002_kmedoids_constraints.c \
+    quant/palette/0003_kcenter_constraints.c \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
     diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.c \
@@ -348,6 +350,7 @@ AM_LOG_FLAGS =
 	staticcheck-test-inc-extra-dist-sync \
 	staticcheck-meson-palette-sources \
 	staticcheck-kmedoids-suboption-env-sync \
+	staticcheck-kcenter-suboption-env-sync \
 	staticcheck-completion-medoids-tokens \
 	staticcheck-kmeans-suboption-env-sync \
 	staticcheck-interframe-strategy-token-sync \
@@ -381,6 +384,7 @@ staticcheck-src-makefile-dist-sources-sync \
 staticcheck-test-inc-extra-dist-sync \
 staticcheck-meson-palette-sources \
 staticcheck-kmedoids-suboption-env-sync \
+staticcheck-kcenter-suboption-env-sync \
 staticcheck-completion-medoids-tokens \
 staticcheck-kmeans-suboption-env-sync \
 staticcheck-interframe-strategy-token-sync \
@@ -546,6 +550,16 @@ staticcheck-kmedoids-suboption-env-sync:
 		--trs-file staticcheck-kmedoids-suboption-env-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-kmedoids-suboption-env-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-kcenter-suboption-env-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-kcenter-suboption-env-sync" \
+		--log-file staticcheck-kcenter-suboption-env-sync.log \
+		--trs-file staticcheck-kcenter-suboption-env-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-kcenter-suboption-env-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-completion-medoids-tokens:
@@ -1342,6 +1356,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-test-inc-extra-dist-sync.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
+    _static/sh/staticcheck-kcenter-suboption-env-sync.sh \
     _static/sh/staticcheck-completion-medoids-tokens.sh \
     _static/sh/staticcheck-kmeans-suboption-env-sync.sh \
     _static/sh/staticcheck-interframe-strategy-token-sync.sh \

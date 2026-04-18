@@ -155,6 +155,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
 	quant/palette/0002_kmedoids_constraints.c \
+	quant/palette/0003_kcenter_constraints.c \
 	diagnostics/probe/0001_probe_parse.c \
 	diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
 	diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.c \
@@ -217,6 +218,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0059_loader_gd_pixelpolicy_detail.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0002_kmedoids_constraints.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0003_kcenter_constraints.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.$(OBJEXT) \
@@ -364,7 +366,8 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po \
 	processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po \
 	quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po \
-	quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
+	quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po \
+	quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -710,6 +713,7 @@ LIBPNG_LIBS = @LIBPNG_LIBS@
 LIBRSVG_CFLAGS = @LIBRSVG_CFLAGS@
 LIBRSVG_LIBS = @LIBRSVG_LIBS@
 LIBS = @LIBS@
+LIBSIXEL_LDFLAGS = @LIBSIXEL_LDFLAGS@
 LIBS_PRIVATE = @LIBS_PRIVATE@
 LIBTIFF_CFLAGS = @LIBTIFF_CFLAGS@
 LIBTIFF_LIBS = @LIBTIFF_LIBS@
@@ -1004,6 +1008,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_IMG2SIXEL_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_KMEANS_INIT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_KMEDOIDS_CONSTRAINTS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_KCENTER_CONSTRAINTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PROBE_PARSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ICC_BUILTIN_RGB_GRAY_V4_PATHS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_ICC_BUILTIN_MAB_MBA_A2B0_PATHS \
@@ -1144,6 +1149,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0002_kmedoids_constraints.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0003_kcenter_constraints.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.c \
@@ -1199,6 +1205,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-test-inc-extra-dist-sync.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
     _static/sh/staticcheck-kmedoids-suboption-env-sync.sh \
+    _static/sh/staticcheck-kcenter-suboption-env-sync.sh \
     _static/sh/staticcheck-completion-medoids-tokens.sh \
     _static/sh/staticcheck-kmeans-suboption-env-sync.sh \
     _static/sh/staticcheck-interframe-strategy-token-sync.sh \
@@ -1475,6 +1482,9 @@ quant/palette/test_runner-0001_kmeans_init.$(OBJEXT):  \
 quant/palette/test_runner-0002_kmedoids_constraints.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0003_kcenter_constraints.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
 diagnostics/probe/$(am__dirstamp):
 	@$(MKDIR_P) diagnostics/probe
 	@: >>diagnostics/probe/$(am__dirstamp)
@@ -1657,6 +1667,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -2317,6 +2328,20 @@ quant/palette/test_runner-0002_kmedoids_constraints.obj: quant/palette/0002_kmed
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0002_kmedoids_constraints.c' object='quant/palette/test_runner-0002_kmedoids_constraints.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0002_kmedoids_constraints.obj `if test -f 'quant/palette/0002_kmedoids_constraints.c'; then $(CYGPATH_W) 'quant/palette/0002_kmedoids_constraints.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0002_kmedoids_constraints.c'; fi`
+
+quant/palette/test_runner-0003_kcenter_constraints.o: quant/palette/0003_kcenter_constraints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0003_kcenter_constraints.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Tpo -c -o quant/palette/test_runner-0003_kcenter_constraints.o `test -f 'quant/palette/0003_kcenter_constraints.c' || echo '$(srcdir)/'`quant/palette/0003_kcenter_constraints.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Tpo quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0003_kcenter_constraints.c' object='quant/palette/test_runner-0003_kcenter_constraints.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0003_kcenter_constraints.o `test -f 'quant/palette/0003_kcenter_constraints.c' || echo '$(srcdir)/'`quant/palette/0003_kcenter_constraints.c
+
+quant/palette/test_runner-0003_kcenter_constraints.obj: quant/palette/0003_kcenter_constraints.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0003_kcenter_constraints.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Tpo -c -o quant/palette/test_runner-0003_kcenter_constraints.obj `if test -f 'quant/palette/0003_kcenter_constraints.c'; then $(CYGPATH_W) 'quant/palette/0003_kcenter_constraints.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0003_kcenter_constraints.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Tpo quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0003_kcenter_constraints.c' object='quant/palette/test_runner-0003_kcenter_constraints.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0003_kcenter_constraints.obj `if test -f 'quant/palette/0003_kcenter_constraints.c'; then $(CYGPATH_W) 'quant/palette/0003_kcenter_constraints.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0003_kcenter_constraints.c'; fi`
 
 diagnostics/probe/test_runner-0001_probe_parse.o: diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/probe/test_runner-0001_probe_parse.o -MD -MP -MF diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo -c -o diagnostics/probe/test_runner-0001_probe_parse.o `test -f 'diagnostics/probe/0001_probe_parse.c' || echo '$(srcdir)/'`diagnostics/probe/0001_probe_parse.c
@@ -3001,6 +3026,7 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -3108,6 +3134,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -3167,6 +3194,7 @@ uninstall-am:
 	staticcheck-test-inc-extra-dist-sync \
 	staticcheck-meson-palette-sources \
 	staticcheck-kmedoids-suboption-env-sync \
+	staticcheck-kcenter-suboption-env-sync \
 	staticcheck-completion-medoids-tokens \
 	staticcheck-kmeans-suboption-env-sync \
 	staticcheck-interframe-strategy-token-sync \
@@ -3200,6 +3228,7 @@ staticcheck-src-makefile-dist-sources-sync \
 staticcheck-test-inc-extra-dist-sync \
 staticcheck-meson-palette-sources \
 staticcheck-kmedoids-suboption-env-sync \
+staticcheck-kcenter-suboption-env-sync \
 staticcheck-completion-medoids-tokens \
 staticcheck-kmeans-suboption-env-sync \
 staticcheck-interframe-strategy-token-sync \
@@ -3365,6 +3394,16 @@ staticcheck-kmedoids-suboption-env-sync:
 		--trs-file staticcheck-kmedoids-suboption-env-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-kmedoids-suboption-env-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-kcenter-suboption-env-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-kcenter-suboption-env-sync" \
+		--log-file staticcheck-kcenter-suboption-env-sync.log \
+		--trs-file staticcheck-kcenter-suboption-env-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-kcenter-suboption-env-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-completion-medoids-tokens:
