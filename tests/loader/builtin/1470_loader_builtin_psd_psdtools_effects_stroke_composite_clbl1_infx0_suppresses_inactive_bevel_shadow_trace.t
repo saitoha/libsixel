@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify clbl=1 + infx=0 keeps bevel-shadow path on
-# effects/stroke-composite hardcase.
+# Verify clbl=1 + infx=0 keeps deferred clipped-group flow active
+# while suppressing inactive interior effect apply.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -43,11 +43,23 @@ test "${trace_output#*builtin PSD: infx=0; skipping interior effects in layer fa
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying bevel shadow in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not keep bevel shadow path"
+test "${trace_output#*builtin PSD: applying clip-weighted deferred interior effects in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite unexpectedly applied deferred interior effects"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps bevel shadow path on clbl=1 + infx=0"
+test "${trace_output#*builtin PSD: applying bevel shadow in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite applied inactive bevel shadow on clbl=1 + infx=0"
+    exit 0
+}
+
+test "${trace_output#*builtin PSD: applying deferred stroke on clipped group*}" \
+    != "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite lost deferred stroke while suppressing inactive interior effects"
+    exit 0
+}
+
+echo "ok" 1 - "effects/stroke-composite keeps clbl=1 + infx=0 flow while suppressing inactive interior effects"
 exit 0

@@ -1,5 +1,6 @@
 #!/bin/sh
-# Verify stroke-composite deferred path applies bevel lighting semantics.
+# Verify explicit inactive ebbl from lfx2 suppresses bevel-shadow apply
+# while keeping legacy lrFX merge traces on effects/stroke-composite.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -30,23 +31,23 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: clbl=1; deferring interior overlays to clipped group composite*}" \
+test "${trace_output#*builtin PSD: parsed ebbl bevel object in layer effects \(inactive\)*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost clbl=1 deferred contract"
+    echo "not ok" 1 - "effects/stroke-composite lost inactive ebbl parse trace"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying deferred bevel lighting semantics in layer fallback*}" \
+test "${trace_output#*builtin PSD: merging legacy lrFX effects missing from lfx2*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed deferred bevel lighting semantics"
+    echo "not ok" 1 - "effects/stroke-composite did not merge legacy lrFX effects"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying clip-weighted deferred interior effects in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed deferred interior apply"
+test "${trace_output#*builtin PSD: applying bevel shadow in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite applied bevel shadow from inactive ebbl"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps deferred bevel lighting semantics trace"
+echo "ok" 1 - "effects/stroke-composite keeps explicit inactive ebbl out of apply path"
 exit 0

@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify stroke-composite keeps bevel highlight inactive while
-# applying bevel shadow after lfx2 inactive + lrFX complement.
+# Verify stroke-composite keeps explicit inactive ebbl out of apply
+# paths while keeping bevel channel parse traces deterministic.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -37,9 +37,15 @@ test "${trace_output#*builtin PSD: parsed bevel highlight channel in layer effec
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying bevel shadow in layer fallback*}" \
+test "${trace_output#*builtin PSD: parsed ebbl bevel object in layer effects \(inactive\)*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not apply bevel shadow"
+    echo "not ok" 1 - "effects/stroke-composite lost inactive ebbl parse trace"
+    exit 0
+}
+
+test "${trace_output#*builtin PSD: applying bevel shadow in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite applied bevel shadow from inactive ebbl"
     exit 0
 }
 
@@ -49,5 +55,5 @@ test "${trace_output#*builtin PSD: applying bevel highlight in layer fallback*}"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps bevel highlight inactive and applies bevel shadow"
+echo "ok" 1 - "effects/stroke-composite keeps inactive ebbl out of apply paths"
 exit 0

@@ -1,5 +1,6 @@
 #!/bin/sh
-# Verify stroke-composite applies bevel channels with lighting semantics.
+# Verify stroke-composite keeps bevel parse traces while explicit
+# inactive ebbl prevents bevel apply.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -49,11 +50,17 @@ test "${trace_output#*builtin PSD: parsed bevel shadow channel in layer effects*
 }
 
 test "${trace_output#*builtin PSD: applying bevel shadow in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not apply bevel shadow"
+    = "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite unexpectedly applied bevel shadow"
+    exit 0
+}
+
+test "${trace_output#*builtin PSD: applying bevel highlight in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite unexpectedly applied bevel highlight"
     exit 0
 }
 
 echo "ok" 1 - \
-    "effects/stroke-composite keeps bevel channel parse and shadow apply trace"
+    "effects/stroke-composite keeps bevel parse traces with inactive apply guard"
 exit 0

@@ -339,9 +339,10 @@ Key points used by this roadmap:
   - New trace representative `1453` fixes active `GrFl` parse coverage on
     `effects/stroke-composite.psd` and guards against regressing to
     inactive-only gradient effect parsing.
-  - New trace representative `1454` fixes bevel-apply coverage on
-    `effects/stroke-composite.psd`, ensuring highlight/shadow application
-    stays active after `lfx2` inactive + `lrFX` complement.
+  - Trace representative `1454` now locks inactive-ebbl suppression on
+    `effects/stroke-composite.psd`: bevel channels remain parse-visible, but
+    explicit inactive bevel channels are not applied even when lrFX merge
+    traces are emitted.
   - Clipping-group base suppression for synthesized `vstk` stroke is now
     limited to `clbl=0` layers, and trace representative `1459` fixes the
     `clbl=1` deferred-stroke preservation contract on
@@ -350,16 +351,15 @@ Key points used by this roadmap:
     in the composite pass (`SoFi`, `GrFl`, `FrFX`), and PASS trace
     representatives `1464..1467` lock clip-weighted contracts while
     `1318` remains XFAIL.
-  - `clbl=1` deferred composite now also applies clip-weighted deferred
-    interior effects (`IrGl/ChFX/bevel shadow`) using base-silhouette
-    coverage as the deferred source while keeping clip-gate separation.
-    PASS trace representatives `1489..1491` lock the deferred-interior
-    clip-weight/non-regression contracts; `1318` remains XFAIL.
+  - `clbl=1` deferred composite keeps clip-weighted deferred source/gate
+    separation, while explicit inactive interior targets are blocked in apply
+    paths. PASS trace representatives `1489..1491` lock deferred-source and
+    deferred-stroke non-regression contracts; `1318` remains XFAIL.
   - `1318`-focused trace representatives are further expanded with
     `1492..1495` to lock:
     `lrFX` inactive `OrGl/IrGl/ChFX` merge/suppression diagnostics and
-    clbl=1 deferred stroke source/gate split plus deferred interior
-    non-regression contracts.
+    `clbl=1` deferred stroke source/gate split while inactive interior apply
+    remains suppressed.
   - Legacy `lrFX` inactive completion now synchronizes named glow effects
     (`OrGl/IrGl/ChFX/DrSh/IrSh/bevl`) to proxy glow fields
     (`outer_glow`/`inner_glow`) when proxy slots are unset/inactive.
@@ -383,9 +383,10 @@ Key points used by this roadmap:
     `stroke-composite` deferred stroke semantics
     (clbl=1 defer + base silhouette + clip-weighted deferred stroke).
   - `1318`-focused PASS trace representatives `1504..1506` now lock:
-    bevel channel parse + shadow apply,
-    deferred bevel-lighting semantics, and
-    glow source/choke/range parse with `clbl=1` deferred interior contracts.
+    bevel channel parse with explicit inactive apply guards,
+    deferred clipped-group gradient/stroke continuity while inactive interior
+    apply stays suppressed, and
+    glow source/choke/range parse with inactive deferred interior guards.
     `1318` remains XFAIL, but the latest local score improved to
     `MS-SSIM 0.957603` without widening fallback heuristics.
   - `1318` deferred outer-effect semantics are now represented by
@@ -431,9 +432,15 @@ Key points used by this roadmap:
   - Effect gradient setup now uses one shared helper for base/deferred paths,
     and deferred outer effects now keep alpha accumulation semantics aligned
     with base outer passes. PASS representatives `1550..1553` lock:
-    deferred outer alpha accumulation trace contract, base/deferred GrFl
-    contract continuity, deferred outer/interior coverage continuity, and
+    deferred outer inactive-suppression contract on stroke-composite,
+    base/deferred GrFl contract continuity,
+    deferred outer/interior coverage continuity, and
     shape-fx2 GrFl sampler contract continuity.
+  - `lfx2` explicit inactive effects now stay blocked in apply paths even when
+    `lrFX` inactive-completion merge traces are emitted. Base/deferred apply
+    guards are shared for named glow/bevel targets, and PASS representatives
+    `1565..1567` lock inactive-no-apply plus active gradient/stroke
+    non-regression contracts.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:

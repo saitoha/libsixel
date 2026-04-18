@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify stroke-composite keeps glow parse semantics while
-# inactive lfx2 effects do not enter deferred interior apply.
+# Verify stroke-composite deferred clipped-group flow keeps
+# gradient/stroke applies while skipping inactive interior effects.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -31,28 +31,15 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed OrGl glow source/choke/range semantics*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed OrGl source/choke/range parse semantics"
-    exit 0
-}
-
-test "${trace_output#*builtin PSD: parsed IrGl glow source/choke/range semantics*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed IrGl source/choke/range parse semantics"
-    exit 0
-}
-
 test "${trace_output#*builtin PSD: clbl=1; deferring interior overlays to clipped group composite*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - "effects/stroke-composite lost clbl=1 deferred contract"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: suppressing clbl=1 deferred base interior glow/choke/bevel-shadow*}" \
+test "${trace_output#*builtin PSD: applying deferred bevel lighting semantics in layer fallback*}" \
     = "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite unexpectedly emitted deferred glow/choke suppression trace"
+    echo "not ok" 1 - "effects/stroke-composite unexpectedly applied deferred bevel lighting semantics"
     exit 0
 }
 
@@ -64,16 +51,15 @@ test "${trace_output#*builtin PSD: applying clip-weighted deferred interior effe
 
 test "${trace_output#*builtin PSD: applying clip-weighted deferred gradient overlay in layer fallback*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost deferred gradient overlay under inactive glow contracts"
+    echo "not ok" 1 - "effects/stroke-composite lost deferred gradient overlay while interior effects are skipped"
     exit 0
 }
 
 test "${trace_output#*builtin PSD: applying clip-weighted deferred effect stroke in layer fallback*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost deferred stroke under inactive glow contracts"
+    echo "not ok" 1 - "effects/stroke-composite lost deferred stroke while interior effects are skipped"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps glow parse semantics with inactive deferred interior guard"
+echo "ok" 1 - "effects/stroke-composite keeps deferred gradient/stroke with inactive interior skip"
 exit 0

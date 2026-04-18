@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify lrFX inactive completion keeps bevel shadow application active on
-# effects/stroke-composite hardcase.
+# Verify lrFX inactive completion keeps merge traces while explicit
+# inactive ebbl still suppresses bevel-shadow apply.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -37,11 +37,17 @@ test "${trace_output#*builtin PSD: merging legacy lrFX effects missing from lfx2
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying bevel shadow in layer fallback*}" \
+test "${trace_output#*builtin PSD: parsed ebbl bevel object in layer effects \(inactive\)*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not apply bevel shadow after inactive completion"
+    echo "not ok" 1 - "effects/stroke-composite lost inactive ebbl parse trace"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite applies bevel shadow after lrFX inactive completion"
+test "${trace_output#*builtin PSD: applying bevel shadow in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite applied bevel shadow from inactive ebbl"
+    exit 0
+}
+
+echo "ok" 1 - "effects/stroke-composite keeps lrFX merge while suppressing inactive bevel shadow"
 exit 0

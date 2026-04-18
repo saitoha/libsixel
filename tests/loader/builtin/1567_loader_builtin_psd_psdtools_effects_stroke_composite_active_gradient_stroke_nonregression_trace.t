@@ -1,5 +1,6 @@
 #!/bin/sh
-# Verify stroke-composite uses deferred outer alpha accumulation semantics.
+# Verify active deferred gradient/stroke contracts remain intact while
+# lfx2 explicit inactive guards suppress inactive effect application.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -30,20 +31,17 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying clip-weighted deferred outer effects in layer fallback*}" \
+test "${trace_output#*builtin PSD: applying clip-weighted deferred gradient overlay in layer fallback*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred outer apply path"
+    echo "not ok" 1 - "effects/stroke-composite lost deferred gradient apply contract"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying deferred outer alpha accumulation in layer fallback*}" \
+test "${trace_output#*builtin PSD: applying clip-weighted deferred effect stroke in layer fallback*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred outer alpha accumulation"
+    echo "not ok" 1 - "effects/stroke-composite lost deferred stroke apply contract"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps deferred outer alpha accumulation contract"
+echo "ok" 1 - "effects/stroke-composite keeps active deferred gradient/stroke contracts"
 exit 0
