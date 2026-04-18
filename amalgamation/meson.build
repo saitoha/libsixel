@@ -47,6 +47,7 @@ amalgamation_units = files(
   '../src/filter-clip.c',
   '../src/filter-colors.c',
   '../src/filter-dither.c',
+  '../src/filter-gradient.c',
   '../src/filter-encode.c',
   '../src/filter-factory.c',
   '../src/filter-final-merge.c',

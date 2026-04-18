@@ -73,6 +73,10 @@ typedef struct sixel_dither_context {
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
+    unsigned char const *bluenoise_gradient_map;
+    size_t bluenoise_gradient_map_size;
+    int bluenoise_gradient_width;
+    int bluenoise_gradient_height;
 } sixel_dither_context_t;
 
 #endif /* LIBSIXEL_DITHER_INTERNAL_H */

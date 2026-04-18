@@ -660,6 +660,10 @@ sixel_dither_map_pixels(
     context.transparent_mask = NULL;
     context.transparent_mask_size = 0;
     context.transparent_keycolor = (-1);
+    context.bluenoise_gradient_map = NULL;
+    context.bluenoise_gradient_map_size = 0U;
+    context.bluenoise_gradient_width = 0;
+    context.bluenoise_gradient_height = 0;
     context.lut = NULL;
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         context.pixels_float = (float *)(void *)data;
@@ -691,6 +695,13 @@ sixel_dither_map_pixels(
         context.transparent_mask = dither->pipeline_transparent_mask;
         context.transparent_mask_size = dither->pipeline_transparent_mask_size;
         context.transparent_keycolor = dither->pipeline_transparent_keycolor;
+    }
+    if (dither != NULL && dither->bluenoise_gradient_map != NULL) {
+        context.bluenoise_gradient_map = dither->bluenoise_gradient_map;
+        context.bluenoise_gradient_map_size =
+            dither->bluenoise_gradient_map_size;
+        context.bluenoise_gradient_width = dither->bluenoise_gradient_width;
+        context.bluenoise_gradient_height = dither->bluenoise_gradient_height;
     }
 
     if (reqcolor < 1) {
@@ -1546,6 +1557,8 @@ sixel_dither_new(
     (*ppdither)->bluenoise_channel_rgb = 0;
     (*ppdither)->bluenoise_size_override = 0;
     (*ppdither)->bluenoise_size = 64;
+    (*ppdither)->bluenoise_gradient_factor_override = 0;
+    (*ppdither)->bluenoise_gradient_factor = 0.0f;
     (*ppdither)->quality_mode = quality_mode;
     (*ppdither)->requested_quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -1568,6 +1581,10 @@ sixel_dither_new(
     (*ppdither)->pipeline_image_width = 0;
     (*ppdither)->pipeline_image_height = 0;
     sixel_dither_clear_pipeline_transparent_mask_hint(*ppdither);
+    (*ppdither)->bluenoise_gradient_map = NULL;
+    (*ppdither)->bluenoise_gradient_map_size = 0U;
+    (*ppdither)->bluenoise_gradient_width = 0;
+    (*ppdither)->bluenoise_gradient_height = 0;
     (*ppdither)->pipeline_logger = NULL;
     sixel_dither_interframe_state_init(*ppdither);
 
@@ -1644,6 +1661,7 @@ sixel_dither_destroy(
             sixel_palette_unref(dither->palette);
             dither->palette = NULL;
         }
+        sixel_dither_clear_bluenoise_gradient_map_hint(dither);
         sixel_dither_interframe_state_dispose(dither);
         sixel_allocator_free(allocator, dither);
         sixel_allocator_unref(allocator);
@@ -2367,6 +2385,63 @@ sixel_dither_clear_pipeline_transparent_mask_hint(
     dither->pipeline_transparent_keycolor = (-1);
 }
 
+SIXEL_INTERNAL_API void
+sixel_dither_clear_bluenoise_gradient_map_hint(
+    sixel_dither_t *dither)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    if (dither->bluenoise_gradient_map != NULL && dither->allocator != NULL) {
+        sixel_allocator_free(dither->allocator,
+                             dither->bluenoise_gradient_map);
+    }
+    dither->bluenoise_gradient_map = NULL;
+    dither->bluenoise_gradient_map_size = 0U;
+    dither->bluenoise_gradient_width = 0;
+    dither->bluenoise_gradient_height = 0;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_set_bluenoise_gradient_map_hint(
+    sixel_dither_t *dither,
+    unsigned char *gradient_map,
+    size_t gradient_map_size,
+    int width,
+    int height)
+{
+    size_t expected_size;
+
+    expected_size = 0U;
+
+    if (dither == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_dither_clear_bluenoise_gradient_map_hint(dither);
+    if (gradient_map == NULL
+            || gradient_map_size == 0U
+            || width <= 0
+            || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INPUT;
+    }
+    expected_size = (size_t)width * (size_t)height;
+    if (gradient_map_size < expected_size) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    dither->bluenoise_gradient_map = gradient_map;
+    dither->bluenoise_gradient_map_size = gradient_map_size;
+    dither->bluenoise_gradient_width = width;
+    dither->bluenoise_gradient_height = height;
+
+    return SIXEL_OK;
+}
+
 void
 sixel_dither_set_pipeline_transparent_mask_hint(
     sixel_dither_t *dither,
@@ -2554,6 +2629,7 @@ sixel_dither_cleanup_apply_hints(sixel_dither_t *dither)
     dither->pipeline_image_width = 0;
     dither->pipeline_image_height = 0;
     sixel_dither_clear_pipeline_transparent_mask_hint(dither);
+    sixel_dither_clear_bluenoise_gradient_map_hint(dither);
     dither->pipeline_logger = NULL;
 }
 

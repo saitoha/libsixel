@@ -119,6 +119,8 @@ struct sixel_dither {
     int bluenoise_channel_rgb;      /* non-zero for rgb channel mode */
     int bluenoise_size_override;    /* CLI bluenoise size flag */
     int bluenoise_size;             /* parsed bluenoise tile size */
+    int bluenoise_gradient_factor_override; /* CLI gradient gamma override */
+    float bluenoise_gradient_factor; /* parsed gradient gamma */
     int quality_mode;               /* quality of histogram */
     int requested_quality_mode;     /* original quality mode request */
     int keycolor;                   /* background color */
@@ -146,6 +148,10 @@ struct sixel_dither {
     unsigned char const *pipeline_transparent_mask; /* alpha==0 pixels */
     size_t pipeline_transparent_mask_size; /* transparent mask length */
     int pipeline_transparent_keycolor; /* keycolor applied to mask hits */
+    unsigned char *bluenoise_gradient_map; /* owned gradient-strength map */
+    size_t bluenoise_gradient_map_size; /* gradient map byte length */
+    int bluenoise_gradient_width; /* gradient map width */
+    int bluenoise_gradient_height; /* gradient map height */
     struct sixel_logger *pipeline_logger; /* parallel log sink */
     sixel_dither_frame_context_t frame_context; /* encoder frame metadata */
     sixel_dither_interframe_state_t interframe_state; /* reserved interframe */
@@ -201,6 +207,18 @@ sixel_dither_set_pipeline_transparent_mask_hint(
 void
 sixel_dither_clear_pipeline_transparent_mask_hint(
     sixel_dither_t *dither);
+
+SIXEL_INTERNAL_API void
+sixel_dither_clear_bluenoise_gradient_map_hint(
+    sixel_dither_t *dither);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_set_bluenoise_gradient_map_hint(
+    sixel_dither_t *dither,
+    unsigned char *gradient_map,
+    size_t gradient_map_size,
+    int width,
+    int height);
 
 /*
  * Configure the alpha preblend backdrop used when transparent keycolor

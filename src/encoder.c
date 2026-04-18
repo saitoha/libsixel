@@ -107,6 +107,7 @@
 #include "filter-clip.h"
 #include "filter-colors.h"
 #include "filter-dither.h"
+#include "filter-gradient.h"
 #include "filter-final-merge.h"
 #include "filter-factory.h"
 #include "filter-palette.h"
@@ -1121,6 +1122,14 @@ static sixel_suboption_key_t const g_subkeys_diffusion_bluenoise[] = {
         "strength",
         NULL,
         "SIXEL_DITHER_BLUENOISE_STRENGTH",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "gradient_factor",
+        "g",
+        "SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
@@ -4184,6 +4193,7 @@ typedef struct sixel_encode_dag_context {
     sixel_filter_resize_config_t resize_config;
     sixel_filter_clip_config_t clip_config;
     sixel_filter_colors_config_t colors_config;
+    sixel_filter_gradient_config_t gradient_config;
     sixel_filter_dither_config_t dither_config;
     int current_pixelformat;
     int current_colorspace;
@@ -4637,6 +4647,10 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     context->dither->bluenoise_strength_override =
         context->encoder->bluenoise_strength_override;
     context->dither->bluenoise_strength = context->encoder->bluenoise_strength;
+    context->dither->bluenoise_gradient_factor_override =
+        context->encoder->bluenoise_gradient_factor_override;
+    context->dither->bluenoise_gradient_factor =
+        context->encoder->bluenoise_gradient_factor;
     context->dither->bluenoise_phase_override =
         context->encoder->bluenoise_phase_override;
     context->dither->bluenoise_phase_x = context->encoder->bluenoise_phase_x;
@@ -4667,29 +4681,80 @@ sixel_encode_dag_node_dither_plan(sixel_encode_dag_context_t *context)
 {
     SIXELSTATUS status;
     int height;
+    int index;
+    int appended_dither;
+    sixel_planner_node_kind_t kind;
 
+    status = SIXEL_OK;
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
+    index = 0;
+    appended_dither = 0;
+    kind = SIXEL_PLANNER_NODE_DITHER;
     context->dither_config.dither = context->dither;
+    context->gradient_config.dither = context->dither;
     height = sixel_frame_get_height(context->frame);
     if (height < 0) {
         height = 0;
     }
 
-    status = sixel_encoder_filter_plan_append(
-        &context->post_plan,
-        SIXEL_FILTER_KIND_DITHER,
-        &context->dither_config,
-        &context->frame,
-        context->current_pixelformat,
-        context->current_colorspace,
-        context->current_pixelformat,
-        context->current_colorspace,
-        height);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    if (context->planner != NULL) {
+        for (index = 0; index < context->planner->dag_node_count; ++index) {
+            kind = context->planner->dag_nodes[index].kind;
+            switch (kind) {
+            case SIXEL_PLANNER_NODE_GRADIENT_MAP:
+                status = sixel_encoder_filter_plan_append(
+                    &context->post_plan,
+                    SIXEL_FILTER_KIND_GRADIENT,
+                    &context->gradient_config,
+                    &context->frame,
+                    context->current_pixelformat,
+                    context->current_colorspace,
+                    context->current_pixelformat,
+                    context->current_colorspace,
+                    height);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                break;
+            case SIXEL_PLANNER_NODE_DITHER:
+                status = sixel_encoder_filter_plan_append(
+                    &context->post_plan,
+                    SIXEL_FILTER_KIND_DITHER,
+                    &context->dither_config,
+                    &context->frame,
+                    context->current_pixelformat,
+                    context->current_colorspace,
+                    context->current_pixelformat,
+                    context->current_colorspace,
+                    height);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                appended_dither = 1;
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    if (appended_dither == 0) {
+        status = sixel_encoder_filter_plan_append(
+            &context->post_plan,
+            SIXEL_FILTER_KIND_DITHER,
+            &context->dither_config,
+            &context->frame,
+            context->current_pixelformat,
+            context->current_colorspace,
+            context->current_pixelformat,
+            context->current_colorspace,
+            height);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
     }
 
     status = sixel_encoder_filter_plan_run(&context->post_plan,
@@ -6721,6 +6786,7 @@ sixel_encoder_encode_frame(
     memset(&context.resize_config, 0, sizeof(context.resize_config));
     memset(&context.clip_config, 0, sizeof(context.clip_config));
     memset(&context.colors_config, 0, sizeof(context.colors_config));
+    memset(&context.gradient_config, 0, sizeof(context.gradient_config));
     memset(&context.dither_config, 0, sizeof(context.dither_config));
     context.current_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     context.current_colorspace = SIXEL_COLORSPACE_GAMMA;
@@ -6988,6 +7054,8 @@ sixel_encoder_new(
     (*ppencoder)->bluenoise_channel_rgb = 0;
     (*ppencoder)->bluenoise_size_override = 0;
     (*ppencoder)->bluenoise_size = 64;
+    (*ppencoder)->bluenoise_gradient_factor_override = 0;
+    (*ppencoder)->bluenoise_gradient_factor = 0.0f;
     (*ppencoder)->method_for_scan       = SIXEL_SCAN_AUTO;
     (*ppencoder)->method_for_largest    = SIXEL_LARGE_AUTO;
     (*ppencoder)->method_for_rep        = SIXEL_REP_AUTO;
@@ -7690,6 +7758,35 @@ sixel_encoder_parse_bluenoise_strength_text(
     }
 
     *strength_out = (float)parsed;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encoder_parse_bluenoise_gradient_factor_text(
+    char const *text,
+    float *gradient_factor_out)
+{
+    char *endptr;
+    double parsed;
+
+    endptr = NULL;
+    parsed = 0.0;
+    if (text == NULL || gradient_factor_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtod(text, &endptr);
+    if (endptr == text ||
+            endptr == NULL ||
+            endptr[0] != '\0' ||
+            errno != 0) {
+        sixel_helper_set_additional_message(
+            "-d bluenoise:gradient_factor must be a floating point value.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *gradient_factor_out = (float)parsed;
     return SIXEL_OK;
 }
 
@@ -8660,6 +8757,8 @@ typedef struct sixel_encoder_interframe_suboption_state {
 typedef struct sixel_encoder_bluenoise_suboption_state {
     int has_strength_override;
     float strength;
+    int has_gradient_factor_override;
+    float gradient_factor;
     int has_phase_override;
     int phase_x;
     int phase_y;
@@ -8849,6 +8948,7 @@ sixel_encoder_resolve_bluenoise_suboptions(
     char const *resolved_key_name;
     int resolved_choice;
     float resolved_strength;
+    float resolved_gradient_factor;
     int resolved_phase_x;
     int resolved_phase_y;
     int resolved_seed;
@@ -8859,6 +8959,7 @@ sixel_encoder_resolve_bluenoise_suboptions(
     resolved_key_name = NULL;
     resolved_choice = 0;
     resolved_strength = 0.055f;
+    resolved_gradient_factor = 0.0f;
     resolved_phase_x = 0;
     resolved_phase_y = 0;
     resolved_seed = 0;
@@ -8868,6 +8969,8 @@ sixel_encoder_resolve_bluenoise_suboptions(
 
     state->has_strength_override = 0;
     state->strength = resolved_strength;
+    state->has_gradient_factor_override = 0;
+    state->gradient_factor = 0.0f;
     state->has_phase_override = 0;
     state->phase_x = 0;
     state->phase_y = 0;
@@ -8894,6 +8997,16 @@ sixel_encoder_resolve_bluenoise_suboptions(
             }
             state->has_strength_override = 1;
             state->strength = resolved_strength;
+        } else if (resolved_key_name != NULL
+                && strcmp(resolved_key_name, "gradient_factor") == 0) {
+            status = sixel_encoder_parse_bluenoise_gradient_factor_text(
+                assignment->resolved_value_text,
+                &resolved_gradient_factor);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            state->has_gradient_factor_override = 1;
+            state->gradient_factor = resolved_gradient_factor;
         } else if (resolved_key_name != NULL
                 && strcmp(resolved_key_name, "phase") == 0) {
             status = sixel_encoder_parse_bluenoise_phase_text(
@@ -9983,6 +10096,8 @@ sixel_encoder_setopt(
     interframe_suboptions.fastpath_enabled = 0;
     bluenoise_suboptions.has_strength_override = 0;
     bluenoise_suboptions.strength = 0.055f;
+    bluenoise_suboptions.has_gradient_factor_override = 0;
+    bluenoise_suboptions.gradient_factor = 0.0f;
     bluenoise_suboptions.has_phase_override = 0;
     bluenoise_suboptions.phase_x = 0;
     bluenoise_suboptions.phase_y = 0;
@@ -10187,6 +10302,10 @@ sixel_encoder_setopt(
         encoder->bluenoise_strength_override =
             bluenoise_suboptions.has_strength_override;
         encoder->bluenoise_strength = bluenoise_suboptions.strength;
+        encoder->bluenoise_gradient_factor_override =
+            bluenoise_suboptions.has_gradient_factor_override;
+        encoder->bluenoise_gradient_factor =
+            bluenoise_suboptions.gradient_factor;
         encoder->bluenoise_phase_override =
             bluenoise_suboptions.has_phase_override;
         encoder->bluenoise_phase_x = bluenoise_suboptions.phase_x;

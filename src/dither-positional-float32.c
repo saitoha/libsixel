@@ -115,6 +115,7 @@ positional_mask_x_float32(int x, int y, int c)
  */
 typedef struct {
     float strength;
+    float gradient_factor;
     int ox;
     int oy;
     int per_channel;
@@ -337,6 +338,7 @@ sixel_bluenoise_conf_init_from_env_body_float32(void)
 {
     char const *text;
     float strength;
+    float gradient_factor;
     int size;
     int ox;
     int oy;
@@ -352,6 +354,14 @@ sixel_bluenoise_conf_init_from_env_body_float32(void)
         parsed = sixel_bn_parse_float_float32(text, &strength);
         if (parsed == 0) {
             strength = 0.055f;
+        }
+    }
+    gradient_factor = 0.0f;
+    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR");
+    if (text != NULL) {
+        parsed = sixel_bn_parse_float_float32(text, &gradient_factor);
+        if (parsed == 0 || gradient_factor <= 0.0f) {
+            gradient_factor = 0.0f;
         }
     }
 
@@ -399,6 +409,7 @@ sixel_bluenoise_conf_init_from_env_body_float32(void)
     }
 
     g_sixel_bn_conf_float32.strength = strength;
+    g_sixel_bn_conf_float32.gradient_factor = gradient_factor;
     g_sixel_bn_conf_float32.ox = ox;
     g_sixel_bn_conf_float32.oy = oy;
     g_sixel_bn_conf_float32.per_channel = per_channel;
@@ -470,6 +481,12 @@ sixel_bluenoise_conf_apply_dither_overrides_float32(
 
     if (dither->bluenoise_strength_override != 0) {
         conf->strength = dither->bluenoise_strength;
+    }
+    if (dither->bluenoise_gradient_factor_override != 0) {
+        conf->gradient_factor = dither->bluenoise_gradient_factor;
+    }
+    if (conf->gradient_factor <= 0.0f) {
+        conf->gradient_factor = 0.0f;
     }
     if (dither->bluenoise_channel_override != 0) {
         conf->per_channel = (dither->bluenoise_channel_rgb != 0) ? 1 : 0;
@@ -565,6 +582,60 @@ positional_mask_blue_with_conf_float32(
         * conf->strength;
 }
 
+static float
+sixel_bluenoise_gradient_weight_float32(
+    sixel_dither_context_t const *context,
+    int x,
+    int absolute_y,
+    float gamma)
+{
+    size_t offset;
+    float normalized;
+    float attenuated;
+
+    offset = 0U;
+    normalized = 0.0f;
+    attenuated = 0.0f;
+
+    if (context == NULL || gamma <= 0.0f) {
+        return 1.0f;
+    }
+    if (context->bluenoise_gradient_map == NULL
+            || context->bluenoise_gradient_width <= 0
+            || context->bluenoise_gradient_height <= 0
+            || absolute_y < 0
+            || x < 0) {
+        return 1.0f;
+    }
+    if (x >= context->bluenoise_gradient_width
+            || absolute_y >= context->bluenoise_gradient_height) {
+        return 1.0f;
+    }
+
+    offset = (size_t)absolute_y * (size_t)context->bluenoise_gradient_width
+           + (size_t)x;
+    if (offset >= context->bluenoise_gradient_map_size) {
+        return 1.0f;
+    }
+
+    normalized = (float)context->bluenoise_gradient_map[offset] / 255.0f;
+    if (normalized <= 0.0f) {
+        return 1.0f;
+    }
+    if (normalized >= 1.0f) {
+        return 0.0f;
+    }
+
+    attenuated = powf(normalized, gamma);
+    if (attenuated < 0.0f) {
+        attenuated = 0.0f;
+    } else if (attenuated > 1.0f) {
+        attenuated = 1.0f;
+    }
+
+    return 1.0f - attenuated;
+}
+
 SIXELSTATUS
 sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                                       sixel_dither_context_t *context)
@@ -594,6 +665,8 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
     size_t absolute_index;
     sixel_bluenoise_conf_float32_t bluenoise_conf;
     int use_bluenoise_conf;
+    float gradient_factor;
+    float gradient_weight;
     float noise;
 
     palette_float = NULL;
@@ -602,11 +675,14 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
     quantized = NULL;
     lookup_wants_float = 0;
     bluenoise_conf.strength = 0.055f;
+    bluenoise_conf.gradient_factor = 0.0f;
     bluenoise_conf.ox = 0;
     bluenoise_conf.oy = 0;
     bluenoise_conf.per_channel = 0;
     bluenoise_conf.size = SIXEL_BN_W;
     use_bluenoise_conf = 0;
+    gradient_factor = 0.0f;
+    gradient_weight = 1.0f;
     noise = 0.0f;
 
     if (dither == NULL || context == NULL) {
@@ -658,6 +734,9 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
             && transparent_keycolor >= 0
             && transparent_keycolor < SIXEL_PALETTE_MAX) {
         use_transparent_fence = 1;
+    }
+    if (use_bluenoise_conf != 0) {
+        gradient_factor = bluenoise_conf.gradient_factor;
     }
     lookup_wants_float = (context->lookup_source_is_float != 0);
     use_palette_float_lookup = 0;
@@ -715,6 +794,15 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                     }
                     continue;
                 }
+                gradient_weight = 1.0f;
+                if (use_bluenoise_conf != 0 && gradient_factor > 0.0f) {
+                    gradient_weight =
+                        sixel_bluenoise_gradient_weight_float32(
+                            context,
+                            x,
+                            absolute_y,
+                            gradient_factor);
+                }
                 for (d = 0; d < context->depth; ++d) {
                     float val;
 
@@ -724,6 +812,7 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                             x,
                             y,
                             d);
+                        noise *= gradient_weight;
                     } else {
                         noise = f_mask(x, y, d);
                     }
@@ -872,6 +961,15 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                     }
                     continue;
                 }
+                gradient_weight = 1.0f;
+                if (use_bluenoise_conf != 0 && gradient_factor > 0.0f) {
+                    gradient_weight =
+                        sixel_bluenoise_gradient_weight_float32(
+                            context,
+                            x,
+                            absolute_y,
+                            gradient_factor);
+                }
                 for (d = 0; d < context->depth; ++d) {
                     float val;
 
@@ -881,6 +979,7 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                             x,
                             y,
                             d);
+                        noise *= gradient_weight;
                     } else {
                         noise = f_mask(x, y, d);
                     }

@@ -36,6 +36,7 @@
 #include "filter-clip.h"
 #include "filter-final-merge.h"
 #include "filter-dither.h"
+#include "filter-gradient.h"
 #include "filter-load.h"
 #include "filter-lookup.h"
 #include "filter-palette.h"
@@ -234,6 +235,21 @@ sixel_filter_factory_dither_init(sixel_filter_t *filter,
 }
 
 static SIXELSTATUS
+sixel_filter_factory_gradient_init(sixel_filter_t *filter,
+                                   const void *config)
+{
+    const sixel_filter_gradient_config_t *gradient_config;
+
+    if (config == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    gradient_config = (const sixel_filter_gradient_config_t *)config;
+
+    return sixel_filter_gradient_init(filter, gradient_config);
+}
+
+static SIXELSTATUS
 sixel_filter_factory_encode_init(sixel_filter_t *filter,
                                  const void *config)
 {
@@ -255,6 +271,9 @@ static const sixel_filter_factory_entry_t
     {"colorspace",
      SIXEL_FILTER_KIND_COLORS,
      sixel_filter_factory_colors_init},
+    {"gradient-map",
+     SIXEL_FILTER_KIND_GRADIENT,
+     sixel_filter_factory_gradient_init},
     {"dither", SIXEL_FILTER_KIND_DITHER, sixel_filter_factory_dither_init},
     {"final-merge",
      SIXEL_FILTER_KIND_FINAL_MERGE,

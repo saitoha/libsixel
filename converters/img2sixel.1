@@ -356,6 +356,10 @@ sub-option:
 .br
 \fBstrength=VALUE\fP -> floating point amplitude (default 0.055)
 .br
+\fBgradient_factor=VALUE\fP -> gamma for gradient attenuation (\fB<=0\fP disables; default 0)
+.br
+\fBg=VALUE\fP -> short alias of \fBgradient_factor\fP
+.br
 \fBphase=X,Y\fP -> phase offsets for blue-noise tile
 .br
 \fBseed=SEED\fP -> phase seed when phase is omitted
@@ -1108,6 +1112,11 @@ Overridden by \fB\-d stbn:fastpath=0|1\fP.
 .br
 scale bluenoise ordered dither strength when \fB\-d bluenoise\fP is set.
 Accepts 0.0-2.0; defaults to 0.055.
+.TP 5
+.B SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR
+.br
+set gradient attenuation gamma when \fB\-d bluenoise\fP is set.
+Values <= 0 disable gradient modulation.
 .TP 5
 .B SIXEL_DITHER_A_DITHER_STRENGTH
 .br

@@ -152,6 +152,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/filter-final-merge.h \
                 $(srcdir)/filter-dither.c \
                 $(srcdir)/filter-dither.h \
+                $(srcdir)/filter-gradient.c \
+                $(srcdir)/filter-gradient.h \
                 $(srcdir)/filter-encode.c \
                 $(srcdir)/filter-encode.h \
                 $(srcdir)/filter-lookup.c \

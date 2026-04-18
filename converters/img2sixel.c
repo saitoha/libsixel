@@ -448,6 +448,10 @@ static cli_option_help_t const g_option_help_table[] = {
         "        sub-option:\n"
         "          strength=VALUE      -> floating point amplitude\n"
         "                                 (default 0.055)\n"
+        "          gradient_factor=VALUE\n"
+        "                               -> gamma for gradient attenuation\n"
+        "                                  (<=0 disables; default 0)\n"
+        "          g=VALUE             -> short alias of gradient_factor\n"
         "          phase=X,Y           -> phase offsets for blue-noise tile\n"
         "          seed=SEED           -> phase seed when phase is omitted\n"
         "          channel=CHANNEL     -> mono or rgb (default mono)\n"
@@ -985,6 +989,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_DITHER_BLUENOISE_STRENGTH",
         "scale bluenoise ordered dither strength when -d bluenoise is set.\n"
         "Accepts 0.0-2.0; defaults to 0.055."
+    },
+    {
+        "SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR",
+        "set gradient attenuation gamma when -d bluenoise is set.\n"
+        "Values <= 0 disable gradient modulation."
     },
     {
         "SIXEL_DITHER_A_DITHER_STRENGTH",

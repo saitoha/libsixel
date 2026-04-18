@@ -64,6 +64,9 @@ static void
 sixel_encoding_planner_build_dag(sixel_encoding_planner_t *planner,
                                  sixel_encoder_t *encoder,
                                  int palette_ready);
+static float
+sixel_encoding_planner_resolve_bluenoise_gradient_factor(
+    sixel_encoder_t const *encoder);
 static int
 sixel_encoding_planner_replan_palette_branch(sixel_encoding_planner_t *planner,
                                              sixel_encoder_t *encoder,
@@ -95,6 +98,58 @@ sixel_planner_pixelformat_for_colorspace(int colorspace,
         }
         return SIXEL_PIXELFORMAT_RGB888;
     }
+}
+
+static float
+sixel_encoding_planner_resolve_bluenoise_gradient_factor(
+    sixel_encoder_t const *encoder)
+{
+    char const *text;
+    char *endptr;
+    double parsed;
+    float resolved;
+
+    text = NULL;
+    endptr = NULL;
+    parsed = 0.0;
+    resolved = 0.0f;
+
+    if (encoder == NULL) {
+        return 0.0f;
+    }
+    if (encoder->method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER) {
+        return 0.0f;
+    }
+
+    if (encoder->bluenoise_gradient_factor_override != 0) {
+        resolved = encoder->bluenoise_gradient_factor;
+        if (resolved > 0.0f) {
+            return resolved;
+        }
+        return 0.0f;
+    }
+
+    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR");
+    if (text == NULL || text[0] == '\0') {
+        return 0.0f;
+    }
+
+    errno = 0;
+    parsed = strtod(text, &endptr);
+    if (endptr == text
+            || endptr == NULL
+            || endptr[0] != '\0'
+            || errno != 0
+            || parsed <= 0.0) {
+        return 0.0f;
+    }
+
+    resolved = (float)parsed;
+    if (resolved <= 0.0f) {
+        return 0.0f;
+    }
+
+    return resolved;
 }
 
 static void
@@ -176,9 +231,11 @@ sixel_encoding_planner_build_dag(sixel_encoding_planner_t *planner,
     int scale_node;
     int colorspace_post_node;
     int join_node;
+    int gradient_node;
     int dither_node;
     int encode_node;
     int work_tail;
+    float gradient_factor;
 
     load_node = -1;
     palette_node = -1;
@@ -188,13 +245,18 @@ sixel_encoding_planner_build_dag(sixel_encoding_planner_t *planner,
     scale_node = -1;
     colorspace_post_node = -1;
     join_node = -1;
+    gradient_node = -1;
     dither_node = -1;
     encode_node = -1;
     work_tail = -1;
+    gradient_factor = 0.0f;
 
     if (planner == NULL || encoder == NULL) {
         return;
     }
+
+    gradient_factor =
+        sixel_encoding_planner_resolve_bluenoise_gradient_factor(encoder);
 
     sixel_encoding_planner_dag_clear(planner);
 
@@ -285,6 +347,18 @@ sixel_encoding_planner_build_dag(sixel_encoding_planner_t *planner,
         }
         sixel_encoding_planner_dag_add_edge(planner, work_tail, join_node, 0);
         work_tail = join_node;
+    }
+
+    if (gradient_factor > 0.0f) {
+        gradient_node = sixel_encoding_planner_dag_add_node(
+            planner,
+            SIXEL_PLANNER_NODE_GRADIENT_MAP,
+            "gradient-map");
+        sixel_encoding_planner_dag_add_edge(planner,
+                                            work_tail,
+                                            gradient_node,
+                                            0);
+        work_tail = gradient_node;
     }
 
     dither_node = sixel_encoding_planner_dag_add_node(

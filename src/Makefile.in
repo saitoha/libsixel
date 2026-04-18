@@ -220,7 +220,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/filter-load.h $(srcdir)/filter-factory.c \
 	$(srcdir)/filter-factory.h $(srcdir)/filter-final-merge.c \
 	$(srcdir)/filter-final-merge.h $(srcdir)/filter-dither.c \
-	$(srcdir)/filter-dither.h $(srcdir)/filter-encode.c \
+	$(srcdir)/filter-dither.h $(srcdir)/filter-gradient.c \
+	$(srcdir)/filter-gradient.h $(srcdir)/filter-encode.c \
 	$(srcdir)/filter-encode.h $(srcdir)/filter-lookup.c \
 	$(srcdir)/filter-lookup.h $(srcdir)/filter-palette.c \
 	$(srcdir)/filter-palette.h $(srcdir)/filter-fhedt.c \
@@ -333,6 +334,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-factory.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-final-merge.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-dither.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-gradient.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-encode.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-lookup.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-palette.lo \
@@ -467,6 +469,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-filter-factory.Plo \
 	./$(DEPDIR)/libsixel_la-filter-fhedt.Plo \
 	./$(DEPDIR)/libsixel_la-filter-final-merge.Plo \
+	./$(DEPDIR)/libsixel_la-filter-gradient.Plo \
 	./$(DEPDIR)/libsixel_la-filter-load.Plo \
 	./$(DEPDIR)/libsixel_la-filter-lookup.Plo \
 	./$(DEPDIR)/libsixel_la-filter-palette.Plo \
@@ -955,6 +958,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-final-merge.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-dither.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-dither.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-gradient.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-gradient.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-encode.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-encode.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-lookup.c \
@@ -1263,6 +1268,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-factory.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-fhedt.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-final-merge.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-gradient.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-load.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-lookup.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-palette.Plo@am__quote@ # am--include-marker
@@ -1692,6 +1698,13 @@ libsixel_la-filter-dither.lo: filter-dither.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-dither.c' object='libsixel_la-filter-dither.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-dither.lo `test -f 'filter-dither.c' || echo '$(srcdir)/'`filter-dither.c
+
+libsixel_la-filter-gradient.lo: filter-gradient.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-gradient.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-gradient.Tpo -c -o libsixel_la-filter-gradient.lo `test -f 'filter-gradient.c' || echo '$(srcdir)/'`filter-gradient.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-filter-gradient.Tpo $(DEPDIR)/libsixel_la-filter-gradient.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-gradient.c' object='libsixel_la-filter-gradient.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-gradient.lo `test -f 'filter-gradient.c' || echo '$(srcdir)/'`filter-gradient.c
 
 libsixel_la-filter-encode.lo: filter-encode.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-encode.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-encode.Tpo -c -o libsixel_la-filter-encode.lo `test -f 'filter-encode.c' || echo '$(srcdir)/'`filter-encode.c
@@ -2409,6 +2422,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-fhedt.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-final-merge.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-gradient.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-load.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-lookup.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo
@@ -2567,6 +2581,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-fhedt.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-final-merge.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-gradient.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-load.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-lookup.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo

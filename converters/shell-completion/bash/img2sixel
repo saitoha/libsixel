@@ -566,6 +566,8 @@ _img2sixel()
                                    x_dither \
                                    bluenoise \
                                    bluenoise:strength=0.055 \
+                                   bluenoise:gradient_factor=1.0 \
+                                   bluenoise:g=1.0 \
                                    bluenoise:phase=10,20 \
                                    bluenoise:seed=123 \
                                    bluenoise:channel=mono \
