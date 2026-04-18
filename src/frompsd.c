@@ -20394,18 +20394,26 @@ sixel_builtin_psd_apply_layer_effects_subset(
             traced_stroke_alpha_semantics = 1;
         }
         if (effect_mode == SIXEL_BUILTIN_PSD_BLEND_NORMAL) {
+            /*
+             * Keep FrFX Normal blend semantics consistent between base and
+             * deferred clipped-group paths. Both paths should blend in gamma
+             * space so contour density does not diverge by execution route.
+             */
             src->rgb_linear[i * 3u + 0u] =
-                sixel_builtin_psd_clamp01(
-                    src->rgb_linear[i * 3u + 0u] * (1.0f - stroke_alpha) +
-                    stroke_rgb[0] * stroke_alpha);
+                sixel_builtin_psd_blend_channel_gamma(
+                    src->rgb_linear[i * 3u + 0u],
+                    stroke_rgb[0],
+                    stroke_alpha);
             src->rgb_linear[i * 3u + 1u] =
-                sixel_builtin_psd_clamp01(
-                    src->rgb_linear[i * 3u + 1u] * (1.0f - stroke_alpha) +
-                    stroke_rgb[1] * stroke_alpha);
+                sixel_builtin_psd_blend_channel_gamma(
+                    src->rgb_linear[i * 3u + 1u],
+                    stroke_rgb[1],
+                    stroke_alpha);
             src->rgb_linear[i * 3u + 2u] =
-                sixel_builtin_psd_clamp01(
-                    src->rgb_linear[i * 3u + 2u] * (1.0f - stroke_alpha) +
-                    stroke_rgb[2] * stroke_alpha);
+                sixel_builtin_psd_blend_channel_gamma(
+                    src->rgb_linear[i * 3u + 2u],
+                    stroke_rgb[2],
+                    stroke_alpha);
         } else {
             sixel_builtin_psd_blend_rgb(
                 src->rgb_linear[i * 3u + 0u],
@@ -23979,34 +23987,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 "psd_decode",
                 "builtin PSD: suppressing synthesized vector stroke on "
                 "clipping-group base layer");
-            apply_effects_subset =
-                effective_composite_layer->has_effect_solid_overlay != 0 ||
-                effective_composite_layer->has_effect_gradient_overlay != 0 ||
-                effective_composite_layer->has_effect_outer_glow != 0 ||
-                effective_composite_layer->has_effect_inner_glow != 0;
-        }
-        if (apply_clipping != 0 &&
-            effective_composite_layer->has_effect_stroke != 0 &&
-            effective_composite_layer->effect_stroke_from_vector_style == 0 &&
-            effective_composite_layer->effect_stroke_position ==
-                SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE &&
-            effective_composite_layer->has_effect_solid_overlay != 0 &&
-            effective_composite_layer->has_blend_clipped_elements != 0 &&
-            effective_composite_layer->blend_clipped_elements_enabled != 0 &&
-            effective_composite_layer->has_vector_mask != 0) {
-            /*
-             * Some clbl=1 clipping siblings carry explicit inside stroke plus
-             * solid overlay. On stroke-composite stacks this can duplicate the
-             * contour that is already represented by the base + clip blend.
-             * Keep sibling overlay but suppress this narrow stroke subset.
-             */
-            layer_for_composite = *effective_composite_layer;
-            layer_for_composite.has_effect_stroke = 0;
-            effective_composite_layer = &layer_for_composite;
-            sixel_builtin_psd_trace_message(
-                "psd_decode",
-                "builtin PSD: suppressing explicit inside stroke on "
-                "clbl=1 clipping sibling");
             apply_effects_subset =
                 effective_composite_layer->has_effect_solid_overlay != 0 ||
                 effective_composite_layer->has_effect_gradient_overlay != 0 ||
