@@ -19453,6 +19453,24 @@ sixel_builtin_psd_layer_interior_effects_enabled(
     return enabled;
 }
 
+static int
+sixel_builtin_psd_build_alpha_distance_maps(
+    float *foreground_distance_map,
+    float *background_distance_map,
+    float const *alpha_map,
+    unsigned int width,
+    unsigned int height,
+    float alpha_threshold);
+
+static float
+sixel_builtin_psd_compute_stroke_coverage_distance(
+    float const *foreground_distance_map,
+    float const *background_distance_map,
+    size_t index,
+    float source_alpha,
+    float stroke_size,
+    int stroke_position);
+
 static void
 sixel_builtin_psd_apply_layer_effects_subset(
     sixel_builtin_psd_layer_record_t const *layer,
@@ -19471,8 +19489,11 @@ sixel_builtin_psd_apply_layer_effects_subset(
     float global_x;
     float global_y;
     float *original_alpha;
+    float *stroke_foreground_distance_map;
+    float *stroke_background_distance_map;
     size_t width;
     size_t height;
+    size_t stroke_map_pixels;
     int stroke_radius;
     int suppress_stroke;
     int traced_vector_mask_glow;
@@ -19503,6 +19524,10 @@ sixel_builtin_psd_apply_layer_effects_subset(
     int stroke_position;
     sixel_builtin_psd_layer_blend_mode_t effect_mode;
     sixel_builtin_psd_layer_record_t gradient_layer;
+    int stroke_distance_map_valid;
+    int traced_distance_stroke;
+    int traced_distance_stroke_position;
+    float stroke_distance_threshold;
 
     i = 0u;
     x = 0u;
@@ -19521,8 +19546,11 @@ sixel_builtin_psd_apply_layer_effects_subset(
     global_x = 0.0f;
     global_y = 0.0f;
     original_alpha = NULL;
+    stroke_foreground_distance_map = NULL;
+    stroke_background_distance_map = NULL;
     width = 0u;
     height = 0u;
+    stroke_map_pixels = 0u;
     stroke_radius = 0;
     suppress_stroke = 0;
     traced_vector_mask_glow = 0;
@@ -19555,6 +19583,10 @@ sixel_builtin_psd_apply_layer_effects_subset(
     stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
     effect_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     memset(&gradient_layer, 0, sizeof(gradient_layer));
+    stroke_distance_map_valid = 0;
+    traced_distance_stroke = 0;
+    traced_distance_stroke_position = 0;
+    stroke_distance_threshold = 0.001f;
     if (layer == NULL || src == NULL || src->rgb_linear == NULL ||
         src->alpha == NULL) {
         return;
@@ -20130,6 +20162,26 @@ sixel_builtin_psd_apply_layer_effects_subset(
         return;
     }
     memcpy(original_alpha, src->alpha, src->pixel_count * sizeof(float));
+    stroke_map_pixels = src->pixel_count;
+    if (width != 0u && stroke_map_pixels / width == height) {
+        stroke_foreground_distance_map = (float *)malloc(
+            stroke_map_pixels * sizeof(float));
+        stroke_background_distance_map = (float *)malloc(
+            stroke_map_pixels * sizeof(float));
+        if (stroke_foreground_distance_map != NULL &&
+            stroke_background_distance_map != NULL) {
+            stroke_distance_threshold =
+                use_binary_stroke_alpha != 0 ? 0.5f : 0.001f;
+            stroke_distance_map_valid =
+                sixel_builtin_psd_build_alpha_distance_maps(
+                    stroke_foreground_distance_map,
+                    stroke_background_distance_map,
+                    original_alpha,
+                    layer->width,
+                    layer->height,
+                    stroke_distance_threshold);
+        }
+    }
     for (i = 0u; i < src->pixel_count; ++i) {
         int dx;
         int dy;
@@ -20148,50 +20200,90 @@ sixel_builtin_psd_apply_layer_effects_subset(
         if (use_binary_stroke_alpha != 0) {
             source_alpha = source_alpha >= 0.5f ? 1.0f : 0.0f;
         }
-        max_alpha = 0.0f;
-        min_alpha = 1.0f;
-        for (dy = -stroke_radius; dy <= stroke_radius; ++dy) {
-            int ny;
-
-            ny = (int)y + dy;
-            if (ny < 0 || ny >= (int)height) {
-                continue;
+        if (stroke_distance_map_valid != 0) {
+            if (traced_distance_stroke == 0) {
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: applying distance-map effect stroke "
+                    "coverage in layer fallback");
+                traced_distance_stroke = 1;
             }
-            for (dx = -stroke_radius; dx <= stroke_radius; ++dx) {
-                int nx;
-                float neighbor_alpha;
-
-                if ((dx * dx + dy * dy) > stroke_radius * stroke_radius) {
-                    continue;
+            if (traced_distance_stroke_position == 0) {
+                if (stroke_position ==
+                    SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: using distance-map inside "
+                        "stroke coverage in layer fallback");
+                } else if (stroke_position ==
+                           SIXEL_BUILTIN_PSD_EFFECT_STROKE_CENTER) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: using distance-map center "
+                        "stroke coverage in layer fallback");
+                } else {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: using distance-map outside "
+                        "stroke coverage in layer fallback");
                 }
-                nx = (int)x + dx;
-                if (nx < 0 || nx >= (int)width) {
-                    continue;
-                }
-                neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                    original_alpha[(size_t)ny * width + (size_t)nx]);
-                if (use_binary_stroke_alpha != 0) {
-                    neighbor_alpha = neighbor_alpha >= 0.5f ? 1.0f : 0.0f;
-                }
-                if (neighbor_alpha > max_alpha) {
-                    max_alpha = neighbor_alpha;
-                }
-                if (neighbor_alpha < min_alpha) {
-                    min_alpha = neighbor_alpha;
-                }
+                traced_distance_stroke_position = 1;
             }
-        }
-        stroke_outside_coverage = max_alpha - source_alpha;
-        stroke_inside_coverage = source_alpha - min_alpha;
-        if (stroke_position ==
-            SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
-            stroke_coverage = stroke_inside_coverage;
-        } else if (stroke_position ==
-                   SIXEL_BUILTIN_PSD_EFFECT_STROKE_CENTER) {
             stroke_coverage =
-                0.5f * (stroke_outside_coverage + stroke_inside_coverage);
+                sixel_builtin_psd_compute_stroke_coverage_distance(
+                    stroke_foreground_distance_map,
+                    stroke_background_distance_map,
+                    i,
+                    source_alpha,
+                    stroke_size,
+                    stroke_position);
         } else {
-            stroke_coverage = stroke_outside_coverage;
+            max_alpha = 0.0f;
+            min_alpha = 1.0f;
+            for (dy = -stroke_radius; dy <= stroke_radius; ++dy) {
+                int ny;
+
+                ny = (int)y + dy;
+                if (ny < 0 || ny >= (int)height) {
+                    continue;
+                }
+                for (dx = -stroke_radius; dx <= stroke_radius; ++dx) {
+                    int nx;
+                    float neighbor_alpha;
+
+                    if ((dx * dx + dy * dy) > stroke_radius * stroke_radius) {
+                        continue;
+                    }
+                    nx = (int)x + dx;
+                    if (nx < 0 || nx >= (int)width) {
+                        continue;
+                    }
+                    neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                        original_alpha[(size_t)ny * width + (size_t)nx]);
+                    if (use_binary_stroke_alpha != 0) {
+                        neighbor_alpha = neighbor_alpha >= 0.5f ?
+                            1.0f : 0.0f;
+                    }
+                    if (neighbor_alpha > max_alpha) {
+                        max_alpha = neighbor_alpha;
+                    }
+                    if (neighbor_alpha < min_alpha) {
+                        min_alpha = neighbor_alpha;
+                    }
+                }
+            }
+            stroke_outside_coverage = max_alpha - source_alpha;
+            stroke_inside_coverage = source_alpha - min_alpha;
+            if (stroke_position ==
+                SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
+                stroke_coverage = stroke_inside_coverage;
+            } else if (stroke_position ==
+                       SIXEL_BUILTIN_PSD_EFFECT_STROKE_CENTER) {
+                stroke_coverage =
+                    0.5f * (stroke_outside_coverage + stroke_inside_coverage);
+            } else {
+                stroke_coverage = stroke_outside_coverage;
+            }
         }
         if (stroke_coverage <= 0.0f) {
             continue;
@@ -20242,6 +20334,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
         src->alpha[i] = sixel_builtin_psd_clamp_alpha_float32(
             source_alpha + stroke_alpha * (1.0f - source_alpha));
     }
+    free(stroke_foreground_distance_map);
+    free(stroke_background_distance_map);
     free(original_alpha);
     if (traced_interior_effects_skip != 0) {
         sixel_builtin_psd_layer_effects_trace_interior_skip();
@@ -20620,15 +20714,6 @@ sixel_builtin_psd_sample_alpha_cross_kernel_shifted(
     unsigned int height,
     float sample_x,
     float sample_y);
-
-static int
-sixel_builtin_psd_build_alpha_distance_maps(
-    float *foreground_distance_map,
-    float *background_distance_map,
-    float const *alpha_map,
-    unsigned int width,
-    unsigned int height,
-    float alpha_threshold);
 
 static float
 sixel_builtin_psd_distance_based_effect_coverage(
@@ -21940,6 +22025,56 @@ sixel_builtin_psd_distance_based_effect_coverage(
     return sixel_builtin_psd_clamp_alpha_float32(coverage);
 }
 
+static float
+sixel_builtin_psd_compute_stroke_coverage_distance(
+    float const *foreground_distance_map,
+    float const *background_distance_map,
+    size_t index,
+    float source_alpha,
+    float stroke_size,
+    int stroke_position)
+{
+    float outside_coverage;
+    float inside_coverage;
+    float stroke_coverage;
+    float stroke_radius_term;
+
+    outside_coverage = 0.0f;
+    inside_coverage = 0.0f;
+    stroke_coverage = 0.0f;
+    stroke_radius_term = 0.0f;
+    if (foreground_distance_map == NULL || background_distance_map == NULL ||
+        stroke_size <= 0.0f) {
+        return 0.0f;
+    }
+    source_alpha = sixel_builtin_psd_clamp_alpha_float32(source_alpha);
+    stroke_radius_term = stroke_size + 1.0f;
+    if (stroke_radius_term <= 0.0f) {
+        return 0.0f;
+    }
+    outside_coverage = sixel_builtin_psd_clamp01(
+        (stroke_radius_term - foreground_distance_map[index]) /
+        stroke_radius_term);
+    inside_coverage = sixel_builtin_psd_clamp01(
+        (stroke_radius_term - background_distance_map[index]) /
+        stroke_radius_term);
+    outside_coverage = sixel_builtin_psd_clamp01(
+        outside_coverage * (1.0f - source_alpha));
+    inside_coverage = sixel_builtin_psd_clamp01(
+        inside_coverage * source_alpha);
+    if (stroke_position ==
+        SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
+        stroke_coverage = inside_coverage;
+    } else if (stroke_position ==
+               SIXEL_BUILTIN_PSD_EFFECT_STROKE_CENTER) {
+        stroke_coverage = sixel_builtin_psd_clamp01(
+            0.5f * (outside_coverage + inside_coverage));
+    } else {
+        stroke_coverage = outside_coverage;
+    }
+    return sixel_builtin_psd_clamp_alpha_float32(stroke_coverage);
+}
+
 static int
 sixel_builtin_psd_build_exterior_background_map(
     unsigned char *out_background_map,
@@ -22094,8 +22229,16 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     int traced_fractional_coverage;
     int traced_source_gate_split;
     int traced_outside_boundary_prefer;
+    int traced_distance_stroke;
+    int traced_distance_stroke_position;
     unsigned char *outside_background_map;
+    float *stroke_foreground_distance_map;
+    float *stroke_background_distance_map;
+    float const *stroke_distance_source_map;
     size_t outside_background_pixel_count;
+    size_t stroke_map_pixels;
+    float stroke_distance_threshold;
+    int stroke_distance_map_valid;
     int use_outside_background_map;
     int use_clip_weight;
     int use_base_silhouette_coverage;
@@ -22128,8 +22271,16 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     traced_fractional_coverage = 0;
     traced_source_gate_split = 0;
     traced_outside_boundary_prefer = 0;
+    traced_distance_stroke = 0;
+    traced_distance_stroke_position = 0;
     outside_background_map = NULL;
+    stroke_foreground_distance_map = NULL;
+    stroke_background_distance_map = NULL;
+    stroke_distance_source_map = NULL;
     outside_background_pixel_count = 0u;
+    stroke_map_pixels = 0u;
+    stroke_distance_threshold = 0.001f;
+    stroke_distance_map_valid = 0;
     use_outside_background_map = 0;
     use_clip_weight = 0;
     use_base_silhouette_coverage = 0;
@@ -22149,6 +22300,30 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     use_clip_weight = layer->has_blend_clipped_elements != 0 &&
         layer->blend_clipped_elements_enabled != 0 ? 1 : 0;
     use_base_silhouette_coverage = stroke_coverage_alpha_map != NULL ? 1 : 0;
+    stroke_distance_source_map = use_base_silhouette_coverage != 0 ?
+        stroke_coverage_alpha_map : canvas_alpha;
+    stroke_map_pixels = (size_t)canvas_width * (size_t)canvas_height;
+    if (canvas_width != 0u &&
+        stroke_map_pixels / (size_t)canvas_width == (size_t)canvas_height) {
+        stroke_foreground_distance_map = (float *)malloc(
+            stroke_map_pixels * sizeof(float));
+        stroke_background_distance_map = (float *)malloc(
+            stroke_map_pixels * sizeof(float));
+        if (stroke_foreground_distance_map != NULL &&
+            stroke_background_distance_map != NULL &&
+            stroke_distance_source_map != NULL) {
+            stroke_distance_threshold =
+                use_base_silhouette_coverage != 0 ? 0.001f : 0.5f;
+            stroke_distance_map_valid =
+                sixel_builtin_psd_build_alpha_distance_maps(
+                    stroke_foreground_distance_map,
+                    stroke_background_distance_map,
+                    stroke_distance_source_map,
+                    canvas_width,
+                    canvas_height,
+                    stroke_distance_threshold);
+        }
+    }
     if (use_base_silhouette_coverage != 0 &&
         stroke_position == SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE) {
         outside_background_pixel_count =
@@ -22171,6 +22346,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     }
     if (stroke_opacity <= 0.0f || stroke_size <= 0.0f) {
         free(outside_background_map);
+        free(stroke_foreground_distance_map);
+        free(stroke_background_distance_map);
         return;
     }
     stroke_radius = (int)ceilf(stroke_size);
@@ -22240,7 +22417,9 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     "layer fallback");
                 traced_outside_boundary_prefer = 1;
             }
-            if (source_alpha <= 0.0f) {
+            if (source_alpha <= 0.0f &&
+                stroke_position ==
+                SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
                 continue;
             }
             if (use_outside_background_map != 0 &&
@@ -22249,124 +22428,166 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                 outside_background_map[idx] == 0u) {
                 continue;
             }
-            max_alpha = 0.0f;
-            min_alpha = 1.0f;
-            stroke_soft_outside_sum = 0.0f;
-            stroke_soft_inside_sum = 0.0f;
-            stroke_soft_weight_sum = 0.0f;
-            for (dy = -stroke_radius; dy <= stroke_radius; ++dy) {
-                int ny;
-
-                ny = (int)y + dy;
-                if (ny < 0 || ny >= (int)canvas_height) {
-                    continue;
+            if (stroke_distance_map_valid != 0) {
+                if (traced_distance_stroke == 0) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: applying distance-map deferred "
+                        "effect stroke coverage in layer fallback");
+                    traced_distance_stroke = 1;
                 }
-                for (dx = -stroke_radius; dx <= stroke_radius; ++dx) {
-                    int nx;
-                    float neighbor_alpha;
-
-                    if ((dx * dx + dy * dy) >
-                        stroke_radius * stroke_radius) {
-                        continue;
-                    }
-                    nx = (int)x + dx;
-                    if (nx < 0 || nx >= (int)canvas_width) {
-                        continue;
-                    }
-                    neighbor_index =
-                        (size_t)ny * (size_t)canvas_width + (size_t)nx;
-                    neighbor_clip_weight =
-                        sixel_builtin_psd_clamp_alpha_float32(
-                            clip_alpha_map[neighbor_index]);
-                    if (use_base_silhouette_coverage != 0) {
-                        neighbor_alpha =
-                            sixel_builtin_psd_sample_alpha_cross_kernel(
-                                stroke_coverage_alpha_map,
-                                canvas_width,
-                                canvas_height,
-                                (size_t)nx,
-                                (size_t)ny);
-                    } else if (use_clip_weight != 0) {
-                        neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                            canvas_alpha[neighbor_index] *
-                            neighbor_clip_weight);
-                    } else if (neighbor_clip_weight > 0.0f) {
-                        neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                            canvas_alpha[neighbor_index]);
+                if (traced_distance_stroke_position == 0) {
+                    if (stroke_position ==
+                        SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
+                        sixel_builtin_psd_trace_message(
+                            "psd_decode",
+                            "builtin PSD: using distance-map deferred "
+                            "inside stroke coverage in layer fallback");
+                    } else if (stroke_position ==
+                               SIXEL_BUILTIN_PSD_EFFECT_STROKE_CENTER) {
+                        sixel_builtin_psd_trace_message(
+                            "psd_decode",
+                            "builtin PSD: using distance-map deferred "
+                            "center stroke coverage in layer fallback");
                     } else {
-                        neighbor_alpha = 0.0f;
+                        sixel_builtin_psd_trace_message(
+                            "psd_decode",
+                            "builtin PSD: using distance-map deferred "
+                            "outside stroke coverage in layer fallback");
                     }
-                    if (neighbor_alpha > max_alpha) {
-                        max_alpha = neighbor_alpha;
+                    traced_distance_stroke_position = 1;
+                }
+                stroke_coverage =
+                    sixel_builtin_psd_compute_stroke_coverage_distance(
+                        stroke_foreground_distance_map,
+                        stroke_background_distance_map,
+                        idx,
+                        source_alpha,
+                        stroke_size,
+                        stroke_position);
+            } else {
+                max_alpha = 0.0f;
+                min_alpha = 1.0f;
+                stroke_soft_outside_sum = 0.0f;
+                stroke_soft_inside_sum = 0.0f;
+                stroke_soft_weight_sum = 0.0f;
+                for (dy = -stroke_radius; dy <= stroke_radius; ++dy) {
+                    int ny;
+
+                    ny = (int)y + dy;
+                    if (ny < 0 || ny >= (int)canvas_height) {
+                        continue;
                     }
-                    if (neighbor_alpha < min_alpha) {
-                        min_alpha = neighbor_alpha;
-                    }
-                    if (use_base_silhouette_coverage != 0) {
-                        spatial_weight = 1.0f -
-                            ((float)(dx * dx + dy * dy) /
-                             coverage_weight_denom);
-                        if (spatial_weight <= 0.0f) {
+                    for (dx = -stroke_radius; dx <= stroke_radius; ++dx) {
+                        int nx;
+                        float neighbor_alpha;
+
+                        if ((dx * dx + dy * dy) >
+                            stroke_radius * stroke_radius) {
                             continue;
                         }
-                        neighbor_delta_outside =
-                            neighbor_alpha - source_alpha;
-                        if (neighbor_delta_outside > 0.0f) {
-                            stroke_soft_outside_sum +=
-                                neighbor_delta_outside * spatial_weight;
+                        nx = (int)x + dx;
+                        if (nx < 0 || nx >= (int)canvas_width) {
+                            continue;
                         }
-                        neighbor_delta_inside = source_alpha - neighbor_alpha;
-                        if (neighbor_delta_inside > 0.0f) {
-                            stroke_soft_inside_sum +=
-                                neighbor_delta_inside * spatial_weight;
+                        neighbor_index =
+                            (size_t)ny * (size_t)canvas_width + (size_t)nx;
+                        neighbor_clip_weight =
+                            sixel_builtin_psd_clamp_alpha_float32(
+                                clip_alpha_map[neighbor_index]);
+                        if (use_base_silhouette_coverage != 0) {
+                            neighbor_alpha =
+                                sixel_builtin_psd_sample_alpha_cross_kernel(
+                                    stroke_coverage_alpha_map,
+                                    canvas_width,
+                                    canvas_height,
+                                    (size_t)nx,
+                                    (size_t)ny);
+                        } else if (use_clip_weight != 0) {
+                            neighbor_alpha =
+                                sixel_builtin_psd_clamp_alpha_float32(
+                                    canvas_alpha[neighbor_index] *
+                                    neighbor_clip_weight);
+                        } else if (neighbor_clip_weight > 0.0f) {
+                            neighbor_alpha =
+                                sixel_builtin_psd_clamp_alpha_float32(
+                                    canvas_alpha[neighbor_index]);
+                        } else {
+                            neighbor_alpha = 0.0f;
                         }
-                        stroke_soft_weight_sum += spatial_weight;
+                        if (neighbor_alpha > max_alpha) {
+                            max_alpha = neighbor_alpha;
+                        }
+                        if (neighbor_alpha < min_alpha) {
+                            min_alpha = neighbor_alpha;
+                        }
+                        if (use_base_silhouette_coverage != 0) {
+                            spatial_weight = 1.0f -
+                                ((float)(dx * dx + dy * dy) /
+                                 coverage_weight_denom);
+                            if (spatial_weight <= 0.0f) {
+                                continue;
+                            }
+                            neighbor_delta_outside =
+                                neighbor_alpha - source_alpha;
+                            if (neighbor_delta_outside > 0.0f) {
+                                stroke_soft_outside_sum +=
+                                    neighbor_delta_outside * spatial_weight;
+                            }
+                            neighbor_delta_inside =
+                                source_alpha - neighbor_alpha;
+                            if (neighbor_delta_inside > 0.0f) {
+                                stroke_soft_inside_sum +=
+                                    neighbor_delta_inside * spatial_weight;
+                            }
+                            stroke_soft_weight_sum += spatial_weight;
+                        }
                     }
                 }
-            }
-            stroke_hard_outside_coverage = max_alpha - source_alpha;
-            stroke_hard_inside_coverage = source_alpha - min_alpha;
-            if (use_base_silhouette_coverage != 0 &&
-                stroke_soft_weight_sum > 0.0f) {
-                stroke_outside_coverage = stroke_hard_outside_coverage;
-                stroke_inside_coverage = stroke_hard_inside_coverage;
-                if (source_alpha > 0.001f && source_alpha < 0.999f) {
-                    stroke_outside_coverage = sixel_builtin_psd_clamp01(
-                        stroke_hard_outside_coverage * 0.92f +
-                        (stroke_soft_outside_sum / stroke_soft_weight_sum) *
-                        0.08f);
-                    stroke_inside_coverage = sixel_builtin_psd_clamp01(
-                        stroke_hard_inside_coverage * 0.92f +
-                        (stroke_soft_inside_sum / stroke_soft_weight_sum) *
-                        0.08f);
+                stroke_hard_outside_coverage = max_alpha - source_alpha;
+                stroke_hard_inside_coverage = source_alpha - min_alpha;
+                if (use_base_silhouette_coverage != 0 &&
+                    stroke_soft_weight_sum > 0.0f) {
+                    stroke_outside_coverage = stroke_hard_outside_coverage;
+                    stroke_inside_coverage = stroke_hard_inside_coverage;
+                    if (source_alpha > 0.001f && source_alpha < 0.999f) {
+                        stroke_outside_coverage = sixel_builtin_psd_clamp01(
+                            stroke_hard_outside_coverage * 0.92f +
+                            (stroke_soft_outside_sum /
+                             stroke_soft_weight_sum) * 0.08f);
+                        stroke_inside_coverage = sixel_builtin_psd_clamp01(
+                            stroke_hard_inside_coverage * 0.92f +
+                            (stroke_soft_inside_sum /
+                             stroke_soft_weight_sum) * 0.08f);
+                    }
+                } else {
+                    stroke_outside_coverage = stroke_hard_outside_coverage;
+                    stroke_inside_coverage = stroke_hard_inside_coverage;
                 }
-            } else {
-                stroke_outside_coverage = stroke_hard_outside_coverage;
-                stroke_inside_coverage = stroke_hard_inside_coverage;
-            }
-            if (use_base_silhouette_coverage != 0 &&
-                stroke_position ==
-                SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE) {
-                /*
-                 * Deferred outside stroke should follow the base
-                 * silhouette edge softness. This suppresses interior cutout
-                 * overdraw while preserving hard outer contours.
-                 */
-                outside_coverage_scale = sixel_builtin_psd_clamp01(
-                    source_alpha);
-                stroke_outside_coverage = sixel_builtin_psd_clamp01(
-                    stroke_outside_coverage * outside_coverage_scale);
-            }
-            if (stroke_position ==
-                SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
-                stroke_coverage = stroke_inside_coverage;
-            } else if (stroke_position ==
-                       SIXEL_BUILTIN_PSD_EFFECT_STROKE_CENTER) {
-                stroke_coverage =
-                    0.5f * (stroke_outside_coverage +
-                            stroke_inside_coverage);
-            } else {
-                stroke_coverage = stroke_outside_coverage;
+                if (use_base_silhouette_coverage != 0 &&
+                    stroke_position ==
+                    SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE) {
+                    /*
+                     * Deferred outside stroke should follow the base
+                     * silhouette edge softness. This suppresses interior
+                     * cutout overdraw while preserving hard outer contours.
+                     */
+                    outside_coverage_scale = sixel_builtin_psd_clamp01(
+                        source_alpha);
+                    stroke_outside_coverage = sixel_builtin_psd_clamp01(
+                        stroke_outside_coverage * outside_coverage_scale);
+                }
+                if (stroke_position ==
+                    SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
+                    stroke_coverage = stroke_inside_coverage;
+                } else if (stroke_position ==
+                           SIXEL_BUILTIN_PSD_EFFECT_STROKE_CENTER) {
+                    stroke_coverage =
+                        0.5f * (stroke_outside_coverage +
+                                stroke_inside_coverage);
+                } else {
+                    stroke_coverage = stroke_outside_coverage;
+                }
             }
             if (stroke_coverage <= 0.0f) {
                 continue;
@@ -22476,6 +22697,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
         }
     }
     free(outside_background_map);
+    free(stroke_foreground_distance_map);
+    free(stroke_background_distance_map);
 }
 
 static SIXELSTATUS
