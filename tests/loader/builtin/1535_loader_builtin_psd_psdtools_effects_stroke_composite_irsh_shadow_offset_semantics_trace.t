@@ -36,17 +36,19 @@ test "${trace_output#*builtin PSD: parsed IrSh shadow offset semantics in layer 
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed IrSh effect object in layer effects \(inactive\)*}" \
+test "${trace_output#*builtin PSD: parsed IrSh effect object in layer effects (inactive)*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - "effects/stroke-composite lost IrSh inactive parse trace"
     exit 0
 }
 
 test "${trace_output#*builtin PSD: applying clip-weighted deferred interior effects in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost deferred interior effect contract"
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly applied deferred interior effects"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps IrSh shadow-offset semantics contract"
+echo "ok" 1 - \
+    "effects/stroke-composite keeps IrSh shadow-offset inactive contract"
 exit 0

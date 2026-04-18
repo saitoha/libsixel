@@ -31,10 +31,18 @@ test "${command_status}" -eq 0 || {
 }
 
 test "${trace_output#*builtin PSD: gating deferred outer effects with exterior background in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed deferred outer gate"
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly emitted deferred outer gate"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps deferred outer-gate contract"
+test "${trace_output#*builtin PSD: parsed OrGl effect object in layer effects (inactive)*}" \
+    != "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite lost inactive OrGl parse contract"
+    exit 0
+}
+
+echo "ok" 1 - "effects/stroke-composite keeps deferred outer inactive-gate contract"
 exit 0

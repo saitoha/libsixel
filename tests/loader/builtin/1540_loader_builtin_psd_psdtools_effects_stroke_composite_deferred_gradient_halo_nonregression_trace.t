@@ -31,8 +31,9 @@ test "${command_status}" -eq 0 || {
 }
 
 test "${trace_output#*builtin PSD: applying deferred outer distance-band coverage in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed deferred outer distance-band path"
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly emitted deferred outer distance-band path"
     exit 0
 }
 

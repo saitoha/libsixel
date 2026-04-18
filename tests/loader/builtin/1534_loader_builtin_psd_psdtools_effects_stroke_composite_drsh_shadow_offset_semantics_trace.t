@@ -36,17 +36,19 @@ test "${trace_output#*builtin PSD: parsed DrSh shadow offset semantics in layer 
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed DrSh effect object in layer effects \(inactive\)*}" \
+test "${trace_output#*builtin PSD: parsed DrSh effect object in layer effects (inactive)*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - "effects/stroke-composite lost DrSh inactive parse trace"
     exit 0
 }
 
 test "${trace_output#*builtin PSD: applying clip-weighted deferred outer effects in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost deferred outer effect contract"
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly applied deferred outer effects"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps DrSh shadow-offset semantics contract"
+echo "ok" 1 - \
+    "effects/stroke-composite keeps DrSh shadow-offset inactive contract"
 exit 0

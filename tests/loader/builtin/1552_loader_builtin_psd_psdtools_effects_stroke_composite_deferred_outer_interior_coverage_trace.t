@@ -30,24 +30,27 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying distance-map deferred effect coverage in layer fallback*}" \
+test "${trace_output#*builtin PSD: applying distance-map deferred effect stroke coverage in layer fallback*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred distance coverage"
+    echo "not ok" 1 - \
+        "effects/stroke-composite missing deferred distance-map stroke coverage"
     exit 0
 }
 
 test "${trace_output#*builtin PSD: applying clip-weighted deferred interior effects in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred interior apply"
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly applied deferred interior effects"
     exit 0
 }
 
 test "${trace_output#*builtin PSD: applying clip-weighted deferred outer effects in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred outer apply"
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly applied deferred outer effects"
     exit 0
 }
 
 echo "ok" 1 - \
-    "effects/stroke-composite keeps deferred outer/interior coverage contracts"
+    "effects/stroke-composite keeps deferred outer/interior inactive coverage contracts"
 exit 0

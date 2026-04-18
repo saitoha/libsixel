@@ -30,13 +30,13 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed IrGl effect object in layer effects \(inactive\)*}" \
+test "${trace_output#*builtin PSD: parsed IrGl effect object in layer effects (inactive)*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - "effects/stroke-composite lost inactive IrGl parse trace"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed ChFX effect object in layer effects \(inactive\)*}" \
+test "${trace_output#*builtin PSD: parsed ChFX effect object in layer effects (inactive)*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - "effects/stroke-composite lost inactive ChFX parse trace"
     exit 0
@@ -48,11 +48,13 @@ test "${trace_output#*builtin PSD: merging legacy lrFX effects missing from lfx2
     exit 0
 }
 
-test "${trace_output#*builtin PSD: suppressing clbl=1 deferred base interior glow/choke/bevel-shadow*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost deferred interior suppression diagnostic"
+test "${trace_output#*builtin PSD: applying clip-weighted deferred interior effects in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly applied deferred interior effects"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps lrFX inactive IrGl/ChFX suppression diagnostic contract"
+echo "ok" 1 - \
+    "effects/stroke-composite keeps lrFX inactive IrGl/ChFX suppression contract"
 exit 0

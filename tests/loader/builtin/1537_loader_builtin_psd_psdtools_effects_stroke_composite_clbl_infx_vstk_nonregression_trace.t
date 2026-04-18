@@ -37,8 +37,16 @@ test "${trace_output#*builtin PSD: clbl=1; deferring interior overlays to clippe
 }
 
 test "${trace_output#*builtin PSD: suppressing clbl=1 deferred base interior glow/choke/bevel-shadow*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost clbl=1 interior suppression contract"
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly emitted deferred interior suppression"
+    exit 0
+}
+
+test "${trace_output#*builtin PSD: applying clip-weighted deferred interior effects in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly applied deferred interior effects"
     exit 0
 }
 

@@ -31,15 +31,16 @@ test "${command_status}" -eq 0 || {
 }
 
 test "${trace_output#*builtin PSD: gating deferred outer effects with exterior background in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed deferred outer gate"
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly emitted deferred outer gate"
     exit 0
 }
 
 test "${trace_output#*builtin PSD: suppressing clbl=1 deferred base interior glow/choke/bevel-shadow*}" \
-    != "${trace_output}" || {
+    = "${trace_output}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite lost deferred interior suppression"
+        "effects/stroke-composite unexpectedly emitted deferred interior suppression"
     exit 0
 }
 
@@ -50,5 +51,5 @@ test "${trace_output#*builtin PSD: applying deferred stroke on clipped group*}" 
 }
 
 echo "ok" 1 - \
-    "effects/stroke-composite keeps deferred outer-gate non-regression"
+    "effects/stroke-composite keeps deferred outer inactive-gate non-regression"
 exit 0

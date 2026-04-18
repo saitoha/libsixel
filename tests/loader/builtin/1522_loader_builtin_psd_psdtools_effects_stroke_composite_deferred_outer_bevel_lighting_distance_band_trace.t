@@ -31,16 +31,25 @@ test "${command_status}" -eq 0 || {
 }
 
 test "${trace_output#*builtin PSD: applying deferred bevel lighting semantics in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed deferred bevel lighting semantics"
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly emitted deferred bevel lighting semantics"
     exit 0
 }
 
 test "${trace_output#*builtin PSD: applying deferred outer distance-band coverage in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed outer distance-band path"
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly emitted outer distance-band path"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps deferred outer bevel-distance contract"
+test "${trace_output#*builtin PSD: parsed ebbl bevel object in layer effects (inactive)*}" \
+    != "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite lost inactive bevel parse contract"
+    exit 0
+}
+
+echo "ok" 1 - \
+    "effects/stroke-composite keeps deferred outer bevel-distance inactive contract"
 exit 0

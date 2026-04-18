@@ -43,9 +43,10 @@ test "${trace_output#*builtin PSD: separating deferred stroke coverage source an
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying distance-map deferred effect coverage in layer fallback*}" \
+test "${trace_output#*builtin PSD: applying distance-map deferred effect stroke coverage in layer fallback*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not use distance-map deferred coverage"
+    echo "not ok" 1 - \
+        "effects/stroke-composite did not use distance-map deferred stroke coverage"
     exit 0
 }
 

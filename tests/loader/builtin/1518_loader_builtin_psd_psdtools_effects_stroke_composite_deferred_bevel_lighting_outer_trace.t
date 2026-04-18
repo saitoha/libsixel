@@ -31,18 +31,26 @@ test "${command_status}" -eq 0 || {
 }
 
 test "${trace_output#*builtin PSD: applying clip-weighted deferred outer effects in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly entered deferred outer path"
+    exit 0
+}
+
+test "${trace_output#*builtin PSD: parsed ebbl bevel object in layer effects (inactive)*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed deferred outer path"
+    echo "not ok" 1 - \
+        "effects/stroke-composite lost inactive bevel parse contract"
     exit 0
 }
 
 test "${trace_output#*builtin PSD: applying deferred bevel lighting semantics in layer fallback*}" \
-    != "${trace_output}" || {
+    = "${trace_output}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite missed deferred bevel lighting semantics"
+        "effects/stroke-composite unexpectedly applied deferred bevel lighting"
     exit 0
 }
 
 echo "ok" 1 - \
-    "effects/stroke-composite keeps deferred outer bevel-lighting contract"
+    "effects/stroke-composite keeps deferred outer bevel inactive contract"
 exit 0

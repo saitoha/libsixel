@@ -31,8 +31,9 @@ test "${command_status}" -eq 0 || {
 }
 
 test "${trace_output#*builtin PSD: applying clip-weighted deferred interior effects in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed deferred interior apply"
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly applied deferred interior effects"
     exit 0
 }
 
@@ -48,5 +49,13 @@ test "${trace_output#*builtin PSD: suppressing synthesized vector stroke on clip
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps deferred interior/stroke non-regression contract"
+test "${trace_output#*builtin PSD: applying clip-weighted deferred gradient overlay in layer fallback*}" \
+    != "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite lost deferred gradient overlay apply contract"
+    exit 0
+}
+
+echo "ok" 1 - \
+    "effects/stroke-composite keeps deferred interior suppression/stroke non-regression"
 exit 0

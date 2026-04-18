@@ -30,11 +30,19 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: suppressing clbl=1 deferred base interior glow/choke/bevel-shadow*}" \
+test "${trace_output#*builtin PSD: parsed IrGl effect object in layer effects (inactive)*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed clbl=1 deferred interior suppression"
+    echo "not ok" 1 - \
+        "effects/stroke-composite missed inactive IrGl parse contract"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps clbl=1 deferred interior suppression contract"
+test "${trace_output#*builtin PSD: applying clip-weighted deferred interior effects in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly applied deferred interior effects"
+    exit 0
+}
+
+echo "ok" 1 - "effects/stroke-composite keeps inactive interior suppression contract"
 exit 0

@@ -37,10 +37,18 @@ test "${trace_output#*builtin PSD: clbl=1; deferring interior overlays to clippe
 }
 
 test "${trace_output#*builtin PSD: applying clip-weighted deferred outer effects in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed deferred outer-effect path"
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly applied deferred outer effects"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps deferred outer-effect contract"
+test "${trace_output#*builtin PSD: parsed OrGl effect object in layer effects (inactive)*}" \
+    != "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite lost inactive OrGl parse contract"
+    exit 0
+}
+
+echo "ok" 1 - "effects/stroke-composite keeps deferred outer inactive contract"
 exit 0

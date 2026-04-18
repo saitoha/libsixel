@@ -32,16 +32,19 @@ test "${command_status}" -eq 0 || {
 }
 
 test "${trace_output#*builtin PSD: applying clip-weighted deferred outer effects in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not enter deferred outer effect path"
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite unexpectedly entered deferred outer effect path"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying distance-map deferred effect coverage in layer fallback*}" \
+test "${trace_output#*builtin PSD: applying distance-map deferred effect stroke coverage in layer fallback*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not use distance-map deferred coverage"
+    echo "not ok" 1 - \
+        "effects/stroke-composite did not use distance-map deferred stroke coverage"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite deferred outer effects use distance-map coverage"
+echo "ok" 1 - \
+    "effects/stroke-composite keeps deferred distance-map coverage on stroke path"
 exit 0
