@@ -1677,6 +1677,11 @@ typedef struct sixel_builtin_psd_layer_record {
     float fill_gradient_stop_pos[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
     float fill_gradient_stop_rgb[SIXEL_BUILTIN_PSD_FILL_STOP_MAX][3];
     float fill_gradient_stop_alpha[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
+    float fill_gradient_stop_mid[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
+    size_t fill_gradient_op_stop_count;
+    float fill_gradient_op_stop_pos[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
+    float fill_gradient_op_stop_alpha[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
+    float fill_gradient_op_stop_mid[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
     unsigned int fill_pattern_tile;
     int fill_pattern_from_resource;
     char fill_pattern_id[128];
@@ -1704,6 +1709,11 @@ typedef struct sixel_builtin_psd_layer_record {
     float effect_gradient_stop_pos[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
     float effect_gradient_stop_rgb[SIXEL_BUILTIN_PSD_FILL_STOP_MAX][3];
     float effect_gradient_stop_alpha[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
+    float effect_gradient_stop_mid[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
+    size_t effect_gradient_op_stop_count;
+    float effect_gradient_op_stop_pos[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
+    float effect_gradient_op_stop_alpha[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
+    float effect_gradient_op_stop_mid[SIXEL_BUILTIN_PSD_FILL_STOP_MAX];
     float effect_gradient_overlay_opacity;
     sixel_builtin_psd_layer_blend_mode_t effect_gradient_overlay_mode;
     float effect_stroke_rgb[3];
@@ -3540,14 +3550,35 @@ sixel_builtin_psd_descriptor_normalize_gradient_alpha(double value)
     return sixel_builtin_psd_clamp_alpha_float32(normalized);
 }
 
+static float
+sixel_builtin_psd_descriptor_normalize_gradient_midpoint(double value)
+{
+    float normalized;
+
+    normalized = 0.5f;
+    if (value != value) {
+        return 0.5f;
+    }
+    if (value <= 1.0) {
+        normalized = (float)value;
+    } else if (value <= 100.0) {
+        normalized = (float)(value / 100.0);
+    } else if (value <= 200.0) {
+        normalized = (float)(value / 200.0);
+    }
+    return sixel_builtin_psd_clamp01(normalized);
+}
+
 static int
 sixel_builtin_psd_parse_gdfl_descriptor_stop_object(
     unsigned char const *data,
     size_t data_length,
     size_t *pcursor,
+    int require_color,
     float *out_pos,
     float out_rgb[3],
-    float *out_alpha)
+    float *out_alpha,
+    float *out_mid)
 {
     size_t cursor;
     size_t item_count;
@@ -3556,8 +3587,10 @@ sixel_builtin_psd_parse_gdfl_descriptor_stop_object(
     char type[5];
     double location;
     double alpha;
+    double midpoint;
     int has_location;
     int has_color;
+    int has_midpoint;
 
     cursor = 0u;
     item_count = 0u;
@@ -3574,8 +3607,10 @@ sixel_builtin_psd_parse_gdfl_descriptor_stop_object(
     type[4] = '\0';
     location = 0.0;
     alpha = 1.0;
+    midpoint = 0.5;
     has_location = 0;
     has_color = 0;
+    has_midpoint = 0;
     if (data == NULL || pcursor == NULL || out_pos == NULL ||
         out_rgb == NULL || out_alpha == NULL) {
         return 0;
@@ -3624,6 +3659,15 @@ sixel_builtin_psd_parse_gdfl_descriptor_stop_object(
                                                             &alpha)) {
             continue;
         }
+        if (memcmp(key, "Mdpn", 4u) == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            data_length,
+                                                            &cursor,
+                                                            type,
+                                                            &midpoint)) {
+            has_midpoint = 1;
+            continue;
+        }
         if (memcmp(key, "Clr ", 4u) == 0 &&
             memcmp(type, "Objc", 4u) == 0) {
             if (!sixel_builtin_psd_descriptor_parse_color_object(data,
@@ -3643,14 +3687,21 @@ sixel_builtin_psd_parse_gdfl_descriptor_stop_object(
             return 0;
         }
     }
-    if (has_color == 0) {
+    if (require_color != 0 && has_color == 0) {
         return 0;
     }
     if (has_location == 0) {
         location = 0.0;
     }
+    if (has_midpoint == 0) {
+        midpoint = 50.0;
+    }
     *out_pos = sixel_builtin_psd_descriptor_normalize_gradient_position(location);
     *out_alpha = sixel_builtin_psd_descriptor_normalize_gradient_alpha(alpha);
+    if (out_mid != NULL) {
+        *out_mid = sixel_builtin_psd_descriptor_normalize_gradient_midpoint(
+            midpoint);
+    }
     *pcursor = cursor;
     return 1;
 }
@@ -3720,18 +3771,22 @@ sixel_builtin_psd_parse_gdfl_descriptor_stop_list(
             float stop_pos;
             float stop_rgb[3];
             float stop_alpha;
+            float stop_mid;
             stop_pos = 0.0f;
             stop_rgb[0] = 0.0f;
             stop_rgb[1] = 0.0f;
             stop_rgb[2] = 0.0f;
             stop_alpha = 1.0f;
+            stop_mid = 0.5f;
             if (!sixel_builtin_psd_parse_gdfl_descriptor_stop_object(
                     data,
                     data_length,
                     &cursor,
+                    1,
                     &stop_pos,
                     stop_rgb,
-                    &stop_alpha)) {
+                    &stop_alpha,
+                    &stop_mid)) {
                 return 0;
             }
             if (stop_count < SIXEL_BUILTIN_PSD_FILL_STOP_MAX) {
@@ -3740,6 +3795,86 @@ sixel_builtin_psd_parse_gdfl_descriptor_stop_list(
                 layer->fill_gradient_stop_rgb[stop_count][1] = stop_rgb[1];
                 layer->fill_gradient_stop_rgb[stop_count][2] = stop_rgb[2];
                 layer->fill_gradient_stop_alpha[stop_count] = stop_alpha;
+                layer->fill_gradient_stop_mid[stop_count] = stop_mid;
+                ++stop_count;
+            }
+        } else if (!sixel_builtin_psd_descriptor_skip_value(data,
+                                                            data_length,
+                                                            &cursor,
+                                                            list_type,
+                                                            0u)) {
+            return 0;
+        }
+    }
+    *pstop_count = stop_count;
+    *pcursor = cursor;
+    return 1;
+}
+
+static int
+sixel_builtin_psd_parse_gdfl_descriptor_transparency_stop_list(
+    unsigned char const *data,
+    size_t data_length,
+    size_t *pcursor,
+    sixel_builtin_psd_layer_record_t *layer,
+    size_t *pstop_count)
+{
+    size_t cursor;
+    size_t list_count;
+    size_t j;
+    char list_type[5];
+    size_t stop_count;
+
+    cursor = 0u;
+    list_count = 0u;
+    j = 0u;
+    memset(list_type, 0, sizeof(list_type));
+    stop_count = 0u;
+    if (data == NULL || pcursor == NULL || layer == NULL ||
+        pstop_count == NULL) {
+        return 0;
+    }
+    cursor = *pcursor;
+    stop_count = *pstop_count;
+    if (cursor + 4u > data_length) {
+        return 0;
+    }
+    list_count = sixel_builtin_read_u32be_size(data + cursor);
+    cursor += 4u;
+    for (j = 0u; j < list_count; ++j) {
+        if (!sixel_builtin_psd_descriptor_read_type(data,
+                                                    data_length,
+                                                    &cursor,
+                                                    list_type)) {
+            return 0;
+        }
+        if (memcmp(list_type, "Objc", 4u) == 0) {
+            float stop_pos;
+            float stop_rgb[3];
+            float stop_alpha;
+            float stop_mid;
+
+            stop_pos = 0.0f;
+            stop_rgb[0] = 0.0f;
+            stop_rgb[1] = 0.0f;
+            stop_rgb[2] = 0.0f;
+            stop_alpha = 1.0f;
+            stop_mid = 0.5f;
+            if (!sixel_builtin_psd_parse_gdfl_descriptor_stop_object(
+                    data,
+                    data_length,
+                    &cursor,
+                    0,
+                    &stop_pos,
+                    stop_rgb,
+                    &stop_alpha,
+                    &stop_mid)) {
+                return 0;
+            }
+            if (stop_count < SIXEL_BUILTIN_PSD_FILL_STOP_MAX) {
+                layer->fill_gradient_op_stop_pos[stop_count] = stop_pos;
+                layer->fill_gradient_op_stop_alpha[stop_count] = stop_alpha;
+                layer->fill_gradient_op_stop_mid[stop_count] = stop_mid;
                 ++stop_count;
             }
         } else if (!sixel_builtin_psd_descriptor_skip_value(data,
@@ -3762,6 +3897,7 @@ sixel_builtin_psd_parse_gdfl_descriptor_grad_object(
     size_t *pcursor,
     unsigned char *pgradient_type,
     size_t *pstop_count,
+    size_t *popacity_stop_count,
     sixel_builtin_psd_layer_record_t *layer)
 {
     size_t cursor;
@@ -3784,7 +3920,8 @@ sixel_builtin_psd_parse_gdfl_descriptor_grad_object(
     type[3] = '\0';
     type[4] = '\0';
     if (data == NULL || pcursor == NULL || pgradient_type == NULL ||
-        pstop_count == NULL || layer == NULL) {
+        pstop_count == NULL || popacity_stop_count == NULL ||
+        layer == NULL) {
         return 0;
     }
 
@@ -3843,6 +3980,18 @@ sixel_builtin_psd_parse_gdfl_descriptor_grad_object(
             }
             continue;
         }
+        if (memcmp(key, "Trns", 4u) == 0 &&
+            memcmp(type, "VlLs", 4u) == 0) {
+            if (!sixel_builtin_psd_parse_gdfl_descriptor_transparency_stop_list(
+                    data,
+                    data_length,
+                    &cursor,
+                    layer,
+                    popacity_stop_count)) {
+                return 0;
+            }
+            continue;
+        }
         if (!sixel_builtin_psd_descriptor_skip_value(data,
                                                      data_length,
                                                      &cursor,
@@ -3870,24 +4019,65 @@ sixel_builtin_psd_sort_gradient_stops(sixel_builtin_psd_layer_record_t *layer,
             if (layer->fill_gradient_stop_pos[b] < layer->fill_gradient_stop_pos[a]) {
                 float tmp_pos;
                 float tmp_alpha;
+                float tmp_mid;
                 float tmp_rgb0;
                 float tmp_rgb1;
                 float tmp_rgb2;
                 tmp_pos = layer->fill_gradient_stop_pos[a];
                 tmp_alpha = layer->fill_gradient_stop_alpha[a];
+                tmp_mid = layer->fill_gradient_stop_mid[a];
                 tmp_rgb0 = layer->fill_gradient_stop_rgb[a][0];
                 tmp_rgb1 = layer->fill_gradient_stop_rgb[a][1];
                 tmp_rgb2 = layer->fill_gradient_stop_rgb[a][2];
                 layer->fill_gradient_stop_pos[a] = layer->fill_gradient_stop_pos[b];
                 layer->fill_gradient_stop_alpha[a] = layer->fill_gradient_stop_alpha[b];
+                layer->fill_gradient_stop_mid[a] = layer->fill_gradient_stop_mid[b];
                 layer->fill_gradient_stop_rgb[a][0] = layer->fill_gradient_stop_rgb[b][0];
                 layer->fill_gradient_stop_rgb[a][1] = layer->fill_gradient_stop_rgb[b][1];
                 layer->fill_gradient_stop_rgb[a][2] = layer->fill_gradient_stop_rgb[b][2];
                 layer->fill_gradient_stop_pos[b] = tmp_pos;
                 layer->fill_gradient_stop_alpha[b] = tmp_alpha;
+                layer->fill_gradient_stop_mid[b] = tmp_mid;
                 layer->fill_gradient_stop_rgb[b][0] = tmp_rgb0;
                 layer->fill_gradient_stop_rgb[b][1] = tmp_rgb1;
                 layer->fill_gradient_stop_rgb[b][2] = tmp_rgb2;
+            }
+        }
+    }
+}
+
+static void
+sixel_builtin_psd_sort_gradient_opacity_stops(
+    sixel_builtin_psd_layer_record_t *layer,
+    size_t stop_count)
+{
+    size_t a;
+
+    if (layer == NULL || stop_count <= 1u) {
+        return;
+    }
+    for (a = 0u; a + 1u < stop_count; ++a) {
+        size_t b;
+
+        for (b = a + 1u; b < stop_count; ++b) {
+            if (layer->fill_gradient_op_stop_pos[b] <
+                layer->fill_gradient_op_stop_pos[a]) {
+                float tmp_pos;
+                float tmp_alpha;
+                float tmp_mid;
+
+                tmp_pos = layer->fill_gradient_op_stop_pos[a];
+                tmp_alpha = layer->fill_gradient_op_stop_alpha[a];
+                tmp_mid = layer->fill_gradient_op_stop_mid[a];
+                layer->fill_gradient_op_stop_pos[a] =
+                    layer->fill_gradient_op_stop_pos[b];
+                layer->fill_gradient_op_stop_alpha[a] =
+                    layer->fill_gradient_op_stop_alpha[b];
+                layer->fill_gradient_op_stop_mid[a] =
+                    layer->fill_gradient_op_stop_mid[b];
+                layer->fill_gradient_op_stop_pos[b] = tmp_pos;
+                layer->fill_gradient_op_stop_alpha[b] = tmp_alpha;
+                layer->fill_gradient_op_stop_mid[b] = tmp_mid;
             }
         }
     }
@@ -3909,6 +4099,7 @@ sixel_builtin_psd_parse_gdfl_descriptor_payload(
     float gradient_angle_deg;
     float gradient_scale;
     size_t stop_count;
+    size_t opacity_stop_count;
 
     cursor = 0u;
     item_count = 0u;
@@ -3928,6 +4119,7 @@ sixel_builtin_psd_parse_gdfl_descriptor_payload(
     gradient_angle_deg = 0.0f;
     gradient_scale = 1.0f;
     stop_count = 0u;
+    opacity_stop_count = 0u;
     if (data == NULL || layer == NULL) {
         return 0;
     }
@@ -4027,6 +4219,18 @@ sixel_builtin_psd_parse_gdfl_descriptor_payload(
             }
             continue;
         }
+        if (memcmp(key, "Trns", 4u) == 0 &&
+            memcmp(type, "VlLs", 4u) == 0) {
+            if (!sixel_builtin_psd_parse_gdfl_descriptor_transparency_stop_list(
+                    data,
+                    key_length,
+                    &cursor,
+                    layer,
+                    &opacity_stop_count)) {
+                return 0;
+            }
+            continue;
+        }
         if (memcmp(key, "Grad", 4u) == 0 &&
             memcmp(type, "Objc", 4u) == 0) {
             if (!sixel_builtin_psd_parse_gdfl_descriptor_grad_object(data,
@@ -4034,6 +4238,7 @@ sixel_builtin_psd_parse_gdfl_descriptor_payload(
                                                                      &cursor,
                                                                      &gradient_type,
                                                                      &stop_count,
+                                                                     &opacity_stop_count,
                                                                      layer)) {
                 return 0;
             }
@@ -4052,6 +4257,10 @@ sixel_builtin_psd_parse_gdfl_descriptor_payload(
     }
 
     sixel_builtin_psd_sort_gradient_stops(layer, stop_count);
+    if (opacity_stop_count > 0u) {
+        sixel_builtin_psd_sort_gradient_opacity_stops(layer,
+                                                      opacity_stop_count);
+    }
 
     layer->fill_kind = SIXEL_BUILTIN_PSD_FILL_GDFL;
     layer->fill_gradient_type = gradient_type;
@@ -4059,6 +4268,7 @@ sixel_builtin_psd_parse_gdfl_descriptor_payload(
     layer->fill_gradient_angle_deg = gradient_angle_deg;
     layer->fill_gradient_scale = gradient_scale > 0.0f ? gradient_scale : 1.0f;
     layer->fill_gradient_stop_count = stop_count;
+    layer->fill_gradient_op_stop_count = opacity_stop_count;
     return 1;
 }
 
@@ -4239,8 +4449,10 @@ sixel_builtin_psd_parse_gdfl_descriptor_payload_loose(
             (unsigned char)gray_u8,
             (unsigned char)gray_u8);
         layer->fill_gradient_stop_alpha[i] = 1.0f;
+        layer->fill_gradient_stop_mid[i] = 0.5f;
     }
     sixel_builtin_psd_sort_gradient_stops(layer, stop_count);
+    layer->fill_gradient_op_stop_count = 0u;
     return 1;
 }
 
@@ -9797,9 +10009,11 @@ sixel_builtin_psd_parse_fill_payload_sxfl(
             layer->fill_gradient_stop_alpha[i] =
                 sixel_builtin_psd_clamp_alpha_float32(
                     (float)data[cursor + 5u] / 255.0f);
+            layer->fill_gradient_stop_mid[i] = 0.5f;
             cursor += 6u;
         }
         layer->fill_gradient_stop_count = i;
+        layer->fill_gradient_op_stop_count = 0u;
         if (layer->fill_gradient_stop_count == 0u) {
             layer->fill_gradient_stop_count = 2u;
             layer->fill_gradient_stop_pos[0] = 0.0f;
@@ -9812,6 +10026,8 @@ sixel_builtin_psd_parse_fill_payload_sxfl(
             layer->fill_gradient_stop_rgb[1][2] = 1.0f;
             layer->fill_gradient_stop_alpha[0] = 1.0f;
             layer->fill_gradient_stop_alpha[1] = 1.0f;
+            layer->fill_gradient_stop_mid[0] = 0.5f;
+            layer->fill_gradient_stop_mid[1] = 0.5f;
         }
         return 1;
     }
@@ -10585,6 +10801,7 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
     size_t item_count;
     size_t i;
     size_t stop_count;
+    size_t opacity_stop_count;
     int enabled;
     int has_gradient;
     int reverse_flag;
@@ -10606,6 +10823,7 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
     item_count = 0u;
     i = 0u;
     stop_count = 0u;
+    opacity_stop_count = 0u;
     enabled = 1;
     has_gradient = 0;
     reverse_flag = 0;
@@ -10752,12 +10970,18 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
                     &cursor,
                     &gradient_type,
                     &stop_count,
+                    &opacity_stop_count,
                     &gradient_tmp)) {
                 return 0;
             }
             if (stop_count > 0u) {
                 sixel_builtin_psd_sort_gradient_stops(&gradient_tmp,
                                                       stop_count);
+                if (opacity_stop_count > 0u) {
+                    sixel_builtin_psd_sort_gradient_opacity_stops(
+                        &gradient_tmp,
+                        opacity_stop_count);
+                }
                 has_gradient = 1;
             }
             continue;
@@ -10802,6 +11026,17 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
             gradient_tmp.fill_gradient_stop_rgb[i][2];
         layer->effect_gradient_stop_alpha[i] =
             gradient_tmp.fill_gradient_stop_alpha[i];
+        layer->effect_gradient_stop_mid[i] =
+            gradient_tmp.fill_gradient_stop_mid[i];
+    }
+    layer->effect_gradient_op_stop_count = opacity_stop_count;
+    for (i = 0u; i < opacity_stop_count; ++i) {
+        layer->effect_gradient_op_stop_pos[i] =
+            gradient_tmp.fill_gradient_op_stop_pos[i];
+        layer->effect_gradient_op_stop_alpha[i] =
+            gradient_tmp.fill_gradient_op_stop_alpha[i];
+        layer->effect_gradient_op_stop_mid[i] =
+            gradient_tmp.fill_gradient_op_stop_mid[i];
     }
     sixel_trace_topic_message(
         "psd_decode",
@@ -14364,6 +14599,7 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->effect_gradient_offset_y_percent = 0.0f;
     layer->effect_gradient_reverse = 0;
     layer->effect_gradient_stop_count = 0u;
+    layer->effect_gradient_op_stop_count = 0u;
     layer->effect_gradient_overlay_opacity = 1.0f;
     layer->effect_gradient_overlay_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     layer->effect_stroke_rgb[0] = 0.0f;
@@ -14472,6 +14708,7 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->document_width = 0u;
     layer->document_height = 0u;
     layer->fill_gradient_stop_count = 0u;
+    layer->fill_gradient_op_stop_count = 0u;
     layer->fill_pattern_tile = 4u;
     layer->fill_pattern_from_resource = 0;
     layer->fill_pattern_id[0] = '\0';
@@ -17072,6 +17309,85 @@ cleanup:
     return status;
 }
 
+static float
+sixel_builtin_psd_gradient_segment_weight(float t0,
+                                          float t1,
+                                          float midpoint,
+                                          float t)
+{
+    float local_t;
+    float safe_mid;
+
+    local_t = 0.0f;
+    safe_mid = sixel_builtin_psd_clamp01(midpoint);
+    if (t1 <= t0) {
+        return 0.0f;
+    }
+    local_t = sixel_builtin_psd_clamp01((t - t0) / (t1 - t0));
+    if (safe_mid <= 0.0f) {
+        safe_mid = 0.0001f;
+    } else if (safe_mid >= 1.0f) {
+        safe_mid = 0.9999f;
+    }
+    if (local_t <= safe_mid) {
+        return sixel_builtin_psd_clamp01(0.5f * (local_t / safe_mid));
+    }
+    return sixel_builtin_psd_clamp01(
+        0.5f + 0.5f * ((local_t - safe_mid) / (1.0f - safe_mid)));
+}
+
+static float
+sixel_builtin_psd_sample_gradient_scalar(float const *stop_pos,
+                                         float const *stop_values,
+                                         float const *stop_mid,
+                                         size_t stop_count,
+                                         int reverse,
+                                         float t)
+{
+    size_t i;
+    size_t idx;
+    float t0;
+    float t1;
+    float w;
+    float midpoint;
+
+    i = 0u;
+    idx = 0u;
+    t0 = 0.0f;
+    t1 = 1.0f;
+    w = 0.0f;
+    midpoint = 0.5f;
+    if (stop_pos == NULL || stop_values == NULL || stop_mid == NULL ||
+        stop_count == 0u) {
+        return 1.0f;
+    }
+    t = sixel_builtin_psd_clamp01(t);
+    if (reverse != 0) {
+        t = 1.0f - t;
+    }
+    if (stop_count == 1u || t <= stop_pos[0]) {
+        return stop_values[0];
+    }
+    idx = stop_count - 1u;
+    if (t >= stop_pos[idx]) {
+        return stop_values[idx];
+    }
+    for (i = 0u; i + 1u < stop_count; ++i) {
+        if (t >= stop_pos[i] && t <= stop_pos[i + 1u]) {
+            idx = i;
+            break;
+        }
+    }
+    t0 = stop_pos[idx];
+    t1 = stop_pos[idx + 1u];
+    midpoint = stop_mid[idx];
+    w = sixel_builtin_psd_gradient_segment_weight(t0,
+                                                  t1,
+                                                  midpoint,
+                                                  t);
+    return stop_values[idx] * (1.0f - w) + stop_values[idx + 1u] * w;
+}
+
 static void
 sixel_builtin_psd_fill_sample_gradient(
     sixel_builtin_psd_layer_record_t const *layer,
@@ -17084,12 +17400,18 @@ sixel_builtin_psd_fill_sample_gradient(
     float t0;
     float t1;
     float w;
+    float midpoint;
+    float sampled_alpha;
+    float t_input;
 
     i = 0u;
     idx = 0u;
     t0 = 0.0f;
     t1 = 1.0f;
     w = 0.0f;
+    midpoint = 0.5f;
+    sampled_alpha = 1.0f;
+    t_input = 0.0f;
     if (out_rgb == NULL || out_alpha == NULL) {
         return;
     }
@@ -17100,7 +17422,8 @@ sixel_builtin_psd_fill_sample_gradient(
         *out_alpha = 1.0f;
         return;
     }
-    t = sixel_builtin_psd_clamp01(t);
+    t_input = sixel_builtin_psd_clamp01(t);
+    t = t_input;
     if (layer->fill_gradient_reverse != 0) {
         t = 1.0f - t;
     }
@@ -17129,12 +17452,11 @@ sixel_builtin_psd_fill_sample_gradient(
     }
     t0 = layer->fill_gradient_stop_pos[idx];
     t1 = layer->fill_gradient_stop_pos[idx + 1u];
-    if (t1 <= t0) {
-        w = 0.0f;
-    } else {
-        w = (t - t0) / (t1 - t0);
-    }
-    w = sixel_builtin_psd_clamp01(w);
+    midpoint = layer->fill_gradient_stop_mid[idx];
+    w = sixel_builtin_psd_gradient_segment_weight(t0,
+                                                  t1,
+                                                  midpoint,
+                                                  t);
     out_rgb[0] = sixel_builtin_psd_clamp01(
         layer->fill_gradient_stop_rgb[idx][0] * (1.0f - w) +
         layer->fill_gradient_stop_rgb[idx + 1u][0] * w);
@@ -17144,9 +17466,19 @@ sixel_builtin_psd_fill_sample_gradient(
     out_rgb[2] = sixel_builtin_psd_clamp01(
         layer->fill_gradient_stop_rgb[idx][2] * (1.0f - w) +
         layer->fill_gradient_stop_rgb[idx + 1u][2] * w);
-    *out_alpha = sixel_builtin_psd_clamp_alpha_float32(
-        layer->fill_gradient_stop_alpha[idx] * (1.0f - w) +
-        layer->fill_gradient_stop_alpha[idx + 1u] * w);
+    if (layer->fill_gradient_op_stop_count > 0u) {
+        sampled_alpha = sixel_builtin_psd_sample_gradient_scalar(
+            layer->fill_gradient_op_stop_pos,
+            layer->fill_gradient_op_stop_alpha,
+            layer->fill_gradient_op_stop_mid,
+            layer->fill_gradient_op_stop_count,
+            layer->fill_gradient_reverse,
+            t_input);
+    } else {
+        sampled_alpha = layer->fill_gradient_stop_alpha[idx] * (1.0f - w) +
+            layer->fill_gradient_stop_alpha[idx + 1u] * w;
+    }
+    *out_alpha = sixel_builtin_psd_clamp_alpha_float32(sampled_alpha);
 }
 
 static float
@@ -19328,6 +19660,18 @@ sixel_builtin_psd_apply_layer_effects_subset(
                 layer->effect_gradient_stop_rgb[i][2];
             gradient_layer.fill_gradient_stop_alpha[i] =
                 layer->effect_gradient_stop_alpha[i];
+            gradient_layer.fill_gradient_stop_mid[i] =
+                layer->effect_gradient_stop_mid[i];
+        }
+        gradient_layer.fill_gradient_op_stop_count =
+            layer->effect_gradient_op_stop_count;
+        for (i = 0u; i < layer->effect_gradient_op_stop_count; ++i) {
+            gradient_layer.fill_gradient_op_stop_pos[i] =
+                layer->effect_gradient_op_stop_pos[i];
+            gradient_layer.fill_gradient_op_stop_alpha[i] =
+                layer->effect_gradient_op_stop_alpha[i];
+            gradient_layer.fill_gradient_op_stop_mid[i] =
+                layer->effect_gradient_op_stop_mid[i];
         }
         gradient_opacity = sixel_builtin_psd_clamp01(
             layer->effect_gradient_overlay_opacity);
@@ -20089,6 +20433,18 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
             layer->effect_gradient_stop_rgb[x][2];
         gradient_layer.fill_gradient_stop_alpha[x] =
             layer->effect_gradient_stop_alpha[x];
+        gradient_layer.fill_gradient_stop_mid[x] =
+            layer->effect_gradient_stop_mid[x];
+    }
+    gradient_layer.fill_gradient_op_stop_count =
+        layer->effect_gradient_op_stop_count;
+    for (x = 0u; x < layer->effect_gradient_op_stop_count; ++x) {
+        gradient_layer.fill_gradient_op_stop_pos[x] =
+            layer->effect_gradient_op_stop_pos[x];
+        gradient_layer.fill_gradient_op_stop_alpha[x] =
+            layer->effect_gradient_op_stop_alpha[x];
+        gradient_layer.fill_gradient_op_stop_mid[x] =
+            layer->effect_gradient_op_stop_mid[x];
     }
     gradient_opacity = sixel_builtin_psd_clamp01(
         layer->effect_gradient_overlay_opacity);
