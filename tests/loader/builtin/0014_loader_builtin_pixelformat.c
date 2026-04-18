@@ -1223,6 +1223,175 @@ verify_pnm_float_probe(char const *label,
 }
 
 static int
+pnm_expect_failure_message_case(char const *label,
+                                unsigned char const *buffer,
+                                size_t buffer_size,
+                                builtin_loader_probe_options_t const *options,
+                                char const *message_fragment)
+{
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    char const *message;
+    int result;
+
+    memset(&probe, 0, sizeof(probe));
+    status = SIXEL_FALSE;
+    message = NULL;
+    result = 1;
+    if (label == NULL ||
+        buffer == NULL ||
+        buffer_size == 0u ||
+        options == NULL ||
+        message_fragment == NULL) {
+        return 1;
+    }
+
+    sixel_helper_set_additional_message(NULL);
+    result = run_builtin_loader_probe_buffer_case(
+        label,
+        buffer,
+        buffer_size,
+        options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        fprintf(stderr, "%s: unexpected success\n", label);
+        return 1;
+    }
+
+    message = sixel_helper_get_additional_message();
+    if (message == NULL || strstr(message, message_fragment) == NULL) {
+        fprintf(stderr,
+                "%s: unexpected message (%s)\n",
+                label,
+                message != NULL ? message : "(null)");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+pnm_expect_rgb888_case(char const *label,
+                       unsigned char const *buffer,
+                       size_t buffer_size,
+                       builtin_loader_probe_options_t const *options,
+                       int expected_width,
+                       int expected_height,
+                       unsigned char const *expected_rgb,
+                       size_t expected_rgb_size)
+{
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    memset(&probe, 0, sizeof(probe));
+    status = SIXEL_FALSE;
+    result = 1;
+    if (label == NULL ||
+        buffer == NULL ||
+        buffer_size == 0u ||
+        options == NULL) {
+        return 1;
+    }
+    if (expected_rgb_size > sizeof(probe.pixels_u8)) {
+        return 1;
+    }
+
+    result = run_builtin_loader_probe_buffer_case(
+        label,
+        buffer,
+        buffer_size,
+        options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s: loader failed (%d)\n", label, (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1) {
+        fprintf(stderr, "%s: callback count mismatch (%d)\n",
+                label, probe.callback_count);
+        return 1;
+    }
+    if (probe.pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        fprintf(stderr, "%s: pixelformat mismatch (%d)\n",
+                label, probe.pixelformat);
+        return 1;
+    }
+    if (probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+        fprintf(stderr, "%s: colorspace mismatch (%d)\n",
+                label, probe.colorspace);
+        return 1;
+    }
+    if (probe.width != expected_width || probe.height != expected_height) {
+        fprintf(stderr, "%s: geometry mismatch (%dx%d)\n",
+                label, probe.width, probe.height);
+        return 1;
+    }
+    if (expected_rgb != NULL &&
+        expected_rgb_size > 0u &&
+        memcmp(probe.pixels_u8, expected_rgb, expected_rgb_size) != 0) {
+        fprintf(stderr, "%s: RGB mismatch\n", label);
+        return 1;
+    }
+
+    return 0;
+}
+
+static void
+pnm_set_default_probe_options(builtin_loader_probe_options_t *options)
+{
+    if (options == NULL) {
+        return;
+    }
+
+    memset(options, 0, sizeof(*options));
+    options->require_static = 1;
+    options->use_palette = 0;
+    options->reqcolors = 256;
+    options->set_bgcolor = 0;
+    options->bgcolor = NULL;
+    options->set_loop_control = 0;
+    options->loop_control = SIXEL_LOOP_AUTO;
+    options->set_cms_engine = 0;
+    options->cms_engine = SIXEL_CMS_ENGINE_NONE;
+}
+
+static void
+pnm_numeric_compose_expected_linear_unit(float out_rgb[3],
+                                         float src_gamma,
+                                         float src_alpha,
+                                         float const bg_linear[3])
+{
+    int channel;
+    float src_linear;
+    float inv_alpha;
+
+    channel = 0;
+    src_linear = 0.0f;
+    inv_alpha = 0.0f;
+    if (out_rgb == NULL || bg_linear == NULL) {
+        return;
+    }
+
+    src_linear = pnm_numeric_decode_srgb_unit(src_gamma);
+    inv_alpha = 1.0f - src_alpha;
+    for (channel = 0; channel < 3; ++channel) {
+        out_rgb[channel] = src_linear * src_alpha
+            + bg_linear[channel] * inv_alpha;
+    }
+}
+
+static int
 run_builtin_loader_pnm_pam_rgba_linear_bg_numeric_test(void)
 {
     static unsigned char const pam_rgba_sample[] = {
@@ -4348,6 +4517,878 @@ run_builtin_loader_pnm_ascii_trailing_comment_strict_test(void)
 }
 
 static int
+run_builtin_loader_pnm_classic_magic_matrix_numeric_test(void)
+{
+    static unsigned char const p2_gray_sample[] = "P2\n1 1\n255\n7\n";
+    static unsigned char const p4_bitmap_sample[] = "P4\n2 1\n\x80";
+    static unsigned char const p5_gray16_sample[] = {
+        'P', '5', '\n',
+        '1', ' ', '1', '\n',
+        '6', '5', '5', '3', '5', '\n',
+        0x80u, 0x00u
+    };
+    static unsigned char const p6_crlf_comment_sample[] = {
+        'P', '6', '\r', '\n',
+        '1', ' ', '1', '\r', '\n',
+        '2', '5', '5', '\r', '\n',
+        '#', 's', 'e', 'p', '\r', '\n',
+        9u, 8u, 7u
+    };
+    static unsigned char const expected_p2_rgb[3] = { 7u, 7u, 7u };
+    static unsigned char const expected_p4_rgb[6] = {
+        0u, 0u, 0u, 255u, 255u, 255u
+    };
+    static unsigned char const expected_p6_rgb[3] = { 9u, 8u, 7u };
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    float expected_p5_rgb[3];
+    int result;
+
+    memset(&probe, 0, sizeof(probe));
+    status = SIXEL_FALSE;
+    memset(expected_p5_rgb, 0, sizeof(expected_p5_rgb));
+    result = 1;
+    pnm_set_default_probe_options(&options);
+
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm classic magic matrix p2",
+        p2_gray_sample,
+        sizeof(p2_gray_sample) - 1u,
+        &options,
+        1,
+        1,
+        expected_p2_rgb,
+        sizeof(expected_p2_rgb));
+    if (result != 0) {
+        return result;
+    }
+
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm classic magic matrix p4",
+        p4_bitmap_sample,
+        sizeof(p4_bitmap_sample) - 1u,
+        &options,
+        2,
+        1,
+        expected_p4_rgb,
+        sizeof(expected_p4_rgb));
+    if (result != 0) {
+        return result;
+    }
+
+    memset(&probe, 0, sizeof(probe));
+    status = SIXEL_FALSE;
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm classic magic matrix p5",
+        p5_gray16_sample,
+        sizeof(p5_gray16_sample),
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm classic magic matrix p5: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    expected_p5_rgb[0] = 32768.0f / 65535.0f;
+    expected_p5_rgb[1] = 32768.0f / 65535.0f;
+    expected_p5_rgb[2] = 32768.0f / 65535.0f;
+    result = verify_pnm_float_probe(
+        "builtin loader pnm classic magic matrix p5",
+        &probe,
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        SIXEL_COLORSPACE_GAMMA,
+        1,
+        1,
+        expected_p5_rgb,
+        0.000001f);
+    if (result != 0) {
+        return result;
+    }
+
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm classic magic matrix p6",
+        p6_crlf_comment_sample,
+        sizeof(p6_crlf_comment_sample),
+        &options,
+        1,
+        1,
+        expected_p6_rgb,
+        sizeof(expected_p6_rgb));
+    if (result != 0) {
+        return result;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_parse_error_matrix_numeric_test(void)
+{
+    typedef struct pnm_parse_error_case {
+        char const *label;
+        unsigned char const *sample;
+        size_t sample_size;
+        char const *message_fragment;
+    } pnm_parse_error_case_t;
+    static unsigned char const short_input_sample[] = { 'P', '6' };
+    static unsigned char const bad_signature_sample[] = { 'X', '6', '\n' };
+    static unsigned char const unknown_magic_sample[] = { 'P', '9', '\n' };
+    static unsigned char const missing_integer_sample[] = "P6\n1 1\n";
+    static unsigned char const long_token_sample[] =
+        "P6\n"
+        "12345678901234567890123456789012345678901234567890123456789012345"
+        " 1\n"
+        "255\n";
+    static unsigned char const width_limit_sample[] =
+        "P3\n65537 1\n255\n0 0 0\n";
+    static unsigned char const height_limit_sample[] =
+        "P3\n1 65537\n255\n0 0 0\n";
+    static unsigned char const maxval_limit_sample[] =
+        "P3\n1 1\n65536\n0 0 0\n";
+    static unsigned char const missing_tupletype_value_sample[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 3\n"
+        "MAXVAL 255\n"
+        "TUPLTYPE\n"
+        "ENDHDR\n";
+    static unsigned char const missing_endhdr_sample[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 3\n"
+        "MAXVAL 255\n"
+        "TUPLTYPE RGB\n";
+    static unsigned char const missing_separator_sample[] =
+        "P6\n1 1\n255";
+    static unsigned char const invalid_comment_term_sample[] =
+        "P6\n1 1\n255\n#bad";
+    static pnm_parse_error_case_t const cases[] = {
+        {
+            "builtin loader pnm parse error short input",
+            short_input_sample,
+            sizeof(short_input_sample),
+            "Image not of any known type, or corrupt"
+        },
+        {
+            "builtin loader pnm parse error bad signature",
+            bad_signature_sample,
+            sizeof(bad_signature_sample),
+            "Image not of any known type, or corrupt"
+        },
+        {
+            "builtin loader pnm parse error unknown magic",
+            unknown_magic_sample,
+            sizeof(unknown_magic_sample),
+            "Image not of any known type, or corrupt"
+        },
+        {
+            "builtin loader pnm parse error missing integer",
+            missing_integer_sample,
+            sizeof(missing_integer_sample) - 1u,
+            "missing integer token"
+        },
+        {
+            "builtin loader pnm parse error token too long",
+            long_token_sample,
+            sizeof(long_token_sample) - 1u,
+            "missing integer token"
+        },
+        {
+            "builtin loader pnm parse error width limit",
+            width_limit_sample,
+            sizeof(width_limit_sample) - 1u,
+            "image width exceeds limit"
+        },
+        {
+            "builtin loader pnm parse error height limit",
+            height_limit_sample,
+            sizeof(height_limit_sample) - 1u,
+            "image height exceeds limit"
+        },
+        {
+            "builtin loader pnm parse error maxval limit",
+            maxval_limit_sample,
+            sizeof(maxval_limit_sample) - 1u,
+            "sample depth exceeds limit"
+        },
+        {
+            "builtin loader pnm parse error missing tupletype value",
+            missing_tupletype_value_sample,
+            sizeof(missing_tupletype_value_sample) - 1u,
+            "missing TUPLTYPE value"
+        },
+        {
+            "builtin loader pnm parse error missing endhdr",
+            missing_endhdr_sample,
+            sizeof(missing_endhdr_sample) - 1u,
+            "PAM header is missing ENDHDR"
+        },
+        {
+            "builtin loader pnm parse error missing binary separator",
+            missing_separator_sample,
+            sizeof(missing_separator_sample) - 1u,
+            "missing binary raster separator"
+        },
+        {
+            "builtin loader pnm parse error invalid comment terminator",
+            invalid_comment_term_sample,
+            sizeof(invalid_comment_term_sample) - 1u,
+            "invalid comment terminator before raster"
+        }
+    };
+    builtin_loader_probe_options_t options;
+    size_t index;
+    int result;
+
+    index = 0u;
+    result = 1;
+    pnm_set_default_probe_options(&options);
+
+    for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+        result = pnm_expect_failure_message_case(
+            cases[index].label,
+            cases[index].sample,
+            cases[index].sample_size,
+            &options,
+            cases[index].message_fragment);
+        if (result != 0) {
+            return result;
+        }
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_pam_tupletype_matrix_numeric_test(void)
+{
+    static unsigned char const pam_bw_success[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 1\n"
+        "MAXVAL 1\n"
+        "TUPLTYPE BLACKANDWHITE\n"
+        "ENDHDR\n"
+        "\x01";
+    static unsigned char const pam_bwa_success[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 2\n"
+        "MAXVAL 255\n"
+        "TUPLTYPE BLACKANDWHITE_ALPHA\n"
+        "ENDHDR\n"
+        "\x11\xff";
+    static unsigned char const pam_gray_success[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 1\n"
+        "MAXVAL 255\n"
+        "TUPLTYPE GRAYSCALE\n"
+        "ENDHDR\n"
+        "\x20";
+    static unsigned char const pam_graya_success[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 2\n"
+        "MAXVAL 255\n"
+        "TUPLTYPE GRAYSCALE_ALPHA\n"
+        "ENDHDR\n"
+        "\x30\xff";
+    static unsigned char const pam_rgb_success[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 3\n"
+        "MAXVAL 255\n"
+        "TUPLTYPE RGB\n"
+        "ENDHDR\n"
+        "\x01\x02\x03";
+    static unsigned char const pam_rgba_success[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 4\n"
+        "MAXVAL 255\n"
+        "TUPLTYPE RGB_ALPHA\n"
+        "ENDHDR\n"
+        "\x04\x05\x06\xff";
+    static unsigned char const pam_unknown_depth1_success[] =
+        "P7\r\n"
+        "  WIDTH 1\r\n"
+        "\tHEIGHT 1\r\n"
+        "DEPTH 1\r\n"
+        "MAXVAL 255\r\n"
+        "TUPLTYPE CUSTOM_GRAY\r\n"
+        "ENDHDR\r\n"
+        "\x7f";
+    static unsigned char const pam_unknown_depth2_success[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 2\n"
+        "MAXVAL 255\n"
+        "TUPLTYPE CUSTOM_GRAYA\n"
+        "ENDHDR\n"
+        "\xc8\xff";
+    static unsigned char const pam_bw_depth_mismatch[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 2\n"
+        "MAXVAL 255\n"
+        "TUPLTYPE BLACKANDWHITE\n"
+        "ENDHDR\n";
+    static unsigned char const pam_rgb_depth_mismatch[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 1\n"
+        "MAXVAL 255\n"
+        "TUPLTYPE RGB\n"
+        "ENDHDR\n";
+    static unsigned char const expected_bw_rgb[3] = { 255u, 255u, 255u };
+    static unsigned char const expected_bwa_rgb[3] = { 17u, 17u, 17u };
+    static unsigned char const expected_gray_rgb[3] = { 32u, 32u, 32u };
+    static unsigned char const expected_graya_rgb[3] = { 48u, 48u, 48u };
+    static unsigned char const expected_rgb_rgb[3] = { 1u, 2u, 3u };
+    static unsigned char const expected_rgba_rgb[3] = { 4u, 5u, 6u };
+    static unsigned char const expected_unknown1_rgb[3] = { 127u, 127u, 127u };
+    static unsigned char const expected_unknown2_rgb[3] = { 200u, 200u, 200u };
+    builtin_loader_probe_options_t options;
+    int result;
+
+    result = 1;
+    pnm_set_default_probe_options(&options);
+
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm pam tupletype matrix bw",
+        pam_bw_success,
+        sizeof(pam_bw_success) - 1u,
+        &options,
+        1,
+        1,
+        expected_bw_rgb,
+        sizeof(expected_bw_rgb));
+    if (result != 0) {
+        return result;
+    }
+
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm pam tupletype matrix bwa",
+        pam_bwa_success,
+        sizeof(pam_bwa_success) - 1u,
+        &options,
+        1,
+        1,
+        expected_bwa_rgb,
+        sizeof(expected_bwa_rgb));
+    if (result != 0) {
+        return result;
+    }
+
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm pam tupletype matrix gray",
+        pam_gray_success,
+        sizeof(pam_gray_success) - 1u,
+        &options,
+        1,
+        1,
+        expected_gray_rgb,
+        sizeof(expected_gray_rgb));
+    if (result != 0) {
+        return result;
+    }
+
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm pam tupletype matrix graya",
+        pam_graya_success,
+        sizeof(pam_graya_success) - 1u,
+        &options,
+        1,
+        1,
+        expected_graya_rgb,
+        sizeof(expected_graya_rgb));
+    if (result != 0) {
+        return result;
+    }
+
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm pam tupletype matrix rgb",
+        pam_rgb_success,
+        sizeof(pam_rgb_success) - 1u,
+        &options,
+        1,
+        1,
+        expected_rgb_rgb,
+        sizeof(expected_rgb_rgb));
+    if (result != 0) {
+        return result;
+    }
+
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm pam tupletype matrix rgba",
+        pam_rgba_success,
+        sizeof(pam_rgba_success) - 1u,
+        &options,
+        1,
+        1,
+        expected_rgba_rgb,
+        sizeof(expected_rgba_rgb));
+    if (result != 0) {
+        return result;
+    }
+
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm pam tupletype matrix unknown depth1",
+        pam_unknown_depth1_success,
+        sizeof(pam_unknown_depth1_success) - 1u,
+        &options,
+        1,
+        1,
+        expected_unknown1_rgb,
+        sizeof(expected_unknown1_rgb));
+    if (result != 0) {
+        return result;
+    }
+
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm pam tupletype matrix unknown depth2",
+        pam_unknown_depth2_success,
+        sizeof(pam_unknown_depth2_success) - 1u,
+        &options,
+        1,
+        1,
+        expected_unknown2_rgb,
+        sizeof(expected_unknown2_rgb));
+    if (result != 0) {
+        return result;
+    }
+
+    result = pnm_expect_failure_message_case(
+        "builtin loader pnm pam tupletype matrix bw mismatch",
+        pam_bw_depth_mismatch,
+        sizeof(pam_bw_depth_mismatch) - 1u,
+        &options,
+        "PAM TUPLTYPE/DEPTH mismatch");
+    if (result != 0) {
+        return result;
+    }
+
+    result = pnm_expect_failure_message_case(
+        "builtin loader pnm pam tupletype matrix rgb mismatch",
+        pam_rgb_depth_mismatch,
+        sizeof(pam_rgb_depth_mismatch) - 1u,
+        &options,
+        "PAM TUPLTYPE/DEPTH mismatch");
+    if (result != 0) {
+        return result;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_ascii_bitmap_matrix_numeric_test(void)
+{
+    static unsigned char const p1_comment_sample[] =
+        "P1\n"
+        "2 1\n"
+        "# lead\n"
+        "1 0\n";
+    static unsigned char const p1_invalid_sample[] =
+        "P1\n"
+        "1 1\n"
+        "2\n";
+    static unsigned char const p1_truncated_sample[] =
+        "P1\n"
+        "2 1\n"
+        "1\n";
+    static unsigned char const expected_comment_rgb[6] = {
+        0u, 0u, 0u, 255u, 255u, 255u
+    };
+    static unsigned char const expected_truncated_compat_rgb[6] = {
+        0u, 0u, 0u, 255u, 255u, 255u
+    };
+    builtin_loader_probe_options_t options;
+    int result;
+
+    result = 1;
+    pnm_set_default_probe_options(&options);
+
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm ascii bitmap matrix comment",
+        p1_comment_sample,
+        sizeof(p1_comment_sample) - 1u,
+        &options,
+        2,
+        1,
+        expected_comment_rgb,
+        sizeof(expected_comment_rgb));
+    if (result != 0) {
+        return result;
+    }
+
+    result = pnm_expect_failure_message_case(
+        "builtin loader pnm ascii bitmap matrix invalid sample",
+        p1_invalid_sample,
+        sizeof(p1_invalid_sample) - 1u,
+        &options,
+        "invalid ASCII bitmap sample");
+    if (result != 0) {
+        return result;
+    }
+
+    if (loader_test_setenv("SIXEL_LOADER_PNM_ALLOW_TRUNCATED_ASCII", "") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm ascii bitmap matrix: "
+                "strict setenv failed\n");
+        return 1;
+    }
+    result = pnm_expect_failure_message_case(
+        "builtin loader pnm ascii bitmap matrix truncated strict",
+        p1_truncated_sample,
+        sizeof(p1_truncated_sample) - 1u,
+        &options,
+        "unexpected end of ASCII raster");
+    if (result != 0) {
+        return result;
+    }
+
+    if (loader_test_setenv("SIXEL_LOADER_PNM_ALLOW_TRUNCATED_ASCII",
+                           "1") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm ascii bitmap matrix: "
+                "compat setenv failed\n");
+        return 1;
+    }
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm ascii bitmap matrix truncated compat",
+        p1_truncated_sample,
+        sizeof(p1_truncated_sample) - 1u,
+        &options,
+        2,
+        1,
+        expected_truncated_compat_rgb,
+        sizeof(expected_truncated_compat_rgb));
+    if (loader_test_setenv("SIXEL_LOADER_PNM_ALLOW_TRUNCATED_ASCII", "") != 0) {
+        fprintf(stderr,
+                "builtin loader pnm ascii bitmap matrix: "
+                "compat reset failed\n");
+        return 1;
+    }
+    if (result != 0) {
+        return result;
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_binary_truncation_matrix_numeric_test(void)
+{
+    typedef struct pnm_binary_error_case {
+        char const *label;
+        unsigned char const *sample;
+        size_t sample_size;
+        char const *message_fragment;
+    } pnm_binary_error_case_t;
+    static unsigned char const p6_truncated_u8_sample[] = {
+        'P', '6', '\n',
+        '2', ' ', '1', '\n',
+        '2', '5', '5', '\n',
+        1u, 2u, 3u, 4u, 5u
+    };
+    static unsigned char const p6_truncated_u16_sample[] = {
+        'P', '6', '\n',
+        '1', ' ', '1', '\n',
+        '6', '5', '5', '3', '5', '\n',
+        0u, 1u, 0u, 2u, 0u
+    };
+    static unsigned char const p4_truncated_bitmap_sample[] = {
+        'P', '4', '\n',
+        '9', ' ', '1', '\n',
+        0xffu
+    };
+    static unsigned char const p3_out_of_range_sample[] =
+        "P3\n"
+        "1 1\n"
+        "10\n"
+        "11 0 0\n";
+    static pnm_binary_error_case_t const cases[] = {
+        {
+            "builtin loader pnm binary truncation matrix u8",
+            p6_truncated_u8_sample,
+            sizeof(p6_truncated_u8_sample),
+            "unexpected end of binary raster"
+        },
+        {
+            "builtin loader pnm binary truncation matrix u16",
+            p6_truncated_u16_sample,
+            sizeof(p6_truncated_u16_sample),
+            "unexpected end of 16-bit binary raster"
+        },
+        {
+            "builtin loader pnm binary truncation matrix bitmap",
+            p4_truncated_bitmap_sample,
+            sizeof(p4_truncated_bitmap_sample),
+            "unexpected end of bitmap raster"
+        },
+        {
+            "builtin loader pnm binary truncation matrix sample range",
+            p3_out_of_range_sample,
+            sizeof(p3_out_of_range_sample) - 1u,
+            "sample value is out of range"
+        }
+    };
+    builtin_loader_probe_options_t options;
+    size_t index;
+    int result;
+
+    index = 0u;
+    result = 1;
+    pnm_set_default_probe_options(&options);
+
+    for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+        result = pnm_expect_failure_message_case(
+            cases[index].label,
+            cases[index].sample,
+            cases[index].sample_size,
+            &options,
+            cases[index].message_fragment);
+        if (result != 0) {
+            return result;
+        }
+    }
+
+    return 0;
+}
+
+static int
+run_builtin_loader_pnm_pam_graya_paths_numeric_test(void)
+{
+    static unsigned char const pam_graya8_transparent[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 2\n"
+        "MAXVAL 255\n"
+        "TUPLTYPE GRAYSCALE_ALPHA\n"
+        "ENDHDR\n"
+        "\x80\x80";
+    static unsigned char const pam_graya8_opaque[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 2\n"
+        "MAXVAL 255\n"
+        "TUPLTYPE GRAYSCALE_ALPHA\n"
+        "ENDHDR\n"
+        "\x40\xff";
+    static unsigned char const pam_graya16_transparent[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 2\n"
+        "MAXVAL 65535\n"
+        "TUPLTYPE GRAYSCALE_ALPHA\n"
+        "ENDHDR\n"
+        "\x80\x00\x80\x00";
+    static unsigned char const pam_graya16_opaque[] =
+        "P7\n"
+        "WIDTH 1\n"
+        "HEIGHT 1\n"
+        "DEPTH 2\n"
+        "MAXVAL 65535\n"
+        "TUPLTYPE GRAYSCALE_ALPHA\n"
+        "ENDHDR\n"
+        "\x40\x00\xff\xff";
+    static unsigned char const bgcolor_u8[3] = { 64u, 128u, 192u };
+    static unsigned char const graya8_transparent_rgb[3] = {
+        128u, 128u, 128u
+    };
+    static unsigned char const expected_graya8_opaque_rgb[3] = {
+        64u, 64u, 64u
+    };
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    float expected_graya8_linear[3];
+    float expected_graya16_linear[3];
+    float expected_graya16_opaque[3];
+    float bg_linear[3];
+    float gray16_unit;
+    float alpha16_unit;
+    int result;
+
+    memset(&probe, 0, sizeof(probe));
+    status = SIXEL_FALSE;
+    memset(expected_graya8_linear, 0, sizeof(expected_graya8_linear));
+    memset(expected_graya16_linear, 0, sizeof(expected_graya16_linear));
+    memset(expected_graya16_opaque, 0, sizeof(expected_graya16_opaque));
+    memset(bg_linear, 0, sizeof(bg_linear));
+    gray16_unit = 0.0f;
+    alpha16_unit = 0.0f;
+    result = 1;
+    pnm_set_default_probe_options(&options);
+    options.set_bgcolor = 1;
+    options.bgcolor = bgcolor_u8;
+
+    sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_GAMMA);
+
+    bg_linear[0] = pnm_numeric_decode_srgb_unit((float)bgcolor_u8[0] / 255.0f);
+    bg_linear[1] = pnm_numeric_decode_srgb_unit((float)bgcolor_u8[1] / 255.0f);
+    bg_linear[2] = pnm_numeric_decode_srgb_unit((float)bgcolor_u8[2] / 255.0f);
+
+    pnm_numeric_compose_expected_linear(expected_graya8_linear,
+                                        graya8_transparent_rgb,
+                                        128u,
+                                        bg_linear);
+    memset(&probe, 0, sizeof(probe));
+    status = SIXEL_FALSE;
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam graya paths rgba8 transparent",
+        pam_graya8_transparent,
+        sizeof(pam_graya8_transparent) - 1u,
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        goto end;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam graya paths rgba8 transparent: "
+                "loader failed (%d)\n",
+                (int)status);
+        result = 1;
+        goto end;
+    }
+    result = verify_pnm_float_probe(
+        "builtin loader pnm pam graya paths rgba8 transparent",
+        &probe,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        1,
+        1,
+        expected_graya8_linear,
+        0.00001f);
+    if (result != 0) {
+        goto end;
+    }
+
+    result = pnm_expect_rgb888_case(
+        "builtin loader pnm pam graya paths rgba8 opaque",
+        pam_graya8_opaque,
+        sizeof(pam_graya8_opaque) - 1u,
+        &options,
+        1,
+        1,
+        expected_graya8_opaque_rgb,
+        sizeof(expected_graya8_opaque_rgb));
+    if (result != 0) {
+        goto end;
+    }
+
+    gray16_unit = 32768.0f / 65535.0f;
+    alpha16_unit = 32768.0f / 65535.0f;
+    pnm_numeric_compose_expected_linear_unit(expected_graya16_linear,
+                                             gray16_unit,
+                                             alpha16_unit,
+                                             bg_linear);
+    memset(&probe, 0, sizeof(probe));
+    status = SIXEL_FALSE;
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam graya paths rgba16 transparent",
+        pam_graya16_transparent,
+        sizeof(pam_graya16_transparent) - 1u,
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        goto end;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam graya paths rgba16 transparent: "
+                "loader failed (%d)\n",
+                (int)status);
+        result = 1;
+        goto end;
+    }
+    result = verify_pnm_float_probe(
+        "builtin loader pnm pam graya paths rgba16 transparent",
+        &probe,
+        SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+        SIXEL_COLORSPACE_LINEAR,
+        1,
+        1,
+        expected_graya16_linear,
+        0.00001f);
+    if (result != 0) {
+        goto end;
+    }
+
+    expected_graya16_opaque[0] = 16384.0f / 65535.0f;
+    expected_graya16_opaque[1] = 16384.0f / 65535.0f;
+    expected_graya16_opaque[2] = 16384.0f / 65535.0f;
+    memset(&probe, 0, sizeof(probe));
+    status = SIXEL_FALSE;
+    result = run_builtin_loader_probe_buffer_case(
+        "builtin loader pnm pam graya paths rgba16 opaque",
+        pam_graya16_opaque,
+        sizeof(pam_graya16_opaque) - 1u,
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        goto end;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader pnm pam graya paths rgba16 opaque: "
+                "loader failed (%d)\n",
+                (int)status);
+        result = 1;
+        goto end;
+    }
+    result = verify_pnm_float_probe(
+        "builtin loader pnm pam graya paths rgba16 opaque",
+        &probe,
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        SIXEL_COLORSPACE_GAMMA,
+        1,
+        1,
+        expected_graya16_opaque,
+        0.000001f);
+    if (result != 0) {
+        goto end;
+    }
+
+    result = 0;
+
+end:
+    sixel_helper_set_loader_background_colorspace(-1);
+    return result;
+}
+
+static int
 run_builtin_loader_env_dispatch(
     builtin_loader_env_dispatch_entry_t const *entries,
     size_t entry_count)
@@ -4731,6 +5772,18 @@ run_builtin_loader_test(void)
           run_builtin_loader_tga_pal_rgba_transparent_index_numeric_test }
     };
     static builtin_loader_env_dispatch_entry_t const pnm_env_dispatch[] = {
+        { "SIXEL_TEST_PNM_NUMERIC_CLASSIC_MAGIC_MATRIX",
+          run_builtin_loader_pnm_classic_magic_matrix_numeric_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PARSE_ERROR_MATRIX",
+          run_builtin_loader_pnm_parse_error_matrix_numeric_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PAM_TUPLTYPE_MATRIX",
+          run_builtin_loader_pnm_pam_tupletype_matrix_numeric_test },
+        { "SIXEL_TEST_PNM_NUMERIC_ASCII_BITMAP_MATRIX",
+          run_builtin_loader_pnm_ascii_bitmap_matrix_numeric_test },
+        { "SIXEL_TEST_PNM_NUMERIC_BINARY_TRUNCATION_MATRIX",
+          run_builtin_loader_pnm_binary_truncation_matrix_numeric_test },
+        { "SIXEL_TEST_PNM_NUMERIC_PAM_GRAYA_PATHS",
+          run_builtin_loader_pnm_pam_graya_paths_numeric_test },
         { "SIXEL_TEST_PNM_NUMERIC_PAM_RGBA_LINEAR_BG",
           run_builtin_loader_pnm_pam_rgba_linear_bg_numeric_test },
         { "SIXEL_TEST_PNM_NUMERIC_PPM16_FLOAT32",
