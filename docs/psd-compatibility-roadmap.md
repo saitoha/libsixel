@@ -44,6 +44,10 @@ Key points used by this roadmap:
     amplification.
   - stroke-composite trace tests avoid xtrace expansion of captured trace text
     and route decode output to `/dev/null` when image bytes are not asserted.
+- Deferred clbl=1 overlay/stroke coverage policy:
+  - deferred `SoFi/GrFl` now sample coverage from a dedicated base-silhouette
+    fill-coverage map, while deferred `FrFX/vstk` continue to use
+    stroke-coverage maps; clip gating remains shared through `clip_alpha_map`.
 - Signature/version policy:
   - `8BPS` supports version `1/2` per existing parser policy.
   - `8BPB` is accepted only with `version=2`; `8BPB+version!=2` is rejected as
