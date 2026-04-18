@@ -109,13 +109,108 @@ jobs:
     strategy:
       matrix:
         include:
-          - label: Autotools-ubuntu-x86_64-tcc
+          - label: Autotools-ubuntu-x86_64-tcc-shared
             buildtool: autotools
             runner: ubuntu-latest
             extra_packages: >-
-              clang tcc libc6-dev binutils
+              clang
+              tcc
+              libc6-dev
+              binutils
             setup_prefix: >-
               CC=tcc
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-tcc-static
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=tcc
+            setup_options: >-
+              --disable-shared
+            extra_packages: >-
+              clang
+              tcc
+              libc6-dev
+              binutils
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-tcc-shared-png-jpeg-tiff-webp
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=tcc
+            setup_options: >-
+              --with-png
+              --with-jpeg
+              --with-tiff
+              --with-webp
+            extra_packages: >-
+              clang
+              tcc
+              libc6-dev
+              binutils
+              libpng-dev
+              libjpeg-dev
+              libtiff-dev
+              libwebp-dev
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-tcc-shared-gd
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=tcc
+            setup_options: >-
+              --with-gd
+            extra_packages: >-
+              clang
+              tcc
+              libc6-dev
+              binutils
+              libgd-dev
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-tcc-no-threads
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=tcc
+            setup_options: >-
+              --disable-threads
+            extra_packages: >-
+              clang
+              tcc
+              libc6-dev
+              binutils
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-tcc-amalgamated_lib
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=tcc
+            setup_options: >-
+              --enable-amalgamated-lib
+            extra_packages: >-
+              clang
+              tcc
+              libc6-dev
+              binutils
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-tcc-amalgamated_tools
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=tcc
+            setup_options: >-
+              --enable-amalgamated-tools
+            extra_packages: >-
+              clang
+              tcc
+              libc6-dev
+              binutils
             exec_type: bash
 
     steps:
