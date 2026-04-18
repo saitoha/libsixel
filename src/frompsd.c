@@ -151,19 +151,19 @@ sixel_builtin_psd_trace_seen(char const *message)
 }
 
 static void
-sixel_builtin_psd_trace_emit(char const *topic,
-                             char const *message)
+sixel_builtin_psd_trace_message(char const *topic,
+                                char const *message)
 {
+    if (message == NULL) {
+        return;
+    }
     if (topic != NULL &&
         strcmp(topic, "psd_decode") == 0 &&
         sixel_builtin_psd_trace_seen(message) != 0) {
         return;
     }
-    sixel_trace_topic_message(topic, message);
+    (sixel_trace_topic_message)(topic, "%s", message);
 }
-
-#define sixel_trace_topic_message(topic, message) \
-    sixel_builtin_psd_trace_emit((topic), (message))
 
 int stbi_zlib_decode_buffer(char *obuffer,
                             int olen,
@@ -10997,7 +10997,7 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
     *pcursor = cursor;
     if (enabled == 0 || has_gradient == 0 || stop_count == 0u ||
         opacity <= 0.0f) {
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: parsed GrFl effect object in layer effects "
             "(inactive)");
@@ -11038,19 +11038,19 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
         layer->effect_gradient_op_stop_mid[i] =
             gradient_tmp.fill_gradient_op_stop_mid[i];
     }
-    sixel_trace_topic_message(
+    sixel_builtin_psd_trace_message(
         "psd_decode",
         "builtin PSD: applying GrFl alignment semantics in layer effects");
     if (layer->effect_gradient_align_with_layer == 0) {
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: parsed GrFl global alignment semantics in "
             "layer effects");
     }
-    sixel_trace_topic_message(
+    sixel_builtin_psd_trace_message(
         "psd_decode",
         "builtin PSD: applying GrFl offset semantics in layer effects");
-    sixel_trace_topic_message(
+    sixel_builtin_psd_trace_message(
         "psd_decode",
         "builtin PSD: parsed GrFl effect object in layer effects");
     return 1;
@@ -11529,7 +11529,7 @@ sixel_builtin_psd_parse_effect_glow_object(
             sizeof(trace_message),
             "builtin PSD: parsed %s glow source/choke/range semantics",
             effect_name);
-        sixel_trace_topic_message("psd_decode", trace_message);
+        sixel_builtin_psd_trace_message("psd_decode", trace_message);
     }
     if ((effect_kind == SIXEL_BUILTIN_PSD_EFFECT_GLOW_DRSH ||
          effect_kind == SIXEL_BUILTIN_PSD_EFFECT_GLOW_IRSH) &&
@@ -11541,7 +11541,7 @@ sixel_builtin_psd_parse_effect_glow_object(
             sizeof(trace_message),
             "builtin PSD: parsed %s shadow offset semantics in layer effects",
             effect_name);
-        sixel_trace_topic_message("psd_decode", trace_message);
+        sixel_builtin_psd_trace_message("psd_decode", trace_message);
     }
     if (enabled == 0 || has_color == 0 || opacity <= 0.0f || size_px <= 0.0f) {
         (void)snprintf(
@@ -11550,7 +11550,7 @@ sixel_builtin_psd_parse_effect_glow_object(
             "builtin PSD: parsed %s effect object in layer effects "
             "(inactive)",
             effect_name);
-        sixel_trace_topic_message("psd_decode", trace_message);
+        sixel_builtin_psd_trace_message("psd_decode", trace_message);
         return 1;
     }
     switch (effect_kind) {
@@ -11675,7 +11675,7 @@ sixel_builtin_psd_parse_effect_glow_object(
         sizeof(trace_message),
         "builtin PSD: parsed %s effect object in layer effects",
         effect_name);
-    sixel_trace_topic_message("psd_decode", trace_message);
+    sixel_builtin_psd_trace_message("psd_decode", trace_message);
     return 1;
 }
 
@@ -11933,23 +11933,23 @@ sixel_builtin_psd_parse_effect_bevel_object(
         fabsf(altitude_deg - 30.0f) >= 0.001f ||
         fabsf(depth - 1.0f) >= 0.001f ||
         direction != SIXEL_BUILTIN_PSD_BEVEL_DIRECTION_UP) {
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: parsed bevel lighting semantics");
     }
     if (enabled == 0 || size_px <= 0.0f) {
         if (has_highlight_color != 0) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: parsed bevel highlight channel in layer "
                 "effects");
         }
         if (has_shadow_color != 0) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: parsed bevel shadow channel in layer effects");
         }
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: parsed ebbl bevel object in layer effects "
             "(inactive)");
@@ -11992,16 +11992,16 @@ sixel_builtin_psd_parse_effect_bevel_object(
         layer->effect_inner_glow_choke = 0.0f;
         layer->effect_inner_glow_range = 1.0f;
     }
-    sixel_trace_topic_message(
+    sixel_builtin_psd_trace_message(
         "psd_decode",
         "builtin PSD: parsed ebbl bevel object in layer effects");
     if (has_highlight_color != 0 && highlight_opacity > 0.0f) {
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: parsed bevel highlight channel in layer effects");
     }
     if (has_shadow_color != 0 && shadow_opacity > 0.0f) {
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: parsed bevel shadow channel in layer effects");
     }
@@ -12715,7 +12715,7 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             outer_glow_inactive = 0;
         }
         merged = 1;
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: merged legacy OrGl effect payload");
     }
@@ -12749,7 +12749,7 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             inner_glow_inactive = 0;
         }
         merged = 1;
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: merged legacy IrGl effect payload");
     }
@@ -12783,7 +12783,7 @@ sixel_builtin_psd_merge_missing_legacy_effects(
             inner_glow_inactive = 0;
         }
         merged = 1;
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: merged legacy ChFX effect payload");
     }
@@ -13530,12 +13530,12 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                     size_px > 0.0f) {
                     if (memcmp(key, "oglw", 4u) == 0) {
                         if (v2_implicit_enabled != 0) {
-                            sixel_trace_topic_message(
+                            sixel_builtin_psd_trace_message(
                                 "psd_decode",
                                 "builtin PSD: accepting lrFX v2 "
                                 "oglw implicit enabled signature");
                         }
-                        sixel_trace_topic_message(
+                        sixel_builtin_psd_trace_message(
                             "psd_decode",
                             "builtin PSD: legacy oglw active in lrFX payload");
                         layer->has_effect_orgl = 1;
@@ -13561,7 +13561,7 @@ sixel_builtin_psd_parse_layer_effects_payload_legacy_lrfx(
                         layer->effect_outer_glow_choke = 0.0f;
                         layer->effect_outer_glow_range = 1.0f;
                     } else {
-                        sixel_trace_topic_message(
+                        sixel_builtin_psd_trace_message(
                             "psd_decode",
                             "builtin PSD: legacy iglw active in lrFX payload");
                         layer->has_effect_irgl = 1;
@@ -15823,7 +15823,7 @@ sixel_builtin_psd_parse_layer_extra_data(
                 layer->has_layer_effects = 1;
                 if (has_object_based_effects != 0 &&
                     has_object_based_active_effects == 0) {
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: lfx2 effects inactive; "
                         "parsing legacy lrFX payload");
@@ -15895,7 +15895,7 @@ sixel_builtin_psd_parse_layer_extra_data(
                 buffer + cursor,
                 key_length,
                 layer);
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: parsed vstk vector stroke style payload");
         } else if (memcmp(key, "iOpa", 4u) == 0) {
@@ -15915,10 +15915,10 @@ sixel_builtin_psd_parse_layer_extra_data(
             layer->blend_clipped_elements_enabled =
                 flag_value != 0u ? 1 : 0;
             if (layer->blend_clipped_elements_enabled != 0) {
-                sixel_trace_topic_message("psd_decode",
+                sixel_builtin_psd_trace_message("psd_decode",
                                           "builtin PSD: parsed clbl=1");
             } else {
-                sixel_trace_topic_message("psd_decode",
+                sixel_builtin_psd_trace_message("psd_decode",
                                           "builtin PSD: parsed clbl=0");
             }
         } else if (memcmp(key, "infx", 4u) == 0) {
@@ -15933,10 +15933,10 @@ sixel_builtin_psd_parse_layer_extra_data(
             layer->blend_interior_effects_enabled =
                 flag_value != 0u ? 1 : 0;
             if (layer->blend_interior_effects_enabled != 0) {
-                sixel_trace_topic_message("psd_decode",
+                sixel_builtin_psd_trace_message("psd_decode",
                                           "builtin PSD: parsed infx=1");
             } else {
-                sixel_trace_topic_message("psd_decode",
+                sixel_builtin_psd_trace_message("psd_decode",
                                           "builtin PSD: parsed infx=0");
             }
         } else if (memcmp(key, "knko", 4u) == 0) {
@@ -16060,7 +16060,7 @@ sixel_builtin_psd_parse_layer_extra_data(
                  layer->effect_irgl_size <= 0.0f) &&
                 (pending_legacy_effects.has_effect_irgl != 0 ||
                  pending_legacy_effects.has_effect_inner_glow != 0)) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: parsed IrGl effect object in layer "
                     "effects (inactive)");
@@ -16070,12 +16070,12 @@ sixel_builtin_psd_parse_layer_extra_data(
                  (layer->effect_bevel_highlight_opacity <= 0.0f &&
                   layer->effect_bevel_shadow_opacity <= 0.0f)) &&
                 pending_legacy_effects.has_effect_bevel != 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: parsed ebbl bevel object in layer "
                     "effects (inactive)");
             }
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: legacy lrFX contains glow/bevel/"
                 "sofi records");
@@ -16089,12 +16089,12 @@ sixel_builtin_psd_parse_layer_extra_data(
             merged_legacy_effects = 0;
         }
         if (merged_legacy_effects != 0) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: merging legacy lrFX effects missing "
                 "from lfx2");
         } else {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: ignoring legacy lrFX when lfx2 is "
                 "present");
@@ -16924,7 +16924,7 @@ sixel_builtin_psd_decode_layer_to_linear(
                         layer->user_mask_channel_index)) {
                     goto cleanup;
                 }
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: malformed optional layer mask channel; "
                     "ignoring");
@@ -16973,7 +16973,7 @@ sixel_builtin_psd_decode_layer_to_linear(
                         layer->user_mask_channel_index)) {
                     goto cleanup;
                 }
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: malformed optional layer mask channel; "
                     "ignoring");
@@ -16998,7 +16998,7 @@ sixel_builtin_psd_decode_layer_to_linear(
                     layer->real_mask_channel_index)) {
                 goto cleanup;
             }
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: malformed optional layer mask channel; "
                 "ignoring");
@@ -17650,6 +17650,101 @@ sixel_builtin_psd_effect_gradient_t(
                                                      sample_y,
                                                      domain_width,
                                                      domain_height);
+}
+
+static int
+sixel_builtin_psd_prepare_effect_gradient_layer(
+    sixel_builtin_psd_layer_record_t const *layer,
+    sixel_builtin_psd_layer_record_t *gradient_layer)
+{
+    size_t index;
+
+    index = 0u;
+    if (layer == NULL || gradient_layer == NULL) {
+        return 0;
+    }
+    *gradient_layer = *layer;
+    gradient_layer->fill_gradient_type = layer->effect_gradient_type;
+    gradient_layer->fill_gradient_reverse = layer->effect_gradient_reverse;
+    gradient_layer->fill_gradient_angle_deg =
+        layer->effect_gradient_angle_deg;
+    gradient_layer->fill_gradient_scale =
+        sixel_builtin_psd_effect_gradient_scale_normalized(
+            layer->effect_gradient_scale);
+    if (fabsf(layer->effect_gradient_scale -
+              gradient_layer->fill_gradient_scale) > 0.0001f) {
+        sixel_builtin_psd_trace_message(
+            "psd_decode",
+            "builtin PSD: normalizing GrFl percent scale for effect "
+            "gradient overlay in layer fallback");
+    }
+    gradient_layer->fill_gradient_stop_count =
+        layer->effect_gradient_stop_count;
+    for (index = 0u; index < layer->effect_gradient_stop_count; ++index) {
+        gradient_layer->fill_gradient_stop_pos[index] =
+            layer->effect_gradient_stop_pos[index];
+        gradient_layer->fill_gradient_stop_rgb[index][0] =
+            layer->effect_gradient_stop_rgb[index][0];
+        gradient_layer->fill_gradient_stop_rgb[index][1] =
+            layer->effect_gradient_stop_rgb[index][1];
+        gradient_layer->fill_gradient_stop_rgb[index][2] =
+            layer->effect_gradient_stop_rgb[index][2];
+        gradient_layer->fill_gradient_stop_alpha[index] =
+            layer->effect_gradient_stop_alpha[index];
+        gradient_layer->fill_gradient_stop_mid[index] =
+            layer->effect_gradient_stop_mid[index];
+    }
+    gradient_layer->fill_gradient_op_stop_count =
+        layer->effect_gradient_op_stop_count;
+    for (index = 0u;
+         index < layer->effect_gradient_op_stop_count;
+         ++index) {
+        gradient_layer->fill_gradient_op_stop_pos[index] =
+            layer->effect_gradient_op_stop_pos[index];
+        gradient_layer->fill_gradient_op_stop_alpha[index] =
+            layer->effect_gradient_op_stop_alpha[index];
+        gradient_layer->fill_gradient_op_stop_mid[index] =
+            layer->effect_gradient_op_stop_mid[index];
+    }
+    return 1;
+}
+
+static float
+sixel_builtin_psd_select_effect_coverage(float legacy_coverage,
+                                         float distance_coverage,
+                                         int is_inner_effect)
+{
+    if (distance_coverage <= 0.0f) {
+        return legacy_coverage;
+    }
+    if (is_inner_effect != 0) {
+        return distance_coverage < legacy_coverage
+            ? distance_coverage
+            : legacy_coverage;
+    }
+    return distance_coverage;
+}
+
+static float
+sixel_builtin_psd_compute_effect_alpha(float coverage,
+                                       float effect_opacity,
+                                       float clip_weight,
+                                       float source_alpha,
+                                       float effect_edge_weight,
+                                       int is_inner_effect)
+{
+    float effect_alpha;
+
+    effect_alpha = sixel_builtin_psd_clamp_alpha_float32(
+        coverage * effect_opacity);
+    if (is_inner_effect != 0) {
+        effect_alpha = sixel_builtin_psd_clamp_alpha_float32(
+            effect_alpha * clip_weight * source_alpha * effect_edge_weight);
+    } else {
+        effect_alpha = sixel_builtin_psd_clamp_alpha_float32(
+            effect_alpha * clip_weight * effect_edge_weight);
+    }
+    return effect_alpha;
 }
 
 static int
@@ -18366,7 +18461,7 @@ sixel_builtin_psd_generate_non_pixel_fill_layer(
                         sixel_allocator_free(chunk->allocator, alpha);
                         return SIXEL_STBI_ERROR;
                     }
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: malformed optional layer mask channel; "
                         "ignoring");
@@ -18418,7 +18513,7 @@ sixel_builtin_psd_generate_non_pixel_fill_layer(
                         sixel_allocator_free(chunk->allocator, alpha);
                         return SIXEL_STBI_ERROR;
                     }
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: malformed optional layer mask channel; "
                         "ignoring");
@@ -18447,7 +18542,7 @@ sixel_builtin_psd_generate_non_pixel_fill_layer(
                     sixel_allocator_free(chunk->allocator, alpha);
                     return SIXEL_STBI_ERROR;
                 }
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: malformed optional layer mask channel; "
                     "ignoring");
@@ -19250,7 +19345,7 @@ sixel_builtin_psd_apply_glow_effect(
 static void
 sixel_builtin_psd_layer_effects_trace_interior_skip(void)
 {
-    sixel_trace_topic_message(
+    sixel_builtin_psd_trace_message(
         "psd_decode",
         "builtin PSD: infx=0; skipping interior effects in "
         "layer fallback");
@@ -19280,20 +19375,20 @@ sixel_builtin_psd_apply_named_glow_effect(
     if (layer->has_vector_mask != 0 &&
         ptraced_vector_mask_glow != NULL &&
         *ptraced_vector_mask_glow == 0) {
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: applying glow effects on vector-mask layer "
             "in layer fallback");
         *ptraced_vector_mask_glow = 1;
     }
     if (source_center != 0 || glow_choke > 0.0f || glow_range < 0.999f) {
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: applying glow source/choke/range semantics "
             "in layer fallback");
     }
     if (effect_trace != NULL && effect_trace[0] != '\0') {
-        sixel_trace_topic_message("psd_decode", effect_trace);
+        sixel_builtin_psd_trace_message("psd_decode", effect_trace);
     }
     sixel_builtin_psd_apply_glow_effect(
         src,
@@ -19567,7 +19662,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
             layer->effect_solid_overlay_opacity);
         effect_mode = layer->effect_solid_overlay_mode;
         if (overlay_opacity > 0.0f) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: applying solid overlay effect in layer "
                 "fallback");
@@ -19632,52 +19727,16 @@ sixel_builtin_psd_apply_layer_effects_subset(
         src->pixel_count == (size_t)layer->width * (size_t)layer->height) {
         width = (size_t)layer->width;
         height = (size_t)layer->height;
-        gradient_layer = *layer;
-        gradient_layer.fill_gradient_type = layer->effect_gradient_type;
-        gradient_layer.fill_gradient_reverse = layer->effect_gradient_reverse;
-        gradient_layer.fill_gradient_angle_deg =
-            layer->effect_gradient_angle_deg;
-        gradient_layer.fill_gradient_scale =
-            sixel_builtin_psd_effect_gradient_scale_normalized(
-                layer->effect_gradient_scale);
-        if (fabsf(layer->effect_gradient_scale -
-                  gradient_layer.fill_gradient_scale) > 0.0001f) {
-            sixel_trace_topic_message(
-                "psd_decode",
-                "builtin PSD: normalizing GrFl percent scale for effect "
-                "gradient overlay in layer fallback");
-        }
-        gradient_layer.fill_gradient_stop_count =
-            layer->effect_gradient_stop_count;
-        for (i = 0u; i < layer->effect_gradient_stop_count; ++i) {
-            gradient_layer.fill_gradient_stop_pos[i] =
-                layer->effect_gradient_stop_pos[i];
-            gradient_layer.fill_gradient_stop_rgb[i][0] =
-                layer->effect_gradient_stop_rgb[i][0];
-            gradient_layer.fill_gradient_stop_rgb[i][1] =
-                layer->effect_gradient_stop_rgb[i][1];
-            gradient_layer.fill_gradient_stop_rgb[i][2] =
-                layer->effect_gradient_stop_rgb[i][2];
-            gradient_layer.fill_gradient_stop_alpha[i] =
-                layer->effect_gradient_stop_alpha[i];
-            gradient_layer.fill_gradient_stop_mid[i] =
-                layer->effect_gradient_stop_mid[i];
-        }
-        gradient_layer.fill_gradient_op_stop_count =
-            layer->effect_gradient_op_stop_count;
-        for (i = 0u; i < layer->effect_gradient_op_stop_count; ++i) {
-            gradient_layer.fill_gradient_op_stop_pos[i] =
-                layer->effect_gradient_op_stop_pos[i];
-            gradient_layer.fill_gradient_op_stop_alpha[i] =
-                layer->effect_gradient_op_stop_alpha[i];
-            gradient_layer.fill_gradient_op_stop_mid[i] =
-                layer->effect_gradient_op_stop_mid[i];
+        if (!sixel_builtin_psd_prepare_effect_gradient_layer(
+                layer,
+                &gradient_layer)) {
+            return;
         }
         gradient_opacity = sixel_builtin_psd_clamp01(
             layer->effect_gradient_overlay_opacity);
         effect_mode = layer->effect_gradient_overlay_mode;
         if (gradient_opacity > 0.0f) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: applying gradient overlay effect in layer "
                 "fallback");
@@ -19882,7 +19941,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
                         (bevel_highlight_source_center != 0 ||
                          bevel_highlight_choke > 0.0f ||
                          bevel_highlight_range < 0.999f)) {
-                        sixel_trace_topic_message(
+                        sixel_builtin_psd_trace_message(
                             "psd_decode",
                             "builtin PSD: applying bevel lighting semantics "
                             "in layer fallback");
@@ -19909,7 +19968,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
                         (bevel_shadow_source_center != 0 ||
                          bevel_shadow_choke > 0.0f ||
                          bevel_shadow_range < 0.999f)) {
-                        sixel_trace_topic_message(
+                        sixel_builtin_psd_trace_message(
                             "psd_decode",
                             "builtin PSD: applying bevel lighting semantics "
                             "in layer fallback");
@@ -20002,7 +20061,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
         suppress_stroke = 1;
     }
     if (suppress_stroke != 0) {
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: suppressing stroke approximation on vector-mask "
             "non-pixel fill layer");
@@ -20037,7 +20096,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
         stroke_rgb[2] = layer->vector_stroke_rgb[2];
         stroke_position = layer->vector_stroke_position;
         effect_mode = layer->vector_stroke_mode;
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: preferring vector stroke style over layer "
             "effect stroke");
@@ -20057,7 +20116,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
         }
         return;
     }
-    sixel_trace_topic_message(
+    sixel_builtin_psd_trace_message(
         "psd_decode",
         "builtin PSD: applying effect stroke in layer fallback");
     stroke_radius = (int)ceilf(stroke_size);
@@ -20280,7 +20339,7 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
                 continue;
             }
             if (use_clip_weight != 0 && traced_clip_weighted == 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying clip-weighted deferred "
                     "solid overlay in layer fallback");
@@ -20407,44 +20466,10 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     if (layer->width == 0u || layer->height == 0u) {
         return;
     }
-    gradient_layer = *layer;
-    gradient_layer.fill_gradient_type = layer->effect_gradient_type;
-    gradient_layer.fill_gradient_reverse = layer->effect_gradient_reverse;
-    gradient_layer.fill_gradient_angle_deg = layer->effect_gradient_angle_deg;
-    gradient_layer.fill_gradient_scale =
-        sixel_builtin_psd_effect_gradient_scale_normalized(
-            layer->effect_gradient_scale);
-    if (fabsf(layer->effect_gradient_scale -
-              gradient_layer.fill_gradient_scale) > 0.0001f) {
-        sixel_trace_topic_message(
-            "psd_decode",
-            "builtin PSD: normalizing GrFl percent scale for effect "
-            "gradient overlay in layer fallback");
-    }
-    gradient_layer.fill_gradient_stop_count = layer->effect_gradient_stop_count;
-    for (x = 0u; x < layer->effect_gradient_stop_count; ++x) {
-        gradient_layer.fill_gradient_stop_pos[x] =
-            layer->effect_gradient_stop_pos[x];
-        gradient_layer.fill_gradient_stop_rgb[x][0] =
-            layer->effect_gradient_stop_rgb[x][0];
-        gradient_layer.fill_gradient_stop_rgb[x][1] =
-            layer->effect_gradient_stop_rgb[x][1];
-        gradient_layer.fill_gradient_stop_rgb[x][2] =
-            layer->effect_gradient_stop_rgb[x][2];
-        gradient_layer.fill_gradient_stop_alpha[x] =
-            layer->effect_gradient_stop_alpha[x];
-        gradient_layer.fill_gradient_stop_mid[x] =
-            layer->effect_gradient_stop_mid[x];
-    }
-    gradient_layer.fill_gradient_op_stop_count =
-        layer->effect_gradient_op_stop_count;
-    for (x = 0u; x < layer->effect_gradient_op_stop_count; ++x) {
-        gradient_layer.fill_gradient_op_stop_pos[x] =
-            layer->effect_gradient_op_stop_pos[x];
-        gradient_layer.fill_gradient_op_stop_alpha[x] =
-            layer->effect_gradient_op_stop_alpha[x];
-        gradient_layer.fill_gradient_op_stop_mid[x] =
-            layer->effect_gradient_op_stop_mid[x];
+    if (!sixel_builtin_psd_prepare_effect_gradient_layer(
+            layer,
+            &gradient_layer)) {
+        return;
     }
     gradient_opacity = sixel_builtin_psd_clamp01(
         layer->effect_gradient_overlay_opacity);
@@ -20516,7 +20541,7 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
                 continue;
             }
             if (use_clip_weight != 0 && traced_clip_weighted == 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying clip-weighted deferred "
                     "gradient overlay in layer fallback");
@@ -20524,7 +20549,7 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
             }
             if (use_coverage_weight != 0 &&
                 traced_coverage_gate_split == 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: separating deferred gradient coverage "
                     "source and clip gate in layer fallback");
@@ -20674,6 +20699,7 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     float effect_edge_weight;
     float distance_coverage;
     float base_alpha;
+    float output_alpha;
     float base_r;
     float base_g;
     float base_b;
@@ -20703,6 +20729,7 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     effect_edge_weight = 1.0f;
     distance_coverage = 0.0f;
     base_alpha = 0.0f;
+    output_alpha = 0.0f;
     base_r = 0.0f;
     base_g = 0.0f;
     base_b = 0.0f;
@@ -20730,6 +20757,12 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     if (effect_opacity <= 0.0f || effect_size <= 0.0f) {
         return;
     }
+    if (is_inner_effect == 0) {
+        sixel_builtin_psd_trace_message(
+            "psd_decode",
+            "builtin PSD: applying deferred outer alpha accumulation "
+            "in layer fallback");
+    }
     radius = (int)ceilf(effect_size);
     if (radius < 1) {
         radius = 1;
@@ -20739,7 +20772,7 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
     if (is_inner_effect == 0 &&
         foreground_distance_map != NULL &&
         background_distance_map != NULL) {
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: applying deferred outer "
             "distance-band coverage in layer fallback");
@@ -20797,7 +20830,7 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
             if (traced_shadow_offset_semantics == 0 &&
                 (fabsf(effect_offset_x) >= 0.001f ||
                  fabsf(effect_offset_y) >= 0.001f)) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying deferred shadow offset semantics "
                     "in layer fallback");
@@ -20809,7 +20842,7 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
                 SIXEL_BUILTIN_PSD_GLOW_SOURCE_EDGE &&
                 outer_background_map[idx] == 0u) {
                 if (traced_exterior_gated == 0) {
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: gating deferred outer effects "
                         "with exterior background in layer fallback");
@@ -20903,13 +20936,10 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
                         effect_source_center,
                         effect_choke,
                         effect_range);
-                if (is_inner_effect != 0) {
-                    if (distance_coverage < coverage) {
-                        coverage = distance_coverage;
-                    }
-                } else if (distance_coverage > 0.0f) {
-                    coverage = distance_coverage;
-                }
+                coverage = sixel_builtin_psd_select_effect_coverage(
+                    legacy_coverage,
+                    distance_coverage,
+                    is_inner_effect);
             }
             if (coverage <= 0.0f) {
                 continue;
@@ -20924,22 +20954,19 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
                 edge_weight = 1.0f;
                 effect_edge_weight = 1.0f;
             }
-            effect_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                coverage * effect_opacity);
-            if (is_inner_effect != 0) {
-                effect_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                    effect_alpha * clip_weight * source_alpha *
-                    effect_edge_weight);
-            } else {
-                effect_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                    effect_alpha * clip_weight * effect_edge_weight);
-            }
+            effect_alpha = sixel_builtin_psd_compute_effect_alpha(
+                coverage,
+                effect_opacity,
+                clip_weight,
+                source_alpha,
+                effect_edge_weight,
+                is_inner_effect);
             if (effect_alpha <= 0.0f) {
                 continue;
             }
             if (ptraced_clip_weighted != NULL &&
                 *ptraced_clip_weighted == 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying clip-weighted deferred "
                     "interior effects in layer fallback");
@@ -20948,7 +20975,7 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
             if (foreground_distance_map != NULL &&
                 background_distance_map != NULL &&
                 traced_distance_map == 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying distance-map deferred effect "
                     "coverage in layer fallback");
@@ -20958,7 +20985,7 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
                 foreground_distance_map != NULL &&
                 background_distance_map != NULL &&
                 traced_outer_distance_band == 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying deferred outer "
                     "distance-band coverage in layer fallback");
@@ -20968,7 +20995,7 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
                 *ptraced_effect == 0 &&
                 effect_trace != NULL &&
                 effect_trace[0] != '\0') {
-                sixel_trace_topic_message("psd_decode", effect_trace);
+                sixel_builtin_psd_trace_message("psd_decode", effect_trace);
                 *ptraced_effect = 1;
             }
             base_alpha = sixel_builtin_psd_clamp_alpha_float32(
@@ -21016,12 +21043,18 @@ sixel_builtin_psd_apply_deferred_inner_effect_with_clip(
                     base_b * (1.0f - effect_alpha) +
                     blended_b * effect_alpha);
             }
+            output_alpha = base_alpha;
+            if (is_inner_effect == 0) {
+                output_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                    base_alpha + effect_alpha * (1.0f - base_alpha));
+                canvas_alpha[idx] = output_alpha;
+            }
             canvas_rgb_premul[idx * 3u + 0u] =
-                sixel_builtin_psd_clamp01(blended_r * base_alpha);
+                sixel_builtin_psd_clamp01(blended_r * output_alpha);
             canvas_rgb_premul[idx * 3u + 1u] =
-                sixel_builtin_psd_clamp01(blended_g * base_alpha);
+                sixel_builtin_psd_clamp01(blended_g * output_alpha);
             canvas_rgb_premul[idx * 3u + 2u] =
-                sixel_builtin_psd_clamp01(blended_b * base_alpha);
+                sixel_builtin_psd_clamp01(blended_b * output_alpha);
         }
     }
 }
@@ -21149,7 +21182,7 @@ sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
             &drsh_offset_x,
             &drsh_offset_y);
         if (traced_clip_weighted == 0) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: applying clip-weighted deferred "
                 "outer effects in layer fallback");
@@ -21210,7 +21243,7 @@ sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
     }
     if (has_outer_glow_effect != 0) {
         if (traced_clip_weighted == 0) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: applying clip-weighted deferred "
                 "outer effects in layer fallback");
@@ -21266,14 +21299,14 @@ sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
                  bevel_highlight_choke > 0.0f ||
                  bevel_highlight_range < 0.999f ||
                  fabsf(bevel_highlight_edge_bias - 0.65f) >= 0.001f)) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying deferred bevel lighting "
                     "semantics in layer fallback");
                 traced_deferred_bevel_lighting_semantics = 1;
             }
             if (traced_clip_weighted == 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying clip-weighted deferred "
                     "outer effects in layer fallback");
@@ -21479,7 +21512,7 @@ sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
              bevel_shadow_choke > 0.0f ||
              bevel_shadow_range < 0.999f ||
              fabsf(bevel_shadow_edge_bias - 0.45f) >= 0.001f)) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: applying deferred bevel lighting semantics "
                 "in layer fallback");
@@ -22200,7 +22233,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             }
             if (use_outside_background_map != 0 &&
                 traced_outside_boundary_prefer == 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: preferring outside-boundary "
                     "coverage for deferred effect stroke in "
@@ -22351,7 +22384,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             }
             if (use_base_silhouette_coverage != 0 &&
                 traced_base_silhouette_coverage == 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying deferred stroke with base "
                     "silhouette coverage in layer fallback");
@@ -22359,7 +22392,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             }
             if (use_base_silhouette_coverage != 0 &&
                 traced_fractional_coverage == 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying fractional silhouette "
                     "coverage for deferred effect stroke in layer "
@@ -22369,7 +22402,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             if (use_base_silhouette_coverage != 0 &&
                 use_clip_weight != 0 &&
                 traced_source_gate_split == 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: separating deferred stroke "
                     "coverage source and clip gate in layer "
@@ -22377,7 +22410,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                 traced_source_gate_split = 1;
             }
             if (use_clip_weight != 0 && traced_clip_weighted == 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying clip-weighted deferred "
                     "effect stroke in layer fallback");
@@ -22972,7 +23005,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     info->height,
                     &pending_overlay_layer);
                 if (pending_overlay_defer_stroke != 0) {
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: applying deferred stroke on clipped "
                         "group");
@@ -22995,13 +23028,13 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             pending_overlay_stroke_coverage_valid = 0;
         }
         if (layer->has_non_pixel_payload != 0) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: ignoring non-pixel payload in layer fallback");
             if (layer->has_fill_payload == 0 &&
                 layer->has_tysh_payload == 0) {
                 if (!has_pixel_channels) {
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: skipping non-pixel metadata layer in layer fallback");
                     continue;
@@ -23028,12 +23061,12 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             }
             if (!has_pixel_channels || prefer_non_pixel_fill != 0) {
                 if (layer->tysh_fill_opacity_malformed != 0) {
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: malformed TySh FillOpacity; ignoring");
                 }
                 if (layer->tysh_stroke_opacity_malformed != 0) {
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: malformed TySh StrokeOpacity; ignoring");
                 }
@@ -23062,7 +23095,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                                 &synthetic_layer,
                                 layer->tysh_stroke_opacity);
                         }
-                        sixel_trace_topic_message(
+                        sixel_builtin_psd_trace_message(
                             "psd_decode",
                             "builtin PSD: rendering non-pixel stroke payload "
                             "in layer fallback");
@@ -23074,12 +23107,12 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         if (SIXEL_FAILED(status)) {
                             char const *reason;
                             reason = sixel_helper_get_additional_message();
-                            sixel_trace_topic_message(
+                            sixel_builtin_psd_trace_message(
                                 "psd_decode",
                                 "builtin PSD: layer fallback failed in "
                                 "stroke synthetic fill generation");
                             if (reason != NULL && reason[0] != '\0') {
-                                sixel_trace_topic_message("psd_decode", reason);
+                                sixel_builtin_psd_trace_message("psd_decode", reason);
                             }
                             goto cleanup;
                         }
@@ -23087,7 +23120,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         synthetic_stroke = 1;
                         composite_layer = &synthetic_layer;
                     } else {
-                        sixel_trace_topic_message(
+                        sixel_builtin_psd_trace_message(
                             "psd_decode",
                             "builtin PSD: skipping non-pixel fill payload due to "
                             "FillFlag=false");
@@ -23114,22 +23147,22 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         if (synthetic_layer.fill_solid_rgb[0] > 0.95f &&
                             synthetic_layer.fill_solid_rgb[1] > 0.95f &&
                             synthetic_layer.fill_solid_rgb[2] > 0.95f) {
-                            sixel_trace_topic_message(
+                            sixel_builtin_psd_trace_message(
                                 "psd_decode",
                                 "builtin PSD: SoCo fill is near white");
                         } else if (synthetic_layer.fill_solid_rgb[0] < 0.05f &&
                                    synthetic_layer.fill_solid_rgb[1] < 0.05f &&
                                    synthetic_layer.fill_solid_rgb[2] < 0.05f) {
-                            sixel_trace_topic_message(
+                            sixel_builtin_psd_trace_message(
                                 "psd_decode",
                                 "builtin PSD: SoCo fill is near black");
                         } else {
-                            sixel_trace_topic_message(
+                            sixel_builtin_psd_trace_message(
                                 "psd_decode",
                                 "builtin PSD: SoCo fill is chromatic");
                         }
                     }
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: rendering non-pixel fill payload "
                         "in layer fallback");
@@ -23141,12 +23174,12 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     if (SIXEL_FAILED(status)) {
                         char const *reason;
                         reason = sixel_helper_get_additional_message();
-                        sixel_trace_topic_message(
+                        sixel_builtin_psd_trace_message(
                             "psd_decode",
                             "builtin PSD: layer fallback failed in "
                             "fill synthetic generation");
                         if (reason != NULL && reason[0] != '\0') {
-                            sixel_trace_topic_message("psd_decode", reason);
+                            sixel_builtin_psd_trace_message("psd_decode", reason);
                         }
                         goto cleanup;
                     }
@@ -23158,7 +23191,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 if (fillflag_skip == 0 &&
                     layer->has_fill_payload != 0 &&
                     layer->has_malformed_fill_payload != 0) {
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: malformed non-pixel fill payload; "
                         "skipping layer");
@@ -23195,24 +23228,24 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 layer->has_effect_stroke != 0 ||
                 layer->has_effect_outer_glow != 0 ||
                 layer->has_effect_inner_glow != 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying layer effects subset in layer fallback");
             } else {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: ignoring layer effects in layer fallback");
             }
         }
         if (layer->has_knockout != 0) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: ignoring knockout in layer fallback");
         }
         if (!sixel_builtin_psd_layer_blend_mode_from_key(
                 effective_composite_layer->blend_key,
                 &blend_mode)) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: unknown layer blend mode; "
                 "falling back to Normal");
@@ -23220,7 +23253,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         }
 
         if (layer->visible == 0) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: skipping hidden layer in layer fallback");
             sixel_builtin_psd_layer_buffers_destroy(chunk->allocator, &src_layer);
@@ -23241,7 +23274,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         info,
                         &model.layers[(size_t)clipping_base_index])) {
                     clip_alpha_valid = 1;
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: resolved clipping base for "
                         "non-pixel clipping layer");
@@ -23249,7 +23282,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             }
         }
         if (apply_clipping != 0 && clip_alpha_valid == 0) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: clipping layer without base; skipping layer");
             sixel_builtin_psd_layer_buffers_destroy(chunk->allocator, &src_layer);
@@ -23257,7 +23290,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         }
 
         if (synthetic_fill == 0 && !has_pixel_channels) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: skipping layer without decodable pixel channels "
                 "in layer fallback");
@@ -23274,15 +23307,15 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             if (SIXEL_FAILED(status)) {
                 char const *reason;
                 reason = sixel_helper_get_additional_message();
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: layer fallback failed in pixel layer decode");
                 if (reason != NULL && reason[0] != '\0') {
-                    sixel_trace_topic_message("psd_decode", reason);
+                    sixel_builtin_psd_trace_message("psd_decode", reason);
                 }
                 sixel_builtin_psd_layer_buffers_destroy(chunk->allocator, &src_layer);
                 if (allow_pixel_layer_decode_skip != 0) {
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: skipping undecodable pixel layer in "
                         "layer fallback");
@@ -23300,14 +23333,14 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     info,
                     effective_composite_layer,
                     &src_layer)) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying vector mask path in "
                     "layer fallback");
             } else if (allow_pixel_layer_decode_skip != 0 &&
                        ignore_placeholder_vector_bbox == 0 &&
                        effective_composite_layer->has_vector_mask_bbox != 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying vector mask bbox in "
                     "layer fallback");
@@ -23316,20 +23349,20 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     effective_composite_layer,
                     &src_layer);
             } else {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: ignoring vector mask in layer fallback");
                 if (ignore_placeholder_vector_bbox != 0) {
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: ignoring placeholder vector mask bbox in "
                         "layer fallback");
                 } else if (layer->has_vector_mask_bbox != 0) {
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: vector mask bbox parsed");
                 } else {
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: vector mask bbox unavailable");
                 }
@@ -23374,12 +23407,12 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 if (effective_composite_layer->has_blend_clipped_elements != 0 &&
                     effective_composite_layer->blend_clipped_elements_enabled ==
                     0) {
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: clbl=0; deferring interior effects "
                         "to clipped group composite");
                 } else {
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: clbl=1; deferring interior overlays "
                         "to clipped group composite");
@@ -23390,7 +23423,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             effective_composite_layer->height == info->height &&
             effective_composite_layer->left == 0 &&
             effective_composite_layer->top == 0) {
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: compositing full-canvas layer in layer fallback");
         }
@@ -23481,7 +23514,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             layer_for_composite = *effective_composite_layer;
             layer_for_composite.has_effect_stroke = 0;
             effective_composite_layer = &layer_for_composite;
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: suppressing synthesized vector stroke on "
                 "clipping-group base layer");
@@ -23509,7 +23542,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             layer_for_composite = *effective_composite_layer;
             layer_for_composite.has_effect_stroke = 0;
             effective_composite_layer = &layer_for_composite;
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: suppressing explicit inside stroke on "
                 "clbl=1 clipping sibling");
@@ -23556,7 +23589,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                      * These passes are prone to double-accumulation around
                      * clipped cutouts before deferred overlays are blended.
                      */
-                    sixel_trace_topic_message(
+                    sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: suppressing clbl=1 deferred base "
                         "interior glow/choke/bevel-shadow");
@@ -23593,7 +23626,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
              * Harden this narrow subset before compositing.
              */
             if (traced_clip_sibling_harden == 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: hardening vector-style clipping sibling "
                     "alpha in layer fallback");
@@ -23662,7 +23695,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 info->height,
                 &pending_overlay_layer);
             if (pending_overlay_defer_stroke != 0) {
-                sixel_trace_topic_message(
+                sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying deferred stroke on clipped "
                     "group");
@@ -25644,7 +25677,7 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
     }
     if (info->color_mode != 2u &&
         sixel_builtin_psd_should_prefer_multilayer_with_merged(chunk, info)) {
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: preferring layer fallback over merged composite");
         layer_status = sixel_builtin_decode_psd_multilayer_missing_composite(
@@ -25664,11 +25697,11 @@ sixel_builtin_decode_psd_gray_or_indexed_8bit(
         if (SIXEL_FAILED(layer_status)) {
             char const *fallback_reason;
             fallback_reason = sixel_helper_get_additional_message();
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: layer fallback failed; using merged composite");
             if (fallback_reason != NULL && fallback_reason[0] != '\0') {
-                sixel_trace_topic_message("psd_decode", fallback_reason);
+                sixel_builtin_psd_trace_message("psd_decode", fallback_reason);
             }
             layer_status = sixel_builtin_decode_psd_single_layer_missing_composite_8bit(
                 chunk,
@@ -26568,7 +26601,7 @@ SIXEL_PSD_FN(SIXEL_PSD_PREF_DEC_MISS_COMP_CMYK, _8bit)(
             sixel_allocator_free(chunk->allocator, cmyk);
             rgbf32 = NULL;
             cmyk = NULL;
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: skipping embedded CMYK ICC conversion due allocation failure");
         } else {
@@ -26956,7 +26989,7 @@ sixel_builtin_decode_psd_cmyk_8bit(
             sixel_allocator_free(chunk->allocator, cmyk);
             rgbf32 = NULL;
             cmyk = NULL;
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: skipping embedded CMYK ICC conversion due allocation failure");
         } else {
@@ -30504,7 +30537,7 @@ sixel_builtin_decode_psd_rgb_8bit(
             ppixelformat);
     }
     if (sixel_builtin_psd_should_prefer_multilayer_with_merged(chunk, info)) {
-        sixel_trace_topic_message(
+        sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: preferring layer fallback over merged composite");
         layer_status = sixel_builtin_decode_psd_multilayer_missing_composite(
@@ -30524,11 +30557,11 @@ sixel_builtin_decode_psd_rgb_8bit(
         if (SIXEL_FAILED(layer_status)) {
             char const *fallback_reason;
             fallback_reason = sixel_helper_get_additional_message();
-            sixel_trace_topic_message(
+            sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: layer fallback failed; using merged composite");
             if (fallback_reason != NULL && fallback_reason[0] != '\0') {
-                sixel_trace_topic_message("psd_decode", fallback_reason);
+                sixel_builtin_psd_trace_message("psd_decode", fallback_reason);
             }
             layer_status = sixel_builtin_decode_psd_single_layer_missing_composite_8bit(
                 chunk,
@@ -32782,5 +32815,4 @@ cleanup_lab32:
 /* emacs c-basic-offset: 4     */
 /* emacs End:                  */
 /* vim: set expandtab ts=4 : */
-#undef sixel_trace_topic_message
 /* EOF */

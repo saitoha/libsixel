@@ -424,6 +424,12 @@ Key points used by this roadmap:
     existing deferred coverage/gate split contracts. PASS representatives
     `1541..1543` lock alignment/offset trace semantics and deferred-gradient
     non-regression.
+  - Effect gradient setup now uses one shared helper for base/deferred paths,
+    and deferred outer effects now keep alpha accumulation semantics aligned
+    with base outer passes. PASS representatives `1550..1553` lock:
+    deferred outer alpha accumulation trace contract, base/deferred GrFl
+    contract continuity, deferred outer/interior coverage continuity, and
+    shape-fx2 GrFl sampler contract continuity.
   - `psd-tools` hardcase LSQA TAPs `1289..1292` now use PASS-first wording
     (legacy TODO/XFAIL text removed), and decode-level parity is guarded by
     builtin loader frame-match checks in `0014` for:
