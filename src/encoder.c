@@ -4518,12 +4518,16 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
 {
     SIXELSTATUS status;
     int quantize_animation_enabled;
+    int histogram_colors;
+    int method_for_diffuse;
 
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     quantize_animation_enabled = 0;
+    histogram_colors = 0;
+    method_for_diffuse = SIXEL_DIFFUSE_NONE;
 
     if (context->palette_job_started != 0) {
         status = sixel_encoder_palette_job_wait(&context->palette_job,
@@ -4606,8 +4610,18 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         }
     }
 
-    sixel_dither_set_diffusion_type(context->dither,
-                                    context->encoder->method_for_diffuse);
+    histogram_colors =
+        sixel_dither_get_num_of_histogram_colors(context->dither);
+    method_for_diffuse = context->encoder->method_for_diffuse;
+    if (histogram_colors <= context->encoder->reqcolors) {
+        /*
+         * Keep the exact-palette fast path local to this frame.
+         * Updating encoder->method_for_diffuse here races with planner reads
+         * when palette jobs run on worker threads.
+         */
+        method_for_diffuse = SIXEL_DIFFUSE_NONE;
+    }
+    sixel_dither_set_diffusion_type(context->dither, method_for_diffuse);
     context->dither->interframe_strategy_override =
         context->encoder->interframe_strategy_override;
     context->dither->interframe_strategy_token =
@@ -5643,7 +5657,6 @@ sixel_encoder_prepare_palette(
     sixel_logger_t *logger)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int histogram_colors;
     sixel_filter_final_merge_config_t merge_config;
     sixel_logger_t *target_logger;
     int cache_allowed;
@@ -6098,10 +6111,6 @@ sixel_encoder_prepare_palette(
         quantize_override_lock_acquired);
     quantize_override_lock_acquired = 0;
 
-    histogram_colors = sixel_dither_get_num_of_histogram_colors(*dither);
-    if (histogram_colors <= encoder->reqcolors) {
-        encoder->method_for_diffuse = SIXEL_DIFFUSE_NONE;
-    }
     sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
 
     status = SIXEL_OK;
