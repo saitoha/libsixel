@@ -36,11 +36,6 @@
 #include <string.h>
 #include <limits.h>
 
-/* Keep SIZE_MAX available even on strict C99 environments. */
-#ifndef SIZE_MAX
-# define SIZE_MAX ((size_t)-1)
-#endif
-
 #if HAVE_ERRNO_H
 # include <errno.h>
 #endif
@@ -68,6 +63,11 @@
 # include <signal.h>
 #elif HAVE_SYS_SIGNAL_H
 # include <sys/signal.h>
+#endif
+
+/* Keep SIZE_MAX available even on strict C99 environments. */
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t)-1)
 #endif
 
 #include <sixel.h>

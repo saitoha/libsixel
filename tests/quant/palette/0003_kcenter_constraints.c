@@ -99,10 +99,10 @@ test_fill_auto_pixels(unsigned char *pixels)
  * The caller must release `*palette_out` with sixel_allocator_free().
  */
 static int
-test_copy_palette_from_dither(sixel_dither_t *dither,
-                              sixel_allocator_t *allocator,
-                              unsigned char **palette_out,
-                              unsigned int *ncolors_out)
+test_copy_palette_from_kcenter(sixel_dither_t *dither,
+                               sixel_allocator_t *allocator,
+                               unsigned char **palette_out,
+                               unsigned int *ncolors_out)
 {
     SIXELSTATUS status;
     sixel_palette_t *palette_obj;
@@ -211,10 +211,10 @@ test_build_kcenter_palette(unsigned char const *pixels,
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    if (!test_copy_palette_from_dither(dither,
-                                       allocator,
-                                       palette_out,
-                                       ncolors_out)) {
+    if (!test_copy_palette_from_kcenter(dither,
+                                        allocator,
+                                        palette_out,
+                                        ncolors_out)) {
         goto end;
     }
     ok = 1;
