@@ -1584,6 +1584,12 @@ typedef SIXELSTATUS (* sixel_load_image_function)(
     sixel_frame_t /* in */     *frame,
     void          /* in/out */ *context);
 
+/*
+ * Return non-zero to request cancellation of the current load/encode process.
+ */
+typedef int (* sixel_cancel_function)(
+    void /* in */ *context);
+
 /* handle type of generic loader object */
 struct sixel_loader;
 typedef struct sixel_loader sixel_loader_t;
@@ -1720,11 +1726,21 @@ sixel_encoder_ref(sixel_encoder_t /* in */ *encoder);
 SIXELAPI void
 sixel_encoder_unref(sixel_encoder_t /* in */ *encoder);
 
-/* set cancel state flag to encoder object */
-SIXELAPI SIXELSTATUS
+/* deprecated: use sixel_encoder_set_cancel_callback() instead */
+SIXELAPI @attr_func_deprecated@ SIXELSTATUS
 sixel_encoder_set_cancel_flag(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ *cancel_flag);
+
+/*
+ * Set a cancellation callback. Returns non-zero from CANCEL_FUNCTION to stop.
+ * CANCEL_CONTEXT is passed to each callback invocation as-is.
+ */
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_cancel_callback(
+    sixel_encoder_t       /* in */ *encoder,
+    sixel_cancel_function /* in */ cancel_function,
+    void                  /* in */ *cancel_context);
 
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS

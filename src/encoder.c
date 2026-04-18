@@ -848,6 +848,28 @@ sixel_encoder_compute_remaining_delay_usec(
     return (unsigned int)remaining_usec64;
 }
 
+static int
+sixel_encoder_is_cancel_requested(sixel_encoder_t const *encoder)
+{
+    int canceled;
+
+    canceled = 0;
+    if (encoder == NULL) {
+        return 0;
+    }
+    if (encoder->cancel_function != NULL
+            && encoder->cancel_function(encoder->cancel_context) != 0) {
+        canceled = 1;
+    }
+    if (canceled == 0
+            && encoder->cancel_flag != NULL
+            && *encoder->cancel_flag != 0) {
+        canceled = 1;
+    }
+
+    return canceled;
+}
+
 static SIXELSTATUS
 sixel_encoder_wait_delay_with_cancel(sixel_encoder_t *encoder,
                                      unsigned int delay_usec)
@@ -867,12 +889,12 @@ sixel_encoder_wait_delay_with_cancel(sixel_encoder_t *encoder,
 
     /*
      * Process-level signals typically land on the main thread. Poll the
-     * shared cancel flag in short slices so worker-thread delay sleeps can
-     * stop promptly after Ctrl-C.
+     * registered cancel source in short slices so worker-thread delay sleeps
+     * can stop promptly after Ctrl-C.
      */
     remaining_usec = delay_usec;
     while (remaining_usec > 0U) {
-        if (encoder->cancel_flag != NULL && *encoder->cancel_flag != 0) {
+        if (sixel_encoder_is_cancel_requested(encoder) != 0) {
             return SIXEL_INTERRUPTED;
         }
         sleep_slice_usec = remaining_usec;
@@ -883,7 +905,7 @@ sixel_encoder_wait_delay_with_cancel(sixel_encoder_t *encoder,
         remaining_usec -= sleep_slice_usec;
     }
 
-    if (encoder->cancel_flag != NULL && *encoder->cancel_flag != 0) {
+    if (sixel_encoder_is_cancel_requested(encoder) != 0) {
         return SIXEL_INTERRUPTED;
     }
 
@@ -4745,7 +4767,7 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
      * This keeps the cursor at the bottom-left of the last rendered frame
      * when SIGINT arrives between frames.
      */
-    if (context->encoder->cancel_flag && *context->encoder->cancel_flag) {
+    if (sixel_encoder_is_cancel_requested(context->encoder) != 0) {
         return SIXEL_INTERRUPTED;
     }
 
@@ -4813,7 +4835,7 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
         return status;
     }
 
-    if (context->encoder->cancel_flag && *context->encoder->cancel_flag) {
+    if (sixel_encoder_is_cancel_requested(context->encoder) != 0) {
         nwrite = context->write_callback("\x18\033\\", 3,
                                          context->write_priv);
         if (nwrite < 0) {
@@ -5387,6 +5409,12 @@ palette_cleanup:
     status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_CANCEL_FLAG,
                                  encoder->cancel_flag);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
+    status = sixel_loader_set_cancel_callback(loader,
+                                              encoder->cancel_function,
+                                              encoder->cancel_context);
     if (SIXEL_FAILED(status)) {
         goto end_loader;
     }
@@ -6388,7 +6416,7 @@ sixel_encoder_output_without_macro(
     pixbuf = sixel_frame_get_pixels(frame);
     memcpy(p, pixbuf, size);
 
-    if (encoder->cancel_flag && *encoder->cancel_flag) {
+    if (sixel_encoder_is_cancel_requested(encoder) != 0) {
         goto end;
     }
 
@@ -7125,6 +7153,8 @@ sixel_encoder_new(
     (*ppencoder)->tile_outfd            = (-1);
     (*ppencoder)->finsecure             = 0;
     (*ppencoder)->cancel_flag           = NULL;
+    (*ppencoder)->cancel_function       = NULL;
+    (*ppencoder)->cancel_context        = NULL;
     (*ppencoder)->dither_cache          = NULL;
     (*ppencoder)->drcs_charset_no       = 1u;
     (*ppencoder)->drcs_mmv              = 2;
@@ -7344,6 +7374,30 @@ sixel_encoder_set_cancel_flag(
 
     encoder->cancel_flag = cancel_flag;
 
+    return status;
+}
+
+/* set cancel callback to encoder object */
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_cancel_callback(
+    sixel_encoder_t       /* in */ *encoder,
+    sixel_cancel_function /* in */ cancel_function,
+    void                  /* in */ *cancel_context
+)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (encoder == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_set_cancel_callback: encoder is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    encoder->cancel_function = cancel_function;
+    encoder->cancel_context = cancel_context;
+
+end:
     return status;
 }
 
@@ -11478,9 +11532,7 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
         }
     }
 
-    if (pipeline->encoder != NULL &&
-        pipeline->encoder->cancel_flag != NULL &&
-        *pipeline->encoder->cancel_flag != 0) {
+    if (sixel_encoder_is_cancel_requested(pipeline->encoder) != 0) {
         status = SIXEL_INTERRUPTED;
         sixel_encoder_frame_pipeline_request_stop(
             pipeline,
@@ -11491,9 +11543,7 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
     }
 
     sixel_mutex_lock(&pipeline->mutex);
-    if (pipeline->encoder != NULL &&
-        pipeline->encoder->cancel_flag != NULL &&
-        *pipeline->encoder->cancel_flag != 0) {
+    if (sixel_encoder_is_cancel_requested(pipeline->encoder) != 0) {
         cancel_requested = 1;
     }
     if (cancel_requested != 0) {
@@ -11512,9 +11562,7 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
             pipeline->worker_status,
             SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
         sixel_cond_wait(&pipeline->cond, &pipeline->mutex);
-        if (pipeline->encoder != NULL &&
-            pipeline->encoder->cancel_flag != NULL &&
-            *pipeline->encoder->cancel_flag != 0) {
+        if (sixel_encoder_is_cancel_requested(pipeline->encoder) != 0) {
             sixel_encoder_frame_pipeline_request_stop_locked(
                 pipeline,
                 SIXEL_INTERRUPTED,
@@ -11581,9 +11629,7 @@ sixel_encoder_frame_pipeline_finish(sixel_encoder_frame_pipeline_t *pipeline)
     queue_count = pipeline->queue_count;
     loader_done = pipeline->loader_done;
     worker_status = pipeline->worker_status;
-    if (pipeline->encoder != NULL
-        && pipeline->encoder->cancel_flag != NULL
-        && *pipeline->encoder->cancel_flag != 0
+    if (sixel_encoder_is_cancel_requested(pipeline->encoder) != 0
         && pipeline->worker_status == SIXEL_OK) {
         cancel_requested = 1;
         sixel_encoder_frame_pipeline_request_stop_locked(
@@ -11842,7 +11888,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
         SIXEL_OK,
         SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
 
-    if (encoder->cancel_flag != NULL && *encoder->cancel_flag != 0) {
+    if (sixel_encoder_is_cancel_requested(encoder) != 0) {
         if (pipeline->handoff_mode == SIXEL_ENCODER_HANDOFF_PIPELINE) {
             sixel_encoder_frame_pipeline_request_stop(
                 pipeline,
@@ -12953,6 +12999,12 @@ reload:
     if (SIXEL_FAILED(status)) {
         goto load_end;
     }
+    status = sixel_loader_set_cancel_callback(loader,
+                                              encoder->cancel_function,
+                                              encoder->cancel_context);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
 
     status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_LOADER_ORDER,
@@ -13063,7 +13115,7 @@ load_end:
 #if HAVE_CLEARERR
         clearerr(stdin);
 #endif  /* HAVE_FSEEK */
-        while (encoder->cancel_flag && !*encoder->cancel_flag) {
+        while (sixel_encoder_is_cancel_requested(encoder) == 0) {
             status = sixel_tty_wait_stdin(1000000);
             if (SIXEL_FAILED(status)) {
                 goto end;
@@ -13072,7 +13124,7 @@ load_end:
                 break;
             }
         }
-        if (!encoder->cancel_flag || !*encoder->cancel_flag) {
+        if (sixel_encoder_is_cancel_requested(encoder) == 0) {
             goto reload;
         }
     }

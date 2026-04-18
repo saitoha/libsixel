@@ -2415,12 +2415,24 @@ void show_help(void)
 
 #if HAVE_SIGNAL
 
-static int signaled = 0;
+/*
+ * Use sig_atomic_t storage for signal handlers and worker-thread polling.
+ * The callback reads this flag from worker threads to stop looped output.
+ */
+static volatile sig_atomic_t signaled = 0;
 
 static void
 signal_handler(int sig)
 {
     signaled = sig;
+}
+
+static int
+signal_cancel_callback(void *context)
+{
+    (void)context;
+
+    return signaled != 0;
 }
 
 #endif
@@ -2781,7 +2793,9 @@ img2sixel_main(int argc, char *argv[])
 # if HAVE_DECL_SIGHUP
     signal(SIGHUP, signal_handler);
 # endif
-    status = sixel_encoder_set_cancel_flag(encoder, &signaled);
+    status = sixel_encoder_set_cancel_callback(encoder,
+                                               signal_cancel_callback,
+                                               NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }

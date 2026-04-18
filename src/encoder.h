@@ -250,6 +250,8 @@ struct sixel_encoder {
     int tile_outfd;
     int finsecure;
     int *cancel_flag;
+    sixel_cancel_function cancel_function;
+    void *cancel_context;
     void *dither_cache;
     unsigned short drcs_charset_no;
     int drcs_mmv;

@@ -38,10 +38,9 @@ echo "1..1"
 set -v
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop0.gif"
-# Keep the watchdog budget below the outer 90s TAP timeout even when
-# some shells quantize short sleeps to one-second intervals.
-wait_limit=80
-wait_sleep=0.1
+# Use a single watchdog process so the test does not depend on PID polling
+# loops and always settles well below the outer 90-second TAP timeout.
+watchdog_timeout=8
 
 set +x
 trace_summary=$(
@@ -52,25 +51,20 @@ trace_summary=$(
             -Lbuiltin! -lforce "${input_gif}" 2>&1 >/dev/null &
         pid=$!
 
+        (
+            sleep "${watchdog_timeout}"
+            kill -0 "${pid}" 2>/dev/null || exit 0
+            kill -KILL "${pid}" 2>/dev/null || true
+            printf "__TIMEOUT__\n"
+        ) &
+        watchdog_pid=$!
+
         sleep 0.1
         kill -INT "${pid}" 2>/dev/null || true
 
-        wait_count="${wait_limit}"
-        while test "${wait_count}" -gt 0; do
-            kill -0 "${pid}" 2>/dev/null || {
-                break
-            }
-            sleep "${wait_sleep}"
-            wait_count=$((wait_count - 1))
-        done
-
-        kill -0 "${pid}" 2>/dev/null && {
-            kill -KILL "${pid}" 2>/dev/null || true
-            wait "${pid}" 2>/dev/null || true
-            printf "__TIMEOUT__\n"
-        }
-
         wait "${pid}" 2>/dev/null || true
+        kill "${watchdog_pid}" 2>/dev/null || true
+        wait "${watchdog_pid}" 2>/dev/null || true
     }
 )
 

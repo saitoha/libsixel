@@ -151,6 +151,8 @@ struct sixel_loader {
     int has_start_frame_no;
     int start_frame_no;
     int const *cancel_flag;
+    sixel_cancel_function cancel_function;
+    void *cancel_context;
     void *context;
     sixel_logger_t logger;
     char *loader_order;
@@ -228,16 +230,52 @@ int
 sixel_loader_callback_is_canceled(void *data)
 {
     sixel_loader_callback_state_t *state;
+    sixel_loader_t *loader;
     void *actual_context;
+    int canceled;
 
     actual_context = loader_timeline_unwrap_callback_context(data);
     state = (sixel_loader_callback_state_t *)actual_context;
-    if (state == NULL || state->loader == NULL ||
-        state->loader->cancel_flag == NULL) {
+    loader = NULL;
+    canceled = 0;
+    if (state == NULL || state->loader == NULL) {
+        return 0;
+    }
+    loader = state->loader;
+    if (loader->cancel_function != NULL) {
+        canceled = loader->cancel_function(loader->cancel_context);
+    }
+    if (canceled != 0) {
+        return 1;
+    }
+    if (loader->cancel_flag == NULL) {
         return 0;
     }
 
-    return *state->loader->cancel_flag != 0;
+    return *loader->cancel_flag != 0;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_loader_set_cancel_callback(
+    sixel_loader_t *loader,
+    sixel_cancel_function cancel_function,
+    void *cancel_context)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_FALSE;
+    if (loader == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_set_cancel_callback: loader is null.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    loader->cancel_function = cancel_function;
+    loader->cancel_context = cancel_context;
+    status = SIXEL_OK;
+
+end:
+    return status;
 }
 
 
@@ -1560,6 +1598,8 @@ sixel_loader_new(
     loader->has_start_frame_no = 0;
     loader->start_frame_no = INT_MIN;
     loader->cancel_flag = NULL;
+    loader->cancel_function = NULL;
+    loader->cancel_context = NULL;
     loader->context = NULL;
     /*
      * Initialize a private logger. The helper reuses an existing global

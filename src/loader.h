@@ -50,6 +50,12 @@ int
 sixel_loader_get_start_frame_no(sixel_loader_t const *loader,
                                 int *start_frame_no);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_loader_set_cancel_callback(
+    sixel_loader_t *loader,
+    sixel_cancel_function cancel_function,
+    void *cancel_context);
+
 typedef int (*sixel_loader_wait_predicate_t)(void *context);
 
 SIXEL_INTERNAL_API int
