@@ -213,7 +213,15 @@ decoder_clipboard_create_spool(sixel_allocator_t *allocator,
     }
 
     open_flags = O_RDWR | O_CREAT | O_TRUNC;
-#if defined(O_EXCL)
+#if defined(O_BINARY)
+    open_flags |= O_BINARY;
+#endif
+    /*
+     * Emscripten + NODERAWFS can report false EEXIST for O_EXCL on freshly
+     * generated temp paths. Keep O_EXCL on native runtimes and drop it for
+     * emscripten to preserve clipboard spool creation reliability.
+     */
+#if defined(O_EXCL) && !defined(__EMSCRIPTEN__)
     open_flags |= O_EXCL;
 #endif
     open_mode = S_IRUSR | S_IWUSR;
