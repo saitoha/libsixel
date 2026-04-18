@@ -21,7 +21,7 @@
 /* Define to 1 if you have the 'backtrace_symbols_fd' function. */
 #undef HAVE_BACKTRACE_SYMBOLS_FD
 
-/* define 1 if GCC supports -Bsymbolic */
+/* define 1 if linker supports -Wl,-Bsymbolic */
 #undef HAVE_BSYMBOLIC
 
 /* Define if __builtin_cpu_init is available */
