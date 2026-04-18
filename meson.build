@@ -390,19 +390,23 @@ if host_system != 'openbsd'
   base_flags += ['-fno-emulated-tls']
 endif
 
-sym_flags = []
-if host_system != 'openbsd'
-  sym_flags += ['-Bsymbolic']
-endif
-
-flags = cc.get_supported_arguments(base_flags + sym_flags)
+flags = cc.get_supported_arguments(base_flags)
 add_project_arguments(flags, language: 'c')
+
+if host_system != 'openbsd'
+  # Use a linker-style option here. Passing raw "-Bsymbolic" as a compile
+  # option can be misparsed by some compilers (for example, tcc treats it as
+  # "-B <prefix>"), which breaks standard include/library path resolution.
+  bsymbolic_ldflag = '-Wl,-Bsymbolic'
+  if cc.has_link_argument(bsymbolic_ldflag)
+    add_project_link_arguments(bsymbolic_ldflag, language: 'c')
+    conf.set('HAVE_BSYMBOLIC', 1)
+  endif
+endif
 
 foreach f: flags
   if f == '-fno-emulated-tls'
     conf.set('HAVE_FNO_EMULATED_TLS', 1)
-  elif f == '-Bsymbolic'
-    conf.set('HAVE_BSYMBOLIC', 1)
   endif
 endforeach
 

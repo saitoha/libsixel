@@ -2118,6 +2118,22 @@ AC_DEFUN([LS_CHECK_CFLAG],
                 [m4_default([$3], :)])
          ])
 
+AC_DEFUN([LS_CHECK_LDFLAG],
+         [AC_CACHE_CHECK([if $CC linker supports $1],
+                         [ac_cv_ld_flag_[]AS_TR_SH([$4])],
+                         [saved_ldflags="$LDFLAGS"
+                          LDFLAGS="$LDFLAGS $1"
+                          AC_LINK_IFELSE([AC_LANG_PROGRAM([],[])],
+                                         [ac_cv_ld_flag_$4=yes],
+                                         [ac_cv_ld_flag_$4=no])
+                          LDFLAGS="$saved_ldflags"])
+          AS_IF([eval test \"x\$ac_cv_ld_flag_[]AS_TR_SH([$4])\" = xyes],
+                [m4_default([$2], :)],
+                [m4_default([$3], :)])
+         ])
+
+LIBSIXEL_LDFLAGS=""
+
   if test "x$using_cl" = "xyes"; then
     # Keep the MSVC banner quiet during compilation and preprocessing.
     CPPFLAGS="-nologo $CPPFLAGS"
@@ -2216,13 +2232,13 @@ else
       # __tls_get_addr unresolved when final tools link against libsixel.
       ;;
     *)
-      LS_CHECK_CFLAG([-Bsymbolic],
-                     [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
+      LS_CHECK_LDFLAG([-Wl,-Bsymbolic],
+                     [LIBSIXEL_LDFLAGS="$LIBSIXEL_LDFLAGS -Wl,-Bsymbolic"
                       AC_DEFINE(HAVE_BSYMBOLIC,
                                 [1],
-                                [define 1 if GCC supports -Bsymbolic])],
+                                [define 1 if linker supports -Wl,-Bsymbolic])],
                      [],
-                     [bsymbolic])
+                     [wl_bsymbolic])
       LS_CHECK_CFLAG([-fno-emulated-tls],
                      [AM_CFLAGS="$AM_CFLAGS -fno-emulated-tls"
                       AC_DEFINE(HAVE_FNO_EMULATED_TLS,
@@ -2242,6 +2258,7 @@ AS_IF([test -n "$EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT" -a -n "$CI"],
       [AM_CFLAGS="$AM_CFLAGS $EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"])
 
 AC_SUBST([AM_CFLAGS])
+AC_SUBST([LIBSIXEL_LDFLAGS])
 
 # Check math library
 AC_CHECK_LIB([m], [floor])

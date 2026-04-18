@@ -772,6 +772,7 @@ CP_CMD
 FILE_CMD
 CLOCK_GETTIME_LIBS
 LIBOBJS
+LIBSIXEL_LDFLAGS
 AM_CFLAGS
 attr_func_deprecated
 attr_var_deprecated
@@ -19612,6 +19613,10 @@ fi
 
 
 
+
+
+LIBSIXEL_LDFLAGS=""
+
   if test "x$using_cl" = "xyes"; then
     # Keep the MSVC banner quiet during compilation and preprocessing.
     CPPFLAGS="-nologo $CPPFLAGS"
@@ -20374,14 +20379,14 @@ fi
       # __tls_get_addr unresolved when final tools link against libsixel.
       ;;
     *)
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Bsymbolic" >&5
-printf %s "checking if $CC supports -Bsymbolic... " >&6; }
-if test ${ac_cv_cc_flag_bsymbolic+y}
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC linker supports -Wl,-Bsymbolic" >&5
+printf %s "checking if $CC linker supports -Wl,-Bsymbolic... " >&6; }
+if test ${ac_cv_ld_flag_wl_bsymbolic+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e) saved_cflags="$CFLAGS"
-                          CFLAGS="-Bsymbolic -Werror"
+  e) saved_ldflags="$LDFLAGS"
+                          LDFLAGS="$LDFLAGS -Wl,-Bsymbolic"
                           cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -20393,22 +20398,23 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_compile "$LINENO"
+if ac_fn_c_try_link "$LINENO"
 then :
-  ac_cv_cc_flag_bsymbolic=yes
+  ac_cv_ld_flag_wl_bsymbolic=yes
 else case e in #(
-  e) ac_cv_cc_flag_bsymbolic=no ;;
+  e) ac_cv_ld_flag_wl_bsymbolic=no ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
-                          CFLAGS="$saved_cflags" ;;
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+                          LDFLAGS="$saved_ldflags" ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_flag_bsymbolic" >&5
-printf "%s\n" "$ac_cv_cc_flag_bsymbolic" >&6; }
-          if eval test \"x\$ac_cv_cc_flag_bsymbolic\" = xyes
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_ld_flag_wl_bsymbolic" >&5
+printf "%s\n" "$ac_cv_ld_flag_wl_bsymbolic" >&6; }
+          if eval test \"x\$ac_cv_ld_flag_wl_bsymbolic\" = xyes
 then :
-  AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
+  LIBSIXEL_LDFLAGS="$LIBSIXEL_LDFLAGS -Wl,-Bsymbolic"
 
 printf "%s\n" "#define HAVE_BSYMBOLIC 1" >>confdefs.h
 
@@ -20513,6 +20519,7 @@ if test -n "$EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT" -a -n "$CI"
 then :
   AM_CFLAGS="$AM_CFLAGS $EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"
 fi
+
 
 
 

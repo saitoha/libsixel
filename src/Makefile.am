@@ -318,9 +318,11 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(CLIPBOARD_CFLAGS) \
                 @THREAD_CFLAGS@
 if BUILDING_ON_WINDOWS
-libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
+libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) \
+                $(MAYBE_COVERAGE) $(LIBSIXEL_LDFLAGS)
 else
-libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
+libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) \
+                $(MAYBE_COVERAGE) $(LIBSIXEL_LDFLAGS)
 endif
 libsixel_la_LIBADD = -lm \
                 $(LIBCURL_LIBS) \
