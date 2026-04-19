@@ -843,6 +843,21 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_TRACE_TOPIC includes 'psd_decode'."
     },
     {
+        "SIXEL_PSD_TRACE_HEADER_ONLY",
+        "suppress verbose PSD trace lines while keeping LSXPSD1 header.\n"
+        "Only the exact value '1' enables it."
+    },
+    {
+        "SIXEL_DIAG_MODE",
+        "choose machine-readable diagnostics mode.\n"
+        "Set to 'code' to emit stable LSX* diagnostic headers."
+    },
+    {
+        "SIXEL_DIAG_MODE_QUIET",
+        "reduce option-parse stderr noise in code diagnostic mode.\n"
+        "Only the exact value '1' enables compact invalid-argument text."
+    },
+    {
         "SIXEL_STATUS_FORCE_COLORS",
         "force ANSI colorized diagnostics from status markup output.\n"
         "Set to '1' to emit color sequences without TTY detection."
@@ -2011,6 +2026,42 @@ img2sixel_safe_size_add(size_t *total, size_t addend)
     return 0;
 }
 
+static int
+img2sixel_diag_mode_is_code(void)
+{
+    char const *value;
+
+    value = img2sixel_compat_getenv("SIXEL_DIAG_MODE");
+    if (value == NULL) {
+        return 0;
+    }
+    if (strcmp(value, "code") == 0) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+img2sixel_diag_mode_is_quiet(void)
+{
+    char const *value;
+
+    if (!img2sixel_diag_mode_is_code()) {
+        return 0;
+    }
+
+    value = img2sixel_compat_getenv("SIXEL_DIAG_MODE_QUIET");
+    if (value == NULL) {
+        return 0;
+    }
+    if (value[0] == '1' && value[1] == '\0') {
+        return 1;
+    }
+
+    return 0;
+}
+
 static void
 img2sixel_format_invalid_argument_message(char *buffer,
                                           size_t buffer_size,
@@ -2270,6 +2321,29 @@ img2sixel_report_invalid_argument(int short_opt,
     }
     memcpy(argument_copy, argument, argument_copy_length);
     argument_copy[argument_copy_length] = '\0';
+
+    if (img2sixel_diag_mode_is_quiet() != 0) {
+        if (detail != NULL && detail[0] != '\0') {
+            (void)snprintf(
+                fallback_buffer,
+                sizeof(fallback_buffer),
+                "'%s' is invalid argument for -%c,--%s option:\n\n%s",
+                argument_copy,
+                (char)short_opt,
+                long_opt,
+                detail);
+        } else {
+            (void)snprintf(
+                fallback_buffer,
+                sizeof(fallback_buffer),
+                "'%s' is invalid argument for -%c,--%s option.",
+                argument_copy,
+                (char)short_opt,
+                long_opt);
+        }
+        sixel_helper_set_additional_message(fallback_buffer);
+        return;
+    }
 
     if (detail != NULL) {
         detail_length = strlen(detail);

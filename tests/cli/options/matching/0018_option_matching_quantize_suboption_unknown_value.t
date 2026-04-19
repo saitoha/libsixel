@@ -20,6 +20,7 @@ nl='
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DIAG_MODE=code \
+    --env SIXEL_DIAG_MODE_QUIET=1 \
     -Qk:i=xyz "${TOP_SRCDIR}/tests/data/inputs/small.ppm" -o/dev/null 2>&1) || \
     status=$?
 

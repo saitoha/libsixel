@@ -19,11 +19,15 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -32,49 +36,76 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed OrGl glow source/choke/range semantics*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed OrGl source/choke/range parse semantics"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed IrGl glow source/choke/range semantics*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missed IrGl source/choke/range parse semantics"
-    exit 0
-}
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite malformed diagnostic header"
+        exit 0
+        ;;
+esac
 
-test "${trace_output#*builtin PSD: clbl=1; deferring interior overlays to clipped group composite*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost clbl=1 deferred contract"
-    exit 0
-}
+case "${diag_line}" in
+    *FX_ORGL_SEM*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite missing FX_ORGL_SEM"
+        exit 0
+        ;;
+esac
 
-test "${trace_output#*builtin PSD: suppressing clbl=1 deferred base interior glow/choke/bevel-shadow*}" \
-    = "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite unexpectedly emitted deferred glow/choke suppression trace"
-    exit 0
-}
+case "${diag_line}" in
+    *FX_IRGL_SEM*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite missing FX_IRGL_SEM"
+        exit 0
+        ;;
+esac
 
-test "${trace_output#*builtin PSD: applying clip-weighted deferred interior effects in layer fallback*}" \
-    = "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite unexpectedly applied deferred interior effects"
-    exit 0
-}
+case "${diag_line}" in
+    *FX_CLBL1_DEFER_INTERIOR*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite missing FX_CLBL1_DEFER_INTERIOR"
+        exit 0
+        ;;
+esac
 
-test "${trace_output#*builtin PSD: applying clip-weighted deferred gradient overlay in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost deferred gradient overlay under inactive glow contracts"
-    exit 0
-}
+case "${diag_line}" in
+    *FX_DEFERRED_GRADIENT_CLIP*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite missing FX_DEFERRED_GRADIENT_CLIP"
+        exit 0
+        ;;
+esac
 
-test "${trace_output#*builtin PSD: applying clip-weighted deferred effect stroke in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost deferred stroke under inactive glow contracts"
-    exit 0
-}
+case "${diag_line}" in
+    *FX_DEFERRED_EFFECT_STROKE_CLIP*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite missing FX_DEFERRED_EFFECT_STROKE_CLIP"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_CLBL1_BASE_INTERIOR_SUPPRESS*)
+        echo "not ok" 1 - \
+            "effects/stroke-composite unexpectedly emitted interior suppression code"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_DEFERRED_INTERIOR_CLIP*)
+        echo "not ok" 1 - \
+            "effects/stroke-composite unexpectedly emitted deferred interior code"
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - \
-    "effects/stroke-composite keeps glow parse semantics with inactive deferred interior guard"
+    "effects/stroke-composite keeps glow semantics in diagnostic code contract"
 exit 0

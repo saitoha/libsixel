@@ -328,6 +328,9 @@ sixel_interframe_prepare_shared_frame(sixel_dither_t *dither,
 
     if (needs_reset) {
         if (can_update) {
+            sixel_dither_note_interframe_reset_reason(
+                dither,
+                SIXEL_DITHER_INTERFRAME_RESET_REASON_SIZE_CHANGE);
             sixel_interframe_release_shared_frame(dither);
         } else {
             *enabled = 0;

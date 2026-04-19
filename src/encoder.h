@@ -281,6 +281,7 @@ struct sixel_encoder {
     sixel_cancel_function cancel_function;
     void *cancel_context;
     void *dither_cache;
+    void *diagnostic_dither;
     unsigned short drcs_charset_no;
     int drcs_mmv;
     int capture_quantized;

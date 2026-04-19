@@ -85,7 +85,8 @@ static void
 sixel_dither_interframe_state_init(sixel_dither_t *dither);
 
 static void
-sixel_dither_interframe_state_reset(sixel_dither_t *dither);
+sixel_dither_interframe_state_reset_with_reason(sixel_dither_t *dither,
+                                                int reason);
 
 static void
 sixel_dither_interframe_state_dispose(sixel_dither_t *dither);
@@ -2488,17 +2489,41 @@ sixel_dither_interframe_state_init(sixel_dither_t *dither)
     dither->interframe_state.method_private_size = 0U;
     dither->interframe_state.apply_count = 0UL;
     dither->interframe_state.consume_count = 0UL;
+    dither->interframe_state.reset_count = 0UL;
+    dither->interframe_state.reset_frame_boundary_count = 0UL;
+    dither->interframe_state.reset_size_change_count = 0UL;
+    dither->interframe_state.reset_clear_count = 0UL;
     dither->interframe_state.last_apply_status = SIXEL_FALSE;
     dither->interframe_state.last_apply_consumed = 0;
 }
 
-static void
-sixel_dither_interframe_state_reset(sixel_dither_t *dither)
+SIXEL_INTERNAL_API void
+sixel_dither_note_interframe_reset_reason(sixel_dither_t *dither,
+                                          int reason)
 {
     if (dither == NULL) {
         return;
     }
 
+    dither->interframe_state.reset_count += 1UL;
+    if (reason == SIXEL_DITHER_INTERFRAME_RESET_REASON_FRAME_BOUNDARY) {
+        dither->interframe_state.reset_frame_boundary_count += 1UL;
+    } else if (reason == SIXEL_DITHER_INTERFRAME_RESET_REASON_SIZE_CHANGE) {
+        dither->interframe_state.reset_size_change_count += 1UL;
+    } else if (reason == SIXEL_DITHER_INTERFRAME_RESET_REASON_CLEAR) {
+        dither->interframe_state.reset_clear_count += 1UL;
+    }
+}
+
+static void
+sixel_dither_interframe_state_reset_with_reason(sixel_dither_t *dither,
+                                                int reason)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    sixel_dither_note_interframe_reset_reason(dither, reason);
     sixel_interframe_release_shared_frame(dither);
     dither->interframe_state.last_apply_status = SIXEL_FALSE;
     dither->interframe_state.last_apply_consumed = 0;
@@ -2511,13 +2536,19 @@ sixel_dither_interframe_state_dispose(sixel_dither_t *dither)
         return;
     }
 
-    sixel_dither_interframe_state_reset(dither);
+    sixel_dither_interframe_state_reset_with_reason(
+        dither,
+        SIXEL_DITHER_INTERFRAME_RESET_REASON_NONE);
     dither->frame_context.frame_no = 0;
     dither->frame_context.loop_no = 0;
     dither->frame_context.multiframe = 0;
     dither->frame_context.valid = 0;
     dither->interframe_state.apply_count = 0UL;
     dither->interframe_state.consume_count = 0UL;
+    dither->interframe_state.reset_count = 0UL;
+    dither->interframe_state.reset_frame_boundary_count = 0UL;
+    dither->interframe_state.reset_size_change_count = 0UL;
+    dither->interframe_state.reset_clear_count = 0UL;
 }
 
 SIXEL_INTERNAL_API void
@@ -2531,7 +2562,9 @@ sixel_dither_clear_frame_context(sixel_dither_t *dither)
     dither->frame_context.loop_no = 0;
     dither->frame_context.multiframe = 0;
     dither->frame_context.valid = 0;
-    sixel_dither_interframe_state_reset(dither);
+    sixel_dither_interframe_state_reset_with_reason(
+        dither,
+        SIXEL_DITHER_INTERFRAME_RESET_REASON_CLEAR);
 }
 
 SIXEL_INTERNAL_API void
@@ -2568,7 +2601,9 @@ sixel_dither_set_frame_context(sixel_dither_t *dither,
          * state at timeline boundaries so capture and encode paths stay in
          * sync even before interframe diffusion is enabled.
          */
-        sixel_dither_interframe_state_reset(dither);
+        sixel_dither_interframe_state_reset_with_reason(
+            dither,
+            SIXEL_DITHER_INTERFRAME_RESET_REASON_FRAME_BOUNDARY);
     }
 }
 

@@ -20,6 +20,7 @@ nl='
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_DIAG_MODE=code \
+    --env SIXEL_DIAG_MODE_QUIET=1 \
     -# foo \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     -o/dev/null 2>&1) || status=$?

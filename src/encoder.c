@@ -530,6 +530,249 @@ sixel_encoder_should_use_psd_trace_only(char const *path)
            sixel_encoder_path_has_extension(path, "psb");
 }
 
+static void
+sixel_encoder_emit_contract_code(FILE *stream,
+                                 int *first,
+                                 char const *code)
+{
+    if (stream == NULL || first == NULL || code == NULL || code[0] == '\0') {
+        return;
+    }
+    if (*first == 0) {
+        fprintf(stream, ",");
+    }
+    fprintf(stream, "%s", code);
+    *first = 0;
+}
+
+static void
+sixel_encoder_update_diagnostic_dither(sixel_encoder_t *encoder,
+                                       sixel_dither_t *dither)
+{
+    if (encoder == NULL) {
+        return;
+    }
+
+    if (encoder->diagnostic_dither != NULL) {
+        sixel_dither_unref((sixel_dither_t *)encoder->diagnostic_dither);
+        encoder->diagnostic_dither = NULL;
+    }
+    if (dither != NULL) {
+        encoder->diagnostic_dither = dither;
+        sixel_dither_ref(dither);
+    }
+}
+
+static char const *
+sixel_encoder_dither_source_name(unsigned int source_id)
+{
+    if (source_id == SIXEL_INTERFRAME_STBN_SOURCE_MASK) {
+        return "mask";
+    }
+    if (source_id == SIXEL_INTERFRAME_STBN_SOURCE_PMJ) {
+        return "pmj";
+    }
+
+    return "hash";
+}
+
+static void
+sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
+                                   SIXELSTATUS status)
+{
+    sixel_dither_t const *dither;
+    unsigned int source_id;
+    int first;
+
+    dither = NULL;
+    source_id = SIXEL_INTERFRAME_STBN_SOURCE_HASH;
+    first = 1;
+    if (encoder == NULL) {
+        return;
+    }
+    if (!sixel_trace_topic_is_enabled("dither_contract")) {
+        return;
+    }
+
+    dither = (sixel_dither_t const *)encoder->dither_cache;
+    if (dither == NULL) {
+        dither = (sixel_dither_t const *)encoder->diagnostic_dither;
+    }
+    if (dither == NULL) {
+        return;
+    }
+    source_id = sixel_interframe_stbn_source_id_from_token(
+        dither->interframe_strategy_token);
+
+    fprintf(stderr,
+            "LSXDTH1|rc=%d|apply=%lu|consume=%lu|reset=%lu|"
+            "reset_boundary=%lu|reset_size=%lu|source=%s|codes=",
+            status,
+            dither->interframe_state.apply_count,
+            dither->interframe_state.consume_count,
+            dither->interframe_state.reset_count,
+            dither->interframe_state.reset_frame_boundary_count,
+            dither->interframe_state.reset_size_change_count,
+            sixel_encoder_dither_source_name(source_id));
+    if (dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
+        sixel_encoder_emit_contract_code(stderr, &first, "INTERFRAME_ENABLED");
+    }
+    if (source_id == SIXEL_INTERFRAME_STBN_SOURCE_PMJ) {
+        sixel_encoder_emit_contract_code(stderr, &first, "STRATEGY_SOURCE_PMJ");
+    }
+    if (dither->interframe_state.reset_frame_boundary_count > 0UL) {
+        sixel_encoder_emit_contract_code(stderr,
+                                         &first,
+                                         "RESET_BETWEEN_INPUTS");
+    }
+    if (dither->interframe_state.reset_size_change_count > 0UL) {
+        sixel_encoder_emit_contract_code(stderr,
+                                         &first,
+                                         "RESET_ON_SIZE_CHANGE");
+    }
+    if (first != 0) {
+        fprintf(stderr, "DTH_OK");
+    }
+    fprintf(stderr, "\n");
+}
+
+static char const *
+sixel_encoder_palette_model_name(int quantize_model)
+{
+    if (quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
+        return "heckbert";
+    }
+    if (quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
+        return "kmeans";
+    }
+    if (quantize_model == SIXEL_QUANTIZE_MODEL_KMEDOIDS) {
+        return "medoids";
+    }
+    if (quantize_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
+        return "center";
+    }
+
+    return "auto";
+}
+
+static char const *
+sixel_encoder_palette_merge_name(int merge_mode)
+{
+    if (merge_mode == SIXEL_FINAL_MERGE_NONE) {
+        return "none";
+    }
+    if (merge_mode == SIXEL_FINAL_MERGE_WARD) {
+        return "ward";
+    }
+
+    return "auto";
+}
+
+static char const *
+sixel_encoder_palette_lut_name(int lut_policy)
+{
+    if (lut_policy == SIXEL_LUT_POLICY_5BIT) {
+        return "5bit";
+    }
+    if (lut_policy == SIXEL_LUT_POLICY_6BIT) {
+        return "6bit";
+    }
+    if (lut_policy == SIXEL_LUT_POLICY_NONE) {
+        return "none";
+    }
+    if (lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
+        return "certlut";
+    }
+    if (lut_policy == SIXEL_LUT_POLICY_FHEDT) {
+        return "fhedt";
+    }
+    if (lut_policy == SIXEL_LUT_POLICY_EYTZINGER) {
+        return "eytzinger";
+    }
+    if (lut_policy == SIXEL_LUT_POLICY_VPTREE) {
+        return "vptree";
+    }
+    if (lut_policy == SIXEL_LUT_POLICY_RBC) {
+        return "rbc";
+    }
+    if (lut_policy == SIXEL_LUT_POLICY_MAHALANOBIS) {
+        return "mahalanobis";
+    }
+
+    return "auto";
+}
+
+static void
+sixel_encoder_emit_palette_contract(sixel_encoder_t const *encoder,
+                                    SIXELSTATUS status)
+{
+    int first;
+
+    first = 1;
+    if (encoder == NULL) {
+        return;
+    }
+    if (!sixel_trace_topic_is_enabled("palette_contract")) {
+        return;
+    }
+
+    fprintf(stderr,
+            "LSXPAL1|rc=%d|model=%s|merge=%s|lut=%s|work=%d|cluster=%d|"
+            "codes=",
+            status,
+            sixel_encoder_palette_model_name(encoder->quantize_model),
+            sixel_encoder_palette_merge_name(
+                encoder->quantize_model_merge_mode),
+            sixel_encoder_palette_lut_name(encoder->lut_policy),
+            encoder->working_colorspace,
+            encoder->clustering_colorspace);
+    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
+        sixel_encoder_emit_contract_code(stderr, &first, "MODEL_HECKBERT");
+    } else if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
+        sixel_encoder_emit_contract_code(stderr, &first, "MODEL_KMEANS");
+    } else if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_KMEDOIDS) {
+        sixel_encoder_emit_contract_code(stderr, &first, "MODEL_MEDOIDS");
+    } else if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
+        sixel_encoder_emit_contract_code(stderr, &first, "MODEL_CENTER");
+    } else {
+        sixel_encoder_emit_contract_code(stderr, &first, "MODEL_AUTO");
+    }
+    if (encoder->quantize_model_merge_mode == SIXEL_FINAL_MERGE_WARD) {
+        sixel_encoder_emit_contract_code(stderr, &first, "MERGE_WARD");
+    } else if (encoder->quantize_model_merge_mode == SIXEL_FINAL_MERGE_NONE) {
+        sixel_encoder_emit_contract_code(stderr, &first, "MERGE_NONE");
+    } else {
+        sixel_encoder_emit_contract_code(stderr, &first, "MERGE_AUTO");
+    }
+    if (encoder->lut_policy == SIXEL_LUT_POLICY_FHEDT) {
+        sixel_encoder_emit_contract_code(stderr, &first, "LUT_FHEDT");
+    } else if (encoder->lut_policy == SIXEL_LUT_POLICY_VPTREE) {
+        sixel_encoder_emit_contract_code(stderr, &first, "LUT_VPTREE");
+    } else if (encoder->lut_policy == SIXEL_LUT_POLICY_EYTZINGER) {
+        sixel_encoder_emit_contract_code(stderr, &first, "LUT_EYTZINGER");
+    } else if (encoder->lut_policy == SIXEL_LUT_POLICY_NONE) {
+        sixel_encoder_emit_contract_code(stderr, &first, "LUT_NONE");
+    } else if (encoder->lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
+        sixel_encoder_emit_contract_code(stderr, &first, "LUT_CERTLUT");
+    } else if (encoder->lut_policy == SIXEL_LUT_POLICY_5BIT) {
+        sixel_encoder_emit_contract_code(stderr, &first, "LUT_5BIT");
+    } else if (encoder->lut_policy == SIXEL_LUT_POLICY_6BIT) {
+        sixel_encoder_emit_contract_code(stderr, &first, "LUT_6BIT");
+    } else {
+        sixel_encoder_emit_contract_code(stderr, &first, "LUT_AUTO");
+    }
+    if (encoder->working_colorspace_set != 0) {
+        sixel_encoder_emit_contract_code(stderr, &first, "WORKING_SET");
+    }
+    if (encoder->clustering_colorspace_set != 0) {
+        sixel_encoder_emit_contract_code(stderr, &first, "CLUSTER_SET");
+    }
+    if (first != 0) {
+        fprintf(stderr, "PAL_OK");
+    }
+    fprintf(stderr, "\n");
+}
+
 static char const *
 sixel_encoder_handoff_mode_name(sixel_encoder_handoff_mode_t mode)
 {
@@ -4870,6 +5113,10 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
         sixel_dither_set_complexion_score(context->dither,
                                           context->encoder->complexion);
     }
+    if (sixel_trace_topic_is_enabled("dither_contract")) {
+        sixel_encoder_update_diagnostic_dither(context->encoder,
+                                               context->dither);
+    }
 
     return SIXEL_OK;
 }
@@ -7518,6 +7765,7 @@ sixel_encoder_new(
     (*ppencoder)->cancel_function       = NULL;
     (*ppencoder)->cancel_context        = NULL;
     (*ppencoder)->dither_cache          = NULL;
+    (*ppencoder)->diagnostic_dither     = NULL;
     (*ppencoder)->drcs_charset_no       = 1u;
     (*ppencoder)->drcs_mmv              = 2;
     (*ppencoder)->capture_quantized     = 0;
@@ -7666,6 +7914,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
         sixel_allocator_free(allocator, encoder->loader_order);
         sixel_allocator_free(allocator, encoder->bgcolor);
         sixel_dither_unref(encoder->dither_cache);
+        sixel_dither_unref((sixel_dither_t *)encoder->diagnostic_dither);
         if (encoder->outfd
             && encoder->outfd != STDOUT_FILENO
             && encoder->outfd != STDERR_FILENO) {
@@ -12838,19 +13087,27 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
     size_t pid_len;
 #endif
 
-    tmpdir = sixel_compat_getenv("TMPDIR");
-    temp_debug_log("tmpdir_env_tmpdir", tmpdir, 0);
 #if defined(_WIN32)
-    if (tmpdir == NULL || tmpdir[0] == '\0') {
-        temp_debug_log_note("tmpdir_env_tmpdir_empty", "trying TEMP");
-        tmpdir = sixel_compat_getenv("TEMP");
-        temp_debug_log("tmpdir_env_temp", tmpdir, 0);
-    }
+    /*
+     * Wine test runners export host-style TMPDIR values such as
+     * "/home/runner/...". MinGW mkstemp() may reject these with
+     * EINVAL, so prefer native Windows temp variables first.
+     */
+    tmpdir = sixel_compat_getenv("TEMP");
+    temp_debug_log("tmpdir_env_temp", tmpdir, 0);
     if (tmpdir == NULL || tmpdir[0] == '\0') {
         temp_debug_log_note("tmpdir_env_temp_empty", "trying TMP");
         tmpdir = sixel_compat_getenv("TMP");
         temp_debug_log("tmpdir_env_tmp", tmpdir, 0);
     }
+    if (tmpdir == NULL || tmpdir[0] == '\0') {
+        temp_debug_log_note("tmpdir_env_tmp_empty", "trying TMPDIR");
+        tmpdir = sixel_compat_getenv("TMPDIR");
+        temp_debug_log("tmpdir_env_tmpdir", tmpdir, 0);
+    }
+#else
+    tmpdir = sixel_compat_getenv("TMPDIR");
+    temp_debug_log("tmpdir_env_tmpdir", tmpdir, 0);
 #endif
     if (tmpdir == NULL || tmpdir[0] == '\0') {
 #if defined(_WIN32)
@@ -13487,6 +13744,7 @@ sixel_encoder_encode(
     if (encoder != NULL) {
         encoder->logger = &logger;
         encoder->parallel_job_id = -1;
+        sixel_encoder_update_diagnostic_dither(encoder, NULL);
         load_context.encoder = encoder;
         load_context.output = NULL;
         load_context.planner = &encoder->planner;
@@ -14058,6 +14316,8 @@ end:
     (void)sixel_tty_end_animation_input_guard();
     if (encoder != NULL) {
         (void)sixel_tty_restore_cursor(encoder->outfd);
+        sixel_encoder_emit_dither_contract(encoder, status);
+        sixel_encoder_emit_palette_contract(encoder, status);
     }
     if (encoder != NULL) {
         sixel_encoder_log_stage(encoder,

@@ -65,9 +65,18 @@ typedef struct sixel_dither_interframe_state {
     size_t method_private_size;
     unsigned long apply_count;
     unsigned long consume_count;
+    unsigned long reset_count;
+    unsigned long reset_frame_boundary_count;
+    unsigned long reset_size_change_count;
+    unsigned long reset_clear_count;
     int last_apply_status;
     int last_apply_consumed;
 } sixel_dither_interframe_state_t;
+
+#define SIXEL_DITHER_INTERFRAME_RESET_REASON_NONE 0
+#define SIXEL_DITHER_INTERFRAME_RESET_REASON_FRAME_BOUNDARY 1
+#define SIXEL_DITHER_INTERFRAME_RESET_REASON_SIZE_CHANGE 2
+#define SIXEL_DITHER_INTERFRAME_RESET_REASON_CLEAR 3
 
 /* apply mode for sixel_dither_apply_palette_with_mode() */
 #define SIXEL_DITHER_APPLY_PRESERVE_INTERFRAME_STATE 0
@@ -191,6 +200,10 @@ sixel_dither_set_frame_context(sixel_dither_t *dither,
 
 SIXEL_INTERNAL_API void
 sixel_dither_clear_frame_context(sixel_dither_t *dither);
+
+SIXEL_INTERNAL_API void
+sixel_dither_note_interframe_reset_reason(sixel_dither_t *dither,
+                                          int reason);
 
 /*
  * Set or clear a caller-provided transparent mask hint used by the
