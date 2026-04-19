@@ -2602,10 +2602,7 @@ sixel_kcenter_collect_hybrid_write_points(sixel_kcenter_collect_ctx_t *ctx)
     }
 }
 
-static SIXELSTATUS
-sixel_kcenter_collect_select_hybrid(sixel_kcenter_collect_ctx_t *ctx)
-{
-    SIXELSTATUS status;
+typedef struct sixel_kcenter_collect_hybrid_state {
     unsigned int index;
     unsigned int tail_index;
     unsigned int strata_index;
@@ -2634,38 +2631,27 @@ sixel_kcenter_collect_select_hybrid(sixel_kcenter_collect_ctx_t *ctx)
     double chroma_value;
     double chroma_target;
     double chroma_accum;
+} sixel_kcenter_collect_hybrid_state_t;
 
-    status = SIXEL_BAD_ALLOCATION;
-    index = 0u;
-    tail_index = 0u;
-    strata_index = 0u;
-    strata_rank = 0u;
-    strata_swap = 0u;
-    bin_index = 0u;
-    hue_bucket = 0u;
-    luma_bucket = 0u;
-    chroma_bucket = 0u;
-    chroma_edge_found = 0;
-    total_weight = 0.0;
-    mean_r = 0.0;
-    mean_g = 0.0;
-    mean_b = 0.0;
-    dr = 0.0;
-    dg = 0.0;
-    db = 0.0;
-    dispersion_score = 0.0;
-    max_component = 0.0;
-    min_component = 0.0;
-    delta_component = 0.0;
-    hue_value = 0.0;
-    hue_phase = 0.0;
-    normalized_hue = 0.0;
-    luma_value = 0.0;
-    chroma_value = 0.0;
-    chroma_target = 0.0;
-    chroma_accum = 0.0;
+static void
+sixel_kcenter_collect_hybrid_state_clear(
+    sixel_kcenter_collect_hybrid_state_t *state)
+{
+    if (state == NULL) {
+        return;
+    }
+    memset(state, 0, sizeof(*state));
+}
+
+static void
+sixel_kcenter_collect_hybrid_resolve_space(sixel_kcenter_collect_ctx_t *ctx)
+{
+    if (ctx == NULL) {
+        return;
+    }
 
     ctx->use_perceptual_strata = 0;
+    ctx->oklab_perceptual_space = 0;
     if (sixel_kcenter_resolve_space_policy(ctx->space_policy)
             == SIXEL_PALETTE_KCENTER_SPACE_POLICY_PERCEPTUAL
             && (ctx->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32
@@ -2675,6 +2661,17 @@ sixel_kcenter_collect_select_hybrid(sixel_kcenter_collect_ctx_t *ctx)
         if (ctx->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
             ctx->oklab_perceptual_space = 1;
         }
+    }
+}
+
+static SIXELSTATUS
+sixel_kcenter_collect_hybrid_allocate_scratch(sixel_kcenter_collect_ctx_t *ctx)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_BAD_ALLOCATION;
+    if (ctx == NULL) {
+        return status;
     }
 
     ctx->bin_selected = (unsigned char *)sixel_allocator_malloc(
@@ -2703,6 +2700,17 @@ sixel_kcenter_collect_select_hybrid(sixel_kcenter_collect_ctx_t *ctx)
         return status;
     }
     memset(ctx->bin_selected, 0, (size_t)ctx->retained_count);
+    return SIXEL_OK;
+}
+
+static void
+sixel_kcenter_collect_hybrid_pick_rare(
+    sixel_kcenter_collect_ctx_t *ctx,
+    sixel_kcenter_collect_hybrid_state_t *state)
+{
+    if (ctx == NULL || state == NULL) {
+        return;
+    }
 
     ctx->selected_count = 0u;
     ctx->rare_limit = ctx->rare_keep;
@@ -2712,210 +2720,287 @@ sixel_kcenter_collect_select_hybrid(sixel_kcenter_collect_ctx_t *ctx)
     if (ctx->rare_limit > ctx->retained_count) {
         ctx->rare_limit = ctx->retained_count;
     }
-    for (index = 0u; index < ctx->rare_limit; ++index) {
-        tail_index = ctx->retained_count - 1u - index;
-        if (ctx->bin_selected[tail_index] != 0u) {
+    for (state->index = 0u;
+            state->index < ctx->rare_limit;
+            ++state->index) {
+        state->tail_index = ctx->retained_count - 1u - state->index;
+        if (ctx->bin_selected[state->tail_index] != 0u) {
             continue;
         }
-        ctx->bin_selected[tail_index] = 1u;
+        ctx->bin_selected[state->tail_index] = 1u;
         ++ctx->selected_count;
     }
+}
 
-    total_weight = 0.0;
-    mean_r = 0.0;
-    mean_g = 0.0;
-    mean_b = 0.0;
-    for (index = 0u; index < ctx->retained_count; ++index) {
-        total_weight += (double)ctx->bins[index].count;
-        mean_r += ctx->bins[index].r * (double)ctx->bins[index].count;
-        mean_g += ctx->bins[index].g * (double)ctx->bins[index].count;
-        mean_b += ctx->bins[index].b * (double)ctx->bins[index].count;
-    }
-    if (total_weight > 0.0) {
-        mean_r /= total_weight;
-        mean_g /= total_weight;
-        mean_b /= total_weight;
+static void
+sixel_kcenter_collect_hybrid_build_dispersion(
+    sixel_kcenter_collect_ctx_t *ctx,
+    sixel_kcenter_collect_hybrid_state_t *state)
+{
+    if (ctx == NULL || state == NULL) {
+        return;
     }
 
-    for (index = 0u; index < ctx->retained_count; ++index) {
-        dr = ctx->bins[index].r - mean_r;
-        dg = ctx->bins[index].g - mean_g;
-        db = ctx->bins[index].b - mean_b;
-        dispersion_score = (double)ctx->bins[index].count
-            * (dr * dr + dg * dg + db * db);
-        ctx->dispersion[index].index = index;
-        ctx->dispersion[index].score = dispersion_score;
+    state->total_weight = 0.0;
+    state->mean_r = 0.0;
+    state->mean_g = 0.0;
+    state->mean_b = 0.0;
+    for (state->index = 0u;
+            state->index < ctx->retained_count;
+            ++state->index) {
+        state->total_weight += (double)ctx->bins[state->index].count;
+        state->mean_r += ctx->bins[state->index].r
+            * (double)ctx->bins[state->index].count;
+        state->mean_g += ctx->bins[state->index].g
+            * (double)ctx->bins[state->index].count;
+        state->mean_b += ctx->bins[state->index].b
+            * (double)ctx->bins[state->index].count;
+    }
+    if (state->total_weight > 0.0) {
+        state->mean_r /= state->total_weight;
+        state->mean_g /= state->total_weight;
+        state->mean_b /= state->total_weight;
+    }
+
+    for (state->index = 0u;
+            state->index < ctx->retained_count;
+            ++state->index) {
+        state->dr = ctx->bins[state->index].r - state->mean_r;
+        state->dg = ctx->bins[state->index].g - state->mean_g;
+        state->db = ctx->bins[state->index].b - state->mean_b;
+        state->dispersion_score = (double)ctx->bins[state->index].count
+            * (state->dr * state->dr
+               + state->dg * state->dg
+               + state->db * state->db);
+        ctx->dispersion[state->index].index = state->index;
+        ctx->dispersion[state->index].score = state->dispersion_score;
         if (ctx->use_perceptual_strata) {
             /*
              * Perceptual spaces already encode opponent channels on a/b.
              * Use raw channels so strata bins stay stable even if the
              * frame-wise mean drifts.
              */
-            chroma_value = sqrt(ctx->bins[index].g * ctx->bins[index].g
-                                + ctx->bins[index].b * ctx->bins[index].b);
-            ctx->chroma_cache[index] = chroma_value;
-            ctx->chroma_rank[index].index = index;
-            ctx->chroma_rank[index].score = chroma_value;
+            state->chroma_value = sqrt(
+                ctx->bins[state->index].g * ctx->bins[state->index].g
+                + ctx->bins[state->index].b * ctx->bins[state->index].b);
+            ctx->chroma_cache[state->index] = state->chroma_value;
+            ctx->chroma_rank[state->index].index = state->index;
+            ctx->chroma_rank[state->index].score = state->chroma_value;
         }
     }
     qsort(ctx->dispersion,
           ctx->retained_count,
           sizeof(sixel_kcenter_dispersion_rank_t),
           sixel_kcenter_compare_dispersion_desc);
+}
+
+static void
+sixel_kcenter_collect_hybrid_build_chroma_edges(
+    sixel_kcenter_collect_ctx_t *ctx,
+    sixel_kcenter_collect_hybrid_state_t *state)
+{
+    if (ctx == NULL || state == NULL
+            || !ctx->use_perceptual_strata
+            || ctx->retained_count == 0u) {
+        return;
+    }
 
     /*
      * Keep runtime guards minimal for MSVC /analyze.  The bucket count is
      * currently a fixed compile-time constant.
      */
-    if (ctx->use_perceptual_strata
-            && ctx->retained_count > 0u) {
-        qsort(ctx->chroma_rank,
-              ctx->retained_count,
-              sizeof(sixel_kcenter_dispersion_rank_t),
-              sixel_kcenter_compare_dispersion_asc);
-        for (strata_rank = 0u;
-                strata_rank + 1u < SIXEL_KCENTER_CHROMA_BUCKETS;
-                ++strata_rank) {
-            chroma_target = ctx->retained_weight
-                * (double)(strata_rank + 1u)
-                / (double)SIXEL_KCENTER_CHROMA_BUCKETS;
-            chroma_accum = 0.0;
-            ctx->chroma_edges[strata_rank]
-                = ctx->chroma_rank[ctx->retained_count - 1u].score;
-            chroma_edge_found = 0;
-            for (strata_swap = 0u;
-                    strata_swap < ctx->retained_count;
-                    ++strata_swap) {
-                bin_index = ctx->chroma_rank[strata_swap].index;
-                chroma_accum += (double)ctx->bins[bin_index].count;
-                if (chroma_accum + 1.0e-12 < chroma_target) {
-                    continue;
-                }
-                ctx->chroma_edges[strata_rank]
-                    = ctx->chroma_rank[strata_swap].score;
-                chroma_edge_found = 1;
-                break;
+    qsort(ctx->chroma_rank,
+          ctx->retained_count,
+          sizeof(sixel_kcenter_dispersion_rank_t),
+          sixel_kcenter_compare_dispersion_asc);
+    for (state->strata_rank = 0u;
+            state->strata_rank + 1u < SIXEL_KCENTER_CHROMA_BUCKETS;
+            ++state->strata_rank) {
+        state->chroma_target = ctx->retained_weight
+            * (double)(state->strata_rank + 1u)
+            / (double)SIXEL_KCENTER_CHROMA_BUCKETS;
+        state->chroma_accum = 0.0;
+        ctx->chroma_edges[state->strata_rank]
+            = ctx->chroma_rank[ctx->retained_count - 1u].score;
+        state->chroma_edge_found = 0;
+        for (state->strata_swap = 0u;
+                state->strata_swap < ctx->retained_count;
+                ++state->strata_swap) {
+            state->bin_index = ctx->chroma_rank[state->strata_swap].index;
+            state->chroma_accum += (double)ctx->bins[state->bin_index].count;
+            if (state->chroma_accum + 1.0e-12 < state->chroma_target) {
+                continue;
             }
-            if (!chroma_edge_found) {
-                ctx->chroma_edges[strata_rank]
-                    = ctx->chroma_rank[ctx->retained_count - 1u].score;
-            }
+            ctx->chroma_edges[state->strata_rank]
+                = ctx->chroma_rank[state->strata_swap].score;
+            state->chroma_edge_found = 1;
+            break;
         }
+        if (!state->chroma_edge_found) {
+            ctx->chroma_edges[state->strata_rank]
+                = ctx->chroma_rank[ctx->retained_count - 1u].score;
+        }
+    }
+}
+
+static void
+sixel_kcenter_collect_hybrid_score_strata(
+    sixel_kcenter_collect_ctx_t *ctx,
+    sixel_kcenter_collect_hybrid_state_t *state)
+{
+    if (ctx == NULL || state == NULL) {
+        return;
     }
 
     sixel_kcenter_collect_reset_strata(ctx);
-    for (index = 0u; index < ctx->retained_count; ++index) {
+    for (state->index = 0u;
+            state->index < ctx->retained_count;
+            ++state->index) {
         if (ctx->use_perceptual_strata) {
-            luma_value = ctx->bins[index].r;
+            state->luma_value = ctx->bins[state->index].r;
         } else {
-            luma_value = ctx->bins[index].r * 0.299
-                + ctx->bins[index].g * 0.587
-                + ctx->bins[index].b * 0.114;
+            state->luma_value = ctx->bins[state->index].r * 0.299
+                + ctx->bins[state->index].g * 0.587
+                + ctx->bins[state->index].b * 0.114;
         }
-        luma_bucket = (unsigned int)(
-            (luma_value * (double)SIXEL_KCENTER_LUMA_BUCKETS) / 256.0);
-        if (luma_bucket >= SIXEL_KCENTER_LUMA_BUCKETS) {
-            luma_bucket = SIXEL_KCENTER_LUMA_BUCKETS - 1u;
+        state->luma_bucket = (unsigned int)(
+            (state->luma_value * (double)SIXEL_KCENTER_LUMA_BUCKETS) / 256.0);
+        if (state->luma_bucket >= SIXEL_KCENTER_LUMA_BUCKETS) {
+            state->luma_bucket = SIXEL_KCENTER_LUMA_BUCKETS - 1u;
         }
 
         if (ctx->use_perceptual_strata) {
-            chroma_value = ctx->chroma_cache[index];
-            if (chroma_value <= 1.0e-9) {
+            state->chroma_value = ctx->chroma_cache[state->index];
+            if (state->chroma_value <= 1.0e-9) {
                 /*
                  * Near-neutral bins have unstable hue.  Pin the hue bucket
                  * instead of amplifying angle noise.
                  */
-                normalized_hue = 0.0;
+                state->normalized_hue = 0.0;
             } else {
-                hue_phase = atan2(ctx->bins[index].b, ctx->bins[index].g);
-                normalized_hue = (hue_phase + SIXEL_KCENTER_PI)
+                state->hue_phase = atan2(ctx->bins[state->index].b,
+                                         ctx->bins[state->index].g);
+                state->normalized_hue = (state->hue_phase + SIXEL_KCENTER_PI)
                     / (2.0 * SIXEL_KCENTER_PI);
-                if (normalized_hue < 0.0) {
-                    normalized_hue = 0.0;
+                if (state->normalized_hue < 0.0) {
+                    state->normalized_hue = 0.0;
                 }
-                if (normalized_hue >= 1.0) {
-                    normalized_hue = 0.999999;
+                if (state->normalized_hue >= 1.0) {
+                    state->normalized_hue = 0.999999;
                 }
             }
-            dr = ctx->bins[index].r - mean_r;
-            chroma_bucket = 0u;
-            while (chroma_bucket + 1u < SIXEL_KCENTER_CHROMA_BUCKETS) {
-                if (chroma_value
-                        <= ctx->chroma_edges[chroma_bucket] + 1.0e-12) {
+            state->dr = ctx->bins[state->index].r - state->mean_r;
+            state->chroma_bucket = 0u;
+            while (state->chroma_bucket + 1u < SIXEL_KCENTER_CHROMA_BUCKETS) {
+                if (state->chroma_value
+                        <= ctx->chroma_edges[state->chroma_bucket] + 1.0e-12) {
                     break;
                 }
-                ++chroma_bucket;
+                ++state->chroma_bucket;
             }
-            dispersion_score = (double)ctx->bins[index].count
-                * (1.10 * dr * dr
-                   + 1.50 * chroma_value * chroma_value);
+            state->dispersion_score = (double)ctx->bins[state->index].count
+                * (1.10 * state->dr * state->dr
+                   + 1.50 * state->chroma_value * state->chroma_value);
         } else {
-            max_component = ctx->bins[index].r;
-            if (ctx->bins[index].g > max_component) {
-                max_component = ctx->bins[index].g;
+            state->max_component = ctx->bins[state->index].r;
+            if (ctx->bins[state->index].g > state->max_component) {
+                state->max_component = ctx->bins[state->index].g;
             }
-            if (ctx->bins[index].b > max_component) {
-                max_component = ctx->bins[index].b;
+            if (ctx->bins[state->index].b > state->max_component) {
+                state->max_component = ctx->bins[state->index].b;
             }
-            min_component = ctx->bins[index].r;
-            if (ctx->bins[index].g < min_component) {
-                min_component = ctx->bins[index].g;
+            state->min_component = ctx->bins[state->index].r;
+            if (ctx->bins[state->index].g < state->min_component) {
+                state->min_component = ctx->bins[state->index].g;
             }
-            if (ctx->bins[index].b < min_component) {
-                min_component = ctx->bins[index].b;
+            if (ctx->bins[state->index].b < state->min_component) {
+                state->min_component = ctx->bins[state->index].b;
             }
-            delta_component = max_component - min_component;
-            hue_value = 0.0;
-            if (delta_component > 1.0e-9) {
-                if (max_component == ctx->bins[index].r) {
-                    hue_value = (ctx->bins[index].g - ctx->bins[index].b)
-                        / delta_component;
-                    if (hue_value < 0.0) {
-                        hue_value += 6.0;
+            state->delta_component
+                = state->max_component - state->min_component;
+            state->hue_value = 0.0;
+            if (state->delta_component > 1.0e-9) {
+                if (state->max_component == ctx->bins[state->index].r) {
+                    state->hue_value = (ctx->bins[state->index].g
+                        - ctx->bins[state->index].b)
+                        / state->delta_component;
+                    if (state->hue_value < 0.0) {
+                        state->hue_value += 6.0;
                     }
-                } else if (max_component == ctx->bins[index].g) {
-                    hue_value = 2.0 + (ctx->bins[index].b - ctx->bins[index].r)
-                        / delta_component;
+                } else if (state->max_component == ctx->bins[state->index].g) {
+                    state->hue_value = 2.0 + (ctx->bins[state->index].b
+                        - ctx->bins[state->index].r)
+                        / state->delta_component;
                 } else {
-                    hue_value = 4.0 + (ctx->bins[index].r - ctx->bins[index].g)
-                        / delta_component;
+                    state->hue_value = 4.0 + (ctx->bins[state->index].r
+                        - ctx->bins[state->index].g)
+                        / state->delta_component;
                 }
             }
-            normalized_hue = hue_value / 6.0;
-            if (normalized_hue < 0.0) {
-                normalized_hue = 0.0;
+            state->normalized_hue = state->hue_value / 6.0;
+            if (state->normalized_hue < 0.0) {
+                state->normalized_hue = 0.0;
             }
-            if (normalized_hue >= 1.0) {
-                normalized_hue = 0.999999;
+            if (state->normalized_hue >= 1.0) {
+                state->normalized_hue = 0.999999;
             }
-            dr = ctx->bins[index].r - mean_r;
-            dg = ctx->bins[index].g - mean_g;
-            db = ctx->bins[index].b - mean_b;
-            dispersion_score = (double)ctx->bins[index].count
-                * (dr * dr + dg * dg + db * db);
-            chroma_bucket = 0u;
+            state->dr = ctx->bins[state->index].r - state->mean_r;
+            state->dg = ctx->bins[state->index].g - state->mean_g;
+            state->db = ctx->bins[state->index].b - state->mean_b;
+            state->dispersion_score = (double)ctx->bins[state->index].count
+                * (state->dr * state->dr
+                   + state->dg * state->dg
+                   + state->db * state->db);
+            state->chroma_bucket = 0u;
         }
 
-        hue_bucket = (unsigned int)(
-            normalized_hue * (double)SIXEL_KCENTER_HUE_BUCKETS);
-        if (hue_bucket >= SIXEL_KCENTER_HUE_BUCKETS) {
-            hue_bucket = SIXEL_KCENTER_HUE_BUCKETS - 1u;
+        state->hue_bucket = (unsigned int)(
+            state->normalized_hue * (double)SIXEL_KCENTER_HUE_BUCKETS);
+        if (state->hue_bucket >= SIXEL_KCENTER_HUE_BUCKETS) {
+            state->hue_bucket = SIXEL_KCENTER_HUE_BUCKETS - 1u;
         }
-        strata_index = (luma_bucket * SIXEL_KCENTER_CHROMA_BUCKETS
-            + chroma_bucket) * SIXEL_KCENTER_HUE_BUCKETS
-            + hue_bucket;
+        state->strata_index = (state->luma_bucket * SIXEL_KCENTER_CHROMA_BUCKETS
+            + state->chroma_bucket) * SIXEL_KCENTER_HUE_BUCKETS
+            + state->hue_bucket;
 
-        if (dispersion_score > ctx->strata_scores[strata_index] + 1.0e-12) {
-            ctx->strata_scores[strata_index] = dispersion_score;
-            ctx->strata_picks[strata_index] = index;
-        } else if (dispersion_score
-                >= ctx->strata_scores[strata_index] - 1.0e-12
-                && ctx->strata_picks[strata_index] != UINT_MAX
-                && index < ctx->strata_picks[strata_index]) {
-            ctx->strata_picks[strata_index] = index;
+        if (state->dispersion_score
+                > ctx->strata_scores[state->strata_index] + 1.0e-12) {
+            ctx->strata_scores[state->strata_index] = state->dispersion_score;
+            ctx->strata_picks[state->strata_index] = state->index;
+        } else if (state->dispersion_score
+                >= ctx->strata_scores[state->strata_index] - 1.0e-12
+                && ctx->strata_picks[state->strata_index] != UINT_MAX
+                && state->index < ctx->strata_picks[state->strata_index]) {
+            ctx->strata_picks[state->strata_index] = state->index;
         }
     }
+}
 
+static SIXELSTATUS
+sixel_kcenter_collect_select_hybrid(sixel_kcenter_collect_ctx_t *ctx)
+{
+    SIXELSTATUS status;
+    sixel_kcenter_collect_hybrid_state_t state;
+
+    status = SIXEL_BAD_ALLOCATION;
+    sixel_kcenter_collect_hybrid_state_clear(&state);
+    if (ctx == NULL) {
+        return status;
+    }
+
+    /*
+     * Keep hybrid priority and tie-break stable:
+     * rare -> strata -> dispersion -> fallback.
+     */
+    sixel_kcenter_collect_hybrid_resolve_space(ctx);
+    status = sixel_kcenter_collect_hybrid_allocate_scratch(ctx);
+    if (status != SIXEL_OK) {
+        return status;
+    }
+    sixel_kcenter_collect_hybrid_pick_rare(ctx, &state);
+    sixel_kcenter_collect_hybrid_build_dispersion(ctx, &state);
+    sixel_kcenter_collect_hybrid_build_chroma_edges(ctx, &state);
+    sixel_kcenter_collect_hybrid_score_strata(ctx, &state);
     sixel_kcenter_collect_hybrid_pick_strata(ctx);
     sixel_kcenter_collect_hybrid_pick_remaining(ctx);
     sixel_kcenter_collect_hybrid_write_points(ctx);
