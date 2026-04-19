@@ -4271,6 +4271,11 @@ sixel_kcenter_swap_collect_candidates(
     return candidate_count;
 }
 
+/*
+ * Try one swap step and keep the objective ordering strict:
+ *   1) minimize radius first
+ *   2) break ties by weighted SSE
+ */
 static int
 sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
 {
@@ -4567,6 +4572,9 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
                 continue;
             }
 
+            /*
+             * Keep objective ordering stable: radius first, then weighted SSE.
+             */
             if (sixel_kcenter_swap_candidate_is_better(radius2,
                                                        sse,
                                                        best_radius2,
@@ -4634,6 +4642,9 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
                 centers[slot] = old_center;
             }
 
+            /*
+             * Keep objective ordering stable: radius first, then weighted SSE.
+             */
             if (sixel_kcenter_swap_candidate_is_better(radius2,
                                                        sse,
                                                        best_radius2,
@@ -4676,6 +4687,10 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
                                          &sse);
     used_cached_apply = sixel_kcenter_swap_apply_with_second(&apply_ctx);
     if (!used_cached_apply) {
+        /*
+         * Fallback keeps nearest/second assignment coherent by rebuilding
+         * from the same center set with the shared dispatcher.
+         */
         sixel_kcenter_assign_points_dispatch(points,
                                              weights,
                                              point_count,
@@ -4697,8 +4712,8 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
             && scratch_second_dist != NULL
             && point_count > 0u) {
         /*
-         * Keep fallback buffers initialized for debugability in constrained
-         * builds.  The next incremental pass will overwrite them anyway.
+         * Keep fallback buffers initialized for debugability and to ensure the
+         * next incremental pass starts from coherent nearest/second state.
          */
         memcpy(scratch_second_slot,
                nearest_slot,
@@ -5045,6 +5060,10 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
     }
     swap_ctx.swap_min_gain = swap_min_gain;
 
+    /*
+     * Trial workflow:
+     *   seed centers -> assign points -> run swap iterations -> keep best trial
+     */
     for (init_trial = 0u; init_trial < init_seeds; ++init_trial) {
         trial_state = base_state + 0x9e3779b9u * (init_trial + 1u);
         if (trial_state == 0u) {
