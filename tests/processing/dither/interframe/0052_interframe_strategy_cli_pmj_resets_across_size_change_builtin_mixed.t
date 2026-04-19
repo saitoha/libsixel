@@ -36,39 +36,44 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 echo "1..1"
 set -v
 
-combined_cksum=$(
+combined_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \
         -ldisable \
         -d stbn:source=pmj -p 16 \
-        "${input_apng}" "${input_gif}" | cksum
+        "${input_apng}" "${input_gif}"
 ) || {
     echo "not ok" 1 - "source=pmj combined mixed-size encode failed"
     exit 0
 }
 
-expected_cksum=$(
-    {
-        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-            --threads=1 \
-            -L builtin \
-            -ldisable \
-            -d stbn:source=pmj -p 16 \
-            "${input_apng}"
-        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-            --threads=1 \
-            -L builtin \
-            -ldisable \
-            -d stbn:source=pmj -p 16 \
-            "${input_gif}"
-    } | cksum
+animated_output=$(
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 \
+        -L builtin \
+        -ldisable \
+        -d stbn:source=pmj -p 16 \
+        "${input_apng}"
 ) || {
-    echo "not ok" 1 - "source=pmj expected mixed stream encode failed"
+    echo "not ok" 1 - "source=pmj animated APNG encode failed"
     exit 0
 }
 
-test "${combined_cksum}" = "${expected_cksum}" || {
+single_output=$(
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 \
+        -L builtin \
+        -ldisable \
+        -d stbn:source=pmj -p 16 \
+        "${input_gif}"
+) || {
+    echo "not ok" 1 - "source=pmj single GIF encode failed"
+    exit 0
+}
+
+expected_output="${animated_output}${single_output}"
+test "${combined_output}" = "${expected_output}" || {
     echo "not ok" 1 - "source=pmj state leaked across size change"
     exit 0
 }
