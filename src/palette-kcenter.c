@@ -6607,6 +6607,7 @@ sixel_kcenter_build_export_phase(sixel_kcenter_build_runtime_t *rt)
     unsigned int swap_temp;
     double component;
     double restored_component;
+    int have_float_palette;
 
     slot = 0u;
     channel = 0u;
@@ -6616,6 +6617,7 @@ sixel_kcenter_build_export_phase(sixel_kcenter_build_runtime_t *rt)
     swap_temp = 0u;
     component = 0.0;
     restored_component = 0.0;
+    have_float_palette = 0;
 
     if (rt == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -6697,11 +6699,16 @@ sixel_kcenter_build_export_phase(sixel_kcenter_build_runtime_t *rt)
                 return SIXEL_BAD_ALLOCATION;
             }
         }
+        if (rt->grown_float != NULL && rt->float_palette == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        have_float_palette = (rt->grown_float != NULL
+                              && rt->float_palette != NULL);
 
         memcpy(rt->grown_palette,
                rt->palette,
                (size_t)rt->final_count * 3u * sizeof(unsigned char));
-        if (rt->grown_float != NULL) {
+        if (have_float_palette) {
             memcpy(rt->grown_float,
                    rt->float_palette,
                    (size_t)rt->final_count * 3u * sizeof(float));
@@ -6729,7 +6736,7 @@ sixel_kcenter_build_export_phase(sixel_kcenter_build_runtime_t *rt)
             for (channel = 0u; channel < 3u; ++channel) {
                 rt->grown_palette[fill * 3u + channel]
                     = rt->palette[slot * 3u + channel];
-                if (rt->grown_float != NULL) {
+                if (have_float_palette) {
                     rt->grown_float[fill * 3u + channel]
                         = rt->float_palette[slot * 3u + channel];
                 }
