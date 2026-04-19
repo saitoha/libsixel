@@ -48,6 +48,7 @@ test_reset_kcenter_overrides(void)
                                        SIXEL_PALETTE_KCENTER_PROFILE_LEGACY);
     sixel_set_kcenter_seed_override(0, 1u);
     sixel_set_kcenter_restarts_override(0, 1u);
+    sixel_set_kcenter_init_seeds_override(0, 1u);
     sixel_set_kcenter_iter_override(0, 16u);
     sixel_set_kcenter_histbits_override(0, 5u);
     sixel_set_kcenter_point_budget_override(0, 0u);
@@ -55,6 +56,9 @@ test_reset_kcenter_overrides(void)
         0,
         SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY);
     sixel_set_kcenter_auto_fft_threshold_override(0, 2048u);
+    sixel_set_kcenter_space_policy_override(
+        0,
+        SIXEL_PALETTE_KCENTER_SPACE_POLICY_LEGACY);
     sixel_set_kcenter_candidate_policy_override(
         0,
         SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY);
@@ -68,6 +72,7 @@ test_reset_kcenter_overrides(void)
         0,
         SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL);
     sixel_set_kcenter_swap_patience_override(0, 0u);
+    sixel_set_kcenter_swap_min_gain_override(0, 0.0);
     sixel_set_kcenter_prune_mass_override(0, 0.995);
 }
 
@@ -1317,6 +1322,95 @@ end:
     return ok;
 }
 
+static int
+test_run_init_seeds_nonworsening_case(void)
+{
+    sixel_allocator_t *allocator;
+    unsigned char pixels[TEST_SWAP_PIXELS * 3u];
+    unsigned char *palette_seed1;
+    unsigned char *palette_seed4;
+    unsigned int ncolors_seed1;
+    unsigned int ncolors_seed4;
+    double radius_seed1;
+    double radius_seed4;
+    int ok;
+
+    allocator = NULL;
+    palette_seed1 = NULL;
+    palette_seed4 = NULL;
+    ncolors_seed1 = 0u;
+    ncolors_seed4 = 0u;
+    radius_seed1 = 0.0;
+    radius_seed4 = 0.0;
+    ok = 0;
+
+    if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
+        return 0;
+    }
+
+    test_fill_seed_pixels(pixels, TEST_SWAP_PIXELS);
+    sixel_set_kcenter_init_seeds_override(1, 1u);
+    if (!test_build_kcenter_palette(pixels,
+                                    TEST_SWAP_WIDTH,
+                                    TEST_SWAP_HEIGHT,
+                                    TEST_SWAP_REQCOLORS,
+                                    SIXEL_QUALITY_FULL,
+                                    SIXEL_PALETTE_KCENTER_ALGO_HYBRID,
+                                    13u,
+                                    1u,
+                                    16u,
+                                    6u,
+                                    512u,
+                                    1.000,
+                                    &palette_seed1,
+                                    &ncolors_seed1,
+                                    allocator)) {
+        goto end;
+    }
+
+    sixel_set_kcenter_init_seeds_override(1, 4u);
+    if (!test_build_kcenter_palette(pixels,
+                                    TEST_SWAP_WIDTH,
+                                    TEST_SWAP_HEIGHT,
+                                    TEST_SWAP_REQCOLORS,
+                                    SIXEL_QUALITY_FULL,
+                                    SIXEL_PALETTE_KCENTER_ALGO_HYBRID,
+                                    13u,
+                                    1u,
+                                    16u,
+                                    6u,
+                                    512u,
+                                    1.000,
+                                    &palette_seed4,
+                                    &ncolors_seed4,
+                                    allocator)) {
+        goto end;
+    }
+
+    radius_seed1 = test_palette_radius_sq(pixels,
+                                          TEST_SWAP_PIXELS,
+                                          palette_seed1,
+                                          ncolors_seed1);
+    radius_seed4 = test_palette_radius_sq(pixels,
+                                          TEST_SWAP_PIXELS,
+                                          palette_seed4,
+                                          ncolors_seed4);
+    if (radius_seed4 > radius_seed1 + 1.0e-9) {
+        goto end;
+    }
+    ok = 1;
+
+end:
+    if (palette_seed4 != NULL) {
+        sixel_allocator_free(allocator, palette_seed4);
+    }
+    if (palette_seed1 != NULL) {
+        sixel_allocator_free(allocator, palette_seed1);
+    }
+    sixel_allocator_unref(allocator);
+    return ok;
+}
+
 int
 test_palette_0003_kcenter_constraints(int argc, char **argv)
 {
@@ -1352,6 +1446,9 @@ test_palette_0003_kcenter_constraints(int argc, char **argv)
     }
     if (strcmp(argv[1], "profile-legacy-compatibility") == 0) {
         return test_run_profile_legacy_compatibility_case() ? 0 : 1;
+    }
+    if (strcmp(argv[1], "init-seeds-nonworsening") == 0) {
+        return test_run_init_seeds_nonworsening_case() ? 0 : 1;
     }
 
     fprintf(stderr, "unknown kcenter test case: %s\n", argv[1]);

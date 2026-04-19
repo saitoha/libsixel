@@ -180,6 +180,8 @@ struct sixel_encoder {
     unsigned int quantize_model_kcenter_seed;
     int quantize_model_kcenter_restarts_override;
     unsigned int quantize_model_kcenter_restarts;
+    int quantize_model_kcenter_init_seeds_override;
+    unsigned int quantize_model_kcenter_init_seeds;
     int quantize_model_kcenter_iter_override;
     unsigned int quantize_model_kcenter_iter;
     int quantize_model_kcenter_histbits_override;
@@ -194,6 +196,8 @@ struct sixel_encoder {
     int quantize_model_kcenter_auto_policy;
     int quantize_model_kcenter_auto_fft_threshold_override;
     unsigned int quantize_model_kcenter_auto_fft_threshold;
+    int quantize_model_kcenter_space_policy_override;
+    int quantize_model_kcenter_space_policy;
     int quantize_model_kcenter_candidate_policy_override;
     int quantize_model_kcenter_candidate_policy;
     int quantize_model_kcenter_rare_keep_override;
@@ -208,6 +212,8 @@ struct sixel_encoder {
     int quantize_model_kcenter_swap_update;
     int quantize_model_kcenter_swap_patience_override;
     unsigned int quantize_model_kcenter_swap_patience;
+    int quantize_model_kcenter_swap_min_gain_override;
+    double quantize_model_kcenter_swap_min_gain;
     int quantize_model_merge_override;
     int quantize_model_merge_mode;
     int quantize_model_merge_oversplit_override;

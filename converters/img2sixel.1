@@ -125,11 +125,15 @@ or \fBhybrid\fP.
 .br
 \fBauto_fft_threshold\fP: integer value in 256-65536.
 .br
+\fBspace_policy\fP: \fBlegacy\fP or \fBperceptual\fP.
+.br
 \fBcandidate_policy\fP: \fBlegacy\fP or \fBhybrid\fP.
 .br
 \fBseed\fP (or short key \fBs\fP): integer value in 0-4294967295.
 .br
 \fBrestarts\fP: integer value in 1-32.
+.br
+\fBinit_seeds\fP: integer value in 1-8.
 .br
 \fBiter\fP: integer value in 1-64.
 .br
@@ -150,6 +154,8 @@ or \fBhybrid\fP.
 \fBswap_update\fP: \fBfull\fP or \fBincremental\fP.
 .br
 \fBswap_patience\fP: 0 or integer value in 1-8.
+.br
+\fBswap_min_gain\fP: floating value in 0.0-8.0.
 .br
 \fBanimation_mode\fP: 0 or 1 (default 0).
 .br
@@ -1483,6 +1489,11 @@ default k-center auto algorithm policy. Accepts legacy or adaptive.
 adaptive auto split threshold for selecting fft vs hybrid (256-65536,
 default 2048).
 .TP 5
+.B SIXEL_PALETTE_KCENTER_SPACE_POLICY
+.br
+bias adaptive auto decisions for perceptual working spaces. Accepts
+legacy or perceptual.
+.TP 5
 .B SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY
 .br
 default candidate collector for k-center preprocessing. Accepts legacy or
@@ -1491,6 +1502,10 @@ hybrid.
 .B SIXEL_PALETTE_KCENTER_RESTARTS
 .br
 k-center restart count (1-32, default 1).
+.TP 5
+.B SIXEL_PALETTE_KCENTER_INIT_SEEDS
+.br
+number of initial-center trials per restart in k-center (1-8, default 1).
 .TP 5
 .B SIXEL_PALETTE_KCENTER_ITER
 .br
@@ -1537,6 +1552,11 @@ choose k-center swap update path. Accepts full or incremental.
 .br
 stop k-center swap loop after N non-improving iterations (0 or 1-8, default
 0).
+.TP 5
+.B SIXEL_PALETTE_KCENTER_SWAP_MIN_GAIN
+.br
+minimum radius gain required to accept a k-center swap (0.0-8.0, default
+0.0).
 .TP 5
 .B SIXEL_PALETTE_LUMIN_FACTOR_R
 .br

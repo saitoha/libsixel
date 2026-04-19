@@ -465,18 +465,45 @@ typedef int SIXELSTATUS;
                                                   supported suboptions:
                                                     algo (or a):
                                                       auto, fft, swap, hybrid
+                                                    profile:
+                                                      legacy, speed,
+                                                      balance, quality
                                                     seed (or s):
                                                       integer in 0-4294967295
+                                                    auto_policy:
+                                                      legacy, adaptive
+                                                    auto_fft_threshold:
+                                                      integer in 256-65536
+                                                    space_policy:
+                                                      legacy, perceptual
+                                                    candidate_policy:
+                                                      legacy, hybrid
                                                     restarts:
                                                       integer in 1-32
+                                                    init_seeds:
+                                                      integer in 1-8
                                                     iter:
                                                       integer in 1-64
                                                     histbits:
                                                       integer in 3-6
                                                     point_budget:
                                                       0 or integer in 64-16384
+                                                    rare_keep:
+                                                      0 or integer in 1-2048
                                                     prune_mass:
                                                       float in 0.900-1.000
+                                                    budget_policy:
+                                                      legacy, adaptive
+                                                    budget_scale:
+                                                      float in 0.25-4.00
+                                                    swap_topk:
+                                                      integer in 1-16
+                                                    swap_update:
+                                                      full, incremental
+                                                    swap_patience:
+                                                      0 or integer in 1-8
+                                                    swap_min_gain:
+                                                      float in 0.0-8.0
                                                 */
 #define SIXEL_OPTFLAG_CROP              ('c')  /* -c REGION, --crop=REGION:
                                                   crop source image to fit the

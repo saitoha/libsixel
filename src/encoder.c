@@ -1372,6 +1372,11 @@ static sixel_suboption_choice_t const g_option_choices_kcenter_auto_policy[] = {
     { "adaptive", SIXEL_PALETTE_KCENTER_AUTO_POLICY_ADAPTIVE }
 };
 
+static sixel_suboption_choice_t const g_option_choices_kcenter_space_policy[] = {
+    { "legacy", SIXEL_PALETTE_KCENTER_SPACE_POLICY_LEGACY },
+    { "perceptual", SIXEL_PALETTE_KCENTER_SPACE_POLICY_PERCEPTUAL }
+};
+
 static sixel_suboption_choice_t const
 g_option_choices_kcenter_candidate_policy[] = {
     { "legacy", SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY },
@@ -1851,6 +1856,15 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_center[] = {
         0u
     },
     {
+        "space_policy",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_SPACE_POLICY",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_kcenter_space_policy,
+        sizeof(g_option_choices_kcenter_space_policy)
+        / sizeof(g_option_choices_kcenter_space_policy[0])
+    },
+    {
         "candidate_policy",
         NULL,
         "SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY",
@@ -1863,6 +1877,14 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_center[] = {
         "restarts",
         NULL,
         "SIXEL_PALETTE_KCENTER_RESTARTS",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "init_seeds",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_INIT_SEEDS",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
@@ -1945,6 +1967,14 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_center[] = {
         "swap_patience",
         NULL,
         "SIXEL_PALETTE_KCENTER_SWAP_PATIENCE",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "swap_min_gain",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_SWAP_MIN_GAIN",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
@@ -6124,6 +6154,9 @@ sixel_encoder_prepare_palette(
     sixel_set_kcenter_restarts_override(
         encoder->quantize_model_kcenter_restarts_override,
         encoder->quantize_model_kcenter_restarts);
+    sixel_set_kcenter_init_seeds_override(
+        encoder->quantize_model_kcenter_init_seeds_override,
+        encoder->quantize_model_kcenter_init_seeds);
     sixel_set_kcenter_iter_override(
         encoder->quantize_model_kcenter_iter_override,
         encoder->quantize_model_kcenter_iter);
@@ -6140,6 +6173,10 @@ sixel_encoder_prepare_palette(
     sixel_set_kcenter_auto_fft_threshold_override(
         encoder->quantize_model_kcenter_auto_fft_threshold_override,
         encoder->quantize_model_kcenter_auto_fft_threshold);
+    sixel_set_kcenter_space_policy_override(
+        encoder->quantize_model_kcenter_space_policy_override,
+        (sixel_kcenter_space_policy_t)
+            encoder->quantize_model_kcenter_space_policy);
     sixel_set_kcenter_candidate_policy_override(
         encoder->quantize_model_kcenter_candidate_policy_override,
         (sixel_kcenter_candidate_policy_t)
@@ -6164,6 +6201,9 @@ sixel_encoder_prepare_palette(
     sixel_set_kcenter_swap_patience_override(
         encoder->quantize_model_kcenter_swap_patience_override,
         encoder->quantize_model_kcenter_swap_patience);
+    sixel_set_kcenter_swap_min_gain_override(
+        encoder->quantize_model_kcenter_swap_min_gain_override,
+        encoder->quantize_model_kcenter_swap_min_gain);
     sixel_set_kcenter_prune_mass_override(
         encoder->quantize_model_kcenter_prune_mass_override,
         encoder->quantize_model_kcenter_prune_mass);
@@ -6231,6 +6271,7 @@ sixel_encoder_prepare_palette(
         SIXEL_PALETTE_KCENTER_PROFILE_LEGACY);
     sixel_set_kcenter_seed_override(0, 1u);
     sixel_set_kcenter_restarts_override(0, 1u);
+    sixel_set_kcenter_init_seeds_override(0, 1u);
     sixel_set_kcenter_iter_override(0, 16u);
     sixel_set_kcenter_histbits_override(0, 5u);
     sixel_set_kcenter_point_budget_override(0, 0u);
@@ -6238,6 +6279,9 @@ sixel_encoder_prepare_palette(
         0,
         SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY);
     sixel_set_kcenter_auto_fft_threshold_override(0, 2048u);
+    sixel_set_kcenter_space_policy_override(
+        0,
+        SIXEL_PALETTE_KCENTER_SPACE_POLICY_LEGACY);
     sixel_set_kcenter_candidate_policy_override(
         0,
         SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY);
@@ -6251,6 +6295,7 @@ sixel_encoder_prepare_palette(
         0,
         SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL);
     sixel_set_kcenter_swap_patience_override(0, 0u);
+    sixel_set_kcenter_swap_min_gain_override(0, 0.0);
     sixel_set_kcenter_prune_mass_override(0, 0.995);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
@@ -7321,6 +7366,8 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kcenter_seed = 1u;
     (*ppencoder)->quantize_model_kcenter_restarts_override = 0;
     (*ppencoder)->quantize_model_kcenter_restarts = 1u;
+    (*ppencoder)->quantize_model_kcenter_init_seeds_override = 0;
+    (*ppencoder)->quantize_model_kcenter_init_seeds = 1u;
     (*ppencoder)->quantize_model_kcenter_iter_override = 0;
     (*ppencoder)->quantize_model_kcenter_iter = 16u;
     (*ppencoder)->quantize_model_kcenter_histbits_override = 0;
@@ -7332,6 +7379,9 @@ sixel_encoder_new(
         = SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY;
     (*ppencoder)->quantize_model_kcenter_auto_fft_threshold_override = 0;
     (*ppencoder)->quantize_model_kcenter_auto_fft_threshold = 2048u;
+    (*ppencoder)->quantize_model_kcenter_space_policy_override = 0;
+    (*ppencoder)->quantize_model_kcenter_space_policy
+        = SIXEL_PALETTE_KCENTER_SPACE_POLICY_LEGACY;
     (*ppencoder)->quantize_model_kcenter_candidate_policy_override = 0;
     (*ppencoder)->quantize_model_kcenter_candidate_policy
         = SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY;
@@ -7349,6 +7399,8 @@ sixel_encoder_new(
         = SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL;
     (*ppencoder)->quantize_model_kcenter_swap_patience_override = 0;
     (*ppencoder)->quantize_model_kcenter_swap_patience = 0u;
+    (*ppencoder)->quantize_model_kcenter_swap_min_gain_override = 0;
+    (*ppencoder)->quantize_model_kcenter_swap_min_gain = 0.0;
     (*ppencoder)->quantize_model_kcenter_prune_mass_override = 0;
     (*ppencoder)->quantize_model_kcenter_prune_mass = 0.995;
     (*ppencoder)->quantize_model_merge_override = 0;
@@ -8385,6 +8437,34 @@ sixel_encoder_parse_kcenter_budget_scale_text(
 }
 
 static SIXELSTATUS
+sixel_encoder_parse_kcenter_swap_min_gain_text(
+    char const *text,
+    double *value_out)
+{
+    char *endptr;
+    double parsed;
+
+    endptr = NULL;
+    parsed = 0.0;
+    if (text == NULL || value_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtod(text, &endptr);
+    if (endptr == text || endptr == NULL || endptr[0] != '\0'
+            || errno != 0 || parsed != parsed
+            || parsed < 0.0 || parsed > 8.0) {
+        sixel_helper_set_additional_message(
+            "-Q swap_min_gain must be in range 0.0-8.0.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *value_out = parsed;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_parse_quantize_merge_oversplit_text(
     char const *text,
     double *value_out)
@@ -8517,6 +8597,15 @@ sixel_encoder_validate_quantize_model_resolution(
                 return SIXEL_BAD_ARGUMENT;
             }
         } else if (key_name != NULL
+                && strcmp(key_name, "space_policy") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                sixel_helper_set_additional_message(
+                    "invalid -Q space_policy resolution.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+        } else if (key_name != NULL
                 && strcmp(key_name, "candidate_policy") == 0) {
             if (!sixel_encoder_resolve_suboption_choice_value(
                     assignment,
@@ -8617,6 +8706,18 @@ sixel_encoder_validate_quantize_model_resolution(
                 32u,
                 0,
                 "restarts",
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "init_seeds") == 0) {
+            status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                1u,
+                8u,
+                0,
+                "init_seeds",
                 &parsed_uint);
             if (SIXEL_FAILED(status)) {
                 return status;
@@ -8808,6 +8909,14 @@ sixel_encoder_validate_quantize_model_resolution(
                 1,
                 "swap_patience",
                 &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "swap_min_gain") == 0) {
+            status = sixel_encoder_parse_kcenter_swap_min_gain_text(
+                assignment->resolved_value_text,
+                &parsed_double);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
@@ -10357,6 +10466,7 @@ sixel_encoder_setopt(
     unsigned int q_binbits;
     unsigned int q_autoratio;
     unsigned int q_restarts;
+    unsigned int q_init_seeds;
     uint32_t q_seed;
     unsigned int q_iter;
     unsigned int q_iter_max;
@@ -10379,6 +10489,7 @@ sixel_encoder_setopt(
     unsigned int q_rare_keep;
     unsigned int q_swap_topk;
     unsigned int q_swap_patience;
+    double q_swap_min_gain;
     double q_prune_mass;
     double q_budget_scale;
     int q_auction;
@@ -10435,6 +10546,7 @@ sixel_encoder_setopt(
     q_binbits = 0u;
     q_autoratio = 0u;
     q_restarts = 0u;
+    q_init_seeds = 0u;
     q_seed = 0u;
     q_iter = 0u;
     q_iter_max = 0u;
@@ -10457,6 +10569,7 @@ sixel_encoder_setopt(
     q_rare_keep = 0u;
     q_swap_topk = 0u;
     q_swap_patience = 0u;
+    q_swap_min_gain = 0.0;
     q_prune_mass = 0.0;
     q_budget_scale = 0.0;
     q_auction = 0;
@@ -10727,6 +10840,7 @@ sixel_encoder_setopt(
         encoder->quantize_model_kcenter_algo_override = 0;
         encoder->quantize_model_kcenter_seed_override = 0;
         encoder->quantize_model_kcenter_restarts_override = 0;
+        encoder->quantize_model_kcenter_init_seeds_override = 0;
         encoder->quantize_model_kcenter_iter_override = 0;
         encoder->quantize_model_kcenter_histbits_override = 0;
         encoder->quantize_model_kcenter_point_budget_override = 0;
@@ -10734,6 +10848,7 @@ sixel_encoder_setopt(
         encoder->quantize_model_kcenter_profile_override = 0;
         encoder->quantize_model_kcenter_auto_policy_override = 0;
         encoder->quantize_model_kcenter_auto_fft_threshold_override = 0;
+        encoder->quantize_model_kcenter_space_policy_override = 0;
         encoder->quantize_model_kcenter_candidate_policy_override = 0;
         encoder->quantize_model_kcenter_rare_keep_override = 0;
         encoder->quantize_model_kcenter_budget_policy_override = 0;
@@ -10741,6 +10856,7 @@ sixel_encoder_setopt(
         encoder->quantize_model_kcenter_swap_topk_override = 0;
         encoder->quantize_model_kcenter_swap_update_override = 0;
         encoder->quantize_model_kcenter_swap_patience_override = 0;
+        encoder->quantize_model_kcenter_swap_min_gain_override = 0;
         encoder->quantize_model_merge_override = 0;
         encoder->quantize_model_merge_oversplit_override = 0;
         encoder->quantize_model_merge_lloyd_override = 0;
@@ -10931,6 +11047,18 @@ sixel_encoder_setopt(
                 encoder->quantize_model_kcenter_auto_fft_threshold
                     = q_auto_fft_threshold;
             } else if (q_key != NULL
+                    && strcmp(q_key, "space_policy") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q space_policy resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kcenter_space_policy_override = 1;
+                encoder->quantize_model_kcenter_space_policy = match_value;
+            } else if (q_key != NULL
                     && strcmp(q_key, "candidate_policy") == 0) {
                 if (!sixel_encoder_resolve_suboption_choice_value(
                         q_assignment,
@@ -11054,6 +11182,21 @@ sixel_encoder_setopt(
                     encoder->quantize_model_kmeans_restarts_override = 1;
                     encoder->quantize_model_kmeans_restarts = q_restarts;
                 }
+            } else if (q_key != NULL
+                    && strcmp(q_key, "init_seeds") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    1u,
+                    8u,
+                    0,
+                    "init_seeds",
+                    &q_init_seeds);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kcenter_init_seeds_override = 1;
+                encoder->quantize_model_kcenter_init_seeds = q_init_seeds;
             } else if (q_key != NULL
                     && strcmp(q_key, "feedback_slots") == 0) {
                 status = sixel_encoder_parse_kmedoids_uint_text(
@@ -11334,6 +11477,18 @@ sixel_encoder_setopt(
                 encoder->quantize_model_kcenter_swap_patience_override = 1;
                 encoder->quantize_model_kcenter_swap_patience
                     = q_swap_patience;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "swap_min_gain") == 0) {
+                status = sixel_encoder_parse_kcenter_swap_min_gain_text(
+                    q_assignment->resolved_value_text,
+                    &q_swap_min_gain);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kcenter_swap_min_gain_override = 1;
+                encoder->quantize_model_kcenter_swap_min_gain
+                    = q_swap_min_gain;
             } else if (q_key != NULL && strcmp(q_key, "prune_mass") == 0) {
                 status = sixel_encoder_parse_kmedoids_prune_mass_text(
                     q_assignment->resolved_value_text,

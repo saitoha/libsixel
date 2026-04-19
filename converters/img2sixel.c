@@ -321,11 +321,15 @@ static cli_option_help_t const g_option_help_table[] = {
         "              adaptive -> threshold-based adaptive split\n"
         "          :auto_fft_threshold=COUNT adaptive auto threshold (256-65536,\n"
         "          default 2048).\n"
+        "          :space_policy=NAME choose color-space policy for adaptive auto:\n"
+        "              legacy -> neutral split\n"
+        "              perceptual -> bias to hybrid in perceptual spaces\n"
         "          :candidate_policy=NAME choose candidate collector:\n"
         "              legacy -> frequency-ranked histogram bins\n"
         "              hybrid -> frequency + dispersion + rare bins\n"
         "          :seed=VALUE (:s=VALUE) uint32 random seed (0-4294967295, default 1).\n"
         "          :restarts=COUNT restart count (1-32, default 1).\n"
+        "          :init_seeds=COUNT initial-center trial count (1-8, default 1).\n"
         "          :iter=COUNT swap iteration cap (1-64, default 16).\n"
         "          :histbits=BITS histogram bits/channel (3-6, default 5).\n"
         "          :point_budget=COUNT candidate cap (0 or 64-16384, default 0=auto).\n"
@@ -345,6 +349,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "              incremental -> nearest/second-nearest cache reuse\n"
         "          :swap_patience=COUNT stop after this many non-improving\n"
         "          swap iterations (0 or 1-8, default 0).\n"
+        "          :swap_min_gain=VALUE minimum radius gain per accepted swap\n"
+        "          (0.0-8.0, default 0.0).\n"
         "          :animation_mode=0|1 default 0\n"
         "          :scene_cut_threshold=VALUE 0.0-1.0 default 0.20\n"
         "          :merge=MODE (:g=MODE) auto, none, ward\n"
@@ -1518,6 +1524,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "Accepts 256-65536, default 2048."
     },
     {
+        "SIXEL_PALETTE_KCENTER_SPACE_POLICY",
+        "bias adaptive auto decisions for perceptual working spaces.\n"
+        "Accepts legacy or perceptual."
+    },
+    {
         "SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY",
         "default candidate collector for k-center preprocessing.\n"
         "Accepts legacy or hybrid."
@@ -1525,6 +1536,11 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_PALETTE_KCENTER_RESTARTS",
         "k-center restart count (1-32, default 1)."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_INIT_SEEDS",
+        "number of initial-center trials per restart in k-center.\n"
+        "Accepts 1-8, default 1."
     },
     {
         "SIXEL_PALETTE_KCENTER_ITER",
@@ -1574,6 +1590,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_PALETTE_KCENTER_SWAP_PATIENCE",
         "stop k-center swap loop after N non-improving iterations.\n"
         "Accepts 0 or 1-8, default 0."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_SWAP_MIN_GAIN",
+        "minimum radius gain required to accept a k-center swap.\n"
+        "Accepts 0.0-8.0, default 0.0."
     },
     {
         "SIXEL_PALETTE_LUMIN_FACTOR_R",

@@ -63,6 +63,11 @@ typedef enum sixel_kcenter_candidate_policy {
     SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_HYBRID,
 } sixel_kcenter_candidate_policy_t;
 
+typedef enum sixel_kcenter_space_policy {
+    SIXEL_PALETTE_KCENTER_SPACE_POLICY_LEGACY = 0,
+    SIXEL_PALETTE_KCENTER_SPACE_POLICY_PERCEPTUAL,
+} sixel_kcenter_space_policy_t;
+
 typedef enum sixel_kcenter_budget_policy {
     SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY = 0,
     SIXEL_PALETTE_KCENTER_BUDGET_POLICY_ADAPTIVE,
@@ -124,6 +129,13 @@ SIXEL_INTERNAL_API unsigned int
 sixel_get_kcenter_restarts(void);
 
 SIXEL_INTERNAL_API void
+sixel_set_kcenter_init_seeds_override(int enabled,
+                                      unsigned int init_seeds);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kcenter_init_seeds(void);
+
+SIXEL_INTERNAL_API void
 sixel_set_kcenter_iter_override(int enabled,
                                 unsigned int iter_count);
 
@@ -166,6 +178,14 @@ sixel_set_kcenter_auto_fft_threshold_override(
 
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kcenter_auto_fft_threshold(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_space_policy_override(
+    int enabled,
+    sixel_kcenter_space_policy_t policy);
+
+SIXEL_INTERNAL_API sixel_kcenter_space_policy_t
+sixel_get_kcenter_space_policy(void);
 
 SIXEL_INTERNAL_API void
 sixel_set_kcenter_candidate_policy_override(
@@ -219,6 +239,13 @@ sixel_set_kcenter_swap_patience_override(
 
 SIXEL_INTERNAL_API unsigned int
 sixel_get_kcenter_swap_patience(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_swap_min_gain_override(int enabled,
+                                         double swap_min_gain);
+
+SIXEL_INTERNAL_API double
+sixel_get_kcenter_swap_min_gain(void);
 
 #ifdef __cplusplus
 }

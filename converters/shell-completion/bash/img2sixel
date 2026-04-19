@@ -443,6 +443,11 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
+                elif [[ ${quant_key} == space_policy ]]; then
+                    for quant_candidate in legacy perceptual; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
                 elif [[ ${quant_key} == candidate_policy ]]; then
                     for quant_candidate in legacy hybrid; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
@@ -455,6 +460,11 @@ _img2sixel()
                     done
                 elif [[ ${quant_key} == restarts ]]; then
                     for quant_candidate in 1 2 4 8 16; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                elif [[ ${quant_key} == init_seeds ]]; then
+                    for quant_candidate in 1 2 3 4 6 8; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
@@ -508,6 +518,11 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
+                elif [[ ${quant_key} == swap_min_gain ]]; then
+                    for quant_candidate in 0.00 0.02 0.05 0.10 0.25; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
                 elif [[ ${quant_key} == animation_mode ]]; then
                     for quant_candidate in 0 1; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
@@ -542,10 +557,11 @@ _img2sixel()
             quant_prefix="${cur%${quant_item}}"
             for quant_candidate in \
                 a= algo= profile= auto_policy= auto_fft_threshold= \
-                candidate_policy= s= seed= restarts= iter= \
+                space_policy= candidate_policy= s= seed= \
+                restarts= init_seeds= iter= \
                 histbits= point_budget= rare_keep= prune_mass= \
                 budget_policy= budget_scale= swap_topk= \
-                swap_update= swap_patience= \
+                swap_update= swap_patience= swap_min_gain= \
                 animation_mode= scene_cut_threshold= \
                 g= merge= o= merge_oversplit= l= merge_lloyd=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue

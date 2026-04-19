@@ -601,6 +601,10 @@ _quantizemodel() {
                      "${prefix}${key}=4096" \
                      "${prefix}${key}=8192"
           return 0
+        elif [[ ${key} == space_policy ]]; then
+          compadd -- "${prefix}${key}=legacy" \
+                     "${prefix}${key}=perceptual"
+          return 0
         elif [[ ${key} == candidate_policy ]]; then
           compadd -- "${prefix}${key}=legacy" \
                      "${prefix}${key}=hybrid"
@@ -617,6 +621,14 @@ _quantizemodel() {
                      "${prefix}${key}=4" \
                      "${prefix}${key}=8" \
                      "${prefix}${key}=16"
+          return 0
+        elif [[ ${key} == init_seeds ]]; then
+          compadd -- "${prefix}${key}=1" \
+                     "${prefix}${key}=2" \
+                     "${prefix}${key}=3" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=6" \
+                     "${prefix}${key}=8"
           return 0
         elif [[ ${key} == iter ]]; then
           compadd -- "${prefix}${key}=4" \
@@ -686,6 +698,13 @@ _quantizemodel() {
                      "${prefix}${key}=4" \
                      "${prefix}${key}=8"
           return 0
+        elif [[ ${key} == swap_min_gain ]]; then
+          compadd -- "${prefix}${key}=0.00" \
+                     "${prefix}${key}=0.02" \
+                     "${prefix}${key}=0.05" \
+                     "${prefix}${key}=0.10" \
+                     "${prefix}${key}=0.25"
+          return 0
         elif [[ ${key} == animation_mode ]]; then
           compadd -- "${prefix}${key}=0" \
                      "${prefix}${key}=1"
@@ -720,9 +739,11 @@ _quantizemodel() {
                    "${prefix}profile=" \
                    "${prefix}auto_policy=" \
                    "${prefix}auto_fft_threshold=" \
+                   "${prefix}space_policy=" \
                    "${prefix}candidate_policy=" \
                    "${prefix}s=" "${prefix}seed=" \
                    "${prefix}restarts=" \
+                   "${prefix}init_seeds=" \
                    "${prefix}iter=" \
                    "${prefix}histbits=" \
                    "${prefix}point_budget=" \
@@ -733,6 +754,7 @@ _quantizemodel() {
                    "${prefix}swap_topk=" \
                    "${prefix}swap_update=" \
                    "${prefix}swap_patience=" \
+                   "${prefix}swap_min_gain=" \
                    "${prefix}animation_mode=" \
                    "${prefix}scene_cut_threshold=" \
                    "${prefix}g=" \
