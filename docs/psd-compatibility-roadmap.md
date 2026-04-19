@@ -55,6 +55,8 @@ Key points used by this roadmap:
   - `vstk` geometry metadata now tracks join/cap/miter/adjust parameters.
     For `inside + miter` vector strokes, base/deferred coverage paths use a
     dedicated miter-join coverage contract instead of the default round band.
+    `miterLimit` now constrains that path, and `strokeAdjust` enables
+    half-pixel coverage sampling in base/deferred miter stroke evaluation.
 - Signature/version policy:
   - `8BPS` supports version `1/2` per existing parser policy.
   - `8BPB` is accepted only with `version=2`; `8BPB+version!=2` is rejected as
