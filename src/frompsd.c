@@ -26107,6 +26107,33 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 "psd_decode",
                 "builtin PSD: applying mode-aware dual-stroke blend in layer "
                 "fallback");
+            sixel_builtin_psd_trace_message(
+                "psd_decode",
+                "builtin PSD: applying distance-map effect stroke coverage in "
+                "layer fallback");
+            if (effective_composite_layer->effect_stroke_position ==
+                SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: using distance-map inside stroke "
+                    "coverage in layer fallback");
+                if (clipped_inside_stroke_alpha_valid != 0) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: using clipped source alpha for "
+                        "inside effect stroke coverage in layer fallback");
+                }
+            } else if (effective_composite_layer->effect_stroke_position ==
+                       SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE) {
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: using distance-map outside stroke "
+                    "coverage in layer fallback");
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: writing outside stroke alpha from "
+                    "outside component");
+            }
             layer_for_composite = *effective_composite_layer;
             layer_for_composite.has_effect_stroke = 0;
             layer_for_composite.has_vector_stroke_style = 0;
