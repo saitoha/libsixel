@@ -750,6 +750,11 @@ test_run_swap_update_consistency_case(void)
     unsigned char *palette_incremental;
     unsigned int ncolors_full;
     unsigned int ncolors_incremental;
+    unsigned int iter_cases[2];
+    unsigned int topk_cases[2];
+    unsigned int restart_cases[2];
+    uint32_t seed_cases[2];
+    unsigned int case_index;
     int ok;
 
     allocator = NULL;
@@ -757,6 +762,15 @@ test_run_swap_update_consistency_case(void)
     palette_incremental = NULL;
     ncolors_full = 0u;
     ncolors_incremental = 0u;
+    iter_cases[0] = 16u;
+    iter_cases[1] = 48u;
+    topk_cases[0] = 4u;
+    topk_cases[1] = 8u;
+    restart_cases[0] = 1u;
+    restart_cases[1] = 2u;
+    seed_cases[0] = 7u;
+    seed_cases[1] = 29u;
+    case_index = 0u;
     ok = 0;
 
     if (SIXEL_FAILED(sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL))) {
@@ -764,87 +778,93 @@ test_run_swap_update_consistency_case(void)
     }
 
     test_fill_seed_pixels(pixels, TEST_SWAP_PIXELS);
-    if (!test_build_kcenter_palette_with_options(
-            pixels,
-            TEST_SWAP_WIDTH,
-            TEST_SWAP_HEIGHT,
-            TEST_SWAP_REQCOLORS,
-            SIXEL_QUALITY_FULL,
-            SIXEL_PALETTE_KCENTER_ALGO_SWAP,
-            7u,
-            1u,
-            16u,
-            6u,
-            512u,
-            1.000,
-            0,
-            SIXEL_PALETTE_KCENTER_PROFILE_LEGACY,
-            0,
-            SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY,
-            0,
-            2048u,
-            0,
-            SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY,
-            0,
-            0u,
-            0,
-            SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY,
-            0,
-            1.0,
-            1,
-            4u,
-            1,
-            SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL,
-            0,
-            0u,
-            &palette_full,
-            &ncolors_full,
-            allocator)) {
-        goto end;
-    }
-    if (!test_build_kcenter_palette_with_options(
-            pixels,
-            TEST_SWAP_WIDTH,
-            TEST_SWAP_HEIGHT,
-            TEST_SWAP_REQCOLORS,
-            SIXEL_QUALITY_FULL,
-            SIXEL_PALETTE_KCENTER_ALGO_SWAP,
-            7u,
-            1u,
-            16u,
-            6u,
-            512u,
-            1.000,
-            0,
-            SIXEL_PALETTE_KCENTER_PROFILE_LEGACY,
-            0,
-            SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY,
-            0,
-            2048u,
-            0,
-            SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY,
-            0,
-            0u,
-            0,
-            SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY,
-            0,
-            1.0,
-            1,
-            4u,
-            1,
-            SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL,
-            0,
-            0u,
-            &palette_incremental,
-            &ncolors_incremental,
-            allocator)) {
-        goto end;
-    }
-    if (!test_palette_equal(palette_full,
-                            ncolors_full,
-                            palette_incremental,
-                            ncolors_incremental)) {
-        goto end;
+    for (case_index = 0u; case_index < 2u; ++case_index) {
+        if (!test_build_kcenter_palette_with_options(
+                pixels,
+                TEST_SWAP_WIDTH,
+                TEST_SWAP_HEIGHT,
+                TEST_SWAP_REQCOLORS,
+                SIXEL_QUALITY_FULL,
+                SIXEL_PALETTE_KCENTER_ALGO_SWAP,
+                seed_cases[case_index],
+                restart_cases[case_index],
+                iter_cases[case_index],
+                6u,
+                512u,
+                1.000,
+                0,
+                SIXEL_PALETTE_KCENTER_PROFILE_LEGACY,
+                0,
+                SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY,
+                0,
+                2048u,
+                0,
+                SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY,
+                0,
+                0u,
+                0,
+                SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY,
+                0,
+                1.0,
+                1,
+                topk_cases[case_index],
+                1,
+                SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL,
+                0,
+                0u,
+                &palette_full,
+                &ncolors_full,
+                allocator)) {
+            goto end;
+        }
+        if (!test_build_kcenter_palette_with_options(
+                pixels,
+                TEST_SWAP_WIDTH,
+                TEST_SWAP_HEIGHT,
+                TEST_SWAP_REQCOLORS,
+                SIXEL_QUALITY_FULL,
+                SIXEL_PALETTE_KCENTER_ALGO_SWAP,
+                seed_cases[case_index],
+                restart_cases[case_index],
+                iter_cases[case_index],
+                6u,
+                512u,
+                1.000,
+                0,
+                SIXEL_PALETTE_KCENTER_PROFILE_LEGACY,
+                0,
+                SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY,
+                0,
+                2048u,
+                0,
+                SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY,
+                0,
+                0u,
+                0,
+                SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY,
+                0,
+                1.0,
+                1,
+                topk_cases[case_index],
+                1,
+                SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL,
+                0,
+                0u,
+                &palette_incremental,
+                &ncolors_incremental,
+                allocator)) {
+            goto end;
+        }
+        if (!test_palette_equal(palette_full,
+                                ncolors_full,
+                                palette_incremental,
+                                ncolors_incremental)) {
+            goto end;
+        }
+        sixel_allocator_free(allocator, palette_incremental);
+        palette_incremental = NULL;
+        sixel_allocator_free(allocator, palette_full);
+        palette_full = NULL;
     }
     ok = 1;
 
