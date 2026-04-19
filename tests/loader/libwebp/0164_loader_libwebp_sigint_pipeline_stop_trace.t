@@ -44,8 +44,8 @@ set -v
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
 # Keep the common case fast with an early SIGINT.
-# If the first signal does not stop the pipeline, retry once after
-# one second and bound the full test with an eight-second watchdog.
+# If the first signal does not stop the pipeline, retry once after a
+# short delay and poll with a bounded watchdog window.
 
 set +x
 trace_summary=$(
@@ -55,32 +55,35 @@ trace_summary=$(
             --env "SIXEL_TRACE_TOPIC=encode_handoff" \
             -Llibwebp! -lforce "${input_webp}" 2>&1 >/dev/null &
         pid=$!
-
-        (
-            sleep 1
-            kill -0 "${pid}" 2>/dev/null || exit 0
-            kill -INT "${pid}" 2>/dev/null || true
-            exit 0
-        ) >/dev/null 2>&1 &
-        retry_pid=$!
-
-        (
-            sleep 8
-            kill -0 "${pid}" 2>/dev/null || exit 0
-            kill -KILL "${pid}" 2>/dev/null || true
-            exit 42
-        ) >/dev/null 2>&1 &
-        watchdog_pid=$!
+        watchdog_status=0
+        loop_count=0
 
         sleep 0.02
         kill -INT "${pid}" 2>/dev/null || true
 
+        loop_count=0
+        while test "${loop_count}" -lt 6; do
+            kill -0 "${pid}" 2>/dev/null || break
+            sleep 0.02
+            loop_count=$((loop_count + 1))
+        done
+
+        kill -0 "${pid}" 2>/dev/null && {
+            sleep 0.2
+            kill -INT "${pid}" 2>/dev/null || true
+        }
+
+        loop_count=0
+        while test "${loop_count}" -lt 60; do
+            kill -0 "${pid}" 2>/dev/null || break
+            sleep 0.05
+            loop_count=$((loop_count + 1))
+        done
+
+        kill -0 "${pid}" 2>/dev/null && watchdog_status=42
+        test "${watchdog_status}" != 42 || kill -KILL "${pid}" 2>/dev/null || true
         wait "${pid}" 2>/dev/null || true
-        kill "${retry_pid}" 2>/dev/null || true
-        wait "${retry_pid}" 2>/dev/null || true
-        kill "${watchdog_pid}" 2>/dev/null || true
-        watchdog_status=0
-        wait "${watchdog_pid}" 2>/dev/null || watchdog_status=$?
+
         printf "__WATCHDOG_STATUS__=%s\n" "${watchdog_status}"
     }
 )
