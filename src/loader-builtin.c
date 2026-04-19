@@ -111,9 +111,36 @@ static int sixel_loader_builtin_decode_lock_ready = 0;
 static void
 sixel_loader_builtin_decode_lock_init_once(void)
 {
+    pthread_mutexattr_t attr;
     int rc;
+    int attr_ready;
+    int settype_rc;
 
-    rc = pthread_mutex_init(&sixel_loader_builtin_decode_lock, NULL);
+    rc = 0;
+    attr_ready = 0;
+    settype_rc = 0;
+    rc = pthread_mutexattr_init(&attr);
+    if (rc == 0) {
+        attr_ready = 1;
+        /*
+         * Mapfile-driven conversions can re-enter builtin decoding in the
+         * same thread before the outer decode call returns. Keep this guard
+         * recursive in no-TLS mode so nested loads do not self-deadlock.
+         */
+        settype_rc = pthread_mutexattr_settype(&attr,
+                                               PTHREAD_MUTEX_RECURSIVE);
+        if (settype_rc == 0) {
+            rc = pthread_mutex_init(&sixel_loader_builtin_decode_lock, &attr);
+        } else {
+            rc = pthread_mutex_init(&sixel_loader_builtin_decode_lock, NULL);
+        }
+    }
+    if (attr_ready != 0) {
+        (void)pthread_mutexattr_destroy(&attr);
+    }
+    if (rc != 0) {
+        rc = pthread_mutex_init(&sixel_loader_builtin_decode_lock, NULL);
+    }
     if (rc == 0) {
         sixel_loader_builtin_decode_lock_ready = 1;
     }
