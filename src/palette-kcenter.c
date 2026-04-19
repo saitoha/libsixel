@@ -2009,6 +2009,7 @@ sixel_kcenter_collect_points(double **points_out,
     double chroma_target;
     double chroma_accum;
     int use_perceptual_strata;
+    int oklab_perceptual_space;
     int chroma_edge_found;
     double *sums;
     unsigned int *counts;
@@ -2083,6 +2084,7 @@ sixel_kcenter_collect_points(double **points_out,
     chroma_target = 0.0;
     chroma_accum = 0.0;
     use_perceptual_strata = 0;
+    oklab_perceptual_space = 0;
     chroma_edge_found = 0;
     sums = NULL;
     counts = NULL;
@@ -2369,6 +2371,9 @@ sixel_kcenter_collect_points(double **points_out,
                     || pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32
                     || pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32)) {
             use_perceptual_strata = 1;
+            if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
+                oklab_perceptual_space = 1;
+            }
         }
         bin_selected = (unsigned char *)sixel_allocator_malloc(
             allocator,
@@ -2439,7 +2444,13 @@ sixel_kcenter_collect_points(double **points_out,
             dispersion[index].score = (double)bins[index].count
                 * (dr * dr + dg * dg + db * db);
             if (use_perceptual_strata) {
-                chroma_value = sqrt(dg * dg + db * db);
+                /*
+                 * Perceptual spaces already encode opponent channels on a/b.
+                 * Use raw channels so strata bins stay stable even if the
+                 * frame-wise mean drifts.
+                 */
+                chroma_value = sqrt(bins[index].g * bins[index].g
+                                    + bins[index].b * bins[index].b);
                 chroma_cache[index] = chroma_value;
                 chroma_rank[index].index = index;
                 chroma_rank[index].score = chroma_value;
@@ -2511,17 +2522,23 @@ sixel_kcenter_collect_points(double **points_out,
             }
 
             if (use_perceptual_strata) {
-                dg = bins[index].g - mean_g;
-                db = bins[index].b - mean_b;
                 chroma_value = chroma_cache[index];
-                hue_phase = atan2(db, dg);
-                normalized_hue = (hue_phase + SIXEL_KCENTER_PI)
-                    / (2.0 * SIXEL_KCENTER_PI);
-                if (normalized_hue < 0.0) {
+                if (chroma_value <= 1.0e-9) {
+                    /*
+                     * Near-neutral bins have unstable hue.  Pin the hue bucket
+                     * instead of amplifying angle noise.
+                     */
                     normalized_hue = 0.0;
-                }
-                if (normalized_hue >= 1.0) {
-                    normalized_hue = 0.999999;
+                } else {
+                    hue_phase = atan2(bins[index].b, bins[index].g);
+                    normalized_hue = (hue_phase + SIXEL_KCENTER_PI)
+                        / (2.0 * SIXEL_KCENTER_PI);
+                    if (normalized_hue < 0.0) {
+                        normalized_hue = 0.0;
+                    }
+                    if (normalized_hue >= 1.0) {
+                        normalized_hue = 0.999999;
+                    }
                 }
                 dr = bins[index].r - mean_r;
                 chroma_bucket = 0u;
@@ -2633,8 +2650,17 @@ sixel_kcenter_collect_points(double **points_out,
 
         high_target = budget;
         if (high_target > selected_count) {
-            high_target = selected_count
-                + ((budget - selected_count) * 3u) / 4u;
+            if (oklab_perceptual_space) {
+                /*
+                 * Reserve more slots for dispersion picks in OKLab so the
+                 * candidate set does not over-focus on only high-mass bins.
+                 */
+                high_target = selected_count
+                    + (budget - selected_count) / 2u;
+            } else {
+                high_target = selected_count
+                    + ((budget - selected_count) * 3u) / 4u;
+            }
             if (high_target > budget) {
                 high_target = budget;
             }
@@ -3550,6 +3576,90 @@ sixel_kcenter_swap_candidate_is_better(double candidate_radius2,
     return 0;
 }
 
+/*
+ * Evaluate one swap candidate in O(point_count) using cached nearest and
+ * second-nearest distances.  This stays exact because only one center slot is
+ * replaced: points in that slot fall back to second-nearest, and all other
+ * points keep their old nearest unless the new center is closer.
+ */
+static int
+sixel_kcenter_swap_eval_with_cutoff(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int slot,
+    unsigned int candidate,
+    unsigned int const *nearest_slot,
+    double const *nearest_dist,
+    double const *second_dist,
+    double allowed_radius2,
+    double *radius2_out,
+    double *sse_out)
+{
+    unsigned int index;
+    double radius2;
+    double sse;
+    double old_distance;
+    double old_second;
+    double new_distance;
+    double distance_to_new;
+    double lhs_weight;
+
+    index = 0u;
+    radius2 = 0.0;
+    sse = 0.0;
+    old_distance = 0.0;
+    old_second = 0.0;
+    new_distance = 0.0;
+    distance_to_new = 0.0;
+    lhs_weight = 0.0;
+
+    if (points == NULL
+            || nearest_slot == NULL
+            || nearest_dist == NULL
+            || second_dist == NULL
+            || radius2_out == NULL
+            || sse_out == NULL
+            || point_count == 0u) {
+        return 0;
+    }
+
+    for (index = 0u; index < point_count; ++index) {
+        old_distance = nearest_dist[index];
+        old_second = second_dist[index];
+        distance_to_new = sixel_kcenter_distance_sq(points,
+                                                    index,
+                                                    candidate);
+        if (nearest_slot[index] == slot) {
+            if (distance_to_new < old_second) {
+                new_distance = distance_to_new;
+            } else {
+                new_distance = old_second;
+            }
+        } else if (distance_to_new < old_distance) {
+            new_distance = distance_to_new;
+        } else {
+            new_distance = old_distance;
+        }
+
+        if (new_distance > radius2) {
+            radius2 = new_distance;
+            if (radius2 > allowed_radius2 + 1.0e-12) {
+                return 0;
+            }
+        }
+        lhs_weight = (weights != NULL) ? weights[index] : 1.0;
+        if (lhs_weight <= 0.0) {
+            lhs_weight = 1.0;
+        }
+        sse += new_distance * lhs_weight;
+    }
+
+    *radius2_out = radius2;
+    *sse_out = sse;
+    return 1;
+}
+
 static int
 sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
 {
@@ -3897,17 +4007,17 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
             affected_count = 0u;
             for (old_slot = 0u; old_slot < point_count; ++old_slot) {
                 old_nearest_slot = nearest_slot[old_slot];
+                if (old_nearest_slot == slot) {
+                    scratch_slot[old_slot] = UINT_MAX;
+                    ++affected_count;
+                    continue;
+                }
                 old_second_slot = second_slot[old_slot];
                 old_distance = nearest_dist[old_slot];
                 old_second = second_dist[old_slot];
                 distance_to_new = sixel_kcenter_distance_sq(points,
                                                             old_slot,
                                                             candidate);
-                if (old_nearest_slot == slot) {
-                    scratch_slot[old_slot] = UINT_MAX;
-                    ++affected_count;
-                    continue;
-                }
                 if (distance_to_new < old_distance) {
                     new_distance = distance_to_new;
                     scratch_slot[old_slot] = slot;
@@ -4034,12 +4144,6 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
             sse = 0.0;
             for (old_slot = 0u; old_slot < point_count; ++old_slot) {
                 old_nearest_slot = nearest_slot[old_slot];
-                old_second_slot = second_slot[old_slot];
-                old_distance = nearest_dist[old_slot];
-                old_second = second_dist[old_slot];
-                distance_to_new = sixel_kcenter_distance_sq(points,
-                                                            old_slot,
-                                                            best_candidate);
                 if (old_nearest_slot == best_slot) {
                     scan_best_slot = 0u;
                     scan_second_slot = 0u;
@@ -4070,7 +4174,11 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
                     scratch_dist[old_slot] = scan_best_dist;
                     scratch_second_slot[old_slot] = scan_second_slot;
                     scratch_second_dist[old_slot] = scan_second_dist;
-                } else if (old_second_slot == best_slot) {
+                } else if (second_slot[old_slot] == best_slot) {
+                    old_distance = nearest_dist[old_slot];
+                    distance_to_new = sixel_kcenter_distance_sq(points,
+                                                                old_slot,
+                                                                best_candidate);
                     if (distance_to_new < old_distance) {
                         scratch_slot[old_slot] = best_slot;
                         scratch_dist[old_slot] = distance_to_new;
@@ -4109,6 +4217,12 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
                         }
                     }
                 } else {
+                    old_second_slot = second_slot[old_slot];
+                    old_distance = nearest_dist[old_slot];
+                    old_second = second_dist[old_slot];
+                    distance_to_new = sixel_kcenter_distance_sq(points,
+                                                                old_slot,
+                                                                best_candidate);
                     if (distance_to_new < old_distance) {
                         scratch_slot[old_slot] = best_slot;
                         scratch_dist[old_slot] = distance_to_new;
@@ -4157,20 +4271,38 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
             continue;
         }
 
-        old_center = centers[slot];
-        centers[slot] = candidate;
-        if (!sixel_kcenter_assign_points_with_cutoff(points,
+        if (nearest_slot != NULL
+                && nearest_dist != NULL
+                && second_dist != NULL) {
+            if (!sixel_kcenter_swap_eval_with_cutoff(points,
                                                      weights,
                                                      point_count,
-                                                     centers,
-                                                     k,
+                                                     slot,
+                                                     candidate,
+                                                     nearest_slot,
+                                                     nearest_dist,
+                                                     second_dist,
                                                      allowed_radius2,
                                                      &radius2,
                                                      &sse)) {
+                continue;
+            }
+        } else {
+            old_center = centers[slot];
+            centers[slot] = candidate;
+            if (!sixel_kcenter_assign_points_with_cutoff(points,
+                                                         weights,
+                                                         point_count,
+                                                         centers,
+                                                         k,
+                                                         allowed_radius2,
+                                                         &radius2,
+                                                         &sse)) {
+                centers[slot] = old_center;
+                continue;
+            }
             centers[slot] = old_center;
-            continue;
         }
-        centers[slot] = old_center;
 
         if (sixel_kcenter_swap_candidate_is_better(radius2,
                                                    sse,
