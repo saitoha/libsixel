@@ -592,6 +592,17 @@ cleanup:
 static int
 test_runner_sleep_milliseconds(unsigned long milliseconds)
 {
+#if defined(_WIN32)
+    /*
+     * nanosleep() is not available in the MSVC runtime.
+     * This helper only accepts millisecond delays, so Sleep()
+     * provides equivalent behavior on Windows builds.
+     */
+    if (milliseconds > 0ul) {
+        Sleep((DWORD)milliseconds);
+    }
+    return 0;
+#else
     struct timespec delay;
     struct timespec remain;
     int sleep_status;
@@ -614,6 +625,7 @@ test_runner_sleep_milliseconds(unsigned long milliseconds)
         }
         delay = remain;
     }
+#endif
 }
 
 static int
