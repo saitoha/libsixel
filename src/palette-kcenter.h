@@ -247,6 +247,18 @@ sixel_set_kcenter_swap_min_gain_override(int enabled,
 SIXEL_INTERNAL_API double
 sixel_get_kcenter_swap_min_gain(void);
 
+SIXEL_INTERNAL_API int
+sixel_get_kcenter_last_polish_applied(void);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kcenter_last_polish_updates(void);
+
+SIXEL_INTERNAL_API double
+sixel_get_kcenter_last_polish_pre_radius2(void);
+
+SIXEL_INTERNAL_API double
+sixel_get_kcenter_last_polish_post_radius2(void);
+
 #ifdef __cplusplus
 }
 #endif

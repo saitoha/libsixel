@@ -128,6 +128,10 @@ static SIXEL_TLS int sixel_kcenter_swap_patience_override_enabled = 0;
 static SIXEL_TLS unsigned int sixel_kcenter_swap_patience_override_value = 0u;
 static SIXEL_TLS int sixel_kcenter_swap_min_gain_override_enabled = 0;
 static SIXEL_TLS double sixel_kcenter_swap_min_gain_override_value = 0.0;
+static SIXEL_TLS int sixel_kcenter_last_polish_applied = 0;
+static SIXEL_TLS unsigned int sixel_kcenter_last_polish_updates = 0u;
+static SIXEL_TLS double sixel_kcenter_last_polish_pre_radius2 = 0.0;
+static SIXEL_TLS double sixel_kcenter_last_polish_post_radius2 = 0.0;
 
 #define SIXEL_KCENTER_AUTO_FFT_THRESHOLD_DEFAULT 2048u
 #define SIXEL_KCENTER_RARE_KEEP_DEFAULT 0u
@@ -136,10 +140,12 @@ static SIXEL_TLS double sixel_kcenter_swap_min_gain_override_value = 0.0;
 #define SIXEL_KCENTER_SWAP_PATIENCE_DEFAULT 0u
 #define SIXEL_KCENTER_INIT_SEEDS_DEFAULT 1u
 #define SIXEL_KCENTER_SWAP_MIN_GAIN_DEFAULT 0.0
+#define SIXEL_KCENTER_CHROMA_BUCKETS 2u
 #define SIXEL_KCENTER_HUE_BUCKETS 8u
 #define SIXEL_KCENTER_LUMA_BUCKETS 4u
 #define SIXEL_KCENTER_STRATA_BUCKETS \
-    (SIXEL_KCENTER_HUE_BUCKETS * SIXEL_KCENTER_LUMA_BUCKETS)
+    (SIXEL_KCENTER_HUE_BUCKETS * SIXEL_KCENTER_LUMA_BUCKETS \
+        * SIXEL_KCENTER_CHROMA_BUCKETS)
 #define SIXEL_KCENTER_PI 3.14159265358979323846
 
 #undef SIXEL_TLS
@@ -1641,6 +1647,30 @@ sixel_get_kcenter_swap_min_gain(void)
                                           fallback);
 }
 
+SIXEL_INTERNAL_API int
+sixel_get_kcenter_last_polish_applied(void)
+{
+    return sixel_kcenter_last_polish_applied;
+}
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kcenter_last_polish_updates(void)
+{
+    return sixel_kcenter_last_polish_updates;
+}
+
+SIXEL_INTERNAL_API double
+sixel_get_kcenter_last_polish_pre_radius2(void)
+{
+    return sixel_kcenter_last_polish_pre_radius2;
+}
+
+SIXEL_INTERNAL_API double
+sixel_get_kcenter_last_polish_post_radius2(void)
+{
+    return sixel_kcenter_last_polish_post_radius2;
+}
+
 static int
 sixel_kcenter_compare_bin_desc(void const *lhs,
                                void const *rhs)
@@ -1660,6 +1690,30 @@ sixel_kcenter_compare_bin_desc(void const *lhs,
         return -1;
     }
     if (a->index > b->index) {
+        return 1;
+    }
+    return 0;
+}
+
+static int
+sixel_kcenter_compare_dispersion_asc(void const *lhs,
+                                     void const *rhs)
+{
+    sixel_kcenter_dispersion_rank_t const *left;
+    sixel_kcenter_dispersion_rank_t const *right;
+
+    left = (sixel_kcenter_dispersion_rank_t const *)lhs;
+    right = (sixel_kcenter_dispersion_rank_t const *)rhs;
+    if (left->score < right->score) {
+        return -1;
+    }
+    if (left->score > right->score) {
+        return 1;
+    }
+    if (left->index < right->index) {
+        return -1;
+    }
+    if (left->index > right->index) {
         return 1;
     }
     return 0;
@@ -1899,6 +1953,7 @@ sixel_kcenter_collect_points(double **points_out,
     unsigned int bin_index;
     unsigned int hue_bucket;
     unsigned int luma_bucket;
+    unsigned int chroma_bucket;
     unsigned int strata_index;
     unsigned int strata_rank;
     unsigned int strata_swap;
@@ -1930,12 +1985,17 @@ sixel_kcenter_collect_points(double **points_out,
     double luma_value;
     double normalized_hue;
     double chroma_value;
+    double chroma_target;
+    double chroma_accum;
     int use_perceptual_strata;
+    int chroma_edge_found;
     double *sums;
     unsigned int *counts;
     unsigned char *bin_selected;
     sixel_kcenter_bin_t *bins;
     sixel_kcenter_dispersion_rank_t *dispersion;
+    sixel_kcenter_dispersion_rank_t *chroma_rank;
+    double *chroma_cache;
     double *points;
     double *weights;
     float const *pixel_float;
@@ -1943,6 +2003,7 @@ sixel_kcenter_collect_points(double **points_out,
     unsigned int strata_picks[SIXEL_KCENTER_STRATA_BUCKETS];
     double strata_scores[SIXEL_KCENTER_STRATA_BUCKETS];
     unsigned int strata_order[SIXEL_KCENTER_STRATA_BUCKETS];
+    double chroma_edges[SIXEL_KCENTER_CHROMA_BUCKETS - 1u];
 
     status = SIXEL_BAD_ARGUMENT;
     channels = depth;
@@ -1966,6 +2027,7 @@ sixel_kcenter_collect_points(double **points_out,
     bin_index = 0u;
     hue_bucket = 0u;
     luma_bucket = 0u;
+    chroma_bucket = 0u;
     strata_index = 0u;
     strata_rank = 0u;
     strata_swap = 0u;
@@ -1997,12 +2059,17 @@ sixel_kcenter_collect_points(double **points_out,
     normalized_hue = 0.0;
     chroma_value = 0.0;
     hue_phase = 0.0;
+    chroma_target = 0.0;
+    chroma_accum = 0.0;
     use_perceptual_strata = 0;
+    chroma_edge_found = 0;
     sums = NULL;
     counts = NULL;
     bin_selected = NULL;
     bins = NULL;
     dispersion = NULL;
+    chroma_rank = NULL;
+    chroma_cache = NULL;
     points = NULL;
     weights = NULL;
     pixel_float = NULL;
@@ -2013,6 +2080,11 @@ sixel_kcenter_collect_points(double **points_out,
         strata_picks[strata_index] = UINT_MAX;
         strata_scores[strata_index] = -1.0;
         strata_order[strata_index] = strata_index;
+    }
+    for (strata_index = 0u;
+            strata_index + 1u < SIXEL_KCENTER_CHROMA_BUCKETS;
+            ++strata_index) {
+        chroma_edges[strata_index] = 0.0;
     }
 
     if (points_out == NULL || weights_out == NULL || point_count_out == NULL
@@ -2285,7 +2357,22 @@ sixel_kcenter_collect_points(double **points_out,
                 allocator,
                 (size_t)retained_count
                 * sizeof(sixel_kcenter_dispersion_rank_t));
+        if (use_perceptual_strata) {
+            chroma_cache = (double *)sixel_allocator_malloc(
+                allocator,
+                (size_t)retained_count * sizeof(double));
+            chroma_rank = (sixel_kcenter_dispersion_rank_t *)
+                sixel_allocator_malloc(
+                    allocator,
+                    (size_t)retained_count
+                    * sizeof(sixel_kcenter_dispersion_rank_t));
+        }
         if (bin_selected == NULL || dispersion == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        if (use_perceptual_strata
+                && (chroma_cache == NULL || chroma_rank == NULL)) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -2330,11 +2417,53 @@ sixel_kcenter_collect_points(double **points_out,
             dispersion[index].index = index;
             dispersion[index].score = (double)bins[index].count
                 * (dr * dr + dg * dg + db * db);
+            if (use_perceptual_strata) {
+                chroma_value = sqrt(dg * dg + db * db);
+                chroma_cache[index] = chroma_value;
+                chroma_rank[index].index = index;
+                chroma_rank[index].score = chroma_value;
+            }
         }
         qsort(dispersion,
               retained_count,
               sizeof(sixel_kcenter_dispersion_rank_t),
               sixel_kcenter_compare_dispersion_desc);
+        if (use_perceptual_strata
+                && retained_count > 0u
+                && SIXEL_KCENTER_CHROMA_BUCKETS > 1u) {
+            qsort(chroma_rank,
+                  retained_count,
+                  sizeof(sixel_kcenter_dispersion_rank_t),
+                  sixel_kcenter_compare_dispersion_asc);
+            for (strata_rank = 0u;
+                    strata_rank + 1u < SIXEL_KCENTER_CHROMA_BUCKETS;
+                    ++strata_rank) {
+                chroma_target = retained_weight
+                    * (double)(strata_rank + 1u)
+                    / (double)SIXEL_KCENTER_CHROMA_BUCKETS;
+                chroma_accum = 0.0;
+                chroma_edges[strata_rank] = chroma_rank[
+                    retained_count - 1u].score;
+                chroma_edge_found = 0;
+                for (strata_swap = 0u;
+                        strata_swap < retained_count;
+                        ++strata_swap) {
+                    bin_index = chroma_rank[strata_swap].index;
+                    chroma_accum += (double)bins[bin_index].count;
+                    if (chroma_accum + 1.0e-12 < chroma_target) {
+                        continue;
+                    }
+                    chroma_edges[strata_rank]
+                        = chroma_rank[strata_swap].score;
+                    chroma_edge_found = 1;
+                    break;
+                }
+                if (!chroma_edge_found) {
+                    chroma_edges[strata_rank] = chroma_rank[
+                        retained_count - 1u].score;
+                }
+            }
+        }
 
         for (strata_index = 0u;
                 strata_index < SIXEL_KCENTER_STRATA_BUCKETS;
@@ -2360,7 +2489,7 @@ sixel_kcenter_collect_points(double **points_out,
             if (use_perceptual_strata) {
                 dg = bins[index].g - mean_g;
                 db = bins[index].b - mean_b;
-                chroma_value = sqrt(dg * dg + db * db);
+                chroma_value = chroma_cache[index];
                 hue_phase = atan2(db, dg);
                 normalized_hue = (hue_phase + SIXEL_KCENTER_PI)
                     / (2.0 * SIXEL_KCENTER_PI);
@@ -2371,8 +2500,17 @@ sixel_kcenter_collect_points(double **points_out,
                     normalized_hue = 0.999999;
                 }
                 dr = bins[index].r - mean_r;
+                chroma_bucket = 0u;
+                while (chroma_bucket + 1u < SIXEL_KCENTER_CHROMA_BUCKETS) {
+                    if (chroma_value
+                            <= chroma_edges[chroma_bucket] + 1.0e-12) {
+                        break;
+                    }
+                    ++chroma_bucket;
+                }
                 probability = (double)bins[index].count
-                    * (0.50 * dr * dr + chroma_value * chroma_value);
+                    * (1.10 * dr * dr
+                       + 1.50 * chroma_value * chroma_value);
             } else {
                 max_component = bins[index].r;
                 if (bins[index].g > max_component) {
@@ -2417,13 +2555,15 @@ sixel_kcenter_collect_points(double **points_out,
                 db = bins[index].b - mean_b;
                 probability = (double)bins[index].count
                     * (dr * dr + dg * dg + db * db);
+                chroma_bucket = 0u;
             }
             hue_bucket = (unsigned int)(
                 normalized_hue * (double)SIXEL_KCENTER_HUE_BUCKETS);
             if (hue_bucket >= SIXEL_KCENTER_HUE_BUCKETS) {
                 hue_bucket = SIXEL_KCENTER_HUE_BUCKETS - 1u;
             }
-            strata_index = luma_bucket * SIXEL_KCENTER_HUE_BUCKETS
+            strata_index = (luma_bucket * SIXEL_KCENTER_CHROMA_BUCKETS
+                + chroma_bucket) * SIXEL_KCENTER_HUE_BUCKETS
                 + hue_bucket;
             if (probability
                     > strata_scores[strata_index] + 1.0e-12) {
@@ -2544,6 +2684,12 @@ end:
     }
     if (dispersion != NULL) {
         sixel_allocator_free(allocator, dispersion);
+    }
+    if (chroma_rank != NULL) {
+        sixel_allocator_free(allocator, chroma_rank);
+    }
+    if (chroma_cache != NULL) {
+        sixel_allocator_free(allocator, chroma_cache);
     }
     if (bin_selected != NULL) {
         sixel_allocator_free(allocator, bin_selected);
@@ -2667,6 +2813,75 @@ sixel_kcenter_assign_points(double const *points,
     }
 }
 
+/*
+ * Evaluate one center-set candidate with a hard radius cutoff.
+ * Return 1 when the candidate stayed within the cutoff, 0 otherwise.
+ */
+static int
+sixel_kcenter_assign_points_with_cutoff(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int const *centers,
+    unsigned int k,
+    double allowed_radius2,
+    double *radius2_out,
+    double *sse_out)
+{
+    unsigned int index;
+    unsigned int slot;
+    unsigned int center_index;
+    double distance;
+    double best_distance;
+    double radius2;
+    double sse;
+    double weight_value;
+
+    index = 0u;
+    slot = 0u;
+    center_index = 0u;
+    distance = 0.0;
+    best_distance = 0.0;
+    radius2 = 0.0;
+    sse = 0.0;
+    weight_value = 0.0;
+
+    if (points == NULL || centers == NULL || point_count == 0u || k == 0u
+            || radius2_out == NULL || sse_out == NULL) {
+        return 0;
+    }
+
+    for (index = 0u; index < point_count; ++index) {
+        best_distance = sixel_kcenter_distance_sq(points, index, centers[0u]);
+        for (slot = 1u; slot < k; ++slot) {
+            center_index = centers[slot];
+            distance = sixel_kcenter_distance_sq(points, index, center_index);
+            if (distance < best_distance) {
+                best_distance = distance;
+            }
+        }
+
+        if (best_distance > radius2) {
+            radius2 = best_distance;
+            if (radius2 > allowed_radius2 + 1.0e-12) {
+                return 0;
+            }
+        }
+        weight_value = 1.0;
+        if (weights != NULL) {
+            weight_value = weights[index];
+            if (weight_value <= 0.0) {
+                weight_value = 1.0;
+            }
+        }
+        sse += best_distance * weight_value;
+    }
+
+    *radius2_out = radius2;
+    *sse_out = sse;
+    return 1;
+}
+
 static void
 sixel_kcenter_assign_points_with_second(
     double const *points,
@@ -2780,6 +2995,182 @@ sixel_kcenter_assign_points_with_second(
     }
     if (sse_out != NULL) {
         *sse_out = sse;
+    }
+}
+
+/*
+ * One-pass SSE polish under a strict radius cap.  A candidate is accepted only
+ * when the radius does not worsen and SSE strictly improves.
+ */
+static void
+sixel_kcenter_polish_sse_with_radius_guard(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int *centers,
+    unsigned int k,
+    unsigned int *nearest_slot,
+    double *nearest_dist,
+    unsigned int *second_slot,
+    double *second_dist,
+    unsigned int *scratch_slot,
+    double *scratch_dist,
+    unsigned int *scratch_second_slot,
+    double *scratch_second_dist,
+    unsigned char *center_mask,
+    double *cluster_weights,
+    double *cluster_sums,
+    double *radius2_io,
+    double *sse_io,
+    unsigned int *updates_io)
+{
+    unsigned int slot;
+    unsigned int index;
+    unsigned int old_center;
+    unsigned int candidate;
+    double target_r;
+    double target_g;
+    double target_b;
+    double distance;
+    double candidate_dist;
+    double weight_value;
+    double radius_limit2;
+    double best_sse;
+    double trial_radius2;
+    double trial_sse;
+    unsigned int updates;
+    int accepted;
+
+    slot = 0u;
+    index = 0u;
+    old_center = 0u;
+    candidate = 0u;
+    target_r = 0.0;
+    target_g = 0.0;
+    target_b = 0.0;
+    distance = 0.0;
+    candidate_dist = 0.0;
+    weight_value = 0.0;
+    radius_limit2 = 0.0;
+    best_sse = 0.0;
+    trial_radius2 = 0.0;
+    trial_sse = 0.0;
+    updates = 0u;
+    accepted = 0;
+
+    if (points == NULL || centers == NULL || nearest_slot == NULL
+            || nearest_dist == NULL || second_slot == NULL
+            || second_dist == NULL || scratch_slot == NULL
+            || scratch_dist == NULL || scratch_second_slot == NULL
+            || scratch_second_dist == NULL || center_mask == NULL
+            || cluster_weights == NULL || cluster_sums == NULL
+            || radius2_io == NULL || sse_io == NULL
+            || point_count == 0u || k == 0u) {
+        if (updates_io != NULL) {
+            *updates_io = 0u;
+        }
+        return;
+    }
+
+    radius_limit2 = *radius2_io;
+    best_sse = *sse_io;
+    for (slot = 0u; slot < k; ++slot) {
+        weight_value = cluster_weights[slot];
+        if (weight_value <= 0.0) {
+            continue;
+        }
+        target_r = cluster_sums[slot * 3u + 0u] / weight_value;
+        target_g = cluster_sums[slot * 3u + 1u] / weight_value;
+        target_b = cluster_sums[slot * 3u + 2u] / weight_value;
+
+        candidate = centers[slot];
+        candidate_dist = DBL_MAX;
+        for (index = 0u; index < point_count; ++index) {
+            if (nearest_slot[index] != slot) {
+                continue;
+            }
+            distance = points[index * 3u + 0u] - target_r;
+            distance = distance * distance;
+            weight_value = points[index * 3u + 1u] - target_g;
+            distance += weight_value * weight_value;
+            weight_value = points[index * 3u + 2u] - target_b;
+            distance += weight_value * weight_value;
+            if (distance < candidate_dist - 1.0e-12) {
+                candidate = index;
+                candidate_dist = distance;
+                continue;
+            }
+            if (distance <= candidate_dist + 1.0e-12 && index < candidate) {
+                candidate = index;
+                candidate_dist = distance;
+            }
+        }
+        if (candidate == centers[slot]) {
+            continue;
+        }
+        if (center_mask[candidate] != 0u) {
+            continue;
+        }
+
+        old_center = centers[slot];
+        centers[slot] = candidate;
+        sixel_kcenter_assign_points_with_second(points,
+                                                weights,
+                                                point_count,
+                                                centers,
+                                                k,
+                                                scratch_slot,
+                                                scratch_dist,
+                                                scratch_second_slot,
+                                                scratch_second_dist,
+                                                &trial_radius2,
+                                                &trial_sse,
+                                                NULL,
+                                                NULL);
+        if (trial_radius2 <= radius_limit2 + 1.0e-12
+                && trial_sse < best_sse - 1.0e-9) {
+            center_mask[old_center] = 0u;
+            center_mask[candidate] = 1u;
+            memcpy(nearest_slot,
+                   scratch_slot,
+                   (size_t)point_count * sizeof(unsigned int));
+            memcpy(nearest_dist,
+                   scratch_dist,
+                   (size_t)point_count * sizeof(double));
+            memcpy(second_slot,
+                   scratch_second_slot,
+                   (size_t)point_count * sizeof(unsigned int));
+            memcpy(second_dist,
+                   scratch_second_dist,
+                   (size_t)point_count * sizeof(double));
+            *radius2_io = trial_radius2;
+            *sse_io = trial_sse;
+            best_sse = trial_sse;
+            ++updates;
+            accepted = 1;
+            sixel_kcenter_assign_points_with_second(points,
+                                                    weights,
+                                                    point_count,
+                                                    centers,
+                                                    k,
+                                                    nearest_slot,
+                                                    nearest_dist,
+                                                    second_slot,
+                                                    second_dist,
+                                                    &trial_radius2,
+                                                    &trial_sse,
+                                                    cluster_weights,
+                                                    cluster_sums);
+            continue;
+        }
+        centers[slot] = old_center;
+    }
+
+    if (updates_io != NULL) {
+        *updates_io = updates;
+    }
+    if (!accepted) {
+        return;
     }
 }
 
@@ -3699,17 +4090,17 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
 
         old_center = centers[slot];
         centers[slot] = candidate;
-        sixel_kcenter_assign_points(points,
-                                    weights,
-                                    point_count,
-                                    centers,
-                                    k,
-                                    scratch_slot,
-                                    scratch_dist,
-                                    &radius2,
-                                    &sse,
-                                    NULL,
-                                    NULL);
+        if (!sixel_kcenter_assign_points_with_cutoff(points,
+                                                     weights,
+                                                     point_count,
+                                                     centers,
+                                                     k,
+                                                     allowed_radius2,
+                                                     &radius2,
+                                                     &sse)) {
+            centers[slot] = old_center;
+            continue;
+        }
         centers[slot] = old_center;
 
         if (sixel_kcenter_swap_candidate_is_better(radius2,
@@ -4015,6 +4406,10 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
         trial_iterations = 0u;
         no_improve = 0u;
         effective_topk = swap_topk;
+        if (profile == SIXEL_PALETTE_KCENTER_PROFILE_SPEED
+                && effective_topk > 2u) {
+            effective_topk = 2u;
+        }
         patience_limit = swap_patience;
         if (adaptive_swap_controls && patience_limit == 0u) {
             patience_limit = sixel_kcenter_profile_default_swap_patience(
@@ -4037,6 +4432,10 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
                     if (adaptive_swap_controls
                             && gain2 > tiny_gain2 * 4.0 + 1.0e-12) {
                         effective_topk = swap_topk;
+                        if (profile == SIXEL_PALETTE_KCENTER_PROFILE_SPEED
+                                && effective_topk > 2u) {
+                            effective_topk = 2u;
+                        }
                     } else if (adaptive_swap_controls
                             && effective_topk > 1u) {
                         --effective_topk;
@@ -4169,8 +4568,14 @@ sixel_kcenter_choose_auto_algo(int quality_mode,
     }
     if (use_perceptual_bias) {
         if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
-            if (threshold < 21846u) {
-                threshold *= 3u;
+            if (quality_mode == SIXEL_QUALITY_LOW) {
+                if (threshold < 32768u) {
+                    threshold *= 2u;
+                } else {
+                    threshold = 65536u;
+                }
+            } else if (threshold < 16384u) {
+                threshold *= 4u;
             } else {
                 threshold = 65536u;
             }
@@ -4277,9 +4682,11 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     unsigned int swap_patience;
     double swap_min_gain;
     int use_cluster_candidates;
+    int use_perceptual_polish;
     unsigned int total_iterations;
     unsigned int best_iterations;
     unsigned int run_iterations;
+    unsigned int polish_updates;
     unsigned int resolved_merge;
     int apply_merge;
     sixel_kcenter_algo_t algo;
@@ -4314,6 +4721,7 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     double sse;
     double best_radius2;
     double best_sse;
+    double polish_pre_radius2;
     double prune_mass;
     double budget_scale;
     unsigned long *merge_weights;
@@ -4404,9 +4812,11 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     swap_patience = SIXEL_KCENTER_SWAP_PATIENCE_DEFAULT;
     swap_min_gain = SIXEL_KCENTER_SWAP_MIN_GAIN_DEFAULT;
     use_cluster_candidates = 0;
+    use_perceptual_polish = 0;
     total_iterations = 0u;
     best_iterations = 0u;
     run_iterations = 0u;
+    polish_updates = 0u;
     resolved_merge = SIXEL_FINAL_MERGE_NONE;
     apply_merge = 0;
     algo = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
@@ -4441,6 +4851,7 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     sse = 0.0;
     best_radius2 = 0.0;
     best_sse = 0.0;
+    polish_pre_radius2 = 0.0;
     prune_mass = 0.995;
     budget_scale = SIXEL_KCENTER_BUDGET_SCALE_DEFAULT;
     merge_weights = NULL;
@@ -4536,6 +4947,11 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
         reqcolors = 1u;
     }
 
+    sixel_kcenter_last_polish_applied = 0;
+    sixel_kcenter_last_polish_updates = 0u;
+    sixel_kcenter_last_polish_pre_radius2 = 0.0;
+    sixel_kcenter_last_polish_post_radius2 = 0.0;
+
     override_lock_acquired = sixel_kcenter_override_lock_acquire();
 
     job_init = sixel_palette_kcenter_log_start(logger,
@@ -4570,6 +4986,16 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
                                                &swap_topk);
     use_cluster_candidates = (profile != SIXEL_PALETTE_KCENTER_PROFILE_LEGACY
                               && swap_topk > 1u);
+    use_perceptual_polish = (profile != SIXEL_PALETTE_KCENTER_PROFILE_LEGACY
+                             && sixel_kcenter_resolve_space_policy(
+                                 space_policy)
+                             == SIXEL_PALETTE_KCENTER_SPACE_POLICY_PERCEPTUAL
+                             && (pixelformat
+                                 == SIXEL_PIXELFORMAT_OKLABFLOAT32
+                                 || pixelformat
+                                 == SIXEL_PIXELFORMAT_CIELABFLOAT32
+                                 || pixelformat
+                                 == SIXEL_PIXELFORMAT_DIN99DFLOAT32));
 
     status = sixel_kcenter_collect_points(&points,
                                           &weights,
@@ -4816,6 +5242,45 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
                                             &sse,
                                             cluster_weights,
                                             cluster_sums);
+    if (use_perceptual_polish
+            && resolved_algo != SIXEL_PALETTE_KCENTER_ALGO_FFT
+            && point_count <= 8192u
+            && k <= 128u) {
+        polish_pre_radius2 = radius2;
+        sixel_kcenter_polish_sse_with_radius_guard(
+            points,
+            weights,
+            point_count,
+            centers,
+            k,
+            nearest_slot,
+            nearest_dist,
+            second_slot,
+            second_dist,
+            scratch_slot,
+            scratch_dist,
+            scratch_second_slot,
+            scratch_second_dist,
+            center_mask,
+            cluster_weights,
+            cluster_sums,
+            &radius2,
+            &sse,
+            &polish_updates);
+        sixel_kcenter_last_polish_applied = 1;
+        sixel_kcenter_last_polish_updates = polish_updates;
+        sixel_kcenter_last_polish_pre_radius2 = polish_pre_radius2;
+        sixel_kcenter_last_polish_post_radius2 = radius2;
+    }
+    if (best_radius2 < 0.0) {
+        best_radius2 = radius2;
+        best_sse = sse;
+    } else if (radius2 < best_radius2 - 1.0e-12
+            || (radius2 <= best_radius2 + 1.0e-12
+                && sse < best_sse - 1.0e-9)) {
+        best_radius2 = radius2;
+        best_sse = sse;
+    }
 
     for (slot = 0u; slot < k; ++slot) {
         final_centers[slot * 3u + 0u] = points[centers[slot] * 3u + 0u];
@@ -4827,11 +5292,13 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     iterate_stop = sixel_timer_now();
     (void)sixel_compat_snprintf(log_detail,
                                 sizeof(log_detail),
-                                "algo=%s iter=%u radius=%.4f sse=%.4f",
+                                "algo=%s iter=%u radius=%.4f sse=%.4f "
+                                "polish_updates=%u",
                                 sixel_kcenter_algo_to_string(resolved_algo),
                                 total_iterations,
                                 sqrt(best_radius2),
-                                best_sse);
+                                best_sse,
+                                polish_updates);
     sixel_palette_kcenter_log_finish(logger,
                                      job_iter,
                                      engine_name,

@@ -96,19 +96,26 @@ def run_encode(
     total_ns = 0
     latest_sixel = b""
     index = 0
+    command = [
+        str(img2sixel),
+        str(image),
+        "-Q",
+        model,
+        "-X",
+        xspace,
+        "-W",
+        wspace,
+    ]
+
+    # Exclude one warmup from aggregation to stabilize first-run bias.
+    subprocess.run(
+        command,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
 
     for index in range(repeat):
-        command = [
-            str(img2sixel),
-            str(image),
-            "-Q",
-            model,
-            "-X",
-            xspace,
-            "-W",
-            wspace,
-        ]
-
         started = time.perf_counter_ns()
         result = subprocess.run(
             command,
@@ -276,6 +283,18 @@ def write_tsv(path: Path, rows: list[CaseMetric]) -> None:
             )
 
 
+def median(values: list[float]) -> float:
+    ordered = sorted(values)
+    length = len(ordered)
+    center = length // 2
+
+    if length == 0:
+        return 0.0
+    if length % 2 == 1:
+        return ordered[center]
+    return (ordered[center - 1] + ordered[center]) / 2.0
+
+
 def main() -> int:
     args = parse_args()
 
@@ -329,12 +348,16 @@ def main() -> int:
     speed_win = sum(item.speed_win for item in rows)
     quality_win = sum(item.quality_win for item in rows)
     extreme = sum(item.extreme_regression for item in rows)
+    median_tr = median([item.time_ratio for item in rows])
+    median_dq = median([item.quality_delta for item in rows])
 
     print("")
     print(f"wrote: {out_path}")
     print(f"strict_win: {strict_win}/25")
     print(f"speed_win:  {speed_win}/25")
     print(f"quality_win:{quality_win}/25")
+    print(f"median_tr:  {median_tr:.6f}")
+    print(f"median_dq:  {median_dq:+.6f}")
     print(f"extreme_regression(tr>1.10 && dq<-0.003): {extreme}")
 
     return 0
