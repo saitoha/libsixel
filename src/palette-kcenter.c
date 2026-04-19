@@ -1960,6 +1960,941 @@ sixel_kcenter_auto_point_budget_adaptive(unsigned int reqcolors,
     return budget;
 }
 
+typedef struct sixel_kcenter_collect_ctx {
+    unsigned char const *data;
+    unsigned int length;
+    unsigned int depth;
+    int pixelformat;
+    int treat_input_as_float32;
+    unsigned int histbits;
+    unsigned int point_budget;
+    double prune_mass;
+    unsigned int reqcolors;
+    int quality_mode;
+    sixel_kcenter_candidate_policy_t candidate_policy;
+    sixel_kcenter_space_policy_t space_policy;
+    unsigned int rare_keep;
+    sixel_kcenter_budget_policy_t budget_policy;
+    double budget_scale;
+    double const *float32_channel_scale;
+    double const *float32_channel_offset;
+    sixel_allocator_t *allocator;
+    unsigned int channels;
+    unsigned int pixel_stride;
+    unsigned int pixel_count;
+    unsigned int bin_count;
+    unsigned int shift_bits;
+    unsigned int visible_count;
+    unsigned int active_count;
+    unsigned int keep_count;
+    unsigned int budget;
+    unsigned int selected_count;
+    unsigned int retained_count;
+    unsigned int rare_limit;
+    unsigned int high_target;
+    double total_weight;
+    double retained_weight;
+    double entropy_norm;
+    double effective_density;
+    int input_is_float32;
+    int use_perceptual_strata;
+    int oklab_perceptual_space;
+    unsigned int *counts;
+    double *sums;
+    sixel_kcenter_bin_t *bins;
+    unsigned char *bin_selected;
+    sixel_kcenter_dispersion_rank_t *dispersion;
+    sixel_kcenter_dispersion_rank_t *chroma_rank;
+    double *chroma_cache;
+    double *points;
+    double *weights;
+    unsigned int strata_picks[SIXEL_KCENTER_STRATA_BUCKETS];
+    double strata_scores[SIXEL_KCENTER_STRATA_BUCKETS];
+    unsigned int strata_order[SIXEL_KCENTER_STRATA_BUCKETS];
+    double chroma_edges[SIXEL_KCENTER_CHROMA_BUCKETS - 1u];
+} sixel_kcenter_collect_ctx_t;
+
+static void
+sixel_kcenter_collect_reset_strata(sixel_kcenter_collect_ctx_t *ctx)
+{
+    unsigned int strata_index;
+
+    strata_index = 0u;
+    if (ctx == NULL) {
+        return;
+    }
+    for (strata_index = 0u;
+            strata_index < SIXEL_KCENTER_STRATA_BUCKETS;
+            ++strata_index) {
+        ctx->strata_picks[strata_index] = UINT_MAX;
+        ctx->strata_scores[strata_index] = -1.0;
+        ctx->strata_order[strata_index] = strata_index;
+    }
+    for (strata_index = 0u;
+            strata_index + 1u < SIXEL_KCENTER_CHROMA_BUCKETS;
+            ++strata_index) {
+        ctx->chroma_edges[strata_index] = 0.0;
+    }
+}
+
+static void
+sixel_kcenter_collect_ctx_clear(sixel_kcenter_collect_ctx_t *ctx)
+{
+    if (ctx == NULL) {
+        return;
+    }
+    memset(ctx, 0, sizeof(*ctx));
+    sixel_kcenter_collect_reset_strata(ctx);
+}
+
+static SIXELSTATUS
+sixel_kcenter_collect_prepare(sixel_kcenter_collect_ctx_t *ctx)
+{
+    SIXELSTATUS status;
+    int input_is_float32;
+
+    status = SIXEL_BAD_ARGUMENT;
+    input_is_float32 = 0;
+    if (ctx == NULL) {
+        return status;
+    }
+
+    ctx->channels = ctx->depth;
+    ctx->pixel_stride = ctx->depth;
+    ctx->budget = ctx->point_budget;
+    ctx->visible_count = 0u;
+    ctx->active_count = 0u;
+    ctx->retained_count = 0u;
+    ctx->selected_count = 0u;
+    ctx->input_is_float32 = 0;
+    ctx->use_perceptual_strata = 0;
+    ctx->oklab_perceptual_space = 0;
+
+    input_is_float32 = (ctx->treat_input_as_float32
+                        && SIXEL_PIXELFORMAT_IS_FLOAT32(ctx->pixelformat));
+    if (input_is_float32) {
+        if (ctx->depth == 0u
+                || ctx->depth % (unsigned int)sizeof(float) != 0u) {
+            return status;
+        }
+        ctx->channels = ctx->depth / (unsigned int)sizeof(float);
+        ctx->pixel_stride = ctx->depth;
+    }
+    if (ctx->channels != 3u && ctx->channels != 4u) {
+        return status;
+    }
+    if (ctx->pixel_stride == 0u) {
+        return status;
+    }
+
+    ctx->input_is_float32 = input_is_float32;
+    ctx->pixel_count = ctx->length / ctx->pixel_stride;
+    if (ctx->histbits > 8u) {
+        return status;
+    }
+    ctx->shift_bits = 8u - ctx->histbits;
+    ctx->bin_count = 1u << (ctx->histbits * 3u);
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_kcenter_collect_build_histogram(sixel_kcenter_collect_ctx_t *ctx)
+{
+    SIXELSTATUS status;
+    unsigned int index;
+    unsigned int ri;
+    unsigned int gi;
+    unsigned int bi;
+    unsigned int bin_index;
+    unsigned int offset;
+    unsigned int alpha_byte;
+    double red;
+    double green;
+    double blue;
+    float const *pixel_float;
+
+    status = SIXEL_BAD_ALLOCATION;
+    index = 0u;
+    ri = 0u;
+    gi = 0u;
+    bi = 0u;
+    bin_index = 0u;
+    offset = 0u;
+    alpha_byte = 0u;
+    red = 0.0;
+    green = 0.0;
+    blue = 0.0;
+    pixel_float = NULL;
+
+    ctx->counts = (unsigned int *)sixel_allocator_malloc(
+        ctx->allocator,
+        (size_t)ctx->bin_count * sizeof(unsigned int));
+    ctx->sums = (double *)sixel_allocator_malloc(
+        ctx->allocator,
+        (size_t)ctx->bin_count * 3u * sizeof(double));
+    if (ctx->counts == NULL || ctx->sums == NULL) {
+        return status;
+    }
+    memset(ctx->counts, 0, (size_t)ctx->bin_count * sizeof(unsigned int));
+    memset(ctx->sums, 0, (size_t)ctx->bin_count * 3u * sizeof(double));
+
+    for (index = 0u; index < ctx->pixel_count; ++index) {
+        offset = index * ctx->pixel_stride;
+        if (ctx->channels == 4u) {
+            if (ctx->input_is_float32) {
+                pixel_float = (float const *)(void const *)(ctx->data + offset);
+                if (sixel_pixelformat_float_channel_clamp(
+                        ctx->pixelformat,
+                        3,
+                        pixel_float[3]) <= 0.0f) {
+                    continue;
+                }
+            } else {
+                alpha_byte = ctx->data[offset + 3u];
+                if (alpha_byte == 0u) {
+                    continue;
+                }
+            }
+        }
+
+        if (ctx->input_is_float32) {
+            pixel_float = (float const *)(void const *)(ctx->data + offset);
+            red = (double)sixel_pixelformat_float_channel_clamp(
+                ctx->pixelformat,
+                0,
+                pixel_float[0]);
+            green = (double)sixel_pixelformat_float_channel_clamp(
+                ctx->pixelformat,
+                1,
+                pixel_float[1]);
+            blue = (double)sixel_pixelformat_float_channel_clamp(
+                ctx->pixelformat,
+                2,
+                pixel_float[2]);
+            red = red * ctx->float32_channel_scale[0]
+                + ctx->float32_channel_offset[0];
+            green = green * ctx->float32_channel_scale[1]
+                + ctx->float32_channel_offset[1];
+            blue = blue * ctx->float32_channel_scale[2]
+                + ctx->float32_channel_offset[2];
+        } else {
+            red = (double)ctx->data[offset + 0u];
+            green = (double)ctx->data[offset + 1u];
+            blue = (double)ctx->data[offset + 2u];
+        }
+
+        if (red < 0.0) {
+            red = 0.0;
+        } else if (red > 255.0) {
+            red = 255.0;
+        }
+        if (green < 0.0) {
+            green = 0.0;
+        } else if (green > 255.0) {
+            green = 255.0;
+        }
+        if (blue < 0.0) {
+            blue = 0.0;
+        } else if (blue > 255.0) {
+            blue = 255.0;
+        }
+
+        ri = ((unsigned int)red) >> ctx->shift_bits;
+        gi = ((unsigned int)green) >> ctx->shift_bits;
+        bi = ((unsigned int)blue) >> ctx->shift_bits;
+        bin_index = (ri << (ctx->histbits * 2u))
+            | (gi << ctx->histbits) | bi;
+        if (bin_index >= ctx->bin_count) {
+            continue;
+        }
+        ctx->counts[bin_index] += 1u;
+        ctx->sums[bin_index * 3u + 0u] += red;
+        ctx->sums[bin_index * 3u + 1u] += green;
+        ctx->sums[bin_index * 3u + 2u] += blue;
+        ++ctx->visible_count;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_kcenter_collect_build_bins_and_stats(sixel_kcenter_collect_ctx_t *ctx)
+{
+    SIXELSTATUS status;
+    unsigned int index;
+    unsigned int active_count;
+    double keep_target;
+    double accum_weight;
+    double retained_weight;
+    double probability;
+    double entropy;
+    double effective_bins;
+
+    status = SIXEL_BAD_ALLOCATION;
+    index = 0u;
+    active_count = 0u;
+    keep_target = 0.0;
+    accum_weight = 0.0;
+    retained_weight = 0.0;
+    probability = 0.0;
+    entropy = 0.0;
+    effective_bins = 0.0;
+
+    if (ctx->visible_count == 0u) {
+        ctx->active_count = 0u;
+        ctx->retained_count = 0u;
+        return SIXEL_OK;
+    }
+
+    for (index = 0u; index < ctx->bin_count; ++index) {
+        if (ctx->counts[index] > 0u) {
+            ++active_count;
+        }
+    }
+    if (active_count == 0u) {
+        ctx->active_count = 0u;
+        ctx->retained_count = 0u;
+        return SIXEL_OK;
+    }
+
+    ctx->keep_count = active_count;
+    ctx->bins = (sixel_kcenter_bin_t *)sixel_allocator_malloc(
+        ctx->allocator,
+        (size_t)ctx->keep_count * sizeof(sixel_kcenter_bin_t));
+    if (ctx->bins == NULL) {
+        return status;
+    }
+
+    active_count = 0u;
+    ctx->total_weight = 0.0;
+    for (index = 0u; index < ctx->bin_count; ++index) {
+        if (ctx->counts[index] == 0u) {
+            continue;
+        }
+        ctx->bins[active_count].index = index;
+        ctx->bins[active_count].count = ctx->counts[index];
+        ctx->bins[active_count].r = ctx->sums[index * 3u + 0u]
+            / (double)ctx->counts[index];
+        ctx->bins[active_count].g = ctx->sums[index * 3u + 1u]
+            / (double)ctx->counts[index];
+        ctx->bins[active_count].b = ctx->sums[index * 3u + 2u]
+            / (double)ctx->counts[index];
+        ctx->total_weight += (double)ctx->counts[index];
+        ++active_count;
+    }
+
+    qsort(ctx->bins,
+          active_count,
+          sizeof(sixel_kcenter_bin_t),
+          sixel_kcenter_compare_bin_desc);
+
+    keep_target = ctx->prune_mass * ctx->total_weight;
+    if (keep_target < 1.0) {
+        keep_target = 1.0;
+    }
+    accum_weight = 0.0;
+    ctx->active_count = 0u;
+    for (index = 0u; index < active_count; ++index) {
+        accum_weight += (double)ctx->bins[index].count;
+        ++ctx->active_count;
+        if (accum_weight >= keep_target
+                && ctx->active_count >= ctx->reqcolors) {
+            break;
+        }
+    }
+    if (ctx->active_count == 0u) {
+        ctx->active_count = 1u;
+    }
+    ctx->retained_count = ctx->active_count;
+    ctx->retained_weight = 0.0;
+    retained_weight = 0.0;
+    for (index = 0u; index < ctx->retained_count; ++index) {
+        retained_weight += (double)ctx->bins[index].count;
+    }
+    ctx->retained_weight = retained_weight;
+
+    if (retained_weight > 0.0 && ctx->retained_count > 1u) {
+        entropy = 0.0;
+        for (index = 0u; index < ctx->retained_count; ++index) {
+            probability = (double)ctx->bins[index].count / retained_weight;
+            if (probability <= 0.0) {
+                continue;
+            }
+            entropy -= probability * log(probability);
+        }
+        ctx->entropy_norm = entropy / log((double)ctx->retained_count);
+        if (ctx->entropy_norm < 0.0) {
+            ctx->entropy_norm = 0.0;
+        } else if (ctx->entropy_norm > 1.0) {
+            ctx->entropy_norm = 1.0;
+        }
+        effective_bins = exp(entropy);
+        ctx->effective_density = effective_bins / (double)ctx->retained_count;
+        if (ctx->effective_density < 0.0) {
+            ctx->effective_density = 0.0;
+        } else if (ctx->effective_density > 1.0) {
+            ctx->effective_density = 1.0;
+        }
+    } else {
+        ctx->entropy_norm = 0.0;
+        ctx->effective_density = 0.0;
+    }
+    return SIXEL_OK;
+}
+
+static void
+sixel_kcenter_collect_resolve_budget(sixel_kcenter_collect_ctx_t *ctx)
+{
+    if (ctx->budget == 0u) {
+        if (sixel_kcenter_resolve_budget_policy(ctx->budget_policy)
+                == SIXEL_PALETTE_KCENTER_BUDGET_POLICY_ADAPTIVE) {
+            ctx->budget = sixel_kcenter_auto_point_budget_adaptive(
+                ctx->reqcolors,
+                ctx->visible_count,
+                ctx->retained_count,
+                ctx->quality_mode,
+                ctx->entropy_norm,
+                ctx->effective_density);
+        } else {
+            ctx->budget = sixel_kcenter_auto_point_budget_legacy(
+                ctx->reqcolors,
+                ctx->visible_count,
+                ctx->quality_mode);
+        }
+        ctx->budget = sixel_kcenter_apply_budget_scale(ctx->budget,
+                                                       ctx->budget_scale);
+    }
+    if (ctx->budget > ctx->retained_count) {
+        ctx->budget = ctx->retained_count;
+    }
+    if (ctx->budget == 0u) {
+        ctx->budget = 1u;
+    }
+}
+
+static SIXELSTATUS
+sixel_kcenter_collect_allocate_output_buffers(sixel_kcenter_collect_ctx_t *ctx)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_BAD_ALLOCATION;
+    ctx->points = (double *)sixel_allocator_malloc(
+        ctx->allocator,
+        (size_t)ctx->budget * 3u * sizeof(double));
+    ctx->weights = (double *)sixel_allocator_malloc(
+        ctx->allocator,
+        (size_t)ctx->budget * sizeof(double));
+    if (ctx->points == NULL || ctx->weights == NULL) {
+        return status;
+    }
+    return SIXEL_OK;
+}
+
+static void
+sixel_kcenter_collect_select_legacy(sixel_kcenter_collect_ctx_t *ctx)
+{
+    unsigned int index;
+
+    index = 0u;
+    for (index = 0u; index < ctx->budget; ++index) {
+        ctx->points[index * 3u + 0u] = ctx->bins[index].r;
+        ctx->points[index * 3u + 1u] = ctx->bins[index].g;
+        ctx->points[index * 3u + 2u] = ctx->bins[index].b;
+        ctx->weights[index] = (double)ctx->bins[index].count;
+    }
+}
+
+static void
+sixel_kcenter_collect_hybrid_pick_strata(sixel_kcenter_collect_ctx_t *ctx)
+{
+    unsigned int strata_rank;
+    unsigned int strata_swap;
+    unsigned int strata_index;
+    unsigned int bin_index;
+
+    strata_rank = 0u;
+    strata_swap = 0u;
+    strata_index = 0u;
+    bin_index = 0u;
+    for (strata_rank = 0u;
+            strata_rank < SIXEL_KCENTER_STRATA_BUCKETS;
+            ++strata_rank) {
+        for (strata_swap = strata_rank + 1u;
+                strata_swap < SIXEL_KCENTER_STRATA_BUCKETS;
+                ++strata_swap) {
+            if (ctx->strata_scores[ctx->strata_order[strata_swap]]
+                    > ctx->strata_scores[ctx->strata_order[strata_rank]]
+                    + 1.0e-12) {
+                strata_index = ctx->strata_order[strata_rank];
+                ctx->strata_order[strata_rank]
+                    = ctx->strata_order[strata_swap];
+                ctx->strata_order[strata_swap] = strata_index;
+            }
+        }
+    }
+    for (strata_rank = 0u;
+            strata_rank < SIXEL_KCENTER_STRATA_BUCKETS
+            && ctx->selected_count < ctx->budget;
+            ++strata_rank) {
+        strata_index = ctx->strata_order[strata_rank];
+        bin_index = ctx->strata_picks[strata_index];
+        if (bin_index == UINT_MAX) {
+            continue;
+        }
+        if (bin_index >= ctx->retained_count
+                || ctx->bin_selected[bin_index] != 0u) {
+            continue;
+        }
+        ctx->bin_selected[bin_index] = 1u;
+        ++ctx->selected_count;
+    }
+}
+
+static void
+sixel_kcenter_collect_hybrid_pick_remaining(sixel_kcenter_collect_ctx_t *ctx)
+{
+    unsigned int index;
+    unsigned int bin_index;
+
+    index = 0u;
+    bin_index = 0u;
+    ctx->high_target = ctx->budget;
+    if (ctx->high_target > ctx->selected_count) {
+        if (ctx->oklab_perceptual_space) {
+            /*
+             * Reserve more slots for dispersion picks in OKLab so the
+             * candidate set does not over-focus on only high-mass bins.
+             */
+            ctx->high_target = ctx->selected_count
+                + (ctx->budget - ctx->selected_count) / 2u;
+        } else {
+            ctx->high_target = ctx->selected_count
+                + ((ctx->budget - ctx->selected_count) * 3u) / 4u;
+        }
+        if (ctx->high_target > ctx->budget) {
+            ctx->high_target = ctx->budget;
+        }
+    }
+
+    /*
+     * Keep hybrid priority stable:
+     * rare bins -> strata representatives -> mass order -> dispersion.
+     */
+    for (index = 0u;
+            index < ctx->retained_count
+            && ctx->selected_count < ctx->high_target;
+            ++index) {
+        if (ctx->bin_selected[index] != 0u) {
+            continue;
+        }
+        ctx->bin_selected[index] = 1u;
+        ++ctx->selected_count;
+    }
+    for (index = 0u;
+            index < ctx->retained_count
+            && ctx->selected_count < ctx->budget;
+            ++index) {
+        bin_index = ctx->dispersion[index].index;
+        if (bin_index >= ctx->retained_count
+                || ctx->bin_selected[bin_index] != 0u) {
+            continue;
+        }
+        ctx->bin_selected[bin_index] = 1u;
+        ++ctx->selected_count;
+    }
+    for (index = 0u;
+            index < ctx->retained_count
+            && ctx->selected_count < ctx->budget;
+            ++index) {
+        if (ctx->bin_selected[index] != 0u) {
+            continue;
+        }
+        ctx->bin_selected[index] = 1u;
+        ++ctx->selected_count;
+    }
+    if (ctx->selected_count == 0u) {
+        ctx->bin_selected[0u] = 1u;
+        ctx->selected_count = 1u;
+    }
+}
+
+static void
+sixel_kcenter_collect_hybrid_write_points(sixel_kcenter_collect_ctx_t *ctx)
+{
+    unsigned int index;
+    unsigned int bin_index;
+
+    index = 0u;
+    bin_index = 0u;
+    ctx->budget = ctx->selected_count;
+    for (index = 0u;
+            index < ctx->retained_count && bin_index < ctx->budget;
+            ++index) {
+        if (ctx->bin_selected[index] == 0u) {
+            continue;
+        }
+        ctx->points[bin_index * 3u + 0u] = ctx->bins[index].r;
+        ctx->points[bin_index * 3u + 1u] = ctx->bins[index].g;
+        ctx->points[bin_index * 3u + 2u] = ctx->bins[index].b;
+        ctx->weights[bin_index] = (double)ctx->bins[index].count;
+        ++bin_index;
+    }
+}
+
+static SIXELSTATUS
+sixel_kcenter_collect_select_hybrid(sixel_kcenter_collect_ctx_t *ctx)
+{
+    SIXELSTATUS status;
+    unsigned int index;
+    unsigned int tail_index;
+    unsigned int strata_index;
+    unsigned int strata_rank;
+    unsigned int strata_swap;
+    unsigned int bin_index;
+    unsigned int hue_bucket;
+    unsigned int luma_bucket;
+    unsigned int chroma_bucket;
+    int chroma_edge_found;
+    double total_weight;
+    double mean_r;
+    double mean_g;
+    double mean_b;
+    double dr;
+    double dg;
+    double db;
+    double dispersion_score;
+    double max_component;
+    double min_component;
+    double delta_component;
+    double hue_value;
+    double hue_phase;
+    double normalized_hue;
+    double luma_value;
+    double chroma_value;
+    double chroma_target;
+    double chroma_accum;
+
+    status = SIXEL_BAD_ALLOCATION;
+    index = 0u;
+    tail_index = 0u;
+    strata_index = 0u;
+    strata_rank = 0u;
+    strata_swap = 0u;
+    bin_index = 0u;
+    hue_bucket = 0u;
+    luma_bucket = 0u;
+    chroma_bucket = 0u;
+    chroma_edge_found = 0;
+    total_weight = 0.0;
+    mean_r = 0.0;
+    mean_g = 0.0;
+    mean_b = 0.0;
+    dr = 0.0;
+    dg = 0.0;
+    db = 0.0;
+    dispersion_score = 0.0;
+    max_component = 0.0;
+    min_component = 0.0;
+    delta_component = 0.0;
+    hue_value = 0.0;
+    hue_phase = 0.0;
+    normalized_hue = 0.0;
+    luma_value = 0.0;
+    chroma_value = 0.0;
+    chroma_target = 0.0;
+    chroma_accum = 0.0;
+
+    ctx->use_perceptual_strata = 0;
+    if (sixel_kcenter_resolve_space_policy(ctx->space_policy)
+            == SIXEL_PALETTE_KCENTER_SPACE_POLICY_PERCEPTUAL
+            && (ctx->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32
+                || ctx->pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32
+                || ctx->pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32)) {
+        ctx->use_perceptual_strata = 1;
+        if (ctx->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
+            ctx->oklab_perceptual_space = 1;
+        }
+    }
+
+    ctx->bin_selected = (unsigned char *)sixel_allocator_malloc(
+        ctx->allocator,
+        (size_t)ctx->retained_count);
+    ctx->dispersion = (sixel_kcenter_dispersion_rank_t *)
+        sixel_allocator_malloc(
+            ctx->allocator,
+            (size_t)ctx->retained_count
+            * sizeof(sixel_kcenter_dispersion_rank_t));
+    if (ctx->use_perceptual_strata) {
+        ctx->chroma_cache = (double *)sixel_allocator_malloc(
+            ctx->allocator,
+            (size_t)ctx->retained_count * sizeof(double));
+        ctx->chroma_rank = (sixel_kcenter_dispersion_rank_t *)
+            sixel_allocator_malloc(
+                ctx->allocator,
+                (size_t)ctx->retained_count
+                * sizeof(sixel_kcenter_dispersion_rank_t));
+    }
+    if (ctx->bin_selected == NULL || ctx->dispersion == NULL) {
+        return status;
+    }
+    if (ctx->use_perceptual_strata
+            && (ctx->chroma_cache == NULL || ctx->chroma_rank == NULL)) {
+        return status;
+    }
+    memset(ctx->bin_selected, 0, (size_t)ctx->retained_count);
+
+    ctx->selected_count = 0u;
+    ctx->rare_limit = ctx->rare_keep;
+    if (ctx->rare_limit > ctx->budget) {
+        ctx->rare_limit = ctx->budget;
+    }
+    if (ctx->rare_limit > ctx->retained_count) {
+        ctx->rare_limit = ctx->retained_count;
+    }
+    for (index = 0u; index < ctx->rare_limit; ++index) {
+        tail_index = ctx->retained_count - 1u - index;
+        if (ctx->bin_selected[tail_index] != 0u) {
+            continue;
+        }
+        ctx->bin_selected[tail_index] = 1u;
+        ++ctx->selected_count;
+    }
+
+    total_weight = 0.0;
+    mean_r = 0.0;
+    mean_g = 0.0;
+    mean_b = 0.0;
+    for (index = 0u; index < ctx->retained_count; ++index) {
+        total_weight += (double)ctx->bins[index].count;
+        mean_r += ctx->bins[index].r * (double)ctx->bins[index].count;
+        mean_g += ctx->bins[index].g * (double)ctx->bins[index].count;
+        mean_b += ctx->bins[index].b * (double)ctx->bins[index].count;
+    }
+    if (total_weight > 0.0) {
+        mean_r /= total_weight;
+        mean_g /= total_weight;
+        mean_b /= total_weight;
+    }
+
+    for (index = 0u; index < ctx->retained_count; ++index) {
+        dr = ctx->bins[index].r - mean_r;
+        dg = ctx->bins[index].g - mean_g;
+        db = ctx->bins[index].b - mean_b;
+        dispersion_score = (double)ctx->bins[index].count
+            * (dr * dr + dg * dg + db * db);
+        ctx->dispersion[index].index = index;
+        ctx->dispersion[index].score = dispersion_score;
+        if (ctx->use_perceptual_strata) {
+            /*
+             * Perceptual spaces already encode opponent channels on a/b.
+             * Use raw channels so strata bins stay stable even if the
+             * frame-wise mean drifts.
+             */
+            chroma_value = sqrt(ctx->bins[index].g * ctx->bins[index].g
+                                + ctx->bins[index].b * ctx->bins[index].b);
+            ctx->chroma_cache[index] = chroma_value;
+            ctx->chroma_rank[index].index = index;
+            ctx->chroma_rank[index].score = chroma_value;
+        }
+    }
+    qsort(ctx->dispersion,
+          ctx->retained_count,
+          sizeof(sixel_kcenter_dispersion_rank_t),
+          sixel_kcenter_compare_dispersion_desc);
+
+    /*
+     * Keep runtime guards minimal for MSVC /analyze.  The bucket count is
+     * currently a fixed compile-time constant.
+     */
+    if (ctx->use_perceptual_strata
+            && ctx->retained_count > 0u) {
+        qsort(ctx->chroma_rank,
+              ctx->retained_count,
+              sizeof(sixel_kcenter_dispersion_rank_t),
+              sixel_kcenter_compare_dispersion_asc);
+        for (strata_rank = 0u;
+                strata_rank + 1u < SIXEL_KCENTER_CHROMA_BUCKETS;
+                ++strata_rank) {
+            chroma_target = ctx->retained_weight
+                * (double)(strata_rank + 1u)
+                / (double)SIXEL_KCENTER_CHROMA_BUCKETS;
+            chroma_accum = 0.0;
+            ctx->chroma_edges[strata_rank]
+                = ctx->chroma_rank[ctx->retained_count - 1u].score;
+            chroma_edge_found = 0;
+            for (strata_swap = 0u;
+                    strata_swap < ctx->retained_count;
+                    ++strata_swap) {
+                bin_index = ctx->chroma_rank[strata_swap].index;
+                chroma_accum += (double)ctx->bins[bin_index].count;
+                if (chroma_accum + 1.0e-12 < chroma_target) {
+                    continue;
+                }
+                ctx->chroma_edges[strata_rank]
+                    = ctx->chroma_rank[strata_swap].score;
+                chroma_edge_found = 1;
+                break;
+            }
+            if (!chroma_edge_found) {
+                ctx->chroma_edges[strata_rank]
+                    = ctx->chroma_rank[ctx->retained_count - 1u].score;
+            }
+        }
+    }
+
+    sixel_kcenter_collect_reset_strata(ctx);
+    for (index = 0u; index < ctx->retained_count; ++index) {
+        if (ctx->use_perceptual_strata) {
+            luma_value = ctx->bins[index].r;
+        } else {
+            luma_value = ctx->bins[index].r * 0.299
+                + ctx->bins[index].g * 0.587
+                + ctx->bins[index].b * 0.114;
+        }
+        luma_bucket = (unsigned int)(
+            (luma_value * (double)SIXEL_KCENTER_LUMA_BUCKETS) / 256.0);
+        if (luma_bucket >= SIXEL_KCENTER_LUMA_BUCKETS) {
+            luma_bucket = SIXEL_KCENTER_LUMA_BUCKETS - 1u;
+        }
+
+        if (ctx->use_perceptual_strata) {
+            chroma_value = ctx->chroma_cache[index];
+            if (chroma_value <= 1.0e-9) {
+                /*
+                 * Near-neutral bins have unstable hue.  Pin the hue bucket
+                 * instead of amplifying angle noise.
+                 */
+                normalized_hue = 0.0;
+            } else {
+                hue_phase = atan2(ctx->bins[index].b, ctx->bins[index].g);
+                normalized_hue = (hue_phase + SIXEL_KCENTER_PI)
+                    / (2.0 * SIXEL_KCENTER_PI);
+                if (normalized_hue < 0.0) {
+                    normalized_hue = 0.0;
+                }
+                if (normalized_hue >= 1.0) {
+                    normalized_hue = 0.999999;
+                }
+            }
+            dr = ctx->bins[index].r - mean_r;
+            chroma_bucket = 0u;
+            while (chroma_bucket + 1u < SIXEL_KCENTER_CHROMA_BUCKETS) {
+                if (chroma_value
+                        <= ctx->chroma_edges[chroma_bucket] + 1.0e-12) {
+                    break;
+                }
+                ++chroma_bucket;
+            }
+            dispersion_score = (double)ctx->bins[index].count
+                * (1.10 * dr * dr
+                   + 1.50 * chroma_value * chroma_value);
+        } else {
+            max_component = ctx->bins[index].r;
+            if (ctx->bins[index].g > max_component) {
+                max_component = ctx->bins[index].g;
+            }
+            if (ctx->bins[index].b > max_component) {
+                max_component = ctx->bins[index].b;
+            }
+            min_component = ctx->bins[index].r;
+            if (ctx->bins[index].g < min_component) {
+                min_component = ctx->bins[index].g;
+            }
+            if (ctx->bins[index].b < min_component) {
+                min_component = ctx->bins[index].b;
+            }
+            delta_component = max_component - min_component;
+            hue_value = 0.0;
+            if (delta_component > 1.0e-9) {
+                if (max_component == ctx->bins[index].r) {
+                    hue_value = (ctx->bins[index].g - ctx->bins[index].b)
+                        / delta_component;
+                    if (hue_value < 0.0) {
+                        hue_value += 6.0;
+                    }
+                } else if (max_component == ctx->bins[index].g) {
+                    hue_value = 2.0 + (ctx->bins[index].b - ctx->bins[index].r)
+                        / delta_component;
+                } else {
+                    hue_value = 4.0 + (ctx->bins[index].r - ctx->bins[index].g)
+                        / delta_component;
+                }
+            }
+            normalized_hue = hue_value / 6.0;
+            if (normalized_hue < 0.0) {
+                normalized_hue = 0.0;
+            }
+            if (normalized_hue >= 1.0) {
+                normalized_hue = 0.999999;
+            }
+            dr = ctx->bins[index].r - mean_r;
+            dg = ctx->bins[index].g - mean_g;
+            db = ctx->bins[index].b - mean_b;
+            dispersion_score = (double)ctx->bins[index].count
+                * (dr * dr + dg * dg + db * db);
+            chroma_bucket = 0u;
+        }
+
+        hue_bucket = (unsigned int)(
+            normalized_hue * (double)SIXEL_KCENTER_HUE_BUCKETS);
+        if (hue_bucket >= SIXEL_KCENTER_HUE_BUCKETS) {
+            hue_bucket = SIXEL_KCENTER_HUE_BUCKETS - 1u;
+        }
+        strata_index = (luma_bucket * SIXEL_KCENTER_CHROMA_BUCKETS
+            + chroma_bucket) * SIXEL_KCENTER_HUE_BUCKETS
+            + hue_bucket;
+
+        if (dispersion_score > ctx->strata_scores[strata_index] + 1.0e-12) {
+            ctx->strata_scores[strata_index] = dispersion_score;
+            ctx->strata_picks[strata_index] = index;
+        } else if (dispersion_score
+                >= ctx->strata_scores[strata_index] - 1.0e-12
+                && ctx->strata_picks[strata_index] != UINT_MAX
+                && index < ctx->strata_picks[strata_index]) {
+            ctx->strata_picks[strata_index] = index;
+        }
+    }
+
+    sixel_kcenter_collect_hybrid_pick_strata(ctx);
+    sixel_kcenter_collect_hybrid_pick_remaining(ctx);
+    sixel_kcenter_collect_hybrid_write_points(ctx);
+    return SIXEL_OK;
+}
+
+static void
+sixel_kcenter_collect_cleanup(sixel_kcenter_collect_ctx_t *ctx)
+{
+    if (ctx == NULL || ctx->allocator == NULL) {
+        return;
+    }
+    if (ctx->points != NULL) {
+        sixel_allocator_free(ctx->allocator, ctx->points);
+    }
+    if (ctx->weights != NULL) {
+        sixel_allocator_free(ctx->allocator, ctx->weights);
+    }
+    if (ctx->dispersion != NULL) {
+        sixel_allocator_free(ctx->allocator, ctx->dispersion);
+    }
+    if (ctx->chroma_rank != NULL) {
+        sixel_allocator_free(ctx->allocator, ctx->chroma_rank);
+    }
+    if (ctx->chroma_cache != NULL) {
+        sixel_allocator_free(ctx->allocator, ctx->chroma_cache);
+    }
+    if (ctx->bin_selected != NULL) {
+        sixel_allocator_free(ctx->allocator, ctx->bin_selected);
+    }
+    if (ctx->bins != NULL) {
+        sixel_allocator_free(ctx->allocator, ctx->bins);
+    }
+    if (ctx->sums != NULL) {
+        sixel_allocator_free(ctx->allocator, ctx->sums);
+    }
+    if (ctx->counts != NULL) {
+        sixel_allocator_free(ctx->allocator, ctx->counts);
+    }
+}
+
 static SIXELSTATUS
 sixel_kcenter_collect_points(double **points_out,
                              double **weights_out,
@@ -1987,163 +2922,9 @@ sixel_kcenter_collect_points(double **points_out,
                              sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
-    unsigned int channels;
-    unsigned int pixel_stride;
-    unsigned int pixel_count;
-    unsigned int bin_count;
-    unsigned int shift_bits;
-    unsigned int active_count;
-    unsigned int visible_count;
-    unsigned int keep_count;
-    unsigned int budget;
-    unsigned int selected_count;
-    unsigned int rare_limit;
-    unsigned int high_target;
-    unsigned int tail_index;
-    unsigned int retained_count;
-    unsigned int index;
-    unsigned int ri;
-    unsigned int gi;
-    unsigned int bi;
-    unsigned int bin_index;
-    unsigned int hue_bucket;
-    unsigned int luma_bucket;
-    unsigned int chroma_bucket;
-    unsigned int strata_index;
-    unsigned int strata_rank;
-    unsigned int strata_swap;
-    unsigned int offset;
-    unsigned int alpha_byte;
-    double total_weight;
-    double keep_target;
-    double accum_weight;
-    double retained_weight;
-    double entropy;
-    double entropy_norm;
-    double effective_bins;
-    double effective_density;
-    double probability;
-    double mean_r;
-    double mean_g;
-    double mean_b;
-    double dr;
-    double dg;
-    double db;
-    double red;
-    double green;
-    double blue;
-    double max_component;
-    double min_component;
-    double delta_component;
-    double hue_value;
-    double hue_phase;
-    double luma_value;
-    double normalized_hue;
-    double chroma_value;
-    double chroma_target;
-    double chroma_accum;
-    int use_perceptual_strata;
-    int oklab_perceptual_space;
-    int chroma_edge_found;
-    double *sums;
-    unsigned int *counts;
-    unsigned char *bin_selected;
-    sixel_kcenter_bin_t *bins;
-    sixel_kcenter_dispersion_rank_t *dispersion;
-    sixel_kcenter_dispersion_rank_t *chroma_rank;
-    double *chroma_cache;
-    double *points;
-    double *weights;
-    float const *pixel_float;
-    int input_is_float32;
-    unsigned int strata_picks[SIXEL_KCENTER_STRATA_BUCKETS];
-    double strata_scores[SIXEL_KCENTER_STRATA_BUCKETS];
-    unsigned int strata_order[SIXEL_KCENTER_STRATA_BUCKETS];
-    double chroma_edges[SIXEL_KCENTER_CHROMA_BUCKETS - 1u];
+    sixel_kcenter_collect_ctx_t collect;
 
     status = SIXEL_BAD_ARGUMENT;
-    channels = depth;
-    pixel_stride = depth;
-    pixel_count = 0u;
-    bin_count = 0u;
-    shift_bits = 0u;
-    active_count = 0u;
-    visible_count = 0u;
-    keep_count = 0u;
-    budget = point_budget;
-    selected_count = 0u;
-    rare_limit = 0u;
-    high_target = 0u;
-    tail_index = 0u;
-    retained_count = 0u;
-    index = 0u;
-    ri = 0u;
-    gi = 0u;
-    bi = 0u;
-    bin_index = 0u;
-    hue_bucket = 0u;
-    luma_bucket = 0u;
-    chroma_bucket = 0u;
-    strata_index = 0u;
-    strata_rank = 0u;
-    strata_swap = 0u;
-    offset = 0u;
-    alpha_byte = 0u;
-    total_weight = 0.0;
-    keep_target = 0.0;
-    accum_weight = 0.0;
-    retained_weight = 0.0;
-    entropy = 0.0;
-    entropy_norm = 0.0;
-    effective_bins = 0.0;
-    effective_density = 0.0;
-    probability = 0.0;
-    mean_r = 0.0;
-    mean_g = 0.0;
-    mean_b = 0.0;
-    dr = 0.0;
-    dg = 0.0;
-    db = 0.0;
-    red = 0.0;
-    green = 0.0;
-    blue = 0.0;
-    max_component = 0.0;
-    min_component = 0.0;
-    delta_component = 0.0;
-    hue_value = 0.0;
-    luma_value = 0.0;
-    normalized_hue = 0.0;
-    chroma_value = 0.0;
-    hue_phase = 0.0;
-    chroma_target = 0.0;
-    chroma_accum = 0.0;
-    use_perceptual_strata = 0;
-    oklab_perceptual_space = 0;
-    chroma_edge_found = 0;
-    sums = NULL;
-    counts = NULL;
-    bin_selected = NULL;
-    bins = NULL;
-    dispersion = NULL;
-    chroma_rank = NULL;
-    chroma_cache = NULL;
-    points = NULL;
-    weights = NULL;
-    pixel_float = NULL;
-    input_is_float32 = 0;
-    for (strata_index = 0u;
-            strata_index < SIXEL_KCENTER_STRATA_BUCKETS;
-            ++strata_index) {
-        strata_picks[strata_index] = UINT_MAX;
-        strata_scores[strata_index] = -1.0;
-        strata_order[strata_index] = strata_index;
-    }
-    for (strata_index = 0u;
-            strata_index + 1u < SIXEL_KCENTER_CHROMA_BUCKETS;
-            ++strata_index) {
-        chroma_edges[strata_index] = 0.0;
-    }
-
     if (points_out == NULL || weights_out == NULL || point_count_out == NULL
             || visible_count_out == NULL
             || active_count_out == NULL
@@ -2151,642 +2932,91 @@ sixel_kcenter_collect_points(double **points_out,
             || allocator == NULL) {
         return status;
     }
+
     *points_out = NULL;
     *weights_out = NULL;
     *point_count_out = 0u;
     *visible_count_out = 0u;
     *active_count_out = 0u;
 
-    input_is_float32 = (treat_input_as_float32
-                        && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat));
-    if (input_is_float32) {
-        if (depth == 0u || depth % (unsigned int)sizeof(float) != 0u) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-        channels = depth / (unsigned int)sizeof(float);
-        pixel_stride = depth;
-    }
-    if (channels != 3u && channels != 4u) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (pixel_stride == 0u) {
-        return SIXEL_BAD_ARGUMENT;
-    }
+    sixel_kcenter_collect_ctx_clear(&collect);
+    collect.data = data;
+    collect.length = length;
+    collect.depth = depth;
+    collect.pixelformat = pixelformat;
+    collect.treat_input_as_float32 = treat_input_as_float32;
+    collect.histbits = histbits;
+    collect.point_budget = point_budget;
+    collect.prune_mass = prune_mass;
+    collect.reqcolors = reqcolors;
+    collect.quality_mode = quality_mode;
+    collect.candidate_policy = candidate_policy;
+    collect.space_policy = space_policy;
+    collect.rare_keep = rare_keep;
+    collect.budget_policy = budget_policy;
+    collect.budget_scale = budget_scale;
+    collect.float32_channel_scale = float32_channel_scale;
+    collect.float32_channel_offset = float32_channel_offset;
+    collect.allocator = allocator;
 
-    pixel_count = length / pixel_stride;
-    if (pixel_count == 0u) {
-        return SIXEL_OK;
-    }
-
-    shift_bits = 8u - histbits;
-    bin_count = 1u << (histbits * 3u);
-
-    counts = (unsigned int *)sixel_allocator_malloc(
-        allocator,
-        (size_t)bin_count * sizeof(unsigned int));
-    sums = (double *)sixel_allocator_malloc(
-        allocator,
-        (size_t)bin_count * 3u * sizeof(double));
-    if (counts == NULL || sums == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
+    /*
+     * Keep the stage order stable to preserve tie-break behavior:
+     * histogram -> prune/stats -> budget -> candidate selection.
+     */
+    status = sixel_kcenter_collect_prepare(&collect);
+    if (status != SIXEL_OK) {
         goto end;
     }
-    memset(counts, 0, (size_t)bin_count * sizeof(unsigned int));
-    memset(sums, 0, (size_t)bin_count * 3u * sizeof(double));
-
-    for (index = 0u; index < pixel_count; ++index) {
-        offset = index * pixel_stride;
-        if (channels == 4u) {
-            if (input_is_float32) {
-                pixel_float = (float const *)(void const *)(data + offset);
-                if (sixel_pixelformat_float_channel_clamp(
-                        pixelformat,
-                        3,
-                        pixel_float[3]) <= 0.0f) {
-                    continue;
-                }
-            } else {
-                alpha_byte = data[offset + 3u];
-                if (alpha_byte == 0u) {
-                    continue;
-                }
-            }
-        }
-
-        if (input_is_float32) {
-            pixel_float = (float const *)(void const *)(data + offset);
-            red = (double)sixel_pixelformat_float_channel_clamp(
-                pixelformat,
-                0,
-                pixel_float[0]);
-            green = (double)sixel_pixelformat_float_channel_clamp(
-                pixelformat,
-                1,
-                pixel_float[1]);
-            blue = (double)sixel_pixelformat_float_channel_clamp(
-                pixelformat,
-                2,
-                pixel_float[2]);
-            red = red * float32_channel_scale[0] + float32_channel_offset[0];
-            green = green * float32_channel_scale[1]
-                + float32_channel_offset[1];
-            blue = blue * float32_channel_scale[2]
-                + float32_channel_offset[2];
-        } else {
-            red = (double)data[offset + 0u];
-            green = (double)data[offset + 1u];
-            blue = (double)data[offset + 2u];
-        }
-
-        if (red < 0.0) {
-            red = 0.0;
-        } else if (red > 255.0) {
-            red = 255.0;
-        }
-        if (green < 0.0) {
-            green = 0.0;
-        } else if (green > 255.0) {
-            green = 255.0;
-        }
-        if (blue < 0.0) {
-            blue = 0.0;
-        } else if (blue > 255.0) {
-            blue = 255.0;
-        }
-
-        ri = ((unsigned int)red) >> shift_bits;
-        gi = ((unsigned int)green) >> shift_bits;
-        bi = ((unsigned int)blue) >> shift_bits;
-        bin_index = (ri << (histbits * 2u)) | (gi << histbits) | bi;
-        if (bin_index >= bin_count) {
-            continue;
-        }
-        counts[bin_index] += 1u;
-        sums[bin_index * 3u + 0u] += red;
-        sums[bin_index * 3u + 1u] += green;
-        sums[bin_index * 3u + 2u] += blue;
-        ++visible_count;
-    }
-
-    *visible_count_out = visible_count;
-    if (visible_count == 0u) {
+    if (collect.pixel_count == 0u) {
         status = SIXEL_OK;
         goto end;
     }
 
-    for (index = 0u; index < bin_count; ++index) {
-        if (counts[index] > 0u) {
-            ++active_count;
-        }
+    status = sixel_kcenter_collect_build_histogram(&collect);
+    if (status != SIXEL_OK) {
+        goto end;
     }
-    if (active_count == 0u) {
+    *visible_count_out = collect.visible_count;
+    if (collect.visible_count == 0u) {
         status = SIXEL_OK;
         goto end;
     }
 
-    bins = (sixel_kcenter_bin_t *)sixel_allocator_malloc(
-        allocator,
-        (size_t)active_count * sizeof(sixel_kcenter_bin_t));
-    if (bins == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
+    status = sixel_kcenter_collect_build_bins_and_stats(&collect);
+    if (status != SIXEL_OK) {
+        goto end;
+    }
+    *active_count_out = collect.retained_count;
+    if (collect.retained_count == 0u) {
+        status = SIXEL_OK;
         goto end;
     }
 
-    keep_count = 0u;
-    total_weight = 0.0;
-    for (index = 0u; index < bin_count; ++index) {
-        if (counts[index] == 0u) {
-            continue;
-        }
-        bins[keep_count].index = index;
-        bins[keep_count].count = counts[index];
-        bins[keep_count].r = sums[index * 3u + 0u] / (double)counts[index];
-        bins[keep_count].g = sums[index * 3u + 1u] / (double)counts[index];
-        bins[keep_count].b = sums[index * 3u + 2u] / (double)counts[index];
-        total_weight += (double)counts[index];
-        ++keep_count;
-    }
-
-    qsort(bins,
-          keep_count,
-          sizeof(sixel_kcenter_bin_t),
-          sixel_kcenter_compare_bin_desc);
-
-    keep_target = prune_mass * total_weight;
-    if (keep_target < 1.0) {
-        keep_target = 1.0;
-    }
-    accum_weight = 0.0;
-    active_count = 0u;
-    for (index = 0u; index < keep_count; ++index) {
-        accum_weight += (double)bins[index].count;
-        ++active_count;
-        if (accum_weight >= keep_target && active_count >= reqcolors) {
-            break;
-        }
-    }
-    if (active_count == 0u) {
-        active_count = 1u;
-    }
-    retained_count = active_count;
-    *active_count_out = retained_count;
-    retained_weight = 0.0;
-    entropy = 0.0;
-    for (index = 0u; index < retained_count; ++index) {
-        retained_weight += (double)bins[index].count;
-    }
-    if (retained_weight > 0.0 && retained_count > 1u) {
-        for (index = 0u; index < retained_count; ++index) {
-            probability = (double)bins[index].count / retained_weight;
-            if (probability <= 0.0) {
-                continue;
-            }
-            entropy -= probability * log(probability);
-        }
-        entropy_norm = entropy / log((double)retained_count);
-        if (entropy_norm < 0.0) {
-            entropy_norm = 0.0;
-        } else if (entropy_norm > 1.0) {
-            entropy_norm = 1.0;
-        }
-        effective_bins = exp(entropy);
-        effective_density = effective_bins / (double)retained_count;
-        if (effective_density < 0.0) {
-            effective_density = 0.0;
-        } else if (effective_density > 1.0) {
-            effective_density = 1.0;
-        }
-    } else {
-        entropy_norm = 0.0;
-        effective_density = 0.0;
-    }
-
-    if (budget == 0u) {
-        if (sixel_kcenter_resolve_budget_policy(budget_policy)
-                == SIXEL_PALETTE_KCENTER_BUDGET_POLICY_ADAPTIVE) {
-            budget = sixel_kcenter_auto_point_budget_adaptive(
-                reqcolors,
-                visible_count,
-                retained_count,
-                quality_mode,
-                entropy_norm,
-                effective_density);
-        } else {
-            budget = sixel_kcenter_auto_point_budget_legacy(reqcolors,
-                                                            visible_count,
-                                                            quality_mode);
-        }
-        budget = sixel_kcenter_apply_budget_scale(budget, budget_scale);
-    }
-    if (budget > retained_count) {
-        budget = retained_count;
-    }
-    if (budget == 0u) {
-        budget = 1u;
-    }
-
-    points = (double *)sixel_allocator_malloc(
-        allocator,
-        (size_t)budget * 3u * sizeof(double));
-    weights = (double *)sixel_allocator_malloc(
-        allocator,
-        (size_t)budget * sizeof(double));
-    if (points == NULL || weights == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
+    sixel_kcenter_collect_resolve_budget(&collect);
+    status = sixel_kcenter_collect_allocate_output_buffers(&collect);
+    if (status != SIXEL_OK) {
         goto end;
     }
 
-    if (sixel_kcenter_resolve_candidate_policy(candidate_policy)
+    if (sixel_kcenter_resolve_candidate_policy(collect.candidate_policy)
             == SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_HYBRID) {
-        use_perceptual_strata = 0;
-        if (sixel_kcenter_resolve_space_policy(space_policy)
-                == SIXEL_PALETTE_KCENTER_SPACE_POLICY_PERCEPTUAL
-                && (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32
-                    || pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32
-                    || pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32)) {
-            use_perceptual_strata = 1;
-            if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
-                oklab_perceptual_space = 1;
-            }
-        }
-        bin_selected = (unsigned char *)sixel_allocator_malloc(
-            allocator,
-            (size_t)retained_count);
-        dispersion = (sixel_kcenter_dispersion_rank_t *)
-            sixel_allocator_malloc(
-                allocator,
-                (size_t)retained_count
-                * sizeof(sixel_kcenter_dispersion_rank_t));
-        if (use_perceptual_strata) {
-            chroma_cache = (double *)sixel_allocator_malloc(
-                allocator,
-                (size_t)retained_count * sizeof(double));
-            chroma_rank = (sixel_kcenter_dispersion_rank_t *)
-                sixel_allocator_malloc(
-                    allocator,
-                    (size_t)retained_count
-                    * sizeof(sixel_kcenter_dispersion_rank_t));
-        }
-        if (bin_selected == NULL || dispersion == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
+        status = sixel_kcenter_collect_select_hybrid(&collect);
+        if (status != SIXEL_OK) {
             goto end;
-        }
-        if (use_perceptual_strata
-                && (chroma_cache == NULL || chroma_rank == NULL)) {
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        memset(bin_selected, 0, (size_t)retained_count);
-
-        rare_limit = rare_keep;
-        if (rare_limit > budget) {
-            rare_limit = budget;
-        }
-        if (rare_limit > retained_count) {
-            rare_limit = retained_count;
-        }
-        for (index = 0u; index < rare_limit; ++index) {
-            tail_index = retained_count - 1u - index;
-            if (bin_selected[tail_index] != 0u) {
-                continue;
-            }
-            bin_selected[tail_index] = 1u;
-            ++selected_count;
-        }
-
-        mean_r = 0.0;
-        mean_g = 0.0;
-        mean_b = 0.0;
-        total_weight = 0.0;
-        for (index = 0u; index < retained_count; ++index) {
-            total_weight += (double)bins[index].count;
-            mean_r += bins[index].r * (double)bins[index].count;
-            mean_g += bins[index].g * (double)bins[index].count;
-            mean_b += bins[index].b * (double)bins[index].count;
-        }
-        if (total_weight > 0.0) {
-            mean_r /= total_weight;
-            mean_g /= total_weight;
-            mean_b /= total_weight;
-        }
-
-        for (index = 0u; index < retained_count; ++index) {
-            dr = bins[index].r - mean_r;
-            dg = bins[index].g - mean_g;
-            db = bins[index].b - mean_b;
-            dispersion[index].index = index;
-            dispersion[index].score = (double)bins[index].count
-                * (dr * dr + dg * dg + db * db);
-            if (use_perceptual_strata) {
-                /*
-                 * Perceptual spaces already encode opponent channels on a/b.
-                 * Use raw channels so strata bins stay stable even if the
-                 * frame-wise mean drifts.
-                 */
-                chroma_value = sqrt(bins[index].g * bins[index].g
-                                    + bins[index].b * bins[index].b);
-                chroma_cache[index] = chroma_value;
-                chroma_rank[index].index = index;
-                chroma_rank[index].score = chroma_value;
-            }
-        }
-        qsort(dispersion,
-              retained_count,
-              sizeof(sixel_kcenter_dispersion_rank_t),
-              sixel_kcenter_compare_dispersion_desc);
-        /*
-         * Keep runtime guards minimal for MSVC /analyze.  The bucket count is
-         * currently a fixed compile-time constant.
-         */
-        if (use_perceptual_strata
-                && retained_count > 0u) {
-            qsort(chroma_rank,
-                  retained_count,
-                  sizeof(sixel_kcenter_dispersion_rank_t),
-                  sixel_kcenter_compare_dispersion_asc);
-            for (strata_rank = 0u;
-                    strata_rank + 1u < SIXEL_KCENTER_CHROMA_BUCKETS;
-                    ++strata_rank) {
-                chroma_target = retained_weight
-                    * (double)(strata_rank + 1u)
-                    / (double)SIXEL_KCENTER_CHROMA_BUCKETS;
-                chroma_accum = 0.0;
-                chroma_edges[strata_rank] = chroma_rank[
-                    retained_count - 1u].score;
-                chroma_edge_found = 0;
-                for (strata_swap = 0u;
-                        strata_swap < retained_count;
-                        ++strata_swap) {
-                    bin_index = chroma_rank[strata_swap].index;
-                    chroma_accum += (double)bins[bin_index].count;
-                    if (chroma_accum + 1.0e-12 < chroma_target) {
-                        continue;
-                    }
-                    chroma_edges[strata_rank]
-                        = chroma_rank[strata_swap].score;
-                    chroma_edge_found = 1;
-                    break;
-                }
-                if (!chroma_edge_found) {
-                    chroma_edges[strata_rank] = chroma_rank[
-                        retained_count - 1u].score;
-                }
-            }
-        }
-
-        for (strata_index = 0u;
-                strata_index < SIXEL_KCENTER_STRATA_BUCKETS;
-                ++strata_index) {
-            strata_picks[strata_index] = UINT_MAX;
-            strata_scores[strata_index] = -1.0;
-            strata_order[strata_index] = strata_index;
-        }
-        for (index = 0u; index < retained_count; ++index) {
-            if (use_perceptual_strata) {
-                luma_value = bins[index].r;
-            } else {
-                luma_value = bins[index].r * 0.299
-                    + bins[index].g * 0.587
-                    + bins[index].b * 0.114;
-            }
-            luma_bucket = (unsigned int)(
-                (luma_value * (double)SIXEL_KCENTER_LUMA_BUCKETS) / 256.0);
-            if (luma_bucket >= SIXEL_KCENTER_LUMA_BUCKETS) {
-                luma_bucket = SIXEL_KCENTER_LUMA_BUCKETS - 1u;
-            }
-
-            if (use_perceptual_strata) {
-                chroma_value = chroma_cache[index];
-                if (chroma_value <= 1.0e-9) {
-                    /*
-                     * Near-neutral bins have unstable hue.  Pin the hue bucket
-                     * instead of amplifying angle noise.
-                     */
-                    normalized_hue = 0.0;
-                } else {
-                    hue_phase = atan2(bins[index].b, bins[index].g);
-                    normalized_hue = (hue_phase + SIXEL_KCENTER_PI)
-                        / (2.0 * SIXEL_KCENTER_PI);
-                    if (normalized_hue < 0.0) {
-                        normalized_hue = 0.0;
-                    }
-                    if (normalized_hue >= 1.0) {
-                        normalized_hue = 0.999999;
-                    }
-                }
-                dr = bins[index].r - mean_r;
-                chroma_bucket = 0u;
-                while (chroma_bucket + 1u < SIXEL_KCENTER_CHROMA_BUCKETS) {
-                    if (chroma_value
-                            <= chroma_edges[chroma_bucket] + 1.0e-12) {
-                        break;
-                    }
-                    ++chroma_bucket;
-                }
-                probability = (double)bins[index].count
-                    * (1.10 * dr * dr
-                       + 1.50 * chroma_value * chroma_value);
-            } else {
-                max_component = bins[index].r;
-                if (bins[index].g > max_component) {
-                    max_component = bins[index].g;
-                }
-                if (bins[index].b > max_component) {
-                    max_component = bins[index].b;
-                }
-                min_component = bins[index].r;
-                if (bins[index].g < min_component) {
-                    min_component = bins[index].g;
-                }
-                if (bins[index].b < min_component) {
-                    min_component = bins[index].b;
-                }
-                delta_component = max_component - min_component;
-                hue_value = 0.0;
-                if (delta_component > 1.0e-9) {
-                    if (max_component == bins[index].r) {
-                        hue_value = (bins[index].g - bins[index].b)
-                            / delta_component;
-                        if (hue_value < 0.0) {
-                            hue_value += 6.0;
-                        }
-                    } else if (max_component == bins[index].g) {
-                        hue_value = 2.0 + (bins[index].b - bins[index].r)
-                            / delta_component;
-                    } else {
-                        hue_value = 4.0 + (bins[index].r - bins[index].g)
-                            / delta_component;
-                    }
-                }
-                normalized_hue = hue_value / 6.0;
-                if (normalized_hue < 0.0) {
-                    normalized_hue = 0.0;
-                }
-                if (normalized_hue >= 1.0) {
-                    normalized_hue = 0.999999;
-                }
-                dr = bins[index].r - mean_r;
-                dg = bins[index].g - mean_g;
-                db = bins[index].b - mean_b;
-                probability = (double)bins[index].count
-                    * (dr * dr + dg * dg + db * db);
-                chroma_bucket = 0u;
-            }
-            hue_bucket = (unsigned int)(
-                normalized_hue * (double)SIXEL_KCENTER_HUE_BUCKETS);
-            if (hue_bucket >= SIXEL_KCENTER_HUE_BUCKETS) {
-                hue_bucket = SIXEL_KCENTER_HUE_BUCKETS - 1u;
-            }
-            strata_index = (luma_bucket * SIXEL_KCENTER_CHROMA_BUCKETS
-                + chroma_bucket) * SIXEL_KCENTER_HUE_BUCKETS
-                + hue_bucket;
-            if (probability
-                    > strata_scores[strata_index] + 1.0e-12) {
-                strata_scores[strata_index] = probability;
-                strata_picks[strata_index] = index;
-            } else if (probability
-                    >= strata_scores[strata_index] - 1.0e-12
-                    && strata_picks[strata_index] != UINT_MAX
-                    && index < strata_picks[strata_index]) {
-                strata_picks[strata_index] = index;
-            }
-        }
-        for (strata_rank = 0u;
-                strata_rank < SIXEL_KCENTER_STRATA_BUCKETS;
-                ++strata_rank) {
-            for (strata_swap = strata_rank + 1u;
-                    strata_swap < SIXEL_KCENTER_STRATA_BUCKETS;
-                    ++strata_swap) {
-                if (strata_scores[strata_order[strata_swap]]
-                        > strata_scores[strata_order[strata_rank]]
-                        + 1.0e-12) {
-                    strata_index = strata_order[strata_rank];
-                    strata_order[strata_rank] = strata_order[strata_swap];
-                    strata_order[strata_swap] = strata_index;
-                }
-            }
-        }
-        for (strata_rank = 0u;
-                strata_rank < SIXEL_KCENTER_STRATA_BUCKETS
-                && selected_count < budget;
-                ++strata_rank) {
-            strata_index = strata_order[strata_rank];
-            bin_index = strata_picks[strata_index];
-            if (bin_index == UINT_MAX) {
-                continue;
-            }
-            if (bin_index >= retained_count || bin_selected[bin_index] != 0u) {
-                continue;
-            }
-            bin_selected[bin_index] = 1u;
-            ++selected_count;
-        }
-
-        high_target = budget;
-        if (high_target > selected_count) {
-            if (oklab_perceptual_space) {
-                /*
-                 * Reserve more slots for dispersion picks in OKLab so the
-                 * candidate set does not over-focus on only high-mass bins.
-                 */
-                high_target = selected_count
-                    + (budget - selected_count) / 2u;
-            } else {
-                high_target = selected_count
-                    + ((budget - selected_count) * 3u) / 4u;
-            }
-            if (high_target > budget) {
-                high_target = budget;
-            }
-        }
-        for (index = 0u; index < retained_count && selected_count < high_target;
-                ++index) {
-            if (bin_selected[index] != 0u) {
-                continue;
-            }
-            bin_selected[index] = 1u;
-            ++selected_count;
-        }
-        for (index = 0u; index < retained_count && selected_count < budget;
-                ++index) {
-            bin_index = dispersion[index].index;
-            if (bin_index >= retained_count || bin_selected[bin_index] != 0u) {
-                continue;
-            }
-            bin_selected[bin_index] = 1u;
-            ++selected_count;
-        }
-        for (index = 0u; index < retained_count && selected_count < budget;
-                ++index) {
-            if (bin_selected[index] != 0u) {
-                continue;
-            }
-            bin_selected[index] = 1u;
-            ++selected_count;
-        }
-        if (selected_count == 0u) {
-            bin_selected[0u] = 1u;
-            selected_count = 1u;
-        }
-
-        budget = selected_count;
-        bin_index = 0u;
-        for (index = 0u;
-                index < retained_count && bin_index < budget;
-                ++index) {
-            if (bin_selected[index] == 0u) {
-                continue;
-            }
-            points[bin_index * 3u + 0u] = bins[index].r;
-            points[bin_index * 3u + 1u] = bins[index].g;
-            points[bin_index * 3u + 2u] = bins[index].b;
-            weights[bin_index] = (double)bins[index].count;
-            ++bin_index;
         }
     } else {
-        for (index = 0u; index < budget; ++index) {
-            points[index * 3u + 0u] = bins[index].r;
-            points[index * 3u + 1u] = bins[index].g;
-            points[index * 3u + 2u] = bins[index].b;
-            weights[index] = (double)bins[index].count;
-        }
+        sixel_kcenter_collect_select_legacy(&collect);
     }
 
-    *points_out = points;
-    *weights_out = weights;
-    *point_count_out = budget;
-    points = NULL;
-    weights = NULL;
+    *points_out = collect.points;
+    *weights_out = collect.weights;
+    *point_count_out = collect.budget;
+    collect.points = NULL;
+    collect.weights = NULL;
     status = SIXEL_OK;
 
 end:
-    if (points != NULL) {
-        sixel_allocator_free(allocator, points);
-    }
-    if (weights != NULL) {
-        sixel_allocator_free(allocator, weights);
-    }
-    if (dispersion != NULL) {
-        sixel_allocator_free(allocator, dispersion);
-    }
-    if (chroma_rank != NULL) {
-        sixel_allocator_free(allocator, chroma_rank);
-    }
-    if (chroma_cache != NULL) {
-        sixel_allocator_free(allocator, chroma_cache);
-    }
-    if (bin_selected != NULL) {
-        sixel_allocator_free(allocator, bin_selected);
-    }
-    if (bins != NULL) {
-        sixel_allocator_free(allocator, bins);
-    }
-    if (sums != NULL) {
-        sixel_allocator_free(allocator, sums);
-    }
-    if (counts != NULL) {
-        sixel_allocator_free(allocator, counts);
-    }
+    sixel_kcenter_collect_cleanup(&collect);
     return status;
 }
 
