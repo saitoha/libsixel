@@ -21426,13 +21426,18 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
     }
     if (effect_mode == vector_mode) {
         union_alpha = sixel_builtin_psd_clamp_alpha_float32(
-            1.0f - (1.0f - effect_alpha) * (1.0f - vector_alpha));
+            vector_alpha > effect_alpha ? vector_alpha : effect_alpha);
         if (union_alpha <= 0.0f) {
             *pout_r = mixed_r;
             *pout_g = mixed_g;
             *pout_b = mixed_b;
             return;
         }
+        /*
+         * Keep color and alpha under the same dual-stroke assumption.
+         * We model same-mode overlap as a single pass at max(alpha), with
+         * effect stroke on top of vector stroke in overlap regions.
+         */
         union_rgb_premul[0] =
             vector_rgb[0] * vector_alpha +
             effect_rgb[0] * effect_alpha * (1.0f - vector_alpha);
