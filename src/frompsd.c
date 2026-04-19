@@ -1575,6 +1575,18 @@ enum {
     SIXEL_BUILTIN_PSD_KNOCKOUT_DEEP = 2
 };
 
+enum {
+    SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER = 0,
+    SIXEL_BUILTIN_PSD_STROKE_JOIN_ROUND = 1,
+    SIXEL_BUILTIN_PSD_STROKE_JOIN_BEVEL = 2
+};
+
+enum {
+    SIXEL_BUILTIN_PSD_STROKE_CAP_BUTT = 0,
+    SIXEL_BUILTIN_PSD_STROKE_CAP_ROUND = 1,
+    SIXEL_BUILTIN_PSD_STROKE_CAP_SQUARE = 2
+};
+
 typedef struct sixel_builtin_psd_layer_record {
     int32_t top;
     int32_t left;
@@ -1726,10 +1738,19 @@ typedef struct sixel_builtin_psd_layer_record {
     float effect_stroke_opacity;
     float effect_stroke_size;
     sixel_builtin_psd_layer_blend_mode_t effect_stroke_mode;
+    int effect_stroke_join_type;
+    int effect_stroke_cap_type;
+    float effect_stroke_miter_limit;
+    int effect_stroke_adjust;
+    int effect_stroke_vector_geometry;
     float vector_stroke_rgb[3];
     float vector_stroke_opacity;
     float vector_stroke_size;
     sixel_builtin_psd_layer_blend_mode_t vector_stroke_mode;
+    int vector_stroke_join_type;
+    int vector_stroke_cap_type;
+    float vector_stroke_miter_limit;
+    int vector_stroke_adjust;
     float effect_outer_glow_rgb[3];
     float effect_outer_glow_opacity;
     float effect_outer_glow_size;
@@ -11246,6 +11267,11 @@ sixel_builtin_psd_parse_effect_stroke_object(
         layer->effect_stroke_opacity = opacity;
         layer->effect_stroke_size = size_px;
         layer->effect_stroke_mode = blend_mode;
+        layer->effect_stroke_join_type = SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER;
+        layer->effect_stroke_cap_type = SIXEL_BUILTIN_PSD_STROKE_CAP_BUTT;
+        layer->effect_stroke_miter_limit = 100.0f;
+        layer->effect_stroke_adjust = 0;
+        layer->effect_stroke_vector_geometry = 0;
         layer->effect_stroke_from_vector_style = 0;
     }
     return 1;
@@ -13953,6 +13979,10 @@ sixel_builtin_psd_parse_vector_stroke_payload(
     float stroke_opacity;
     float stroke_size;
     int stroke_position;
+    int stroke_join_type;
+    int stroke_cap_type;
+    float stroke_miter_limit;
+    int stroke_adjust;
     sixel_builtin_psd_layer_blend_mode_t blend_mode;
 
     cursor = 0u;
@@ -13976,6 +14006,10 @@ sixel_builtin_psd_parse_vector_stroke_payload(
     stroke_opacity = 1.0f;
     stroke_size = 0.0f;
     stroke_position = SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE;
+    stroke_join_type = SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER;
+    stroke_cap_type = SIXEL_BUILTIN_PSD_STROKE_CAP_BUTT;
+    stroke_miter_limit = 100.0f;
+    stroke_adjust = 0;
     blend_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
     if (data == NULL || layer == NULL) {
         return 0;
@@ -14081,6 +14115,68 @@ sixel_builtin_psd_parse_vector_stroke_payload(
                 &blend_mode);
             continue;
         }
+        if (strcmp(key_text, "strokeStyleLineJoinType") == 0 &&
+            sixel_builtin_psd_descriptor_read_enum_text(data,
+                                                        key_length,
+                                                        &cursor,
+                                                        type,
+                                                        enum_value,
+                                                        sizeof(enum_value),
+                                                        &enum_value_length)) {
+            if (strcmp(enum_value, "strokeStyleRoundJoin") == 0 ||
+                strcmp(enum_value, "RndJ") == 0) {
+                stroke_join_type = SIXEL_BUILTIN_PSD_STROKE_JOIN_ROUND;
+            } else if (strcmp(enum_value, "strokeStyleBevelJoin") == 0 ||
+                       strcmp(enum_value, "BvlJ") == 0) {
+                stroke_join_type = SIXEL_BUILTIN_PSD_STROKE_JOIN_BEVEL;
+            } else {
+                stroke_join_type = SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER;
+            }
+            continue;
+        }
+        if (strcmp(key_text, "strokeStyleLineCapType") == 0 &&
+            sixel_builtin_psd_descriptor_read_enum_text(data,
+                                                        key_length,
+                                                        &cursor,
+                                                        type,
+                                                        enum_value,
+                                                        sizeof(enum_value),
+                                                        &enum_value_length)) {
+            if (strcmp(enum_value, "strokeStyleRoundCap") == 0 ||
+                strcmp(enum_value, "RndC") == 0) {
+                stroke_cap_type = SIXEL_BUILTIN_PSD_STROKE_CAP_ROUND;
+            } else if (strcmp(enum_value, "strokeStyleSquareCap") == 0 ||
+                       strcmp(enum_value, "SqrC") == 0) {
+                stroke_cap_type = SIXEL_BUILTIN_PSD_STROKE_CAP_SQUARE;
+            } else {
+                stroke_cap_type = SIXEL_BUILTIN_PSD_STROKE_CAP_BUTT;
+            }
+            continue;
+        }
+        if (strcmp(key_text, "strokeStyleMiterLimit") == 0 &&
+            sixel_builtin_psd_descriptor_read_numeric_value(data,
+                                                            key_length,
+                                                            &cursor,
+                                                            type,
+                                                            &numeric)) {
+            if (numeric <= 1.0) {
+                stroke_miter_limit = 1.0f;
+            } else if (numeric >= 1000.0) {
+                stroke_miter_limit = 1000.0f;
+            } else {
+                stroke_miter_limit = (float)numeric;
+            }
+            continue;
+        }
+        if (strcmp(key_text, "strokeStyleStrokeAdjust") == 0 &&
+            sixel_builtin_psd_descriptor_read_bool_value(data,
+                                                         key_length,
+                                                         &cursor,
+                                                         type,
+                                                         &bool_value)) {
+            stroke_adjust = bool_value != 0 ? 1 : 0;
+            continue;
+        }
         if (strcmp(key_text, "strokeStyleContent") == 0 &&
             memcmp(type, "Objc", 4u) == 0 &&
             sixel_builtin_psd_parse_vector_stroke_content_object(
@@ -14111,6 +14207,10 @@ sixel_builtin_psd_parse_vector_stroke_payload(
     layer->vector_stroke_opacity = stroke_opacity;
     layer->vector_stroke_size = stroke_size;
     layer->vector_stroke_mode = blend_mode;
+    layer->vector_stroke_join_type = stroke_join_type;
+    layer->vector_stroke_cap_type = stroke_cap_type;
+    layer->vector_stroke_miter_limit = stroke_miter_limit;
+    layer->vector_stroke_adjust = stroke_adjust;
     if (layer->has_effect_stroke == 0) {
         layer->has_effect_stroke = 1;
         layer->effect_stroke_position = stroke_position;
@@ -14120,6 +14220,11 @@ sixel_builtin_psd_parse_vector_stroke_payload(
         layer->effect_stroke_opacity = stroke_opacity;
         layer->effect_stroke_size = stroke_size;
         layer->effect_stroke_mode = blend_mode;
+        layer->effect_stroke_join_type = stroke_join_type;
+        layer->effect_stroke_cap_type = stroke_cap_type;
+        layer->effect_stroke_miter_limit = stroke_miter_limit;
+        layer->effect_stroke_adjust = stroke_adjust;
+        layer->effect_stroke_vector_geometry = 1;
         layer->effect_stroke_from_vector_style = 1;
     }
     return 1;
@@ -14656,12 +14761,21 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->effect_stroke_opacity = 1.0f;
     layer->effect_stroke_size = 1.0f;
     layer->effect_stroke_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    layer->effect_stroke_join_type = SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER;
+    layer->effect_stroke_cap_type = SIXEL_BUILTIN_PSD_STROKE_CAP_BUTT;
+    layer->effect_stroke_miter_limit = 100.0f;
+    layer->effect_stroke_adjust = 0;
+    layer->effect_stroke_vector_geometry = 0;
     layer->vector_stroke_rgb[0] = 0.0f;
     layer->vector_stroke_rgb[1] = 0.0f;
     layer->vector_stroke_rgb[2] = 0.0f;
     layer->vector_stroke_opacity = 1.0f;
     layer->vector_stroke_size = 1.0f;
     layer->vector_stroke_mode = SIXEL_BUILTIN_PSD_BLEND_NORMAL;
+    layer->vector_stroke_join_type = SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER;
+    layer->vector_stroke_cap_type = SIXEL_BUILTIN_PSD_STROKE_CAP_BUTT;
+    layer->vector_stroke_miter_limit = 100.0f;
+    layer->vector_stroke_adjust = 0;
     layer->effect_outer_glow_rgb[0] = 0.0f;
     layer->effect_outer_glow_rgb[1] = 0.0f;
     layer->effect_outer_glow_rgb[2] = 0.0f;
@@ -19588,6 +19702,18 @@ sixel_builtin_psd_compute_stroke_coverage_distance(
     float *pinside_coverage);
 
 static void
+sixel_builtin_psd_compute_stroke_coverage_linf(
+    float const *alpha_map,
+    unsigned int width,
+    unsigned int height,
+    size_t index,
+    float source_alpha,
+    int stroke_radius,
+    int use_binary_alpha,
+    float *poutside_coverage,
+    float *pinside_coverage);
+
+static void
 sixel_builtin_psd_apply_layer_effects_subset(
     sixel_builtin_psd_layer_record_t const *layer,
     sixel_builtin_psd_layer_buffers_t *src,
@@ -19628,6 +19754,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
     float stroke_opacity;
     float stroke_size;
     float stroke_rgb[3];
+    float miter_outside_coverage;
+    float miter_inside_coverage;
     float bevel_highlight_opacity;
     float bevel_shadow_opacity;
     float bevel_effect_size;
@@ -19645,6 +19773,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
     int traced_distance_stroke;
     int traced_distance_stroke_position;
     int traced_stroke_alpha_semantics;
+    int use_miter_join;
+    int traced_miter_join;
     float stroke_distance_threshold;
     size_t coverage_row_offset;
     int coverage_x;
@@ -19693,6 +19823,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
     stroke_rgb[0] = 0.0f;
     stroke_rgb[1] = 0.0f;
     stroke_rgb[2] = 0.0f;
+    miter_outside_coverage = 0.0f;
+    miter_inside_coverage = 0.0f;
     bevel_highlight_opacity = 0.0f;
     bevel_shadow_opacity = 0.0f;
     bevel_effect_size = 0.0f;
@@ -19710,6 +19842,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
     traced_distance_stroke = 0;
     traced_distance_stroke_position = 0;
     traced_stroke_alpha_semantics = 0;
+    use_miter_join = 0;
+    traced_miter_join = 0;
     stroke_distance_threshold = 0.001f;
     coverage_row_offset = 0u;
     coverage_x = 0;
@@ -19853,6 +19987,15 @@ sixel_builtin_psd_apply_layer_effects_subset(
             layer->vector_stroke_size;
         dual_vector_stroke_layer.effect_stroke_mode =
             layer->vector_stroke_mode;
+        dual_vector_stroke_layer.effect_stroke_join_type =
+            layer->vector_stroke_join_type;
+        dual_vector_stroke_layer.effect_stroke_cap_type =
+            layer->vector_stroke_cap_type;
+        dual_vector_stroke_layer.effect_stroke_miter_limit =
+            layer->vector_stroke_miter_limit;
+        dual_vector_stroke_layer.effect_stroke_adjust =
+            layer->vector_stroke_adjust;
+        dual_vector_stroke_layer.effect_stroke_vector_geometry = 1;
         dual_vector_stroke_layer.effect_stroke_from_vector_style = 0;
         dual_vector_stroke_layer.has_vector_stroke_style = 0;
         dual_vector_stroke_layer.has_vector_stroke_content_fill = 0;
@@ -20330,6 +20473,11 @@ sixel_builtin_psd_apply_layer_effects_subset(
          */
         use_binary_stroke_alpha = 1;
     }
+    use_miter_join =
+        layer->effect_stroke_vector_geometry != 0 &&
+        layer->effect_stroke_join_type ==
+            SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER &&
+        stroke_position == SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE ? 1 : 0;
     if (stroke_opacity <= 0.0f || stroke_size <= 0.0f) {
         if (traced_interior_effects_skip != 0) {
             sixel_builtin_psd_layer_effects_trace_interior_skip();
@@ -20419,7 +20567,44 @@ sixel_builtin_psd_apply_layer_effects_subset(
         if (use_binary_stroke_alpha != 0) {
             source_alpha = source_alpha >= 0.5f ? 1.0f : 0.0f;
         }
-        if (stroke_distance_map_valid != 0) {
+        if (use_miter_join != 0) {
+            if (traced_miter_join == 0) {
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: applying miter-join vector stroke "
+                    "coverage in layer fallback");
+                traced_miter_join = 1;
+            }
+            sixel_builtin_psd_compute_stroke_coverage_linf(
+                original_alpha,
+                layer->width,
+                layer->height,
+                i,
+                source_alpha,
+                stroke_radius,
+                use_binary_stroke_alpha,
+                &miter_outside_coverage,
+                &miter_inside_coverage);
+            if (stroke_distance_map_valid != 0) {
+                sixel_builtin_psd_compute_stroke_coverage_distance(
+                    stroke_foreground_distance_map,
+                    stroke_background_distance_map,
+                    i,
+                    source_alpha,
+                    stroke_size,
+                    &stroke_outside_coverage,
+                    &stroke_inside_coverage);
+                stroke_outside_coverage = sixel_builtin_psd_clamp01(
+                    stroke_outside_coverage * 0.99f +
+                    miter_outside_coverage * 0.01f);
+                stroke_inside_coverage = sixel_builtin_psd_clamp01(
+                    stroke_inside_coverage * 0.99f +
+                    miter_inside_coverage * 0.01f);
+            } else {
+                stroke_outside_coverage = miter_outside_coverage;
+                stroke_inside_coverage = miter_inside_coverage;
+            }
+        } else if (stroke_distance_map_valid != 0) {
             if (traced_distance_stroke == 0) {
                 sixel_builtin_psd_trace_message(
                     "psd_decode",
@@ -22397,6 +22582,94 @@ sixel_builtin_psd_compute_stroke_coverage_distance(
     }
 }
 
+static void
+sixel_builtin_psd_compute_stroke_coverage_linf(
+    float const *alpha_map,
+    unsigned int width,
+    unsigned int height,
+    size_t index,
+    float source_alpha,
+    int stroke_radius,
+    int use_binary_alpha,
+    float *poutside_coverage,
+    float *pinside_coverage)
+{
+    int dx;
+    int dy;
+    int nx;
+    int ny;
+    size_t x;
+    size_t y;
+    size_t neighbor_index;
+    float max_alpha;
+    float min_alpha;
+    float neighbor_alpha;
+    float outside_coverage;
+    float inside_coverage;
+
+    dx = 0;
+    dy = 0;
+    nx = 0;
+    ny = 0;
+    x = 0u;
+    y = 0u;
+    neighbor_index = 0u;
+    max_alpha = 0.0f;
+    min_alpha = 1.0f;
+    neighbor_alpha = 0.0f;
+    outside_coverage = 0.0f;
+    inside_coverage = 0.0f;
+    if (poutside_coverage != NULL) {
+        *poutside_coverage = 0.0f;
+    }
+    if (pinside_coverage != NULL) {
+        *pinside_coverage = 0.0f;
+    }
+    if (alpha_map == NULL || width == 0u || height == 0u || stroke_radius < 1) {
+        return;
+    }
+    x = index % (size_t)width;
+    y = index / (size_t)width;
+    source_alpha = sixel_builtin_psd_clamp_alpha_float32(source_alpha);
+    if (use_binary_alpha != 0) {
+        source_alpha = source_alpha >= 0.5f ? 1.0f : 0.0f;
+    }
+    for (dy = -stroke_radius; dy <= stroke_radius; ++dy) {
+        ny = (int)y + dy;
+        if (ny < 0 || ny >= (int)height) {
+            continue;
+        }
+        for (dx = -stroke_radius; dx <= stroke_radius; ++dx) {
+            nx = (int)x + dx;
+            if (nx < 0 || nx >= (int)width) {
+                continue;
+            }
+            neighbor_index = (size_t)ny * (size_t)width + (size_t)nx;
+            neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                alpha_map[neighbor_index]);
+            if (use_binary_alpha != 0) {
+                neighbor_alpha = neighbor_alpha >= 0.5f ? 1.0f : 0.0f;
+            }
+            if (neighbor_alpha > max_alpha) {
+                max_alpha = neighbor_alpha;
+            }
+            if (neighbor_alpha < min_alpha) {
+                min_alpha = neighbor_alpha;
+            }
+        }
+    }
+    outside_coverage = sixel_builtin_psd_clamp01(max_alpha - source_alpha);
+    inside_coverage = sixel_builtin_psd_clamp01(source_alpha - min_alpha);
+    if (poutside_coverage != NULL) {
+        *poutside_coverage = sixel_builtin_psd_clamp_alpha_float32(
+            outside_coverage);
+    }
+    if (pinside_coverage != NULL) {
+        *pinside_coverage = sixel_builtin_psd_clamp_alpha_float32(
+            inside_coverage);
+    }
+}
+
 static int
 sixel_builtin_psd_build_exterior_background_map(
     unsigned char *out_background_map,
@@ -22539,6 +22812,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     float stroke_soft_outside_sum;
     float stroke_soft_inside_sum;
     float stroke_soft_weight_sum;
+    float miter_outside_coverage;
+    float miter_inside_coverage;
     float spatial_weight;
     float neighbor_delta_outside;
     float neighbor_delta_inside;
@@ -22555,6 +22830,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     int traced_distance_stroke;
     int traced_distance_stroke_position;
     int traced_stroke_alpha_semantics;
+    int use_miter_join;
+    int traced_miter_join;
     unsigned char *outside_background_map;
     float *stroke_foreground_distance_map;
     float *stroke_background_distance_map;
@@ -22583,6 +22860,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     stroke_soft_outside_sum = 0.0f;
     stroke_soft_inside_sum = 0.0f;
     stroke_soft_weight_sum = 0.0f;
+    miter_outside_coverage = 0.0f;
+    miter_inside_coverage = 0.0f;
     spatial_weight = 0.0f;
     neighbor_delta_outside = 0.0f;
     neighbor_delta_inside = 0.0f;
@@ -22599,6 +22878,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     traced_distance_stroke = 0;
     traced_distance_stroke_position = 0;
     traced_stroke_alpha_semantics = 0;
+    use_miter_join = 0;
+    traced_miter_join = 0;
     outside_background_map = NULL;
     stroke_foreground_distance_map = NULL;
     stroke_background_distance_map = NULL;
@@ -22623,6 +22904,11 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     stroke_rgb[2] = layer->effect_stroke_rgb[2];
     stroke_position = layer->effect_stroke_position;
     effect_mode = layer->effect_stroke_mode;
+    use_miter_join =
+        layer->effect_stroke_vector_geometry != 0 &&
+        layer->effect_stroke_join_type ==
+            SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER &&
+        stroke_position == SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE ? 1 : 0;
     use_clip_weight = layer->has_blend_clipped_elements != 0 &&
         layer->blend_clipped_elements_enabled != 0 ? 1 : 0;
     use_base_silhouette_coverage = stroke_coverage_alpha_map != NULL ? 1 : 0;
@@ -22756,7 +23042,44 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                 outside_background_map[idx] == 0u) {
                 continue;
             }
-            if (stroke_distance_map_valid != 0) {
+            if (use_miter_join != 0) {
+                if (traced_miter_join == 0) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: applying deferred miter-join "
+                        "vector stroke on clipped group");
+                    traced_miter_join = 1;
+                }
+                sixel_builtin_psd_compute_stroke_coverage_linf(
+                    stroke_distance_source_map,
+                    canvas_width,
+                    canvas_height,
+                    idx,
+                    source_alpha,
+                    stroke_radius,
+                    0,
+                    &miter_outside_coverage,
+                    &miter_inside_coverage);
+                if (stroke_distance_map_valid != 0) {
+                    sixel_builtin_psd_compute_stroke_coverage_distance(
+                        stroke_foreground_distance_map,
+                        stroke_background_distance_map,
+                        idx,
+                        source_alpha,
+                        stroke_size,
+                        &stroke_outside_coverage,
+                        &stroke_inside_coverage);
+                    stroke_outside_coverage = sixel_builtin_psd_clamp01(
+                        stroke_outside_coverage * 0.99f +
+                        miter_outside_coverage * 0.01f);
+                    stroke_inside_coverage = sixel_builtin_psd_clamp01(
+                        stroke_inside_coverage * 0.99f +
+                        miter_inside_coverage * 0.01f);
+                } else {
+                    stroke_outside_coverage = miter_outside_coverage;
+                    stroke_inside_coverage = miter_inside_coverage;
+                }
+            } else if (stroke_distance_map_valid != 0) {
                 if (traced_distance_stroke == 0) {
                     sixel_builtin_psd_trace_message(
                         "psd_decode",
@@ -24304,6 +24627,17 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     pending_overlay_layer.vector_stroke_size;
                 pending_overlay_vector_stroke_layer.effect_stroke_mode =
                     pending_overlay_layer.vector_stroke_mode;
+                pending_overlay_vector_stroke_layer.effect_stroke_join_type =
+                    pending_overlay_layer.vector_stroke_join_type;
+                pending_overlay_vector_stroke_layer.effect_stroke_cap_type =
+                    pending_overlay_layer.vector_stroke_cap_type;
+                pending_overlay_vector_stroke_layer
+                    .effect_stroke_miter_limit =
+                    pending_overlay_layer.vector_stroke_miter_limit;
+                pending_overlay_vector_stroke_layer.effect_stroke_adjust =
+                    pending_overlay_layer.vector_stroke_adjust;
+                pending_overlay_vector_stroke_layer
+                    .effect_stroke_vector_geometry = 1;
                 pending_overlay_vector_stroke_layer.has_vector_stroke_style = 0;
                 pending_overlay_vector_stroke_layer
                     .has_vector_stroke_content_fill = 0;

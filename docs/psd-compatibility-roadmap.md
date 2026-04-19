@@ -52,6 +52,9 @@ Key points used by this roadmap:
     base path emits a dual-stroke trace and deferred `clbl=1` pass applies
     vector/effect stroke together on clipped groups before the deferred
     `FrFX` pass.
+  - `vstk` geometry metadata now tracks join/cap/miter/adjust parameters.
+    For `inside + miter` vector strokes, base/deferred coverage paths use a
+    dedicated miter-join coverage contract instead of the default round band.
 - Signature/version policy:
   - `8BPS` supports version `1/2` per existing parser policy.
   - `8BPB` is accepted only with `version=2`; `8BPB+version!=2` is rejected as
