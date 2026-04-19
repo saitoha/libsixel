@@ -4875,6 +4875,8 @@ sixel_builtin_load_psd_single_frame(
             sixel_helper_set_additional_message(
                 "builtin PSD: malformed section length/offset");
         }
+        sixel_builtin_psd_trace_contract_add_error_code("ERR_PARSE_INFO");
+        sixel_builtin_psd_trace_contract_flush(1);
         return SIXEL_STBI_ERROR;
     }
     psd_validation_status = sixel_builtin_validate_psd_info(
@@ -4892,6 +4894,8 @@ sixel_builtin_load_psd_single_frame(
             sixel_helper_set_additional_message(
                 "builtin PSD: validation failed");
         }
+        sixel_builtin_psd_trace_contract_add_error_code("ERR_VALIDATE");
+        sixel_builtin_psd_trace_contract_flush(1);
         return SIXEL_STBI_ERROR;
     }
     if (enable_cms) {
@@ -4935,10 +4939,15 @@ sixel_builtin_load_psd_single_frame(
         if (status == SIXEL_FALSE) {
             sixel_helper_set_additional_message(
                 "builtin PSD: internal decode mode selection failed");
+            sixel_builtin_psd_trace_contract_add_error_code(
+                "ERR_MODE_SELECT");
+            sixel_builtin_psd_trace_contract_flush(1);
             return SIXEL_STBI_ERROR;
         }
     }
     if (SIXEL_FAILED(status)) {
+        sixel_builtin_psd_trace_contract_add_error_code("ERR_DECODE");
+        sixel_builtin_psd_trace_contract_flush(1);
         return status;
     }
 
@@ -4975,6 +4984,7 @@ sixel_builtin_load_psd_single_frame(
     frame->alpha_zero_is_transparent =
         frame->transparent_mask != NULL &&
         frame->transparent_mask_size > 0u ? 1 : 0;
+    sixel_builtin_psd_trace_contract_flush(0);
     return SIXEL_OK;
 }
 

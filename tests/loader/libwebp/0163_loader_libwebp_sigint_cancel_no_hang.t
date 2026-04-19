@@ -61,20 +61,35 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -lforce "${input_webp}" \
     >/dev/null 2>/dev/null &
 pid=$!
 
-sleep 1
+sleep 0.02
 kill -INT "${pid}" 2>/dev/null || true
 
-wait_limit=40
-# Runtime wrappers such as wine can delay SIGINT delivery to the target.
-# Keep native runs strict while allowing extra grace time for wrapped runs.
-test -n "${SIXEL_RUNTIME-}" && wait_limit=200
+# Fast path: keep normal runs short when SIGINT is delivered immediately.
+wait_limit=10
 while test "${wait_limit}" -gt 0; do
     kill -0 "${pid}" 2>/dev/null || {
         break
     }
-    sleep 0.05
+    sleep 0.02
     wait_limit=$((wait_limit - 1))
 done
+
+kill -0 "${pid}" 2>/dev/null && {
+    # Fallback path: preserve the previous watchdog window as insurance.
+    sleep 1
+    kill -INT "${pid}" 2>/dev/null || true
+    wait_limit=40
+    # Runtime wrappers such as wine can delay SIGINT delivery to the target.
+    # Keep native runs strict while allowing extra grace time for wrapped runs.
+    test -n "${SIXEL_RUNTIME-}" && wait_limit=200
+    while test "${wait_limit}" -gt 0; do
+        kill -0 "${pid}" 2>/dev/null || {
+            break
+        }
+        sleep 0.05
+        wait_limit=$((wait_limit - 1))
+    done
+}
 
 kill -0 "${pid}" 2>/dev/null && {
     kill -KILL "${pid}" 2>/dev/null || true

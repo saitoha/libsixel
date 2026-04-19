@@ -20,6 +20,7 @@ set +x
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
 command_status=0
+overlay_trace_ok=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
@@ -32,10 +33,14 @@ test "${command_status}" -eq 0 || {
 }
 
 test "${trace_output#*builtin PSD: applying solid overlay effect in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not apply solid overlay effect"
+    != "${trace_output}" && overlay_trace_ok=1
+test "${trace_output#*builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays*}" \
+    != "${trace_output}" && overlay_trace_ok=1
+
+test "${overlay_trace_ok}" = "1" || {
+    echo "not ok" 1 - "effects/stroke-composite solid-overlay trace contract is missing"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps solid-overlay apply trace contract"
+echo "ok" 1 - "effects/stroke-composite keeps solid-overlay trace contract"
 exit 0

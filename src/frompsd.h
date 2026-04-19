@@ -97,6 +97,12 @@ sixel_builtin_validate_psd_info(
     char *message,
     size_t message_size);
 
+SIXEL_INTERNAL_API void
+sixel_builtin_psd_trace_contract_add_error_code(char const *code);
+
+SIXEL_INTERNAL_API void
+sixel_builtin_psd_trace_contract_flush(int rc);
+
 SIXELSTATUS
 sixel_builtin_decode_psd_bitmap_1bit(
     sixel_chunk_t const *chunk,

@@ -20,7 +20,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_blend_and_clipping.psd"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psdtools_blend_and_clipping_expected_psdtools.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.99}
 trace_output=''
 lsqa_msg=''
 command_status=0

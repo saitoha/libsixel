@@ -99,12 +99,23 @@
 #endif
 
 #define SIXEL_PSD_TRACE_SEEN_MAX 256u
+#define SIXEL_PSD_TRACE_MESSAGE_MAX 384u
+#define SIXEL_PSD_TRACE_CODE_MAX 64u
 
 #if SIXEL_PSD_TRACE_TLS_AVAILABLE
 static SIXEL_PSD_TRACE_TLS uint64_t
 sixel_builtin_psd_trace_seen_hashes[SIXEL_PSD_TRACE_SEEN_MAX];
 static SIXEL_PSD_TRACE_TLS unsigned int
 sixel_builtin_psd_trace_seen_count;
+static SIXEL_PSD_TRACE_TLS char
+sixel_builtin_psd_trace_messages[SIXEL_PSD_TRACE_SEEN_MAX]
+                                [SIXEL_PSD_TRACE_MESSAGE_MAX];
+static SIXEL_PSD_TRACE_TLS unsigned int
+sixel_builtin_psd_trace_message_count;
+static SIXEL_PSD_TRACE_TLS char const *
+sixel_builtin_psd_trace_codes[SIXEL_PSD_TRACE_CODE_MAX];
+static SIXEL_PSD_TRACE_TLS unsigned int
+sixel_builtin_psd_trace_code_count;
 #endif
 
 static void
@@ -112,6 +123,8 @@ sixel_builtin_psd_trace_reset(void)
 {
 #if SIXEL_PSD_TRACE_TLS_AVAILABLE
     sixel_builtin_psd_trace_seen_count = 0u;
+    sixel_builtin_psd_trace_message_count = 0u;
+    sixel_builtin_psd_trace_code_count = 0u;
 #endif
 }
 
@@ -151,9 +164,154 @@ sixel_builtin_psd_trace_seen(char const *message)
 }
 
 static void
+sixel_builtin_psd_trace_add_code(char const *code)
+{
+#if SIXEL_PSD_TRACE_TLS_AVAILABLE
+    unsigned int i;
+
+    i = 0u;
+    if (code == NULL || code[0] == '\0') {
+        return;
+    }
+    for (i = 0u; i < sixel_builtin_psd_trace_code_count; ++i) {
+        if (strcmp(sixel_builtin_psd_trace_codes[i], code) == 0) {
+            return;
+        }
+    }
+    if (sixel_builtin_psd_trace_code_count >= SIXEL_PSD_TRACE_CODE_MAX) {
+        return;
+    }
+    sixel_builtin_psd_trace_codes[sixel_builtin_psd_trace_code_count] = code;
+    ++sixel_builtin_psd_trace_code_count;
+#else
+    (void)code;
+#endif
+}
+
+static char const *
+sixel_builtin_psd_trace_code_from_message(char const *message)
+{
+    if (message == NULL || message[0] == '\0') {
+        return NULL;
+    }
+    if (strstr(message, "parsed OrGl glow source/choke/range semantics") !=
+            NULL) {
+        return "FX_ORGL_SEM";
+    }
+    if (strstr(message,
+               "parsed OrGl effect object in layer effects (inactive)") !=
+            NULL) {
+        return "FX_ORGL_INACTIVE_PARSE";
+    }
+    if (strstr(message, "parsed IrGl glow source/choke/range semantics") !=
+            NULL) {
+        return "FX_IRGL_SEM";
+    }
+    if (strstr(message,
+               "parsed IrGl effect object in layer effects (inactive)") !=
+            NULL) {
+        return "FX_IRGL_INACTIVE_PARSE";
+    }
+    if (strstr(message, "parsed bevel lighting semantics") != NULL) {
+        return "FX_BEVEL_LIGHT_SEM";
+    }
+    if (strstr(message,
+               "parsed ebbl bevel object in layer effects (inactive)") !=
+            NULL) {
+        return "FX_EBBL_INACTIVE_PARSE";
+    }
+    if (strstr(message,
+               "separating deferred solid coverage source and clip gate "
+               "in layer fallback") != NULL) {
+        return "FX_DEFERRED_SOLID_CLIP_SPLIT";
+    }
+    return NULL;
+}
+
+static void
+sixel_builtin_psd_trace_buffer_message(char const *message)
+{
+#if SIXEL_PSD_TRACE_TLS_AVAILABLE
+    size_t length;
+    unsigned int slot;
+
+    length = 0u;
+    slot = 0u;
+    if (message == NULL || message[0] == '\0') {
+        return;
+    }
+    if (sixel_builtin_psd_trace_message_count >= SIXEL_PSD_TRACE_SEEN_MAX) {
+        return;
+    }
+    slot = sixel_builtin_psd_trace_message_count;
+    length = strlen(message);
+    if (length >= SIXEL_PSD_TRACE_MESSAGE_MAX) {
+        length = SIXEL_PSD_TRACE_MESSAGE_MAX - 1u;
+    }
+    memcpy(sixel_builtin_psd_trace_messages[slot], message, length);
+    sixel_builtin_psd_trace_messages[slot][length] = '\0';
+    ++sixel_builtin_psd_trace_message_count;
+#else
+    (void)message;
+#endif
+}
+
+void
+sixel_builtin_psd_trace_contract_add_error_code(char const *code)
+{
+    sixel_builtin_psd_trace_add_code(code);
+}
+
+void
+sixel_builtin_psd_trace_contract_flush(int rc)
+{
+#if SIXEL_PSD_TRACE_TLS_AVAILABLE
+    unsigned int i;
+    char const *kind;
+
+    i = 0u;
+    kind = rc == 0 ? "OK" : "ERR";
+    if (!sixel_trace_topic_is_enabled("psd_decode")) {
+        sixel_builtin_psd_trace_reset();
+        return;
+    }
+
+    if (sixel_builtin_psd_trace_code_count == 0u) {
+        if (rc == 0) {
+            sixel_builtin_psd_trace_add_code("PSD_OK");
+        } else {
+            sixel_builtin_psd_trace_add_code("PSD_ERR");
+        }
+    }
+
+    fprintf(stderr, "LSXPSD1|rc=%d|kind=%s|codes=", rc, kind);
+    for (i = 0u; i < sixel_builtin_psd_trace_code_count; ++i) {
+        if (i != 0u) {
+            fprintf(stderr, ",");
+        }
+        fprintf(stderr, "%s", sixel_builtin_psd_trace_codes[i]);
+    }
+    fprintf(stderr, "\n");
+
+    for (i = 0u; i < sixel_builtin_psd_trace_message_count; ++i) {
+        (sixel_trace_topic_message)(
+            "psd_decode",
+            "%s",
+            sixel_builtin_psd_trace_messages[i]);
+    }
+    sixel_builtin_psd_trace_reset();
+#else
+    (void)rc;
+#endif
+}
+
+static void
 sixel_builtin_psd_trace_message(char const *topic,
                                 char const *message)
 {
+    char const *code;
+
+    code = NULL;
     if (message == NULL) {
         return;
     }
@@ -161,6 +319,14 @@ sixel_builtin_psd_trace_message(char const *topic,
         strcmp(topic, "psd_decode") == 0 &&
         sixel_builtin_psd_trace_seen(message) != 0) {
         return;
+    }
+    if (topic != NULL && strcmp(topic, "psd_decode") == 0) {
+        code = sixel_builtin_psd_trace_code_from_message(message);
+        sixel_builtin_psd_trace_add_code(code);
+        sixel_builtin_psd_trace_buffer_message(message);
+#if SIXEL_PSD_TRACE_TLS_AVAILABLE
+        return;
+#endif
     }
     (sixel_trace_topic_message)(topic, "%s", message);
 }

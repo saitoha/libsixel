@@ -18,14 +18,27 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -ldisable -g \
               "${input_gif}" -o /dev/null >/dev/null 2>&1 &
 pid=$!
 
+# Fast path: short polling for common completion.
 wait_limit=10
 while test "${wait_limit}" -gt 0; do
     kill -0 "${pid}" 2>/dev/null || {
         break
     }
-    sleep 1
+    sleep 0.02
     wait_limit=$((wait_limit - 1))
 done
+
+kill -0 "${pid}" 2>/dev/null && {
+    # Fallback path: preserve the old watchdog as insurance.
+    wait_limit=10
+    while test "${wait_limit}" -gt 0; do
+        kill -0 "${pid}" 2>/dev/null || {
+            break
+        }
+        sleep 1
+        wait_limit=$((wait_limit - 1))
+    done
+}
 
 kill -0 "${pid}" 2>/dev/null && {
     kill "${pid}" 2>/dev/null || true
