@@ -332,6 +332,34 @@ sixel_kcenter_swap_apply_ctx_clear(sixel_kcenter_swap_apply_ctx_t *ctx)
     memset(ctx, 0, sizeof(*ctx));
 }
 
+/*
+ * Keep swap-step orchestration state compact while preserving objective order:
+ * radius is minimized first, and weighted SSE breaks ties.
+ */
+typedef struct sixel_kcenter_swap_step {
+    unsigned int candidate_list[16];
+    unsigned int candidate_count;
+    unsigned int topk;
+    unsigned int best_slot;
+    unsigned int best_candidate;
+    double best_radius2;
+    double best_sse;
+    double allowed_radius2;
+    double *best_new_dist;
+    double swap_min_gain;
+    int found;
+    int used_incremental_eval;
+} sixel_kcenter_swap_step_t;
+
+static void
+sixel_kcenter_swap_step_clear(sixel_kcenter_swap_step_t *step)
+{
+    if (step == NULL) {
+        return;
+    }
+    memset(step, 0, sizeof(*step));
+}
+
 typedef struct sixel_kcenter_solver_ctx {
     double const *points;
     double const *weights;
@@ -4501,217 +4529,329 @@ sixel_kcenter_swap_collect_candidates(
     return candidate_count;
 }
 
-/*
- * Try one swap step and keep the objective ordering strict:
- *   1) minimize radius first
- *   2) break ties by weighted SSE
- */
 static int
-sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
+sixel_kcenter_swap_step_init(sixel_kcenter_swap_step_t *step,
+                             sixel_kcenter_swap_ctx_t const *ctx)
 {
-    unsigned int point_count;
-    unsigned int k;
+    if (step == NULL || ctx == NULL
+            || ctx->radius2_io == NULL || ctx->sse_io == NULL) {
+        return 0;
+    }
+
+    sixel_kcenter_swap_step_clear(step);
+    step->topk = ctx->swap_topk;
+    if (step->topk < 1u) {
+        step->topk = 1u;
+    }
+    if (step->topk > 16u) {
+        step->topk = 16u;
+    }
+    step->swap_min_gain = ctx->swap_min_gain;
+    if (step->swap_min_gain < 0.0) {
+        step->swap_min_gain = 0.0;
+    }
+    step->best_radius2 = *ctx->radius2_io;
+    step->best_sse = *ctx->sse_io;
+    step->allowed_radius2 = sixel_kcenter_swap_allowed_radius_sq(
+        step->best_radius2,
+        step->swap_min_gain);
+    return 1;
+}
+
+static int
+sixel_kcenter_swap_prepare_candidates_stage(sixel_kcenter_swap_ctx_t const *ctx,
+                                            sixel_kcenter_swap_step_t *step)
+{
+    if (ctx == NULL || step == NULL) {
+        return 0;
+    }
+    if (ctx->point_count == 0u
+            || ctx->k == 0u
+            || ctx->point_count <= ctx->k
+            || ctx->center_mask == NULL
+            || ctx->nearest_slot == NULL
+            || ctx->nearest_dist == NULL) {
+        return 0;
+    }
+
+    step->candidate_count = sixel_kcenter_swap_collect_candidates(
+        ctx,
+        step->topk,
+        ctx->use_cluster_candidates,
+        ctx->rng_state,
+        step->candidate_list);
+    return step->candidate_count > 0u;
+}
+
+static int
+sixel_kcenter_swap_candidate_usable(sixel_kcenter_swap_ctx_t const *ctx,
+                                    unsigned int candidate,
+                                    unsigned int *slot_out)
+{
+    unsigned int slot;
+
+    slot = 0u;
+    if (ctx == NULL
+            || ctx->centers == NULL
+            || ctx->center_mask == NULL
+            || ctx->nearest_slot == NULL
+            || candidate >= ctx->point_count) {
+        return 0;
+    }
+
+    slot = ctx->nearest_slot[candidate];
+    if (slot >= ctx->k || ctx->centers[slot] == candidate) {
+        return 0;
+    }
+    if (ctx->center_mask[candidate] != 0u) {
+        return 0;
+    }
+    if (slot_out != NULL) {
+        *slot_out = slot;
+    }
+    return 1;
+}
+
+static void
+sixel_kcenter_swap_accept_candidate(sixel_kcenter_swap_step_t *step,
+                                    unsigned int slot,
+                                    unsigned int candidate,
+                                    double radius2,
+                                    double sse)
+{
+    if (step == NULL) {
+        return;
+    }
+    step->best_radius2 = radius2;
+    step->best_sse = sse;
+    step->best_slot = slot;
+    step->best_candidate = candidate;
+    step->allowed_radius2 = sixel_kcenter_swap_allowed_radius_sq(
+        step->best_radius2,
+        step->swap_min_gain);
+    step->found = 1;
+}
+
+static void
+sixel_kcenter_swap_eval_incremental_stage(sixel_kcenter_swap_ctx_t const *ctx,
+                                          sixel_kcenter_swap_step_t *step)
+{
     double const *points;
     double const *weights;
-    unsigned int *centers;
-    unsigned char *center_mask;
-    unsigned int *nearest_slot;
-    double *nearest_dist;
-    unsigned int *second_slot;
-    double *second_dist;
-    double *radius2_io;
-    double *sse_io;
+    unsigned int point_count;
+    unsigned int k;
+    unsigned int const *centers;
+    unsigned int const *nearest_slot;
+    double const *nearest_dist;
+    unsigned int const *second_slot;
+    double const *second_dist;
     unsigned int *scratch_slot;
     double *scratch_dist;
     unsigned int *scratch_second_slot;
     double *scratch_second_dist;
-    unsigned int candidate_list[16];
-    unsigned int candidate_count;
-    unsigned int topk;
-    sixel_kcenter_swap_update_t swap_update;
-    double swap_min_gain;
-    int use_cluster_candidates;
-    uint32_t *rng_state;
-    unsigned int candidate;
-    unsigned int old_slot;
     unsigned int index;
+    unsigned int candidate;
     unsigned int slot;
-    unsigned int best_slot;
-    unsigned int best_candidate;
-    unsigned int old_center;
+    unsigned int old_slot;
     unsigned int scan_slot;
     unsigned int affected_count;
-    double radius2;
-    double sse;
-    double best_radius2;
-    double best_sse;
-    double allowed_radius2;
-    double distance_to_new;
-    double new_distance;
-    double old_distance;
-    double old_second;
     unsigned int old_nearest_slot;
     unsigned int old_second_slot;
     unsigned int scan_best_slot;
     unsigned int scan_second_slot;
+    double old_distance;
+    double old_second;
+    double distance_to_new;
+    double new_distance;
     double scan_best_dist;
     double scan_second_dist;
     double scan_distance;
+    double radius2;
+    double sse;
     double lhs_weight;
-    int found;
     int rejected;
-    int used_incremental_eval;
-    int used_cached_apply;
-    double *best_new_dist;
-    double *trial_new_dist;
-    sixel_kcenter_swap_apply_ctx_t apply_ctx;
 
-    if (ctx == NULL) {
-        return 0;
-    }
-
-    point_count = ctx->point_count;
-    k = ctx->k;
-    points = ctx->points;
-    weights = ctx->weights;
-    centers = ctx->centers;
-    center_mask = ctx->center_mask;
-    nearest_slot = ctx->nearest_slot;
-    nearest_dist = ctx->nearest_dist;
-    second_slot = ctx->second_slot;
-    second_dist = ctx->second_dist;
-    radius2_io = ctx->radius2_io;
-    sse_io = ctx->sse_io;
-    scratch_slot = ctx->scratch_slot;
-    scratch_dist = ctx->scratch_dist;
-    scratch_second_slot = ctx->scratch_second_slot;
-    scratch_second_dist = ctx->scratch_second_dist;
-    topk = ctx->swap_topk;
-    swap_update = ctx->swap_update;
-    swap_min_gain = ctx->swap_min_gain;
-    use_cluster_candidates = ctx->use_cluster_candidates;
-    rng_state = ctx->rng_state;
-
-    candidate_count = 0u;
-    candidate = 0u;
-    old_slot = 0u;
+    points = NULL;
+    weights = NULL;
+    point_count = 0u;
+    k = 0u;
+    centers = NULL;
+    nearest_slot = NULL;
+    nearest_dist = NULL;
+    second_slot = NULL;
+    second_dist = NULL;
+    scratch_slot = NULL;
+    scratch_dist = NULL;
+    scratch_second_slot = NULL;
+    scratch_second_dist = NULL;
     index = 0u;
+    candidate = 0u;
     slot = 0u;
-    best_slot = 0u;
-    best_candidate = 0u;
-    old_center = 0u;
+    old_slot = 0u;
     scan_slot = 0u;
     affected_count = 0u;
-    radius2 = 0.0;
-    sse = 0.0;
-    best_radius2 = *radius2_io;
-    best_sse = *sse_io;
-    allowed_radius2 = 0.0;
-    distance_to_new = 0.0;
-    new_distance = 0.0;
-    old_distance = 0.0;
-    old_second = 0.0;
     old_nearest_slot = 0u;
     old_second_slot = 0u;
     scan_best_slot = 0u;
     scan_second_slot = 0u;
+    old_distance = 0.0;
+    old_second = 0.0;
+    distance_to_new = 0.0;
+    new_distance = 0.0;
     scan_best_dist = 0.0;
     scan_second_dist = 0.0;
     scan_distance = 0.0;
+    radius2 = 0.0;
+    sse = 0.0;
     lhs_weight = 0.0;
-    found = 0;
     rejected = 0;
-    used_incremental_eval = 0;
-    used_cached_apply = 0;
-    best_new_dist = NULL;
-    trial_new_dist = NULL;
-    sixel_kcenter_swap_apply_ctx_clear(&apply_ctx);
 
-    if (point_count == 0u
-            || k == 0u
-            || point_count <= k
-            || center_mask == NULL
-            || nearest_slot == NULL
+    if (ctx == NULL || step == NULL) {
+        return;
+    }
+    if (ctx->swap_update != SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL
+            || ctx->second_slot == NULL
+            || ctx->second_dist == NULL
+            || ctx->scratch_slot == NULL
+            || ctx->scratch_dist == NULL
+            || ctx->scratch_second_slot == NULL
+            || ctx->scratch_second_dist == NULL) {
+        return;
+    }
+
+    points = ctx->points;
+    weights = ctx->weights;
+    point_count = ctx->point_count;
+    k = ctx->k;
+    centers = ctx->centers;
+    nearest_slot = ctx->nearest_slot;
+    nearest_dist = ctx->nearest_dist;
+    second_slot = ctx->second_slot;
+    second_dist = ctx->second_dist;
+    scratch_slot = ctx->scratch_slot;
+    scratch_dist = ctx->scratch_dist;
+    scratch_second_slot = ctx->scratch_second_slot;
+    scratch_second_dist = ctx->scratch_second_dist;
+    if (points == NULL || centers == NULL || nearest_slot == NULL
             || nearest_dist == NULL) {
-        return 0;
-    }
-    if (topk < 1u) {
-        topk = 1u;
-    }
-    if (topk > 16u) {
-        topk = 16u;
-    }
-    if (swap_min_gain < 0.0) {
-        swap_min_gain = 0.0;
-    }
-    allowed_radius2 = sixel_kcenter_swap_allowed_radius_sq(best_radius2,
-                                                           swap_min_gain);
-    candidate_count = sixel_kcenter_swap_collect_candidates(
-        ctx,
-        topk,
-        use_cluster_candidates,
-        rng_state,
-        candidate_list);
-
-    if (candidate_count == 0u) {
-        return 0;
+        return;
     }
 
-    found = 0;
-    if (swap_update == SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL
-            && second_slot != NULL
-            && second_dist != NULL
-            && scratch_second_slot != NULL
-            && scratch_second_dist != NULL) {
-        used_incremental_eval = 1;
-        for (index = 0u; index < candidate_count; ++index) {
-            candidate = candidate_list[index];
-            slot = nearest_slot[candidate];
-            if (slot >= k || centers[slot] == candidate) {
+    step->used_incremental_eval = 1;
+    for (index = 0u; index < step->candidate_count; ++index) {
+        candidate = step->candidate_list[index];
+        if (!sixel_kcenter_swap_candidate_usable(ctx, candidate, &slot)) {
+            continue;
+        }
+
+        radius2 = 0.0;
+        sse = 0.0;
+        rejected = 0;
+        affected_count = 0u;
+        for (old_slot = 0u; old_slot < point_count; ++old_slot) {
+            old_nearest_slot = nearest_slot[old_slot];
+            if (old_nearest_slot == slot) {
+                scratch_slot[old_slot] = UINT_MAX;
+                ++affected_count;
                 continue;
             }
-            if (center_mask[candidate] != 0u) {
-                continue;
+            old_second_slot = second_slot[old_slot];
+            old_distance = nearest_dist[old_slot];
+            old_second = second_dist[old_slot];
+            distance_to_new = sixel_kcenter_distance_sq(points,
+                                                        old_slot,
+                                                        candidate);
+            if (distance_to_new < old_distance) {
+                new_distance = distance_to_new;
+                scratch_slot[old_slot] = slot;
+                scratch_dist[old_slot] = distance_to_new;
+                scratch_second_slot[old_slot] = old_nearest_slot;
+                scratch_second_dist[old_slot] = old_distance;
+            } else {
+                new_distance = old_distance;
+                scratch_slot[old_slot] = old_nearest_slot;
+                scratch_dist[old_slot] = old_distance;
+                if (distance_to_new < old_second) {
+                    scratch_second_slot[old_slot] = slot;
+                    scratch_second_dist[old_slot] = distance_to_new;
+                } else {
+                    scratch_second_slot[old_slot] = old_second_slot;
+                    scratch_second_dist[old_slot] = old_second;
+                }
             }
+            if (new_distance > radius2) {
+                radius2 = new_distance;
+                if (radius2 > step->allowed_radius2 + 1.0e-12) {
+                    rejected = 1;
+                    break;
+                }
+            }
+            lhs_weight = (weights != NULL) ? weights[old_slot] : 1.0;
+            if (lhs_weight <= 0.0) {
+                lhs_weight = 1.0;
+            }
+            sse += new_distance * lhs_weight;
+            if (radius2 >= step->best_radius2 - 1.0e-12
+                    && sse >= step->best_sse - 1.0e-9) {
+                rejected = 1;
+                break;
+            }
+        }
+        if (rejected) {
+            continue;
+        }
 
-            radius2 = 0.0;
-            sse = 0.0;
-            rejected = 0;
-            affected_count = 0u;
+        if (affected_count > 0u) {
             for (old_slot = 0u; old_slot < point_count; ++old_slot) {
-                old_nearest_slot = nearest_slot[old_slot];
-                if (old_nearest_slot == slot) {
-                    scratch_slot[old_slot] = UINT_MAX;
-                    ++affected_count;
+                if (scratch_slot[old_slot] != UINT_MAX) {
                     continue;
                 }
-                old_second_slot = second_slot[old_slot];
-                old_distance = nearest_dist[old_slot];
-                old_second = second_dist[old_slot];
-                distance_to_new = sixel_kcenter_distance_sq(points,
-                                                            old_slot,
-                                                            candidate);
-                if (distance_to_new < old_distance) {
-                    new_distance = distance_to_new;
-                    scratch_slot[old_slot] = slot;
-                    scratch_dist[old_slot] = distance_to_new;
-                    scratch_second_slot[old_slot] = old_nearest_slot;
-                    scratch_second_dist[old_slot] = old_distance;
+                scan_best_slot = 0u;
+                if (slot == 0u) {
+                    scan_best_dist = sixel_kcenter_distance_sq(points,
+                                                               old_slot,
+                                                               candidate);
                 } else {
-                    new_distance = old_distance;
-                    scratch_slot[old_slot] = old_nearest_slot;
-                    scratch_dist[old_slot] = old_distance;
-                    if (distance_to_new < old_second) {
-                        scratch_second_slot[old_slot] = slot;
-                        scratch_second_dist[old_slot] = distance_to_new;
+                    scan_best_dist = sixel_kcenter_distance_sq(
+                        points,
+                        old_slot,
+                        centers[0u]);
+                }
+                scan_second_slot = 0u;
+                scan_second_dist = DBL_MAX;
+                for (scan_slot = 1u; scan_slot < k; ++scan_slot) {
+                    if (scan_slot == slot) {
+                        scan_distance = sixel_kcenter_distance_sq(
+                            points,
+                            old_slot,
+                            candidate);
                     } else {
-                        scratch_second_slot[old_slot] = old_second_slot;
-                        scratch_second_dist[old_slot] = old_second;
+                        scan_distance = sixel_kcenter_distance_sq(
+                            points,
+                            old_slot,
+                            centers[scan_slot]);
+                    }
+                    if (scan_distance < scan_best_dist) {
+                        scan_second_dist = scan_best_dist;
+                        scan_second_slot = scan_best_slot;
+                        scan_best_dist = scan_distance;
+                        scan_best_slot = scan_slot;
+                    } else if (scan_distance < scan_second_dist) {
+                        scan_second_dist = scan_distance;
+                        scan_second_slot = scan_slot;
                     }
                 }
-                if (new_distance > radius2) {
-                    radius2 = new_distance;
-                    if (radius2 > allowed_radius2 + 1.0e-12) {
+                if (k == 1u) {
+                    scan_second_slot = scan_best_slot;
+                    scan_second_dist = scan_best_dist;
+                }
+                scratch_slot[old_slot] = scan_best_slot;
+                scratch_dist[old_slot] = scan_best_dist;
+                scratch_second_slot[old_slot] = scan_second_slot;
+                scratch_second_dist[old_slot] = scan_second_dist;
+                if (scan_best_dist > radius2) {
+                    radius2 = scan_best_dist;
+                    if (radius2 > step->allowed_radius2 + 1.0e-12) {
                         rejected = 1;
                         break;
                     }
@@ -4720,199 +4860,235 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
                 if (lhs_weight <= 0.0) {
                     lhs_weight = 1.0;
                 }
-                sse += new_distance * lhs_weight;
-                if (radius2 >= best_radius2 - 1.0e-12
-                        && sse >= best_sse - 1.0e-9) {
+                sse += scan_best_dist * lhs_weight;
+                if (radius2 >= step->best_radius2 - 1.0e-12
+                        && sse >= step->best_sse - 1.0e-9) {
                     rejected = 1;
                     break;
                 }
             }
-            if (rejected) {
-                continue;
-            }
+        }
+        if (rejected) {
+            continue;
+        }
 
-            if (affected_count > 0u) {
-                for (old_slot = 0u; old_slot < point_count; ++old_slot) {
-                    if (scratch_slot[old_slot] != UINT_MAX) {
-                        continue;
-                    }
-                    scan_best_slot = 0u;
-                    if (slot == 0u) {
-                        scan_best_dist = sixel_kcenter_distance_sq(points,
-                                                                   old_slot,
-                                                                   candidate);
-                    } else {
-                        scan_best_dist = sixel_kcenter_distance_sq(
-                            points,
-                            old_slot,
-                            centers[0u]);
-                    }
-                    scan_second_slot = 0u;
-                    scan_second_dist = DBL_MAX;
-                    for (scan_slot = 1u; scan_slot < k; ++scan_slot) {
-                        if (scan_slot == slot) {
-                            scan_distance = sixel_kcenter_distance_sq(
-                                points,
-                                old_slot,
-                                candidate);
-                        } else {
-                            scan_distance = sixel_kcenter_distance_sq(
-                                points,
-                                old_slot,
-                                centers[scan_slot]);
-                        }
-                        if (scan_distance < scan_best_dist) {
-                            scan_second_dist = scan_best_dist;
-                            scan_second_slot = scan_best_slot;
-                            scan_best_dist = scan_distance;
-                            scan_best_slot = scan_slot;
-                        } else if (scan_distance < scan_second_dist) {
-                            scan_second_dist = scan_distance;
-                            scan_second_slot = scan_slot;
-                        }
-                    }
-                    if (k == 1u) {
-                        scan_second_slot = scan_best_slot;
-                        scan_second_dist = scan_best_dist;
-                    }
-                    scratch_slot[old_slot] = scan_best_slot;
-                    scratch_dist[old_slot] = scan_best_dist;
-                    scratch_second_slot[old_slot] = scan_second_slot;
-                    scratch_second_dist[old_slot] = scan_second_dist;
-                    if (scan_best_dist > radius2) {
-                        radius2 = scan_best_dist;
-                        if (radius2 > allowed_radius2 + 1.0e-12) {
-                            rejected = 1;
-                            break;
-                        }
-                    }
-                    lhs_weight = (weights != NULL) ? weights[old_slot] : 1.0;
-                    if (lhs_weight <= 0.0) {
-                        lhs_weight = 1.0;
-                    }
-                    sse += scan_best_dist * lhs_weight;
-                    if (radius2 >= best_radius2 - 1.0e-12
-                            && sse >= best_sse - 1.0e-9) {
-                        rejected = 1;
-                        break;
-                    }
-                }
-            }
-            if (rejected) {
-                continue;
-            }
-
-            /*
-             * Keep objective ordering stable: radius first, then weighted SSE.
-             */
-            if (sixel_kcenter_swap_candidate_is_better(radius2,
-                                                       sse,
-                                                       best_radius2,
-                                                       best_sse,
-                                                       allowed_radius2)) {
-                best_radius2 = radius2;
-                best_sse = sse;
-                best_slot = slot;
-                best_candidate = candidate;
-                allowed_radius2 = sixel_kcenter_swap_allowed_radius_sq(
-                    best_radius2,
-                    swap_min_gain);
-                found = 1;
-            }
+        if (sixel_kcenter_swap_candidate_is_better(radius2,
+                                                   sse,
+                                                   step->best_radius2,
+                                                   step->best_sse,
+                                                   step->allowed_radius2)) {
+            sixel_kcenter_swap_accept_candidate(step,
+                                                slot,
+                                                candidate,
+                                                radius2,
+                                                sse);
         }
     }
+}
 
-    if (!used_incremental_eval) {
-        found = 0;
-        trial_new_dist = scratch_second_dist;
-        best_new_dist = NULL;
-        for (index = 0u; index < candidate_count; ++index) {
-            candidate = candidate_list[index];
-            slot = nearest_slot[candidate];
-            if (slot >= k || centers[slot] == candidate) {
+static void
+sixel_kcenter_swap_eval_full_stage(sixel_kcenter_swap_ctx_t *ctx,
+                                   sixel_kcenter_swap_step_t *step)
+{
+    double const *points;
+    double const *weights;
+    unsigned int point_count;
+    unsigned int k;
+    unsigned int *centers;
+    unsigned int *nearest_slot;
+    double *nearest_dist;
+    double *second_dist;
+    double *scratch_dist;
+    unsigned int index;
+    unsigned int candidate;
+    unsigned int slot;
+    unsigned int old_center;
+    double radius2;
+    double sse;
+    double *trial_new_dist;
+    double *best_new_dist;
+
+    points = NULL;
+    weights = NULL;
+    point_count = 0u;
+    k = 0u;
+    centers = NULL;
+    nearest_slot = NULL;
+    nearest_dist = NULL;
+    second_dist = NULL;
+    scratch_dist = NULL;
+    index = 0u;
+    candidate = 0u;
+    slot = 0u;
+    old_center = 0u;
+    radius2 = 0.0;
+    sse = 0.0;
+    trial_new_dist = NULL;
+    best_new_dist = NULL;
+
+    if (ctx == NULL || step == NULL || step->used_incremental_eval) {
+        return;
+    }
+
+    points = ctx->points;
+    weights = ctx->weights;
+    point_count = ctx->point_count;
+    k = ctx->k;
+    centers = ctx->centers;
+    nearest_slot = ctx->nearest_slot;
+    nearest_dist = ctx->nearest_dist;
+    second_dist = ctx->second_dist;
+    scratch_dist = ctx->scratch_dist;
+    trial_new_dist = ctx->scratch_second_dist;
+    if (points == NULL || centers == NULL || nearest_slot == NULL
+            || nearest_dist == NULL) {
+        return;
+    }
+
+    for (index = 0u; index < step->candidate_count; ++index) {
+        candidate = step->candidate_list[index];
+        if (!sixel_kcenter_swap_candidate_usable(ctx, candidate, &slot)) {
+            continue;
+        }
+
+        if (second_dist != NULL) {
+            if (!sixel_kcenter_swap_eval_with_cutoff(points,
+                                                     weights,
+                                                     point_count,
+                                                     slot,
+                                                     candidate,
+                                                     nearest_slot,
+                                                     nearest_dist,
+                                                     second_dist,
+                                                     step->allowed_radius2,
+                                                     step->best_radius2,
+                                                     step->best_sse,
+                                                     trial_new_dist,
+                                                     &radius2,
+                                                     &sse)) {
                 continue;
             }
-            if (center_mask[candidate] != 0u) {
-                continue;
-            }
-
-            if (nearest_slot != NULL
-                    && nearest_dist != NULL
-                    && second_dist != NULL) {
-                if (!sixel_kcenter_swap_eval_with_cutoff(points,
+        } else {
+            old_center = centers[slot];
+            centers[slot] = candidate;
+            if (!sixel_kcenter_assign_points_with_cutoff(points,
                                                          weights,
                                                          point_count,
-                                                         slot,
-                                                         candidate,
-                                                         nearest_slot,
-                                                         nearest_dist,
-                                                         second_dist,
-                                                         allowed_radius2,
-                                                         best_radius2,
-                                                         best_sse,
-                                                         trial_new_dist,
+                                                         centers,
+                                                         k,
+                                                         step->allowed_radius2,
                                                          &radius2,
                                                          &sse)) {
-                    continue;
-                }
-            } else {
-                old_center = centers[slot];
-                centers[slot] = candidate;
-                if (!sixel_kcenter_assign_points_with_cutoff(points,
-                                                             weights,
-                                                             point_count,
-                                                             centers,
-                                                             k,
-                                                             allowed_radius2,
-                                                             &radius2,
-                                                             &sse)) {
-                    centers[slot] = old_center;
-                    continue;
-                }
                 centers[slot] = old_center;
+                continue;
             }
+            centers[slot] = old_center;
+        }
 
-            /*
-             * Keep objective ordering stable: radius first, then weighted SSE.
-             */
-            if (sixel_kcenter_swap_candidate_is_better(radius2,
-                                                       sse,
-                                                       best_radius2,
-                                                       best_sse,
-                                                       allowed_radius2)) {
-                best_radius2 = radius2;
-                best_sse = sse;
-                best_slot = slot;
-                best_candidate = candidate;
-                allowed_radius2 = sixel_kcenter_swap_allowed_radius_sq(
-                    best_radius2,
-                    swap_min_gain);
-                if (trial_new_dist != NULL && scratch_dist != NULL) {
-                    memcpy(scratch_dist,
-                           trial_new_dist,
-                           (size_t)point_count * sizeof(double));
-                    best_new_dist = scratch_dist;
-                } else {
-                    best_new_dist = NULL;
-                }
-                found = 1;
+        if (sixel_kcenter_swap_candidate_is_better(radius2,
+                                                   sse,
+                                                   step->best_radius2,
+                                                   step->best_sse,
+                                                   step->allowed_radius2)) {
+            sixel_kcenter_swap_accept_candidate(step,
+                                                slot,
+                                                candidate,
+                                                radius2,
+                                                sse);
+            if (trial_new_dist != NULL
+                    && scratch_dist != NULL
+                    && point_count > 0u) {
+                memcpy(scratch_dist,
+                       trial_new_dist,
+                       (size_t)point_count * sizeof(double));
+                best_new_dist = scratch_dist;
+            } else {
+                best_new_dist = NULL;
             }
         }
     }
 
-    if (!found) {
+    step->best_new_dist = best_new_dist;
+}
+
+static int
+sixel_kcenter_swap_apply_stage(sixel_kcenter_swap_ctx_t *ctx,
+                               sixel_kcenter_swap_step_t const *step)
+{
+    double const *points;
+    double const *weights;
+    unsigned int point_count;
+    unsigned int k;
+    unsigned int *centers;
+    unsigned char *center_mask;
+    unsigned int *nearest_slot;
+    double *nearest_dist;
+    unsigned int *second_slot;
+    double *second_dist;
+    double *radius2_io;
+    double *sse_io;
+    unsigned int *scratch_second_slot;
+    double *scratch_second_dist;
+    unsigned int old_center;
+    double radius2;
+    double sse;
+    int used_cached_apply;
+    sixel_kcenter_swap_apply_ctx_t apply_ctx;
+
+    points = NULL;
+    weights = NULL;
+    point_count = 0u;
+    k = 0u;
+    centers = NULL;
+    center_mask = NULL;
+    nearest_slot = NULL;
+    nearest_dist = NULL;
+    second_slot = NULL;
+    second_dist = NULL;
+    radius2_io = NULL;
+    sse_io = NULL;
+    scratch_second_slot = NULL;
+    scratch_second_dist = NULL;
+    old_center = 0u;
+    radius2 = 0.0;
+    sse = 0.0;
+    used_cached_apply = 0;
+    sixel_kcenter_swap_apply_ctx_clear(&apply_ctx);
+
+    if (ctx == NULL || step == NULL || !step->found) {
         return 0;
     }
 
-    old_center = centers[best_slot];
-    centers[best_slot] = best_candidate;
+    points = ctx->points;
+    weights = ctx->weights;
+    point_count = ctx->point_count;
+    k = ctx->k;
+    centers = ctx->centers;
+    center_mask = ctx->center_mask;
+    nearest_slot = ctx->nearest_slot;
+    nearest_dist = ctx->nearest_dist;
+    second_slot = ctx->second_slot;
+    second_dist = ctx->second_dist;
+    radius2_io = ctx->radius2_io;
+    sse_io = ctx->sse_io;
+    scratch_second_slot = ctx->scratch_second_slot;
+    scratch_second_dist = ctx->scratch_second_dist;
+    if (points == NULL || centers == NULL
+            || center_mask == NULL
+            || radius2_io == NULL
+            || sse_io == NULL) {
+        return 0;
+    }
+
+    old_center = centers[step->best_slot];
+    centers[step->best_slot] = step->best_candidate;
     center_mask[old_center] = 0u;
-    center_mask[best_candidate] = 1u;
+    center_mask[step->best_candidate] = 1u;
     sixel_kcenter_swap_prepare_apply_ctx(&apply_ctx,
                                          ctx,
-                                         best_slot,
-                                         best_candidate,
-                                         best_new_dist,
+                                         step->best_slot,
+                                         step->best_candidate,
+                                         step->best_new_dist,
                                          &radius2,
                                          &sse);
     used_cached_apply = sixel_kcenter_swap_apply_with_second(&apply_ctx);
@@ -4940,6 +5116,8 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
     if (!used_cached_apply
             && scratch_second_slot != NULL
             && scratch_second_dist != NULL
+            && nearest_slot != NULL
+            && nearest_dist != NULL
             && point_count > 0u) {
         /*
          * Keep fallback buffers initialized for debugability and to ensure the
@@ -4953,6 +5131,31 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
                (size_t)point_count * sizeof(double));
     }
     return 1;
+}
+
+/*
+ * Try one swap step and keep the objective ordering strict:
+ *   1) minimize radius first
+ *   2) break ties by weighted SSE
+ */
+static int
+sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
+{
+    sixel_kcenter_swap_step_t step;
+
+    sixel_kcenter_swap_step_clear(&step);
+    if (!sixel_kcenter_swap_step_init(&step, ctx)) {
+        return 0;
+    }
+    if (!sixel_kcenter_swap_prepare_candidates_stage(ctx, &step)) {
+        return 0;
+    }
+
+    sixel_kcenter_swap_eval_incremental_stage(ctx, &step);
+    if (!step.used_incremental_eval) {
+        sixel_kcenter_swap_eval_full_stage(ctx, &step);
+    }
+    return sixel_kcenter_swap_apply_stage(ctx, &step);
 }
 
 static void
