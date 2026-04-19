@@ -5504,9 +5504,8 @@ sixel_kcenter_apply_perceptual_solver_bias(
     }
 }
 
-static SIXELSTATUS
-build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
-{
+
+typedef struct sixel_kcenter_build_runtime {
     unsigned char **result;
     float **result_float32;
     unsigned char const *data;
@@ -5534,12 +5533,6 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     unsigned int active_count;
     unsigned int k;
     unsigned int overshoot;
-    unsigned int slot;
-    unsigned int index;
-    unsigned int channel;
-    unsigned int fill;
-    unsigned int source;
-    unsigned int swap_temp;
     unsigned int polish_point_limit;
     unsigned int polish_k_limit;
     unsigned int seed;
@@ -5601,9 +5594,6 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     double *merge_sums;
     int cluster_total;
     unsigned int final_count;
-    double weight_value;
-    double component;
-    double restored_component;
     unsigned char *palette;
     unsigned char *grown_palette;
     float *float_palette;
@@ -5624,175 +5614,117 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     double merge_stop;
     double export_start;
     double export_stop;
-    float float_minimum;
-    float float_maximum;
-    double range;
-    double now;
-    double init_span;
-    double iterate_span;
-    double merge_span;
-    double export_span;
     int override_lock_acquired;
     sixel_kcenter_solver_ctx_t solver_ctx;
     sixel_kcenter_polish_ctx_t polish_ctx;
+} sixel_kcenter_build_runtime_t;
 
-    if (ctx == NULL) {
-        return SIXEL_BAD_ARGUMENT;
+static void
+sixel_kcenter_build_runtime_init(sixel_kcenter_build_runtime_t *rt,
+                                 sixel_kcenter_build_ctx_t const *ctx)
+{
+    if (rt == NULL || ctx == NULL) {
+        return;
     }
+    memset(rt, 0, sizeof(*rt));
 
-    result = ctx->result;
-    result_float32 = ctx->result_float32;
-    data = ctx->data;
-    length = ctx->length;
-    depth = ctx->depth;
-    reqcolors = ctx->reqcolors;
-    ncolors = ctx->ncolors;
-    origcolors = ctx->origcolors;
-    quality_mode = ctx->quality_mode;
-    force_palette = ctx->force_palette;
-    use_reversible = ctx->use_reversible;
-    final_merge_mode = ctx->final_merge_mode;
-    allocator = ctx->allocator;
-    pixelformat = ctx->pixelformat;
-    treat_input_as_float32 = ctx->treat_input_as_float32;
-    logger = ctx->logger;
-    job_seq = ctx->job_seq;
-    engine_name = ctx->engine_name;
-    telemetry = ctx->telemetry;
+    rt->result = ctx->result;
+    rt->result_float32 = ctx->result_float32;
+    rt->data = ctx->data;
+    rt->length = ctx->length;
+    rt->depth = ctx->depth;
+    rt->reqcolors = ctx->reqcolors;
+    rt->ncolors = ctx->ncolors;
+    rt->origcolors = ctx->origcolors;
+    rt->quality_mode = ctx->quality_mode;
+    rt->force_palette = ctx->force_palette;
+    rt->use_reversible = ctx->use_reversible;
+    rt->final_merge_mode = ctx->final_merge_mode;
+    rt->allocator = ctx->allocator;
+    rt->pixelformat = ctx->pixelformat;
+    rt->treat_input_as_float32 = ctx->treat_input_as_float32;
+    rt->logger = ctx->logger;
+    rt->job_seq = ctx->job_seq;
+    rt->engine_name = ctx->engine_name;
+    rt->telemetry = ctx->telemetry;
 
-    status = SIXEL_BAD_ARGUMENT;
-    points = NULL;
-    weights = NULL;
-    point_count = 0u;
-    visible_count = 0u;
-    active_count = 0u;
-    k = 0u;
-    overshoot = 0u;
-    slot = 0u;
-    index = 0u;
+    rt->status = SIXEL_BAD_ARGUMENT;
+    rt->seed = 1u;
+    rt->restarts = 1u;
+    rt->init_seeds = SIXEL_KCENTER_INIT_SEEDS_DEFAULT;
+    rt->iter_limit = 16u;
+    rt->histbits = 5u;
+    rt->point_budget = 0u;
+    rt->auto_fft_threshold = SIXEL_KCENTER_AUTO_FFT_THRESHOLD_DEFAULT;
+    rt->rare_keep = SIXEL_KCENTER_RARE_KEEP_DEFAULT;
+    rt->swap_topk = SIXEL_KCENTER_SWAP_TOPK_DEFAULT;
+    rt->swap_patience = SIXEL_KCENTER_SWAP_PATIENCE_DEFAULT;
+    rt->swap_min_gain = SIXEL_KCENTER_SWAP_MIN_GAIN_DEFAULT;
+    rt->resolved_merge = SIXEL_FINAL_MERGE_NONE;
+    rt->algo = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
+    rt->resolved_algo = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
+    rt->profile = SIXEL_PALETTE_KCENTER_PROFILE_LEGACY;
+    rt->auto_policy = SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY;
+    rt->space_policy = SIXEL_PALETTE_KCENTER_SPACE_POLICY_LEGACY;
+    rt->candidate_policy = SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY;
+    rt->budget_policy = SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY;
+    rt->swap_update = SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL;
+    rt->rng_state = 1u;
+    rt->prune_mass = 0.995;
+    rt->budget_scale = SIXEL_KCENTER_BUDGET_SCALE_DEFAULT;
+    rt->job_init = -1;
+    rt->job_iter = -1;
+    rt->job_merge = -1;
+    rt->job_export = -1;
+    rt->log_detail[0] = '\0';
+
+    if (rt->result != NULL) {
+        *rt->result = NULL;
+    }
+    if (rt->result_float32 != NULL) {
+        *rt->result_float32 = NULL;
+    }
+    if (rt->ncolors != NULL) {
+        *rt->ncolors = 0u;
+    }
+    if (rt->origcolors != NULL) {
+        *rt->origcolors = 0u;
+    }
+}
+
+static SIXELSTATUS
+sixel_kcenter_build_prepare_and_collect(sixel_kcenter_build_runtime_t *rt)
+{
+    unsigned int channel;
+    float float_minimum;
+    float float_maximum;
+    double range;
+
     channel = 0u;
-    fill = 0u;
-    source = 0u;
-    swap_temp = 0u;
-    polish_point_limit = 0u;
-    polish_k_limit = 0u;
-    seed = 1u;
-    restarts = 1u;
-    init_seeds = SIXEL_KCENTER_INIT_SEEDS_DEFAULT;
-    iter_limit = 16u;
-    histbits = 5u;
-    point_budget = 0u;
-    auto_fft_threshold = SIXEL_KCENTER_AUTO_FFT_THRESHOLD_DEFAULT;
-    rare_keep = SIXEL_KCENTER_RARE_KEEP_DEFAULT;
-    swap_topk = SIXEL_KCENTER_SWAP_TOPK_DEFAULT;
-    swap_patience = SIXEL_KCENTER_SWAP_PATIENCE_DEFAULT;
-    swap_min_gain = SIXEL_KCENTER_SWAP_MIN_GAIN_DEFAULT;
-    use_cluster_candidates = 0;
-    use_perceptual_polish = 0;
-    use_legacy_oklab_polish = 0;
-    total_iterations = 0u;
-    best_iterations = 0u;
-    run_iterations = 0u;
-    polish_updates = 0u;
-    resolved_merge = SIXEL_FINAL_MERGE_NONE;
-    apply_merge = 0;
-    algo = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
-    resolved_algo = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
-    profile = SIXEL_PALETTE_KCENTER_PROFILE_LEGACY;
-    auto_policy = SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY;
-    space_policy = SIXEL_PALETTE_KCENTER_SPACE_POLICY_LEGACY;
-    candidate_policy = SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY;
-    budget_policy = SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY;
-    swap_update = SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL;
-    rng_state = 1u;
-    centers = NULL;
-    best_centers = NULL;
-    work_centers = NULL;
-    nearest_slot = NULL;
-    second_slot = NULL;
-    scratch_slot = NULL;
-    scratch_second_slot = NULL;
-    nearest_dist = NULL;
-    second_dist = NULL;
-    scratch_dist = NULL;
-    scratch_second_dist = NULL;
-    cluster_weights = NULL;
-    cluster_sums = NULL;
-    final_centers = NULL;
-    sort_weights = NULL;
-    order = NULL;
-    scratch_indices = NULL;
-    fft_dist_cache = NULL;
-    center_mask = NULL;
-    radius2 = 0.0;
-    sse = 0.0;
-    best_radius2 = 0.0;
-    best_sse = 0.0;
-    polish_pre_radius2 = 0.0;
-    prune_mass = 0.995;
-    budget_scale = SIXEL_KCENTER_BUDGET_SCALE_DEFAULT;
-    merge_weights = NULL;
-    merge_sums = NULL;
-    cluster_total = 0;
-    final_count = 0u;
-    weight_value = 0.0;
-    component = 0.0;
-    restored_component = 0.0;
-    palette = NULL;
-    grown_palette = NULL;
-    float_palette = NULL;
-    grown_float = NULL;
-    input_is_float32 = 0;
-    float32_channel_scale[0] = 0.0;
-    float32_channel_scale[1] = 0.0;
-    float32_channel_scale[2] = 0.0;
-    float32_channel_offset[0] = 0.0;
-    float32_channel_offset[1] = 0.0;
-    float32_channel_offset[2] = 0.0;
-    job_init = -1;
-    job_iter = -1;
-    job_merge = -1;
-    job_export = -1;
-    log_detail[0] = '\0';
-    wall_start = sixel_timer_now();
-    init_stop = wall_start;
-    iterate_start = wall_start;
-    iterate_stop = wall_start;
-    merge_start = wall_start;
-    merge_stop = wall_start;
-    export_start = wall_start;
-    export_stop = wall_start;
     float_minimum = 0.0f;
     float_maximum = 0.0f;
     range = 0.0;
-    now = 0.0;
-    init_span = 0.0;
-    iterate_span = 0.0;
-    merge_span = 0.0;
-    export_span = 0.0;
-    override_lock_acquired = 0;
-    memset(&solver_ctx, 0, sizeof(solver_ctx));
-    memset(&polish_ctx, 0, sizeof(polish_ctx));
 
-    if (result != NULL) {
-        *result = NULL;
-    }
-    if (result_float32 != NULL) {
-        *result_float32 = NULL;
-    }
-    if (ncolors != NULL) {
-        *ncolors = 0u;
-    }
-    if (origcolors != NULL) {
-        *origcolors = 0u;
-    }
-    if (allocator == NULL || data == NULL || result == NULL) {
-        return status;
+    if (rt == NULL) {
+        return SIXEL_BAD_ARGUMENT;
     }
 
-    input_is_float32 = (treat_input_as_float32
-                        && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat));
-    if (input_is_float32) {
+    if (rt->allocator == NULL || rt->data == NULL || rt->result == NULL) {
+        return rt->status;
+    }
+
+    rt->wall_start = sixel_timer_now();
+    rt->init_stop = rt->wall_start;
+    rt->iterate_start = rt->wall_start;
+    rt->iterate_stop = rt->wall_start;
+    rt->merge_start = rt->wall_start;
+    rt->merge_stop = rt->wall_start;
+    rt->export_start = rt->wall_start;
+    rt->export_stop = rt->wall_start;
+
+    rt->input_is_float32 = (rt->treat_input_as_float32
+                            && SIXEL_PIXELFORMAT_IS_FLOAT32(rt->pixelformat));
+    if (rt->input_is_float32) {
         for (channel = 0u; channel < 3u; ++channel) {
 #if HAVE_FLOAT_H
 # define SIXEL_KCENTER_FLOAT_BOUND FLT_MAX
@@ -5800,29 +5732,29 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
 # define SIXEL_KCENTER_FLOAT_BOUND 1.0e9f
 #endif
             float_minimum = sixel_pixelformat_float_channel_clamp(
-                pixelformat,
+                rt->pixelformat,
                 (int)channel,
                 -SIXEL_KCENTER_FLOAT_BOUND);
             float_maximum = sixel_pixelformat_float_channel_clamp(
-                pixelformat,
+                rt->pixelformat,
                 (int)channel,
                 SIXEL_KCENTER_FLOAT_BOUND);
 #undef SIXEL_KCENTER_FLOAT_BOUND
             range = (double)float_maximum - (double)float_minimum;
             if (range <= 0.0) {
-                float32_channel_scale[channel] = 0.0;
-                float32_channel_offset[channel] = 0.0;
+                rt->float32_channel_scale[channel] = 0.0;
+                rt->float32_channel_offset[channel] = 0.0;
             } else {
-                float32_channel_scale[channel] = 255.0 / range;
-                float32_channel_offset[channel]
+                rt->float32_channel_scale[channel] = 255.0 / range;
+                rt->float32_channel_offset[channel]
                     = -((double)float_minimum)
-                    * float32_channel_scale[channel];
+                    * rt->float32_channel_scale[channel];
             }
         }
     }
 
-    if (reqcolors == 0u) {
-        reqcolors = 1u;
+    if (rt->reqcolors == 0u) {
+        rt->reqcolors = 1u;
     }
 
     sixel_kcenter_last_polish_applied = 0;
@@ -5830,755 +5762,905 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     sixel_kcenter_last_polish_pre_radius2 = 0.0;
     sixel_kcenter_last_polish_post_radius2 = 0.0;
 
-    override_lock_acquired = sixel_kcenter_override_lock_acquire();
+    rt->override_lock_acquired = sixel_kcenter_override_lock_acquire();
 
-    job_init = sixel_palette_kcenter_log_start(logger,
-                                               job_seq,
-                                               engine_name,
-                                               "palette/init",
-                                               "init");
+    rt->job_init = sixel_palette_kcenter_log_start(rt->logger,
+                                                   rt->job_seq,
+                                                   rt->engine_name,
+                                                   "palette/init",
+                                                   "init");
 
-    algo = sixel_get_kcenter_algo();
-    profile = sixel_get_kcenter_profile();
-    seed = (unsigned int)sixel_get_kcenter_seed();
-    restarts = sixel_get_kcenter_restarts();
-    init_seeds = sixel_get_kcenter_init_seeds();
-    iter_limit = sixel_get_kcenter_iter();
-    histbits = sixel_get_kcenter_histbits();
-    point_budget = sixel_get_kcenter_point_budget();
-    prune_mass = sixel_get_kcenter_prune_mass();
-    auto_policy = sixel_get_kcenter_auto_policy();
-    auto_fft_threshold = sixel_get_kcenter_auto_fft_threshold();
-    space_policy = sixel_get_kcenter_space_policy();
-    candidate_policy = sixel_get_kcenter_candidate_policy();
-    rare_keep = sixel_get_kcenter_rare_keep();
-    budget_policy = sixel_get_kcenter_budget_policy();
-    budget_scale = sixel_get_kcenter_budget_scale();
-    swap_topk = sixel_get_kcenter_swap_topk();
-    swap_update = sixel_get_kcenter_swap_update();
-    swap_patience = sixel_get_kcenter_swap_patience();
-    swap_min_gain = sixel_get_kcenter_swap_min_gain();
-    sixel_kcenter_apply_perceptual_solver_bias(profile,
-                                               space_policy,
-                                               &init_seeds,
-                                               &swap_topk);
-    use_cluster_candidates = (profile != SIXEL_PALETTE_KCENTER_PROFILE_LEGACY
-                              && swap_topk > 1u);
-    use_perceptual_polish = (profile != SIXEL_PALETTE_KCENTER_PROFILE_LEGACY
-                             && sixel_kcenter_resolve_space_policy(
-                                 space_policy)
-                             == SIXEL_PALETTE_KCENTER_SPACE_POLICY_PERCEPTUAL
-                             && (pixelformat
-                                 == SIXEL_PIXELFORMAT_OKLABFLOAT32
-                                 || pixelformat
-                                 == SIXEL_PIXELFORMAT_CIELABFLOAT32
-                                 || pixelformat
-                                 == SIXEL_PIXELFORMAT_DIN99DFLOAT32));
-    use_legacy_oklab_polish = (profile
-                               == SIXEL_PALETTE_KCENTER_PROFILE_LEGACY
-                               && quality_mode != SIXEL_QUALITY_LOW
-                               && pixelformat
-                               == SIXEL_PIXELFORMAT_OKLABFLOAT32);
+    rt->algo = sixel_get_kcenter_algo();
+    rt->profile = sixel_get_kcenter_profile();
+    rt->seed = (unsigned int)sixel_get_kcenter_seed();
+    rt->restarts = sixel_get_kcenter_restarts();
+    rt->init_seeds = sixel_get_kcenter_init_seeds();
+    rt->iter_limit = sixel_get_kcenter_iter();
+    rt->histbits = sixel_get_kcenter_histbits();
+    rt->point_budget = sixel_get_kcenter_point_budget();
+    rt->prune_mass = sixel_get_kcenter_prune_mass();
+    rt->auto_policy = sixel_get_kcenter_auto_policy();
+    rt->auto_fft_threshold = sixel_get_kcenter_auto_fft_threshold();
+    rt->space_policy = sixel_get_kcenter_space_policy();
+    rt->candidate_policy = sixel_get_kcenter_candidate_policy();
+    rt->rare_keep = sixel_get_kcenter_rare_keep();
+    rt->budget_policy = sixel_get_kcenter_budget_policy();
+    rt->budget_scale = sixel_get_kcenter_budget_scale();
+    rt->swap_topk = sixel_get_kcenter_swap_topk();
+    rt->swap_update = sixel_get_kcenter_swap_update();
+    rt->swap_patience = sixel_get_kcenter_swap_patience();
+    rt->swap_min_gain = sixel_get_kcenter_swap_min_gain();
 
-    status = sixel_kcenter_collect_points(&points,
-                                          &weights,
-                                          &point_count,
-                                          &visible_count,
-                                          &active_count,
-                                          data,
-                                          length,
-                                          depth,
-                                          pixelformat,
-                                          treat_input_as_float32,
-                                          histbits,
-                                          point_budget,
-                                          prune_mass,
-                                          reqcolors,
-                                          quality_mode,
-                                          candidate_policy,
-                                          space_policy,
-                                          rare_keep,
-                                          budget_policy,
-                                          budget_scale,
-                                          float32_channel_scale,
-                                          float32_channel_offset,
-                                          allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    sixel_kcenter_apply_perceptual_solver_bias(rt->profile,
+                                               rt->space_policy,
+                                               &rt->init_seeds,
+                                               &rt->swap_topk);
+    rt->use_cluster_candidates =
+        (rt->profile != SIXEL_PALETTE_KCENTER_PROFILE_LEGACY
+         && rt->swap_topk > 1u);
+    rt->use_perceptual_polish =
+        (rt->profile != SIXEL_PALETTE_KCENTER_PROFILE_LEGACY
+         && sixel_kcenter_resolve_space_policy(rt->space_policy)
+         == SIXEL_PALETTE_KCENTER_SPACE_POLICY_PERCEPTUAL
+         && (rt->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32
+             || rt->pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32
+             || rt->pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32));
+    rt->use_legacy_oklab_polish =
+        (rt->profile == SIXEL_PALETTE_KCENTER_PROFILE_LEGACY
+         && rt->quality_mode != SIXEL_QUALITY_LOW
+         && rt->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32);
+
+    rt->status = sixel_kcenter_collect_points(
+        &rt->points,
+        &rt->weights,
+        &rt->point_count,
+        &rt->visible_count,
+        &rt->active_count,
+        rt->data,
+        rt->length,
+        rt->depth,
+        rt->pixelformat,
+        rt->treat_input_as_float32,
+        rt->histbits,
+        rt->point_budget,
+        rt->prune_mass,
+        rt->reqcolors,
+        rt->quality_mode,
+        rt->candidate_policy,
+        rt->space_policy,
+        rt->rare_keep,
+        rt->budget_policy,
+        rt->budget_scale,
+        rt->float32_channel_scale,
+        rt->float32_channel_offset,
+        rt->allocator);
+    if (SIXEL_FAILED(rt->status)) {
+        return rt->status;
     }
 
-    if (origcolors != NULL) {
-        *origcolors = visible_count;
+    if (rt->origcolors != NULL) {
+        *rt->origcolors = rt->visible_count;
     }
-    if (point_count == 0u) {
-        status = SIXEL_OK;
-        goto end;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_kcenter_build_allocate_solver_buffers(sixel_kcenter_build_runtime_t *rt)
+{
+    if (rt == NULL) {
+        return SIXEL_BAD_ARGUMENT;
     }
 
-    resolved_merge = (unsigned int)sixel_resolve_final_merge_mode(
-        final_merge_mode);
-    apply_merge = (resolved_merge == SIXEL_FINAL_MERGE_WARD);
-    overshoot = reqcolors;
-    if (apply_merge) {
+    rt->centers = (unsigned int *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->k * sizeof(unsigned int));
+    rt->best_centers = (unsigned int *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->k * sizeof(unsigned int));
+    rt->work_centers = (unsigned int *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->k * sizeof(unsigned int));
+    rt->nearest_slot = (unsigned int *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->point_count * sizeof(unsigned int));
+    rt->second_slot = (unsigned int *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->point_count * sizeof(unsigned int));
+    rt->scratch_slot = (unsigned int *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->point_count * sizeof(unsigned int));
+    rt->scratch_second_slot = (unsigned int *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->point_count * sizeof(unsigned int));
+    rt->nearest_dist = (double *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->point_count * sizeof(double));
+    rt->second_dist = (double *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->point_count * sizeof(double));
+    rt->scratch_dist = (double *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->point_count * sizeof(double));
+    rt->scratch_second_dist = (double *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->point_count * sizeof(double));
+    rt->cluster_weights = (double *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->k * sizeof(double));
+    rt->cluster_sums = (double *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->k * 3u * sizeof(double));
+    rt->final_centers = (double *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->k * 3u * sizeof(double));
+    rt->scratch_indices = (unsigned int *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->point_count * sizeof(unsigned int));
+    rt->fft_dist_cache = (double *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->point_count * sizeof(double));
+    rt->center_mask = (unsigned char *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->point_count);
+
+    if (rt->centers == NULL || rt->best_centers == NULL
+            || rt->work_centers == NULL || rt->nearest_slot == NULL
+            || rt->second_slot == NULL || rt->scratch_slot == NULL
+            || rt->scratch_second_slot == NULL || rt->nearest_dist == NULL
+            || rt->second_dist == NULL || rt->scratch_dist == NULL
+            || rt->scratch_second_dist == NULL || rt->cluster_weights == NULL
+            || rt->cluster_sums == NULL || rt->final_centers == NULL
+            || rt->scratch_indices == NULL || rt->fft_dist_cache == NULL
+            || rt->center_mask == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_kcenter_build_solve_phase(sixel_kcenter_build_runtime_t *rt)
+{
+    unsigned int slot;
+
+    slot = 0u;
+    if (rt == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    rt->resolved_merge = (unsigned int)sixel_resolve_final_merge_mode(
+        rt->final_merge_mode);
+    rt->apply_merge = (rt->resolved_merge == SIXEL_FINAL_MERGE_WARD);
+    rt->overshoot = rt->reqcolors;
+    if (rt->apply_merge) {
         sixel_final_merge_load_env();
-        overshoot = sixel_final_merge_target(reqcolors, (int)resolved_merge);
+        rt->overshoot = sixel_final_merge_target(
+            rt->reqcolors,
+            (int)rt->resolved_merge);
     }
-    if (overshoot > point_count) {
-        overshoot = point_count;
+    if (rt->overshoot > rt->point_count) {
+        rt->overshoot = rt->point_count;
     }
-    if (overshoot == 0u) {
-        overshoot = 1u;
+    if (rt->overshoot == 0u) {
+        rt->overshoot = 1u;
     }
-    k = overshoot;
+    rt->k = rt->overshoot;
 
-    centers = (unsigned int *)sixel_allocator_malloc(
-        allocator,
-        (size_t)k * sizeof(unsigned int));
-    best_centers = (unsigned int *)sixel_allocator_malloc(
-        allocator,
-        (size_t)k * sizeof(unsigned int));
-    work_centers = (unsigned int *)sixel_allocator_malloc(
-        allocator,
-        (size_t)k * sizeof(unsigned int));
-    nearest_slot = (unsigned int *)sixel_allocator_malloc(
-        allocator,
-        (size_t)point_count * sizeof(unsigned int));
-    second_slot = (unsigned int *)sixel_allocator_malloc(
-        allocator,
-        (size_t)point_count * sizeof(unsigned int));
-    scratch_slot = (unsigned int *)sixel_allocator_malloc(
-        allocator,
-        (size_t)point_count * sizeof(unsigned int));
-    scratch_second_slot = (unsigned int *)sixel_allocator_malloc(
-        allocator,
-        (size_t)point_count * sizeof(unsigned int));
-    nearest_dist = (double *)sixel_allocator_malloc(
-        allocator,
-        (size_t)point_count * sizeof(double));
-    second_dist = (double *)sixel_allocator_malloc(
-        allocator,
-        (size_t)point_count * sizeof(double));
-    scratch_dist = (double *)sixel_allocator_malloc(
-        allocator,
-        (size_t)point_count * sizeof(double));
-    scratch_second_dist = (double *)sixel_allocator_malloc(
-        allocator,
-        (size_t)point_count * sizeof(double));
-    cluster_weights = (double *)sixel_allocator_malloc(
-        allocator,
-        (size_t)k * sizeof(double));
-    cluster_sums = (double *)sixel_allocator_malloc(
-        allocator,
-        (size_t)k * 3u * sizeof(double));
-    final_centers = (double *)sixel_allocator_malloc(
-        allocator,
-        (size_t)k * 3u * sizeof(double));
-    scratch_indices = (unsigned int *)sixel_allocator_malloc(
-        allocator,
-        (size_t)point_count * sizeof(unsigned int));
-    fft_dist_cache = (double *)sixel_allocator_malloc(
-        allocator,
-        (size_t)point_count * sizeof(double));
-    center_mask = (unsigned char *)sixel_allocator_malloc(
-        allocator,
-        (size_t)point_count);
-
-    if (centers == NULL || best_centers == NULL || work_centers == NULL
-            || nearest_slot == NULL || second_slot == NULL
-            || scratch_slot == NULL || scratch_second_slot == NULL
-            || nearest_dist == NULL || second_dist == NULL
-            || scratch_dist == NULL || scratch_second_dist == NULL
-            || cluster_weights == NULL || cluster_sums == NULL
-            || final_centers == NULL || scratch_indices == NULL
-            || fft_dist_cache == NULL || center_mask == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
+    rt->status = sixel_kcenter_build_allocate_solver_buffers(rt);
+    if (SIXEL_FAILED(rt->status)) {
+        return rt->status;
     }
 
-    resolved_algo = algo;
-    if (resolved_algo == SIXEL_PALETTE_KCENTER_ALGO_AUTO) {
-        resolved_algo = sixel_kcenter_choose_auto_algo(quality_mode,
-                                                       point_count,
-                                                       auto_policy,
-                                                       auto_fft_threshold,
-                                                       pixelformat,
-                                                       space_policy);
+    rt->resolved_algo = rt->algo;
+    if (rt->resolved_algo == SIXEL_PALETTE_KCENTER_ALGO_AUTO) {
+        rt->resolved_algo = sixel_kcenter_choose_auto_algo(
+            rt->quality_mode,
+            rt->point_count,
+            rt->auto_policy,
+            rt->auto_fft_threshold,
+            rt->pixelformat,
+            rt->space_policy);
     }
 
-    init_stop = sixel_timer_now();
-    iterate_start = init_stop;
-    (void)sixel_compat_snprintf(log_detail,
-                                sizeof(log_detail),
-                                "samples=%u active=%u k=%u profile=%s "
-                                "algo=%s/%s auto=%s fft_threshold=%u "
-                                "space=%s cand=%s rare_keep=%u "
-                                "budget=%s scale=%.2f req_budget=%u "
-                                "prune_mass=%.3f swap_topk=%u "
-                                "swap_update=%s swap_patience=%u "
-                                "swap_min_gain=%.3f seed=%u "
-                                "init_seeds=%u histbits=%u",
-                                point_count,
-                                active_count,
-                                k,
-                                sixel_kcenter_profile_to_string(profile),
-                                sixel_kcenter_algo_to_string(algo),
-                                sixel_kcenter_algo_to_string(resolved_algo),
-                                sixel_kcenter_auto_policy_to_string(
-                                    auto_policy),
-                                auto_fft_threshold,
-                                sixel_kcenter_space_policy_to_string(
-                                    space_policy),
-                                sixel_kcenter_candidate_policy_to_string(
-                                    candidate_policy),
-                                rare_keep,
-                                sixel_kcenter_budget_policy_to_string(
-                                    budget_policy),
-                                budget_scale,
-                                point_budget,
-                                prune_mass,
-                                swap_topk,
-                                sixel_kcenter_swap_update_to_string(
-                                    swap_update),
-                                swap_patience,
-                                swap_min_gain,
-                                seed,
-                                init_seeds,
-                                histbits);
-    sixel_palette_kcenter_log_finish(logger,
-                                     job_init,
-                                     engine_name,
+    rt->init_stop = sixel_timer_now();
+    rt->iterate_start = rt->init_stop;
+    (void)sixel_compat_snprintf(
+        rt->log_detail,
+        sizeof(rt->log_detail),
+        "samples=%u active=%u k=%u profile=%s algo=%s/%s auto=%s "
+        "fft_threshold=%u space=%s cand=%s rare_keep=%u budget=%s "
+        "scale=%.2f req_budget=%u prune_mass=%.3f swap_topk=%u "
+        "swap_update=%s swap_patience=%u swap_min_gain=%.3f seed=%u "
+        "init_seeds=%u histbits=%u",
+        rt->point_count,
+        rt->active_count,
+        rt->k,
+        sixel_kcenter_profile_to_string(rt->profile),
+        sixel_kcenter_algo_to_string(rt->algo),
+        sixel_kcenter_algo_to_string(rt->resolved_algo),
+        sixel_kcenter_auto_policy_to_string(rt->auto_policy),
+        rt->auto_fft_threshold,
+        sixel_kcenter_space_policy_to_string(rt->space_policy),
+        sixel_kcenter_candidate_policy_to_string(rt->candidate_policy),
+        rt->rare_keep,
+        sixel_kcenter_budget_policy_to_string(rt->budget_policy),
+        rt->budget_scale,
+        rt->point_budget,
+        rt->prune_mass,
+        rt->swap_topk,
+        sixel_kcenter_swap_update_to_string(rt->swap_update),
+        rt->swap_patience,
+        rt->swap_min_gain,
+        rt->seed,
+        rt->init_seeds,
+        rt->histbits);
+    sixel_palette_kcenter_log_finish(rt->logger,
+                                     rt->job_init,
+                                     rt->engine_name,
                                      "palette/init",
                                      "init",
-                                     log_detail);
+                                     rt->log_detail);
 
-    job_iter = sixel_palette_kcenter_log_start(logger,
-                                               job_seq,
-                                               engine_name,
-                                               "palette/iterate",
-                                               "iterate");
+    rt->job_iter = sixel_palette_kcenter_log_start(rt->logger,
+                                                   rt->job_seq,
+                                                   rt->engine_name,
+                                                   "palette/iterate",
+                                                   "iterate");
 
-    solver_ctx.points = points;
-    solver_ctx.weights = weights;
-    solver_ctx.point_count = point_count;
-    solver_ctx.k = k;
-    solver_ctx.resolved_algo = resolved_algo;
-    solver_ctx.profile = profile;
-    solver_ctx.init_seeds = init_seeds;
-    solver_ctx.iter_limit = iter_limit;
-    solver_ctx.rng_state = &rng_state;
-    solver_ctx.centers = work_centers;
-    solver_ctx.nearest_slot = nearest_slot;
-    solver_ctx.nearest_dist = nearest_dist;
-    solver_ctx.second_slot = second_slot;
-    solver_ctx.second_dist = second_dist;
-    solver_ctx.scratch_slot = scratch_slot;
-    solver_ctx.scratch_dist = scratch_dist;
-    solver_ctx.scratch_second_slot = scratch_second_slot;
-    solver_ctx.scratch_second_dist = scratch_second_dist;
-    solver_ctx.swap_topk = swap_topk;
-    solver_ctx.swap_update = swap_update;
-    solver_ctx.swap_patience = swap_patience;
-    solver_ctx.swap_min_gain = swap_min_gain;
-    solver_ctx.use_cluster_candidates = use_cluster_candidates;
-    solver_ctx.radius2_out = &radius2;
-    solver_ctx.sse_out = &sse;
-    solver_ctx.iterations_out = &run_iterations;
-    solver_ctx.scratch_indices = scratch_indices;
-    solver_ctx.fft_dist_cache = fft_dist_cache;
-    solver_ctx.center_mask = center_mask;
+    rt->solver_ctx.points = rt->points;
+    rt->solver_ctx.weights = rt->weights;
+    rt->solver_ctx.point_count = rt->point_count;
+    rt->solver_ctx.k = rt->k;
+    rt->solver_ctx.resolved_algo = rt->resolved_algo;
+    rt->solver_ctx.profile = rt->profile;
+    rt->solver_ctx.init_seeds = rt->init_seeds;
+    rt->solver_ctx.iter_limit = rt->iter_limit;
+    rt->solver_ctx.rng_state = &rt->rng_state;
+    rt->solver_ctx.centers = rt->work_centers;
+    rt->solver_ctx.nearest_slot = rt->nearest_slot;
+    rt->solver_ctx.nearest_dist = rt->nearest_dist;
+    rt->solver_ctx.second_slot = rt->second_slot;
+    rt->solver_ctx.second_dist = rt->second_dist;
+    rt->solver_ctx.scratch_slot = rt->scratch_slot;
+    rt->solver_ctx.scratch_dist = rt->scratch_dist;
+    rt->solver_ctx.scratch_second_slot = rt->scratch_second_slot;
+    rt->solver_ctx.scratch_second_dist = rt->scratch_second_dist;
+    rt->solver_ctx.swap_topk = rt->swap_topk;
+    rt->solver_ctx.swap_update = rt->swap_update;
+    rt->solver_ctx.swap_patience = rt->swap_patience;
+    rt->solver_ctx.swap_min_gain = rt->swap_min_gain;
+    rt->solver_ctx.use_cluster_candidates = rt->use_cluster_candidates;
+    rt->solver_ctx.radius2_out = &rt->radius2;
+    rt->solver_ctx.sse_out = &rt->sse;
+    rt->solver_ctx.iterations_out = &rt->run_iterations;
+    rt->solver_ctx.scratch_indices = rt->scratch_indices;
+    rt->solver_ctx.fft_dist_cache = rt->fft_dist_cache;
+    rt->solver_ctx.center_mask = rt->center_mask;
 
-    best_radius2 = -1.0;
-    best_sse = 0.0;
-    best_iterations = 0u;
-    for (slot = 0u; slot < restarts; ++slot) {
-        rng_state = (uint32_t)(seed + 0x9e3779b9u * (slot + 1u));
-        status = sixel_kcenter_run_solver(&solver_ctx);
-        if (SIXEL_FAILED(status)) {
-            goto end;
+    rt->best_radius2 = -1.0;
+    rt->best_sse = 0.0;
+    rt->best_iterations = 0u;
+    for (slot = 0u; slot < rt->restarts; ++slot) {
+        rt->rng_state = (uint32_t)(rt->seed + 0x9e3779b9u * (slot + 1u));
+        rt->status = sixel_kcenter_run_solver(&rt->solver_ctx);
+        if (SIXEL_FAILED(rt->status)) {
+            return rt->status;
         }
 
-        if (best_radius2 < 0.0
-                || radius2 < best_radius2 - 1.0e-12
-                || (radius2 <= best_radius2 + 1.0e-12
-                    && sse < best_sse - 1.0e-9)) {
-            memcpy(best_centers,
-                   work_centers,
-                   (size_t)k * sizeof(unsigned int));
-            best_radius2 = radius2;
-            best_sse = sse;
-            best_iterations = run_iterations;
+        if (rt->best_radius2 < 0.0
+                || rt->radius2 < rt->best_radius2 - 1.0e-12
+                || (rt->radius2 <= rt->best_radius2 + 1.0e-12
+                    && rt->sse < rt->best_sse - 1.0e-9)) {
+            memcpy(rt->best_centers,
+                   rt->work_centers,
+                   (size_t)rt->k * sizeof(unsigned int));
+            rt->best_radius2 = rt->radius2;
+            rt->best_sse = rt->sse;
+            rt->best_iterations = rt->run_iterations;
         }
     }
-    memcpy(centers, best_centers, (size_t)k * sizeof(unsigned int));
-    total_iterations = best_iterations;
+    memcpy(rt->centers,
+           rt->best_centers,
+           (size_t)rt->k * sizeof(unsigned int));
+    rt->total_iterations = rt->best_iterations;
 
-    sixel_kcenter_assign_points_with_second(points,
-                                            weights,
-                                            point_count,
-                                            centers,
-                                            k,
-                                            nearest_slot,
-                                            nearest_dist,
-                                            second_slot,
-                                            second_dist,
-                                            &radius2,
-                                            &sse,
-                                            cluster_weights,
-                                            cluster_sums);
-    polish_ctx.points = points;
-    polish_ctx.weights = weights;
-    polish_ctx.point_count = point_count;
-    polish_ctx.centers = centers;
-    polish_ctx.k = k;
-    polish_ctx.nearest_slot = nearest_slot;
-    polish_ctx.nearest_dist = nearest_dist;
-    polish_ctx.second_slot = second_slot;
-    polish_ctx.second_dist = second_dist;
-    polish_ctx.scratch_slot = scratch_slot;
-    polish_ctx.scratch_dist = scratch_dist;
-    polish_ctx.scratch_second_slot = scratch_second_slot;
-    polish_ctx.scratch_second_dist = scratch_second_dist;
-    polish_ctx.center_mask = center_mask;
-    polish_ctx.cluster_weights = cluster_weights;
-    polish_ctx.cluster_sums = cluster_sums;
-    polish_ctx.radius2_io = &radius2;
-    polish_ctx.sse_io = &sse;
-    /*
-     * Legacy default keeps polish disabled in general, but OKLab inputs benefit
-     * from one guarded polish pass at moderate point counts.
-     */
-    if (use_legacy_oklab_polish) {
-        polish_point_limit = 2048u;
-        polish_k_limit = 96u;
+    sixel_kcenter_assign_points_with_second(rt->points,
+                                            rt->weights,
+                                            rt->point_count,
+                                            rt->centers,
+                                            rt->k,
+                                            rt->nearest_slot,
+                                            rt->nearest_dist,
+                                            rt->second_slot,
+                                            rt->second_dist,
+                                            &rt->radius2,
+                                            &rt->sse,
+                                            rt->cluster_weights,
+                                            rt->cluster_sums);
+
+    rt->polish_ctx.points = rt->points;
+    rt->polish_ctx.weights = rt->weights;
+    rt->polish_ctx.point_count = rt->point_count;
+    rt->polish_ctx.centers = rt->centers;
+    rt->polish_ctx.k = rt->k;
+    rt->polish_ctx.nearest_slot = rt->nearest_slot;
+    rt->polish_ctx.nearest_dist = rt->nearest_dist;
+    rt->polish_ctx.second_slot = rt->second_slot;
+    rt->polish_ctx.second_dist = rt->second_dist;
+    rt->polish_ctx.scratch_slot = rt->scratch_slot;
+    rt->polish_ctx.scratch_dist = rt->scratch_dist;
+    rt->polish_ctx.scratch_second_slot = rt->scratch_second_slot;
+    rt->polish_ctx.scratch_second_dist = rt->scratch_second_dist;
+    rt->polish_ctx.center_mask = rt->center_mask;
+    rt->polish_ctx.cluster_weights = rt->cluster_weights;
+    rt->polish_ctx.cluster_sums = rt->cluster_sums;
+    rt->polish_ctx.radius2_io = &rt->radius2;
+    rt->polish_ctx.sse_io = &rt->sse;
+
+    if (rt->use_legacy_oklab_polish) {
+        rt->polish_point_limit = 2048u;
+        rt->polish_k_limit = 96u;
     } else {
-        polish_point_limit = 8192u;
-        polish_k_limit = 128u;
+        rt->polish_point_limit = 8192u;
+        rt->polish_k_limit = 128u;
     }
-    if ((use_perceptual_polish || use_legacy_oklab_polish)
-            && resolved_algo != SIXEL_PALETTE_KCENTER_ALGO_FFT
-            && point_count <= polish_point_limit
-            && k <= polish_k_limit) {
-        polish_pre_radius2 = radius2;
-        sixel_kcenter_polish_sse_with_radius_guard(
-            &polish_ctx,
-            &polish_updates);
+    if ((rt->use_perceptual_polish || rt->use_legacy_oklab_polish)
+            && rt->resolved_algo != SIXEL_PALETTE_KCENTER_ALGO_FFT
+            && rt->point_count <= rt->polish_point_limit
+            && rt->k <= rt->polish_k_limit) {
+        rt->polish_pre_radius2 = rt->radius2;
+        sixel_kcenter_polish_sse_with_radius_guard(&rt->polish_ctx,
+                                                   &rt->polish_updates);
         sixel_kcenter_last_polish_applied = 1;
-        sixel_kcenter_last_polish_updates = polish_updates;
-        sixel_kcenter_last_polish_pre_radius2 = polish_pre_radius2;
-        sixel_kcenter_last_polish_post_radius2 = radius2;
+        sixel_kcenter_last_polish_updates = rt->polish_updates;
+        sixel_kcenter_last_polish_pre_radius2 = rt->polish_pre_radius2;
+        sixel_kcenter_last_polish_post_radius2 = rt->radius2;
     }
-    if (best_radius2 < 0.0) {
-        best_radius2 = radius2;
-        best_sse = sse;
-    } else if (radius2 < best_radius2 - 1.0e-12
-            || (radius2 <= best_radius2 + 1.0e-12
-                && sse < best_sse - 1.0e-9)) {
-        best_radius2 = radius2;
-        best_sse = sse;
+    if (rt->best_radius2 < 0.0) {
+        rt->best_radius2 = rt->radius2;
+        rt->best_sse = rt->sse;
+    } else if (rt->radius2 < rt->best_radius2 - 1.0e-12
+            || (rt->radius2 <= rt->best_radius2 + 1.0e-12
+                && rt->sse < rt->best_sse - 1.0e-9)) {
+        rt->best_radius2 = rt->radius2;
+        rt->best_sse = rt->sse;
     }
 
-    for (slot = 0u; slot < k; ++slot) {
-        final_centers[slot * 3u + 0u] = points[centers[slot] * 3u + 0u];
-        final_centers[slot * 3u + 1u] = points[centers[slot] * 3u + 1u];
-        final_centers[slot * 3u + 2u] = points[centers[slot] * 3u + 2u];
+    for (slot = 0u; slot < rt->k; ++slot) {
+        rt->final_centers[slot * 3u + 0u] = rt->points[rt->centers[slot] * 3u];
+        rt->final_centers[slot * 3u + 1u]
+            = rt->points[rt->centers[slot] * 3u + 1u];
+        rt->final_centers[slot * 3u + 2u]
+            = rt->points[rt->centers[slot] * 3u + 2u];
     }
-    final_count = k;
+    rt->final_count = rt->k;
 
-    iterate_stop = sixel_timer_now();
-    (void)sixel_compat_snprintf(log_detail,
-                                sizeof(log_detail),
+    rt->iterate_stop = sixel_timer_now();
+    (void)sixel_compat_snprintf(rt->log_detail,
+                                sizeof(rt->log_detail),
                                 "algo=%s iter=%u radius=%.4f sse=%.4f "
                                 "polish_updates=%u",
-                                sixel_kcenter_algo_to_string(resolved_algo),
-                                total_iterations,
-                                sqrt(best_radius2),
-                                best_sse,
-                                polish_updates);
-    sixel_palette_kcenter_log_finish(logger,
-                                     job_iter,
-                                     engine_name,
+                                sixel_kcenter_algo_to_string(rt->resolved_algo),
+                                rt->total_iterations,
+                                sqrt(rt->best_radius2),
+                                rt->best_sse,
+                                rt->polish_updates);
+    sixel_palette_kcenter_log_finish(rt->logger,
+                                     rt->job_iter,
+                                     rt->engine_name,
                                      "palette/iterate",
                                      "iterate",
-                                     log_detail);
+                                     rt->log_detail);
 
-    merge_start = iterate_stop;
-    merge_stop = iterate_stop;
-    if (apply_merge && k > reqcolors) {
-        merge_start = sixel_timer_now();
-        job_merge = sixel_palette_kcenter_log_start(logger,
-                                                    job_seq,
-                                                    engine_name,
+    rt->merge_start = rt->iterate_stop;
+    rt->merge_stop = rt->iterate_stop;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_kcenter_build_merge_phase(sixel_kcenter_build_runtime_t *rt)
+{
+    unsigned int slot;
+    unsigned int channel;
+    double weight_value;
+    double component;
+
+    slot = 0u;
+    channel = 0u;
+    weight_value = 0.0;
+    component = 0.0;
+
+    if (rt == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!rt->apply_merge || rt->k <= rt->reqcolors) {
+        return SIXEL_OK;
+    }
+
+    rt->merge_start = sixel_timer_now();
+    rt->job_merge = sixel_palette_kcenter_log_start(rt->logger,
+                                                    rt->job_seq,
+                                                    rt->engine_name,
                                                     "palette/merge",
                                                     "merge");
 
-        merge_weights = (unsigned long *)sixel_allocator_malloc(
-            allocator,
-            (size_t)k * sizeof(unsigned long));
-        merge_sums = (double *)sixel_allocator_malloc(
-            allocator,
-            (size_t)k * 3u * sizeof(double));
-        if (merge_weights == NULL || merge_sums == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-
-        for (slot = 0u; slot < k; ++slot) {
-            weight_value = cluster_weights[slot];
-            if (weight_value <= 0.0) {
-                merge_weights[slot] = 1ul;
-                merge_sums[slot * 3u + 0u] = 0.0;
-                merge_sums[slot * 3u + 1u] = 0.0;
-                merge_sums[slot * 3u + 2u] = 0.0;
-                continue;
-            }
-            if (weight_value > (double)ULONG_MAX) {
-                merge_weights[slot] = ULONG_MAX;
-            } else {
-                merge_weights[slot] = (unsigned long)(weight_value + 0.5);
-                if (merge_weights[slot] == 0ul) {
-                    merge_weights[slot] = 1ul;
-                }
-            }
-            for (channel = 0u; channel < 3u; ++channel) {
-                component = cluster_sums[slot * 3u + channel]
-                    / cluster_weights[slot];
-                if (component < 0.0) {
-                    component = 0.0;
-                }
-                if (component > 255.0) {
-                    component = 255.0;
-                }
-                merge_sums[slot * 3u + channel]
-                    = component * (double)merge_weights[slot];
-            }
-        }
-
-        cluster_total = sixel_palette_apply_merge(merge_weights,
-                                                  merge_sums,
-                                                  3u,
-                                                  (int)k,
-                                                  (int)reqcolors,
-                                                  (int)resolved_merge,
-                                                  use_reversible,
-                                                  pixelformat,
-                                                  allocator);
-        if (cluster_total < 1) {
-            cluster_total = 1;
-        }
-        if ((unsigned int)cluster_total > reqcolors) {
-            cluster_total = (int)reqcolors;
-        }
-        final_count = (unsigned int)cluster_total;
-        if (final_count == 0u) {
-            final_count = 1u;
-        }
-
-        for (slot = 0u; slot < final_count; ++slot) {
-            weight_value = (double)merge_weights[slot];
-            if (weight_value <= 0.0) {
-                weight_value = 1.0;
-            }
-            for (channel = 0u; channel < 3u; ++channel) {
-                final_centers[slot * 3u + channel]
-                    = merge_sums[slot * 3u + channel] / weight_value;
-            }
-            cluster_weights[slot] = weight_value;
-        }
-
-        merge_stop = sixel_timer_now();
-        (void)sixel_compat_snprintf(log_detail,
-                                    sizeof(log_detail),
-                                    "clusters=%u merge=%u",
-                                    final_count,
-                                    resolved_merge);
-        sixel_palette_kcenter_log_finish(logger,
-                                         job_merge,
-                                         engine_name,
-                                         "palette/merge",
-                                         "merge",
-                                         log_detail);
+    rt->merge_weights = (unsigned long *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->k * sizeof(unsigned long));
+    rt->merge_sums = (double *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->k * 3u * sizeof(double));
+    if (rt->merge_weights == NULL || rt->merge_sums == NULL) {
+        return SIXEL_BAD_ALLOCATION;
     }
 
-    export_start = sixel_timer_now();
-    job_export = sixel_palette_kcenter_log_start(logger,
-                                                 job_seq,
-                                                 engine_name,
-                                                 "palette/export",
-                                                 "export");
-
-    palette = (unsigned char *)sixel_allocator_malloc(
-        allocator,
-        (size_t)final_count * 3u);
-    if (palette == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-    if (result_float32 != NULL && input_is_float32 && final_count > 0u) {
-        float_palette = (float *)sixel_allocator_malloc(
-            allocator,
-            (size_t)final_count * 3u * sizeof(float));
-        if (float_palette == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
+    for (slot = 0u; slot < rt->k; ++slot) {
+        weight_value = rt->cluster_weights[slot];
+        if (weight_value <= 0.0) {
+            rt->merge_weights[slot] = 1ul;
+            rt->merge_sums[slot * 3u + 0u] = 0.0;
+            rt->merge_sums[slot * 3u + 1u] = 0.0;
+            rt->merge_sums[slot * 3u + 2u] = 0.0;
+            continue;
         }
-    }
-
-    for (slot = 0u; slot < final_count; ++slot) {
+        if (weight_value > (double)ULONG_MAX) {
+            rt->merge_weights[slot] = ULONG_MAX;
+        } else {
+            rt->merge_weights[slot] = (unsigned long)(weight_value + 0.5);
+            if (rt->merge_weights[slot] == 0ul) {
+                rt->merge_weights[slot] = 1ul;
+            }
+        }
         for (channel = 0u; channel < 3u; ++channel) {
-            component = final_centers[slot * 3u + channel];
+            component = rt->cluster_sums[slot * 3u + channel]
+                / rt->cluster_weights[slot];
             if (component < 0.0) {
                 component = 0.0;
             }
             if (component > 255.0) {
                 component = 255.0;
             }
-            if (float_palette != NULL) {
-                if (float32_channel_scale[channel] > 0.0) {
-                    restored_component = component;
-                    restored_component -= float32_channel_offset[channel];
-                    restored_component /= float32_channel_scale[channel];
-                } else {
-                    restored_component = 0.0;
-                }
-                float_palette[slot * 3u + channel]
-                    = sixel_pixelformat_float_channel_clamp(
-                        pixelformat,
-                        (int)channel,
-                        (float)restored_component);
-            }
-            palette[slot * 3u + channel] = (unsigned char)(component + 0.5);
+            rt->merge_sums[slot * 3u + channel]
+                = component * (double)rt->merge_weights[slot];
         }
     }
 
-    if (force_palette && final_count < reqcolors && final_count > 0u) {
-        grown_palette = (unsigned char *)sixel_allocator_malloc(
-            allocator,
-            (size_t)reqcolors * 3u);
-        sort_weights = (double *)sixel_allocator_malloc(
-            allocator,
-            (size_t)final_count * sizeof(double));
-        order = (unsigned int *)sixel_allocator_malloc(
-            allocator,
-            (size_t)final_count * sizeof(unsigned int));
-        if (grown_palette == NULL || sort_weights == NULL || order == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
+    rt->cluster_total = sixel_palette_apply_merge(rt->merge_weights,
+                                                  rt->merge_sums,
+                                                  3u,
+                                                  (int)rt->k,
+                                                  (int)rt->reqcolors,
+                                                  (int)rt->resolved_merge,
+                                                  rt->use_reversible,
+                                                  rt->pixelformat,
+                                                  rt->allocator);
+    if (rt->cluster_total < 1) {
+        rt->cluster_total = 1;
+    }
+    if ((unsigned int)rt->cluster_total > rt->reqcolors) {
+        rt->cluster_total = (int)rt->reqcolors;
+    }
+    rt->final_count = (unsigned int)rt->cluster_total;
+    if (rt->final_count == 0u) {
+        rt->final_count = 1u;
+    }
+
+    for (slot = 0u; slot < rt->final_count; ++slot) {
+        weight_value = (double)rt->merge_weights[slot];
+        if (weight_value <= 0.0) {
+            weight_value = 1.0;
         }
-        if (float_palette != NULL) {
-            grown_float = (float *)sixel_allocator_malloc(
-                allocator,
-                (size_t)reqcolors * 3u * sizeof(float));
-            if (grown_float == NULL) {
-                status = SIXEL_BAD_ALLOCATION;
-                goto end;
+        for (channel = 0u; channel < 3u; ++channel) {
+            rt->final_centers[slot * 3u + channel]
+                = rt->merge_sums[slot * 3u + channel] / weight_value;
+        }
+        rt->cluster_weights[slot] = weight_value;
+    }
+
+    rt->merge_stop = sixel_timer_now();
+    (void)sixel_compat_snprintf(rt->log_detail,
+                                sizeof(rt->log_detail),
+                                "clusters=%u merge=%u",
+                                rt->final_count,
+                                rt->resolved_merge);
+    sixel_palette_kcenter_log_finish(rt->logger,
+                                     rt->job_merge,
+                                     rt->engine_name,
+                                     "palette/merge",
+                                     "merge",
+                                     rt->log_detail);
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_kcenter_build_export_phase(sixel_kcenter_build_runtime_t *rt)
+{
+    unsigned int slot;
+    unsigned int channel;
+    unsigned int index;
+    unsigned int fill;
+    unsigned int source;
+    unsigned int swap_temp;
+    double component;
+    double restored_component;
+
+    slot = 0u;
+    channel = 0u;
+    index = 0u;
+    fill = 0u;
+    source = 0u;
+    swap_temp = 0u;
+    component = 0.0;
+    restored_component = 0.0;
+
+    if (rt == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    rt->export_start = sixel_timer_now();
+    rt->job_export = sixel_palette_kcenter_log_start(rt->logger,
+                                                     rt->job_seq,
+                                                     rt->engine_name,
+                                                     "palette/export",
+                                                     "export");
+
+    rt->palette = (unsigned char *)sixel_allocator_malloc(
+        rt->allocator,
+        (size_t)rt->final_count * 3u);
+    if (rt->palette == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (rt->result_float32 != NULL
+            && rt->input_is_float32
+            && rt->final_count > 0u) {
+        rt->float_palette = (float *)sixel_allocator_malloc(
+            rt->allocator,
+            (size_t)rt->final_count * 3u * sizeof(float));
+        if (rt->float_palette == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+    }
+
+    for (slot = 0u; slot < rt->final_count; ++slot) {
+        for (channel = 0u; channel < 3u; ++channel) {
+            component = rt->final_centers[slot * 3u + channel];
+            if (component < 0.0) {
+                component = 0.0;
+            }
+            if (component > 255.0) {
+                component = 255.0;
+            }
+            if (rt->float_palette != NULL) {
+                if (rt->float32_channel_scale[channel] > 0.0) {
+                    restored_component = component;
+                    restored_component -= rt->float32_channel_offset[channel];
+                    restored_component /= rt->float32_channel_scale[channel];
+                } else {
+                    restored_component = 0.0;
+                }
+                rt->float_palette[slot * 3u + channel]
+                    = sixel_pixelformat_float_channel_clamp(
+                        rt->pixelformat,
+                        (int)channel,
+                        (float)restored_component);
+            }
+            rt->palette[slot * 3u + channel] = (unsigned char)(component + 0.5);
+        }
+    }
+
+    if (rt->force_palette
+            && rt->final_count < rt->reqcolors
+            && rt->final_count > 0u) {
+        rt->grown_palette = (unsigned char *)sixel_allocator_malloc(
+            rt->allocator,
+            (size_t)rt->reqcolors * 3u);
+        rt->sort_weights = (double *)sixel_allocator_malloc(
+            rt->allocator,
+            (size_t)rt->final_count * sizeof(double));
+        rt->order = (unsigned int *)sixel_allocator_malloc(
+            rt->allocator,
+            (size_t)rt->final_count * sizeof(unsigned int));
+        if (rt->grown_palette == NULL
+                || rt->sort_weights == NULL
+                || rt->order == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        if (rt->float_palette != NULL) {
+            rt->grown_float = (float *)sixel_allocator_malloc(
+                rt->allocator,
+                (size_t)rt->reqcolors * 3u * sizeof(float));
+            if (rt->grown_float == NULL) {
+                return SIXEL_BAD_ALLOCATION;
             }
         }
 
-        memcpy(grown_palette,
-               palette,
-               (size_t)final_count * 3u * sizeof(unsigned char));
-        if (grown_float != NULL) {
-            memcpy(grown_float,
-                   float_palette,
-                   (size_t)final_count * 3u * sizeof(float));
+        memcpy(rt->grown_palette,
+               rt->palette,
+               (size_t)rt->final_count * 3u * sizeof(unsigned char));
+        if (rt->grown_float != NULL) {
+            memcpy(rt->grown_float,
+                   rt->float_palette,
+                   (size_t)rt->final_count * 3u * sizeof(float));
         }
 
-        for (index = 0u; index < final_count; ++index) {
-            order[index] = index;
-            sort_weights[index] = cluster_weights[index];
+        for (index = 0u; index < rt->final_count; ++index) {
+            rt->order[index] = index;
+            rt->sort_weights[index] = rt->cluster_weights[index];
         }
-        for (index = 0u; index + 1u < final_count; ++index) {
-            for (slot = index + 1u; slot < final_count; ++slot) {
-                if (sort_weights[order[slot]] > sort_weights[order[index]]) {
-                    swap_temp = order[index];
-                    order[index] = order[slot];
-                    order[slot] = swap_temp;
+        for (index = 0u; index + 1u < rt->final_count; ++index) {
+            for (slot = index + 1u; slot < rt->final_count; ++slot) {
+                if (rt->sort_weights[rt->order[slot]]
+                        > rt->sort_weights[rt->order[index]]) {
+                    swap_temp = rt->order[index];
+                    rt->order[index] = rt->order[slot];
+                    rt->order[slot] = swap_temp;
                 }
             }
         }
 
-        fill = final_count;
+        fill = rt->final_count;
         source = 0u;
-        while (fill < reqcolors) {
-            slot = order[source];
+        while (fill < rt->reqcolors) {
+            slot = rt->order[source];
             for (channel = 0u; channel < 3u; ++channel) {
-                grown_palette[fill * 3u + channel]
-                    = palette[slot * 3u + channel];
-                if (grown_float != NULL) {
-                    grown_float[fill * 3u + channel]
-                        = float_palette[slot * 3u + channel];
+                rt->grown_palette[fill * 3u + channel]
+                    = rt->palette[slot * 3u + channel];
+                if (rt->grown_float != NULL) {
+                    rt->grown_float[fill * 3u + channel]
+                        = rt->float_palette[slot * 3u + channel];
                 }
             }
             ++fill;
             ++source;
-            if (source >= final_count) {
+            if (source >= rt->final_count) {
                 source = 0u;
             }
         }
 
-        sixel_allocator_free(allocator, palette);
-        palette = grown_palette;
-        grown_palette = NULL;
-        if (float_palette != NULL) {
-            sixel_allocator_free(allocator, float_palette);
-            float_palette = grown_float;
-            grown_float = NULL;
+        sixel_allocator_free(rt->allocator, rt->palette);
+        rt->palette = rt->grown_palette;
+        rt->grown_palette = NULL;
+        if (rt->float_palette != NULL) {
+            sixel_allocator_free(rt->allocator, rt->float_palette);
+            rt->float_palette = rt->grown_float;
+            rt->grown_float = NULL;
         }
-        final_count = reqcolors;
+        rt->final_count = rt->reqcolors;
     }
 
-    *result = palette;
-    palette = NULL;
-    if (result_float32 != NULL) {
-        *result_float32 = float_palette;
-        float_palette = NULL;
+    *rt->result = rt->palette;
+    rt->palette = NULL;
+    if (rt->result_float32 != NULL) {
+        *rt->result_float32 = rt->float_palette;
+        rt->float_palette = NULL;
     }
-    if (ncolors != NULL) {
-        *ncolors = final_count;
+    if (rt->ncolors != NULL) {
+        *rt->ncolors = rt->final_count;
     }
 
-    export_stop = sixel_timer_now();
-    (void)sixel_compat_snprintf(log_detail,
-                                sizeof(log_detail),
+    rt->export_stop = sixel_timer_now();
+    (void)sixel_compat_snprintf(rt->log_detail,
+                                sizeof(rt->log_detail),
                                 "colors=%u",
-                                final_count);
-    sixel_palette_kcenter_log_finish(logger,
-                                     job_export,
-                                     engine_name,
+                                rt->final_count);
+    sixel_palette_kcenter_log_finish(rt->logger,
+                                     rt->job_export,
+                                     rt->engine_name,
                                      "palette/export",
                                      "export",
-                                     log_detail);
+                                     rt->log_detail);
+    return SIXEL_OK;
+}
 
-    status = SIXEL_OK;
+static void
+sixel_kcenter_build_finalize_telemetry(sixel_kcenter_build_runtime_t *rt)
+{
+    double now;
+    double init_span;
+    double iterate_span;
+    double merge_span;
+    double export_span;
+
+    now = 0.0;
+    init_span = 0.0;
+    iterate_span = 0.0;
+    merge_span = 0.0;
+    export_span = 0.0;
+
+    if (rt == NULL || rt->telemetry == NULL) {
+        return;
+    }
+
+    now = sixel_timer_now();
+    if (rt->init_stop < rt->wall_start) {
+        rt->init_stop = now;
+    }
+    if (rt->iterate_stop < rt->iterate_start) {
+        rt->iterate_stop = rt->init_stop;
+    }
+    if (rt->merge_stop < rt->merge_start) {
+        rt->merge_stop = rt->iterate_stop;
+    }
+    if (rt->export_stop < rt->export_start) {
+        rt->export_stop = now;
+    }
+
+    init_span = rt->init_stop - rt->wall_start;
+    if (init_span < 0.0) {
+        init_span = 0.0;
+    }
+    iterate_span = rt->iterate_stop - rt->iterate_start;
+    if (iterate_span < 0.0) {
+        iterate_span = 0.0;
+    }
+    merge_span = rt->merge_stop - rt->merge_start;
+    if (merge_span < 0.0) {
+        merge_span = 0.0;
+    }
+    export_span = rt->export_stop - rt->export_start;
+    if (export_span < 0.0) {
+        export_span = 0.0;
+    }
+
+    rt->telemetry->init_ms = init_span * 1000.0;
+    rt->telemetry->iterate_ms = iterate_span * 1000.0;
+    rt->telemetry->merge_ms = merge_span * 1000.0;
+    rt->telemetry->export_ms = export_span * 1000.0;
+    rt->telemetry->iterate_count = rt->total_iterations;
+    rt->telemetry->merge_iterate_count
+        = (rt->apply_merge && rt->k > rt->reqcolors) ? 1u : 0u;
+    rt->telemetry->merge_mode
+        = (rt->apply_merge && rt->k > rt->reqcolors)
+        ? (int)rt->resolved_merge
+        : SIXEL_FINAL_MERGE_NONE;
+}
+
+static void
+sixel_kcenter_build_cleanup(sixel_kcenter_build_runtime_t *rt)
+{
+    if (rt == NULL || rt->allocator == NULL) {
+        return;
+    }
+    /*
+     * Release temporary storage in reverse ownership order so partially
+     * completed stages remain easy to audit during failure debugging.
+     */
+    if (rt->grown_float != NULL) {
+        sixel_allocator_free(rt->allocator, rt->grown_float);
+    }
+    if (rt->grown_palette != NULL) {
+        sixel_allocator_free(rt->allocator, rt->grown_palette);
+    }
+    if (rt->float_palette != NULL) {
+        sixel_allocator_free(rt->allocator, rt->float_palette);
+    }
+    if (rt->palette != NULL) {
+        sixel_allocator_free(rt->allocator, rt->palette);
+    }
+    if (rt->merge_sums != NULL) {
+        sixel_allocator_free(rt->allocator, rt->merge_sums);
+    }
+    if (rt->merge_weights != NULL) {
+        sixel_allocator_free(rt->allocator, rt->merge_weights);
+    }
+    if (rt->center_mask != NULL) {
+        sixel_allocator_free(rt->allocator, rt->center_mask);
+    }
+    if (rt->fft_dist_cache != NULL) {
+        sixel_allocator_free(rt->allocator, rt->fft_dist_cache);
+    }
+    if (rt->scratch_indices != NULL) {
+        sixel_allocator_free(rt->allocator, rt->scratch_indices);
+    }
+    if (rt->order != NULL) {
+        sixel_allocator_free(rt->allocator, rt->order);
+    }
+    if (rt->sort_weights != NULL) {
+        sixel_allocator_free(rt->allocator, rt->sort_weights);
+    }
+    if (rt->final_centers != NULL) {
+        sixel_allocator_free(rt->allocator, rt->final_centers);
+    }
+    if (rt->cluster_sums != NULL) {
+        sixel_allocator_free(rt->allocator, rt->cluster_sums);
+    }
+    if (rt->cluster_weights != NULL) {
+        sixel_allocator_free(rt->allocator, rt->cluster_weights);
+    }
+    if (rt->scratch_dist != NULL) {
+        sixel_allocator_free(rt->allocator, rt->scratch_dist);
+    }
+    if (rt->scratch_second_dist != NULL) {
+        sixel_allocator_free(rt->allocator, rt->scratch_second_dist);
+    }
+    if (rt->nearest_dist != NULL) {
+        sixel_allocator_free(rt->allocator, rt->nearest_dist);
+    }
+    if (rt->second_dist != NULL) {
+        sixel_allocator_free(rt->allocator, rt->second_dist);
+    }
+    if (rt->scratch_slot != NULL) {
+        sixel_allocator_free(rt->allocator, rt->scratch_slot);
+    }
+    if (rt->scratch_second_slot != NULL) {
+        sixel_allocator_free(rt->allocator, rt->scratch_second_slot);
+    }
+    if (rt->nearest_slot != NULL) {
+        sixel_allocator_free(rt->allocator, rt->nearest_slot);
+    }
+    if (rt->second_slot != NULL) {
+        sixel_allocator_free(rt->allocator, rt->second_slot);
+    }
+    if (rt->work_centers != NULL) {
+        sixel_allocator_free(rt->allocator, rt->work_centers);
+    }
+    if (rt->best_centers != NULL) {
+        sixel_allocator_free(rt->allocator, rt->best_centers);
+    }
+    if (rt->centers != NULL) {
+        sixel_allocator_free(rt->allocator, rt->centers);
+    }
+    if (rt->weights != NULL) {
+        sixel_allocator_free(rt->allocator, rt->weights);
+    }
+    if (rt->points != NULL) {
+        sixel_allocator_free(rt->allocator, rt->points);
+    }
+    sixel_kcenter_override_lock_release(rt->override_lock_acquired);
+}
+
+static SIXELSTATUS
+build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
+{
+    sixel_kcenter_build_runtime_t runtime;
+
+    if (ctx == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_kcenter_build_runtime_init(&runtime, ctx);
+
+    if (runtime.allocator == NULL
+            || runtime.data == NULL
+            || runtime.result == NULL) {
+        return runtime.status;
+    }
+
+    runtime.status = sixel_kcenter_build_prepare_and_collect(&runtime);
+    if (SIXEL_FAILED(runtime.status)) {
+        goto end;
+    }
+
+    /*
+     * Keep build stages strictly ordered:
+     * collect -> solve -> merge -> export.
+     * This preserves tie-break and logging behavior.
+     */
+    if (runtime.point_count == 0u) {
+        runtime.status = SIXEL_OK;
+        goto end;
+    }
+
+    runtime.status = sixel_kcenter_build_solve_phase(&runtime);
+    if (SIXEL_FAILED(runtime.status)) {
+        goto end;
+    }
+
+    runtime.status = sixel_kcenter_build_merge_phase(&runtime);
+    if (SIXEL_FAILED(runtime.status)) {
+        goto end;
+    }
+
+    runtime.status = sixel_kcenter_build_export_phase(&runtime);
+    if (SIXEL_FAILED(runtime.status)) {
+        goto end;
+    }
+
+    runtime.status = SIXEL_OK;
 
 end:
-    if (telemetry != NULL) {
-        now = sixel_timer_now();
-        if (init_stop < wall_start) {
-            init_stop = now;
-        }
-        if (iterate_stop < iterate_start) {
-            iterate_stop = init_stop;
-        }
-        if (merge_stop < merge_start) {
-            merge_stop = iterate_stop;
-        }
-        if (export_stop < export_start) {
-            export_stop = now;
-        }
-
-        init_span = init_stop - wall_start;
-        if (init_span < 0.0) {
-            init_span = 0.0;
-        }
-        iterate_span = iterate_stop - iterate_start;
-        if (iterate_span < 0.0) {
-            iterate_span = 0.0;
-        }
-        merge_span = merge_stop - merge_start;
-        if (merge_span < 0.0) {
-            merge_span = 0.0;
-        }
-        export_span = export_stop - export_start;
-        if (export_span < 0.0) {
-            export_span = 0.0;
-        }
-
-        telemetry->init_ms = init_span * 1000.0;
-        telemetry->iterate_ms = iterate_span * 1000.0;
-        telemetry->merge_ms = merge_span * 1000.0;
-        telemetry->export_ms = export_span * 1000.0;
-        telemetry->iterate_count = total_iterations;
-        telemetry->merge_iterate_count
-            = (apply_merge && k > reqcolors) ? 1u : 0u;
-        telemetry->merge_mode = (apply_merge && k > reqcolors)
-            ? (int)resolved_merge
-            : SIXEL_FINAL_MERGE_NONE;
-    }
-
-    if (grown_float != NULL) {
-        sixel_allocator_free(allocator, grown_float);
-    }
-    if (grown_palette != NULL) {
-        sixel_allocator_free(allocator, grown_palette);
-    }
-    if (float_palette != NULL) {
-        sixel_allocator_free(allocator, float_palette);
-    }
-    if (palette != NULL) {
-        sixel_allocator_free(allocator, palette);
-    }
-    if (merge_sums != NULL) {
-        sixel_allocator_free(allocator, merge_sums);
-    }
-    if (merge_weights != NULL) {
-        sixel_allocator_free(allocator, merge_weights);
-    }
-    if (center_mask != NULL) {
-        sixel_allocator_free(allocator, center_mask);
-    }
-    if (fft_dist_cache != NULL) {
-        sixel_allocator_free(allocator, fft_dist_cache);
-    }
-    if (scratch_indices != NULL) {
-        sixel_allocator_free(allocator, scratch_indices);
-    }
-    if (order != NULL) {
-        sixel_allocator_free(allocator, order);
-    }
-    if (sort_weights != NULL) {
-        sixel_allocator_free(allocator, sort_weights);
-    }
-    if (final_centers != NULL) {
-        sixel_allocator_free(allocator, final_centers);
-    }
-    if (cluster_sums != NULL) {
-        sixel_allocator_free(allocator, cluster_sums);
-    }
-    if (cluster_weights != NULL) {
-        sixel_allocator_free(allocator, cluster_weights);
-    }
-    if (scratch_dist != NULL) {
-        sixel_allocator_free(allocator, scratch_dist);
-    }
-    if (scratch_second_dist != NULL) {
-        sixel_allocator_free(allocator, scratch_second_dist);
-    }
-    if (nearest_dist != NULL) {
-        sixel_allocator_free(allocator, nearest_dist);
-    }
-    if (second_dist != NULL) {
-        sixel_allocator_free(allocator, second_dist);
-    }
-    if (scratch_slot != NULL) {
-        sixel_allocator_free(allocator, scratch_slot);
-    }
-    if (scratch_second_slot != NULL) {
-        sixel_allocator_free(allocator, scratch_second_slot);
-    }
-    if (nearest_slot != NULL) {
-        sixel_allocator_free(allocator, nearest_slot);
-    }
-    if (second_slot != NULL) {
-        sixel_allocator_free(allocator, second_slot);
-    }
-    if (work_centers != NULL) {
-        sixel_allocator_free(allocator, work_centers);
-    }
-    if (best_centers != NULL) {
-        sixel_allocator_free(allocator, best_centers);
-    }
-    if (centers != NULL) {
-        sixel_allocator_free(allocator, centers);
-    }
-    if (weights != NULL) {
-        sixel_allocator_free(allocator, weights);
-    }
-    if (points != NULL) {
-        sixel_allocator_free(allocator, points);
-    }
-    sixel_kcenter_override_lock_release(override_lock_acquired);
-    return status;
+    sixel_kcenter_build_finalize_telemetry(&runtime);
+    sixel_kcenter_build_cleanup(&runtime);
+    return runtime.status;
 }
 
 static SIXELSTATUS
