@@ -3974,26 +3974,53 @@ sixel_kcenter_swap_apply_with_second(sixel_kcenter_swap_apply_ctx_t *ctx)
     return 1;
 }
 
-static int
-sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
+static void
+sixel_kcenter_swap_prepare_apply_ctx(
+    sixel_kcenter_swap_apply_ctx_t *apply_ctx,
+    sixel_kcenter_swap_ctx_t const *swap_ctx,
+    unsigned int swapped_slot,
+    unsigned int swapped_center,
+    double const *new_center_dist2,
+    double *radius2_out,
+    double *sse_out)
+{
+    if (apply_ctx == NULL || swap_ctx == NULL) {
+        return;
+    }
+    apply_ctx->points = swap_ctx->points;
+    apply_ctx->weights = swap_ctx->weights;
+    apply_ctx->point_count = swap_ctx->point_count;
+    apply_ctx->centers = swap_ctx->centers;
+    apply_ctx->k = swap_ctx->k;
+    apply_ctx->swapped_slot = swapped_slot;
+    apply_ctx->swapped_center = swapped_center;
+    apply_ctx->nearest_slot = swap_ctx->nearest_slot;
+    apply_ctx->nearest_dist = swap_ctx->nearest_dist;
+    apply_ctx->second_slot = swap_ctx->second_slot;
+    apply_ctx->second_dist = swap_ctx->second_dist;
+    apply_ctx->scratch_slot = swap_ctx->scratch_slot;
+    apply_ctx->scratch_dist = swap_ctx->scratch_dist;
+    apply_ctx->scratch_second_slot = swap_ctx->scratch_second_slot;
+    apply_ctx->scratch_second_dist = swap_ctx->scratch_second_dist;
+    apply_ctx->new_center_dist2 = new_center_dist2;
+    apply_ctx->radius2_out = radius2_out;
+    apply_ctx->sse_out = sse_out;
+}
+
+static unsigned int
+sixel_kcenter_swap_collect_candidates(
+    sixel_kcenter_swap_ctx_t const *ctx,
+    unsigned int topk,
+    int use_cluster_candidates,
+    uint32_t *rng_state,
+    unsigned int *candidate_list)
 {
     unsigned int point_count;
     unsigned int k;
-    double const *points;
     double const *weights;
-    unsigned int *centers;
-    unsigned char *center_mask;
-    unsigned int *nearest_slot;
-    double *nearest_dist;
-    unsigned int *second_slot;
-    double *second_dist;
-    double *radius2_io;
-    double *sse_io;
-    unsigned int *scratch_slot;
-    double *scratch_dist;
-    unsigned int *scratch_second_slot;
-    double *scratch_second_dist;
-    unsigned int candidate_list[16];
+    unsigned char const *center_mask;
+    unsigned int const *nearest_slot;
+    double const *nearest_dist;
     unsigned int global_list[16];
     double global_dist[16];
     double global_weight[16];
@@ -4009,19 +4036,8 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
     unsigned int cluster_count;
     unsigned int cluster_slot_count;
     unsigned int cluster_slot_pos;
-    unsigned int topk;
-    sixel_kcenter_swap_update_t swap_update;
-    double swap_min_gain;
-    int use_cluster_candidates;
-    uint32_t *rng_state;
     unsigned int candidate;
-    unsigned int old_slot;
     unsigned int index;
-    unsigned int slot;
-    unsigned int best_slot;
-    unsigned int best_candidate;
-    unsigned int old_center;
-    unsigned int scan_slot;
     unsigned int tries;
     unsigned int pick;
     unsigned int cluster_slot;
@@ -4029,74 +4045,24 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
     unsigned int global_index;
     unsigned int cluster_index;
     unsigned int selected_source;
-    unsigned int affected_count;
-    double radius2;
-    double sse;
-    double best_radius2;
-    double best_sse;
-    double allowed_radius2;
-    double distance_to_new;
-    double new_distance;
-    double old_distance;
-    double old_second;
-    unsigned int old_nearest_slot;
-    unsigned int old_second_slot;
-    unsigned int scan_best_slot;
-    unsigned int scan_second_slot;
-    double scan_best_dist;
-    double scan_second_dist;
-    double scan_distance;
     double lhs_weight;
     double best_cluster_dist;
     double best_cluster_weight;
     int added;
-    int found;
-    int rejected;
-    int used_incremental_eval;
-    int used_cached_apply;
-    double *best_new_dist;
-    double *trial_new_dist;
-    sixel_kcenter_swap_apply_ctx_t apply_ctx;
 
-    if (ctx == NULL) {
-        return 0;
-    }
-
-    point_count = ctx->point_count;
-    k = ctx->k;
-    points = ctx->points;
-    weights = ctx->weights;
-    centers = ctx->centers;
-    center_mask = ctx->center_mask;
-    nearest_slot = ctx->nearest_slot;
-    nearest_dist = ctx->nearest_dist;
-    second_slot = ctx->second_slot;
-    second_dist = ctx->second_dist;
-    radius2_io = ctx->radius2_io;
-    sse_io = ctx->sse_io;
-    scratch_slot = ctx->scratch_slot;
-    scratch_dist = ctx->scratch_dist;
-    scratch_second_slot = ctx->scratch_second_slot;
-    scratch_second_dist = ctx->scratch_second_dist;
-    topk = ctx->swap_topk;
-    swap_update = ctx->swap_update;
-    swap_min_gain = ctx->swap_min_gain;
-    use_cluster_candidates = ctx->use_cluster_candidates;
-    rng_state = ctx->rng_state;
-
+    point_count = 0u;
+    k = 0u;
+    weights = NULL;
+    center_mask = NULL;
+    nearest_slot = NULL;
+    nearest_dist = NULL;
     candidate_count = 0u;
     global_count = 0u;
     cluster_count = 0u;
     cluster_slot_count = 0u;
     cluster_slot_pos = 0u;
     candidate = 0u;
-    old_slot = 0u;
     index = 0u;
-    slot = 0u;
-    best_slot = 0u;
-    best_candidate = 0u;
-    old_center = 0u;
-    scan_slot = 0u;
     tries = 0u;
     pick = 0u;
     cluster_slot = 0u;
@@ -4104,58 +4070,28 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
     global_index = 0u;
     cluster_index = 0u;
     selected_source = 0u;
-    affected_count = 0u;
-    radius2 = 0.0;
-    sse = 0.0;
-    best_radius2 = *radius2_io;
-    best_sse = *sse_io;
-    allowed_radius2 = 0.0;
-    distance_to_new = 0.0;
-    new_distance = 0.0;
-    old_distance = 0.0;
-    old_second = 0.0;
-    old_nearest_slot = 0u;
-    old_second_slot = 0u;
-    scan_best_slot = 0u;
-    scan_second_slot = 0u;
-    scan_best_dist = 0.0;
-    scan_second_dist = 0.0;
-    scan_distance = 0.0;
     lhs_weight = 0.0;
     best_cluster_dist = 0.0;
     best_cluster_weight = 0.0;
     added = 0;
-    found = 0;
-    rejected = 0;
-    used_incremental_eval = 0;
-    used_cached_apply = 0;
-    best_new_dist = NULL;
-    trial_new_dist = NULL;
-    sixel_kcenter_swap_apply_ctx_clear(&apply_ctx);
 
-    if (point_count == 0u
-            || k == 0u
-            || point_count <= k
-            || center_mask == NULL
-            || nearest_slot == NULL
-            || nearest_dist == NULL) {
-        return 0;
+    if (ctx == NULL || candidate_list == NULL || topk == 0u) {
+        return 0u;
     }
-    if (topk < 1u) {
-        topk = 1u;
+
+    point_count = ctx->point_count;
+    k = ctx->k;
+    weights = ctx->weights;
+    center_mask = ctx->center_mask;
+    nearest_slot = ctx->nearest_slot;
+    nearest_dist = ctx->nearest_dist;
+
+    if (center_mask == NULL || nearest_slot == NULL || nearest_dist == NULL) {
+        return 0u;
     }
     if (topk > 16u) {
         topk = 16u;
     }
-    if (swap_min_gain < 0.0) {
-        swap_min_gain = 0.0;
-    }
-    if (!use_cluster_candidates) {
-        cluster_slot_count = 0u;
-        cluster_count = 0u;
-    }
-    allowed_radius2 = sixel_kcenter_swap_allowed_radius_sq(best_radius2,
-                                                           swap_min_gain);
 
     for (index = 0u; index < point_count; ++index) {
         if (center_mask[index] != 0u) {
@@ -4331,6 +4267,156 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
             break;
         }
     }
+
+    return candidate_count;
+}
+
+static int
+sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
+{
+    unsigned int point_count;
+    unsigned int k;
+    double const *points;
+    double const *weights;
+    unsigned int *centers;
+    unsigned char *center_mask;
+    unsigned int *nearest_slot;
+    double *nearest_dist;
+    unsigned int *second_slot;
+    double *second_dist;
+    double *radius2_io;
+    double *sse_io;
+    unsigned int *scratch_slot;
+    double *scratch_dist;
+    unsigned int *scratch_second_slot;
+    double *scratch_second_dist;
+    unsigned int candidate_list[16];
+    unsigned int candidate_count;
+    unsigned int topk;
+    sixel_kcenter_swap_update_t swap_update;
+    double swap_min_gain;
+    int use_cluster_candidates;
+    uint32_t *rng_state;
+    unsigned int candidate;
+    unsigned int old_slot;
+    unsigned int index;
+    unsigned int slot;
+    unsigned int best_slot;
+    unsigned int best_candidate;
+    unsigned int old_center;
+    unsigned int scan_slot;
+    unsigned int affected_count;
+    double radius2;
+    double sse;
+    double best_radius2;
+    double best_sse;
+    double allowed_radius2;
+    double distance_to_new;
+    double new_distance;
+    double old_distance;
+    double old_second;
+    unsigned int old_nearest_slot;
+    unsigned int old_second_slot;
+    unsigned int scan_best_slot;
+    unsigned int scan_second_slot;
+    double scan_best_dist;
+    double scan_second_dist;
+    double scan_distance;
+    double lhs_weight;
+    int found;
+    int rejected;
+    int used_incremental_eval;
+    int used_cached_apply;
+    double *best_new_dist;
+    double *trial_new_dist;
+    sixel_kcenter_swap_apply_ctx_t apply_ctx;
+
+    if (ctx == NULL) {
+        return 0;
+    }
+
+    point_count = ctx->point_count;
+    k = ctx->k;
+    points = ctx->points;
+    weights = ctx->weights;
+    centers = ctx->centers;
+    center_mask = ctx->center_mask;
+    nearest_slot = ctx->nearest_slot;
+    nearest_dist = ctx->nearest_dist;
+    second_slot = ctx->second_slot;
+    second_dist = ctx->second_dist;
+    radius2_io = ctx->radius2_io;
+    sse_io = ctx->sse_io;
+    scratch_slot = ctx->scratch_slot;
+    scratch_dist = ctx->scratch_dist;
+    scratch_second_slot = ctx->scratch_second_slot;
+    scratch_second_dist = ctx->scratch_second_dist;
+    topk = ctx->swap_topk;
+    swap_update = ctx->swap_update;
+    swap_min_gain = ctx->swap_min_gain;
+    use_cluster_candidates = ctx->use_cluster_candidates;
+    rng_state = ctx->rng_state;
+
+    candidate_count = 0u;
+    candidate = 0u;
+    old_slot = 0u;
+    index = 0u;
+    slot = 0u;
+    best_slot = 0u;
+    best_candidate = 0u;
+    old_center = 0u;
+    scan_slot = 0u;
+    affected_count = 0u;
+    radius2 = 0.0;
+    sse = 0.0;
+    best_radius2 = *radius2_io;
+    best_sse = *sse_io;
+    allowed_radius2 = 0.0;
+    distance_to_new = 0.0;
+    new_distance = 0.0;
+    old_distance = 0.0;
+    old_second = 0.0;
+    old_nearest_slot = 0u;
+    old_second_slot = 0u;
+    scan_best_slot = 0u;
+    scan_second_slot = 0u;
+    scan_best_dist = 0.0;
+    scan_second_dist = 0.0;
+    scan_distance = 0.0;
+    lhs_weight = 0.0;
+    found = 0;
+    rejected = 0;
+    used_incremental_eval = 0;
+    used_cached_apply = 0;
+    best_new_dist = NULL;
+    trial_new_dist = NULL;
+    sixel_kcenter_swap_apply_ctx_clear(&apply_ctx);
+
+    if (point_count == 0u
+            || k == 0u
+            || point_count <= k
+            || center_mask == NULL
+            || nearest_slot == NULL
+            || nearest_dist == NULL) {
+        return 0;
+    }
+    if (topk < 1u) {
+        topk = 1u;
+    }
+    if (topk > 16u) {
+        topk = 16u;
+    }
+    if (swap_min_gain < 0.0) {
+        swap_min_gain = 0.0;
+    }
+    allowed_radius2 = sixel_kcenter_swap_allowed_radius_sq(best_radius2,
+                                                           swap_min_gain);
+    candidate_count = sixel_kcenter_swap_collect_candidates(
+        ctx,
+        topk,
+        use_cluster_candidates,
+        rng_state,
+        candidate_list);
 
     if (candidate_count == 0u) {
         return 0;
@@ -4581,24 +4667,13 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
     centers[best_slot] = best_candidate;
     center_mask[old_center] = 0u;
     center_mask[best_candidate] = 1u;
-    apply_ctx.points = points;
-    apply_ctx.weights = weights;
-    apply_ctx.point_count = point_count;
-    apply_ctx.centers = centers;
-    apply_ctx.k = k;
-    apply_ctx.swapped_slot = best_slot;
-    apply_ctx.swapped_center = best_candidate;
-    apply_ctx.nearest_slot = nearest_slot;
-    apply_ctx.nearest_dist = nearest_dist;
-    apply_ctx.second_slot = second_slot;
-    apply_ctx.second_dist = second_dist;
-    apply_ctx.scratch_slot = scratch_slot;
-    apply_ctx.scratch_dist = scratch_dist;
-    apply_ctx.scratch_second_slot = scratch_second_slot;
-    apply_ctx.scratch_second_dist = scratch_second_dist;
-    apply_ctx.new_center_dist2 = best_new_dist;
-    apply_ctx.radius2_out = &radius2;
-    apply_ctx.sse_out = &sse;
+    sixel_kcenter_swap_prepare_apply_ctx(&apply_ctx,
+                                         ctx,
+                                         best_slot,
+                                         best_candidate,
+                                         best_new_dist,
+                                         &radius2,
+                                         &sse);
     used_cached_apply = sixel_kcenter_swap_apply_with_second(&apply_ctx);
     if (!used_cached_apply) {
         sixel_kcenter_assign_points_dispatch(points,
