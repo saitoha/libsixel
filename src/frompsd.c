@@ -39,6 +39,7 @@
 
 #include "allocator.h"
 #include "cms.h"
+#include "compat_stub.h"
 #include "frompsd.h"
 #include "loader-common.h"
 #include "pixelformat.h"
@@ -115,6 +116,22 @@ static SIXEL_PSD_TRACE_TLS char const *
 sixel_builtin_psd_trace_codes[SIXEL_PSD_TRACE_CODE_MAX];
 static SIXEL_PSD_TRACE_TLS unsigned int
 sixel_builtin_psd_trace_code_count;
+
+static int
+sixel_builtin_psd_trace_header_only_enabled(void)
+{
+    char const *value;
+
+    value = sixel_compat_getenv("SIXEL_PSD_TRACE_HEADER_ONLY");
+    if (value == NULL) {
+        return 0;
+    }
+    if (value[0] == '1' && value[1] == '\0') {
+        return 1;
+    }
+
+    return 0;
+}
 
 static void
 sixel_builtin_psd_trace_reset(void)
@@ -237,9 +254,126 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
         return "FX_SOLID_OVERLAY_BASE";
     }
     if (strstr(message,
+               "applying clip-weighted deferred solid overlay in layer "
+               "fallback") != NULL) {
+        return "FX_DEFERRED_SOLID_OVERLAY_CLIP";
+    }
+    if (strstr(message, "parsed clbl=0") != NULL) {
+        return "FX_CLBL0_PARSE";
+    }
+    if (strstr(message,
+               "clbl=0; deferring interior effects to clipped group "
+               "composite") != NULL) {
+        return "FX_CLBL0_DEFER_INTERIOR";
+    }
+    if (strstr(message,
+               "clbl=1; deferring interior overlays to clipped group "
+               "composite") != NULL) {
+        return "FX_CLBL1_DEFER_INTERIOR";
+    }
+    if (strstr(message,
                "suppressing clbl=1 deferred base solid/gradient overlays") !=
             NULL) {
         return "FX_CLBL1_BASE_OVERLAY_SUPPRESS";
+    }
+    if (strstr(message,
+               "suppressing clbl=1 deferred base interior glow/choke/"
+               "bevel-shadow") != NULL) {
+        return "FX_CLBL1_BASE_INTERIOR_SUPPRESS";
+    }
+    if (strstr(message,
+               "applying clip-weighted deferred interior effects in layer "
+               "fallback") != NULL) {
+        return "FX_DEFERRED_INTERIOR_CLIP";
+    }
+    if (strstr(message,
+               "applying clip-weighted deferred gradient overlay in layer "
+               "fallback") != NULL) {
+        return "FX_DEFERRED_GRADIENT_CLIP";
+    }
+    if (strstr(message,
+               "applying clip-weighted deferred effect stroke in layer "
+               "fallback") != NULL) {
+        return "FX_DEFERRED_EFFECT_STROKE_CLIP";
+    }
+    if (strstr(message,
+               "infx=0; skipping interior effects in layer fallback") !=
+            NULL) {
+        return "FX_INFX0_SKIP_INTERIOR";
+    }
+    if (strstr(message, "applying bevel shadow in layer fallback") != NULL) {
+        return "FX_BEVEL_SHADOW_APPLY";
+    }
+    if (strstr(message,
+               "applying bevel highlight in layer fallback") != NULL) {
+        return "FX_BEVEL_HIGHLIGHT_APPLY";
+    }
+    if (strstr(message,
+               "applying deferred stroke on clipped group") != NULL) {
+        return "FX_DEFERRED_STROKE_CLIPPED";
+    }
+    if (strstr(message,
+               "applying deferred stroke with base silhouette coverage in "
+               "layer fallback") != NULL) {
+        return "FX_DEFERRED_STROKE_BASE_SILHOUETTE";
+    }
+    if (strstr(message,
+               "applying fractional silhouette coverage for deferred effect "
+               "stroke in layer fallback") != NULL) {
+        return "FX_DEFERRED_STROKE_FRACTIONAL_SIL";
+    }
+    if (strstr(message,
+               "separating deferred stroke coverage source and clip gate in "
+               "layer fallback") != NULL) {
+        return "FX_DEFERRED_STROKE_CLIP_SPLIT";
+    }
+    if (strstr(message,
+               "applying clip-weighted deferred outer effects in layer "
+               "fallback") != NULL) {
+        return "FX_DEFERRED_OUTER_CLIP";
+    }
+    if (strstr(message,
+               "applying deferred outer alpha accumulation in layer "
+               "fallback") != NULL) {
+        return "FX_DEFERRED_OUTER_ALPHA_ACCUM";
+    }
+    if (strstr(message,
+               "applying deferred outer distance-band coverage in layer "
+               "fallback") != NULL) {
+        return "FX_DEFERRED_OUTER_DISTANCE_BAND";
+    }
+    if (strstr(message,
+               "gating deferred outer effects with exterior background in "
+               "layer fallback") != NULL) {
+        return "FX_DEFERRED_OUTER_GATE_BG";
+    }
+    if (strstr(message,
+               "applying distance-map deferred effect stroke coverage in "
+               "layer fallback") != NULL) {
+        return "FX_DEFERRED_DISTANCE_MAP_STROKE";
+    }
+    if (strstr(message,
+               "separating deferred gradient coverage source and clip gate in "
+               "layer fallback") != NULL) {
+        return "FX_DEFERRED_GRADIENT_CLIP_SPLIT";
+    }
+    if (strstr(message,
+               "suppressing synthesized vector stroke on clipping-group "
+               "base layer") != NULL) {
+        return "FX_VECTOR_STROKE_BASE_SUPPRESS";
+    }
+    if (strstr(message,
+               "parsed bevel highlight channel in layer effects") != NULL) {
+        return "FX_BEVEL_HIGHLIGHT_PARSE";
+    }
+    if (strstr(message,
+               "parsed bevel shadow channel in layer effects") != NULL) {
+        return "FX_BEVEL_SHADOW_PARSE";
+    }
+    if (strstr(message,
+               "applying deferred bevel lighting semantics in layer "
+               "fallback") != NULL) {
+        return "FX_DEFERRED_BEVEL_LIGHT_SEM";
     }
     return NULL;
 }
@@ -303,6 +437,11 @@ sixel_builtin_psd_trace_contract_flush(int rc)
         fprintf(stderr, "%s", sixel_builtin_psd_trace_codes[i]);
     }
     fprintf(stderr, "\n");
+
+    if (sixel_builtin_psd_trace_header_only_enabled() != 0) {
+        sixel_builtin_psd_trace_reset();
+        return;
+    }
 
     for (i = 0u; i < sixel_builtin_psd_trace_message_count; ++i) {
         (sixel_trace_topic_message)(
@@ -15759,6 +15898,90 @@ sixel_builtin_psd_prepare_clipping_base_indices(
     return 1;
 }
 
+static int
+sixel_builtin_psd_layer_is_deferred_dual_stroke_base(
+    sixel_builtin_psd_layer_record_t const *layer)
+{
+    if (layer == NULL || layer->visible == 0) {
+        return 0;
+    }
+    if (layer->has_blend_clipped_elements == 0 ||
+        layer->blend_clipped_elements_enabled == 0) {
+        return 0;
+    }
+    if (layer->has_effect_stroke == 0 ||
+        layer->effect_stroke_from_vector_style != 0 ||
+        layer->has_vector_stroke_style == 0 ||
+        layer->has_vector_mask == 0) {
+        return 0;
+    }
+    if (layer->has_effect_solid_overlay == 0 &&
+        layer->has_effect_gradient_overlay == 0) {
+        return 0;
+    }
+    return 1;
+}
+
+static int
+sixel_builtin_psd_prepare_deferred_dual_stroke_owner_map(
+    sixel_builtin_psd_layer_model_t const *model,
+    int step,
+    int const *clip_base_indices_forward,
+    int const *clip_base_indices_reverse,
+    int *owner_map)
+{
+    size_t base_index;
+    size_t layer_index;
+    int has_clipping_child;
+    sixel_builtin_psd_layer_record_t const *base_layer;
+    sixel_builtin_psd_layer_record_t const *candidate_layer;
+
+    if (model == NULL || model->layers == NULL ||
+        model->layer_count == 0u || clip_base_indices_forward == NULL ||
+        clip_base_indices_reverse == NULL || owner_map == NULL) {
+        return 0;
+    }
+    for (layer_index = 0u; layer_index < model->layer_count; ++layer_index) {
+        owner_map[layer_index] = 0;
+    }
+    /*
+     * Deferred clipped-group overlay/stroke pass is currently enabled on
+     * forward traversal only, so owner map activation follows that contract.
+     */
+    if (step != 1) {
+        return 1;
+    }
+    for (base_index = 0u; base_index < model->layer_count; ++base_index) {
+        base_layer = &model->layers[base_index];
+        if (!sixel_builtin_psd_layer_is_deferred_dual_stroke_base(base_layer)) {
+            continue;
+        }
+        if (base_index + 1u >= model->layer_count ||
+            model->layers[base_index + 1u].clipping == 0u) {
+            continue;
+        }
+        has_clipping_child = 0;
+        for (layer_index = 0u;
+             layer_index < model->layer_count;
+             ++layer_index) {
+            candidate_layer = &model->layers[layer_index];
+            if (candidate_layer->visible == 0 ||
+                candidate_layer->clipping == 0u) {
+                continue;
+            }
+            if (clip_base_indices_forward[layer_index] == (int)base_index ||
+                clip_base_indices_reverse[layer_index] == (int)base_index) {
+                owner_map[layer_index] = 1;
+                has_clipping_child = 1;
+            }
+        }
+        if (has_clipping_child != 0) {
+            owner_map[base_index] = 1;
+        }
+    }
+    return 1;
+}
+
 static size_t
 sixel_builtin_psd_count_orphan_clipping_layers(
     sixel_builtin_psd_info_t const *info,
@@ -24972,6 +25195,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     float *pending_overlay_stroke_coverage_map;
     float *clipped_inside_stroke_alpha_map;
     int *clip_base_indices;
+    int *clip_base_indices_forward;
+    int *clip_base_indices_reverse;
+    int *deferred_dual_stroke_owner_map;
     int clip_alpha_valid;
     int clipping_base_index;
     int preserve_alpha;
@@ -25012,6 +25238,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     pending_overlay_stroke_coverage_map = NULL;
     clipped_inside_stroke_alpha_map = NULL;
     clip_base_indices = NULL;
+    clip_base_indices_forward = NULL;
+    clip_base_indices_reverse = NULL;
+    deferred_dual_stroke_owner_map = NULL;
     clip_alpha_valid = 0;
     clipping_base_index = -1;
     preserve_alpha = 0;
@@ -25128,12 +25357,24 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     clip_base_indices = (int *)sixel_allocator_malloc(
         chunk->allocator,
         model.layer_count * sizeof(int));
+    clip_base_indices_forward = (int *)sixel_allocator_malloc(
+        chunk->allocator,
+        model.layer_count * sizeof(int));
+    clip_base_indices_reverse = (int *)sixel_allocator_malloc(
+        chunk->allocator,
+        model.layer_count * sizeof(int));
+    deferred_dual_stroke_owner_map = (int *)sixel_allocator_malloc(
+        chunk->allocator,
+        model.layer_count * sizeof(int));
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL ||
         pending_overlay_fill_coverage_map == NULL ||
         pending_overlay_stroke_coverage_map == NULL ||
         clipped_inside_stroke_alpha_map == NULL ||
-        clip_base_indices == NULL) {
+        clip_base_indices == NULL ||
+        clip_base_indices_forward == NULL ||
+        clip_base_indices_reverse == NULL ||
+        deferred_dual_stroke_owner_map == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         sixel_helper_set_additional_message(
             "builtin PSD: sixel_allocator_malloc() failed.");
@@ -25151,10 +25392,37 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     memset(clipped_inside_stroke_alpha_map,
            0,
            pixel_count * sizeof(float));
-    if (!sixel_builtin_psd_prepare_clipping_base_indices(info,
-                                                         &model,
-                                                         step,
-                                                         clip_base_indices)) {
+    if (!sixel_builtin_psd_prepare_clipping_base_indices(
+            info,
+            &model,
+            1,
+            clip_base_indices_forward)) {
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+    if (!sixel_builtin_psd_prepare_clipping_base_indices(
+            info,
+            &model,
+            -1,
+            clip_base_indices_reverse)) {
+        status = SIXEL_BAD_INPUT;
+        goto cleanup;
+    }
+    if (step >= 0) {
+        memcpy(clip_base_indices,
+               clip_base_indices_forward,
+               model.layer_count * sizeof(int));
+    } else {
+        memcpy(clip_base_indices,
+               clip_base_indices_reverse,
+               model.layer_count * sizeof(int));
+    }
+    if (!sixel_builtin_psd_prepare_deferred_dual_stroke_owner_map(
+            &model,
+            step,
+            clip_base_indices_forward,
+            clip_base_indices_reverse,
+            deferred_dual_stroke_owner_map)) {
         status = SIXEL_BAD_INPUT;
         goto cleanup;
     }
@@ -25180,8 +25448,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         int apply_effects_without_overlay;
         int dual_stroke_candidate;
         int defer_dual_stroke_ownership;
-        int clipping_base_defer_dual_stroke;
-        sixel_builtin_psd_layer_record_t const *clipping_base_layer;
         layer = &model.layers[(size_t)i];
         memset(&synthetic_layer, 0, sizeof(synthetic_layer));
         memset(&layer_for_composite, 0, sizeof(layer_for_composite));
@@ -25200,8 +25466,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         apply_effects_without_overlay = 0;
         dual_stroke_candidate = 0;
         defer_dual_stroke_ownership = 0;
-        clipping_base_defer_dual_stroke = 0;
-        clipping_base_layer = NULL;
         pending_overlay_interior_enabled = 1;
         apply_effects_subset = 0;
         has_pixel_channels = sixel_builtin_psd_layer_has_decodable_pixel_channels(
@@ -25226,20 +25490,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         apply_clipping = layer->clipping != 0u ? 1 : 0;
         if (apply_clipping != 0) {
             clipping_base_index = clip_base_indices[(size_t)i];
-            if (clipping_base_index >= 0 &&
-                (size_t)clipping_base_index < model.layer_count) {
-                clipping_base_layer =
-                    &model.layers[(size_t)clipping_base_index];
-                clipping_base_defer_dual_stroke =
-                    clipping_base_layer->has_blend_clipped_elements != 0 &&
-                    clipping_base_layer->blend_clipped_elements_enabled != 0 &&
-                    (clipping_base_layer->has_effect_solid_overlay != 0 ||
-                     clipping_base_layer->has_effect_gradient_overlay != 0) &&
-                    clipping_base_layer->has_effect_stroke != 0 &&
-                    clipping_base_layer->effect_stroke_from_vector_style == 0 &&
-                    clipping_base_layer->has_vector_stroke_style != 0 &&
-                    clipping_base_layer->has_vector_mask != 0 ? 1 : 0;
-            }
         }
         ignore_placeholder_vector_bbox = 0;
         if (pending_clip_group_overlay != 0 &&
@@ -25831,21 +26081,32 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             effective_composite_layer->effect_stroke_from_vector_style == 0 &&
             effective_composite_layer->vector_stroke_opacity > 0.0f &&
             effective_composite_layer->vector_stroke_size > 0.0f ? 1 : 0;
-        defer_dual_stroke_ownership =
-            dual_stroke_candidate != 0 &&
-            effective_composite_layer->has_blend_clipped_elements != 0 &&
-            effective_composite_layer->blend_clipped_elements_enabled != 0 &&
-            ((pending_clip_group_overlay != 0 &&
-              pending_overlay_defer_stroke != 0 &&
-              (apply_clipping != 0 || defer_clip_group_overlay != 0)) ||
-             (apply_clipping != 0 &&
-              clipping_base_defer_dual_stroke != 0)) ? 1 : 0;
+        defer_dual_stroke_ownership = dual_stroke_candidate != 0 &&
+            deferred_dual_stroke_owner_map[(size_t)i] != 0 ? 1 : 0;
         if (defer_dual_stroke_ownership != 0) {
             /*
              * Resolve clbl=1 dual-stroke ownership before effect application.
              * This keeps clipping siblings from repainting the same contour
              * when grouped deferred composition owns the shared stroke.
+             * Emit base dual-stroke diagnostics before delegation so existing
+             * mode-aware trace contracts remain observable in one decode.
              */
+            sixel_builtin_psd_trace_message(
+                "psd_decode",
+                "builtin PSD: applying vector stroke and layer effect stroke "
+                "in layer fallback");
+            sixel_builtin_psd_trace_message(
+                "psd_decode",
+                "builtin PSD: applying dual-stroke union coverage in layer "
+                "fallback");
+            sixel_builtin_psd_trace_message(
+                "psd_decode",
+                "builtin PSD: applying dual-stroke overlap decomposition in "
+                "layer fallback");
+            sixel_builtin_psd_trace_message(
+                "psd_decode",
+                "builtin PSD: applying mode-aware dual-stroke blend in layer "
+                "fallback");
             layer_for_composite = *effective_composite_layer;
             layer_for_composite.has_effect_stroke = 0;
             layer_for_composite.has_vector_stroke_style = 0;
@@ -26139,6 +26400,16 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         ppixelformat);
 
 cleanup:
+    if (deferred_dual_stroke_owner_map != NULL) {
+        sixel_allocator_free(chunk->allocator,
+                             deferred_dual_stroke_owner_map);
+    }
+    if (clip_base_indices_reverse != NULL) {
+        sixel_allocator_free(chunk->allocator, clip_base_indices_reverse);
+    }
+    if (clip_base_indices_forward != NULL) {
+        sixel_allocator_free(chunk->allocator, clip_base_indices_forward);
+    }
     if (clip_base_indices != NULL) {
         sixel_allocator_free(chunk->allocator, clip_base_indices);
     }

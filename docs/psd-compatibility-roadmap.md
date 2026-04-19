@@ -67,7 +67,9 @@ Key points used by this roadmap:
   - clbl=1 dual-stroke ownership is now resolved before base-layer effect
     application in missing-composite fallback. When deferred clipped-group
     composition owns `vstk + FrFX`, base passes keep coverage preparation only,
-    and pending deferred state is consumed/cleared after one apply.
+    and pending deferred state is consumed/cleared after one apply. Ownership
+    candidates are precomputed per group from forward/reverse clipping-base
+    maps so deferred delegation no longer depends on transient pending state.
   - `vstk` geometry metadata now tracks join/cap/miter/adjust parameters.
     For `inside` vector strokes, base/deferred coverage paths now branch by
     join semantics (`miter`, `round`, `bevel`) through a shared helper.
