@@ -104,14 +104,21 @@ decoder_create_temp_template_with_prefix(sixel_allocator_t *allocator,
     int needs_separator;
     size_t maximum_tmpdir_len;
 
-    tmpdir = sixel_compat_getenv("TMPDIR");
 #if defined(_WIN32)
-    if (tmpdir == NULL || tmpdir[0] == '\0') {
-        tmpdir = sixel_compat_getenv("TEMP");
-    }
+    /*
+     * MinGW runtimes under Wine can reject host-side TMPDIR values
+     * (for example "/home/..."). Prefer TEMP/TMP first and then
+     * fall back to TMPDIR.
+     */
+    tmpdir = sixel_compat_getenv("TEMP");
     if (tmpdir == NULL || tmpdir[0] == '\0') {
         tmpdir = sixel_compat_getenv("TMP");
     }
+    if (tmpdir == NULL || tmpdir[0] == '\0') {
+        tmpdir = sixel_compat_getenv("TMPDIR");
+    }
+#else
+    tmpdir = sixel_compat_getenv("TMPDIR");
 #endif
     if (tmpdir == NULL || tmpdir[0] == '\0') {
 #if defined(_WIN32)
