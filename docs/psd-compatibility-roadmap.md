@@ -64,6 +64,10 @@ Key points used by this roadmap:
     composition so sibling base passes do not repaint interior overlays.
     PASS trace representatives `1603..1605` lock deferred overlay ownership
     and deferred stroke non-regression behavior.
+  - clbl=1 dual-stroke ownership is now resolved before base-layer effect
+    application in missing-composite fallback. When deferred clipped-group
+    composition owns `vstk + FrFX`, base passes keep coverage preparation only,
+    and pending deferred state is consumed/cleared after one apply.
   - `vstk` geometry metadata now tracks join/cap/miter/adjust parameters.
     For `inside` vector strokes, base/deferred coverage paths now branch by
     join semantics (`miter`, `round`, `bevel`) through a shared helper.
