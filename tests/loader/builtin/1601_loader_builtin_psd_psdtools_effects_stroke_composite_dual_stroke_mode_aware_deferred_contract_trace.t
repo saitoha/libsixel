@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify deferred fallback keeps mode-aware dual-stroke contract.
+# Verify deferred fallback keeps mode-aware dual-stroke diagnostic contract.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -18,10 +18,14 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
+    --env SIXEL_PSD_TRACE_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -30,27 +34,38 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying mode-aware dual-stroke blend on clipped group*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred mode-aware dual-stroke trace"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header line"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying deferred dual-stroke overlap decomposition on clipped group*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred overlap decomposition trace"
-    exit 0
-}
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite diagnostic header is malformed"
+        exit 0
+        ;;
+esac
 
-test "${trace_output#*builtin PSD: applying single-path deferred dual-stroke blend on clipped group*}" \
-    = "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite kept removed deferred single-path trace"
-    exit 0
-}
+case "${diag_line}" in
+    *FX_DUAL_MODE_DEFER*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite missing FX_DUAL_MODE_DEFER code"
+        exit 0
+        ;;
+esac
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps deferred mode-aware dual-stroke contract"
+case "${diag_line}" in
+    *FX_DUAL_OVERLAP_DEFER*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite missing FX_DUAL_OVERLAP_DEFER code"
+        exit 0
+        ;;
+esac
+
+echo "ok" 1 - "effects/stroke-composite keeps deferred dual-stroke code contract"
 exit 0

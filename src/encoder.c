@@ -132,6 +132,8 @@
     "SIXEL_PALETTE_SCENE_CUT_THRESHOLD"
 #define SIXEL_ENCODER_ANIMATION_HIDE_CURSOR_ENVVAR \
     "SIXEL_ANIMATION_HIDE_CURSOR"
+#define SIXEL_ENCODER_PSD_TRACE_ONLY_ENVVAR \
+    "SIXEL_PSD_TRACE_ONLY"
 
 #define SIXEL_QUANTIZE_SCENE_CUT_THRESHOLD_DEFAULT 0.20
 #define SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE 8
@@ -431,6 +433,7 @@ typedef struct sixel_encoder_load_context {
     sixel_output_t *output;
     sixel_encoding_planner_t *planner;
     sixel_allocator_t *allocator;
+    int psd_trace_only;
     sixel_encoder_frame_pipeline_t frame_pipeline;
 } sixel_encoder_load_context_t;
 
@@ -483,6 +486,44 @@ sixel_encoder_should_force_none_lut_for_psd(
         return 0;
     }
     if (encoder->lut_policy != SIXEL_LUT_POLICY_CERTLUT) {
+        return 0;
+    }
+    return sixel_encoder_path_has_extension(path, "psd") ||
+           sixel_encoder_path_has_extension(path, "psb");
+}
+
+static int
+sixel_encoder_envvar_is_enabled(char const *envvar)
+{
+    char const *value;
+
+    value = NULL;
+    if (envvar == NULL) {
+        return 0;
+    }
+
+    value = sixel_compat_getenv(envvar);
+    if (value == NULL) {
+        return 0;
+    }
+    if (value[0] == '1' && value[1] == '\0') {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+sixel_encoder_should_use_psd_trace_only(char const *path)
+{
+    if (path == NULL) {
+        return 0;
+    }
+    if (!sixel_encoder_envvar_is_enabled(
+            SIXEL_ENCODER_PSD_TRACE_ONLY_ENVVAR)) {
+        return 0;
+    }
+    if (!sixel_trace_topic_is_enabled("psd_decode")) {
         return 0;
     }
     return sixel_encoder_path_has_extension(path, "psd") ||
@@ -12633,6 +12674,14 @@ load_image_callback(sixel_frame_t *frame, void *data)
         encoder->capture_source_frame = frame;
     }
 
+    if (context->psd_trace_only != 0) {
+        /*
+         * PSD trace-only mode keeps loader-side diagnostics but skips frame
+         * encoding and output generation to reduce per-test runtime.
+         */
+        return SIXEL_OK;
+    }
+
     status = sixel_encoder_load_callback_resolve_handoff(pipeline,
                                                           planner,
                                                           encoder,
@@ -13397,6 +13446,7 @@ sixel_encoder_encode(
     int saved_errno;
     int saved_lut_policy;
     int force_none_lut_for_psd;
+    int psd_trace_only;
 
     clipboard_input_format[0] = '\0';
     clipboard_input_path = NULL;
@@ -13415,6 +13465,7 @@ sixel_encoder_encode(
     saved_errno = 0;
     saved_lut_policy = SIXEL_LUT_POLICY_AUTO;
     force_none_lut_for_psd = 0;
+    psd_trace_only = 0;
     memset(&load_context, 0, sizeof(load_context));
     sixel_logger_init(&logger);
     sixel_logger_prepare_env(&logger);
@@ -13534,6 +13585,9 @@ sixel_encoder_encode(
                                     ? effective_filename
                                     : "(null)");
     }
+    psd_trace_only = sixel_encoder_should_use_psd_trace_only(
+        effective_filename);
+    load_context.psd_trace_only = psd_trace_only;
 
     if (encoder->output_is_png) {
         sixel_encoder_log_stage(encoder,
@@ -13866,6 +13920,21 @@ load_end:
     }
 
     if (status != SIXEL_OK) {
+        goto end;
+    }
+
+    if (psd_trace_only != 0 &&
+        encoder->output_is_png == 0 &&
+        encoder->clipboard_output_active == 0 &&
+        encoder->pipe_mode == 0) {
+        sixel_encoder_log_stage(
+            encoder,
+            NULL,
+            "main",
+            "encoder",
+            "psd_trace_only_done",
+            "source=%s",
+            effective_filename != NULL ? effective_filename : "(null)");
         goto end;
     }
 

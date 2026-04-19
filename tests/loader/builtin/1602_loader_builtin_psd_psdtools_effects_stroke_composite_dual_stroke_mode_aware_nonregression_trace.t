@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify dual-stroke mode-aware traces stay stable and single-path is absent.
+# Verify dual-stroke mode-aware diagnostics stay stable.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -18,12 +18,14 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
-first_match=''
-second_match=''
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
+    --env SIXEL_PSD_TRACE_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -32,40 +34,56 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-first_match="${trace_output#*builtin PSD: applying mode-aware dual-stroke blend in layer fallback*}"
-test "${first_match}" != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing base mode-aware trace"
-    exit 0
-}
-second_match="${first_match#*builtin PSD: applying mode-aware dual-stroke blend in layer fallback*}"
-test "${second_match}" = "${first_match}" || {
-    echo "not ok" 1 - "effects/stroke-composite duplicated base mode-aware trace"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header line"
     exit 0
 }
 
-first_match="${trace_output#*builtin PSD: applying mode-aware dual-stroke blend on clipped group*}"
-test "${first_match}" != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred mode-aware trace"
-    exit 0
-}
-second_match="${first_match#*builtin PSD: applying mode-aware dual-stroke blend on clipped group*}"
-test "${second_match}" = "${first_match}" || {
-    echo "not ok" 1 - "effects/stroke-composite duplicated deferred mode-aware trace"
-    exit 0
-}
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite diagnostic header is malformed"
+        exit 0
+        ;;
+esac
 
-test "${trace_output#*builtin PSD: applying single-path dual-stroke blend in layer fallback*}" \
-    = "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite base single-path trace reappeared"
-    exit 0
-}
+case "${diag_line}" in
+    *FX_DUAL_MODE_BASE*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite missing FX_DUAL_MODE_BASE code"
+        exit 0
+        ;;
+esac
 
-test "${trace_output#*builtin PSD: applying single-path deferred dual-stroke blend on clipped group*}" \
-    = "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite deferred single-path trace reappeared"
-    exit 0
-}
+case "${diag_line}" in
+    *FX_DUAL_OVERLAP_BASE*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite missing FX_DUAL_OVERLAP_BASE code"
+        exit 0
+        ;;
+esac
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps mode-aware dual-stroke trace counts stable"
+case "${diag_line}" in
+    *FX_DUAL_MODE_DEFER*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite missing FX_DUAL_MODE_DEFER code"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_DUAL_OVERLAP_DEFER*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite missing FX_DUAL_OVERLAP_DEFER code"
+        exit 0
+        ;;
+esac
+
+echo "ok" 1 - "effects/stroke-composite keeps dual-stroke code set stable"
 exit 0

@@ -32,6 +32,7 @@ command_status=0
 
 trace_output_off=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
+    --env SIXEL_PSD_TRACE_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd_off}" 2>&1) || \
     command_status=$?
 
@@ -49,6 +50,7 @@ test "${trace_output_off#*builtin PSD: applying deferred stroke-adjusted vector 
 command_status=0
 trace_output_on=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
+    --env SIXEL_PSD_TRACE_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd_on}" 2>&1) || \
     command_status=$?
 

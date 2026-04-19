@@ -26,7 +26,6 @@ lsqa_msg=''
 command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env SIXEL_TRACE_TOPIC=psd_decode \
     --bgcolor="#000000" \
     -Lbuiltin:e=auto! -o "${output_sixel}" "${input_psd}" 2>&1) || command_status=$?
 : "${trace_output}"

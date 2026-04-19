@@ -212,6 +212,35 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
                "in layer fallback") != NULL) {
         return "FX_DEFERRED_SOLID_CLIP_SPLIT";
     }
+    if (strstr(message,
+               "applying mode-aware dual-stroke blend in layer fallback") !=
+            NULL) {
+        return "FX_DUAL_MODE_BASE";
+    }
+    if (strstr(message,
+               "applying dual-stroke overlap decomposition in layer fallback")
+            != NULL) {
+        return "FX_DUAL_OVERLAP_BASE";
+    }
+    if (strstr(message,
+               "applying mode-aware dual-stroke blend on clipped group") !=
+            NULL) {
+        return "FX_DUAL_MODE_DEFER";
+    }
+    if (strstr(message,
+               "applying deferred dual-stroke overlap decomposition "
+               "on clipped group") != NULL) {
+        return "FX_DUAL_OVERLAP_DEFER";
+    }
+    if (strstr(message, "applying solid overlay effect in layer fallback") !=
+            NULL) {
+        return "FX_SOLID_OVERLAY_BASE";
+    }
+    if (strstr(message,
+               "suppressing clbl=1 deferred base solid/gradient overlays") !=
+            NULL) {
+        return "FX_CLBL1_BASE_OVERLAY_SUPPRESS";
+    }
     return NULL;
 }
 
