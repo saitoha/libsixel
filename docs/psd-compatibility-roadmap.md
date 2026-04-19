@@ -44,7 +44,7 @@ Key points used by this roadmap:
     amplification.
   - stroke-composite trace tests avoid xtrace expansion of captured trace text
     and route decode output to `/dev/null` when image bytes are not asserted.
-- Deferred clbl=1 overlay/stroke coverage policy:
+  - Deferred clbl=1 overlay/stroke coverage policy:
   - deferred `SoFi/GrFl` now sample coverage from a dedicated base-silhouette
     fill-coverage map, while deferred `FrFX/vstk` continue to use
     stroke-coverage maps; clip gating remains shared through `clip_alpha_map`.
@@ -60,6 +60,10 @@ Key points used by this roadmap:
       and the transient single-path/max-alpha wording is retired.
     PASS trace representatives `1589..1596` and `1600..1602` lock the
     mode-aware contracts and non-regression behavior.
+  - clbl=1 clipping siblings now keep SoFi/GrFl ownership in deferred group
+    composition so sibling base passes do not repaint interior overlays.
+    PASS trace representatives `1603..1605` lock deferred overlay ownership
+    and deferred stroke non-regression behavior.
   - `vstk` geometry metadata now tracks join/cap/miter/adjust parameters.
     For `inside` vector strokes, base/deferred coverage paths now branch by
     join semantics (`miter`, `round`, `bevel`) through a shared helper.
