@@ -750,10 +750,10 @@ test_run_swap_update_consistency_case(void)
     unsigned char *palette_incremental;
     unsigned int ncolors_full;
     unsigned int ncolors_incremental;
-    unsigned int iter_cases[2];
-    unsigned int topk_cases[2];
-    unsigned int restart_cases[2];
-    uint32_t seed_cases[2];
+    unsigned int iter_cases[3];
+    unsigned int topk_cases[3];
+    unsigned int restart_cases[3];
+    uint32_t seed_cases[3];
     unsigned int case_index;
     int ok;
 
@@ -764,12 +764,16 @@ test_run_swap_update_consistency_case(void)
     ncolors_incremental = 0u;
     iter_cases[0] = 16u;
     iter_cases[1] = 48u;
+    iter_cases[2] = 64u;
     topk_cases[0] = 4u;
     topk_cases[1] = 8u;
+    topk_cases[2] = 12u;
     restart_cases[0] = 1u;
     restart_cases[1] = 2u;
+    restart_cases[2] = 3u;
     seed_cases[0] = 7u;
     seed_cases[1] = 29u;
+    seed_cases[2] = 61u;
     case_index = 0u;
     ok = 0;
 
@@ -778,7 +782,7 @@ test_run_swap_update_consistency_case(void)
     }
 
     test_fill_seed_pixels(pixels, TEST_SWAP_PIXELS);
-    for (case_index = 0u; case_index < 2u; ++case_index) {
+    for (case_index = 0u; case_index < 3u; ++case_index) {
         if (!test_build_kcenter_palette_with_options(
                 pixels,
                 TEST_SWAP_WIDTH,
