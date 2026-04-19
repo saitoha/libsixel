@@ -23779,12 +23779,12 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             float vector_stroke_outside_coverage;
             float vector_stroke_inside_coverage;
             float vector_stroke_outer_coverage;
-            float vector_stroke_alpha;
-            float vector_stroke_outer_alpha;
+            float vector_stroke_alpha = 0.0f;
+            float vector_stroke_outer_alpha = 0.0f;
             float final_stroke_alpha;
             float final_stroke_outer_alpha;
-            float union_stroke_alpha;
-            float union_stroke_outer_alpha;
+            float union_stroke_alpha = 0.0f;
+            float union_stroke_outer_alpha = 0.0f;
             float base_alpha;
             float base_r;
             float base_g;
@@ -24391,6 +24391,10 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                 base_g = 0.0f;
                 base_b = 0.0f;
             }
+            /*
+             * Keep dual-stroke alphas initialized when dual stroke is not
+             * active so strict analyzers do not report false reads.
+             */
             if (apply_dual_stroke != 0 &&
                 vector_stroke_alpha > 0.0f &&
                 effective_stroke_alpha > 0.0f) {
