@@ -46,6 +46,33 @@ typedef enum sixel_kcenter_algo {
     SIXEL_PALETTE_KCENTER_ALGO_HYBRID,
 } sixel_kcenter_algo_t;
 
+typedef enum sixel_kcenter_profile {
+    SIXEL_PALETTE_KCENTER_PROFILE_LEGACY = 0,
+    SIXEL_PALETTE_KCENTER_PROFILE_SPEED,
+    SIXEL_PALETTE_KCENTER_PROFILE_BALANCE,
+    SIXEL_PALETTE_KCENTER_PROFILE_QUALITY,
+} sixel_kcenter_profile_t;
+
+typedef enum sixel_kcenter_auto_policy {
+    SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY = 0,
+    SIXEL_PALETTE_KCENTER_AUTO_POLICY_ADAPTIVE,
+} sixel_kcenter_auto_policy_t;
+
+typedef enum sixel_kcenter_candidate_policy {
+    SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY = 0,
+    SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_HYBRID,
+} sixel_kcenter_candidate_policy_t;
+
+typedef enum sixel_kcenter_budget_policy {
+    SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY = 0,
+    SIXEL_PALETTE_KCENTER_BUDGET_POLICY_ADAPTIVE,
+} sixel_kcenter_budget_policy_t;
+
+typedef enum sixel_kcenter_swap_update {
+    SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL = 0,
+    SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL,
+} sixel_kcenter_swap_update_t;
+
 SIXELSTATUS
 sixel_palette_build_kcenter(sixel_palette_t *palette,
                             unsigned char const *data,
@@ -74,6 +101,13 @@ sixel_set_kcenter_algo_override(int enabled,
 
 SIXEL_INTERNAL_API sixel_kcenter_algo_t
 sixel_get_kcenter_algo(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_profile_override(int enabled,
+                                   sixel_kcenter_profile_t profile);
+
+SIXEL_INTERNAL_API sixel_kcenter_profile_t
+sixel_get_kcenter_profile(void);
 
 SIXEL_INTERNAL_API void
 sixel_set_kcenter_seed_override(int enabled,
@@ -116,6 +150,75 @@ sixel_set_kcenter_prune_mass_override(int enabled,
 
 SIXEL_INTERNAL_API double
 sixel_get_kcenter_prune_mass(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_auto_policy_override(
+    int enabled,
+    sixel_kcenter_auto_policy_t policy);
+
+SIXEL_INTERNAL_API sixel_kcenter_auto_policy_t
+sixel_get_kcenter_auto_policy(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_auto_fft_threshold_override(
+    int enabled,
+    unsigned int threshold);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kcenter_auto_fft_threshold(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_candidate_policy_override(
+    int enabled,
+    sixel_kcenter_candidate_policy_t policy);
+
+SIXEL_INTERNAL_API sixel_kcenter_candidate_policy_t
+sixel_get_kcenter_candidate_policy(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_rare_keep_override(int enabled,
+                                     unsigned int rare_keep);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kcenter_rare_keep(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_budget_policy_override(
+    int enabled,
+    sixel_kcenter_budget_policy_t policy);
+
+SIXEL_INTERNAL_API sixel_kcenter_budget_policy_t
+sixel_get_kcenter_budget_policy(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_budget_scale_override(int enabled,
+                                        double budget_scale);
+
+SIXEL_INTERNAL_API double
+sixel_get_kcenter_budget_scale(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_swap_topk_override(int enabled,
+                                     unsigned int swap_topk);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kcenter_swap_topk(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_swap_update_override(
+    int enabled,
+    sixel_kcenter_swap_update_t swap_update);
+
+SIXEL_INTERNAL_API sixel_kcenter_swap_update_t
+sixel_get_kcenter_swap_update(void);
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_swap_patience_override(
+    int enabled,
+    unsigned int swap_patience);
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kcenter_swap_patience(void);
 
 #ifdef __cplusplus
 }

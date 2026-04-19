@@ -584,6 +584,27 @@ _quantizemodel() {
                      "${prefix}${key}=swap" \
                      "${prefix}${key}=hybrid"
           return 0
+        elif [[ ${key} == profile ]]; then
+          compadd -- "${prefix}${key}=legacy" \
+                     "${prefix}${key}=speed" \
+                     "${prefix}${key}=balance" \
+                     "${prefix}${key}=quality"
+          return 0
+        elif [[ ${key} == auto_policy ]]; then
+          compadd -- "${prefix}${key}=legacy" \
+                     "${prefix}${key}=adaptive"
+          return 0
+        elif [[ ${key} == auto_fft_threshold ]]; then
+          compadd -- "${prefix}${key}=256" \
+                     "${prefix}${key}=1024" \
+                     "${prefix}${key}=2048" \
+                     "${prefix}${key}=4096" \
+                     "${prefix}${key}=8192"
+          return 0
+        elif [[ ${key} == candidate_policy ]]; then
+          compadd -- "${prefix}${key}=legacy" \
+                     "${prefix}${key}=hybrid"
+          return 0
         elif [[ ${key} == s || ${key} == seed ]]; then
           compadd -- "${prefix}${key}=1" \
                      "${prefix}${key}=7" \
@@ -619,12 +640,51 @@ _quantizemodel() {
                      "${prefix}${key}=4096" \
                      "${prefix}${key}=16384"
           return 0
+        elif [[ ${key} == rare_keep ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=16" \
+                     "${prefix}${key}=64" \
+                     "${prefix}${key}=128" \
+                     "${prefix}${key}=256" \
+                     "${prefix}${key}=512" \
+                     "${prefix}${key}=1024" \
+                     "${prefix}${key}=2048"
+          return 0
         elif [[ ${key} == prune_mass ]]; then
           compadd -- "${prefix}${key}=0.900" \
                      "${prefix}${key}=0.950" \
                      "${prefix}${key}=0.980" \
                      "${prefix}${key}=0.995" \
                      "${prefix}${key}=1.000"
+          return 0
+        elif [[ ${key} == budget_policy ]]; then
+          compadd -- "${prefix}${key}=legacy" \
+                     "${prefix}${key}=adaptive"
+          return 0
+        elif [[ ${key} == budget_scale ]]; then
+          compadd -- "${prefix}${key}=0.50" \
+                     "${prefix}${key}=0.80" \
+                     "${prefix}${key}=1.00" \
+                     "${prefix}${key}=1.25" \
+                     "${prefix}${key}=1.40"
+          return 0
+        elif [[ ${key} == swap_topk ]]; then
+          compadd -- "${prefix}${key}=1" \
+                     "${prefix}${key}=2" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=8" \
+                     "${prefix}${key}=16"
+          return 0
+        elif [[ ${key} == swap_update ]]; then
+          compadd -- "${prefix}${key}=full" \
+                     "${prefix}${key}=incremental"
+          return 0
+        elif [[ ${key} == swap_patience ]]; then
+          compadd -- "${prefix}${key}=0" \
+                     "${prefix}${key}=1" \
+                     "${prefix}${key}=2" \
+                     "${prefix}${key}=4" \
+                     "${prefix}${key}=8"
           return 0
         elif [[ ${key} == animation_mode ]]; then
           compadd -- "${prefix}${key}=0" \
@@ -657,12 +717,22 @@ _quantizemodel() {
       else
         prefix=${current%${segment}}
         compadd -- "${prefix}a=" "${prefix}algo=" \
+                   "${prefix}profile=" \
+                   "${prefix}auto_policy=" \
+                   "${prefix}auto_fft_threshold=" \
+                   "${prefix}candidate_policy=" \
                    "${prefix}s=" "${prefix}seed=" \
                    "${prefix}restarts=" \
                    "${prefix}iter=" \
                    "${prefix}histbits=" \
                    "${prefix}point_budget=" \
+                   "${prefix}rare_keep=" \
                    "${prefix}prune_mass=" \
+                   "${prefix}budget_policy=" \
+                   "${prefix}budget_scale=" \
+                   "${prefix}swap_topk=" \
+                   "${prefix}swap_update=" \
+                   "${prefix}swap_patience=" \
                    "${prefix}animation_mode=" \
                    "${prefix}scene_cut_threshold=" \
                    "${prefix}g=" \

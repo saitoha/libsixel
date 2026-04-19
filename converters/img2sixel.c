@@ -311,13 +311,40 @@ static cli_option_help_t const g_option_help_table[] = {
         "              fft    -> Gonzalez farthest-first traversal\n"
         "              swap   -> local swap refinement from random seeds\n"
         "              hybrid -> fft initialization + swap refinement\n"
+        "          :profile=NAME choose center preset:\n"
+        "              legacy  -> compatibility defaults\n"
+        "              speed   -> faster adaptive preset\n"
+        "              balance -> balanced adaptive preset\n"
+        "              quality -> quality-first adaptive preset\n"
+        "          :auto_policy=NAME choose auto algo policy:\n"
+        "              legacy -> historical quality/point-count split\n"
+        "              adaptive -> threshold-based adaptive split\n"
+        "          :auto_fft_threshold=COUNT adaptive auto threshold (256-65536,\n"
+        "          default 2048).\n"
+        "          :candidate_policy=NAME choose candidate collector:\n"
+        "              legacy -> frequency-ranked histogram bins\n"
+        "              hybrid -> frequency + dispersion + rare bins\n"
         "          :seed=VALUE (:s=VALUE) uint32 random seed (0-4294967295, default 1).\n"
         "          :restarts=COUNT restart count (1-32, default 1).\n"
         "          :iter=COUNT swap iteration cap (1-64, default 16).\n"
         "          :histbits=BITS histogram bits/channel (3-6, default 5).\n"
         "          :point_budget=COUNT candidate cap (0 or 64-16384, default 0=auto).\n"
+        "          :rare_keep=COUNT preserve rare bins after mass pruning\n"
+        "          (0 or 1-2048, default 0).\n"
         "          :prune_mass=RATIO retain cumulative mass (0.900-1.000,\n"
         "          default 0.995).\n"
+        "          :budget_policy=NAME choose auto point-budget policy:\n"
+        "              legacy -> historical reqcolors scaling\n"
+        "              adaptive -> visible/active-count adaptive scaling\n"
+        "          :budget_scale=VALUE budget multiplier (0.25-4.00,\n"
+        "          default 1.0).\n"
+        "          :swap_topk=COUNT evaluate top-k farthest candidates per\n"
+        "          swap iteration (1-16, default 1).\n"
+        "          :swap_update=NAME choose swap update path:\n"
+        "              full -> full assignment recomputation\n"
+        "              incremental -> nearest/second-nearest cache reuse\n"
+        "          :swap_patience=COUNT stop after this many non-improving\n"
+        "          swap iterations (0 or 1-8, default 0).\n"
         "          :animation_mode=0|1 default 0\n"
         "          :scene_cut_threshold=VALUE 0.0-1.0 default 0.20\n"
         "          :merge=MODE (:g=MODE) auto, none, ward\n"
@@ -1471,9 +1498,29 @@ static cli_env_help_t const g_env_help_table[] = {
         "Accepts auto, fft, swap, or hybrid."
     },
     {
+        "SIXEL_PALETTE_KCENTER_PROFILE",
+        "default k-center preset when -Q center omits :profile.\n"
+        "Accepts legacy, speed, balance, or quality."
+    },
+    {
         "SIXEL_PALETTE_KCENTER_SEED",
         "default uint32 random seed for k-center stochastic paths.\n"
         "Accepts 0-4294967295."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_AUTO_POLICY",
+        "default k-center auto algorithm policy.\n"
+        "Accepts legacy or adaptive."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_AUTO_FFT_THRESHOLD",
+        "adaptive auto split threshold for selecting fft vs hybrid.\n"
+        "Accepts 256-65536, default 2048."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY",
+        "default candidate collector for k-center preprocessing.\n"
+        "Accepts legacy or hybrid."
     },
     {
         "SIXEL_PALETTE_KCENTER_RESTARTS",
@@ -1494,9 +1541,39 @@ static cli_env_help_t const g_env_help_table[] = {
         "Accepts 0 or 64-16384. 0 keeps the internal auto budget."
     },
     {
+        "SIXEL_PALETTE_KCENTER_RARE_KEEP",
+        "preserve low-frequency bins after k-center mass pruning.\n"
+        "Accepts 0 or 1-2048, default 0."
+    },
+    {
         "SIXEL_PALETTE_KCENTER_PRUNE_MASS",
         "retain cumulative histogram mass before k-center solve.\n"
         "Accepts 0.900-1.000, default 0.995."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_BUDGET_POLICY",
+        "choose auto budget policy for k-center candidate selection.\n"
+        "Accepts legacy or adaptive."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_BUDGET_SCALE",
+        "scale auto-selected k-center point budget.\n"
+        "Accepts 0.25-4.00, default 1.0."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_SWAP_TOPK",
+        "evaluate up to this many farthest-point swap candidates per\n"
+        "iteration in k-center. Accepts 1-16, default 1."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_SWAP_UPDATE",
+        "choose k-center swap update path.\n"
+        "Accepts full or incremental."
+    },
+    {
+        "SIXEL_PALETTE_KCENTER_SWAP_PATIENCE",
+        "stop k-center swap loop after N non-improving iterations.\n"
+        "Accepts 0 or 1-8, default 0."
     },
     {
         "SIXEL_PALETTE_LUMIN_FACTOR_R",

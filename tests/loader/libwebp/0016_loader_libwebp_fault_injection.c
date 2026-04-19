@@ -292,6 +292,7 @@ webpfi_sixel_allocator_malloc(sixel_allocator_t *allocator, size_t nbytes)
 #define sixel_loader_libwebp_load testonly_loader_libwebp_load
 #define sixel_loader_libwebp_name testonly_loader_libwebp_name
 #define sixel_loader_libwebp_new testonly_loader_libwebp_new
+#define loader_can_try_libwebp testonly_loader_can_try_libwebp
 #define sixel_loader_libwebp_placeholder_function \
     testonly_loader_libwebp_placeholder_function
 
@@ -303,6 +304,7 @@ webpfi_sixel_allocator_malloc(sixel_allocator_t *allocator, size_t nbytes)
 #undef sixel_loader_libwebp_load
 #undef sixel_loader_libwebp_name
 #undef sixel_loader_libwebp_new
+#undef loader_can_try_libwebp
 #undef sixel_loader_libwebp_placeholder_function
 
 #undef WebPAnimDecoderOptionsInit

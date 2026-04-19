@@ -118,6 +118,15 @@ Supported k-center suboptions:
 \fBalgo\fP (or short key \fBa\fP): \fBauto\fP, \fBfft\fP, \fBswap\fP,
 or \fBhybrid\fP.
 .br
+\fBprofile\fP: \fBlegacy\fP, \fBspeed\fP, \fBbalance\fP, or
+\fBquality\fP.
+.br
+\fBauto_policy\fP: \fBlegacy\fP or \fBadaptive\fP.
+.br
+\fBauto_fft_threshold\fP: integer value in 256-65536.
+.br
+\fBcandidate_policy\fP: \fBlegacy\fP or \fBhybrid\fP.
+.br
 \fBseed\fP (or short key \fBs\fP): integer value in 0-4294967295.
 .br
 \fBrestarts\fP: integer value in 1-32.
@@ -128,7 +137,19 @@ or \fBhybrid\fP.
 .br
 \fBpoint_budget\fP: 0 or integer value in 64-16384.
 .br
+\fBrare_keep\fP: 0 or integer value in 1-2048.
+.br
 \fBprune_mass\fP: floating value in 0.900-1.000.
+.br
+\fBbudget_policy\fP: \fBlegacy\fP or \fBadaptive\fP.
+.br
+\fBbudget_scale\fP: floating value in 0.25-4.00.
+.br
+\fBswap_topk\fP: integer value in 1-16.
+.br
+\fBswap_update\fP: \fBfull\fP or \fBincremental\fP.
+.br
+\fBswap_patience\fP: 0 or integer value in 1-8.
 .br
 \fBanimation_mode\fP: 0 or 1 (default 0).
 .br
@@ -1444,9 +1465,28 @@ override BanditPAM mini-batch size (8-4096).
 default k-center strategy when \fB-Q center\fP omits \fB:algo\fP. Accepts
 auto, fft, swap, or hybrid.
 .TP 5
+.B SIXEL_PALETTE_KCENTER_PROFILE
+.br
+default k-center preset when \fB-Q center\fP omits \fB:profile\fP. Accepts
+legacy, speed, balance, or quality.
+.TP 5
 .B SIXEL_PALETTE_KCENTER_SEED
 .br
 default random seed for k-center stochastic solvers (0-4294967295).
+.TP 5
+.B SIXEL_PALETTE_KCENTER_AUTO_POLICY
+.br
+default k-center auto algorithm policy. Accepts legacy or adaptive.
+.TP 5
+.B SIXEL_PALETTE_KCENTER_AUTO_FFT_THRESHOLD
+.br
+adaptive auto split threshold for selecting fft vs hybrid (256-65536,
+default 2048).
+.TP 5
+.B SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY
+.br
+default candidate collector for k-center preprocessing. Accepts legacy or
+hybrid.
 .TP 5
 .B SIXEL_PALETTE_KCENTER_RESTARTS
 .br
@@ -1465,10 +1505,38 @@ histogram bits per channel for center preprocessing (3-6, default 5).
 override k-center candidate point cap (0 or 64-16384). A value of 0 keeps the
 internal automatic budget.
 .TP 5
+.B SIXEL_PALETTE_KCENTER_RARE_KEEP
+.br
+preserve low-frequency bins after k-center mass pruning (0 or 1-2048,
+default 0).
+.TP 5
 .B SIXEL_PALETTE_KCENTER_PRUNE_MASS
 .br
 retain cumulative histogram mass before k-center solving (0.900-1.000,
 default 0.995).
+.TP 5
+.B SIXEL_PALETTE_KCENTER_BUDGET_POLICY
+.br
+choose auto budget policy for k-center candidate selection. Accepts legacy
+or adaptive.
+.TP 5
+.B SIXEL_PALETTE_KCENTER_BUDGET_SCALE
+.br
+scale auto-selected k-center point budget (0.25-4.00, default 1.0).
+.TP 5
+.B SIXEL_PALETTE_KCENTER_SWAP_TOPK
+.br
+evaluate up to this many farthest-point swap candidates per iteration in
+k-center (1-16, default 1).
+.TP 5
+.B SIXEL_PALETTE_KCENTER_SWAP_UPDATE
+.br
+choose k-center swap update path. Accepts full or incremental.
+.TP 5
+.B SIXEL_PALETTE_KCENTER_SWAP_PATIENCE
+.br
+stop k-center swap loop after N non-improving iterations (0 or 1-8, default
+0).
 .TP 5
 .B SIXEL_PALETTE_LUMIN_FACTOR_R
 .br

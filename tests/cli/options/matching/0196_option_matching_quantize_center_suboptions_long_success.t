@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qcenter:algo=hybrid:seed=42:restarts=2:iter=8:histbits=5:point_budget=512:prune_mass=0.980 \
+    -Qcenter:algo=hybrid:profile=balance:auto_policy=adaptive:auto_fft_threshold=4096:candidate_policy=hybrid:seed=42:restarts=2:iter=8:histbits=5:point_budget=512:rare_keep=64:prune_mass=0.980:budget_policy=adaptive:budget_scale=1.25:swap_topk=4:swap_update=incremental:swap_patience=2 \
     "${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png" \
     >/dev/null || {
     echo "not ok" 1 - "-Q center long suboptions were rejected"

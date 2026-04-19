@@ -1360,6 +1360,34 @@ static sixel_suboption_choice_t const g_option_choices_kcenter_algo[] = {
     { "hybrid", SIXEL_PALETTE_KCENTER_ALGO_HYBRID }
 };
 
+static sixel_suboption_choice_t const g_option_choices_kcenter_profile[] = {
+    { "legacy", SIXEL_PALETTE_KCENTER_PROFILE_LEGACY },
+    { "speed", SIXEL_PALETTE_KCENTER_PROFILE_SPEED },
+    { "balance", SIXEL_PALETTE_KCENTER_PROFILE_BALANCE },
+    { "quality", SIXEL_PALETTE_KCENTER_PROFILE_QUALITY }
+};
+
+static sixel_suboption_choice_t const g_option_choices_kcenter_auto_policy[] = {
+    { "legacy", SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY },
+    { "adaptive", SIXEL_PALETTE_KCENTER_AUTO_POLICY_ADAPTIVE }
+};
+
+static sixel_suboption_choice_t const
+g_option_choices_kcenter_candidate_policy[] = {
+    { "legacy", SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY },
+    { "hybrid", SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_HYBRID }
+};
+
+static sixel_suboption_choice_t const g_option_choices_kcenter_budget_policy[] = {
+    { "legacy", SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY },
+    { "adaptive", SIXEL_PALETTE_KCENTER_BUDGET_POLICY_ADAPTIVE }
+};
+
+static sixel_suboption_choice_t const g_option_choices_kcenter_swap_update[] = {
+    { "full", SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL },
+    { "incremental", SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL }
+};
+
 static sixel_suboption_choice_t const g_option_choices_quantize_merge[] = {
     { "auto", SIXEL_FINAL_MERGE_AUTO },
     { "none", SIXEL_FINAL_MERGE_NONE },
@@ -1789,12 +1817,47 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_center[] = {
         / sizeof(g_option_choices_kcenter_algo[0])
     },
     {
+        "profile",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_PROFILE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_kcenter_profile,
+        sizeof(g_option_choices_kcenter_profile)
+        / sizeof(g_option_choices_kcenter_profile[0])
+    },
+    {
         "seed",
         "s",
         "SIXEL_PALETTE_KCENTER_SEED",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
+    },
+    {
+        "auto_policy",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_AUTO_POLICY",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_kcenter_auto_policy,
+        sizeof(g_option_choices_kcenter_auto_policy)
+        / sizeof(g_option_choices_kcenter_auto_policy[0])
+    },
+    {
+        "auto_fft_threshold",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_AUTO_FFT_THRESHOLD",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "candidate_policy",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_kcenter_candidate_policy,
+        sizeof(g_option_choices_kcenter_candidate_policy)
+        / sizeof(g_option_choices_kcenter_candidate_policy[0])
     },
     {
         "restarts",
@@ -1829,9 +1892,59 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_center[] = {
         0u
     },
     {
+        "rare_keep",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_RARE_KEEP",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
         "prune_mass",
         NULL,
         "SIXEL_PALETTE_KCENTER_PRUNE_MASS",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "budget_policy",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_BUDGET_POLICY",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_kcenter_budget_policy,
+        sizeof(g_option_choices_kcenter_budget_policy)
+        / sizeof(g_option_choices_kcenter_budget_policy[0])
+    },
+    {
+        "budget_scale",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_BUDGET_SCALE",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "swap_topk",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_SWAP_TOPK",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "swap_update",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_SWAP_UPDATE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_kcenter_swap_update,
+        sizeof(g_option_choices_kcenter_swap_update)
+        / sizeof(g_option_choices_kcenter_swap_update[0])
+    },
+    {
+        "swap_patience",
+        NULL,
+        "SIXEL_PALETTE_KCENTER_SWAP_PATIENCE",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
@@ -6002,6 +6115,9 @@ sixel_encoder_prepare_palette(
     sixel_set_kcenter_algo_override(
         encoder->quantize_model_kcenter_algo_override,
         (sixel_kcenter_algo_t)encoder->quantize_model_kcenter_algo);
+    sixel_set_kcenter_profile_override(
+        encoder->quantize_model_kcenter_profile_override,
+        (sixel_kcenter_profile_t)encoder->quantize_model_kcenter_profile);
     sixel_set_kcenter_seed_override(
         encoder->quantize_model_kcenter_seed_override,
         (uint32_t)encoder->quantize_model_kcenter_seed);
@@ -6017,6 +6133,37 @@ sixel_encoder_prepare_palette(
     sixel_set_kcenter_point_budget_override(
         encoder->quantize_model_kcenter_point_budget_override,
         encoder->quantize_model_kcenter_point_budget);
+    sixel_set_kcenter_auto_policy_override(
+        encoder->quantize_model_kcenter_auto_policy_override,
+        (sixel_kcenter_auto_policy_t)
+            encoder->quantize_model_kcenter_auto_policy);
+    sixel_set_kcenter_auto_fft_threshold_override(
+        encoder->quantize_model_kcenter_auto_fft_threshold_override,
+        encoder->quantize_model_kcenter_auto_fft_threshold);
+    sixel_set_kcenter_candidate_policy_override(
+        encoder->quantize_model_kcenter_candidate_policy_override,
+        (sixel_kcenter_candidate_policy_t)
+            encoder->quantize_model_kcenter_candidate_policy);
+    sixel_set_kcenter_rare_keep_override(
+        encoder->quantize_model_kcenter_rare_keep_override,
+        encoder->quantize_model_kcenter_rare_keep);
+    sixel_set_kcenter_budget_policy_override(
+        encoder->quantize_model_kcenter_budget_policy_override,
+        (sixel_kcenter_budget_policy_t)
+            encoder->quantize_model_kcenter_budget_policy);
+    sixel_set_kcenter_budget_scale_override(
+        encoder->quantize_model_kcenter_budget_scale_override,
+        encoder->quantize_model_kcenter_budget_scale);
+    sixel_set_kcenter_swap_topk_override(
+        encoder->quantize_model_kcenter_swap_topk_override,
+        encoder->quantize_model_kcenter_swap_topk);
+    sixel_set_kcenter_swap_update_override(
+        encoder->quantize_model_kcenter_swap_update_override,
+        (sixel_kcenter_swap_update_t)
+            encoder->quantize_model_kcenter_swap_update);
+    sixel_set_kcenter_swap_patience_override(
+        encoder->quantize_model_kcenter_swap_patience_override,
+        encoder->quantize_model_kcenter_swap_patience);
     sixel_set_kcenter_prune_mass_override(
         encoder->quantize_model_kcenter_prune_mass_override,
         encoder->quantize_model_kcenter_prune_mass);
@@ -6079,11 +6226,31 @@ sixel_encoder_prepare_palette(
     sixel_set_kcenter_algo_override(
         0,
         SIXEL_PALETTE_KCENTER_ALGO_AUTO);
+    sixel_set_kcenter_profile_override(
+        0,
+        SIXEL_PALETTE_KCENTER_PROFILE_LEGACY);
     sixel_set_kcenter_seed_override(0, 1u);
     sixel_set_kcenter_restarts_override(0, 1u);
     sixel_set_kcenter_iter_override(0, 16u);
     sixel_set_kcenter_histbits_override(0, 5u);
     sixel_set_kcenter_point_budget_override(0, 0u);
+    sixel_set_kcenter_auto_policy_override(
+        0,
+        SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY);
+    sixel_set_kcenter_auto_fft_threshold_override(0, 2048u);
+    sixel_set_kcenter_candidate_policy_override(
+        0,
+        SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY);
+    sixel_set_kcenter_rare_keep_override(0, 0u);
+    sixel_set_kcenter_budget_policy_override(
+        0,
+        SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY);
+    sixel_set_kcenter_budget_scale_override(0, 1.0);
+    sixel_set_kcenter_swap_topk_override(0, 1u);
+    sixel_set_kcenter_swap_update_override(
+        0,
+        SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL);
+    sixel_set_kcenter_swap_patience_override(0, 0u);
     sixel_set_kcenter_prune_mass_override(0, 0.995);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
@@ -7147,6 +7314,9 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kcenter_algo_override = 0;
     (*ppencoder)->quantize_model_kcenter_algo
         = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
+    (*ppencoder)->quantize_model_kcenter_profile_override = 0;
+    (*ppencoder)->quantize_model_kcenter_profile
+        = SIXEL_PALETTE_KCENTER_PROFILE_LEGACY;
     (*ppencoder)->quantize_model_kcenter_seed_override = 0;
     (*ppencoder)->quantize_model_kcenter_seed = 1u;
     (*ppencoder)->quantize_model_kcenter_restarts_override = 0;
@@ -7157,6 +7327,28 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_kcenter_histbits = 5u;
     (*ppencoder)->quantize_model_kcenter_point_budget_override = 0;
     (*ppencoder)->quantize_model_kcenter_point_budget = 0u;
+    (*ppencoder)->quantize_model_kcenter_auto_policy_override = 0;
+    (*ppencoder)->quantize_model_kcenter_auto_policy
+        = SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY;
+    (*ppencoder)->quantize_model_kcenter_auto_fft_threshold_override = 0;
+    (*ppencoder)->quantize_model_kcenter_auto_fft_threshold = 2048u;
+    (*ppencoder)->quantize_model_kcenter_candidate_policy_override = 0;
+    (*ppencoder)->quantize_model_kcenter_candidate_policy
+        = SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY;
+    (*ppencoder)->quantize_model_kcenter_rare_keep_override = 0;
+    (*ppencoder)->quantize_model_kcenter_rare_keep = 0u;
+    (*ppencoder)->quantize_model_kcenter_budget_policy_override = 0;
+    (*ppencoder)->quantize_model_kcenter_budget_policy
+        = SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY;
+    (*ppencoder)->quantize_model_kcenter_budget_scale_override = 0;
+    (*ppencoder)->quantize_model_kcenter_budget_scale = 1.0;
+    (*ppencoder)->quantize_model_kcenter_swap_topk_override = 0;
+    (*ppencoder)->quantize_model_kcenter_swap_topk = 1u;
+    (*ppencoder)->quantize_model_kcenter_swap_update_override = 0;
+    (*ppencoder)->quantize_model_kcenter_swap_update
+        = SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL;
+    (*ppencoder)->quantize_model_kcenter_swap_patience_override = 0;
+    (*ppencoder)->quantize_model_kcenter_swap_patience = 0u;
     (*ppencoder)->quantize_model_kcenter_prune_mass_override = 0;
     (*ppencoder)->quantize_model_kcenter_prune_mass = 0.995;
     (*ppencoder)->quantize_model_merge_override = 0;
@@ -8165,6 +8357,34 @@ sixel_encoder_parse_kmedoids_prune_mass_text(
 }
 
 static SIXELSTATUS
+sixel_encoder_parse_kcenter_budget_scale_text(
+    char const *text,
+    double *value_out)
+{
+    char *endptr;
+    double parsed;
+
+    endptr = NULL;
+    parsed = 0.0;
+    if (text == NULL || value_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed = strtod(text, &endptr);
+    if (endptr == text || endptr == NULL || endptr[0] != '\0'
+            || errno != 0 || parsed != parsed
+            || parsed < 0.25 || parsed > 4.00) {
+        sixel_helper_set_additional_message(
+            "-Q budget_scale must be in range 0.25-4.00.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *value_out = parsed;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_encoder_parse_quantize_merge_oversplit_text(
     char const *text,
     double *value_out)
@@ -8278,6 +8498,62 @@ sixel_encoder_validate_quantize_model_resolution(
                 sixel_helper_set_additional_message(
                     "invalid -Q algo resolution.");
                 return SIXEL_BAD_ARGUMENT;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "profile") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                sixel_helper_set_additional_message(
+                    "invalid -Q profile resolution.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "auto_policy") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                sixel_helper_set_additional_message(
+                    "invalid -Q auto_policy resolution.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "candidate_policy") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                sixel_helper_set_additional_message(
+                    "invalid -Q candidate_policy resolution.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "budget_policy") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                sixel_helper_set_additional_message(
+                    "invalid -Q budget_policy resolution.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "swap_update") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                sixel_helper_set_additional_message(
+                    "invalid -Q swap_update resolution.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "auto_fft_threshold") == 0) {
+            status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                256u,
+                65536u,
+                0,
+                "auto_fft_threshold",
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
             }
         } else if (key_name != NULL && strcmp(key_name, "iter") == 0) {
             if (base_value == SIXEL_QUANTIZE_MODEL_KMEANS) {
@@ -8489,9 +8765,9 @@ sixel_encoder_validate_quantize_model_resolution(
         } else if (key_name != NULL && strcmp(key_name, "rare_keep") == 0) {
             status = sixel_encoder_parse_kmedoids_uint_text(
                 assignment->resolved_value_text,
-                0u,
-                1024u,
-                0,
+                base_value == SIXEL_QUANTIZE_MODEL_KCENTER ? 1u : 0u,
+                base_value == SIXEL_QUANTIZE_MODEL_KCENTER ? 2048u : 1024u,
+                base_value == SIXEL_QUANTIZE_MODEL_KCENTER,
                 "rare_keep",
                 &parsed_uint);
             if (SIXEL_FAILED(status)) {
@@ -8501,6 +8777,37 @@ sixel_encoder_validate_quantize_model_resolution(
             status = sixel_encoder_parse_kmedoids_prune_mass_text(
                 assignment->resolved_value_text,
                 &parsed_double);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "budget_scale") == 0) {
+            status = sixel_encoder_parse_kcenter_budget_scale_text(
+                assignment->resolved_value_text,
+                &parsed_double);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "swap_topk") == 0) {
+            status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                1u,
+                16u,
+                0,
+                "swap_topk",
+                &parsed_uint);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL
+                && strcmp(key_name, "swap_patience") == 0) {
+            status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                1u,
+                8u,
+                1,
+                "swap_patience",
+                &parsed_uint);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
@@ -10068,8 +10375,12 @@ sixel_encoder_setopt(
     unsigned int q_bandit_batch;
     unsigned int q_histbits;
     unsigned int q_point_budget;
+    unsigned int q_auto_fft_threshold;
     unsigned int q_rare_keep;
+    unsigned int q_swap_topk;
+    unsigned int q_swap_patience;
     double q_prune_mass;
+    double q_budget_scale;
     int q_auction;
     unsigned int q_auction_shortlist;
     int q_animation_mode;
@@ -10142,8 +10453,12 @@ sixel_encoder_setopt(
     q_bandit_batch = 0u;
     q_histbits = 0u;
     q_point_budget = 0u;
+    q_auto_fft_threshold = 0u;
     q_rare_keep = 0u;
+    q_swap_topk = 0u;
+    q_swap_patience = 0u;
     q_prune_mass = 0.0;
+    q_budget_scale = 0.0;
     q_auction = 0;
     q_auction_shortlist = 0u;
     q_animation_mode = 0;
@@ -10416,6 +10731,16 @@ sixel_encoder_setopt(
         encoder->quantize_model_kcenter_histbits_override = 0;
         encoder->quantize_model_kcenter_point_budget_override = 0;
         encoder->quantize_model_kcenter_prune_mass_override = 0;
+        encoder->quantize_model_kcenter_profile_override = 0;
+        encoder->quantize_model_kcenter_auto_policy_override = 0;
+        encoder->quantize_model_kcenter_auto_fft_threshold_override = 0;
+        encoder->quantize_model_kcenter_candidate_policy_override = 0;
+        encoder->quantize_model_kcenter_rare_keep_override = 0;
+        encoder->quantize_model_kcenter_budget_policy_override = 0;
+        encoder->quantize_model_kcenter_budget_scale_override = 0;
+        encoder->quantize_model_kcenter_swap_topk_override = 0;
+        encoder->quantize_model_kcenter_swap_update_override = 0;
+        encoder->quantize_model_kcenter_swap_patience_override = 0;
         encoder->quantize_model_merge_override = 0;
         encoder->quantize_model_merge_oversplit_override = 0;
         encoder->quantize_model_merge_lloyd_override = 0;
@@ -10566,6 +10891,57 @@ sixel_encoder_setopt(
                     encoder->quantize_model_kmedoids_algo_override = 1;
                     encoder->quantize_model_kmedoids_algo = match_value;
                 }
+            } else if (q_key != NULL && strcmp(q_key, "profile") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q profile resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kcenter_profile_override = 1;
+                encoder->quantize_model_kcenter_profile = match_value;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "auto_policy") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q auto_policy resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kcenter_auto_policy_override = 1;
+                encoder->quantize_model_kcenter_auto_policy = match_value;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "auto_fft_threshold") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    256u,
+                    65536u,
+                    0,
+                    "auto_fft_threshold",
+                    &q_auto_fft_threshold);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kcenter_auto_fft_threshold_override = 1;
+                encoder->quantize_model_kcenter_auto_fft_threshold
+                    = q_auto_fft_threshold;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "candidate_policy") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q candidate_policy resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kcenter_candidate_policy_override = 1;
+                encoder->quantize_model_kcenter_candidate_policy = match_value;
             } else if (q_key != NULL && strcmp(q_key, "seed") == 0) {
                 status = sixel_encoder_parse_kmedoids_seed_text(
                     q_assignment->resolved_value_text,
@@ -10876,17 +11252,88 @@ sixel_encoder_setopt(
             } else if (q_key != NULL && strcmp(q_key, "rare_keep") == 0) {
                 status = sixel_encoder_parse_kmedoids_uint_text(
                     q_assignment->resolved_value_text,
-                    0u,
-                    1024u,
-                    0,
+                    q_model == SIXEL_QUANTIZE_MODEL_KCENTER ? 1u : 0u,
+                    q_model == SIXEL_QUANTIZE_MODEL_KCENTER ? 2048u : 1024u,
+                    q_model == SIXEL_QUANTIZE_MODEL_KCENTER,
                     "rare_keep",
                     &q_rare_keep);
                 if (SIXEL_FAILED(status)) {
                     status = SIXEL_BAD_ARGUMENT;
                     goto end;
                 }
-                encoder->quantize_model_kmedoids_rare_keep_override = 1;
-                encoder->quantize_model_kmedoids_rare_keep = q_rare_keep;
+                if (q_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
+                    encoder->quantize_model_kcenter_rare_keep_override = 1;
+                    encoder->quantize_model_kcenter_rare_keep = q_rare_keep;
+                } else {
+                    encoder->quantize_model_kmedoids_rare_keep_override = 1;
+                    encoder->quantize_model_kmedoids_rare_keep = q_rare_keep;
+                }
+            } else if (q_key != NULL
+                    && strcmp(q_key, "budget_policy") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q budget_policy resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kcenter_budget_policy_override = 1;
+                encoder->quantize_model_kcenter_budget_policy = match_value;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "budget_scale") == 0) {
+                status = sixel_encoder_parse_kcenter_budget_scale_text(
+                    q_assignment->resolved_value_text,
+                    &q_budget_scale);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kcenter_budget_scale_override = 1;
+                encoder->quantize_model_kcenter_budget_scale
+                    = q_budget_scale;
+            } else if (q_key != NULL && strcmp(q_key, "swap_topk") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    1u,
+                    16u,
+                    0,
+                    "swap_topk",
+                    &q_swap_topk);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kcenter_swap_topk_override = 1;
+                encoder->quantize_model_kcenter_swap_topk = q_swap_topk;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "swap_update") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q swap_update resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kcenter_swap_update_override = 1;
+                encoder->quantize_model_kcenter_swap_update = match_value;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "swap_patience") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    1u,
+                    8u,
+                    1,
+                    "swap_patience",
+                    &q_swap_patience);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kcenter_swap_patience_override = 1;
+                encoder->quantize_model_kcenter_swap_patience
+                    = q_swap_patience;
             } else if (q_key != NULL && strcmp(q_key, "prune_mass") == 0) {
                 status = sixel_encoder_parse_kmedoids_prune_mass_text(
                     q_assignment->resolved_value_text,

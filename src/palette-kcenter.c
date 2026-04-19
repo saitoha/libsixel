@@ -78,6 +78,9 @@
 static SIXEL_TLS int sixel_kcenter_algo_override_enabled = 0;
 static SIXEL_TLS sixel_kcenter_algo_t sixel_kcenter_algo_override_value
     = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
+static SIXEL_TLS int sixel_kcenter_profile_override_enabled = 0;
+static SIXEL_TLS sixel_kcenter_profile_t sixel_kcenter_profile_override_value
+    = SIXEL_PALETTE_KCENTER_PROFILE_LEGACY;
 static SIXEL_TLS int sixel_kcenter_seed_override_enabled = 0;
 static SIXEL_TLS uint32_t sixel_kcenter_seed_override_value = 1u;
 static SIXEL_TLS int sixel_kcenter_restarts_override_enabled = 0;
@@ -90,6 +93,39 @@ static SIXEL_TLS int sixel_kcenter_point_budget_override_enabled = 0;
 static SIXEL_TLS unsigned int sixel_kcenter_point_budget_override_value = 0u;
 static SIXEL_TLS int sixel_kcenter_prune_mass_override_enabled = 0;
 static SIXEL_TLS double sixel_kcenter_prune_mass_override_value = 0.995;
+static SIXEL_TLS int sixel_kcenter_auto_policy_override_enabled = 0;
+static SIXEL_TLS sixel_kcenter_auto_policy_t
+    sixel_kcenter_auto_policy_override_value
+    = SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY;
+static SIXEL_TLS int sixel_kcenter_auto_fft_threshold_override_enabled = 0;
+static SIXEL_TLS unsigned int
+    sixel_kcenter_auto_fft_threshold_override_value = 2048u;
+static SIXEL_TLS int sixel_kcenter_candidate_policy_override_enabled = 0;
+static SIXEL_TLS sixel_kcenter_candidate_policy_t
+    sixel_kcenter_candidate_policy_override_value
+    = SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY;
+static SIXEL_TLS int sixel_kcenter_rare_keep_override_enabled = 0;
+static SIXEL_TLS unsigned int sixel_kcenter_rare_keep_override_value = 0u;
+static SIXEL_TLS int sixel_kcenter_budget_policy_override_enabled = 0;
+static SIXEL_TLS sixel_kcenter_budget_policy_t
+    sixel_kcenter_budget_policy_override_value
+    = SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY;
+static SIXEL_TLS int sixel_kcenter_budget_scale_override_enabled = 0;
+static SIXEL_TLS double sixel_kcenter_budget_scale_override_value = 1.0;
+static SIXEL_TLS int sixel_kcenter_swap_topk_override_enabled = 0;
+static SIXEL_TLS unsigned int sixel_kcenter_swap_topk_override_value = 1u;
+static SIXEL_TLS int sixel_kcenter_swap_update_override_enabled = 0;
+static SIXEL_TLS sixel_kcenter_swap_update_t
+    sixel_kcenter_swap_update_override_value
+    = SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL;
+static SIXEL_TLS int sixel_kcenter_swap_patience_override_enabled = 0;
+static SIXEL_TLS unsigned int sixel_kcenter_swap_patience_override_value = 0u;
+
+#define SIXEL_KCENTER_AUTO_FFT_THRESHOLD_DEFAULT 2048u
+#define SIXEL_KCENTER_RARE_KEEP_DEFAULT 0u
+#define SIXEL_KCENTER_BUDGET_SCALE_DEFAULT 1.0
+#define SIXEL_KCENTER_SWAP_TOPK_DEFAULT 1u
+#define SIXEL_KCENTER_SWAP_PATIENCE_DEFAULT 0u
 
 #undef SIXEL_TLS
 
@@ -211,6 +247,11 @@ typedef struct sixel_kcenter_bin {
     double b;
 } sixel_kcenter_bin_t;
 
+typedef struct sixel_kcenter_dispersion_rank {
+    unsigned int index;
+    double score;
+} sixel_kcenter_dispersion_rank_t;
+
 /* Keep solver call signatures compact for strict C compilers. */
 typedef struct sixel_kcenter_swap_ctx {
     double const *points;
@@ -220,10 +261,17 @@ typedef struct sixel_kcenter_swap_ctx {
     unsigned int k;
     unsigned int *nearest_slot;
     double *nearest_dist;
+    unsigned int *second_slot;
+    double *second_dist;
     double *radius2_io;
     double *sse_io;
     unsigned int *scratch_slot;
     double *scratch_dist;
+    unsigned int *scratch_second_slot;
+    double *scratch_second_dist;
+    unsigned int swap_topk;
+    sixel_kcenter_swap_update_t swap_update;
+    uint32_t *rng_state;
 } sixel_kcenter_swap_ctx_t;
 
 typedef struct sixel_kcenter_solver_ctx {
@@ -237,8 +285,15 @@ typedef struct sixel_kcenter_solver_ctx {
     unsigned int *centers;
     unsigned int *nearest_slot;
     double *nearest_dist;
+    unsigned int *second_slot;
+    double *second_dist;
     unsigned int *scratch_slot;
     double *scratch_dist;
+    unsigned int *scratch_second_slot;
+    double *scratch_second_dist;
+    unsigned int swap_topk;
+    sixel_kcenter_swap_update_t swap_update;
+    unsigned int swap_patience;
     double *radius2_out;
     double *sse_out;
     unsigned int *iterations_out;
@@ -376,6 +431,270 @@ sixel_kcenter_algo_to_string(sixel_kcenter_algo_t algo)
     case SIXEL_PALETTE_KCENTER_ALGO_AUTO:
     default:
         return "auto";
+    }
+}
+
+static sixel_kcenter_profile_t
+sixel_kcenter_resolve_profile(sixel_kcenter_profile_t profile)
+{
+    switch (profile) {
+    case SIXEL_PALETTE_KCENTER_PROFILE_SPEED:
+    case SIXEL_PALETTE_KCENTER_PROFILE_BALANCE:
+    case SIXEL_PALETTE_KCENTER_PROFILE_QUALITY:
+    case SIXEL_PALETTE_KCENTER_PROFILE_LEGACY:
+        return profile;
+    default:
+        return SIXEL_PALETTE_KCENTER_PROFILE_LEGACY;
+    }
+}
+
+static char const *
+sixel_kcenter_profile_to_string(sixel_kcenter_profile_t profile)
+{
+    switch (profile) {
+    case SIXEL_PALETTE_KCENTER_PROFILE_SPEED:
+        return "speed";
+    case SIXEL_PALETTE_KCENTER_PROFILE_BALANCE:
+        return "balance";
+    case SIXEL_PALETTE_KCENTER_PROFILE_QUALITY:
+        return "quality";
+    case SIXEL_PALETTE_KCENTER_PROFILE_LEGACY:
+    default:
+        return "legacy";
+    }
+}
+
+static sixel_kcenter_auto_policy_t
+sixel_kcenter_resolve_auto_policy(sixel_kcenter_auto_policy_t policy)
+{
+    switch (policy) {
+    case SIXEL_PALETTE_KCENTER_AUTO_POLICY_ADAPTIVE:
+    case SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY:
+        return policy;
+    default:
+        return SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY;
+    }
+}
+
+static char const *
+sixel_kcenter_auto_policy_to_string(sixel_kcenter_auto_policy_t policy)
+{
+    switch (policy) {
+    case SIXEL_PALETTE_KCENTER_AUTO_POLICY_ADAPTIVE:
+        return "adaptive";
+    case SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY:
+    default:
+        return "legacy";
+    }
+}
+
+static sixel_kcenter_candidate_policy_t
+sixel_kcenter_resolve_candidate_policy(
+    sixel_kcenter_candidate_policy_t policy)
+{
+    switch (policy) {
+    case SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_HYBRID:
+    case SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY:
+        return policy;
+    default:
+        return SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY;
+    }
+}
+
+static char const *
+sixel_kcenter_candidate_policy_to_string(
+    sixel_kcenter_candidate_policy_t policy)
+{
+    switch (policy) {
+    case SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_HYBRID:
+        return "hybrid";
+    case SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY:
+    default:
+        return "legacy";
+    }
+}
+
+static sixel_kcenter_budget_policy_t
+sixel_kcenter_resolve_budget_policy(sixel_kcenter_budget_policy_t policy)
+{
+    switch (policy) {
+    case SIXEL_PALETTE_KCENTER_BUDGET_POLICY_ADAPTIVE:
+    case SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY:
+        return policy;
+    default:
+        return SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY;
+    }
+}
+
+static char const *
+sixel_kcenter_budget_policy_to_string(sixel_kcenter_budget_policy_t policy)
+{
+    switch (policy) {
+    case SIXEL_PALETTE_KCENTER_BUDGET_POLICY_ADAPTIVE:
+        return "adaptive";
+    case SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY:
+    default:
+        return "legacy";
+    }
+}
+
+static sixel_kcenter_swap_update_t
+sixel_kcenter_resolve_swap_update(sixel_kcenter_swap_update_t swap_update)
+{
+    switch (swap_update) {
+    case SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL:
+    case SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL:
+        return swap_update;
+    default:
+        return SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL;
+    }
+}
+
+static char const *
+sixel_kcenter_swap_update_to_string(sixel_kcenter_swap_update_t swap_update)
+{
+    switch (swap_update) {
+    case SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL:
+        return "incremental";
+    case SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL:
+    default:
+        return "full";
+    }
+}
+
+static sixel_kcenter_auto_policy_t
+sixel_kcenter_profile_default_auto_policy(sixel_kcenter_profile_t profile)
+{
+    switch (profile) {
+    case SIXEL_PALETTE_KCENTER_PROFILE_SPEED:
+    case SIXEL_PALETTE_KCENTER_PROFILE_BALANCE:
+    case SIXEL_PALETTE_KCENTER_PROFILE_QUALITY:
+        return SIXEL_PALETTE_KCENTER_AUTO_POLICY_ADAPTIVE;
+    case SIXEL_PALETTE_KCENTER_PROFILE_LEGACY:
+    default:
+        return SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY;
+    }
+}
+
+static unsigned int
+sixel_kcenter_profile_default_auto_fft_threshold(
+    sixel_kcenter_profile_t profile)
+{
+    switch (profile) {
+    case SIXEL_PALETTE_KCENTER_PROFILE_SPEED:
+        return 1024u;
+    case SIXEL_PALETTE_KCENTER_PROFILE_QUALITY:
+        return 4096u;
+    case SIXEL_PALETTE_KCENTER_PROFILE_BALANCE:
+    case SIXEL_PALETTE_KCENTER_PROFILE_LEGACY:
+    default:
+        return SIXEL_KCENTER_AUTO_FFT_THRESHOLD_DEFAULT;
+    }
+}
+
+static sixel_kcenter_candidate_policy_t
+sixel_kcenter_profile_default_candidate_policy(
+    sixel_kcenter_profile_t profile)
+{
+    switch (profile) {
+    case SIXEL_PALETTE_KCENTER_PROFILE_BALANCE:
+    case SIXEL_PALETTE_KCENTER_PROFILE_QUALITY:
+        return SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_HYBRID;
+    case SIXEL_PALETTE_KCENTER_PROFILE_SPEED:
+    case SIXEL_PALETTE_KCENTER_PROFILE_LEGACY:
+    default:
+        return SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY;
+    }
+}
+
+static unsigned int
+sixel_kcenter_profile_default_rare_keep(sixel_kcenter_profile_t profile)
+{
+    switch (profile) {
+    case SIXEL_PALETTE_KCENTER_PROFILE_SPEED:
+        return 16u;
+    case SIXEL_PALETTE_KCENTER_PROFILE_BALANCE:
+        return 64u;
+    case SIXEL_PALETTE_KCENTER_PROFILE_QUALITY:
+        return 192u;
+    case SIXEL_PALETTE_KCENTER_PROFILE_LEGACY:
+    default:
+        return SIXEL_KCENTER_RARE_KEEP_DEFAULT;
+    }
+}
+
+static sixel_kcenter_budget_policy_t
+sixel_kcenter_profile_default_budget_policy(sixel_kcenter_profile_t profile)
+{
+    switch (profile) {
+    case SIXEL_PALETTE_KCENTER_PROFILE_SPEED:
+    case SIXEL_PALETTE_KCENTER_PROFILE_BALANCE:
+    case SIXEL_PALETTE_KCENTER_PROFILE_QUALITY:
+        return SIXEL_PALETTE_KCENTER_BUDGET_POLICY_ADAPTIVE;
+    case SIXEL_PALETTE_KCENTER_PROFILE_LEGACY:
+    default:
+        return SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY;
+    }
+}
+
+static double
+sixel_kcenter_profile_default_budget_scale(sixel_kcenter_profile_t profile)
+{
+    switch (profile) {
+    case SIXEL_PALETTE_KCENTER_PROFILE_SPEED:
+        return 0.80;
+    case SIXEL_PALETTE_KCENTER_PROFILE_QUALITY:
+        return 1.40;
+    case SIXEL_PALETTE_KCENTER_PROFILE_BALANCE:
+    case SIXEL_PALETTE_KCENTER_PROFILE_LEGACY:
+    default:
+        return SIXEL_KCENTER_BUDGET_SCALE_DEFAULT;
+    }
+}
+
+static unsigned int
+sixel_kcenter_profile_default_swap_topk(sixel_kcenter_profile_t profile)
+{
+    switch (profile) {
+    case SIXEL_PALETTE_KCENTER_PROFILE_SPEED:
+        return 2u;
+    case SIXEL_PALETTE_KCENTER_PROFILE_BALANCE:
+        return 4u;
+    case SIXEL_PALETTE_KCENTER_PROFILE_QUALITY:
+        return 8u;
+    case SIXEL_PALETTE_KCENTER_PROFILE_LEGACY:
+    default:
+        return SIXEL_KCENTER_SWAP_TOPK_DEFAULT;
+    }
+}
+
+static sixel_kcenter_swap_update_t
+sixel_kcenter_profile_default_swap_update(sixel_kcenter_profile_t profile)
+{
+    switch (profile) {
+    case SIXEL_PALETTE_KCENTER_PROFILE_SPEED:
+    case SIXEL_PALETTE_KCENTER_PROFILE_BALANCE:
+    case SIXEL_PALETTE_KCENTER_PROFILE_QUALITY:
+        return SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL;
+    case SIXEL_PALETTE_KCENTER_PROFILE_LEGACY:
+    default:
+        return SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL;
+    }
+}
+
+static unsigned int
+sixel_kcenter_profile_default_swap_patience(sixel_kcenter_profile_t profile)
+{
+    switch (profile) {
+    case SIXEL_PALETTE_KCENTER_PROFILE_SPEED:
+        return 1u;
+    case SIXEL_PALETTE_KCENTER_PROFILE_BALANCE:
+        return 2u;
+    case SIXEL_PALETTE_KCENTER_PROFILE_QUALITY:
+        return 4u;
+    case SIXEL_PALETTE_KCENTER_PROFILE_LEGACY:
+    default:
+        return SIXEL_KCENTER_SWAP_PATIENCE_DEFAULT;
     }
 }
 
@@ -526,6 +845,44 @@ sixel_get_kcenter_algo(void)
     cached_value = sixel_kcenter_resolve_algo(parsed);
     cached = 1;
     return cached_value;
+}
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_profile_override(int enabled,
+                                   sixel_kcenter_profile_t profile)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kcenter_override_lock_acquire();
+    sixel_kcenter_profile_override_enabled = enabled ? 1 : 0;
+    sixel_kcenter_profile_override_value
+        = sixel_kcenter_resolve_profile(profile);
+    sixel_kcenter_override_lock_release(lock_acquired);
+}
+
+SIXEL_INTERNAL_API sixel_kcenter_profile_t
+sixel_get_kcenter_profile(void)
+{
+    char const *env_value;
+    sixel_kcenter_profile_t parsed;
+
+    if (sixel_kcenter_profile_override_enabled) {
+        return sixel_kcenter_resolve_profile(
+            sixel_kcenter_profile_override_value);
+    }
+
+    parsed = SIXEL_PALETTE_KCENTER_PROFILE_LEGACY;
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_KCENTER_PROFILE");
+    if (env_value != NULL) {
+        if (strcmp(env_value, "speed") == 0) {
+            parsed = SIXEL_PALETTE_KCENTER_PROFILE_SPEED;
+        } else if (strcmp(env_value, "balance") == 0) {
+            parsed = SIXEL_PALETTE_KCENTER_PROFILE_BALANCE;
+        } else if (strcmp(env_value, "quality") == 0) {
+            parsed = SIXEL_PALETTE_KCENTER_PROFILE_QUALITY;
+        }
+    }
+    return sixel_kcenter_resolve_profile(parsed);
 }
 
 SIXEL_INTERNAL_API void
@@ -726,6 +1083,358 @@ sixel_get_kcenter_prune_mass(void)
                                           0.995);
 }
 
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_auto_policy_override(
+    int enabled,
+    sixel_kcenter_auto_policy_t policy)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kcenter_override_lock_acquire();
+    sixel_kcenter_auto_policy_override_enabled = enabled ? 1 : 0;
+    sixel_kcenter_auto_policy_override_value
+        = sixel_kcenter_resolve_auto_policy(policy);
+    sixel_kcenter_override_lock_release(lock_acquired);
+}
+
+SIXEL_INTERNAL_API sixel_kcenter_auto_policy_t
+sixel_get_kcenter_auto_policy(void)
+{
+    char const *env_value;
+    sixel_kcenter_profile_t profile;
+    sixel_kcenter_auto_policy_t parsed;
+
+    if (sixel_kcenter_auto_policy_override_enabled) {
+        return sixel_kcenter_resolve_auto_policy(
+            sixel_kcenter_auto_policy_override_value);
+    }
+
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_KCENTER_AUTO_POLICY");
+    if (env_value != NULL) {
+        if (strcmp(env_value, "adaptive") == 0) {
+            parsed = SIXEL_PALETTE_KCENTER_AUTO_POLICY_ADAPTIVE;
+            return sixel_kcenter_resolve_auto_policy(parsed);
+        }
+        if (strcmp(env_value, "legacy") == 0) {
+            parsed = SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY;
+            return sixel_kcenter_resolve_auto_policy(parsed);
+        }
+    }
+
+    profile = sixel_get_kcenter_profile();
+    return sixel_kcenter_profile_default_auto_policy(profile);
+}
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_auto_fft_threshold_override(
+    int enabled,
+    unsigned int threshold)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kcenter_override_lock_acquire();
+    sixel_kcenter_auto_fft_threshold_override_enabled = enabled ? 1 : 0;
+    sixel_kcenter_auto_fft_threshold_override_value = threshold;
+    sixel_kcenter_override_lock_release(lock_acquired);
+}
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kcenter_auto_fft_threshold(void)
+{
+    unsigned int fallback;
+    sixel_kcenter_profile_t profile;
+
+    if (sixel_kcenter_auto_fft_threshold_override_enabled) {
+        if (sixel_kcenter_auto_fft_threshold_override_value < 256u) {
+            return 256u;
+        }
+        if (sixel_kcenter_auto_fft_threshold_override_value > 65536u) {
+            return 65536u;
+        }
+        return sixel_kcenter_auto_fft_threshold_override_value;
+    }
+
+    profile = sixel_get_kcenter_profile();
+    fallback = sixel_kcenter_profile_default_auto_fft_threshold(profile);
+    return sixel_kcenter_parse_env_uint(
+        "SIXEL_PALETTE_KCENTER_AUTO_FFT_THRESHOLD",
+        256u,
+        65536u,
+        fallback,
+        0);
+}
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_candidate_policy_override(
+    int enabled,
+    sixel_kcenter_candidate_policy_t policy)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kcenter_override_lock_acquire();
+    sixel_kcenter_candidate_policy_override_enabled = enabled ? 1 : 0;
+    sixel_kcenter_candidate_policy_override_value
+        = sixel_kcenter_resolve_candidate_policy(policy);
+    sixel_kcenter_override_lock_release(lock_acquired);
+}
+
+SIXEL_INTERNAL_API sixel_kcenter_candidate_policy_t
+sixel_get_kcenter_candidate_policy(void)
+{
+    char const *env_value;
+    sixel_kcenter_profile_t profile;
+    sixel_kcenter_candidate_policy_t parsed;
+
+    if (sixel_kcenter_candidate_policy_override_enabled) {
+        return sixel_kcenter_resolve_candidate_policy(
+            sixel_kcenter_candidate_policy_override_value);
+    }
+
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY");
+    if (env_value != NULL) {
+        if (strcmp(env_value, "hybrid") == 0) {
+            parsed = SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_HYBRID;
+            return sixel_kcenter_resolve_candidate_policy(parsed);
+        }
+        if (strcmp(env_value, "legacy") == 0) {
+            parsed = SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY;
+            return sixel_kcenter_resolve_candidate_policy(parsed);
+        }
+    }
+
+    profile = sixel_get_kcenter_profile();
+    return sixel_kcenter_profile_default_candidate_policy(profile);
+}
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_rare_keep_override(int enabled,
+                                     unsigned int rare_keep)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kcenter_override_lock_acquire();
+    sixel_kcenter_rare_keep_override_enabled = enabled ? 1 : 0;
+    sixel_kcenter_rare_keep_override_value = rare_keep;
+    sixel_kcenter_override_lock_release(lock_acquired);
+}
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kcenter_rare_keep(void)
+{
+    unsigned int fallback;
+    sixel_kcenter_profile_t profile;
+
+    if (sixel_kcenter_rare_keep_override_enabled) {
+        if (sixel_kcenter_rare_keep_override_value == 0u) {
+            return 0u;
+        }
+        if (sixel_kcenter_rare_keep_override_value > 2048u) {
+            return 2048u;
+        }
+        return sixel_kcenter_rare_keep_override_value;
+    }
+
+    profile = sixel_get_kcenter_profile();
+    fallback = sixel_kcenter_profile_default_rare_keep(profile);
+    return sixel_kcenter_parse_env_uint("SIXEL_PALETTE_KCENTER_RARE_KEEP",
+                                        1u,
+                                        2048u,
+                                        fallback,
+                                        1);
+}
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_budget_policy_override(
+    int enabled,
+    sixel_kcenter_budget_policy_t policy)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kcenter_override_lock_acquire();
+    sixel_kcenter_budget_policy_override_enabled = enabled ? 1 : 0;
+    sixel_kcenter_budget_policy_override_value
+        = sixel_kcenter_resolve_budget_policy(policy);
+    sixel_kcenter_override_lock_release(lock_acquired);
+}
+
+SIXEL_INTERNAL_API sixel_kcenter_budget_policy_t
+sixel_get_kcenter_budget_policy(void)
+{
+    char const *env_value;
+    sixel_kcenter_profile_t profile;
+    sixel_kcenter_budget_policy_t parsed;
+
+    if (sixel_kcenter_budget_policy_override_enabled) {
+        return sixel_kcenter_resolve_budget_policy(
+            sixel_kcenter_budget_policy_override_value);
+    }
+
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_KCENTER_BUDGET_POLICY");
+    if (env_value != NULL) {
+        if (strcmp(env_value, "adaptive") == 0) {
+            parsed = SIXEL_PALETTE_KCENTER_BUDGET_POLICY_ADAPTIVE;
+            return sixel_kcenter_resolve_budget_policy(parsed);
+        }
+        if (strcmp(env_value, "legacy") == 0) {
+            parsed = SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY;
+            return sixel_kcenter_resolve_budget_policy(parsed);
+        }
+    }
+
+    profile = sixel_get_kcenter_profile();
+    return sixel_kcenter_profile_default_budget_policy(profile);
+}
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_budget_scale_override(int enabled,
+                                        double budget_scale)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kcenter_override_lock_acquire();
+    sixel_kcenter_budget_scale_override_enabled = enabled ? 1 : 0;
+    sixel_kcenter_budget_scale_override_value = budget_scale;
+    sixel_kcenter_override_lock_release(lock_acquired);
+}
+
+SIXEL_INTERNAL_API double
+sixel_get_kcenter_budget_scale(void)
+{
+    double fallback;
+    sixel_kcenter_profile_t profile;
+
+    if (sixel_kcenter_budget_scale_override_enabled) {
+        if (sixel_kcenter_budget_scale_override_value < 0.25) {
+            return 0.25;
+        }
+        if (sixel_kcenter_budget_scale_override_value > 4.00) {
+            return 4.00;
+        }
+        return sixel_kcenter_budget_scale_override_value;
+    }
+
+    profile = sixel_get_kcenter_profile();
+    fallback = sixel_kcenter_profile_default_budget_scale(profile);
+    return sixel_kcenter_parse_env_double("SIXEL_PALETTE_KCENTER_BUDGET_SCALE",
+                                          0.25,
+                                          4.00,
+                                          fallback);
+}
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_swap_topk_override(int enabled,
+                                     unsigned int swap_topk)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kcenter_override_lock_acquire();
+    sixel_kcenter_swap_topk_override_enabled = enabled ? 1 : 0;
+    sixel_kcenter_swap_topk_override_value = swap_topk;
+    sixel_kcenter_override_lock_release(lock_acquired);
+}
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kcenter_swap_topk(void)
+{
+    unsigned int fallback;
+    sixel_kcenter_profile_t profile;
+
+    if (sixel_kcenter_swap_topk_override_enabled) {
+        if (sixel_kcenter_swap_topk_override_value < 1u) {
+            return 1u;
+        }
+        if (sixel_kcenter_swap_topk_override_value > 16u) {
+            return 16u;
+        }
+        return sixel_kcenter_swap_topk_override_value;
+    }
+
+    profile = sixel_get_kcenter_profile();
+    fallback = sixel_kcenter_profile_default_swap_topk(profile);
+    return sixel_kcenter_parse_env_uint("SIXEL_PALETTE_KCENTER_SWAP_TOPK",
+                                        1u,
+                                        16u,
+                                        fallback,
+                                        0);
+}
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_swap_update_override(
+    int enabled,
+    sixel_kcenter_swap_update_t swap_update)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kcenter_override_lock_acquire();
+    sixel_kcenter_swap_update_override_enabled = enabled ? 1 : 0;
+    sixel_kcenter_swap_update_override_value
+        = sixel_kcenter_resolve_swap_update(swap_update);
+    sixel_kcenter_override_lock_release(lock_acquired);
+}
+
+SIXEL_INTERNAL_API sixel_kcenter_swap_update_t
+sixel_get_kcenter_swap_update(void)
+{
+    char const *env_value;
+    sixel_kcenter_profile_t profile;
+    sixel_kcenter_swap_update_t parsed;
+
+    if (sixel_kcenter_swap_update_override_enabled) {
+        return sixel_kcenter_resolve_swap_update(
+            sixel_kcenter_swap_update_override_value);
+    }
+
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_KCENTER_SWAP_UPDATE");
+    if (env_value != NULL) {
+        if (strcmp(env_value, "incremental") == 0) {
+            parsed = SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL;
+            return sixel_kcenter_resolve_swap_update(parsed);
+        }
+        if (strcmp(env_value, "full") == 0) {
+            parsed = SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL;
+            return sixel_kcenter_resolve_swap_update(parsed);
+        }
+    }
+
+    profile = sixel_get_kcenter_profile();
+    return sixel_kcenter_profile_default_swap_update(profile);
+}
+
+SIXEL_INTERNAL_API void
+sixel_set_kcenter_swap_patience_override(
+    int enabled,
+    unsigned int swap_patience)
+{
+    int lock_acquired;
+
+    lock_acquired = sixel_kcenter_override_lock_acquire();
+    sixel_kcenter_swap_patience_override_enabled = enabled ? 1 : 0;
+    sixel_kcenter_swap_patience_override_value = swap_patience;
+    sixel_kcenter_override_lock_release(lock_acquired);
+}
+
+SIXEL_INTERNAL_API unsigned int
+sixel_get_kcenter_swap_patience(void)
+{
+    unsigned int fallback;
+    sixel_kcenter_profile_t profile;
+
+    if (sixel_kcenter_swap_patience_override_enabled) {
+        if (sixel_kcenter_swap_patience_override_value > 8u) {
+            return 8u;
+        }
+        return sixel_kcenter_swap_patience_override_value;
+    }
+
+    profile = sixel_get_kcenter_profile();
+    fallback = sixel_kcenter_profile_default_swap_patience(profile);
+    return sixel_kcenter_parse_env_uint("SIXEL_PALETTE_KCENTER_SWAP_PATIENCE",
+                                        1u,
+                                        8u,
+                                        fallback,
+                                        1);
+}
+
 static int
 sixel_kcenter_compare_bin_desc(void const *lhs,
                                void const *rhs)
@@ -750,10 +1459,59 @@ sixel_kcenter_compare_bin_desc(void const *lhs,
     return 0;
 }
 
+static int
+sixel_kcenter_compare_dispersion_desc(void const *lhs,
+                                      void const *rhs)
+{
+    sixel_kcenter_dispersion_rank_t const *left;
+    sixel_kcenter_dispersion_rank_t const *right;
+
+    left = (sixel_kcenter_dispersion_rank_t const *)lhs;
+    right = (sixel_kcenter_dispersion_rank_t const *)rhs;
+    if (left->score > right->score) {
+        return -1;
+    }
+    if (left->score < right->score) {
+        return 1;
+    }
+    if (left->index < right->index) {
+        return -1;
+    }
+    if (left->index > right->index) {
+        return 1;
+    }
+    return 0;
+}
+
 static unsigned int
-sixel_kcenter_auto_point_budget(unsigned int reqcolors,
-                                unsigned int visible_count,
-                                int quality_mode)
+sixel_kcenter_apply_budget_scale(unsigned int budget,
+                                 double budget_scale)
+{
+    double scaled;
+
+    if (budget == 0u) {
+        return 0u;
+    }
+    if (budget_scale < 0.25) {
+        budget_scale = 0.25;
+    }
+    if (budget_scale > 4.00) {
+        budget_scale = 4.00;
+    }
+    scaled = (double)budget * budget_scale;
+    if (scaled < 1.0) {
+        scaled = 1.0;
+    }
+    if (scaled > 16384.0) {
+        scaled = 16384.0;
+    }
+    return (unsigned int)(scaled + 0.5);
+}
+
+static unsigned int
+sixel_kcenter_auto_point_budget_legacy(unsigned int reqcolors,
+                                       unsigned int visible_count,
+                                       int quality_mode)
 {
     unsigned int budget;
 
@@ -783,11 +1541,70 @@ sixel_kcenter_auto_point_budget(unsigned int reqcolors,
     return budget;
 }
 
+static unsigned int
+sixel_kcenter_auto_point_budget_adaptive(unsigned int reqcolors,
+                                         unsigned int visible_count,
+                                         unsigned int active_count,
+                                         int quality_mode)
+{
+    unsigned int budget;
+    unsigned int ratio;
+
+    budget = sixel_kcenter_auto_point_budget_legacy(reqcolors,
+                                                    visible_count,
+                                                    quality_mode);
+    if (active_count == 0u) {
+        return budget;
+    }
+
+    ratio = 0u;
+    if (visible_count > 0u) {
+        ratio = (active_count * 100u) / visible_count;
+    }
+
+    if (ratio >= 20u) {
+        if (budget < 12288u) {
+            budget = budget + budget / 2u;
+        }
+    } else if (ratio <= 5u) {
+        if (budget > 96u) {
+            budget = budget - budget / 4u;
+        }
+    }
+
+    if (active_count > reqcolors * 8u) {
+        if (budget < 8192u) {
+            budget = budget + budget / 4u;
+        }
+    }
+    if (quality_mode == SIXEL_QUALITY_FULL && budget < 12288u) {
+        budget = budget + budget / 5u;
+    }
+    if (quality_mode == SIXEL_QUALITY_LOW && budget > 96u) {
+        budget = budget - budget / 8u;
+    }
+
+    if (budget < 64u) {
+        budget = 64u;
+    }
+    if (budget > 16384u) {
+        budget = 16384u;
+    }
+    if (budget > active_count) {
+        budget = active_count;
+    }
+    if (budget == 0u) {
+        budget = 1u;
+    }
+    return budget;
+}
+
 static SIXELSTATUS
 sixel_kcenter_collect_points(double **points_out,
                              double **weights_out,
                              unsigned int *point_count_out,
                              unsigned int *visible_count_out,
+                             unsigned int *active_count_out,
                              unsigned char const *data,
                              unsigned int length,
                              unsigned int depth,
@@ -798,6 +1615,11 @@ sixel_kcenter_collect_points(double **points_out,
                              double prune_mass,
                              unsigned int reqcolors,
                              int quality_mode,
+                             sixel_kcenter_candidate_policy_t
+                                 candidate_policy,
+                             unsigned int rare_keep,
+                             sixel_kcenter_budget_policy_t budget_policy,
+                             double budget_scale,
                              double const *float32_channel_scale,
                              double const *float32_channel_offset,
                              sixel_allocator_t *allocator)
@@ -812,6 +1634,11 @@ sixel_kcenter_collect_points(double **points_out,
     unsigned int visible_count;
     unsigned int keep_count;
     unsigned int budget;
+    unsigned int selected_count;
+    unsigned int rare_limit;
+    unsigned int high_target;
+    unsigned int tail_index;
+    unsigned int retained_count;
     unsigned int index;
     unsigned int ri;
     unsigned int gi;
@@ -822,12 +1649,20 @@ sixel_kcenter_collect_points(double **points_out,
     double total_weight;
     double keep_target;
     double accum_weight;
+    double mean_r;
+    double mean_g;
+    double mean_b;
+    double dr;
+    double dg;
+    double db;
     double red;
     double green;
     double blue;
     double *sums;
     unsigned int *counts;
+    unsigned char *bin_selected;
     sixel_kcenter_bin_t *bins;
+    sixel_kcenter_dispersion_rank_t *dispersion;
     double *points;
     double *weights;
     float const *pixel_float;
@@ -843,6 +1678,11 @@ sixel_kcenter_collect_points(double **points_out,
     visible_count = 0u;
     keep_count = 0u;
     budget = point_budget;
+    selected_count = 0u;
+    rare_limit = 0u;
+    high_target = 0u;
+    tail_index = 0u;
+    retained_count = 0u;
     index = 0u;
     ri = 0u;
     gi = 0u;
@@ -853,25 +1693,37 @@ sixel_kcenter_collect_points(double **points_out,
     total_weight = 0.0;
     keep_target = 0.0;
     accum_weight = 0.0;
+    mean_r = 0.0;
+    mean_g = 0.0;
+    mean_b = 0.0;
+    dr = 0.0;
+    dg = 0.0;
+    db = 0.0;
     red = 0.0;
     green = 0.0;
     blue = 0.0;
     sums = NULL;
     counts = NULL;
+    bin_selected = NULL;
     bins = NULL;
+    dispersion = NULL;
     points = NULL;
     weights = NULL;
     pixel_float = NULL;
     input_is_float32 = 0;
 
     if (points_out == NULL || weights_out == NULL || point_count_out == NULL
-            || visible_count_out == NULL || data == NULL || allocator == NULL) {
+            || visible_count_out == NULL
+            || active_count_out == NULL
+            || data == NULL
+            || allocator == NULL) {
         return status;
     }
     *points_out = NULL;
     *weights_out = NULL;
     *point_count_out = 0u;
     *visible_count_out = 0u;
+    *active_count_out = 0u;
 
     input_is_float32 = (treat_input_as_float32
                         && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat));
@@ -1044,14 +1896,25 @@ sixel_kcenter_collect_points(double **points_out,
     if (active_count == 0u) {
         active_count = 1u;
     }
+    retained_count = active_count;
+    *active_count_out = retained_count;
 
     if (budget == 0u) {
-        budget = sixel_kcenter_auto_point_budget(reqcolors,
-                                                 visible_count,
-                                                 quality_mode);
+        if (sixel_kcenter_resolve_budget_policy(budget_policy)
+                == SIXEL_PALETTE_KCENTER_BUDGET_POLICY_ADAPTIVE) {
+            budget = sixel_kcenter_auto_point_budget_adaptive(reqcolors,
+                                                              visible_count,
+                                                              retained_count,
+                                                              quality_mode);
+        } else {
+            budget = sixel_kcenter_auto_point_budget_legacy(reqcolors,
+                                                            visible_count,
+                                                            quality_mode);
+        }
+        budget = sixel_kcenter_apply_budget_scale(budget, budget_scale);
     }
-    if (budget > active_count) {
-        budget = active_count;
+    if (budget > retained_count) {
+        budget = retained_count;
     }
     if (budget == 0u) {
         budget = 1u;
@@ -1068,11 +1931,124 @@ sixel_kcenter_collect_points(double **points_out,
         goto end;
     }
 
-    for (index = 0u; index < budget; ++index) {
-        points[index * 3u + 0u] = bins[index].r;
-        points[index * 3u + 1u] = bins[index].g;
-        points[index * 3u + 2u] = bins[index].b;
-        weights[index] = (double)bins[index].count;
+    if (sixel_kcenter_resolve_candidate_policy(candidate_policy)
+            == SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_HYBRID) {
+        bin_selected = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            (size_t)retained_count);
+        dispersion = (sixel_kcenter_dispersion_rank_t *)
+            sixel_allocator_malloc(
+                allocator,
+                (size_t)retained_count
+                * sizeof(sixel_kcenter_dispersion_rank_t));
+        if (bin_selected == NULL || dispersion == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memset(bin_selected, 0, (size_t)retained_count);
+
+        rare_limit = rare_keep;
+        if (rare_limit > budget) {
+            rare_limit = budget;
+        }
+        if (rare_limit > retained_count) {
+            rare_limit = retained_count;
+        }
+        for (index = 0u; index < rare_limit; ++index) {
+            tail_index = retained_count - 1u - index;
+            if (bin_selected[tail_index] != 0u) {
+                continue;
+            }
+            bin_selected[tail_index] = 1u;
+            ++selected_count;
+        }
+
+        mean_r = 0.0;
+        mean_g = 0.0;
+        mean_b = 0.0;
+        total_weight = 0.0;
+        for (index = 0u; index < retained_count; ++index) {
+            total_weight += (double)bins[index].count;
+            mean_r += bins[index].r * (double)bins[index].count;
+            mean_g += bins[index].g * (double)bins[index].count;
+            mean_b += bins[index].b * (double)bins[index].count;
+        }
+        if (total_weight > 0.0) {
+            mean_r /= total_weight;
+            mean_g /= total_weight;
+            mean_b /= total_weight;
+        }
+
+        for (index = 0u; index < retained_count; ++index) {
+            dr = bins[index].r - mean_r;
+            dg = bins[index].g - mean_g;
+            db = bins[index].b - mean_b;
+            dispersion[index].index = index;
+            dispersion[index].score = (double)bins[index].count
+                * (dr * dr + dg * dg + db * db);
+        }
+        qsort(dispersion,
+              retained_count,
+              sizeof(sixel_kcenter_dispersion_rank_t),
+              sixel_kcenter_compare_dispersion_desc);
+
+        high_target = budget;
+        if (high_target > selected_count) {
+            high_target = selected_count
+                + ((budget - selected_count) * 3u) / 4u;
+            if (high_target > budget) {
+                high_target = budget;
+            }
+        }
+        for (index = 0u; index < retained_count && selected_count < high_target;
+                ++index) {
+            if (bin_selected[index] != 0u) {
+                continue;
+            }
+            bin_selected[index] = 1u;
+            ++selected_count;
+        }
+        for (index = 0u; index < retained_count && selected_count < budget;
+                ++index) {
+            bin_index = dispersion[index].index;
+            if (bin_index >= retained_count || bin_selected[bin_index] != 0u) {
+                continue;
+            }
+            bin_selected[bin_index] = 1u;
+            ++selected_count;
+        }
+        for (index = 0u; index < retained_count && selected_count < budget;
+                ++index) {
+            if (bin_selected[index] != 0u) {
+                continue;
+            }
+            bin_selected[index] = 1u;
+            ++selected_count;
+        }
+        if (selected_count == 0u) {
+            bin_selected[0u] = 1u;
+            selected_count = 1u;
+        }
+
+        budget = selected_count;
+        bin_index = 0u;
+        for (index = 0u; index < retained_count && bin_index < budget; ++index) {
+            if (bin_selected[index] == 0u) {
+                continue;
+            }
+            points[bin_index * 3u + 0u] = bins[index].r;
+            points[bin_index * 3u + 1u] = bins[index].g;
+            points[bin_index * 3u + 2u] = bins[index].b;
+            weights[bin_index] = (double)bins[index].count;
+            ++bin_index;
+        }
+    } else {
+        for (index = 0u; index < budget; ++index) {
+            points[index * 3u + 0u] = bins[index].r;
+            points[index * 3u + 1u] = bins[index].g;
+            points[index * 3u + 2u] = bins[index].b;
+            weights[index] = (double)bins[index].count;
+        }
     }
 
     *points_out = points;
@@ -1088,6 +2064,12 @@ end:
     }
     if (weights != NULL) {
         sixel_allocator_free(allocator, weights);
+    }
+    if (dispersion != NULL) {
+        sixel_allocator_free(allocator, dispersion);
+    }
+    if (bin_selected != NULL) {
+        sixel_allocator_free(allocator, bin_selected);
     }
     if (bins != NULL) {
         sixel_allocator_free(allocator, bins);
@@ -1173,6 +2155,122 @@ sixel_kcenter_assign_points(double const *points,
         }
         if (nearest_dist != NULL) {
             nearest_dist[index] = best_distance;
+        }
+        if (best_distance > radius2) {
+            radius2 = best_distance;
+        }
+
+        weight_value = 1.0;
+        if (weights != NULL) {
+            weight_value = weights[index];
+            if (weight_value <= 0.0) {
+                weight_value = 1.0;
+            }
+        }
+        sse += best_distance * weight_value;
+
+        if (cluster_weights != NULL) {
+            cluster_weights[best_slot] += weight_value;
+        }
+        if (cluster_sums != NULL) {
+            cluster_sums[best_slot * 3u + 0u]
+                += points[index * 3u + 0u] * weight_value;
+            cluster_sums[best_slot * 3u + 1u]
+                += points[index * 3u + 1u] * weight_value;
+            cluster_sums[best_slot * 3u + 2u]
+                += points[index * 3u + 2u] * weight_value;
+        }
+    }
+
+    if (radius2_out != NULL) {
+        *radius2_out = radius2;
+    }
+    if (sse_out != NULL) {
+        *sse_out = sse;
+    }
+}
+
+static void
+sixel_kcenter_assign_points_with_second(
+    double const *points,
+    double const *weights,
+    unsigned int point_count,
+    unsigned int const *centers,
+    unsigned int k,
+    unsigned int *nearest_slot,
+    double *nearest_dist,
+    unsigned int *second_slot,
+    double *second_dist,
+    double *radius2_out,
+    double *sse_out,
+    double *cluster_weights,
+    double *cluster_sums)
+{
+    unsigned int index;
+    unsigned int slot;
+    unsigned int best_slot;
+    unsigned int second_best_slot;
+    unsigned int center_index;
+    double distance;
+    double best_distance;
+    double second_best_distance;
+    double radius2;
+    double sse;
+    double weight_value;
+
+    index = 0u;
+    slot = 0u;
+    best_slot = 0u;
+    second_best_slot = 0u;
+    center_index = 0u;
+    distance = 0.0;
+    best_distance = 0.0;
+    second_best_distance = 0.0;
+    radius2 = 0.0;
+    sse = 0.0;
+    weight_value = 0.0;
+
+    if (cluster_weights != NULL) {
+        memset(cluster_weights, 0, (size_t)k * sizeof(double));
+    }
+    if (cluster_sums != NULL) {
+        memset(cluster_sums, 0, (size_t)k * 3u * sizeof(double));
+    }
+
+    for (index = 0u; index < point_count; ++index) {
+        best_slot = 0u;
+        best_distance = sixel_kcenter_distance_sq(points, index, centers[0u]);
+        second_best_slot = 0u;
+        second_best_distance = DBL_MAX;
+        for (slot = 1u; slot < k; ++slot) {
+            center_index = centers[slot];
+            distance = sixel_kcenter_distance_sq(points, index, center_index);
+            if (distance < best_distance) {
+                second_best_distance = best_distance;
+                second_best_slot = best_slot;
+                best_distance = distance;
+                best_slot = slot;
+            } else if (distance < second_best_distance) {
+                second_best_distance = distance;
+                second_best_slot = slot;
+            }
+        }
+        if (k == 1u) {
+            second_best_distance = best_distance;
+            second_best_slot = best_slot;
+        }
+
+        if (nearest_slot != NULL) {
+            nearest_slot[index] = best_slot;
+        }
+        if (nearest_dist != NULL) {
+            nearest_dist[index] = best_distance;
+        }
+        if (second_slot != NULL) {
+            second_slot[index] = second_best_slot;
+        }
+        if (second_dist != NULL) {
+            second_dist[index] = second_best_distance;
         }
         if (best_distance > radius2) {
             radius2 = best_distance;
@@ -1396,18 +2494,46 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
     unsigned int *centers;
     unsigned int *nearest_slot;
     double *nearest_dist;
+    unsigned int *second_slot;
+    double *second_dist;
     double *radius2_io;
     double *sse_io;
     unsigned int *scratch_slot;
     double *scratch_dist;
+    unsigned int *scratch_second_slot;
+    double *scratch_second_dist;
+    unsigned int candidate_list[16];
+    double candidate_dist[16];
+    double candidate_weight[16];
+    unsigned int candidate_count;
+    unsigned int topk;
+    sixel_kcenter_swap_update_t swap_update;
+    uint32_t *rng_state;
+    unsigned int insert_pos;
+    unsigned int shift;
+    unsigned int candidate;
+    unsigned int old_slot;
     unsigned int index;
-    unsigned int worst_index;
     unsigned int slot;
+    unsigned int best_slot;
+    unsigned int best_candidate;
     unsigned int old_center;
+    unsigned int tries;
+    unsigned int pick;
     double radius2;
     double sse;
+    double best_radius2;
+    double best_sse;
+    double distance_to_new;
+    double new_distance;
+    double old_distance;
+    double old_second;
+    unsigned int old_nearest_slot;
+    unsigned int old_second_slot;
     double lhs_weight;
     double rhs_weight;
+    int added;
+    int found;
 
     if (ctx == NULL) {
         return 0;
@@ -1420,81 +2546,298 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
     centers = ctx->centers;
     nearest_slot = ctx->nearest_slot;
     nearest_dist = ctx->nearest_dist;
+    second_slot = ctx->second_slot;
+    second_dist = ctx->second_dist;
     radius2_io = ctx->radius2_io;
     sse_io = ctx->sse_io;
     scratch_slot = ctx->scratch_slot;
     scratch_dist = ctx->scratch_dist;
+    scratch_second_slot = ctx->scratch_second_slot;
+    scratch_second_dist = ctx->scratch_second_dist;
+    topk = ctx->swap_topk;
+    swap_update = ctx->swap_update;
+    rng_state = ctx->rng_state;
 
+    candidate_count = 0u;
+    insert_pos = 0u;
+    shift = 0u;
+    candidate = 0u;
+    old_slot = 0u;
     index = 0u;
-    worst_index = 0u;
     slot = 0u;
+    best_slot = 0u;
+    best_candidate = 0u;
     old_center = 0u;
+    tries = 0u;
+    pick = 0u;
     radius2 = 0.0;
     sse = 0.0;
+    best_radius2 = *radius2_io;
+    best_sse = *sse_io;
+    distance_to_new = 0.0;
+    new_distance = 0.0;
+    old_distance = 0.0;
+    old_second = 0.0;
+    old_nearest_slot = 0u;
+    old_second_slot = 0u;
     lhs_weight = 0.0;
     rhs_weight = 0.0;
+    added = 0;
+    found = 0;
 
-    if (point_count == 0u || k == 0u) {
+    if (point_count == 0u || k == 0u || point_count <= k) {
         return 0;
     }
+    if (topk < 1u) {
+        topk = 1u;
+    }
+    if (topk > 16u) {
+        topk = 16u;
+    }
 
-    worst_index = 0u;
-    for (index = 1u; index < point_count; ++index) {
-        if (nearest_dist[index] > nearest_dist[worst_index] + 1.0e-12) {
-            worst_index = index;
-        } else if (nearest_dist[index] >= nearest_dist[worst_index]
-                - 1.0e-12) {
-            lhs_weight = (weights != NULL) ? weights[index] : 1.0;
-            rhs_weight = (weights != NULL) ? weights[worst_index] : 1.0;
-            if (lhs_weight > rhs_weight + 1.0e-12) {
-                worst_index = index;
-            } else if (lhs_weight >= rhs_weight - 1.0e-12
-                    && index < worst_index) {
-                worst_index = index;
+    for (index = 0u; index < point_count; ++index) {
+        if (sixel_kcenter_is_center(centers, k, index)) {
+            continue;
+        }
+
+        lhs_weight = (weights != NULL) ? weights[index] : 1.0;
+        insert_pos = candidate_count;
+        while (insert_pos > 0u) {
+            rhs_weight = candidate_weight[insert_pos - 1u];
+            if (nearest_dist[index] > candidate_dist[insert_pos - 1u]
+                    + 1.0e-12) {
+                --insert_pos;
+                continue;
             }
+            if (nearest_dist[index] >= candidate_dist[insert_pos - 1u]
+                    - 1.0e-12
+                    && (lhs_weight > rhs_weight + 1.0e-12
+                        || (lhs_weight >= rhs_weight - 1.0e-12
+                            && index < candidate_list[insert_pos - 1u]))) {
+                --insert_pos;
+                continue;
+            }
+            break;
+        }
+
+        if (insert_pos >= topk) {
+            continue;
+        }
+        if (candidate_count < topk) {
+            ++candidate_count;
+        }
+        shift = candidate_count;
+        while (shift > insert_pos + 1u) {
+            candidate_list[shift - 1u] = candidate_list[shift - 2u];
+            candidate_dist[shift - 1u] = candidate_dist[shift - 2u];
+            candidate_weight[shift - 1u] = candidate_weight[shift - 2u];
+            --shift;
+        }
+        candidate_list[insert_pos] = index;
+        candidate_dist[insert_pos] = nearest_dist[index];
+        candidate_weight[insert_pos] = lhs_weight;
+    }
+
+    while (candidate_count < topk && rng_state != NULL && point_count > 0u) {
+        tries = 0u;
+        pick = 0u;
+        added = 0;
+        while (tries < point_count * 2u + 8u) {
+            pick = sixel_kcenter_rng_bounded(rng_state, point_count);
+            if (sixel_kcenter_is_center(centers, k, pick)) {
+                ++tries;
+                continue;
+            }
+            found = 0;
+            for (index = 0u; index < candidate_count; ++index) {
+                if (candidate_list[index] == pick) {
+                    found = 1;
+                    break;
+                }
+            }
+            if (!found) {
+                candidate_list[candidate_count] = pick;
+                candidate_dist[candidate_count] = nearest_dist[pick];
+                candidate_weight[candidate_count]
+                    = (weights != NULL) ? weights[pick] : 1.0;
+                ++candidate_count;
+                added = 1;
+                break;
+            }
+            ++tries;
+        }
+        if (!added) {
+            break;
         }
     }
 
-    slot = nearest_slot[worst_index];
-    if (slot >= k || centers[slot] == worst_index) {
+    if (candidate_count == 0u) {
         return 0;
     }
 
-    if (sixel_kcenter_is_center(centers, k, worst_index)) {
+    if (swap_update == SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL
+            && second_slot != NULL
+            && second_dist != NULL) {
+        for (index = 0u; index < candidate_count; ++index) {
+            candidate = candidate_list[index];
+            slot = nearest_slot[candidate];
+            if (slot >= k || centers[slot] == candidate) {
+                continue;
+            }
+            if (sixel_kcenter_is_center(centers, k, candidate)) {
+                continue;
+            }
+
+            radius2 = 0.0;
+            sse = 0.0;
+            for (old_slot = 0u; old_slot < point_count; ++old_slot) {
+                old_nearest_slot = nearest_slot[old_slot];
+                old_second_slot = second_slot[old_slot];
+                old_distance = nearest_dist[old_slot];
+                old_second = second_dist[old_slot];
+                distance_to_new = sixel_kcenter_distance_sq(points,
+                                                            old_slot,
+                                                            candidate);
+
+                if (old_nearest_slot == slot) {
+                    new_distance = old_second;
+                    scratch_slot[old_slot] = old_second_slot;
+                    if (distance_to_new <= new_distance) {
+                        new_distance = distance_to_new;
+                        scratch_slot[old_slot] = slot;
+                    }
+                } else {
+                    new_distance = old_distance;
+                    scratch_slot[old_slot] = old_nearest_slot;
+                    if (distance_to_new < new_distance) {
+                        new_distance = distance_to_new;
+                        scratch_slot[old_slot] = slot;
+                    }
+                }
+                scratch_dist[old_slot] = new_distance;
+                if (new_distance > radius2) {
+                    radius2 = new_distance;
+                }
+                lhs_weight = (weights != NULL) ? weights[old_slot] : 1.0;
+                if (lhs_weight <= 0.0) {
+                    lhs_weight = 1.0;
+                }
+                sse += new_distance * lhs_weight;
+            }
+
+            if (radius2 < best_radius2 - 1.0e-12
+                    || (radius2 <= best_radius2 + 1.0e-12
+                        && sse < best_sse - 1.0e-9)) {
+                best_radius2 = radius2;
+                best_sse = sse;
+                best_slot = slot;
+                best_candidate = candidate;
+                found = 1;
+            }
+        }
+
+        if (found) {
+            centers[best_slot] = best_candidate;
+            sixel_kcenter_assign_points_with_second(points,
+                                                    weights,
+                                                    point_count,
+                                                    centers,
+                                                    k,
+                                                    nearest_slot,
+                                                    nearest_dist,
+                                                    second_slot,
+                                                    second_dist,
+                                                    &radius2,
+                                                    &sse,
+                                                    NULL,
+                                                    NULL);
+            *radius2_io = radius2;
+            *sse_io = sse;
+            return 1;
+        }
         return 0;
     }
 
-    old_center = centers[slot];
-    centers[slot] = worst_index;
+    for (index = 0u; index < candidate_count; ++index) {
+        candidate = candidate_list[index];
+        slot = nearest_slot[candidate];
+        if (slot >= k || centers[slot] == candidate) {
+            continue;
+        }
+        if (sixel_kcenter_is_center(centers, k, candidate)) {
+            continue;
+        }
 
-    sixel_kcenter_assign_points(points,
-                                weights,
-                                point_count,
-                                centers,
-                                k,
-                                scratch_slot,
-                                scratch_dist,
-                                &radius2,
-                                &sse,
-                                NULL,
-                                NULL);
+        old_center = centers[slot];
+        centers[slot] = candidate;
+        sixel_kcenter_assign_points(points,
+                                    weights,
+                                    point_count,
+                                    centers,
+                                    k,
+                                    scratch_slot,
+                                    scratch_dist,
+                                    &radius2,
+                                    &sse,
+                                    NULL,
+                                    NULL);
+        centers[slot] = old_center;
 
-    if (radius2 < *radius2_io - 1.0e-12
-            || (radius2 <= *radius2_io + 1.0e-12
-                && sse < *sse_io - 1.0e-9)) {
-        memcpy(nearest_slot,
-               scratch_slot,
+        if (radius2 < best_radius2 - 1.0e-12
+                || (radius2 <= best_radius2 + 1.0e-12
+                    && sse < best_sse - 1.0e-9)) {
+            best_radius2 = radius2;
+            best_sse = sse;
+            best_slot = slot;
+            best_candidate = candidate;
+            found = 1;
+        }
+    }
+
+    if (!found) {
+        return 0;
+    }
+
+    centers[best_slot] = best_candidate;
+    if (second_slot != NULL && second_dist != NULL) {
+        sixel_kcenter_assign_points_with_second(points,
+                                                weights,
+                                                point_count,
+                                                centers,
+                                                k,
+                                                nearest_slot,
+                                                nearest_dist,
+                                                second_slot,
+                                                second_dist,
+                                                &radius2,
+                                                &sse,
+                                                NULL,
+                                                NULL);
+    } else {
+        sixel_kcenter_assign_points(points,
+                                    weights,
+                                    point_count,
+                                    centers,
+                                    k,
+                                    nearest_slot,
+                                    nearest_dist,
+                                    &radius2,
+                                    &sse,
+                                    NULL,
+                                    NULL);
+    }
+    *radius2_io = radius2;
+    *sse_io = sse;
+    if (scratch_second_slot != NULL && scratch_second_dist != NULL) {
+        /* Keep buffers initialized for debugability in constrained builds. */
+        memcpy(scratch_second_slot,
+               nearest_slot,
                (size_t)point_count * sizeof(unsigned int));
-        memcpy(nearest_dist,
-               scratch_dist,
+        memcpy(scratch_second_dist,
+               nearest_dist,
                (size_t)point_count * sizeof(double));
-        *radius2_io = radius2;
-        *sse_io = sse;
-        return 1;
     }
-
-    centers[slot] = old_center;
-    return 0;
+    return 1;
 }
 
 static SIXELSTATUS
@@ -1511,8 +2854,15 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
     unsigned int *centers;
     unsigned int *nearest_slot;
     double *nearest_dist;
+    unsigned int *second_slot;
+    double *second_dist;
     unsigned int *scratch_slot;
     double *scratch_dist;
+    unsigned int *scratch_second_slot;
+    double *scratch_second_dist;
+    unsigned int swap_topk;
+    sixel_kcenter_swap_update_t swap_update;
+    unsigned int swap_patience;
     double *radius2_out;
     double *sse_out;
     unsigned int *iterations_out;
@@ -1520,6 +2870,7 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
     double *fft_dist_cache;
     unsigned char *center_mask;
     unsigned int iterations;
+    unsigned int no_improve;
     double radius2;
     double sse;
     sixel_kcenter_swap_ctx_t swap_ctx;
@@ -1538,8 +2889,15 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
     centers = ctx->centers;
     nearest_slot = ctx->nearest_slot;
     nearest_dist = ctx->nearest_dist;
+    second_slot = ctx->second_slot;
+    second_dist = ctx->second_dist;
     scratch_slot = ctx->scratch_slot;
     scratch_dist = ctx->scratch_dist;
+    scratch_second_slot = ctx->scratch_second_slot;
+    scratch_second_dist = ctx->scratch_second_dist;
+    swap_topk = ctx->swap_topk;
+    swap_update = ctx->swap_update;
+    swap_patience = ctx->swap_patience;
     radius2_out = ctx->radius2_out;
     sse_out = ctx->sse_out;
     iterations_out = ctx->iterations_out;
@@ -1549,6 +2907,7 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
 
     status = SIXEL_OK;
     iterations = 0u;
+    no_improve = 0u;
     radius2 = 0.0;
     sse = 0.0;
     swap_ctx.points = points;
@@ -1558,10 +2917,17 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
     swap_ctx.k = k;
     swap_ctx.nearest_slot = nearest_slot;
     swap_ctx.nearest_dist = nearest_dist;
+    swap_ctx.second_slot = second_slot;
+    swap_ctx.second_dist = second_dist;
     swap_ctx.radius2_io = &radius2;
     swap_ctx.sse_io = &sse;
     swap_ctx.scratch_slot = scratch_slot;
     swap_ctx.scratch_dist = scratch_dist;
+    swap_ctx.scratch_second_slot = scratch_second_slot;
+    swap_ctx.scratch_second_dist = scratch_second_dist;
+    swap_ctx.swap_topk = swap_topk;
+    swap_ctx.swap_update = swap_update;
+    swap_ctx.rng_state = rng_state;
 
     if (point_count == 0u || k == 0u) {
         if (radius2_out != NULL) {
@@ -1593,24 +2959,45 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
                                  center_mask);
     }
 
-    sixel_kcenter_assign_points(points,
-                                weights,
-                                point_count,
-                                centers,
-                                k,
-                                nearest_slot,
-                                nearest_dist,
-                                &radius2,
-                                &sse,
-                                NULL,
-                                NULL);
+    if (second_slot != NULL && second_dist != NULL) {
+        sixel_kcenter_assign_points_with_second(points,
+                                                weights,
+                                                point_count,
+                                                centers,
+                                                k,
+                                                nearest_slot,
+                                                nearest_dist,
+                                                second_slot,
+                                                second_dist,
+                                                &radius2,
+                                                &sse,
+                                                NULL,
+                                                NULL);
+    } else {
+        sixel_kcenter_assign_points(points,
+                                    weights,
+                                    point_count,
+                                    centers,
+                                    k,
+                                    nearest_slot,
+                                    nearest_dist,
+                                    &radius2,
+                                    &sse,
+                                    NULL,
+                                    NULL);
+    }
 
     if (resolved_algo != SIXEL_PALETTE_KCENTER_ALGO_FFT) {
         while (iterations < iter_limit) {
-            if (!sixel_kcenter_try_worst_swap(&swap_ctx)) {
+            if (sixel_kcenter_try_worst_swap(&swap_ctx)) {
+                ++iterations;
+                no_improve = 0u;
+                continue;
+            }
+            if (swap_patience == 0u || no_improve >= swap_patience) {
                 break;
             }
-            ++iterations;
+            ++no_improve;
         }
     }
 
@@ -1628,9 +3015,38 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
 
 static sixel_kcenter_algo_t
 sixel_kcenter_choose_auto_algo(int quality_mode,
-                               unsigned int point_count)
+                               unsigned int point_count,
+                               sixel_kcenter_auto_policy_t auto_policy,
+                               unsigned int auto_fft_threshold)
 {
-    if (quality_mode == SIXEL_QUALITY_LOW || point_count > 2048u) {
+    unsigned int threshold;
+
+    threshold = auto_fft_threshold;
+    if (threshold < 256u) {
+        threshold = 256u;
+    }
+    if (threshold > 65536u) {
+        threshold = 65536u;
+    }
+
+    if (sixel_kcenter_resolve_auto_policy(auto_policy)
+            == SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY) {
+        if (quality_mode == SIXEL_QUALITY_LOW || point_count > 2048u) {
+            return SIXEL_PALETTE_KCENTER_ALGO_FFT;
+        }
+        return SIXEL_PALETTE_KCENTER_ALGO_HYBRID;
+    }
+
+    if (quality_mode == SIXEL_QUALITY_LOW) {
+        if (threshold > 256u) {
+            threshold /= 2u;
+        }
+    } else if (quality_mode == SIXEL_QUALITY_FULL) {
+        if (threshold < 32768u) {
+            threshold *= 2u;
+        }
+    }
+    if (point_count > threshold) {
         return SIXEL_PALETTE_KCENTER_ALGO_FFT;
     }
     return SIXEL_PALETTE_KCENTER_ALGO_HYBRID;
@@ -1663,6 +3079,7 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     double *weights;
     unsigned int point_count;
     unsigned int visible_count;
+    unsigned int active_count;
     unsigned int k;
     unsigned int overshoot;
     unsigned int slot;
@@ -1676,6 +3093,10 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     unsigned int iter_limit;
     unsigned int histbits;
     unsigned int point_budget;
+    unsigned int auto_fft_threshold;
+    unsigned int rare_keep;
+    unsigned int swap_topk;
+    unsigned int swap_patience;
     unsigned int total_iterations;
     unsigned int best_iterations;
     unsigned int run_iterations;
@@ -1683,14 +3104,23 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     int apply_merge;
     sixel_kcenter_algo_t algo;
     sixel_kcenter_algo_t resolved_algo;
+    sixel_kcenter_profile_t profile;
+    sixel_kcenter_auto_policy_t auto_policy;
+    sixel_kcenter_candidate_policy_t candidate_policy;
+    sixel_kcenter_budget_policy_t budget_policy;
+    sixel_kcenter_swap_update_t swap_update;
     uint32_t rng_state;
     unsigned int *centers;
     unsigned int *best_centers;
     unsigned int *work_centers;
     unsigned int *nearest_slot;
+    unsigned int *second_slot;
     unsigned int *scratch_slot;
+    unsigned int *scratch_second_slot;
     double *nearest_dist;
+    double *second_dist;
     double *scratch_dist;
+    double *scratch_second_dist;
     double *cluster_weights;
     double *cluster_sums;
     double *final_centers;
@@ -1704,6 +3134,7 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     double best_radius2;
     double best_sse;
     double prune_mass;
+    double budget_scale;
     unsigned long *merge_weights;
     double *merge_sums;
     int cluster_total;
@@ -1722,7 +3153,7 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     int job_iter;
     int job_merge;
     int job_export;
-    char log_detail[160];
+    char log_detail[320];
     double wall_start;
     double init_stop;
     double iterate_start;
@@ -1771,6 +3202,7 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     weights = NULL;
     point_count = 0u;
     visible_count = 0u;
+    active_count = 0u;
     k = 0u;
     overshoot = 0u;
     slot = 0u;
@@ -1784,6 +3216,10 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     iter_limit = 16u;
     histbits = 5u;
     point_budget = 0u;
+    auto_fft_threshold = SIXEL_KCENTER_AUTO_FFT_THRESHOLD_DEFAULT;
+    rare_keep = SIXEL_KCENTER_RARE_KEEP_DEFAULT;
+    swap_topk = SIXEL_KCENTER_SWAP_TOPK_DEFAULT;
+    swap_patience = SIXEL_KCENTER_SWAP_PATIENCE_DEFAULT;
     total_iterations = 0u;
     best_iterations = 0u;
     run_iterations = 0u;
@@ -1791,14 +3227,23 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     apply_merge = 0;
     algo = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
     resolved_algo = SIXEL_PALETTE_KCENTER_ALGO_AUTO;
+    profile = SIXEL_PALETTE_KCENTER_PROFILE_LEGACY;
+    auto_policy = SIXEL_PALETTE_KCENTER_AUTO_POLICY_LEGACY;
+    candidate_policy = SIXEL_PALETTE_KCENTER_CANDIDATE_POLICY_LEGACY;
+    budget_policy = SIXEL_PALETTE_KCENTER_BUDGET_POLICY_LEGACY;
+    swap_update = SIXEL_PALETTE_KCENTER_SWAP_UPDATE_FULL;
     rng_state = 1u;
     centers = NULL;
     best_centers = NULL;
     work_centers = NULL;
     nearest_slot = NULL;
+    second_slot = NULL;
     scratch_slot = NULL;
+    scratch_second_slot = NULL;
     nearest_dist = NULL;
+    second_dist = NULL;
     scratch_dist = NULL;
+    scratch_second_dist = NULL;
     cluster_weights = NULL;
     cluster_sums = NULL;
     final_centers = NULL;
@@ -1812,6 +3257,7 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     best_radius2 = 0.0;
     best_sse = 0.0;
     prune_mass = 0.995;
+    budget_scale = SIXEL_KCENTER_BUDGET_SCALE_DEFAULT;
     merge_weights = NULL;
     merge_sums = NULL;
     cluster_total = 0;
@@ -1914,17 +3360,28 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
                                                "init");
 
     algo = sixel_get_kcenter_algo();
+    profile = sixel_get_kcenter_profile();
     seed = (unsigned int)sixel_get_kcenter_seed();
     restarts = sixel_get_kcenter_restarts();
     iter_limit = sixel_get_kcenter_iter();
     histbits = sixel_get_kcenter_histbits();
     point_budget = sixel_get_kcenter_point_budget();
     prune_mass = sixel_get_kcenter_prune_mass();
+    auto_policy = sixel_get_kcenter_auto_policy();
+    auto_fft_threshold = sixel_get_kcenter_auto_fft_threshold();
+    candidate_policy = sixel_get_kcenter_candidate_policy();
+    rare_keep = sixel_get_kcenter_rare_keep();
+    budget_policy = sixel_get_kcenter_budget_policy();
+    budget_scale = sixel_get_kcenter_budget_scale();
+    swap_topk = sixel_get_kcenter_swap_topk();
+    swap_update = sixel_get_kcenter_swap_update();
+    swap_patience = sixel_get_kcenter_swap_patience();
 
     status = sixel_kcenter_collect_points(&points,
                                           &weights,
                                           &point_count,
                                           &visible_count,
+                                          &active_count,
                                           data,
                                           length,
                                           depth,
@@ -1935,6 +3392,10 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
                                           prune_mass,
                                           reqcolors,
                                           quality_mode,
+                                          candidate_policy,
+                                          rare_keep,
+                                          budget_policy,
+                                          budget_scale,
                                           float32_channel_scale,
                                           float32_channel_offset,
                                           allocator);
@@ -1978,13 +3439,25 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     nearest_slot = (unsigned int *)sixel_allocator_malloc(
         allocator,
         (size_t)point_count * sizeof(unsigned int));
+    second_slot = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(unsigned int));
     scratch_slot = (unsigned int *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(unsigned int));
+    scratch_second_slot = (unsigned int *)sixel_allocator_malloc(
         allocator,
         (size_t)point_count * sizeof(unsigned int));
     nearest_dist = (double *)sixel_allocator_malloc(
         allocator,
         (size_t)point_count * sizeof(double));
+    second_dist = (double *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(double));
     scratch_dist = (double *)sixel_allocator_malloc(
+        allocator,
+        (size_t)point_count * sizeof(double));
+    scratch_second_dist = (double *)sixel_allocator_malloc(
         allocator,
         (size_t)point_count * sizeof(double));
     cluster_weights = (double *)sixel_allocator_malloc(
@@ -2007,8 +3480,10 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
         (size_t)point_count);
 
     if (centers == NULL || best_centers == NULL || work_centers == NULL
-            || nearest_slot == NULL || scratch_slot == NULL
-            || nearest_dist == NULL || scratch_dist == NULL
+            || nearest_slot == NULL || second_slot == NULL
+            || scratch_slot == NULL || scratch_second_slot == NULL
+            || nearest_dist == NULL || second_dist == NULL
+            || scratch_dist == NULL || scratch_second_dist == NULL
             || cluster_weights == NULL || cluster_sums == NULL
             || final_centers == NULL || scratch_indices == NULL
             || fft_dist_cache == NULL || center_mask == NULL) {
@@ -2019,23 +3494,44 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     resolved_algo = algo;
     if (resolved_algo == SIXEL_PALETTE_KCENTER_ALGO_AUTO) {
         resolved_algo = sixel_kcenter_choose_auto_algo(quality_mode,
-                                                       point_count);
+                                                       point_count,
+                                                       auto_policy,
+                                                       auto_fft_threshold);
     }
 
     init_stop = sixel_timer_now();
     iterate_start = init_stop;
     (void)sixel_compat_snprintf(log_detail,
                                 sizeof(log_detail),
-                                "samples=%u k=%u algo=%s/%s seed=%u "
-                                "histbits=%u budget=%u prune_mass=%.3f",
+                                "samples=%u active=%u k=%u profile=%s "
+                                "algo=%s/%s auto=%s fft_threshold=%u "
+                                "cand=%s rare_keep=%u budget=%s scale=%.2f "
+                                "req_budget=%u prune_mass=%.3f "
+                                "swap_topk=%u swap_update=%s "
+                                "swap_patience=%u seed=%u histbits=%u",
                                 point_count,
+                                active_count,
                                 k,
+                                sixel_kcenter_profile_to_string(profile),
                                 sixel_kcenter_algo_to_string(algo),
                                 sixel_kcenter_algo_to_string(resolved_algo),
-                                seed,
-                                histbits,
+                                sixel_kcenter_auto_policy_to_string(
+                                    auto_policy),
+                                auto_fft_threshold,
+                                sixel_kcenter_candidate_policy_to_string(
+                                    candidate_policy),
+                                rare_keep,
+                                sixel_kcenter_budget_policy_to_string(
+                                    budget_policy),
+                                budget_scale,
                                 point_budget,
-                                prune_mass);
+                                prune_mass,
+                                swap_topk,
+                                sixel_kcenter_swap_update_to_string(
+                                    swap_update),
+                                swap_patience,
+                                seed,
+                                histbits);
     sixel_palette_kcenter_log_finish(logger,
                                      job_init,
                                      engine_name,
@@ -2059,8 +3555,15 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     solver_ctx.centers = work_centers;
     solver_ctx.nearest_slot = nearest_slot;
     solver_ctx.nearest_dist = nearest_dist;
+    solver_ctx.second_slot = second_slot;
+    solver_ctx.second_dist = second_dist;
     solver_ctx.scratch_slot = scratch_slot;
     solver_ctx.scratch_dist = scratch_dist;
+    solver_ctx.scratch_second_slot = scratch_second_slot;
+    solver_ctx.scratch_second_dist = scratch_second_dist;
+    solver_ctx.swap_topk = swap_topk;
+    solver_ctx.swap_update = swap_update;
+    solver_ctx.swap_patience = swap_patience;
     solver_ctx.radius2_out = &radius2;
     solver_ctx.sse_out = &sse;
     solver_ctx.iterations_out = &run_iterations;
@@ -2093,17 +3596,19 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     memcpy(centers, best_centers, (size_t)k * sizeof(unsigned int));
     total_iterations = best_iterations;
 
-    sixel_kcenter_assign_points(points,
-                                weights,
-                                point_count,
-                                centers,
-                                k,
-                                nearest_slot,
-                                nearest_dist,
-                                &radius2,
-                                &sse,
-                                cluster_weights,
-                                cluster_sums);
+    sixel_kcenter_assign_points_with_second(points,
+                                            weights,
+                                            point_count,
+                                            centers,
+                                            k,
+                                            nearest_slot,
+                                            nearest_dist,
+                                            second_slot,
+                                            second_dist,
+                                            &radius2,
+                                            &sse,
+                                            cluster_weights,
+                                            cluster_sums);
 
     for (slot = 0u; slot < k; ++slot) {
         final_centers[slot * 3u + 0u] = points[centers[slot] * 3u + 0u];
@@ -2467,14 +3972,26 @@ end:
     if (scratch_dist != NULL) {
         sixel_allocator_free(allocator, scratch_dist);
     }
+    if (scratch_second_dist != NULL) {
+        sixel_allocator_free(allocator, scratch_second_dist);
+    }
     if (nearest_dist != NULL) {
         sixel_allocator_free(allocator, nearest_dist);
+    }
+    if (second_dist != NULL) {
+        sixel_allocator_free(allocator, second_dist);
     }
     if (scratch_slot != NULL) {
         sixel_allocator_free(allocator, scratch_slot);
     }
+    if (scratch_second_slot != NULL) {
+        sixel_allocator_free(allocator, scratch_second_slot);
+    }
     if (nearest_slot != NULL) {
         sixel_allocator_free(allocator, nearest_slot);
+    }
+    if (second_slot != NULL) {
+        sixel_allocator_free(allocator, second_slot);
     }
     if (work_centers != NULL) {
         sixel_allocator_free(allocator, work_centers);

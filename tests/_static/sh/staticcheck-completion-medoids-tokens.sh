@@ -25,8 +25,12 @@ for token in \
     clara_trials= clara_sample= clarans_local= clarans_neighbors= \
     bandit_iter= bandit_candidates= bandit_batch= \
     center fft swap hybrid restarts= \
+    profile= auto_policy= auto_fft_threshold= candidate_policy= \
+    rare_keep= budget_policy= budget_scale= \
+    swap_topk= swap_update= swap_patience= \
     auto \
-    pam sample random bandit fft swap hybrid
+    pam sample random bandit fft swap hybrid \
+    legacy speed balance quality adaptive full incremental
 do
     case "$bash_text" in
         *"$token"*)

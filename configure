@@ -18993,6 +18993,18 @@ esac
 fi
 
 
+if test "x$ac_cv_sixel_cc_is_pcc" = "xyes" &&
+       test "x$with_librsvg" = "xauto"
+then :
+
+  # GCC/clang-oriented glib/cairo headers emit pcc diagnostics and
+  # occasionally hard errors. Keep pcc auto builds warning-free by default.
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: pcc detected; disabling auto-detected librsvg loader" >&5
+printf "%s\n" "$as_me: pcc detected; disabling auto-detected librsvg loader" >&6;}
+  with_librsvg=no
+
+fi
+
 
 # Check whether --with-winpthread was given.
 if test ${with_winpthread+y}

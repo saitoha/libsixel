@@ -1032,7 +1032,14 @@ endif
 
 librsvg_opt = get_option('librsvg')
 librsvg_dep = disabler()
-if not librsvg_opt.disabled()
+enable_librsvg = not librsvg_opt.disabled()
+if is_pcc_backend and librsvg_opt.auto()
+  # GCC/clang-oriented glib/cairo headers trigger pcc diagnostics and can
+  # abort the build. Keep pcc auto builds warning-free by default.
+  enable_librsvg = false
+  message('pcc backend detected: disable librsvg auto loader')
+endif
+if enable_librsvg
   librsvg_dep = dependency('librsvg-2.0',
                            version: '>=2.46',
                            required: false,

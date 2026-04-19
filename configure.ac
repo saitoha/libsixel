@@ -1807,6 +1807,14 @@ AC_ARG_WITH([librsvg],
             [],
             [with_librsvg=auto])
 
+AS_IF([test "x$ac_cv_sixel_cc_is_pcc" = "xyes" &&
+       test "x$with_librsvg" = "xauto"], [
+  # GCC/clang-oriented glib/cairo headers emit pcc diagnostics and
+  # occasionally hard errors. Keep pcc auto builds warning-free by default.
+  AC_MSG_NOTICE([pcc detected; disabling auto-detected librsvg loader])
+  with_librsvg=no
+])
+
 AC_ARG_WITH([winpthread],
             [AS_HELP_STRING([--with-winpthread],
                             [whether to build with libwinpthread, windows only (default: no)])],
