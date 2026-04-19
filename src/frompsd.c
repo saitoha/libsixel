@@ -102,7 +102,6 @@
 #define SIXEL_PSD_TRACE_MESSAGE_MAX 384u
 #define SIXEL_PSD_TRACE_CODE_MAX 64u
 
-#if SIXEL_PSD_TRACE_TLS_AVAILABLE
 static SIXEL_PSD_TRACE_TLS uint64_t
 sixel_builtin_psd_trace_seen_hashes[SIXEL_PSD_TRACE_SEEN_MAX];
 static SIXEL_PSD_TRACE_TLS unsigned int
@@ -116,16 +115,13 @@ static SIXEL_PSD_TRACE_TLS char const *
 sixel_builtin_psd_trace_codes[SIXEL_PSD_TRACE_CODE_MAX];
 static SIXEL_PSD_TRACE_TLS unsigned int
 sixel_builtin_psd_trace_code_count;
-#endif
 
 static void
 sixel_builtin_psd_trace_reset(void)
 {
-#if SIXEL_PSD_TRACE_TLS_AVAILABLE
     sixel_builtin_psd_trace_seen_count = 0u;
     sixel_builtin_psd_trace_message_count = 0u;
     sixel_builtin_psd_trace_code_count = 0u;
-#endif
 }
 
 static int
@@ -136,7 +132,6 @@ sixel_builtin_psd_trace_seen(char const *message)
 
     hash = 0u;
     i = 0u;
-#if SIXEL_PSD_TRACE_TLS_AVAILABLE
     if (message == NULL) {
         return 0;
     }
@@ -156,17 +151,12 @@ sixel_builtin_psd_trace_seen(char const *message)
             sixel_builtin_psd_trace_seen_count] = hash;
         ++sixel_builtin_psd_trace_seen_count;
     }
-#else
-    (void)hash;
-    (void)message;
-#endif
     return 0;
 }
 
 static void
 sixel_builtin_psd_trace_add_code(char const *code)
 {
-#if SIXEL_PSD_TRACE_TLS_AVAILABLE
     unsigned int i;
 
     i = 0u;
@@ -183,9 +173,6 @@ sixel_builtin_psd_trace_add_code(char const *code)
     }
     sixel_builtin_psd_trace_codes[sixel_builtin_psd_trace_code_count] = code;
     ++sixel_builtin_psd_trace_code_count;
-#else
-    (void)code;
-#endif
 }
 
 static char const *
@@ -231,7 +218,6 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
 static void
 sixel_builtin_psd_trace_buffer_message(char const *message)
 {
-#if SIXEL_PSD_TRACE_TLS_AVAILABLE
     size_t length;
     unsigned int slot;
 
@@ -251,9 +237,6 @@ sixel_builtin_psd_trace_buffer_message(char const *message)
     memcpy(sixel_builtin_psd_trace_messages[slot], message, length);
     sixel_builtin_psd_trace_messages[slot][length] = '\0';
     ++sixel_builtin_psd_trace_message_count;
-#else
-    (void)message;
-#endif
 }
 
 void
@@ -265,7 +248,6 @@ sixel_builtin_psd_trace_contract_add_error_code(char const *code)
 void
 sixel_builtin_psd_trace_contract_flush(int rc)
 {
-#if SIXEL_PSD_TRACE_TLS_AVAILABLE
     unsigned int i;
     char const *kind;
 
@@ -300,9 +282,6 @@ sixel_builtin_psd_trace_contract_flush(int rc)
             sixel_builtin_psd_trace_messages[i]);
     }
     sixel_builtin_psd_trace_reset();
-#else
-    (void)rc;
-#endif
 }
 
 static void
@@ -324,9 +303,7 @@ sixel_builtin_psd_trace_message(char const *topic,
         code = sixel_builtin_psd_trace_code_from_message(message);
         sixel_builtin_psd_trace_add_code(code);
         sixel_builtin_psd_trace_buffer_message(message);
-#if SIXEL_PSD_TRACE_TLS_AVAILABLE
         return;
-#endif
     }
     (sixel_trace_topic_message)(topic, "%s", message);
 }
