@@ -6464,14 +6464,24 @@ sixel_kcenter_build_allocate_solver_buffers(sixel_kcenter_build_runtime_t *rt)
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_kcenter_build_solve_phase(sixel_kcenter_build_runtime_t *rt)
-{
+typedef struct sixel_kcenter_build_solve_state {
     unsigned int slot;
+} sixel_kcenter_build_solve_state_t;
 
-    slot = 0u;
+static void
+sixel_kcenter_build_solve_state_clear(sixel_kcenter_build_solve_state_t *state)
+{
+    if (state == NULL) {
+        return;
+    }
+    memset(state, 0, sizeof(*state));
+}
+
+static void
+sixel_kcenter_build_solve_resolve_target(sixel_kcenter_build_runtime_t *rt)
+{
     if (rt == NULL) {
-        return SIXEL_BAD_ARGUMENT;
+        return;
     }
 
     rt->resolved_merge = (unsigned int)sixel_resolve_final_merge_mode(
@@ -6491,10 +6501,21 @@ sixel_kcenter_build_solve_phase(sixel_kcenter_build_runtime_t *rt)
         rt->overshoot = 1u;
     }
     rt->k = rt->overshoot;
+}
 
-    rt->status = sixel_kcenter_build_allocate_solver_buffers(rt);
-    if (SIXEL_FAILED(rt->status)) {
-        return rt->status;
+static SIXELSTATUS
+sixel_kcenter_build_solve_prepare_solver(sixel_kcenter_build_runtime_t *rt)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_BAD_ARGUMENT;
+    if (rt == NULL) {
+        return status;
+    }
+
+    status = sixel_kcenter_build_allocate_solver_buffers(rt);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
     rt->resolved_algo = rt->algo;
@@ -6506,6 +6527,15 @@ sixel_kcenter_build_solve_phase(sixel_kcenter_build_runtime_t *rt)
             rt->auto_fft_threshold,
             rt->pixelformat,
             rt->space_policy);
+    }
+    return SIXEL_OK;
+}
+
+static void
+sixel_kcenter_build_solve_start_iterate_log(sixel_kcenter_build_runtime_t *rt)
+{
+    if (rt == NULL) {
+        return;
     }
 
     rt->init_stop = sixel_timer_now();
@@ -6552,6 +6582,14 @@ sixel_kcenter_build_solve_phase(sixel_kcenter_build_runtime_t *rt)
                                                    rt->engine_name,
                                                    "palette/iterate",
                                                    "iterate");
+}
+
+static void
+sixel_kcenter_build_solve_setup_solver_ctx(sixel_kcenter_build_runtime_t *rt)
+{
+    if (rt == NULL) {
+        return;
+    }
 
     rt->solver_ctx.points = rt->points;
     rt->solver_ctx.weights = rt->weights;
@@ -6582,21 +6620,34 @@ sixel_kcenter_build_solve_phase(sixel_kcenter_build_runtime_t *rt)
     rt->solver_ctx.scratch_indices = rt->scratch_indices;
     rt->solver_ctx.fft_dist_cache = rt->fft_dist_cache;
     rt->solver_ctx.center_mask = rt->center_mask;
+}
+
+static SIXELSTATUS
+sixel_kcenter_build_solve_run_restarts(sixel_kcenter_build_runtime_t *rt,
+                                       sixel_kcenter_build_solve_state_t *state)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_BAD_ARGUMENT;
+    if (rt == NULL || state == NULL) {
+        return status;
+    }
 
     rt->best_radius2 = -1.0;
     rt->best_sse = 0.0;
     rt->best_iterations = 0u;
-    for (slot = 0u; slot < rt->restarts; ++slot) {
-        rt->rng_state = (uint32_t)(rt->seed + 0x9e3779b9u * (slot + 1u));
-        rt->status = sixel_kcenter_run_solver(&rt->solver_ctx);
-        if (SIXEL_FAILED(rt->status)) {
-            return rt->status;
+    for (state->slot = 0u; state->slot < rt->restarts; ++state->slot) {
+        rt->rng_state = (uint32_t)(rt->seed
+            + 0x9e3779b9u * (state->slot + 1u));
+        status = sixel_kcenter_run_solver(&rt->solver_ctx);
+        if (SIXEL_FAILED(status)) {
+            return status;
         }
 
-        if (rt->best_radius2 < 0.0
-                || rt->radius2 < rt->best_radius2 - 1.0e-12
-                || (rt->radius2 <= rt->best_radius2 + 1.0e-12
-                    && rt->sse < rt->best_sse - 1.0e-9)) {
+        if (sixel_kcenter_solver_trial_is_better(rt->radius2,
+                                                 rt->sse,
+                                                 rt->best_radius2,
+                                                 rt->best_sse)) {
             memcpy(rt->best_centers,
                    rt->work_centers,
                    (size_t)rt->k * sizeof(unsigned int));
@@ -6605,6 +6656,16 @@ sixel_kcenter_build_solve_phase(sixel_kcenter_build_runtime_t *rt)
             rt->best_iterations = rt->run_iterations;
         }
     }
+    return SIXEL_OK;
+}
+
+static void
+sixel_kcenter_build_solve_assign_best(sixel_kcenter_build_runtime_t *rt)
+{
+    if (rt == NULL) {
+        return;
+    }
+
     memcpy(rt->centers,
            rt->best_centers,
            (size_t)rt->k * sizeof(unsigned int));
@@ -6623,6 +6684,14 @@ sixel_kcenter_build_solve_phase(sixel_kcenter_build_runtime_t *rt)
                                             &rt->sse,
                                             rt->cluster_weights,
                                             rt->cluster_sums);
+}
+
+static void
+sixel_kcenter_build_solve_setup_polish_ctx(sixel_kcenter_build_runtime_t *rt)
+{
+    if (rt == NULL) {
+        return;
+    }
 
     rt->polish_ctx.points = rt->points;
     rt->polish_ctx.weights = rt->weights;
@@ -6642,6 +6711,14 @@ sixel_kcenter_build_solve_phase(sixel_kcenter_build_runtime_t *rt)
     rt->polish_ctx.cluster_sums = rt->cluster_sums;
     rt->polish_ctx.radius2_io = &rt->radius2;
     rt->polish_ctx.sse_io = &rt->sse;
+}
+
+static void
+sixel_kcenter_build_solve_apply_polish(sixel_kcenter_build_runtime_t *rt)
+{
+    if (rt == NULL) {
+        return;
+    }
 
     if (rt->use_legacy_oklab_polish) {
         rt->polish_point_limit = 2048u;
@@ -6662,22 +6739,40 @@ sixel_kcenter_build_solve_phase(sixel_kcenter_build_runtime_t *rt)
         sixel_kcenter_last_polish_pre_radius2 = rt->polish_pre_radius2;
         sixel_kcenter_last_polish_post_radius2 = rt->radius2;
     }
-    if (rt->best_radius2 < 0.0) {
-        rt->best_radius2 = rt->radius2;
-        rt->best_sse = rt->sse;
-    } else if (rt->radius2 < rt->best_radius2 - 1.0e-12
-            || (rt->radius2 <= rt->best_radius2 + 1.0e-12
-                && rt->sse < rt->best_sse - 1.0e-9)) {
+}
+
+static void
+sixel_kcenter_build_solve_update_best_objective(
+    sixel_kcenter_build_runtime_t *rt)
+{
+    if (rt == NULL) {
+        return;
+    }
+
+    if (sixel_kcenter_solver_trial_is_better(rt->radius2,
+                                             rt->sse,
+                                             rt->best_radius2,
+                                             rt->best_sse)) {
         rt->best_radius2 = rt->radius2;
         rt->best_sse = rt->sse;
     }
+}
 
-    for (slot = 0u; slot < rt->k; ++slot) {
-        rt->final_centers[slot * 3u + 0u] = rt->points[rt->centers[slot] * 3u];
-        rt->final_centers[slot * 3u + 1u]
-            = rt->points[rt->centers[slot] * 3u + 1u];
-        rt->final_centers[slot * 3u + 2u]
-            = rt->points[rt->centers[slot] * 3u + 2u];
+static void
+sixel_kcenter_build_solve_finalize(sixel_kcenter_build_runtime_t *rt,
+                                   sixel_kcenter_build_solve_state_t *state)
+{
+    if (rt == NULL || state == NULL) {
+        return;
+    }
+
+    for (state->slot = 0u; state->slot < rt->k; ++state->slot) {
+        rt->final_centers[state->slot * 3u + 0u]
+            = rt->points[rt->centers[state->slot] * 3u];
+        rt->final_centers[state->slot * 3u + 1u]
+            = rt->points[rt->centers[state->slot] * 3u + 1u];
+        rt->final_centers[state->slot * 3u + 2u]
+            = rt->points[rt->centers[state->slot] * 3u + 2u];
     }
     rt->final_count = rt->k;
 
@@ -6700,6 +6795,39 @@ sixel_kcenter_build_solve_phase(sixel_kcenter_build_runtime_t *rt)
 
     rt->merge_start = rt->iterate_stop;
     rt->merge_stop = rt->iterate_stop;
+}
+
+static SIXELSTATUS
+sixel_kcenter_build_solve_phase(sixel_kcenter_build_runtime_t *rt)
+{
+    sixel_kcenter_build_solve_state_t state;
+
+    sixel_kcenter_build_solve_state_clear(&state);
+    if (rt == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    /*
+     * Keep solve execution order fixed:
+     * solve -> assign -> polish -> finalize.
+     */
+    sixel_kcenter_build_solve_resolve_target(rt);
+    rt->status = sixel_kcenter_build_solve_prepare_solver(rt);
+    if (SIXEL_FAILED(rt->status)) {
+        return rt->status;
+    }
+
+    sixel_kcenter_build_solve_start_iterate_log(rt);
+    sixel_kcenter_build_solve_setup_solver_ctx(rt);
+    rt->status = sixel_kcenter_build_solve_run_restarts(rt, &state);
+    if (SIXEL_FAILED(rt->status)) {
+        return rt->status;
+    }
+    sixel_kcenter_build_solve_assign_best(rt);
+    sixel_kcenter_build_solve_setup_polish_ctx(rt);
+    sixel_kcenter_build_solve_apply_polish(rt);
+    sixel_kcenter_build_solve_update_best_objective(rt);
+    sixel_kcenter_build_solve_finalize(rt, &state);
     return SIXEL_OK;
 }
 
