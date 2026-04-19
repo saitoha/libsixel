@@ -114,6 +114,12 @@ struct sixel_cms_transform {
 #endif
 };
 
+#if defined(__PCC__) || defined(__TINYC__)
+# define SIXEL_CMS_NO_TLS_COMPILER 1
+#else
+# define SIXEL_CMS_NO_TLS_COMPILER 0
+#endif
+
 #if defined(_MSC_VER)
 # if defined(_MT)
 #  define SIXEL_CMS_TLS __declspec(thread)
@@ -123,10 +129,11 @@ struct sixel_cms_transform {
 #  define SIXEL_CMS_TLS_AVAILABLE 0
 # endif
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L) \
-    && !defined(__PCC__)
+    && !SIXEL_CMS_NO_TLS_COMPILER
 # define SIXEL_CMS_TLS _Thread_local
 # define SIXEL_CMS_TLS_AVAILABLE 1
-#elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
+#elif (defined(__GNUC__) || defined(__clang__)) \
+    && !SIXEL_CMS_NO_TLS_COMPILER
 # define SIXEL_CMS_TLS __thread
 # define SIXEL_CMS_TLS_AVAILABLE 1
 #else
@@ -255,6 +262,7 @@ sixel_cms_engine_unlock(void)
 
 #undef SIXEL_CMS_TLS
 #undef SIXEL_CMS_TLS_AVAILABLE
+#undef SIXEL_CMS_NO_TLS_COMPILER
 
 typedef enum sixel_cms_rendering_intent {
     SIXEL_CMS_INTENT_PERCEPTUAL = 0,

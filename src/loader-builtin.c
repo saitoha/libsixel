@@ -75,13 +75,19 @@
 #include "sixel_atomic.h"
 #include "threading.h"
 
+#if defined(__PCC__) || defined(__TINYC__)
+# define SIXEL_BUILTIN_NO_TLS_COMPILER 1
+#else
+# define SIXEL_BUILTIN_NO_TLS_COMPILER 0
+#endif
+
 #if defined(_MSC_VER)
 # define SIXEL_STBI_TLS __declspec(thread)
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
     && !defined(__STDC_NO_THREADS__) \
-    && !defined(__PCC__)
+    && !SIXEL_BUILTIN_NO_TLS_COMPILER
 # define SIXEL_STBI_TLS _Thread_local
-#elif defined(__GNUC__) && !defined(__PCC__)
+#elif defined(__GNUC__) && !SIXEL_BUILTIN_NO_TLS_COMPILER
 # define SIXEL_STBI_TLS __thread
 #else
 # define SIXEL_STBI_TLS
@@ -91,9 +97,9 @@ static SIXEL_STBI_TLS sixel_allocator_t *stbi_allocator;
 
 #undef SIXEL_STBI_TLS
 
-#if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
+#if SIXEL_ENABLE_THREADS && SIXEL_BUILTIN_NO_TLS_COMPILER && !defined(_WIN32)
 /*
- * pcc builds currently avoid TLS qualifiers.  stb_image integration keeps
+ * PCC/TCC builds currently avoid TLS qualifiers. stb_image integration keeps
  * allocator and error-state pointers in process globals in that mode, so we
  * serialize builtin loader decode sections to preserve allocator integrity.
  */
@@ -102,25 +108,12 @@ static pthread_once_t sixel_loader_builtin_decode_lock_once
     = PTHREAD_ONCE_INIT;
 static int sixel_loader_builtin_decode_lock_ready = 0;
 
-#if !defined(PTHREAD_MUTEX_RECURSIVE) && defined(PTHREAD_MUTEX_RECURSIVE_NP)
-# define PTHREAD_MUTEX_RECURSIVE PTHREAD_MUTEX_RECURSIVE_NP
-#endif
-
 static void
 sixel_loader_builtin_decode_lock_init_once(void)
 {
-    pthread_mutexattr_t attr;
     int rc;
 
-    rc = pthread_mutexattr_init(&attr);
-    if (rc != 0) {
-        return;
-    }
-    rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-    if (rc == 0) {
-        rc = pthread_mutex_init(&sixel_loader_builtin_decode_lock, &attr);
-    }
-    pthread_mutexattr_destroy(&attr);
+    rc = pthread_mutex_init(&sixel_loader_builtin_decode_lock, NULL);
     if (rc == 0) {
         sixel_loader_builtin_decode_lock_ready = 1;
     }
@@ -147,7 +140,8 @@ sixel_loader_builtin_lock_release(int acquired)
         pthread_mutex_unlock(&sixel_loader_builtin_decode_lock);
     }
 }
-#endif  /* SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32) */
+#endif  /* SIXEL_ENABLE_THREADS && SIXEL_BUILTIN_NO_TLS_COMPILER &&
+         !defined(_WIN32) */
 
 #define SIXEL_BUILTIN_PNG_COLOR_TYPE_GRAY 0
 #define SIXEL_BUILTIN_PNG_COLOR_TYPE_RGB 2
@@ -206,7 +200,7 @@ stbi_free(void *p)
 #define STBI_NO_STDIO 1
 #define STB_IMAGE_IMPLEMENTATION 1
 #define STBI_FAILURE_USERMSG 1
-#if defined(_WIN32) || defined(__PCC__)
+#if defined(_WIN32) || SIXEL_BUILTIN_NO_TLS_COMPILER
 # define STBI_NO_THREAD_LOCALS 1  /* no tls */
 #endif
 #define STBI_NO_GIF
@@ -3541,7 +3535,7 @@ sixel_loader_builtin_setopt(sixel_loader_component_t *component,
         } else {
             self->cms_engine = -1;
         }
-#if !defined(__PCC__)
+#if !SIXEL_BUILTIN_NO_TLS_COMPILER
         sixel_helper_set_loader_cms_engine(int_value != NULL ? *int_value : -1);
 #endif
         return SIXEL_OK;
@@ -3576,7 +3570,8 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
     int header_job_id;
     int decode_job_id;
     sixel_loader_timeline_callback_state_t timeline_state;
-#if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
+#if SIXEL_ENABLE_THREADS && SIXEL_BUILTIN_NO_TLS_COMPILER \
+    && !defined(_WIN32)
     int lock_acquired;
 #endif
 
@@ -3585,7 +3580,8 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
     status = SIXEL_FALSE;
     header_job_id = -1;
     decode_job_id = -1;
-#if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
+#if SIXEL_ENABLE_THREADS && SIXEL_BUILTIN_NO_TLS_COMPILER \
+    && !defined(_WIN32)
     lock_acquired = 0;
 #endif
     if (component == NULL || chunk == NULL || fn_load == NULL) {
@@ -3597,7 +3593,8 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
         bgcolor = self->bgcolor;
     }
 
-#if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
+#if SIXEL_ENABLE_THREADS && SIXEL_BUILTIN_NO_TLS_COMPILER \
+    && !defined(_WIN32)
     lock_acquired = sixel_loader_builtin_lock_acquire();
 #endif
     header_job_id = loader_timeline_phase_start("header/read");
@@ -3621,7 +3618,8 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
                                self->bmp_info40_mode,
                                loader_timeline_emit_frame_callback,
                                &timeline_state);
-#if SIXEL_ENABLE_THREADS && defined(__PCC__) && !defined(_WIN32)
+#if SIXEL_ENABLE_THREADS && SIXEL_BUILTIN_NO_TLS_COMPILER \
+    && !defined(_WIN32)
     sixel_loader_builtin_lock_release(lock_acquired);
 #endif
     loader_timeline_callback_close_header(&timeline_state, status);

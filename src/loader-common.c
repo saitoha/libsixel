@@ -63,14 +63,21 @@
 #include "loader-common.h"
 #include "logger.h"
 
+#if defined(__PCC__) || defined(__TINYC__)
+# define SIXEL_LOADER_NO_TLS_COMPILER 1
+#else
+# define SIXEL_LOADER_NO_TLS_COMPILER 0
+#endif
+
 #if defined(_MSC_VER)
 # define SIXEL_LOADER_TLS __declspec(thread)
 # define SIXEL_LOADER_TLS_AVAILABLE 1
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
-    && !defined(__PCC__)
+    && !SIXEL_LOADER_NO_TLS_COMPILER
 # define SIXEL_LOADER_TLS _Thread_local
 # define SIXEL_LOADER_TLS_AVAILABLE 1
-#elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
+#elif (defined(__GNUC__) || defined(__clang__)) \
+    && !SIXEL_LOADER_NO_TLS_COMPILER
 # define SIXEL_LOADER_TLS __thread
 # define SIXEL_LOADER_TLS_AVAILABLE 1
 #else
@@ -234,6 +241,7 @@ loader_background_unlock(void)
 
 #undef SIXEL_LOADER_TLS
 #undef SIXEL_LOADER_TLS_AVAILABLE
+#undef SIXEL_LOADER_NO_TLS_COMPILER
 
 #define SIXEL_ENV_WIC_ICO_MINSIZE "SIXEL_LOADER_WIC_ICO_MINSIZE"
 #define SIXEL_ENV_WIC_ICO_MINSIZE_LEGACY "SIXEL_LODER_WIC_ICO_MINSIZE"
@@ -267,7 +275,10 @@ loader_common_timeline_next_job(void)
     int job_id;
 
     job_id = -1;
-    if (!loader_timeline_scope.active || loader_timeline_scope.job_seq == NULL) {
+    loader_background_lock();
+    if (!loader_timeline_scope.active
+        || loader_timeline_scope.job_seq == NULL) {
+        loader_background_unlock();
         return -1;
     }
     if (*loader_timeline_scope.job_seq < 0) {
@@ -275,21 +286,38 @@ loader_common_timeline_next_job(void)
     }
     job_id = *loader_timeline_scope.job_seq;
     *loader_timeline_scope.job_seq = job_id + 1;
+    loader_background_unlock();
     return job_id;
 }
 
 static void
 loader_timeline_log_event(char const *role, char const *event, int job_id)
 {
-    if (!loader_timeline_scope.active ||
-            loader_timeline_scope.logger == NULL ||
-            role == NULL || event == NULL || job_id < 0) {
+    sixel_logger_t *logger;
+    char worker[96];
+    size_t worker_length;
+
+    logger = NULL;
+    worker[0] = '\0';
+    worker_length = 0u;
+    loader_background_lock();
+    if (!loader_timeline_scope.active || loader_timeline_scope.logger == NULL ||
+        role == NULL || event == NULL || job_id < 0) {
+        loader_background_unlock();
         return;
     }
+    logger = loader_timeline_scope.logger;
+    worker_length = strlen(loader_timeline_scope.worker);
+    if (worker_length >= sizeof(worker)) {
+        worker_length = sizeof(worker) - 1u;
+    }
+    memcpy(worker, loader_timeline_scope.worker, worker_length);
+    worker[worker_length] = '\0';
+    loader_background_unlock();
 
-    sixel_logger_logf(loader_timeline_scope.logger,
+    sixel_logger_logf(logger,
                       role,
-                      loader_timeline_scope.worker,
+                      worker,
                       event,
                       job_id,
                       -1,
@@ -1347,6 +1375,7 @@ loader_timeline_scope_begin(sixel_logger_t *logger,
 {
     size_t worker_length;
 
+    loader_background_lock();
     loader_timeline_scope.logger = NULL;
     loader_timeline_scope.worker[0] = '\0';
     loader_timeline_scope.job_seq = NULL;
@@ -1355,6 +1384,7 @@ loader_timeline_scope_begin(sixel_logger_t *logger,
 
     if (logger == NULL || worker == NULL || worker[0] == '\0' ||
             job_seq == NULL || !logger->active) {
+        loader_background_unlock();
         return;
     }
 
@@ -1368,16 +1398,19 @@ loader_timeline_scope_begin(sixel_logger_t *logger,
     loader_timeline_scope.job_seq = job_seq;
     loader_timeline_scope.optional_mask = 0u;
     loader_timeline_scope.active = 1;
+    loader_background_unlock();
 }
 
 void
 loader_timeline_scope_end(void)
 {
+    loader_background_lock();
     loader_timeline_scope.logger = NULL;
     loader_timeline_scope.worker[0] = '\0';
     loader_timeline_scope.job_seq = NULL;
     loader_timeline_scope.optional_mask = 0u;
     loader_timeline_scope.active = 0;
+    loader_background_unlock();
 }
 
 int
