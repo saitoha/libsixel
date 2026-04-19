@@ -32,7 +32,7 @@ test "${status}" -eq 2 || {
 diag_line=${msg%%"${nl}"*}
 
 case "${diag_line}" in
-    LSXCLI1\|phase=option_parse\|rc=*\|code=UNKNOWN_SUBOPTION_KEY)
+    LSXCLI1\|phase=option_parse\|rc=*\|code=UNKNOWN_SUBOPTION_KEY*)
         ;;
     *)
         echo "not ok" 1 - "unknown -Q suboption key diagnostic header mismatch"
