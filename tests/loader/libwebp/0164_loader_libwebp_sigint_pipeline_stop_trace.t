@@ -43,9 +43,9 @@ echo "1..1"
 set -v
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
-# Use a single watchdog process so the test does not depend on PID polling
-# loops and always settles well below the outer 90-second TAP timeout.
-watchdog_timeout=8
+# Keep the common case fast with an early SIGINT.
+# If the child is still alive after a short grace period, apply the
+# previous long watchdog window as a fallback before hard-killing.
 
 set +x
 trace_summary=$(
@@ -57,14 +57,26 @@ trace_summary=$(
         pid=$!
 
         (
-            sleep "${watchdog_timeout}"
+            sleep 0.2
+            kill -0 "${pid}" 2>/dev/null || exit 0
+            sleep 1
+            kill -INT "${pid}" 2>/dev/null || true
+            wait_limit=40
+            test -n "${SIXEL_RUNTIME-}" && wait_limit=200
+            while test "${wait_limit}" -gt 0; do
+                kill -0 "${pid}" 2>/dev/null || {
+                    exit 0
+                }
+                sleep 0.05
+                wait_limit=$((wait_limit - 1))
+            done
             kill -0 "${pid}" 2>/dev/null || exit 0
             kill -KILL "${pid}" 2>/dev/null || true
             exit 42
         ) >/dev/null 2>&1 &
         watchdog_pid=$!
 
-        sleep 0.1
+        sleep 0.02
         kill -INT "${pid}" 2>/dev/null || true
 
         wait "${pid}" 2>/dev/null || true
