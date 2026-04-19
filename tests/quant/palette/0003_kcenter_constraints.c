@@ -347,83 +347,84 @@ end:
     return ok;
 }
 
-static int
-test_build_kcenter_palette_with_options(
-    unsigned char const *pixels,
-    unsigned int width,
-    unsigned int height,
-    unsigned int reqcolors,
-    int quality_mode,
-    sixel_kcenter_algo_t algo,
-    uint32_t seed,
-    unsigned int restarts,
-    unsigned int iter_count,
-    unsigned int histbits,
-    unsigned int point_budget,
-    double prune_mass,
-    int use_profile,
-    sixel_kcenter_profile_t profile,
-    int use_auto_policy,
-    sixel_kcenter_auto_policy_t auto_policy,
-    int use_auto_fft_threshold,
-    unsigned int auto_fft_threshold,
-    int use_candidate_policy,
-    sixel_kcenter_candidate_policy_t candidate_policy,
-    int use_rare_keep,
-    unsigned int rare_keep,
-    int use_budget_policy,
-    sixel_kcenter_budget_policy_t budget_policy,
-    int use_budget_scale,
-    double budget_scale,
-    int use_swap_topk,
-    unsigned int swap_topk,
-    int use_swap_update,
-    sixel_kcenter_swap_update_t swap_update,
-    int use_swap_patience,
-    unsigned int swap_patience,
-    unsigned char **palette_out,
-    unsigned int *ncolors_out,
-    sixel_allocator_t *allocator)
-{
-    return test_build_kcenter_palette_with_options_format(
-        pixels,
-        width,
-        height,
-        reqcolors,
-        quality_mode,
-        algo,
-        seed,
-        restarts,
-        iter_count,
-        histbits,
-        point_budget,
-        prune_mass,
-        use_profile,
-        profile,
-        use_auto_policy,
-        auto_policy,
-        use_auto_fft_threshold,
-        auto_fft_threshold,
-        use_candidate_policy,
-        candidate_policy,
-        use_rare_keep,
-        rare_keep,
-        use_budget_policy,
-        budget_policy,
-        use_budget_scale,
-        budget_scale,
-        use_swap_topk,
-        swap_topk,
-        use_swap_update,
-        swap_update,
-        use_swap_patience,
-        swap_patience,
-        SIXEL_PIXELFORMAT_RGB888,
-        0,
-        palette_out,
-        ncolors_out,
-        allocator);
-}
+/*
+ * Keep the legacy RGB888 wrapper as a macro to avoid pcc ICE in the helper
+ * function definition with a very long argument list.
+ */
+#define test_build_kcenter_palette_with_options(                         \
+    pixels,                                                              \
+    width,                                                               \
+    height,                                                              \
+    reqcolors,                                                           \
+    quality_mode,                                                        \
+    algo,                                                                \
+    seed,                                                                \
+    restarts,                                                            \
+    iter_count,                                                          \
+    histbits,                                                            \
+    point_budget,                                                        \
+    prune_mass,                                                          \
+    use_profile,                                                         \
+    profile,                                                             \
+    use_auto_policy,                                                     \
+    auto_policy,                                                         \
+    use_auto_fft_threshold,                                              \
+    auto_fft_threshold,                                                  \
+    use_candidate_policy,                                                \
+    candidate_policy,                                                    \
+    use_rare_keep,                                                       \
+    rare_keep,                                                           \
+    use_budget_policy,                                                   \
+    budget_policy,                                                       \
+    use_budget_scale,                                                    \
+    budget_scale,                                                        \
+    use_swap_topk,                                                       \
+    swap_topk,                                                           \
+    use_swap_update,                                                     \
+    swap_update,                                                         \
+    use_swap_patience,                                                   \
+    swap_patience,                                                       \
+    palette_out,                                                         \
+    ncolors_out,                                                         \
+    allocator)                                                           \
+    test_build_kcenter_palette_with_options_format(                      \
+        pixels,                                                          \
+        width,                                                           \
+        height,                                                          \
+        reqcolors,                                                       \
+        quality_mode,                                                    \
+        algo,                                                            \
+        seed,                                                            \
+        restarts,                                                        \
+        iter_count,                                                      \
+        histbits,                                                        \
+        point_budget,                                                    \
+        prune_mass,                                                      \
+        use_profile,                                                     \
+        profile,                                                         \
+        use_auto_policy,                                                 \
+        auto_policy,                                                     \
+        use_auto_fft_threshold,                                          \
+        auto_fft_threshold,                                              \
+        use_candidate_policy,                                            \
+        candidate_policy,                                                \
+        use_rare_keep,                                                   \
+        rare_keep,                                                       \
+        use_budget_policy,                                               \
+        budget_policy,                                                   \
+        use_budget_scale,                                                \
+        budget_scale,                                                    \
+        use_swap_topk,                                                   \
+        swap_topk,                                                       \
+        use_swap_update,                                                 \
+        swap_update,                                                     \
+        use_swap_patience,                                               \
+        swap_patience,                                                   \
+        SIXEL_PIXELFORMAT_RGB888,                                        \
+        0,                                                               \
+        palette_out,                                                     \
+        ncolors_out,                                                     \
+        allocator)
 
 static int
 test_build_kcenter_palette(unsigned char const *pixels,

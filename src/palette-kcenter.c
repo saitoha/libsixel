@@ -330,6 +330,27 @@ typedef struct sixel_kcenter_solver_ctx {
     unsigned char *center_mask;
 } sixel_kcenter_solver_ctx_t;
 
+typedef struct sixel_kcenter_polish_ctx {
+    double const *points;
+    double const *weights;
+    unsigned int point_count;
+    unsigned int *centers;
+    unsigned int k;
+    unsigned int *nearest_slot;
+    double *nearest_dist;
+    unsigned int *second_slot;
+    double *second_dist;
+    unsigned int *scratch_slot;
+    double *scratch_dist;
+    unsigned int *scratch_second_slot;
+    double *scratch_second_dist;
+    unsigned char *center_mask;
+    double *cluster_weights;
+    double *cluster_sums;
+    double *radius2_io;
+    double *sse_io;
+} sixel_kcenter_polish_ctx_t;
+
 typedef struct sixel_kcenter_build_ctx {
     unsigned char **result;
     float **result_float32;
@@ -3007,26 +3028,27 @@ sixel_kcenter_assign_points_with_second(
  */
 static void
 sixel_kcenter_polish_sse_with_radius_guard(
-    double const *points,
-    double const *weights,
-    unsigned int point_count,
-    unsigned int *centers,
-    unsigned int k,
-    unsigned int *nearest_slot,
-    double *nearest_dist,
-    unsigned int *second_slot,
-    double *second_dist,
-    unsigned int *scratch_slot,
-    double *scratch_dist,
-    unsigned int *scratch_second_slot,
-    double *scratch_second_dist,
-    unsigned char *center_mask,
-    double *cluster_weights,
-    double *cluster_sums,
-    double *radius2_io,
-    double *sse_io,
+    sixel_kcenter_polish_ctx_t *ctx,
     unsigned int *updates_io)
 {
+    double const *points;
+    double const *weights;
+    unsigned int point_count;
+    unsigned int *centers;
+    unsigned int k;
+    unsigned int *nearest_slot;
+    double *nearest_dist;
+    unsigned int *second_slot;
+    double *second_dist;
+    unsigned int *scratch_slot;
+    double *scratch_dist;
+    unsigned int *scratch_second_slot;
+    double *scratch_second_dist;
+    unsigned char *center_mask;
+    double *cluster_weights;
+    double *cluster_sums;
+    double *radius2_io;
+    double *sse_io;
     unsigned int slot;
     unsigned int index;
     unsigned int old_center;
@@ -3044,6 +3066,24 @@ sixel_kcenter_polish_sse_with_radius_guard(
     unsigned int updates;
     int accepted;
 
+    points = NULL;
+    weights = NULL;
+    point_count = 0u;
+    centers = NULL;
+    k = 0u;
+    nearest_slot = NULL;
+    nearest_dist = NULL;
+    second_slot = NULL;
+    second_dist = NULL;
+    scratch_slot = NULL;
+    scratch_dist = NULL;
+    scratch_second_slot = NULL;
+    scratch_second_dist = NULL;
+    center_mask = NULL;
+    cluster_weights = NULL;
+    cluster_sums = NULL;
+    radius2_io = NULL;
+    sse_io = NULL;
     slot = 0u;
     index = 0u;
     old_center = 0u;
@@ -3060,6 +3100,32 @@ sixel_kcenter_polish_sse_with_radius_guard(
     trial_sse = 0.0;
     updates = 0u;
     accepted = 0;
+
+    if (ctx == NULL) {
+        if (updates_io != NULL) {
+            *updates_io = 0u;
+        }
+        return;
+    }
+
+    points = ctx->points;
+    weights = ctx->weights;
+    point_count = ctx->point_count;
+    centers = ctx->centers;
+    k = ctx->k;
+    nearest_slot = ctx->nearest_slot;
+    nearest_dist = ctx->nearest_dist;
+    second_slot = ctx->second_slot;
+    second_dist = ctx->second_dist;
+    scratch_slot = ctx->scratch_slot;
+    scratch_dist = ctx->scratch_dist;
+    scratch_second_slot = ctx->scratch_second_slot;
+    scratch_second_dist = ctx->scratch_second_dist;
+    center_mask = ctx->center_mask;
+    cluster_weights = ctx->cluster_weights;
+    cluster_sums = ctx->cluster_sums;
+    radius2_io = ctx->radius2_io;
+    sse_io = ctx->sse_io;
 
     if (points == NULL || centers == NULL || nearest_slot == NULL
             || nearest_dist == NULL || second_slot == NULL
@@ -4764,6 +4830,7 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     double export_span;
     int override_lock_acquired;
     sixel_kcenter_solver_ctx_t solver_ctx;
+    sixel_kcenter_polish_ctx_t polish_ctx;
 
     if (ctx == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -4898,6 +4965,7 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
     export_span = 0.0;
     override_lock_acquired = 0;
     memset(&solver_ctx, 0, sizeof(solver_ctx));
+    memset(&polish_ctx, 0, sizeof(polish_ctx));
 
     if (result != NULL) {
         *result = NULL;
@@ -5245,30 +5313,31 @@ build_palette_kcenter(sixel_kcenter_build_ctx_t *ctx)
                                             &sse,
                                             cluster_weights,
                                             cluster_sums);
+    polish_ctx.points = points;
+    polish_ctx.weights = weights;
+    polish_ctx.point_count = point_count;
+    polish_ctx.centers = centers;
+    polish_ctx.k = k;
+    polish_ctx.nearest_slot = nearest_slot;
+    polish_ctx.nearest_dist = nearest_dist;
+    polish_ctx.second_slot = second_slot;
+    polish_ctx.second_dist = second_dist;
+    polish_ctx.scratch_slot = scratch_slot;
+    polish_ctx.scratch_dist = scratch_dist;
+    polish_ctx.scratch_second_slot = scratch_second_slot;
+    polish_ctx.scratch_second_dist = scratch_second_dist;
+    polish_ctx.center_mask = center_mask;
+    polish_ctx.cluster_weights = cluster_weights;
+    polish_ctx.cluster_sums = cluster_sums;
+    polish_ctx.radius2_io = &radius2;
+    polish_ctx.sse_io = &sse;
     if (use_perceptual_polish
             && resolved_algo != SIXEL_PALETTE_KCENTER_ALGO_FFT
             && point_count <= 8192u
             && k <= 128u) {
         polish_pre_radius2 = radius2;
         sixel_kcenter_polish_sse_with_radius_guard(
-            points,
-            weights,
-            point_count,
-            centers,
-            k,
-            nearest_slot,
-            nearest_dist,
-            second_slot,
-            second_dist,
-            scratch_slot,
-            scratch_dist,
-            scratch_second_slot,
-            scratch_second_dist,
-            center_mask,
-            cluster_weights,
-            cluster_sums,
-            &radius2,
-            &sse,
+            &polish_ctx,
             &polish_updates);
         sixel_kcenter_last_polish_applied = 1;
         sixel_kcenter_last_polish_updates = polish_updates;
