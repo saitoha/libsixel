@@ -52,6 +52,14 @@ Key points used by this roadmap:
     base path emits a dual-stroke trace and deferred `clbl=1` pass applies
     vector/effect stroke together on clipped groups before the deferred
     `FrFX` pass.
+  - Dual-stroke color compositing now uses a mode-aware shared helper across
+    base/deferred paths:
+    - same-mode (`vstk`/`FrFX`) overlays use a union-alpha, single-blend
+      entrance, and
+    - differing blend modes use deterministic overlap partitioning to avoid
+      over-dark overlap regions while preserving per-stroke mode semantics.
+    PASS trace representatives `1589..1592` lock the base/deferred mode-aware
+    path and non-regression contracts.
   - `vstk` geometry metadata now tracks join/cap/miter/adjust parameters.
     For `inside` vector strokes, base/deferred coverage paths now branch by
     join semantics (`miter`, `round`, `bevel`) through a shared helper.
