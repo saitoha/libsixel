@@ -4384,16 +4384,10 @@ sixel_kcenter_swap_prepare_apply_ctx(
     apply_ctx->sse_out = sse_out;
 }
 
-static unsigned int
-sixel_kcenter_swap_collect_candidates(
-    sixel_kcenter_swap_ctx_t const *ctx,
-    unsigned int topk,
-    int use_cluster_candidates,
-    uint32_t *rng_state,
-    unsigned int *candidate_list)
-{
+typedef struct sixel_kcenter_swap_candidate_state {
     unsigned int point_count;
     unsigned int k;
+    unsigned int topk;
     double const *weights;
     unsigned char const *center_mask;
     unsigned int const *nearest_slot;
@@ -4412,229 +4406,326 @@ sixel_kcenter_swap_collect_candidates(
     unsigned int global_count;
     unsigned int cluster_count;
     unsigned int cluster_slot_count;
-    unsigned int cluster_slot_pos;
-    unsigned int candidate;
-    unsigned int index;
-    unsigned int tries;
-    unsigned int pick;
-    unsigned int cluster_slot;
-    unsigned int cluster_best;
     unsigned int global_index;
     unsigned int cluster_index;
     unsigned int selected_source;
+} sixel_kcenter_swap_candidate_state_t;
+
+static void
+sixel_kcenter_swap_candidate_state_clear(
+    sixel_kcenter_swap_candidate_state_t *state)
+{
+    if (state == NULL) {
+        return;
+    }
+    memset(state, 0, sizeof(*state));
+}
+
+static int
+sixel_kcenter_swap_collect_resolve_inputs(
+    sixel_kcenter_swap_ctx_t const *ctx,
+    unsigned int topk,
+    unsigned int const *candidate_list,
+    sixel_kcenter_swap_candidate_state_t *state)
+{
+    if (ctx == NULL || candidate_list == NULL || state == NULL || topk == 0u) {
+        return 0;
+    }
+
+    state->point_count = ctx->point_count;
+    state->k = ctx->k;
+    state->weights = ctx->weights;
+    state->center_mask = ctx->center_mask;
+    state->nearest_slot = ctx->nearest_slot;
+    state->nearest_dist = ctx->nearest_dist;
+    if (state->center_mask == NULL
+            || state->nearest_slot == NULL
+            || state->nearest_dist == NULL) {
+        return 0;
+    }
+
+    state->topk = topk;
+    if (state->topk > 16u) {
+        state->topk = 16u;
+    }
+    return 1;
+}
+
+static void
+sixel_kcenter_swap_collect_global_candidates(
+    sixel_kcenter_swap_candidate_state_t *state)
+{
+    unsigned int index;
+    double lhs_weight;
+
+    index = 0u;
+    lhs_weight = 0.0;
+    if (state == NULL) {
+        return;
+    }
+
+    for (index = 0u; index < state->point_count; ++index) {
+        if (state->center_mask[index] != 0u) {
+            continue;
+        }
+        lhs_weight = (state->weights != NULL) ? state->weights[index] : 1.0;
+        sixel_kcenter_swap_insert_candidate(state->global_list,
+                                            state->global_dist,
+                                            state->global_weight,
+                                            &state->global_count,
+                                            state->topk,
+                                            index,
+                                            state->nearest_dist[index],
+                                            lhs_weight);
+    }
+}
+
+static void
+sixel_kcenter_swap_collect_cluster_slots(
+    sixel_kcenter_swap_candidate_state_t *state)
+{
+    unsigned int index;
+    unsigned int cluster_slot;
+
+    index = 0u;
+    cluster_slot = 0u;
+    if (state == NULL) {
+        return;
+    }
+
+    for (index = 0u; index < state->global_count; ++index) {
+        cluster_slot = state->nearest_slot[state->global_list[index]];
+        if (cluster_slot >= state->k) {
+            continue;
+        }
+        if (sixel_kcenter_swap_candidate_present(state->cluster_slot_list,
+                                                 state->cluster_slot_count,
+                                                 cluster_slot)) {
+            continue;
+        }
+        if (state->cluster_slot_count >= state->topk) {
+            break;
+        }
+        state->cluster_slot_list[state->cluster_slot_count] = cluster_slot;
+        ++state->cluster_slot_count;
+    }
+}
+
+static void
+sixel_kcenter_swap_collect_cluster_representatives(
+    sixel_kcenter_swap_candidate_state_t *state)
+{
+    unsigned int index;
+    unsigned int pick;
+    unsigned int cluster_slot;
+    unsigned int cluster_slot_pos;
+    unsigned int cluster_best;
     double lhs_weight;
     double best_cluster_dist;
     double best_cluster_weight;
-    int added;
 
-    point_count = 0u;
-    k = 0u;
-    weights = NULL;
-    center_mask = NULL;
-    nearest_slot = NULL;
-    nearest_dist = NULL;
-    candidate_count = 0u;
-    global_count = 0u;
-    cluster_count = 0u;
-    cluster_slot_count = 0u;
-    cluster_slot_pos = 0u;
-    candidate = 0u;
     index = 0u;
-    tries = 0u;
     pick = 0u;
     cluster_slot = 0u;
+    cluster_slot_pos = 0u;
     cluster_best = UINT_MAX;
-    global_index = 0u;
-    cluster_index = 0u;
-    selected_source = 0u;
     lhs_weight = 0.0;
     best_cluster_dist = 0.0;
     best_cluster_weight = 0.0;
-    added = 0;
-
-    if (ctx == NULL || candidate_list == NULL || topk == 0u) {
-        return 0u;
+    if (state == NULL) {
+        return;
     }
 
-    point_count = ctx->point_count;
-    k = ctx->k;
-    weights = ctx->weights;
-    center_mask = ctx->center_mask;
-    nearest_slot = ctx->nearest_slot;
-    nearest_dist = ctx->nearest_dist;
-
-    if (center_mask == NULL || nearest_slot == NULL || nearest_dist == NULL) {
-        return 0u;
+    for (index = 0u; index < state->cluster_slot_count; ++index) {
+        state->cluster_best_list[index] = UINT_MAX;
+        state->cluster_best_dist_list[index] = -1.0;
+        state->cluster_best_weight_list[index] = -1.0;
     }
-    if (topk > 16u) {
-        topk = 16u;
-    }
-
-    for (index = 0u; index < point_count; ++index) {
-        if (center_mask[index] != 0u) {
+    for (pick = 0u; pick < state->point_count; ++pick) {
+        if (state->center_mask[pick] != 0u) {
             continue;
         }
-        lhs_weight = (weights != NULL) ? weights[index] : 1.0;
-        sixel_kcenter_swap_insert_candidate(global_list,
-                                            global_dist,
-                                            global_weight,
-                                            &global_count,
-                                            topk,
-                                            index,
-                                            nearest_dist[index],
-                                            lhs_weight);
-    }
-    if (use_cluster_candidates) {
-        for (index = 0u; index < global_count; ++index) {
-            cluster_slot = nearest_slot[global_list[index]];
-            if (cluster_slot >= k) {
-                continue;
-            }
-            if (sixel_kcenter_swap_candidate_present(cluster_slot_list,
-                                                     cluster_slot_count,
-                                                     cluster_slot)) {
-                continue;
-            }
-            if (cluster_slot_count >= topk) {
-                break;
-            }
-            cluster_slot_list[cluster_slot_count] = cluster_slot;
-            ++cluster_slot_count;
+        cluster_slot = state->nearest_slot[pick];
+        if (cluster_slot >= state->k) {
+            continue;
         }
-        for (index = 0u; index < cluster_slot_count; ++index) {
-            cluster_best_list[index] = UINT_MAX;
-            cluster_best_dist_list[index] = -1.0;
-            cluster_best_weight_list[index] = -1.0;
+        cluster_slot_pos = 0u;
+        while (cluster_slot_pos < state->cluster_slot_count
+                && state->cluster_slot_list[cluster_slot_pos] != cluster_slot) {
+            ++cluster_slot_pos;
         }
-        for (pick = 0u; pick < point_count; ++pick) {
-            if (center_mask[pick] != 0u) {
-                continue;
-            }
-            cluster_slot = nearest_slot[pick];
-            if (cluster_slot >= k) {
-                continue;
-            }
-            cluster_slot_pos = 0u;
-            while (cluster_slot_pos < cluster_slot_count
-                    && cluster_slot_list[cluster_slot_pos] != cluster_slot) {
-                ++cluster_slot_pos;
-            }
-            if (cluster_slot_pos >= cluster_slot_count) {
-                continue;
-            }
-            lhs_weight = (weights != NULL) ? weights[pick] : 1.0;
-            if (lhs_weight <= 0.0) {
-                lhs_weight = 1.0;
-            }
-            if (nearest_dist[pick]
-                    > cluster_best_dist_list[cluster_slot_pos] + 1.0e-12) {
-                cluster_best_list[cluster_slot_pos] = pick;
-                cluster_best_dist_list[cluster_slot_pos] = nearest_dist[pick];
-                cluster_best_weight_list[cluster_slot_pos] = lhs_weight;
-                continue;
-            }
-            if (nearest_dist[pick]
-                    >= cluster_best_dist_list[cluster_slot_pos] - 1.0e-12
-                    && (lhs_weight
-                        > cluster_best_weight_list[cluster_slot_pos] + 1.0e-12
-                        || (lhs_weight
-                            >= cluster_best_weight_list[cluster_slot_pos]
-                                - 1.0e-12
-                            && pick < cluster_best_list[cluster_slot_pos]))) {
-                cluster_best_list[cluster_slot_pos] = pick;
-                cluster_best_dist_list[cluster_slot_pos] = nearest_dist[pick];
-                cluster_best_weight_list[cluster_slot_pos] = lhs_weight;
-            }
+        if (cluster_slot_pos >= state->cluster_slot_count) {
+            continue;
         }
-        for (index = 0u; index < cluster_slot_count; ++index) {
-            cluster_best = cluster_best_list[index];
-            if (cluster_best == UINT_MAX) {
-                continue;
-            }
-            best_cluster_dist = cluster_best_dist_list[index];
-            best_cluster_weight = cluster_best_weight_list[index];
-            sixel_kcenter_swap_insert_candidate(cluster_list,
-                                                cluster_dist,
-                                                cluster_weight,
-                                                &cluster_count,
-                                                topk,
-                                                cluster_best,
-                                                best_cluster_dist,
-                                                best_cluster_weight);
+        lhs_weight = (state->weights != NULL) ? state->weights[pick] : 1.0;
+        if (lhs_weight <= 0.0) {
+            lhs_weight = 1.0;
         }
-
-        global_index = 0u;
-        cluster_index = 0u;
-        selected_source = 0u;
-        while (candidate_count < topk
-                && (global_index < global_count
-                    || cluster_index < cluster_count)) {
-            if (selected_source == 0u && global_index < global_count) {
-                candidate = global_list[global_index];
-                ++global_index;
-                selected_source = 1u;
-            } else if (selected_source == 1u
-                    && cluster_index < cluster_count) {
-                candidate = cluster_list[cluster_index];
-                ++cluster_index;
-                selected_source = 0u;
-            } else if (global_index < global_count) {
-                candidate = global_list[global_index];
-                ++global_index;
-            } else {
-                candidate = cluster_list[cluster_index];
-                ++cluster_index;
-            }
-            if (sixel_kcenter_swap_candidate_present(candidate_list,
-                                                     candidate_count,
-                                                     candidate)) {
-                continue;
-            }
-            candidate_list[candidate_count] = candidate;
-            ++candidate_count;
+        if (state->nearest_dist[pick]
+                > state->cluster_best_dist_list[cluster_slot_pos] + 1.0e-12) {
+            state->cluster_best_list[cluster_slot_pos] = pick;
+            state->cluster_best_dist_list[cluster_slot_pos]
+                = state->nearest_dist[pick];
+            state->cluster_best_weight_list[cluster_slot_pos] = lhs_weight;
+            continue;
         }
-        while (candidate_count < topk && global_index < global_count) {
-            candidate = global_list[global_index];
-            if (!sixel_kcenter_swap_candidate_present(candidate_list,
-                                                      candidate_count,
-                                                      candidate)) {
-                candidate_list[candidate_count] = candidate;
-                ++candidate_count;
-            }
-            ++global_index;
-        }
-        while (candidate_count < topk && cluster_index < cluster_count) {
-            candidate = cluster_list[cluster_index];
-            if (!sixel_kcenter_swap_candidate_present(candidate_list,
-                                                      candidate_count,
-                                                      candidate)) {
-                candidate_list[candidate_count] = candidate;
-                ++candidate_count;
-            }
-            ++cluster_index;
-        }
-    } else {
-        for (index = 0u; index < global_count; ++index) {
-            candidate_list[candidate_count] = global_list[index];
-            ++candidate_count;
+        if (state->nearest_dist[pick]
+                >= state->cluster_best_dist_list[cluster_slot_pos] - 1.0e-12
+                && (lhs_weight
+                    > state->cluster_best_weight_list[cluster_slot_pos]
+                        + 1.0e-12
+                    || (lhs_weight
+                        >= state->cluster_best_weight_list[cluster_slot_pos]
+                            - 1.0e-12
+                        && pick
+                            < state->cluster_best_list[cluster_slot_pos]))) {
+            state->cluster_best_list[cluster_slot_pos] = pick;
+            state->cluster_best_dist_list[cluster_slot_pos]
+                = state->nearest_dist[pick];
+            state->cluster_best_weight_list[cluster_slot_pos] = lhs_weight;
         }
     }
+    for (index = 0u; index < state->cluster_slot_count; ++index) {
+        cluster_best = state->cluster_best_list[index];
+        if (cluster_best == UINT_MAX) {
+            continue;
+        }
+        best_cluster_dist = state->cluster_best_dist_list[index];
+        best_cluster_weight = state->cluster_best_weight_list[index];
+        sixel_kcenter_swap_insert_candidate(state->cluster_list,
+                                            state->cluster_dist,
+                                            state->cluster_weight,
+                                            &state->cluster_count,
+                                            state->topk,
+                                            cluster_best,
+                                            best_cluster_dist,
+                                            best_cluster_weight);
+    }
+}
 
-    while (candidate_count < topk && rng_state != NULL && point_count > 0u) {
+static void
+sixel_kcenter_swap_merge_interleaved_candidates(
+    sixel_kcenter_swap_candidate_state_t *state,
+    unsigned int *candidate_list)
+{
+    unsigned int candidate;
+
+    candidate = 0u;
+    if (state == NULL || candidate_list == NULL) {
+        return;
+    }
+
+    state->global_index = 0u;
+    state->cluster_index = 0u;
+    state->selected_source = 0u;
+    while (state->candidate_count < state->topk
+            && (state->global_index < state->global_count
+                || state->cluster_index < state->cluster_count)) {
+        if (state->selected_source == 0u
+                && state->global_index < state->global_count) {
+            candidate = state->global_list[state->global_index];
+            ++state->global_index;
+            state->selected_source = 1u;
+        } else if (state->selected_source == 1u
+                && state->cluster_index < state->cluster_count) {
+            candidate = state->cluster_list[state->cluster_index];
+            ++state->cluster_index;
+            state->selected_source = 0u;
+        } else if (state->global_index < state->global_count) {
+            candidate = state->global_list[state->global_index];
+            ++state->global_index;
+        } else {
+            candidate = state->cluster_list[state->cluster_index];
+            ++state->cluster_index;
+        }
+        if (sixel_kcenter_swap_candidate_present(candidate_list,
+                                                 state->candidate_count,
+                                                 candidate)) {
+            continue;
+        }
+        candidate_list[state->candidate_count] = candidate;
+        ++state->candidate_count;
+    }
+    while (state->candidate_count < state->topk
+            && state->global_index < state->global_count) {
+        candidate = state->global_list[state->global_index];
+        if (!sixel_kcenter_swap_candidate_present(candidate_list,
+                                                  state->candidate_count,
+                                                  candidate)) {
+            candidate_list[state->candidate_count] = candidate;
+            ++state->candidate_count;
+        }
+        ++state->global_index;
+    }
+    while (state->candidate_count < state->topk
+            && state->cluster_index < state->cluster_count) {
+        candidate = state->cluster_list[state->cluster_index];
+        if (!sixel_kcenter_swap_candidate_present(candidate_list,
+                                                  state->candidate_count,
+                                                  candidate)) {
+            candidate_list[state->candidate_count] = candidate;
+            ++state->candidate_count;
+        }
+        ++state->cluster_index;
+    }
+}
+
+static void
+sixel_kcenter_swap_collect_global_only(
+    sixel_kcenter_swap_candidate_state_t *state,
+    unsigned int *candidate_list)
+{
+    unsigned int index;
+
+    index = 0u;
+    if (state == NULL || candidate_list == NULL) {
+        return;
+    }
+
+    for (index = 0u; index < state->global_count; ++index) {
+        candidate_list[state->candidate_count] = state->global_list[index];
+        ++state->candidate_count;
+    }
+}
+
+static void
+sixel_kcenter_swap_fill_random_candidates(
+    sixel_kcenter_swap_candidate_state_t *state,
+    uint32_t *rng_state,
+    unsigned int *candidate_list)
+{
+    unsigned int tries;
+    unsigned int pick;
+    int added;
+
+    tries = 0u;
+    pick = 0u;
+    added = 0;
+    if (state == NULL || candidate_list == NULL) {
+        return;
+    }
+
+    /*
+     * Keep random supplementation deterministic: preserve the existing
+     * bounded-retry cap and RNG call order.
+     */
+    while (state->candidate_count < state->topk
+            && rng_state != NULL
+            && state->point_count > 0u) {
         tries = 0u;
         pick = 0u;
         added = 0;
-        while (tries < point_count * 2u + 8u) {
-            pick = sixel_kcenter_rng_bounded(rng_state, point_count);
-            if (center_mask[pick] != 0u) {
+        while (tries < state->point_count * 2u + 8u) {
+            pick = sixel_kcenter_rng_bounded(rng_state, state->point_count);
+            if (state->center_mask[pick] != 0u) {
                 ++tries;
                 continue;
             }
             if (!sixel_kcenter_swap_candidate_present(candidate_list,
-                                                      candidate_count,
+                                                      state->candidate_count,
                                                       pick)) {
-                candidate_list[candidate_count] = pick;
-                ++candidate_count;
+                candidate_list[state->candidate_count] = pick;
+                ++state->candidate_count;
                 added = 1;
                 break;
             }
@@ -4644,8 +4735,44 @@ sixel_kcenter_swap_collect_candidates(
             break;
         }
     }
+}
 
-    return candidate_count;
+static unsigned int
+sixel_kcenter_swap_collect_candidates(
+    sixel_kcenter_swap_ctx_t const *ctx,
+    unsigned int topk,
+    int use_cluster_candidates,
+    uint32_t *rng_state,
+    unsigned int *candidate_list)
+{
+    sixel_kcenter_swap_candidate_state_t state;
+
+    sixel_kcenter_swap_candidate_state_clear(&state);
+    if (!sixel_kcenter_swap_collect_resolve_inputs(ctx,
+                                                   topk,
+                                                   candidate_list,
+                                                   &state)) {
+        return 0u;
+    }
+
+    sixel_kcenter_swap_collect_global_candidates(&state);
+
+    /*
+     * Keep candidate ordering stable:
+     * global -> cluster representative extraction -> interleaved merge.
+     */
+    if (use_cluster_candidates) {
+        sixel_kcenter_swap_collect_cluster_slots(&state);
+        sixel_kcenter_swap_collect_cluster_representatives(&state);
+        sixel_kcenter_swap_merge_interleaved_candidates(&state, candidate_list);
+    } else {
+        sixel_kcenter_swap_collect_global_only(&state, candidate_list);
+    }
+
+    sixel_kcenter_swap_fill_random_candidates(&state,
+                                              rng_state,
+                                              candidate_list);
+    return state.candidate_count;
 }
 
 static int
