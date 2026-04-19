@@ -392,6 +392,40 @@ typedef struct sixel_kcenter_solver_ctx {
     unsigned char *center_mask;
 } sixel_kcenter_solver_ctx_t;
 
+/*
+ * Keep run_solver mutable state in one place so staged helpers can preserve
+ * the exact trial order and tie-break behavior.
+ */
+typedef struct sixel_kcenter_solver_run_state {
+    SIXELSTATUS status;
+    unsigned int init_seeds;
+    unsigned int swap_topk;
+    unsigned int swap_patience;
+    double swap_min_gain;
+    unsigned int init_trial;
+    unsigned int iterations;
+    unsigned int trial_iterations;
+    double radius2;
+    double sse;
+    double tiny_gain2;
+    double best_trial_radius2;
+    double best_trial_sse;
+    unsigned int best_trial_iterations;
+    uint32_t base_state;
+    uint32_t trial_state;
+    int adaptive_swap_controls;
+    sixel_kcenter_swap_ctx_t swap_ctx;
+} sixel_kcenter_solver_run_state_t;
+
+static void
+sixel_kcenter_solver_run_state_clear(sixel_kcenter_solver_run_state_t *state)
+{
+    if (state == NULL) {
+        return;
+    }
+    memset(state, 0, sizeof(*state));
+}
+
 typedef struct sixel_kcenter_polish_ctx {
     double const *points;
     double const *weights;
@@ -5324,263 +5358,266 @@ sixel_kcenter_solver_trial_is_better(double radius2,
     return 0;
 }
 
+static int
+sixel_kcenter_solver_validate_ctx(sixel_kcenter_solver_ctx_t const *ctx)
+{
+    if (ctx == NULL) {
+        return 0;
+    }
+    if (ctx->points == NULL || ctx->centers == NULL
+            || ctx->nearest_slot == NULL || ctx->nearest_dist == NULL
+            || ctx->scratch_slot == NULL || ctx->scratch_dist == NULL
+            || ctx->scratch_indices == NULL
+            || ctx->fft_dist_cache == NULL || ctx->center_mask == NULL) {
+        return 0;
+    }
+    return 1;
+}
+
+static void
+sixel_kcenter_solver_init_runtime(
+    sixel_kcenter_solver_ctx_t const *ctx,
+    sixel_kcenter_solver_run_state_t *state)
+{
+    if (ctx == NULL || state == NULL) {
+        return;
+    }
+
+    state->status = SIXEL_OK;
+    state->init_seeds = ctx->init_seeds;
+    state->swap_topk = ctx->swap_topk;
+    state->swap_patience = ctx->swap_patience;
+    state->swap_min_gain = ctx->swap_min_gain;
+    state->best_trial_radius2 = -1.0;
+    state->best_trial_sse = 0.0;
+    state->best_trial_iterations = 0u;
+    state->base_state = 1u;
+    state->trial_state = 1u;
+
+    if (state->init_seeds < 1u) {
+        state->init_seeds = 1u;
+    }
+    if (state->init_seeds > 8u) {
+        state->init_seeds = 8u;
+    }
+    if (state->swap_topk < 1u) {
+        state->swap_topk = 1u;
+    }
+    if (state->swap_topk > 16u) {
+        state->swap_topk = 16u;
+    }
+    if (state->swap_patience > 8u) {
+        state->swap_patience = 8u;
+    }
+    if (state->swap_min_gain < 0.0) {
+        state->swap_min_gain = 0.0;
+    }
+    if (state->swap_min_gain > 0.0) {
+        state->tiny_gain2 = state->swap_min_gain * state->swap_min_gain * 0.25;
+    } else {
+        state->tiny_gain2 = 1.0e-6;
+    }
+    state->adaptive_swap_controls
+        = (ctx->profile != SIXEL_PALETTE_KCENTER_PROFILE_LEGACY);
+    if (ctx->rng_state != NULL && *ctx->rng_state != 0u) {
+        state->base_state = *ctx->rng_state;
+    }
+}
+
+static void
+sixel_kcenter_solver_init_swap_context(
+    sixel_kcenter_solver_ctx_t const *ctx,
+    sixel_kcenter_solver_run_state_t *state)
+{
+    sixel_kcenter_swap_ctx_t *swap_ctx;
+
+    swap_ctx = NULL;
+    if (ctx == NULL || state == NULL) {
+        return;
+    }
+
+    swap_ctx = &state->swap_ctx;
+    memset(swap_ctx, 0, sizeof(*swap_ctx));
+    swap_ctx->points = ctx->points;
+    swap_ctx->weights = ctx->weights;
+    swap_ctx->point_count = ctx->point_count;
+    swap_ctx->centers = ctx->centers;
+    swap_ctx->k = ctx->k;
+    swap_ctx->center_mask = ctx->center_mask;
+    swap_ctx->nearest_slot = ctx->nearest_slot;
+    swap_ctx->nearest_dist = ctx->nearest_dist;
+    swap_ctx->second_slot = ctx->second_slot;
+    swap_ctx->second_dist = ctx->second_dist;
+    swap_ctx->radius2_io = &state->radius2;
+    swap_ctx->sse_io = &state->sse;
+    swap_ctx->scratch_slot = ctx->scratch_slot;
+    swap_ctx->scratch_dist = ctx->scratch_dist;
+    swap_ctx->scratch_second_slot = ctx->scratch_second_slot;
+    swap_ctx->scratch_second_dist = ctx->scratch_second_dist;
+    swap_ctx->swap_topk = state->swap_topk;
+    swap_ctx->swap_update = ctx->swap_update;
+    swap_ctx->swap_min_gain = state->swap_min_gain;
+    swap_ctx->use_cluster_candidates = ctx->use_cluster_candidates;
+    swap_ctx->rng_state = &state->trial_state;
+}
+
+static void
+sixel_kcenter_solver_run_trial_once(
+    sixel_kcenter_solver_ctx_t const *ctx,
+    sixel_kcenter_solver_run_state_t *state)
+{
+    if (ctx == NULL || state == NULL) {
+        return;
+    }
+
+    state->trial_state
+        = state->base_state + 0x9e3779b9u * (state->init_trial + 1u);
+    if (state->trial_state == 0u) {
+        state->trial_state = 1u;
+    }
+
+    sixel_kcenter_solver_seed_centers(ctx->resolved_algo,
+                                      ctx->points,
+                                      ctx->weights,
+                                      ctx->point_count,
+                                      ctx->k,
+                                      &state->trial_state,
+                                      ctx->centers,
+                                      ctx->scratch_slot,
+                                      ctx->fft_dist_cache,
+                                      ctx->center_mask);
+
+    sixel_kcenter_solver_assign_current(ctx->points,
+                                        ctx->weights,
+                                        ctx->point_count,
+                                        ctx->centers,
+                                        ctx->k,
+                                        ctx->nearest_slot,
+                                        ctx->nearest_dist,
+                                        ctx->second_slot,
+                                        ctx->second_dist,
+                                        &state->radius2,
+                                        &state->sse);
+
+    sixel_kcenter_solver_run_trial_swaps(&state->swap_ctx,
+                                         ctx->resolved_algo,
+                                         ctx->profile,
+                                         ctx->iter_limit,
+                                         state->swap_topk,
+                                         state->swap_patience,
+                                         state->adaptive_swap_controls,
+                                         state->tiny_gain2,
+                                         &state->radius2,
+                                         &state->trial_iterations);
+}
+
+static void
+sixel_kcenter_solver_maybe_store_best(
+    sixel_kcenter_solver_ctx_t const *ctx,
+    sixel_kcenter_solver_run_state_t *state)
+{
+    if (ctx == NULL || state == NULL) {
+        return;
+    }
+    if (!sixel_kcenter_solver_trial_is_better(state->radius2,
+                                              state->sse,
+                                              state->best_trial_radius2,
+                                              state->best_trial_sse)) {
+        return;
+    }
+
+    memcpy(ctx->scratch_indices,
+           ctx->centers,
+           (size_t)ctx->k * sizeof(unsigned int));
+    state->best_trial_radius2 = state->radius2;
+    state->best_trial_sse = state->sse;
+    state->best_trial_iterations = state->trial_iterations;
+}
+
+static void
+sixel_kcenter_solver_finalize_best(
+    sixel_kcenter_solver_ctx_t const *ctx,
+    sixel_kcenter_solver_run_state_t *state)
+{
+    if (ctx == NULL || state == NULL) {
+        return;
+    }
+
+    memcpy(ctx->centers,
+           ctx->scratch_indices,
+           (size_t)ctx->k * sizeof(unsigned int));
+    sixel_kcenter_refresh_center_mask(ctx->center_mask,
+                                      ctx->point_count,
+                                      ctx->centers,
+                                      ctx->k);
+    sixel_kcenter_solver_assign_current(ctx->points,
+                                        ctx->weights,
+                                        ctx->point_count,
+                                        ctx->centers,
+                                        ctx->k,
+                                        ctx->nearest_slot,
+                                        ctx->nearest_dist,
+                                        ctx->second_slot,
+                                        ctx->second_dist,
+                                        &state->radius2,
+                                        &state->sse);
+    state->iterations = state->best_trial_iterations;
+
+    if (ctx->radius2_out != NULL) {
+        *ctx->radius2_out = state->radius2;
+    }
+    if (ctx->sse_out != NULL) {
+        *ctx->sse_out = state->sse;
+    }
+    if (ctx->iterations_out != NULL) {
+        *ctx->iterations_out = state->iterations;
+    }
+    if (ctx->rng_state != NULL) {
+        *ctx->rng_state = state->trial_state;
+    }
+}
+
 static SIXELSTATUS
 sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
 {
-    SIXELSTATUS status;
-    double const *points;
-    double const *weights;
-    unsigned int point_count;
-    unsigned int k;
-    sixel_kcenter_algo_t resolved_algo;
-    sixel_kcenter_profile_t profile;
-    unsigned int init_seeds;
-    unsigned int iter_limit;
-    uint32_t *rng_state;
-    unsigned int *centers;
-    unsigned int *nearest_slot;
-    double *nearest_dist;
-    unsigned int *second_slot;
-    double *second_dist;
-    unsigned int *scratch_slot;
-    double *scratch_dist;
-    unsigned int *scratch_second_slot;
-    double *scratch_second_dist;
-    unsigned int swap_topk;
-    sixel_kcenter_swap_update_t swap_update;
-    unsigned int swap_patience;
-    double swap_min_gain;
-    int use_cluster_candidates;
-    double *radius2_out;
-    double *sse_out;
-    unsigned int *iterations_out;
-    unsigned int *scratch_indices;
-    double *fft_dist_cache;
-    unsigned char *center_mask;
-    unsigned int init_trial;
-    unsigned int iterations;
-    unsigned int trial_iterations;
-    double radius2;
-    double sse;
-    double tiny_gain2;
-    double best_trial_radius2;
-    double best_trial_sse;
-    unsigned int best_trial_iterations;
-    uint32_t base_state;
-    uint32_t trial_state;
-    int adaptive_swap_controls;
-    sixel_kcenter_swap_ctx_t swap_ctx;
+    sixel_kcenter_solver_run_state_t state;
 
-    if (ctx == NULL) {
+    if (!sixel_kcenter_solver_validate_ctx(ctx)) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    points = ctx->points;
-    weights = ctx->weights;
-    point_count = ctx->point_count;
-    k = ctx->k;
-    resolved_algo = ctx->resolved_algo;
-    profile = ctx->profile;
-    init_seeds = ctx->init_seeds;
-    iter_limit = ctx->iter_limit;
-    rng_state = ctx->rng_state;
-    centers = ctx->centers;
-    nearest_slot = ctx->nearest_slot;
-    nearest_dist = ctx->nearest_dist;
-    second_slot = ctx->second_slot;
-    second_dist = ctx->second_dist;
-    scratch_slot = ctx->scratch_slot;
-    scratch_dist = ctx->scratch_dist;
-    scratch_second_slot = ctx->scratch_second_slot;
-    scratch_second_dist = ctx->scratch_second_dist;
-    swap_topk = ctx->swap_topk;
-    swap_update = ctx->swap_update;
-    swap_patience = ctx->swap_patience;
-    swap_min_gain = ctx->swap_min_gain;
-    use_cluster_candidates = ctx->use_cluster_candidates;
-    radius2_out = ctx->radius2_out;
-    sse_out = ctx->sse_out;
-    iterations_out = ctx->iterations_out;
-    scratch_indices = ctx->scratch_indices;
-    fft_dist_cache = ctx->fft_dist_cache;
-    center_mask = ctx->center_mask;
-
-    status = SIXEL_OK;
-    init_trial = 0u;
-    iterations = 0u;
-    trial_iterations = 0u;
-    radius2 = 0.0;
-    sse = 0.0;
-    tiny_gain2 = 0.0;
-    best_trial_radius2 = -1.0;
-    best_trial_sse = 0.0;
-    best_trial_iterations = 0u;
-    base_state = 1u;
-    trial_state = 1u;
-    adaptive_swap_controls = 0;
-
-    if (points == NULL || centers == NULL
-            || nearest_slot == NULL || nearest_dist == NULL
-            || scratch_slot == NULL || scratch_dist == NULL
-            || scratch_indices == NULL
-            || fft_dist_cache == NULL || center_mask == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    memset(&swap_ctx, 0, sizeof(swap_ctx));
-    swap_ctx.points = points;
-    swap_ctx.weights = weights;
-    swap_ctx.point_count = point_count;
-    swap_ctx.centers = centers;
-    swap_ctx.k = k;
-    swap_ctx.center_mask = center_mask;
-    swap_ctx.nearest_slot = nearest_slot;
-    swap_ctx.nearest_dist = nearest_dist;
-    swap_ctx.second_slot = second_slot;
-    swap_ctx.second_dist = second_dist;
-    swap_ctx.radius2_io = &radius2;
-    swap_ctx.sse_io = &sse;
-    swap_ctx.scratch_slot = scratch_slot;
-    swap_ctx.scratch_dist = scratch_dist;
-    swap_ctx.scratch_second_slot = scratch_second_slot;
-    swap_ctx.scratch_second_dist = scratch_second_dist;
-    swap_ctx.swap_topk = swap_topk;
-    swap_ctx.swap_update = swap_update;
-    swap_ctx.swap_min_gain = swap_min_gain;
-    swap_ctx.use_cluster_candidates = use_cluster_candidates;
-    swap_ctx.rng_state = &trial_state;
-
-    if (point_count == 0u || k == 0u) {
-        if (radius2_out != NULL) {
-            *radius2_out = 0.0;
+    if (ctx->point_count == 0u || ctx->k == 0u) {
+        if (ctx->radius2_out != NULL) {
+            *ctx->radius2_out = 0.0;
         }
-        if (sse_out != NULL) {
-            *sse_out = 0.0;
+        if (ctx->sse_out != NULL) {
+            *ctx->sse_out = 0.0;
         }
-        if (iterations_out != NULL) {
-            *iterations_out = 0u;
+        if (ctx->iterations_out != NULL) {
+            *ctx->iterations_out = 0u;
         }
         return SIXEL_OK;
     }
 
-    if (init_seeds < 1u) {
-        init_seeds = 1u;
-    }
-    if (init_seeds > 8u) {
-        init_seeds = 8u;
-    }
-    if (swap_topk < 1u) {
-        swap_topk = 1u;
-    }
-    if (swap_topk > 16u) {
-        swap_topk = 16u;
-    }
-    if (swap_patience > 8u) {
-        swap_patience = 8u;
-    }
-    if (swap_min_gain < 0.0) {
-        swap_min_gain = 0.0;
-    }
-    if (swap_min_gain > 0.0) {
-        tiny_gain2 = swap_min_gain * swap_min_gain * 0.25;
-    } else {
-        tiny_gain2 = 1.0e-6;
-    }
-    adaptive_swap_controls = (profile
-                              != SIXEL_PALETTE_KCENTER_PROFILE_LEGACY);
-    if (rng_state != NULL && *rng_state != 0u) {
-        base_state = *rng_state;
-    }
-    swap_ctx.swap_min_gain = swap_min_gain;
+    sixel_kcenter_solver_run_state_clear(&state);
+    sixel_kcenter_solver_init_runtime(ctx, &state);
+    sixel_kcenter_solver_init_swap_context(ctx, &state);
 
     /*
-     * Trial workflow:
-     *   seed centers -> assign points -> run swap iterations -> keep best trial
+     * Trial invariants:
+     *   - seed progression keeps the fixed golden-ratio offset order
+     *   - objective ordering stays radius first, then weighted SSE
+     *   - final assignment always runs once after restoring best centers
      */
-    for (init_trial = 0u; init_trial < init_seeds; ++init_trial) {
-        trial_state = base_state + 0x9e3779b9u * (init_trial + 1u);
-        if (trial_state == 0u) {
-            trial_state = 1u;
-        }
-
-        sixel_kcenter_solver_seed_centers(resolved_algo,
-                                          points,
-                                          weights,
-                                          point_count,
-                                          k,
-                                          &trial_state,
-                                          centers,
-                                          scratch_slot,
-                                          fft_dist_cache,
-                                          center_mask);
-
-        sixel_kcenter_solver_assign_current(points,
-                                            weights,
-                                            point_count,
-                                            centers,
-                                            k,
-                                            nearest_slot,
-                                            nearest_dist,
-                                            second_slot,
-                                            second_dist,
-                                            &radius2,
-                                            &sse);
-
-        sixel_kcenter_solver_run_trial_swaps(&swap_ctx,
-                                             resolved_algo,
-                                             profile,
-                                             iter_limit,
-                                             swap_topk,
-                                             swap_patience,
-                                             adaptive_swap_controls,
-                                             tiny_gain2,
-                                             &radius2,
-                                             &trial_iterations);
-
-        if (sixel_kcenter_solver_trial_is_better(radius2,
-                                                 sse,
-                                                 best_trial_radius2,
-                                                 best_trial_sse)) {
-            memcpy(scratch_indices,
-                   centers,
-                   (size_t)k * sizeof(unsigned int));
-            best_trial_radius2 = radius2;
-            best_trial_sse = sse;
-            best_trial_iterations = trial_iterations;
-        }
+    for (state.init_trial = 0u;
+            state.init_trial < state.init_seeds;
+            ++state.init_trial) {
+        sixel_kcenter_solver_run_trial_once(ctx, &state);
+        sixel_kcenter_solver_maybe_store_best(ctx, &state);
     }
 
-    memcpy(centers, scratch_indices, (size_t)k * sizeof(unsigned int));
-    sixel_kcenter_refresh_center_mask(center_mask,
-                                      point_count,
-                                      centers,
-                                      k);
-    sixel_kcenter_solver_assign_current(points,
-                                        weights,
-                                        point_count,
-                                        centers,
-                                        k,
-                                        nearest_slot,
-                                        nearest_dist,
-                                        second_slot,
-                                        second_dist,
-                                        &radius2,
-                                        &sse);
-    iterations = best_trial_iterations;
-
-    if (radius2_out != NULL) {
-        *radius2_out = radius2;
-    }
-    if (sse_out != NULL) {
-        *sse_out = sse;
-    }
-    if (iterations_out != NULL) {
-        *iterations_out = iterations;
-    }
-    if (rng_state != NULL) {
-        *rng_state = trial_state;
-    }
-    return status;
+    sixel_kcenter_solver_finalize_best(ctx, &state);
+    return state.status;
 }
 
 static sixel_kcenter_algo_t
