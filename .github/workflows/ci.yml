@@ -5772,6 +5772,50 @@ jobs:
               meson
             exec_type: bash
 
+          - label: Autotools-ubuntu-x86_64-cosmopolitan-static
+            buildtool: autotools
+            runner: ubuntu-24.04
+            setup_prefix: >-
+              CC=cosmocc
+              LD=cosmocc
+              AR=cosmoar
+              RANLIB=cosmoranlib
+              INSTALL=cosmoinstall
+            setup_options: >-
+              --disable-shared
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-lcms2
+              --without-libcurl
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-cosmopolitan-static
+            buildtool: meson
+            runner: ubuntu-24.04
+            setup_prefix: >-
+              CC=cosmocc-meson
+              LD=cosmocc-meson
+              AR=cosmoar
+              RANLIB=cosmoranlib
+              INSTALL=cosmoinstall
+            setup_options: >-
+              -Ddefault_library=static
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+            check_target:
+              test --wrapper "$PWD"/build-aux/ape-wrapper
+            extra_packages: >-
+              meson
+            exec_type: bash
+
           - label: Autotools-macos-aarch64-cosmopolitan-static
             buildtool: autotools
             runner: macos-latest
@@ -5799,6 +5843,58 @@ jobs:
           - label: Meson-macos-aarch64-cosmopolitan-static
             buildtool: meson
             runner: macos-latest
+            setup_prefix: >-
+              CC=cosmocc-meson
+              LD=cosmocc-meson
+              AR=cosmoar
+              RANLIB=cosmoranlib
+              INSTALL=cosmoinstall
+            setup_options: >-
+              -Ddefault_library=static
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dcoregraphics=disabled
+              -Dquicklook_extension=disabled
+              -Dquicklook_preview=disabled
+              -Dappkit=disabled
+            check_target:
+              test --wrapper "$PWD"/build-aux/ape-wrapper
+            extra_packages: >-
+              meson
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-cosmopolitan-static
+            buildtool: autotools
+            runner: macos-15-intel
+            setup_prefix: >-
+              CC=cosmocc
+              LD=cosmocc
+              AR=cosmoar
+              RANLIB=cosmoranlib
+              INSTALL=cosmoinstall
+            setup_options: >-
+              --disable-shared
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-lcms2
+              --without-libcurl
+              --without-coregraphics
+              --disable-quicklook-extension
+              --disable-quicklook-preview
+              --disable-appkit
+            exec_type: bash
+
+          - label: Meson-macos-x86_64-cosmopolitan-static
+            buildtool: meson
+            runner: macos-15-intel
             setup_prefix: >-
               CC=cosmocc-meson
               LD=cosmocc-meson
@@ -5888,6 +5984,73 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Verify Cosmopolitan fat binaries (bash)
+        if: ${{ matrix.exec_type == 'bash' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+
+          if [ "${{ matrix.buildtool }}" = "meson" ]; then
+            img2sixel_bin="$PWD/builddir/converters/img2sixel"
+            sixel2png_bin="$PWD/builddir/converters/sixel2png"
+            lsqa_bin="$PWD/builddir/assessment/lsqa"
+          else
+            img2sixel_bin="$PWD/converters/img2sixel"
+            sixel2png_bin="$PWD/converters/sixel2png"
+            lsqa_bin="$PWD/assessment/lsqa"
+          fi
+
+          verify_fat_binary() {
+            bin_path="$1"
+            dbg_path="${bin_path}.com.dbg"
+            arm_path="${bin_path}.aarch64.elf"
+
+            test -f "$bin_path"
+            test -f "$dbg_path"
+            test -f "$arm_path"
+
+            test "$(head -n1 "$bin_path")" = "MZqFpD='"
+
+            bin_desc="$(file "$bin_path")"
+            dbg_desc="$(file "$dbg_path")"
+            arm_desc="$(file "$arm_path")"
+
+            case "$bin_desc" in
+              *DOS/MBR*|*COM*|*MZ*)
+                ;;
+              *)
+                echo "::error::unexpected APE description: $bin_desc"
+                exit 1
+                ;;
+            esac
+
+            case "$dbg_desc" in
+              *ELF*64-bit*LSB*executable*x86-64*)
+                ;;
+              *)
+                echo "::error::unexpected x86_64 sidecar description: $dbg_desc"
+                exit 1
+                ;;
+            esac
+
+            case "$arm_desc" in
+              *ELF*64-bit*LSB*executable*ARM*aarch64*)
+                ;;
+              *)
+                echo "::error::unexpected aarch64 sidecar description: $arm_desc"
+                exit 1
+                ;;
+            esac
+          }
+
+          verify_fat_binary "$img2sixel_bin"
+          verify_fat_binary "$sixel2png_bin"
+          verify_fat_binary "$lsqa_bin"
+
+          sh "$img2sixel_bin" --version >/dev/null
+          sh "$sixel2png_bin" --version >/dev/null
+          sh "$lsqa_bin" --help >/dev/null
 
   pcc:
     name: ${{ matrix.label }}
