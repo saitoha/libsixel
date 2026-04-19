@@ -12783,6 +12783,11 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
     int tmpdir_writable;
     char note_buffer[128];
     int note_size;
+#if defined(__EMSCRIPTEN__)
+    char pid_buffer[32];
+    int pid_chars;
+    size_t pid_len;
+#endif
 
     tmpdir = sixel_compat_getenv("TMPDIR");
     temp_debug_log("tmpdir_env_tmpdir", tmpdir, 0);
@@ -12833,7 +12838,26 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
     }
 
     prefix_len = strlen(prefix);
+#if defined(__EMSCRIPTEN__)
+    /*
+     * Emscripten NODERAWFS environments can return the same mktemp() result
+     * across parallel processes. Include the process id in the template
+     * prefix so concurrent workers do not race on the same staging path.
+     */
+    pid_chars = sixel_compat_snprintf(pid_buffer,
+                                      sizeof(pid_buffer),
+                                      "%lu",
+                                      (unsigned long)getpid());
+    if (pid_chars <= 0 || (size_t)pid_chars >= sizeof(pid_buffer)) {
+        temp_debug_log_note("template_pid_format_failed",
+                            "failed to format pid component");
+        return NULL;
+    }
+    pid_len = (size_t)pid_chars;
+    suffix_len = prefix_len + 1u + pid_len + strlen("-XXXXXX");
+#else
     suffix_len = prefix_len + strlen("-XXXXXX");
+#endif
     maximum_tmpdir_len = (size_t)INT_MAX;
     note_size = sixel_compat_snprintf(
         note_buffer,
@@ -12907,11 +12931,28 @@ create_temp_template_with_prefix(sixel_allocator_t *allocator,
     }
 
     if (needs_separator) {
+#if defined(__EMSCRIPTEN__)
+        (void) snprintf(template_path, template_len,
+                        "%s%c%s-%s-XXXXXX",
+                        tmpdir,
+                        separator,
+                        prefix,
+                        pid_buffer);
+#else
         (void) snprintf(template_path, template_len,
                         "%s%c%s-XXXXXX", tmpdir, separator, prefix);
+#endif
     } else {
+#if defined(__EMSCRIPTEN__)
+        (void) snprintf(template_path, template_len,
+                        "%s%s-%s-XXXXXX",
+                        tmpdir,
+                        prefix,
+                        pid_buffer);
+#else
         (void) snprintf(template_path, template_len,
                         "%s%s-XXXXXX", tmpdir, prefix);
+#endif
     }
     temp_debug_log("template_built", template_path, 0);
 
