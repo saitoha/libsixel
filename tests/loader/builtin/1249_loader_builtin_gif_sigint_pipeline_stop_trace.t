@@ -3,6 +3,8 @@
 
 set -eux
 
+: "${TEST_RUNNER_PATH:=${TOP_BUILDDIR}/tests/test_runner${SIXEL_BIN_EXT-}}"
+
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n"
     exit 0
@@ -39,56 +41,30 @@ set -v
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop0.gif"
 # Keep the common case fast with an early SIGINT.
-# If the first signal does not stop the pipeline, retry once after a
-# short delay and poll with a bounded watchdog window.
+# If the first run misses trace coverage, retry once with a longer window.
 
-set +x
+set +xv
 trace_summary=$(
     {
-        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        # shellcheck disable=SC2086
+        ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --sigint-run 20 1200 \
+            ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
             --env "SIXEL_THREADS=4" \
             --env "SIXEL_TRACE_TOPIC=encode_handoff" \
-            -Lbuiltin! -lforce "${input_gif}" 2>&1 >/dev/null &
-        pid=$!
-        watchdog_status=0
-        loop_count=0
-
-        sleep 0.02
-        kill -INT "${pid}" 2>/dev/null || true
-
-        loop_count=0
-        while test "${loop_count}" -lt 6; do
-            kill -0 "${pid}" 2>/dev/null || break
-            sleep 0.02
-            loop_count=$((loop_count + 1))
-        done
-
-        kill -0 "${pid}" 2>/dev/null && {
-            sleep 0.2
-            kill -INT "${pid}" 2>/dev/null || true
-        }
-
-        loop_count=0
-        while test "${loop_count}" -lt 60; do
-            kill -0 "${pid}" 2>/dev/null || break
-            sleep 0.05
-            loop_count=$((loop_count + 1))
-        done
-
-        kill -0 "${pid}" 2>/dev/null && watchdog_status=42
-        test "${watchdog_status}" != 42 || kill -KILL "${pid}" 2>/dev/null || true
-        wait "${pid}" 2>/dev/null || true
-
-        printf "__WATCHDOG_STATUS__=%s\n" "${watchdog_status}"
+            -Lbuiltin! -lforce "${input_gif}" 2>&1 >/dev/null
+        sigint_run_status=$?
+        printf "__SIGINT_RUN_STATUS__=%s\n" "${sigint_run_status}"
     }
 )
 
-timeout_flag=0
+sigint_run_status=1
 handoff_flag=0
 stop_flag=0
+retry_flag=0
 
-trace_remainder=${trace_summary#*__WATCHDOG_STATUS__=42}
-test "${trace_remainder}" != "${trace_summary}" && timeout_flag=1
+status_line=${trace_summary#*__SIGINT_RUN_STATUS__=}
+test "${status_line}" != "${trace_summary}" &&
+    sigint_run_status=${status_line%%[!0-9]*}
 
 trace_remainder=${trace_summary#*event=callback_handoff_decide handoff=pipeline}
 test "${trace_remainder}" != "${trace_summary}" && handoff_flag=1
@@ -96,9 +72,42 @@ test "${trace_remainder}" != "${trace_summary}" && handoff_flag=1
 trace_remainder=${trace_summary#*event=pipeline_stop}
 test "${trace_remainder}" != "${trace_summary}" && stop_flag=1
 
-set -x
+test "${sigint_run_status}" = "0" || retry_flag=1
+test "${handoff_flag}" = "1" || retry_flag=1
+test "${stop_flag}" = "1" || retry_flag=1
 
-test "${timeout_flag}" = "0" || {
+test "${retry_flag}" = "0" || {
+    set +xv
+    trace_summary=$(
+        {
+            # shellcheck disable=SC2086
+            ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --sigint-run 200 6000 \
+                ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+                --env "SIXEL_THREADS=4" \
+                --env "SIXEL_TRACE_TOPIC=encode_handoff" \
+                -Lbuiltin! -lforce "${input_gif}" 2>&1 >/dev/null
+            sigint_run_status=$?
+            printf "__SIGINT_RUN_STATUS__=%s\n" "${sigint_run_status}"
+        }
+    )
+
+    sigint_run_status=1
+    handoff_flag=0
+    stop_flag=0
+
+    status_line=${trace_summary#*__SIGINT_RUN_STATUS__=}
+    test "${status_line}" != "${trace_summary}" &&
+        sigint_run_status=${status_line%%[!0-9]*}
+
+    trace_remainder=${trace_summary#*event=callback_handoff_decide handoff=pipeline}
+    test "${trace_remainder}" != "${trace_summary}" && handoff_flag=1
+
+    trace_remainder=${trace_summary#*event=pipeline_stop}
+    test "${trace_remainder}" != "${trace_summary}" && stop_flag=1
+}
+set -xv
+
+test "${sigint_run_status}" = "0" || {
     echo "not ok" 1 - "builtin GIF pipeline did not stop after SIGINT"
     exit 0
 }

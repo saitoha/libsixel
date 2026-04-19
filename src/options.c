@@ -93,6 +93,9 @@ sixel_option_apply_env_default(char const *variable);
 static int
 sixel_option_environment_is_enabled(char const *variable);
 
+static int
+sixel_option_diag_mode_is_code(void);
+
 typedef struct sixel_option_choice_suggestion {
     char const *name;
     double score;
@@ -168,6 +171,24 @@ sixel_option_environment_is_enabled(char const *variable)
         return 0;
     }
     if (value[0] == '1' && value[1] == '\0') {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+sixel_option_diag_mode_is_code(void)
+{
+    char const *value;
+
+    value = NULL;
+
+    value = sixel_compat_getenv("SIXEL_DIAG_MODE");
+    if (value == NULL) {
+        return 0;
+    }
+    if (strcmp(value, "code") == 0) {
         return 1;
     }
 
@@ -350,14 +371,19 @@ sixel_option_report_ambiguous_prefix(
 {
     int written;
     int suggestions_enabled;
+    int diag_mode_code;
     char const *active_candidates;
 
     if (buffer == NULL || buffer_size == 0u) {
         return;
     }
+    diag_mode_code = sixel_option_diag_mode_is_code();
     suggestions_enabled = sixel_option_environment_is_enabled(
         SIXEL_OPTION_ENV_PREFIX_SUGGESTIONS);
     active_candidates = suggestions_enabled ? candidates : NULL;
+    if (diag_mode_code) {
+        active_candidates = NULL;
+    }
     if (active_candidates != NULL && active_candidates[0] != '\0') {
         written = snprintf(buffer,
                            buffer_size,
@@ -382,13 +408,15 @@ sixel_option_report_invalid_choice(
     size_t buffer_size)
 {
     int written;
+    int diag_mode_code;
 
     if (base_message == NULL) {
         return;
     }
+    diag_mode_code = sixel_option_diag_mode_is_code();
 
-    if (suggestions != NULL && suggestions[0] != '\0' && buffer != NULL &&
-        buffer_size > 0u) {
+    if (!diag_mode_code && suggestions != NULL && suggestions[0] != '\0'
+        && buffer != NULL && buffer_size > 0u) {
         buffer[0] = '\0';
         written = snprintf(buffer,
                            buffer_size,
@@ -588,14 +616,28 @@ sixel_option_report_unknown_base_value(
 {
     char candidates[256];
     int written;
+    int diag_mode_code;
 
     candidates[0] = '\0';
     written = 0;
+    diag_mode_code = 0;
     sixel_option_emit_candidate_list_from_schema_values(values,
                                                         value_count,
                                                         candidates,
                                                         sizeof(candidates));
     if (buffer == NULL || buffer_size == 0u) {
+        return;
+    }
+    diag_mode_code = sixel_option_diag_mode_is_code();
+
+    if (diag_mode_code) {
+        written = snprintf(
+            buffer,
+            buffer_size,
+            "unknown option base value \"%s\".",
+            base_token != NULL ? base_token : "");
+        (void)written;
+        sixel_helper_set_additional_message(buffer);
         return;
     }
 
@@ -635,14 +677,28 @@ sixel_option_report_unknown_suboption_key(
      */
     char candidates[384];
     int written;
+    int diag_mode_code;
 
     candidates[0] = '\0';
     written = 0;
+    diag_mode_code = 0;
     sixel_option_emit_candidate_list_from_subkeys(subkeys,
                                                   subkey_count,
                                                   candidates,
                                                   sizeof(candidates));
     if (buffer == NULL || buffer_size == 0u) {
+        return;
+    }
+    diag_mode_code = sixel_option_diag_mode_is_code();
+
+    if (diag_mode_code) {
+        written = snprintf(
+            buffer,
+            buffer_size,
+            "unknown suboption key \"%s\".",
+            key_token != NULL ? key_token : "");
+        (void)written;
+        sixel_helper_set_additional_message(buffer);
         return;
     }
 
@@ -679,14 +735,29 @@ sixel_option_report_unknown_suboption_value(
 {
     char candidates[192];
     int written;
+    int diag_mode_code;
 
     candidates[0] = '\0';
     written = 0;
+    diag_mode_code = 0;
     sixel_option_emit_candidate_list_from_choices(choices,
                                                   choice_count,
                                                   candidates,
                                                   sizeof(candidates));
     if (buffer == NULL || buffer_size == 0u) {
+        return;
+    }
+    diag_mode_code = sixel_option_diag_mode_is_code();
+
+    if (diag_mode_code) {
+        written = snprintf(
+            buffer,
+            buffer_size,
+            "unknown suboption value \"%s\" for key \"%s\".",
+            value_token != NULL ? value_token : "",
+            key_name != NULL ? key_name : "");
+        (void)written;
+        sixel_helper_set_additional_message(buffer);
         return;
     }
 

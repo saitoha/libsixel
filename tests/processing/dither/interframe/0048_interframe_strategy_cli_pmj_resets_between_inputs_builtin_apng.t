@@ -24,32 +24,39 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 echo "1..1"
 set -v
 
-combined_output=$(
+combined_cksum=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \
         -ldisable \
         -d stbn:source=pmj -p 16 \
-        "${input_apng}" "${input_apng}"
+        "${input_apng}" "${input_apng}" | cksum
 ) || {
     echo "not ok" 1 - "interframe source=pmj two-input encode failed"
     exit 0
 }
 
-single_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        -L builtin \
-        -ldisable \
-        -d stbn:source=pmj -p 16 \
-        "${input_apng}"
+expected_cksum=$(
+    {
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+            --threads=1 \
+            -L builtin \
+            -ldisable \
+            -d stbn:source=pmj -p 16 \
+            "${input_apng}"
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+            --threads=1 \
+            -L builtin \
+            -ldisable \
+            -d stbn:source=pmj -p 16 \
+            "${input_apng}"
+    } | cksum
 ) || {
-    echo "not ok" 1 - "interframe source=pmj single-input encode failed"
+    echo "not ok" 1 - "interframe source=pmj expected stream encode failed"
     exit 0
 }
 
-expected_output="${single_output}${single_output}"
-test "${combined_output}" = "${expected_output}" || {
+test "${combined_cksum}" = "${expected_cksum}" || {
     echo "not ok" 1 - "source=pmj state leaked across input boundary"
     exit 0
 }

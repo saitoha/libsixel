@@ -17,6 +17,24 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#if HAVE_TIME_H
+# include <time.h>
+#endif
+
+#if !defined(_WIN32)
+# if HAVE_SIGNAL_H
+#  include <signal.h>
+# endif
+# if HAVE_UNISTD_H
+#  include <unistd.h>
+# endif
+# if HAVE_SYS_TYPES_H
+#  include <sys/types.h>
+# endif
+# if HAVE_SYS_WAIT_H
+#  include <sys/wait.h>
+# endif
+#endif
 
 #if defined(_WIN32)
 # include <windows.h>
@@ -309,6 +327,10 @@ print_usage(char const *program)
             "       %s --win32-ctrl-break-run <delay-ms> <timeout-ms> "
             "<program> [args...]\n",
             program);
+    fprintf(stderr,
+            "       %s --sigint-run <delay-ms> <timeout-ms> "
+            "<program> [args...]\n",
+            program);
     fprintf(stderr, "\n");
     fprintf(stderr, "available tests:\n");
     for (index = 0u; test_entries[index].name != NULL; index++) {
@@ -568,6 +590,201 @@ cleanup:
 }
 
 static int
+test_runner_sleep_milliseconds(unsigned long milliseconds)
+{
+    struct timespec delay;
+    struct timespec remain;
+    int sleep_status;
+
+    delay.tv_sec = 0;
+    delay.tv_nsec = 0L;
+    remain.tv_sec = 0;
+    remain.tv_nsec = 0L;
+    sleep_status = 0;
+
+    delay.tv_sec = (time_t)(milliseconds / 1000ul);
+    delay.tv_nsec = (long)(milliseconds % 1000ul) * 1000000L;
+    for (;;) {
+        sleep_status = nanosleep(&delay, &remain);
+        if (sleep_status == 0) {
+            return 0;
+        }
+        if (errno != EINTR) {
+            return -1;
+        }
+        delay = remain;
+    }
+}
+
+static int
+test_runner_run_posix_sigint(int argc, char **argv)
+{
+#if !defined(_WIN32)
+    char const *delay_token;
+    char const *timeout_token;
+    unsigned long parsed_delay;
+    unsigned long parsed_timeout;
+    char *delay_end;
+    char *timeout_end;
+    char const *program;
+    char **program_argv;
+    pid_t child_pid;
+    pid_t wait_pid;
+    int wait_status;
+    int child_running;
+    unsigned long elapsed_ms;
+    unsigned long poll_interval_ms;
+    int send_result;
+    int kill_result;
+
+    delay_token = NULL;
+    timeout_token = NULL;
+    parsed_delay = 0ul;
+    parsed_timeout = 0ul;
+    delay_end = NULL;
+    timeout_end = NULL;
+    program = NULL;
+    program_argv = NULL;
+    child_pid = (pid_t)0;
+    wait_pid = (pid_t)0;
+    wait_status = 0;
+    child_running = 1;
+    elapsed_ms = 0ul;
+    poll_interval_ms = 10ul;
+    send_result = 0;
+    kill_result = 0;
+
+    if (argc < 4) {
+        fprintf(stderr,
+                "usage: %s <delay-ms> <timeout-ms> <program> [args...]\n",
+                argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    delay_token = argv[1];
+    timeout_token = argv[2];
+    program = argv[3];
+    program_argv = argv + 3;
+
+    errno = 0;
+    parsed_delay = strtoul(delay_token, &delay_end, 10);
+    if (errno != 0 || delay_end == delay_token || *delay_end != '\0') {
+        fprintf(stderr,
+                "test_runner: invalid delay milliseconds: %s\n",
+                delay_token);
+        return EXIT_FAILURE;
+    }
+
+    errno = 0;
+    parsed_timeout = strtoul(timeout_token, &timeout_end, 10);
+    if (errno != 0 || timeout_end == timeout_token || *timeout_end != '\0') {
+        fprintf(stderr,
+                "test_runner: invalid timeout milliseconds: %s\n",
+                timeout_token);
+        return EXIT_FAILURE;
+    }
+
+    child_pid = fork();
+    if (child_pid < (pid_t)0) {
+        fprintf(stderr, "test_runner: fork failed: %s\n", strerror(errno));
+        return EXIT_FAILURE;
+    }
+
+    if (child_pid == (pid_t)0) {
+        (void)setpgid(0, 0);
+        (void)execvp(program, program_argv);
+        fprintf(stderr, "test_runner: execvp failed: %s\n", strerror(errno));
+        _exit(127);
+    }
+
+    if (setpgid(child_pid, child_pid) != 0
+        && errno != EACCES && errno != ESRCH) {
+        fprintf(stderr, "test_runner: setpgid failed: %s\n", strerror(errno));
+    }
+
+    if (parsed_delay > 0ul
+        && test_runner_sleep_milliseconds(parsed_delay) != 0) {
+        fprintf(stderr, "test_runner: nanosleep failed: %s\n", strerror(errno));
+        goto timeout_cleanup;
+    }
+
+    send_result = kill((pid_t)(-child_pid), SIGINT);
+    if (send_result != 0 && errno != ESRCH) {
+        fprintf(stderr, "test_runner: SIGINT send failed: %s\n",
+                strerror(errno));
+    }
+
+    if (parsed_timeout > 0ul && poll_interval_ms > parsed_timeout) {
+        poll_interval_ms = parsed_timeout;
+    }
+
+    while (child_running != 0) {
+        wait_pid = waitpid(child_pid, &wait_status, WNOHANG);
+        if (wait_pid == child_pid) {
+            child_running = 0;
+            break;
+        }
+        if (wait_pid < (pid_t)0) {
+            if (errno == EINTR) {
+                continue;
+            }
+            fprintf(stderr, "test_runner: waitpid failed: %s\n",
+                    strerror(errno));
+            goto timeout_cleanup;
+        }
+        if (parsed_timeout == 0ul || elapsed_ms >= parsed_timeout) {
+            fprintf(stderr,
+                    "test_runner: timeout waiting child after SIGINT\n");
+            goto timeout_cleanup;
+        }
+        if (test_runner_sleep_milliseconds(poll_interval_ms) != 0) {
+            fprintf(stderr, "test_runner: nanosleep failed: %s\n",
+                    strerror(errno));
+            goto timeout_cleanup;
+        }
+        if (elapsed_ms > parsed_timeout - poll_interval_ms) {
+            elapsed_ms = parsed_timeout;
+        } else {
+            elapsed_ms += poll_interval_ms;
+        }
+    }
+
+    return EXIT_SUCCESS;
+
+timeout_cleanup:
+    kill_result = kill((pid_t)(-child_pid), SIGKILL);
+    if (kill_result != 0 && errno != ESRCH) {
+        fprintf(stderr, "test_runner: SIGKILL send failed: %s\n",
+                strerror(errno));
+    }
+    for (;;) {
+        wait_pid = waitpid(child_pid, &wait_status, 0);
+        if (wait_pid == child_pid) {
+            break;
+        }
+        if (wait_pid < (pid_t)0 && errno == EINTR) {
+            continue;
+        }
+        if (wait_pid < (pid_t)0 && errno == ECHILD) {
+            break;
+        }
+        if (wait_pid < (pid_t)0) {
+            fprintf(stderr, "test_runner: waitpid cleanup failed: %s\n",
+                    strerror(errno));
+            break;
+        }
+    }
+    return EXIT_FAILURE;
+#else
+    (void)argc;
+    (void)argv;
+
+    fprintf(stderr, "test_runner: --sigint-run is unavailable\n");
+    return EXIT_FAILURE;
+#endif
+}
+
+static int
 test_runner_setenv_portable(char const *name, char const *value);
 static int
 test_runner_apply_env_assignment(char const *assignment);
@@ -759,6 +976,11 @@ main(int argc, char **argv)
     if (strcmp(argv[first_index], "--win32-ctrl-break-run") == 0) {
         return test_runner_run_windows_ctrl_break(argc - first_index,
                                                   argv + first_index);
+    }
+
+    if (strcmp(argv[first_index], "--sigint-run") == 0) {
+        return test_runner_run_posix_sigint(argc - first_index,
+                                            argv + first_index);
     }
 
     requested = argv[first_index];

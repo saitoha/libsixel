@@ -13,20 +13,22 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
+input_ppm="${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm"
+
 last_ward=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=1:restarts=1:feedback=off:merge=auto \
     -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
+    "${input_ppm}" | cksum)
 last_auto=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
     -Qkmeans:seed=1:restarts=1:feedback=off:merge=auto \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
+    "${input_ppm}" | cksum)
 ward_only=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
+    "${input_ppm}" | cksum)
 auto_only=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=1:restarts=1:feedback=off:merge=auto \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
+    "${input_ppm}" | cksum)
 
 test "${last_ward}" != "${last_auto}" || {
     echo "not ok" 1 - "argument order did not affect merge selection"

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying -#/--cms-engine rejects unknown values.
+# TAP test verifying -#/--cms-engine unknown values use code contract.
 
 set -eux
 
@@ -12,30 +12,33 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -# foo \
+msg=''
+diag_line=''
+status=0
+nl='
+'
+
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_DIAG_MODE=code \
+    -# foo \
     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-    -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "unknown --cms-engine value unexpectedly succeeded"
+    -o/dev/null 2>&1) || status=$?
+
+test "${status}" -eq 2 || {
+    echo "not ok" 1 - "unknown --cms-engine value exit status mismatch"
     exit 0
 }
 
-case "${msg}" in
-    *"-#,--cms-engine"* )
+diag_line=${msg%%"${nl}"*}
+
+case "${diag_line}" in
+    LSXCLI1\|phase=option_parse\|rc=*\|code=INVALID_CMS_ENGINE)
         ;;
     *)
-        echo "not ok" 1 - "missing --cms-engine option context in diagnostic"
+        echo "not ok" 1 - "unknown --cms-engine diagnostic header mismatch"
         exit 0
         ;;
 esac
 
-case "${msg}" in
-    *"cms-engine accepts none, auto, builtin, lcms2, or colorsync."*)
-        ;;
-    *)
-        echo "not ok" 1 - "missing valid-value diagnostics for --cms-engine"
-        exit 0
-        ;;
-esac
-
-echo "ok" 1 - "unknown --cms-engine value is rejected"
+echo "ok" 1 - "unknown --cms-engine value keeps RC+diagnostic code contract"
 exit 0

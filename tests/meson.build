@@ -116,16 +116,6 @@ run_command(
   check: true,
 )
 
-# Keep large generated fixtures out of the source tree and make Meson test
-# inputs match autotools by materializing them under TOP_BUILDDIR.
-run_command(
-  sh,
-  meson.project_source_root() / 'tests/_static/sh/prepare-psb-large-fixtures.sh',
-  meson.project_source_root(),
-  meson.project_build_root(),
-  check: true,
-)
-
 # Meson sets runtime library lookup via rpath/runpath, so test wrappers must
 # not override PATH/LD_LIBRARY_PATH/DYLD_LIBRARY_PATH in this execution path.
 base_env_settings += [['SIXEL_SHLIBPATH_OVERRIDES_RUNPATH', 'no']]
@@ -309,6 +299,11 @@ foreach t : tests
   test_should_fail = xfail_tests.contains(t)
   test_args = [python_tap_wrapper_file] + test_cmd
   test_protocol = 'tap'
+  test_timeout = 90
+  if t.contains('sigint')
+    # Keep hung SIGINT tests from inflating wall clock on CI workers.
+    test_timeout = 20
+  endif
   if test_should_fail
     # TAP tests report failures via "not ok" while keeping exit status 0.
     # Convert TAP result lines to exit status so should_fail behaves like
@@ -322,7 +317,7 @@ foreach t : tests
     protocol: test_protocol,
     env: test_env,
     should_fail: test_should_fail,
-    timeout: 90,
+    timeout: test_timeout,
     suite: ['tap'])
 endforeach
 

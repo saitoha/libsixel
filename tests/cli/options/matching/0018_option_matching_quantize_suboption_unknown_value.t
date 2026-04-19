@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying unknown -Q suboption values are rejected.
+# TAP test verifying unknown -Q suboption values use CLI code contract.
 
 set -eux
 
@@ -12,32 +12,34 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Qk:i=xyz "${TOP_SRCDIR}/tests/data/inputs/small.ppm" -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "unknown -Q suboption value unexpectedly succeeded"
+msg=''
+diag_line=''
+status=0
+nl='
+'
+
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_DIAG_MODE=code \
+    -Qk:i=xyz "${TOP_SRCDIR}/tests/data/inputs/small.ppm" -o/dev/null 2>&1) || \
+    status=$?
+
+test "${status}" -eq 2 || {
+    echo "not ok" 1 - "unknown -Q suboption value exit status mismatch"
     exit 0
 }
 
-case "${msg}" in
-    *"unknown suboption value"*)
+diag_line=${msg%%"${nl}"*}
+
+case "${diag_line}" in
+    LSXCLI1\|phase=option_parse\|rc=*\|code=UNKNOWN_SUBOPTION_VALUE)
         ;;
     *)
-        echo "not ok" 1 - "missing unknown suboption value diagnostic"
+        echo "not ok" 1 - "unknown -Q suboption value diagnostic header mismatch"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-case "${msg}" in
-    *"\"xyz\""*"\"inittype\""*"valid values"*"auto, none, pca"*)
-        ;;
-    *)
-        echo "not ok" 1 - "missing token/candidate details for unknown -Q suboption value"
-        printf '%s\n' '--- stderr ---' >&2
-        printf '%s\n' "${msg}" >&2
-        exit 0
-        ;;
-esac
-
-echo "ok" 1 - "unknown -Q suboption value is rejected"
+echo "ok" 1 - "unknown -Q suboption value keeps RC+diagnostic code contract"
 exit 0

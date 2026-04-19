@@ -2551,6 +2551,99 @@ signal_cancel_callback(void *context)
 #endif
 
 static int
+img2sixel_option_parse_detail_to_code(char const *detail_source)
+{
+    if (detail_source == NULL || detail_source[0] == '\0') {
+        return 0;
+    }
+    if (strstr(detail_source, "unrecognized option") != NULL) {
+        return 1;
+    }
+    if (strstr(detail_source, "missing argument for") != NULL) {
+        return 2;
+    }
+    if (strstr(detail_source, "ambiguous prefix") != NULL) {
+        return 3;
+    }
+    if (strstr(detail_source, "unknown option base value") != NULL) {
+        return 4;
+    }
+    if (strstr(detail_source, "unknown suboption key") != NULL) {
+        return 5;
+    }
+    if (strstr(detail_source, "unknown suboption value") != NULL) {
+        return 6;
+    }
+    if (strstr(detail_source,
+               "suboption must be written as key=value") != NULL) {
+        return 7;
+    }
+    if (strstr(detail_source, "cms-engine accepts") != NULL) {
+        return 9;
+    }
+    if (strstr(detail_source, "invalid argument for") != NULL) {
+        return 8;
+    }
+
+    return 0;
+}
+
+static char const *
+img2sixel_option_parse_code_name(int detail_code)
+{
+    switch (detail_code) {
+    case 1:
+        return "UNRECOGNIZED_OPTION";
+    case 2:
+        return "MISSING_ARGUMENT";
+    case 3:
+        return "AMBIGUOUS_PREFIX";
+    case 4:
+        return "UNKNOWN_BASE_VALUE";
+    case 5:
+        return "UNKNOWN_SUBOPTION_KEY";
+    case 6:
+        return "UNKNOWN_SUBOPTION_VALUE";
+    case 7:
+        return "SUBOPTION_FORMAT";
+    case 8:
+        return "INVALID_ARGUMENT";
+    case 9:
+        return "INVALID_CMS_ENGINE";
+    default:
+        break;
+    }
+
+    return "BAD_ARGUMENT";
+}
+
+static void
+img2sixel_emit_option_parse_diagnostic(int status, char const *detail_source)
+{
+    char const *code_name;
+    int detail_code;
+
+    code_name = "ERROR";
+    detail_code = 0;
+
+    if (status == SIXEL_BAD_ARGUMENT) {
+        detail_code = img2sixel_option_parse_detail_to_code(detail_source);
+        code_name = img2sixel_option_parse_code_name(detail_code);
+    } else if (status == SIXEL_BAD_ALLOCATION) {
+        code_name = "BAD_ALLOCATION";
+    } else if (status == SIXEL_BAD_CLIPBOARD) {
+        code_name = "BAD_CLIPBOARD";
+    } else if (status == SIXEL_RUNTIME_ERROR) {
+        code_name = "RUNTIME_ERROR";
+    }
+
+    fprintf(stderr,
+            "LSXCLI1|phase=option_parse|rc=%d|code=%s\n",
+            status,
+            code_name);
+}
+
+static int
 img2sixel_exit_code(SIXELSTATUS status)
 {
     /*
@@ -2663,6 +2756,7 @@ img2sixel_main(int argc, char *argv[])
     size_t parsed_index;
     int parse_unknown_option;
     int parse_terminal_optind;
+    int option_parse_failed;
     img2sixel_parsed_option_t current_option;
 
     n = 0;
@@ -2679,6 +2773,7 @@ img2sixel_main(int argc, char *argv[])
     parsed_index = 0u;
     parse_unknown_option = 0;
     parse_terminal_optind = 1;
+    option_parse_failed = 0;
     current_option.code = 0;
     current_option.optopt_value = 0;
     current_option.argument = NULL;
@@ -2714,6 +2809,7 @@ img2sixel_main(int argc, char *argv[])
 
         if (n > 0) {
             if (img2sixel_guard_missing_argument(n, argv) != 0) {
+                option_parse_failed = 1;
                 status = SIXEL_BAD_ARGUMENT;
                 goto error;
             }
@@ -2736,6 +2832,7 @@ img2sixel_main(int argc, char *argv[])
                 parsed_options,
                 new_capacity * sizeof(*parsed_options));
             if (grown_options == NULL) {
+                option_parse_failed = 1;
                 status = SIXEL_BAD_ALLOCATION;
                 goto error;
             }
@@ -2759,6 +2856,7 @@ img2sixel_main(int argc, char *argv[])
                                          detail_buffer,
                                          sizeof(detail_buffer)) != 0) {
                 sixel_helper_set_additional_message(detail_buffer);
+                option_parse_failed = 1;
                 status = SIXEL_BAD_ARGUMENT;
                 goto error;
             }
@@ -2774,6 +2872,7 @@ img2sixel_main(int argc, char *argv[])
                     detail_buffer[0] != '\0'
                         ? detail_buffer
                         : NULL);
+                option_parse_failed = 1;
                 status = SIXEL_BAD_ARGUMENT;
                 goto error;
             }
@@ -2795,6 +2894,7 @@ img2sixel_main(int argc, char *argv[])
         img2sixel_handle_getopt_error(
             parsed_options[parsed_count - 1u].optopt_value,
             parsed_options[parsed_count - 1u].token);
+        option_parse_failed = 1;
         status = SIXEL_BAD_ARGUMENT;
         goto unknown_option_error;
     }
@@ -2849,6 +2949,7 @@ img2sixel_main(int argc, char *argv[])
             img2sixel_handle_getopt_error(
                 parsed_options[parsed_index].optopt_value,
                 parsed_options[parsed_index].token);
+            option_parse_failed = 1;
             status = SIXEL_BAD_ARGUMENT;
             goto unknown_option_error;
         case '1':
@@ -2887,6 +2988,7 @@ img2sixel_main(int argc, char *argv[])
                         detail_buffer[0] != '\0'
                             ? detail_buffer
                             : NULL);
+                    option_parse_failed = 1;
                 }
                 goto error;
             }
@@ -2941,6 +3043,11 @@ error:
     img2sixel_trace_topic_message("lifecycle",
                                  "enter error path: status=%d",
                                  status);
+    if (option_parse_failed != 0) {
+        img2sixel_emit_option_parse_diagnostic(
+            status,
+            sixel_helper_get_additional_message());
+    }
     fprintf(stderr, "\n%s\n%s\n\n",
             sixel_helper_format_error(status),
             sixel_helper_get_additional_message());
@@ -2953,6 +3060,9 @@ error:
 unknown_option_error:
     img2sixel_trace_topic_message("lifecycle",
                                  "enter unknown-option path");
+    img2sixel_emit_option_parse_diagnostic(
+        status,
+        sixel_helper_get_additional_message());
     fprintf(stderr,
             "\n"
             "usage: img2sixel [-78eIkiugvSPDOVH] [-= threads] [-. precision] [-p colors] [-m file]\n"

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying unknown -L base tokens include token and candidates.
+# TAP test verifying unknown -L base tokens use CLI code contract.
 
 set -eux
 
@@ -12,22 +12,34 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lzzzloader \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "unknown -L base token unexpectedly succeeded"
+msg=''
+diag_line=''
+status=0
+nl='
+'
+
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_DIAG_MODE=code \
+    -Lzzzloader "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+    -o/dev/null 2>&1) || status=$?
+
+test "${status}" -eq 2 || {
+    echo "not ok" 1 - "unknown -L base token exit status mismatch"
     exit 0
 }
 
-case "${msg}" in
-    *"unknown option base value"*"\"zzzloader\""*"valid values"*"builtin"*)
+diag_line=${msg%%"${nl}"*}
+
+case "${diag_line}" in
+    LSXCLI1\|phase=option_parse\|rc=*\|code=UNKNOWN_BASE_VALUE)
         ;;
     *)
-        echo "not ok" 1 - "missing token/candidate details for unknown -L base token"
+        echo "not ok" 1 - "unknown -L base token diagnostic header mismatch"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "unknown -L base token reports token and candidates"
+echo "ok" 1 - "unknown -L base token keeps RC+diagnostic code contract"
 exit 0

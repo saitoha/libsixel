@@ -16,29 +16,34 @@ test "${HAVE_WEBP-}" = 1 || {
 echo "1..1"
 set -v
 
-input_anim="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_anim_12x8.webp"
-combined_output=$(
+input_anim="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
+combined_cksum=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 -ldisable \
         -d interframe -p 16 \
-        "${input_anim}" "${input_anim}"
+        "${input_anim}" "${input_anim}" | cksum
 ) || {
     echo "not ok" 1 - "interframe two-input encode failed"
     exit 0
 }
 
-single_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 -ldisable \
-        -d interframe -p 16 \
-        "${input_anim}"
+expected_cksum=$(
+    {
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+            --threads=1 -ldisable \
+            -d interframe -p 16 \
+            "${input_anim}"
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+            --threads=1 -ldisable \
+            -d interframe -p 16 \
+            "${input_anim}"
+    } | cksum
 ) || {
-    echo "not ok" 1 - "interframe single-input encode failed"
+    echo "not ok" 1 - "interframe expected stream encode failed"
     exit 0
 }
 
-expected_output="${single_output}${single_output}"
-test "${combined_output}" = "${expected_output}" || {
+test "${combined_cksum}" = "${expected_cksum}" || {
     echo "not ok" 1 - "interframe state leaked across input boundary"
     exit 0
 }

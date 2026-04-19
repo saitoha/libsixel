@@ -2,6 +2,25 @@
 
 mkdir -p "$ARTIFACT_LOCAL_DIR"
 
+# Meson runs `sh -c SCRIPT ARG0 ARG1 ...` where ARG0 becomes `$0`.
+# Keep compatibility with both forms by preferring `$1` and falling back
+# to `$0` when no positional argument is supplied.
+if test -n "${1:-}"; then
+  test_script=$1
+  shift
+else
+  test_script=$0
+fi
+
+test_requires_large_fixtures() {
+  case "$test_script" in
+    *xxlarge*|*oversized_iccp*)
+      return 0
+      ;;
+  esac
+  return 1
+}
+
 prepare_psb_large_fixtures_once() {
   state_dir="$MESON_BUILD_ROOT/tests"
   # Keep a single shared marker per build dir. Using PPID as a fallback
@@ -10,16 +29,21 @@ prepare_psb_large_fixtures_once() {
   done_file="$state_dir/.psb-large-fixtures.done"
   lock_dir="$state_dir/.psb-large-fixtures.lock"
   prepare_script="$TOP_SRCDIR/tests/_static/sh/prepare-psb-large-fixtures.sh"
+  ready_probe_webp="$TOP_BUILDDIR/tests/data/inputs/formats/webp-static-icc-overlimit-padded.webp"
+  ready_probe_psb="$TOP_BUILDDIR/tests/data/inputs/formats/snake16_psb_cmyk16_missing_composite_multilayer_normal_high_offset_xxlarge.psd"
 
   mkdir -p "$state_dir"
 
   if test -f "$done_file"; then
-    return 0
+    if test -f "$ready_probe_webp" && test -f "$ready_probe_psb"; then
+      return 0
+    fi
+    rm -f "$done_file"
   fi
 
   if mkdir "$lock_dir" 2>/dev/null; then
     # Keep fixture-preparation chatter out of TAP stdout.
-    if ! sh "$prepare_script" "$TOP_SRCDIR" 1>&2; then
+    if ! sh "$prepare_script" "$TOP_SRCDIR" "$TOP_BUILDDIR" 1>&2; then
       rmdir "$lock_dir"
       return 1
     fi
@@ -39,18 +63,10 @@ prepare_psb_large_fixtures_once() {
   done
 }
 
-if ! prepare_psb_large_fixtures_once; then
-  exit 1
-fi
-
-# Meson runs `sh -c SCRIPT ARG0 ARG1 ...` where ARG0 becomes `$0`.
-# Keep compatibility with both forms by preferring `$1` and falling back
-# to `$0` when no positional argument is supplied.
-if test -n "${1:-}"; then
-  test_script=$1
-  shift
-else
-  test_script=$0
+if test_requires_large_fixtures; then
+  if ! prepare_psb_large_fixtures_once; then
+    exit 1
+  fi
 fi
 
 case "${test_script##*.}" in
@@ -206,10 +222,12 @@ if test "${test_script##*.}" = "php"; then
         fi
         if test "$wait_count" -gt 600; then
           venv_progress php "timeout waiting for shared venv exports; marking interpreter unavailable"
-          printf '%s\n' 'SIXEL_TEST_PHP=' > "$php_venv_exports_file"
-          printf '%s\n' 'SIXEL_TEST_PHP_BINDING_ROOT=' >> "$php_venv_exports_file"
-          printf '%s\n' 'SIXEL_TEST_PHP_LIBDIR=' >> "$php_venv_exports_file"
-          printf '%s\n' 'SIXEL_TEST_PHP_LIBPATH=' >> "$php_venv_exports_file"
+          {
+            printf '%s\n' 'SIXEL_TEST_PHP='
+            printf '%s\n' 'SIXEL_TEST_PHP_BINDING_ROOT='
+            printf '%s\n' 'SIXEL_TEST_PHP_LIBDIR='
+            printf '%s\n' 'SIXEL_TEST_PHP_LIBPATH='
+          } > "$php_venv_exports_file"
           break
         fi
         sleep 0.05
@@ -271,11 +289,13 @@ if test ! -f "$perl_venv_exports_file"; then
       fi
       if test "$wait_count" -gt 600; then
         venv_progress perl "timeout waiting for shared venv exports; marking interpreter unavailable"
-        printf '%s\n' 'SIXEL_TEST_PERL=' > "$perl_venv_exports_file"
-        printf '%s\n' 'SIXEL_TEST_PERL5LIB=' >> "$perl_venv_exports_file"
-        printf '%s\n' 'SIXEL_TEST_PERL_LOCAL_LIB_ROOT=' >> "$perl_venv_exports_file"
-        printf '%s\n' 'SIXEL_TEST_PERL_MB_OPT=' >> "$perl_venv_exports_file"
-        printf '%s\n' 'SIXEL_TEST_PERL_MM_OPT=' >> "$perl_venv_exports_file"
+        {
+          printf '%s\n' 'SIXEL_TEST_PERL='
+          printf '%s\n' 'SIXEL_TEST_PERL5LIB='
+          printf '%s\n' 'SIXEL_TEST_PERL_LOCAL_LIB_ROOT='
+          printf '%s\n' 'SIXEL_TEST_PERL_MB_OPT='
+          printf '%s\n' 'SIXEL_TEST_PERL_MM_OPT='
+        } > "$perl_venv_exports_file"
         break
       fi
       sleep 0.05

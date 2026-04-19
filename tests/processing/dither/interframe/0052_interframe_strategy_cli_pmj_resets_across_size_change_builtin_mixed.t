@@ -9,7 +9,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
-input_gif="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
+input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-transparent-anim-dispose2.gif"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
@@ -36,44 +36,39 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 echo "1..1"
 set -v
 
-combined_output=$(
+combined_cksum=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         -L builtin \
         -ldisable \
         -d stbn:source=pmj -p 16 \
-        "${input_apng}" "${input_gif}"
+        "${input_apng}" "${input_gif}" | cksum
 ) || {
     echo "not ok" 1 - "source=pmj combined mixed-size encode failed"
     exit 0
 }
 
-animated_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        -L builtin \
-        -ldisable \
-        -d stbn:source=pmj -p 16 \
-        "${input_apng}"
+expected_cksum=$(
+    {
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+            --threads=1 \
+            -L builtin \
+            -ldisable \
+            -d stbn:source=pmj -p 16 \
+            "${input_apng}"
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+            --threads=1 \
+            -L builtin \
+            -ldisable \
+            -d stbn:source=pmj -p 16 \
+            "${input_gif}"
+    } | cksum
 ) || {
-    echo "not ok" 1 - "source=pmj animated APNG encode failed"
+    echo "not ok" 1 - "source=pmj expected mixed stream encode failed"
     exit 0
 }
 
-single_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        -L builtin \
-        -ldisable \
-        -d stbn:source=pmj -p 16 \
-        "${input_gif}"
-) || {
-    echo "not ok" 1 - "source=pmj single GIF encode failed"
-    exit 0
-}
-
-expected_output="${animated_output}${single_output}"
-test "${combined_output}" = "${expected_output}" || {
+test "${combined_cksum}" = "${expected_cksum}" || {
     echo "not ok" 1 - "source=pmj state leaked across size change"
     exit 0
 }
