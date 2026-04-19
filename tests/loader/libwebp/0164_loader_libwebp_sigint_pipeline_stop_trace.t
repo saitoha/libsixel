@@ -44,8 +44,8 @@ set -v
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
 # Keep the common case fast with an early SIGINT.
-# If the child is still alive after a short grace period, apply the
-# previous long watchdog window as a fallback before hard-killing.
+# If the first signal does not stop the pipeline, retry once after
+# one second and bound the full test with an eight-second watchdog.
 
 set +x
 trace_summary=$(
@@ -57,19 +57,15 @@ trace_summary=$(
         pid=$!
 
         (
-            sleep 0.2
-            kill -0 "${pid}" 2>/dev/null || exit 0
             sleep 1
+            kill -0 "${pid}" 2>/dev/null || exit 0
             kill -INT "${pid}" 2>/dev/null || true
-            wait_limit=40
-            test -n "${SIXEL_RUNTIME-}" && wait_limit=200
-            while test "${wait_limit}" -gt 0; do
-                kill -0 "${pid}" 2>/dev/null || {
-                    exit 0
-                }
-                sleep 0.05
-                wait_limit=$((wait_limit - 1))
-            done
+            exit 0
+        ) >/dev/null 2>&1 &
+        retry_pid=$!
+
+        (
+            sleep 8
             kill -0 "${pid}" 2>/dev/null || exit 0
             kill -KILL "${pid}" 2>/dev/null || true
             exit 42
@@ -80,9 +76,12 @@ trace_summary=$(
         kill -INT "${pid}" 2>/dev/null || true
 
         wait "${pid}" 2>/dev/null || true
+        kill "${retry_pid}" 2>/dev/null || true
+        wait "${retry_pid}" 2>/dev/null || true
         kill "${watchdog_pid}" 2>/dev/null || true
-        wait "${watchdog_pid}" 2>/dev/null || true
-        printf "__WATCHDOG_STATUS__=%s\n" "$?"
+        watchdog_status=0
+        wait "${watchdog_pid}" 2>/dev/null || watchdog_status=$?
+        printf "__WATCHDOG_STATUS__=%s\n" "${watchdog_status}"
     }
 )
 
