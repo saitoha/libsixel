@@ -4710,6 +4710,172 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
     return 1;
 }
 
+static void
+sixel_kcenter_solver_seed_centers(sixel_kcenter_algo_t resolved_algo,
+                                  double const *points,
+                                  double const *weights,
+                                  unsigned int point_count,
+                                  unsigned int k,
+                                  uint32_t *trial_state,
+                                  unsigned int *centers,
+                                  unsigned int *scratch_slot,
+                                  double *fft_dist_cache,
+                                  unsigned char *center_mask)
+{
+    if (resolved_algo == SIXEL_PALETTE_KCENTER_ALGO_SWAP) {
+        sixel_kcenter_choose_random(point_count,
+                                    k,
+                                    trial_state,
+                                    centers,
+                                    scratch_slot);
+    } else {
+        sixel_kcenter_choose_fft(points,
+                                 weights,
+                                 point_count,
+                                 k,
+                                 trial_state,
+                                 centers,
+                                 fft_dist_cache,
+                                 center_mask);
+    }
+    sixel_kcenter_refresh_center_mask(center_mask,
+                                      point_count,
+                                      centers,
+                                      k);
+}
+
+static void
+sixel_kcenter_solver_assign_current(double const *points,
+                                    double const *weights,
+                                    unsigned int point_count,
+                                    unsigned int const *centers,
+                                    unsigned int k,
+                                    unsigned int *nearest_slot,
+                                    double *nearest_dist,
+                                    unsigned int *second_slot,
+                                    double *second_dist,
+                                    double *radius2_out,
+                                    double *sse_out)
+{
+    sixel_kcenter_assign_points_dispatch(points,
+                                         weights,
+                                         point_count,
+                                         centers,
+                                         k,
+                                         nearest_slot,
+                                         nearest_dist,
+                                         second_slot,
+                                         second_dist,
+                                         radius2_out,
+                                         sse_out,
+                                         NULL,
+                                         NULL);
+}
+
+static void
+sixel_kcenter_solver_run_trial_swaps(sixel_kcenter_swap_ctx_t *swap_ctx,
+                                     sixel_kcenter_algo_t resolved_algo,
+                                     sixel_kcenter_profile_t profile,
+                                     unsigned int iter_limit,
+                                     unsigned int swap_topk,
+                                     unsigned int swap_patience,
+                                     int adaptive_swap_controls,
+                                     double tiny_gain2,
+                                     double *radius2_io,
+                                     unsigned int *trial_iterations_io)
+{
+    unsigned int trial_iterations;
+    unsigned int no_improve;
+    unsigned int effective_topk;
+    unsigned int patience_limit;
+    double gain2;
+
+    trial_iterations = 0u;
+    no_improve = 0u;
+    effective_topk = swap_topk;
+    patience_limit = swap_patience;
+    gain2 = 0.0;
+
+    if (trial_iterations_io != NULL) {
+        *trial_iterations_io = 0u;
+    }
+    if (swap_ctx == NULL || radius2_io == NULL) {
+        return;
+    }
+    if (profile == SIXEL_PALETTE_KCENTER_PROFILE_SPEED
+            && effective_topk > 2u) {
+        effective_topk = 2u;
+    }
+    if (adaptive_swap_controls && patience_limit == 0u) {
+        patience_limit = sixel_kcenter_profile_default_swap_patience(profile);
+    }
+    if (resolved_algo == SIXEL_PALETTE_KCENTER_ALGO_FFT) {
+        return;
+    }
+
+    while (trial_iterations < iter_limit) {
+        swap_ctx->swap_topk = effective_topk;
+        gain2 = *radius2_io;
+        if (sixel_kcenter_try_worst_swap(swap_ctx)) {
+            gain2 -= *radius2_io;
+            ++trial_iterations;
+            if (adaptive_swap_controls && gain2 <= tiny_gain2 + 1.0e-12) {
+                ++no_improve;
+            } else {
+                no_improve = 0u;
+            }
+            if (adaptive_swap_controls
+                    && gain2 > tiny_gain2 * 4.0 + 1.0e-12) {
+                effective_topk = swap_topk;
+                if (profile == SIXEL_PALETTE_KCENTER_PROFILE_SPEED
+                        && effective_topk > 2u) {
+                    effective_topk = 2u;
+                }
+            } else if (adaptive_swap_controls && effective_topk > 1u) {
+                --effective_topk;
+            }
+            if (patience_limit != 0u
+                    && no_improve >= patience_limit
+                    && trial_iterations >= 2u) {
+                break;
+            }
+            continue;
+        }
+        ++no_improve;
+        if (adaptive_swap_controls
+                && no_improve >= 2u
+                && effective_topk > 1u) {
+            --effective_topk;
+        }
+        if (patience_limit == 0u || no_improve >= patience_limit) {
+            break;
+        }
+    }
+
+    if (trial_iterations_io != NULL) {
+        *trial_iterations_io = trial_iterations;
+    }
+}
+
+static int
+sixel_kcenter_solver_trial_is_better(double radius2,
+                                     double sse,
+                                     double best_radius2,
+                                     double best_sse)
+{
+    if (best_radius2 < 0.0) {
+        return 1;
+    }
+    if (radius2 < best_radius2 - 1.0e-12) {
+        return 1;
+    }
+    if (radius2 <= best_radius2 + 1.0e-12
+            && sse < best_sse - 1.0e-9) {
+        return 1;
+    }
+    return 0;
+}
+
 static SIXELSTATUS
 sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
 {
@@ -4746,12 +4912,8 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
     unsigned int init_trial;
     unsigned int iterations;
     unsigned int trial_iterations;
-    unsigned int no_improve;
-    unsigned int effective_topk;
-    unsigned int patience_limit;
     double radius2;
     double sse;
-    double gain2;
     double tiny_gain2;
     double best_trial_radius2;
     double best_trial_sse;
@@ -4799,12 +4961,8 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
     init_trial = 0u;
     iterations = 0u;
     trial_iterations = 0u;
-    no_improve = 0u;
-    effective_topk = 0u;
-    patience_limit = 0u;
     radius2 = 0.0;
     sse = 0.0;
-    gain2 = 0.0;
     tiny_gain2 = 0.0;
     best_trial_radius2 = -1.0;
     best_trial_sse = 0.0;
@@ -4893,101 +5051,44 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
             trial_state = 1u;
         }
 
-        if (resolved_algo == SIXEL_PALETTE_KCENTER_ALGO_SWAP) {
-            sixel_kcenter_choose_random(point_count,
-                                        k,
-                                        &trial_state,
-                                        centers,
-                                        scratch_slot);
-        } else {
-            sixel_kcenter_choose_fft(points,
-                                     weights,
-                                     point_count,
-                                     k,
-                                     &trial_state,
-                                     centers,
-                                     fft_dist_cache,
-                                     center_mask);
-        }
-        sixel_kcenter_refresh_center_mask(center_mask,
+        sixel_kcenter_solver_seed_centers(resolved_algo,
+                                          points,
+                                          weights,
                                           point_count,
+                                          k,
+                                          &trial_state,
                                           centers,
-                                          k);
+                                          scratch_slot,
+                                          fft_dist_cache,
+                                          center_mask);
 
-        sixel_kcenter_assign_points_dispatch(points,
-                                             weights,
-                                             point_count,
-                                             centers,
-                                             k,
-                                             nearest_slot,
-                                             nearest_dist,
-                                             second_slot,
-                                             second_dist,
+        sixel_kcenter_solver_assign_current(points,
+                                            weights,
+                                            point_count,
+                                            centers,
+                                            k,
+                                            nearest_slot,
+                                            nearest_dist,
+                                            second_slot,
+                                            second_dist,
+                                            &radius2,
+                                            &sse);
+
+        sixel_kcenter_solver_run_trial_swaps(&swap_ctx,
+                                             resolved_algo,
+                                             profile,
+                                             iter_limit,
+                                             swap_topk,
+                                             swap_patience,
+                                             adaptive_swap_controls,
+                                             tiny_gain2,
                                              &radius2,
-                                             &sse,
-                                             NULL,
-                                             NULL);
+                                             &trial_iterations);
 
-        trial_iterations = 0u;
-        no_improve = 0u;
-        effective_topk = swap_topk;
-        if (profile == SIXEL_PALETTE_KCENTER_PROFILE_SPEED
-                && effective_topk > 2u) {
-            effective_topk = 2u;
-        }
-        patience_limit = swap_patience;
-        if (adaptive_swap_controls && patience_limit == 0u) {
-            patience_limit = sixel_kcenter_profile_default_swap_patience(
-                profile);
-        }
-
-        if (resolved_algo != SIXEL_PALETTE_KCENTER_ALGO_FFT) {
-            while (trial_iterations < iter_limit) {
-                swap_ctx.swap_topk = effective_topk;
-                gain2 = radius2;
-                if (sixel_kcenter_try_worst_swap(&swap_ctx)) {
-                    gain2 -= radius2;
-                    ++trial_iterations;
-                    if (adaptive_swap_controls
-                            && gain2 <= tiny_gain2 + 1.0e-12) {
-                        ++no_improve;
-                    } else {
-                        no_improve = 0u;
-                    }
-                    if (adaptive_swap_controls
-                            && gain2 > tiny_gain2 * 4.0 + 1.0e-12) {
-                        effective_topk = swap_topk;
-                        if (profile == SIXEL_PALETTE_KCENTER_PROFILE_SPEED
-                                && effective_topk > 2u) {
-                            effective_topk = 2u;
-                        }
-                    } else if (adaptive_swap_controls
-                            && effective_topk > 1u) {
-                        --effective_topk;
-                    }
-                    if (patience_limit != 0u
-                            && no_improve >= patience_limit
-                            && trial_iterations >= 2u) {
-                        break;
-                    }
-                    continue;
-                }
-                ++no_improve;
-                if (adaptive_swap_controls
-                        && no_improve >= 2u
-                        && effective_topk > 1u) {
-                    --effective_topk;
-                }
-                if (patience_limit == 0u || no_improve >= patience_limit) {
-                    break;
-                }
-            }
-        }
-
-        if (best_trial_radius2 < 0.0
-                || radius2 < best_trial_radius2 - 1.0e-12
-                || (radius2 <= best_trial_radius2 + 1.0e-12
-                    && sse < best_trial_sse - 1.0e-9)) {
+        if (sixel_kcenter_solver_trial_is_better(radius2,
+                                                 sse,
+                                                 best_trial_radius2,
+                                                 best_trial_sse)) {
             memcpy(scratch_indices,
                    centers,
                    (size_t)k * sizeof(unsigned int));
@@ -5002,19 +5103,17 @@ sixel_kcenter_run_solver(sixel_kcenter_solver_ctx_t *ctx)
                                       point_count,
                                       centers,
                                       k);
-    sixel_kcenter_assign_points_dispatch(points,
-                                         weights,
-                                         point_count,
-                                         centers,
-                                         k,
-                                         nearest_slot,
-                                         nearest_dist,
-                                         second_slot,
-                                         second_dist,
-                                         &radius2,
-                                         &sse,
-                                         NULL,
-                                         NULL);
+    sixel_kcenter_solver_assign_current(points,
+                                        weights,
+                                        point_count,
+                                        centers,
+                                        k,
+                                        nearest_slot,
+                                        nearest_dist,
+                                        second_slot,
+                                        second_dist,
+                                        &radius2,
+                                        &sse);
     iterations = best_trial_iterations;
 
     if (radius2_out != NULL) {
