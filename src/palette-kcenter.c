@@ -298,6 +298,31 @@ typedef struct sixel_kcenter_swap_ctx {
     uint32_t *rng_state;
 } sixel_kcenter_swap_ctx_t;
 
+/*
+ * Keep cached-swap apply signatures compact to avoid strict-compiler parser
+ * and backend edge cases.
+ */
+typedef struct sixel_kcenter_swap_apply_ctx {
+    double const *points;
+    double const *weights;
+    unsigned int point_count;
+    unsigned int *centers;
+    unsigned int k;
+    unsigned int swapped_slot;
+    unsigned int swapped_center;
+    unsigned int *nearest_slot;
+    double *nearest_dist;
+    unsigned int *second_slot;
+    double *second_dist;
+    unsigned int *scratch_slot;
+    double *scratch_dist;
+    unsigned int *scratch_second_slot;
+    double *scratch_second_dist;
+    double const *new_center_dist2;
+    double *radius2_out;
+    double *sse_out;
+} sixel_kcenter_swap_apply_ctx_t;
+
 typedef struct sixel_kcenter_solver_ctx {
     double const *points;
     double const *weights;
@@ -3676,26 +3701,26 @@ sixel_kcenter_swap_eval_with_cutoff(
  * O(point_count * k) reassignment pass.
  */
 static int
-sixel_kcenter_swap_apply_with_second(
-    double const *points,
-    double const *weights,
-    unsigned int point_count,
-    unsigned int *centers,
-    unsigned int k,
-    unsigned int swapped_slot,
-    unsigned int swapped_center,
-    unsigned int *nearest_slot,
-    double *nearest_dist,
-    unsigned int *second_slot,
-    double *second_dist,
-    unsigned int *scratch_slot,
-    double *scratch_dist,
-    unsigned int *scratch_second_slot,
-    double *scratch_second_dist,
-    double const *new_center_dist2,
-    double *radius2_out,
-    double *sse_out)
+sixel_kcenter_swap_apply_with_second(sixel_kcenter_swap_apply_ctx_t *ctx)
 {
+    double const *points;
+    double const *weights;
+    unsigned int point_count;
+    unsigned int *centers;
+    unsigned int k;
+    unsigned int swapped_slot;
+    unsigned int swapped_center;
+    unsigned int *nearest_slot;
+    double *nearest_dist;
+    unsigned int *second_slot;
+    double *second_dist;
+    unsigned int *scratch_slot;
+    double *scratch_dist;
+    unsigned int *scratch_second_slot;
+    double *scratch_second_dist;
+    double const *new_center_dist2;
+    double *radius2_out;
+    double *sse_out;
     unsigned int old_slot;
     unsigned int scan_slot;
     unsigned int old_nearest_slot;
@@ -3727,6 +3752,28 @@ sixel_kcenter_swap_apply_with_second(
     radius2 = 0.0;
     sse = 0.0;
     lhs_weight = 0.0;
+
+    if (ctx == NULL) {
+        return 0;
+    }
+    points = ctx->points;
+    weights = ctx->weights;
+    point_count = ctx->point_count;
+    centers = ctx->centers;
+    k = ctx->k;
+    swapped_slot = ctx->swapped_slot;
+    swapped_center = ctx->swapped_center;
+    nearest_slot = ctx->nearest_slot;
+    nearest_dist = ctx->nearest_dist;
+    second_slot = ctx->second_slot;
+    second_dist = ctx->second_dist;
+    scratch_slot = ctx->scratch_slot;
+    scratch_dist = ctx->scratch_dist;
+    scratch_second_slot = ctx->scratch_second_slot;
+    scratch_second_dist = ctx->scratch_second_dist;
+    new_center_dist2 = ctx->new_center_dist2;
+    radius2_out = ctx->radius2_out;
+    sse_out = ctx->sse_out;
 
     if (points == NULL
             || centers == NULL
@@ -3950,6 +3997,7 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
     int used_cached_apply;
     double *best_new_dist;
     double *trial_new_dist;
+    sixel_kcenter_swap_apply_ctx_t apply_ctx;
 
     if (ctx == NULL) {
         return 0;
@@ -4024,11 +4072,31 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
     used_cached_apply = 0;
     best_new_dist = NULL;
     trial_new_dist = NULL;
+    apply_ctx.points = NULL;
+    apply_ctx.weights = NULL;
+    apply_ctx.point_count = 0u;
+    apply_ctx.centers = NULL;
+    apply_ctx.k = 0u;
+    apply_ctx.swapped_slot = 0u;
+    apply_ctx.swapped_center = 0u;
+    apply_ctx.nearest_slot = NULL;
+    apply_ctx.nearest_dist = NULL;
+    apply_ctx.second_slot = NULL;
+    apply_ctx.second_dist = NULL;
+    apply_ctx.scratch_slot = NULL;
+    apply_ctx.scratch_dist = NULL;
+    apply_ctx.scratch_second_slot = NULL;
+    apply_ctx.scratch_second_dist = NULL;
+    apply_ctx.new_center_dist2 = NULL;
+    apply_ctx.radius2_out = NULL;
+    apply_ctx.sse_out = NULL;
 
     if (point_count == 0u
             || k == 0u
             || point_count <= k
-            || center_mask == NULL) {
+            || center_mask == NULL
+            || nearest_slot == NULL
+            || nearest_dist == NULL) {
         return 0;
     }
     if (topk < 1u) {
@@ -4471,25 +4539,25 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
     centers[best_slot] = best_candidate;
     center_mask[old_center] = 0u;
     center_mask[best_candidate] = 1u;
-    used_cached_apply = sixel_kcenter_swap_apply_with_second(
-        points,
-        weights,
-        point_count,
-        centers,
-        k,
-        best_slot,
-        best_candidate,
-        nearest_slot,
-        nearest_dist,
-        second_slot,
-        second_dist,
-        scratch_slot,
-        scratch_dist,
-        scratch_second_slot,
-        scratch_second_dist,
-        best_new_dist,
-        &radius2,
-        &sse);
+    apply_ctx.points = points;
+    apply_ctx.weights = weights;
+    apply_ctx.point_count = point_count;
+    apply_ctx.centers = centers;
+    apply_ctx.k = k;
+    apply_ctx.swapped_slot = best_slot;
+    apply_ctx.swapped_center = best_candidate;
+    apply_ctx.nearest_slot = nearest_slot;
+    apply_ctx.nearest_dist = nearest_dist;
+    apply_ctx.second_slot = second_slot;
+    apply_ctx.second_dist = second_dist;
+    apply_ctx.scratch_slot = scratch_slot;
+    apply_ctx.scratch_dist = scratch_dist;
+    apply_ctx.scratch_second_slot = scratch_second_slot;
+    apply_ctx.scratch_second_dist = scratch_second_dist;
+    apply_ctx.new_center_dist2 = best_new_dist;
+    apply_ctx.radius2_out = &radius2;
+    apply_ctx.sse_out = &sse;
+    used_cached_apply = sixel_kcenter_swap_apply_with_second(&apply_ctx);
     if (!used_cached_apply) {
         if (second_slot != NULL && second_dist != NULL) {
             sixel_kcenter_assign_points_with_second(points,
@@ -4523,7 +4591,8 @@ sixel_kcenter_try_worst_swap(sixel_kcenter_swap_ctx_t *ctx)
     *sse_io = sse;
     if (!used_cached_apply
             && scratch_second_slot != NULL
-            && scratch_second_dist != NULL) {
+            && scratch_second_dist != NULL
+            && point_count > 0u) {
         /*
          * Keep fallback buffers initialized for debugability in constrained
          * builds.  The next incremental pass will overwrite them anyway.
