@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify base fallback emits single-path dual-stroke blend trace.
+# Verify deferred dual-stroke alpha semantics without max-coverage wording.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -30,20 +30,27 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying single-path dual-stroke blend in layer fallback*}" \
+test "${trace_output#*builtin PSD: applying deferred dual-stroke union on clipped group*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite missing base single-path dual-stroke trace"
+        "effects/stroke-composite did not emit deferred dual-stroke union trace"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying mode-aware dual-stroke blend in layer fallback*}" \
+test "${trace_output#*builtin PSD: resolving deferred dual-stroke alpha with max coverage on clipped group*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite kept removed deferred max-alpha wording"
+    exit 0
+}
+
+test "${trace_output#*builtin PSD: applying mode-aware dual-stroke blend on clipped group*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite missing base mode-aware dual-stroke trace"
+        "effects/stroke-composite did not emit deferred mode-aware trace"
     exit 0
 }
 
 echo "ok" 1 - \
-    "effects/stroke-composite keeps base single-path dual-stroke trace contract"
+    "effects/stroke-composite keeps deferred dual-stroke alpha semantics contract"
 exit 0

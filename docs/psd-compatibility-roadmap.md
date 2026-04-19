@@ -55,11 +55,11 @@ Key points used by this roadmap:
   - Dual-stroke color compositing now uses a mode-aware shared helper across
     base/deferred paths:
     - overlap decomposition remains analyzable, but each stroke color is
-      applied through one canonical pass per pixel, and
-    - base/deferred paths both emit single-path dual-stroke traces so
-      diagnostics can verify one color route per decode path.
-    PASS trace representatives `1589..1592` and `1600..1602` lock the
-    mode-aware single-path contracts and non-regression behavior.
+      applied in vector-then-effect order with consistent overlap semantics.
+    - base/deferred paths both keep mode-aware + overlap-decomposition traces,
+      and the transient single-path/max-alpha wording is retired.
+    PASS trace representatives `1589..1596` and `1600..1602` lock the
+    mode-aware contracts and non-regression behavior.
   - `vstk` geometry metadata now tracks join/cap/miter/adjust parameters.
     For `inside` vector strokes, base/deferred coverage paths now branch by
     join semantics (`miter`, `round`, `bevel`) through a shared helper.

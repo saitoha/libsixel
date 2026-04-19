@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify deferred fallback emits single-path dual-stroke blend trace.
+# Verify deferred fallback keeps mode-aware dual-stroke contract.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -30,13 +30,6 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying single-path deferred dual-stroke blend on clipped group*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred single-path dual-stroke trace"
-    exit 0
-}
-
 test "${trace_output#*builtin PSD: applying mode-aware dual-stroke blend on clipped group*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - \
@@ -44,6 +37,20 @@ test "${trace_output#*builtin PSD: applying mode-aware dual-stroke blend on clip
     exit 0
 }
 
+test "${trace_output#*builtin PSD: applying deferred dual-stroke overlap decomposition on clipped group*}" \
+    != "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite missing deferred overlap decomposition trace"
+    exit 0
+}
+
+test "${trace_output#*builtin PSD: applying single-path deferred dual-stroke blend on clipped group*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite kept removed deferred single-path trace"
+    exit 0
+}
+
 echo "ok" 1 - \
-    "effects/stroke-composite keeps deferred single-path dual-stroke trace contract"
+    "effects/stroke-composite keeps deferred mode-aware dual-stroke contract"
 exit 0

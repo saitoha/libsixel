@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify base fallback resolves dual-stroke alpha with max coverage.
+# Verify base fallback keeps mode-aware dual-stroke contract.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -30,13 +30,27 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: resolving dual-stroke alpha with max coverage in layer fallback*}" \
+test "${trace_output#*builtin PSD: applying mode-aware dual-stroke blend in layer fallback*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite did not emit base max-alpha trace"
+        "effects/stroke-composite missing base mode-aware dual-stroke trace"
+    exit 0
+}
+
+test "${trace_output#*builtin PSD: applying dual-stroke overlap decomposition in layer fallback*}" \
+    != "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite missing base overlap decomposition trace"
+    exit 0
+}
+
+test "${trace_output#*builtin PSD: applying single-path dual-stroke blend in layer fallback*}" \
+    = "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite kept removed base single-path trace"
     exit 0
 }
 
 echo "ok" 1 - \
-    "effects/stroke-composite keeps base dual-stroke max-alpha contract"
+    "effects/stroke-composite keeps base mode-aware dual-stroke contract"
 exit 0
