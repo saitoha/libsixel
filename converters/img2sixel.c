@@ -837,6 +837,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "Example: 'path,suggestion' narrows diagnostics to those topics."
     },
     {
+        "SIXEL_PSD_TRACE_ONLY",
+        "enable PSD/PSB trace-only diagnostics shortcut.\n"
+        "Only the exact value '1' enables it, and only when\n"
+        "SIXEL_TRACE_TOPIC includes 'psd_decode'."
+    },
+    {
         "SIXEL_STATUS_FORCE_COLORS",
         "force ANSI colorized diagnostics from status markup output.\n"
         "Set to '1' to emit color sequences without TTY detection."
