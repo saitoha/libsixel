@@ -19702,7 +19702,7 @@ sixel_builtin_psd_compute_stroke_coverage_distance(
     float *pinside_coverage);
 
 static void
-sixel_builtin_psd_compute_stroke_coverage_linf(
+sixel_builtin_psd_compute_stroke_coverage_join(
     float const *alpha_map,
     unsigned int width,
     unsigned int height,
@@ -19710,7 +19710,7 @@ sixel_builtin_psd_compute_stroke_coverage_linf(
     float source_alpha,
     int stroke_radius,
     float stroke_size,
-    float miter_limit,
+    int stroke_join_type,
     int stroke_adjust,
     int use_binary_alpha,
     float *poutside_coverage,
@@ -19786,12 +19786,16 @@ sixel_builtin_psd_apply_layer_effects_subset(
     int traced_distance_stroke;
     int traced_distance_stroke_position;
     int traced_stroke_alpha_semantics;
-    int use_miter_join;
+    int use_join_coverage;
     int traced_miter_join;
+    int traced_round_join;
+    int traced_bevel_join;
     int stroke_adjust;
     int traced_stroke_adjust;
     int stroke_join_type;
     float stroke_distance_threshold;
+    float bevel_outside_coverage;
+    float bevel_inside_coverage;
     size_t coverage_row_offset;
     int coverage_x;
     int coverage_y;
@@ -19860,12 +19864,16 @@ sixel_builtin_psd_apply_layer_effects_subset(
     traced_distance_stroke = 0;
     traced_distance_stroke_position = 0;
     traced_stroke_alpha_semantics = 0;
-    use_miter_join = 0;
+    use_join_coverage = 0;
     traced_miter_join = 0;
+    traced_round_join = 0;
+    traced_bevel_join = 0;
     stroke_adjust = 0;
     traced_stroke_adjust = 0;
     stroke_join_type = SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER;
     stroke_distance_threshold = 0.001f;
+    bevel_outside_coverage = 0.0f;
+    bevel_inside_coverage = 0.0f;
     coverage_row_offset = 0u;
     coverage_x = 0;
     coverage_y = 0;
@@ -20501,9 +20509,11 @@ sixel_builtin_psd_apply_layer_effects_subset(
          */
         use_binary_stroke_alpha = 1;
     }
-    use_miter_join =
+    use_join_coverage =
         layer->effect_stroke_vector_geometry != 0 &&
-        stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER &&
+        (stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER ||
+         stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_ROUND ||
+         stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_BEVEL) &&
         stroke_position == SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE ? 1 : 0;
     if (stroke_adjust != 0) {
         stroke_coverage_size = stroke_size + 0.5f;
@@ -20597,8 +20607,9 @@ sixel_builtin_psd_apply_layer_effects_subset(
         if (use_binary_stroke_alpha != 0) {
             source_alpha = source_alpha >= 0.5f ? 1.0f : 0.0f;
         }
-        if (use_miter_join != 0) {
-            if (traced_miter_join == 0) {
+        if (use_join_coverage != 0) {
+            if (stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER &&
+                traced_miter_join == 0) {
                 sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying miter-limit constrained vector "
@@ -20608,16 +20619,39 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     "builtin PSD: applying miter-join vector stroke "
                     "coverage in layer fallback");
                 traced_miter_join = 1;
+                if (stroke_miter_limit <= 2.0f &&
+                    traced_bevel_join == 0) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: applying bevel-join vector stroke "
+                        "coverage in layer fallback");
+                    traced_bevel_join = 1;
+                }
+            } else if (stroke_join_type ==
+                           SIXEL_BUILTIN_PSD_STROKE_JOIN_ROUND &&
+                       traced_round_join == 0) {
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: applying round-join vector stroke "
+                    "coverage in layer fallback");
+                traced_round_join = 1;
+            } else if (stroke_join_type ==
+                           SIXEL_BUILTIN_PSD_STROKE_JOIN_BEVEL &&
+                       traced_bevel_join == 0) {
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: applying bevel-join vector stroke "
+                    "coverage in layer fallback");
+                traced_bevel_join = 1;
             }
-            if (stroke_adjust != 0 &&
-                traced_stroke_adjust == 0) {
+            if (stroke_adjust != 0 && traced_stroke_adjust == 0) {
                 sixel_builtin_psd_trace_message(
                     "psd_decode",
                     "builtin PSD: applying stroke-adjusted vector stroke "
                     "coverage in layer fallback");
                 traced_stroke_adjust = 1;
             }
-            sixel_builtin_psd_compute_stroke_coverage_linf(
+            sixel_builtin_psd_compute_stroke_coverage_join(
                 original_alpha,
                 layer->width,
                 layer->height,
@@ -20625,42 +20659,34 @@ sixel_builtin_psd_apply_layer_effects_subset(
                 source_alpha,
                 stroke_radius,
                 stroke_coverage_size,
-                stroke_miter_limit,
+                stroke_join_type,
                 stroke_adjust,
                 use_binary_stroke_alpha,
                 &miter_outside_coverage,
                 &miter_inside_coverage);
-            if (stroke_distance_map_valid != 0) {
-                sixel_builtin_psd_compute_stroke_coverage_distance(
-                    stroke_foreground_distance_map,
-                    stroke_background_distance_map,
+            if (stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER) {
+                sixel_builtin_psd_compute_stroke_coverage_join(
+                    original_alpha,
+                    layer->width,
+                    layer->height,
                     i,
                     source_alpha,
+                    stroke_radius,
                     stroke_coverage_size,
-                    &stroke_outside_coverage,
-                    &stroke_inside_coverage);
+                    SIXEL_BUILTIN_PSD_STROKE_JOIN_BEVEL,
+                    stroke_adjust,
+                    use_binary_stroke_alpha,
+                    &bevel_outside_coverage,
+                    &bevel_inside_coverage);
                 sixel_builtin_psd_apply_miter_limit_guard(
                     stroke_miter_limit,
-                    stroke_outside_coverage,
-                    stroke_inside_coverage,
+                    bevel_outside_coverage,
+                    bevel_inside_coverage,
                     &miter_outside_coverage,
                     &miter_inside_coverage);
-                stroke_outside_coverage = sixel_builtin_psd_clamp01(
-                    stroke_outside_coverage * 0.99f +
-                    miter_outside_coverage * 0.01f);
-                stroke_inside_coverage = sixel_builtin_psd_clamp01(
-                    stroke_inside_coverage * 0.99f +
-                    miter_inside_coverage * 0.01f);
-            } else {
-                sixel_builtin_psd_apply_miter_limit_guard(
-                    stroke_miter_limit,
-                    miter_outside_coverage,
-                    miter_inside_coverage,
-                    &miter_outside_coverage,
-                    &miter_inside_coverage);
-                stroke_outside_coverage = miter_outside_coverage;
-                stroke_inside_coverage = miter_inside_coverage;
             }
+            stroke_outside_coverage = miter_outside_coverage;
+            stroke_inside_coverage = miter_inside_coverage;
         } else if (stroke_distance_map_valid != 0) {
             if (traced_distance_stroke == 0) {
                 sixel_builtin_psd_trace_message(
@@ -22640,7 +22666,7 @@ sixel_builtin_psd_compute_stroke_coverage_distance(
 }
 
 static void
-sixel_builtin_psd_compute_stroke_coverage_linf(
+sixel_builtin_psd_compute_stroke_coverage_join(
     float const *alpha_map,
     unsigned int width,
     unsigned int height,
@@ -22648,7 +22674,7 @@ sixel_builtin_psd_compute_stroke_coverage_linf(
     float source_alpha,
     int stroke_radius,
     float stroke_size,
-    float miter_limit,
+    int stroke_join_type,
     int stroke_adjust,
     int use_binary_alpha,
     float *poutside_coverage,
@@ -22668,10 +22694,9 @@ sixel_builtin_psd_compute_stroke_coverage_linf(
     float inside_coverage;
     float radius_x;
     float radius_y;
-    float normalized_miter;
     float dx_norm;
     float dy_norm;
-    float linf_distance;
+    float join_distance;
     float radial_weight;
     float adjust_weight;
     float source_sample;
@@ -22690,10 +22715,9 @@ sixel_builtin_psd_compute_stroke_coverage_linf(
     inside_coverage = 0.0f;
     radius_x = 0.0f;
     radius_y = 0.0f;
-    normalized_miter = 1.0f;
     dx_norm = 0.0f;
     dy_norm = 0.0f;
-    linf_distance = 0.0f;
+    join_distance = 0.0f;
     radial_weight = 0.0f;
     adjust_weight = 1.0f;
     source_sample = 0.0f;
@@ -22722,7 +22746,6 @@ sixel_builtin_psd_compute_stroke_coverage_linf(
     }
     radius_x = stroke_size > 0.0f ? stroke_size : (float)stroke_radius;
     radius_y = radius_x;
-    normalized_miter = sixel_builtin_psd_clamp01((miter_limit - 1.0f) / 9.0f);
     if (stroke_adjust != 0) {
         adjust_weight = 0.5f;
     }
@@ -22738,15 +22761,19 @@ sixel_builtin_psd_compute_stroke_coverage_linf(
             }
             dx_norm = fabsf((float)dx) / (radius_x + 1.0f);
             dy_norm = fabsf((float)dy) / (radius_y + 1.0f);
-            linf_distance = dx_norm > dy_norm ? dx_norm : dy_norm;
-            if (linf_distance > 1.0f) {
+            if (stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_ROUND) {
+                join_distance = sqrtf(dx_norm * dx_norm + dy_norm * dy_norm);
+            } else if (stroke_join_type ==
+                       SIXEL_BUILTIN_PSD_STROKE_JOIN_BEVEL) {
+                join_distance = dx_norm + dy_norm;
+            } else {
+                join_distance = dx_norm > dy_norm ? dx_norm : dy_norm;
+            }
+            if (join_distance > 1.0f) {
                 continue;
             }
-            radial_weight = 1.0f - linf_distance;
+            radial_weight = 1.0f - join_distance;
             radial_weight = sixel_builtin_psd_clamp01(radial_weight);
-            radial_weight = sixel_builtin_psd_clamp01(
-                radial_weight * normalized_miter +
-                (1.0f - normalized_miter));
             neighbor_index = (size_t)ny * (size_t)width + (size_t)nx;
             neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
                 alpha_map[neighbor_index]);
@@ -22792,11 +22819,9 @@ sixel_builtin_psd_apply_miter_limit_guard(
     float *pmiter_outside_coverage,
     float *pmiter_inside_coverage)
 {
-    float miter_guard_weight;
     float outside_coverage;
     float inside_coverage;
 
-    miter_guard_weight = 1.0f;
     outside_coverage = 0.0f;
     inside_coverage = 0.0f;
     if (pmiter_outside_coverage == NULL || pmiter_inside_coverage == NULL) {
@@ -22810,19 +22835,14 @@ sixel_builtin_psd_apply_miter_limit_guard(
         miter_limit = 1000.0f;
     }
     /*
-     * Photoshop-style miter limit is ratio-based. Keep this approximation
-     * simple and deterministic by blending sharp miter coverage toward the
-     * existing distance-based fallback when the configured limit is small.
+     * Keep miter-limit handling deterministic in raster fallback.
+     * Low limits should switch sharp corners to bevel-like coverage
+     * rather than blending multiple coverage models.
      */
-    miter_guard_weight = sixel_builtin_psd_clamp01((miter_limit - 1.0f) / 9.0f);
-    outside_coverage = sixel_builtin_psd_clamp01(
-        outside_coverage * miter_guard_weight +
-        sixel_builtin_psd_clamp01(fallback_outside_coverage) *
-            (1.0f - miter_guard_weight));
-    inside_coverage = sixel_builtin_psd_clamp01(
-        inside_coverage * miter_guard_weight +
-        sixel_builtin_psd_clamp01(fallback_inside_coverage) *
-            (1.0f - miter_guard_weight));
+    if (miter_limit <= 2.0f) {
+        outside_coverage = sixel_builtin_psd_clamp01(fallback_outside_coverage);
+        inside_coverage = sixel_builtin_psd_clamp01(fallback_inside_coverage);
+    }
     *pmiter_outside_coverage = outside_coverage;
     *pmiter_inside_coverage = inside_coverage;
 }
@@ -22989,8 +23009,10 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     int traced_distance_stroke;
     int traced_distance_stroke_position;
     int traced_stroke_alpha_semantics;
-    int use_miter_join;
+    int use_join_coverage;
     int traced_miter_join;
+    int traced_round_join;
+    int traced_bevel_join;
     int stroke_adjust;
     int traced_stroke_adjust;
     int stroke_join_type;
@@ -23005,6 +23027,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     int use_outside_background_map;
     int use_clip_weight;
     int use_base_silhouette_coverage;
+    float bevel_outside_coverage;
+    float bevel_inside_coverage;
 
     x = 0u;
     y = 0u;
@@ -23042,8 +23066,10 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     traced_distance_stroke = 0;
     traced_distance_stroke_position = 0;
     traced_stroke_alpha_semantics = 0;
-    use_miter_join = 0;
+    use_join_coverage = 0;
     traced_miter_join = 0;
+    traced_round_join = 0;
+    traced_bevel_join = 0;
     stroke_adjust = 0;
     traced_stroke_adjust = 0;
     stroke_join_type = SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER;
@@ -23058,6 +23084,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     use_outside_background_map = 0;
     use_clip_weight = 0;
     use_base_silhouette_coverage = 0;
+    bevel_outside_coverage = 0.0f;
+    bevel_inside_coverage = 0.0f;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL || layer == NULL ||
         layer->has_effect_stroke == 0 || canvas_width == 0u ||
@@ -23078,9 +23106,11 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     if (stroke_adjust != 0) {
         stroke_coverage_size = stroke_size + 0.5f;
     }
-    use_miter_join =
+    use_join_coverage =
         layer->effect_stroke_vector_geometry != 0 &&
-        stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER &&
+        (stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER ||
+         stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_ROUND ||
+         stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_BEVEL) &&
         stroke_position == SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE ? 1 : 0;
     use_clip_weight = layer->has_blend_clipped_elements != 0 &&
         layer->blend_clipped_elements_enabled != 0 ? 1 : 0;
@@ -23215,8 +23245,9 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                 outside_background_map[idx] == 0u) {
                 continue;
             }
-            if (use_miter_join != 0) {
-                if (traced_miter_join == 0) {
+            if (use_join_coverage != 0) {
+                if (stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER &&
+                    traced_miter_join == 0) {
                     sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: applying deferred miter-limit "
@@ -23226,16 +23257,39 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                         "builtin PSD: applying deferred miter-join "
                         "vector stroke on clipped group");
                     traced_miter_join = 1;
+                    if (stroke_miter_limit <= 2.0f &&
+                        traced_bevel_join == 0) {
+                        sixel_builtin_psd_trace_message(
+                            "psd_decode",
+                            "builtin PSD: applying deferred bevel-join "
+                            "vector stroke on clipped group");
+                        traced_bevel_join = 1;
+                    }
+                } else if (stroke_join_type ==
+                               SIXEL_BUILTIN_PSD_STROKE_JOIN_ROUND &&
+                           traced_round_join == 0) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: applying deferred round-join "
+                        "vector stroke on clipped group");
+                    traced_round_join = 1;
+                } else if (stroke_join_type ==
+                               SIXEL_BUILTIN_PSD_STROKE_JOIN_BEVEL &&
+                           traced_bevel_join == 0) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: applying deferred bevel-join "
+                        "vector stroke on clipped group");
+                    traced_bevel_join = 1;
                 }
-                if (stroke_adjust != 0 &&
-                    traced_stroke_adjust == 0) {
+                if (stroke_adjust != 0 && traced_stroke_adjust == 0) {
                     sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: applying deferred stroke-adjusted "
                         "vector stroke on clipped group");
                     traced_stroke_adjust = 1;
                 }
-                sixel_builtin_psd_compute_stroke_coverage_linf(
+                sixel_builtin_psd_compute_stroke_coverage_join(
                     stroke_distance_source_map,
                     canvas_width,
                     canvas_height,
@@ -23243,42 +23297,34 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     source_alpha,
                     stroke_radius,
                     stroke_coverage_size,
-                    stroke_miter_limit,
+                    stroke_join_type,
                     stroke_adjust,
                     0,
                     &miter_outside_coverage,
                     &miter_inside_coverage);
-                if (stroke_distance_map_valid != 0) {
-                    sixel_builtin_psd_compute_stroke_coverage_distance(
-                        stroke_foreground_distance_map,
-                        stroke_background_distance_map,
+                if (stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER) {
+                    sixel_builtin_psd_compute_stroke_coverage_join(
+                        stroke_distance_source_map,
+                        canvas_width,
+                        canvas_height,
                         idx,
                         source_alpha,
+                        stroke_radius,
                         stroke_coverage_size,
-                        &stroke_outside_coverage,
-                        &stroke_inside_coverage);
+                        SIXEL_BUILTIN_PSD_STROKE_JOIN_BEVEL,
+                        stroke_adjust,
+                        0,
+                        &bevel_outside_coverage,
+                        &bevel_inside_coverage);
                     sixel_builtin_psd_apply_miter_limit_guard(
                         stroke_miter_limit,
-                        stroke_outside_coverage,
-                        stroke_inside_coverage,
+                        bevel_outside_coverage,
+                        bevel_inside_coverage,
                         &miter_outside_coverage,
                         &miter_inside_coverage);
-                    stroke_outside_coverage = sixel_builtin_psd_clamp01(
-                        stroke_outside_coverage * 0.99f +
-                        miter_outside_coverage * 0.01f);
-                    stroke_inside_coverage = sixel_builtin_psd_clamp01(
-                        stroke_inside_coverage * 0.99f +
-                        miter_inside_coverage * 0.01f);
-                } else {
-                    sixel_builtin_psd_apply_miter_limit_guard(
-                        stroke_miter_limit,
-                        miter_outside_coverage,
-                        miter_inside_coverage,
-                        &miter_outside_coverage,
-                        &miter_inside_coverage);
-                    stroke_outside_coverage = miter_outside_coverage;
-                    stroke_inside_coverage = miter_inside_coverage;
                 }
+                stroke_outside_coverage = miter_outside_coverage;
+                stroke_inside_coverage = miter_inside_coverage;
             } else if (stroke_distance_map_valid != 0) {
                 if (traced_distance_stroke == 0) {
                     sixel_builtin_psd_trace_message(

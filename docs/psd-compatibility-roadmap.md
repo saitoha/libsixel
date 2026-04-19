@@ -53,10 +53,11 @@ Key points used by this roadmap:
     vector/effect stroke together on clipped groups before the deferred
     `FrFX` pass.
   - `vstk` geometry metadata now tracks join/cap/miter/adjust parameters.
-    For `inside + miter` vector strokes, base/deferred coverage paths use a
-    dedicated miter-join coverage contract instead of the default round band.
-    `miterLimit` now constrains that path, and `strokeAdjust` enables
-    half-pixel coverage sampling in base/deferred miter stroke evaluation.
+    For `inside` vector strokes, base/deferred coverage paths now branch by
+    join semantics (`miter`, `round`, `bevel`) through a shared helper.
+    Low `miterLimit` values switch constrained miter coverage to bevel
+    coverage, and `strokeAdjust` applies half-pixel sampling across all join
+    modes in both base and deferred paths.
 - Signature/version policy:
   - `8BPS` supports version `1/2` per existing parser policy.
   - `8BPB` is accepted only with `version=2`; `8BPB+version!=2` is rejected as
