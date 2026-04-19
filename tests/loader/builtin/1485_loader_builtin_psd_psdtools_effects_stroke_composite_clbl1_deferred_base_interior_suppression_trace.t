@@ -30,7 +30,7 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed IrGl effect object in layer effects (inactive)*}" \
+test "${trace_output#*builtin PSD: parsed IrGl effect object in layer effects \(inactive\)*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - \
         "effects/stroke-composite missed inactive IrGl parse contract"

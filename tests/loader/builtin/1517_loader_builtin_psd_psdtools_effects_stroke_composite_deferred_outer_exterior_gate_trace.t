@@ -37,7 +37,7 @@ test "${trace_output#*builtin PSD: gating deferred outer effects with exterior b
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed OrGl effect object in layer effects (inactive)*}" \
+test "${trace_output#*builtin PSD: parsed OrGl effect object in layer effects \(inactive\)*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - \
         "effects/stroke-composite lost inactive OrGl parse contract"
