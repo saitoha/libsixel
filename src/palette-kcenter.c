@@ -2428,9 +2428,12 @@ sixel_kcenter_collect_points(double **points_out,
               retained_count,
               sizeof(sixel_kcenter_dispersion_rank_t),
               sixel_kcenter_compare_dispersion_desc);
+        /*
+         * Keep runtime guards minimal for MSVC /analyze.  The bucket count is
+         * currently a fixed compile-time constant.
+         */
         if (use_perceptual_strata
-                && retained_count > 0u
-                && SIXEL_KCENTER_CHROMA_BUCKETS > 1u) {
+                && retained_count > 0u) {
             qsort(chroma_rank,
                   retained_count,
                   sizeof(sixel_kcenter_dispersion_rank_t),
