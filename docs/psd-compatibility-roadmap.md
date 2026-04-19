@@ -48,6 +48,10 @@ Key points used by this roadmap:
   - deferred `SoFi/GrFl` now sample coverage from a dedicated base-silhouette
     fill-coverage map, while deferred `FrFX/vstk` continue to use
     stroke-coverage maps; clip gating remains shared through `clip_alpha_map`.
+  - `vstk + FrFX` are now composited together in layer fallback:
+    base path emits a dual-stroke trace and deferred `clbl=1` pass applies
+    vector/effect stroke together on clipped groups before the deferred
+    `FrFX` pass.
 - Signature/version policy:
   - `8BPS` supports version `1/2` per existing parser policy.
   - `8BPB` is accepted only with `version=2`; `8BPB+version!=2` is rejected as

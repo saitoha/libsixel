@@ -19649,6 +19649,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
     size_t coverage_row_offset;
     int coverage_x;
     int coverage_y;
+    int apply_dual_stroke;
+    sixel_builtin_psd_layer_record_t dual_vector_stroke_layer;
 
     i = 0u;
     x = 0u;
@@ -19712,6 +19714,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
     coverage_row_offset = 0u;
     coverage_x = 0;
     coverage_y = 0;
+    apply_dual_stroke = 0;
+    memset(&dual_vector_stroke_layer, 0, sizeof(dual_vector_stroke_layer));
     if (layer == NULL || src == NULL || src->rgb_linear == NULL ||
         src->alpha == NULL) {
         return;
@@ -19814,6 +19818,52 @@ sixel_builtin_psd_apply_layer_effects_subset(
          * during the base-layer effect pass.
          */
         suppress_clbl_nonstroke_glow = 1;
+    }
+    apply_dual_stroke =
+        layer->has_vector_stroke_style != 0 &&
+        layer->has_effect_stroke != 0 &&
+        layer->effect_stroke_from_vector_style == 0 &&
+        layer->vector_stroke_opacity > 0.0f &&
+        layer->vector_stroke_size > 0.0f ? 1 : 0;
+    if (apply_dual_stroke != 0) {
+        dual_vector_stroke_layer = *layer;
+        dual_vector_stroke_layer.has_effect_solid_overlay = 0;
+        dual_vector_stroke_layer.has_effect_gradient_overlay = 0;
+        dual_vector_stroke_layer.has_effect_outer_glow = 0;
+        dual_vector_stroke_layer.has_effect_inner_glow = 0;
+        dual_vector_stroke_layer.has_effect_orgl = 0;
+        dual_vector_stroke_layer.has_effect_irgl = 0;
+        dual_vector_stroke_layer.has_effect_chfx = 0;
+        dual_vector_stroke_layer.has_effect_drsh = 0;
+        dual_vector_stroke_layer.has_effect_irsh = 0;
+        dual_vector_stroke_layer.has_effect_bevel = 0;
+        dual_vector_stroke_layer.effect_bevel_highlight_opacity = 0.0f;
+        dual_vector_stroke_layer.effect_bevel_shadow_opacity = 0.0f;
+        dual_vector_stroke_layer.effect_stroke_position =
+            layer->vector_stroke_position;
+        dual_vector_stroke_layer.effect_stroke_rgb[0] =
+            layer->vector_stroke_rgb[0];
+        dual_vector_stroke_layer.effect_stroke_rgb[1] =
+            layer->vector_stroke_rgb[1];
+        dual_vector_stroke_layer.effect_stroke_rgb[2] =
+            layer->vector_stroke_rgb[2];
+        dual_vector_stroke_layer.effect_stroke_opacity =
+            sixel_builtin_psd_clamp01(layer->vector_stroke_opacity);
+        dual_vector_stroke_layer.effect_stroke_size =
+            layer->vector_stroke_size;
+        dual_vector_stroke_layer.effect_stroke_mode =
+            layer->vector_stroke_mode;
+        dual_vector_stroke_layer.effect_stroke_from_vector_style = 0;
+        dual_vector_stroke_layer.has_vector_stroke_style = 0;
+        dual_vector_stroke_layer.has_vector_stroke_content_fill = 0;
+        sixel_builtin_psd_trace_message(
+            "psd_decode",
+            "builtin PSD: applying vector stroke and layer effect "
+            "stroke in layer fallback");
+        sixel_builtin_psd_apply_layer_effects_subset(
+            &dual_vector_stroke_layer,
+            src,
+            stroke_coverage_alpha_map);
     }
     if (layer->has_effect_solid_overlay != 0) {
         if (interior_effects_enabled == 0) {
@@ -20270,10 +20320,6 @@ sixel_builtin_psd_apply_layer_effects_subset(
         stroke_rgb[2] = layer->vector_stroke_rgb[2];
         stroke_position = layer->vector_stroke_position;
         effect_mode = layer->vector_stroke_mode;
-        sixel_builtin_psd_trace_message(
-            "psd_decode",
-            "builtin PSD: preferring vector stroke style over layer "
-            "effect stroke");
     }
     if (layer->effect_stroke_from_vector_style != 0 &&
         layer->has_vector_mask != 0) {
@@ -23290,12 +23336,15 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     size_t clip_alpha_index;
     int pending_overlay_interior_enabled;
     int pending_overlay_defer_stroke;
+    int pending_overlay_dual_stroke;
     int pending_overlay_fill_coverage_valid;
     int pending_overlay_stroke_coverage_valid;
     int clipped_inside_stroke_alpha_valid;
     int traced_clip_sibling_harden;
     int apply_effects_subset;
     sixel_builtin_psd_layer_record_t pending_overlay_layer;
+    sixel_builtin_psd_layer_record_t pending_overlay_vector_stroke_layer;
+    sixel_builtin_psd_layer_record_t pending_overlay_effect_stroke_layer;
     SIXELSTATUS status;
 
     sixel_builtin_psd_layer_model_init(&model);
@@ -23328,12 +23377,19 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     clip_alpha_index = 0u;
     pending_overlay_interior_enabled = 1;
     pending_overlay_defer_stroke = 0;
+    pending_overlay_dual_stroke = 0;
     pending_overlay_fill_coverage_valid = 0;
     pending_overlay_stroke_coverage_valid = 0;
     clipped_inside_stroke_alpha_valid = 0;
     traced_clip_sibling_harden = 0;
     apply_effects_subset = 0;
     memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
+    memset(&pending_overlay_vector_stroke_layer,
+           0,
+           sizeof(pending_overlay_vector_stroke_layer));
+    memset(&pending_overlay_effect_stroke_layer,
+           0,
+           sizeof(pending_overlay_effect_stroke_layer));
     status = SIXEL_FALSE;
 
     if (chunk == NULL || info == NULL || ppixels == NULL || pwidth == NULL ||
@@ -24077,6 +24133,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
              */
             layer_for_composite = *effective_composite_layer;
             layer_for_composite.has_effect_stroke = 0;
+            layer_for_composite.has_vector_stroke_style = 0;
+            layer_for_composite.has_vector_stroke_content_fill = 0;
             effective_composite_layer = &layer_for_composite;
             apply_effects_subset =
                 effective_composite_layer->has_effect_solid_overlay != 0 ||
@@ -24136,6 +24194,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 layer_for_composite.has_effect_gradient_overlay = 0;
                 if (pending_overlay_defer_stroke != 0) {
                     layer_for_composite.has_effect_stroke = 0;
+                    layer_for_composite.has_vector_stroke_style = 0;
+                    layer_for_composite.has_vector_stroke_content_fill = 0;
                 }
                 apply_effects_without_overlay =
                     layer_for_composite.has_effect_stroke != 0 ||
@@ -24221,7 +24281,49 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         pending_overlay_interior_enabled =
             sixel_builtin_psd_layer_interior_effects_enabled(
                 &pending_overlay_layer);
+        pending_overlay_dual_stroke =
+            pending_overlay_defer_stroke != 0 &&
+            pending_overlay_layer.has_vector_stroke_style != 0 &&
+            pending_overlay_layer.has_effect_stroke != 0 &&
+            pending_overlay_layer.effect_stroke_from_vector_style == 0 ? 1 : 0;
         if (pending_overlay_interior_enabled != 0) {
+            if (pending_overlay_dual_stroke != 0) {
+                pending_overlay_vector_stroke_layer = pending_overlay_layer;
+                pending_overlay_vector_stroke_layer.effect_stroke_position =
+                    pending_overlay_layer.vector_stroke_position;
+                pending_overlay_vector_stroke_layer.effect_stroke_rgb[0] =
+                    pending_overlay_layer.vector_stroke_rgb[0];
+                pending_overlay_vector_stroke_layer.effect_stroke_rgb[1] =
+                    pending_overlay_layer.vector_stroke_rgb[1];
+                pending_overlay_vector_stroke_layer.effect_stroke_rgb[2] =
+                    pending_overlay_layer.vector_stroke_rgb[2];
+                pending_overlay_vector_stroke_layer.effect_stroke_opacity =
+                    sixel_builtin_psd_clamp01(
+                        pending_overlay_layer.vector_stroke_opacity);
+                pending_overlay_vector_stroke_layer.effect_stroke_size =
+                    pending_overlay_layer.vector_stroke_size;
+                pending_overlay_vector_stroke_layer.effect_stroke_mode =
+                    pending_overlay_layer.vector_stroke_mode;
+                pending_overlay_vector_stroke_layer.has_vector_stroke_style = 0;
+                pending_overlay_vector_stroke_layer
+                    .has_vector_stroke_content_fill = 0;
+                pending_overlay_vector_stroke_layer
+                    .effect_stroke_from_vector_style = 0;
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: applying deferred vector stroke and "
+                    "layer effect stroke on clipped group");
+                sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
+                    canvas_rgb_premul,
+                    canvas_alpha,
+                    clip_alpha_map,
+                    pending_overlay_stroke_coverage_valid != 0
+                        ? pending_overlay_stroke_coverage_map
+                        : NULL,
+                    info->width,
+                    info->height,
+                    &pending_overlay_vector_stroke_layer);
+            }
             sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
                 canvas_rgb_premul,
                 canvas_alpha,
@@ -24267,22 +24369,43 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     "psd_decode",
                     "builtin PSD: applying deferred stroke on clipped "
                     "group");
-                sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
-                    canvas_rgb_premul,
-                    canvas_alpha,
-                    clip_alpha_map,
-                    pending_overlay_stroke_coverage_valid != 0
-                        ? pending_overlay_stroke_coverage_map
-                        : NULL,
-                    info->width,
-                    info->height,
-                    &pending_overlay_layer);
+                if (pending_overlay_dual_stroke != 0) {
+                    pending_overlay_effect_stroke_layer = pending_overlay_layer;
+                    pending_overlay_effect_stroke_layer
+                        .has_vector_stroke_style = 0;
+                    pending_overlay_effect_stroke_layer
+                        .has_vector_stroke_content_fill = 0;
+                    pending_overlay_effect_stroke_layer
+                        .effect_stroke_from_vector_style = 0;
+                    sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
+                        canvas_rgb_premul,
+                        canvas_alpha,
+                        clip_alpha_map,
+                        pending_overlay_stroke_coverage_valid != 0
+                            ? pending_overlay_stroke_coverage_map
+                            : NULL,
+                        info->width,
+                        info->height,
+                        &pending_overlay_effect_stroke_layer);
+                } else {
+                    sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
+                        canvas_rgb_premul,
+                        canvas_alpha,
+                        clip_alpha_map,
+                        pending_overlay_stroke_coverage_valid != 0
+                            ? pending_overlay_stroke_coverage_map
+                            : NULL,
+                        info->width,
+                        info->height,
+                        &pending_overlay_layer);
+                }
             }
         } else {
             sixel_builtin_psd_layer_effects_trace_interior_skip();
         }
         pending_clip_group_overlay = 0;
         pending_overlay_defer_stroke = 0;
+        pending_overlay_dual_stroke = 0;
         pending_overlay_fill_coverage_valid = 0;
         pending_overlay_stroke_coverage_valid = 0;
     }

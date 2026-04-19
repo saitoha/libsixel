@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify vector stroke style preference trace remains visible in fallback.
+# Verify clbl=1 deferred path applies vector/effect stroke together.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -22,18 +22,27 @@ command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
-    -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
+    -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
+    command_status=$?
 
 test "${command_status}" -eq 0 || {
     echo "not ok" 1 - "effects/stroke-composite decode failed"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: preferring vector stroke style over layer effect stroke*}" \
+test "${trace_output#*builtin PSD: applying deferred vector stroke and layer effect stroke on clipped group*}" \
     != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not prefer vector stroke style"
+    echo "not ok" 1 - \
+        "effects/stroke-composite did not apply deferred vector/effect dual stroke"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps vector-stroke preference trace"
+test "${trace_output#*builtin PSD: applying deferred stroke on clipped group*}" \
+    != "${trace_output}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite lost deferred stroke contract"
+    exit 0
+}
+
+echo "ok" 1 - "effects/stroke-composite keeps deferred vector/effect dual stroke"
 exit 0
