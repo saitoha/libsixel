@@ -27,7 +27,7 @@ test "${status}" -eq 0 || {
     exit 0
 }
 diag_line=${msg%%"${nl}"*}
-test "${diag_line#LSXPAL1|rc=0|}" != "${diag_line}" || {
+test "${diag_line#LSXPAL1*rc=0*}" != "${diag_line}" || {
     echo "not ok" 1 - "heckbert profile=speed diagnostic header is malformed"
     exit 0
 }

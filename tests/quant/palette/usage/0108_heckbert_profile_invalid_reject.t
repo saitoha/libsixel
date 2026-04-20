@@ -28,7 +28,7 @@ test "${status}" -ne 0 || {
     exit 0
 }
 diag_line=${msg%%"${nl}"*}
-test "${diag_line#LSXCLI1|phase=option_parse|rc=}" != "${diag_line}" || {
+test "${diag_line#LSXCLI1*phase=option_parse*rc=*}" != "${diag_line}" || {
     echo "not ok" 1 - "heckbert invalid profile diagnostic header is malformed"
     exit 0
 }

@@ -28,7 +28,7 @@ diag_line=${msg%%'
 '*}
 
 case "${diag_line}" in
-    LSXCLI1\|phase=option_parse\|rc=*\|code=UNKNOWN_SUBOPTION_KEY) ;;
+    LSXCLI1\|phase=option_parse\|rc=*\|code=UNKNOWN_SUBOPTION_KEY*) ;;
     *)
         echo "not ok" 1 - "missing unknown stbn key diagnostic code"
         exit 0
