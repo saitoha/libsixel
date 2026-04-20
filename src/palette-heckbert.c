@@ -484,6 +484,67 @@ histogram_quantize(unsigned int sample8,
 }
 
 /*
+ * Build an 8-bit quantization table so the histogram pass can avoid
+ * per-channel shift/rounding branches.
+ */
+static void
+histogram_build_quantize_lut(struct histogram_control const *control,
+                             unsigned int quantized_lut[256])
+{
+    unsigned int sample8;
+
+    for (sample8 = 0U; sample8 < 256U; ++sample8) {
+        quantized_lut[sample8] = histogram_quantize(sample8, control);
+    }
+}
+
+/*
+ * Build plane-indexed packed values for depth 3/4 RGB(A) fast-path packing.
+ */
+static void
+histogram_build_fast_pack_lut(unsigned int depth,
+                              unsigned int bits,
+                              unsigned int const quantized_lut[256],
+                              uint32_t packed_lut[4][256])
+{
+    unsigned int plane;
+    unsigned int sample8;
+    unsigned int shift;
+
+    for (plane = 0U; plane < 4U; ++plane) {
+        for (sample8 = 0U; sample8 < 256U; ++sample8) {
+            packed_lut[plane][sample8] = 0U;
+        }
+    }
+    for (plane = 0U; plane < depth; ++plane) {
+        shift = (depth - 1U - plane) * bits;
+        for (sample8 = 0U; sample8 < 256U; ++sample8) {
+            packed_lut[plane][sample8]
+                = (uint32_t)quantized_lut[sample8] << shift;
+        }
+    }
+}
+
+static uint32_t
+histogram_pack_color_fast_rgb(unsigned char const *data,
+                              uint32_t const packed_lut[4][256])
+{
+    return packed_lut[0][data[0]]
+           | packed_lut[1][data[1]]
+           | packed_lut[2][data[2]];
+}
+
+static uint32_t
+histogram_pack_color_fast_rgba(unsigned char const *data,
+                               uint32_t const packed_lut[4][256])
+{
+    return packed_lut[0][data[0]]
+           | packed_lut[1][data[1]]
+           | packed_lut[2][data[2]]
+           | packed_lut[3][data[3]];
+}
+
+/*
  * Pack a pixel into a dense histogram index.  Colour channels are processed in
  * reverse order so the least significant bits store the first component.
  */
@@ -509,6 +570,29 @@ histogram_pack_color(unsigned char const *data,
     for (n = 0U; n < depth; ++n) {
         sample8 = (unsigned int)data[depth - 1U - n];
         packed |= histogram_quantize(sample8, control) << (n * bits);
+    }
+
+    return packed;
+}
+
+/*
+ * Generic LUT-based packer used when the 3/4-channel fast paths are not
+ * applicable.
+ */
+static unsigned int
+histogram_pack_color_from_lut(unsigned char const *data,
+                              unsigned int depth,
+                              unsigned int bits,
+                              unsigned int const quantized_lut[256])
+{
+    unsigned int n;
+    uint32_t packed;
+    unsigned int sample8;
+
+    packed = 0U;
+    for (n = 0U; n < depth; ++n) {
+        sample8 = (unsigned int)data[depth - 1U - n];
+        packed |= (uint32_t)quantized_lut[sample8] << (n * bits);
     }
 
     return packed;
@@ -553,6 +637,10 @@ sixel_lut_build_histogram(unsigned char const *data,
     unsigned int n;
     unsigned int plane;
     unsigned int channel_stride;
+    unsigned int quantized_lut[256];
+    uint32_t packed_lut[4][256];
+    unsigned int bits;
+    int use_fast_pack;
     int input_is_float32;
 
     status = SIXEL_FALSE;
@@ -609,6 +697,16 @@ sixel_lut_build_histogram(unsigned char const *data,
     if (use_reversible) {
         control.reversible_rounding = 1;
     }
+    histogram_build_quantize_lut(&control, quantized_lut);
+    bits = control.channel_bits;
+    use_fast_pack = 0;
+    if (channel_stride == 1U && (depth_u == 3U || depth_u == 4U)) {
+        histogram_build_fast_pack_lut(depth_u,
+                                      bits,
+                                      quantized_lut,
+                                      packed_lut);
+        use_fast_pack = 1;
+    }
     hist_size = histogram_dense_size(depth_u, &control);
     histogram = (unit_t *)sixel_allocator_calloc(allocator,
                                                  hist_size,
@@ -655,9 +753,22 @@ sixel_lut_build_histogram(unsigned char const *data,
             }
             bucket_input = reversible_pixel;
         }
-        bucket_index = histogram_pack_color(bucket_input,
-                                            depth_u,
-                                            &control);
+        if (use_fast_pack && depth_u == 3U) {
+            bucket_index = histogram_pack_color_fast_rgb(bucket_input,
+                                                         packed_lut);
+        } else if (use_fast_pack && depth_u == 4U) {
+            bucket_index = histogram_pack_color_fast_rgba(bucket_input,
+                                                          packed_lut);
+        } else if (control.channel_shift == 0U) {
+            bucket_index = histogram_pack_color(bucket_input,
+                                                depth_u,
+                                                &control);
+        } else {
+            bucket_index = histogram_pack_color_from_lut(bucket_input,
+                                                         depth_u,
+                                                         bits,
+                                                         quantized_lut);
+        }
         if (histogram[bucket_index] == 0U) {
             *ref++ = bucket_index;
         }
@@ -717,6 +828,11 @@ static double compareplanePcaAxis[3];
 static unsigned int compareplanePcaDimensions;
 static unsigned int compareplaneTieDepth;
 
+struct sixel_pca_sort_entry {
+    struct tupleint *entry;
+    double key;
+};
+
 static int
 compareplane_lexicographic(struct tupleint const *lhs,
                            struct tupleint const *rhs,
@@ -750,11 +866,7 @@ compareplane_lexicographic(struct tupleint const *lhs,
     return 0;
 }
 
-/*
- * qsort callback used when the split axis is determined by PCA.  The projection
- * is evaluated on demand to avoid storing an additional array alongside the
- * histogram entries.
- */
+/* qsort fallback for PCA split when key-buffer allocation fails. */
 static int
 compareplanePca(const void *arg1, const void *arg2)
 {
@@ -784,6 +896,35 @@ compareplanePca(const void *arg1, const void *arg2)
 
     diff = compareplane_lexicographic(*comparandPP,
                                       *comparatorPP,
+                                      compareplaneTieDepth);
+    if (diff != 0) {
+        return diff;
+    }
+
+    return 0;
+}
+
+/*
+ * qsort callback for cached PCA projection keys.  Ties keep the previous
+ * lexicographic order so split determinism matches the legacy path.
+ */
+static int
+compareplanePcaCached(const void *arg1, const void *arg2)
+{
+    struct sixel_pca_sort_entry const *lhs;
+    struct sixel_pca_sort_entry const *rhs;
+    int diff;
+
+    lhs = (struct sixel_pca_sort_entry const *)arg1;
+    rhs = (struct sixel_pca_sort_entry const *)arg2;
+    if (lhs->key < rhs->key) {
+        return -1;
+    }
+    if (lhs->key > rhs->key) {
+        return 1;
+    }
+    diff = compareplane_lexicographic(lhs->entry,
+                                      rhs->entry,
                                       compareplaneTieDepth);
     if (diff != 0) {
         return diff;
@@ -1227,6 +1368,57 @@ computePcaAxis(tupletable2 const colorfreqtable,
     return 1;
 }
 
+/*
+ * Sort the target box by precomputed PCA projection keys.  Allocation failure
+ * is reported so callers can fall back to the legacy compareplanePca path.
+ */
+static SIXELSTATUS
+sortBoxByPcaProjection(tupletable2 const colorfreqtable,
+                       unsigned int boxStart,
+                       unsigned int boxSize,
+                       unsigned int depth,
+                       unsigned int dimensions,
+                       double axis[3])
+{
+    struct sixel_pca_sort_entry *cache;
+    unsigned int i;
+    unsigned int plane;
+    struct tupleint *entry;
+    double key;
+
+    cache = NULL;
+    i = 0U;
+    plane = 0U;
+    entry = NULL;
+    key = 0.0;
+    cache = (struct sixel_pca_sort_entry *)malloc(
+        boxSize * sizeof(struct sixel_pca_sort_entry));
+    if (cache == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    compareplaneTieDepth = depth;
+    for (i = 0U; i < boxSize; ++i) {
+        entry = colorfreqtable.table[boxStart + i];
+        key = 0.0;
+        for (plane = 0U; plane < dimensions; ++plane) {
+            key += (double)entry->tuple[plane] * axis[plane];
+        }
+        cache[i].entry = entry;
+        cache[i].key = key;
+    }
+    qsort((char *)cache,
+          boxSize,
+          sizeof(struct sixel_pca_sort_entry),
+          compareplanePcaCached);
+    for (i = 0U; i < boxSize; ++i) {
+        colorfreqtable.table[boxStart + i] = cache[i].entry;
+    }
+    free(cache);
+
+    return SIXEL_OK;
+}
+
 static void
 centerBox(unsigned int boxStart,
           unsigned int boxSize,
@@ -1540,6 +1732,10 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     unsigned long value;
     size_t offset;
     size_t total;
+    unsigned int *assignment;
+    unsigned int previous_cluster;
+    int has_assignment_history;
+    int assignment_changed;
     struct tupleint *entry;
 
     centers = NULL;
@@ -1556,6 +1752,10 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     value = 0UL;
     offset = 0U;
     total = 0U;
+    assignment = NULL;
+    previous_cluster = 0U;
+    has_assignment_history = 0;
+    assignment_changed = 0;
     entry = NULL;
     if (iterations == 0U || cluster_count == 0U || depth == 0U
         || cluster_weight == NULL || cluster_sums == NULL
@@ -1566,6 +1766,14 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     centers = (double *)malloc(total * sizeof(double));
     if (centers == NULL) {
         return;
+    }
+    assignment = (unsigned int *)malloc(
+        colorfreqtable.size * sizeof(unsigned int));
+    if (assignment != NULL) {
+        for (entry_index = 0U; entry_index < colorfreqtable.size;
+                ++entry_index) {
+            assignment[entry_index] = UINT_MAX;
+        }
     }
     for (cluster_index = 0U; cluster_index < cluster_count;
             ++cluster_index) {
@@ -1582,6 +1790,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         }
     }
     for (iteration = 0U; iteration < iterations; ++iteration) {
+        assignment_changed = 0;
         for (cluster_index = 0U; cluster_index < cluster_count;
                 ++cluster_index) {
             cluster_weight[cluster_index] = 0UL;
@@ -1625,12 +1834,25 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                     best_cluster = cluster_index;
                 }
             }
+            if (assignment != NULL) {
+                previous_cluster = assignment[entry_index];
+                assignment[entry_index] = best_cluster;
+                if (previous_cluster != best_cluster) {
+                    assignment_changed = 1;
+                }
+            }
             offset = (size_t)best_cluster * (size_t)depth;
             cluster_weight[best_cluster] += value;
             for (component = 0U; component < depth; ++component) {
                 cluster_sums[offset + (size_t)component]
                     += (double)entry->tuple[component] * (double)value;
             }
+        }
+        if (assignment != NULL) {
+            if (has_assignment_history && !assignment_changed) {
+                break;
+            }
+            has_assignment_history = 1;
         }
         for (cluster_index = 0U; cluster_index < cluster_count;
                 ++cluster_index) {
@@ -1663,6 +1885,9 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
             }
             cluster_weight[cluster_index] = 1UL;
         }
+    }
+    if (assignment != NULL) {
+        free(assignment);
     }
     free(centers);
 }
@@ -1844,10 +2069,22 @@ sixel_palette_heckbert_split_attempt(
         for (i = 0U; i < 3U; ++i) {
             compareplanePcaAxis[i] = pca_axis[i];
         }
-        qsort((char *)&colorfreqtable.table[boxStart],
-              boxSize,
-              sizeof(colorfreqtable.table[boxStart]),
-              compareplanePca);
+        status = sortBoxByPcaProjection(colorfreqtable,
+                                        boxStart,
+                                        boxSize,
+                                        depth,
+                                        dimensions,
+                                        pca_axis);
+        if (status == SIXEL_BAD_ALLOCATION) {
+            qsort((char *)&colorfreqtable.table[boxStart],
+                  boxSize,
+                  sizeof(colorfreqtable.table[boxStart]),
+                  compareplanePca);
+            status = SIXEL_OK;
+        }
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
         if (axis_used != NULL) {
             *axis_used = 0U;
         }

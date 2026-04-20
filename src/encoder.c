@@ -6256,6 +6256,8 @@ sixel_encoder_prepare_palette(
     int effective_final_merge_mode;
     int effective_merge_oversplit_override;
     double effective_merge_oversplit;
+    int effective_lut_policy;
+    int effective_lut_policy_override;
 
     target_logger = logger;
     cache_allowed = allow_cache != 0;
@@ -6275,6 +6277,8 @@ sixel_encoder_prepare_palette(
     effective_final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
     effective_merge_oversplit_override = 0;
     effective_merge_oversplit = 1.81;
+    effective_lut_policy = SIXEL_LUT_POLICY_CERTLUT;
+    effective_lut_policy_override = 0;
     if (encoder == NULL || frame == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -6403,6 +6407,8 @@ sixel_encoder_prepare_palette(
     effective_merge_oversplit_override
         = encoder->quantize_model_merge_oversplit_override;
     effective_merge_oversplit = encoder->quantize_model_merge_oversplit;
+    effective_lut_policy = encoder->lut_policy;
+    effective_lut_policy_override = encoder->lut_policy_override;
     if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
             && encoder->quantize_model_heckbert_profile
                 == SIXEL_HECKBERT_PROFILE_QUALITY
@@ -6411,6 +6417,19 @@ sixel_encoder_prepare_palette(
         effective_merge_oversplit =
             sixel_encoder_heckbert_quality_oversplit_factor(palette_reqcolors);
         effective_merge_oversplit_override = 1;
+    }
+    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
+            && encoder->quantize_model_heckbert_profile
+                == SIXEL_HECKBERT_PROFILE_SPEED
+            && effective_lut_policy_override == 0
+            && encoder->quantize_model_merge_override == 0
+            && encoder->method_for_largest_override == 0
+            && effective_lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
+        /*
+         * Keep speed profile internal and compatible: when lookup policy is not
+         * explicitly pinned by user/env, use the lighter 5bit histogram bins.
+         */
+        effective_lut_policy = SIXEL_LUT_POLICY_5BIT;
     }
 
     status = sixel_dither_new(dither, palette_reqcolors, encoder->allocator);
@@ -6471,7 +6490,7 @@ sixel_encoder_prepare_palette(
         }
     }
 
-    sixel_dither_set_lut_policy(*dither, encoder->lut_policy);
+    sixel_dither_set_lut_policy(*dither, effective_lut_policy);
     sixel_dither_set_sixel_reversible(*dither,
                                       encoder->sixel_reversible);
     memset(&merge_config, 0, sizeof(merge_config));
@@ -7894,6 +7913,7 @@ sixel_encoder_new(
     (*ppencoder)->quantize_animation_prev_height = 0;
     (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
+    (*ppencoder)->lut_policy_override   = 0;
     (*ppencoder)->sixel_reversible      = 0;
     (*ppencoder)->method_for_resampling = SIXEL_RES_BILINEAR;
     (*ppencoder)->loop_mode             = SIXEL_LOOP_AUTO;
@@ -8001,6 +8021,7 @@ sixel_encoder_new(
             sizeof(match_detail));
         if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
             (*ppencoder)->lut_policy = env_match_value;
+            (*ppencoder)->lut_policy_override = 1;
         }
     }
 
@@ -12215,6 +12236,7 @@ sixel_encoder_setopt(
             goto end;
         }
         encoder->lut_policy = match_value;
+        encoder->lut_policy_override = 1;
         if (encoder->dither_cache != NULL) {
             sixel_dither_set_lut_policy(encoder->dither_cache,
                                         encoder->lut_policy);
