@@ -36,6 +36,7 @@ baseline_output=$(
         --threads=1 \
         -L libwebp \
         -ldisable \
+        -S -T 1 \
         -d interframe -p 2 \
         "${input_webp}"
 ) || {
@@ -48,6 +49,7 @@ captured_output=$(
         --threads=1 \
         -L libwebp \
         -ldisable \
+        -S -T 1 \
         -d interframe -p 2 \
         -M "${palette_output}" \
         "${input_webp}"

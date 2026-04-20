@@ -33,6 +33,7 @@ baseline_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -d interframe -p 16 \
         "${input_apng}"
 ) || {
@@ -46,6 +47,7 @@ captured_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -d interframe -p 16 \
         -M "${palette_output}" \
         "${input_apng}"

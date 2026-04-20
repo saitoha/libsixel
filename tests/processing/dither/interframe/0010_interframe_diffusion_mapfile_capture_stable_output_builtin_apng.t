@@ -31,6 +31,7 @@ baseline_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -d interframe -p 2 \
         "${input_apng}"
 ) || {
@@ -43,6 +44,7 @@ captured_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -d interframe -p 2 \
         -M "${palette_output}" \
         "${input_apng}"

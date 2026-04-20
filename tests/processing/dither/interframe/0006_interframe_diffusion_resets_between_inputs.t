@@ -26,6 +26,7 @@ nl='
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=dither_contract \
     --threads=1 -ldisable \
+    -S -T 1 \
     -d interframe -p 2 \
     "${input_anim}" "${input_anim}" 2>&1 >/dev/null) || status=$?
 

@@ -17,6 +17,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
     -L builtin \
     -ldisable \
+    -S -T 1 \
     -d stbn:source=pmj -p 2 \
     "${input_apng}" "${input_apng}" 2>&1 >/dev/null) || status=$?
 

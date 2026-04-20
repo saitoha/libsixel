@@ -33,6 +33,7 @@ first_capture_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -d stbn:source=pmj -p 16 \
         -M "${palette_output}" \
         "${input_apng}"
@@ -47,6 +48,7 @@ second_capture_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -d stbn:source=pmj -p 16 \
         -M "${palette_output}" \
         "${input_apng}"

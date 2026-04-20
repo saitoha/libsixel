@@ -31,6 +31,7 @@ first_capture_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -d stbn:source=pmj -p 2 \
         -M "${palette_output}" \
         "${input_apng}"
@@ -44,6 +45,7 @@ second_capture_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -d stbn:source=pmj -p 2 \
         -M "${palette_output}" \
         "${input_apng}"
