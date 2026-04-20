@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_gif="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
+input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 # Start frame numbers are zero-based, so "-T 0" selects the first frame.
 
 interframe_static=$(

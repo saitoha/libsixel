@@ -8,7 +8,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-input_gif="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
+input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \

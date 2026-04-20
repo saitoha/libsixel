@@ -13,7 +13,7 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_anim_12x8.webp"
+input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
 palette_output="${ARTIFACT_LOCAL_DIR}/interframe-mapfile.pal"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
