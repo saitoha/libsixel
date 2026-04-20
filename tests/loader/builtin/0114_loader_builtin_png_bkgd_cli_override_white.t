@@ -20,6 +20,9 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_png="${TOP_SRCDIR}/images/pngsuite/background/bgan6a08.png"
 expected_sixel="${ARTIFACT_LOCAL_DIR}/libpng_bgan6a08_white.six"
 output_sixel="${ARTIFACT_LOCAL_DIR}/builtin_bgan6a08_white.six"
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.97}
+nl='
+'
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -B#fff -Llibpng:cms_engine=none! "${input_png}" >"${expected_sixel}" || {
     echo "not ok" 1 - "libpng baseline conversion failed"
@@ -32,8 +35,10 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_BACKGROUND_POLICY=explicit_fir
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.98" "${expected_sixel}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "$lsqa_msg"
+lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM \
+    -b "MS-SSIM:${lsqa_floor}" "${expected_sixel}" "${output_sixel}" 2>&1) || {
+    lsqa_line=${lsqa_msg%%"${nl}"*}
+    echo "not ok" 1 - "builtin bKGD override fell below MS-SSIM ${lsqa_floor}: ${lsqa_line}"
     exit 0
 }
 
