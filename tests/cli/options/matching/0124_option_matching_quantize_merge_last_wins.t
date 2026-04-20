@@ -13,7 +13,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_ppm="${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm"
+input_ppm="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 msg=''
 diag_line=''
 status=0

@@ -14,7 +14,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/merge-heckbert-8bit.six"
 
 SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2 \

@@ -18,7 +18,7 @@ set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 palette_png="${TOP_SRCDIR}/images/pngsuite/basic/basn2c08.png"
-input_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+input_png="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/mapfile-rgb.sixel"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m "${palette_png}" "${input_png}" >"${target_sixel}" || {

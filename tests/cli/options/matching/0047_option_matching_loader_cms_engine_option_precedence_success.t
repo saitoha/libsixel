@@ -18,7 +18,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
+input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/palette_lossless_embedded_a98_icc.webp"
 output_ref_auto="${ARTIFACT_LOCAL_DIR}/cms_engine_precedence_ref_auto.six"
 output_ref_none="${ARTIFACT_LOCAL_DIR}/cms_engine_precedence_ref_none.six"
 output_option_last="${ARTIFACT_LOCAL_DIR}/cms_engine_precedence_option_last.six"

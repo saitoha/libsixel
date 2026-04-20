@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_png="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-indexed-embedded-esrgb.png"
+input_png="${TOP_SRCDIR}/tests/data/inputs/formats/map8_embedded_icc.png"
 output_cms1="${ARTIFACT_LOCAL_DIR}/cms_engine_env_builtin_ref_cms1.six"
 output_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_env_builtin_ref_cms0.six"
 output_override="${ARTIFACT_LOCAL_DIR}/cms_engine_env_builtin_override.six"

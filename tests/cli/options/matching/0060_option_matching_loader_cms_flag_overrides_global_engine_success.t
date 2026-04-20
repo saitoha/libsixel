@@ -18,7 +18,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
+input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/palette_lossless_embedded_a98_icc.webp"
 output_ref_cms0="${ARTIFACT_LOCAL_DIR}/cms_flag_override_ref_cms0.six"
 output_with_global_auto_cms0="${ARTIFACT_LOCAL_DIR}/cms_flag_override_global_auto_cms0.six"
 

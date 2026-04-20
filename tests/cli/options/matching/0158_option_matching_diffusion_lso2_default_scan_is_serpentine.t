@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png"
 output_default="${ARTIFACT_LOCAL_DIR}/output_default.six"
 output_serp="${ARTIFACT_LOCAL_DIR}/output_serp.six"
 output_raster="${ARTIFACT_LOCAL_DIR}/output_raster.six"

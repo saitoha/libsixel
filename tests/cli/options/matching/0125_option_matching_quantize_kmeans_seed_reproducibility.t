@@ -14,13 +14,13 @@ set -v
 
 seed_123_a=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=123:restarts=2 \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
+    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" | cksum)
 seed_123_b=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=123:restarts=2 \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
+    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" | cksum)
 seed_124=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=124:restarts=2 \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
+    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" | cksum)
 
 test "${seed_123_a}" = "${seed_123_b}" || {
     echo "not ok" 1 - "same kmeans seed was not reproducible"
