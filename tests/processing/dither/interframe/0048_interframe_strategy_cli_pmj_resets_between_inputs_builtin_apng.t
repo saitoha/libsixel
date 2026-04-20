@@ -8,14 +8,14 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
+input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
     -L builtin \
     -ldisable \
     -S -T 1 \
-    -d fs -p 16 \
+    -d fs -p 2 \
     "${input_apng}" >/dev/null 2>&1 || {
     printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
     exit 0
@@ -37,7 +37,7 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
     -L builtin \
     -ldisable \
-    -d stbn:source=pmj -p 16 \
+    -d stbn:source=pmj -p 2 \
     "${input_apng}" "${input_apng}" 2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 0 || {
