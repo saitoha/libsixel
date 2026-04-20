@@ -589,20 +589,15 @@ cleanup:
 #endif
 }
 
+/*
+ * The SIGINT-driven runner is available only on non-Windows builds.
+ * Keep its sleep helper in the same platform scope so -Wunused-function
+ * does not fail Windows toolchains that treat warnings as errors.
+ */
+#if !defined(_WIN32)
 static int
 test_runner_sleep_milliseconds(unsigned long milliseconds)
 {
-#if defined(_WIN32)
-    /*
-     * nanosleep() is not available in the MSVC runtime.
-     * This helper only accepts millisecond delays, so Sleep()
-     * provides equivalent behavior on Windows builds.
-     */
-    if (milliseconds > 0ul) {
-        Sleep((DWORD)milliseconds);
-    }
-    return 0;
-#else
     struct timespec delay;
     struct timespec remain;
     int sleep_status;
@@ -625,8 +620,8 @@ test_runner_sleep_milliseconds(unsigned long milliseconds)
         }
         delay = remain;
     }
-#endif
 }
+#endif
 
 static int
 test_runner_run_posix_sigint(int argc, char **argv)
