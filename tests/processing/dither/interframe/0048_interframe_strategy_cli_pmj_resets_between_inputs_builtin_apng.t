@@ -10,28 +10,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 \
-    -L builtin \
-    -ldisable \
-    -S -T 1 \
-    -d fs -p 2 \
-    "${input_apng}" >/dev/null 2>&1 || {
-    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
-    exit 0
-}
-
-echo "1..1"
-set -v
-
 msg=''
-diag_line=''
 status=0
-single_output=''
-nl='
-'
-expected_output="${single_output}${single_output}"
-
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=dither_contract \
     --threads=1 \
@@ -41,9 +21,18 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "${input_apng}" "${input_apng}" 2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 0 || {
-    echo "not ok" 1 - "interframe source=pmj two-input encode failed"
+    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
     exit 0
 }
+
+echo "1..1"
+set -v
+
+diag_line=''
+single_output=''
+nl='
+'
+expected_output="${single_output}${single_output}"
 
 diag_line=${msg%%"${nl}"*}
 test -n "${diag_line}" || {

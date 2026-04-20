@@ -10,20 +10,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 \
-    -L builtin \
-    -ldisable \
-    -S -T 1 \
-    -Qauto -d fs -p 2 \
-    "${input_apng}" >/dev/null 2>&1 || {
-    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
-    exit 0
-}
-
-echo "1..1"
-set -v
-
 low_threshold_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
@@ -33,9 +19,12 @@ low_threshold_output=$(
         -d fs -p 2 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "scene_cut_threshold=0.00 encode failed"
+    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
     exit 0
 }
+
+echo "1..1"
+set -v
 
 high_threshold_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \

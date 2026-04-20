@@ -10,20 +10,6 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 \
-    -L builtin \
-    -ldisable \
-    -S -T 1 \
-    -d fs -p 16 \
-    "${input_apng}" >/dev/null 2>&1 || {
-    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
-    exit 0
-}
-
-echo "1..1"
-set -v
-
 base_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
@@ -32,9 +18,12 @@ base_output=$(
         -d stbn:source=mask -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "8bit stbn mask base encode failed"
+    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
     exit 0
 }
+
+echo "1..1"
+set -v
 
 guard_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \

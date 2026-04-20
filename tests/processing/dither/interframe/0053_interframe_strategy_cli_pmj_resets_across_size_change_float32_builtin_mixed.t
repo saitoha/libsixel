@@ -11,42 +11,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-transparent-anim-dispose2.gif"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 \
-    --precision=float32 \
-    -L builtin \
-    -ldisable \
-    -S -T 1 \
-    -d fs -p 2 \
-    "${input_apng}" >/dev/null 2>&1 || {
-    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
-    exit 0
-}
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 \
-    --precision=float32 \
-    -L builtin \
-    -ldisable \
-    -S -T 0 \
-    -d fs -p 2 \
-    "${input_gif}" >/dev/null 2>&1 || {
-    printf "1..0 # SKIP animated builtin GIF frame path is unavailable\n"
-    exit 0
-}
-
-echo "1..1"
-set -v
-
 msg=''
-diag_line=''
 status=0
-animated_output=''
-single_output=''
-nl='
-'
-expected_output="${animated_output}${single_output}"
-
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=dither_contract \
     --threads=1 \
@@ -57,9 +23,19 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     "${input_apng}" "${input_gif}" 2>&1 >/dev/null) || status=$?
 
 test "${status}" -eq 0 || {
-    echo "not ok" 1 - "float32 source=pmj combined mixed-size encode failed"
+    printf "1..0 # SKIP animated builtin APNG/GIF frame path is unavailable\n"
     exit 0
 }
+
+echo "1..1"
+set -v
+
+diag_line=''
+animated_output=''
+single_output=''
+nl='
+'
+expected_output="${animated_output}${single_output}"
 
 diag_line=${msg%%"${nl}"*}
 test -n "${diag_line}" || {

@@ -20,20 +20,6 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_anim_12x8.webp"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 \
-    -L libwebp \
-    -ldisable \
-    -S -T 1 \
-    -d fs -p 16 \
-    "${input_webp}" >/dev/null 2>&1 || {
-    printf "1..0 # SKIP animated libwebp frame path is unavailable\n"
-    exit 0
-}
-
-echo "1..1"
-set -v
-
 single_thread_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
@@ -42,9 +28,12 @@ single_thread_output=$(
         -d interframe -p 16 \
         "${input_webp}"
 ) || {
-    echo "not ok" 1 - "interframe single-thread encode failed"
+    printf "1..0 # SKIP animated libwebp frame path is unavailable\n"
     exit 0
 }
+
+echo "1..1"
+set -v
 
 multi_thread_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \

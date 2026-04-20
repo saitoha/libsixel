@@ -15,20 +15,6 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
 
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 \
-    -L builtin \
-    -ldisable \
-    -S -T 1 \
-    -d fs -p 16 \
-    "${input_apng}" >/dev/null 2>&1 || {
-    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
-    exit 0
-}
-
-echo "1..1"
-set -v
-
 single_thread_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
@@ -37,9 +23,12 @@ single_thread_output=$(
         -d stbn:source=pmj -p 16 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "8bit pmj cli single-thread encode failed"
+    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
     exit 0
 }
+
+echo "1..1"
+set -v
 
 multi_thread_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \

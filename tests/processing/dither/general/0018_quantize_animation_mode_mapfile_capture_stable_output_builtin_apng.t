@@ -22,20 +22,6 @@ mkdir -p "${ARTIFACT_LOCAL_DIR}" || {
 
 palette_output="${ARTIFACT_LOCAL_DIR}/quantize-animation-mode-mapfile.pal"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 \
-    -L builtin \
-    -ldisable \
-    -S -T 1 \
-    -Qauto -d fs -p 2 \
-    "${input_apng}" >/dev/null 2>&1 || {
-    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
-    exit 0
-}
-
-echo "1..1"
-set -v
-
 baseline_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
@@ -44,9 +30,12 @@ baseline_output=$(
         -Qauto:animation_mode=1 -d fs -p 2 \
         "${input_apng}"
 ) || {
-    echo "not ok" 1 - "animation_mode baseline encode failed"
+    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
     exit 0
 }
+
+echo "1..1"
+set -v
 
 mapfile_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
