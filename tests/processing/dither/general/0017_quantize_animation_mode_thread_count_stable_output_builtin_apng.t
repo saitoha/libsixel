@@ -15,7 +15,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin \
     -ldisable \
     -S -T 1 \
-    -Qauto -d fs -p 16 \
+    -Qauto -d fs -p 2 \
     "${input_apng}" >/dev/null 2>&1 || {
     printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
     exit 0

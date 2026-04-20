@@ -22,7 +22,7 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
 combined_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 -ldisable \
-        -d interframe -p 16 \
+        -d interframe -p 2 \
         "${input_anim}" "${input_gif}"
 ) || {
     echo "not ok" 1 - "interframe combined encode failed"
@@ -32,7 +32,7 @@ combined_output=$(
 animated_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 -ldisable \
-        -d interframe -p 16 \
+        -d interframe -p 2 \
         "${input_anim}"
 ) || {
     echo "not ok" 1 - "interframe animated encode failed"
@@ -42,7 +42,7 @@ animated_output=$(
 single_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 -ldisable \
-        -d interframe -p 16 \
+        -d interframe -p 2 \
         "${input_gif}"
 ) || {
     echo "not ok" 1 - "interframe single encode failed"

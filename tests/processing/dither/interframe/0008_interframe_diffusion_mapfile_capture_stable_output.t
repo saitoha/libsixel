@@ -21,7 +21,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L libwebp \
     -ldisable \
     -S -T 1 \
-    -d fs -p 16 \
+    -d fs -p 2 \
     "${input_webp}" >/dev/null 2>&1 || {
     printf "1..0 # SKIP animated libwebp frame path is unavailable\n"
     exit 0
@@ -36,7 +36,7 @@ baseline_output=$(
         --threads=1 \
         -L libwebp \
         -ldisable \
-        -d interframe -p 16 \
+        -d interframe -p 2 \
         "${input_webp}"
 ) || {
     echo "not ok" 1 - "interframe baseline encode failed"
@@ -48,7 +48,7 @@ captured_output=$(
         --threads=1 \
         -L libwebp \
         -ldisable \
-        -d interframe -p 16 \
+        -d interframe -p 2 \
         -M "${palette_output}" \
         "${input_webp}"
 ) || {

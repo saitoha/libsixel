@@ -16,7 +16,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin \
     -ldisable \
     -S -T 1 \
-    -d fs -p 16 \
+    -d fs -p 2 \
     "${input_apng}" >/dev/null 2>&1 || {
     printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
     exit 0
@@ -31,7 +31,7 @@ first_capture_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d stbn:source=pmj -p 16 \
+        -d stbn:source=pmj -p 2 \
         -M "${palette_output}" \
         "${input_apng}"
 ) || {
@@ -44,7 +44,7 @@ second_capture_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -d stbn:source=pmj -p 16 \
+        -d stbn:source=pmj -p 2 \
         -M "${palette_output}" \
         "${input_apng}"
 ) || {

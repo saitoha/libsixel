@@ -23,13 +23,13 @@ input_apng_exif="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_apn
 input_apng_plain="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
 
 static_on=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibpng:orientation=on! "${input_static_exif}" 2>/dev/null) || {
+    -Llibpng:orientation=on! "${input_static_exif}" -p 2 2>/dev/null) || {
     echo "not ok" 1 - "libpng static orientation=on decode failed"
     exit 0
 }
 
 static_off=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibpng:orientation=off! "${input_static_exif}" 2>/dev/null) || {
+    -Llibpng:orientation=off! "${input_static_exif}" -p 2 2>/dev/null) || {
     echo "not ok" 1 - "libpng static orientation=off decode failed"
     exit 0
 }
@@ -40,7 +40,7 @@ test "${static_on}" != "${static_off}" || {
 }
 
 static_default=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibpng! "${input_static_exif}" 2>/dev/null) || {
+    -Llibpng! "${input_static_exif}" -p 2 2>/dev/null) || {
     echo "not ok" 1 - "libpng static default orientation decode failed"
     exit 0
 }
@@ -51,13 +51,13 @@ test "${static_default}" = "${static_on}" || {
 }
 
 plain_static_on=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibpng:orientation=on! "${input_static_plain}" 2>/dev/null) || {
+    -Llibpng:orientation=on! "${input_static_plain}" -p 2 2>/dev/null) || {
     echo "not ok" 1 - "libpng plain static orientation=on decode failed"
     exit 0
 }
 
 plain_static_off=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibpng:orientation=off! "${input_static_plain}" 2>/dev/null) || {
+    -Llibpng:orientation=off! "${input_static_plain}" -p 2 2>/dev/null) || {
     echo "not ok" 1 - "libpng plain static orientation=off decode failed"
     exit 0
 }
@@ -69,14 +69,14 @@ test "${plain_static_on}" = "${plain_static_off}" || {
 
 apng_on_f0=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibpng:orientation=on! -S --start-frame=0 \
-    "${input_apng_exif}" 2>/dev/null) || {
+    "${input_apng_exif}" -p 2 2>/dev/null) || {
     echo "not ok" 1 - "libpng APNG frame0 orientation=on decode failed"
     exit 0
 }
 
 apng_off_f0=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibpng:orientation=off! -S --start-frame=0 \
-    "${input_apng_exif}" 2>/dev/null) || {
+    "${input_apng_exif}" -p 2 2>/dev/null) || {
     echo "not ok" 1 - "libpng APNG frame0 orientation=off decode failed"
     exit 0
 }
@@ -88,14 +88,14 @@ test "${apng_on_f0}" != "${apng_off_f0}" || {
 
 apng_on_f1=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibpng:orientation=on! -S --start-frame=1 \
-    "${input_apng_exif}" 2>/dev/null) || {
+    "${input_apng_exif}" -p 2 2>/dev/null) || {
     echo "not ok" 1 - "libpng APNG frame1 orientation=on decode failed"
     exit 0
 }
 
 apng_off_f1=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibpng:orientation=off! -S --start-frame=1 \
-    "${input_apng_exif}" 2>/dev/null) || {
+    "${input_apng_exif}" -p 2 2>/dev/null) || {
     echo "not ok" 1 - "libpng APNG frame1 orientation=off decode failed"
     exit 0
 }
@@ -107,14 +107,14 @@ test "${apng_on_f1}" != "${apng_off_f1}" || {
 
 plain_apng_on=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibpng:orientation=on! -S --start-frame=1 \
-    "${input_apng_plain}" 2>/dev/null) || {
+    "${input_apng_plain}" -p 2 2>/dev/null) || {
     echo "not ok" 1 - "libpng plain APNG orientation=on decode failed"
     exit 0
 }
 
 plain_apng_off=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Llibpng:orientation=off! -S --start-frame=1 \
-    "${input_apng_plain}" 2>/dev/null) || {
+    "${input_apng_plain}" -p 2 2>/dev/null) || {
     echo "not ok" 1 - "libpng plain APNG orientation=off decode failed"
     exit 0
 }

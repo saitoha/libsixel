@@ -15,7 +15,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin \
     -ldisable \
     -S -T 1 \
-    -Qauto -d fs -p 16 \
+    -Qauto -d fs -p 2 \
     "${input_apng}" >/dev/null 2>&1 || {
     printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
     exit 0
@@ -30,7 +30,7 @@ low_threshold_output=$(
         -L builtin \
         -ldisable \
         -Qauto:animation_mode=1:scene_cut_threshold=0.00 \
-        -d fs -p 16 \
+        -d fs -p 2 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "scene_cut_threshold=0.00 encode failed"
@@ -43,7 +43,7 @@ high_threshold_output=$(
         -L builtin \
         -ldisable \
         -Qauto:animation_mode=1:scene_cut_threshold=1.00 \
-        -d fs -p 16 \
+        -d fs -p 2 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "scene_cut_threshold=1.00 encode failed"

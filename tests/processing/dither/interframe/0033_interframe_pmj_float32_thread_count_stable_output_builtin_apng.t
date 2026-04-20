@@ -21,7 +21,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin \
     -ldisable \
     -S -T 1 \
-    -d fs -p 16 \
+    -d fs -p 2 \
     "${input_apng}" >/dev/null 2>&1 || {
     printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
     exit 0
@@ -37,7 +37,7 @@ single_thread_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
+        -d interframe -p 2 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "float32 pmj single-thread encode failed"
@@ -51,7 +51,7 @@ multi_thread_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
+        -d interframe -p 2 \
         "${input_apng}"
 ) || {
     echo "not ok" 1 - "float32 pmj multi-thread encode failed"

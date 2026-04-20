@@ -17,7 +17,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin \
     -ldisable \
     -S -T 1 \
-    -d fs -p 16 \
+    -d fs -p 2 \
     "${input_apng}" >/dev/null 2>&1 || {
     printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
     exit 0
@@ -34,7 +34,7 @@ first_capture_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
+        -d interframe -p 2 \
         -M "${palette_output}" \
         "${input_apng}"
 ) || {
@@ -49,7 +49,7 @@ second_capture_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
+        -d interframe -p 2 \
         -M "${palette_output}" \
         "${input_apng}"
 ) || {
