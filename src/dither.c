@@ -3011,7 +3011,7 @@ sixel_dither_apply_palette_with_mode(
     int wcomp3;
     int resolved_apply_mode = SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE;
     int needs_size_reset = 0;
-    size_t pipeline_depth = 0U;
+    int pipeline_depth = 0;
 #if SIXEL_ENABLE_THREADS
     int shared_lut;
 #endif  /* SIXEL_ENABLE_THREADS */
@@ -3526,8 +3526,7 @@ sixel_dither_apply_palette_with_mode(
     dither->ncolors = ncolors;
     palette->entry_count = (unsigned int)ncolors;
     if (resolved_apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) {
-        pipeline_depth = (size_t)sixel_helper_compute_depth(
-            pipeline_pixelformat);
+        pipeline_depth = sixel_helper_compute_depth(pipeline_pixelformat);
         dither->interframe_state.width = width;
         dither->interframe_state.height = height;
         dither->interframe_state.depth = pipeline_depth;
