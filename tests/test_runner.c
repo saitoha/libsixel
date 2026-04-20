@@ -594,7 +594,7 @@ cleanup:
  * Keep its sleep helper in the same platform scope so -Wunused-function
  * does not fail Windows toolchains that treat warnings as errors.
  */
-#if !defined(_WIN32)
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static int
 test_runner_sleep_milliseconds(unsigned long milliseconds)
 {
@@ -626,7 +626,7 @@ test_runner_sleep_milliseconds(unsigned long milliseconds)
 static int
 test_runner_run_posix_sigint(int argc, char **argv)
 {
-#if !defined(_WIN32)
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
     char const *delay_token;
     char const *timeout_token;
     unsigned long parsed_delay;
