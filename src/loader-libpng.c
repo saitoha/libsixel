@@ -177,6 +177,30 @@ apng_decode_trace_message(char const *format, ...)
     fputc('\n', stderr);
 }
 
+#if HAVE_DEBUG
+static int
+libpng_debug_trace_is_enabled(void)
+{
+    if (loader_trace_is_enabled()) {
+        return 1;
+    }
+    if (sixel_trace_topic_is_enabled("loader")) {
+        return 1;
+    }
+
+    return 0;
+}
+
+# define LIBPNG_DEBUG_LOG(...)                                          \
+    do {                                                                 \
+        if (libpng_debug_trace_is_enabled()) {                           \
+            fprintf(stderr, __VA_ARGS__);                                \
+        }                                                                \
+    } while (0)
+#else
+# define LIBPNG_DEBUG_LOG(...) do { } while (0)
+#endif
+
 static int
 libpng_trns_keycolor_mode(void)
 {
@@ -1744,8 +1768,8 @@ load_png(unsigned char      /* out */ **result,
     bitdepth = png_get_bit_depth(png_ptr, info_ptr);
     if (bitdepth == 16) {
 #  if HAVE_DEBUG
-        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
-        fprintf(stderr, "preserving 16bit for float32 conversion...\n");
+        LIBPNG_DEBUG_LOG("bitdepth: %u\n", (unsigned int)bitdepth);
+        LIBPNG_DEBUG_LOG("preserving 16bit for float32 conversion...\n");
 #  endif
         promote_to_float32 = 1;
     }
@@ -2546,7 +2570,7 @@ alpha_cleanup:
     switch (color_type) {
     case PNG_COLOR_TYPE_PALETTE:
 #  if HAVE_DEBUG
-        fprintf(stderr, "paletted PNG(PNG_COLOR_TYPE_PALETTE)\n");
+        LIBPNG_DEBUG_LOG("paletted PNG(PNG_COLOR_TYPE_PALETTE)\n");
 #  endif
         png_status = png_get_PLTE(png_ptr, info_ptr,
                                   &png_palette, pncolors);
@@ -2557,14 +2581,14 @@ alpha_cleanup:
             goto cleanup;
         }
 #  if HAVE_DEBUG
-        fprintf(stderr, "palette colors: %d\n", *pncolors);
-        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
+        LIBPNG_DEBUG_LOG("palette colors: %d\n", *pncolors);
+        LIBPNG_DEBUG_LOG("bitdepth: %u\n", (unsigned int)bitdepth);
 #  endif
         if (ppalette == NULL || *pncolors > reqcolors) {
 #  if HAVE_DEBUG
-            fprintf(stderr, "detected more colors than required(>%d).\n",
-                    reqcolors);
-            fprintf(stderr, "expand to RGB format...\n");
+            LIBPNG_DEBUG_LOG("detected more colors than required(>%d).\n",
+                             reqcolors);
+            LIBPNG_DEBUG_LOG("expand to RGB format...\n");
 #  endif
             png_set_palette_to_rgb(png_ptr);
             png_set_strip_alpha(png_ptr);
@@ -2637,14 +2661,14 @@ alpha_cleanup:
         break;
     case PNG_COLOR_TYPE_GRAY:
 #  if HAVE_DEBUG
-        fprintf(stderr, "grayscale PNG(PNG_COLOR_TYPE_GRAY)\n");
-        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
+        LIBPNG_DEBUG_LOG("grayscale PNG(PNG_COLOR_TYPE_GRAY)\n");
+        LIBPNG_DEBUG_LOG("bitdepth: %u\n", (unsigned int)bitdepth);
 #  endif
         if (1 << bitdepth > reqcolors) {
 #  if HAVE_DEBUG
-            fprintf(stderr, "detected more colors than required(>%d).\n",
-                    reqcolors);
-            fprintf(stderr, "expand into RGB format...\n");
+            LIBPNG_DEBUG_LOG("detected more colors than required(>%d).\n",
+                             reqcolors);
+            LIBPNG_DEBUG_LOG("expand into RGB format...\n");
 #  endif
             png_set_gray_to_rgb(png_ptr);
             *pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -2656,21 +2680,21 @@ alpha_cleanup:
                 if (ppalette) {
 #  if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
 #   if HAVE_DEBUG
-                    fprintf(stderr, "expand %u bpp to 8bpp format...\n",
-                            (unsigned int)bitdepth);
+                    LIBPNG_DEBUG_LOG("expand %u bpp to 8bpp format...\n",
+                                     (unsigned int)bitdepth);
 #   endif
                     png_set_expand_gray_1_2_4_to_8(png_ptr);
                     *pixelformat = SIXEL_PIXELFORMAT_G8;
 #  elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
 #   if HAVE_DEBUG
-                    fprintf(stderr, "expand %u bpp to 8bpp format...\n",
-                            (unsigned int)bitdepth);
+                    LIBPNG_DEBUG_LOG("expand %u bpp to 8bpp format...\n",
+                                     (unsigned int)bitdepth);
 #   endif
                     png_set_gray_1_2_4_to_8(png_ptr);
                     *pixelformat = SIXEL_PIXELFORMAT_G8;
 #  else
 #   if HAVE_DEBUG
-                    fprintf(stderr, "expand into RGB format...\n");
+                    LIBPNG_DEBUG_LOG("expand into RGB format...\n");
 #   endif
                     png_set_gray_to_rgb(png_ptr);
                     *pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -2685,7 +2709,7 @@ alpha_cleanup:
                     *pixelformat = SIXEL_PIXELFORMAT_G8;
                 } else {
 #  if HAVE_DEBUG
-                    fprintf(stderr, "expand into RGB format...\n");
+                    LIBPNG_DEBUG_LOG("expand into RGB format...\n");
 #  endif
                     png_set_gray_to_rgb(png_ptr);
                     *pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -2693,7 +2717,7 @@ alpha_cleanup:
                 break;
             default:
 #  if HAVE_DEBUG
-                fprintf(stderr, "expand into RGB format...\n");
+                LIBPNG_DEBUG_LOG("expand into RGB format...\n");
 #  endif
                 png_set_gray_to_rgb(png_ptr);
                 *pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -2703,25 +2727,25 @@ alpha_cleanup:
         break;
     case PNG_COLOR_TYPE_GRAY_ALPHA:
 #  if HAVE_DEBUG
-        fprintf(stderr, "grayscale-alpha PNG(PNG_COLOR_TYPE_GRAY_ALPHA)\n");
-        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
-        fprintf(stderr, "expand to RGB format...\n");
+        LIBPNG_DEBUG_LOG("grayscale-alpha PNG(PNG_COLOR_TYPE_GRAY_ALPHA)\n");
+        LIBPNG_DEBUG_LOG("bitdepth: %u\n", (unsigned int)bitdepth);
+        LIBPNG_DEBUG_LOG("expand to RGB format...\n");
 #  endif
         png_set_gray_to_rgb(png_ptr);
         *pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB_ALPHA:
 #  if HAVE_DEBUG
-        fprintf(stderr, "RGBA PNG(PNG_COLOR_TYPE_RGB_ALPHA)\n");
-        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
-        fprintf(stderr, "expand to RGB format...\n");
+        LIBPNG_DEBUG_LOG("RGBA PNG(PNG_COLOR_TYPE_RGB_ALPHA)\n");
+        LIBPNG_DEBUG_LOG("bitdepth: %u\n", (unsigned int)bitdepth);
+        LIBPNG_DEBUG_LOG("expand to RGB format...\n");
 #  endif
         *pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case PNG_COLOR_TYPE_RGB:
 #  if HAVE_DEBUG
-        fprintf(stderr, "RGB PNG(PNG_COLOR_TYPE_RGB)\n");
-        fprintf(stderr, "bitdepth: %u\n", (unsigned int)bitdepth);
+        LIBPNG_DEBUG_LOG("RGB PNG(PNG_COLOR_TYPE_RGB)\n");
+        LIBPNG_DEBUG_LOG("bitdepth: %u\n", (unsigned int)bitdepth);
 #  endif
         *pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
