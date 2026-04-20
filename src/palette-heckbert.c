@@ -527,7 +527,7 @@ histogram_build_fast_pack_lut(unsigned int depth,
 
 static uint32_t
 histogram_pack_color_fast_rgb(unsigned char const *data,
-                              uint32_t const packed_lut[4][256])
+                              uint32_t packed_lut[4][256])
 {
     return packed_lut[0][data[0]]
            | packed_lut[1][data[1]]
@@ -536,7 +536,7 @@ histogram_pack_color_fast_rgb(unsigned char const *data,
 
 static uint32_t
 histogram_pack_color_fast_rgba(unsigned char const *data,
-                               uint32_t const packed_lut[4][256])
+                               uint32_t packed_lut[4][256])
 {
     return packed_lut[0][data[0]]
            | packed_lut[1][data[1]]
