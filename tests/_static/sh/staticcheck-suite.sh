@@ -26,7 +26,22 @@ TOP_BUILDDIR=${TOP_BUILDDIR:-$build_root}
 ARTIFACT_ROOT=${ARTIFACT_ROOT:-$build_root/tests/_artifacts}
 export TOP_SRCDIR TOP_BUILDDIR ARTIFACT_ROOT
 
-total=37
+total=$(awk '
+$1 ~ /^run_case_(tap|plain|skip)$/ {
+    name=$2
+    gsub(/"/, "", name)
+    if (name ~ /^staticcheck-/) {
+        seen[name]=1
+    }
+}
+END {
+    count=0
+    for (name in seen) {
+        count++
+    }
+    print count + 0
+}
+' "$0")
 index=0
 pass_count=0
 skip_count=0
