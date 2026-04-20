@@ -261,6 +261,15 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
     if (strstr(message, "parsed clbl=0") != NULL) {
         return "FX_CLBL0_PARSE";
     }
+    if (strstr(message, "parsed clbl=1") != NULL) {
+        return "FX_CLBL1_PARSE";
+    }
+    if (strstr(message, "parsed infx=0") != NULL) {
+        return "FX_INFX0_PARSE";
+    }
+    if (strstr(message, "parsed infx=1") != NULL) {
+        return "FX_INFX1_PARSE";
+    }
     if (strstr(message,
                "clbl=0; deferring interior effects to clipped group "
                "composite") != NULL) {

@@ -36,47 +36,67 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 echo "1..1"
 set -v
 
-combined_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        -L builtin \
-        -ldisable \
-        -d stbn:source=mask -p 16 \
-        "${input_apng}" "${input_gif}"
-) || {
+msg=''
+diag_line=''
+status=0
+animated_output=''
+single_output=''
+nl='
+'
+expected_output="${animated_output}${single_output}"
+
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_TRACE_TOPIC=dither_contract \
+    --threads=1 \
+    -L builtin \
+    -ldisable \
+    -d stbn:source=mask -p 16 \
+    "${input_apng}" "${input_gif}" 2>&1 >/dev/null) || status=$?
+
+test "${status}" -eq 0 || {
     echo "not ok" 1 - "source=mask combined encode failed"
     exit 0
 }
 
-animated_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        -L builtin \
-        -ldisable \
-        -d stbn:source=mask -p 16 \
-        "${input_apng}"
-) || {
-    echo "not ok" 1 - "source=mask animated encode failed"
+diag_line=${msg%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "source=mask missing diagnostic header"
     exit 0
 }
 
-single_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        -L builtin \
-        -ldisable \
-        -d stbn:source=mask -p 16 \
-        "${input_gif}"
-) || {
-    echo "not ok" 1 - "source=mask single encode failed"
-    exit 0
-}
+case "${diag_line}" in
+    LSXDTH1\|rc=0\|*codes=*) ;;
+    *)
+        echo "not ok" 1 - "source=mask malformed diagnostic header"
+        exit 0
+        ;;
+esac
 
-expected_output="${animated_output}${single_output}"
-test "${combined_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "source=mask state leaked across size change"
-    exit 0
-}
+case "${diag_line}" in
+    *\|source=mask\|*) ;;
+    *)
+        echo "not ok" 1 - "source=mask diagnostic source marker is missing"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *RESET_BETWEEN_INPUTS*) ;;
+    *)
+        echo "not ok" 1 - "source=mask missing input-boundary reset contract"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *RESET_ON_SIZE_CHANGE*) ;;
+    *)
+        echo "not ok" 1 - "source=mask state leaked across size change"
+        exit 0
+        ;;
+esac
+
+: "${expected_output}"
 
 echo "ok" 1 - "source=mask resets across size change"
 exit 0

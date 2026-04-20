@@ -18,11 +18,15 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -31,25 +35,47 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: gating deferred outer effects with exterior background in layer fallback*}" \
-    = "${trace_output}" || {
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite unexpectedly emitted deferred outer gate"
+        "effects/stroke-composite missing diagnostic header line"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: suppressing clbl=1 deferred base interior glow/choke/bevel-shadow*}" \
-    = "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite unexpectedly emitted deferred interior suppression"
-    exit 0
-}
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite diagnostic header is malformed"
+        exit 0
+        ;;
+esac
 
-test "${trace_output#*builtin PSD: applying deferred stroke on clipped group*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost deferred stroke contract"
-    exit 0
-}
+case "${diag_line}" in
+    *FX_DEFERRED_OUTER_GATE_BG*)
+        echo "not ok" 1 - \
+            "effects/stroke-composite unexpectedly emitted deferred outer gate"
+        exit 0
+        ;;
+    *) ;;
+esac
+
+case "${diag_line}" in
+    *FX_CLBL1_BASE_INTERIOR_SUPPRESS*)
+        echo "not ok" 1 - \
+            "effects/stroke-composite unexpectedly emitted deferred interior suppression"
+        exit 0
+        ;;
+    *) ;;
+esac
+
+case "${diag_line}" in
+    *FX_DEFERRED_STROKE_CLIPPED*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite lost deferred stroke contract"
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - \
     "effects/stroke-composite keeps deferred outer inactive-gate non-regression"

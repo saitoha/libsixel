@@ -18,10 +18,12 @@ tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-merge-subopt-XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
 merge_only_keys=$tmpdir/merge_only_keys.txt
+heckbert_keys=$tmpdir/heckbert_keys.txt
 kmeans_keys=$tmpdir/kmeans_keys.txt
 kmedoids_keys=$tmpdir/kmedoids_keys.txt
 center_keys=$tmpdir/center_keys.txt
 merge_only_pairs=$tmpdir/merge_only_pairs.tsv
+heckbert_pairs=$tmpdir/heckbert_pairs.tsv
 kmeans_pairs=$tmpdir/kmeans_pairs.tsv
 kmedoids_pairs=$tmpdir/kmedoids_pairs.tsv
 center_pairs=$tmpdir/center_pairs.tsv
@@ -129,11 +131,13 @@ extract_merge_pairs() {
 }
 
 extract_keys g_subkeys_quantize_model_merge_only > "$merge_only_keys"
+extract_keys g_subkeys_quantize_model_heckbert > "$heckbert_keys"
 extract_keys g_subkeys_quantize_model_kmeans > "$kmeans_keys"
 extract_keys g_subkeys_quantize_model_kmedoids > "$kmedoids_keys"
 extract_keys g_subkeys_quantize_model_center > "$center_keys"
 
 extract_merge_pairs g_subkeys_quantize_model_merge_only > "$merge_only_pairs"
+extract_merge_pairs g_subkeys_quantize_model_heckbert > "$heckbert_pairs"
 extract_merge_pairs g_subkeys_quantize_model_kmeans > "$kmeans_pairs"
 extract_merge_pairs g_subkeys_quantize_model_kmedoids > "$kmedoids_pairs"
 extract_merge_pairs g_subkeys_quantize_model_center > "$center_pairs"
@@ -152,6 +156,10 @@ status=0
 for key in animation_mode scene_cut_threshold merge merge_oversplit merge_lloyd; do
     grep -Fxq "$key" "$merge_only_keys" || {
         echo "# merge-only block missing key: $key" >> "$missing"
+        status=1
+    }
+    grep -Fxq "$key" "$heckbert_keys" || {
+        echo "# heckbert block missing merge key: $key" >> "$missing"
         status=1
     }
     grep -Fxq "$key" "$kmeans_keys" || {
@@ -175,6 +183,10 @@ for pair in \
     "merge_lloyd	SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT"; do
     grep -Fxq "$pair" "$merge_only_pairs" || {
         echo "# merge-only block missing pair: $pair" >> "$missing"
+        status=1
+    }
+    grep -Fxq "$pair" "$heckbert_pairs" || {
+        echo "# heckbert block missing merge pair: $pair" >> "$missing"
         status=1
     }
     grep -Fxq "$pair" "$kmeans_pairs" || {
@@ -203,6 +215,11 @@ for env_name in \
     }
 done
 
+grep -Fxq "profile" "$heckbert_keys" || {
+    echo "# heckbert block missing key: profile" >> "$missing"
+    status=1
+}
+
 awk '
 /g_schema_quantize_model_values\[\][[:space:]]*=[[:space:]]*\{/ {
     in_block = 1
@@ -225,7 +242,7 @@ want_auto && /g_subkeys_quantize_model_merge_only/ {
     auto_ok = 1
     want_auto = 0
 }
-want_heckbert && /g_subkeys_quantize_model_merge_only/ {
+want_heckbert && /g_subkeys_quantize_model_heckbert/ {
     heckbert_ok = 1
     want_heckbert = 0
 }
@@ -236,7 +253,7 @@ END {
     exit 1
 }
 ' "$encoder_file" || {
-    echo "# schema mismatch: auto/heckbert must reference merge-only subkeys" \
+    echo "# schema mismatch: auto=merge-only and heckbert=heckbert-subkeys" \
         >> "$missing"
     status=1
 }

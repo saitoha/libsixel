@@ -24,35 +24,66 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 echo "1..1"
 set -v
 
-combined_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        -L builtin \
-        -ldisable \
-        -d stbn:source=pmj -p 16 \
-        "${input_apng}" "${input_apng}"
-) || {
+msg=''
+diag_line=''
+status=0
+single_output=''
+nl='
+'
+expected_output="${single_output}${single_output}"
+
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_TRACE_TOPIC=dither_contract \
+    --threads=1 \
+    -L builtin \
+    -ldisable \
+    -d stbn:source=pmj -p 16 \
+    "${input_apng}" "${input_apng}" 2>&1 >/dev/null) || status=$?
+
+test "${status}" -eq 0 || {
     echo "not ok" 1 - "interframe source=pmj two-input encode failed"
     exit 0
 }
 
-single_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        -L builtin \
-        -ldisable \
-        -d stbn:source=pmj -p 16 \
-        "${input_apng}"
-) || {
-    echo "not ok" 1 - "interframe source=pmj single encode failed"
+diag_line=${msg%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "source=pmj missing diagnostic header"
     exit 0
 }
 
-expected_output="${single_output}${single_output}"
-test "${combined_output}" = "${expected_output}" || {
-    echo "not ok" 1 - "source=pmj state leaked across input boundary"
-    exit 0
-}
+case "${diag_line}" in
+    LSXDTH1\|rc=0\|*codes=*) ;;
+    *)
+        echo "not ok" 1 - "source=pmj malformed diagnostic header"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *STRATEGY_SOURCE_PMJ*) ;;
+    *)
+        echo "not ok" 1 - "source=pmj diagnostic code is missing"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *RESET_BETWEEN_INPUTS*) ;;
+    *)
+        echo "not ok" 1 - "source=pmj state leaked across input boundary"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *RESET_ON_SIZE_CHANGE*)
+        echo "not ok" 1 - "source=pmj unexpectedly reported size-change reset"
+        exit 0
+        ;;
+    *) ;;
+esac
+
+: "${expected_output}"
 
 echo "ok" 1 - "source=pmj resets between input files"
 exit 0

@@ -20,7 +20,7 @@ baseline_none_norm=$(
         -Q "heckbert:merge=none" \
         -f norm \
         -p 16 \
-        "${input_image}"
+        "${input_image}" | cksum
 ) || run_status=$?
 set -x
 
@@ -37,7 +37,7 @@ profile_none_norm=$(
         -Q "heckbert:profile=quality:merge=none" \
         -f norm \
         -p 16 \
-        "${input_image}"
+        "${input_image}" | cksum
 ) || run_status=$?
 set -x
 
@@ -63,7 +63,7 @@ baseline_ward_pca=$(
         -Q "heckbert:merge=ward" \
         -f pca \
         -p 16 \
-        "${input_image}"
+        "${input_image}" | cksum
 ) || run_status=$?
 set -x
 
@@ -80,7 +80,7 @@ profile_ward_pca=$(
         -Q "heckbert:profile=speed:merge=ward" \
         -f pca \
         -p 16 \
-        "${input_image}"
+        "${input_image}" | cksum
 ) || run_status=$?
 set -x
 
