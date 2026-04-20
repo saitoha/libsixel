@@ -8,7 +8,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
+input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 palette_output="${ARTIFACT_LOCAL_DIR}/interframe-8bit-pmj-mapfile-builtin-apng.pal"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
