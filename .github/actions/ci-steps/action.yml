@@ -340,7 +340,16 @@ runs:
         set -exv
         mkdir -p cosmopolitan
         if [ ! -f cosmopolitan/cosmocc.zip ]; then
-          curl -L -o cosmopolitan/cosmocc.zip https://cosmo.zip/pub/cosmocc/cosmocc.zip
+          # Retry with backoff because DNS resolution can fail transiently.
+          for attempt in 1 2 3; do
+            curl -L -o cosmopolitan/cosmocc.zip \
+              https://cosmo.zip/pub/cosmocc/cosmocc.zip && break
+            if [ "$attempt" -eq 3 ]; then
+              echo "Failed to download cosmocc.zip after ${attempt} attempts." >&2
+              exit 1
+            fi
+            sleep $((attempt * 5))
+          done
         fi
         unzip -o -q cosmopolitan/cosmocc.zip
         chmod +x bin/cosmo*
