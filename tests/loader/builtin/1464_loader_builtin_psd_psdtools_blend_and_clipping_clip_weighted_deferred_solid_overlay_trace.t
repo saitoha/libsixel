@@ -15,10 +15,8 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_blend_and_clipping.psd"
-output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 trace_output=''
 diag_line=''
 command_status=0
@@ -29,7 +27,7 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
     --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
-    -Lbuiltin:e=auto! -o "${output_sixel}" "${input_psd}" 2>&1) || command_status=$?
+    -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 : "${trace_output}"
 
 test "${command_status}" -eq 0 || {

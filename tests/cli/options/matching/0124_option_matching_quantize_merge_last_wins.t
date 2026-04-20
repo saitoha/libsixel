@@ -16,17 +16,21 @@ set -v
 input_ppm="${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm"
 
 last_ward=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -p 16 \
     -Qkmeans:seed=1:restarts=1:feedback=off:merge=auto \
     -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
     "${input_ppm}" | cksum)
 last_auto=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -p 16 \
     -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
     -Qkmeans:seed=1:restarts=1:feedback=off:merge=auto \
     "${input_ppm}" | cksum)
 ward_only=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -p 16 \
     -Qkmeans:seed=1:restarts=1:feedback=off:merge=ward \
     "${input_ppm}" | cksum)
 auto_only=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -p 16 \
     -Qkmeans:seed=1:restarts=1:feedback=off:merge=auto \
     "${input_ppm}" | cksum)
 
