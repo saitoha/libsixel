@@ -388,6 +388,9 @@ typedef int SIXELSTATUS;
                                                       float in 1.0-3.0
                                                     merge_lloyd (or l):
                                                       0 or integer in 1-30
+                                                  heckbert accepts profile:
+                                                    profile:
+                                                      compat, speed, quality
                                                   kmeans accepts suboptions in:
                                                     kmeans:key=value[:key=value...]
                                                   supported suboptions:

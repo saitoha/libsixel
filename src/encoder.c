@@ -655,6 +655,12 @@ sixel_encoder_palette_model_name(int quantize_model)
     return "auto";
 }
 
+enum {
+    SIXEL_HECKBERT_PROFILE_COMPAT = 0,
+    SIXEL_HECKBERT_PROFILE_SPEED = 1,
+    SIXEL_HECKBERT_PROFILE_QUALITY = 2
+};
+
 static char const *
 sixel_encoder_palette_merge_name(int merge_mode)
 {
@@ -700,6 +706,89 @@ sixel_encoder_palette_lut_name(int lut_policy)
     }
 
     return "auto";
+}
+
+static double
+sixel_encoder_heckbert_quality_oversplit_factor(int reqcolors)
+{
+    unsigned int count;
+
+    count = reqcolors > 0 ? (unsigned int)reqcolors : 256U;
+    if (count <= 32U) {
+        return 2.0;
+    }
+    if (count <= 64U) {
+        return 1.8;
+    }
+    if (count <= 128U) {
+        return 1.6;
+    }
+
+    return 1.4;
+}
+
+/*
+ * Quality profile uses a larger oversplit budget for small palettes so Ward
+ * merge can recover local color islands.  Large palettes keep the factor
+ * closer to 1.0 to cap merge cost.
+ */
+static void
+sixel_encoder_apply_heckbert_profile_defaults(sixel_encoder_t *encoder)
+{
+    int profile;
+
+    if (encoder == NULL) {
+        return;
+    }
+    if (encoder->quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
+        return;
+    }
+
+    /*
+     * Explicit suboptions still win: only fill fields whose override flag is
+     * not set so `-Q ...:profile=...:merge=...` keeps the explicit merge
+     * choice, and `-f` keeps the explicit split-axis choice.
+     */
+    profile = encoder->quantize_model_heckbert_profile;
+    switch (profile) {
+    case SIXEL_HECKBERT_PROFILE_SPEED:
+        if (encoder->quantize_model_merge_override == 0) {
+            encoder->quantize_model_merge_mode = SIXEL_FINAL_MERGE_NONE;
+            encoder->final_merge_mode = SIXEL_FINAL_MERGE_NONE;
+        }
+        if (encoder->quantize_model_merge_lloyd_override == 0) {
+            encoder->quantize_model_merge_lloyd = 3u;
+        }
+        if (encoder->method_for_largest_override == 0) {
+            encoder->method_for_largest = SIXEL_LARGE_NORM;
+        }
+        break;
+    case SIXEL_HECKBERT_PROFILE_QUALITY:
+        if (encoder->quantize_model_merge_override == 0) {
+            encoder->quantize_model_merge_mode = SIXEL_FINAL_MERGE_WARD;
+            encoder->final_merge_mode = SIXEL_FINAL_MERGE_WARD;
+        }
+        if (encoder->quantize_model_merge_lloyd_override == 0) {
+            encoder->quantize_model_merge_lloyd = 2u;
+        }
+        if (encoder->method_for_largest_override == 0) {
+            encoder->method_for_largest = SIXEL_LARGE_PCA;
+        }
+        break;
+    case SIXEL_HECKBERT_PROFILE_COMPAT:
+    default:
+        if (encoder->quantize_model_merge_override == 0) {
+            encoder->quantize_model_merge_mode = SIXEL_FINAL_MERGE_AUTO;
+            encoder->final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
+        }
+        if (encoder->quantize_model_merge_lloyd_override == 0) {
+            encoder->quantize_model_merge_lloyd = 3u;
+        }
+        if (encoder->method_for_largest_override == 0) {
+            encoder->method_for_largest = SIXEL_LARGE_AUTO;
+        }
+        break;
+    }
 }
 
 static void
@@ -1683,6 +1772,13 @@ static sixel_suboption_choice_t const g_option_choices_quantize_merge[] = {
     { "ward", SIXEL_FINAL_MERGE_WARD }
 };
 
+static sixel_suboption_choice_t const
+g_option_choices_heckbert_profile[] = {
+    { "compat", SIXEL_HECKBERT_PROFILE_COMPAT },
+    { "speed", SIXEL_HECKBERT_PROFILE_SPEED },
+    { "quality", SIXEL_HECKBERT_PROFILE_QUALITY }
+};
+
 static sixel_suboption_key_t const g_subkeys_quantize_model_merge_only[] = {
     {
         "animation_mode",
@@ -1699,6 +1795,59 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_merge_only[] = {
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
+    },
+    {
+        "merge",
+        "g",
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_quantize_merge,
+        sizeof(g_option_choices_quantize_merge)
+        / sizeof(g_option_choices_quantize_merge[0])
+    },
+    {
+        "merge_oversplit",
+        "o",
+        "SIXEL_PALETTE_OVERSPLIT_FACTOR",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "merge_lloyd",
+        "l",
+        "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    }
+};
+
+static sixel_suboption_key_t const g_subkeys_quantize_model_heckbert[] = {
+    {
+        "animation_mode",
+        NULL,
+        SIXEL_PALETTE_ANIMATION_MODE_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "scene_cut_threshold",
+        NULL,
+        SIXEL_PALETTE_SCENE_CUT_THRESHOLD_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "profile",
+        NULL,
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_heckbert_profile,
+        sizeof(g_option_choices_heckbert_profile)
+        / sizeof(g_option_choices_heckbert_profile[0])
     },
     {
         "merge",
@@ -2317,9 +2466,9 @@ static sixel_option_value_schema_t const g_schema_quantize_model_values[] = {
     {
         "heckbert",
         SIXEL_QUANTIZE_MODEL_MEDIANCUT,
-        g_subkeys_quantize_model_merge_only,
-        sizeof(g_subkeys_quantize_model_merge_only)
-        / sizeof(g_subkeys_quantize_model_merge_only[0])
+        g_subkeys_quantize_model_heckbert,
+        sizeof(g_subkeys_quantize_model_heckbert)
+        / sizeof(g_subkeys_quantize_model_heckbert[0])
     },
     {
         "kmeans",
@@ -6103,6 +6252,10 @@ sixel_encoder_prepare_palette(
     int palette_reqcolors;
     int quantize_override_lock_acquired;
     int quantize_animation_enabled;
+    int effective_method_for_largest;
+    int effective_final_merge_mode;
+    int effective_merge_oversplit_override;
+    double effective_merge_oversplit;
 
     target_logger = logger;
     cache_allowed = allow_cache != 0;
@@ -6118,6 +6271,10 @@ sixel_encoder_prepare_palette(
     palette_reqcolors = 0;
     quantize_override_lock_acquired = 0;
     quantize_animation_enabled = 0;
+    effective_method_for_largest = SIXEL_LARGE_AUTO;
+    effective_final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
+    effective_merge_oversplit_override = 0;
+    effective_merge_oversplit = 1.81;
     if (encoder == NULL || frame == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -6241,6 +6398,20 @@ sixel_encoder_prepare_palette(
     if (reserve_alpha_key) {
         palette_reqcolors = encoder->reqcolors - 1;
     }
+    effective_method_for_largest = encoder->method_for_largest;
+    effective_final_merge_mode = encoder->final_merge_mode;
+    effective_merge_oversplit_override
+        = encoder->quantize_model_merge_oversplit_override;
+    effective_merge_oversplit = encoder->quantize_model_merge_oversplit;
+    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
+            && encoder->quantize_model_heckbert_profile
+                == SIXEL_HECKBERT_PROFILE_QUALITY
+            && effective_merge_oversplit_override == 0
+            && effective_final_merge_mode == SIXEL_FINAL_MERGE_WARD) {
+        effective_merge_oversplit =
+            sixel_encoder_heckbert_quality_oversplit_factor(palette_reqcolors);
+        effective_merge_oversplit_override = 1;
+    }
 
     status = sixel_dither_new(dither, palette_reqcolors, encoder->allocator);
     if (SIXEL_FAILED(status)) {
@@ -6305,7 +6476,7 @@ sixel_encoder_prepare_palette(
                                       encoder->sixel_reversible);
     memset(&merge_config, 0, sizeof(merge_config));
     merge_config.dither = *dither;
-    merge_config.final_merge_mode = encoder->final_merge_mode;
+    merge_config.final_merge_mode = effective_final_merge_mode;
     status = sixel_filter_final_merge_apply(&merge_config, target_logger);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
@@ -6374,8 +6545,8 @@ sixel_encoder_prepare_palette(
         encoder->quantize_model_kmeans_feedback_interval_override,
         encoder->quantize_model_kmeans_feedback_interval);
     sixel_set_final_merge_target_factor_override(
-        encoder->quantize_model_merge_oversplit_override,
-        encoder->quantize_model_merge_oversplit);
+        effective_merge_oversplit_override,
+        effective_merge_oversplit);
     sixel_set_final_merge_lloyd_iterations_override(
         encoder->quantize_model_merge_lloyd_override,
         encoder->quantize_model_merge_lloyd);
@@ -6500,7 +6671,7 @@ sixel_encoder_prepare_palette(
                                      sixel_frame_get_width(palette_frame),
                                      sixel_frame_get_height(palette_frame),
                                      palette_pixelformat,
-                                     encoder->method_for_largest,
+                                     effective_method_for_largest,
                                      encoder->method_for_rep,
                                      encoder->quality_mode);
     sixel_set_kmeans_init_type_override(0, SIXEL_PALETTE_KMEANS_INIT_AUTO);
@@ -7567,9 +7738,12 @@ sixel_encoder_new(
     (*ppencoder)->bluenoise_gradient_factor = 0.0f;
     (*ppencoder)->method_for_scan       = SIXEL_SCAN_AUTO;
     (*ppencoder)->method_for_largest    = SIXEL_LARGE_AUTO;
+    (*ppencoder)->method_for_largest_override = 0;
     (*ppencoder)->method_for_rep        = SIXEL_REP_AUTO;
     (*ppencoder)->quality_mode          = SIXEL_QUALITY_AUTO;
     (*ppencoder)->quantize_model        = SIXEL_QUANTIZE_MODEL_AUTO;
+    (*ppencoder)->quantize_model_heckbert_profile
+        = SIXEL_HECKBERT_PROFILE_COMPAT;
     (*ppencoder)->quantize_model_kmeans_init_override = 0;
     (*ppencoder)->quantize_model_kmeans_init_type = SIXEL_PALETTE_KMEANS_INIT_AUTO;
     (*ppencoder)->quantize_model_kmeans_threshold_override = 0;
@@ -10786,6 +10960,7 @@ sixel_encoder_setopt(
     unsigned int q_auction_shortlist;
     int q_animation_mode;
     double q_scene_cut_threshold;
+    int q_heckbert_profile;
     sixel_suboption_assignment_t const *q_assignment;
     char const *q_key;
     int q_model;
@@ -10866,6 +11041,7 @@ sixel_encoder_setopt(
     q_auction_shortlist = 0u;
     q_animation_mode = 0;
     q_scene_cut_threshold = 0.0;
+    q_heckbert_profile = SIXEL_HECKBERT_PROFILE_COMPAT;
     q_assignment = NULL;
     q_key = NULL;
     q_model = SIXEL_QUANTIZE_MODEL_AUTO;
@@ -11060,6 +11236,7 @@ sixel_encoder_setopt(
                 goto end;
             }
             encoder->method_for_largest = match_value;
+            encoder->method_for_largest_override = 1;
         }
         break;
     case SIXEL_OPTFLAG_SELECT_COLOR:  /* s */
@@ -11152,6 +11329,8 @@ sixel_encoder_setopt(
         encoder->quantize_model_merge_lloyd_override = 0;
         encoder->quantize_model_animation_mode_override = 0;
         encoder->quantize_model_scene_cut_threshold_override = 0;
+        encoder->quantize_model_heckbert_profile
+            = SIXEL_HECKBERT_PROFILE_COMPAT;
 
         q_index = 0u;
         while (q_index < q_resolution->assignment_count) {
@@ -11306,8 +11485,14 @@ sixel_encoder_setopt(
                     status = SIXEL_BAD_ARGUMENT;
                     goto end;
                 }
-                encoder->quantize_model_kcenter_profile_override = 1;
-                encoder->quantize_model_kcenter_profile = match_value;
+                if (q_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
+                    encoder->quantize_model_kcenter_profile_override = 1;
+                    encoder->quantize_model_kcenter_profile = match_value;
+                } else {
+                    q_heckbert_profile = match_value;
+                    encoder->quantize_model_heckbert_profile
+                        = q_heckbert_profile;
+                }
             } else if (q_key != NULL
                     && strcmp(q_key, "auto_policy") == 0) {
                 if (!sixel_encoder_resolve_suboption_choice_value(
@@ -11863,6 +12048,7 @@ sixel_encoder_setopt(
             }
             ++q_index;
         }
+        sixel_encoder_apply_heckbert_profile_defaults(encoder);
         break;
     case SIXEL_OPTFLAG_CROP:  /* c */
         status = sixel_encoder_apply_crop_option(encoder, value);

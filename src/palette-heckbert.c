@@ -90,7 +90,8 @@ typedef unsigned long sample;
 typedef sample *tuple;
 
 enum {
-    sixel_palette_heckbert_max_channels = 4
+    sixel_palette_heckbert_max_channels = 4,
+    sixel_palette_heckbert_axis_bins = 256
 };
 
 struct tupleint {
@@ -711,7 +712,6 @@ struct box {
     unsigned int sum;
 };
 
-static unsigned int compareplanePlane;
 static tupletable2 const *force_palette_source;
 static double compareplanePcaAxis[3];
 static unsigned int compareplanePcaDimensions;
@@ -745,39 +745,6 @@ compareplane_lexicographic(struct tupleint const *lhs,
     }
     if (lhs->value > rhs->value) {
         return 1;
-    }
-
-    return 0;
-}
-
-/*
- * qsort callback used to order tuples by the component selected for the
- * current split.  The helper mirrors the original Netpbm implementation but
- * keeps the state in a local static so the algorithm can remain thread-safe at
- * the call boundary.
- */
-static int
-compareplane(const void *arg1, const void *arg2)
-{
-    int lhs;
-    int rhs;
-    int diff;
-    typedef const struct tupleint *const *const sortarg;
-    sortarg comparandPP = (sortarg)arg1;
-    sortarg comparatorPP = (sortarg)arg2;
-    lhs = (int)(*comparandPP)->tuple[compareplanePlane];
-    rhs = (int)(*comparatorPP)->tuple[compareplanePlane];
-    if (lhs < rhs) {
-        return -1;
-    }
-    if (lhs > rhs) {
-        return 1;
-    }
-    diff = compareplane_lexicographic(*comparandPP,
-                                      *comparatorPP,
-                                      compareplaneTieDepth);
-    if (diff != 0) {
-        return diff;
     }
 
     return 0;
@@ -908,35 +875,151 @@ newBoxVector(unsigned int colors,
     return bv;
 }
 
+static unsigned int
+sixel_palette_heckbert_entry_weight(struct tupleint const *entry)
+{
+    unsigned long weight;
+
+    if (entry == NULL) {
+        return 1U;
+    }
+    weight = entry->value;
+    if (weight == 0UL) {
+        return 1U;
+    }
+    if (weight > (unsigned long)UINT_MAX) {
+        return UINT_MAX;
+    }
+
+    return (unsigned int)weight;
+}
+
+/*
+ * Collect min/max bounds and total tuple weight in one pass so splitBox can
+ * reuse the same scan for axis selection and weighted median splitting.
+ */
 static void
-findBoxBoundaries(tupletable2 const colorfreqtable,
-                  unsigned int depth,
-                  unsigned int boxStart,
-                  unsigned int boxSize,
-                  sample minval[],
-                  sample maxval[])
+findBoxBoundariesAndWeight(tupletable2 const colorfreqtable,
+                           unsigned int depth,
+                           unsigned int boxStart,
+                           unsigned int boxSize,
+                           sample minval[],
+                           sample maxval[],
+                           unsigned long *total_weight)
 {
     unsigned int plane;
     unsigned int i;
+    struct tupleint const *entry;
+    unsigned int weight;
 
     for (plane = 0U; plane < depth; ++plane) {
         minval[plane] = colorfreqtable.table[boxStart]->tuple[plane];
         maxval[plane] = minval[plane];
     }
+    if (total_weight != NULL) {
+        *total_weight = 0UL;
+    }
 
-    for (i = 1U; i < boxSize; ++i) {
+    for (i = 0U; i < boxSize; ++i) {
+        entry = colorfreqtable.table[boxStart + i];
+        if (total_weight != NULL) {
+            weight = sixel_palette_heckbert_entry_weight(entry);
+            *total_weight += (unsigned long)weight;
+        }
         for (plane = 0U; plane < depth; ++plane) {
-            sample v;
+            sample value;
 
-            v = colorfreqtable.table[boxStart + i]->tuple[plane];
-            if (v < minval[plane]) {
-                minval[plane] = v;
+            value = entry->tuple[plane];
+            if (value < minval[plane]) {
+                minval[plane] = value;
             }
-            if (v > maxval[plane]) {
-                maxval[plane] = v;
+            if (value > maxval[plane]) {
+                maxval[plane] = value;
             }
         }
     }
+}
+
+/*
+ * Reorder tuples by one 8-bit axis using an in-place bucket permutation.
+ * This replaces O(n log n) qsort for norm/lum splits with O(n + 256) work.
+ */
+static SIXELSTATUS
+sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
+                     unsigned int boxStart,
+                     unsigned int boxSize,
+                     unsigned int axis)
+{
+    unsigned int bucket_count[sixel_palette_heckbert_axis_bins];
+    unsigned int bucket_next[sixel_palette_heckbert_axis_bins];
+    unsigned int bucket_end[sixel_palette_heckbert_axis_bins];
+    unsigned int min_bucket;
+    unsigned int max_bucket;
+    unsigned int bucket;
+    unsigned int index;
+    unsigned int cursor;
+    unsigned int axis_value;
+    struct tupleint *entry;
+    struct tupleint *swapped;
+
+    if (axis >= sixel_palette_heckbert_max_channels) {
+        sixel_helper_set_additional_message(
+            "Internal error: invalid split axis in sortBoxByAxisBuckets.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    for (bucket = 0U; bucket < sixel_palette_heckbert_axis_bins; ++bucket) {
+        bucket_count[bucket] = 0U;
+        bucket_next[bucket] = 0U;
+        bucket_end[bucket] = 0U;
+    }
+
+    min_bucket = sixel_palette_heckbert_axis_bins - 1U;
+    max_bucket = 0U;
+    for (index = 0U; index < boxSize; ++index) {
+        entry = colorfreqtable.table[boxStart + index];
+        axis_value = (unsigned int)entry->tuple[axis];
+        if (axis_value >= sixel_palette_heckbert_axis_bins) {
+            axis_value = sixel_palette_heckbert_axis_bins - 1U;
+        }
+        bucket_count[axis_value] += 1U;
+        if (axis_value < min_bucket) {
+            min_bucket = axis_value;
+        }
+        if (axis_value > max_bucket) {
+            max_bucket = axis_value;
+        }
+    }
+    if (boxSize == 0U || min_bucket >= max_bucket) {
+        return SIXEL_OK;
+    }
+
+    cursor = boxStart;
+    for (bucket = min_bucket; bucket <= max_bucket; ++bucket) {
+        bucket_next[bucket] = cursor;
+        bucket_end[bucket] = cursor + bucket_count[bucket];
+        cursor = bucket_end[bucket];
+    }
+
+    for (bucket = min_bucket; bucket <= max_bucket; ++bucket) {
+        while (bucket_next[bucket] < bucket_end[bucket]) {
+            index = bucket_next[bucket];
+            entry = colorfreqtable.table[index];
+            axis_value = (unsigned int)entry->tuple[axis];
+            if (axis_value >= sixel_palette_heckbert_axis_bins) {
+                axis_value = sixel_palette_heckbert_axis_bins - 1U;
+            }
+            if (axis_value == bucket) {
+                bucket_next[bucket] += 1U;
+                continue;
+            }
+            swapped = colorfreqtable.table[bucket_next[axis_value]];
+            colorfreqtable.table[bucket_next[axis_value]] = entry;
+            colorfreqtable.table[index] = swapped;
+            bucket_next[axis_value] += 1U;
+        }
+    }
+
+    return SIXEL_OK;
 }
 
 static unsigned int
@@ -1014,6 +1097,7 @@ computePcaAxis(tupletable2 const colorfreqtable,
     double vec[3];
     double next[3];
     double norm;
+    double alignment;
     double variance_total;
     double lambda;
     struct tupleint *entry;
@@ -1022,6 +1106,7 @@ computePcaAxis(tupletable2 const colorfreqtable,
 
     dims = depth < 3U ? depth : 3U;
     weight_sum = 0.0;
+    alignment = 0.0;
     variance_total = 0.0;
     lambda = 0.0;
     for (plane = 0U; plane < 3U; ++plane) {
@@ -1098,8 +1183,19 @@ computePcaAxis(tupletable2 const colorfreqtable,
         if (norm <= 0.0) {
             return 0;
         }
+        alignment = 0.0;
+        for (plane = 0U; plane < dims; ++plane) {
+            next[plane] /= norm;
+            alignment += next[plane] * vec[plane];
+        }
+        if (alignment < 0.0) {
+            alignment = -alignment;
+        }
         for (plane = 0U; plane < 3U; ++plane) {
-            vec[plane] = (plane < dims) ? next[plane] / norm : 0.0;
+            vec[plane] = (plane < dims) ? next[plane] : 0.0;
+        }
+        if (1.0 - alignment <= 1.0e-6) {
+            break;
         }
     }
     lambda = 0.0;
@@ -1629,6 +1725,160 @@ sixel_palette_clusters_to_colormap(unsigned long *weights,
     return status;
 }
 
+static void
+sixel_palette_heckbert_compute_box_median(tupletable2 const colorfreqtable,
+                                          unsigned int boxStart,
+                                          unsigned int boxSize,
+                                          unsigned int sum,
+                                          unsigned int *median_index,
+                                          unsigned int *lower_sum)
+{
+    unsigned int index;
+    unsigned int lowersum;
+    unsigned int weight;
+    unsigned int half;
+
+    index = 1U;
+    lowersum = 0U;
+    weight = 0U;
+    half = sum / 2U;
+    if (boxSize == 0U) {
+        *median_index = 0U;
+        *lower_sum = 0U;
+        return;
+    }
+
+    weight = sixel_palette_heckbert_entry_weight(
+        colorfreqtable.table[boxStart]);
+    lowersum = weight;
+    while (index < boxSize - 1U && lowersum < half) {
+        weight = sixel_palette_heckbert_entry_weight(
+            colorfreqtable.table[boxStart + index]);
+        lowersum += weight;
+        index += 1U;
+    }
+
+    if (index == 0U) {
+        index = 1U;
+    }
+    if (index >= boxSize) {
+        index = boxSize - 1U;
+    }
+    *median_index = index;
+    *lower_sum = lowersum;
+}
+
+/*
+ * Detect partitions that would produce an empty or nearly-empty child box.
+ * splitBox retries with fallback axes when this returns true.
+ */
+static int
+sixel_palette_heckbert_split_is_degenerate(unsigned int boxSize,
+                                           unsigned int medianIndex,
+                                           unsigned int lowersum,
+                                           unsigned int sum)
+{
+    if (boxSize < 2U) {
+        return 1;
+    }
+    if (medianIndex == 0U || medianIndex >= boxSize) {
+        return 1;
+    }
+    if (lowersum == 0U || lowersum >= sum) {
+        return 1;
+    }
+    if (boxSize >= 4U
+            && (medianIndex <= 1U || medianIndex >= boxSize - 1U)) {
+        return 1;
+    }
+
+    return 0;
+}
+
+/*
+ * Attempt one split strategy (PCA or axis bucket sort), then compute the
+ * weighted median split point on the reordered tuple range.
+ */
+static SIXELSTATUS
+sixel_palette_heckbert_split_attempt(
+    tupletable2 const colorfreqtable,
+    unsigned int depth,
+    unsigned int boxStart,
+    unsigned int boxSize,
+    sample minval[],
+    sample maxval[],
+    int methodForLargest,
+    unsigned int sum,
+    unsigned int dimensions,
+    unsigned int *medianIndex,
+    unsigned int *lowersum,
+    unsigned int *axis_used,
+    double *pca_ratio)
+{
+    SIXELSTATUS status;
+    unsigned int axis;
+    unsigned int i;
+    double pca_axis[3];
+    int use_pca;
+
+    status = SIXEL_FALSE;
+    axis = 0U;
+    i = 0U;
+    use_pca = 0;
+    if (pca_ratio != NULL) {
+        *pca_ratio = 0.0;
+    }
+
+    if (methodForLargest == SIXEL_LARGE_PCA) {
+        use_pca = computePcaAxis(colorfreqtable,
+                                 dimensions,
+                                 boxStart,
+                                 boxSize,
+                                 pca_axis,
+                                 pca_ratio);
+        if (!use_pca) {
+            return SIXEL_FALSE;
+        }
+        compareplanePcaDimensions = dimensions;
+        compareplaneTieDepth = depth;
+        for (i = 0U; i < 3U; ++i) {
+            compareplanePcaAxis[i] = pca_axis[i];
+        }
+        qsort((char *)&colorfreqtable.table[boxStart],
+              boxSize,
+              sizeof(colorfreqtable.table[boxStart]),
+              compareplanePca);
+        if (axis_used != NULL) {
+            *axis_used = 0U;
+        }
+    } else {
+        if (methodForLargest == SIXEL_LARGE_LUM) {
+            axis = largestByLuminosity(minval, maxval, depth);
+        } else {
+            axis = largestByNorm(minval, maxval, depth);
+        }
+        status = sortBoxByAxisBuckets(colorfreqtable,
+                                      boxStart,
+                                      boxSize,
+                                      axis);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (axis_used != NULL) {
+            *axis_used = axis;
+        }
+    }
+
+    sixel_palette_heckbert_compute_box_median(colorfreqtable,
+                                              boxStart,
+                                              boxSize,
+                                              sum,
+                                              medianIndex,
+                                              lowersum);
+
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 splitBox(boxVector bv,
          unsigned int *boxesP,
@@ -1644,18 +1894,18 @@ splitBox(boxVector bv,
     enum { max_depth = 16 };
     sample minval[max_depth];
     sample maxval[max_depth];
-    unsigned int largestDimension;
     unsigned int medianIndex;
     unsigned int lowersum;
-    unsigned int i;
     unsigned int dimensions;
     unsigned long total_weight;
-    unsigned long weight_value;
-    unsigned int weight_clamped;
-    double pca_axis[3];
+    unsigned int axis_used;
     double pca_ratio;
-    int use_pca;
-    int effective_method;
+    int split_ok;
+    unsigned int split_methods[3];
+    unsigned int split_method_count;
+    unsigned int split_attempt;
+    int split_method;
+    int degenerate;
 
     status = SIXEL_FALSE;
     boxStart = bv[bi].ind;
@@ -1663,71 +1913,28 @@ splitBox(boxVector bv,
     sm = bv[bi].sum;
     dimensions = (depth < 3U) ? depth : 3U;
     total_weight = 0UL;
+    axis_used = 0U;
     pca_ratio = 0.0;
-    use_pca = (methodForLargest == SIXEL_LARGE_PCA);
-    effective_method = methodForLargest;
-    findBoxBoundaries(colorfreqtable,
-                      depth,
-                      boxStart,
-                      boxSize,
-                      minval,
-                      maxval);
-    if (use_pca != 0) {
-        if (!computePcaAxis(colorfreqtable,
-                            dimensions,
-                            boxStart,
-                            boxSize,
-                            pca_axis,
-                            &pca_ratio)) {
-            sixel_debugf("PCA fallback to range axis on box %u", bi);
-            use_pca = 0;
-            effective_method = SIXEL_LARGE_NORM;
-        } else {
-            sixel_debugf("box %u: PCA split (PC1 ratio %.3f)",
-                         bi,
-                         pca_ratio);
-        }
+    split_ok = 0;
+    split_method_count = 0U;
+    split_attempt = 0U;
+    split_method = methodForLargest;
+    degenerate = 0;
+    if (methodForLargest != SIXEL_LARGE_NORM
+            && methodForLargest != SIXEL_LARGE_LUM
+            && methodForLargest != SIXEL_LARGE_PCA) {
+        sixel_helper_set_additional_message(
+            "Internal error: invalid value of methodForLargest.");
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
     }
-    if (use_pca == 0) {
-        switch (effective_method) {
-        case SIXEL_LARGE_NORM:
-            largestDimension = largestByNorm(minval, maxval, depth);
-            break;
-        case SIXEL_LARGE_LUM:
-            largestDimension = largestByLuminosity(minval, maxval, depth);
-            break;
-        default:
-            sixel_helper_set_additional_message(
-                "Internal error: invalid value of methodForLargest.");
-            status = SIXEL_LOGIC_ERROR;
-            goto end;
-        }
-
-        compareplanePlane = largestDimension;
-        compareplaneTieDepth = depth;
-        qsort((char *)&colorfreqtable.table[boxStart],
-              boxSize,
-              sizeof(colorfreqtable.table[boxStart]),
-              compareplane);
-    } else {
-        compareplanePcaDimensions = dimensions;
-        compareplaneTieDepth = depth;
-        for (i = 0U; i < 3U; ++i) {
-            compareplanePcaAxis[i] = pca_axis[i];
-        }
-        qsort((char *)&colorfreqtable.table[boxStart],
-              boxSize,
-              sizeof(colorfreqtable.table[boxStart]),
-              compareplanePca);
-    }
-
-    for (i = 0U; i < boxSize; ++i) {
-        weight_value = colorfreqtable.table[boxStart + i]->value;
-        if (weight_value == 0UL) {
-            weight_value = 1UL;
-        }
-        total_weight += weight_value;
-    }
+    findBoxBoundariesAndWeight(colorfreqtable,
+                               depth,
+                               boxStart,
+                               boxSize,
+                               minval,
+                               maxval,
+                               &total_weight);
     if (total_weight == 0UL) {
         sixel_helper_set_additional_message(
             "Internal error: empty histogram in splitBox.");
@@ -1737,31 +1944,77 @@ splitBox(boxVector bv,
     sm = (total_weight > (unsigned long)UINT_MAX)
              ? UINT_MAX
              : (unsigned int)total_weight;
+    if (methodForLargest == SIXEL_LARGE_PCA) {
+        split_methods[split_method_count++] = SIXEL_LARGE_PCA;
+        split_methods[split_method_count++] = SIXEL_LARGE_NORM;
+        split_methods[split_method_count++] = SIXEL_LARGE_LUM;
+    } else if (methodForLargest == SIXEL_LARGE_LUM) {
+        split_methods[split_method_count++] = SIXEL_LARGE_LUM;
+        split_methods[split_method_count++] = SIXEL_LARGE_NORM;
+    } else {
+        split_methods[split_method_count++] = SIXEL_LARGE_NORM;
+        split_methods[split_method_count++] = SIXEL_LARGE_LUM;
+    }
 
-    weight_value = colorfreqtable.table[boxStart]->value;
-    if (weight_value == 0UL) {
-        weight_value = 1UL;
-    }
-    weight_clamped = (weight_value > (unsigned long)UINT_MAX)
-                         ? UINT_MAX
-                         : (unsigned int)weight_value;
-    lowersum = weight_clamped;
-    for (i = 1U; i < boxSize - 1U && lowersum < sm / 2U; ++i) {
-        weight_value = colorfreqtable.table[boxStart + i]->value;
-        if (weight_value == 0UL) {
-            weight_value = 1UL;
+    medianIndex = 1U;
+    lowersum = 1U;
+    /*
+     * Try preferred strategy first, then fallback strategies when the split is
+     * too imbalanced.  This avoids pathological one-color-vs-rest partitions.
+     */
+    for (split_attempt = 0U; split_attempt < split_method_count;
+            ++split_attempt) {
+        split_method = (int)split_methods[split_attempt];
+        status = sixel_palette_heckbert_split_attempt(colorfreqtable,
+                                                      depth,
+                                                      boxStart,
+                                                      boxSize,
+                                                      minval,
+                                                      maxval,
+                                                      split_method,
+                                                      sm,
+                                                      dimensions,
+                                                      &medianIndex,
+                                                      &lowersum,
+                                                      &axis_used,
+                                                      &pca_ratio);
+        if (SIXEL_FAILED(status)) {
+            if (split_method == SIXEL_LARGE_PCA) {
+                sixel_debugf("PCA fallback to range axis on box %u", bi);
+                status = SIXEL_FALSE;
+                continue;
+            }
+            goto end;
         }
-        weight_clamped = (weight_value > (unsigned long)UINT_MAX)
-                             ? UINT_MAX
-                             : (unsigned int)weight_value;
-        lowersum += weight_clamped;
+        split_ok = 1;
+        if (split_method == SIXEL_LARGE_PCA) {
+            sixel_debugf("box %u: PCA split (PC1 ratio %.3f)",
+                         bi,
+                         pca_ratio);
+        } else {
+            sixel_debugf("box %u: axis split method=%d axis=%u",
+                         bi,
+                         split_method,
+                         axis_used);
+        }
+        degenerate = sixel_palette_heckbert_split_is_degenerate(boxSize,
+                                                                medianIndex,
+                                                                lowersum,
+                                                                sm);
+        if (!degenerate) {
+            break;
+        }
+        if (split_attempt + 1U < split_method_count) {
+            sixel_debugf("box %u: split imbalance on method=%d; fallback",
+                         bi,
+                         split_method);
+        }
     }
-    medianIndex = i;
-    if (medianIndex == 0U) {
-        medianIndex = 1U;
-    }
-    if (medianIndex >= boxSize) {
-        medianIndex = boxSize - 1U;
+    if (!split_ok) {
+        sixel_helper_set_additional_message(
+            "Internal error: splitBox failed to select an axis.");
+        status = SIXEL_LOGIC_ERROR;
+        goto end;
     }
 
     bv[bi].colors = medianIndex;

@@ -103,9 +103,11 @@ struct sixel_encoder {
     float bluenoise_gradient_factor;
     int method_for_scan;
     int method_for_largest;
+    int method_for_largest_override;
     int method_for_rep;
     int quality_mode;
     int quantize_model;
+    int quantize_model_heckbert_profile;
     int quantize_model_kmeans_init_override;
     int quantize_model_kmeans_init_type;
     int quantize_model_kmeans_threshold_override;
