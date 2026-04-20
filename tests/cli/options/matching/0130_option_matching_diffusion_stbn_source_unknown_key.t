@@ -24,15 +24,23 @@ msg=$(
     exit 0
 }
 
-test "${msg#*unknown suboption key*}" != "${msg}" || {
-    echo "not ok" 1 - "missing unknown stbn key diagnostic"
-    exit 0
-}
+diag_line=${msg%%'
+'*}
 
-test "${msg#*source*}" != "${msg}" || {
-    echo "not ok" 1 - "unknown key diagnostic lacked valid source key hint"
+case "${diag_line}" in
+    LSXCLI1\|phase=option_parse\|rc=*\|code=UNKNOWN_SUBOPTION_KEY) ;;
+    *)
+        echo "not ok" 1 - "missing unknown stbn key diagnostic code"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *\|rc=0\|*)
+    echo "not ok" 1 - "unknown stbn key unexpectedly reported rc=0"
     exit 0
-}
+    ;;
+esac
 
 echo "ok" 1 - "unknown stbn key is rejected"
 exit 0

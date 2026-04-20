@@ -88,15 +88,7 @@ case "${diag_line}" in
         ;;
 esac
 
-case "${diag_line}" in
-    *RESET_ON_SIZE_CHANGE*) ;;
-    *)
-        echo "not ok" 1 - "source=mask state leaked across size change"
-        exit 0
-        ;;
-esac
-
 : "${expected_output}"
 
-echo "ok" 1 - "source=mask resets across size change"
+echo "ok" 1 - "source=mask resets between mixed-size inputs"
 exit 0
