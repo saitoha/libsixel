@@ -306,6 +306,16 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
         return "FX_DEFERRED_EFFECT_STROKE_CLIP";
     }
     if (strstr(message,
+               "keeping inside stroke alpha write inside source silhouette")
+            != NULL) {
+        return "FX_STROKE_ALPHA_INSIDE_BASE";
+    }
+    if (strstr(message,
+               "keeping deferred inside stroke alpha write inside source "
+               "silhouette") != NULL) {
+        return "FX_STROKE_ALPHA_INSIDE_DEFER";
+    }
+    if (strstr(message,
                "infx=0; skipping interior effects in layer fallback") !=
             NULL) {
         return "FX_INFX0_SKIP_INTERIOR";
@@ -426,6 +436,34 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
     if (strstr(message,
                "parsed bevel shadow channel in layer effects") != NULL) {
         return "FX_BEVEL_SHADOW_PARSE";
+    }
+    if (strstr(message,
+               "merging legacy lrFX effects missing from lfx2") != NULL) {
+        return "FX_LRFX_MERGE";
+    }
+    if (strstr(message,
+               "ignoring legacy lrFX when lfx2 is present") != NULL) {
+        return "FX_LRFX_IGNORE";
+    }
+    if (strstr(message,
+               "parsed DrSh shadow offset semantics in layer effects") !=
+            NULL) {
+        return "FX_DRSH_OFFSET_SEM";
+    }
+    if (strstr(message,
+               "parsed IrSh shadow offset semantics in layer effects") !=
+            NULL) {
+        return "FX_IRSH_OFFSET_SEM";
+    }
+    if (strstr(message,
+               "parsed DrSh effect object in layer effects (inactive)") !=
+            NULL) {
+        return "FX_DRSH_INACTIVE_PARSE";
+    }
+    if (strstr(message,
+               "parsed IrSh effect object in layer effects (inactive)") !=
+            NULL) {
+        return "FX_IRSH_INACTIVE_PARSE";
     }
     if (strstr(message,
                "applying deferred bevel lighting semantics in layer "

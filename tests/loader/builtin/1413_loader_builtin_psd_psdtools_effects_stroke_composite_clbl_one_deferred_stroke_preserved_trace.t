@@ -18,29 +18,54 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
-    -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
+    -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
+    command_status=$?
 
 test "${command_status}" -eq 0 || {
     echo "not ok" 1 - "effects/stroke-composite decode failed"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: clbl=1; deferring interior overlays to clipped group composite*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not defer clbl=1 interiors"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying effect stroke in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost explicit stroke during defer"
-    exit 0
-}
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite malformed diagnostic header"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_CLBL1_DEFER_INTERIOR*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite missing FX_CLBL1_DEFER_INTERIOR"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_EFFECT_STROKE_BASE*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite missing FX_EFFECT_STROKE_BASE"
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - "effects/stroke-composite keeps stroke with clbl=1 defer path"
 exit 0
