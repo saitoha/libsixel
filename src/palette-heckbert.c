@@ -1302,33 +1302,46 @@ computePcaAxis(tupletable2 const colorfreqtable,
     double weight_sum;
     double mean[3];
     double cov[3][3];
+    double second_moment[3][3];
+    double tuple_value[3];
     double vec[3];
     double next[3];
     double norm;
     double alignment;
     double variance_total;
     double lambda;
+    double normalized_second;
+    double cov_value;
+    double projected;
     struct tupleint *entry;
     double weight;
-    double diff;
 
     dims = depth < 3U ? depth : 3U;
     weight_sum = 0.0;
     alignment = 0.0;
     variance_total = 0.0;
     lambda = 0.0;
+    normalized_second = 0.0;
+    cov_value = 0.0;
+    projected = 0.0;
     for (plane = 0U; plane < 3U; ++plane) {
         mean[plane] = 0.0;
+        tuple_value[plane] = 0.0;
         vec[plane] = (plane < dims) ? 1.0 : 0.0;
         axis[plane] = 0.0;
         for (other = 0U; other < 3U; ++other) {
             cov[plane][other] = 0.0;
+            second_moment[plane][other] = 0.0;
         }
     }
     if (dims == 0U || boxSize < 2U) {
         return 0;
     }
 
+    /*
+     * Collect first and second moments in one scan so PCA split setup does
+     * not walk the same box twice.
+     */
     for (i = 0U; i < boxSize; ++i) {
         entry = colorfreqtable.table[boxStart + i];
         weight = (double)entry->value;
@@ -1337,7 +1350,14 @@ computePcaAxis(tupletable2 const colorfreqtable,
         }
         weight_sum += weight;
         for (plane = 0U; plane < dims; ++plane) {
-            mean[plane] += weight * (double)entry->tuple[plane];
+            tuple_value[plane] = (double)entry->tuple[plane];
+            mean[plane] += weight * tuple_value[plane];
+        }
+        for (plane = 0U; plane < dims; ++plane) {
+            for (other = plane; other < dims; ++other) {
+                second_moment[plane][other]
+                    += weight * tuple_value[plane] * tuple_value[other];
+            }
         }
     }
     if (weight_sum <= 0.0) {
@@ -1346,27 +1366,15 @@ computePcaAxis(tupletable2 const colorfreqtable,
     for (plane = 0U; plane < dims; ++plane) {
         mean[plane] /= weight_sum;
     }
-
-    for (i = 0U; i < boxSize; ++i) {
-        entry = colorfreqtable.table[boxStart + i];
-        weight = (double)entry->value;
-        if (weight == 0.0) {
-            weight = 1.0;
-        }
-        for (plane = 0U; plane < dims; ++plane) {
-            diff = (double)entry->tuple[plane] - mean[plane];
-            cov[plane][plane] += weight * diff * diff;
-            for (other = plane + 1U; other < dims; ++other) {
-                cov[plane][other]
-                    += weight * diff
-                       * ((double)entry->tuple[other] - mean[other]);
-            }
-        }
-    }
     for (plane = 0U; plane < dims; ++plane) {
         for (other = plane; other < dims; ++other) {
-            cov[plane][other] /= weight_sum;
-            cov[other][plane] = cov[plane][other];
+            normalized_second = second_moment[plane][other] / weight_sum;
+            cov_value = normalized_second - mean[plane] * mean[other];
+            if (plane == other && cov_value < 0.0 && cov_value > -1.0e-9) {
+                cov_value = 0.0;
+            }
+            cov[plane][other] = cov_value;
+            cov[other][plane] = cov_value;
         }
         variance_total += cov[plane][plane];
     }
@@ -1408,7 +1416,7 @@ computePcaAxis(tupletable2 const colorfreqtable,
     }
     lambda = 0.0;
     for (plane = 0U; plane < dims; ++plane) {
-        double projected = 0.0;
+        projected = 0.0;
         for (other = 0U; other < dims; ++other) {
             projected += cov[plane][other] * vec[other];
         }
@@ -2553,9 +2561,27 @@ mediancut(tupletable2 const colorfreqtable,
         for (bi = 0U; bi < boxes; ++bi) {
             offset = bv[bi].ind;
             size = bv[bi].colors;
+            if (size == 0U) {
+                cluster_weight[bi] = 0UL;
+                for (plane = 0U; plane < depth; ++plane) {
+                    cluster_sums[(size_t)bi * (size_t)depth + plane]
+                        = 0.0;
+                }
+                continue;
+            }
+            if (size == 1U) {
+                entry = colorfreqtable.table[offset];
+                value = (unsigned long)entry->value;
+                cluster_weight[bi] = value;
+                for (plane = 0U; plane < depth; ++plane) {
+                    cluster_sums[(size_t)bi * (size_t)depth + plane]
+                        = (double)entry->tuple[plane] * (double)value;
+                }
+                continue;
+            }
             cluster_weight[bi] = 0UL;
             for (plane = 0U; plane < depth; ++plane) {
-            cluster_sums[(size_t)bi * (size_t)depth + plane] = 0.0;
+                cluster_sums[(size_t)bi * (size_t)depth + plane] = 0.0;
             }
             for (i = 0U; i < size; ++i) {
                 entry = colorfreqtable.table[offset + i];
