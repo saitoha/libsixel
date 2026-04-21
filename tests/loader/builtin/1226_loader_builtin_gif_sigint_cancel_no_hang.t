@@ -60,14 +60,14 @@ test "${ctrl_break_mode}" = "1" && {
 
 test "${sigint_runner_mode}" = "1" && {
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --sigint-run \
-        20 900 "${IMG2SIXEL_PATH}" -Lbuiltin! -lforce "${input_gif}" \
+        20 900 "${IMG2SIXEL_PATH}" -Lbuiltin! -lforce -g "${input_gif}" \
         >/dev/null && {
         echo "ok" 1 - "builtin GIF force-loop stops quickly on SIGINT"
         exit 0
     }
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -lforce "${input_gif}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -lforce -g "${input_gif}" \
     >/dev/null 2>/dev/null &
 pid=$!
 

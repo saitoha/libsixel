@@ -18,8 +18,16 @@ set -v
 
 # Keep the input tiny because this test only verifies argument parsing.
 image_path="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
+msg=''
+status=0
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m -w 100 -h 100 "${image_path}" -o/dev/null 2>&1) && {
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_DIAG_MODE=code \
+    --env SIXEL_DIAG_MODE_QUIET=1 \
+    -m -w 100 -h 100 "${image_path}" -o/dev/null \
+    2>&1 >/dev/null) || status=$?
+
+test "${status}" -eq 2 || {
     echo "not ok" 1 - "accepted -m without argument"
     exit 0
 }
@@ -27,8 +35,6 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -m -w 100 -h 100 "${image_p
 trimmed_msg=${msg#*missing required argument for -m,--mapfile option}
 test "${trimmed_msg}" != "${msg}" || {
     echo "not ok" 1 - "no diagnostic for missing -m argument"
-    printf '%s\n' '--- stderr ---' >&2
-    printf '%s\n' "${msg}" >&2
     exit 0
 }
 

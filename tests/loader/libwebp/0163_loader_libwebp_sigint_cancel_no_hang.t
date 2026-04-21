@@ -66,14 +66,14 @@ test "${ctrl_break_mode}" = "1" && {
 
 test "${sigint_runner_mode}" = "1" && {
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --sigint-run \
-        20 900 "${IMG2SIXEL_PATH}" -Llibwebp! -lforce "${input_webp}" \
+        20 900 "${IMG2SIXEL_PATH}" -Llibwebp! -lforce -g "${input_webp}" \
         >/dev/null && {
         echo "ok" 1 - "libwebp force-loop stops quickly on SIGINT"
         exit 0
     }
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -lforce "${input_webp}" \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -lforce -g "${input_webp}" \
     >/dev/null 2>/dev/null &
 pid=$!
 

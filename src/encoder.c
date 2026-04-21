@@ -991,6 +991,24 @@ sixel_encoder_handoff_trace_event_name(
     }
 }
 
+static int
+sixel_encoder_handoff_trace_minimal_enabled(void)
+{
+    static int cached = -1;
+    char const *value;
+
+    value = NULL;
+    if (cached >= 0) {
+        return cached;
+    }
+    cached = 0;
+    value = sixel_compat_getenv("SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL");
+    if (value != NULL && strcmp(value, "1") == 0) {
+        cached = 1;
+    }
+    return cached;
+}
+
 static void
 sixel_encoder_handoff_trace_emit(
     sixel_encoder_frame_pipeline_t *pipeline,
@@ -1001,10 +1019,20 @@ sixel_encoder_handoff_trace_emit(
     sixel_encoder_handoff_trace_reason_t reason)
 {
     char const *handoff_name;
+    int minimal_enabled;
 
     handoff_name = "none";
+    minimal_enabled = 0;
     if (pipeline != NULL) {
-        handoff_name = sixel_encoder_handoff_mode_name(pipeline->handoff_mode);
+        handoff_name = sixel_encoder_handoff_mode_name(
+            pipeline->handoff_mode);
+    }
+    minimal_enabled = sixel_encoder_handoff_trace_minimal_enabled();
+    if (minimal_enabled != 0
+            && event !=
+                   SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_HANDOFF_DECIDE
+            && event != SIXEL_ENCODER_HANDOFF_TRACE_EVENT_PIPELINE_STOP) {
+        return;
     }
     sixel_trace_topic_message(
         SIXEL_TRACE_TOPIC_ENCODE_HANDOFF,

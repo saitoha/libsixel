@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
+image_path="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 out_file="${ARTIFACT_LOCAL_DIR}/-p"
 
 cd "${ARTIFACT_LOCAL_DIR}" && {

@@ -44,27 +44,20 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop0.gif"
 # If the first run misses trace coverage, retry once with a longer window.
 
 set +xv
+sigint_run_status=0
 trace_summary=$(
-    {
-        # shellcheck disable=SC2086
-        ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --sigint-run 20 1200 \
-            ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-            --env "SIXEL_THREADS=4" \
-            --env "SIXEL_TRACE_TOPIC=encode_handoff" \
-            -Lbuiltin! -lforce "${input_gif}" 2>&1 >/dev/null
-        sigint_run_status=$?
-        printf "__SIGINT_RUN_STATUS__=%s\n" "${sigint_run_status}"
-    }
-)
+    # shellcheck disable=SC2086
+    ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --sigint-run 12 300 \
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --env "SIXEL_THREADS=4" \
+        --env "SIXEL_TRACE_TOPIC=encode_handoff" \
+        --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
+        -Lbuiltin! -lforce -g "${input_gif}" 2>&1 >/dev/null
+) || sigint_run_status=$?
 
-sigint_run_status=1
 handoff_flag=0
 stop_flag=0
 retry_flag=0
-
-status_line=${trace_summary#*__SIGINT_RUN_STATUS__=}
-test "${status_line}" != "${trace_summary}" &&
-    sigint_run_status=${status_line%%[!0-9]*}
 
 trace_remainder=${trace_summary#*event=callback_handoff_decide handoff=pipeline}
 test "${trace_remainder}" != "${trace_summary}" && handoff_flag=1
@@ -78,26 +71,19 @@ test "${stop_flag}" = "1" || retry_flag=1
 
 test "${retry_flag}" = "0" || {
     set +xv
+    sigint_run_status=0
     trace_summary=$(
-        {
-            # shellcheck disable=SC2086
-            ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --sigint-run 200 6000 \
-                ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-                --env "SIXEL_THREADS=4" \
-                --env "SIXEL_TRACE_TOPIC=encode_handoff" \
-                -Lbuiltin! -lforce "${input_gif}" 2>&1 >/dev/null
-            sigint_run_status=$?
-            printf "__SIGINT_RUN_STATUS__=%s\n" "${sigint_run_status}"
-        }
-    )
+        # shellcheck disable=SC2086
+        ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --sigint-run 20 600 \
+            ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+            --env "SIXEL_THREADS=4" \
+            --env "SIXEL_TRACE_TOPIC=encode_handoff" \
+            --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
+            -Lbuiltin! -lforce -g "${input_gif}" 2>&1 >/dev/null
+    ) || sigint_run_status=$?
 
-    sigint_run_status=1
     handoff_flag=0
     stop_flag=0
-
-    status_line=${trace_summary#*__SIGINT_RUN_STATUS__=}
-    test "${status_line}" != "${trace_summary}" &&
-        sigint_run_status=${status_line%%[!0-9]*}
 
     trace_remainder=${trace_summary#*event=callback_handoff_decide handoff=pipeline}
     test "${trace_remainder}" != "${trace_summary}" && handoff_flag=1

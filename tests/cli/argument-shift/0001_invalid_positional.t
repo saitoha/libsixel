@@ -29,8 +29,7 @@ missing_path="${TOP_SRCDIR}/tests/data/inputs/does-not-exist-invalid-positional.
 missing_stdout=''
 
 missing_stdout=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env SIXEL_TRACE_TOPIC=file_open:lifecycle \
-    -v "${missing_path}" 2>/dev/null) && {
+    "${missing_path}" 2>/dev/null) && {
     echo "not ok" 1 - "img2sixel accepted missing input"
     exit 0
 }
