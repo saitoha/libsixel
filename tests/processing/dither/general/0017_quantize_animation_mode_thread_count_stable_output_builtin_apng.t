@@ -15,6 +15,7 @@ single_thread_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -Qauto:animation_mode=1:scene_cut_threshold=1 -d fs \
         "${input_apng}"
 ) || {
@@ -30,6 +31,7 @@ multi_thread_output=$(
         --threads=3 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -Qauto:animation_mode=1:scene_cut_threshold=1 -d fs \
         "${input_apng}"
 ) || {

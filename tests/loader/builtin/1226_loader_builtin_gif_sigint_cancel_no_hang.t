@@ -70,8 +70,17 @@ done
 
 kill -0 "${pid}" 2>/dev/null && {
     # Fallback path: preserve the previous watchdog window as insurance.
-    sleep 1
-    kill -INT "${pid}" 2>/dev/null || true
+    # Poll briefly before the second SIGINT so quick exits do not pay the
+    # full one-second fallback cost.
+    retry_wait_limit=20
+    while test "${retry_wait_limit}" -gt 0; do
+        kill -0 "${pid}" 2>/dev/null || {
+            break
+        }
+        sleep 0.05
+        retry_wait_limit=$((retry_wait_limit - 1))
+    done
+    kill -0 "${pid}" 2>/dev/null && kill -INT "${pid}" 2>/dev/null || true
     wait_limit=40
     # Runtime wrappers such as wine can delay SIGINT delivery to the target.
     # Keep native runs strict while allowing extra grace time for wrapped runs.

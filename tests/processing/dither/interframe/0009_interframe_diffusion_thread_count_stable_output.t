@@ -25,6 +25,7 @@ single_thread_output=$(
         --threads=1 \
         -L libwebp \
         -ldisable \
+        -S -T 1 \
         -d interframe -p 16 \
         "${input_webp}"
 ) || {
@@ -40,6 +41,7 @@ multi_thread_output=$(
         --threads=2 \
         -L libwebp \
         -ldisable \
+        -S -T 1 \
         -d interframe -p 16 \
         "${input_webp}"
 ) || {

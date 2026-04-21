@@ -30,12 +30,12 @@ done
 
 kill -0 "${pid}" 2>/dev/null && {
     # Fallback path: preserve the old watchdog as insurance.
-    wait_limit=10
+    wait_limit=200
     while test "${wait_limit}" -gt 0; do
         kill -0 "${pid}" 2>/dev/null || {
             break
         }
-        sleep 1
+        sleep 0.05
         wait_limit=$((wait_limit - 1))
     done
 }

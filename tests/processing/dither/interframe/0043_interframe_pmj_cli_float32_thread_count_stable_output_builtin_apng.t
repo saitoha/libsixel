@@ -21,6 +21,7 @@ single_thread_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -d stbn:source=pmj -p 16 \
         "${input_apng}"
 ) || {
@@ -37,6 +38,7 @@ multi_thread_output=$(
         --precision=float32 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -d stbn:source=pmj -p 16 \
         "${input_apng}"
 ) || {

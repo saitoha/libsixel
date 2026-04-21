@@ -15,11 +15,6 @@ test "${ARTIFACT_LOCAL_DIR-}" != "" || {
     exit 0
 }
 
-mkdir -p "${ARTIFACT_LOCAL_DIR}" || {
-    printf "1..0 # SKIP cannot create ARTIFACT_LOCAL_DIR\n"
-    exit 0
-}
-
 palette_output="${ARTIFACT_LOCAL_DIR}/quantize-animation-mode-mapfile.pal"
 
 baseline_output=$(
@@ -27,6 +22,7 @@ baseline_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -Qauto:animation_mode=1 -d fs -p 2 \
         "${input_apng}"
 ) || {
@@ -42,6 +38,7 @@ mapfile_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
+        -S -T 1 \
         -Qauto:animation_mode=1 -d fs -p 2 \
         -M "${palette_output}" \
         "${input_apng}"
