@@ -796,25 +796,36 @@ sixel_encoder_emit_palette_contract(sixel_encoder_t const *encoder,
                                     SIXELSTATUS status)
 {
     int first;
+    int kmeans_seed_set;
+    unsigned int kmeans_seed;
 
     first = 1;
+    kmeans_seed_set = 0;
+    kmeans_seed = 0u;
     if (encoder == NULL) {
         return;
     }
     if (!sixel_trace_topic_is_enabled("palette_contract")) {
         return;
     }
+    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS
+            && encoder->quantize_model_kmeans_seed_override != 0) {
+        kmeans_seed_set = 1;
+        kmeans_seed = encoder->quantize_model_kmeans_seed;
+    }
 
     fprintf(stderr,
             "LSXPAL1|rc=%d|model=%s|merge=%s|lut=%s|work=%d|cluster=%d|"
-            "codes=",
+            "kseed_set=%d|kseed=%u|codes=",
             status,
             sixel_encoder_palette_model_name(encoder->quantize_model),
             sixel_encoder_palette_merge_name(
                 encoder->quantize_model_merge_mode),
             sixel_encoder_palette_lut_name(encoder->lut_policy),
             encoder->working_colorspace,
-            encoder->clustering_colorspace);
+            encoder->clustering_colorspace,
+            kmeans_seed_set,
+            kmeans_seed);
     if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
         sixel_encoder_emit_contract_code(stderr, &first, "MODEL_HECKBERT");
     } else if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
@@ -855,6 +866,9 @@ sixel_encoder_emit_palette_contract(sixel_encoder_t const *encoder,
     }
     if (encoder->clustering_colorspace_set != 0) {
         sixel_encoder_emit_contract_code(stderr, &first, "CLUSTER_SET");
+    }
+    if (kmeans_seed_set != 0) {
+        sixel_encoder_emit_contract_code(stderr, &first, "KMEANS_SEED_SET");
     }
     if (first != 0) {
         fprintf(stderr, "PAL_OK");
