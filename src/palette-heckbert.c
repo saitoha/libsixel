@@ -836,6 +836,197 @@ struct sixel_pca_sort_entry {
 static int
 compareplane_lexicographic(struct tupleint const *lhs,
                            struct tupleint const *rhs,
+                           unsigned int depth);
+static int compareplanePcaCached(const void *arg1, const void *arg2);
+static unsigned int sixel_palette_heckbert_entry_weight(
+    struct tupleint const *entry);
+
+static int
+sixel_pca_entry_compare(struct sixel_pca_sort_entry const *lhs,
+                        struct sixel_pca_sort_entry const *rhs)
+{
+    int diff;
+
+    diff = 0;
+    if (lhs == NULL || rhs == NULL) {
+        return 0;
+    }
+    if (lhs->key < rhs->key) {
+        return -1;
+    }
+    if (lhs->key > rhs->key) {
+        return 1;
+    }
+    diff = compareplane_lexicographic(lhs->entry,
+                                      rhs->entry,
+                                      compareplaneTieDepth);
+    if (diff != 0) {
+        return diff;
+    }
+
+    return 0;
+}
+
+static void
+sixel_pca_entry_swap(struct sixel_pca_sort_entry *lhs,
+                     struct sixel_pca_sort_entry *rhs)
+{
+    struct sixel_pca_sort_entry tmp;
+
+    if (lhs == NULL || rhs == NULL || lhs == rhs) {
+        return;
+    }
+    tmp = *lhs;
+    *lhs = *rhs;
+    *rhs = tmp;
+}
+
+/*
+ * Find a weighted median split point using in-place partitioning instead of
+ * sorting the full PCA range.  The routine preserves split behavior by falling
+ * back to full sort when selection fails to converge.
+ */
+static void
+sixel_pca_select_weighted_median(struct sixel_pca_sort_entry cache[],
+                                 unsigned int boxSize,
+                                 unsigned int half,
+                                 unsigned int *medianIndex,
+                                 unsigned int *lowerSum)
+{
+    unsigned int left;
+    unsigned int right;
+    unsigned int lt;
+    unsigned int gt;
+    unsigned int i;
+    unsigned int less_count;
+    unsigned int equal_count;
+    unsigned int prefix_count;
+    unsigned int target;
+    unsigned int index;
+    unsigned int lower;
+    unsigned int less_weight;
+    unsigned int equal_weight;
+    unsigned int prefix_weight;
+    unsigned int iteration_limit;
+    unsigned int weight;
+    struct sixel_pca_sort_entry pivot;
+    int cmp;
+
+    left = 0U;
+    right = boxSize;
+    lt = 0U;
+    gt = 0U;
+    i = 0U;
+    less_count = 0U;
+    equal_count = 0U;
+    prefix_count = 0U;
+    target = half;
+    index = 0U;
+    lower = 0U;
+    less_weight = 0U;
+    equal_weight = 0U;
+    prefix_weight = 0U;
+    iteration_limit = 0U;
+    weight = 0U;
+    pivot.entry = NULL;
+    pivot.key = 0.0;
+    cmp = 0;
+
+    if (medianIndex == NULL || lowerSum == NULL || cache == NULL
+            || boxSize == 0U) {
+        if (medianIndex != NULL) {
+            *medianIndex = 0U;
+        }
+        if (lowerSum != NULL) {
+            *lowerSum = 0U;
+        }
+        return;
+    }
+    if (boxSize == 1U) {
+        *medianIndex = 1U;
+        *lowerSum = sixel_palette_heckbert_entry_weight(cache[0U].entry);
+        return;
+    }
+    if (target == 0U) {
+        target = 1U;
+    }
+    iteration_limit = boxSize * 8U + 32U;
+
+    while (left < right && iteration_limit > 0U) {
+        if (prefix_weight >= target) {
+            *medianIndex = prefix_count;
+            *lowerSum = prefix_weight;
+            return;
+        }
+        --iteration_limit;
+        pivot = cache[left + (right - left) / 2U];
+        lt = left;
+        gt = right;
+        i = left;
+        while (i < gt) {
+            cmp = sixel_pca_entry_compare(&cache[i], &pivot);
+            if (cmp < 0) {
+                sixel_pca_entry_swap(&cache[i], &cache[lt]);
+                ++i;
+                ++lt;
+                continue;
+            }
+            if (cmp > 0) {
+                --gt;
+                sixel_pca_entry_swap(&cache[i], &cache[gt]);
+                continue;
+            }
+            ++i;
+        }
+        less_count = lt - left;
+        equal_count = gt - lt;
+        less_weight = 0U;
+        for (i = left; i < lt; ++i) {
+            less_weight += sixel_palette_heckbert_entry_weight(cache[i].entry);
+        }
+        if (less_count > 0U && prefix_weight + less_weight >= target) {
+            right = lt;
+            continue;
+        }
+        lower = prefix_weight + less_weight;
+        index = prefix_count + less_count;
+        equal_weight = 0U;
+        for (i = lt; i < gt; ++i) {
+            weight = sixel_palette_heckbert_entry_weight(cache[i].entry);
+            equal_weight += weight;
+            if (lower < target) {
+                lower += weight;
+                ++index;
+            }
+        }
+        if (lower >= target || prefix_weight + less_weight + equal_weight
+                                  >= target) {
+            *medianIndex = index;
+            *lowerSum = lower;
+            return;
+        }
+        prefix_count += less_count + equal_count;
+        prefix_weight += less_weight + equal_weight;
+        left = gt;
+    }
+
+    qsort((char *)cache,
+          boxSize,
+          sizeof(struct sixel_pca_sort_entry),
+          compareplanePcaCached);
+    index = 1U;
+    lower = sixel_palette_heckbert_entry_weight(cache[0U].entry);
+    while (index < boxSize - 1U && lower < target) {
+        lower += sixel_palette_heckbert_entry_weight(cache[index].entry);
+        ++index;
+    }
+    *medianIndex = index;
+    *lowerSum = lower;
+}
+
+static int
+compareplane_lexicographic(struct tupleint const *lhs,
+                           struct tupleint const *rhs,
                            unsigned int depth)
 {
     unsigned int plane;
@@ -1490,6 +1681,93 @@ sortBoxByPcaProjection(tupletable2 const colorfreqtable,
         colorfreqtable.table[boxStart + i] = cache[i].entry;
     }
     free(cache);
+
+    return SIXEL_OK;
+}
+
+/*
+ * Partition one PCA box around its weighted median without globally sorting
+ * the range.  The selected lower side stays in the front region expected by
+ * splitBox, while the upper side remains in the back region.
+ */
+static SIXELSTATUS
+partitionBoxByPcaMedian(tupletable2 const colorfreqtable,
+                        unsigned int boxStart,
+                        unsigned int boxSize,
+                        unsigned int depth,
+                        unsigned int dimensions,
+                        double axis[3],
+                        unsigned int sum,
+                        unsigned int *medianIndex,
+                        unsigned int *lowerSum)
+{
+    struct sixel_pca_sort_entry *cache;
+    unsigned int i;
+    unsigned int plane;
+    struct tupleint *entry;
+    double key;
+    unsigned int index;
+    unsigned int lower;
+
+    cache = NULL;
+    i = 0U;
+    plane = 0U;
+    entry = NULL;
+    key = 0.0;
+    index = 0U;
+    lower = 0U;
+    if (medianIndex == NULL || lowerSum == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (boxSize == 0U) {
+        *medianIndex = 0U;
+        *lowerSum = 0U;
+        return SIXEL_OK;
+    }
+    if (boxSize == 1U) {
+        *medianIndex = 1U;
+        *lowerSum = sixel_palette_heckbert_entry_weight(
+            colorfreqtable.table[boxStart]);
+        return SIXEL_OK;
+    }
+    cache = (struct sixel_pca_sort_entry *)malloc(
+        boxSize * sizeof(struct sixel_pca_sort_entry));
+    if (cache == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    compareplaneTieDepth = depth;
+    for (i = 0U; i < boxSize; ++i) {
+        entry = colorfreqtable.table[boxStart + i];
+        key = 0.0;
+        for (plane = 0U; plane < dimensions; ++plane) {
+            key += (double)entry->tuple[plane] * axis[plane];
+        }
+        cache[i].entry = entry;
+        cache[i].key = key;
+    }
+    sixel_pca_select_weighted_median(cache,
+                                     boxSize,
+                                     sum / 2U,
+                                     medianIndex,
+                                     lowerSum);
+    index = *medianIndex;
+    if (index == 0U) {
+        index = 1U;
+    }
+    if (index >= boxSize) {
+        index = boxSize - 1U;
+    }
+    lower = 0U;
+    for (i = 0U; i < index; ++i) {
+        lower += sixel_palette_heckbert_entry_weight(cache[i].entry);
+    }
+    for (i = 0U; i < boxSize; ++i) {
+        colorfreqtable.table[boxStart + i] = cache[i].entry;
+    }
+    free(cache);
+    *medianIndex = index;
+    *lowerSum = lower;
 
     return SIXEL_OK;
 }
@@ -2160,17 +2438,34 @@ sixel_palette_heckbert_split_attempt(
         for (i = 0U; i < 3U; ++i) {
             compareplanePcaAxis[i] = pca_axis[i];
         }
-        status = sortBoxByPcaProjection(colorfreqtable,
-                                        boxStart,
-                                        boxSize,
-                                        depth,
-                                        dimensions,
-                                        pca_axis);
+        status = partitionBoxByPcaMedian(colorfreqtable,
+                                         boxStart,
+                                         boxSize,
+                                         depth,
+                                         dimensions,
+                                         pca_axis,
+                                         sum,
+                                         medianIndex,
+                                         lowersum);
+        if (status == SIXEL_BAD_ALLOCATION) {
+            status = sortBoxByPcaProjection(colorfreqtable,
+                                            boxStart,
+                                            boxSize,
+                                            depth,
+                                            dimensions,
+                                            pca_axis);
+        }
         if (status == SIXEL_BAD_ALLOCATION) {
             qsort((char *)&colorfreqtable.table[boxStart],
                   boxSize,
                   sizeof(colorfreqtable.table[boxStart]),
                   compareplanePca);
+            sixel_palette_heckbert_compute_box_median(colorfreqtable,
+                                                      boxStart,
+                                                      boxSize,
+                                                      sum,
+                                                      medianIndex,
+                                                      lowersum);
             status = SIXEL_OK;
         }
         if (SIXEL_FAILED(status)) {
@@ -2179,6 +2474,7 @@ sixel_palette_heckbert_split_attempt(
         if (axis_used != NULL) {
             *axis_used = 0U;
         }
+        return SIXEL_OK;
     } else {
         if (methodForLargest == SIXEL_LARGE_LUM) {
             axis = largestByLuminosity(minval, maxval, depth);
