@@ -6,6 +6,7 @@ set -eux
 
 echo "1..1"
 set -v
+set +xv
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "palette/0003_kcenter_constraints" perceptual-strata-deterministic >/dev/null || {

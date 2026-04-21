@@ -18,11 +18,15 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -31,13 +35,28 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying deferred dual-stroke overlap decomposition on clipped group*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite did not emit deferred overlap decomposition trace"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header"
     exit 0
 }
 
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite malformed diagnostic header"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_DUAL_OVERLAP_DEFER*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite missing FX_DUAL_OVERLAP_DEFER"
+        exit 0
+        ;;
+esac
+
 echo "ok" 1 - \
-    "effects/stroke-composite keeps deferred dual-stroke overlap decomposition contract"
+    "effects/stroke-composite keeps deferred dual-stroke overlap code contract"
 exit 0

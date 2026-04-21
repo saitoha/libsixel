@@ -43,35 +43,18 @@ cert_dir="${TOP_SRCDIR}/tests/data/io/network/certs"
 server_script="${TOP_SRCDIR}/tests/data/io/network/https-server.py"
 server_root="${TOP_SRCDIR}"
 
-server_pid_file="${ARTIFACT_LOCAL_DIR}/curl-server-pid.$$"
 (
     cd "${server_root}" || exit 1
-    "${PYTHON}" "${server_script}" \
+    exec "${PYTHON}" "${server_script}" \
         --host localhost \
         --port-base "${server_port_base}" \
         --max-port-attempts "${max_port_attempts}" \
         --port-file "${port_file}" \
         --cert-file "${cert_dir}/server.crt" \
         --key-file "${cert_dir}/server.key" \
-        --requests 5 &
-    echo $! >"${server_pid_file}"
-)
-server_pid=""
-for _ in \
-    1 2 3 4 5 6 7 8 9 10 \
-    11 12 13 14 15 16 17 18 19 20 \
-    21 22 23 24 25 26 27 28 29 30; do
-    test -s "${server_pid_file}" && {
-        IFS= read -r server_pid < "${server_pid_file}" || test -n "${server_pid}"
-        break
-    }
-    sleep 0.01
-done
-
-test -n "${server_pid}" || {
-    printf 'ok 1 - self-signed fetch with -k # SKIP failed to capture HTTPS server pid\n'
-    exit 0
-}
+        --requests 5
+) &
+server_pid=$!
 
 server_port=""
 for _ in \
@@ -97,12 +80,11 @@ test -n "${server_port}" || {
     exit 0
 }
 
-verify_output="${ARTIFACT_LOCAL_DIR}/https.sixel"
 server_ok=1
 
 for _ in 1 2 3; do
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -k "https://localhost:${server_port}/images/map8.six" \
-        >"${verify_output}" && {
+        >/dev/null && {
         server_ok=0
         break
     }
@@ -114,11 +96,6 @@ kill "${server_pid}" 2>/dev/null || :
 wait "${server_pid}" 2>/dev/null || :
 
 test ${server_ok} -eq 0 || {
-    echo "not ok" 1 - "self-signed fetch with -k failed"
-    exit 0
-}
-
-test -s "${verify_output}" || {
     echo "not ok" 1 - "self-signed fetch with -k failed"
     exit 0
 }

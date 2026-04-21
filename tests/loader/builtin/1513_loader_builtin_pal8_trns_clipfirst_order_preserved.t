@@ -22,28 +22,28 @@ scalefirst_edge_ok=0
 
 clipfirst_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -v -Lbuiltin:cms_engine=none! -d fs:scan=raster \
-    -c2x1+1+0 -w7 -h3 -r nearest "${input_png}" 2>&1 >/dev/null) || {
+    -c2x1+1+0 -w7 -h3 -r nearest -p 2 "${input_png}" 2>&1 >/dev/null) || {
     echo "not ok 1 - clip then scale render failed"
     exit 0
 }
 
 scalefirst_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -v -Lbuiltin:cms_engine=none! -d fs:scan=raster \
-    -w7 -h3 -r nearest -c2x1+1+0 "${input_png}" 2>&1 >/dev/null) || {
+    -w7 -h3 -r nearest -c2x1+1+0 -p 2 "${input_png}" 2>&1 >/dev/null) || {
     echo "not ok 1 - scale then clip render failed"
     exit 0
 }
 
 clipfirst_out=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:cms_engine=none! -d fs:scan=raster \
-    -c2x1+1+0 -w7 -h3 -r nearest "${input_png}") || {
+    -c2x1+1+0 -w7 -h3 -r nearest -p 2 "${input_png}") || {
     echo "not ok 1 - clip then scale sixel output failed"
     exit 0
 }
 
 scalefirst_out=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Lbuiltin:cms_engine=none! -d fs:scan=raster \
-    -w7 -h3 -r nearest -c2x1+1+0 "${input_png}") || {
+    -w7 -h3 -r nearest -c2x1+1+0 -p 2 "${input_png}") || {
     echo "not ok 1 - scale then clip sixel output failed"
     exit 0
 }

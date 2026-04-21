@@ -16,25 +16,24 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
+default_out=""
+positive_out=""
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L coregraphics! -ldisable \
-    "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
-    >"${ARTIFACT_LOCAL_DIR}/coregraphics_start_default.six" || {
+default_out=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -Lcoregraphics! -ldisable -p 2 \
+    "${TOP_SRCDIR}/tests/data/inputs/small.gif" 2>/dev/null) || {
     echo "not ok" 1 - "baseline coregraphics animation decode failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --start-frame=1 \
-    -L coregraphics! -ldisable \
-    "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
-    >"${ARTIFACT_LOCAL_DIR}/coregraphics_start_positive.six" || {
+positive_out=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --start-frame=1 -Lcoregraphics! -ldisable -p 2 \
+    "${TOP_SRCDIR}/tests/data/inputs/small.gif" 2>/dev/null) || {
     echo "not ok" 1 - "coregraphics decode with positive start frame failed"
     exit 0
 }
 
-cmp -s "${ARTIFACT_LOCAL_DIR}/coregraphics_start_default.six" \
-    "${ARTIFACT_LOCAL_DIR}/coregraphics_start_positive.six" && {
+test "${default_out}" != "${positive_out}" || {
     echo "not ok" 1 - "positive start frame did not change coregraphics output"
     exit 0
 }
