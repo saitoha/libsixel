@@ -247,6 +247,14 @@ static double sixel_final_merge_ward_pair_cost(
     sixel_final_merge_cluster_t const *lhs,
     sixel_final_merge_cluster_t const *rhs,
     int pixelformat);
+static void
+sixel_final_merge_ward_refresh_row(double const *cost_matrix,
+                                   unsigned char const *active_map,
+                                   size_t nclusters_u,
+                                   int nclusters,
+                                   int row,
+                                   int *best_index,
+                                   double *best_cost);
 static int sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
                                          int nclusters,
                                          int target_k,
@@ -842,6 +850,57 @@ sixel_final_merge_ward_pair_cost(sixel_final_merge_cluster_t const *lhs,
 }
 
 /*
+ * Refresh the minimum-cost partner for one row in the Ward distance matrix.
+ * Callers can reuse the cached row minima to avoid scanning all pairs each
+ * merge step.
+ */
+static void
+sixel_final_merge_ward_refresh_row(double const *cost_matrix,
+                                   unsigned char const *active_map,
+                                   size_t nclusters_u,
+                                   int nclusters,
+                                   int row,
+                                   int *best_index,
+                                   double *best_cost)
+{
+    int col;
+    size_t row_base;
+    double cost;
+    double min_cost;
+    int min_index;
+
+    col = 0;
+    row_base = 0U;
+    cost = 0.0;
+    min_cost = DBL_MAX;
+    min_index = -1;
+    if (cost_matrix == NULL || active_map == NULL || best_index == NULL
+            || best_cost == NULL || nclusters <= 0 || row < 0
+            || row >= nclusters || active_map[(size_t)row] == 0U) {
+        if (best_index != NULL) {
+            *best_index = -1;
+        }
+        if (best_cost != NULL) {
+            *best_cost = DBL_MAX;
+        }
+        return;
+    }
+    row_base = (size_t)row * nclusters_u;
+    for (col = 0; col < nclusters; ++col) {
+        if (col == row || active_map[(size_t)col] == 0U) {
+            continue;
+        }
+        cost = cost_matrix[row_base + (size_t)col];
+        if (cost < min_cost) {
+            min_cost = cost;
+            min_index = col;
+        }
+    }
+    *best_index = min_index;
+    *best_cost = min_cost;
+}
+
+/*
  * Fast Ward path:
  *
  *   - cache pairwise merge costs in a dense matrix;
@@ -863,8 +922,10 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
     int k;
     int best_i;
     int best_j;
+    int row_peer;
     double best_cost;
     double cost;
+    double new_cost;
     double wi;
     double wj;
     double merged_weight;
@@ -872,11 +933,10 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
     size_t nclusters_u;
     size_t matrix_cells;
     size_t row_base;
-    size_t col_base;
-    size_t index_ij;
-    size_t index_ji;
     unsigned char *active_map;
     double *cost_matrix;
+    int *row_best_index;
+    double *row_best_cost;
 
     desired = target_k;
     active = 0;
@@ -885,8 +945,10 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
     k = 0;
     best_i = -1;
     best_j = -1;
+    row_peer = -1;
     best_cost = DBL_MAX;
     cost = 0.0;
+    new_cost = 0.0;
     wi = 0.0;
     wj = 0.0;
     merged_weight = 0.0;
@@ -897,11 +959,10 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
     nclusters_u = 0U;
     matrix_cells = 0U;
     row_base = 0U;
-    col_base = 0U;
-    index_ij = 0U;
-    index_ji = 0U;
     active_map = NULL;
     cost_matrix = NULL;
+    row_best_index = NULL;
+    row_best_cost = NULL;
     if (clusters == NULL || nclusters <= 0) {
         return 1;
     }
@@ -916,6 +977,12 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
     if (matrix_cells > SIZE_MAX / sizeof(double)) {
         return 0;
     }
+    if (nclusters_u > SIZE_MAX / sizeof(int)) {
+        return 0;
+    }
+    if (nclusters_u > SIZE_MAX / sizeof(double)) {
+        return 0;
+    }
 
     active_map = (unsigned char *)malloc(nclusters_u * sizeof(unsigned char));
     if (active_map == NULL) {
@@ -923,6 +990,19 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
     }
     cost_matrix = (double *)malloc(matrix_cells * sizeof(double));
     if (cost_matrix == NULL) {
+        free(active_map);
+        return 0;
+    }
+    row_best_index = (int *)malloc(nclusters_u * sizeof(int));
+    if (row_best_index == NULL) {
+        free(cost_matrix);
+        free(active_map);
+        return 0;
+    }
+    row_best_cost = (double *)malloc(nclusters_u * sizeof(double));
+    if (row_best_cost == NULL) {
+        free(row_best_index);
+        free(cost_matrix);
         free(active_map);
         return 0;
     }
@@ -936,6 +1016,8 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
         for (j = 0; j < nclusters; ++j) {
             cost_matrix[row_base + (size_t)j] = DBL_MAX;
         }
+        row_best_index[(size_t)i] = -1;
+        row_best_cost[(size_t)i] = DBL_MAX;
     }
 
     if (active <= desired) {
@@ -946,6 +1028,8 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
                 clusters[i].b = 0.0;
             }
         }
+        free(row_best_cost);
+        free(row_best_index);
         free(cost_matrix);
         free(active_map);
         return 1;
@@ -966,6 +1050,18 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
             cost_matrix[(size_t)j * nclusters_u + (size_t)i] = cost;
         }
     }
+    for (i = 0; i < nclusters; ++i) {
+        if (active_map[(size_t)i] == 0U) {
+            continue;
+        }
+        sixel_final_merge_ward_refresh_row(cost_matrix,
+                                           active_map,
+                                           nclusters_u,
+                                           nclusters,
+                                           i,
+                                           &row_best_index[(size_t)i],
+                                           &row_best_cost[(size_t)i]);
+    }
 
     while (active > desired) {
         best_i = -1;
@@ -975,21 +1071,33 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
             if (active_map[(size_t)i] == 0U) {
                 continue;
             }
-            row_base = (size_t)i * nclusters_u;
-            for (j = i + 1; j < nclusters; ++j) {
-                if (active_map[(size_t)j] == 0U) {
-                    continue;
-                }
-                cost = cost_matrix[row_base + (size_t)j];
-                if (cost < best_cost) {
-                    best_cost = cost;
-                    best_i = i;
-                    best_j = j;
-                }
+            row_peer = row_best_index[(size_t)i];
+            if (row_peer < 0 || row_peer >= nclusters
+                    || row_peer == i
+                    || active_map[(size_t)row_peer] == 0U) {
+                sixel_final_merge_ward_refresh_row(
+                    cost_matrix,
+                    active_map,
+                    nclusters_u,
+                    nclusters,
+                    i,
+                    &row_best_index[(size_t)i],
+                    &row_best_cost[(size_t)i]);
+                row_peer = row_best_index[(size_t)i];
+            }
+            if (row_peer >= 0 && row_best_cost[(size_t)i] < best_cost) {
+                best_cost = row_best_cost[(size_t)i];
+                best_i = i;
+                best_j = row_peer;
             }
         }
         if (best_i < 0 || best_j < 0) {
             break;
+        }
+        if (best_j < best_i) {
+            k = best_i;
+            best_i = best_j;
+            best_j = k;
         }
 
         wi = clusters[best_i].count;
@@ -1011,6 +1119,8 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
         clusters[best_j].g = 0.0;
         clusters[best_j].b = 0.0;
         active_map[(size_t)best_j] = 0U;
+        row_best_index[(size_t)best_j] = -1;
+        row_best_cost[(size_t)best_j] = DBL_MAX;
         --active;
 
         row_base = (size_t)best_j * nclusters_u;
@@ -1018,21 +1128,49 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
             cost_matrix[row_base + (size_t)k] = DBL_MAX;
             cost_matrix[(size_t)k * nclusters_u + (size_t)best_j] = DBL_MAX;
         }
-
         row_base = (size_t)best_i * nclusters_u;
         for (k = 0; k < nclusters; ++k) {
-            col_base = (size_t)k * nclusters_u;
-            index_ij = row_base + (size_t)k;
-            index_ji = col_base + (size_t)best_i;
             if (k == best_i || active_map[(size_t)k] == 0U) {
-                cost_matrix[index_ij] = DBL_MAX;
-                cost_matrix[index_ji] = DBL_MAX;
+                cost_matrix[row_base + (size_t)k] = DBL_MAX;
+                cost_matrix[(size_t)k * nclusters_u + (size_t)best_i]
+                    = DBL_MAX;
                 continue;
             }
             cost = sixel_final_merge_ward_pair_cost(
                 &clusters[best_i], &clusters[k], pixelformat);
-            cost_matrix[index_ij] = cost;
-            cost_matrix[index_ji] = cost;
+            cost_matrix[row_base + (size_t)k] = cost;
+            cost_matrix[(size_t)k * nclusters_u + (size_t)best_i] = cost;
+        }
+        sixel_final_merge_ward_refresh_row(cost_matrix,
+                                           active_map,
+                                           nclusters_u,
+                                           nclusters,
+                                           best_i,
+                                           &row_best_index[(size_t)best_i],
+                                           &row_best_cost[(size_t)best_i]);
+        for (k = 0; k < nclusters; ++k) {
+            if (k == best_i || active_map[(size_t)k] == 0U) {
+                continue;
+            }
+            row_peer = row_best_index[(size_t)k];
+            if (row_peer == best_i || row_peer == best_j || row_peer < 0
+                    || row_peer >= nclusters
+                    || active_map[(size_t)row_peer] == 0U) {
+                sixel_final_merge_ward_refresh_row(
+                    cost_matrix,
+                    active_map,
+                    nclusters_u,
+                    nclusters,
+                    k,
+                    &row_best_index[(size_t)k],
+                    &row_best_cost[(size_t)k]);
+                continue;
+            }
+            new_cost = cost_matrix[(size_t)k * nclusters_u + (size_t)best_i];
+            if (new_cost < row_best_cost[(size_t)k]) {
+                row_best_cost[(size_t)k] = new_cost;
+                row_best_index[(size_t)k] = best_i;
+            }
         }
     }
 
@@ -1043,6 +1181,8 @@ sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
             clusters[i].b = 0.0;
         }
     }
+    free(row_best_cost);
+    free(row_best_index);
     free(cost_matrix);
     free(active_map);
 

@@ -963,6 +963,36 @@ sumcompare(const void *b1, const void *b2)
     return 0;
 }
 
+/*
+ * Reposition one updated box while preserving sumcompare order without
+ * re-sorting the full vector.
+ */
+static void
+sixel_palette_heckbert_reposition_box(boxVector bv,
+                                      unsigned int count,
+                                      unsigned int index)
+{
+    unsigned int pos;
+    struct box tmp;
+
+    pos = index;
+    if (bv == NULL || count < 2U || index >= count) {
+        return;
+    }
+    while (pos > 0U && sumcompare(&bv[pos - 1U], &bv[pos]) > 0) {
+        tmp = bv[pos - 1U];
+        bv[pos - 1U] = bv[pos];
+        bv[pos] = tmp;
+        --pos;
+    }
+    while (pos + 1U < count && sumcompare(&bv[pos], &bv[pos + 1U]) > 0) {
+        tmp = bv[pos];
+        bv[pos] = bv[pos + 1U];
+        bv[pos + 1U] = tmp;
+        ++pos;
+    }
+}
+
 static tupletable2
 newColorMap(unsigned int newcolors,
             unsigned int depth,
@@ -2141,6 +2171,7 @@ splitBox(boxVector bv,
     unsigned int split_methods[3];
     unsigned int split_method_count;
     unsigned int split_attempt;
+    unsigned int old_boxes;
     int split_method;
     int degenerate;
 
@@ -2155,6 +2186,7 @@ splitBox(boxVector bv,
     split_ok = 0;
     split_method_count = 0U;
     split_attempt = 0U;
+    old_boxes = 0U;
     split_method = methodForLargest;
     degenerate = 0;
     if (methodForLargest != SIXEL_LARGE_NORM
@@ -2254,13 +2286,15 @@ splitBox(boxVector bv,
         goto end;
     }
 
+    old_boxes = *boxesP;
     bv[bi].colors = medianIndex;
     bv[bi].sum = lowersum;
-    bv[*boxesP].ind = boxStart + medianIndex;
-    bv[*boxesP].colors = boxSize - medianIndex;
-    bv[*boxesP].sum = sm - lowersum;
-    ++(*boxesP);
-    qsort((char *)bv, *boxesP, sizeof(struct box), sumcompare);
+    bv[old_boxes].ind = boxStart + medianIndex;
+    bv[old_boxes].colors = boxSize - medianIndex;
+    bv[old_boxes].sum = sm - lowersum;
+    *boxesP = old_boxes + 1U;
+    sixel_palette_heckbert_reposition_box(bv, old_boxes, bi);
+    sixel_palette_heckbert_reposition_box(bv, *boxesP, old_boxes);
     status = SIXEL_OK;
 
 end:
