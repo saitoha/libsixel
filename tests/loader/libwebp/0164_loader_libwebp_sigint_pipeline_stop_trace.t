@@ -69,7 +69,7 @@ trace_summary=$(
         --env "SIXEL_THREADS=4" \
         --env "SIXEL_TRACE_TOPIC=encode_handoff" \
         --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
-        -Llibwebp! -lforce -g "${input_webp}" 2>&1 >/dev/null
+        -Llibwebp! -lforce -o /dev/null -g "${input_webp}" 2>&1 >/dev/null
 ) || sigint_run_status=$?
 
 handoff_flag=0
@@ -97,7 +97,7 @@ test "${retry_flag}" = "0" || {
             --env "SIXEL_THREADS=4" \
             --env "SIXEL_TRACE_TOPIC=encode_handoff" \
             --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
-            -Llibwebp! -lforce -g "${input_webp}" 2>&1 >/dev/null
+            -Llibwebp! -lforce -o /dev/null -g "${input_webp}" 2>&1 >/dev/null
     ) || sigint_run_status=$?
 
     handoff_flag=0
