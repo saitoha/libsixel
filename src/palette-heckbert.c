@@ -1363,7 +1363,12 @@ sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
                      unsigned int boxStart,
                      unsigned int boxSize,
                      unsigned int axis,
-                     unsigned int const axis_count
+                     /*
+                      * Keep this non-const for C99 compatibility: passing a
+                      * pointer-to-array with added qualifiers is only relaxed
+                      * in newer standards, but we build with -std=c99.
+                      */
+                     unsigned int axis_count
                          [sixel_palette_heckbert_max_channels]
                          [sixel_palette_heckbert_axis_bins],
                      sample const minval[],
@@ -2184,7 +2189,24 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         || colorfreqtable.table == NULL || colorfreqtable.size == 0U) {
         return;
     }
+    /*
+     * The caller builds clusters from the histogram table, so cluster_count
+     * must never exceed the tuple count.  Abort refinement if metadata is
+     * inconsistent to avoid out-of-bounds reads on analyzer builds.
+     */
+    if (cluster_count > colorfreqtable.size) {
+        return;
+    }
+    if ((size_t)cluster_count > SIZE_MAX / sizeof(unsigned long)) {
+        return;
+    }
+    if ((size_t)cluster_count > SIZE_MAX / (size_t)depth) {
+        return;
+    }
     total = (size_t)cluster_count * (size_t)depth;
+    if (total > SIZE_MAX / sizeof(double)) {
+        return;
+    }
     sum_bytes = total * sizeof(double);
     centers = (double *)malloc(total * sizeof(double));
     if (centers == NULL) {
@@ -3106,6 +3128,14 @@ mediancut(tupletable2 const colorfreqtable,
         }
         if ((unsigned int)cluster_total > newcolors) {
             cluster_total = (int)newcolors;
+        }
+        /*
+         * cluster_weight/cluster_sums are allocated for `boxes` entries.
+         * Clamp merged cluster_count so downstream refinement and conversion
+         * never index beyond those buffers.
+         */
+        if ((unsigned int)cluster_total > boxes) {
+            cluster_total = (int)boxes;
         }
         if (cluster_total > 0) {
             sixel_final_merge_load_env();
