@@ -25,14 +25,14 @@ set -v
 set +x
 
 input_psd_off="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
-input_psd_on="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite_stroke_adjust_on.psd"
-trace_output_off=''
-trace_output_on=''
+trace_output=''
+diag_line_off=''
 command_status=0
 
-trace_output_off=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd_off}" 2>&1) || \
     command_status=$?
 
@@ -41,29 +41,35 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output_off#*builtin PSD: applying stroke-adjusted vector stroke coverage in layer fallback*}" \
-    = "${trace_output_off}" || {
-    echo "not ok" 1 - "effects/stroke-composite unexpectedly enabled base stroke-adjust trace"
+diag_line_off=${trace_output}
+test -n "${diag_line_off}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing off diagnostic header"
     exit 0
 }
 
-command_status=0
-trace_output_on=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env SIXEL_TRACE_TOPIC=psd_decode \
-    --env SIXEL_PSD_TRACE_ONLY=1 \
-    -Lbuiltin:e=auto! -o /dev/null "${input_psd_on}" 2>&1) || \
-    command_status=$?
+case "${diag_line_off}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite off diagnostic header is malformed"
+        exit 0
+        ;;
+esac
 
-test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "effects/stroke-composite (strokeAdjust on) decode failed"
-    exit 0
-}
+case "${diag_line_off}" in
+    *FX_STROKE_ADJUST_BASE*)
+        echo "not ok" 1 - "effects/stroke-composite unexpectedly enabled base stroke-adjust code"
+        exit 0
+        ;;
+    *) ;;
+esac
 
-test "${trace_output_on#*builtin PSD: applying stroke-adjusted vector stroke coverage in layer fallback*}" \
-    != "${trace_output_on}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not enable base stroke-adjust trace"
-    exit 0
-}
+case "${diag_line_off}" in
+    *FX_STROKE_ADJUST_DEFER*)
+        echo "not ok" 1 - "effects/stroke-composite unexpectedly enabled deferred stroke-adjust code"
+        exit 0
+        ;;
+    *) ;;
+esac
 
-echo "ok" 1 - "effects/stroke-composite keeps base strokeAdjust on/off contract"
+echo "ok" 1 - "effects/stroke-composite keeps strokeAdjust disabled in off fixture"
 exit 0

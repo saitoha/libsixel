@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify miter-join support keeps deferred vector/effect dual-stroke contract.
+# Verify miter-join dual-stroke contract stays mapped in diagnostic codes.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -14,15 +14,19 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-set +x
+set +xv
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -31,20 +35,67 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying vector stroke and layer effect stroke in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite lost base vector/effect dual-stroke contract"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying deferred vector stroke and layer effect stroke on clipped group*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite lost deferred vector/effect dual-stroke contract"
-    exit 0
-}
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite diagnostic header is malformed"
+        exit 0
+        ;;
+esac
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps vector/effect dual-stroke non-regression contract"
+case "${diag_line}" in
+    *FX_DUAL_SOURCE_BASE*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite lost base dual-source code"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_DUAL_SOURCE_DEFER*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite lost deferred dual-source code"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_DUAL_MODE_BASE*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite lost base mode-aware code"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_DUAL_MODE_DEFER*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite lost deferred mode-aware code"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_DUAL_OVERLAP_BASE*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite lost base overlap code"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_DUAL_OVERLAP_DEFER*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite lost deferred overlap code"
+        exit 0
+        ;;
+esac
+
+echo "ok" 1 - "effects/stroke-composite keeps dual-source code contract"
 exit 0

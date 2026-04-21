@@ -18,12 +18,13 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
+set +x
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 server_port_base=4444
 max_port_attempts=5
 # Use nearby ports so the HTTPS server can start when the default is busy.
-port_file="${ARTIFACT_LOCAL_DIR}/server.port"
+port_file="${ARTIFACT_LOCAL_DIR}/server.$$.port"
 
 
 PYTHON=""
@@ -42,7 +43,7 @@ cert_dir="${TOP_SRCDIR}/tests/data/io/network/certs"
 server_script="${TOP_SRCDIR}/tests/data/io/network/https-server.py"
 server_root="${TOP_SRCDIR}"
 
-server_pid_file="${ARTIFACT_LOCAL_DIR}/curl-server-pid"
+server_pid_file="${ARTIFACT_LOCAL_DIR}/curl-server-pid.$$"
 (
     cd "${server_root}" || exit 1
     "${PYTHON}" "${server_script}" \
@@ -56,39 +57,37 @@ server_pid_file="${ARTIFACT_LOCAL_DIR}/curl-server-pid"
     echo $! >"${server_pid_file}"
 )
 server_pid=""
-while IFS= read -r server_pid_line || test -n "${server_pid_line}"; do
-    case "${server_pid}" in
-        "")
-            server_pid=${server_pid_line}
-            ;;
-        *)
-            server_pid="${server_pid}
-${server_pid_line}"
-            ;;
-    esac
-done < "${server_pid_file}"
+for _ in \
+    1 2 3 4 5 6 7 8 9 10 \
+    11 12 13 14 15 16 17 18 19 20 \
+    21 22 23 24 25 26 27 28 29 30; do
+    test -s "${server_pid_file}" && {
+        IFS= read -r server_pid < "${server_pid_file}" || test -n "${server_pid}"
+        break
+    }
+    sleep 0.01
+done
+
+test -n "${server_pid}" || {
+    printf 'ok 1 - self-signed fetch with -k # SKIP failed to capture HTTPS server pid\n'
+    exit 0
+}
 
 server_port=""
-for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
+for _ in \
+    1 2 3 4 5 6 7 8 9 10 \
+    11 12 13 14 15 16 17 18 19 20 \
+    21 22 23 24 25 26 27 28 29 30 \
+    31 32 33 34 35 36 37 38 39 40 \
+    41 42 43 44 45 46 47 48 49 50; do
     test -s "${port_file}" && {
-        server_port=""
-        while IFS= read -r server_port_line || test -n "${server_port_line}"; do
-            case "${server_port}" in
-                "")
-                    server_port=${server_port_line}
-                    ;;
-                *)
-                    server_port="${server_port}
-${server_port_line}"
-                    ;;
-            esac
-        done < "${port_file}"
+        IFS= read -r server_port < "${port_file}" || test -n "${server_port}"
         break
     }
 
     kill -0 "${server_pid}" 2>/dev/null || break
 
-    "${PYTHON}" -c "import time; time.sleep(0.01)"
+    sleep 0.01
 done
 
 test -n "${server_port}" || {
@@ -108,7 +107,7 @@ for _ in 1 2 3; do
         break
     }
 
-    "${PYTHON}" -c "import time; time.sleep(0.01)"
+    sleep 0.01
 done
 
 kill "${server_pid}" 2>/dev/null || :
