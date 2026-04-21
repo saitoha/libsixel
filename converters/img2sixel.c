@@ -837,6 +837,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "Example: 'path,suggestion' narrows diagnostics to those topics."
     },
     {
+        "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL",
+        "emit minimal encode_handoff trace events for test contracts.\n"
+        "Only the exact value '1' enables it."
+    },
+    {
         "SIXEL_PSD_TRACE_ONLY",
         "enable PSD/PSB trace-only diagnostics shortcut.\n"
         "Only the exact value '1' enables it, and only when\n"
