@@ -86,7 +86,9 @@ kill -0 "${pid}" 2>/dev/null && {
         sleep 0.05
         retry_wait_limit=$((retry_wait_limit - 1))
     done
-    kill -0 "${pid}" 2>/dev/null && kill -INT "${pid}" 2>/dev/null || true
+    kill -0 "${pid}" 2>/dev/null && {
+        kill -INT "${pid}" 2>/dev/null || true
+    }
     wait_limit=40
     # Runtime wrappers such as wine can delay SIGINT delivery to the target.
     # Keep native runs strict while allowing extra grace time for wrapped runs.
