@@ -6,15 +6,16 @@ set -eux
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 rc=0
-cli_output_file="${ARTIFACT_LOCAL_DIR}/cli_option_requires_argument.out"
+cli_output=''
 
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "cli/0030_cli_option_requires_argument" >"${cli_output_file}" 2>&1 || rc=$?
-cat "${cli_output_file}" >&2 2>/dev/null || :
+cli_output=$(set +xv; ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    "cli/0030_cli_option_requires_argument" 2>&1) || rc=$?
+: "${cli_output}"
 
 test "${rc}" -eq 0 || {
+    printf '%s\n' "${cli_output}" >&2
     echo "not ok" 1 - "cli_option_requires_argument"
     exit 0
 }

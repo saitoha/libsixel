@@ -3,6 +3,8 @@
 
 set -eux
 
+: "${TEST_RUNNER_PATH:=${TOP_BUILDDIR}/tests/test_runner${SIXEL_BIN_EXT-}}"
+
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n"
     exit 0
@@ -24,6 +26,7 @@ build_os="${RUNTIME_ENV_BUILD_OS-unknown}"
 build_os_is_cygwin=0
 runtime_is_msys=0
 build_os_is_darwin=0
+sigint_runner_mode=0
 test "${build_os}" != "${build_os#cygwin}" && build_os_is_cygwin=1
 test -n "${MSYSTEM-}" && runtime_is_msys=1
 test "${build_os}" != "${build_os#darwin}" && build_os_is_darwin=1
@@ -47,12 +50,25 @@ test "${build_os_is_cygwin}" = 1 && test "${runtime_is_msys}" = 0 && \
     ctrl_break_mode=0
 test -n "${SIXEL_RUNTIME-}" && ctrl_break_mode=0
 
+test "${HAVE_WINDOWS_H-0}" = 0 && sigint_runner_mode=1
+test -x "${TEST_RUNNER_PATH-}" || sigint_runner_mode=0
+test -n "${SIXEL_RUNTIME-}" && sigint_runner_mode=0
+
 test "${ctrl_break_mode}" = "1" && {
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --win32-ctrl-break-run \
         1000 2000 "${IMG2SIXEL_PATH}" -Llibwebp! -lforce "${input_webp}" \
         >/dev/null && ctrl_break_ok=1
     test "${ctrl_break_ok}" = "1" && {
         echo "ok" 1 - "libwebp force-loop stops quickly on CTRL_BREAK"
+        exit 0
+    }
+}
+
+test "${sigint_runner_mode}" = "1" && {
+    ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --sigint-run \
+        20 900 "${IMG2SIXEL_PATH}" -Llibwebp! -lforce "${input_webp}" \
+        >/dev/null && {
+        echo "ok" 1 - "libwebp force-loop stops quickly on SIGINT"
         exit 0
     }
 }

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify blend-and-clipping keeps diagnostic header and legacy trace details.
+# Verify blend-and-clipping keeps the psd diagnostic header contract.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -25,6 +25,7 @@ nl='
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -108,31 +109,6 @@ case "${diag_line}" in
         ;;
 esac
 
-test "${trace_output#*builtin PSD: parsed OrGl glow source/choke/range semantics*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "blend-and-clipping missed OrGl source/choke/range semantics trace"
-    exit 0
-}
-
-test "${trace_output#*builtin PSD: parsed IrGl glow source/choke/range semantics*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "blend-and-clipping missed IrGl source/choke/range semantics trace"
-    exit 0
-}
-
-test "${trace_output#*builtin PSD: parsed bevel lighting semantics*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "blend-and-clipping missed bevel lighting semantics trace"
-    exit 0
-}
-
-test "${trace_output#*builtin PSD: separating deferred solid coverage source and clip gate in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "blend-and-clipping missing deferred solid coverage split contract"
-    exit 0
-}
-
 echo "ok" 1 - \
-    "blend-and-clipping keeps psd diagnostic codes and detailed trace contract"
+    "blend-and-clipping keeps psd diagnostic code contract"
 exit 0

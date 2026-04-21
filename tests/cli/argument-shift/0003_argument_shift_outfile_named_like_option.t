@@ -16,8 +16,6 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 out_file="${ARTIFACT_LOCAL_DIR}/-p"
 
-: >"${out_file}"
-
 cd "${ARTIFACT_LOCAL_DIR}" && {
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -o -p "${image_path}" >/dev/null || {
         echo "not ok" 1 - "outfile named like option rejected"

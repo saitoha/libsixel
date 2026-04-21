@@ -24,19 +24,19 @@ test "${is_windows_env}" = 0 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-missing_path="${ARTIFACT_LOCAL_DIR}/invalid_filename"
-missing_output="${ARTIFACT_LOCAL_DIR}/capture.invalid"
+missing_path="${TOP_SRCDIR}/tests/data/inputs/does-not-exist-invalid-positional.ppm"
+missing_stdout=''
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+missing_stdout=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=file_open:lifecycle \
-    -v "${missing_path}" >"${missing_output}" && {
+    -v "${missing_path}" 2>/dev/null) && {
     echo "not ok" 1 - "img2sixel accepted missing input"
     exit 0
 }
+: "${missing_stdout}"
 
-test ! -s "${missing_output}" || {
+test -z "${missing_stdout}" || {
     echo "not ok" 1 - "img2sixel produced output for missing input"
     exit 0
 }

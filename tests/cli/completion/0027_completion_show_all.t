@@ -10,38 +10,30 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo '1..1'
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-output_file="${ARTIFACT_LOCAL_DIR}/completion-all.txt"
+completion_output=''
 
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -1 all >"${output_file}" || {
+completion_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -1 all) || {
     echo "not ok" 1 - "combined completion output failed"
     exit 0
 }
+: "${completion_output}"
 
-bash_header_found=0
-zsh_header_found=0
-while IFS= read -r line; do
-    case "${line}" in
-        *"# bash completion for img2sixel"*)
-            bash_header_found=1
-            ;;
-        *"#compdef img2sixel"*)
-            zsh_header_found=1
-            ;;
-    esac
-done < "${output_file}"
-
-test "${bash_header_found}" -eq 1 || {
+case "${completion_output}" in
+    *"# bash completion for img2sixel"*) ;;
+    *)
     echo "not ok" 1 - "missing bash completion header in combined output"
     exit 0
-}
+    ;;
+esac
 
-test "${zsh_header_found}" -eq 1 || {
+case "${completion_output}" in
+    *"#compdef img2sixel"*) ;;
+    *)
     echo "not ok" 1 - "missing zsh completion header in combined output"
     exit 0
-}
+    ;;
+esac
 
 echo "ok" 1 - "combined completion output available"
 exit 0
