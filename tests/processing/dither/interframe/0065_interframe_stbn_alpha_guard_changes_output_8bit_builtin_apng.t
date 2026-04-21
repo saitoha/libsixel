@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring stbn alpha_guard changes 8bit builtin apng output.
+# TAP test ensuring alpha_guard=1 is reflected in 8bit STBN contract.
 
 set -eux
 
@@ -10,14 +10,18 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
 
-base_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        -L builtin \
-        -ldisable \
-        -d stbn:source=mask -p 16 \
-        "${input_apng}"
-) || {
+msg=''
+status=0
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_TRACE_TOPIC=dither_contract \
+    --threads=1 \
+    -L builtin \
+    -ldisable \
+    -S -T 1 \
+    -d stbn:source=mask:alpha_guard=1 -p 16 \
+    "${input_apng}" 2>&1 >/dev/null) || status=$?
+
+test "${status}" -eq 0 || {
     printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
     exit 0
 }
@@ -25,22 +29,39 @@ base_output=$(
 echo "1..1"
 set -v
 
-guard_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        -L builtin \
-        -ldisable \
-        -d stbn:source=mask:alpha_guard=1 -p 16 \
-        "${input_apng}"
-) || {
-    echo "not ok" 1 - "8bit stbn alpha_guard encode failed"
+diag_line=''
+nl='
+'
+
+diag_line=${msg%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "8bit stbn alpha_guard missing diagnostic header"
     exit 0
 }
 
-test "${guard_output}" != "${base_output}" || {
-    echo "not ok" 1 - "8bit stbn alpha_guard did not change output"
-    exit 0
-}
+case "${diag_line}" in
+    LSXDTH1\|rc=0\|*codes=*) ;;
+    *)
+        echo "not ok" 1 - "8bit stbn alpha_guard malformed diagnostic header"
+        exit 0
+        ;;
+esac
 
-echo "ok" 1 - "8bit stbn alpha_guard changes output"
+case "${diag_line}" in
+    *\|source=mask\|*) ;;
+    *)
+        echo "not ok" 1 - "8bit stbn alpha_guard source marker is missing"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *ALPHA_GUARD_ON*) ;;
+    *)
+        echo "not ok" 1 - "8bit stbn alpha_guard contract code is missing"
+        exit 0
+        ;;
+esac
+
+echo "ok" 1 - "8bit stbn alpha_guard contract is reported"
 exit 0

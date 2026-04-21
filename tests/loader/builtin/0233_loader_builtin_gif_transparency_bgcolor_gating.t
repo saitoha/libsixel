@@ -8,66 +8,57 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-transparent-anim-dispose2.gif"
-out_default="${ARTIFACT_LOCAL_DIR}/builtin_gif_transparent_default.six"
-out_bgcolor="${ARTIFACT_LOCAL_DIR}/builtin_gif_transparent_bgcolor.six"
 keycolor_header="$(printf '\033P0;1q')"
+default_output=''
+bgcolor_output=''
+default_line=''
+bgcolor_line=''
+nl='
+'
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
+default_output=$(
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=1 \
               -Lbuiltin! \
-              -ldisable -d fs:scan=raster \
-              "${input_gif}" >"${out_default}" || {
+              -ldisable -S -T 1 -d fs:scan=raster \
+              "${input_gif}"
+) || {
     echo "not ok" 1 - "builtin transparent GIF default decode failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
+bgcolor_output=$(
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=1 \
               --env SIXEL_BGCOLOR=white \
               -Lbuiltin! \
-              -ldisable -d fs:scan=raster \
-              "${input_gif}" >"${out_bgcolor}" || {
+              -ldisable -S -T 1 -d fs:scan=raster \
+              "${input_gif}"
+) || {
     echo "not ok" 1 - "builtin transparent GIF with bgcolor decode failed"
     exit 0
 }
 
-set +x
-out_default_text=""
-IFS= read -r out_default_text < "${out_default}" || test -n "${out_default_text}"
-case "${out_default_text}" in
-    *"${keycolor_header}"*)
-        default_has_keycolor=1
-        ;;
+default_line=${default_output%%"${nl}"*}
+bgcolor_line=${bgcolor_output%%"${nl}"*}
+
+case "${default_line}" in
+    *"${keycolor_header}"*) ;;
     *)
-        default_has_keycolor=0
+        echo "not ok" 1 - "builtin GIF default output is missing keycolor"
+        exit 0
         ;;
 esac
 
-out_bgcolor_text=""
-IFS= read -r out_bgcolor_text < "${out_bgcolor}" || test -n "${out_bgcolor_text}"
-case "${out_bgcolor_text}" in
+case "${bgcolor_line}" in
     *"${keycolor_header}"*)
-        bgcolor_has_keycolor=1
+        echo "not ok" 1 - "builtin GIF bgcolor output unexpectedly kept keycolor"
+        exit 0
         ;;
-    *)
-        bgcolor_has_keycolor=0
-        ;;
+    *) ;;
 esac
-
-test "${default_has_keycolor}" -eq 1 || {
-    echo "not ok" 1 - "builtin GIF transparency keycolor gating mismatch"
-    exit 0
-}
-
-test "${bgcolor_has_keycolor}" -eq 0 || {
-    echo "not ok" 1 - "builtin GIF transparency keycolor gating mismatch"
-    exit 0
-}
 
 echo "ok" 1 - "builtin GIF transparency keycolor is gated by bgcolor"
-
 exit 0

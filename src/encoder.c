@@ -620,6 +620,12 @@ sixel_encoder_emit_dither_contract(sixel_encoder_t const *encoder,
     if (source_id == SIXEL_INTERFRAME_STBN_SOURCE_PMJ) {
         sixel_encoder_emit_contract_code(stderr, &first, "STRATEGY_SOURCE_PMJ");
     }
+    if (dither->stbn_alpha_guard_override != 0
+            && dither->stbn_alpha_guard_enabled != 0) {
+        sixel_encoder_emit_contract_code(stderr, &first, "ALPHA_GUARD_ON");
+    } else if (dither->stbn_alpha_guard_override != 0) {
+        sixel_encoder_emit_contract_code(stderr, &first, "ALPHA_GUARD_OFF");
+    }
     if (dither->interframe_state.reset_frame_boundary_count > 0UL) {
         sixel_encoder_emit_contract_code(stderr,
                                          &first,
