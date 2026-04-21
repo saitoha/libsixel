@@ -2572,8 +2572,8 @@ sixel_palette_heckbert_split_attempt(
     unsigned int boxSize,
     sample minval[],
     sample maxval[],
-    unsigned int const axis_count[sixel_palette_heckbert_max_channels]
-                                 [sixel_palette_heckbert_axis_bins],
+    unsigned int axis_count[sixel_palette_heckbert_max_channels]
+                           [sixel_palette_heckbert_axis_bins],
     int methodForLargest,
     unsigned int sum,
     unsigned int dimensions,
