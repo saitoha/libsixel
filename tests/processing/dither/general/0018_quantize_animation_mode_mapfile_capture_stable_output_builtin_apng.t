@@ -14,6 +14,7 @@ test "${ARTIFACT_LOCAL_DIR-}" != "" || {
     printf "1..0 # SKIP ARTIFACT_LOCAL_DIR is not set\n"
     exit 0
 }
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 palette_output="${ARTIFACT_LOCAL_DIR}/quantize-animation-mode-mapfile.pal"
 
