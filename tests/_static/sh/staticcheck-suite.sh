@@ -337,6 +337,27 @@ run_case_tap "staticcheck-docs-envvars-help-table" \
     "$src_root/tests/_static/sh/staticcheck-docs-envvars-help-table.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-loader-builtin-1464-static-contract" \
+    env ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/staticcheck-loader-builtin-1464" \
+    TOP_SRCDIR="$TOP_SRCDIR" \
+    TOP_BUILDDIR="$TOP_BUILDDIR" \
+    sh "$src_root/tests/meson-tap-exitcode-wrapper.sh" \
+    "$src_root/tests/loader/builtin/1464_loader_builtin_psd_psdtools_blend_and_clipping_clip_weighted_deferred_solid_overlay_trace.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-loader-builtin-1578-static-contract" \
+    env ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/staticcheck-loader-builtin-1578" \
+    TOP_SRCDIR="$TOP_SRCDIR" \
+    TOP_BUILDDIR="$TOP_BUILDDIR" \
+    sh "$src_root/tests/meson-tap-exitcode-wrapper.sh" \
+    "$src_root/tests/loader/builtin/1578_loader_builtin_psd_psdtools_effects_stroke_composite_vector_stroke_adjust_deferred_trace.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-quant-palette-init-0073-static-contract" \
+    env ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/staticcheck-quant-palette-init-0073" \
+    TOP_SRCDIR="$TOP_SRCDIR" \
+    TOP_BUILDDIR="$TOP_BUILDDIR" \
+    sh "$src_root/tests/meson-tap-exitcode-wrapper.sh" \
+    "$src_root/tests/quant/palette/init/0073_kcenter_auto_perceptual_oklab_hybrid_preference.t" || fail_and_exit $?
+
 printf 'staticcheck summary: total=%d pass=%d skip=%d fail=%d\n' \
     "$index" "$pass_count" "$skip_count" "$fail_count"
 

@@ -76,6 +76,21 @@ esac
                 # This check is now covered by staticcheck.
                 next
             }
+            if (path == "loader/builtin/1464_loader_builtin_psd_psdtools_blend_and_clipping_clip_weighted_deferred_solid_overlay_trace.t") {
+                # This check validates static code contracts in src/frompsd.c.
+                # Keep it under staticcheck to avoid dynamic check overhead.
+                next
+            }
+            if (path == "loader/builtin/1578_loader_builtin_psd_psdtools_effects_stroke_composite_vector_stroke_adjust_deferred_trace.t") {
+                # This check validates static code contracts in src/frompsd.c.
+                # Keep it under staticcheck to avoid dynamic check overhead.
+                next
+            }
+            if (path == "quant/palette/init/0073_kcenter_auto_perceptual_oklab_hybrid_preference.t") {
+                # This check validates static code contracts in a C test source.
+                # Keep it under staticcheck to avoid dynamic check overhead.
+                next
+            }
             if (ruby_tests_mode == "skip" &&
                 path ~ /^bindings\/ruby\/[0-9][0-9][0-9][0-9]_.+\.rb$/) {
                 next
