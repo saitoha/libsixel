@@ -8,7 +8,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
+input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 esc=''
 sixel_record_end=''
 locked_output=''
@@ -20,20 +20,11 @@ first_palette_prefix=''
 second_palette_prefix=''
 frame_scan=''
 frame_token=''
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 \
-    -L builtin \
-    -ldisable \
-    -S -T 1 \
-    -Qauto -d fs -p 16 \
-    "${input_apng}" >/dev/null 2>&1 || {
-    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
-    exit 0
-}
+command_status=0
 
 echo "1..1"
 set -v
+set +xv
 
 locked_output=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -43,7 +34,20 @@ locked_output=$(
         -Qauto:animation_mode=1:scene_cut_threshold=1.0 \
         -d fs -p 16 \
         "${input_apng}"
-) || {
+) || command_status=$?
+
+test "${command_status}" -eq 0 || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 \
+        -L builtin \
+        -ldisable \
+        -S -T 1 \
+        -Qauto -d fs -p 16 \
+        "${input_apng}" >/dev/null 2>&1 || {
+        printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
+        exit 0
+    }
+
     echo "not ok" 1 - "animation_mode lock encode failed"
     exit 0
 }

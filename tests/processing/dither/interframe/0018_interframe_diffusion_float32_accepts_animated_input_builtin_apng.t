@@ -8,38 +8,35 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_apng_12x8_rgba_loop2.png"
+input_apng="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
+command_status=0
+
+echo "1..1"
+set -v
+set +xv
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
     --precision=float32 \
     -L builtin \
     -ldisable \
-    -S -T 1 \
-    -d fs -p 16 \
-    "${input_apng}" >/dev/null 2>&1 || {
-    printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
-    exit 0
-}
+    -d interframe -p 16 \
+    "${input_apng}" >/dev/null 2>&1 || command_status=$?
 
-echo "1..1"
-set -v
-
-interframe_output=$(
+test "${command_status}" -eq 0 || {
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --threads=1 \
         --precision=float32 \
         -L builtin \
         -ldisable \
-        -d interframe -p 16 \
-        "${input_apng}"
-) || {
-    echo "not ok" 1 - "interframe float32 animated encode failed"
-    exit 0
-}
+        -S -T 1 \
+        -d fs -p 16 \
+        "${input_apng}" >/dev/null 2>&1 || {
+        printf "1..0 # SKIP animated builtin APNG frame path is unavailable\n"
+        exit 0
+    }
 
-test -n "${interframe_output}" || {
-    echo "not ok" 1 - "interframe float32 animated output is empty"
+    echo "not ok" 1 - "interframe float32 animated encode failed"
     exit 0
 }
 

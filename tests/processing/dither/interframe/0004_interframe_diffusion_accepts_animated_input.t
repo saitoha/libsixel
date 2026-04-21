@@ -13,28 +13,32 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/orientation_plain_anim_12x8.webp"
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 \
-    -L libwebp \
-    -ldisable \
-    -S -T 1 \
-    -d fs -p 16 \
-    "${input_webp}" >/dev/null 2>&1 || {
-    printf "1..0 # SKIP animated libwebp frame path is unavailable\n"
-    exit 0
-}
+input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp"
+command_status=0
 
 echo "1..1"
 set -v
+set +xv
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --threads=1 \
     -L libwebp \
     -ldisable \
     -d interframe -p 16 \
-    "${input_webp}" >/dev/null || {
+    "${input_webp}" >/dev/null 2>&1 || command_status=$?
+
+test "${command_status}" -eq 0 || {
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 \
+        -L libwebp \
+        -ldisable \
+        -S -T 1 \
+        -d fs -p 16 \
+        "${input_webp}" >/dev/null 2>&1 || {
+        printf "1..0 # SKIP animated libwebp frame path is unavailable\n"
+        exit 0
+    }
+
     echo "not ok" 1 - "interframe animated encode failed"
     exit 0
 }
