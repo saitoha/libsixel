@@ -637,6 +637,8 @@ sixel_lut_build_histogram(unsigned char const *data,
     unsigned int n;
     unsigned int plane;
     unsigned int channel_stride;
+    unsigned char const *bucket_input;
+    float const *float_pixel;
     unsigned int quantized_lut[256];
     uint32_t packed_lut[4][256];
     unsigned int bits;
@@ -646,6 +648,8 @@ sixel_lut_build_histogram(unsigned char const *data,
     status = SIXEL_FALSE;
     histogram = NULL;
     refmap = NULL;
+    bucket_input = NULL;
+    float_pixel = NULL;
     if (colorfreqtable == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -727,53 +731,82 @@ sixel_lut_build_histogram(unsigned char const *data,
         goto cleanup;
     }
 
-    for (i = 0U; i + pixel_stride <= length; i += step) {
-        unsigned char const *bucket_input;
-
-        bucket_input = NULL;
-        if (input_is_float32) {
-            float const *float_pixel;
-
-            float_pixel = (float const *)(void const *)(data + i);
-            for (plane = 0U; plane < depth_u; ++plane) {
-                quantized_pixel[plane]
-                    = sixel_palette_heckbert_float32_to_u8(
-                        float_pixel[plane],
-                        pixelformat,
-                        (int)plane);
-            }
-            bucket_input = quantized_pixel;
-        } else {
-            bucket_input = data + i;
-        }
-        if (use_reversible) {
-            for (plane = 0U; plane < depth_u; ++plane) {
-                reversible_pixel[plane]
-                    = sixel_palette_reversible_value(bucket_input[plane]);
-            }
-            bucket_input = reversible_pixel;
-        }
-        if (use_fast_pack && depth_u == 3U) {
-            bucket_index = histogram_pack_color_fast_rgb(bucket_input,
+    /*
+     * Keep the dominant 8bit RGB/RGBA path branch-light so histogram packing
+     * does not pay per-pixel float and reversible checks.
+     */
+    if (!input_is_float32
+            && !use_reversible
+            && use_fast_pack
+            && depth_u == 3U) {
+        for (i = 0U; i + pixel_stride <= length; i += step) {
+            bucket_index = histogram_pack_color_fast_rgb(data + i,
                                                          packed_lut);
-        } else if (use_fast_pack && depth_u == 4U) {
-            bucket_index = histogram_pack_color_fast_rgba(bucket_input,
+            if (histogram[bucket_index] == 0U) {
+                *ref++ = bucket_index;
+            }
+            if (histogram[bucket_index] < UINT32_MAX) {
+                histogram[bucket_index]++;
+            }
+        }
+    } else if (!input_is_float32
+               && !use_reversible
+               && use_fast_pack
+               && depth_u == 4U) {
+        for (i = 0U; i + pixel_stride <= length; i += step) {
+            bucket_index = histogram_pack_color_fast_rgba(data + i,
                                                           packed_lut);
-        } else if (control.channel_shift == 0U) {
-            bucket_index = histogram_pack_color(bucket_input,
-                                                depth_u,
-                                                &control);
-        } else {
-            bucket_index = histogram_pack_color_from_lut(bucket_input,
-                                                         depth_u,
-                                                         bits,
-                                                         quantized_lut);
+            if (histogram[bucket_index] == 0U) {
+                *ref++ = bucket_index;
+            }
+            if (histogram[bucket_index] < UINT32_MAX) {
+                histogram[bucket_index]++;
+            }
         }
-        if (histogram[bucket_index] == 0U) {
-            *ref++ = bucket_index;
-        }
-        if (histogram[bucket_index] < UINT32_MAX) {
-            histogram[bucket_index]++;
+    } else {
+        for (i = 0U; i + pixel_stride <= length; i += step) {
+            if (input_is_float32) {
+                float_pixel = (float const *)(void const *)(data + i);
+                for (plane = 0U; plane < depth_u; ++plane) {
+                    quantized_pixel[plane]
+                        = sixel_palette_heckbert_float32_to_u8(
+                            float_pixel[plane],
+                            pixelformat,
+                            (int)plane);
+                }
+                bucket_input = quantized_pixel;
+            } else {
+                bucket_input = data + i;
+            }
+            if (use_reversible) {
+                for (plane = 0U; plane < depth_u; ++plane) {
+                    reversible_pixel[plane]
+                        = sixel_palette_reversible_value(bucket_input[plane]);
+                }
+                bucket_input = reversible_pixel;
+            }
+            if (use_fast_pack && depth_u == 3U) {
+                bucket_index = histogram_pack_color_fast_rgb(bucket_input,
+                                                             packed_lut);
+            } else if (use_fast_pack && depth_u == 4U) {
+                bucket_index = histogram_pack_color_fast_rgba(bucket_input,
+                                                              packed_lut);
+            } else if (control.channel_shift == 0U) {
+                bucket_index = histogram_pack_color(bucket_input,
+                                                    depth_u,
+                                                    &control);
+            } else {
+                bucket_index = histogram_pack_color_from_lut(bucket_input,
+                                                             depth_u,
+                                                             bits,
+                                                             quantized_lut);
+            }
+            if (histogram[bucket_index] == 0U) {
+                *ref++ = bucket_index;
+            }
+            if (histogram[bucket_index] < UINT32_MAX) {
+                histogram[bucket_index]++;
+            }
         }
     }
 
@@ -830,6 +863,7 @@ static unsigned int compareplaneTieDepth;
 
 struct sixel_pca_sort_entry {
     struct tupleint *entry;
+    unsigned int weight;
     double key;
 };
 
@@ -944,7 +978,7 @@ sixel_pca_select_weighted_median(struct sixel_pca_sort_entry cache[],
     }
     if (boxSize == 1U) {
         *medianIndex = 1U;
-        *lowerSum = sixel_palette_heckbert_entry_weight(cache[0U].entry);
+        *lowerSum = cache[0U].weight;
         return;
     }
     if (target == 0U) {
@@ -982,7 +1016,7 @@ sixel_pca_select_weighted_median(struct sixel_pca_sort_entry cache[],
         equal_count = gt - lt;
         less_weight = 0U;
         for (i = left; i < lt; ++i) {
-            less_weight += sixel_palette_heckbert_entry_weight(cache[i].entry);
+            less_weight += cache[i].weight;
         }
         if (less_count > 0U && prefix_weight + less_weight >= target) {
             right = lt;
@@ -992,7 +1026,7 @@ sixel_pca_select_weighted_median(struct sixel_pca_sort_entry cache[],
         index = prefix_count + less_count;
         equal_weight = 0U;
         for (i = lt; i < gt; ++i) {
-            weight = sixel_palette_heckbert_entry_weight(cache[i].entry);
+            weight = cache[i].weight;
             equal_weight += weight;
             if (lower < target) {
                 lower += weight;
@@ -1015,9 +1049,9 @@ sixel_pca_select_weighted_median(struct sixel_pca_sort_entry cache[],
           sizeof(struct sixel_pca_sort_entry),
           compareplanePcaCached);
     index = 1U;
-    lower = sixel_palette_heckbert_entry_weight(cache[0U].entry);
+    lower = cache[0U].weight;
     while (index < boxSize - 1U && lower < target) {
-        lower += sixel_palette_heckbert_entry_weight(cache[index].entry);
+        lower += cache[index].weight;
         ++index;
     }
     *medianIndex = index;
@@ -1671,6 +1705,7 @@ sortBoxByPcaProjection(tupletable2 const colorfreqtable,
             key += (double)entry->tuple[plane] * axis[plane];
         }
         cache[i].entry = entry;
+        cache[i].weight = sixel_palette_heckbert_entry_weight(entry);
         cache[i].key = key;
     }
     qsort((char *)cache,
@@ -1698,10 +1733,13 @@ partitionBoxByPcaMedian(tupletable2 const colorfreqtable,
                         unsigned int dimensions,
                         double axis[3],
                         unsigned int sum,
+                        struct sixel_pca_sort_entry *workspace,
+                        unsigned int workspace_capacity,
                         unsigned int *medianIndex,
                         unsigned int *lowerSum)
 {
     struct sixel_pca_sort_entry *cache;
+    struct sixel_pca_sort_entry *owned_cache;
     unsigned int i;
     unsigned int plane;
     struct tupleint *entry;
@@ -1710,6 +1748,7 @@ partitionBoxByPcaMedian(tupletable2 const colorfreqtable,
     unsigned int lower;
 
     cache = NULL;
+    owned_cache = NULL;
     i = 0U;
     plane = 0U;
     entry = NULL;
@@ -1730,10 +1769,15 @@ partitionBoxByPcaMedian(tupletable2 const colorfreqtable,
             colorfreqtable.table[boxStart]);
         return SIXEL_OK;
     }
-    cache = (struct sixel_pca_sort_entry *)malloc(
-        boxSize * sizeof(struct sixel_pca_sort_entry));
-    if (cache == NULL) {
-        return SIXEL_BAD_ALLOCATION;
+    if (workspace != NULL && workspace_capacity >= boxSize) {
+        cache = workspace;
+    } else {
+        owned_cache = (struct sixel_pca_sort_entry *)malloc(
+            boxSize * sizeof(struct sixel_pca_sort_entry));
+        if (owned_cache == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        cache = owned_cache;
     }
 
     compareplaneTieDepth = depth;
@@ -1744,6 +1788,7 @@ partitionBoxByPcaMedian(tupletable2 const colorfreqtable,
             key += (double)entry->tuple[plane] * axis[plane];
         }
         cache[i].entry = entry;
+        cache[i].weight = sixel_palette_heckbert_entry_weight(entry);
         cache[i].key = key;
     }
     sixel_pca_select_weighted_median(cache,
@@ -1760,12 +1805,14 @@ partitionBoxByPcaMedian(tupletable2 const colorfreqtable,
     }
     lower = 0U;
     for (i = 0U; i < index; ++i) {
-        lower += sixel_palette_heckbert_entry_weight(cache[i].entry);
+        lower += cache[i].weight;
     }
     for (i = 0U; i < boxSize; ++i) {
         colorfreqtable.table[boxStart + i] = cache[i].entry;
     }
-    free(cache);
+    if (owned_cache != NULL) {
+        free(owned_cache);
+    }
     *medianIndex = index;
     *lowerSum = lower;
 
@@ -2069,7 +2116,8 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                                   unsigned int cluster_count,
                                   unsigned long *cluster_weight,
                                   double *cluster_sums,
-                                  unsigned int iterations)
+                                  unsigned int iterations,
+                                  unsigned int *executed_iterations)
 {
     double *centers;
     double distance;
@@ -2089,6 +2137,9 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     unsigned int previous_cluster;
     int has_assignment_history;
     int assignment_changed;
+    int center_changed;
+    double previous_center;
+    unsigned int executed;
     struct tupleint *entry;
 
     centers = NULL;
@@ -2109,7 +2160,13 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     previous_cluster = 0U;
     has_assignment_history = 0;
     assignment_changed = 0;
+    center_changed = 0;
+    previous_center = 0.0;
+    executed = 0U;
     entry = NULL;
+    if (executed_iterations != NULL) {
+        *executed_iterations = 0U;
+    }
     if (iterations == 0U || cluster_count == 0U || depth == 0U
         || cluster_weight == NULL || cluster_sums == NULL
         || colorfreqtable.table == NULL || colorfreqtable.size == 0U) {
@@ -2144,6 +2201,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     }
     for (iteration = 0U; iteration < iterations; ++iteration) {
         assignment_changed = 0;
+        center_changed = 0;
         for (cluster_index = 0U; cluster_index < cluster_count;
                 ++cluster_index) {
             cluster_weight[cluster_index] = 0UL;
@@ -2152,7 +2210,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                 ++cluster_index) {
             offset = (size_t)cluster_index * (size_t)depth;
             for (component = 0U; component < depth; ++component) {
-            cluster_sums[offset + (size_t)component] = 0.0;
+                cluster_sums[offset + (size_t)component] = 0.0;
             }
         }
         for (entry_index = 0U; entry_index < colorfreqtable.size;
@@ -2217,6 +2275,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         }
         if (assignment != NULL) {
             if (has_assignment_history && !assignment_changed) {
+                executed = iteration + 1U;
                 break;
             }
             has_assignment_history = 1;
@@ -2229,10 +2288,18 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
             }
             offset = (size_t)cluster_index * (size_t)depth;
             for (component = 0U; component < depth; ++component) {
-                centers[offset + (size_t)component]
-                    = cluster_sums[offset + (size_t)component]
+                previous_center = centers[offset + (size_t)component];
+                channel = cluster_sums[offset + (size_t)component]
                     / (double)weight;
+                if (channel != previous_center) {
+                    center_changed = 1;
+                }
+                centers[offset + (size_t)component] = channel;
             }
+        }
+        executed = iteration + 1U;
+        if (!center_changed) {
+            break;
         }
     }
     for (cluster_index = 0U; cluster_index < cluster_count;
@@ -2257,6 +2324,9 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         free(assignment);
     }
     free(centers);
+    if (executed_iterations != NULL) {
+        *executed_iterations = executed;
+    }
 }
 
 static SIXELSTATUS
@@ -2404,6 +2474,8 @@ sixel_palette_heckbert_split_attempt(
     int methodForLargest,
     unsigned int sum,
     unsigned int dimensions,
+    struct sixel_pca_sort_entry *pca_workspace,
+    unsigned int pca_workspace_capacity,
     unsigned int *medianIndex,
     unsigned int *lowersum,
     unsigned int *axis_used,
@@ -2445,6 +2517,8 @@ sixel_palette_heckbert_split_attempt(
                                          dimensions,
                                          pca_axis,
                                          sum,
+                                         pca_workspace,
+                                         pca_workspace_capacity,
                                          medianIndex,
                                          lowersum);
         if (status == SIXEL_BAD_ALLOCATION) {
@@ -2512,7 +2586,9 @@ splitBox(boxVector bv,
          unsigned int bi,
          tupletable2 const colorfreqtable,
          unsigned int depth,
-         int methodForLargest)
+         int methodForLargest,
+         struct sixel_pca_sort_entry *pca_workspace,
+         unsigned int pca_workspace_capacity)
 {
     SIXELSTATUS status;
     unsigned int boxStart;
@@ -2623,6 +2699,8 @@ splitBox(boxVector bv,
                                                       split_method,
                                                       sm,
                                                       dimensions,
+                                                      pca_workspace,
+                                                      pca_workspace_capacity,
                                                       &medianIndex,
                                                       &lowersum,
                                                       &axis_used,
@@ -2721,6 +2799,7 @@ mediancut(tupletable2 const colorfreqtable,
     struct tupleint *entry;
     SIXELSTATUS merge_status;
     unsigned int iteration_limit;
+    unsigned int iteration_actual;
     unsigned int boxes_before;
     unsigned int boxes_after;
     double iteration_wall_start;
@@ -2730,6 +2809,8 @@ mediancut(tupletable2 const colorfreqtable,
     double merge_wall_start;
     double merge_wall_stop;
     char log_detail[128];
+    struct sixel_pca_sort_entry *pca_workspace;
+    unsigned int pca_workspace_capacity;
 
     status = SIXEL_FALSE;
     bv = NULL;
@@ -2740,6 +2821,7 @@ mediancut(tupletable2 const colorfreqtable,
     resolved_merge = sixel_resolve_final_merge_mode(final_merge_mode);
     apply_merge = (resolved_merge == SIXEL_FINAL_MERGE_WARD);
     iteration_limit = 0U;
+    iteration_actual = 0U;
     boxes_before = 0U;
     boxes_after = 0U;
     iteration_wall_start = 0.0;
@@ -2749,6 +2831,8 @@ mediancut(tupletable2 const colorfreqtable,
     merge_wall_start = 0.0;
     merge_wall_stop = 0.0;
     log_detail[0] = '\0';
+    pca_workspace = NULL;
+    pca_workspace_capacity = 0U;
     sum = 0U;
     for (i = 0U; i < colorfreqtable.size; ++i) {
         sum += colorfreqtable.table[i]->value;
@@ -2769,6 +2853,14 @@ mediancut(tupletable2 const colorfreqtable,
     bv = newBoxVector(colorfreqtable.size, sum, working_colors, allocator);
     if (bv == NULL) {
         goto end;
+    }
+    if (methodForLargest == SIXEL_LARGE_PCA && colorfreqtable.size > 1U) {
+        pca_workspace = (struct sixel_pca_sort_entry *)sixel_allocator_malloc(
+            allocator,
+            colorfreqtable.size * sizeof(struct sixel_pca_sort_entry));
+        if (pca_workspace != NULL) {
+            pca_workspace_capacity = colorfreqtable.size;
+        }
     }
     boxes = 1U;
     multicolorBoxesExist = (colorfreqtable.size > 1U);
@@ -2791,7 +2883,9 @@ mediancut(tupletable2 const colorfreqtable,
                               bi,
                               colorfreqtable,
                               depth,
-                              methodForLargest);
+                              methodForLargest,
+                              pca_workspace,
+                              pca_workspace_capacity);
             if (SIXEL_FAILED(status)) {
                 iteration_wall_stop = sixel_timer_now();
                 if (iterate_ms != NULL) {
@@ -2920,7 +3014,8 @@ mediancut(tupletable2 const colorfreqtable,
                                                   (unsigned int)cluster_total,
                                                   cluster_weight,
                                                   cluster_sums,
-                                                  iteration_limit);
+                                                  iteration_limit,
+                                                  &iteration_actual);
             }
         }
         merge_status = sixel_palette_clusters_to_colormap(cluster_weight,
@@ -2936,8 +3031,8 @@ mediancut(tupletable2 const colorfreqtable,
         if (merge_ms != NULL) {
             *merge_ms += (merge_wall_stop - merge_wall_start) * 1000.0;
         }
-        if (merge_iterate_count != NULL && iteration_limit > 0U) {
-            *merge_iterate_count += iteration_limit;
+        if (merge_iterate_count != NULL) {
+            *merge_iterate_count += iteration_actual;
         }
         if (merge_mode != NULL) {
             *merge_mode = resolved_merge;
@@ -2948,7 +3043,7 @@ mediancut(tupletable2 const colorfreqtable,
                        boxes,
                        cluster_total,
                        resolved_merge,
-                       iteration_limit);
+                       iteration_actual);
         sixel_palette_heckbert_log_finish(logger,
                                           job_merge,
                                           engine_name,
@@ -2982,6 +3077,9 @@ end:
     }
     if (cluster_weight != NULL) {
         sixel_allocator_free(allocator, cluster_weight);
+    }
+    if (pca_workspace != NULL) {
+        sixel_allocator_free(allocator, pca_workspace);
     }
 
     return status;
