@@ -12,24 +12,73 @@ echo "1..1"
 set -v
 set +xv
 
-help_block=''
-status=0
+found_algo_header=0
+found_algo_auto=0
+found_algo_sample=0
+found_algo_random=0
+found_algo_bandit=0
+found_inittype_header=0
+found_inittype_auto=0
 
-help_block=$(cat "${TOP_SRCDIR}/converters/img2sixel.c" 2>/dev/null) || \
-    status=$?
+while IFS= read -r source_line || test -n "${source_line}"; do
+    case "${source_line}" in
+        *:algo=NAME*choose\ k-medoids\ solver:*)
+            found_algo_header=1
+            ;;
+        *auto*adaptive\ default*)
+            found_algo_auto=1
+            ;;
+        *sample*CLARA:*)
+            found_algo_sample=1
+            ;;
+        *random*CLARANS:*)
+            found_algo_random=1
+            ;;
+        *bandit*BanditPAM:*)
+            found_algo_bandit=1
+            ;;
+        *:inittype=TYPE*choose\ k-means\ seed\ mode:*)
+            found_inittype_header=1
+            ;;
+        *auto*choose\ seed\ mode\ automatically*)
+            found_inittype_auto=1
+            ;;
+        *) ;;
+    esac
+done < "${TOP_SRCDIR}/converters/img2sixel.c"
 
-test "${status}" -eq 0 || {
-    echo "not ok" 1 - "failed to load quantize help block from img2sixel.c"
+test "${found_algo_header}" -eq 1 || {
+    echo "not ok" 1 - "medoids algo heading is missing in source help"
     exit 0
 }
 
-test "${help_block#*:algo=NAME (:a=NAME) choose k-medoids solver:*auto      -> adaptive*sample    -> CLARA:*random    -> CLARANS:*bandit    -> BanditPAM:*}" != "${help_block}" || {
-    echo "not ok" 1 - "medoids algo description lines are missing in source help"
+test "${found_algo_auto}" -eq 1 || {
+    echo "not ok" 1 - "medoids auto description is missing in source help"
     exit 0
 }
 
-test "${help_block#*:inittype=TYPE (:i=TYPE) choose k-means seed mode:*auto -> choose seed mode*}" != "${help_block}" || {
-    echo "not ok" 1 - "kmeans inittype description lines are missing in source help"
+test "${found_algo_sample}" -eq 1 || {
+    echo "not ok" 1 - "medoids sample description is missing in source help"
+    exit 0
+}
+
+test "${found_algo_random}" -eq 1 || {
+    echo "not ok" 1 - "medoids random description is missing in source help"
+    exit 0
+}
+
+test "${found_algo_bandit}" -eq 1 || {
+    echo "not ok" 1 - "medoids bandit description is missing in source help"
+    exit 0
+}
+
+test "${found_inittype_header}" -eq 1 || {
+    echo "not ok" 1 - "kmeans inittype heading is missing in source help"
+    exit 0
+}
+
+test "${found_inittype_auto}" -eq 1 || {
+    echo "not ok" 1 - "kmeans inittype auto description is missing in source help"
     exit 0
 }
 

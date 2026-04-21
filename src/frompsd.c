@@ -230,9 +230,29 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
         return "FX_DEFERRED_SOLID_CLIP_SPLIT";
     }
     if (strstr(message,
+               "applying vector stroke and layer effect stroke in layer "
+               "fallback") != NULL) {
+        return "FX_DUAL_SOURCE_BASE";
+    }
+    if (strstr(message,
+               "applying deferred vector stroke and layer effect stroke on "
+               "clipped group") != NULL) {
+        return "FX_DUAL_SOURCE_DEFER";
+    }
+    if (strstr(message,
                "applying mode-aware dual-stroke blend in layer fallback") !=
             NULL) {
         return "FX_DUAL_MODE_BASE";
+    }
+    if (strstr(message,
+               "resolving dual-stroke alpha with max coverage in layer "
+               "fallback") != NULL) {
+        return "FX_DUAL_MAX_ALPHA_BASE";
+    }
+    if (strstr(message,
+               "applying dual-stroke union coverage in layer fallback") !=
+            NULL) {
+        return "FX_DUAL_OVERLAP_BASE";
     }
     if (strstr(message,
                "applying dual-stroke overlap decomposition in layer fallback")
@@ -245,8 +265,18 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
         return "FX_DUAL_MODE_DEFER";
     }
     if (strstr(message,
+               "resolving deferred dual-stroke alpha with max coverage on "
+               "clipped group") != NULL) {
+        return "FX_DUAL_MAX_ALPHA_DEFER";
+    }
+    if (strstr(message,
                "applying deferred dual-stroke overlap decomposition "
                "on clipped group") != NULL) {
+        return "FX_DUAL_OVERLAP_DEFER";
+    }
+    if (strstr(message,
+               "applying deferred dual-stroke union on clipped group") !=
+            NULL) {
         return "FX_DUAL_OVERLAP_DEFER";
     }
     if (strstr(message, "applying solid overlay effect in layer fallback") !=
@@ -299,6 +329,10 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
                "applying clip-weighted deferred gradient overlay in layer "
                "fallback") != NULL) {
         return "FX_DEFERRED_GRADIENT_CLIP";
+    }
+    if (strstr(message,
+               "applying gradient overlay effect in layer fallback") != NULL) {
+        return "FX_GRFL_BASE_APPLY";
     }
     if (strstr(message,
                "applying clip-weighted deferred effect stroke in layer "
@@ -418,6 +452,36 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
     }
     if (strstr(message, "applying effect stroke in layer fallback") != NULL) {
         return "FX_EFFECT_STROKE_BASE";
+    }
+    if (strstr(message,
+               "applying round-join vector stroke coverage in layer "
+               "fallback") != NULL) {
+        return "FX_VECTOR_ROUND_BASE";
+    }
+    if (strstr(message,
+               "applying deferred round-join vector stroke on clipped group")
+            != NULL) {
+        return "FX_VECTOR_ROUND_DEFER";
+    }
+    if (strstr(message,
+               "applying stroke-adjusted vector stroke coverage in layer "
+               "fallback") != NULL) {
+        return "FX_STROKE_ADJUST_BASE";
+    }
+    if (strstr(message,
+               "applying deferred stroke-adjusted vector stroke on clipped "
+               "group") != NULL) {
+        return "FX_STROKE_ADJUST_DEFER";
+    }
+    if (strstr(message,
+               "skipping vector stroke cap on closed silhouette in layer "
+               "fallback") != NULL) {
+        return "FX_VECTOR_CAP_SKIP";
+    }
+    if (strstr(message,
+               "preferring vector stroke style over layer effect stroke in "
+               "layer fallback") != NULL) {
+        return "FX_VECTOR_ONLY_PREFER";
     }
     if (strstr(message,
                "separating deferred gradient coverage source and clip gate in "
@@ -552,20 +616,24 @@ sixel_builtin_psd_trace_message(char const *topic,
                                 char const *message)
 {
     char const *code;
+    int header_only_enabled;
 
     code = NULL;
+    header_only_enabled = 0;
     if (message == NULL) {
         return;
     }
-    if (topic != NULL &&
-        strcmp(topic, "psd_decode") == 0 &&
-        sixel_builtin_psd_trace_seen(message) != 0) {
-        return;
-    }
     if (topic != NULL && strcmp(topic, "psd_decode") == 0) {
+        header_only_enabled = sixel_builtin_psd_trace_header_only_enabled();
+        if (header_only_enabled == 0 &&
+                sixel_builtin_psd_trace_seen(message) != 0) {
+            return;
+        }
         code = sixel_builtin_psd_trace_code_from_message(message);
         sixel_builtin_psd_trace_add_code(code);
-        sixel_builtin_psd_trace_buffer_message(message);
+        if (header_only_enabled == 0) {
+            sixel_builtin_psd_trace_buffer_message(message);
+        }
         return;
     }
     (sixel_trace_topic_message)(topic, "%s", message);
