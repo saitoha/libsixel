@@ -12,10 +12,17 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_OPTION_PREFIX_SUGGESTIONS=0 \
-    -d st "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-    -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "ambiguous prefix unexpectedly succeeded"
+msg=''
+status=0
+
+set +x
+msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_OPTION_PREFIX_SUGGESTIONS=0 \
+    -d st "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
+    -o/dev/null 2>&1) || status=$?
+set -x
+
+test "${status}" -eq 2 || {
+    echo "not ok" 1 - "ambiguous prefix exit status mismatch"
     exit 0
 }
 

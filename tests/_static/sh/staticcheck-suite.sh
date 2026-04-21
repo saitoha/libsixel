@@ -325,6 +325,14 @@ run_case_tap "staticcheck-build-doc-meson-options" \
     "$src_root/tests/_static/sh/staticcheck-build-doc-meson-options.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-help-quantize-source-contract" \
+    "$src_root/tests/_static/sh/staticcheck-help-quantize-source-contract.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-help-sixel2png-source-contract" \
+    "$src_root/tests/_static/sh/staticcheck-help-sixel2png-source-contract.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-docs-help-vs-man" \
     "$src_root/tests/_static/sh/staticcheck-docs-help-vs-man.sh" \
     "$src_root" || fail_and_exit $?

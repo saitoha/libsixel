@@ -16,52 +16,44 @@ test "${HAVE_LIBTIFF-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_tiff="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.tiff"
-output_cms1="${ARTIFACT_LOCAL_DIR}/cms_engine_env_libtiff_ref_cms1.six"
-output_cms0="${ARTIFACT_LOCAL_DIR}/cms_engine_env_libtiff_ref_cms0.six"
-output_override="${ARTIFACT_LOCAL_DIR}/cms_engine_env_libtiff_override.six"
+ref_cms1_cksum=''
+ref_cms0_cksum=''
+override_cksum=''
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=auto! "${input_tiff}" >"${output_cms1}" || {
+set +x
+ref_cms1_cksum=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -Llibtiff:cms_engine=auto! "${input_tiff}" | cksum) || {
+    set -x
     echo "not ok" 1 - "libtiff cms=1 reference decode failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibtiff:cms_engine=none! "${input_tiff}" >"${output_cms0}" || {
+ref_cms0_cksum=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -Llibtiff:cms_engine=none! "${input_tiff}" | cksum) || {
+    set -x
     echo "not ok" 1 - "libtiff cms=0 reference decode failed"
     exit 0
 }
 
-lsqa_status=0
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" \
-    "${output_cms1}" "${output_cms0}" 2>&1) || lsqa_status=$?
-test "${lsqa_status}" -eq 5 || {
-    echo "not ok" 1 - "libtiff cms references were not distinguishable: ${lsqa_msg-}"
-    exit 0
-}
-
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+override_cksum=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     --env "SIXEL_LOADER_LIBTIFF_CMS_ENGINE=auto" \
-    -Llibtiff! "${input_tiff}" >"${output_override}" || {
+    -Llibtiff! "${input_tiff}" | cksum) || {
+    set -x
     echo "not ok" 1 - "SIXEL_LOADER_LIBTIFF_CMS_ENGINE override decode failed"
     exit 0
 }
+set -x
 
-lsqa_status=0
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" \
-    "${output_override}" "${output_cms1}" 2>&1) || lsqa_status=$?
-test "${lsqa_status}" -eq 0 || {
-    echo "not ok" 1 - "SIXEL_LOADER_LIBTIFF_CMS_ENGINE did not match cms=1 reference: ${lsqa_msg-}"
+test "${override_cksum}" = "${ref_cms1_cksum}" || {
+    echo "not ok" 1 - "SIXEL_LOADER_LIBTIFF_CMS_ENGINE did not match cms=1 reference"
     exit 0
 }
 
-lsqa_status=0
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.999" \
-    "${output_override}" "${output_cms0}" 2>&1) || lsqa_status=$?
-test "${lsqa_status}" -eq 5 || {
-    echo "not ok" 1 - "override output did not differ from cms=0 baseline: ${lsqa_msg-}"
+test "${override_cksum}" != "${ref_cms0_cksum}" || {
+    echo "not ok" 1 - "override output did not differ from cms=0 baseline"
     exit 0
 }
 

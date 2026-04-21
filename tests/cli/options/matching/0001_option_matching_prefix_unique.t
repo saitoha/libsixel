@@ -12,9 +12,16 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs:scan=ser \
-              "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-              -o/dev/null 2>&1) || {
+msg=''
+status=0
+
+set +x
+msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs:scan=ser \
+    "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
+    -o/dev/null 2>&1) || status=$?
+set -x
+
+test "${status}" -eq 0 || {
     echo "not ok" 1 - "unique prefix was rejected"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2

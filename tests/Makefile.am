@@ -363,6 +363,8 @@ AM_LOG_FLAGS =
 	staticcheck-binding-loader-setopt-sync \
 	staticcheck-build-doc-configure-help \
 	staticcheck-build-doc-meson-options \
+	staticcheck-help-quantize-source-contract \
+	staticcheck-help-sixel2png-source-contract \
 	staticcheck-docs-help-vs-man \
 	staticcheck-docs-man-vs-bash-completion \
 	staticcheck-docs-envvars-help-table \
@@ -397,6 +399,8 @@ staticcheck-artifact-local-dir-mkdir \
 staticcheck-binding-loader-setopt-sync \
 staticcheck-build-doc-configure-help \
 staticcheck-build-doc-meson-options \
+staticcheck-help-quantize-source-contract \
+staticcheck-help-sixel2png-source-contract \
 staticcheck-docs-help-vs-man \
 staticcheck-docs-man-vs-bash-completion \
 staticcheck-docs-envvars-help-table \
@@ -681,6 +685,26 @@ staticcheck-build-doc-meson-options:
 		--trs-file staticcheck-build-doc-meson-options.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-build-doc-meson-options.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-help-quantize-source-contract:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-help-quantize-source-contract" \
+		--log-file staticcheck-help-quantize-source-contract.log \
+		--trs-file staticcheck-help-quantize-source-contract.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-help-quantize-source-contract.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-help-sixel2png-source-contract:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-help-sixel2png-source-contract" \
+		--log-file staticcheck-help-sixel2png-source-contract.log \
+		--trs-file staticcheck-help-sixel2png-source-contract.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-help-sixel2png-source-contract.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-docs-envvars-help-table:

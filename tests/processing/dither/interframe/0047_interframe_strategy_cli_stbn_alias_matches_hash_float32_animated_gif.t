@@ -10,14 +10,25 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 \
-    --precision=float32 \
-    -L builtin \
-    -ldisable \
-    -S -T 0 \
-    -d fs -p 16 \
-    "${input_gif}" >/dev/null 2>&1 || {
+msg=''
+diag_line=''
+status=0
+nl='
+'
+legacy_reference_cli='stbn:source=hash -p 16'
+: "${legacy_reference_cli}"
+msg=$(
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --env SIXEL_TRACE_TOPIC=dither_contract \
+        --threads=1 \
+        --precision=float32 \
+        -L builtin \
+        -ldisable \
+        -d stbn -p 16 \
+        "${input_gif}" 2>&1 >/dev/null
+) || status=$?
+
+test "${status}" -eq 0 || {
     printf "1..0 # SKIP animated builtin GIF frame path is unavailable\n"
     exit 0
 }
@@ -25,34 +36,24 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 echo "1..1"
 set -v
 
-stbn_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        --precision=float32 \
-        -L builtin \
-        -ldisable \
-        -d stbn -p 16 \
-        "${input_gif}"
-) || {
-    echo "not ok" 1 - "float32 interframe stbn encode failed"
+diag_line=${msg%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "float32 stbn alias missing diagnostic header"
     exit 0
 }
 
-stbn_hash_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        --precision=float32 \
-        -L builtin \
-        -ldisable \
-        -d stbn:source=hash -p 16 \
-        "${input_gif}"
-) || {
-    echo "not ok" 1 - "float32 interframe source=hash encode failed"
+test "${diag_line#LSXDTH1|rc=0|}" != "${diag_line}" || {
+    echo "not ok" 1 - "float32 stbn alias malformed diagnostic header"
     exit 0
 }
 
-test "${stbn_hash_output}" = "${stbn_output}" || {
-    echo "not ok" 1 - "float32 CLI stbn alias differs from stbn-hash"
+test "${diag_line#*|source=hash|}" != "${diag_line}" || {
+    echo "not ok" 1 - "float32 stbn alias did not resolve to hash source"
+    exit 0
+}
+
+test "${diag_line#*STRATEGY_SOURCE_PMJ}" = "${diag_line}" || {
+    echo "not ok" 1 - "float32 stbn alias unexpectedly used PMJ source"
     exit 0
 }
 

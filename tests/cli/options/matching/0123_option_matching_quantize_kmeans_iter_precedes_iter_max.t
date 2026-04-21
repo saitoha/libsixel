@@ -12,15 +12,17 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-iter_only=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+set +x
+iter_only=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=1:restarts=1:feedback=off:iter=1 \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
-iter_and_max=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.ppm" | cksum)
+iter_and_max=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=1:restarts=1:feedback=off:iter=1:iter_max=100 \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
-iter_more=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.ppm" | cksum)
+iter_more=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -Qkmeans:seed=1:restarts=1:feedback=off:iter=8 \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.ppm" | cksum)
+    "${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.ppm" | cksum)
+set -x
 
 test "${iter_only}" = "${iter_and_max}" || {
     echo "not ok" 1 - "iter did not take precedence over iter_max"

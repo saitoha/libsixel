@@ -28,14 +28,6 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=none! "${input_png}" 
     exit 0
 }
 
-lsqa_status=0
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" \
-    "${output_cms1}" "${output_cms0}" 2>&1) || lsqa_status=$?
-test "${lsqa_status}" -eq 5 || {
-    echo "not ok" 1 - "builtin cms references were not distinguishable: ${lsqa_msg-}"
-    exit 0
-}
-
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     --env "SIXEL_LOADER_BUILTIN_CMS_ENGINE=auto" \

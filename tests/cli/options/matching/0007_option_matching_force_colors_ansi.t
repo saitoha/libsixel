@@ -13,11 +13,17 @@ echo "1..1"
 set -v
 
 esc_char=$(printf '\033')
+msg=''
+status=0
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_STATUS_FORCE_COLORS=1 \
-    -d st "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-    -o/dev/null 2>&1) && {
-    echo "not ok" 1 - "force colors diagnostic unexpectedly succeeded"
+set +x
+msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_STATUS_FORCE_COLORS=1 \
+    -d st "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
+    -o/dev/null 2>&1) || status=$?
+set -x
+
+test "${status}" -eq 2 || {
+    echo "not ok" 1 - "force colors diagnostic exit status mismatch"
     exit 0
 }
 

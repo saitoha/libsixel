@@ -12,16 +12,25 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d burkez "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-    -o/dev/null 2>&1) || {
+msg=''
+status=0
+
+set +x
+msg=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --env SIXEL_DIAG_MODE=code \
+    --env SIXEL_DIAG_MODE_QUIET=1 \
+    -d burkez "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
+    -o/dev/null 2>&1) || status=$?
+set -x
+
+test "${status}" -eq 0 && {
     case "${msg}" in
-        *'specified diffusion method is not supported.'*|\
-        *'unknown option base value "burkez".'*'Did you mean:'*)
-            echo "ok" 1 - "distance-1 typo rejected with diagnostic"
+        *'corrected --diffusion value "burkez" -> "burkes".'*)
+            echo "ok" 1 - "distance-1 typo is corrected"
             exit 0
             ;;
         *)
-            echo "not ok" 1 - "unexpected rejection without diagnostic"
+            echo "not ok" 1 - "missing correction notice"
             printf '%s\n' '--- stderr ---' >&2
             printf '%s\n' "${msg}" >&2
             exit 0
@@ -29,13 +38,25 @@ msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d burkez "${TOP_SRCDIR}/te
     esac
 }
 
+test "${status}" -eq 2 || {
+    echo "not ok" 1 - "distance-1 typo exit status mismatch"
+    printf '%s\n' '--- stderr ---' >&2
+    printf '%s\n' "${msg}" >&2
+    exit 0
+}
+
 case "${msg}" in
     *'corrected --diffusion value "burkez" -> "burkes".'*)
         echo "ok" 1 - "distance-1 typo is corrected"
         exit 0
         ;;
+    *'specified diffusion method is not supported.'*|\
+    *'unknown option base value "burkez".'*)
+        echo "ok" 1 - "distance-1 typo rejected with diagnostic"
+        exit 0
+        ;;
     *)
-        echo "not ok" 1 - "missing correction notice"
+        echo "not ok" 1 - "unexpected rejection without diagnostic"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2
         exit 0

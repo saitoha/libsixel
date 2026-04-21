@@ -763,6 +763,18 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-help-quantize-source-contract',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-help-quantize-source-contract.sh',
+      meson.project_source_root()],
+  ],
+  [
+    'staticcheck-help-sixel2png-source-contract',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-help-sixel2png-source-contract.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-docs-envvars-help-table',
     [meson.current_source_dir() / '_static/sh/staticcheck-docs-envvars-help-table.sh',
       meson.project_source_root()],

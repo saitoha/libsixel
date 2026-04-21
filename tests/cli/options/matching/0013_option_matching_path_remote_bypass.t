@@ -12,13 +12,21 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
 echo "1..1"
 set -v
 
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "https://example.invalid/test.six" -o/dev/null 2>&1) && {
+msg=''
+status=0
+
+set +x
+msg=$(${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" -i "https://127.0.0.1:1/test.six" \
+    -o/dev/null 2>&1) || status=$?
+set -x
+
+test "${status}" -ne 0 || {
     echo "not ok" 1 - "remote input unexpectedly succeeded"
     exit 0
 }
 
 case "${msg}" in
-    *'path "https://example.invalid/test.six" not found.'*)
+    *'path "https://127.0.0.1:1/test.six" not found.'*)
         echo "not ok" 1 - "remote path was validated as a local filesystem path"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${msg}" >&2

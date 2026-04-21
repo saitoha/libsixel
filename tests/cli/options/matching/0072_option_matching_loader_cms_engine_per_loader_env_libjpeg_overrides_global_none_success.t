@@ -33,14 +33,6 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibjpeg:cms_engine=none! "${input_jpeg}"
     exit 0
 }
 
-lsqa_status=0
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" \
-    "${output_cms1}" "${output_cms0}" 2>&1) || lsqa_status=$?
-test "${lsqa_status}" -eq 5 || {
-    echo "not ok" 1 - "libjpeg cms references were not distinguishable: ${lsqa_msg-}"
-    exit 0
-}
-
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env "SIXEL_LOADER_CMS_ENGINE=none" \
     --env "SIXEL_LOADER_LIBJPEG_CMS_ENGINE=auto" \

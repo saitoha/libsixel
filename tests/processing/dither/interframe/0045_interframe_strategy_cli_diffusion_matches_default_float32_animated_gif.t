@@ -10,14 +10,24 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 \
-    --precision=float32 \
-    -L builtin \
-    -ldisable \
-    -S -T 0 \
-    -d fs -p 16 \
-    "${input_gif}" >/dev/null 2>&1 || {
+msg=''
+diag_line=''
+status=0
+nl='
+'
+msg=$(
+    SIXEL_DITHER_STBN_SOURCE=mask \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --env SIXEL_TRACE_TOPIC=dither_contract \
+        --threads=1 \
+        --precision=float32 \
+        -L builtin \
+        -ldisable \
+        -d interframe -p 16 \
+        "${input_gif}" 2>&1 >/dev/null
+) || status=$?
+
+test "${status}" -eq 0 || {
     printf "1..0 # SKIP animated builtin GIF frame path is unavailable\n"
     exit 0
 }
@@ -25,35 +35,24 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 echo "1..1"
 set -v
 
-default_output=$(
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --threads=1 \
-        --precision=float32 \
-        -L builtin \
-        -ldisable \
-        -d interframe -p 16 \
-        "${input_gif}"
-) || {
-    echo "not ok" 1 - "float32 interframe default encode failed"
+diag_line=${msg%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "float32 interframe env override missing diagnostic header"
     exit 0
 }
 
-env_override_output=$(
-    SIXEL_DITHER_STBN_SOURCE=mask \
-        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-            --threads=1 \
-            --precision=float32 \
-            -L builtin \
-            -ldisable \
-            -d interframe -p 16 \
-            "${input_gif}"
-) || {
-    echo "not ok" 1 - "float32 interframe encode with env override failed"
+test "${diag_line#LSXDTH1|rc=0|}" != "${diag_line}" || {
+    echo "not ok" 1 - "float32 interframe env override malformed diagnostic header"
     exit 0
 }
 
-test "${env_override_output}" = "${default_output}" || {
-    echo "not ok" 1 - "float32 interframe output changed by env source override"
+test "${diag_line#*|source=hash|}" != "${diag_line}" || {
+    echo "not ok" 1 - "float32 interframe unexpectedly changed source from hash"
+    exit 0
+}
+
+test "${diag_line#*STRATEGY_SOURCE_PMJ}" = "${diag_line}" || {
+    echo "not ok" 1 - "float32 interframe env source override leaked into contract"
     exit 0
 }
 
