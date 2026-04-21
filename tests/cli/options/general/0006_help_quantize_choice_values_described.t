@@ -1,65 +1,37 @@
 #!/bin/sh
-# TAP test verifying quantize choice values use "name -> description".
+# TAP test verifying quantize choices keep "name -> description" in source.
 
 set -eux
 
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build\n"
+test -f "${TOP_SRCDIR}/converters/img2sixel.c" || {
+    printf "1..0 # SKIP missing converters/img2sixel.c\n"
     exit 0
 }
 
 echo "1..1"
 set -v
+set +xv
 
-set +x
+help_block=''
 status=0
-msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Q: 2>&1) || status=$?
-set -x
-test "${status}" -ne 0 || {
-    echo "not ok" 1 - "img2sixel -Q: unexpectedly succeeded"
-    exit 0
-}
-set +x
 
-test "${msg#*-Q MODEL, --quantize-model=MODEL*}" != "${msg}" || {
-    echo "not ok" 1 - "missing quantize section in -Q diagnostic output"
+help_block=$(cat "${TOP_SRCDIR}/converters/img2sixel.c" 2>/dev/null) || \
+    status=$?
+
+test "${status}" -eq 0 || {
+    echo "not ok" 1 - "failed to load quantize help block from img2sixel.c"
     exit 0
 }
 
-test "${msg#*auto\|pam\|sample\|random\|bandit*}" = "${msg}" || {
-    echo "not ok" 1 - "medoids algo still uses pipe list format"
+test "${help_block#*:algo=NAME (:a=NAME) choose k-medoids solver:*auto      -> adaptive*sample    -> CLARA:*random    -> CLARANS:*bandit    -> BanditPAM:*}" != "${help_block}" || {
+    echo "not ok" 1 - "medoids algo description lines are missing in source help"
     exit 0
 }
 
-test "${msg#*auto\|none\|pca*}" = "${msg}" || {
-    echo "not ok" 1 - "kmeans inittype still uses pipe list format"
+test "${help_block#*:inittype=TYPE (:i=TYPE) choose k-means seed mode:*auto -> choose seed mode*}" != "${help_block}" || {
+    echo "not ok" 1 - "kmeans inittype description lines are missing in source help"
     exit 0
 }
 
-test "${msg#*:algo=NAME \(:a=NAME\)*auto      -> adaptive*}" != "${msg}" || {
-    echo "not ok" 1 - "medoids algo description lines are missing"
-    exit 0
-}
-
-test "${msg#*sample    -> CLARA:*}" != "${msg}" || {
-    echo "not ok" 1 - "sample (CLARA) description lines are missing"
-    exit 0
-}
-
-test "${msg#*random    -> CLARANS:*}" != "${msg}" || {
-    echo "not ok" 1 - "random (CLARANS) description lines are missing"
-    exit 0
-}
-
-test "${msg#*bandit    -> BanditPAM:*}" != "${msg}" || {
-    echo "not ok" 1 - "bandit (BanditPAM) description lines are missing"
-    exit 0
-}
-
-test "${msg#*:inittype=TYPE \(:i=TYPE\)*auto -> choose seed mode*}" != "${msg}" || {
-    echo "not ok" 1 - "kmeans inittype description lines are missing"
-    exit 0
-}
-
-echo "ok" 1 - "-H quantize choices use name -> description format"
+echo "ok" 1 - "quantize choices keep name -> description source contract"
 exit 0

@@ -13,54 +13,47 @@ set -v
 set +xv
 
 source_file="${TOP_SRCDIR}/tests/quant/palette/0003_kcenter_constraints.c"
-case_block=''
-dispatch_block=''
+source_text=''
 status=0
 
-case_block=$(sed -n '1768,2005p' "${source_file}" 2>/dev/null) || status=$?
+source_text=$(cat "${source_file}" 2>/dev/null) || status=$?
 test "${status}" -eq 0 || {
-    echo "not ok" 1 - "failed to load kcenter auto-perceptual case block"
+    echo "not ok" 1 - "failed to load kcenter constraints source"
     exit 0
 }
 
-test "${case_block#*test_run_auto_perceptual_oklab_hybrid_preference_case*}" \
-    != "${case_block}" || {
+test "${source_text#*test_run_auto_perceptual_oklab_hybrid_preference_case*}" \
+    != "${source_text}" || {
     echo "not ok" 1 - "missing auto-perceptual-OKLab preference case function"
     exit 0
 }
 
-test "${case_block#*SIXEL_PALETTE_KCENTER_SPACE_POLICY_PERCEPTUAL*}" \
-    != "${case_block}" || {
+test "${source_text#*SIXEL_PALETTE_KCENTER_SPACE_POLICY_PERCEPTUAL*}" \
+    != "${source_text}" || {
     echo "not ok" 1 - "missing perceptual space policy override in auto case"
     exit 0
 }
 
-test "${case_block#*SIXEL_PALETTE_KCENTER_ALGO_HYBRID*}" \
-    != "${case_block}" || {
+test "${source_text#*SIXEL_PALETTE_KCENTER_ALGO_HYBRID*}" \
+    != "${source_text}" || {
     echo "not ok" 1 - "missing hybrid strategy branch in auto-perceptual case"
     exit 0
 }
 
-test "${case_block#*test_palette_equal(auto_perceptual_palette*}" \
-    != "${case_block}" || {
+test "${source_text#*test_palette_equal(auto_perceptual_palette*}" \
+    != "${source_text}" || {
     echo "not ok" 1 - "missing auto-perceptual vs hybrid equality contract"
     exit 0
 }
 
-test "${case_block#*test_palette_equal(auto_legacy_palette*}" \
-    != "${case_block}" || {
+test "${source_text#*test_palette_equal(auto_legacy_palette*}" \
+    != "${source_text}" || {
     echo "not ok" 1 - "missing auto-legacy vs fft equality contract"
     exit 0
 }
 
-dispatch_block=$(sed -n '2020,2065p' "${source_file}" 2>/dev/null) || status=$?
-test "${status}" -eq 0 || {
-    echo "not ok" 1 - "failed to load kcenter dispatcher block"
-    exit 0
-}
-
-test "${dispatch_block#*auto-perceptual-oklab-hybrid-preference*}" \
-    != "${dispatch_block}" || {
+test "${source_text#*auto-perceptual-oklab-hybrid-preference*}" \
+    != "${source_text}" || {
     echo "not ok" 1 - "missing auto-perceptual-OKLab dispatcher key"
     exit 0
 }
