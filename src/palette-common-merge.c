@@ -243,6 +243,14 @@ static void sixel_final_merge_clusters(sixel_final_merge_cluster_t *clusters,
                                        int merge_mode,
                                        int use_reversible,
                                        int pixelformat);
+static double sixel_final_merge_ward_pair_cost(
+    sixel_final_merge_cluster_t const *lhs,
+    sixel_final_merge_cluster_t const *rhs,
+    int pixelformat);
+static int sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
+                                         int nclusters,
+                                         int target_k,
+                                         int pixelformat);
 static void sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
                                    int nclusters,
                                    int target_k,
@@ -712,6 +720,10 @@ sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
     if (clusters == NULL || nclusters <= 0) {
         return;
     }
+    if (sixel_final_merge_ward_matrix(
+            clusters, nclusters, target_k, pixelformat)) {
+        return;
+    }
     if (desired < 1) {
         desired = 1;
     }
@@ -790,6 +802,251 @@ sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
 
     (void)use_reversible;
     (void)pixelformat;
+}
+
+/*
+ * Compute Ward merge cost for one cluster pair.  DBL_MAX marks pairs that are
+ * not mergeable and keeps selection logic simple in both fast and fallback
+ * paths.
+ */
+static double
+sixel_final_merge_ward_pair_cost(sixel_final_merge_cluster_t const *lhs,
+                                 sixel_final_merge_cluster_t const *rhs,
+                                 int pixelformat)
+{
+    double wi;
+    double wj;
+    double merged_weight;
+    double distance_sq;
+
+    wi = 0.0;
+    wj = 0.0;
+    merged_weight = 0.0;
+    distance_sq = 0.0;
+    if (lhs == NULL || rhs == NULL) {
+        return DBL_MAX;
+    }
+    wi = lhs->count;
+    wj = rhs->count;
+    if (wi <= 0.0 || wj <= 0.0) {
+        return DBL_MAX;
+    }
+    merged_weight = wi + wj;
+    if (merged_weight <= 0.0) {
+        return DBL_MAX;
+    }
+    distance_sq = sixel_final_merge_distance_sq(lhs, rhs, pixelformat, 1);
+    distance_sq *= wi * wj / merged_weight;
+
+    return distance_sq;
+}
+
+/*
+ * Fast Ward path:
+ *
+ *   - cache pairwise merge costs in a dense matrix;
+ *   - after each merge, update only pairs touching the merged cluster.
+ *
+ * This removes repeated full distance recomputation while preserving merge
+ * order.  When allocation fails, caller falls back to the legacy scan.
+ */
+static int
+sixel_final_merge_ward_matrix(sixel_final_merge_cluster_t *clusters,
+                              int nclusters,
+                              int target_k,
+                              int pixelformat)
+{
+    int desired;
+    int active;
+    int i;
+    int j;
+    int k;
+    int best_i;
+    int best_j;
+    double best_cost;
+    double cost;
+    double wi;
+    double wj;
+    double merged_weight;
+    sixel_final_merge_cluster_t merged;
+    size_t nclusters_u;
+    size_t matrix_cells;
+    size_t row_base;
+    size_t col_base;
+    size_t index_ij;
+    size_t index_ji;
+    unsigned char *active_map;
+    double *cost_matrix;
+
+    desired = target_k;
+    active = 0;
+    i = 0;
+    j = 0;
+    k = 0;
+    best_i = -1;
+    best_j = -1;
+    best_cost = DBL_MAX;
+    cost = 0.0;
+    wi = 0.0;
+    wj = 0.0;
+    merged_weight = 0.0;
+    merged.r = 0.0;
+    merged.g = 0.0;
+    merged.b = 0.0;
+    merged.count = 0.0;
+    nclusters_u = 0U;
+    matrix_cells = 0U;
+    row_base = 0U;
+    col_base = 0U;
+    index_ij = 0U;
+    index_ji = 0U;
+    active_map = NULL;
+    cost_matrix = NULL;
+    if (clusters == NULL || nclusters <= 0) {
+        return 1;
+    }
+    if (desired < 1) {
+        desired = 1;
+    }
+    nclusters_u = (size_t)nclusters;
+    if (nclusters_u > SIZE_MAX / nclusters_u) {
+        return 0;
+    }
+    matrix_cells = nclusters_u * nclusters_u;
+    if (matrix_cells > SIZE_MAX / sizeof(double)) {
+        return 0;
+    }
+
+    active_map = (unsigned char *)malloc(nclusters_u * sizeof(unsigned char));
+    if (active_map == NULL) {
+        return 0;
+    }
+    cost_matrix = (double *)malloc(matrix_cells * sizeof(double));
+    if (cost_matrix == NULL) {
+        free(active_map);
+        return 0;
+    }
+
+    for (i = 0; i < nclusters; ++i) {
+        active_map[(size_t)i] = (clusters[i].count > 0.0) ? 1U : 0U;
+        if (active_map[(size_t)i] != 0U) {
+            ++active;
+        }
+        row_base = (size_t)i * nclusters_u;
+        for (j = 0; j < nclusters; ++j) {
+            cost_matrix[row_base + (size_t)j] = DBL_MAX;
+        }
+    }
+
+    if (active <= desired) {
+        for (i = 0; i < nclusters; ++i) {
+            if (clusters[i].count <= 0.0) {
+                clusters[i].r = 0.0;
+                clusters[i].g = 0.0;
+                clusters[i].b = 0.0;
+            }
+        }
+        free(cost_matrix);
+        free(active_map);
+        return 1;
+    }
+
+    for (i = 0; i < nclusters; ++i) {
+        if (active_map[(size_t)i] == 0U) {
+            continue;
+        }
+        row_base = (size_t)i * nclusters_u;
+        for (j = i + 1; j < nclusters; ++j) {
+            if (active_map[(size_t)j] == 0U) {
+                continue;
+            }
+            cost = sixel_final_merge_ward_pair_cost(
+                &clusters[i], &clusters[j], pixelformat);
+            cost_matrix[row_base + (size_t)j] = cost;
+            cost_matrix[(size_t)j * nclusters_u + (size_t)i] = cost;
+        }
+    }
+
+    while (active > desired) {
+        best_i = -1;
+        best_j = -1;
+        best_cost = DBL_MAX;
+        for (i = 0; i < nclusters; ++i) {
+            if (active_map[(size_t)i] == 0U) {
+                continue;
+            }
+            row_base = (size_t)i * nclusters_u;
+            for (j = i + 1; j < nclusters; ++j) {
+                if (active_map[(size_t)j] == 0U) {
+                    continue;
+                }
+                cost = cost_matrix[row_base + (size_t)j];
+                if (cost < best_cost) {
+                    best_cost = cost;
+                    best_i = i;
+                    best_j = j;
+                }
+            }
+        }
+        if (best_i < 0 || best_j < 0) {
+            break;
+        }
+
+        wi = clusters[best_i].count;
+        wj = clusters[best_j].count;
+        merged_weight = wi + wj;
+        if (merged_weight <= 0.0) {
+            merged_weight = 1.0;
+        }
+        merged.count = merged_weight;
+        merged.r = (clusters[best_i].r * wi + clusters[best_j].r * wj)
+            / merged_weight;
+        merged.g = (clusters[best_i].g * wi + clusters[best_j].g * wj)
+            / merged_weight;
+        merged.b = (clusters[best_i].b * wi + clusters[best_j].b * wj)
+            / merged_weight;
+        clusters[best_i] = merged;
+        clusters[best_j].count = 0.0;
+        clusters[best_j].r = 0.0;
+        clusters[best_j].g = 0.0;
+        clusters[best_j].b = 0.0;
+        active_map[(size_t)best_j] = 0U;
+        --active;
+
+        row_base = (size_t)best_j * nclusters_u;
+        for (k = 0; k < nclusters; ++k) {
+            cost_matrix[row_base + (size_t)k] = DBL_MAX;
+            cost_matrix[(size_t)k * nclusters_u + (size_t)best_j] = DBL_MAX;
+        }
+
+        row_base = (size_t)best_i * nclusters_u;
+        for (k = 0; k < nclusters; ++k) {
+            col_base = (size_t)k * nclusters_u;
+            index_ij = row_base + (size_t)k;
+            index_ji = col_base + (size_t)best_i;
+            if (k == best_i || active_map[(size_t)k] == 0U) {
+                cost_matrix[index_ij] = DBL_MAX;
+                cost_matrix[index_ji] = DBL_MAX;
+                continue;
+            }
+            cost = sixel_final_merge_ward_pair_cost(
+                &clusters[best_i], &clusters[k], pixelformat);
+            cost_matrix[index_ij] = cost;
+            cost_matrix[index_ji] = cost;
+        }
+    }
+
+    for (i = 0; i < nclusters; ++i) {
+        if (clusters[i].count <= 0.0) {
+            clusters[i].r = 0.0;
+            clusters[i].g = 0.0;
+            clusters[i].b = 0.0;
+        }
+    }
+    free(cost_matrix);
+    free(active_map);
+
+    return 1;
 }
 
 /* Determine how many clusters to create before the final merge step. */

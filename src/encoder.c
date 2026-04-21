@@ -6304,6 +6304,8 @@ sixel_encoder_prepare_palette(
     int effective_final_merge_mode;
     int effective_merge_oversplit_override;
     double effective_merge_oversplit;
+    int effective_merge_lloyd_override;
+    unsigned int effective_merge_lloyd;
     int effective_lut_policy;
     int effective_lut_policy_override;
 
@@ -6325,6 +6327,8 @@ sixel_encoder_prepare_palette(
     effective_final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
     effective_merge_oversplit_override = 0;
     effective_merge_oversplit = 1.81;
+    effective_merge_lloyd_override = 0;
+    effective_merge_lloyd = 3u;
     effective_lut_policy = SIXEL_LUT_POLICY_CERTLUT;
     effective_lut_policy_override = 0;
     if (encoder == NULL || frame == NULL || dither == NULL) {
@@ -6455,6 +6459,9 @@ sixel_encoder_prepare_palette(
     effective_merge_oversplit_override
         = encoder->quantize_model_merge_oversplit_override;
     effective_merge_oversplit = encoder->quantize_model_merge_oversplit;
+    effective_merge_lloyd_override
+        = encoder->quantize_model_merge_lloyd_override;
+    effective_merge_lloyd = encoder->quantize_model_merge_lloyd;
     effective_lut_policy = encoder->lut_policy;
     effective_lut_policy_override = encoder->lut_policy_override;
     if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
@@ -6465,6 +6472,14 @@ sixel_encoder_prepare_palette(
         effective_merge_oversplit =
             sixel_encoder_heckbert_quality_oversplit_factor(palette_reqcolors);
         effective_merge_oversplit_override = 1;
+        if (effective_merge_lloyd_override == 0) {
+            /*
+             * Keep profile=quality defaults effective without changing CLI
+             * precedence: explicit merge_lloyd still wins.
+             */
+            effective_merge_lloyd = 2u;
+            effective_merge_lloyd_override = 1;
+        }
     }
     if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
             && encoder->quantize_model_heckbert_profile
@@ -6615,8 +6630,8 @@ sixel_encoder_prepare_palette(
         effective_merge_oversplit_override,
         effective_merge_oversplit);
     sixel_set_final_merge_lloyd_iterations_override(
-        encoder->quantize_model_merge_lloyd_override,
-        encoder->quantize_model_merge_lloyd);
+        effective_merge_lloyd_override,
+        effective_merge_lloyd);
     sixel_set_kmedoids_algo_override(
         encoder->quantize_model_kmedoids_algo_override,
         (sixel_kmedoids_algo_t)encoder->quantize_model_kmedoids_algo);
