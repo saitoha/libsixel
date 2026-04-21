@@ -18,11 +18,15 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -31,25 +35,45 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying deferred outer distance-band coverage in layer fallback*}" \
-    = "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite unexpectedly emitted outer distance-band path"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: gating deferred outer effects with exterior background in layer fallback*}" \
-    = "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite unexpectedly emitted exterior edge gate"
-    exit 0
-}
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite malformed diagnostic header"
+        exit 0
+        ;;
+esac
 
-test "${trace_output#*builtin PSD: parsed OrGl effect object in layer effects \(inactive\)*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost inactive OrGl parse contract"
-    exit 0
-}
+case "${diag_line}" in
+    *FX_DEFERRED_OUTER_DISTANCE_BAND*)
+        echo "not ok" 1 - \
+            "effects/stroke-composite unexpectedly emitted FX_DEFERRED_OUTER_DISTANCE_BAND"
+        exit 0
+        ;;
+esac
 
-echo "ok" 1 - "effects/stroke-composite keeps deferred outer edge-gate inactive contract"
+case "${diag_line}" in
+    *FX_DEFERRED_OUTER_GATE_BG*)
+        echo "not ok" 1 - \
+            "effects/stroke-composite unexpectedly emitted FX_DEFERRED_OUTER_GATE_BG"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_ORGL_INACTIVE_PARSE*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite missing FX_ORGL_INACTIVE_PARSE"
+        exit 0
+        ;;
+esac
+
+echo "ok" 1 - \
+    "effects/stroke-composite keeps deferred outer edge-gate inactive code contract"
 exit 0

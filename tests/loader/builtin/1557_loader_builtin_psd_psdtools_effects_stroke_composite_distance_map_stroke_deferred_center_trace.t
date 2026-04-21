@@ -23,11 +23,15 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite_center.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -36,20 +40,38 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying distance-map deferred effect stroke coverage in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite center missing deferred distance-map stroke path"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite center missing diagnostic header"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: using distance-map deferred center stroke coverage in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite center missing deferred center stroke semantics"
-    exit 0
-}
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite center malformed diagnostic header"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_DEFERRED_DISTANCE_MAP_STROKE*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite center missing FX_DEFERRED_DISTANCE_MAP_STROKE"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_DEFERRED_DISTANCE_MAP_CENTER*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite center missing FX_DEFERRED_DISTANCE_MAP_CENTER"
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - \
-    "effects/stroke-composite center keeps deferred center stroke semantics"
+    "effects/stroke-composite center keeps deferred center code contract"
 exit 0
