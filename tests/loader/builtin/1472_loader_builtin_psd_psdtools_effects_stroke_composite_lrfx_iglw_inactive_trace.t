@@ -1,7 +1,6 @@
 #!/bin/sh
 # Verify lrFX v2 iglw payload keeps inactive contract while
-# preserving legacy merge behavior on
-# effects/stroke-composite hardcase.
+# preserving legacy merge behavior on effects/stroke-composite hardcase.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -20,11 +19,15 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -33,23 +36,45 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: merging legacy lrFX effects missing from lfx2*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not merge legacy lrFX effects"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header line"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed IrGl effect object in layer effects \(inactive\)*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost IrGl inactive parse trace"
-    exit 0
-}
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite diagnostic header is malformed"
+        exit 0
+        ;;
+esac
 
-test "${trace_output#*builtin PSD: applying inner glow effect in layer fallback*}" \
-    = "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite unexpectedly applied inner glow from inactive iglw"
-    exit 0
-}
+case "${diag_line}" in
+    *FX_LRFX_MERGE*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite did not merge legacy lrFX"
+        exit 0
+        ;;
+esac
 
-echo "ok" 1 - "effects/stroke-composite keeps v2 iglw inactive while merging lrFX"
+case "${diag_line}" in
+    *FX_IRGL_INACTIVE_PARSE*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite lost IrGl inactive parse"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_IRGL_APPLY*)
+        echo "not ok" 1 - \
+            "effects/stroke-composite unexpectedly applied inactive inner glow"
+        exit 0
+        ;;
+    *) ;;
+esac
+
+echo "ok" 1 - "effects/stroke-composite keeps v2 iglw inactive contract"
 exit 0

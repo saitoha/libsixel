@@ -18,11 +18,15 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -31,12 +35,29 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying miter-limit constrained vector stroke coverage in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite did not apply base miter-limit constrained vector stroke coverage"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header line"
     exit 0
 }
+
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite diagnostic header is malformed"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_VECTOR_MITER_LIMIT_BASE*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite did not apply base miter-limit constrained vector stroke coverage"
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - \
     "effects/stroke-composite keeps base miter-limit constrained vector stroke contract"

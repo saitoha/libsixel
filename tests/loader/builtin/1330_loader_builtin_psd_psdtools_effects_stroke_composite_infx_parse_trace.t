@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify infx tagged-block value is parsed as disabled.
+# Verify infx parse diagnostics are emitted on stroke-composite hardcase.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -18,11 +18,15 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -31,10 +35,28 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed infx=0*}" != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not parse infx=0"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header line"
     exit 0
 }
 
-echo "ok" 1 - "effects/stroke-composite keeps infx disabled parse contract"
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite diagnostic header is malformed"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_INFX0_PARSE*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite did not parse infx=0"
+        exit 0
+        ;;
+esac
+
+echo "ok" 1 - "effects/stroke-composite keeps infx parse diagnostics"
 exit 0

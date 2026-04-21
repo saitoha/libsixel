@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify dual-stroke union path keeps legacy deferred/base stroke contracts.
+# Verify base/deferred effect-stroke diagnostics remain available.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -18,11 +18,15 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -31,17 +35,36 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying effect stroke in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost base effect stroke trace"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header line"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying deferred stroke on clipped group*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite lost deferred stroke trace"
-    exit 0
-}
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite diagnostic header is malformed"
+        exit 0
+        ;;
+esac
 
-echo "ok" 1 - "effects/stroke-composite keeps stroke contracts with dual union"
+case "${diag_line}" in
+    *FX_EFFECT_STROKE_BASE*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite lost base effect stroke"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_DEFERRED_STROKE_CLIPPED*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite lost deferred stroke trace"
+        exit 0
+        ;;
+esac
+
+echo "ok" 1 - "effects/stroke-composite keeps base/deferred stroke traces"
 exit 0

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify knko=0 does not trigger knockout-ignore trace in fallback.
+# Verify knko=0 does not trigger knockout-ignore diagnostics.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -18,11 +18,15 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -31,11 +35,36 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*ignoring knockout in layer fallback*}" = \
-    "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite treated knko=0 as enabled"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header line"
     exit 0
 }
+
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite diagnostic header is malformed"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_DUAL_SOURCE_BASE*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite missing base dual-stroke trace"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_KNOCKOUT_IGNORE*)
+        echo "not ok" 1 - "effects/stroke-composite treated knko=0 as enabled"
+        exit 0
+        ;;
+    *) ;;
+esac
 
 echo "ok" 1 - "effects/stroke-composite keeps knko=0 as knockout-none"
 exit 0

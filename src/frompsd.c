@@ -207,6 +207,28 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
             NULL) {
         return "FX_ORGL_INACTIVE_PARSE";
     }
+    if (strstr(message,
+               "parsed OrGl effect object in layer effects") != NULL) {
+        return "FX_ORGL_PARSE";
+    }
+    if (strstr(message,
+               "parsed ChFX effect object in layer effects (inactive)") !=
+            NULL) {
+        return "FX_CHFX_INACTIVE_PARSE";
+    }
+    if (strstr(message,
+               "parsed ChFX effect object in layer effects") != NULL) {
+        return "FX_CHFX_PARSE";
+    }
+    if (strstr(message,
+               "parsed GrFl effect object in layer effects (inactive)") !=
+            NULL) {
+        return "FX_GRFL_INACTIVE_PARSE";
+    }
+    if (strstr(message,
+               "parsed GrFl effect object in layer effects") != NULL) {
+        return "FX_GRFL_PARSE";
+    }
     if (strstr(message, "parsed IrGl glow source/choke/range semantics") !=
             NULL) {
         return "FX_IRGL_SEM";
@@ -223,6 +245,10 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
                "parsed ebbl bevel object in layer effects (inactive)") !=
             NULL) {
         return "FX_EBBL_INACTIVE_PARSE";
+    }
+    if (strstr(message,
+               "parsed ebbl bevel object in layer effects") != NULL) {
+        return "FX_EBBL_PARSE";
     }
     if (strstr(message,
                "separating deferred solid coverage source and clip gate "
@@ -350,6 +376,16 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
         return "FX_STROKE_ALPHA_INSIDE_DEFER";
     }
     if (strstr(message,
+               "writing outside stroke alpha from outside component") !=
+            NULL) {
+        return "FX_STROKE_ALPHA_OUTSIDE_BASE";
+    }
+    if (strstr(message,
+               "splitting deferred center stroke alpha write by outside "
+               "component") != NULL) {
+        return "FX_STROKE_ALPHA_CENTER_DEFER_SPLIT";
+    }
+    if (strstr(message,
                "infx=0; skipping interior effects in layer fallback") !=
             NULL) {
         return "FX_INFX0_SKIP_INTERIOR";
@@ -358,8 +394,15 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
         return "FX_BEVEL_SHADOW_APPLY";
     }
     if (strstr(message,
+               "applying inner glow effect in layer fallback") != NULL) {
+        return "FX_IRGL_APPLY";
+    }
+    if (strstr(message,
                "applying bevel highlight in layer fallback") != NULL) {
         return "FX_BEVEL_HIGHLIGHT_APPLY";
+    }
+    if (strstr(message, "ignoring knockout in layer fallback") != NULL) {
+        return "FX_KNOCKOUT_IGNORE";
     }
     if (strstr(message,
                "applying deferred stroke on clipped group") != NULL) {
@@ -459,6 +502,11 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
         return "FX_VECTOR_ROUND_BASE";
     }
     if (strstr(message,
+               "applying miter-limit constrained vector stroke coverage in "
+               "layer fallback") != NULL) {
+        return "FX_VECTOR_MITER_LIMIT_BASE";
+    }
+    if (strstr(message,
                "applying deferred round-join vector stroke on clipped group")
             != NULL) {
         return "FX_VECTOR_ROUND_DEFER";
@@ -504,6 +552,10 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
     if (strstr(message,
                "merging legacy lrFX effects missing from lfx2") != NULL) {
         return "FX_LRFX_MERGE";
+    }
+    if (strstr(message,
+               "legacy lrFX contains glow/bevel/sofi records") != NULL) {
+        return "FX_LRFX_RECORDS_PRESENT";
     }
     if (strstr(message,
                "ignoring legacy lrFX when lfx2 is present") != NULL) {
