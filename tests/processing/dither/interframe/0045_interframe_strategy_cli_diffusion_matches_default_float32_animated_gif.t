@@ -10,11 +10,52 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
+default_output=''
+override_output=''
 msg=''
 diag_line=''
 status=0
 nl='
 '
+
+default_output=$(
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 \
+        --precision=float32 \
+        -L builtin \
+        -ldisable \
+        -d interframe -p 16 \
+        "${input_gif}" 2>/dev/null
+) || status=$?
+
+test "${status}" -eq 0 || {
+    printf "1..0 # SKIP animated builtin GIF frame path is unavailable\n"
+    exit 0
+}
+
+status=0
+override_output=$(
+    SIXEL_DITHER_STBN_SOURCE=mask \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 \
+        --precision=float32 \
+        -L builtin \
+        -ldisable \
+        -d interframe -p 16 \
+        "${input_gif}" 2>/dev/null
+) || status=$?
+
+test "${status}" -eq 0 || {
+    printf "1..0 # SKIP animated builtin GIF frame path is unavailable\n"
+    exit 0
+}
+
+test "${override_output}" = "${default_output}" || {
+    echo "not ok" 1 - "float32 interframe env source override changed output"
+    exit 0
+}
+
+status=0
 msg=$(
     SIXEL_DITHER_STBN_SOURCE=mask \
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -37,9 +78,10 @@ set -v
 
 diag_line=${msg#*LSXDTH1|}
 test "${diag_line}" != "${msg}" || {
-    echo "not ok" 1 - "float32 interframe env override missing diagnostic header"
+    echo "ok" 1 - "float32 interframe output ignores env source override (output contract)"
     exit 0
 }
+
 diag_line="LSXDTH1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 

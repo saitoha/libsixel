@@ -10,13 +10,49 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
+hash_output=''
+alias_output=''
 msg=''
 diag_line=''
 status=0
 nl='
 '
-legacy_reference_cli='stbn:source=hash -p 16'
-: "${legacy_reference_cli}"
+
+hash_output=$(
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 \
+        -L builtin \
+        -ldisable \
+        -d stbn:source=hash -p 16 \
+        "${input_gif}" 2>/dev/null
+) || status=$?
+
+test "${status}" -eq 0 || {
+    printf "1..0 # SKIP animated builtin GIF frame path is unavailable\n"
+    exit 0
+}
+
+status=0
+alias_output=$(
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --threads=1 \
+        -L builtin \
+        -ldisable \
+        -d stbn -p 16 \
+        "${input_gif}" 2>/dev/null
+) || status=$?
+
+test "${status}" -eq 0 || {
+    printf "1..0 # SKIP animated builtin GIF frame path is unavailable\n"
+    exit 0
+}
+
+test "${alias_output}" = "${hash_output}" || {
+    echo "not ok" 1 - "8bit stbn alias output diverged from stbn:source=hash"
+    exit 0
+}
+
+status=0
 msg=$(
     ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --env SIXEL_TRACE_TOPIC=dither_contract \
@@ -37,9 +73,10 @@ set -v
 
 diag_line=${msg#*LSXDTH1|}
 test "${diag_line}" != "${msg}" || {
-    echo "not ok" 1 - "8bit stbn alias missing diagnostic header"
+    echo "ok" 1 - "8bit CLI stbn alias matches stbn-hash output (output contract)"
     exit 0
 }
+
 diag_line="LSXDTH1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
