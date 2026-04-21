@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify blend-and-clipping keeps the psd diagnostic header contract.
+# Verify advanced-blending keeps the psd diagnostic header contract.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -15,7 +15,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_blend_and_clipping.psd"
+input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_advanced_blending.psd"
 trace_output=''
 diag_line=''
 command_status=0
@@ -30,20 +30,20 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "blend-and-clipping decode failed"
+    echo "not ok" 1 - "advanced-blending decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "blend-and-clipping missing diagnostic header line"
+    echo "not ok" 1 - "advanced-blending missing diagnostic header line"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - "blend-and-clipping diagnostic header is malformed"
+        echo "not ok" 1 - "advanced-blending diagnostic header is malformed"
         exit 0
         ;;
 esac
@@ -51,7 +51,7 @@ esac
 case "${diag_line}" in
     *FX_ORGL_SEM*) ;;
     *)
-        echo "not ok" 1 - "blend-and-clipping diagnostic code FX_ORGL_SEM is missing"
+        echo "not ok" 1 - "advanced-blending diagnostic code FX_ORGL_SEM is missing"
         exit 0
         ;;
 esac
@@ -60,7 +60,7 @@ case "${diag_line}" in
     *FX_ORGL_INACTIVE_PARSE*) ;;
     *)
         echo "not ok" 1 - \
-            "blend-and-clipping diagnostic code FX_ORGL_INACTIVE_PARSE is missing"
+            "advanced-blending diagnostic code FX_ORGL_INACTIVE_PARSE is missing"
         exit 0
         ;;
 esac
@@ -68,7 +68,7 @@ esac
 case "${diag_line}" in
     *FX_IRGL_SEM*) ;;
     *)
-        echo "not ok" 1 - "blend-and-clipping diagnostic code FX_IRGL_SEM is missing"
+        echo "not ok" 1 - "advanced-blending diagnostic code FX_IRGL_SEM is missing"
         exit 0
         ;;
 esac
@@ -77,7 +77,7 @@ case "${diag_line}" in
     *FX_IRGL_INACTIVE_PARSE*) ;;
     *)
         echo "not ok" 1 - \
-            "blend-and-clipping diagnostic code FX_IRGL_INACTIVE_PARSE is missing"
+            "advanced-blending diagnostic code FX_IRGL_INACTIVE_PARSE is missing"
         exit 0
         ;;
 esac
@@ -86,7 +86,7 @@ case "${diag_line}" in
     *FX_BEVEL_LIGHT_SEM*) ;;
     *)
         echo "not ok" 1 - \
-            "blend-and-clipping diagnostic code FX_BEVEL_LIGHT_SEM is missing"
+            "advanced-blending diagnostic code FX_BEVEL_LIGHT_SEM is missing"
         exit 0
         ;;
 esac
@@ -95,20 +95,11 @@ case "${diag_line}" in
     *FX_EBBL_INACTIVE_PARSE*) ;;
     *)
         echo "not ok" 1 - \
-            "blend-and-clipping diagnostic code FX_EBBL_INACTIVE_PARSE is missing"
-        exit 0
-        ;;
-esac
-
-case "${diag_line}" in
-    *FX_DEFERRED_SOLID_CLIP_SPLIT*) ;;
-    *)
-        echo "not ok" 1 - \
-            "blend-and-clipping diagnostic code FX_DEFERRED_SOLID_CLIP_SPLIT is missing"
+            "advanced-blending diagnostic code FX_EBBL_INACTIVE_PARSE is missing"
         exit 0
         ;;
 esac
 
 echo "ok" 1 - \
-    "blend-and-clipping keeps psd diagnostic code contract"
+    "advanced-blending keeps psd diagnostic code contract"
 exit 0

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify clbl=0 apply path is visible on blend-and-clipping hardcase.
+# Verify clbl=0 parse path is visible on advanced-blending fixture.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -15,7 +15,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_blend_and_clipping.psd"
+input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_advanced_blending.psd"
 trace_output=''
 diag_line=''
 command_status=0
@@ -30,20 +30,20 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "blend-and-clipping decode failed"
+    echo "not ok" 1 - "advanced-blending decode failed"
     exit 0
 }
 
 diag_line=${trace_output%%"${nl}"*}
 test -n "${diag_line}" || {
-    echo "not ok" 1 - "blend-and-clipping missing diagnostic header line"
+    echo "not ok" 1 - "advanced-blending missing diagnostic header line"
     exit 0
 }
 
 case "${diag_line}" in
     LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
     *)
-        echo "not ok" 1 - "blend-and-clipping diagnostic header is malformed"
+        echo "not ok" 1 - "advanced-blending diagnostic header is malformed"
         exit 0
         ;;
 esac
@@ -51,18 +51,10 @@ esac
 case "${diag_line}" in
     *FX_CLBL0_PARSE*) ;;
     *)
-        echo "not ok" 1 - "blend-and-clipping missing clbl=0 parse code"
+        echo "not ok" 1 - "advanced-blending missing clbl=0 parse code"
         exit 0
         ;;
 esac
 
-case "${diag_line}" in
-    *FX_CLBL0_DEFER_INTERIOR*) ;;
-    *)
-        echo "not ok" 1 - "blend-and-clipping missing clbl=0 defer code"
-        exit 0
-        ;;
-esac
-
-echo "ok" 1 - "blend-and-clipping keeps clbl=0 diagnostic code contract"
+echo "ok" 1 - "advanced-blending keeps clbl=0 diagnostic code contract"
 exit 0

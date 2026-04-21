@@ -21,27 +21,26 @@ input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_advanced_blending.psd"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psdtools_advanced_blending_expected_psdtools.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.995}
-lsqa_msg=''
-trace_output=''
 command_status=0
 
-trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --threads=1 \
-    -Lbuiltin:e=auto! -o "${output_sixel}" "${input_psd}" 2>&1) || command_status=$?
+set +e
+set +xv
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -Lbuiltin:e=auto! -o "${output_sixel}" "${input_psd}" >/dev/null 2>&1
+command_status=$?
+set -e
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "builtin loader failed on hard-case advanced-blending fixture: ${trace_output}"
+    echo "not ok" 1 - "builtin loader failed on hard-case advanced-blending fixture"
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
+${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
     -b "MS-SSIM:${lsqa_floor}" \
-    "${expected_ppm}" "${output_sixel}" 2>&1) || {
+    "${expected_ppm}" "${output_sixel}" >/dev/null 2>&1 || {
     echo "not ok" 1 - "hard-case advanced-blending decode fell below MS-SSIM ${lsqa_floor}"
     exit 0
 }
-
-: "${lsqa_msg}"
 
 echo "ok" 1 - "hard-case advanced-blending decode reaches MS-SSIM ${lsqa_floor}"
 exit 0

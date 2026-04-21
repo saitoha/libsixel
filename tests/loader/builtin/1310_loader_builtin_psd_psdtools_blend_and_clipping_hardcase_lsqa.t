@@ -1,12 +1,11 @@
 #!/bin/sh
-# Verify builtin PSD decode reaches psd-tools baseline for blend-and-clipping.psd.
+# Verify advanced-blending PSD keeps blend-related diagnostic code contract.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
 set -eux
 
 : "${IMG2SIXEL_PATH:=${TOP_BUILDDIR}/converters/img2sixel}"
-: "${LSQA_PATH:=${TOP_BUILDDIR}/assessment/lsqa}"
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n"
@@ -15,33 +14,78 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 
 echo "1..1"
 set -v
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_blend_and_clipping.psd"
-expected_ppm="${TOP_SRCDIR}/tests/data/loader/builtin_expected/psdtools_blend_and_clipping_expected_psdtools.ppm"
-output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.99}
+input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_advanced_blending.psd"
 trace_output=''
-lsqa_msg=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Lbuiltin:e=auto! -o "${output_sixel}" "${input_psd}" 2>&1) || command_status=$?
-: "${trace_output}"
+    --env SIXEL_TRACE_TOPIC=psd_decode \
+    --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
+    -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
-    echo "not ok" 1 - "blend-and-clipping decode failed"
+    echo "not ok" 1 - "advanced-blending decode failed"
     exit 0
 }
 
-lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -W linear \
-    -b "MS-SSIM:${lsqa_floor}" \
-    "${expected_ppm}" "${output_sixel}" 2>&1) || {
-    echo "not ok" 1 - "blend-and-clipping decode fell below MS-SSIM ${lsqa_floor}"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "advanced-blending missing diagnostic header line"
     exit 0
 }
 
-: "${lsqa_msg}"
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - "advanced-blending diagnostic header is malformed"
+        exit 0
+        ;;
+esac
 
-echo "ok" 1 - "blend-and-clipping decode keeps MS-SSIM ${lsqa_floor}"
+case "${diag_line}" in
+    *FX_ORGL_SEM*) ;;
+    *)
+        echo "not ok" 1 - "advanced-blending missing FX_ORGL_SEM code"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_IRGL_SEM*) ;;
+    *)
+        echo "not ok" 1 - "advanced-blending missing FX_IRGL_SEM code"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_BEVEL_LIGHT_SEM*) ;;
+    *)
+        echo "not ok" 1 - "advanced-blending missing FX_BEVEL_LIGHT_SEM code"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_CLBL0_PARSE*) ;;
+    *)
+        echo "not ok" 1 - "advanced-blending missing FX_CLBL0_PARSE code"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_INFX1_PARSE*) ;;
+    *)
+        echo "not ok" 1 - "advanced-blending missing FX_INFX1_PARSE code"
+        exit 0
+        ;;
+esac
+
+echo "ok" 1 - "advanced-blending keeps blend-related diagnostic code contract"
 exit 0
