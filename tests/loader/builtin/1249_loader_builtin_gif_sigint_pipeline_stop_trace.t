@@ -42,12 +42,24 @@ set -v
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop0.gif"
 # Keep the common case fast with an early SIGINT.
 # If the first run misses trace coverage, retry once with a longer window.
+sigint_delay_fast=12
+sigint_delay_retry=80
+sigint_timeout=300
+
+# TSan builds can delay scheduler progress around signal delivery.
+# Increase only this test's timing window to keep non-TSan runs fast.
+test "${SIXEL_TSAN_BUILD-no}" = "yes" && {
+    sigint_delay_fast=40
+    sigint_delay_retry=240
+    sigint_timeout=3000
+}
 
 set +xv
 sigint_run_status=0
 trace_summary=$(
     # shellcheck disable=SC2086
-    ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --sigint-run 12 300 \
+    ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+        --sigint-run "${sigint_delay_fast}" "${sigint_timeout}" \
         ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --env "SIXEL_THREADS=4" \
         --env "SIXEL_TRACE_TOPIC=encode_handoff" \
@@ -74,7 +86,8 @@ test "${retry_flag}" = "0" || {
     sigint_run_status=0
     trace_summary=$(
         # shellcheck disable=SC2086
-        ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --sigint-run 80 300 \
+        ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+            --sigint-run "${sigint_delay_retry}" "${sigint_timeout}" \
             ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
             --env "SIXEL_THREADS=4" \
             --env "SIXEL_TRACE_TOPIC=encode_handoff" \
