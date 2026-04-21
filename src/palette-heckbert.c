@@ -1076,12 +1076,16 @@ findBoxBoundariesAndWeight(tupletable2 const colorfreqtable,
                            unsigned int boxSize,
                            sample minval[],
                            sample maxval[],
-                           unsigned long *total_weight)
+                           unsigned long *total_weight,
+                           unsigned int axis_count
+                               [sixel_palette_heckbert_max_channels]
+                               [sixel_palette_heckbert_axis_bins])
 {
     unsigned int plane;
     unsigned int i;
     struct tupleint const *entry;
     unsigned int weight;
+    unsigned int axis_value;
 
     for (plane = 0U; plane < depth; ++plane) {
         minval[plane] = colorfreqtable.table[boxStart]->tuple[plane];
@@ -1089,6 +1093,13 @@ findBoxBoundariesAndWeight(tupletable2 const colorfreqtable,
     }
     if (total_weight != NULL) {
         *total_weight = 0UL;
+    }
+    if (axis_count != NULL) {
+        for (plane = 0U; plane < depth; ++plane) {
+            for (i = 0U; i < sixel_palette_heckbert_axis_bins; ++i) {
+                axis_count[plane][i] = 0U;
+            }
+        }
     }
 
     for (i = 0U; i < boxSize; ++i) {
@@ -1107,6 +1118,13 @@ findBoxBoundariesAndWeight(tupletable2 const colorfreqtable,
             if (value > maxval[plane]) {
                 maxval[plane] = value;
             }
+            if (axis_count != NULL) {
+                axis_value = (unsigned int)value;
+                if (axis_value >= sixel_palette_heckbert_axis_bins) {
+                    axis_value = sixel_palette_heckbert_axis_bins - 1U;
+                }
+                axis_count[plane][axis_value] += 1U;
+            }
         }
     }
 }
@@ -1119,7 +1137,12 @@ static SIXELSTATUS
 sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
                      unsigned int boxStart,
                      unsigned int boxSize,
-                     unsigned int axis)
+                     unsigned int axis,
+                     unsigned int const axis_count
+                         [sixel_palette_heckbert_max_channels]
+                         [sixel_palette_heckbert_axis_bins],
+                     sample const minval[],
+                     sample const maxval[])
 {
     unsigned int bucket_count[sixel_palette_heckbert_axis_bins];
     unsigned int bucket_next[sixel_palette_heckbert_axis_bins];
@@ -1144,20 +1167,34 @@ sortBoxByAxisBuckets(tupletable2 const colorfreqtable,
         bucket_end[bucket] = 0U;
     }
 
-    min_bucket = sixel_palette_heckbert_axis_bins - 1U;
-    max_bucket = 0U;
-    for (index = 0U; index < boxSize; ++index) {
-        entry = colorfreqtable.table[boxStart + index];
-        axis_value = (unsigned int)entry->tuple[axis];
-        if (axis_value >= sixel_palette_heckbert_axis_bins) {
-            axis_value = sixel_palette_heckbert_axis_bins - 1U;
+    if (axis_count != NULL && minval != NULL && maxval != NULL) {
+        min_bucket = (unsigned int)minval[axis];
+        max_bucket = (unsigned int)maxval[axis];
+        if (min_bucket >= sixel_palette_heckbert_axis_bins) {
+            min_bucket = sixel_palette_heckbert_axis_bins - 1U;
         }
-        bucket_count[axis_value] += 1U;
-        if (axis_value < min_bucket) {
-            min_bucket = axis_value;
+        if (max_bucket >= sixel_palette_heckbert_axis_bins) {
+            max_bucket = sixel_palette_heckbert_axis_bins - 1U;
         }
-        if (axis_value > max_bucket) {
-            max_bucket = axis_value;
+        for (bucket = min_bucket; bucket <= max_bucket; ++bucket) {
+            bucket_count[bucket] = axis_count[axis][bucket];
+        }
+    } else {
+        min_bucket = sixel_palette_heckbert_axis_bins - 1U;
+        max_bucket = 0U;
+        for (index = 0U; index < boxSize; ++index) {
+            entry = colorfreqtable.table[boxStart + index];
+            axis_value = (unsigned int)entry->tuple[axis];
+            if (axis_value >= sixel_palette_heckbert_axis_bins) {
+                axis_value = sixel_palette_heckbert_axis_bins - 1U;
+            }
+            bucket_count[axis_value] += 1U;
+            if (axis_value < min_bucket) {
+                min_bucket = axis_value;
+            }
+            if (axis_value > max_bucket) {
+                max_bucket = axis_value;
+            }
         }
     }
     if (boxSize == 0U || min_bucket >= max_bucket) {
@@ -1843,29 +1880,43 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                 continue;
             }
             best_cluster = 0U;
+            previous_cluster = UINT_MAX;
+            if (assignment != NULL) {
+                previous_cluster = assignment[entry_index];
+                if (previous_cluster < cluster_count) {
+                    best_cluster = previous_cluster;
+                }
+            }
             best_distance = 0.0;
-            offset = 0U;
+            offset = (size_t)best_cluster * (size_t)depth;
             for (component = 0U; component < depth; ++component) {
                 diff = (double)entry->tuple[component]
                     - centers[offset + (size_t)component];
                 best_distance += diff * diff;
             }
-            for (cluster_index = 1U; cluster_index < cluster_count;
+            for (cluster_index = 0U; cluster_index < cluster_count;
                     ++cluster_index) {
+                if (cluster_index == best_cluster) {
+                    continue;
+                }
                 distance = 0.0;
                 offset = (size_t)cluster_index * (size_t)depth;
                 for (component = 0U; component < depth; ++component) {
                     diff = (double)entry->tuple[component]
                         - centers[offset + (size_t)component];
                     distance += diff * diff;
+                    if (distance > best_distance) {
+                        break;
+                    }
                 }
-                if (distance < best_distance) {
+                if (distance < best_distance
+                    || (distance == best_distance
+                        && cluster_index < best_cluster)) {
                     best_distance = distance;
                     best_cluster = cluster_index;
                 }
             }
             if (assignment != NULL) {
-                previous_cluster = assignment[entry_index];
                 assignment[entry_index] = best_cluster;
                 if (previous_cluster != best_cluster) {
                     assignment_changed = 1;
@@ -2062,6 +2113,8 @@ sixel_palette_heckbert_split_attempt(
     unsigned int boxSize,
     sample minval[],
     sample maxval[],
+    unsigned int const axis_count[sixel_palette_heckbert_max_channels]
+                                 [sixel_palette_heckbert_axis_bins],
     int methodForLargest,
     unsigned int sum,
     unsigned int dimensions,
@@ -2127,7 +2180,10 @@ sixel_palette_heckbert_split_attempt(
         status = sortBoxByAxisBuckets(colorfreqtable,
                                       boxStart,
                                       boxSize,
-                                      axis);
+                                      axis,
+                                      axis_count,
+                                      minval,
+                                      maxval);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -2172,6 +2228,9 @@ splitBox(boxVector bv,
     unsigned int split_method_count;
     unsigned int split_attempt;
     unsigned int old_boxes;
+    unsigned int axis_count[sixel_palette_heckbert_max_channels]
+                           [sixel_palette_heckbert_axis_bins];
+    unsigned int (*axis_count_ptr)[sixel_palette_heckbert_axis_bins];
     int split_method;
     int degenerate;
 
@@ -2187,6 +2246,7 @@ splitBox(boxVector bv,
     split_method_count = 0U;
     split_attempt = 0U;
     old_boxes = 0U;
+    axis_count_ptr = NULL;
     split_method = methodForLargest;
     degenerate = 0;
     if (methodForLargest != SIXEL_LARGE_NORM
@@ -2197,13 +2257,17 @@ splitBox(boxVector bv,
         status = SIXEL_LOGIC_ERROR;
         goto end;
     }
+    if (methodForLargest != SIXEL_LARGE_PCA) {
+        axis_count_ptr = axis_count;
+    }
     findBoxBoundariesAndWeight(colorfreqtable,
                                depth,
                                boxStart,
                                boxSize,
                                minval,
                                maxval,
-                               &total_weight);
+                               &total_weight,
+                               axis_count_ptr);
     if (total_weight == 0UL) {
         sixel_helper_set_additional_message(
             "Internal error: empty histogram in splitBox.");
@@ -2234,12 +2298,24 @@ splitBox(boxVector bv,
     for (split_attempt = 0U; split_attempt < split_method_count;
             ++split_attempt) {
         split_method = (int)split_methods[split_attempt];
+        if (split_method != SIXEL_LARGE_PCA && axis_count_ptr == NULL) {
+            findBoxBoundariesAndWeight(colorfreqtable,
+                                       depth,
+                                       boxStart,
+                                       boxSize,
+                                       minval,
+                                       maxval,
+                                       NULL,
+                                       axis_count);
+            axis_count_ptr = axis_count;
+        }
         status = sixel_palette_heckbert_split_attempt(colorfreqtable,
                                                       depth,
                                                       boxStart,
                                                       boxSize,
                                                       minval,
                                                       maxval,
+                                                      axis_count_ptr,
                                                       split_method,
                                                       sm,
                                                       dimensions,
