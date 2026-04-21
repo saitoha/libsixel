@@ -652,8 +652,6 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
     unsigned char *quantized;
     float lookup_pixel_float[SIXEL_MAX_CHANNELS];
     unsigned char const *lookup_pixel;
-    sixel_lut_t *fast_lut;
-    int use_fast_lut;
     int lookup_wants_float;
     int use_palette_float_lookup;
     int need_float_pixel;
@@ -694,6 +692,10 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
     if (context->palette == NULL || context->result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    if (context->lookup_mode < SIXEL_DITHER_LOOKUP_MODE_NORMAL
+            || context->lookup_mode > SIXEL_DITHER_LOOKUP_MODE_MONO_LIGHTBG) {
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     switch (context->method_for_diffuse) {
     case SIXEL_DIFFUSE_A_DITHER:
@@ -724,8 +726,6 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
     new_palette_float = context->new_palette_float;
     float_depth = context->float_depth;
     quantized = context->scratch;
-    fast_lut = context->lut;
-    use_fast_lut = (fast_lut != NULL);
     transparent_mask = context->transparent_mask;
     transparent_mask_size = context->transparent_mask_size;
     transparent_keycolor = context->transparent_keycolor;
@@ -836,17 +836,8 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                 if (lookup_wants_float) {
                     lookup_pixel = (unsigned char const *)(void const *)
                         lookup_pixel_float;
-                    if (use_fast_lut) {
-                        color_index = sixel_lut_map_pixel(fast_lut,
-                                                         lookup_pixel);
-                    } else {
-                        color_index = context->lookup(lookup_pixel,
-                                                      context->depth,
-                                                      context->palette,
-                                                      context->reqcolor,
-                                                      context->indextable,
-                                                      context->complexion);
-                    }
+                    color_index = sixel_dither_lookup_index(context,
+                                                            lookup_pixel);
                 } else if (use_palette_float_lookup) {
                     color_index = sixel_dither_lookup_palette_float32(
                         lookup_pixel_float,
@@ -856,17 +847,8 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                         context->complexion);
                 } else {
                     lookup_pixel = quantized;
-                    if (use_fast_lut) {
-                        color_index = sixel_lut_map_pixel(fast_lut,
-                                                         lookup_pixel);
-                    } else {
-                        color_index = context->lookup(lookup_pixel,
-                                                      context->depth,
-                                                      context->palette,
-                                                      context->reqcolor,
-                                                      context->indextable,
-                                                      context->complexion);
-                    }
+                    color_index = sixel_dither_lookup_index(context,
+                                                            lookup_pixel);
                 }
                 if (context->migration_map[color_index] == 0) {
                     if (absolute_y >= context->output_start) {
@@ -1009,13 +991,8 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                         lookup_pixel = (unsigned char const *)(void const *)
                             lookup_pixel_float;
                         context->result[pos] = (sixel_index_t)
-                            context->lookup(
-                                lookup_pixel,
-                                context->depth,
-                                context->palette,
-                                context->reqcolor,
-                                context->indextable,
-                                context->complexion);
+                            sixel_dither_lookup_index(context,
+                                                      lookup_pixel);
                     } else if (use_palette_float_lookup) {
                         context->result[pos] = (sixel_index_t)
                             sixel_dither_lookup_palette_float32(
@@ -1027,13 +1004,8 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                     } else {
                         lookup_pixel = quantized;
                         context->result[pos] = (sixel_index_t)
-                            context->lookup(
-                                lookup_pixel,
-                                context->depth,
-                                context->palette,
-                                context->reqcolor,
-                                context->indextable,
-                                context->complexion);
+                            sixel_dither_lookup_index(context,
+                                                      lookup_pixel);
                     }
                 }
             }

@@ -640,8 +640,6 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     float *new_palette_float;
     int float_depth;
     int float_index;
-    sixel_lut_t *fast_lut;
-    int use_fast_lut;
     float (*f_mask)(int x, int y, int c);
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
@@ -678,6 +676,10 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     if (context->result == NULL || context->scratch == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    if (context->lookup_mode < SIXEL_DITHER_LOOKUP_MODE_NORMAL
+            || context->lookup_mode > SIXEL_DITHER_LOOKUP_MODE_MONO_LIGHTBG) {
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     switch (context->method_for_diffuse) {
     case SIXEL_DIFFUSE_A_DITHER:
@@ -706,8 +708,6 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     palette_float = context->palette_float;
     new_palette_float = context->new_palette_float;
     float_depth = context->float_depth;
-    fast_lut = context->lut;
-    use_fast_lut = (fast_lut != NULL);
     transparent_mask = context->transparent_mask;
     transparent_mask_size = context->transparent_mask_size;
     transparent_keycolor = context->transparent_keycolor;
@@ -800,17 +800,8 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
                                                       : val > 255 ? 255
                                                                      : val);
                 }
-                if (use_fast_lut) {
-                    color_index = sixel_lut_map_pixel(fast_lut,
-                                                     context->scratch);
-                } else {
-                    color_index = context->lookup(context->scratch,
-                                                  context->depth,
-                                                  context->palette,
-                                                  context->reqcolor,
-                                                  context->indextable,
-                                                  context->complexion);
-                }
+                color_index = sixel_dither_lookup_index(context,
+                                                        context->scratch);
                 if (context->migration_map[color_index] == 0) {
                     if (absolute_y >= context->output_start) {
                         /*
@@ -942,12 +933,7 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
                      * cast to sixel_index_t (unsigned char) is safe here.
                      */
                     context->result[pos] = (sixel_index_t)
-                        context->lookup(context->scratch,
-                                        context->depth,
-                                        context->palette,
-                                        context->reqcolor,
-                                        context->indextable,
-                                        context->complexion);
+                        sixel_dither_lookup_index(context, context->scratch);
                 }
             }
             if (absolute_y >= context->output_start) {

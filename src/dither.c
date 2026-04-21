@@ -392,142 +392,16 @@ static const unsigned char pal_xterm256[] = {
 
 
 #if defined(_MSC_VER)
-# define SIXEL_TLS __declspec(thread)
 # define SIXEL_TLS_AVAILABLE 1
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
     && !defined(__STDC_NO_THREADS__) \
     && !defined(__PCC__)
-# define SIXEL_TLS _Thread_local
 # define SIXEL_TLS_AVAILABLE 1
 #elif defined(__GNUC__) && !defined(__PCC__)
-# define SIXEL_TLS __thread
 # define SIXEL_TLS_AVAILABLE 1
 #else
-# define SIXEL_TLS
 # define SIXEL_TLS_AVAILABLE 0
 #endif
-
-/*
- * Fast LUT lookups rely on per-thread scratch state.  A TLS indirection keeps
- * parallel dithering workers from stomping on each other's lookup context when
- * several bands run concurrently.
- */
-static SIXEL_TLS sixel_lut_t *dither_lut_context = NULL;
-
-#undef SIXEL_TLS
-
-/* lookup closest color from palette with "normal" strategy */
-static int
-lookup_normal(unsigned char const * const pixel,
-              int const depth,
-              unsigned char const * const palette,
-              int const reqcolor,
-              unsigned short * const cachetable,
-              int const complexion)
-{
-    int result;
-    int diff;
-    int r;
-    int i;
-    int n;
-    int distant;
-
-    result = (-1);
-    diff = INT_MAX;
-
-    /* don't use cachetable in 'normal' strategy */
-    (void) cachetable;
-
-    for (i = 0; i < reqcolor; i++) {
-        distant = 0;
-        r = pixel[0] - palette[i * depth + 0];
-        distant += r * r * complexion;
-        for (n = 1; n < depth; ++n) {
-            r = pixel[n] - palette[i * depth + n];
-            distant += r * r;
-        }
-        if (distant < diff) {
-            diff = distant;
-            result = i;
-        }
-    }
-
-    return result;
-}
-
-
-/*
- * Shared fast lookup flow handled by the lut module.  The palette lookup now
- * delegates to sixel_lut_map_pixel() so policy-specific caches and the
- * certification tree stay encapsulated inside src/lookup-common.c.
- */
-
-static int
-lookup_fast_lut(unsigned char const * const pixel,
-                int const depth,
-                unsigned char const * const palette,
-                int const reqcolor,
-                unsigned short * const cachetable,
-                int const complexion)
-{
-    (void)depth;
-    (void)palette;
-    (void)reqcolor;
-    (void)cachetable;
-    (void)complexion;
-
-    if (dither_lut_context == NULL) {
-        return 0;
-    }
-
-    return sixel_lut_map_pixel(dither_lut_context, pixel);
-}
-
-
-static int
-lookup_mono_darkbg(unsigned char const * const pixel,
-                   int const depth,
-                   unsigned char const * const palette,
-                   int const reqcolor,
-                   unsigned short * const cachetable,
-                   int const complexion)
-{
-    int n;
-    int distant;
-
-    /* unused */ (void) palette;
-    /* unused */ (void) cachetable;
-    /* unused */ (void) complexion;
-
-    distant = 0;
-    for (n = 0; n < depth; ++n) {
-        distant += pixel[n];
-    }
-    return distant >= 128 * reqcolor ? 1: 0;
-}
-
-
-static int
-lookup_mono_lightbg(unsigned char const * const pixel,
-                    int const depth,
-                    unsigned char const * const palette,
-                    int const reqcolor,
-                    unsigned short * const cachetable,
-                    int const complexion)
-{
-    int n;
-    int distant;
-
-    /* unused */ (void) palette;
-    /* unused */ (void) cachetable;
-    /* unused */ (void) complexion;
-
-    distant = 0;
-    for (n = 0; n < depth; ++n) {
-        distant += pixel[n];
-    }
-    return distant < 128 * reqcolor ? 1: 0;
-}
 
 static SIXELSTATUS
 sixel_dither_validate_complexion_limit(int depth, int complexion)
@@ -606,14 +480,10 @@ sixel_dither_map_pixels(
     unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
     unsigned short migration_map[SIXEL_PALETTE_MAX];
     sixel_dither_context_t context;
-    int (*f_lookup)(unsigned char const * const pixel,
-                    int const depth,
-                    unsigned char const * const palette,
-                    int const reqcolor,
-                    unsigned short * const cachetable,
-                    int const complexion) = lookup_normal;
+    sixel_dither_lookup_mode_t lookup_mode;
     int use_varerr;
     int use_positional;
+    int use_fast_lut;
     sixel_lut_t *active_lut;
     int manage_lut;
     int policy;
@@ -633,6 +503,8 @@ sixel_dither_map_pixels(
     manage_lut = 0;
     palette_float = NULL;
     palette_float_depth = 0;
+    lookup_mode = SIXEL_DITHER_LOOKUP_MODE_NORMAL;
+    use_fast_lut = 0;
     memset(&lookup_config, 0, sizeof(lookup_config));
     memset(&lookup_result, 0, sizeof(lookup_result));
 
@@ -656,6 +528,7 @@ sixel_dither_map_pixels(
     context.palette_float = NULL;
     context.new_palette_float = NULL;
     context.float_depth = 0;
+    context.lookup_mode = SIXEL_DITHER_LOOKUP_MODE_NORMAL;
     context.lookup_source_is_float = 0;
     context.prefer_palette_float_lookup = 0;
     context.transparent_mask = NULL;
@@ -731,30 +604,30 @@ sixel_dither_map_pixels(
             sum2 += palette[n];
         }
         if (sum1 == 0 && sum2 == 255 * 3) {
-            f_lookup = lookup_mono_darkbg;
+            lookup_mode = SIXEL_DITHER_LOOKUP_MODE_MONO_DARKBG;
         } else if (sum1 == 255 * 3 && sum2 == 0) {
-            f_lookup = lookup_mono_lightbg;
+            lookup_mode = SIXEL_DITHER_LOOKUP_MODE_MONO_LIGHTBG;
         }
     }
-    if (foptimize && depth == 3 && f_lookup == lookup_normal) {
-        f_lookup = lookup_fast_lut;
+    if (foptimize && depth == 3
+            && lookup_mode == SIXEL_DITHER_LOOKUP_MODE_NORMAL) {
+        use_fast_lut = 1;
     }
 #if SIXEL_ENABLE_THREADS && !SIXEL_TLS_AVAILABLE
-    if (f_lookup == lookup_fast_lut) {
+    if (use_fast_lut != 0) {
         /*
-         * Fast lookup stores the active LUT in a TLS pointer for the hot path.
-         * Compilers without TLS support collapse that pointer into a process
-         * global, which is unsafe when multiple worker threads map pixels at
-         * the same time.
+         * Fast lookup depends on thread-local state in the inner loops.
+         * Compilers without TLS support cannot isolate that state across
+         * worker threads, so keep the conservative direct scan.
          */
-        f_lookup = lookup_normal;
+        use_fast_lut = 0;
     }
 #endif
     if (lut_policy == SIXEL_LUT_POLICY_NONE) {
-        f_lookup = lookup_normal;
+        use_fast_lut = 0;
     }
 
-    if ((f_lookup == lookup_normal || f_lookup == lookup_fast_lut)
+    if ((lookup_mode == SIXEL_DITHER_LOOKUP_MODE_NORMAL || use_fast_lut != 0)
             && !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         status = sixel_dither_validate_complexion_limit(depth, complexion);
         if (SIXEL_FAILED(status)) {
@@ -762,7 +635,7 @@ sixel_dither_map_pixels(
         }
     }
 
-    if (f_lookup == lookup_fast_lut) {
+    if (use_fast_lut != 0) {
         if (depth != 3) {
             status = SIXEL_BAD_ARGUMENT;
             sixel_helper_set_additional_message(
@@ -831,18 +704,16 @@ sixel_dither_map_pixels(
             manage_lut = lookup_result.owned;
         }
         context.lut = active_lut;
-        dither_lut_context = active_lut;
     }
 
-    context.lookup = f_lookup;
-    if (f_lookup == lookup_fast_lut
-        && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    context.lookup_mode = lookup_mode;
+    if (use_fast_lut != 0 && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         context.lookup_source_is_float = 1;
     }
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
         && context.palette_float != NULL
         && context.float_depth >= context.depth
-        && f_lookup == lookup_normal) {
+        && lookup_mode == SIXEL_DITHER_LOOKUP_MODE_NORMAL) {
         context.prefer_palette_float_lookup = 1;
     }
     context.optimize_palette = foptimize_palette;
@@ -896,9 +767,6 @@ sixel_dither_map_pixels(
     status = SIXEL_OK;
 
 end:
-    if (dither_lut_context != NULL && f_lookup == lookup_fast_lut) {
-        dither_lut_context = NULL;
-    }
     if (manage_lut && active_lut != NULL) {
         sixel_lut_unref(active_lut);
     }

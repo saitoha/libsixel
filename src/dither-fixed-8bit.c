@@ -1184,16 +1184,7 @@ sixel_dither_apply_fixed_impl(
     int reqcolor,
     int method_for_scan,
     int optimize_palette,
-    int (*f_lookup)(const unsigned char *pixel,
-                    int depth,
-                    const unsigned char *palette,
-                    int reqcolor,
-                    unsigned short *cachetable,
-                    int complexion),
-    sixel_lut_t *fast_lut,
-    int use_fast_lut,
-    unsigned short *indextable,
-    int complexion,
+    sixel_dither_context_t const *lookup_context,
     unsigned char new_palette[],
     unsigned short migration_map[],
     int *ncolors,
@@ -1538,13 +1529,8 @@ sixel_dither_apply_fixed_impl(
                 source_pixel = data + base;
             }
 
-            if (use_fast_lut && fast_lut != NULL) {
-                color_index = sixel_lut_map_pixel(fast_lut, source_pixel);
-            } else {
-                color_index = f_lookup(source_pixel, depth, palette,
-                                       reqcolor, indextable,
-                                       complexion);
-            }
+            color_index = sixel_dither_lookup_index(lookup_context,
+                                                    source_pixel);
 
             if (optimize_palette) {
                 if (migration_map[color_index] == 0) {
@@ -1664,7 +1650,8 @@ sixel_dither_apply_fixed_8bit(sixel_dither_t *dither,
     if (context->migration_map == NULL || context->ncolors == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (context->lookup == NULL) {
+    if (context->lookup_mode < SIXEL_DITHER_LOOKUP_MODE_NORMAL
+            || context->lookup_mode > SIXEL_DITHER_LOOKUP_MODE_MONO_LIGHTBG) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -1679,11 +1666,7 @@ sixel_dither_apply_fixed_8bit(sixel_dither_t *dither,
                                          context->reqcolor,
                                          context->method_for_scan,
                                          context->optimize_palette,
-                                         context->lookup,
-                                         context->lut,
-                                         context->lut != NULL,
-                                         context->indextable,
-                                         context->complexion,
+                                         context,
                                          context->new_palette,
                                          context->migration_map,
                                          context->ncolors,

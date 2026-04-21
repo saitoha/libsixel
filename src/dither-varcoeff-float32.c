@@ -462,8 +462,6 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     size_t carry_len;
     int method_for_diffuse;
     int method_for_scan;
-    sixel_lut_t *fast_lut;
-    int use_fast_lut;
     diffuse_varerr_mode_float varerr_diffuse;
     diffuse_varerr_carry_mode_float varerr_diffuse_carry;
     int optimize_palette;
@@ -485,15 +483,8 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     int output_index;
     int diff;
     int table_index;
-    unsigned short *indextable;
     unsigned short *migration_map;
     int *ncolors;
-    int (*lookup)(const unsigned char *,
-                  int,
-                  const unsigned char *,
-                  int,
-                  unsigned short *,
-                  int);
     float *palette_float;
     float *new_palette_float;
     int float_depth;
@@ -520,15 +511,11 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     data = context->pixels_float;
     palette = context->palette;
     new_palette = context->new_palette;
-    indextable = context->indextable;
     migration_map = context->migration_map;
     ncolors = context->ncolors;
     depth = context->depth;
     channel_count = depth;
     reqcolor = context->reqcolor;
-    lookup = context->lookup;
-    fast_lut = context->lut;
-    use_fast_lut = (fast_lut != NULL);
     transparent_mask = context->transparent_mask;
     transparent_mask_size = context->transparent_mask_size;
     transparent_keycolor = context->transparent_keycolor;
@@ -547,7 +534,8 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     if (data == NULL || palette == NULL || context->result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (lookup == NULL) {
+    if (context->lookup_mode < SIXEL_DITHER_LOOKUP_MODE_NORMAL
+            || context->lookup_mode > SIXEL_DITHER_LOOKUP_MODE_MONO_LIGHTBG) {
         return SIXEL_BAD_ARGUMENT;
     }
     /*
@@ -704,17 +692,8 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
             if (lookup_wants_float) {
                 lookup_pixel = (unsigned char const *)(void const *)
                     lookup_pixel_float;
-                if (use_fast_lut) {
-                    color_index = sixel_lut_map_pixel(fast_lut,
-                                                     lookup_pixel);
-                } else {
-                    color_index = lookup(lookup_pixel,
-                                         depth,
-                                         palette,
-                                         reqcolor,
-                                         indextable,
-                                         context->complexion);
-                }
+                color_index = sixel_dither_lookup_index(context,
+                                                        lookup_pixel);
             } else if (use_palette_float_lookup) {
                 color_index = sixel_dither_lookup_palette_float32(
                     lookup_pixel_float,
@@ -724,17 +703,8 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                     context->complexion);
             } else {
                 lookup_pixel = quantized;
-                if (use_fast_lut) {
-                    color_index = sixel_lut_map_pixel(fast_lut,
-                                                     lookup_pixel);
-                } else {
-                    color_index = lookup(lookup_pixel,
-                                         depth,
-                                         palette,
-                                         reqcolor,
-                                         indextable,
-                                         context->complexion);
-                }
+                color_index = sixel_dither_lookup_index(context,
+                                                        lookup_pixel);
             }
 
                 if (optimize_palette) {
