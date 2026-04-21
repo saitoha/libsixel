@@ -18,11 +18,15 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -31,21 +35,44 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: parsed infx=0*}" != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not parse infx=0"
+diag_line=${trace_output%%"${nl}"*}
+test -n "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing diagnostic header"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: infx=0; skipping interior effects in layer fallback*}" = "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite unexpectedly emitted infx skip trace"
-    exit 0
-}
+case "${diag_line}" in
+    LSXPSD1\|rc=0\|kind=OK\|codes=*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite malformed diagnostic header"
+        exit 0
+        ;;
+esac
 
-test "${trace_output#*builtin PSD: applying effect stroke in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite did not keep stroke when infx=0"
-    exit 0
-}
+case "${diag_line}" in
+    *FX_INFX0_PARSE*) ;;
+    *)
+        echo "not ok" 1 - "effects/stroke-composite missing FX_INFX0_PARSE"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_INFX0_SKIP_INTERIOR*)
+        echo "not ok" 1 - \
+            "effects/stroke-composite unexpectedly emitted FX_INFX0_SKIP_INTERIOR"
+        exit 0
+        ;;
+esac
+
+case "${diag_line}" in
+    *FX_EFFECT_STROKE_BASE*) ;;
+    *)
+        echo "not ok" 1 - \
+            "effects/stroke-composite missing FX_EFFECT_STROKE_BASE"
+        exit 0
+        ;;
+esac
 
 echo "ok" 1 - "effects/stroke-composite keeps stroke while infx=0 is active"
 exit 0

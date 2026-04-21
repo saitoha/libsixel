@@ -362,6 +362,26 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
         return "FX_DEFERRED_DISTANCE_MAP_STROKE";
     }
     if (strstr(message,
+               "applying distance-map effect stroke coverage in "
+               "layer fallback") != NULL) {
+        return "FX_DISTANCE_MAP_STROKE_BASE";
+    }
+    if (strstr(message,
+               "using distance-map inside stroke coverage in "
+               "layer fallback") != NULL) {
+        return "FX_DISTANCE_MAP_INSIDE_BASE";
+    }
+    if (strstr(message,
+               "using distance-map center stroke coverage in "
+               "layer fallback") != NULL) {
+        return "FX_DISTANCE_MAP_CENTER_BASE";
+    }
+    if (strstr(message,
+               "using distance-map outside stroke coverage in "
+               "layer fallback") != NULL) {
+        return "FX_DISTANCE_MAP_OUTSIDE_BASE";
+    }
+    if (strstr(message,
                "using distance-map deferred inside stroke coverage in "
                "layer fallback") != NULL) {
         return "FX_DEFERRED_DISTANCE_MAP_INSIDE";
@@ -385,6 +405,9 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
                "normalizing GrFl percent scale for effect gradient overlay "
                "in layer fallback") != NULL) {
         return "FX_GRFL_SCALE_NORMALIZE";
+    }
+    if (strstr(message, "applying effect stroke in layer fallback") != NULL) {
+        return "FX_EFFECT_STROKE_BASE";
     }
     if (strstr(message,
                "separating deferred gradient coverage source and clip gate in "
