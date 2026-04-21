@@ -2124,6 +2124,11 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     double best_distance;
     double diff;
     double channel;
+    double entry0;
+    double entry1;
+    double entry2;
+    double entry3;
+    double weighted_value;
     unsigned int iteration;
     unsigned int cluster_index;
     unsigned int component;
@@ -2139,6 +2144,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     int assignment_changed;
     int center_changed;
     double previous_center;
+    size_t sum_bytes;
     unsigned int executed;
     struct tupleint *entry;
 
@@ -2147,6 +2153,11 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     best_distance = 0.0;
     diff = 0.0;
     channel = 0.0;
+    entry0 = 0.0;
+    entry1 = 0.0;
+    entry2 = 0.0;
+    entry3 = 0.0;
+    weighted_value = 0.0;
     iteration = 0U;
     cluster_index = 0U;
     component = 0U;
@@ -2162,6 +2173,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     assignment_changed = 0;
     center_changed = 0;
     previous_center = 0.0;
+    sum_bytes = 0U;
     executed = 0U;
     entry = NULL;
     if (executed_iterations != NULL) {
@@ -2173,6 +2185,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         return;
     }
     total = (size_t)cluster_count * (size_t)depth;
+    sum_bytes = total * sizeof(double);
     centers = (double *)malloc(total * sizeof(double));
     if (centers == NULL) {
         return;
@@ -2202,17 +2215,13 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     for (iteration = 0U; iteration < iterations; ++iteration) {
         assignment_changed = 0;
         center_changed = 0;
-        for (cluster_index = 0U; cluster_index < cluster_count;
-                ++cluster_index) {
-            cluster_weight[cluster_index] = 0UL;
-        }
-        for (cluster_index = 0U; cluster_index < cluster_count;
-                ++cluster_index) {
-            offset = (size_t)cluster_index * (size_t)depth;
-            for (component = 0U; component < depth; ++component) {
-                cluster_sums[offset + (size_t)component] = 0.0;
-            }
-        }
+        /* Reset cluster accumulators in one contiguous pass. */
+        memset(cluster_weight,
+               0,
+               (size_t)cluster_count * sizeof(unsigned long));
+        memset(cluster_sums,
+               0,
+               sum_bytes);
         for (entry_index = 0U; entry_index < colorfreqtable.size;
                 ++entry_index) {
             entry = colorfreqtable.table[entry_index];
@@ -2231,33 +2240,114 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                     best_cluster = previous_cluster;
                 }
             }
-            best_distance = 0.0;
-            offset = (size_t)best_cluster * (size_t)depth;
-            for (component = 0U; component < depth; ++component) {
-                diff = (double)entry->tuple[component]
-                    - centers[offset + (size_t)component];
+            /*
+             * Most inputs are RGB/RGBA. Keep dedicated hot paths to avoid
+             * the per-component loop overhead in the nearest-center search.
+             */
+            if (depth == 3U) {
+                entry0 = (double)entry->tuple[0U];
+                entry1 = (double)entry->tuple[1U];
+                entry2 = (double)entry->tuple[2U];
+                offset = (size_t)best_cluster * 3U;
+                diff = entry0 - centers[offset + 0U];
+                best_distance = diff * diff;
+                diff = entry1 - centers[offset + 1U];
                 best_distance += diff * diff;
-            }
-            for (cluster_index = 0U; cluster_index < cluster_count;
-                    ++cluster_index) {
-                if (cluster_index == best_cluster) {
-                    continue;
+                diff = entry2 - centers[offset + 2U];
+                best_distance += diff * diff;
+                for (cluster_index = 0U; cluster_index < cluster_count;
+                        ++cluster_index) {
+                    if (cluster_index == best_cluster) {
+                        continue;
+                    }
+                    offset = (size_t)cluster_index * 3U;
+                    diff = entry0 - centers[offset + 0U];
+                    distance = diff * diff;
+                    if (distance <= best_distance) {
+                        diff = entry1 - centers[offset + 1U];
+                        distance += diff * diff;
+                        if (distance <= best_distance) {
+                            diff = entry2 - centers[offset + 2U];
+                            distance += diff * diff;
+                        }
+                    }
+                    if (distance < best_distance
+                        || (distance == best_distance
+                            && cluster_index < best_cluster)) {
+                        best_distance = distance;
+                        best_cluster = cluster_index;
+                    }
                 }
-                distance = 0.0;
-                offset = (size_t)cluster_index * (size_t)depth;
+            } else if (depth == 4U) {
+                entry0 = (double)entry->tuple[0U];
+                entry1 = (double)entry->tuple[1U];
+                entry2 = (double)entry->tuple[2U];
+                entry3 = (double)entry->tuple[3U];
+                offset = (size_t)best_cluster * 4U;
+                diff = entry0 - centers[offset + 0U];
+                best_distance = diff * diff;
+                diff = entry1 - centers[offset + 1U];
+                best_distance += diff * diff;
+                diff = entry2 - centers[offset + 2U];
+                best_distance += diff * diff;
+                diff = entry3 - centers[offset + 3U];
+                best_distance += diff * diff;
+                for (cluster_index = 0U; cluster_index < cluster_count;
+                        ++cluster_index) {
+                    if (cluster_index == best_cluster) {
+                        continue;
+                    }
+                    offset = (size_t)cluster_index * 4U;
+                    diff = entry0 - centers[offset + 0U];
+                    distance = diff * diff;
+                    if (distance <= best_distance) {
+                        diff = entry1 - centers[offset + 1U];
+                        distance += diff * diff;
+                        if (distance <= best_distance) {
+                            diff = entry2 - centers[offset + 2U];
+                            distance += diff * diff;
+                            if (distance <= best_distance) {
+                                diff = entry3 - centers[offset + 3U];
+                                distance += diff * diff;
+                            }
+                        }
+                    }
+                    if (distance < best_distance
+                        || (distance == best_distance
+                            && cluster_index < best_cluster)) {
+                        best_distance = distance;
+                        best_cluster = cluster_index;
+                    }
+                }
+            } else {
+                best_distance = 0.0;
+                offset = (size_t)best_cluster * (size_t)depth;
                 for (component = 0U; component < depth; ++component) {
                     diff = (double)entry->tuple[component]
                         - centers[offset + (size_t)component];
-                    distance += diff * diff;
-                    if (distance > best_distance) {
-                        break;
-                    }
+                    best_distance += diff * diff;
                 }
-                if (distance < best_distance
-                    || (distance == best_distance
-                        && cluster_index < best_cluster)) {
-                    best_distance = distance;
-                    best_cluster = cluster_index;
+                for (cluster_index = 0U; cluster_index < cluster_count;
+                        ++cluster_index) {
+                    if (cluster_index == best_cluster) {
+                        continue;
+                    }
+                    distance = 0.0;
+                    offset = (size_t)cluster_index * (size_t)depth;
+                    for (component = 0U; component < depth; ++component) {
+                        diff = (double)entry->tuple[component]
+                            - centers[offset + (size_t)component];
+                        distance += diff * diff;
+                        if (distance > best_distance) {
+                            break;
+                        }
+                    }
+                    if (distance < best_distance
+                        || (distance == best_distance
+                            && cluster_index < best_cluster)) {
+                        best_distance = distance;
+                        best_cluster = cluster_index;
+                    }
                 }
             }
             if (assignment != NULL) {
@@ -2268,9 +2358,22 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
             }
             offset = (size_t)best_cluster * (size_t)depth;
             cluster_weight[best_cluster] += value;
-            for (component = 0U; component < depth; ++component) {
-                cluster_sums[offset + (size_t)component]
-                    += (double)entry->tuple[component] * (double)value;
+            weighted_value = (double)value;
+            /* Mirror the hot-path specialization for weighted sum updates. */
+            if (depth == 3U) {
+                cluster_sums[offset + 0U] += entry0 * weighted_value;
+                cluster_sums[offset + 1U] += entry1 * weighted_value;
+                cluster_sums[offset + 2U] += entry2 * weighted_value;
+            } else if (depth == 4U) {
+                cluster_sums[offset + 0U] += entry0 * weighted_value;
+                cluster_sums[offset + 1U] += entry1 * weighted_value;
+                cluster_sums[offset + 2U] += entry2 * weighted_value;
+                cluster_sums[offset + 3U] += entry3 * weighted_value;
+            } else {
+                for (component = 0U; component < depth; ++component) {
+                    cluster_sums[offset + (size_t)component]
+                        += (double)entry->tuple[component] * weighted_value;
+                }
             }
         }
         if (assignment != NULL) {
