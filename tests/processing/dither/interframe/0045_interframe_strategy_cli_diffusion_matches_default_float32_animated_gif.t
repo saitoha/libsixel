@@ -35,11 +35,13 @@ test "${status}" -eq 0 || {
 echo "1..1"
 set -v
 
-diag_line=${msg%%"${nl}"*}
-test -n "${diag_line}" || {
+diag_line=${msg#*LSXDTH1|}
+test "${diag_line}" != "${msg}" || {
     echo "not ok" 1 - "float32 interframe env override missing diagnostic header"
     exit 0
 }
+diag_line="LSXDTH1|${diag_line}"
+diag_line=${diag_line%%"${nl}"*}
 
 test "${diag_line#LSXDTH1|rc=0|}" != "${diag_line}" || {
     echo "not ok" 1 - "float32 interframe env override malformed diagnostic header"
