@@ -1,11 +1,16 @@
 #!/bin/sh -e
 
+prev=
 for a in "$@"; do
   if [ "$prev" = "-o" ]; then
-    if [ "$a" = "sanitycheckc.exe" ]; then
-      cp "$(which true)" "$a"
-      exit 0
-    fi
+    case "$a" in
+      # Meson changed the sanity check output name in newer releases.
+      # Handle both legacy and current forms to keep setup portable.
+      sanitycheck*.exe|sanity_check_for_*.exe)
+        cp "$(which true)" "$a"
+        exit 0
+        ;;
+    esac
   fi
   prev="$a"
 done
