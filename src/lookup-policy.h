@@ -78,8 +78,9 @@ typedef struct sixel_lookup_policy_vtbl {
     SIXELSTATUS (*prepare)(sixel_lookup_policy_t *policy,
                            sixel_lookup_policy_prepare_request_t const *
                                request);
-    int (*map_pixel)(sixel_lookup_policy_t const *policy,
-                     unsigned char const *pixel);
+    int
+    (*map_pixel)(sixel_lookup_policy_t const *policy,
+                 unsigned char const *pixel);
 } sixel_lookup_policy_vtbl_t;
 
 struct sixel_lookup_policy {
