@@ -161,12 +161,16 @@ END {
 '
 }
 
+# Keep test sources opt-in. Pulling tests into the default amalgamation may
+# inject private include paths (for example "src/allocator.h") that are not
+# valid when --enable-amalgamated-tools generates production units.
 default_units=$(collect_units_from_dirs \
-    "src tests converters assessment gdk-pixbuf-loader" \
+    "src converters assessment gdk-pixbuf-loader" \
     \( -name '*.c' -o -name '*.m' \))
 
+# Header discovery follows the same default scope as source discovery.
 header_units=$(collect_units_from_dirs \
-    "include src converters tests assessment" \
+    "include src converters assessment" \
     \( -name '*.h' \))
 
 # Ensure generated headers that may not exist in the source tree are still
