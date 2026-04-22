@@ -2197,12 +2197,18 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     if (cluster_count > colorfreqtable.size) {
         return;
     }
+    /*
+     * 64-bit size_t always covers unsigned-int channel counts, so these
+     * guards are only needed on narrow-size_t targets.
+     */
+#if SIZE_MAX <= UINT_MAX
     if ((size_t)cluster_count > SIZE_MAX / sizeof(unsigned long)) {
         return;
     }
     if ((size_t)cluster_count > SIZE_MAX / (size_t)depth) {
         return;
     }
+#endif
     total = (size_t)cluster_count * (size_t)depth;
     if (total > SIZE_MAX / sizeof(double)) {
         return;
