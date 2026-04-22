@@ -23,7 +23,7 @@ status=0
 source_line=''
 
 set +x
-help_text=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --help 2>&1) || status=$?
+help_text=$("${IMG2SIXEL_PATH}" --help 2>&1) || status=$?
 set -x
 
 test "${status}" -eq 0 || {

@@ -1589,10 +1589,11 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     int pos;
     size_t base;
     float *source_pixel;
-    unsigned char quantized[SIXEL_MAX_CHANNELS];
-    unsigned char corrected[SIXEL_MAX_CHANNELS];
-    float working_float[SIXEL_MAX_CHANNELS];
-    float lookup_pixel_float[SIXEL_MAX_CHANNELS];
+    /* Keep lookup inputs initialized across all branch combinations. */
+    unsigned char quantized[SIXEL_MAX_CHANNELS] = { 0 };
+    unsigned char corrected[SIXEL_MAX_CHANNELS] = { 0 };
+    float working_float[SIXEL_MAX_CHANNELS] = { 0.0f };
+    float lookup_pixel_float[SIXEL_MAX_CHANNELS] = { 0.0f };
     int color_index;
     int output_index;
     unsigned char palette_value_u8;

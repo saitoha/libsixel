@@ -450,7 +450,8 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     unsigned char *new_palette;
     float *source_pixel;
     float quantized_float;
-    unsigned char quantized[SIXEL_MAX_CHANNELS];
+    /* Keep lookup inputs initialized across all branch combinations. */
+    unsigned char quantized[SIXEL_MAX_CHANNELS] = { 0 };
     float *carry_curr = NULL;
     float *carry_next = NULL;
     float *carry_far = NULL;
@@ -489,7 +490,7 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     float *new_palette_float;
     int float_depth;
     int float_index;
-    float lookup_pixel_float[SIXEL_MAX_CHANNELS];
+    float lookup_pixel_float[SIXEL_MAX_CHANNELS] = { 0.0f };
     unsigned char const *lookup_pixel;
     int lookup_wants_float;
     int use_palette_float_lookup;

@@ -2190,6 +2190,13 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         return;
     }
     /*
+     * Heckbert merge paths only handle palette-sized cluster counts and
+     * channel depths that fit the fixed tuple representation.
+     */
+    if (depth > SIXEL_MAX_CHANNELS || cluster_count > SIXEL_PALETTE_MAX) {
+        return;
+    }
+    /*
      * The caller builds clusters from the histogram table, so cluster_count
      * must never exceed the tuple count.  Abort refinement if metadata is
      * inconsistent to avoid out-of-bounds reads on analyzer builds.
@@ -2197,18 +2204,12 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     if (cluster_count > colorfreqtable.size) {
         return;
     }
-    /*
-     * 64-bit size_t always covers unsigned-int channel counts, so these
-     * guards are only needed on narrow-size_t targets.
-     */
-#if SIZE_MAX <= UINT_MAX
     if ((size_t)cluster_count > SIZE_MAX / sizeof(unsigned long)) {
         return;
     }
     if ((size_t)cluster_count > SIZE_MAX / (size_t)depth) {
         return;
     }
-#endif
     total = (size_t)cluster_count * (size_t)depth;
     if (total > SIZE_MAX / sizeof(double)) {
         return;
@@ -2218,8 +2219,12 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     if (centers == NULL) {
         return;
     }
-    assignment = (unsigned int *)malloc(
-        colorfreqtable.size * sizeof(unsigned int));
+    if ((size_t)colorfreqtable.size > SIZE_MAX / sizeof(unsigned int)) {
+        free(centers);
+        return;
+    }
+    assignment = (unsigned int *)malloc((size_t)colorfreqtable.size
+                                        * sizeof(unsigned int));
     if (assignment != NULL) {
         for (entry_index = 0U; entry_index < colorfreqtable.size;
                 ++entry_index) {
