@@ -11,10 +11,16 @@ if WANT_AMALGAMATED_TOOLS
 BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+$(AMALGAMATION_SIXEL): FORCE_TEST_RUNNER_AMALGAMATION \
+        $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation \
 		SIXEL_AMALGAMATION_INCLUDE_TESTS=1 sixel.c
+
+# The normal build may already generate amalgamation/sixel.c without test
+# units. Keep this sentinel target non-materialized so check builds always
+# regenerate the test-enabled amalgamation before compiling test_runner.
+FORCE_TEST_RUNNER_AMALGAMATION:
 endif
 TESTS = @SIXEL_CHECK_TESTS@
 XFAIL_TESTS = \

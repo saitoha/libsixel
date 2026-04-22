@@ -3244,10 +3244,18 @@ uninstall-am:
 
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-@WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+@WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): FORCE_TEST_RUNNER_AMALGAMATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(top_builddir)/amalgamation/Makefile
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation \
 @WANT_AMALGAMATED_TOOLS_TRUE@		SIXEL_AMALGAMATION_INCLUDE_TESTS=1 sixel.c
+@WANT_AMALGAMATED_TOOLS_TRUE@
+@WANT_AMALGAMATED_TOOLS_TRUE@# The normal build may already generate
+@WANT_AMALGAMATED_TOOLS_TRUE@# amalgamation/sixel.c without test units. Keep
+@WANT_AMALGAMATED_TOOLS_TRUE@# this sentinel target non-materialized so check
+@WANT_AMALGAMATED_TOOLS_TRUE@# builds always regenerate the test-enabled
+@WANT_AMALGAMATED_TOOLS_TRUE@# amalgamation before compiling test_runner.
+@WANT_AMALGAMATED_TOOLS_TRUE@FORCE_TEST_RUNNER_AMALGAMATION:
 
 .PHONY: \
 	staticcheck \
