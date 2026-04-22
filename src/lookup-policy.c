@@ -395,6 +395,16 @@ sixel_lookup_policy_mono_lightbg_vtbl = {
     sixel_lookup_policy_map_lookup_object
 };
 
+/*
+ * GCC's static analyzer does not always model ownership transfer through
+ * out-parameters and can report false leaks when prepared policy objects are
+ * handed to the caller via `*out_policy`.
+ */
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK) && \
+    defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+#endif
 static SIXELSTATUS
 sixel_lookup_policy_build_lookup_object(
     sixel_lookup_policy_t **out_policy,
@@ -622,6 +632,10 @@ sixel_lookup_policy_build_fast_lut(
 
     return SIXEL_OK;
 }
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK) && \
+    defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 void
 sixel_lookup_policy_init(sixel_lookup_policy_t **policy)
