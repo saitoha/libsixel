@@ -498,7 +498,30 @@ emit_all_headers() {
                         "defined(BUILD_IMG2SIXEL)"
                 fi
                 ;;
-            converters/cli.h|converters/completion_utils.h|converters/path.h|converters/getopt_stub.h|converters/malloc_stub.h|converters/aborttrace.h)
+            # Keep converter helper headers gated by the same feature macros
+            # as their implementation units so partial builds (for example
+            # BUILD_CLI in test_runner amalgamation) keep typedef contracts.
+            converters/cli.h)
+                emit_header_unit "${unit}" \
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA) || defined(BUILD_CLI)"
+                ;;
+            converters/completion_utils.h)
+                emit_header_unit "${unit}" \
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA) || defined(BUILD_COMPLETION_UTILS)"
+                ;;
+            converters/path.h)
+                emit_header_unit "${unit}" \
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA) || defined(BUILD_PATH)"
+                ;;
+            converters/malloc_stub.h)
+                emit_header_unit "${unit}" \
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA) || defined(BUILD_MALLOC_STUB)"
+                ;;
+            converters/aborttrace.h)
+                emit_header_unit "${unit}" \
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA) || defined(BUILD_ABORTTRACE)"
+                ;;
+            converters/getopt_stub.h)
                 emit_header_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA)"
                 ;;
