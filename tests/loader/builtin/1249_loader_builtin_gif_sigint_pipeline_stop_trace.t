@@ -40,17 +40,13 @@ echo "1..1"
 set -v
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop0.gif"
-# Keep the common case fast with an early SIGINT.
-# If the first run misses trace coverage, retry once with a longer window.
-sigint_delay_fast=12
-sigint_delay_retry=80
-sigint_timeout=300
+# Wait long enough for a deterministic handoff trace trigger.
+# The runner sends SIGINT after it observes the handoff token.
+sigint_timeout=1200
 
 # TSan builds can delay scheduler progress around signal delivery.
-# Increase only this test's timing window to keep non-TSan runs fast.
+# Increase this test's trigger wait timeout only when needed.
 test "${SIXEL_TSAN_BUILD-no}" = "yes" && {
-    sigint_delay_fast=40
-    sigint_delay_retry=240
     sigint_timeout=3000
 }
 
@@ -59,7 +55,9 @@ sigint_run_status=0
 trace_summary=$(
     # shellcheck disable=SC2086
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-        --sigint-run "${sigint_delay_fast}" "${sigint_timeout}" \
+        --sigint-run-until \
+        "event=callback_handoff_decide handoff=pipeline" \
+        "${sigint_timeout}" \
         ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --env "SIXEL_THREADS=4" \
         --env "SIXEL_TRACE_TOPIC=encode_handoff" \
@@ -69,41 +67,12 @@ trace_summary=$(
 
 handoff_flag=0
 stop_flag=0
-retry_flag=0
 
 trace_remainder=${trace_summary#*event=callback_handoff_decide handoff=pipeline}
 test "${trace_remainder}" != "${trace_summary}" && handoff_flag=1
 
 trace_remainder=${trace_summary#*event=pipeline_stop}
 test "${trace_remainder}" != "${trace_summary}" && stop_flag=1
-
-test "${sigint_run_status}" = "0" || retry_flag=1
-test "${handoff_flag}" = "1" || retry_flag=1
-test "${stop_flag}" = "1" || retry_flag=1
-
-test "${retry_flag}" = "0" || {
-    set +xv
-    sigint_run_status=0
-    trace_summary=$(
-        # shellcheck disable=SC2086
-        ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-            --sigint-run "${sigint_delay_retry}" "${sigint_timeout}" \
-            ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-            --env "SIXEL_THREADS=4" \
-            --env "SIXEL_TRACE_TOPIC=encode_handoff" \
-            --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
-            -Lbuiltin! -lforce -o /dev/null -g "${input_gif}" 2>&1 >/dev/null
-    ) || sigint_run_status=$?
-
-    handoff_flag=0
-    stop_flag=0
-
-    trace_remainder=${trace_summary#*event=callback_handoff_decide handoff=pipeline}
-    test "${trace_remainder}" != "${trace_summary}" && handoff_flag=1
-
-    trace_remainder=${trace_summary#*event=pipeline_stop}
-    test "${trace_remainder}" != "${trace_summary}" && stop_flag=1
-}
 set -xv
 
 test "${sigint_run_status}" = "0" || {

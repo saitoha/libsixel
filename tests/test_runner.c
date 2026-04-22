@@ -22,6 +22,9 @@
 #endif
 
 #if !defined(_WIN32)
+# if HAVE_FCNTL_H
+#  include <fcntl.h>
+# endif
 # if HAVE_SIGNAL_H
 #  include <signal.h>
 # endif
@@ -332,6 +335,10 @@ print_usage(char const *program)
             program);
     fprintf(stderr,
             "       %s --sigint-run <delay-ms> <timeout-ms> "
+            "<program> [args...]\n",
+            program);
+    fprintf(stderr,
+            "       %s --sigint-run-until <needle> <timeout-ms> "
             "<program> [args...]\n",
             program);
     fprintf(stderr, "\n");
@@ -795,6 +802,336 @@ timeout_cleanup:
 }
 
 static int
+test_runner_buffer_contains(char const *buffer,
+                            size_t buffer_length,
+                            char const *needle,
+                            size_t needle_length)
+{
+    size_t offset;
+    size_t index;
+
+    offset = 0u;
+    index = 0u;
+
+    if (needle_length == 0u) {
+        return 1;
+    }
+    if (buffer == NULL || needle == NULL) {
+        return 0;
+    }
+    if (buffer_length < needle_length) {
+        return 0;
+    }
+
+    for (offset = 0u; offset + needle_length <= buffer_length; ++offset) {
+        for (index = 0u; index < needle_length; ++index) {
+            if (buffer[offset + index] != needle[index]) {
+                break;
+            }
+        }
+        if (index == needle_length) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+test_runner_run_posix_sigint_until(int argc, char **argv)
+{
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+    char const *needle_token;
+    char const *timeout_token;
+    unsigned long parsed_timeout;
+    char *timeout_end;
+    char const *program;
+    char **program_argv;
+    size_t needle_length;
+    size_t carry_length;
+    size_t combined_length;
+    size_t copy_length;
+    ssize_t read_size;
+    int stderr_pipe[2];
+    int stderr_read_open;
+    int stderr_write_open;
+    int stderr_closed;
+    pid_t child_pid;
+    pid_t wait_pid;
+    int wait_status;
+    int child_running;
+    unsigned long elapsed_ms;
+    unsigned long poll_interval_ms;
+    int send_result;
+    int kill_result;
+    int signal_sent;
+    int found_trigger;
+    char read_buffer[1024];
+    char *combined_buffer;
+    size_t combined_capacity;
+    int fd_flags;
+    int sleep_status;
+
+    needle_token = NULL;
+    timeout_token = NULL;
+    parsed_timeout = 0ul;
+    timeout_end = NULL;
+    program = NULL;
+    program_argv = NULL;
+    needle_length = 0u;
+    carry_length = 0u;
+    combined_length = 0u;
+    copy_length = 0u;
+    read_size = 0;
+    stderr_pipe[0] = -1;
+    stderr_pipe[1] = -1;
+    stderr_read_open = 0;
+    stderr_write_open = 0;
+    stderr_closed = 0;
+    child_pid = (pid_t)0;
+    wait_pid = (pid_t)0;
+    wait_status = 0;
+    child_running = 1;
+    elapsed_ms = 0ul;
+    poll_interval_ms = 10ul;
+    send_result = 0;
+    kill_result = 0;
+    signal_sent = 0;
+    found_trigger = 0;
+    combined_buffer = NULL;
+    combined_capacity = 0u;
+    fd_flags = 0;
+    sleep_status = 0;
+
+    if (argc < 5) {
+        fprintf(stderr,
+                "usage: %s <needle> <timeout-ms> <program> [args...]\n",
+                argv[0]);
+        return EXIT_FAILURE;
+    }
+
+    needle_token = argv[1];
+    timeout_token = argv[2];
+    program = argv[3];
+    program_argv = argv + 3;
+    needle_length = strlen(needle_token);
+
+    if (needle_length == 0u) {
+        fprintf(stderr, "test_runner: --sigint-run-until needs a token\n");
+        return EXIT_FAILURE;
+    }
+
+    errno = 0;
+    parsed_timeout = strtoul(timeout_token, &timeout_end, 10);
+    if (errno != 0 || timeout_end == timeout_token || *timeout_end != '\0') {
+        fprintf(stderr,
+                "test_runner: invalid timeout milliseconds: %s\n",
+                timeout_token);
+        return EXIT_FAILURE;
+    }
+
+    combined_capacity = needle_length + sizeof(read_buffer);
+    combined_buffer = (char *)malloc(combined_capacity);
+    if (combined_buffer == NULL) {
+        fprintf(stderr,
+                "test_runner: failed to allocate sigint trace buffer\n");
+        return EXIT_FAILURE;
+    }
+
+    if (pipe(stderr_pipe) != 0) {
+        fprintf(stderr, "test_runner: pipe failed: %s\n", strerror(errno));
+        goto timeout_cleanup;
+    }
+    stderr_read_open = 1;
+    stderr_write_open = 1;
+
+    child_pid = fork();
+    if (child_pid < (pid_t)0) {
+        fprintf(stderr, "test_runner: fork failed: %s\n", strerror(errno));
+        goto timeout_cleanup;
+    }
+
+    if (child_pid == (pid_t)0) {
+        (void)setpgid(0, 0);
+        (void)close(stderr_pipe[0]);
+        (void)dup2(stderr_pipe[1], STDERR_FILENO);
+        (void)close(stderr_pipe[1]);
+        (void)execvp(program, program_argv);
+        fprintf(stderr, "test_runner: execvp failed: %s\n", strerror(errno));
+        _exit(127);
+    }
+
+    if (setpgid(child_pid, child_pid) != 0
+        && errno != EACCES && errno != ESRCH) {
+        fprintf(stderr, "test_runner: setpgid failed: %s\n", strerror(errno));
+    }
+
+    (void)close(stderr_pipe[1]);
+    stderr_write_open = 0;
+
+    fd_flags = fcntl(stderr_pipe[0], F_GETFL, 0);
+    if (fd_flags >= 0) {
+        (void)fcntl(stderr_pipe[0], F_SETFL, fd_flags | O_NONBLOCK);
+    }
+
+    if (parsed_timeout > 0ul && poll_interval_ms > parsed_timeout) {
+        poll_interval_ms = parsed_timeout;
+    }
+
+    for (;;) {
+        wait_pid = waitpid(child_pid, &wait_status, WNOHANG);
+        if (wait_pid == child_pid) {
+            child_running = 0;
+        } else if (wait_pid < (pid_t)0 && errno != EINTR) {
+            fprintf(stderr, "test_runner: waitpid failed: %s\n",
+                    strerror(errno));
+            goto timeout_cleanup;
+        }
+
+        for (;;) {
+            read_size = read(stderr_pipe[0],
+                             read_buffer,
+                             sizeof(read_buffer));
+            if (read_size > 0) {
+                if (fwrite(read_buffer,
+                           1u,
+                           (size_t)read_size,
+                           stderr) != (size_t)read_size) {
+                    fprintf(stderr, "test_runner: stderr relay failed\n");
+                    goto timeout_cleanup;
+                }
+                fflush(stderr);
+
+                memcpy(combined_buffer + carry_length,
+                       read_buffer,
+                       (size_t)read_size);
+                combined_length = carry_length + (size_t)read_size;
+                if (signal_sent == 0 &&
+                    test_runner_buffer_contains(combined_buffer,
+                                                combined_length,
+                                                needle_token,
+                                                needle_length)) {
+                    found_trigger = 1;
+                    send_result = kill((pid_t)(-child_pid), SIGINT);
+                    if (send_result != 0 && errno != ESRCH) {
+                        fprintf(stderr,
+                                "test_runner: SIGINT send failed: %s\n",
+                                strerror(errno));
+                    }
+                    signal_sent = 1;
+                }
+
+                if (needle_length > 1u) {
+                    if (combined_length >= needle_length - 1u) {
+                        copy_length = needle_length - 1u;
+                        memmove(combined_buffer,
+                                combined_buffer + combined_length
+                                - copy_length,
+                                copy_length);
+                        carry_length = copy_length;
+                    } else {
+                        carry_length = combined_length;
+                    }
+                } else {
+                    carry_length = 0u;
+                }
+                continue;
+            }
+            if (read_size == 0) {
+                stderr_closed = 1;
+                break;
+            }
+            if (errno == EINTR) {
+                continue;
+            }
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                break;
+            }
+            fprintf(stderr, "test_runner: read failed: %s\n", strerror(errno));
+            goto timeout_cleanup;
+        }
+
+        if (signal_sent == 0 && child_running == 0) {
+            fprintf(stderr,
+                    "test_runner: child exited before SIGINT trigger\n");
+            goto timeout_cleanup;
+        }
+        if (signal_sent != 0 && child_running == 0 && stderr_closed != 0) {
+            break;
+        }
+        if (parsed_timeout == 0ul || elapsed_ms >= parsed_timeout) {
+            if (found_trigger == 0) {
+                fprintf(stderr,
+                        "test_runner: timeout waiting for trigger token\n");
+            } else {
+                fprintf(stderr,
+                        "test_runner: timeout waiting child after SIGINT\n");
+            }
+            goto timeout_cleanup;
+        }
+
+        sleep_status = test_runner_sleep_milliseconds(poll_interval_ms);
+        if (sleep_status != 0) {
+            fprintf(stderr, "test_runner: nanosleep failed: %s\n",
+                    strerror(errno));
+            goto timeout_cleanup;
+        }
+        if (elapsed_ms > parsed_timeout - poll_interval_ms) {
+            elapsed_ms = parsed_timeout;
+        } else {
+            elapsed_ms += poll_interval_ms;
+        }
+    }
+
+    if (stderr_read_open != 0) {
+        (void)close(stderr_pipe[0]);
+    }
+    free(combined_buffer);
+    return EXIT_SUCCESS;
+
+timeout_cleanup:
+    if (child_pid > (pid_t)0) {
+        kill_result = kill((pid_t)(-child_pid), SIGKILL);
+        if (kill_result != 0 && errno != ESRCH) {
+            fprintf(stderr, "test_runner: SIGKILL send failed: %s\n",
+                    strerror(errno));
+        }
+        for (;;) {
+            wait_pid = waitpid(child_pid, &wait_status, 0);
+            if (wait_pid == child_pid) {
+                break;
+            }
+            if (wait_pid < (pid_t)0 && errno == EINTR) {
+                continue;
+            }
+            if (wait_pid < (pid_t)0 && errno == ECHILD) {
+                break;
+            }
+            if (wait_pid < (pid_t)0) {
+                fprintf(stderr, "test_runner: waitpid cleanup failed: %s\n",
+                        strerror(errno));
+                break;
+            }
+        }
+    }
+    if (stderr_read_open != 0) {
+        (void)close(stderr_pipe[0]);
+    }
+    if (stderr_write_open != 0) {
+        (void)close(stderr_pipe[1]);
+    }
+    free(combined_buffer);
+    return EXIT_FAILURE;
+#else
+    (void)argc;
+    (void)argv;
+
+    fprintf(stderr, "test_runner: --sigint-run-until is unavailable\n");
+    return EXIT_FAILURE;
+#endif
+}
+
+static int
 test_runner_setenv_portable(char const *name, char const *value);
 static int
 test_runner_apply_env_assignment(char const *assignment);
@@ -991,6 +1328,10 @@ main(int argc, char **argv)
     if (strcmp(argv[first_index], "--sigint-run") == 0) {
         return test_runner_run_posix_sigint(argc - first_index,
                                             argv + first_index);
+    }
+    if (strcmp(argv[first_index], "--sigint-run-until") == 0) {
+        return test_runner_run_posix_sigint_until(argc - first_index,
+                                                  argv + first_index);
     }
 
     requested = argv[first_index];
