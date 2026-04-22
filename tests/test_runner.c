@@ -801,6 +801,7 @@ timeout_cleanup:
 #endif
 }
 
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
 static int
 test_runner_buffer_contains(char const *buffer,
                             size_t buffer_length,
@@ -836,6 +837,7 @@ test_runner_buffer_contains(char const *buffer,
 
     return 0;
 }
+#endif
 
 static int
 test_runner_run_posix_sigint_until(int argc, char **argv)
