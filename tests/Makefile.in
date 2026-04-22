@@ -123,6 +123,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0008_filter_load.c \
 	processing/filter/0009_filter_dither.c \
 	processing/filter/0010_filter_encode.c \
+	processing/filter/0011_filter_lookup_policy.c \
 	processing/filter/filter_test_common.h \
 	loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
 	loader/wic/0009_loader_wic_pixelformat.c \
@@ -188,6 +189,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0008_filter_load.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0009_filter_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0010_filter_encode.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0011_filter_lookup_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/wic/test_runner-0009_loader_wic_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT) \
@@ -365,6 +367,7 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po \
 	processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po \
 	processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po \
+	processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Po \
 	quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po \
 	quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po \
 	quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
@@ -1033,6 +1036,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_LOADER_WIC_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FILTER_ENCODE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_FILTER_LOOKUP_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_LOADER_GD_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_LOADER_LIBPNG_PIXELFORMAT \
@@ -1117,6 +1121,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0008_filter_load.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0009_filter_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0010_filter_encode.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0011_filter_lookup_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/wic/0009_loader_wic_pixelformat.c \
@@ -1325,6 +1330,9 @@ processing/filter/test_runner-0009_filter_dither.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/filter/test_runner-0010_filter_encode.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0011_filter_lookup_policy.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 loader/coregraphics/$(am__dirstamp):
@@ -1667,6 +1675,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po@am__quote@ # am--include-marker
@@ -1910,6 +1919,20 @@ processing/filter/test_runner-0010_filter_encode.obj: processing/filter/0010_fil
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0010_filter_encode.c' object='processing/filter/test_runner-0010_filter_encode.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0010_filter_encode.obj `if test -f 'processing/filter/0010_filter_encode.c'; then $(CYGPATH_W) 'processing/filter/0010_filter_encode.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0010_filter_encode.c'; fi`
+
+processing/filter/test_runner-0011_filter_lookup_policy.o: processing/filter/0011_filter_lookup_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0011_filter_lookup_policy.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Tpo -c -o processing/filter/test_runner-0011_filter_lookup_policy.o `test -f 'processing/filter/0011_filter_lookup_policy.c' || echo '$(srcdir)/'`processing/filter/0011_filter_lookup_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Tpo processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0011_filter_lookup_policy.c' object='processing/filter/test_runner-0011_filter_lookup_policy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0011_filter_lookup_policy.o `test -f 'processing/filter/0011_filter_lookup_policy.c' || echo '$(srcdir)/'`processing/filter/0011_filter_lookup_policy.c
+
+processing/filter/test_runner-0011_filter_lookup_policy.obj: processing/filter/0011_filter_lookup_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0011_filter_lookup_policy.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Tpo -c -o processing/filter/test_runner-0011_filter_lookup_policy.obj `if test -f 'processing/filter/0011_filter_lookup_policy.c'; then $(CYGPATH_W) 'processing/filter/0011_filter_lookup_policy.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0011_filter_lookup_policy.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Tpo processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0011_filter_lookup_policy.c' object='processing/filter/test_runner-0011_filter_lookup_policy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0011_filter_lookup_policy.obj `if test -f 'processing/filter/0011_filter_lookup_policy.c'; then $(CYGPATH_W) 'processing/filter/0011_filter_lookup_policy.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0011_filter_lookup_policy.c'; fi`
 
 loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o: loader/coregraphics/0008_loader_coregraphics_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o -MD -MP -MF loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Tpo -c -o loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o `test -f 'loader/coregraphics/0008_loader_coregraphics_pixelformat.c' || echo '$(srcdir)/'`loader/coregraphics/0008_loader_coregraphics_pixelformat.c
@@ -3026,6 +3049,7 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
@@ -3134,6 +3158,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
