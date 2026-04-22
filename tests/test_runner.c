@@ -646,20 +646,38 @@ test_runner_signal_group_and_child(pid_t child_pid, int signum)
     int child_result;
     int group_errno;
     int child_errno;
+    pid_t child_pgid;
+    int should_signal_child;
 
     group_result = 0;
     child_result = 0;
     group_errno = 0;
     child_errno = 0;
+    child_pgid = (pid_t)-1;
+    should_signal_child = 1;
 
     group_result = kill((pid_t)(-child_pid), signum);
     if (group_result != 0) {
         group_errno = errno;
     }
 
-    child_result = kill(child_pid, signum);
-    if (child_result != 0) {
-        child_errno = errno;
+    if (group_result == 0) {
+        child_pgid = getpgid(child_pid);
+        if (child_pgid == child_pid) {
+            should_signal_child = 0;
+        }
+    }
+
+    /*
+     * Avoid delivering the same signal twice to the group leader.
+     * Keep direct-child fallback when the process-group relationship
+     * is unknown so wrapped runtimes still get signal delivery.
+     */
+    if (should_signal_child != 0) {
+        child_result = kill(child_pid, signum);
+        if (child_result != 0) {
+            child_errno = errno;
+        }
     }
 
     if ((group_errno == 0 || group_errno == ESRCH)
