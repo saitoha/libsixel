@@ -2124,7 +2124,9 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                                   unsigned int iterations,
                                   unsigned int *executed_iterations)
 {
-    double *centers;
+    double centers[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
+    unsigned long cluster_weight_local[SIXEL_PALETTE_MAX];
+    double cluster_sums_local[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
     double distance;
     double best_distance;
     double diff;
@@ -2142,18 +2144,17 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     unsigned long weight;
     unsigned long value;
     size_t offset;
-    size_t total;
+    size_t local_offset;
+    size_t output_offset;
     unsigned int *assignment;
     unsigned int previous_cluster;
     int has_assignment_history;
     int assignment_changed;
     int center_changed;
     double previous_center;
-    size_t sum_bytes;
     unsigned int executed;
     struct tupleint *entry;
 
-    centers = NULL;
     distance = 0.0;
     best_distance = 0.0;
     diff = 0.0;
@@ -2171,14 +2172,14 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     weight = 0UL;
     value = 0UL;
     offset = 0U;
-    total = 0U;
+    local_offset = 0U;
+    output_offset = 0U;
     assignment = NULL;
     previous_cluster = 0U;
     has_assignment_history = 0;
     assignment_changed = 0;
     center_changed = 0;
     previous_center = 0.0;
-    sum_bytes = 0U;
     executed = 0U;
     entry = NULL;
     if (executed_iterations != NULL) {
@@ -2216,18 +2217,8 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         return;
     }
 #endif
-    total = (size_t)cluster_count * (size_t)depth;
-    if (total > SIZE_MAX / sizeof(double)) {
-        return;
-    }
-    sum_bytes = total * sizeof(double);
-    centers = (double *)malloc(total * sizeof(double));
-    if (centers == NULL) {
-        return;
-    }
 #if SIZE_MAX <= UINT_MAX
     if ((size_t)colorfreqtable.size > SIZE_MAX / sizeof(unsigned int)) {
-        free(centers);
         return;
     }
 #endif
@@ -2239,17 +2230,22 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
             assignment[entry_index] = UINT_MAX;
         }
     }
+    memset(cluster_weight_local, 0, sizeof(cluster_weight_local));
+    memset(cluster_sums_local, 0, sizeof(cluster_sums_local));
+    memset(centers, 0, sizeof(centers));
     for (cluster_index = 0U; cluster_index < cluster_count;
             ++cluster_index) {
-        offset = (size_t)cluster_index * (size_t)depth;
+        local_offset = (size_t)cluster_index * (size_t)SIXEL_MAX_CHANNELS;
+        output_offset = (size_t)cluster_index * (size_t)depth;
         weight = cluster_weight[cluster_index];
+        cluster_weight_local[cluster_index] = weight;
         for (component = 0U; component < depth; ++component) {
+            cluster_sums_local[local_offset + (size_t)component]
+                = cluster_sums[output_offset + (size_t)component];
             if (weight > 0UL) {
-                centers[offset + (size_t)component]
-                    = cluster_sums[offset + (size_t)component]
+                centers[local_offset + (size_t)component]
+                    = cluster_sums_local[local_offset + (size_t)component]
                     / (double)weight;
-            } else {
-                centers[offset + (size_t)component] = 0.0;
             }
         }
     }
@@ -2257,12 +2253,8 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         assignment_changed = 0;
         center_changed = 0;
         /* Reset cluster accumulators in one contiguous pass. */
-        memset(cluster_weight,
-               0,
-               (size_t)cluster_count * sizeof(unsigned long));
-        memset(cluster_sums,
-               0,
-               sum_bytes);
+        memset(cluster_weight_local, 0, sizeof(cluster_weight_local));
+        memset(cluster_sums_local, 0, sizeof(cluster_sums_local));
         for (entry_index = 0U; entry_index < colorfreqtable.size;
                 ++entry_index) {
             entry = colorfreqtable.table[entry_index];
@@ -2289,7 +2281,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                 entry0 = (double)entry->tuple[0U];
                 entry1 = (double)entry->tuple[1U];
                 entry2 = (double)entry->tuple[2U];
-                offset = (size_t)best_cluster * 3U;
+                offset = (size_t)best_cluster * (size_t)SIXEL_MAX_CHANNELS;
                 diff = entry0 - centers[offset + 0U];
                 best_distance = diff * diff;
                 diff = entry1 - centers[offset + 1U];
@@ -2301,7 +2293,8 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                     if (cluster_index == best_cluster) {
                         continue;
                     }
-                    offset = (size_t)cluster_index * 3U;
+                    offset = (size_t)cluster_index
+                        * (size_t)SIXEL_MAX_CHANNELS;
                     diff = entry0 - centers[offset + 0U];
                     distance = diff * diff;
                     if (distance <= best_distance) {
@@ -2324,7 +2317,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                 entry1 = (double)entry->tuple[1U];
                 entry2 = (double)entry->tuple[2U];
                 entry3 = (double)entry->tuple[3U];
-                offset = (size_t)best_cluster * 4U;
+                offset = (size_t)best_cluster * (size_t)SIXEL_MAX_CHANNELS;
                 diff = entry0 - centers[offset + 0U];
                 best_distance = diff * diff;
                 diff = entry1 - centers[offset + 1U];
@@ -2338,7 +2331,8 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                     if (cluster_index == best_cluster) {
                         continue;
                     }
-                    offset = (size_t)cluster_index * 4U;
+                    offset = (size_t)cluster_index
+                        * (size_t)SIXEL_MAX_CHANNELS;
                     diff = entry0 - centers[offset + 0U];
                     distance = diff * diff;
                     if (distance <= best_distance) {
@@ -2362,7 +2356,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                 }
             } else {
                 best_distance = 0.0;
-                offset = (size_t)best_cluster * (size_t)depth;
+                offset = (size_t)best_cluster * (size_t)SIXEL_MAX_CHANNELS;
                 for (component = 0U; component < depth; ++component) {
                     diff = (double)entry->tuple[component]
                         - centers[offset + (size_t)component];
@@ -2374,7 +2368,8 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                         continue;
                     }
                     distance = 0.0;
-                    offset = (size_t)cluster_index * (size_t)depth;
+                    offset = (size_t)cluster_index
+                        * (size_t)SIXEL_MAX_CHANNELS;
                     for (component = 0U; component < depth; ++component) {
                         diff = (double)entry->tuple[component]
                             - centers[offset + (size_t)component];
@@ -2397,22 +2392,22 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                     assignment_changed = 1;
                 }
             }
-            offset = (size_t)best_cluster * (size_t)depth;
-            cluster_weight[best_cluster] += value;
+            offset = (size_t)best_cluster * (size_t)SIXEL_MAX_CHANNELS;
+            cluster_weight_local[best_cluster] += value;
             weighted_value = (double)value;
             /* Mirror the hot-path specialization for weighted sum updates. */
             if (depth == 3U) {
-                cluster_sums[offset + 0U] += entry0 * weighted_value;
-                cluster_sums[offset + 1U] += entry1 * weighted_value;
-                cluster_sums[offset + 2U] += entry2 * weighted_value;
+                cluster_sums_local[offset + 0U] += entry0 * weighted_value;
+                cluster_sums_local[offset + 1U] += entry1 * weighted_value;
+                cluster_sums_local[offset + 2U] += entry2 * weighted_value;
             } else if (depth == 4U) {
-                cluster_sums[offset + 0U] += entry0 * weighted_value;
-                cluster_sums[offset + 1U] += entry1 * weighted_value;
-                cluster_sums[offset + 2U] += entry2 * weighted_value;
-                cluster_sums[offset + 3U] += entry3 * weighted_value;
+                cluster_sums_local[offset + 0U] += entry0 * weighted_value;
+                cluster_sums_local[offset + 1U] += entry1 * weighted_value;
+                cluster_sums_local[offset + 2U] += entry2 * weighted_value;
+                cluster_sums_local[offset + 3U] += entry3 * weighted_value;
             } else {
                 for (component = 0U; component < depth; ++component) {
-                    cluster_sums[offset + (size_t)component]
+                    cluster_sums_local[offset + (size_t)component]
                         += (double)entry->tuple[component] * weighted_value;
                 }
             }
@@ -2426,14 +2421,14 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         }
         for (cluster_index = 0U; cluster_index < cluster_count;
                 ++cluster_index) {
-            weight = cluster_weight[cluster_index];
+            weight = cluster_weight_local[cluster_index];
             if (weight == 0UL) {
                 continue;
             }
-            offset = (size_t)cluster_index * (size_t)depth;
+            offset = (size_t)cluster_index * (size_t)SIXEL_MAX_CHANNELS;
             for (component = 0U; component < depth; ++component) {
                 previous_center = centers[offset + (size_t)component];
-                channel = cluster_sums[offset + (size_t)component]
+                channel = cluster_sums_local[offset + (size_t)component]
                     / (double)weight;
                 if (channel != previous_center) {
                     center_changed = 1;
@@ -2448,8 +2443,8 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     }
     for (cluster_index = 0U; cluster_index < cluster_count;
             ++cluster_index) {
-        weight = cluster_weight[cluster_index];
-        offset = (size_t)cluster_index * (size_t)depth;
+        weight = cluster_weight_local[cluster_index];
+        offset = (size_t)cluster_index * (size_t)SIXEL_MAX_CHANNELS;
         if (weight == 0UL) {
             for (component = 0U; component < depth; ++component) {
                 channel = centers[offset + (size_t)component];
@@ -2459,15 +2454,24 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                 if (channel > 255.0) {
                     channel = 255.0;
                 }
-                cluster_sums[offset + (size_t)component] = channel;
+                cluster_sums_local[offset + (size_t)component] = channel;
             }
-            cluster_weight[cluster_index] = 1UL;
+            cluster_weight_local[cluster_index] = 1UL;
+        }
+    }
+    for (cluster_index = 0U; cluster_index < cluster_count;
+            ++cluster_index) {
+        local_offset = (size_t)cluster_index * (size_t)SIXEL_MAX_CHANNELS;
+        output_offset = (size_t)cluster_index * (size_t)depth;
+        cluster_weight[cluster_index] = cluster_weight_local[cluster_index];
+        for (component = 0U; component < depth; ++component) {
+            cluster_sums[output_offset + (size_t)component]
+                = cluster_sums_local[local_offset + (size_t)component];
         }
     }
     if (assignment != NULL) {
         free(assignment);
     }
-    free(centers);
     if (executed_iterations != NULL) {
         *executed_iterations = executed;
     }
