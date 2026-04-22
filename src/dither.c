@@ -465,6 +465,30 @@ sixel_dither_prepare_lookup_policy(
 }
 
 /*
+ * Bundle palette-application inputs so compilers that are sensitive to long
+ * signatures (for example pcc) can compile the mapper reliably.
+ */
+typedef struct sixel_dither_map_pixels_request {
+    sixel_index_t *result;
+    unsigned char *data;
+    int width;
+    int height;
+    int band_origin;
+    int output_start;
+    int depth;
+    unsigned char *palette;
+    int reqcolor;
+    int method_for_diffuse;
+    int method_for_scan;
+    int foptimize_palette;
+    int complexion;
+    sixel_lookup_policy_t *lookup_policy;
+    int *ncolors;
+    sixel_dither_t *dither;
+    int pixelformat;
+} sixel_dither_map_pixels_request_t;
+
+/*
  * Apply the palette into the supplied pixel buffer while coordinating the
  * dithering strategy. The lookup policy is prepared by the caller so this
  * routine can focus on building the shared worker context and dispatching the
@@ -472,23 +496,7 @@ sixel_dither_prepare_lookup_policy(
  */
 static SIXELSTATUS
 sixel_dither_map_pixels(
-    sixel_index_t     /* out */ *result,
-    unsigned char     /* in */  *data,
-    int               /* in */  width,
-    int               /* in */  height,
-    int               /* in */  band_origin,
-    int               /* in */  output_start,
-    int               /* in */  depth,
-    unsigned char     /* in */  *palette,
-    int               /* in */  reqcolor,
-    int               /* in */  methodForDiffuse,
-    int               /* in */  methodForScan,
-    int               /* in */  foptimize_palette,
-    int               /* in */  complexion,
-    sixel_lookup_policy_t /* in */ *lookup_policy,
-    int               /* in */  *ncolors,
-    sixel_dither_t    /* in */  *dither,
-    int               /* in */  pixelformat)
+    sixel_dither_map_pixels_request_t const *request)
 {
     unsigned char copy[SIXEL_MAX_CHANNELS];
     float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
@@ -499,9 +507,46 @@ sixel_dither_map_pixels(
     sixel_dither_lookup_map_fn lookup_map;
     int use_varerr;
     int use_positional;
+    sixel_index_t *result;
+    unsigned char *data;
+    int width;
+    int height;
+    int band_origin;
+    int output_start;
+    int depth;
+    unsigned char *palette;
+    int reqcolor;
+    int method_for_diffuse;
+    int method_for_scan;
+    int foptimize_palette;
+    int complexion;
+    sixel_lookup_policy_t *lookup_policy;
+    int *ncolors;
+    sixel_dither_t *dither;
+    int pixelformat;
 
     status = SIXEL_FALSE;
     lookup_map = NULL;
+    if (request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    result = request->result;
+    data = request->data;
+    width = request->width;
+    height = request->height;
+    band_origin = request->band_origin;
+    output_start = request->output_start;
+    depth = request->depth;
+    palette = request->palette;
+    reqcolor = request->reqcolor;
+    method_for_diffuse = request->method_for_diffuse;
+    method_for_scan = request->method_for_scan;
+    foptimize_palette = request->foptimize_palette;
+    complexion = request->complexion;
+    lookup_policy = request->lookup_policy;
+    ncolors = request->ncolors;
+    dither = request->dither;
+    pixelformat = request->pixelformat;
 
     memset(&context, 0, sizeof(context));
     context.result = result;
@@ -591,12 +636,13 @@ sixel_dither_map_pixels(
     }
 
     use_varerr = (depth == 3
-                  && methodForDiffuse == SIXEL_DIFFUSE_LSO2);
-    use_positional = (methodForDiffuse == SIXEL_DIFFUSE_A_DITHER
-                      || methodForDiffuse == SIXEL_DIFFUSE_X_DITHER
-                      || methodForDiffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER);
-    context.method_for_diffuse = methodForDiffuse;
-    context.method_for_scan = methodForScan;
+                  && method_for_diffuse == SIXEL_DIFFUSE_LSO2);
+    use_positional = (method_for_diffuse == SIXEL_DIFFUSE_A_DITHER
+                      || method_for_diffuse == SIXEL_DIFFUSE_X_DITHER
+                      || method_for_diffuse ==
+                      SIXEL_DIFFUSE_BLUENOISE_DITHER);
+    context.method_for_diffuse = method_for_diffuse;
+    context.method_for_scan = method_for_scan;
     context.optimize_palette = foptimize_palette;
     context.complexion = complexion;
 
@@ -732,6 +778,7 @@ sixel_dither_parallel_worker(tp_job_t job,
     int reuse_lut_preconfigured;
     int restore_context;
     sixel_lookup_policy_t lookup_policy;
+    sixel_dither_map_pixels_request_t map_request;
 
     plan = (sixel_parallel_dither_plan_t *)userdata;
     if (plan == NULL) {
@@ -843,23 +890,25 @@ sixel_dither_parallel_worker(tp_job_t job,
      * check in the renderer, so neighboring bands never clobber each
      * other's body.
      */
-    status = sixel_dither_map_pixels(plan->dest + (size_t)in0 * plan->width,
-                                     (unsigned char *)source,
-                                     plan->width,
-                                     rows,
-                                     in0,
-                                     y0,
-                                     3,
-                                     plan->palette->entries,
-                                     plan->reqcolor,
-                                     plan->method_for_diffuse,
-                                     plan->method_for_scan,
-                                     plan->optimize_palette_entries,
-                                     plan->complexion,
-                                     &lookup_policy,
-                                     &local_ncolors,
-                                     plan->dither,
-                                     plan->pixelformat);
+    memset(&map_request, 0, sizeof(map_request));
+    map_request.result = plan->dest + (size_t)in0 * plan->width;
+    map_request.data = (unsigned char *)source;
+    map_request.width = plan->width;
+    map_request.height = rows;
+    map_request.band_origin = in0;
+    map_request.output_start = y0;
+    map_request.depth = 3;
+    map_request.palette = plan->palette->entries;
+    map_request.reqcolor = plan->reqcolor;
+    map_request.method_for_diffuse = plan->method_for_diffuse;
+    map_request.method_for_scan = plan->method_for_scan;
+    map_request.foptimize_palette = plan->optimize_palette_entries;
+    map_request.complexion = plan->complexion;
+    map_request.lookup_policy = &lookup_policy;
+    map_request.ncolors = &local_ncolors;
+    map_request.dither = plan->dither;
+    map_request.pixelformat = plan->pixelformat;
+    status = sixel_dither_map_pixels(&map_request);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -1086,6 +1135,7 @@ sixel_dither_resolve_indexes(
     sixel_dither_t *dither;
     int pixelformat;
     int reuse_lut_preconfigured;
+    sixel_dither_map_pixels_request_t map_request;
 
     status = SIXEL_FALSE;
     if (request == NULL || request->palette == NULL
@@ -1140,23 +1190,25 @@ sixel_dither_resolve_indexes(
         return status;
     }
 
-    status = sixel_dither_map_pixels(result,
-                                     data,
-                                     width,
-                                     height,
-                                     0,
-                                     0,
-                                     depth,
-                                     palette->entries,
-                                     reqcolor,
-                                     method_for_diffuse,
-                                     method_for_scan,
-                                     foptimize_palette,
-                                     complexion,
-                                     &palette->lookup_policy,
-                                     ncolors,
-                                     dither,
-                                     pixelformat);
+    memset(&map_request, 0, sizeof(map_request));
+    map_request.result = result;
+    map_request.data = data;
+    map_request.width = width;
+    map_request.height = height;
+    map_request.band_origin = 0;
+    map_request.output_start = 0;
+    map_request.depth = depth;
+    map_request.palette = palette->entries;
+    map_request.reqcolor = reqcolor;
+    map_request.method_for_diffuse = method_for_diffuse;
+    map_request.method_for_scan = method_for_scan;
+    map_request.foptimize_palette = foptimize_palette;
+    map_request.complexion = complexion;
+    map_request.lookup_policy = &palette->lookup_policy;
+    map_request.ncolors = ncolors;
+    map_request.dither = dither;
+    map_request.pixelformat = pixelformat;
+    status = sixel_dither_map_pixels(&map_request);
     sixel_lookup_policy_clear(&palette->lookup_policy);
 
     return status;
