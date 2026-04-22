@@ -2274,6 +2274,14 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                 }
             }
             /*
+             * Static analyzers may conservatively keep UINT_MAX from the
+             * assignment history path. Normalize before center indexing so
+             * every offset uses a cluster id within [0, cluster_count).
+             */
+            if (best_cluster >= cluster_count) {
+                best_cluster = 0U;
+            }
+            /*
              * Most inputs are RGB/RGBA. Keep dedicated hot paths to avoid
              * the per-component loop overhead in the nearest-center search.
              */
