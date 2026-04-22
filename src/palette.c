@@ -846,6 +846,7 @@ sixel_palette_new(sixel_palette_t **palette, sixel_allocator_t *allocator)
     object->sixel_reversible = 0;
     object->final_merge = 0;
     object->lut = NULL;
+    object->lookup_policy = NULL;
     sixel_lookup_policy_init(&object->lookup_policy);
 
     *palette = object;

@@ -27,39 +27,36 @@
 #endif
 
 #include <limits.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "filter-lookup.h"
 #include "lookup-common.h"
 #include "lookup-policy.h"
 
-static SIXELSTATUS
-sixel_lookup_policy_prepare_normal(
-    sixel_lookup_policy_t *policy,
-    sixel_lookup_policy_prepare_request_t const *request);
+typedef struct sixel_lookup_policy_object {
+    sixel_lookup_policy_t base;
+    sixel_lookup_policy_mode_t mode;
+    int lookup_source_is_float;
+    int prefer_palette_float_lookup;
+    sixel_allocator_t *allocator;
+} sixel_lookup_policy_object_t;
 
-static SIXELSTATUS
-sixel_lookup_policy_prepare_fast_lut(
-    sixel_lookup_policy_t *policy,
-    sixel_lookup_policy_prepare_request_t const *request);
+typedef struct sixel_lookup_policy_lookup_object {
+    sixel_lookup_policy_object_t object;
+    sixel_lookup_policy_lookup_fn lookup_fn;
+    unsigned char const *palette;
+    int depth;
+    int reqcolor;
+    unsigned short *indextable;
+    int complexion;
+} sixel_lookup_policy_lookup_object_t;
 
-static SIXELSTATUS
-sixel_lookup_policy_prepare_mono_darkbg(
-    sixel_lookup_policy_t *policy,
-    sixel_lookup_policy_prepare_request_t const *request);
-
-static SIXELSTATUS
-sixel_lookup_policy_prepare_mono_lightbg(
-    sixel_lookup_policy_t *policy,
-    sixel_lookup_policy_prepare_request_t const *request);
-
-static int
-sixel_lookup_policy_map_with_lookup_fn(sixel_lookup_policy_t const *policy,
-                                       unsigned char const *pixel);
-
-static int
-sixel_lookup_policy_map_fast_lut(sixel_lookup_policy_t const *policy,
-                                 unsigned char const *pixel);
+typedef struct sixel_lookup_policy_fast_lut_object {
+    sixel_lookup_policy_object_t object;
+    sixel_lut_t *lut;
+    int owns_lut;
+} sixel_lookup_policy_fast_lut_object_t;
 
 static int
 lookup_normal(unsigned char const *pixel,
@@ -252,59 +249,262 @@ sixel_lookup_policy_select_mode(
     return mode;
 }
 
+static sixel_lookup_policy_object_t const *
+sixel_lookup_policy_object_from_base_const(
+    sixel_lookup_policy_t const *policy)
+{
+    return (sixel_lookup_policy_object_t const *)(void const *)policy;
+}
+
+static void *
+sixel_lookup_policy_object_alloc(size_t bytes, sixel_allocator_t *allocator)
+{
+    void *memory;
+
+    memory = NULL;
+    if (allocator != NULL) {
+        memory = sixel_allocator_malloc(allocator, bytes);
+        if (memory != NULL) {
+            sixel_allocator_ref(allocator);
+        }
+        return memory;
+    }
+
+    memory = malloc(bytes);
+    return memory;
+}
+
+static void
+sixel_lookup_policy_object_free(sixel_lookup_policy_object_t *object)
+{
+    sixel_allocator_t *allocator;
+
+    if (object == NULL) {
+        return;
+    }
+
+    allocator = object->allocator;
+    if (allocator != NULL) {
+        sixel_allocator_free(allocator, object);
+        sixel_allocator_unref(allocator);
+        return;
+    }
+
+    free(object);
+}
+
+static int
+sixel_lookup_policy_map_lookup_object(sixel_lookup_policy_t const *policy,
+                                      unsigned char const *pixel)
+{
+    sixel_lookup_policy_lookup_object_t const *object;
+
+    object = NULL;
+    if (policy == NULL || pixel == NULL) {
+        return 0;
+    }
+
+    object = (sixel_lookup_policy_lookup_object_t const *)(void const *)policy;
+    if (object->lookup_fn == NULL) {
+        return 0;
+    }
+
+    return object->lookup_fn(pixel,
+                             object->depth,
+                             object->palette,
+                             object->reqcolor,
+                             object->indextable,
+                             object->complexion);
+}
+
+static int
+sixel_lookup_policy_map_fast_lut_object(sixel_lookup_policy_t const *policy,
+                                        unsigned char const *pixel)
+{
+    sixel_lookup_policy_fast_lut_object_t const *object;
+
+    object = NULL;
+    if (policy == NULL || pixel == NULL) {
+        return 0;
+    }
+
+    object =
+        (sixel_lookup_policy_fast_lut_object_t const *)(void const *)policy;
+    if (object->lut == NULL) {
+        return 0;
+    }
+
+    return sixel_lut_map_pixel(object->lut, pixel);
+}
+
+static void
+sixel_lookup_policy_destroy_lookup_object(sixel_lookup_policy_t *policy)
+{
+    sixel_lookup_policy_lookup_object_t *object;
+
+    object = NULL;
+    if (policy == NULL) {
+        return;
+    }
+
+    object = (sixel_lookup_policy_lookup_object_t *)(void *)policy;
+    sixel_lookup_policy_object_free(&object->object);
+}
+
+static void
+sixel_lookup_policy_destroy_fast_lut_object(sixel_lookup_policy_t *policy)
+{
+    sixel_lookup_policy_fast_lut_object_t *object;
+
+    object = NULL;
+    if (policy == NULL) {
+        return;
+    }
+
+    object = (sixel_lookup_policy_fast_lut_object_t *)(void *)policy;
+    if (object->owns_lut != 0 && object->lut != NULL) {
+        sixel_lut_unref(object->lut);
+    }
+    object->lut = NULL;
+    object->owns_lut = 0;
+    sixel_lookup_policy_object_free(&object->object);
+}
+
 static sixel_lookup_policy_vtbl_t const sixel_lookup_policy_normal_vtbl = {
     "lookup-normal",
-    sixel_lookup_policy_prepare_normal,
-    sixel_lookup_policy_map_with_lookup_fn
+    sixel_lookup_policy_destroy_lookup_object,
+    sixel_lookup_policy_map_lookup_object
 };
 
 static sixel_lookup_policy_vtbl_t const sixel_lookup_policy_fast_lut_vtbl = {
     "lookup-fast-lut",
-    sixel_lookup_policy_prepare_fast_lut,
-    sixel_lookup_policy_map_fast_lut
+    sixel_lookup_policy_destroy_fast_lut_object,
+    sixel_lookup_policy_map_fast_lut_object
 };
 
 static sixel_lookup_policy_vtbl_t const sixel_lookup_policy_mono_darkbg_vtbl = {
     "lookup-mono-darkbg",
-    sixel_lookup_policy_prepare_mono_darkbg,
-    sixel_lookup_policy_map_with_lookup_fn
+    sixel_lookup_policy_destroy_lookup_object,
+    sixel_lookup_policy_map_lookup_object
 };
 
 static sixel_lookup_policy_vtbl_t const
 sixel_lookup_policy_mono_lightbg_vtbl = {
     "lookup-mono-lightbg",
-    sixel_lookup_policy_prepare_mono_lightbg,
-    sixel_lookup_policy_map_with_lookup_fn
+    sixel_lookup_policy_destroy_lookup_object,
+    sixel_lookup_policy_map_lookup_object
 };
 
 static SIXELSTATUS
-sixel_lookup_policy_prepare_normal(
-    sixel_lookup_policy_t *policy,
-    sixel_lookup_policy_prepare_request_t const *request)
+sixel_lookup_policy_build_lookup_object(
+    sixel_lookup_policy_t **out_policy,
+    sixel_lookup_policy_prepare_request_t const *request,
+    sixel_lookup_policy_mode_t mode,
+    sixel_lookup_policy_lookup_fn lookup_fn,
+    sixel_lookup_policy_vtbl_t const *vtbl,
+    int lookup_source_is_float,
+    int prefer_palette_float_lookup)
 {
-    (void)request;
+    sixel_lookup_policy_lookup_object_t *object;
 
-    policy->lookup_fn = lookup_normal;
-    policy->lookup_source_is_float = 0;
-    policy->prefer_palette_float_lookup = 0;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(policy->pixelformat)
-            && policy->palette_float != NULL
-            && policy->float_depth >= policy->depth) {
-        policy->prefer_palette_float_lookup = 1;
+    object = NULL;
+    if (out_policy == NULL || request == NULL || lookup_fn == NULL
+            || vtbl == NULL) {
+        return SIXEL_BAD_ARGUMENT;
     }
+
+    object = (sixel_lookup_policy_lookup_object_t *)
+        sixel_lookup_policy_object_alloc(sizeof(*object), request->allocator);
+    if (object == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_policy_prepare: allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    memset(object, 0, sizeof(*object));
+    object->object.base.vtbl = vtbl;
+    object->object.mode = mode;
+    object->object.lookup_source_is_float = lookup_source_is_float;
+    object->object.prefer_palette_float_lookup =
+        prefer_palette_float_lookup;
+    object->object.allocator = request->allocator;
+    object->lookup_fn = lookup_fn;
+    object->palette = request->palette;
+    object->depth = request->depth;
+    object->reqcolor = request->reqcolor;
+    object->indextable = NULL;
+    object->complexion = request->complexion;
+
+    *out_policy = &object->object.base;
 
     return SIXEL_OK;
 }
 
 static SIXELSTATUS
-sixel_lookup_policy_prepare_fast_lut(
-    sixel_lookup_policy_t *policy,
+sixel_lookup_policy_build_normal(
+    sixel_lookup_policy_t **out_policy,
+    sixel_lookup_policy_prepare_request_t const *request)
+{
+    int prefer_palette_float_lookup;
+
+    prefer_palette_float_lookup = 0;
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)
+            && request->palette_float != NULL
+            && request->float_depth >= request->depth) {
+        prefer_palette_float_lookup = 1;
+    }
+
+    return sixel_lookup_policy_build_lookup_object(
+        out_policy,
+        request,
+        SIXEL_DITHER_LOOKUP_MODE_NORMAL,
+        lookup_normal,
+        &sixel_lookup_policy_normal_vtbl,
+        0,
+        prefer_palette_float_lookup);
+}
+
+static SIXELSTATUS
+sixel_lookup_policy_build_mono_darkbg(
+    sixel_lookup_policy_t **out_policy,
+    sixel_lookup_policy_prepare_request_t const *request)
+{
+    return sixel_lookup_policy_build_lookup_object(
+        out_policy,
+        request,
+        SIXEL_DITHER_LOOKUP_MODE_MONO_DARKBG,
+        lookup_mono_darkbg,
+        &sixel_lookup_policy_mono_darkbg_vtbl,
+        0,
+        0);
+}
+
+static SIXELSTATUS
+sixel_lookup_policy_build_mono_lightbg(
+    sixel_lookup_policy_t **out_policy,
+    sixel_lookup_policy_prepare_request_t const *request)
+{
+    return sixel_lookup_policy_build_lookup_object(
+        out_policy,
+        request,
+        SIXEL_DITHER_LOOKUP_MODE_MONO_LIGHTBG,
+        lookup_mono_lightbg,
+        &sixel_lookup_policy_mono_lightbg_vtbl,
+        0,
+        0);
+}
+
+static SIXELSTATUS
+sixel_lookup_policy_build_fast_lut(
+    sixel_lookup_policy_t **out_policy,
     sixel_lookup_policy_prepare_request_t const *request)
 {
     SIXELSTATUS status;
+    sixel_lookup_policy_fast_lut_object_t *object;
     sixel_filter_lookup_config_t lookup_config;
     sixel_filter_lookup_result_t lookup_result;
     sixel_lut_t *reuse_lut;
+    int normalized_lut_policy;
     int shared_lut;
     int reuse_lut_preconfigured;
     int wcomp1;
@@ -312,24 +512,31 @@ sixel_lookup_policy_prepare_fast_lut(
     int wcomp3;
 
     status = SIXEL_FALSE;
+    object = NULL;
     memset(&lookup_config, 0, sizeof(lookup_config));
     memset(&lookup_result, 0, sizeof(lookup_result));
     reuse_lut = NULL;
+    normalized_lut_policy = SIXEL_LUT_POLICY_6BIT;
     shared_lut = 1;
     reuse_lut_preconfigured = 0;
-    wcomp1 = policy->complexion;
+    wcomp1 = request->complexion;
     wcomp2 = 1;
     wcomp3 = 1;
 
-    if (policy->depth != 3) {
+    if (out_policy == NULL || request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (request->depth != 3) {
         sixel_helper_set_additional_message(
             "sixel_lookup_policy_prepare: fast lookup requires RGB pixels.");
         return SIXEL_BAD_ARGUMENT;
     }
 
-    policy->lut_policy = sixel_lookup_policy_normalize_fast_lut_policy(
+    normalized_lut_policy = sixel_lookup_policy_normalize_fast_lut_policy(
         request->lut_policy);
-    shared_lut = sixel_lookup_policy_shared_cache_enabled(policy->lut_policy);
+    shared_lut =
+        sixel_lookup_policy_shared_cache_enabled(normalized_lut_policy);
 
     reuse_lut = request->reuse_lut;
     if (request->parallel_active != 0
@@ -341,161 +548,120 @@ sixel_lookup_policy_prepare_fast_lut(
         reuse_lut_preconfigured = 1;
     }
 
-    if (policy->lut_policy == SIXEL_LUT_POLICY_CERTLUT
-            && policy->method_for_largest == SIXEL_LARGE_LUM) {
-        wcomp1 = policy->complexion * 299;
+    if (normalized_lut_policy == SIXEL_LUT_POLICY_CERTLUT
+            && request->method_for_largest == SIXEL_LARGE_LUM) {
+        wcomp1 = request->complexion * 299;
         wcomp2 = 587;
         wcomp3 = 114;
     }
 
-    lookup_config.palette = policy->palette;
-    lookup_config.palette_float = policy->palette_float;
-    lookup_config.depth = policy->depth;
-    lookup_config.float_depth = policy->float_depth;
-    lookup_config.ncolors = policy->reqcolor;
-    lookup_config.complexion = policy->complexion;
-    lookup_config.method_for_largest = policy->method_for_largest;
-    lookup_config.lut_policy = policy->lut_policy;
-    lookup_config.pixelformat = policy->pixelformat;
-    lookup_config.reuse_lut = reuse_lut;
+    object = (sixel_lookup_policy_fast_lut_object_t *)
+        sixel_lookup_policy_object_alloc(sizeof(*object), request->allocator);
+    if (object == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_policy_prepare: allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    memset(object, 0, sizeof(*object));
+    object->object.base.vtbl = &sixel_lookup_policy_fast_lut_vtbl;
+    object->object.mode = SIXEL_DITHER_LOOKUP_MODE_FAST_LUT;
+    object->object.lookup_source_is_float =
+        SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
+    object->object.prefer_palette_float_lookup = 0;
+    object->object.allocator = request->allocator;
 
     if (reuse_lut_preconfigured != 0) {
         /*
          * Shared and worker-local caches can arrive fully configured from the
-         * caller.  Reusing them here avoids configure-time races and keeps the
+         * caller. Reusing them here avoids configure-time races and keeps the
          * pixel loop focused on map dispatch.
          */
-        policy->lut = reuse_lut;
-        policy->owns_lut = 0;
-        policy->lookup_source_is_float =
-            SIXEL_PIXELFORMAT_IS_FLOAT32(policy->pixelformat);
-        policy->prefer_palette_float_lookup = 0;
+        object->lut = reuse_lut;
+        object->owns_lut = 0;
+        *out_policy = &object->object.base;
         return SIXEL_OK;
     }
+
+    lookup_config.palette = request->palette;
+    lookup_config.palette_float = request->palette_float;
+    lookup_config.depth = request->depth;
+    lookup_config.float_depth = request->float_depth;
+    lookup_config.ncolors = request->reqcolor;
+    lookup_config.complexion = request->complexion;
+    lookup_config.method_for_largest = request->method_for_largest;
+    lookup_config.lut_policy = normalized_lut_policy;
+    lookup_config.pixelformat = request->pixelformat;
+    lookup_config.reuse_lut = reuse_lut;
 
     status = sixel_filter_lookup_build(&lookup_config,
                                        request->allocator,
                                        NULL,
                                        &lookup_result);
     if (SIXEL_FAILED(status)) {
+        sixel_lookup_policy_destroy_fast_lut_object(&object->object.base);
         return status;
     }
 
-    policy->lut = lookup_result.lut;
-    policy->owns_lut = lookup_result.owned;
+    object->lut = lookup_result.lut;
+    object->owns_lut = lookup_result.owned;
 
-    if (policy->owns_lut != 0
+    if (object->owns_lut != 0
             && request->reuse_lut_slot != NULL
             && *request->reuse_lut_slot == NULL) {
-        *request->reuse_lut_slot = policy->lut;
-        policy->owns_lut = 0;
+        *request->reuse_lut_slot = object->lut;
+        object->owns_lut = 0;
     }
-
-    policy->lookup_source_is_float =
-        SIXEL_PIXELFORMAT_IS_FLOAT32(policy->pixelformat);
-    policy->prefer_palette_float_lookup = 0;
 
     /* Keep computed weights visible for future backend-specific policies. */
     (void)wcomp1;
     (void)wcomp2;
     (void)wcomp3;
 
-    return SIXEL_OK;
-}
-
-static SIXELSTATUS
-sixel_lookup_policy_prepare_mono_darkbg(
-    sixel_lookup_policy_t *policy,
-    sixel_lookup_policy_prepare_request_t const *request)
-{
-    (void)request;
-
-    policy->lookup_fn = lookup_mono_darkbg;
-    policy->lookup_source_is_float = 0;
-    policy->prefer_palette_float_lookup = 0;
+    *out_policy = &object->object.base;
 
     return SIXEL_OK;
-}
-
-static SIXELSTATUS
-sixel_lookup_policy_prepare_mono_lightbg(
-    sixel_lookup_policy_t *policy,
-    sixel_lookup_policy_prepare_request_t const *request)
-{
-    (void)request;
-
-    policy->lookup_fn = lookup_mono_lightbg;
-    policy->lookup_source_is_float = 0;
-    policy->prefer_palette_float_lookup = 0;
-
-    return SIXEL_OK;
-}
-
-static int
-sixel_lookup_policy_map_with_lookup_fn(sixel_lookup_policy_t const *policy,
-                                       unsigned char const *pixel)
-{
-    if (policy == NULL || pixel == NULL || policy->lookup_fn == NULL) {
-        return 0;
-    }
-
-    return policy->lookup_fn(pixel,
-                             policy->depth,
-                             policy->palette,
-                             policy->reqcolor,
-                             policy->indextable,
-                             policy->complexion);
-}
-
-static int
-sixel_lookup_policy_map_fast_lut(sixel_lookup_policy_t const *policy,
-                                 unsigned char const *pixel)
-{
-    if (policy == NULL || pixel == NULL || policy->lut == NULL) {
-        return 0;
-    }
-
-    return sixel_lut_map_pixel(policy->lut, pixel);
 }
 
 void
-sixel_lookup_policy_init(sixel_lookup_policy_t *policy)
+sixel_lookup_policy_init(sixel_lookup_policy_t **policy)
 {
     if (policy == NULL) {
         return;
     }
 
-    memset(policy, 0, sizeof(*policy));
-    policy->vtbl = &sixel_lookup_policy_normal_vtbl;
-    policy->mode = SIXEL_DITHER_LOOKUP_MODE_NORMAL;
+    *policy = NULL;
 }
 
 void
-sixel_lookup_policy_clear(sixel_lookup_policy_t *policy)
+sixel_lookup_policy_clear(sixel_lookup_policy_t **policy)
 {
-    if (policy == NULL) {
+    sixel_lookup_policy_t *current;
+
+    current = NULL;
+    if (policy == NULL || *policy == NULL) {
         return;
     }
 
-    if (policy->owns_lut != 0 && policy->lut != NULL) {
-        sixel_lut_unref(policy->lut);
+    current = *policy;
+    *policy = NULL;
+    if (current->vtbl != NULL && current->vtbl->destroy != NULL) {
+        current->vtbl->destroy(current);
     }
-
-    memset(policy, 0, sizeof(*policy));
-    policy->vtbl = &sixel_lookup_policy_normal_vtbl;
-    policy->mode = SIXEL_DITHER_LOOKUP_MODE_NORMAL;
 }
 
 SIXELSTATUS
 sixel_lookup_policy_prepare(
-    sixel_lookup_policy_t *policy,
+    sixel_lookup_policy_t **policy,
     sixel_lookup_policy_prepare_request_t const *request)
 {
     SIXELSTATUS status;
     sixel_lookup_policy_mode_t mode;
+    sixel_lookup_policy_t *prepared;
 
     status = SIXEL_FALSE;
     mode = SIXEL_DITHER_LOOKUP_MODE_NORMAL;
+    prepared = NULL;
 
     if (policy == NULL || request == NULL || request->palette == NULL
             || request->depth <= 0 || request->reqcolor <= 0) {
@@ -504,53 +670,39 @@ sixel_lookup_policy_prepare(
 
     sixel_lookup_policy_clear(policy);
 
-    policy->palette = request->palette;
-    policy->palette_float = request->palette_float;
-    policy->depth = request->depth;
-    policy->float_depth = request->float_depth;
-    policy->reqcolor = request->reqcolor;
-    policy->complexion = request->complexion;
-    policy->pixelformat = request->pixelformat;
-    policy->lut_policy = request->lut_policy;
-    policy->method_for_largest = request->method_for_largest;
-    policy->indextable = NULL;
-
     mode = sixel_lookup_policy_select_mode(request);
-    policy->mode = mode;
 
     if ((mode == SIXEL_DITHER_LOOKUP_MODE_NORMAL
             || mode == SIXEL_DITHER_LOOKUP_MODE_FAST_LUT)
-            && !SIXEL_PIXELFORMAT_IS_FLOAT32(policy->pixelformat)) {
+            && !SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
         status = sixel_lookup_policy_validate_complexion_limit(
-            policy->depth,
-            policy->complexion);
+            request->depth,
+            request->complexion);
         if (SIXEL_FAILED(status)) {
-            sixel_lookup_policy_clear(policy);
             return status;
         }
     }
 
     switch (mode) {
     case SIXEL_DITHER_LOOKUP_MODE_FAST_LUT:
-        policy->vtbl = &sixel_lookup_policy_fast_lut_vtbl;
+        status = sixel_lookup_policy_build_fast_lut(&prepared, request);
         break;
     case SIXEL_DITHER_LOOKUP_MODE_MONO_DARKBG:
-        policy->vtbl = &sixel_lookup_policy_mono_darkbg_vtbl;
+        status = sixel_lookup_policy_build_mono_darkbg(&prepared, request);
         break;
     case SIXEL_DITHER_LOOKUP_MODE_MONO_LIGHTBG:
-        policy->vtbl = &sixel_lookup_policy_mono_lightbg_vtbl;
+        status = sixel_lookup_policy_build_mono_lightbg(&prepared, request);
         break;
     case SIXEL_DITHER_LOOKUP_MODE_NORMAL:
     default:
-        policy->vtbl = &sixel_lookup_policy_normal_vtbl;
+        status = sixel_lookup_policy_build_normal(&prepared, request);
         break;
     }
-
-    status = policy->vtbl->prepare(policy, request);
     if (SIXEL_FAILED(status)) {
-        sixel_lookup_policy_clear(policy);
         return status;
     }
+
+    *policy = prepared;
 
     return SIXEL_OK;
 }
@@ -558,11 +710,15 @@ sixel_lookup_policy_prepare(
 sixel_lookup_policy_mode_t
 sixel_lookup_policy_get_mode(sixel_lookup_policy_t const *policy)
 {
+    sixel_lookup_policy_object_t const *object;
+
+    object = NULL;
     if (policy == NULL) {
         return SIXEL_DITHER_LOOKUP_MODE_NORMAL;
     }
 
-    return policy->mode;
+    object = sixel_lookup_policy_object_from_base_const(policy);
+    return object->mode;
 }
 
 sixel_lookup_policy_map_fn
@@ -593,22 +749,30 @@ sixel_lookup_policy_map_pixel(sixel_lookup_policy_t const *policy,
 int
 sixel_lookup_policy_lookup_source_is_float(sixel_lookup_policy_t const *policy)
 {
+    sixel_lookup_policy_object_t const *object;
+
+    object = NULL;
     if (policy == NULL) {
         return 0;
     }
 
-    return policy->lookup_source_is_float;
+    object = sixel_lookup_policy_object_from_base_const(policy);
+    return object->lookup_source_is_float;
 }
 
 int
 sixel_lookup_policy_prefer_palette_float_lookup(
     sixel_lookup_policy_t const *policy)
 {
+    sixel_lookup_policy_object_t const *object;
+
+    object = NULL;
     if (policy == NULL) {
         return 0;
     }
 
-    return policy->prefer_palette_float_lookup;
+    object = sixel_lookup_policy_object_from_base_const(policy);
+    return object->prefer_palette_float_lookup;
 }
 
 /* emacs Local Variables:      */

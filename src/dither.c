@@ -423,7 +423,7 @@ sixel_dither_validate_complexion_limit(int depth, int complexion)
 
 static SIXELSTATUS
 sixel_dither_prepare_lookup_policy(
-    sixel_lookup_policy_t *lookup_policy,
+    sixel_lookup_policy_t **lookup_policy,
     unsigned char const *palette,
     float const *palette_float,
     int depth,
@@ -777,7 +777,7 @@ sixel_dither_parallel_worker(tp_job_t job,
     int reuse_lut_is_shared;
     int reuse_lut_preconfigured;
     int restore_context;
-    sixel_lookup_policy_t lookup_policy;
+    sixel_lookup_policy_t *lookup_policy;
     sixel_dither_map_pixels_request_t map_request;
 
     plan = (sixel_parallel_dither_plan_t *)userdata;
@@ -860,6 +860,7 @@ sixel_dither_parallel_worker(tp_job_t job,
             reuse_lut_preconfigured = 1;
         }
     }
+    lookup_policy = NULL;
     sixel_lookup_policy_init(&lookup_policy);
     status = sixel_dither_prepare_lookup_policy(
         &lookup_policy,
@@ -904,7 +905,7 @@ sixel_dither_parallel_worker(tp_job_t job,
     map_request.method_for_scan = plan->method_for_scan;
     map_request.foptimize_palette = plan->optimize_palette_entries;
     map_request.complexion = plan->complexion;
-    map_request.lookup_policy = &lookup_policy;
+    map_request.lookup_policy = lookup_policy;
     map_request.ncolors = &local_ncolors;
     map_request.dither = plan->dither;
     map_request.pixelformat = plan->pixelformat;
@@ -1204,7 +1205,7 @@ sixel_dither_resolve_indexes(
     map_request.method_for_scan = method_for_scan;
     map_request.foptimize_palette = foptimize_palette;
     map_request.complexion = complexion;
-    map_request.lookup_policy = &palette->lookup_policy;
+    map_request.lookup_policy = palette->lookup_policy;
     map_request.ncolors = ncolors;
     map_request.dither = dither;
     map_request.pixelformat = pixelformat;

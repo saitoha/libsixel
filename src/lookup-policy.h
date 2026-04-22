@@ -46,6 +46,9 @@ typedef int (*sixel_lookup_policy_map_fn)(
     sixel_lookup_policy_t const *policy,
     unsigned char const *pixel);
 
+typedef void (*sixel_lookup_policy_destroy_fn)(
+    sixel_lookup_policy_t *policy);
+
 typedef struct sixel_lookup_policy_prepare_request {
     unsigned char const *palette;
     float const *palette_float;
@@ -75,42 +78,26 @@ typedef int (*sixel_lookup_policy_lookup_fn)(
 
 typedef struct sixel_lookup_policy_vtbl {
     char const *name;
-    SIXELSTATUS (*prepare)(sixel_lookup_policy_t *policy,
-                           sixel_lookup_policy_prepare_request_t const *
-                               request);
-    int
-    (*map_pixel)(sixel_lookup_policy_t const *policy,
-                 unsigned char const *pixel);
+    sixel_lookup_policy_destroy_fn destroy;
+    sixel_lookup_policy_map_fn map_pixel;
 } sixel_lookup_policy_vtbl_t;
 
 struct sixel_lookup_policy {
+    /*
+     * Abstract lookup contract. Concrete policy objects embed this base and
+     * keep all runtime state in their private payload.
+     */
     sixel_lookup_policy_vtbl_t const *vtbl;
-    sixel_lookup_policy_mode_t mode;
-    sixel_lookup_policy_lookup_fn lookup_fn;
-    unsigned char const *palette;
-    float const *palette_float;
-    int depth;
-    int float_depth;
-    int reqcolor;
-    int complexion;
-    int pixelformat;
-    int lut_policy;
-    int method_for_largest;
-    unsigned short *indextable;
-    sixel_lut_t *lut;
-    int owns_lut;
-    int lookup_source_is_float;
-    int prefer_palette_float_lookup;
 };
 
 SIXEL_INTERNAL_API void
-sixel_lookup_policy_init(sixel_lookup_policy_t *policy);
+sixel_lookup_policy_init(sixel_lookup_policy_t **policy);
 
 SIXEL_INTERNAL_API void
-sixel_lookup_policy_clear(sixel_lookup_policy_t *policy);
+sixel_lookup_policy_clear(sixel_lookup_policy_t **policy);
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lookup_policy_prepare(sixel_lookup_policy_t *policy,
+sixel_lookup_policy_prepare(sixel_lookup_policy_t **policy,
                             sixel_lookup_policy_prepare_request_t const *
                                 request);
 

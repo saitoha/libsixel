@@ -53,7 +53,7 @@ test_lookup_policy_normal_mode_maps_expected_color(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
-    sixel_lookup_policy_t lookup_policy;
+    sixel_lookup_policy_t *lookup_policy;
     sixel_lookup_policy_prepare_request_t request;
     unsigned char palette[6];
     unsigned char pixel[3];
@@ -61,7 +61,7 @@ test_lookup_policy_normal_mode_maps_expected_color(void)
 
     status = SIXEL_FALSE;
     allocator = NULL;
-    memset(&lookup_policy, 0, sizeof(lookup_policy));
+    lookup_policy = NULL;
     memset(&request, 0, sizeof(request));
     memset(palette, 0, sizeof(palette));
     memset(pixel, 0, sizeof(pixel));
@@ -97,13 +97,13 @@ test_lookup_policy_normal_mode_maps_expected_color(void)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    if (sixel_lookup_policy_get_mode(&lookup_policy)
+    if (sixel_lookup_policy_get_mode(lookup_policy)
             != SIXEL_DITHER_LOOKUP_MODE_NORMAL) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
 
-    mapped = sixel_lookup_policy_map_pixel(&lookup_policy, pixel);
+    mapped = sixel_lookup_policy_map_pixel(lookup_policy, pixel);
     if (mapped != 1) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
@@ -123,7 +123,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
-    sixel_lookup_policy_t lookup_policy;
+    sixel_lookup_policy_t *lookup_policy;
     sixel_lookup_policy_prepare_request_t request;
     unsigned char palette[6];
     float pixel_float[3];
@@ -132,7 +132,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
 
     status = SIXEL_FALSE;
     allocator = NULL;
-    memset(&lookup_policy, 0, sizeof(lookup_policy));
+    lookup_policy = NULL;
     memset(&request, 0, sizeof(request));
     memset(palette, 0, sizeof(palette));
     memset(pixel_float, 0, sizeof(pixel_float));
@@ -169,12 +169,12 @@ test_lookup_policy_fast_mode_maps_float_input(void)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    if (sixel_lookup_policy_get_mode(&lookup_policy)
+    if (sixel_lookup_policy_get_mode(lookup_policy)
             != SIXEL_DITHER_LOOKUP_MODE_FAST_LUT) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
-    if (sixel_lookup_policy_lookup_source_is_float(&lookup_policy) == 0) {
+    if (sixel_lookup_policy_lookup_source_is_float(lookup_policy) == 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -184,7 +184,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
     }
 
     mapped = sixel_lookup_policy_map_pixel(
-        &lookup_policy,
+        lookup_policy,
         (unsigned char const *)(void const *)pixel_float);
     if (mapped < 0 || mapped >= 2) {
         status = SIXEL_BAD_ARGUMENT;
@@ -208,7 +208,7 @@ test_lookup_policy_mono_mode_maps_expected_threshold(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
-    sixel_lookup_policy_t lookup_policy;
+    sixel_lookup_policy_t *lookup_policy;
     sixel_lookup_policy_prepare_request_t request;
     unsigned char palette[6];
     unsigned char dark_pixel[3];
@@ -218,7 +218,7 @@ test_lookup_policy_mono_mode_maps_expected_threshold(void)
 
     status = SIXEL_FALSE;
     allocator = NULL;
-    memset(&lookup_policy, 0, sizeof(lookup_policy));
+    lookup_policy = NULL;
     memset(&request, 0, sizeof(request));
     memset(palette, 0, sizeof(palette));
     memset(dark_pixel, 0, sizeof(dark_pixel));
@@ -260,14 +260,14 @@ test_lookup_policy_mono_mode_maps_expected_threshold(void)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    if (sixel_lookup_policy_get_mode(&lookup_policy)
+    if (sixel_lookup_policy_get_mode(lookup_policy)
             != SIXEL_DITHER_LOOKUP_MODE_MONO_DARKBG) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
 
-    dark_index = sixel_lookup_policy_map_pixel(&lookup_policy, dark_pixel);
-    bright_index = sixel_lookup_policy_map_pixel(&lookup_policy, bright_pixel);
+    dark_index = sixel_lookup_policy_map_pixel(lookup_policy, dark_pixel);
+    bright_index = sixel_lookup_policy_map_pixel(lookup_policy, bright_pixel);
     if (dark_index != 0 || bright_index != 1) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
