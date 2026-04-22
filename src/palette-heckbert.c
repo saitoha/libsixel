@@ -2204,12 +2204,18 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     if (cluster_count > colorfreqtable.size) {
         return;
     }
+#if SIZE_MAX <= UINT_MAX
+    /*
+     * On narrow-size_t targets keep explicit overflow guards for buffer
+     * sizing.  Wider targets make these comparisons tautologically false.
+     */
     if ((size_t)cluster_count > SIZE_MAX / sizeof(unsigned long)) {
         return;
     }
     if ((size_t)cluster_count > SIZE_MAX / (size_t)depth) {
         return;
     }
+#endif
     total = (size_t)cluster_count * (size_t)depth;
     if (total > SIZE_MAX / sizeof(double)) {
         return;
@@ -2219,10 +2225,12 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
     if (centers == NULL) {
         return;
     }
+#if SIZE_MAX <= UINT_MAX
     if ((size_t)colorfreqtable.size > SIZE_MAX / sizeof(unsigned int)) {
         free(centers);
         return;
     }
+#endif
     assignment = (unsigned int *)malloc((size_t)colorfreqtable.size
                                         * sizeof(unsigned int));
     if (assignment != NULL) {
