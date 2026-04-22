@@ -123,7 +123,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0008_filter_load.c \
 	processing/filter/0009_filter_dither.c \
 	processing/filter/0010_filter_encode.c \
-	processing/filter/0011_filter_lookup_policy.c \
+	processing/lookup/0001_lookup_policy.c \
 	processing/filter/filter_test_common.h \
 	loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
 	loader/wic/0009_loader_wic_pixelformat.c \
@@ -171,6 +171,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	extension/gdk-pixbuf-loader/0006_loader_module.c \
 	extension/gdk-pixbuf-loader/0007_loader_plugin_integration.c \
 	$(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
+	$(top_srcdir)/src/lookup-policy.c \
 	$(top_srcdir)/converters/aborttrace.c \
 	$(top_srcdir)/converters/cli.c
 am__dirstamp = $(am__leading_dot)dirstamp
@@ -189,7 +190,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0008_filter_load.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0009_filter_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0010_filter_encode.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0011_filter_lookup_policy.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/wic/test_runner-0009_loader_wic_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT) \
@@ -235,6 +236,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0006_loader_module.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0007_loader_plugin_integration.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/gdk-pixbuf-loader/test_runner-sixel-pixbuf-loader.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-aborttrace.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-cli.$(OBJEXT)
 am__objects_1 =  \
@@ -311,6 +313,7 @@ am__depfiles_remade =  \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po \
 	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po \
+	$(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po \
 	./$(DEPDIR)/test_runner-test_runner.Po \
 	cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po \
 	cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po \
@@ -367,7 +370,7 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po \
 	processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po \
 	processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po \
-	processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Po \
+	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po \
 	quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po \
 	quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
@@ -1036,7 +1039,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_LOADER_WIC_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FILTER_ENCODE \
-@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_FILTER_LOOKUP_POLICY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LOOKUP_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_LOADER_GD_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_LOADER_LIBPNG_PIXELFORMAT \
@@ -1121,7 +1124,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0008_filter_load.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0009_filter_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0010_filter_encode.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0011_filter_lookup_policy.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0001_lookup_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/wic/0009_loader_wic_pixelformat.c \
@@ -1169,6 +1172,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0006_loader_module.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0007_loader_plugin_integration.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/src/lookup-policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/aborttrace.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/cli.c
 
@@ -1332,9 +1336,15 @@ processing/filter/test_runner-0009_filter_dither.$(OBJEXT):  \
 processing/filter/test_runner-0010_filter_encode.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
-processing/filter/test_runner-0011_filter_lookup_policy.$(OBJEXT):  \
-	processing/filter/$(am__dirstamp) \
-	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup
+	@: >>processing/lookup/$(am__dirstamp)
+processing/lookup/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/lookup/$(DEPDIR)
+	@: >>processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT):  \
+	processing/lookup/$(am__dirstamp) \
+	processing/lookup/$(DEPDIR)/$(am__dirstamp)
 loader/coregraphics/$(am__dirstamp):
 	@$(MKDIR_P) loader/coregraphics
 	@: >>loader/coregraphics/$(am__dirstamp)
@@ -1561,6 +1571,15 @@ $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp):
 $(top_builddir)/gdk-pixbuf-loader/test_runner-sixel-pixbuf-loader.$(OBJEXT):  \
 	$(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp) \
 	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src
+	@: >>$(top_builddir)/src/$(am__dirstamp)
+$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src/$(DEPDIR)
+	@: >>$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/test_runner-lookup-policy.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/converters/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/converters
 	@: >>$(top_builddir)/converters/$(am__dirstamp)
@@ -1592,6 +1611,7 @@ mostlyclean-compile:
 	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
 	-rm -f $(top_builddir)/converters/*.$(OBJEXT)
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/*.$(OBJEXT)
+	-rm -f $(top_builddir)/src/*.$(OBJEXT)
 	-rm -f cli/*.$(OBJEXT)
 	-rm -f cli/aborttrace/*.$(OBJEXT)
 	-rm -f diagnostics/icc/*.$(OBJEXT)
@@ -1610,6 +1630,7 @@ mostlyclean-compile:
 	-rm -f loader/quicklook/*.$(OBJEXT)
 	-rm -f loader/wic/*.$(OBJEXT)
 	-rm -f processing/filter/*.$(OBJEXT)
+	-rm -f processing/lookup/*.$(OBJEXT)
 	-rm -f quant/palette/*.$(OBJEXT)
 
 distclean-compile:
@@ -1619,6 +1640,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_runner-test_runner.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po@am__quote@ # am--include-marker
@@ -1675,7 +1697,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po@am__quote@ # am--include-marker
@@ -1920,19 +1942,19 @@ processing/filter/test_runner-0010_filter_encode.obj: processing/filter/0010_fil
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0010_filter_encode.obj `if test -f 'processing/filter/0010_filter_encode.c'; then $(CYGPATH_W) 'processing/filter/0010_filter_encode.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0010_filter_encode.c'; fi`
 
-processing/filter/test_runner-0011_filter_lookup_policy.o: processing/filter/0011_filter_lookup_policy.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0011_filter_lookup_policy.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Tpo -c -o processing/filter/test_runner-0011_filter_lookup_policy.o `test -f 'processing/filter/0011_filter_lookup_policy.c' || echo '$(srcdir)/'`processing/filter/0011_filter_lookup_policy.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Tpo processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0011_filter_lookup_policy.c' object='processing/filter/test_runner-0011_filter_lookup_policy.o' libtool=no @AMDEPBACKSLASH@
+processing/lookup/test_runner-0001_lookup_policy.o: processing/lookup/0001_lookup_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0001_lookup_policy.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Tpo -c -o processing/lookup/test_runner-0001_lookup_policy.o `test -f 'processing/lookup/0001_lookup_policy.c' || echo '$(srcdir)/'`processing/lookup/0001_lookup_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Tpo processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0001_lookup_policy.c' object='processing/lookup/test_runner-0001_lookup_policy.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0011_filter_lookup_policy.o `test -f 'processing/filter/0011_filter_lookup_policy.c' || echo '$(srcdir)/'`processing/filter/0011_filter_lookup_policy.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0001_lookup_policy.o `test -f 'processing/lookup/0001_lookup_policy.c' || echo '$(srcdir)/'`processing/lookup/0001_lookup_policy.c
 
-processing/filter/test_runner-0011_filter_lookup_policy.obj: processing/filter/0011_filter_lookup_policy.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0011_filter_lookup_policy.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Tpo -c -o processing/filter/test_runner-0011_filter_lookup_policy.obj `if test -f 'processing/filter/0011_filter_lookup_policy.c'; then $(CYGPATH_W) 'processing/filter/0011_filter_lookup_policy.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0011_filter_lookup_policy.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Tpo processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0011_filter_lookup_policy.c' object='processing/filter/test_runner-0011_filter_lookup_policy.obj' libtool=no @AMDEPBACKSLASH@
+processing/lookup/test_runner-0001_lookup_policy.obj: processing/lookup/0001_lookup_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0001_lookup_policy.obj -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Tpo -c -o processing/lookup/test_runner-0001_lookup_policy.obj `if test -f 'processing/lookup/0001_lookup_policy.c'; then $(CYGPATH_W) 'processing/lookup/0001_lookup_policy.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0001_lookup_policy.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Tpo processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0001_lookup_policy.c' object='processing/lookup/test_runner-0001_lookup_policy.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0011_filter_lookup_policy.obj `if test -f 'processing/filter/0011_filter_lookup_policy.c'; then $(CYGPATH_W) 'processing/filter/0011_filter_lookup_policy.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0011_filter_lookup_policy.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0001_lookup_policy.obj `if test -f 'processing/lookup/0001_lookup_policy.c'; then $(CYGPATH_W) 'processing/lookup/0001_lookup_policy.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0001_lookup_policy.c'; fi`
 
 loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o: loader/coregraphics/0008_loader_coregraphics_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o -MD -MP -MF loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Tpo -c -o loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o `test -f 'loader/coregraphics/0008_loader_coregraphics_pixelformat.c' || echo '$(srcdir)/'`loader/coregraphics/0008_loader_coregraphics_pixelformat.c
@@ -2564,6 +2586,20 @@ $(top_builddir)/gdk-pixbuf-loader/test_runner-sixel-pixbuf-loader.obj: $(top_bui
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/test_runner-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
 
+$(top_builddir)/src/test_runner-lookup-policy.o: $(top_builddir)/src/lookup-policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/test_runner-lookup-policy.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Tpo -c -o $(top_builddir)/src/test_runner-lookup-policy.o `test -f '$(top_builddir)/src/lookup-policy.c' || echo '$(srcdir)/'`$(top_builddir)/src/lookup-policy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Tpo $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/lookup-policy.c' object='$(top_builddir)/src/test_runner-lookup-policy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/test_runner-lookup-policy.o `test -f '$(top_builddir)/src/lookup-policy.c' || echo '$(srcdir)/'`$(top_builddir)/src/lookup-policy.c
+
+$(top_builddir)/src/test_runner-lookup-policy.obj: $(top_builddir)/src/lookup-policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/test_runner-lookup-policy.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Tpo -c -o $(top_builddir)/src/test_runner-lookup-policy.obj `if test -f '$(top_builddir)/src/lookup-policy.c'; then $(CYGPATH_W) '$(top_builddir)/src/lookup-policy.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/lookup-policy.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Tpo $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/lookup-policy.c' object='$(top_builddir)/src/test_runner-lookup-policy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/test_runner-lookup-policy.obj `if test -f '$(top_builddir)/src/lookup-policy.c'; then $(CYGPATH_W) '$(top_builddir)/src/lookup-policy.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/lookup-policy.c'; fi`
+
 $(top_builddir)/converters/test_runner-aborttrace.o: $(top_builddir)/converters/aborttrace.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/test_runner-aborttrace.o -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Tpo -c -o $(top_builddir)/converters/test_runner-aborttrace.o `test -f '$(top_builddir)/converters/aborttrace.c' || echo '$(srcdir)/'`$(top_builddir)/converters/aborttrace.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Tpo $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po
@@ -2940,6 +2976,8 @@ distclean-generic:
 	-$(am__rm_f) $(top_builddir)/converters/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/src/$(am__dirstamp)
 	-$(am__rm_f) cli/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) cli/$(am__dirstamp)
 	-$(am__rm_f) cli/aborttrace/$(DEPDIR)/$(am__dirstamp)
@@ -2976,6 +3014,8 @@ distclean-generic:
 	-$(am__rm_f) loader/wic/$(am__dirstamp)
 	-$(am__rm_f) processing/filter/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/filter/$(am__dirstamp)
+	-$(am__rm_f) processing/lookup/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/lookup/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/$(am__dirstamp)
 
@@ -2993,6 +3033,7 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po
 	-rm -f ./$(DEPDIR)/test_runner-test_runner.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po
@@ -3049,7 +3090,7 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Po
+	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
@@ -3102,6 +3143,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/test_runner-lookup-policy.Po
 	-rm -f ./$(DEPDIR)/test_runner-test_runner.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po
@@ -3158,7 +3200,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
-	-rm -f processing/filter/$(DEPDIR)/test_runner-0011_filter_lookup_policy.Po
+	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po

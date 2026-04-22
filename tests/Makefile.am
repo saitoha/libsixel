@@ -190,7 +190,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0009_LOADER_WIC_PIXELFORMAT \
     -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
     -DBUILD_TEST_0010_FILTER_ENCODE \
-    -DBUILD_TEST_0011_FILTER_LOOKUP_POLICY \
+    -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
     -DBUILD_TEST_0011_LOADER_GD_PIXELFORMAT \
     -DBUILD_TEST_0012_LOADER_LIBPNG_PIXELFORMAT \
@@ -247,7 +247,7 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0008_filter_load.c \
     processing/filter/0009_filter_dither.c \
     processing/filter/0010_filter_encode.c \
-    processing/filter/0011_filter_lookup_policy.c \
+    processing/lookup/0001_lookup_policy.c \
     processing/filter/filter_test_common.h \
     loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
     loader/wic/0009_loader_wic_pixelformat.c \
@@ -295,6 +295,7 @@ test_runner_SOURCES = test_runner.c \
     extension/gdk-pixbuf-loader/0006_loader_module.c \
     extension/gdk-pixbuf-loader/0007_loader_plugin_integration.c \
     $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
+    $(top_srcdir)/src/lookup-policy.c \
     $(top_srcdir)/converters/aborttrace.c \
     $(top_srcdir)/converters/cli.c
 test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) \

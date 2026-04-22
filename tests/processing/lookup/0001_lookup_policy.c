@@ -283,7 +283,7 @@ cleanup:
 }
 
 int
-test_filter_0011_filter_lookup_policy(int argc, char **argv)
+test_lookup_0001_lookup_policy(int argc, char **argv)
 {
     int success;
 

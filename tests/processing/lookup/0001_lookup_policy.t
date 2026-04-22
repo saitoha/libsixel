@@ -8,10 +8,10 @@ set -eux
 echo "1..1"
 set -v
 
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "filter/0011_filter_lookup_policy" || {
-    echo "not ok 1 - 0011_filter_lookup_policy"
+${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" "lookup/0001_lookup_policy" || {
+    echo "not ok 1 - 0001_lookup_policy"
     exit 0
 }
 
-echo "ok 1 - 0011_filter_lookup_policy"
+echo "ok 1 - 0001_lookup_policy"
 exit 0
