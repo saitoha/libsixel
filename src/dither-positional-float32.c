@@ -682,6 +682,7 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
     gradient_factor = 0.0f;
     gradient_weight = 1.0f;
     noise = 0.0f;
+    memset(lookup_pixel_float, 0, sizeof(lookup_pixel_float));
 
     if (dither == NULL || context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -694,6 +695,9 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
     }
     if (context->lookup_mode < SIXEL_DITHER_LOOKUP_MODE_NORMAL
             || context->lookup_mode > SIXEL_DITHER_LOOKUP_MODE_MONO_LIGHTBG) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (context->depth <= 0 || context->depth > SIXEL_MAX_CHANNELS) {
         return SIXEL_BAD_ARGUMENT;
     }
 
