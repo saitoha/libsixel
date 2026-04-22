@@ -1,8 +1,8 @@
-name: libsixel Fuzzing (hourly)
+name: libsixel Fuzzing (push)
 
 on:
-  schedule:
-    - cron: '0 * * * *'
+  push:
+    branches: ['**']
 
 permissions:
   contents: read
@@ -22,7 +22,7 @@ env:
 
 jobs:
   fuzz_push_full:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'push'
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -33,7 +33,7 @@ jobs:
     env:
       FUZZ_STRUCT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-struct
       FUZZ_STRUCT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-struct/${{ matrix.target }}
-      FUZZ_STRUCT_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={2}/.tmp/fuzz-artifacts-struct/{3}/', github.event_name == 'schedule' && '10800' || '300', github.event_name == 'schedule' && '10' || '2', github.workspace, matrix.target) }}
+      FUZZ_STRUCT_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={2}/.tmp/fuzz-artifacts-struct/{3}/', github.event_name == 'push' && '10800' || '300', github.event_name == 'push' && '10' || '2', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -44,7 +44,7 @@ jobs:
         run: |
           set -euo pipefail
           run_target=1
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${{ github.event_name }}" = "push" ]; then
             run_target=0
             if [ "${{ matrix.buildtool }}" = "meson" ]; then
               case "${{ matrix.target }}" in
@@ -75,10 +75,10 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ env.FUZZ_STRUCT_CORPUS }}/${{ matrix.target }}
-          key: fuzz-corpus-struct-hourly-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: fuzz-corpus-struct-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            fuzz-corpus-struct-hourly-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
-            fuzz-corpus-struct-hourly-${{ matrix.buildtool }}-${{ matrix.target }}-
+            fuzz-corpus-struct-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
+            fuzz-corpus-struct-push-${{ matrix.buildtool }}-${{ matrix.target }}-
             fuzz-corpus-struct-${{ matrix.buildtool }}-${{ matrix.target }}-
 
       - name: Seed struct fuzz corpus
@@ -211,7 +211,7 @@ jobs:
             ${{ env.FUZZ_STRUCT_CORPUS }}
 
   fuzz_push_loader_formats:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'push'
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -222,7 +222,7 @@ jobs:
     env:
       FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader
       FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/${{ matrix.target }}
-      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={2}/.tmp/fuzz-artifacts-loader/{3}/', github.event_name == 'schedule' && '10800' || '300', github.event_name == 'schedule' && '10' || '2', github.workspace, matrix.target) }}
+      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={2}/.tmp/fuzz-artifacts-loader/{3}/', github.event_name == 'push' && '10800' || '300', github.event_name == 'push' && '10' || '2', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -233,7 +233,7 @@ jobs:
         run: |
           set -euo pipefail
           run_target=1
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${{ github.event_name }}" = "push" ]; then
             run_target=0
             if [ "${{ matrix.buildtool }}" = "meson" ]; then
               case "${{ matrix.target }}" in
@@ -264,10 +264,10 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ env.FUZZ_BUILTIN_CORPUS }}/${{ matrix.target }}
-          key: fuzz-corpus-loader-hourly-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: fuzz-corpus-loader-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            fuzz-corpus-loader-hourly-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
-            fuzz-corpus-loader-hourly-${{ matrix.buildtool }}-${{ matrix.target }}-
+            fuzz-corpus-loader-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
+            fuzz-corpus-loader-push-${{ matrix.buildtool }}-${{ matrix.target }}-
             fuzz-corpus-loader-${{ matrix.buildtool }}-${{ matrix.target }}-
 
       - name: Seed loader-format fuzz corpus
@@ -387,7 +387,7 @@ jobs:
             ${{ env.FUZZ_BUILTIN_CORPUS }}
 
   fuzz_push_cli_img2sixel:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'push'
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cli-img2sixel-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -399,9 +399,9 @@ jobs:
       FUZZ_INPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-corpus-cli-img2sixel/${{ matrix.target }}
       FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-cli-img2sixel/${{ matrix.buildtool }}/${{ matrix.target }}
       FUZZ_AFL: afl-fuzz
-      FUZZ_TIMEOUT: ${{ github.event_name == 'schedule' && '2700' || '300' }}
-      FUZZ_AFL_WORKERS: ${{ github.event_name == 'schedule' && '6' || '2' }}
-      FUZZ_AFL_MODE: ${{ github.event_name == 'schedule' && 'cmplog' || 'normal' }}
+      FUZZ_TIMEOUT: ${{ github.event_name == 'push' && '2700' || '300' }}
+      FUZZ_AFL_WORKERS: ${{ github.event_name == 'push' && '6' || '2' }}
+      FUZZ_AFL_MODE: ${{ github.event_name == 'push' && 'cmplog' || 'normal' }}
       FUZZ_AFL_CMPLOG_RUNNER: ""
       FUZZ_AFL_EXTRA_OPTS: ""
       AFL_USE_ASAN: 1
@@ -419,7 +419,7 @@ jobs:
         run: |
           set -euo pipefail
           run_target=1
-          if [ "${{ github.event_name }}" = "schedule" ]; then
+          if [ "${{ github.event_name }}" = "push" ]; then
             run_target=0
             if [ "${{ matrix.buildtool }}" = "autotools" ]; then
               case "${{ matrix.target }}" in
@@ -758,7 +758,7 @@ jobs:
             ${{ env.FUZZ_INPUT_DIR }}.tar.gz
 
   fuzz_push_loader_coregraphics:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'push'
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-macos-aarch64-clang' || 'Meson-macos-aarch64-clang' }}-fuzz-loader-coregraphics
     runs-on: macos-latest
     strategy:
@@ -768,7 +768,7 @@ jobs:
     env:
       FUZZ_COMPONENT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/component
       FUZZ_COMPONENT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/coregraphics
-      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix={2}/.tmp/fuzz-artifacts-loader/coregraphics/', github.event_name == 'schedule' && '10800' || '300', github.event_name == 'schedule' && '10' || '2', github.workspace) }}
+      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix={2}/.tmp/fuzz-artifacts-loader/coregraphics/', github.event_name == 'push' && '10800' || '300', github.event_name == 'push' && '10' || '2', github.workspace) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -779,7 +779,7 @@ jobs:
         run: |
           set -euo pipefail
           run_target=1
-          if [ "${{ github.event_name }}" = "schedule" ] &&
+          if [ "${{ github.event_name }}" = "push" ] &&
              [ "${{ matrix.buildtool }}" != "meson" ]; then
             run_target=0
           fi
@@ -810,10 +810,10 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ${{ env.FUZZ_COMPONENT_CORPUS }}
-          key: fuzz-corpus-loader-coregraphics-hourly-${{ matrix.buildtool }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: fuzz-corpus-loader-coregraphics-push-${{ matrix.buildtool }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            fuzz-corpus-loader-coregraphics-hourly-${{ matrix.buildtool }}-${{ github.ref_name }}-
-            fuzz-corpus-loader-coregraphics-hourly-${{ matrix.buildtool }}-
+            fuzz-corpus-loader-coregraphics-push-${{ matrix.buildtool }}-${{ github.ref_name }}-
+            fuzz-corpus-loader-coregraphics-push-${{ matrix.buildtool }}-
             fuzz-corpus-loader-coregraphics-${{ matrix.buildtool }}-
 
       - name: Seed coregraphics fuzz corpus
@@ -924,7 +924,7 @@ jobs:
             ${{ env.FUZZ_COMPONENT_CORPUS }}
 
   fuzz_push_loader_wic_detect:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'push'
     name: Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect
     runs-on: windows-latest
     outputs:
