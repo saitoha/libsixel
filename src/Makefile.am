@@ -71,6 +71,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/tosixel-highcolor.c \
                 $(srcdir)/tosixel-highcolor.h \
                 $(srcdir)/lookup-common.c \
+                $(srcdir)/lookup-policy.c \
                 $(srcdir)/lookup-8bit.c \
                 $(srcdir)/lookup-8bit.h \
                 $(srcdir)/lookup-float32.c \
@@ -84,6 +85,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-vptree-float32.c \
                 $(srcdir)/lookup-vptree-float32.h \
                 $(srcdir)/lookup-common.h \
+                $(srcdir)/lookup-policy.h \
                 $(srcdir)/palette-heckbert.c \
                 $(srcdir)/palette-heckbert.h \
                 $(srcdir)/palette-common-merge.c \

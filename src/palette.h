@@ -28,12 +28,12 @@
 #include <sixel.h>
 
 #include "sixel_atomic.h"
+#include "lookup-policy.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct sixel_lut;
 struct sixel_final_merge_cluster;
 typedef struct sixel_final_merge_cluster sixel_final_merge_cluster_t;
 
@@ -94,6 +94,7 @@ struct sixel_palette {
     int sixel_reversible;           /* reversible tone flag proxy */
     int final_merge;                /* final merge flag proxy */
     struct sixel_lut *lut;          /* reusable lookup table */
+    sixel_lookup_policy_t lookup_policy; /* lookup dispatch contract */
 };
 
 void

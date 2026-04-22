@@ -50,6 +50,7 @@
 #include "palette.h"
 #include "compat_stub.h"
 #include "lookup-common.h"
+#include "lookup-policy.h"
 #include "timer.h"
 #include "dither-common-pipeline.h"
 #include "dither-positional-8bit.h"
@@ -59,7 +60,6 @@
 #include "dither-varcoeff-8bit.h"
 #include "dither-varcoeff-float32.h"
 #include "dither-internal.h"
-#include "filter-lookup.h"
 #include "logger.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
@@ -391,144 +391,6 @@ static const unsigned char pal_xterm256[] = {
 };
 
 
-#if defined(_MSC_VER)
-# define SIXEL_TLS __declspec(thread)
-# define SIXEL_TLS_AVAILABLE 1
-#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
-    && !defined(__STDC_NO_THREADS__) \
-    && !defined(__PCC__)
-# define SIXEL_TLS _Thread_local
-# define SIXEL_TLS_AVAILABLE 1
-#elif defined(__GNUC__) && !defined(__PCC__)
-# define SIXEL_TLS __thread
-# define SIXEL_TLS_AVAILABLE 1
-#else
-# define SIXEL_TLS
-# define SIXEL_TLS_AVAILABLE 0
-#endif
-
-/*
- * Fast LUT lookups rely on per-thread scratch state.  A TLS indirection keeps
- * parallel dithering workers from stomping on each other's lookup context when
- * several bands run concurrently.
- */
-static SIXEL_TLS sixel_lut_t *dither_lut_context = NULL;
-
-#undef SIXEL_TLS
-
-/* lookup closest color from palette with "normal" strategy */
-static int
-lookup_normal(unsigned char const * const pixel,
-              int const depth,
-              unsigned char const * const palette,
-              int const reqcolor,
-              unsigned short * const cachetable,
-              int const complexion)
-{
-    int result;
-    int diff;
-    int r;
-    int i;
-    int n;
-    int distant;
-
-    result = (-1);
-    diff = INT_MAX;
-
-    /* don't use cachetable in 'normal' strategy */
-    (void) cachetable;
-
-    for (i = 0; i < reqcolor; i++) {
-        distant = 0;
-        r = pixel[0] - palette[i * depth + 0];
-        distant += r * r * complexion;
-        for (n = 1; n < depth; ++n) {
-            r = pixel[n] - palette[i * depth + n];
-            distant += r * r;
-        }
-        if (distant < diff) {
-            diff = distant;
-            result = i;
-        }
-    }
-
-    return result;
-}
-
-
-/*
- * Shared fast lookup flow handled by the lut module.  The palette lookup now
- * delegates to sixel_lut_map_pixel() so policy-specific caches and the
- * certification tree stay encapsulated inside src/lookup-common.c.
- */
-
-static int
-lookup_fast_lut(unsigned char const * const pixel,
-                int const depth,
-                unsigned char const * const palette,
-                int const reqcolor,
-                unsigned short * const cachetable,
-                int const complexion)
-{
-    (void)depth;
-    (void)palette;
-    (void)reqcolor;
-    (void)cachetable;
-    (void)complexion;
-
-    if (dither_lut_context == NULL) {
-        return 0;
-    }
-
-    return sixel_lut_map_pixel(dither_lut_context, pixel);
-}
-
-
-static int
-lookup_mono_darkbg(unsigned char const * const pixel,
-                   int const depth,
-                   unsigned char const * const palette,
-                   int const reqcolor,
-                   unsigned short * const cachetable,
-                   int const complexion)
-{
-    int n;
-    int distant;
-
-    /* unused */ (void) palette;
-    /* unused */ (void) cachetable;
-    /* unused */ (void) complexion;
-
-    distant = 0;
-    for (n = 0; n < depth; ++n) {
-        distant += pixel[n];
-    }
-    return distant >= 128 * reqcolor ? 1: 0;
-}
-
-
-static int
-lookup_mono_lightbg(unsigned char const * const pixel,
-                    int const depth,
-                    unsigned char const * const palette,
-                    int const reqcolor,
-                    unsigned short * const cachetable,
-                    int const complexion)
-{
-    int n;
-    int distant;
-
-    /* unused */ (void) palette;
-    /* unused */ (void) cachetable;
-    /* unused */ (void) complexion;
-
-    distant = 0;
-    for (n = 0; n < depth; ++n) {
-        distant += pixel[n];
-    }
-    return distant < 128 * reqcolor ? 1: 0;
-}
-
 static SIXELSTATUS
 sixel_dither_validate_complexion_limit(int depth, int complexion)
 {
@@ -559,19 +421,54 @@ sixel_dither_validate_complexion_limit(int depth, int complexion)
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+sixel_dither_prepare_lookup_policy(
+    sixel_lookup_policy_t *lookup_policy,
+    unsigned char const *palette,
+    float const *palette_float,
+    int depth,
+    int float_depth,
+    int reqcolor,
+    int foptimize,
+    int complexion,
+    int lut_policy,
+    int method_for_largest,
+    int pixelformat,
+    int parallel_active,
+    int reuse_lut_is_shared,
+    int reuse_lut_preconfigured,
+    sixel_lut_t *reuse_lut,
+    sixel_lut_t **reuse_lut_slot,
+    sixel_allocator_t *allocator)
+{
+    sixel_lookup_policy_prepare_request_t request;
+
+    memset(&request, 0, sizeof(request));
+    request.palette = palette;
+    request.palette_float = palette_float;
+    request.depth = depth;
+    request.float_depth = float_depth;
+    request.reqcolor = reqcolor;
+    request.complexion = complexion;
+    request.optimize_lookup = foptimize;
+    request.lut_policy = lut_policy;
+    request.method_for_largest = method_for_largest;
+    request.pixelformat = pixelformat;
+    request.parallel_active = parallel_active;
+    request.reuse_lut_is_shared = reuse_lut_is_shared;
+    request.reuse_lut_preconfigured = reuse_lut_preconfigured;
+    request.reuse_lut = reuse_lut;
+    request.reuse_lut_slot = reuse_lut_slot;
+    request.allocator = allocator;
+
+    return sixel_lookup_policy_prepare(lookup_policy, &request);
+}
+
 /*
  * Apply the palette into the supplied pixel buffer while coordinating the
- * dithering strategy.  The routine performs the following steps:
- *   - Select an index lookup helper, enabling the fast LUT path when the
- *     caller requested palette optimization and the input pixels are RGB.
- *   - Ensure the LUT object is prepared for the active policy, including
- *     weight selection for CERTLUT so complexion aware lookups remain
- *     accurate.
- *   - Dispatch to the positional, variable, or fixed error diffusion
- *     routines, each of which expects the LUT context to be initialized
- *     beforehand.
- *   - Release any temporary LUT references that were acquired for the fast
- *     lookup path.
+ * dithering strategy. The lookup policy is prepared by the caller so this
+ * routine can focus on building the shared worker context and dispatching the
+ * selected diffusion backend.
  */
 static SIXELSTATUS
 sixel_dither_map_pixels(
@@ -586,55 +483,25 @@ sixel_dither_map_pixels(
     int               /* in */  reqcolor,
     int               /* in */  methodForDiffuse,
     int               /* in */  methodForScan,
-    int               /* in */  foptimize,
     int               /* in */  foptimize_palette,
     int               /* in */  complexion,
-    int               /* in */  lut_policy,
-    int               /* in */  method_for_largest,
-    sixel_lut_t       /* in */  *lut,
+    sixel_lookup_policy_t /* in */ *lookup_policy,
     int               /* in */  *ncolors,
-    sixel_allocator_t /* in */  *allocator,
     sixel_dither_t    /* in */  *dither,
     int               /* in */  pixelformat)
 {
     unsigned char copy[SIXEL_MAX_CHANNELS];
     float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
-    SIXELSTATUS status = SIXEL_FALSE;
-    int sum1;
-    int sum2;
-    int n;
+    SIXELSTATUS status;
     unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
     unsigned short migration_map[SIXEL_PALETTE_MAX];
     sixel_dither_context_t context;
-    int (*f_lookup)(unsigned char const * const pixel,
-                    int const depth,
-                    unsigned char const * const palette,
-                    int const reqcolor,
-                    unsigned short * const cachetable,
-                    int const complexion) = lookup_normal;
+    sixel_dither_lookup_map_fn lookup_map;
     int use_varerr;
     int use_positional;
-    sixel_lut_t *active_lut;
-    int manage_lut;
-    int policy;
-    int shared_lut;
-    float const *palette_float;
-    int palette_float_depth;
-    sixel_filter_lookup_config_t lookup_config;
-    sixel_filter_lookup_result_t lookup_result;
 
-    /*
-     * Per-component weights used by the lookup backends.  These remain generic
-     * to support RGB as well as alternate color spaces when evaluating palette
-     * distance.
-     */
-
-    active_lut = NULL;
-    manage_lut = 0;
-    palette_float = NULL;
-    palette_float_depth = 0;
-    memset(&lookup_config, 0, sizeof(lookup_config));
-    memset(&lookup_result, 0, sizeof(lookup_result));
+    status = SIXEL_FALSE;
+    lookup_map = NULL;
 
     memset(&context, 0, sizeof(context));
     context.result = result;
@@ -649,7 +516,8 @@ sixel_dither_map_pixels(
     context.migration_map = migration_map;
     context.ncolors = ncolors;
     context.scratch = copy;
-    context.indextable = NULL;
+    context.lookup_policy = lookup_policy;
+    context.lookup_map = NULL;
     context.pixels = data;
     context.pixels_float = NULL;
     context.pixelformat = pixelformat;
@@ -665,7 +533,12 @@ sixel_dither_map_pixels(
     context.bluenoise_gradient_map_size = 0U;
     context.bluenoise_gradient_width = 0;
     context.bluenoise_gradient_height = 0;
-    context.lut = NULL;
+    lookup_map = sixel_lookup_policy_get_map_fn(lookup_policy);
+    context.lookup_map = lookup_map;
+    context.lookup_source_is_float =
+        sixel_lookup_policy_lookup_source_is_float(lookup_policy);
+    context.prefer_palette_float_lookup =
+        sixel_lookup_policy_prefer_palette_float_lookup(lookup_policy);
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         context.pixels_float = (float *)(void *)data;
     }
@@ -684,8 +557,6 @@ sixel_dither_map_pixels(
                 context.palette_float = palette_object->entries_float32;
                 context.float_depth = float_components;
                 context.new_palette_float = new_palette_float;
-                palette_float = palette_object->entries_float32;
-                palette_float_depth = palette_object->float_depth;
             }
         }
     }
@@ -712,6 +583,12 @@ sixel_dither_map_pixels(
             "a bad argument is detected, reqcolor < 0.");
         goto end;
     }
+    if (lookup_policy == NULL || lookup_map == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "sixel_dither_map_pixels: lookup policy is not prepared.");
+        goto end;
+    }
 
     use_varerr = (depth == 3
                   && methodForDiffuse == SIXEL_DIFFUSE_LSO2);
@@ -720,131 +597,6 @@ sixel_dither_map_pixels(
                       || methodForDiffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER);
     context.method_for_diffuse = methodForDiffuse;
     context.method_for_scan = methodForScan;
-
-    if (reqcolor == 2) {
-        sum1 = 0;
-        sum2 = 0;
-        for (n = 0; n < depth; ++n) {
-            sum1 += palette[n];
-        }
-        for (n = depth; n < depth + depth; ++n) {
-            sum2 += palette[n];
-        }
-        if (sum1 == 0 && sum2 == 255 * 3) {
-            f_lookup = lookup_mono_darkbg;
-        } else if (sum1 == 255 * 3 && sum2 == 0) {
-            f_lookup = lookup_mono_lightbg;
-        }
-    }
-    if (foptimize && depth == 3 && f_lookup == lookup_normal) {
-        f_lookup = lookup_fast_lut;
-    }
-#if SIXEL_ENABLE_THREADS && !SIXEL_TLS_AVAILABLE
-    if (f_lookup == lookup_fast_lut) {
-        /*
-         * Fast lookup stores the active LUT in a TLS pointer for the hot path.
-         * Compilers without TLS support collapse that pointer into a process
-         * global, which is unsafe when multiple worker threads map pixels at
-         * the same time.
-         */
-        f_lookup = lookup_normal;
-    }
-#endif
-    if (lut_policy == SIXEL_LUT_POLICY_NONE) {
-        f_lookup = lookup_normal;
-    }
-
-    if ((f_lookup == lookup_normal || f_lookup == lookup_fast_lut)
-            && !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        status = sixel_dither_validate_complexion_limit(depth, complexion);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-
-    if (f_lookup == lookup_fast_lut) {
-        if (depth != 3) {
-            status = SIXEL_BAD_ARGUMENT;
-            sixel_helper_set_additional_message(
-                "sixel_dither_map_pixels: fast lookup requires RGB pixels.");
-            goto end;
-        }
-        policy = lut_policy;
-        if (policy != SIXEL_LUT_POLICY_CERTLUT
-            && policy != SIXEL_LUT_POLICY_5BIT
-            && policy != SIXEL_LUT_POLICY_6BIT
-            && policy != SIXEL_LUT_POLICY_EYTZINGER
-            && policy != SIXEL_LUT_POLICY_FHEDT
-            && policy != SIXEL_LUT_POLICY_VPTREE
-            && policy != SIXEL_LUT_POLICY_RBC
-            && policy != SIXEL_LUT_POLICY_MAHALANOBIS) {
-            policy = SIXEL_LUT_POLICY_6BIT;
-        }
-        shared_lut = 1;
-        if (policy == SIXEL_LUT_POLICY_CERTLUT) {
-            shared_lut = sixel_lookup_env_shared_certlut();
-        } else if (policy == SIXEL_LUT_POLICY_5BIT) {
-            shared_lut = sixel_lookup_env_shared_5bit();
-        } else if (policy == SIXEL_LUT_POLICY_6BIT) {
-            shared_lut = sixel_lookup_env_shared_6bit();
-        }
-        if (lut != NULL && sixel_lookup_parallel_dither_active() != 0
-                && shared_lut == 0) {
-            /*
-             * Caller requested thread-local CERTLUT/DENCELUT caches.
-             * Drop the shared handle so each worker builds an isolated
-             * instance instead of serializing on a mutex.
-             */
-            lut = NULL;
-        }
-        if (lut != NULL && sixel_lookup_parallel_dither_active() != 0
-                && shared_lut != 0) {
-            /*
-             * Parallel palette application reuses the preconfigured LUT to
-             * avoid rebuilding FHEDT inside each worker.  The shared LUT is
-             * immutable after setup, so workers only need a read-only handle
-             * here.
-             */
-            active_lut = lut;
-            manage_lut = 0;
-        } else {
-            lookup_config.palette = palette;
-            lookup_config.palette_float = palette_float;
-            lookup_config.depth = depth;
-            lookup_config.float_depth = palette_float_depth;
-            lookup_config.ncolors = reqcolor;
-            lookup_config.complexion = complexion;
-            lookup_config.method_for_largest = method_for_largest;
-            lookup_config.lut_policy = policy;
-            lookup_config.pixelformat = pixelformat;
-            lookup_config.reuse_lut = lut;
-
-            status = sixel_filter_lookup_build(&lookup_config,
-                                               allocator,
-                                               NULL,
-                                               &lookup_result);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-
-            active_lut = lookup_result.lut;
-            manage_lut = lookup_result.owned;
-        }
-        context.lut = active_lut;
-        dither_lut_context = active_lut;
-    }
-
-    context.lookup = f_lookup;
-    if (f_lookup == lookup_fast_lut
-        && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        context.lookup_source_is_float = 1;
-    }
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
-        && context.palette_float != NULL
-        && context.float_depth >= context.depth
-        && f_lookup == lookup_normal) {
-        context.prefer_palette_float_lookup = 1;
-    }
     context.optimize_palette = foptimize_palette;
     context.complexion = complexion;
 
@@ -896,12 +648,6 @@ sixel_dither_map_pixels(
     status = SIXEL_OK;
 
 end:
-    if (dither_lut_context != NULL && f_lookup == lookup_fast_lut) {
-        dither_lut_context = NULL;
-    }
-    if (manage_lut && active_lut != NULL) {
-        sixel_lut_unref(active_lut);
-    }
     return status;
 }
 
@@ -937,7 +683,6 @@ typedef struct sixel_parallel_dither_plan {
  */
 typedef struct sixel_parallel_dither_state {
     sixel_lut_t *lut;
-    int lut_initialized;
 } sixel_parallel_dither_state_t;
 
 static void
@@ -949,7 +694,7 @@ sixel_parallel_dither_cleanup(void *workspace)
     if (state == NULL) {
         return;
     }
-    if (state->lut_initialized != 0 && state->lut != NULL) {
+    if (state->lut != NULL) {
         /*
          * Each worker owns its private LUT instance when shared caches are
          * disabled.  Release it here so threadpool teardown can free the
@@ -979,13 +724,14 @@ sixel_dither_parallel_worker(tp_job_t job,
     int in1;
     int rows;
     int local_ncolors;
-    int wcomp1;
-    int wcomp2;
-    int wcomp3;
     SIXELSTATUS status;
     sixel_parallel_dither_state_t *state;
-    sixel_lut_t *local_lut;
+    sixel_lut_t *reuse_lut;
+    sixel_lut_t **reuse_lut_slot;
+    int reuse_lut_is_shared;
+    int reuse_lut_preconfigured;
     int restore_context;
+    sixel_lookup_policy_t lookup_policy;
 
     plan = (sixel_parallel_dither_plan_t *)userdata;
     if (plan == NULL) {
@@ -1053,58 +799,43 @@ sixel_dither_parallel_worker(tp_job_t job,
 
     local_ncolors = plan->reqcolor;
     state = (sixel_parallel_dither_state_t *)workspace;
-    local_lut = plan->lut;
+    reuse_lut = plan->lut;
+    reuse_lut_slot = NULL;
+    reuse_lut_is_shared = 0;
+    reuse_lut_preconfigured = 0;
     restore_context = 0;
-    if (local_lut == NULL && state != NULL) {
-        if (state->lut_initialized == 0) {
-            status = sixel_lut_new(&state->lut,
-                                   plan->lut_policy,
-                                   plan->allocator);
-            if (SIXEL_FAILED(status)) {
-                if (copy != NULL) {
-                    free(copy);
-                }
-                return status;
-            }
-            if (plan->lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
-                if (plan->method_for_largest == SIXEL_LARGE_LUM) {
-                    wcomp1 = plan->complexion * 299;
-                    wcomp2 = 587;
-                    wcomp3 = 114;
-                } else {
-                    wcomp1 = plan->complexion;
-                    wcomp2 = 1;
-                    wcomp3 = 1;
-                }
-            } else {
-                wcomp1 = plan->complexion;
-                wcomp2 = 1;
-                wcomp3 = 1;
-            }
-            status = sixel_lut_configure(state->lut,
-                                         plan->palette->entries,
-                                         plan->palette->entries_float32,
-                                         plan->palette->depth,
-                                         plan->palette->float_depth,
-                                         (int)plan->palette->entry_count,
-                                         plan->complexion,
-                                         wcomp1,
-                                         wcomp2,
-                                         wcomp3,
-                                         plan->lut_policy,
-                                         plan->pixelformat);
-            if (SIXEL_FAILED(status)) {
-                sixel_lut_unref(state->lut);
-                state->lut = NULL;
-                if (copy != NULL) {
-                    free(copy);
-                }
-                return status;
-            }
-            state->lut_initialized = 1;
+    if (reuse_lut != NULL) {
+        reuse_lut_is_shared = 1;
+        reuse_lut_preconfigured = 1;
+    } else if (state != NULL) {
+        reuse_lut_slot = &state->lut;
+        if (state->lut != NULL) {
+            reuse_lut_preconfigured = 1;
         }
-        local_lut = state->lut;
     }
+    sixel_lookup_policy_init(&lookup_policy);
+    status = sixel_dither_prepare_lookup_policy(
+        &lookup_policy,
+        plan->palette->entries,
+        plan->palette->entries_float32,
+        3,
+        plan->palette->float_depth,
+        plan->reqcolor,
+        plan->optimize_palette,
+        plan->complexion,
+        plan->lut_policy,
+        plan->method_for_largest,
+        plan->pixelformat,
+        1,
+        reuse_lut_is_shared,
+        reuse_lut_preconfigured,
+        reuse_lut,
+        reuse_lut_slot,
+        plan->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
     /*
      * Map directly into the shared destination but suppress writes
      * before output_start.  The overlap rows are computed only to warm
@@ -1123,16 +854,15 @@ sixel_dither_parallel_worker(tp_job_t job,
                                      plan->reqcolor,
                                      plan->method_for_diffuse,
                                      plan->method_for_scan,
-                                     plan->optimize_palette,
                                      plan->optimize_palette_entries,
                                      plan->complexion,
-                                     plan->lut_policy,
-                                     plan->method_for_largest,
-                                     local_lut,
+                                     &lookup_policy,
                                      &local_ncolors,
-                                     plan->allocator,
                                      plan->dither,
                                      plan->pixelformat);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
     if (plan->logger != NULL) {
         restore_context = sixel_dither_logger_set_frame_context(
             plan->logger,
@@ -1154,6 +884,9 @@ sixel_dither_parallel_worker(tp_job_t job,
             sixel_logger_clear_frame_context(plan->logger);
         }
     }
+
+cleanup:
+    sixel_lookup_policy_clear(&lookup_policy);
     if (copy != NULL) {
         free(copy);
     }
@@ -1352,6 +1085,7 @@ sixel_dither_resolve_indexes(
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
     int pixelformat;
+    int reuse_lut_preconfigured;
 
     status = SIXEL_FALSE;
     if (request == NULL || request->palette == NULL
@@ -1376,9 +1110,35 @@ sixel_dither_resolve_indexes(
     allocator = request->allocator;
     dither = request->dither;
     pixelformat = request->pixelformat;
+    reuse_lut_preconfigured = 0;
+    if (palette->lut != NULL) {
+        reuse_lut_preconfigured = 1;
+    }
 
     sixel_palette_set_lut_policy(lut_policy);
     sixel_palette_set_method_for_largest(method_for_largest);
+
+    status = sixel_dither_prepare_lookup_policy(
+        &palette->lookup_policy,
+        palette->entries,
+        palette->entries_float32,
+        depth,
+        palette->float_depth,
+        reqcolor,
+        foptimize,
+        complexion,
+        lut_policy,
+        method_for_largest,
+        pixelformat,
+        sixel_lookup_parallel_dither_active(),
+        0,
+        reuse_lut_preconfigured,
+        palette->lut,
+        &palette->lut,
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
 
     status = sixel_dither_map_pixels(result,
                                      data,
@@ -1391,16 +1151,13 @@ sixel_dither_resolve_indexes(
                                      reqcolor,
                                      method_for_diffuse,
                                      method_for_scan,
-                                     foptimize,
                                      foptimize_palette,
                                      complexion,
-                                     lut_policy,
-                                     method_for_largest,
-                                     palette->lut,
+                                     &palette->lookup_policy,
                                      ncolors,
-                                     allocator,
                                      dither,
                                      pixelformat);
+    sixel_lookup_policy_clear(&palette->lookup_policy);
 
     return status;
 }
@@ -2099,6 +1856,9 @@ sixel_dither_set_lut_policy(
     if (dither->palette != NULL && dither->palette->lut != NULL) {
         sixel_lut_unref(dither->palette->lut);
         dither->palette->lut = NULL;
+    }
+    if (dither->palette != NULL) {
+        sixel_lookup_policy_clear(&dither->palette->lookup_policy);
     }
 }
 

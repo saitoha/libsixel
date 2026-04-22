@@ -846,6 +846,7 @@ sixel_palette_new(sixel_palette_t **palette, sixel_allocator_t *allocator)
     object->sixel_reversible = 0;
     object->final_merge = 0;
     object->lut = NULL;
+    sixel_lookup_policy_init(&object->lookup_policy);
 
     *palette = object;
     status = SIXEL_OK;
@@ -884,6 +885,7 @@ sixel_palette_dispose(sixel_palette_t *palette)
         palette->entries_float32 = NULL;
     }
 
+    sixel_lookup_policy_clear(&palette->lookup_policy);
     if (palette->lut != NULL) {
         sixel_lut_unref(palette->lut);
         palette->lut = NULL;
