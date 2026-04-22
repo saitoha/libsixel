@@ -1392,6 +1392,8 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-artifact-local-dir-mkdir.sh \
     _static/sh/staticcheck-build-doc-configure-help.sh \
     _static/sh/staticcheck-build-doc-meson-options.sh \
+    _static/sh/staticcheck-help-quantize-source-contract.sh \
+    _static/sh/staticcheck-help-sixel2png-source-contract.sh \
     _static/sh/staticcheck-docs-help-vs-man.sh \
     _static/sh/staticcheck-docs-man-vs-bash-completion.sh \
     _static/sh/staticcheck-docs-envvars-help-table.sh \
