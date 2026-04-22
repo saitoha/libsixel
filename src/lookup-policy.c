@@ -274,6 +274,15 @@ sixel_lookup_policy_object_alloc(size_t bytes, sixel_allocator_t *allocator)
     return memory;
 }
 
+/*
+ * GCC's analyzer can mis-handle the casted base-pointer free path when
+ * ownership is transferred across policy wrappers.
+ */
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK) && \
+    defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+#endif
 static void
 sixel_lookup_policy_object_free(sixel_lookup_policy_object_t *object)
 {
@@ -292,6 +301,10 @@ sixel_lookup_policy_object_free(sixel_lookup_policy_object_t *object)
 
     free(object);
 }
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK) && \
+    defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 static int
 sixel_lookup_policy_map_lookup_object(sixel_lookup_policy_t const *policy,
