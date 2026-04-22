@@ -410,8 +410,17 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
     int output_index;
     int diff;
     int table_index;
+    unsigned short *indextable;
     unsigned short *migration_map;
     int *ncolors;
+    int (*lookup)(const unsigned char *,
+                  int,
+                  const unsigned char *,
+                  int,
+                  unsigned short *,
+                  int);
+    sixel_lut_t *fast_lut;
+    int use_fast_lut;
     float *palette_float;
     float *new_palette_float;
     int float_depth;
@@ -431,10 +440,14 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
     data = context->pixels;
     palette = context->palette;
     new_palette = context->new_palette;
+    indextable = context->indextable;
     migration_map = context->migration_map;
     ncolors = context->ncolors;
     depth = context->depth;
     reqcolor = context->reqcolor;
+    lookup = context->lookup;
+    fast_lut = context->lut;
+    use_fast_lut = (fast_lut != NULL);
     palette_float = context->palette_float;
     new_palette_float = context->new_palette_float;
     float_depth = context->float_depth;
@@ -453,10 +466,6 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
     }
 
     if (depth <= 0 || depth > SIXEL_MAX_CHANNELS) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (context->lookup_mode < SIXEL_DITHER_LOOKUP_MODE_NORMAL
-            || context->lookup_mode > SIXEL_DITHER_LOOKUP_MODE_MONO_LIGHTBG) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -580,7 +589,16 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
                 source_pixel = data + base;
             }
 
-            color_index = sixel_dither_lookup_index(context, source_pixel);
+            if (use_fast_lut) {
+                color_index = sixel_lut_map_pixel(fast_lut, source_pixel);
+            } else {
+                color_index = lookup(source_pixel,
+                                      depth,
+                                      palette,
+                                      reqcolor,
+                                      indextable,
+                                      context->complexion);
+            }
 
                 if (optimize_palette) {
                     if (migration_map[color_index] == 0) {
