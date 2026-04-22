@@ -633,6 +633,49 @@ test_runner_sleep_milliseconds(unsigned long milliseconds)
 }
 #endif
 
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+/*
+ * Some runtimes (notably APE wrappers) do not always propagate signals sent
+ * only to the process group. Send to both the process group and the direct
+ * child so SIGINT/SIGKILL delivery remains stable across runtimes.
+ */
+static int
+test_runner_signal_group_and_child(pid_t child_pid, int signum)
+{
+    int group_result;
+    int child_result;
+    int group_errno;
+    int child_errno;
+
+    group_result = 0;
+    child_result = 0;
+    group_errno = 0;
+    child_errno = 0;
+
+    group_result = kill((pid_t)(-child_pid), signum);
+    if (group_result != 0) {
+        group_errno = errno;
+    }
+
+    child_result = kill(child_pid, signum);
+    if (child_result != 0) {
+        child_errno = errno;
+    }
+
+    if ((group_errno == 0 || group_errno == ESRCH)
+            && (child_errno == 0 || child_errno == ESRCH)) {
+        return 0;
+    }
+
+    if (child_errno != 0 && child_errno != ESRCH) {
+        errno = child_errno;
+    } else {
+        errno = group_errno;
+    }
+    return -1;
+}
+#endif
+
 static int
 test_runner_run_posix_sigint(int argc, char **argv)
 {
@@ -725,8 +768,8 @@ test_runner_run_posix_sigint(int argc, char **argv)
         goto timeout_cleanup;
     }
 
-    send_result = kill((pid_t)(-child_pid), SIGINT);
-    if (send_result != 0 && errno != ESRCH) {
+    send_result = test_runner_signal_group_and_child(child_pid, SIGINT);
+    if (send_result != 0) {
         fprintf(stderr, "test_runner: SIGINT send failed: %s\n",
                 strerror(errno));
     }
@@ -769,8 +812,8 @@ test_runner_run_posix_sigint(int argc, char **argv)
     return EXIT_SUCCESS;
 
 timeout_cleanup:
-    kill_result = kill((pid_t)(-child_pid), SIGKILL);
-    if (kill_result != 0 && errno != ESRCH) {
+    kill_result = test_runner_signal_group_and_child(child_pid, SIGKILL);
+    if (kill_result != 0) {
         fprintf(stderr, "test_runner: SIGKILL send failed: %s\n",
                 strerror(errno));
     }
@@ -1014,8 +1057,10 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                                                 needle_token,
                                                 needle_length)) {
                     found_trigger = 1;
-                    send_result = kill((pid_t)(-child_pid), SIGINT);
-                    if (send_result != 0 && errno != ESRCH) {
+                    send_result = test_runner_signal_group_and_child(
+                        child_pid,
+                        SIGINT);
+                    if (send_result != 0) {
                         fprintf(stderr,
                                 "test_runner: SIGINT send failed: %s\n",
                                 strerror(errno));
@@ -1093,8 +1138,8 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
 
 timeout_cleanup:
     if (child_pid > (pid_t)0) {
-        kill_result = kill((pid_t)(-child_pid), SIGKILL);
-        if (kill_result != 0 && errno != ESRCH) {
+        kill_result = test_runner_signal_group_and_child(child_pid, SIGKILL);
+        if (kill_result != 0) {
             fprintf(stderr, "test_runner: SIGKILL send failed: %s\n",
                     strerror(errno));
         }
