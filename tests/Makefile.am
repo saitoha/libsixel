@@ -13,7 +13,8 @@ BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
-	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
+	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation \
+		SIXEL_AMALGAMATION_INCLUDE_TESTS=1 sixel.c
 endif
 TESTS = @SIXEL_CHECK_TESTS@
 XFAIL_TESTS = \

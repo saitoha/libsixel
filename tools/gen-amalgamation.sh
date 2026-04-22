@@ -25,6 +25,11 @@ shift 2 || true
 
 mkdir -p "$(dirname "${output}")"
 
+include_tests=0
+if [ "${SIXEL_AMALGAMATION_INCLUDE_TESTS:-0}" = "1" ]; then
+    include_tests=1
+fi
+
 collect_units_from_dirs() {
     search_dirs=$1
     shift
@@ -164,13 +169,20 @@ END {
 # Keep test sources opt-in. Pulling tests into the default amalgamation may
 # inject private include paths (for example "src/allocator.h") that are not
 # valid when --enable-amalgamated-tools generates production units.
+default_source_dirs="src converters assessment gdk-pixbuf-loader"
+default_header_dirs="include src converters assessment"
+if [ "${include_tests}" -eq 1 ]; then
+    default_source_dirs="${default_source_dirs} tests"
+    default_header_dirs="${default_header_dirs} tests"
+fi
+
 default_units=$(collect_units_from_dirs \
-    "src converters assessment gdk-pixbuf-loader" \
+    "${default_source_dirs}" \
     \( -name '*.c' -o -name '*.m' \))
 
 # Header discovery follows the same default scope as source discovery.
 header_units=$(collect_units_from_dirs \
-    "include src converters assessment" \
+    "${default_header_dirs}" \
     \( -name '*.h' \))
 
 # Ensure generated headers that may not exist in the source tree are still
