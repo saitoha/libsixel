@@ -1287,6 +1287,43 @@ img2sixel_install_zsh_rc(const char *home)
 }
 
 static int
+img2sixel_write_all_stdout(const char *buf, size_t len)
+{
+    size_t total;
+    ssize_t written;
+
+    if (buf == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    total = 0u;
+    written = 0;
+    /*
+     * write(2) may legally return short counts on pipes.
+     * Drain the entire completion payload to keep show output deterministic.
+     */
+    while (total < len) {
+        written = img2sixel_compat_write(STDOUT_FILENO,
+                                         buf + total,
+                                         len - total);
+        if (written < 0) {
+            if (errno == EINTR) {
+                continue;
+            }
+            return -1;
+        }
+        if (written == 0) {
+            errno = EIO;
+            return -1;
+        }
+        total += (size_t)written;
+    }
+
+    return 0;
+}
+
+static int
 img2sixel_handle_install(int mask)
 {
     const char *home;
@@ -1433,7 +1470,11 @@ img2sixel_handle_show(int mask)
             return -1;
         }
         img2sixel_compat_puts("# ---- bash ----\n");
-        (void)img2sixel_compat_write(STDOUT_FILENO, buf, len);
+        if (img2sixel_write_all_stdout(buf, len) != 0) {
+            img2sixel_log_errno("failed to write bash completion data");
+            free(buf);
+            return -1;
+        }
         if (len == 0) {
             printf("\n");
         } else if (buf[len - 1] != '\n') {
@@ -1450,7 +1491,11 @@ img2sixel_handle_show(int mask)
             return -1;
         }
         img2sixel_compat_puts("# ---- zsh ----\n");
-        (void)img2sixel_compat_write(STDOUT_FILENO, buf, len);
+        if (img2sixel_write_all_stdout(buf, len) != 0) {
+            img2sixel_log_errno("failed to write zsh completion data");
+            free(buf);
+            return -1;
+        }
         if (len == 0) {
             printf("\n");
         } else if (buf[len - 1] != '\n') {
@@ -1470,7 +1515,11 @@ img2sixel_handle_show(int mask)
             img2sixel_log_errno("failed to load bash completion data");
             return -1;
         }
-        (void)img2sixel_compat_write(STDOUT_FILENO, buf, len);
+        if (img2sixel_write_all_stdout(buf, len) != 0) {
+            img2sixel_log_errno("failed to write bash completion data");
+            free(buf);
+            return -1;
+        }
         if (len == 0) {
             printf("\n");
         } else if (buf[len - 1] != '\n') {
@@ -1488,7 +1537,11 @@ img2sixel_handle_show(int mask)
             img2sixel_log_errno("failed to load zsh completion data");
             return -1;
         }
-        (void)img2sixel_compat_write(STDOUT_FILENO, buf, len);
+        if (img2sixel_write_all_stdout(buf, len) != 0) {
+            img2sixel_log_errno("failed to write zsh completion data");
+            free(buf);
+            return -1;
+        }
         if (len == 0) {
             printf("\n");
         } else if (buf[len - 1] != '\n') {
