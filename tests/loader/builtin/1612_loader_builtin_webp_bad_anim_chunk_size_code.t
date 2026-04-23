@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming forced builtin loader rejects animated WebP.
+# TAP test confirming forced builtin loader corrupted fixture bad_anim_chunk_size.webp.
 
 set -eux
 
@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 set +x
 
-input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-2frame.webp"
+input_webp="${TOP_SRCDIR}/tests/data/corrupted/bad_anim_chunk_size.webp"
 trace_output=''
 diag_line=''
 command_status=0
@@ -24,13 +24,13 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin! -o /dev/null "${input_webp}" 2>&1) || command_status=$?
 
 test "${command_status}" -ne 0 || {
-    echo "not ok" 1 - "forced builtin loader rejects animated WebP unexpectedly succeeded"
+    echo "not ok" 1 - "forced builtin loader corrupted fixture bad_anim_chunk_size.webp unexpectedly succeeded"
     exit 0
 }
 
 diag_line=${trace_output#*LSXWEBP1|}
 test "${diag_line}" != "${trace_output}" || {
-    echo "not ok" 1 - "forced builtin loader rejects animated WebP missing LSXWEBP1 contract header"
+    echo "not ok" 1 - "forced builtin loader corrupted fixture bad_anim_chunk_size.webp missing LSXWEBP1 contract header"
     exit 0
 }
 
@@ -38,14 +38,14 @@ diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
 test "${diag_line#LSXWEBP1|rc=1|kind=ERR|codes=}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader rejects animated WebP malformed error contract header"
+    echo "not ok" 1 - "forced builtin loader corrupted fixture bad_anim_chunk_size.webp malformed error contract header"
     exit 0
 }
 
 test "${diag_line#*W_UNSUP_ANIM*}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader rejects animated WebP missing W_UNSUP_ANIM contract code"
+    echo "not ok" 1 - "forced builtin loader corrupted fixture bad_anim_chunk_size.webp missing W_UNSUP_ANIM contract code"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader rejects animated WebP emits W_UNSUP_ANIM contract code"
+echo "ok" 1 - "forced builtin loader corrupted fixture bad_anim_chunk_size.webp emits W_UNSUP_ANIM contract code"
 exit 0
