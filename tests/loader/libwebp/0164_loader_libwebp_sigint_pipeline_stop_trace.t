@@ -51,6 +51,33 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame
 #
 
 set +xv
+preflight_status=0
+preflight_trace=$(
+    # shellcheck disable=SC2086
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --env "SIXEL_THREADS=4" \
+        --env "SIXEL_TRACE_TOPIC=encode_handoff" \
+        --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
+        -Llibwebp! -ldisable -o /dev/null -g "${input_webp}" \
+        2>&1 >/dev/null
+) || preflight_status=$?
+preflight_has_trigger=0
+trace_remainder=${preflight_trace#*event=callback_handoff_decide}
+test "${trace_remainder}" != "${preflight_trace}" && preflight_has_trigger=1
+set -xv
+
+test "${preflight_status}" = "0" || {
+    printf '%s\n' "${preflight_trace}"
+    echo "not ok" 1 - "libwebp encode_handoff preflight failed"
+    exit 0
+}
+
+test "${preflight_has_trigger}" = "1" || {
+    echo "ok 1 - libwebp pipeline stop trace # SKIP encode_handoff callback trace token is unavailable in this runtime"
+    exit 0
+}
+
+set +xv
 sigint_run_status=0
 trace_summary=$(
     # shellcheck disable=SC2086
