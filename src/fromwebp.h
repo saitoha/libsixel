@@ -38,6 +38,12 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_fromwebp_load(sixel_chunk_t const *chunk,
                     sixel_frame_t *frame);
 
+SIXEL_INTERNAL_API void
+sixel_builtin_webp_trace_contract_add_error_code(char const *code);
+
+SIXEL_INTERNAL_API void
+sixel_builtin_webp_trace_contract_flush(int rc);
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming forced builtin loader rejects lossy VP8 WebP.
+# TAP test confirming forced builtin loader rejects lossy VP8 ICCP WebP.
 
 set -eux
 
@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 set +x
 
-input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64.webp"
+input_webp="${TOP_SRCDIR}/tests/data/inputs/snake_64_embedded_a98_icc.webp"
 trace_output=''
 diag_line=''
 command_status=0
@@ -24,13 +24,13 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin! -o /dev/null "${input_webp}" 2>&1) || command_status=$?
 
 test "${command_status}" -ne 0 || {
-    echo "not ok" 1 - "forced builtin loader rejects lossy VP8 WebP unexpectedly succeeded"
+    echo "not ok" 1 - "forced builtin loader rejects lossy VP8 ICCP WebP unexpectedly succeeded"
     exit 0
 }
 
 diag_line=${trace_output#*LSXWEBP1|}
 test "${diag_line}" != "${trace_output}" || {
-    echo "not ok" 1 - "forced builtin loader rejects lossy VP8 WebP missing LSXWEBP1 contract header"
+    echo "not ok" 1 - "forced builtin loader rejects lossy VP8 ICCP WebP missing LSXWEBP1 contract header"
     exit 0
 }
 
@@ -38,14 +38,14 @@ diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
 test "${diag_line#LSXWEBP1|rc=1|kind=ERR|codes=}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader rejects lossy VP8 WebP malformed error contract header"
+    echo "not ok" 1 - "forced builtin loader rejects lossy VP8 ICCP WebP malformed error contract header"
     exit 0
 }
 
 test "${diag_line#*W_UNSUP_VP8_LOSSY*}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader rejects lossy VP8 WebP missing W_UNSUP_VP8_LOSSY contract code"
+    echo "not ok" 1 - "forced builtin loader rejects lossy VP8 ICCP WebP missing W_UNSUP_VP8_LOSSY contract code"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader rejects lossy VP8 WebP emits W_UNSUP_VP8_LOSSY contract code"
+echo "ok" 1 - "forced builtin loader rejects lossy VP8 ICCP WebP emits W_UNSUP_VP8_LOSSY contract code"
 exit 0

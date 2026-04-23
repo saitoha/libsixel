@@ -29,6 +29,7 @@
 /* STDC_HEADERS */
 #include <limits.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #if HAVE_STRING_H
@@ -71,6 +72,22 @@
 #define SIXEL_WEBP_MAX_HUFFMAN_BITS 15
 
 #define SIXEL_WEBP_TRANSFORM_MAX 4
+#define SIXEL_WEBP_TRACE_CODE_MAX 32u
+
+#if defined(_MSC_VER)
+# define SIXEL_WEBP_TRACE_TLS __declspec(thread)
+# define SIXEL_WEBP_TRACE_TLS_AVAILABLE 1
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
+    && !defined(__PCC__)
+# define SIXEL_WEBP_TRACE_TLS _Thread_local
+# define SIXEL_WEBP_TRACE_TLS_AVAILABLE 1
+#elif (defined(__GNUC__) || defined(__clang__)) && !defined(__PCC__)
+# define SIXEL_WEBP_TRACE_TLS __thread
+# define SIXEL_WEBP_TRACE_TLS_AVAILABLE 1
+#else
+# define SIXEL_WEBP_TRACE_TLS
+# define SIXEL_WEBP_TRACE_TLS_AVAILABLE 0
+#endif
 
 typedef struct sixel_webp_bit_reader {
     unsigned char const *data;
@@ -135,6 +152,74 @@ static int const sixel_webp_distance_map[120][2] = {
     { 7, 5 }, { -7, 5 }, { 8, 4 }, { 6, 7 }, { -6, 7 }, { 7, 6 },
     { -7, 6 }, { 8, 5 }, { 7, 7 }, { -7, 7 }, { 8, 6 }, { 8, 7 }
 };
+
+static SIXEL_WEBP_TRACE_TLS char const *
+sixel_builtin_webp_trace_codes[SIXEL_WEBP_TRACE_CODE_MAX];
+static SIXEL_WEBP_TRACE_TLS unsigned int
+sixel_builtin_webp_trace_code_count;
+
+static void
+sixel_builtin_webp_trace_reset(void)
+{
+    sixel_builtin_webp_trace_code_count = 0u;
+}
+
+static void
+sixel_builtin_webp_trace_add_code(char const *code)
+{
+    unsigned int i;
+
+    i = 0u;
+    if (code == NULL || code[0] == '\0') {
+        return;
+    }
+    for (i = 0u; i < sixel_builtin_webp_trace_code_count; ++i) {
+        if (strcmp(sixel_builtin_webp_trace_codes[i], code) == 0) {
+            return;
+        }
+    }
+    if (sixel_builtin_webp_trace_code_count >= SIXEL_WEBP_TRACE_CODE_MAX) {
+        return;
+    }
+    sixel_builtin_webp_trace_codes[sixel_builtin_webp_trace_code_count] = code;
+    ++sixel_builtin_webp_trace_code_count;
+}
+
+void
+sixel_builtin_webp_trace_contract_add_error_code(char const *code)
+{
+    sixel_builtin_webp_trace_add_code(code);
+}
+
+void
+sixel_builtin_webp_trace_contract_flush(int rc)
+{
+    unsigned int i;
+    char const *kind;
+
+    i = 0u;
+    kind = rc == 0 ? "OK" : "ERR";
+    if (!sixel_trace_topic_is_enabled("webp_decode")) {
+        sixel_builtin_webp_trace_reset();
+        return;
+    }
+    if (sixel_builtin_webp_trace_code_count == 0u) {
+        if (rc == 0) {
+            sixel_builtin_webp_trace_add_code("WEBP_OK");
+        } else {
+            sixel_builtin_webp_trace_add_code("WEBP_ERR");
+        }
+    }
+    fprintf(stderr, "LSXWEBP1|rc=%d|kind=%s|codes=", rc, kind);
+    for (i = 0u; i < sixel_builtin_webp_trace_code_count; ++i) {
+        if (i != 0u) {
+            fprintf(stderr, ",");
+        }
+        fprintf(stderr, "%s", sixel_builtin_webp_trace_codes[i]);
+    }
+    fprintf(stderr, "\n");
+    sixel_builtin_webp_trace_reset();
+}
 
 static uint32_t
 sixel_webp_read_u32le(unsigned char const *p)
@@ -2247,6 +2332,8 @@ sixel_webp_find_vp8l_payload(sixel_chunk_t const *chunk,
     int saw_anim;
     int saw_anmf;
     int saw_alph;
+    int saw_iccp;
+    int saw_exif;
     unsigned char vp8x_flags;
     unsigned char const *payload;
     size_t payload_size;
@@ -2267,6 +2354,8 @@ sixel_webp_find_vp8l_payload(sixel_chunk_t const *chunk,
     saw_anim = 0;
     saw_anmf = 0;
     saw_alph = 0;
+    saw_iccp = 0;
+    saw_exif = 0;
     vp8x_flags = 0u;
     payload = NULL;
     payload_size = 0u;
@@ -2280,12 +2369,16 @@ sixel_webp_find_vp8l_payload(sixel_chunk_t const *chunk,
     data = chunk->buffer;
     size = chunk->size;
     if (data == NULL || size < 12u) {
+        sixel_builtin_webp_trace_contract_add_error_code(
+            "W_ERR_RIFF_HEADER_TRUNC");
         sixel_helper_set_additional_message(
             "builtin webp: RIFF header is truncated.");
         return SIXEL_BAD_INPUT;
     }
     if (memcmp(data, "RIFF", 4u) != 0 ||
         memcmp(data + 8u, "WEBP", 4u) != 0) {
+        sixel_builtin_webp_trace_contract_add_error_code(
+            "W_ERR_RIFF_SIGNATURE");
         sixel_helper_set_additional_message(
             "builtin webp: RIFF/WEBP signature is invalid.");
         return SIXEL_BAD_INPUT;
@@ -2293,15 +2386,21 @@ sixel_webp_find_vp8l_payload(sixel_chunk_t const *chunk,
 
     riff_size = sixel_webp_read_u32le(data + 4u);
     if (riff_size < 4u) {
+        sixel_builtin_webp_trace_contract_add_error_code(
+            "W_ERR_RIFF_SIZE_FIELD");
         sixel_helper_set_additional_message(
             "builtin webp: RIFF size field is invalid.");
         return SIXEL_BAD_INPUT;
     }
     if ((size_t)riff_size > SIZE_MAX - 8u) {
+        sixel_builtin_webp_trace_contract_add_error_code(
+            "W_ERR_RIFF_SIZE_EXCEEDS");
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     riff_total_size = (size_t)riff_size + 8u;
     if (riff_total_size > size) {
+        sixel_builtin_webp_trace_contract_add_error_code(
+            "W_ERR_RIFF_SIZE_EXCEEDS");
         sixel_helper_set_additional_message(
             "builtin webp: RIFF size exceeds input buffer.");
         return SIXEL_BAD_INPUT;
@@ -2310,6 +2409,8 @@ sixel_webp_find_vp8l_payload(sixel_chunk_t const *chunk,
     offset = 12u;
     while (offset < riff_total_size) {
         if (riff_total_size - offset < 8u) {
+            sixel_builtin_webp_trace_contract_add_error_code(
+                "W_ERR_CHUNK_HDR_TRUNC");
             sixel_helper_set_additional_message(
                 "builtin webp: chunk header is truncated.");
             return SIXEL_BAD_INPUT;
@@ -2321,15 +2422,21 @@ sixel_webp_find_vp8l_payload(sixel_chunk_t const *chunk,
         chunk_total_size = 8u + chunk_size + (chunk_size & 1u);
 
         if (chunk_size > SIZE_MAX - 8u - offset) {
+            sixel_builtin_webp_trace_contract_add_error_code(
+                "W_ERR_CHUNK_PAYLOAD_EXCEEDS");
             return SIXEL_BAD_INTEGER_OVERFLOW;
         }
         if (chunk_total_size > riff_total_size - offset) {
+            sixel_builtin_webp_trace_contract_add_error_code(
+                "W_ERR_CHUNK_PAYLOAD_EXCEEDS");
             sixel_helper_set_additional_message(
                 "builtin webp: chunk payload exceeds RIFF size.");
             return SIXEL_BAD_INPUT;
         }
         if ((chunk_size_u32 & 1u) != 0u &&
             data[offset + 8u + chunk_size] != 0u) {
+            sixel_builtin_webp_trace_contract_add_error_code(
+                "W_ERR_ODD_PADDING_NONZERO");
             sixel_helper_set_additional_message(
                 "builtin webp: odd-sized chunk has non-zero padding.");
             return SIXEL_BAD_INPUT;
@@ -2339,6 +2446,8 @@ sixel_webp_find_vp8l_payload(sixel_chunk_t const *chunk,
             fourcc != SIXEL_WEBP_CHUNK_VP8 &&
             fourcc != SIXEL_WEBP_CHUNK_VP8L &&
             fourcc != SIXEL_WEBP_CHUNK_VP8X) {
+            sixel_builtin_webp_trace_contract_add_error_code(
+                "W_ERR_FIRST_CHUNK");
             sixel_helper_set_additional_message(
                 "builtin webp: first chunk must be VP8/VP8L/VP8X.");
             return SIXEL_BAD_INPUT;
@@ -2346,11 +2455,15 @@ sixel_webp_find_vp8l_payload(sixel_chunk_t const *chunk,
 
         if (fourcc == SIXEL_WEBP_CHUNK_VP8X) {
             if (saw_vp8x != 0) {
+                sixel_builtin_webp_trace_contract_add_error_code(
+                    "W_ERR_DUP_VP8X");
                 sixel_helper_set_additional_message(
                     "builtin webp: duplicate VP8X chunk is invalid.");
                 return SIXEL_BAD_INPUT;
             }
             if (chunk_size != 10u) {
+                sixel_builtin_webp_trace_contract_add_error_code(
+                    "W_ERR_VP8X_SIZE");
                 sixel_helper_set_additional_message(
                     "builtin webp: VP8X chunk size is invalid.");
                 return SIXEL_BAD_INPUT;
@@ -2361,6 +2474,8 @@ sixel_webp_find_vp8l_payload(sixel_chunk_t const *chunk,
             saw_vp8 = 1;
         } else if (fourcc == SIXEL_WEBP_CHUNK_VP8L) {
             if (saw_vp8l != 0) {
+                sixel_builtin_webp_trace_contract_add_error_code(
+                    "W_ERR_VP8L_STREAM");
                 sixel_helper_set_additional_message(
                     "builtin webp: duplicate VP8L chunk is invalid.");
                 return SIXEL_BAD_INPUT;
@@ -2377,6 +2492,11 @@ sixel_webp_find_vp8l_payload(sixel_chunk_t const *chunk,
         } else if (fourcc == SIXEL_WEBP_CHUNK_ICCP ||
                    fourcc == SIXEL_WEBP_CHUNK_EXIF ||
                    fourcc == SIXEL_WEBP_CHUNK_XMP) {
+            if (fourcc == SIXEL_WEBP_CHUNK_ICCP) {
+                saw_iccp = 1;
+            } else if (fourcc == SIXEL_WEBP_CHUNK_EXIF) {
+                saw_exif = 1;
+            }
             /* Metadata chunks are intentionally ignored in the MVP path. */
         }
 
@@ -2385,21 +2505,35 @@ sixel_webp_find_vp8l_payload(sixel_chunk_t const *chunk,
 
     if (saw_anim != 0 || saw_anmf != 0 ||
         ((vp8x_flags & SIXEL_WEBP_VP8X_ANIMATION_FLAG) != 0u)) {
+        sixel_builtin_webp_trace_contract_add_error_code("W_UNSUP_ANIM");
         sixel_helper_set_additional_message(
             "builtin webp: animated WebP is not supported.");
         return SIXEL_NOT_IMPLEMENTED;
     }
 
     if (saw_vp8 != 0 || saw_alph != 0) {
+        sixel_builtin_webp_trace_contract_add_error_code(
+            "W_UNSUP_VP8_LOSSY");
         sixel_helper_set_additional_message(
             "builtin webp: VP8 lossy WebP is not supported.");
         return SIXEL_NOT_IMPLEMENTED;
     }
 
     if (saw_vp8l == 0 || payload == NULL || payload_size == 0u) {
+        sixel_builtin_webp_trace_contract_add_error_code(
+            "W_ERR_MISSING_VP8L");
         sixel_helper_set_additional_message(
             "builtin webp: VP8L payload was not found.");
         return SIXEL_BAD_INPUT;
+    }
+
+    if (saw_iccp != 0) {
+        sixel_builtin_webp_trace_contract_add_error_code(
+            "W_META_ICCP_IGNORED");
+    }
+    if (saw_exif != 0) {
+        sixel_builtin_webp_trace_contract_add_error_code(
+            "W_META_EXIF_IGNORED");
     }
 
     *ppayload = payload;
@@ -2426,12 +2560,13 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     height = 0;
 
     if (chunk == NULL || frame == NULL || chunk->allocator == NULL) {
-        return SIXEL_BAD_ARGUMENT;
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
     }
 
     status = sixel_webp_find_vp8l_payload(chunk, &payload, &payload_size);
     if (SIXEL_FAILED(status)) {
-        return status;
+        goto cleanup;
     }
 
     status = sixel_webp_decode_vp8l_payload(payload,
@@ -2441,7 +2576,9 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
                                             &height,
                                             chunk->allocator);
     if (SIXEL_FAILED(status)) {
-        return status;
+        sixel_builtin_webp_trace_contract_add_error_code(
+            "W_ERR_VP8L_STREAM");
+        goto cleanup;
     }
 
     frame->width = width;
@@ -2450,8 +2587,12 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
     frame->colorspace = SIXEL_COLORSPACE_GAMMA;
     sixel_frame_set_pixels(frame, rgba);
+    sixel_builtin_webp_trace_contract_add_error_code("W_OK_VP8L_STATIC");
 
-    return SIXEL_OK;
+cleanup:
+    sixel_builtin_webp_trace_contract_flush(
+        SIXEL_SUCCEEDED(status) ? 0 : 1);
+    return status;
 }
 
 
