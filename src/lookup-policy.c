@@ -41,7 +41,7 @@
  *
  * Ownership/lifetime:
  * - create_by_name() returns refcount=1 objects from concrete classes.
- * - ref/unref/prepare/map wrappers dispatch through each class vtbl.
+ * - Callers use policy->vtbl methods directly.
  *
  * Creation path:
  * - name selector resolves "lookup/..." names.
@@ -192,76 +192,6 @@ sixel_lookup_policy_create_by_name(
     }
 
     return entry->create(policy);
-}
-
-void
-sixel_lookup_policy_ref(sixel_lookup_policy_interface_t *policy)
-{
-    if (policy == NULL || policy->vtbl == NULL || policy->vtbl->ref == NULL) {
-        return;
-    }
-
-    policy->vtbl->ref(policy);
-}
-
-void
-sixel_lookup_policy_unref(sixel_lookup_policy_interface_t *policy)
-{
-    if (policy == NULL || policy->vtbl == NULL || policy->vtbl->unref == NULL) {
-        return;
-    }
-
-    policy->vtbl->unref(policy);
-}
-
-SIXELSTATUS
-sixel_lookup_policy_prepare(
-    sixel_lookup_policy_interface_t *policy,
-    sixel_lookup_policy_prepare_request_t const *request)
-{
-    if (policy == NULL || policy->vtbl == NULL
-            || policy->vtbl->prepare == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    return policy->vtbl->prepare(policy, request);
-}
-
-int
-sixel_lookup_policy_map_pixel(
-    sixel_lookup_policy_interface_t const *policy,
-    unsigned char const *pixel)
-{
-    if (policy == NULL || policy->vtbl == NULL
-            || policy->vtbl->map_pixel == NULL) {
-        return 0;
-    }
-
-    return policy->vtbl->map_pixel(policy, pixel);
-}
-
-int
-sixel_lookup_policy_lookup_source_is_float(
-    sixel_lookup_policy_interface_t const *policy)
-{
-    if (policy == NULL || policy->vtbl == NULL
-            || policy->vtbl->lookup_source_is_float == NULL) {
-        return 0;
-    }
-
-    return policy->vtbl->lookup_source_is_float(policy);
-}
-
-int
-sixel_lookup_policy_prefer_palette_float_lookup(
-    sixel_lookup_policy_interface_t const *policy)
-{
-    if (policy == NULL || policy->vtbl == NULL
-            || policy->vtbl->prefer_palette_float_lookup == NULL) {
-        return 0;
-    }
-
-    return policy->vtbl->prefer_palette_float_lookup(policy);
 }
 
 /* emacs Local Variables:      */

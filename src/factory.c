@@ -109,43 +109,8 @@ sixel_factory_get_default(sixel_factory_t **factory)
     }
 
     *factory = &g_sixel_factory_singleton;
-    sixel_factory_ref(*factory);
+    (*factory)->vtbl->ref(*factory);
     return SIXEL_OK;
-}
-
-void
-sixel_factory_ref(sixel_factory_t *factory)
-{
-    if (factory == NULL || factory->vtbl == NULL
-            || factory->vtbl->ref == NULL) {
-        return;
-    }
-
-    factory->vtbl->ref(factory);
-}
-
-void
-sixel_factory_unref(sixel_factory_t *factory)
-{
-    if (factory == NULL || factory->vtbl == NULL
-            || factory->vtbl->unref == NULL) {
-        return;
-    }
-
-    factory->vtbl->unref(factory);
-}
-
-SIXELSTATUS
-sixel_factory_create(sixel_factory_t *factory,
-                     char const *class_name,
-                     void **object)
-{
-    if (factory == NULL || factory->vtbl == NULL
-            || factory->vtbl->create == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    return factory->vtbl->create(factory, class_name, object);
 }
 
 /* emacs Local Variables:      */

@@ -86,16 +86,16 @@ create_lookup_policy(char const *name,
     }
     factory = (sixel_factory_t *)service;
 
-    status = sixel_factory_create(factory, name, (void **)&created);
-    sixel_factory_unref(factory);
+    status = factory->vtbl->create(factory, name, (void **)&created);
+    factory->vtbl->unref(factory);
     factory = NULL;
     if (SIXEL_FAILED(status)) {
         return status;
     }
 
-    status = sixel_lookup_policy_prepare(created, request);
+    status = created->vtbl->prepare(created, request);
     if (SIXEL_FAILED(status)) {
-        sixel_lookup_policy_unref(created);
+        created->vtbl->unref(created);
         return status;
     }
 
@@ -189,7 +189,7 @@ test_lookup_policy_normal_mode_maps_expected_color(void)
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
-    mapped = sixel_lookup_policy_map_pixel(lookup_policy, pixel);
+    mapped = lookup_policy->vtbl->map_pixel(lookup_policy, pixel);
     if (mapped != 1) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
@@ -199,7 +199,7 @@ test_lookup_policy_normal_mode_maps_expected_color(void)
 
 cleanup:
     if (lookup_policy != NULL) {
-        sixel_lookup_policy_unref(lookup_policy);
+        lookup_policy->vtbl->unref(lookup_policy);
     }
     sixel_allocator_unref(allocator);
 
@@ -265,7 +265,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
-    if (sixel_lookup_policy_lookup_source_is_float(lookup_policy) == 0) {
+    if (lookup_policy->vtbl->lookup_source_is_float(lookup_policy) == 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -274,7 +274,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
         goto cleanup;
     }
 
-    mapped = sixel_lookup_policy_map_pixel(
+    mapped = lookup_policy->vtbl->map_pixel(
         lookup_policy,
         (unsigned char const *)(void const *)pixel_float);
     if (mapped < 0 || mapped >= 2) {
@@ -286,7 +286,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
 
 cleanup:
     if (lookup_policy != NULL) {
-        sixel_lookup_policy_unref(lookup_policy);
+        lookup_policy->vtbl->unref(lookup_policy);
     }
     if (cached_lut != NULL) {
         sixel_lut_unref(cached_lut);
@@ -362,8 +362,8 @@ test_lookup_policy_mono_mode_maps_expected_threshold(void)
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
-    dark_index = sixel_lookup_policy_map_pixel(lookup_policy, dark_pixel);
-    bright_index = sixel_lookup_policy_map_pixel(lookup_policy, bright_pixel);
+    dark_index = lookup_policy->vtbl->map_pixel(lookup_policy, dark_pixel);
+    bright_index = lookup_policy->vtbl->map_pixel(lookup_policy, bright_pixel);
     if (dark_index != 0 || bright_index != 1) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
@@ -373,7 +373,7 @@ test_lookup_policy_mono_mode_maps_expected_threshold(void)
 
 cleanup:
     if (lookup_policy != NULL) {
-        sixel_lookup_policy_unref(lookup_policy);
+        lookup_policy->vtbl->unref(lookup_policy);
     }
     sixel_allocator_unref(allocator);
 
@@ -428,7 +428,7 @@ test_lookup_policy_named_factory_creates_fast_lut(void)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    mapped = sixel_lookup_policy_map_pixel(lookup_policy, pixel);
+    mapped = lookup_policy->vtbl->map_pixel(lookup_policy, pixel);
     if (mapped < 0 || mapped >= 2) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
@@ -438,7 +438,7 @@ test_lookup_policy_named_factory_creates_fast_lut(void)
 
 cleanup:
     if (lookup_policy != NULL) {
-        sixel_lookup_policy_unref(lookup_policy);
+        lookup_policy->vtbl->unref(lookup_policy);
     }
     sixel_allocator_unref(allocator);
 
@@ -521,13 +521,13 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
         }
 
         vtbls[i] = lookup_policy->vtbl;
-        mapped = sixel_lookup_policy_map_pixel(lookup_policy, pixel);
+        mapped = lookup_policy->vtbl->map_pixel(lookup_policy, pixel);
         if (mapped < 0 || mapped >= 2) {
             status = SIXEL_BAD_ARGUMENT;
             goto cleanup;
         }
 
-        sixel_lookup_policy_unref(lookup_policy);
+        lookup_policy->vtbl->unref(lookup_policy);
         lookup_policy = NULL;
     }
 
@@ -544,7 +544,7 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
 
 cleanup:
     if (lookup_policy != NULL) {
-        sixel_lookup_policy_unref(lookup_policy);
+        lookup_policy->vtbl->unref(lookup_policy);
     }
     sixel_allocator_unref(allocator);
 

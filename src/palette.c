@@ -892,7 +892,7 @@ sixel_palette_dispose(sixel_palette_t *palette)
     }
 
     if (palette->lookup_policy != NULL) {
-        sixel_lookup_policy_unref(palette->lookup_policy);
+        palette->lookup_policy->vtbl->unref(palette->lookup_policy);
         palette->lookup_policy = NULL;
     }
     if (palette->lut != NULL) {

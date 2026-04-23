@@ -498,23 +498,23 @@ sixel_dither_prepare_lookup_policy(
     }
     factory = (sixel_factory_t *)service;
 
-    status = sixel_factory_create(factory,
-                                  policy_name,
-                                  (void **)&prepared_policy);
-    sixel_factory_unref(factory);
+    status = factory->vtbl->create(factory,
+                                   policy_name,
+                                   (void **)&prepared_policy);
+    factory->vtbl->unref(factory);
     factory = NULL;
     if (SIXEL_FAILED(status)) {
         return status;
     }
 
-    status = sixel_lookup_policy_prepare(prepared_policy, &request);
+    status = prepared_policy->vtbl->prepare(prepared_policy, &request);
     if (SIXEL_FAILED(status)) {
-        sixel_lookup_policy_unref(prepared_policy);
+        prepared_policy->vtbl->unref(prepared_policy);
         return status;
     }
 
     if (*lookup_policy != NULL) {
-        sixel_lookup_policy_unref(*lookup_policy);
+        (*lookup_policy)->vtbl->unref(*lookup_policy);
     }
     *lookup_policy = prepared_policy;
 
@@ -635,14 +635,18 @@ sixel_dither_map_pixels(
     context.bluenoise_gradient_map_size = 0U;
     context.bluenoise_gradient_width = 0;
     context.bluenoise_gradient_height = 0;
-    if (lookup_policy != NULL && lookup_policy->vtbl != NULL) {
-        lookup_map = lookup_policy->vtbl->map_pixel;
+    if (lookup_policy == NULL || lookup_policy->vtbl == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "sixel_dither_map_pixels: lookup policy is not prepared.");
+        goto end;
     }
+    lookup_map = lookup_policy->vtbl->map_pixel;
     context.lookup_map = lookup_map;
     context.lookup_source_is_float =
-        sixel_lookup_policy_lookup_source_is_float(lookup_policy);
+        lookup_policy->vtbl->lookup_source_is_float(lookup_policy);
     context.prefer_palette_float_lookup =
-        sixel_lookup_policy_prefer_palette_float_lookup(lookup_policy);
+        lookup_policy->vtbl->prefer_palette_float_lookup(lookup_policy);
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         context.pixels_float = (float *)(void *)data;
     }
@@ -687,7 +691,7 @@ sixel_dither_map_pixels(
             "a bad argument is detected, reqcolor < 0.");
         goto end;
     }
-    if (lookup_policy == NULL || lookup_map == NULL) {
+    if (lookup_map == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         sixel_helper_set_additional_message(
             "sixel_dither_map_pixels: lookup policy is not prepared.");
@@ -995,7 +999,7 @@ sixel_dither_parallel_worker(tp_job_t job,
 
 cleanup:
     if (lookup_policy != NULL) {
-        sixel_lookup_policy_unref(lookup_policy);
+        lookup_policy->vtbl->unref(lookup_policy);
         lookup_policy = NULL;
     }
     if (copy != NULL) {
@@ -1272,7 +1276,7 @@ sixel_dither_resolve_indexes(
     map_request.pixelformat = pixelformat;
     status = sixel_dither_map_pixels(&map_request);
     if (palette->lookup_policy != NULL) {
-        sixel_lookup_policy_unref(palette->lookup_policy);
+        palette->lookup_policy->vtbl->unref(palette->lookup_policy);
         palette->lookup_policy = NULL;
     }
 
@@ -1976,7 +1980,8 @@ sixel_dither_set_lut_policy(
     }
     if (dither->palette != NULL) {
         if (dither->palette->lookup_policy != NULL) {
-            sixel_lookup_policy_unref(dither->palette->lookup_policy);
+            dither->palette->lookup_policy->vtbl->unref(
+                dither->palette->lookup_policy);
             dither->palette->lookup_policy = NULL;
         }
     }

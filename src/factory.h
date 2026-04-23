@@ -66,17 +66,6 @@ struct sixel_factory_interface {
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_factory_get_default(sixel_factory_t **factory);
 
-SIXEL_INTERNAL_API void
-sixel_factory_ref(sixel_factory_t *factory);
-
-SIXEL_INTERNAL_API void
-sixel_factory_unref(sixel_factory_t *factory);
-
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_factory_create(sixel_factory_t *factory,
-                     char const *class_name,
-                     void **object);
-
 #ifdef __cplusplus
 }
 #endif

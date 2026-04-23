@@ -47,7 +47,7 @@ extern "C" {
  *
  * Ownership/lifetime:
  * - Factory create returns refcount=1 policy objects.
- * - Callers release with sixel_lookup_policy_unref().
+ * - Callers release with policy->vtbl->unref(policy).
  *
  * Creation path:
  * - sixel_lookup_policy_select_name(request)
@@ -107,30 +107,6 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_by_name(
     char const *name,
     sixel_lookup_policy_interface_t **policy);
-
-SIXEL_INTERNAL_API void
-sixel_lookup_policy_ref(sixel_lookup_policy_interface_t *policy);
-
-SIXEL_INTERNAL_API void
-sixel_lookup_policy_unref(sixel_lookup_policy_interface_t *policy);
-
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lookup_policy_prepare(
-    sixel_lookup_policy_interface_t *policy,
-    sixel_lookup_policy_prepare_request_t const *request);
-
-SIXEL_INTERNAL_API int
-sixel_lookup_policy_map_pixel(
-    sixel_lookup_policy_interface_t const *policy,
-    unsigned char const *pixel);
-
-SIXEL_INTERNAL_API int
-sixel_lookup_policy_lookup_source_is_float(
-    sixel_lookup_policy_interface_t const *policy);
-
-SIXEL_INTERNAL_API int
-sixel_lookup_policy_prefer_palette_float_lookup(
-    sixel_lookup_policy_interface_t const *policy);
 
 #ifdef __cplusplus
 }

@@ -52,7 +52,7 @@ extern "C" {
  *
  * Ownership/lifetime:
  * - Each constructor returns refcount=1 policy objects.
- * - Callers release with sixel_lookup_policy_unref().
+ * - Callers release with policy->vtbl->unref(policy).
  *
  * Creation path:
  * - lookup-policy.c registry resolves class names to constructors.
