@@ -120,6 +120,7 @@ fuzz_loader_formats = [
   'psd',
   'pic',
   'bmp',
+  'webp',
 ]
 
 foreach fmt : fuzz_loader_formats
@@ -162,7 +163,7 @@ target="$1"
 source_root="$2"
 corpus_base="${FUZZ_BUILTIN_CORPUS:-$source_root/images}"
 args="${FUZZ_BUILTIN_ARGS:-}"
-formats="png gif jpeg pnm sixel hdr psd pic bmp"
+formats="png gif jpeg pnm sixel hdr psd pic bmp webp"
 
 for format in $formats; do
   corpus="$corpus_base/$format"
