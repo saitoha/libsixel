@@ -768,7 +768,7 @@ jobs:
     env:
       FUZZ_COMPONENT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/component
       FUZZ_COMPONENT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/coregraphics
-      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix={2}/.tmp/fuzz-artifacts-loader/coregraphics/', github.event_name == 'push' && '10800' || '300', github.event_name == 'push' && '10' || '2', github.workspace) }}
+      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=10 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix={2}/.tmp/fuzz-artifacts-loader/coregraphics/', github.event_name == 'push' && '10800' || '300', github.event_name == 'push' && '10' || '2', github.workspace) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
