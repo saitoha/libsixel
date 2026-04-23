@@ -879,7 +879,9 @@ zshcompletiondir = @zshcompletiondir@
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
-@WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
+TEST_RUNNER_AMALGAMATION_SIXEL = \
+        $(top_builddir)/amalgamation/test-runner/sixel.c
+@WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(TEST_RUNNER_AMALGAMATION_SIXEL)
 TESTS = @SIXEL_CHECK_TESTS@
 XFAIL_TESTS = \
     loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t \
@@ -1003,7 +1005,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(ABORTTRACE_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_LIBS@
 
-@WANT_AMALGAMATED_TOOLS_TRUE@nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_test_runner_SOURCES = $(TEST_RUNNER_AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 @WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
@@ -1240,6 +1242,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
 CLEANFILES = 
+@WANT_AMALGAMATED_TOOLS_TRUE@CLEANFILES += $(TEST_RUNNER_AMALGAMATION_SIXEL)
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -2628,19 +2631,19 @@ $(top_builddir)/converters/test_runner-cli.obj: $(top_builddir)/converters/cli.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/test_runner-cli.obj `if test -f '$(top_builddir)/converters/cli.c'; then $(CYGPATH_W) '$(top_builddir)/converters/cli.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/cli.c'; fi`
 
-$(top_builddir)/amalgamation/test_runner-sixel.o: $(top_builddir)/amalgamation/sixel.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/test_runner-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo -c -o $(top_builddir)/amalgamation/test_runner-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+$(top_builddir)/amalgamation/test_runner-sixel.o: $(TEST_RUNNER_AMALGAMATION_SIXEL)
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/test_runner-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo -c -o $(top_builddir)/amalgamation/test_runner-sixel.o `test -f '$(TEST_RUNNER_AMALGAMATION_SIXEL)' || echo '$(srcdir)/'`$(TEST_RUNNER_AMALGAMATION_SIXEL)
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/test_runner-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(TEST_RUNNER_AMALGAMATION_SIXEL)' object='$(top_builddir)/amalgamation/test_runner-sixel.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/test_runner-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/test_runner-sixel.o `test -f '$(TEST_RUNNER_AMALGAMATION_SIXEL)' || echo '$(srcdir)/'`$(TEST_RUNNER_AMALGAMATION_SIXEL)
 
-$(top_builddir)/amalgamation/test_runner-sixel.obj: $(top_builddir)/amalgamation/sixel.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/test_runner-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo -c -o $(top_builddir)/amalgamation/test_runner-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+$(top_builddir)/amalgamation/test_runner-sixel.obj: $(TEST_RUNNER_AMALGAMATION_SIXEL)
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/test_runner-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo -c -o $(top_builddir)/amalgamation/test_runner-sixel.obj `if test -f '$(TEST_RUNNER_AMALGAMATION_SIXEL)'; then $(CYGPATH_W) '$(TEST_RUNNER_AMALGAMATION_SIXEL)'; else $(CYGPATH_W) '$(srcdir)/$(TEST_RUNNER_AMALGAMATION_SIXEL)'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/test_runner-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(TEST_RUNNER_AMALGAMATION_SIXEL)' object='$(top_builddir)/amalgamation/test_runner-sixel.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/test_runner-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/test_runner-sixel.obj `if test -f '$(TEST_RUNNER_AMALGAMATION_SIXEL)'; then $(CYGPATH_W) '$(TEST_RUNNER_AMALGAMATION_SIXEL)'; else $(CYGPATH_W) '$(srcdir)/$(TEST_RUNNER_AMALGAMATION_SIXEL)'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -3244,17 +3247,17 @@ uninstall-am:
 
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-@WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): FORCE_TEST_RUNNER_AMALGAMATION \
-@WANT_AMALGAMATED_TOOLS_TRUE@	$(top_builddir)/amalgamation/Makefile
+@WANT_AMALGAMATED_TOOLS_TRUE@$(TEST_RUNNER_AMALGAMATION_SIXEL): FORCE_TEST_RUNNER_AMALGAMATION \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(top_builddir)/amalgamation/Makefile
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
-@WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation \
-@WANT_AMALGAMATED_TOOLS_TRUE@		SIXEL_AMALGAMATION_INCLUDE_TESTS=1 sixel.c
-@WANT_AMALGAMATED_TOOLS_TRUE@
-@WANT_AMALGAMATED_TOOLS_TRUE@# The normal build may already generate
-@WANT_AMALGAMATED_TOOLS_TRUE@# amalgamation/sixel.c without test units. Keep
-@WANT_AMALGAMATED_TOOLS_TRUE@# this sentinel target non-materialized so check
-@WANT_AMALGAMATED_TOOLS_TRUE@# builds always regenerate the test-enabled
-@WANT_AMALGAMATED_TOOLS_TRUE@# amalgamation before compiling test_runner.
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)SIXEL_AMALGAMATION_INCLUDE_TESTS=1 \
+@WANT_AMALGAMATED_TOOLS_TRUE@		$(SHELL) $(top_srcdir)/tools/gen-amalgamation.sh \
+@WANT_AMALGAMATED_TOOLS_TRUE@		"$(TEST_RUNNER_AMALGAMATION_SIXEL)" \
+@WANT_AMALGAMATED_TOOLS_TRUE@		"$(top_srcdir)" "$(top_builddir)"
+
+# The default amalgamation target uses amalgamation/sixel.c without tests.
+# Generate a dedicated file for test_runner to avoid race overwrites when
+# parallel sub-makes regenerate the default amalgamation concurrently.
 @WANT_AMALGAMATED_TOOLS_TRUE@FORCE_TEST_RUNNER_AMALGAMATION:
 
 .PHONY: \

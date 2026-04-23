@@ -7,19 +7,24 @@ endif
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+TEST_RUNNER_AMALGAMATION_SIXEL = \
+        $(top_builddir)/amalgamation/test-runner/sixel.c
 if WANT_AMALGAMATED_TOOLS
-BUILT_SOURCES = $(AMALGAMATION_SIXEL)
+BUILT_SOURCES = $(TEST_RUNNER_AMALGAMATION_SIXEL)
+CLEANFILES = $(TEST_RUNNER_AMALGAMATION_SIXEL)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-$(AMALGAMATION_SIXEL): FORCE_TEST_RUNNER_AMALGAMATION \
+$(TEST_RUNNER_AMALGAMATION_SIXEL): FORCE_TEST_RUNNER_AMALGAMATION \
         $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
-	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation \
-		SIXEL_AMALGAMATION_INCLUDE_TESTS=1 sixel.c
+	$(AM_V_GEN)SIXEL_AMALGAMATION_INCLUDE_TESTS=1 \
+		$(SHELL) $(top_srcdir)/tools/gen-amalgamation.sh \
+		"$(TEST_RUNNER_AMALGAMATION_SIXEL)" \
+		"$(top_srcdir)" "$(top_builddir)"
 
-# The normal build may already generate amalgamation/sixel.c without test
-# units. Keep this sentinel target non-materialized so check builds always
-# regenerate the test-enabled amalgamation before compiling test_runner.
+# The default amalgamation target uses amalgamation/sixel.c without tests.
+# Generate a dedicated file for test_runner to avoid race overwrites when
+# parallel sub-makes regenerate the default amalgamation concurrently.
 FORCE_TEST_RUNNER_AMALGAMATION:
 endif
 TESTS = @SIXEL_CHECK_TESTS@
@@ -161,7 +166,7 @@ TESTS_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
+nodist_test_runner_SOURCES = $(TEST_RUNNER_AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
