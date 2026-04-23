@@ -262,24 +262,23 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/loader-wic.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
 	$(srcdir)/frompng.c $(srcdir)/frompng.h $(srcdir)/fromhdr.c \
 	$(srcdir)/fromhdr.h $(srcdir)/frompsd.c $(srcdir)/frompsd.h \
-		$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/fromwebp.c \
-		$(srcdir)/fromwebp.h $(srcdir)/fromwebp-internal.h \
-		$(srcdir)/fromwebp-container.c \
-		$(srcdir)/fromwebp-vp8.c \
-		$(srcdir)/fromwebp-vp8l.c $(srcdir)/fromwebp-trace.c \
-		$(srcdir)/frombmp-parser.c \
-		$(srcdir)/frombmp.c $(srcdir)/frombmp.h \
-	$(srcdir)/frombmp-internal.h $(srcdir)/clipboard.c \
-	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
-	$(srcdir)/mapfile.c $(srcdir)/mapfile.h $(srcdir)/drcs.c \
-	$(srcdir)/drcs.h $(srcdir)/planner.c $(srcdir)/planner.h \
-	$(srcdir)/decoder.c $(srcdir)/decoder.h \
-	$(srcdir)/decoder-parallel.c $(srcdir)/decoder-parallel.h \
-	$(srcdir)/decoder-image.h $(srcdir)/options.c \
-	$(srcdir)/options.h $(srcdir)/path.c $(srcdir)/path.h \
-	$(srcdir)/stb_image.h $(srcdir)/writer.c $(srcdir)/writer.h \
-	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
-	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/stdio_stub.h \
+	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/fromwebp.c \
+	$(srcdir)/fromwebp.h $(srcdir)/fromwebp-internal.h \
+	$(srcdir)/fromwebp-container.c $(srcdir)/fromwebp-vp8.c \
+	$(srcdir)/fromwebp-vp8l.c $(srcdir)/fromwebp-trace.c \
+	$(srcdir)/frombmp-parser.c $(srcdir)/frombmp.c \
+	$(srcdir)/frombmp.h $(srcdir)/frombmp-internal.h \
+	$(srcdir)/clipboard.c $(srcdir)/clipboard.h \
+	$(srcdir)/encoder.c $(srcdir)/encoder.h $(srcdir)/mapfile.c \
+	$(srcdir)/mapfile.h $(srcdir)/drcs.c $(srcdir)/drcs.h \
+	$(srcdir)/planner.c $(srcdir)/planner.h $(srcdir)/decoder.c \
+	$(srcdir)/decoder.h $(srcdir)/decoder-parallel.c \
+	$(srcdir)/decoder-parallel.h $(srcdir)/decoder-image.h \
+	$(srcdir)/options.c $(srcdir)/options.h $(srcdir)/path.c \
+	$(srcdir)/path.h $(srcdir)/stb_image.h $(srcdir)/writer.c \
+	$(srcdir)/writer.h $(srcdir)/stb_image_write.c \
+	$(srcdir)/stb_image_write.h $(srcdir)/status.c \
+	$(srcdir)/status.h $(srcdir)/stdio_stub.h \
 	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
@@ -500,15 +499,15 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-fromgif.Plo \
 	./$(DEPDIR)/libsixel_la-fromhdr.Plo \
 	./$(DEPDIR)/libsixel_la-frompng.Plo \
-		./$(DEPDIR)/libsixel_la-frompnm.Plo \
-		./$(DEPDIR)/libsixel_la-frompsd.Plo \
-		./$(DEPDIR)/libsixel_la-fromsixel.Plo \
-		./$(DEPDIR)/libsixel_la-fromwebp.Plo \
-		./$(DEPDIR)/libsixel_la-fromwebp-container.Plo \
-		./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo \
-		./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo \
-		./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo \
-		./$(DEPDIR)/libsixel_la-icc-apply.Plo \
+	./$(DEPDIR)/libsixel_la-frompnm.Plo \
+	./$(DEPDIR)/libsixel_la-frompsd.Plo \
+	./$(DEPDIR)/libsixel_la-fromsixel.Plo \
+	./$(DEPDIR)/libsixel_la-fromwebp-container.Plo \
+	./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo \
+	./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo \
+	./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo \
+	./$(DEPDIR)/libsixel_la-fromwebp.Plo \
+	./$(DEPDIR)/libsixel_la-icc-apply.Plo \
 	./$(DEPDIR)/libsixel_la-icc-parse.Plo \
 	./$(DEPDIR)/libsixel_la-loader-builtin.Plo \
 	./$(DEPDIR)/libsixel_la-loader-chain.Plo \
@@ -1323,11 +1322,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompnm.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompsd.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-container.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-apply.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-parse.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-builtin.Plo@am__quote@ # am--include-marker
@@ -2538,15 +2537,15 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromhdr.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompng.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-frompsd.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-fromwebp.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-container.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-frompsd.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-container.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-chain.Plo
@@ -2705,15 +2704,15 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromhdr.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompng.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-frompsd.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-fromwebp.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-container.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo
-		-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-frompsd.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-container.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-chain.Plo
