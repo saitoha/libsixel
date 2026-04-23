@@ -35,7 +35,7 @@
  * IDL (internal contract)
  *
  * interface ILookupPolicyDispatcher {
- *   select_name(request);
+ *   select_name(select_request);
  *   create_by_name(name, out policy);
  * }
  *
@@ -124,7 +124,7 @@ sixel_lookup_policy_find_registry_entry(char const *name)
 
 char const *
 sixel_lookup_policy_select_name(
-    sixel_lookup_policy_prepare_request_t const *request)
+    sixel_lookup_policy_select_request_t const *request)
 {
     int sum1;
     int sum2;

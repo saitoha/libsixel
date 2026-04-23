@@ -50,13 +50,21 @@ extern "C" {
  * - Callers release with policy->vtbl->unref(policy).
  *
  * Creation path:
- * - sixel_lookup_policy_select_name(request)
+ * - sixel_lookup_policy_select_name(select_request)
  * - services/factory -> create("lookup/...", &policy)
  * - create() resolves names via per-class constructors
  * - policy->prepare(request)
  */
 
 typedef struct sixel_lookup_policy_interface sixel_lookup_policy_interface_t;
+
+typedef struct sixel_lookup_policy_select_request {
+    unsigned char const *palette;
+    int depth;
+    int reqcolor;
+    int optimize_lookup;
+    int lut_policy;
+} sixel_lookup_policy_select_request_t;
 
 typedef struct sixel_lookup_policy_prepare_request {
     unsigned char const *palette;
@@ -65,12 +73,8 @@ typedef struct sixel_lookup_policy_prepare_request {
     int float_depth;
     int reqcolor;
     int complexion;
-    int optimize_lookup;
-    int lut_policy;
     int method_for_largest;
     int pixelformat;
-    int parallel_active;
-    int reuse_lut_is_shared;
     int reuse_lut_preconfigured;
     sixel_lut_t *reuse_lut;
     sixel_lut_t **reuse_lut_slot;
@@ -101,7 +105,7 @@ struct sixel_lookup_policy_interface {
 
 SIXEL_INTERNAL_API char const *
 sixel_lookup_policy_select_name(
-    sixel_lookup_policy_prepare_request_t const *request);
+    sixel_lookup_policy_select_request_t const *request);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_by_name(

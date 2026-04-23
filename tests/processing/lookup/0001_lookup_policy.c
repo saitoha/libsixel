@@ -32,6 +32,7 @@
 
 static void
 init_lookup_policy_request(sixel_lookup_policy_prepare_request_t *request,
+                           sixel_lookup_policy_select_request_t *select_request,
                            unsigned char const *palette,
                            int reqcolor,
                            int optimize_lookup,
@@ -42,18 +43,22 @@ init_lookup_policy_request(sixel_lookup_policy_prepare_request_t *request,
                            sixel_allocator_t *allocator)
 {
     memset(request, 0, sizeof(*request));
+    memset(select_request, 0, sizeof(*select_request));
+
+    select_request->palette = palette;
+    select_request->depth = 3;
+    select_request->reqcolor = reqcolor;
+    select_request->optimize_lookup = optimize_lookup;
+    select_request->lut_policy = lut_policy;
+
     request->palette = palette;
     request->palette_float = NULL;
     request->depth = 3;
     request->float_depth = 0;
     request->reqcolor = reqcolor;
     request->complexion = 1;
-    request->optimize_lookup = optimize_lookup;
-    request->lut_policy = lut_policy;
     request->method_for_largest = SIXEL_LARGE_AUTO;
     request->pixelformat = pixelformat;
-    request->parallel_active = 0;
-    request->reuse_lut_is_shared = 0;
     request->reuse_lut = reuse_lut;
     request->reuse_lut_slot = reuse_lut_slot;
     request->allocator = allocator;
@@ -105,6 +110,7 @@ create_lookup_policy(char const *name,
 
 static SIXELSTATUS
 create_lookup_policy_by_selected_name(
+    sixel_lookup_policy_select_request_t const *select_request,
     sixel_lookup_policy_prepare_request_t const *request,
     sixel_lookup_policy_interface_t **lookup_policy,
     char const **selected_name)
@@ -116,11 +122,13 @@ create_lookup_policy_by_selected_name(
         *selected_name = NULL;
     }
 
-    if (request == NULL || lookup_policy == NULL) {
+    if (select_request == NULL
+            || request == NULL
+            || lookup_policy == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    name = sixel_lookup_policy_select_name(request);
+    name = sixel_lookup_policy_select_name(select_request);
     if (name == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -138,6 +146,7 @@ test_lookup_policy_normal_mode_maps_expected_color(void)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_lookup_policy_interface_t *lookup_policy;
+    sixel_lookup_policy_select_request_t select_request;
     sixel_lookup_policy_prepare_request_t request;
     unsigned char palette[6];
     unsigned char pixel[3];
@@ -147,6 +156,7 @@ test_lookup_policy_normal_mode_maps_expected_color(void)
     status = SIXEL_FALSE;
     allocator = NULL;
     lookup_policy = NULL;
+    memset(&select_request, 0, sizeof(select_request));
     memset(&request, 0, sizeof(request));
     memset(palette, 0, sizeof(palette));
     memset(pixel, 0, sizeof(pixel));
@@ -169,6 +179,7 @@ test_lookup_policy_normal_mode_maps_expected_color(void)
     pixel[2] = 10;
 
     init_lookup_policy_request(&request,
+                               &select_request,
                                palette,
                                2,
                                0,
@@ -178,7 +189,8 @@ test_lookup_policy_normal_mode_maps_expected_color(void)
                                NULL,
                                allocator);
 
-    status = create_lookup_policy_by_selected_name(&request,
+    status = create_lookup_policy_by_selected_name(&select_request,
+                                                   &request,
                                                    &lookup_policy,
                                                    &selected_name);
     if (SIXEL_FAILED(status)) {
@@ -212,6 +224,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_lookup_policy_interface_t *lookup_policy;
+    sixel_lookup_policy_select_request_t select_request;
     sixel_lookup_policy_prepare_request_t request;
     unsigned char palette[6];
     float pixel_float[3];
@@ -222,6 +235,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
     status = SIXEL_FALSE;
     allocator = NULL;
     lookup_policy = NULL;
+    memset(&select_request, 0, sizeof(select_request));
     memset(&request, 0, sizeof(request));
     memset(palette, 0, sizeof(palette));
     memset(pixel_float, 0, sizeof(pixel_float));
@@ -245,6 +259,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
     pixel_float[2] = 0.0f;
 
     init_lookup_policy_request(&request,
+                               &select_request,
                                palette,
                                2,
                                1,
@@ -254,7 +269,8 @@ test_lookup_policy_fast_mode_maps_float_input(void)
                                &cached_lut,
                                allocator);
 
-    status = create_lookup_policy_by_selected_name(&request,
+    status = create_lookup_policy_by_selected_name(&select_request,
+                                                   &request,
                                                    &lookup_policy,
                                                    &selected_name);
     if (SIXEL_FAILED(status)) {
@@ -302,6 +318,7 @@ test_lookup_policy_mono_mode_maps_expected_threshold(void)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_lookup_policy_interface_t *lookup_policy;
+    sixel_lookup_policy_select_request_t select_request;
     sixel_lookup_policy_prepare_request_t request;
     unsigned char palette[6];
     unsigned char dark_pixel[3];
@@ -313,6 +330,7 @@ test_lookup_policy_mono_mode_maps_expected_threshold(void)
     status = SIXEL_FALSE;
     allocator = NULL;
     lookup_policy = NULL;
+    memset(&select_request, 0, sizeof(select_request));
     memset(&request, 0, sizeof(request));
     memset(palette, 0, sizeof(palette));
     memset(dark_pixel, 0, sizeof(dark_pixel));
@@ -341,6 +359,7 @@ test_lookup_policy_mono_mode_maps_expected_threshold(void)
     bright_pixel[2] = 255;
 
     init_lookup_policy_request(&request,
+                               &select_request,
                                palette,
                                2,
                                1,
@@ -350,7 +369,8 @@ test_lookup_policy_mono_mode_maps_expected_threshold(void)
                                NULL,
                                allocator);
 
-    status = create_lookup_policy_by_selected_name(&request,
+    status = create_lookup_policy_by_selected_name(&select_request,
+                                                   &request,
                                                    &lookup_policy,
                                                    &selected_name);
     if (SIXEL_FAILED(status)) {
@@ -386,6 +406,7 @@ test_lookup_policy_named_factory_creates_fast_lut(void)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_lookup_policy_interface_t *lookup_policy;
+    sixel_lookup_policy_select_request_t select_request;
     sixel_lookup_policy_prepare_request_t request;
     unsigned char palette[6];
     unsigned char pixel[3];
@@ -394,6 +415,7 @@ test_lookup_policy_named_factory_creates_fast_lut(void)
     status = SIXEL_FALSE;
     allocator = NULL;
     lookup_policy = NULL;
+    memset(&select_request, 0, sizeof(select_request));
     memset(&request, 0, sizeof(request));
     memset(palette, 0, sizeof(palette));
     memset(pixel, 0, sizeof(pixel));
@@ -415,6 +437,7 @@ test_lookup_policy_named_factory_creates_fast_lut(void)
     pixel[2] = 20;
 
     init_lookup_policy_request(&request,
+                               &select_request,
                                palette,
                                2,
                                0,
@@ -464,6 +487,7 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_lookup_policy_prepare_request_t request;
+    sixel_lookup_policy_select_request_t select_request;
     sixel_lookup_policy_interface_t *lookup_policy;
     sixel_lookup_policy_vtbl_t const *vtbls[11];
     unsigned char palette[6];
@@ -475,6 +499,7 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
 
     status = SIXEL_FALSE;
     allocator = NULL;
+    memset(&select_request, 0, sizeof(select_request));
     memset(&request, 0, sizeof(request));
     lookup_policy = NULL;
     memset(vtbls, 0, sizeof(vtbls));
@@ -501,6 +526,7 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
     pixel[2] = 10;
 
     init_lookup_policy_request(&request,
+                               &select_request,
                                palette,
                                2,
                                1,

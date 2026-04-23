@@ -170,9 +170,10 @@ sixel_lookup_policy_vptree_prepare(
         normalized_lut_policy);
 
     reuse_lut = request->reuse_lut;
-    if (request->parallel_active != 0
+    if (sixel_lookup_parallel_dither_active() != 0
+            /* Reuse slot NULL means the LUT comes from shared plan cache. */
             && shared_lut == 0
-            && request->reuse_lut_is_shared != 0) {
+            && request->reuse_lut_slot == NULL) {
         reuse_lut = NULL;
     }
     if (reuse_lut != NULL && request->reuse_lut_preconfigured != 0) {

@@ -445,14 +445,13 @@ sixel_dither_prepare_lookup_policy(
     int lut_policy,
     int method_for_largest,
     int pixelformat,
-    int parallel_active,
-    int reuse_lut_is_shared,
     int reuse_lut_preconfigured,
     sixel_lut_t *reuse_lut,
     sixel_lut_t **reuse_lut_slot,
     sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
+    sixel_lookup_policy_select_request_t select_request;
     sixel_lookup_policy_prepare_request_t request;
     sixel_lookup_policy_interface_t *prepared_policy;
     sixel_factory_t *factory;
@@ -460,6 +459,7 @@ sixel_dither_prepare_lookup_policy(
     char const *policy_name;
 
     status = SIXEL_FALSE;
+    memset(&select_request, 0, sizeof(select_request));
     memset(&request, 0, sizeof(request));
     prepared_policy = NULL;
     factory = NULL;
@@ -476,18 +476,20 @@ sixel_dither_prepare_lookup_policy(
     request.float_depth = float_depth;
     request.reqcolor = reqcolor;
     request.complexion = complexion;
-    request.optimize_lookup = foptimize;
-    request.lut_policy = lut_policy;
     request.method_for_largest = method_for_largest;
     request.pixelformat = pixelformat;
-    request.parallel_active = parallel_active;
-    request.reuse_lut_is_shared = reuse_lut_is_shared;
     request.reuse_lut_preconfigured = reuse_lut_preconfigured;
     request.reuse_lut = reuse_lut;
     request.reuse_lut_slot = reuse_lut_slot;
     request.allocator = allocator;
 
-    policy_name = sixel_lookup_policy_select_name(&request);
+    select_request.palette = palette;
+    select_request.depth = depth;
+    select_request.reqcolor = reqcolor;
+    select_request.optimize_lookup = foptimize;
+    select_request.lut_policy = lut_policy;
+
+    policy_name = sixel_lookup_policy_select_name(&select_request);
     if (policy_name == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -837,7 +839,6 @@ sixel_dither_parallel_worker(tp_job_t job,
     sixel_parallel_dither_state_t *state;
     sixel_lut_t *reuse_lut;
     sixel_lut_t **reuse_lut_slot;
-    int reuse_lut_is_shared;
     int reuse_lut_preconfigured;
     int restore_context;
     sixel_lookup_policy_interface_t *lookup_policy;
@@ -911,11 +912,9 @@ sixel_dither_parallel_worker(tp_job_t job,
     state = (sixel_parallel_dither_state_t *)workspace;
     reuse_lut = plan->lut;
     reuse_lut_slot = NULL;
-    reuse_lut_is_shared = 0;
     reuse_lut_preconfigured = 0;
     restore_context = 0;
     if (reuse_lut != NULL) {
-        reuse_lut_is_shared = 1;
         reuse_lut_preconfigured = 1;
     } else if (state != NULL) {
         reuse_lut_slot = &state->lut;
@@ -936,8 +935,6 @@ sixel_dither_parallel_worker(tp_job_t job,
         plan->lut_policy,
         plan->method_for_largest,
         plan->pixelformat,
-        1,
-        reuse_lut_is_shared,
         reuse_lut_preconfigured,
         reuse_lut,
         reuse_lut_slot,
@@ -1246,8 +1243,6 @@ sixel_dither_resolve_indexes(
         lut_policy,
         method_for_largest,
         pixelformat,
-        sixel_lookup_parallel_dither_active(),
-        0,
         reuse_lut_preconfigured,
         palette->lut,
         &palette->lut,
