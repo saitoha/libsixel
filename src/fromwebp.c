@@ -37,53 +37,52 @@
 #include "fromwebp-internal.h"
 
 static SIXELSTATUS
-sixel_webp_apply_container_kind(sixel_webp_container_kind_t kind,
-                                sixel_webp_container_info_t const *info)
+sixel_webp_apply_decode_plan(sixel_webp_decode_plan_t const *plan)
 {
-    SIXELSTATUS status;
+    typedef struct sixel_webp_kind_dispatch {
+        SIXELSTATUS status;
+        char const *trace_code;
+        char const *message;
+    } sixel_webp_kind_dispatch_t;
+    static sixel_webp_kind_dispatch_t const dispatch[] = {
+        { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_MISSING_VP8L,
+          "builtin webp: VP8L payload was not found." },
+        { SIXEL_OK, NULL, NULL },
+        { SIXEL_NOT_IMPLEMENTED, SIXEL_WEBP_CODE_UNSUP_VP8_LOSSY,
+          "builtin webp: VP8 lossy WebP is not supported." },
+        { SIXEL_NOT_IMPLEMENTED, SIXEL_WEBP_CODE_UNSUP_ANIM,
+          "builtin webp: animated WebP is not supported." }
+    };
+    size_t kind_index;
+    sixel_webp_kind_dispatch_t const *selected;
 
-    status = SIXEL_OK;
-    if (info == NULL) {
+    selected = NULL;
+    if (plan == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-
-    switch (kind) {
-    case SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM:
-        sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_UNSUP_ANIM);
-        sixel_helper_set_additional_message(
-            "builtin webp: animated WebP is not supported.");
-        status = SIXEL_NOT_IMPLEMENTED;
-        break;
-
-    case SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_VP8:
-        sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_UNSUP_VP8_LOSSY);
-        sixel_helper_set_additional_message(
-            "builtin webp: VP8 lossy WebP is not supported.");
-        status = SIXEL_NOT_IMPLEMENTED;
-        break;
-
-    case SIXEL_WEBP_CONTAINER_KIND_CORRUPT:
-        sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_ERR_MISSING_VP8L);
-        sixel_helper_set_additional_message(
-            "builtin webp: VP8L payload was not found.");
-        status = SIXEL_BAD_INPUT;
-        break;
-
-    case SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC:
-    default:
-        if (info->saw_iccp != 0) {
+    kind_index = (size_t)plan->kind;
+    if (kind_index >= sizeof(dispatch) / sizeof(dispatch[0])) {
+        return SIXEL_BAD_INPUT;
+    }
+    selected = &dispatch[kind_index];
+    if (selected->trace_code != NULL) {
+        sixel_webp_trace_contract_add_code(selected->trace_code);
+    }
+    if (selected->message != NULL) {
+        sixel_helper_set_additional_message(selected->message);
+    }
+    if (plan->kind == SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC) {
+        if (plan->meta_iccp_ignored != 0) {
             sixel_webp_trace_contract_add_code(
                 SIXEL_WEBP_CODE_META_ICCP_IGNORED);
         }
-        if (info->saw_exif != 0) {
+        if (plan->meta_exif_ignored != 0) {
             sixel_webp_trace_contract_add_code(
                 SIXEL_WEBP_CODE_META_EXIF_IGNORED);
         }
-        status = SIXEL_OK;
-        break;
     }
 
-    return status;
+    return selected->status;
 }
 
 SIXELSTATUS
@@ -92,14 +91,14 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
 {
     SIXELSTATUS status;
     sixel_webp_container_info_t container;
-    sixel_webp_container_kind_t kind;
+    sixel_webp_decode_plan_t plan;
     unsigned char *rgba;
     int width;
     int height;
 
     status = SIXEL_OK;
     memset(&container, 0, sizeof(container));
-    kind = SIXEL_WEBP_CONTAINER_KIND_CORRUPT;
+    memset(&plan, 0, sizeof(plan));
     rgba = NULL;
     width = 0;
     height = 0;
@@ -114,16 +113,20 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
         goto cleanup;
     }
 
-    /* Keep feature classification separate from RIFF validation details. */
-    kind = sixel_webp_classify_container(&container);
-    status = sixel_webp_apply_container_kind(kind, &container);
+    status = sixel_webp_build_decode_plan(&container, &plan);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    /* Keep feature handling policy in one place for future mode growth. */
+    status = sixel_webp_apply_decode_plan(&plan);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
 
     /* Decode layer accepts only VP8L payload bytes and allocator context. */
-    status = sixel_webp_decode_vp8l_payload(container.vp8l_payload,
-                                            container.vp8l_payload_size,
+    status = sixel_webp_decode_vp8l_payload(plan.vp8l_payload,
+                                            plan.vp8l_payload_size,
                                             &rgba,
                                             &width,
                                             &height,
