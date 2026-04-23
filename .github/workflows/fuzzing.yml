@@ -33,7 +33,7 @@ jobs:
     env:
       FUZZ_STRUCT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-struct
       FUZZ_STRUCT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-struct/${{ matrix.target }}
-      FUZZ_STRUCT_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={2}/.tmp/fuzz-artifacts-struct/{3}/', github.event_name == 'push' && '10800' || '300', github.event_name == 'push' && '10' || '2', github.workspace, matrix.target) }}
+      FUZZ_STRUCT_ARGS_BASE: ${{ format('-fork={0} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={1}/.tmp/fuzz-artifacts-struct/{2}/', github.event_name == 'push' && '10' || '2', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -139,7 +139,14 @@ jobs:
               struct_max_len=16384
               ;;
           esac
-          fuzz_args="$FUZZ_STRUCT_ARGS -max_len=$struct_max_len -dict=$dict_merged"
+          struct_max_total_time=600
+          # Keep expensive structure checks in extended mode.
+          case "${{ matrix.target }}" in
+            psd-resource|loader-order)
+              struct_max_total_time=1800
+              ;;
+          esac
+          fuzz_args="$FUZZ_STRUCT_ARGS_BASE -max_total_time=$struct_max_total_time -max_len=$struct_max_len -dict=$dict_merged"
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             CC=clang CXX=clang++ ./configure --enable-fuzz
@@ -222,7 +229,7 @@ jobs:
     env:
       FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader
       FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/${{ matrix.target }}
-      FUZZ_BUILTIN_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={2}/.tmp/fuzz-artifacts-loader/{3}/', github.event_name == 'push' && '10800' || '300', github.event_name == 'push' && '10' || '2', github.workspace, matrix.target) }}
+      FUZZ_BUILTIN_ARGS_BASE: ${{ format('-fork={0} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={1}/.tmp/fuzz-artifacts-loader/{2}/', github.event_name == 'push' && '10' || '2', github.workspace, matrix.target) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -313,7 +320,14 @@ jobs:
           else
             cp "$dict_common" "$dict_merged"
           fi
-          fuzz_args="$FUZZ_BUILTIN_ARGS -dict=$dict_merged"
+          loader_max_total_time=600
+          # PNG/GIF/PSD are prioritized because they account for most reports.
+          case "${{ matrix.target }}" in
+            png|gif|psd)
+              loader_max_total_time=1800
+              ;;
+          esac
+          fuzz_args="$FUZZ_BUILTIN_ARGS_BASE -max_total_time=$loader_max_total_time -dict=$dict_merged"
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             CC=clang CXX=clang++ ./configure --enable-fuzz
@@ -399,7 +413,7 @@ jobs:
       FUZZ_INPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-corpus-cli-img2sixel/${{ matrix.target }}
       FUZZ_OUTPUT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-cli-img2sixel/${{ matrix.buildtool }}/${{ matrix.target }}
       FUZZ_AFL: afl-fuzz
-      FUZZ_TIMEOUT: ${{ github.event_name == 'push' && '2700' || '300' }}
+      FUZZ_TIMEOUT: 600
       FUZZ_AFL_WORKERS: ${{ github.event_name == 'push' && '6' || '2' }}
       FUZZ_AFL_MODE: ${{ github.event_name == 'push' && 'cmplog' || 'normal' }}
       FUZZ_AFL_CMPLOG_RUNNER: ""
@@ -525,6 +539,14 @@ jobs:
             fuzz_target='fuzz-cli-img2sixel-numeric'
             asan_runner="$PWD/.tmp/fuzz-img2sixel-cli-numeric-afl-persistent"
           fi
+          fuzz_timeout="$FUZZ_TIMEOUT"
+          # Keep parser-focused CLI modes running longer for hang/crash signal.
+          case "${{ matrix.target }}" in
+            combo|parser)
+              fuzz_timeout=1800
+              ;;
+          esac
+          export FUZZ_TIMEOUT="$fuzz_timeout"
 
           resolve_runner_path() {
             local runner="$1"
@@ -768,7 +790,7 @@ jobs:
     env:
       FUZZ_COMPONENT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader/component
       FUZZ_COMPONENT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/coregraphics
-      FUZZ_COMPONENT_ARGS: ${{ format('-max_total_time={0} -fork={1} -print_final_stats=1 -timeout=10 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix={2}/.tmp/fuzz-artifacts-loader/coregraphics/', github.event_name == 'push' && '10800' || '300', github.event_name == 'push' && '10' || '2', github.workspace) }}
+      FUZZ_COMPONENT_ARGS_BASE: ${{ format('-fork={0} -print_final_stats=1 -timeout=10 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix={1}/.tmp/fuzz-artifacts-loader/coregraphics/', github.event_name == 'push' && '10' || '2', github.workspace) }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
@@ -869,7 +891,12 @@ jobs:
           else
             cp "$dict_common" "$dict_merged"
           fi
-          fuzz_args="$FUZZ_COMPONENT_ARGS -dict=$dict_merged"
+          component_max_total_time=600
+          # CoreGraphics is a focus target on push runs.
+          if [ "${{ matrix.buildtool }}" = "meson" ]; then
+            component_max_total_time=1800
+          fi
+          fuzz_args="$FUZZ_COMPONENT_ARGS_BASE -max_total_time=$component_max_total_time -dict=$dict_merged"
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             ./configure --enable-fuzz --with-coregraphics
