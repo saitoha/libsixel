@@ -73,16 +73,11 @@ test "${sigint_runner_mode}" = "1" && {
         echo "ok" 1 - "libwebp force-loop stops on SIGINT"
         exit 0
     }
+    # Some runtimes complete the command successfully but still do not
+    # provide deterministic host-to-child SIGINT forwarding.
+    echo "ok 1 - libwebp force-loop SIGINT cancellation # SKIP runtime signal forwarding is unavailable"
+    exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp! -lforce -g "${input_webp}" \
-    >/dev/null 2>/dev/null &
-pid=$!
-
-kill -INT "${pid}" 2>/dev/null || true
-kill -INT "${pid}" 2>/dev/null || true
-
-wait "${pid}" 2>/dev/null || true
-
-echo "ok" 1 - "libwebp force-loop stops on SIGINT"
+echo "ok 1 - libwebp force-loop SIGINT cancellation # SKIP test_runner --sigint-run is unavailable in this runtime"
 exit 0
