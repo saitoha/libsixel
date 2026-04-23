@@ -49,7 +49,7 @@ extern "C" {
  * - IFactory.create("lookup/...", &policy)
  */
 
-typedef struct sixel_factory sixel_factory_t;
+typedef struct sixel_factory_interface sixel_factory_t;
 
 typedef struct sixel_factory_vtbl {
     void (*ref)(sixel_factory_t *factory);
@@ -59,7 +59,7 @@ typedef struct sixel_factory_vtbl {
                           void **object);
 } sixel_factory_vtbl_t;
 
-struct sixel_factory {
+struct sixel_factory_interface {
     sixel_factory_vtbl_t const *vtbl;
 };
 

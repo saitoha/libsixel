@@ -635,7 +635,9 @@ sixel_dither_map_pixels(
     context.bluenoise_gradient_map_size = 0U;
     context.bluenoise_gradient_width = 0;
     context.bluenoise_gradient_height = 0;
-    lookup_map = sixel_lookup_policy_get_map_fn(lookup_policy);
+    if (lookup_policy != NULL && lookup_policy->vtbl != NULL) {
+        lookup_map = lookup_policy->vtbl->map_pixel;
+    }
     context.lookup_map = lookup_map;
     context.lookup_source_is_float =
         sixel_lookup_policy_lookup_source_is_float(lookup_policy);

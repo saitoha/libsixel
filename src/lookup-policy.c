@@ -41,7 +41,6 @@
  * interface ILookupPolicy {
  *   ref();
  *   unref();
- *   name();
  *   prepare(request);
  *   map_pixel(pixel);
  *   lookup_source_is_float();
@@ -60,6 +59,14 @@ typedef enum sixel_lookup_policy_kind {
     SIXEL_LOOKUP_POLICY_KIND_FAST_LUT
 } sixel_lookup_policy_kind_t;
 
+typedef int (*sixel_lookup_policy_lookup_impl_t)(
+    unsigned char const *pixel,
+    int depth,
+    unsigned char const *palette,
+    int reqcolor,
+    unsigned short *cachetable,
+    int complexion);
+
 typedef struct sixel_lookup_policy_class {
     char const *name;
     sixel_lookup_policy_kind_t kind;
@@ -72,7 +79,7 @@ typedef struct sixel_lookup_policy_object {
     sixel_lookup_policy_class_t const *policy_class;
     int lookup_source_is_float;
     int prefer_palette_float_lookup;
-    sixel_lookup_policy_lookup_fn lookup_fn;
+    sixel_lookup_policy_lookup_impl_t lookup_fn;
     unsigned char const *palette;
     int depth;
     int reqcolor;
@@ -427,8 +434,8 @@ sixel_lookup_policy_prepare_normal(sixel_lookup_policy_object_t *object,
 static SIXELSTATUS
 sixel_lookup_policy_prepare_mono(sixel_lookup_policy_object_t *object,
                                  sixel_lookup_policy_prepare_request_t const
-                                     *request,
-                                 sixel_lookup_policy_lookup_fn mono_fn)
+                                 *request,
+                                 sixel_lookup_policy_lookup_impl_t mono_fn)
 {
     if (object == NULL || request == NULL || mono_fn == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -565,24 +572,6 @@ sixel_lookup_policy_unref_impl(sixel_lookup_policy_t *policy)
     }
 }
 
-static char const *
-sixel_lookup_policy_name_impl(sixel_lookup_policy_t const *policy)
-{
-    sixel_lookup_policy_object_t const *object;
-
-    object = NULL;
-    if (policy == NULL) {
-        return "lookup/unknown";
-    }
-
-    object = sixel_lookup_policy_object_from_base_const(policy);
-    if (object->policy_class == NULL || object->policy_class->name == NULL) {
-        return "lookup/unknown";
-    }
-
-    return object->policy_class->name;
-}
-
 static SIXELSTATUS
 sixel_lookup_policy_prepare_impl(
     sixel_lookup_policy_t *policy,
@@ -710,7 +699,6 @@ sixel_lookup_policy_prefer_palette_float_lookup_impl(
 static sixel_lookup_policy_vtbl_t const g_sixel_lookup_policy_vtbl = {
     sixel_lookup_policy_ref_impl,
     sixel_lookup_policy_unref_impl,
-    sixel_lookup_policy_name_impl,
     sixel_lookup_policy_prepare_impl,
     sixel_lookup_policy_map_pixel_impl,
     sixel_lookup_policy_lookup_source_is_float_impl,
@@ -779,16 +767,6 @@ sixel_lookup_policy_unref(sixel_lookup_policy_t *policy)
     policy->vtbl->unref(policy);
 }
 
-char const *
-sixel_lookup_policy_get_name(sixel_lookup_policy_t const *policy)
-{
-    if (policy == NULL || policy->vtbl == NULL || policy->vtbl->name == NULL) {
-        return "lookup/unknown";
-    }
-
-    return policy->vtbl->name(policy);
-}
-
 SIXELSTATUS
 sixel_lookup_policy_prepare(
     sixel_lookup_policy_t *policy,
@@ -802,30 +780,17 @@ sixel_lookup_policy_prepare(
     return policy->vtbl->prepare(policy, request);
 }
 
-sixel_lookup_policy_map_fn
-sixel_lookup_policy_get_map_fn(sixel_lookup_policy_t const *policy)
-{
-    if (policy == NULL || policy->vtbl == NULL
-            || policy->vtbl->map_pixel == NULL) {
-        return NULL;
-    }
-
-    return policy->vtbl->map_pixel;
-}
-
 int
 sixel_lookup_policy_map_pixel(
     sixel_lookup_policy_t const *policy,
     unsigned char const *pixel)
 {
-    sixel_lookup_policy_map_fn map_pixel;
-
-    map_pixel = sixel_lookup_policy_get_map_fn(policy);
-    if (map_pixel == NULL) {
+    if (policy == NULL || policy->vtbl == NULL
+            || policy->vtbl->map_pixel == NULL) {
         return 0;
     }
 
-    return map_pixel(policy, pixel);
+    return policy->vtbl->map_pixel(policy, pixel);
 }
 
 int

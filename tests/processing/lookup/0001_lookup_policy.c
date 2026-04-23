@@ -189,12 +189,6 @@ test_lookup_policy_normal_mode_maps_expected_color(void)
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
-    if (strcmp(sixel_lookup_policy_get_name(lookup_policy),
-               "lookup/normal") != 0) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto cleanup;
-    }
-
     mapped = sixel_lookup_policy_map_pixel(lookup_policy, pixel);
     if (mapped != 1) {
         status = SIXEL_BAD_ARGUMENT;
@@ -268,11 +262,6 @@ test_lookup_policy_fast_mode_maps_float_input(void)
     }
 
     if (selected_name == NULL || strcmp(selected_name, "lookup/6bit") != 0) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto cleanup;
-    }
-    if (strcmp(sixel_lookup_policy_get_name(lookup_policy),
-               "lookup/6bit") != 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -373,12 +362,6 @@ test_lookup_policy_mono_mode_maps_expected_threshold(void)
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
-    if (strcmp(sixel_lookup_policy_get_name(lookup_policy),
-               "lookup/mono-darkbg") != 0) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto cleanup;
-    }
-
     dark_index = sixel_lookup_policy_map_pixel(lookup_policy, dark_pixel);
     bright_index = sixel_lookup_policy_map_pixel(lookup_policy, bright_pixel);
     if (dark_index != 0 || bright_index != 1) {
@@ -445,12 +428,6 @@ test_lookup_policy_named_factory_creates_fast_lut(void)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    if (strcmp(sixel_lookup_policy_get_name(lookup_policy),
-               "lookup/eytzinger") != 0) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto cleanup;
-    }
-
     mapped = sixel_lookup_policy_map_pixel(lookup_policy, pixel);
     if (mapped < 0 || mapped >= 2) {
         status = SIXEL_BAD_ARGUMENT;

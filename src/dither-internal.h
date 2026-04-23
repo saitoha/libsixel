@@ -35,10 +35,10 @@
 
 #include "dither.h"
 
-struct sixel_lookup_policy;
+struct sixel_lookup_policy_interface;
 
 typedef int (*sixel_dither_lookup_map_fn)(
-    struct sixel_lookup_policy const *policy,
+    struct sixel_lookup_policy_interface const *policy,
     unsigned char const *pixel);
 
 typedef struct sixel_dither_context {
@@ -57,7 +57,7 @@ typedef struct sixel_dither_context {
     int method_for_scan;
     int optimize_palette;
     int complexion;
-    struct sixel_lookup_policy *lookup_policy;
+    struct sixel_lookup_policy_interface *lookup_policy;
     sixel_dither_lookup_map_fn lookup_map;
     unsigned char *scratch;
     unsigned char *new_palette;
