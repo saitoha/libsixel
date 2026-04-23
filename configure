@@ -813,6 +813,8 @@ WANT_AMALGAMATED_TOOLS_FALSE
 WANT_AMALGAMATED_TOOLS_TRUE
 WANT_AMALGAMATED_LIB_FALSE
 WANT_AMALGAMATED_LIB_TRUE
+WITH_EMSCRIPTEN_SPLIT_MODE_FALSE
+WITH_EMSCRIPTEN_SPLIT_MODE_TRUE
 HAVE_ABORT_TRACE_FALSE
 HAVE_ABORT_TRACE_TRUE
 WANT_SIXEL2PNG_FALSE
@@ -18386,6 +18388,25 @@ fi ;; #(
      ;;
 esac
 
+sixel_emscripten_split_mode=no
+case $host_os in #(
+  emscripten*) :
+    if test "x$enable_emscripten_single_file" = "xyes"
+then :
+  sixel_emscripten_split_mode=yes
+fi ;; #(
+  *) :
+     ;;
+esac
+ if test "x$sixel_emscripten_split_mode" = "xyes"; then
+  WITH_EMSCRIPTEN_SPLIT_MODE_TRUE=
+  WITH_EMSCRIPTEN_SPLIT_MODE_FALSE='#'
+else
+  WITH_EMSCRIPTEN_SPLIT_MODE_TRUE='#'
+  WITH_EMSCRIPTEN_SPLIT_MODE_FALSE=
+fi
+
+
 # Check whether --enable-threads was given.
 if test ${enable_threads+y}
 then :
@@ -29617,7 +29638,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config build-aux/lso-tap-driver.sh:build-aux/lso-tap-driver.sh.in build-aux/resolve-test-tool-paths.sh:build-aux/resolve-test-tool-paths.sh.in examples/Makefile examples/drawing/Makefile examples/opengl/Makefile examples/python/Makefile examples/ruby/Makefile examples/windows/Makefile images/Makefile fuzz/Makefile tests/Makefile tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer.in python/Makefile ruby/Makefile php/Makefile ruby/lib/libsixel/version_runtime.rb gdk-pixbuf-loader/Makefile quicklook-extension/Makefile wic/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile converters/img2sixel-node-launcher:converters/img2sixel-node-launcher.in converters/sixel2png-node-launcher:converters/sixel2png-node-launcher.in assessment/Makefile tools/Makefile tools/libsixel-config build-aux/lso-tap-driver.sh:build-aux/lso-tap-driver.sh.in build-aux/resolve-test-tool-paths.sh:build-aux/resolve-test-tool-paths.sh.in examples/Makefile examples/drawing/Makefile examples/opengl/Makefile examples/python/Makefile examples/ruby/Makefile examples/windows/Makefile images/Makefile fuzz/Makefile tests/Makefile tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer.in python/Makefile ruby/Makefile php/Makefile ruby/lib/libsixel/version_runtime.rb gdk-pixbuf-loader/Makefile quicklook-extension/Makefile wic/Makefile"
 
 
 # Always generate the amalgamation Makefile so "make dist" can stage the
@@ -29822,6 +29843,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_ABORT_TRACE_TRUE}" && test -z "${HAVE_ABORT_TRACE_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_ABORT_TRACE\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WITH_EMSCRIPTEN_SPLIT_MODE_TRUE}" && test -z "${WITH_EMSCRIPTEN_SPLIT_MODE_FALSE}"; then
+  as_fn_error $? "conditional \"WITH_EMSCRIPTEN_SPLIT_MODE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_AMALGAMATED_LIB_TRUE}" && test -z "${WANT_AMALGAMATED_LIB_FALSE}"; then
@@ -30840,6 +30865,8 @@ do
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "include/Makefile") CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
     "converters/Makefile") CONFIG_FILES="$CONFIG_FILES converters/Makefile" ;;
+    "converters/img2sixel-node-launcher") CONFIG_FILES="$CONFIG_FILES converters/img2sixel-node-launcher:converters/img2sixel-node-launcher.in" ;;
+    "converters/sixel2png-node-launcher") CONFIG_FILES="$CONFIG_FILES converters/sixel2png-node-launcher:converters/sixel2png-node-launcher.in" ;;
     "assessment/Makefile") CONFIG_FILES="$CONFIG_FILES assessment/Makefile" ;;
     "tools/Makefile") CONFIG_FILES="$CONFIG_FILES tools/Makefile" ;;
     "tools/libsixel-config") CONFIG_FILES="$CONFIG_FILES tools/libsixel-config" ;;

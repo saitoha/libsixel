@@ -34,6 +34,26 @@ src_build_dir = join_paths(meson.project_build_root(), 'src')
 
 img2sixel_opt = get_option('img2sixel')
 sixel2png_opt = get_option('sixel2png')
+emscripten_split_mode = host_system == 'emscripten' and not get_option('emscripten_single_file')
+emscripten_tool_install_dir = get_option('bindir')
+if emscripten_split_mode
+  emscripten_tool_install_dir = join_paths(get_option('libexecdir'), 'libsixel')
+  emscripten_launcher_conf = configuration_data()
+  emscripten_launcher_libexecdir = get_option('libexecdir')
+  if not emscripten_launcher_libexecdir.startswith('/')
+    emscripten_launcher_libexecdir = join_paths(get_option('prefix'),
+                                                emscripten_launcher_libexecdir)
+  endif
+  emscripten_launcher_conf.set('prefix', get_option('prefix'))
+  emscripten_launcher_conf.set('exec_prefix', get_option('prefix'))
+  emscripten_launcher_conf.set('libexecdir', emscripten_launcher_libexecdir)
+  emscripten_sidecar_install_dir = join_paths(get_option('libexecdir'), 'libsixel')
+  emscripten_sidecar_installer = find_program(
+    join_paths(meson.project_source_root(),
+               'build-aux',
+               'install-emscripten-sidecar.sh')
+  )
+endif
 
 img2sixel_deps = []
 if img2sixel_opt.enabled()
@@ -47,7 +67,8 @@ if img2sixel_opt.enabled()
                                         '-DHAVE_COMPLETION_EMBED_H'],
       include_directories: [project_inc, local_inc],
       dependencies: deps + aborttrace_deps_local,
-      install: true)
+      install: true,
+      install_dir: emscripten_tool_install_dir)
   else
     img2sixel_exe = executable('img2sixel',
       img2sixel_core_sources,
@@ -58,7 +79,8 @@ if img2sixel_opt.enabled()
       dependencies: [libsixel_dep] + aborttrace_deps_local,
       include_directories: [project_inc, local_inc],
       build_rpath: src_build_dir,
-      install: true)
+      install: true,
+      install_dir: emscripten_tool_install_dir)
   endif
   img2sixel_deps = [img2sixel_exe]
 
@@ -355,6 +377,24 @@ fi
       depend_files: shebang_file,
       build_by_default: true)]
   endif
+  if emscripten_split_mode
+    img2sixel_launcher = configure_file(
+      input: 'img2sixel-node-launcher.in',
+      output: 'img2sixel-node-launcher',
+      configuration: emscripten_launcher_conf
+    )
+    install_data(
+      img2sixel_launcher,
+      install_dir: get_option('bindir'),
+      rename: 'img2sixel'
+    )
+    meson.add_install_script(
+      emscripten_sidecar_installer,
+      img2sixel_exe.full_path(),
+      emscripten_sidecar_install_dir,
+      'img2sixel'
+    )
+  endif
   install_man('img2sixel.1')
   if bash_completion_dir != ''
     # Explicitly tag the completion install so Meson does not try to
@@ -379,7 +419,8 @@ if sixel2png_opt.enabled()
       objc_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
       include_directories: [project_inc, local_inc],
       dependencies: deps + aborttrace_deps_local,
-      install: true)
+      install: true,
+      install_dir: emscripten_tool_install_dir)
   else
     sixel2png_exe = executable('sixel2png',
       ['sixel2png.c'] + sources_common + aborttrace_sources,
@@ -388,7 +429,8 @@ if sixel2png_opt.enabled()
       dependencies: [libsixel_dep] + aborttrace_deps_local,
       include_directories: project_inc,
       build_rpath: src_build_dir,
-      install: true)
+      install: true,
+      install_dir: emscripten_tool_install_dir)
   endif
   install_man('sixel2png.1')
   if shebang_enabled
@@ -398,6 +440,24 @@ if sixel2png_opt.enabled()
       command: [shebang_helper, shebang_file, '@INPUT@'],
       depend_files: shebang_file,
       build_by_default: true)]
+  endif
+  if emscripten_split_mode
+    sixel2png_launcher = configure_file(
+      input: 'sixel2png-node-launcher.in',
+      output: 'sixel2png-node-launcher',
+      configuration: emscripten_launcher_conf
+    )
+    install_data(
+      sixel2png_launcher,
+      install_dir: get_option('bindir'),
+      rename: 'sixel2png'
+    )
+    meson.add_install_script(
+      emscripten_sidecar_installer,
+      sixel2png_exe.full_path(),
+      emscripten_sidecar_install_dir,
+      'sixel2png'
+    )
   endif
   sixel2png_deps = [sixel2png_exe]
 endif

@@ -208,6 +208,13 @@ this manual procedure.
    wrapper so the resulting program is directly executable without an
    additional shim.
 
+   When `-sSINGLE_FILE=1` is not enabled (the current Autotools default unless
+   `--disable-emscripten-single_file` is passed), `make install` uses a split
+   runtime layout:
+
+   - `$(libexecdir)/libsixel`: JS wrappers and `.wasm` sidecars
+   - `$(bindir)`: launcher scripts that call `node` explicitly
+
 4. **Build and (optionally) test**:
 
    ```sh
@@ -290,6 +297,10 @@ meson setup builddir
 | `-Demscripten_single_file=` | boolean, `false` | Add `-sSINGLE_FILE=1` for Emscripten builds. |
 | `-Demscripten_wasm_bigint=` | boolean, `false` | Add `-sWASM_BIGINT=1` for Emscripten builds. |
 | `-Demscripten_assertions=` | boolean, `true` | Keep Emscripten assertions enabled (`false` adds `-sASSERTIONS=0`). |
+
+For Emscripten targets with `-Demscripten_single_file=false`, Meson installs
+the JS wrappers and `.wasm` sidecars into `libexecdir/libsixel` and installs
+`bindir` launchers that execute those wrappers via `node`.
 | `-Db_lto=` | base option, `false` | Meson base option for link-time optimization. |
 | `-Db_lto_mode=` | base option, `default` | LTO mode (`default`/`thin`; `thin` requires compatible toolchain). |
 | `-Db_pgo=` | base option, `off` | Meson base option for profile-guided optimization (`generate`/`use`). |

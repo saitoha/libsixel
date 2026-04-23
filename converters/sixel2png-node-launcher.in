@@ -1,0 +1,7 @@
+#!/bin/sh
+# Node launcher for the split Emscripten install layout.
+set -eu
+
+libexecdir=@libexecdir@
+
+exec node "${libexecdir}/libsixel/sixel2png" "$@"

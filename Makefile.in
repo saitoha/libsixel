@@ -563,6 +563,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/resolve-ruby-test-venv.sh \
 	build-aux/resolve-perl-test-venv.sh \
 	build-aux/resolve-php-test-venv.sh \
+	build-aux/install-emscripten-sidecar.sh \
 	build-aux/meson-test-with-failures.sh \
 	build-aux/resolve-test-tool-paths.sh.in \
 	tools/fuzz-afl-runner.sh \

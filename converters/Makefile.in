@@ -92,21 +92,24 @@ build_triplet = @build@
 host_triplet = @host@
 @WANT_AMALGAMATED_TOOLS_TRUE@am__append_1 = $(AMALGAMATION_SIXEL)
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
+pkglibexec_PROGRAMS = $(am__EXEEXT_3) $(am__EXEEXT_4)
 noinst_PROGRAMS =
 @AMALGAMATION_NEEDS_OBJC_TRUE@am__append_2 = -x objective-c
-@WANT_IMG2SIXEL_TRUE@am__append_3 = img2sixel
-@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@am__append_4 = $(ABORTTRACE_LIBS)
-@WANT_IMG2SIXEL_TRUE@am__append_5 = $(srcdir)/img2sixel.1
-@WANT_IMG2SIXEL_TRUE@am__append_6 = $(srcdir)/shell-completion/bash/img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_7 = $(srcdir)/shell-completion/zsh/_img2sixel
-@WANT_SIXEL2PNG_TRUE@am__append_8 = sixel2png
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_9 = $(AMALGAMATION_TOOL_CPPFLAGS) -DBUILD_SIXEL2PNG
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_10 = -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
-@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_11 = $(ABORTTRACE_LIBS)
-@WANT_SIXEL2PNG_TRUE@am__append_12 = $(srcdir)/sixel2png.1
-@WITH_SHEBANG_FILE_TRUE@am__append_13 = $(SIXEL_SHEBANG_STAMP)
-@WANT_IMG2SIXEL_TRUE@am__append_14 = $(img2sixel_OBJECTS)
-@WANT_SIXEL2PNG_TRUE@am__append_15 = $(sixel2png_OBJECTS)
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__append_3 = img2sixel
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__append_4 = img2sixel
+@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@am__append_5 = $(ABORTTRACE_LIBS)
+@WANT_IMG2SIXEL_TRUE@am__append_6 = $(srcdir)/img2sixel.1
+@WANT_IMG2SIXEL_TRUE@am__append_7 = $(srcdir)/shell-completion/bash/img2sixel
+@WANT_IMG2SIXEL_TRUE@am__append_8 = $(srcdir)/shell-completion/zsh/_img2sixel
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__append_9 = sixel2png
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__append_10 = sixel2png
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_11 = $(AMALGAMATION_TOOL_CPPFLAGS) -DBUILD_SIXEL2PNG
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_12 = -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
+@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_13 = $(ABORTTRACE_LIBS)
+@WANT_SIXEL2PNG_TRUE@am__append_14 = $(srcdir)/sixel2png.1
+@WITH_SHEBANG_FILE_TRUE@am__append_15 = $(SIXEL_SHEBANG_STAMP)
+@WANT_IMG2SIXEL_TRUE@am__append_16 = $(img2sixel_OBJECTS)
+@WANT_SIXEL2PNG_TRUE@am__append_17 = $(sixel2png_OBJECTS)
 subdir = converters
 SUBDIRS =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -125,14 +128,16 @@ DIST_COMMON = $(srcdir)/Makefile.am \
 	$(am__dist_zshcompletion_DATA_DIST) $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = img2sixel-node-launcher sixel2png-node-launcher
 CONFIG_CLEAN_VPATH_FILES =
-@WANT_IMG2SIXEL_TRUE@am__EXEEXT_1 = img2sixel$(EXEEXT)
-@WANT_SIXEL2PNG_TRUE@am__EXEEXT_2 = sixel2png$(EXEEXT)
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" \
-	"$(DESTDIR)$(bashcompletiondir)" \
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__EXEEXT_1 = img2sixel$(EXEEXT)
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__EXEEXT_2 = sixel2png$(EXEEXT)
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkglibexecdir)" \
+	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompletiondir)" \
 	"$(DESTDIR)$(zshcompletiondir)"
-PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__EXEEXT_3 = img2sixel$(EXEEXT)
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__EXEEXT_4 = sixel2png$(EXEEXT)
+PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS) $(pkglibexec_PROGRAMS)
 am__img2sixel_SOURCES_DIST = $(srcdir)/img2sixel.c \
 	$(srcdir)/completion_utils.c $(srcdir)/completion_utils.h \
 	$(srcdir)/compat.c $(srcdir)/compat.h $(srcdir)/path.c \
@@ -342,6 +347,8 @@ am__define_uniq_tagged_files = \
     if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
   done | $(am__uniquify_input)`
 am__DIST_COMMON = $(dist_man_MANS) $(srcdir)/Makefile.in \
+	$(srcdir)/img2sixel-node-launcher.in \
+	$(srcdir)/sixel2png-node-launcher.in \
 	$(top_srcdir)/build-aux/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 am__relativize = \
@@ -611,11 +618,13 @@ DIST_SUBDIRS = $(SUBDIRS)
 BUILT_SOURCES = completion_embed.h $(am__append_1)
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 EXTRA_DIST = $(srcdir)/aborttrace.c $(srcdir)/aborttrace.h \
-             $(srcdir)/compat.h
+             $(srcdir)/compat.h \
+             $(srcdir)/img2sixel-node-launcher.in \
+             $(srcdir)/sixel2png-node-launcher.in
 
-dist_man_MANS = $(am__append_5) $(am__append_12)
-dist_bashcompletion_DATA = $(am__append_6)
-dist_zshcompletion_DATA = $(am__append_7)
+dist_man_MANS = $(am__append_6) $(am__append_14)
+dist_bashcompletion_DATA = $(am__append_7)
+dist_zshcompletion_DATA = $(am__append_8)
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_TOOL_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir) \
@@ -642,7 +651,7 @@ AMALGAMATION_TOOL_LIBS = -lm \
         $(CLIPBOARD_LIBS) \
         @THREAD_LIBS@
 
-CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_13)
+CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(srcdir)/img2sixel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.h \
@@ -688,11 +697,11 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_13)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(QUICKLOOK_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(CLIPBOARD_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	@THREAD_CFLAGS@ \
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(am__append_4)
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(am__append_5)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(AMALGAMATION_TOOL_LIBS) \
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@	$(am__append_4)
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@	$(am__append_5)
 @WANT_SIXEL2PNG_TRUE@sixel2png_CPPFLAGS = $(AM_CPPFLAGS) \
-@WANT_SIXEL2PNG_TRUE@	$(am__append_9) $(am__append_10)
+@WANT_SIXEL2PNG_TRUE@	$(am__append_11) $(am__append_12)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(srcdir)/sixel2png.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/cli.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/cli.h \
@@ -722,17 +731,17 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_13)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(QUICKLOOK_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(CLIPBOARD_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	@THREAD_CFLAGS@ \
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__append_11)
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__append_13)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(AMALGAMATION_TOOL_LIBS) \
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__append_11)
-@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS)
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__append_13)
+@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS) $(pkglibexec_PROGRAMS)
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = converters-shebang.stamp
 
 # Build only executable object files so link steps can wait for libsixel.
 #
 # This target is consumed by the top-level parallel orchestration to overlap
 # compilation in converters/ with libsixel shared library creation.
-PRELINK_OBJECTS = $(am__append_14) $(am__append_15)
+PRELINK_OBJECTS = $(am__append_16) $(am__append_17)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -767,6 +776,10 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+img2sixel-node-launcher: $(top_builddir)/config.status $(srcdir)/img2sixel-node-launcher.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
+sixel2png-node-launcher: $(top_builddir)/config.status $(srcdir)/sixel2png-node-launcher.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
@@ -815,6 +828,50 @@ clean-binPROGRAMS:
 clean-noinstPROGRAMS:
 	$(am__rm_f) $(noinst_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(noinst_PROGRAMS:$(EXEEXT)=)
+install-pkglibexecPROGRAMS: $(pkglibexec_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	@list='$(pkglibexec_PROGRAMS)'; test -n "$(pkglibexecdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(pkglibexecdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(pkglibexecdir)" || exit 1; \
+	fi; \
+	for p in $$list; do echo "$$p $$p"; done | \
+	sed 's/$(EXEEXT)$$//' | \
+	while read p p1; do if test -f $$p \
+	 || test -f $$p1 \
+	  ; then echo "$$p"; echo "$$p"; else :; fi; \
+	done | \
+	sed -e 'p;s,.*/,,;n;h' \
+	    -e 's|.*|.|' \
+	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
+	sed 'N;N;N;s,\n, ,g' | \
+	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
+	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
+	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
+	    else { print "f", $$3 "/" $$4, $$1; } } \
+	  END { for (d in files) print "f", d, files[d] }' | \
+	while read type dir files; do \
+	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
+	    test -z "$$files" || { \
+	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(pkglibexecdir)$$dir'"; \
+	    $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(pkglibexecdir)$$dir" || exit $$?; \
+	    } \
+	; done
+
+uninstall-pkglibexecPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(pkglibexec_PROGRAMS)'; test -n "$(pkglibexecdir)" || list=; \
+	files=`for p in $$list; do echo "$$p"; done | \
+	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
+	      -e 's/$$/$(EXEEXT)/' \
+	`; \
+	test -n "$$list" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(pkglibexecdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(pkglibexecdir)" && $(am__rm_f) $$files
+
+clean-pkglibexecPROGRAMS:
+	$(am__rm_f) $(pkglibexec_PROGRAMS)
+	test -z "$(EXEEXT)" || $(am__rm_f) $(pkglibexec_PROGRAMS:$(EXEEXT)=)
 $(top_builddir)/amalgamation/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/amalgamation
 	@: >>$(top_builddir)/amalgamation/$(am__dirstamp)
@@ -1324,7 +1381,7 @@ check: $(BUILT_SOURCES)
 all-am: Makefile $(PROGRAMS) $(MANS) $(DATA) all-local
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompletiondir)" "$(DESTDIR)$(zshcompletiondir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(pkglibexecdir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompletiondir)" "$(DESTDIR)$(zshcompletiondir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -1363,10 +1420,12 @@ maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 	-$(am__rm_f) $(BUILT_SOURCES)
+@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@install-exec-hook:
+@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@uninstall-hook:
 clean: clean-recursive
 
 clean-am: clean-binPROGRAMS clean-generic clean-libtool \
-	clean-noinstPROGRAMS mostlyclean-am
+	clean-noinstPROGRAMS clean-pkglibexecPROGRAMS mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/img2sixel-sixel.Po
@@ -1405,8 +1464,9 @@ install-dvi: install-dvi-recursive
 
 install-dvi-am:
 
-install-exec-am: install-binPROGRAMS
-
+install-exec-am: install-binPROGRAMS install-pkglibexecPROGRAMS
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
 install-html: install-html-recursive
 
 install-html-am:
@@ -1458,31 +1518,36 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-dist_bashcompletionDATA \
-	uninstall-dist_zshcompletionDATA uninstall-man
-
+	uninstall-dist_zshcompletionDATA uninstall-man \
+	uninstall-pkglibexecPROGRAMS
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 uninstall-man: uninstall-man1
 
 .MAKE: $(am__recursive_targets) all check install install-am \
-	install-exec install-strip
+	install-exec install-exec-am install-strip uninstall-am
 
 .PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am all-local \
 	am--depfiles check check-am clean clean-binPROGRAMS \
-	clean-generic clean-libtool clean-noinstPROGRAMS cscopelist-am \
-	ctags ctags-am distclean distclean-compile distclean-generic \
+	clean-generic clean-libtool clean-noinstPROGRAMS \
+	clean-pkglibexecPROGRAMS cscopelist-am ctags ctags-am \
+	distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-binPROGRAMS \
 	install-data install-data-am install-dist_bashcompletionDATA \
 	install-dist_zshcompletionDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-man1 \
-	install-pdf install-pdf-am install-ps install-ps-am \
+	install-exec install-exec-am install-exec-hook install-html \
+	install-html-am install-info install-info-am install-man \
+	install-man1 install-pdf install-pdf-am \
+	install-pkglibexecPROGRAMS install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
 	installdirs-am maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
 	uninstall-am uninstall-binPROGRAMS \
 	uninstall-dist_bashcompletionDATA \
-	uninstall-dist_zshcompletionDATA uninstall-man uninstall-man1
+	uninstall-dist_zshcompletionDATA uninstall-hook uninstall-man \
+	uninstall-man1 uninstall-pkglibexecPROGRAMS
 
 .PRECIOUS: Makefile
 
@@ -1515,6 +1580,28 @@ completion_embed.h: \
 @WITH_SHEBANG_FILE_TRUE@	@touch $@
 
 @WITH_SHEBANG_FILE_TRUE@all-local: $(SIXEL_SHEBANG_STAMP)
+
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
+@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@install-exec-hook:
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@	$(INSTALL_SCRIPT) "$(builddir)/img2sixel-node-launcher" \
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@		"$(DESTDIR)$(bindir)/img2sixel"
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@	@if test -f "img2sixel.wasm"; then \
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@		$(INSTALL_DATA) "img2sixel.wasm" \
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@			"$(DESTDIR)$(pkglibexecdir)/img2sixel.wasm"; \
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@	fi
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@	$(INSTALL_SCRIPT) "$(builddir)/sixel2png-node-launcher" \
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@		"$(DESTDIR)$(bindir)/sixel2png"
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@	@if test -f "sixel2png.wasm"; then \
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@		$(INSTALL_DATA) "sixel2png.wasm" \
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@			"$(DESTDIR)$(pkglibexecdir)/sixel2png.wasm"; \
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@	fi
+
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
+@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@uninstall-hook:
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@	rm -f "$(DESTDIR)$(bindir)/img2sixel"
+@WANT_IMG2SIXEL_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@	rm -f "$(DESTDIR)$(pkglibexecdir)/img2sixel.wasm"
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@	rm -f "$(DESTDIR)$(bindir)/sixel2png"
+@WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@	rm -f "$(DESTDIR)$(pkglibexecdir)/sixel2png.wasm"
 
 .PHONY: prelink-objs
 prelink-objs: $(BUILT_SOURCES) $(PRELINK_OBJECTS)

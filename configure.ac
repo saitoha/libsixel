@@ -1475,6 +1475,14 @@ AS_CASE([$host_os],
          AS_IF([test -n "$EMSCRIPTEN_LDFLAGS"],
                [LDFLAGS="$LDFLAGS $EMSCRIPTEN_LDFLAGS"])])
 
+sixel_emscripten_split_mode=no
+AS_CASE([$host_os],
+        [emscripten*],
+        [AS_IF([test "x$enable_emscripten_single_file" = "xyes"],
+               [sixel_emscripten_split_mode=yes])])
+AM_CONDITIONAL([WITH_EMSCRIPTEN_SPLIT_MODE],
+               [test "x$sixel_emscripten_split_mode" = "xyes"])
+
 AC_ARG_ENABLE([threads],
               [AS_HELP_STRING([--disable-threads],
                               [disable internal threadpool support (default: auto)])],
@@ -4741,6 +4749,8 @@ AC_CONFIG_FILES([Makefile
                  src/Makefile
                  include/Makefile
                  converters/Makefile
+                 converters/img2sixel-node-launcher:converters/img2sixel-node-launcher.in
+                 converters/sixel2png-node-launcher:converters/sixel2png-node-launcher.in
                  assessment/Makefile
                  tools/Makefile
                  tools/libsixel-config

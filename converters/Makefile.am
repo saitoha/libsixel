@@ -19,9 +19,12 @@ endif
 BASH = @BASH@
 
 EXTRA_DIST = $(srcdir)/aborttrace.c $(srcdir)/aborttrace.h \
-             $(srcdir)/compat.h
+             $(srcdir)/compat.h \
+             $(srcdir)/img2sixel-node-launcher.in \
+             $(srcdir)/sixel2png-node-launcher.in
 
 bin_PROGRAMS =
+pkglibexec_PROGRAMS =
 noinst_PROGRAMS =
 dist_man_MANS =
 
@@ -97,7 +100,11 @@ completion_embed.h: \
 	mv "$$tmp" "$@" || { rm -f "$$tmp"; exit 1; }
 
 if WANT_IMG2SIXEL
+if WITH_EMSCRIPTEN_SPLIT_MODE
+pkglibexec_PROGRAMS += img2sixel
+else
 bin_PROGRAMS += img2sixel
+endif
 if WANT_AMALGAMATED_TOOLS
 img2sixel_SOURCES =
 nodist_img2sixel_SOURCES = $(AMALGAMATION_SIXEL)
@@ -156,7 +163,11 @@ dist_zshcompletion_DATA += $(srcdir)/shell-completion/zsh/_img2sixel
 endif
 
 if WANT_SIXEL2PNG
+if WITH_EMSCRIPTEN_SPLIT_MODE
+pkglibexec_PROGRAMS += sixel2png
+else
 bin_PROGRAMS += sixel2png
+endif
 sixel2png_CPPFLAGS = $(AM_CPPFLAGS)
 if WANT_AMALGAMATED_TOOLS
 sixel2png_SOURCES =
@@ -201,7 +212,7 @@ endif
 
 
 if WITH_SHEBANG_FILE
-SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS)
+SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS) $(pkglibexec_PROGRAMS)
 SIXEL_SHEBANG_STAMP = converters-shebang.stamp
 
 $(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
@@ -213,6 +224,38 @@ $(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
 
 all-local: $(SIXEL_SHEBANG_STAMP)
 CLEANFILES += $(SIXEL_SHEBANG_STAMP)
+endif
+
+if WITH_EMSCRIPTEN_SPLIT_MODE
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
+install-exec-hook:
+if WANT_IMG2SIXEL
+	$(INSTALL_SCRIPT) "$(builddir)/img2sixel-node-launcher" \
+		"$(DESTDIR)$(bindir)/img2sixel"
+	@if test -f "img2sixel.wasm"; then \
+		$(INSTALL_DATA) "img2sixel.wasm" \
+			"$(DESTDIR)$(pkglibexecdir)/img2sixel.wasm"; \
+	fi
+endif
+if WANT_SIXEL2PNG
+	$(INSTALL_SCRIPT) "$(builddir)/sixel2png-node-launcher" \
+		"$(DESTDIR)$(bindir)/sixel2png"
+	@if test -f "sixel2png.wasm"; then \
+		$(INSTALL_DATA) "sixel2png.wasm" \
+			"$(DESTDIR)$(pkglibexecdir)/sixel2png.wasm"; \
+	fi
+endif
+
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
+uninstall-hook:
+if WANT_IMG2SIXEL
+	rm -f "$(DESTDIR)$(bindir)/img2sixel"
+	rm -f "$(DESTDIR)$(pkglibexecdir)/img2sixel.wasm"
+endif
+if WANT_SIXEL2PNG
+	rm -f "$(DESTDIR)$(bindir)/sixel2png"
+	rm -f "$(DESTDIR)$(pkglibexecdir)/sixel2png.wasm"
+endif
 endif
 
 .PHONY: prelink-objs
