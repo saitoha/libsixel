@@ -1291,6 +1291,8 @@ img2sixel_write_all_stdout(const char *buf, size_t len)
 {
     size_t total;
     ssize_t written;
+    unsigned int retry_count;
+    unsigned int max_retry_count;
 
     if (buf == NULL) {
         errno = EINVAL;
@@ -1299,6 +1301,8 @@ img2sixel_write_all_stdout(const char *buf, size_t len)
 
     total = 0u;
     written = 0;
+    retry_count = 0u;
+    max_retry_count = 65536u;
     /*
      * write(2) may legally return short counts on pipes.
      * Drain the entire completion payload to keep show output deterministic.
@@ -1311,12 +1315,33 @@ img2sixel_write_all_stdout(const char *buf, size_t len)
             if (errno == EINTR) {
                 continue;
             }
+            /*
+             * Some runtimes (including Emscripten stdout plumbing) can report
+             * transient EAGAIN/EWOULDBLOCK even for user-facing stdout writes.
+             * Retry a bounded number of times before surfacing the error.
+             */
+            if (errno == EAGAIN
+#if defined(EWOULDBLOCK) && EWOULDBLOCK != EAGAIN
+                || errno == EWOULDBLOCK
+#endif
+                ) {
+                if (retry_count < max_retry_count) {
+                    ++retry_count;
+                    continue;
+                }
+                return -1;
+            }
             return -1;
         }
         if (written == 0) {
+            if (retry_count < max_retry_count) {
+                ++retry_count;
+                continue;
+            }
             errno = EIO;
             return -1;
         }
+        retry_count = 0u;
         total += (size_t)written;
     }
 
