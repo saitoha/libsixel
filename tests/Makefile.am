@@ -11,7 +11,6 @@ TEST_RUNNER_AMALGAMATION_SIXEL = \
         $(top_builddir)/amalgamation/test-runner/sixel.c
 if WANT_AMALGAMATED_TOOLS
 BUILT_SOURCES = $(TEST_RUNNER_AMALGAMATION_SIXEL)
-CLEANFILES = $(TEST_RUNNER_AMALGAMATION_SIXEL)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(TEST_RUNNER_AMALGAMATION_SIXEL): FORCE_TEST_RUNNER_AMALGAMATION \
@@ -244,6 +243,15 @@ test_runner_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
 test_runner_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
 test_runner_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 else
+if WANT_AMALGAMATED_LIB
+# libsixel amalgamation already contains lookup-policy objects.
+# Avoid duplicate symbol definitions when test_runner links sixel.lib.
+TEST_RUNNER_LOOKUP_POLICY_SOURCE =
+else
+# Build lookup-policy into test_runner for source-contract staticcheck.
+TEST_RUNNER_LOOKUP_POLICY_SOURCE = $(top_srcdir)/src/lookup-policy.c
+endif
+
 test_runner_SOURCES = test_runner.c \
     cli/aborttrace/0001_img2sixel_aborttrace.c \
     cli/0029_cli_token_is_known_option.c \
@@ -307,7 +315,7 @@ test_runner_SOURCES = test_runner.c \
     extension/gdk-pixbuf-loader/0006_loader_module.c \
     extension/gdk-pixbuf-loader/0007_loader_plugin_integration.c \
     $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
-    $(top_srcdir)/src/lookup-policy.c \
+    $(TEST_RUNNER_LOOKUP_POLICY_SOURCE) \
     $(top_srcdir)/converters/aborttrace.c \
     $(top_srcdir)/converters/cli.c
 test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) \
@@ -1434,6 +1442,9 @@ dist-hook:
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
 CLEANFILES =
+if WANT_AMALGAMATED_TOOLS
+CLEANFILES += $(TEST_RUNNER_AMALGAMATION_SIXEL)
+endif
 
 # Avoid deleting in-tree test scripts when "make clean" is invoked.
 # Only remove copied test files in an out-of-tree build so that the
