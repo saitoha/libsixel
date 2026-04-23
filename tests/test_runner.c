@@ -337,7 +337,7 @@ print_usage(char const *program)
     fprintf(stderr, "       %s --list\n", program);
     fprintf(stderr, "       %s --is-running-under-wine\n", program);
     fprintf(stderr,
-            "       %s --win32-ctrl-break-run <delay-ms> <timeout-ms> "
+            "       %s --win32-ctrl-break-run <delay-ms> <timeout-ms|0> "
             "<program> [args...]\n",
             program);
     fprintf(stderr,
@@ -402,6 +402,7 @@ test_runner_run_windows_ctrl_break(int argc, char **argv)
     char const *token_cursor;
     size_t backslash_count;
     DWORD wait_result;
+    DWORD wait_timeout;
     BOOL create_ok;
     BOOL handler_ignore_set;
     BOOL ctrl_break_sent;
@@ -425,6 +426,7 @@ test_runner_run_windows_ctrl_break(int argc, char **argv)
     token_cursor = NULL;
     backslash_count = 0u;
     wait_result = WAIT_FAILED;
+    wait_timeout = INFINITE;
     create_ok = FALSE;
     handler_ignore_set = FALSE;
     ctrl_break_sent = FALSE;
@@ -562,8 +564,11 @@ test_runner_run_windows_ctrl_break(int argc, char **argv)
         goto cleanup;
     }
 
+    if (parsed_timeout > 0ul) {
+        wait_timeout = (DWORD)parsed_timeout;
+    }
     wait_result = WaitForSingleObject(process_info.hProcess,
-                                      (DWORD)parsed_timeout);
+                                      wait_timeout);
     if (wait_result == WAIT_OBJECT_0) {
         child_terminated = TRUE;
         exit_status = EXIT_SUCCESS;

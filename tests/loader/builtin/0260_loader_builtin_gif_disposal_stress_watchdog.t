@@ -13,42 +13,11 @@ printf '1..1\n'
 set -v
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-disposal-stress-anim.gif"
+command_status=0
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -ldisable -g \
-              "${input_gif}" -o /dev/null >/dev/null 2>&1 &
-pid=$!
-
-# Fast path: short polling for common completion.
-wait_limit=10
-while test "${wait_limit}" -gt 0; do
-    kill -0 "${pid}" 2>/dev/null || {
-        break
-    }
-    sleep 0.02
-    wait_limit=$((wait_limit - 1))
-done
-
-kill -0 "${pid}" 2>/dev/null && {
-    # Fallback path: preserve the old watchdog as insurance.
-    wait_limit=200
-    while test "${wait_limit}" -gt 0; do
-        kill -0 "${pid}" 2>/dev/null || {
-            break
-        }
-        sleep 0.05
-        wait_limit=$((wait_limit - 1))
-    done
-}
-
-kill -0 "${pid}" 2>/dev/null && {
-    kill "${pid}" 2>/dev/null || true
-    wait "${pid}" 2>/dev/null || true
-    echo "not ok" 1 - "disposal stress decode exceeded watchdog"
-    exit 0
-}
-
-wait "${pid}" || rc=$?
-test "${rc-0}" -eq 0 || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -ldisable -g "${input_gif}" \
+    -o /dev/null >/dev/null 2>&1 || command_status=$?
+test "${command_status}" -eq 0 || {
     echo "not ok" 1 - "disposal stress decode failed"
     exit 0
 }

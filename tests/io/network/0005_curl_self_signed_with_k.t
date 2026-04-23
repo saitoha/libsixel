@@ -57,24 +57,16 @@ server_root="${TOP_SRCDIR}"
 server_pid=$!
 
 server_port=""
-for _ in \
-    1 2 3 4 5 6 7 8 9 10 \
-    11 12 13 14 15 16 17 18 19 20 \
-    21 22 23 24 25 26 27 28 29 30 \
-    31 32 33 34 35 36 37 38 39 40 \
-    41 42 43 44 45 46 47 48 49 50; do
-    test -s "${port_file}" && {
-        IFS= read -r server_port < "${port_file}" || test -n "${server_port}"
-        break
-    }
-
+while test ! -s "${port_file}"; do
     kill -0 "${server_pid}" 2>/dev/null || break
-
-    sleep 0.01
 done
+test -s "${port_file}" && {
+    IFS= read -r server_port < "${port_file}" || test -n "${server_port}"
+}
 
 test -n "${server_port}" || {
     kill "${server_pid}" 2>/dev/null || :
+    kill -9 "${server_pid}" 2>/dev/null || :
     wait "${server_pid}" 2>/dev/null || :
     printf 'ok 1 - self-signed fetch with -k # SKIP failed to start HTTPS server\n'
     exit 0
@@ -82,17 +74,12 @@ test -n "${server_port}" || {
 
 server_ok=1
 
-for _ in 1 2 3; do
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -k "https://localhost:${server_port}/images/map8.six" \
-        >/dev/null && {
-        server_ok=0
-        break
-    }
-
-    sleep 0.01
-done
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -k \
+    "https://localhost:${server_port}/images/map8.six" >/dev/null && \
+    server_ok=0
 
 kill "${server_pid}" 2>/dev/null || :
+kill -9 "${server_pid}" 2>/dev/null || :
 wait "${server_pid}" 2>/dev/null || :
 
 test ${server_ok} -eq 0 || {

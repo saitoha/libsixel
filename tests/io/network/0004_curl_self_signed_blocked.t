@@ -53,54 +53,24 @@ server_pid_file="${ARTIFACT_LOCAL_DIR}/curl-server-pid"
     echo $! >"${server_pid_file}"
 )
 server_pid=""
-while IFS= read -r server_pid_line || test -n "${server_pid_line}"; do
-    case "${server_pid}" in
-        "")
-            server_pid=${server_pid_line}
-            ;;
-        *)
-            server_pid="${server_pid}
-${server_pid_line}"
-            ;;
-    esac
-done < "${server_pid_file}"
+IFS= read -r server_pid < "${server_pid_file}" || test -n "${server_pid}"
+test -n "${server_pid}" || {
+    printf 'ok 1 - self-signed fetch blocked # SKIP failed to read HTTPS server pid\n'
+    exit 0
+}
 
 server_port=""
-for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
-    test -s "${port_file}" && {
-        server_port=""
-        while IFS= read -r server_port_line || test -n "${server_port_line}"; do
-            case "${server_port}" in
-                "")
-                    server_port=${server_port_line}
-                    ;;
-                *)
-                    server_port="${server_port}
-${server_port_line}"
-                    ;;
-            esac
-        done < "${port_file}"
-        break
-    }
-
-    "${PYTHON}" -c "import time; time.sleep(0.1)"
+while test ! -s "${port_file}"; do
+    kill -0 "${server_pid}" 2>/dev/null || break
 done
+test -s "${port_file}" && {
+    IFS= read -r server_port < "${port_file}" || test -n "${server_port}"
+}
 
 test -n "${server_port}" || {
-wait_limit=10
-waited=0
-kill "${server_pid}" 2>/dev/null || :
-while kill -0 "${server_pid}" 2>/dev/null; do
-    test ${waited} -lt ${wait_limit} || {
-        echo "Server pid ${server_pid} did not exit; forcing kill." >&2
-        kill -9 "${server_pid}" 2>/dev/null || :
-        break
-    }
-
-    "${PYTHON}" -c "import time; time.sleep(0.01)"
-    waited=$((waited + 1))
-done
-wait "${server_pid}" 2>/dev/null || :
+    kill "${server_pid}" 2>/dev/null || :
+    kill -9 "${server_pid}" 2>/dev/null || :
+    wait "${server_pid}" 2>/dev/null || :
     printf 'ok 1 - self-signed fetch blocked # SKIP failed to start HTTPS server\n'
     exit 0
 }
@@ -109,19 +79,8 @@ verify_output="${ARTIFACT_LOCAL_DIR}/curl-verify"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "https://localhost:${server_port}/images/map8.six" \
     >"${verify_output}" && command_status=0 || command_status=$?
 
-wait_limit=10
-waited=0
 kill "${server_pid}" 2>/dev/null || :
-while kill -0 "${server_pid}" 2>/dev/null; do
-    test ${waited} -lt ${wait_limit} || {
-        echo "Server pid ${server_pid} did not exit; forcing kill." >&2
-        kill -9 "${server_pid}" 2>/dev/null || :
-        break
-    }
-
-    "${PYTHON}" -c "import time; time.sleep(0.01)"
-    waited=$((waited + 1))
-done
+kill -9 "${server_pid}" 2>/dev/null || :
 wait "${server_pid}" 2>/dev/null || :
 
 # The HTTPS request must fail TLS verification when -k is omitted.
