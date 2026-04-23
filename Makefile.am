@@ -90,7 +90,8 @@ ltmain.sh: $(top_srcdir)/build-aux/ltmain.sh
 	fuzz-run-loader-wic \
 	fuzz-run-struct-push-set \
 	fuzz-run-struct-full-set \
-	check-python check-ruby check-perl check-php
+	check-python check-ruby check-perl check-php \
+	installcheck-local
 
 check-python:
 	$(MAKE) -C tests check-python
@@ -108,6 +109,42 @@ if HAVE_PHP
 else
 	@echo "PHP bindings are not enabled; skipping PHP tests"
 endif
+
+installcheck-local:
+	@set -eu; \
+	if test '@cross_compiling@' = 'yes'; then \
+		echo "installcheck: skipped for cross-compiling builds"; \
+		exit 0; \
+	fi; \
+	prefix='@prefix@'; \
+	exec_prefix='@exec_prefix@'; \
+	bindir='@bindir@'; \
+	libexecdir='@libexecdir@'; \
+	libdir='@libdir@'; \
+	if test "$$prefix" = "NONE"; then \
+		prefix='/usr/local'; \
+	fi; \
+	if test "$$exec_prefix" = "NONE"; then \
+		exec_prefix='${prefix}'; \
+	fi; \
+	eval "exec_prefix=$$exec_prefix"; \
+	eval "bindir=$$bindir"; \
+	eval "libexecdir=$$libexecdir"; \
+	eval "libdir=$$libdir"; \
+	install_root=''; \
+	if test -n "$${SIXEL_INSTALLCHECK_DESTDIR-}"; then \
+		install_root="$${SIXEL_INSTALLCHECK_DESTDIR}"; \
+	elif test -n "$${DESTDIR-}"; then \
+		install_root="$${DESTDIR}"; \
+	fi; \
+	install_bindir="$$install_root$$bindir"; \
+	install_libexecdir="$$install_root$$libexecdir"; \
+	install_libdir="$$install_root$$libdir"; \
+	$(MAKE) $(AM_MAKEFLAGS) -C tests installcheck-local \
+		SIXEL_INSTALLCHECK=1 \
+		SIXEL_INSTALL_BINDIR="$$install_bindir" \
+		SIXEL_INSTALL_LIBEXECDIR="$$install_libexecdir" \
+		SIXEL_INSTALL_LIBDIR="$$install_libdir"
 
 FUZZ_AFL ?= afl-fuzz
 FUZZ_TIMEOUT ?= 0

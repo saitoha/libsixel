@@ -2155,6 +2155,7 @@ endif
 # Build the embedded completion header once so both the converter targets and
 # the amalgamated translation unit can consume the same generated artifact.
 sh = find_program('sh')
+meson_prog = find_program('meson', required: true)
 python3 = find_program('python3', required: true)
 gen_completion = join_paths(
   meson.project_source_root(), 'tools', 'gen_completion_embed.py'
@@ -2260,6 +2261,108 @@ subdir('images')
 if get_option('tests')
   subdir('tests')
 endif
+
+run_target('installcheck',
+  command: [sh, '-c', '''
+set -eu
+
+meson_bin="$1"
+build_root="$2"
+prefix="$3"
+bindir="$4"
+libexecdir="$5"
+libdir="$6"
+host_system="$7"
+cross="$8"
+tests_enabled="$9"
+bin_ext="${10}"
+
+if test "$cross" = "yes"; then
+  echo "installcheck: skipped for cross builds"
+  exit 0
+fi
+
+if test "$tests_enabled" != "yes"; then
+  echo "installcheck: skipped because tests are disabled"
+  exit 0
+fi
+
+case "$bindir" in
+  /*) install_bindir="$bindir" ;;
+  *) install_bindir="$prefix/$bindir" ;;
+esac
+
+case "$libexecdir" in
+  /*) install_libexecdir="$libexecdir" ;;
+  *) install_libexecdir="$prefix/$libexecdir" ;;
+esac
+
+case "$libdir" in
+  /*) install_libdir="$libdir" ;;
+  *) install_libdir="$prefix/$libdir" ;;
+esac
+
+if test ! -d "$install_bindir"; then
+  echo "installcheck: installed bindir not found: $install_bindir" >&2
+  echo "installcheck: run 'meson install -C $build_root' first" >&2
+  exit 1
+fi
+
+if test ! -d "$install_libdir"; then
+  echo "installcheck: installed libdir not found: $install_libdir" >&2
+  echo "installcheck: run 'meson install -C $build_root' first" >&2
+  exit 1
+fi
+
+PATH="$install_bindir:$build_root/tests:$PATH"
+export PATH
+
+if test "$host_system" = "darwin"; then
+  if test -n "${DYLD_LIBRARY_PATH:-}"; then
+    DYLD_LIBRARY_PATH="$install_libdir:${DYLD_LIBRARY_PATH}"
+  else
+    DYLD_LIBRARY_PATH="$install_libdir"
+  fi
+  export DYLD_LIBRARY_PATH
+else
+  if test -n "${LD_LIBRARY_PATH:-}"; then
+    LD_LIBRARY_PATH="$install_libdir:${LD_LIBRARY_PATH}"
+  else
+    LD_LIBRARY_PATH="$install_libdir"
+  fi
+  export LD_LIBRARY_PATH
+fi
+
+export SIXEL_RUNTIME=''
+export SIXEL_INSTALLCHECK=1
+export SIXEL_INSTALL_BINDIR="$install_bindir"
+export SIXEL_INSTALL_LIBEXECDIR="$install_libexecdir"
+export SIXEL_INSTALL_LIBDIR="$install_libdir"
+export SIXEL_INSTALLCHECK_IMG2SIXEL_PATH="img2sixel${bin_ext}"
+export SIXEL_INSTALLCHECK_SIXEL2PNG_PATH="sixel2png${bin_ext}"
+export SIXEL_INSTALLCHECK_LSQA_PATH="lsqa${bin_ext}"
+export SIXEL_INSTALLCHECK_TEST_RUNNER_PATH="test_runner${bin_ext}"
+
+if test -n "${SIXEL_INSTALLCHECK_TESTS-}"; then
+  # Allow callers to run a focused subset while keeping installcheck defaults.
+  # shellcheck disable=SC2086
+  "$meson_bin" test -C "$build_root" --no-rebuild --suite tap --print-errorlogs --setup installcheck $SIXEL_INSTALLCHECK_TESTS
+else
+  "$meson_bin" test -C "$build_root" --no-rebuild --suite tap --print-errorlogs --setup installcheck
+fi
+''',
+            'meson-installcheck',
+            meson_prog,
+            meson.project_build_root(),
+            get_option('prefix'),
+            get_option('bindir'),
+            get_option('libexecdir'),
+            get_option('libdir'),
+            host_machine.system(),
+            meson.is_cross_build() ? 'yes' : 'no',
+            get_option('tests') ? 'yes' : 'no',
+            (host_machine.system() == 'windows' or
+             host_machine.system() == 'cygwin') ? '.exe' : ''])
 
 if fuzz_enabled
   subdir('fuzz')

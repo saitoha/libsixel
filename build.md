@@ -29,7 +29,14 @@ Before building, ensure the following tools are available:
 make
 make check    # optional
 make install  # may require sudo
+make installcheck  # optional: run tests against installed commands
 ```
+
+`installcheck` follows the usual "install-style" intent (validate installed
+artifacts rather than build-tree outputs).  `make installcheck` expects
+`make install` to be completed first and then runs the existing TAP suite with
+`PATH` and loader variables adjusted to the installed tree.  When validating a
+staged package image, pass `SIXEL_INSTALLCHECK_DESTDIR=/path/to/stage`.
 
 Customize `./configure` options to enable PNG, JPEG, curl, or Quick Look
 extension support.  Run `./configure --help` to see the full list of options.
@@ -316,6 +323,7 @@ Then build and run tests:
 meson compile -C builddir
 meson test -C builddir
 meson install -C builddir  # may require sudo on Unix-like systems
+meson compile -C builddir installcheck  # optional: tests installed commands
 ```
 
 ### Static analyzer builds (Meson)

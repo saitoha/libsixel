@@ -36,6 +36,7 @@ HELPER_FILES = \
     bindings/php/_coverage_to_lcov.php
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
+SIXEL_INSTALLCHECK ?= 0
 SIXEL_TEST_MACOS_PRODUCT_VERSION := $(shell sw_vers -productVersion 2>/dev/null || printf "")
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
 AM_TESTS_ENVIRONMENT += TOP_SRCDIR='$(abs_top_srcdir)'; export TOP_SRCDIR;
@@ -49,6 +50,8 @@ AM_TESTS_ENVIRONMENT += SIXEL_MSAN_BUILD='@SIXEL_MSAN_BUILD@'; \
        export SIXEL_MSAN_BUILD;
 AM_TESTS_ENVIRONMENT += CROSS_COMPILING='@cross_compiling@'; \
        export CROSS_COMPILING;
+AM_TESTS_ENVIRONMENT += SIXEL_INSTALLCHECK='$(SIXEL_INSTALLCHECK)'; \
+       export SIXEL_INSTALLCHECK;
 AM_TESTS_ENVIRONMENT += ENABLE_PYTHON='@ENABLE_PYTHON@'; export ENABLE_PYTHON;
 AM_TESTS_ENVIRONMENT += ENABLE_RUBY='@ENABLE_RUBY@'; export ENABLE_RUBY;
 AM_TESTS_ENVIRONMENT += ENABLE_PERL='@ENABLE_PERL@'; export ENABLE_PERL;
@@ -803,7 +806,7 @@ staticcheck-c-header-modeline:
 
 # Build all test logs through a phony target so recursive make does not need
 # to receive thousands of .log paths as command-line arguments.
-.PHONY: sixel-check-test-tools sixel-check-test-logs
+.PHONY: sixel-check-test-tools sixel-check-test-logs installcheck-local
 sixel-check-test-tools:
 	@set -eu; \
 	$(MAKE) -C "$(top_builddir)/src" libsixel.la; \
@@ -819,6 +822,53 @@ endif
 
 sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
 	@:
+
+# Run the regular TAP suite against installed commands.
+# installcheck expects `make install` to have completed first.
+installcheck-local:
+	@set -eu; \
+	if test "${SIXEL_INSTALLCHECK-0}" != "1"; then \
+	    echo "installcheck: skipping tests/installcheck-local (driver inactive)"; \
+	    exit 0; \
+	fi; \
+	install_bindir='$(SIXEL_INSTALL_BINDIR)'; \
+	install_libdir='$(SIXEL_INSTALL_LIBDIR)'; \
+	if test -z "$$install_bindir"; then \
+	    echo "error: SIXEL_INSTALL_BINDIR is not set" >&2; \
+	    exit 1; \
+	fi; \
+	if test ! -d "$$install_bindir"; then \
+	    echo "error: installcheck requires installed binaries at $$install_bindir" >&2; \
+	    echo "error: run 'make install' first or pass SIXEL_INSTALLCHECK_DESTDIR" >&2; \
+	    exit 1; \
+	fi; \
+	if test -n "$$install_libdir" && test ! -d "$$install_libdir"; then \
+	    echo "error: installcheck library directory does not exist: $$install_libdir" >&2; \
+	    exit 1; \
+	fi; \
+	if test -n "$$install_libdir"; then \
+	    if test -n "$${LD_LIBRARY_PATH-}"; then \
+	        export LD_LIBRARY_PATH="$$install_libdir:$${LD_LIBRARY_PATH}"; \
+	    else \
+	        export LD_LIBRARY_PATH="$$install_libdir"; \
+	    fi; \
+	    if test -n "$${DYLD_LIBRARY_PATH-}"; then \
+	        export DYLD_LIBRARY_PATH="$$install_libdir:$${DYLD_LIBRARY_PATH}"; \
+	    else \
+	        export DYLD_LIBRARY_PATH="$$install_libdir"; \
+	    fi; \
+	fi; \
+	export PATH="$$install_bindir:$(abs_top_builddir)/tests:$$PATH"; \
+	export SIXEL_RUNTIME=''; \
+	export SIXEL_INSTALLCHECK=1; \
+	export SIXEL_INSTALL_LIBDIR="$$install_libdir"; \
+	export SIXEL_INSTALLCHECK_IMG2SIXEL_PATH='img2sixel@EXEEXT@'; \
+	export SIXEL_INSTALLCHECK_SIXEL2PNG_PATH='sixel2png@EXEEXT@'; \
+	export SIXEL_INSTALLCHECK_LSQA_PATH='lsqa@EXEEXT@'; \
+	export SIXEL_INSTALLCHECK_TEST_RUNNER_PATH='test_runner@EXEEXT@'; \
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS \
+	    SIXEL_INSTALLCHECK=1 \
+	    SIXEL_RUNTIME=''
 
 # Override check-TESTS to avoid nested single quotes in automake helpers.
 # Export config.h feature toggles once so tests can rely on environment

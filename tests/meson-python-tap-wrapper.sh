@@ -12,6 +12,30 @@ else
   test_script=$0
 fi
 
+# Default tool paths to build-tree outputs while allowing installcheck to
+# override them through the environment.
+tool_bin_ext=${SIXEL_BIN_EXT-}
+if test -z "${IMG2SIXEL_PATH-}"; then
+  IMG2SIXEL_PATH="$MESON_BUILD_ROOT/converters/img2sixel${tool_bin_ext}"
+fi
+if test -z "${SIXEL2PNG_PATH-}"; then
+  SIXEL2PNG_PATH="$MESON_BUILD_ROOT/converters/sixel2png${tool_bin_ext}"
+fi
+if test -z "${LSQA_PATH-}"; then
+  LSQA_PATH="$MESON_BUILD_ROOT/assessment/lsqa${tool_bin_ext}"
+fi
+if test -z "${TEST_RUNNER_PATH-}"; then
+  TEST_RUNNER_PATH="$MESON_BUILD_ROOT/tests/test_runner${tool_bin_ext}"
+fi
+if test -z "${LIBSIXEL_LIBDIR-}"; then
+  LIBSIXEL_LIBDIR="$MESON_BUILD_ROOT/src"
+fi
+export IMG2SIXEL_PATH
+export SIXEL2PNG_PATH
+export LSQA_PATH
+export TEST_RUNNER_PATH
+export LIBSIXEL_LIBDIR
+
 test_requires_large_fixtures() {
   case "$test_script" in
     *xxlarge*|*oversized_iccp*)

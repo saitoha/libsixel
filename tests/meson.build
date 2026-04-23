@@ -77,18 +77,10 @@ base_env_settings = [
   ['SIXEL_CONFIGURED_PHP', php_for_tests_path],
   # Mirror autotools check-TESTS metadata so TAP helper scripts can share
   # one execution path across build systems.
-  # Ensure Python TAP tests can locate the freshly built shared library when
-  # Meson is invoked without a prior `meson compile`. The binding smoke test
-  # relies on LIBSIXEL_LIBDIR to point at the build artifact directory.
+  # Keep the build-tree shared library path available for bindings and
+  # configure wrappers. Executable tool paths are resolved in
+  # meson-python-tap-wrapper.sh so installcheck can override them.
   ['LIBSIXEL_LIBDIR', meson.project_build_root() / 'src'],
-  ['IMG2SIXEL_PATH', meson.project_build_root() / 'converters' /
-   ('img2sixel' + bin_ext)],
-  ['SIXEL2PNG_PATH', meson.project_build_root() / 'converters' /
-   ('sixel2png' + bin_ext)],
-  ['LSQA_PATH', meson.project_build_root() / 'assessment' /
-   ('lsqa' + bin_ext)],
-  ['TEST_RUNNER_PATH', meson.project_build_root() / 'tests' /
-   ('test_runner' + bin_ext)],
 ]
 
 thumbnailer_case_dir = join_paths(
@@ -322,6 +314,21 @@ foreach t : tests
 endforeach
 
 add_test_setup('ci', timeout_multiplier: 1)
+
+# installcheck runs the same TAP suite but resolves command paths from PATH
+# so callers can validate installed binaries instead of build-tree wrappers.
+installcheck_env = environment()
+installcheck_env.set('SIXEL_INSTALLCHECK', '1')
+installcheck_env.set('SIXEL_RUNTIME', '')
+installcheck_env.set('IMG2SIXEL_PATH', 'img2sixel' + bin_ext)
+installcheck_env.set('SIXEL2PNG_PATH', 'sixel2png' + bin_ext)
+installcheck_env.set('LSQA_PATH', 'lsqa' + bin_ext)
+installcheck_env.set('TEST_RUNNER_PATH', 'test_runner' + bin_ext)
+installcheck_env.set('LIBSIXEL_LIBDIR',
+                     join_paths(get_option('prefix'), get_option('libdir')))
+add_test_setup('installcheck',
+  env: installcheck_env,
+  timeout_multiplier: 1)
 
 run_target('test-python',
   command: [sh, '-c', '''
