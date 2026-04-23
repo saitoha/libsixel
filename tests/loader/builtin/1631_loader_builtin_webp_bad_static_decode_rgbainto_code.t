@@ -42,10 +42,10 @@ test "${diag_line#LSXWEBP1|rc=1|kind=ERR|codes=}" != "${diag_line}" || {
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_VP8_LOSSY*}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader corrupted fixture bad_static_decode_rgbainto_failure.webp missing W_UNSUP_VP8_LOSSY contract code"
+test "${diag_line#*W_UNSUP_VP8_ALPHA*}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader corrupted fixture bad_static_decode_rgbainto_failure.webp missing W_UNSUP_VP8_ALPHA contract code"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader corrupted fixture bad_static_decode_rgbainto_failure.webp emits W_UNSUP_VP8_LOSSY contract code"
+echo "ok" 1 - "forced builtin loader corrupted fixture bad_static_decode_rgbainto_failure.webp emits W_UNSUP_VP8_ALPHA contract code"
 exit 0

@@ -348,8 +348,17 @@ sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
         return SIXEL_OK;
     }
 
-    if (info->vp8_count != 0u || info->alpha_count != 0u) {
-        plan->kind = SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_VP8;
+    if (info->vp8_count != 0u && info->alpha_count != 0u) {
+        plan->kind = SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_VP8_ALPHA;
+        plan->vp8_payload = info->vp8.payload;
+        plan->vp8_payload_size = info->vp8.payload_size;
+        return SIXEL_OK;
+    }
+
+    if (info->vp8_count != 0u) {
+        plan->kind = SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_VP8_STATIC;
+        plan->vp8_payload = info->vp8.payload;
+        plan->vp8_payload_size = info->vp8.payload_size;
         return SIXEL_OK;
     }
 
