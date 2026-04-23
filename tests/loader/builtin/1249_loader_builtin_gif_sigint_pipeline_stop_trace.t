@@ -25,11 +25,6 @@ test "${HAVE_WINDOWS_H-0}" = 1 && {
     exit 0
 }
 
-test "${GITHUB_JOB-}" = "cosmopolitan" && {
-    printf "1..0 # SKIP cosmopolitan runtime can stall SIGINT pipeline trace wait\n"
-    exit 0
-}
-
 test "${SIXEL_TSAN_BUILD-no}" = "yes" && {
     printf "1..0 # SKIP TSan runtime can stall SIGINT pipeline trace timing\n"
     exit 0

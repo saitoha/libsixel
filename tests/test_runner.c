@@ -948,6 +948,7 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     size_t combined_capacity;
     int fd_flags;
     int sleep_status;
+    int read_progress;
 
     needle_token = NULL;
     timeout_token = NULL;
@@ -979,6 +980,7 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     combined_capacity = 0u;
     fd_flags = 0;
     sleep_status = 0;
+    read_progress = 0;
 
     if (argc < 5) {
         fprintf(stderr,
@@ -1056,13 +1058,24 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     }
 
     for (;;) {
+        read_progress = 0;
         wait_pid = waitpid(child_pid, &wait_status, WNOHANG);
         if (wait_pid == child_pid) {
             child_running = 0;
-        } else if (wait_pid < (pid_t)0 && errno != EINTR) {
-            fprintf(stderr, "test_runner: waitpid failed: %s\n",
-                    strerror(errno));
-            goto timeout_cleanup;
+        } else if (wait_pid < (pid_t)0) {
+            if (errno == EINTR) {
+                /* Retry the loop after interrupted waitpid calls. */
+            } else if (errno == ECHILD) {
+                /*
+                 * Some wrapper runtimes reap direct children eagerly.
+                 * Treat this the same as observing normal child exit.
+                 */
+                child_running = 0;
+            } else {
+                fprintf(stderr, "test_runner: waitpid failed: %s\n",
+                        strerror(errno));
+                goto timeout_cleanup;
+            }
         }
 
         for (;;) {
@@ -1070,6 +1083,7 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                              read_buffer,
                              sizeof(read_buffer));
             if (read_size > 0) {
+                read_progress = 1;
                 if (fwrite(read_buffer,
                            1u,
                            (size_t)read_size,
@@ -1141,8 +1155,17 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                     "test_runner: child exited before SIGINT trigger\n");
             goto timeout_cleanup;
         }
-        if (signal_sent != 0 && child_running == 0 && stderr_closed != 0) {
-            break;
+        if (signal_sent != 0 && child_running == 0) {
+            /*
+             * Drain relayed stderr while data is still flowing, but stop
+             * waiting once the direct child has exited and no more bytes are
+             * immediately readable. Some wrappers keep inherited write ends
+             * open in helper descendants, so waiting only for EOF can stall.
+             */
+            if (stderr_closed != 0 || read_progress == 0) {
+                break;
+            }
+            continue;
         }
         if (parsed_timeout > 0ul && elapsed_ms >= parsed_timeout) {
             if (found_trigger == 0) {
