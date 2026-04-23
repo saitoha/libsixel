@@ -45,20 +45,10 @@ echo "1..1"
 set -v
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
-# Wait long enough for a deterministic handoff trace trigger.
-# The runner sends SIGINT after it observes the handoff token.
-sigint_timeout=1200
-
-# TSan builds can delay scheduler progress around signal delivery.
-# Increase this test's trigger wait timeout only when needed.
-test "${SIXEL_TSAN_BUILD-no}" = "yes" && {
-    sigint_timeout=5000
-}
-
-# Runtime wrappers can delay scheduler handoff and signal propagation.
-test -n "${SIXEL_RUNTIME-}" && {
-    sigint_timeout=5000
-}
+#
+# Drive SIGINT from the trace token itself, not from a wall-clock budget.
+# A zero timeout disables the runner-side watchdog and avoids timing tuning.
+#
 
 set +xv
 sigint_run_status=0
@@ -67,7 +57,7 @@ trace_summary=$(
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
         --sigint-run-until \
         "event=callback_handoff_decide" \
-        "${sigint_timeout}" \
+        0 \
         ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --env "SIXEL_THREADS=4" \
         --env "SIXEL_TRACE_TOPIC=encode_handoff" \

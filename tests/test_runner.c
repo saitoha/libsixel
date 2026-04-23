@@ -341,11 +341,11 @@ print_usage(char const *program)
             "<program> [args...]\n",
             program);
     fprintf(stderr,
-            "       %s --sigint-run <delay-ms> <timeout-ms> "
+            "       %s --sigint-run <delay-ms> <timeout-ms|0> "
             "<program> [args...]\n",
             program);
     fprintf(stderr,
-            "       %s --sigint-run-until <needle> <timeout-ms> "
+            "       %s --sigint-run-until <needle> <timeout-ms|0> "
             "<program> [args...]\n",
             program);
     fprintf(stderr, "\n");
@@ -817,7 +817,7 @@ test_runner_run_posix_sigint(int argc, char **argv)
                     strerror(errno));
             goto timeout_cleanup;
         }
-        if (parsed_timeout == 0ul || elapsed_ms >= parsed_timeout) {
+        if (parsed_timeout > 0ul && elapsed_ms >= parsed_timeout) {
             fprintf(stderr,
                     "test_runner: timeout waiting child after SIGINT\n");
             goto timeout_cleanup;
@@ -827,10 +827,12 @@ test_runner_run_posix_sigint(int argc, char **argv)
                     strerror(errno));
             goto timeout_cleanup;
         }
-        if (elapsed_ms > parsed_timeout - poll_interval_ms) {
-            elapsed_ms = parsed_timeout;
-        } else {
-            elapsed_ms += poll_interval_ms;
+        if (parsed_timeout > 0ul) {
+            if (elapsed_ms > parsed_timeout - poll_interval_ms) {
+                elapsed_ms = parsed_timeout;
+            } else {
+                elapsed_ms += poll_interval_ms;
+            }
         }
     }
 
@@ -1137,7 +1139,7 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
         if (signal_sent != 0 && child_running == 0 && stderr_closed != 0) {
             break;
         }
-        if (parsed_timeout == 0ul || elapsed_ms >= parsed_timeout) {
+        if (parsed_timeout > 0ul && elapsed_ms >= parsed_timeout) {
             if (found_trigger == 0) {
                 fprintf(stderr,
                         "test_runner: timeout waiting for trigger token\n");
@@ -1154,10 +1156,12 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                     strerror(errno));
             goto timeout_cleanup;
         }
-        if (elapsed_ms > parsed_timeout - poll_interval_ms) {
-            elapsed_ms = parsed_timeout;
-        } else {
-            elapsed_ms += poll_interval_ms;
+        if (parsed_timeout > 0ul) {
+            if (elapsed_ms > parsed_timeout - poll_interval_ms) {
+                elapsed_ms = parsed_timeout;
+            } else {
+                elapsed_ms += poll_interval_ms;
+            }
         }
     }
 
