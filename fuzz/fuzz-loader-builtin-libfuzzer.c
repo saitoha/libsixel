@@ -45,7 +45,8 @@ typedef enum fuzz_builtin_force_format {
     FUZZ_FORCE_FORMAT_HDR,
     FUZZ_FORCE_FORMAT_PSD,
     FUZZ_FORCE_FORMAT_PIC,
-    FUZZ_FORCE_FORMAT_BMP
+    FUZZ_FORCE_FORMAT_BMP,
+    FUZZ_FORCE_FORMAT_WEBP
 } fuzz_builtin_force_format_t;
 
 static fuzz_builtin_force_format_t g_force_format = FUZZ_FORCE_FORMAT_AUTO;
@@ -85,6 +86,9 @@ fuzz_parse_force_format(char const *value)
     }
     if (strcmp(value, "bmp") == 0) {
         return FUZZ_FORCE_FORMAT_BMP;
+    }
+    if (strcmp(value, "webp") == 0) {
+        return FUZZ_FORCE_FORMAT_WEBP;
     }
     return FUZZ_FORCE_FORMAT_AUTO;
 }
@@ -181,6 +185,22 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
         0x00u, 0x00u
     };
+    static unsigned char const webp_vp8l_header[36] = {
+        'R', 'I', 'F', 'F', 0x1cu, 0x00u, 0x00u, 0x00u,
+        'W', 'E', 'B', 'P', 'V', 'P', '8', 'L',
+        0x0fu, 0x00u, 0x00u, 0x00u,
+        0x2fu, 0x0fu, 0xc0u, 0x03u, 0x00u, 0x07u, 0x10u, 0xfdu,
+        0x8fu, 0xfeu, 0x07u, 0x22u, 0xa2u, 0xffu, 0x01u, 0x00u
+    };
+    static unsigned char const webp_vp8x_header[54] = {
+        'R', 'I', 'F', 'F', 0x2eu, 0x00u, 0x00u, 0x00u,
+        'W', 'E', 'B', 'P', 'V', 'P', '8', 'X',
+        0x0au, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x0fu, 0x00u, 0x00u, 0x0fu,
+        0x00u, 0x00u, 'V', 'P', '8', 'L', 0x0fu, 0x00u, 0x00u, 0x00u,
+        0x2fu, 0x0fu, 0xc0u, 0x03u, 0x00u, 0x07u, 0x10u, 0xfdu,
+        0x8fu, 0xfeu, 0x07u, 0x22u, 0xa2u, 0xffu, 0x01u, 0x00u
+    };
     size_t target_size;
 
     if (out_data == NULL || out_size == NULL) {
@@ -238,6 +258,11 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
     case FUZZ_FORCE_FORMAT_BMP:
         if (target_size < sizeof(bmp_header)) {
             target_size = sizeof(bmp_header);
+        }
+        break;
+    case FUZZ_FORCE_FORMAT_WEBP:
+        if (target_size < sizeof(webp_vp8x_header)) {
+            target_size = sizeof(webp_vp8x_header);
         }
         break;
     case FUZZ_FORCE_FORMAT_AUTO:
@@ -324,6 +349,17 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
                          0u,
                          bmp_header,
                          sizeof(bmp_header));
+        break;
+    case FUZZ_FORCE_FORMAT_WEBP:
+        fuzz_apply_magic(g_forced_chunk_buffer,
+                         target_size,
+                         0u,
+                         (size > 0u && (data[0] & 1u) != 0u)
+                         ? webp_vp8l_header
+                         : webp_vp8x_header,
+                         (size > 0u && (data[0] & 1u) != 0u)
+                         ? sizeof(webp_vp8l_header)
+                         : sizeof(webp_vp8x_header));
         break;
     case FUZZ_FORCE_FORMAT_AUTO:
     default:

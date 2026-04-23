@@ -237,6 +237,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/frompsd.h \
                 $(srcdir)/fromgif.c \
                 $(srcdir)/fromgif.h \
+                $(srcdir)/fromwebp.c \
+                $(srcdir)/fromwebp.h \
                 $(srcdir)/frombmp-parser.c \
                 $(srcdir)/frombmp.c \
                 $(srcdir)/frombmp.h \

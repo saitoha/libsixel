@@ -67,6 +67,7 @@
 #include "fromhdr.h"
 #include "frompng.h"
 #include "frompsd.h"
+#include "fromwebp.h"
 #include "frompnm.h"
 #include "pixelformat.h"
 #include "loader-builtin.h"
@@ -3745,6 +3746,7 @@ typedef enum sixel_builtin_decode_path {
     SIXEL_BUILTIN_DECODE_PATH_SIXEL = 0,
     SIXEL_BUILTIN_DECODE_PATH_PNM,
     SIXEL_BUILTIN_DECODE_PATH_GIF,
+    SIXEL_BUILTIN_DECODE_PATH_WEBP,
     SIXEL_BUILTIN_DECODE_PATH_STBI
 } sixel_builtin_decode_path_t;
 
@@ -3760,6 +3762,9 @@ sixel_builtin_detect_decode_path(sixel_chunk_t const *chunk)
     if (chunk != NULL && chunk_is_gif(chunk)) {
         return SIXEL_BUILTIN_DECODE_PATH_GIF;
     }
+    if (chunk != NULL && chunk_is_webp(chunk)) {
+        return SIXEL_BUILTIN_DECODE_PATH_WEBP;
+    }
     return SIXEL_BUILTIN_DECODE_PATH_STBI;
 }
 
@@ -3773,6 +3778,8 @@ sixel_builtin_decode_path_name(sixel_builtin_decode_path_t path)
         return "pnm";
     case SIXEL_BUILTIN_DECODE_PATH_GIF:
         return "gif";
+    case SIXEL_BUILTIN_DECODE_PATH_WEBP:
+        return "webp";
     case SIXEL_BUILTIN_DECODE_PATH_STBI:
     default:
         return "stbi";
@@ -5942,6 +5949,19 @@ sixel_builtin_load_with_builtin_impl(
             goto end;
         }
         goto end;
+
+    case SIXEL_BUILTIN_DECODE_PATH_WEBP:
+        status = sixel_builtin_prepare_frame_and_chunk_size(pchunk,
+                                                            &frame,
+                                                            &chunk_size);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        status = sixel_fromwebp_load(pchunk, frame);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
 
     case SIXEL_BUILTIN_DECODE_PATH_STBI:
     default:
