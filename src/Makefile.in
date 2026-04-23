@@ -168,6 +168,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/sleep.h $(srcdir)/fromsixel.c $(srcdir)/tosixel.c \
 	$(srcdir)/tosixel-highcolor.c $(srcdir)/tosixel-highcolor.h \
 	$(srcdir)/lookup-common.c $(srcdir)/lookup-policy.c \
+	$(srcdir)/factory.c $(srcdir)/components.c \
 	$(srcdir)/lookup-8bit.c $(srcdir)/lookup-8bit.h \
 	$(srcdir)/lookup-float32.c $(srcdir)/lookup-float32.h \
 	$(srcdir)/lookup-fhedt-8bit.c $(srcdir)/lookup-fhedt-8bit.h \
@@ -176,7 +177,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-vptree-8bit.c $(srcdir)/lookup-vptree-8bit.h \
 	$(srcdir)/lookup-vptree-float32.c \
 	$(srcdir)/lookup-vptree-float32.h $(srcdir)/lookup-common.h \
-	$(srcdir)/lookup-policy.h $(srcdir)/palette-heckbert.c \
+	$(srcdir)/lookup-policy.h $(srcdir)/factory.h \
+	$(srcdir)/components.h $(srcdir)/palette-heckbert.c \
 	$(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
 	$(srcdir)/palette-common-snap.c \
@@ -297,6 +299,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-tosixel-highcolor.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-common.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-factory.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-components.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-8bit.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-float32.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-fhedt-8bit.lo \
@@ -444,6 +448,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-cms.Plo \
 	./$(DEPDIR)/libsixel_la-colorspace.Plo \
 	./$(DEPDIR)/libsixel_la-compat_stub.Plo \
+	./$(DEPDIR)/libsixel_la-components.Plo \
 	./$(DEPDIR)/libsixel_la-cpu.Plo \
 	./$(DEPDIR)/libsixel_la-decoder-parallel.Plo \
 	./$(DEPDIR)/libsixel_la-decoder.Plo \
@@ -463,6 +468,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither.Plo \
 	./$(DEPDIR)/libsixel_la-drcs.Plo \
 	./$(DEPDIR)/libsixel_la-encoder.Plo \
+	./$(DEPDIR)/libsixel_la-factory.Plo \
 	./$(DEPDIR)/libsixel_la-filter-clip.Plo \
 	./$(DEPDIR)/libsixel_la-filter-colors.Plo \
 	./$(DEPDIR)/libsixel_la-filter-dither.Plo \
@@ -882,6 +888,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/tosixel-highcolor.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-common.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/factory.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/components.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-8bit.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-8bit.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-float32.c \
@@ -896,6 +904,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-float32.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-common.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/factory.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/components.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-merge.c \
@@ -1246,6 +1256,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-cms.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-colorspace.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-compat_stub.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-components.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-cpu.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder-parallel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder.Plo@am__quote@ # am--include-marker
@@ -1265,6 +1276,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-drcs.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-factory.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-clip.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-colors.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-dither.Plo@am__quote@ # am--include-marker
@@ -1438,6 +1450,20 @@ libsixel_la-lookup-policy.lo: lookup-policy.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy.c' object='libsixel_la-lookup-policy.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy.lo `test -f 'lookup-policy.c' || echo '$(srcdir)/'`lookup-policy.c
+
+libsixel_la-factory.lo: factory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-factory.lo -MD -MP -MF $(DEPDIR)/libsixel_la-factory.Tpo -c -o libsixel_la-factory.lo `test -f 'factory.c' || echo '$(srcdir)/'`factory.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-factory.Tpo $(DEPDIR)/libsixel_la-factory.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='factory.c' object='libsixel_la-factory.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-factory.lo `test -f 'factory.c' || echo '$(srcdir)/'`factory.c
+
+libsixel_la-components.lo: components.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-components.lo -MD -MP -MF $(DEPDIR)/libsixel_la-components.Tpo -c -o libsixel_la-components.lo `test -f 'components.c' || echo '$(srcdir)/'`components.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-components.Tpo $(DEPDIR)/libsixel_la-components.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='components.c' object='libsixel_la-components.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-components.lo `test -f 'components.c' || echo '$(srcdir)/'`components.c
 
 libsixel_la-lookup-8bit.lo: lookup-8bit.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-8bit.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-8bit.Tpo -c -o libsixel_la-lookup-8bit.lo `test -f 'lookup-8bit.c' || echo '$(srcdir)/'`lookup-8bit.c
@@ -2408,6 +2434,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-cms.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-colorspace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-compat_stub.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-components.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-cpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
@@ -2427,6 +2454,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-drcs.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-clip.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-colors.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-dither.Plo
@@ -2568,6 +2596,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-cms.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-colorspace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-compat_stub.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-components.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-cpu.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
@@ -2587,6 +2616,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-drcs.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-clip.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-colors.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-dither.Plo

@@ -19,6 +19,7 @@ MAYBE_COVERAGE = --coverage
 endif
 
 AMALGAMATION_LSQA_CPPFLAGS = $(AM_CPPFLAGS) \
+        -I$(top_srcdir) \
         $(LIBCURL_CFLAGS) \
         $(WINHTTP_CFLAGS) \
         $(LIBPNG_CFLAGS) \

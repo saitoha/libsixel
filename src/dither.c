@@ -49,6 +49,8 @@
 #include "dither-interframe-method.h"
 #include "palette.h"
 #include "compat_stub.h"
+#include "components.h"
+#include "factory.h"
 #include "lookup-common.h"
 #include "lookup-policy.h"
 #include "timer.h"
@@ -67,6 +69,15 @@
 # include "threadpool.h"
 #endif
 #include <sixel.h>
+
+/*
+ * IDL usage in this unit
+ *
+ * IComponents.getservice("services/factory", &factory)
+ * IFactory.create("lookup/...", &lookup)
+ * ILookupPolicy.prepare(request)
+ * ILookupPolicy.map_pixel(pixel)
+ */
 
 static SIXELSTATUS
 sixel_dither_preblend_alpha_inplace(unsigned char *pixels,
@@ -441,9 +452,24 @@ sixel_dither_prepare_lookup_policy(
     sixel_lut_t **reuse_lut_slot,
     sixel_allocator_t *allocator)
 {
+    SIXELSTATUS status;
     sixel_lookup_policy_prepare_request_t request;
+    sixel_lookup_policy_t *prepared_policy;
+    sixel_factory_t *factory;
+    void *service;
+    char const *policy_name;
 
+    status = SIXEL_FALSE;
     memset(&request, 0, sizeof(request));
+    prepared_policy = NULL;
+    factory = NULL;
+    service = NULL;
+    policy_name = NULL;
+
+    if (lookup_policy == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     request.palette = palette;
     request.palette_float = palette_float;
     request.depth = depth;
@@ -461,7 +487,38 @@ sixel_dither_prepare_lookup_policy(
     request.reuse_lut_slot = reuse_lut_slot;
     request.allocator = allocator;
 
-    return sixel_lookup_policy_prepare(lookup_policy, &request);
+    policy_name = sixel_lookup_policy_select_name(&request);
+    if (policy_name == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_components_getservice("services/factory", &service);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    factory = (sixel_factory_t *)service;
+
+    status = sixel_factory_create(factory,
+                                  policy_name,
+                                  (void **)&prepared_policy);
+    sixel_factory_unref(factory);
+    factory = NULL;
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = sixel_lookup_policy_prepare(prepared_policy, &request);
+    if (SIXEL_FAILED(status)) {
+        sixel_lookup_policy_unref(prepared_policy);
+        return status;
+    }
+
+    if (*lookup_policy != NULL) {
+        sixel_lookup_policy_unref(*lookup_policy);
+    }
+    *lookup_policy = prepared_policy;
+
+    return SIXEL_OK;
 }
 
 /*
@@ -861,7 +918,6 @@ sixel_dither_parallel_worker(tp_job_t job,
         }
     }
     lookup_policy = NULL;
-    sixel_lookup_policy_init(&lookup_policy);
     status = sixel_dither_prepare_lookup_policy(
         &lookup_policy,
         plan->palette->entries,
@@ -936,7 +992,10 @@ sixel_dither_parallel_worker(tp_job_t job,
     }
 
 cleanup:
-    sixel_lookup_policy_clear(&lookup_policy);
+    if (lookup_policy != NULL) {
+        sixel_lookup_policy_unref(lookup_policy);
+        lookup_policy = NULL;
+    }
     if (copy != NULL) {
         free(copy);
     }
@@ -1210,7 +1269,10 @@ sixel_dither_resolve_indexes(
     map_request.dither = dither;
     map_request.pixelformat = pixelformat;
     status = sixel_dither_map_pixels(&map_request);
-    sixel_lookup_policy_clear(&palette->lookup_policy);
+    if (palette->lookup_policy != NULL) {
+        sixel_lookup_policy_unref(palette->lookup_policy);
+        palette->lookup_policy = NULL;
+    }
 
     return status;
 }
@@ -1911,7 +1973,10 @@ sixel_dither_set_lut_policy(
         dither->palette->lut = NULL;
     }
     if (dither->palette != NULL) {
-        sixel_lookup_policy_clear(&dither->palette->lookup_policy);
+        if (dither->palette->lookup_policy != NULL) {
+            sixel_lookup_policy_unref(dither->palette->lookup_policy);
+            dither->palette->lookup_policy = NULL;
+        }
     }
 }
 

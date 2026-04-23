@@ -76,6 +76,12 @@
 #include "logger.h"
 #include "sixel_atomic.h"
 
+/*
+ * IDL usage in this unit
+ *
+ * ILookupPolicy.unref()
+ */
+
 
 static int palette_default_lut_policy = SIXEL_LUT_POLICY_AUTO;
 static int palette_method_for_largest = SIXEL_LARGE_NORM;
@@ -847,7 +853,6 @@ sixel_palette_new(sixel_palette_t **palette, sixel_allocator_t *allocator)
     object->final_merge = 0;
     object->lut = NULL;
     object->lookup_policy = NULL;
-    sixel_lookup_policy_init(&object->lookup_policy);
 
     *palette = object;
     status = SIXEL_OK;
@@ -886,7 +891,10 @@ sixel_palette_dispose(sixel_palette_t *palette)
         palette->entries_float32 = NULL;
     }
 
-    sixel_lookup_policy_clear(&palette->lookup_policy);
+    if (palette->lookup_policy != NULL) {
+        sixel_lookup_policy_unref(palette->lookup_policy);
+        palette->lookup_policy = NULL;
+    }
     if (palette->lut != NULL) {
         sixel_lut_unref(palette->lut);
         palette->lut = NULL;
