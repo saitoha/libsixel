@@ -52,6 +52,7 @@ extern "C" {
  * Creation path:
  * - sixel_lookup_policy_select_name(request)
  * - services/factory -> create("lookup/...", &policy)
+ * - create() resolves names via per-class constructors
  * - policy->prepare(request)
  */
 
@@ -76,16 +77,21 @@ typedef struct sixel_lookup_policy_prepare_request {
     sixel_allocator_t *allocator;
 } sixel_lookup_policy_prepare_request_t;
 
+typedef int sixel_lookup_policy_result_t;
+
 typedef struct sixel_lookup_policy_vtbl {
     void (*ref)(sixel_lookup_policy_interface_t *policy);
     void (*unref)(sixel_lookup_policy_interface_t *policy);
     SIXELSTATUS (*prepare)(sixel_lookup_policy_interface_t *policy,
                            sixel_lookup_policy_prepare_request_t const
                            *request);
-    int (*map_pixel)(sixel_lookup_policy_interface_t const *policy,
-                     unsigned char const *pixel);
-    int (*lookup_source_is_float)(sixel_lookup_policy_interface_t const *policy);
-    int (*prefer_palette_float_lookup)(
+    sixel_lookup_policy_result_t
+    (*map_pixel)(sixel_lookup_policy_interface_t const *policy,
+                 unsigned char const *pixel);
+    sixel_lookup_policy_result_t
+    (*lookup_source_is_float)(sixel_lookup_policy_interface_t const *policy);
+    sixel_lookup_policy_result_t
+    (*prefer_palette_float_lookup)(
         sixel_lookup_policy_interface_t const *policy);
 } sixel_lookup_policy_vtbl_t;
 

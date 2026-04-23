@@ -168,18 +168,27 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/sleep.h $(srcdir)/fromsixel.c $(srcdir)/tosixel.c \
 	$(srcdir)/tosixel-highcolor.c $(srcdir)/tosixel-highcolor.h \
 	$(srcdir)/lookup-common.c $(srcdir)/lookup-policy.c \
-	$(srcdir)/factory.c $(srcdir)/components.c \
-	$(srcdir)/lookup-8bit.c $(srcdir)/lookup-8bit.h \
-	$(srcdir)/lookup-float32.c $(srcdir)/lookup-float32.h \
-	$(srcdir)/lookup-fhedt-8bit.c $(srcdir)/lookup-fhedt-8bit.h \
-	$(srcdir)/lookup-fhedt-float32.c \
+	$(srcdir)/lookup-policy-normal.c \
+	$(srcdir)/lookup-policy-mono-darkbg.c \
+	$(srcdir)/lookup-policy-mono-lightbg.c \
+	$(srcdir)/lookup-policy-certlut.c \
+	$(srcdir)/lookup-policy-5bit.c $(srcdir)/lookup-policy-6bit.c \
+	$(srcdir)/lookup-policy-eytzinger.c \
+	$(srcdir)/lookup-policy-fhedt.c \
+	$(srcdir)/lookup-policy-vptree.c $(srcdir)/lookup-policy-rbc.c \
+	$(srcdir)/lookup-policy-mahalanobis.c $(srcdir)/factory.c \
+	$(srcdir)/components.c $(srcdir)/lookup-8bit.c \
+	$(srcdir)/lookup-8bit.h $(srcdir)/lookup-float32.c \
+	$(srcdir)/lookup-float32.h $(srcdir)/lookup-fhedt-8bit.c \
+	$(srcdir)/lookup-fhedt-8bit.h $(srcdir)/lookup-fhedt-float32.c \
 	$(srcdir)/lookup-fhedt-float32.h \
 	$(srcdir)/lookup-vptree-8bit.c $(srcdir)/lookup-vptree-8bit.h \
 	$(srcdir)/lookup-vptree-float32.c \
 	$(srcdir)/lookup-vptree-float32.h $(srcdir)/lookup-common.h \
-	$(srcdir)/lookup-policy.h $(srcdir)/factory.h \
-	$(srcdir)/components.h $(srcdir)/palette-heckbert.c \
-	$(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
+	$(srcdir)/lookup-policy.h $(srcdir)/lookup-policy-private.h \
+	$(srcdir)/factory.h $(srcdir)/components.h \
+	$(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
+	$(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
 	$(srcdir)/palette-common-snap.c \
 	$(srcdir)/palette-common-snap.h $(srcdir)/palette-kmeans.c \
@@ -299,6 +308,17 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-tosixel-highcolor.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-common.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-normal.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-mono-darkbg.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-mono-lightbg.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-certlut.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-5bit.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-6bit.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-eytzinger.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-fhedt.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-vptree.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-rbc.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-mahalanobis.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-factory.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-components.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-8bit.lo \
@@ -522,6 +542,17 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-lookup-fhedt-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-fhedt-float32.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-float32.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-5bit.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-6bit.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-certlut.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-eytzinger.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-fhedt.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-normal.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-rbc.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo \
@@ -888,6 +919,17 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/tosixel-highcolor.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-common.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-normal.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mono-darkbg.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mono-lightbg.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-certlut.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-5bit.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-6bit.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-eytzinger.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-fhedt.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-vptree.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-rbc.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mahalanobis.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/factory.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/components.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-8bit.c \
@@ -904,6 +946,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-float32.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-common.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-private.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/factory.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/components.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.c \
@@ -1330,6 +1373,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-fhedt-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-fhedt-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-float32.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-5bit.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-6bit.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-certlut.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-eytzinger.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-fhedt.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-normal.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-rbc.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo@am__quote@ # am--include-marker
@@ -1450,6 +1504,83 @@ libsixel_la-lookup-policy.lo: lookup-policy.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy.c' object='libsixel_la-lookup-policy.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy.lo `test -f 'lookup-policy.c' || echo '$(srcdir)/'`lookup-policy.c
+
+libsixel_la-lookup-policy-normal.lo: lookup-policy-normal.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-normal.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-normal.Tpo -c -o libsixel_la-lookup-policy-normal.lo `test -f 'lookup-policy-normal.c' || echo '$(srcdir)/'`lookup-policy-normal.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-normal.Tpo $(DEPDIR)/libsixel_la-lookup-policy-normal.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-normal.c' object='libsixel_la-lookup-policy-normal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-normal.lo `test -f 'lookup-policy-normal.c' || echo '$(srcdir)/'`lookup-policy-normal.c
+
+libsixel_la-lookup-policy-mono-darkbg.lo: lookup-policy-mono-darkbg.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-mono-darkbg.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Tpo -c -o libsixel_la-lookup-policy-mono-darkbg.lo `test -f 'lookup-policy-mono-darkbg.c' || echo '$(srcdir)/'`lookup-policy-mono-darkbg.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Tpo $(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-mono-darkbg.c' object='libsixel_la-lookup-policy-mono-darkbg.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-mono-darkbg.lo `test -f 'lookup-policy-mono-darkbg.c' || echo '$(srcdir)/'`lookup-policy-mono-darkbg.c
+
+libsixel_la-lookup-policy-mono-lightbg.lo: lookup-policy-mono-lightbg.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-mono-lightbg.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Tpo -c -o libsixel_la-lookup-policy-mono-lightbg.lo `test -f 'lookup-policy-mono-lightbg.c' || echo '$(srcdir)/'`lookup-policy-mono-lightbg.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Tpo $(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-mono-lightbg.c' object='libsixel_la-lookup-policy-mono-lightbg.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-mono-lightbg.lo `test -f 'lookup-policy-mono-lightbg.c' || echo '$(srcdir)/'`lookup-policy-mono-lightbg.c
+
+libsixel_la-lookup-policy-certlut.lo: lookup-policy-certlut.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-certlut.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-certlut.Tpo -c -o libsixel_la-lookup-policy-certlut.lo `test -f 'lookup-policy-certlut.c' || echo '$(srcdir)/'`lookup-policy-certlut.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-certlut.Tpo $(DEPDIR)/libsixel_la-lookup-policy-certlut.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-certlut.c' object='libsixel_la-lookup-policy-certlut.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-certlut.lo `test -f 'lookup-policy-certlut.c' || echo '$(srcdir)/'`lookup-policy-certlut.c
+
+libsixel_la-lookup-policy-5bit.lo: lookup-policy-5bit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-5bit.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-5bit.Tpo -c -o libsixel_la-lookup-policy-5bit.lo `test -f 'lookup-policy-5bit.c' || echo '$(srcdir)/'`lookup-policy-5bit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-5bit.Tpo $(DEPDIR)/libsixel_la-lookup-policy-5bit.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-5bit.c' object='libsixel_la-lookup-policy-5bit.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-5bit.lo `test -f 'lookup-policy-5bit.c' || echo '$(srcdir)/'`lookup-policy-5bit.c
+
+libsixel_la-lookup-policy-6bit.lo: lookup-policy-6bit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-6bit.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-6bit.Tpo -c -o libsixel_la-lookup-policy-6bit.lo `test -f 'lookup-policy-6bit.c' || echo '$(srcdir)/'`lookup-policy-6bit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-6bit.Tpo $(DEPDIR)/libsixel_la-lookup-policy-6bit.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-6bit.c' object='libsixel_la-lookup-policy-6bit.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-6bit.lo `test -f 'lookup-policy-6bit.c' || echo '$(srcdir)/'`lookup-policy-6bit.c
+
+libsixel_la-lookup-policy-eytzinger.lo: lookup-policy-eytzinger.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-eytzinger.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-eytzinger.Tpo -c -o libsixel_la-lookup-policy-eytzinger.lo `test -f 'lookup-policy-eytzinger.c' || echo '$(srcdir)/'`lookup-policy-eytzinger.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-eytzinger.Tpo $(DEPDIR)/libsixel_la-lookup-policy-eytzinger.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-eytzinger.c' object='libsixel_la-lookup-policy-eytzinger.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-eytzinger.lo `test -f 'lookup-policy-eytzinger.c' || echo '$(srcdir)/'`lookup-policy-eytzinger.c
+
+libsixel_la-lookup-policy-fhedt.lo: lookup-policy-fhedt.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-fhedt.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-fhedt.Tpo -c -o libsixel_la-lookup-policy-fhedt.lo `test -f 'lookup-policy-fhedt.c' || echo '$(srcdir)/'`lookup-policy-fhedt.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-fhedt.Tpo $(DEPDIR)/libsixel_la-lookup-policy-fhedt.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-fhedt.c' object='libsixel_la-lookup-policy-fhedt.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-fhedt.lo `test -f 'lookup-policy-fhedt.c' || echo '$(srcdir)/'`lookup-policy-fhedt.c
+
+libsixel_la-lookup-policy-vptree.lo: lookup-policy-vptree.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-vptree.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-vptree.Tpo -c -o libsixel_la-lookup-policy-vptree.lo `test -f 'lookup-policy-vptree.c' || echo '$(srcdir)/'`lookup-policy-vptree.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-vptree.Tpo $(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-vptree.c' object='libsixel_la-lookup-policy-vptree.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-vptree.lo `test -f 'lookup-policy-vptree.c' || echo '$(srcdir)/'`lookup-policy-vptree.c
+
+libsixel_la-lookup-policy-rbc.lo: lookup-policy-rbc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-rbc.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-rbc.Tpo -c -o libsixel_la-lookup-policy-rbc.lo `test -f 'lookup-policy-rbc.c' || echo '$(srcdir)/'`lookup-policy-rbc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-rbc.Tpo $(DEPDIR)/libsixel_la-lookup-policy-rbc.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-rbc.c' object='libsixel_la-lookup-policy-rbc.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-rbc.lo `test -f 'lookup-policy-rbc.c' || echo '$(srcdir)/'`lookup-policy-rbc.c
+
+libsixel_la-lookup-policy-mahalanobis.lo: lookup-policy-mahalanobis.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-mahalanobis.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Tpo -c -o libsixel_la-lookup-policy-mahalanobis.lo `test -f 'lookup-policy-mahalanobis.c' || echo '$(srcdir)/'`lookup-policy-mahalanobis.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Tpo $(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-mahalanobis.c' object='libsixel_la-lookup-policy-mahalanobis.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-mahalanobis.lo `test -f 'lookup-policy-mahalanobis.c' || echo '$(srcdir)/'`lookup-policy-mahalanobis.c
 
 libsixel_la-factory.lo: factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-factory.lo -MD -MP -MF $(DEPDIR)/libsixel_la-factory.Tpo -c -o libsixel_la-factory.lo `test -f 'factory.c' || echo '$(srcdir)/'`factory.c
@@ -2508,6 +2639,17 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-fhedt-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-fhedt-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-float32.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-5bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-6bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-certlut.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-eytzinger.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-fhedt.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-normal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-rbc.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo
@@ -2670,6 +2812,17 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-fhedt-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-fhedt-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-float32.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-5bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-6bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-certlut.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-eytzinger.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-fhedt.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-normal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-rbc.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo

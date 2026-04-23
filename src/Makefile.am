@@ -72,6 +72,17 @@ libsixel_la_SOURCES = \
                 $(srcdir)/tosixel-highcolor.h \
                 $(srcdir)/lookup-common.c \
                 $(srcdir)/lookup-policy.c \
+                $(srcdir)/lookup-policy-normal.c \
+                $(srcdir)/lookup-policy-mono-darkbg.c \
+                $(srcdir)/lookup-policy-mono-lightbg.c \
+                $(srcdir)/lookup-policy-certlut.c \
+                $(srcdir)/lookup-policy-5bit.c \
+                $(srcdir)/lookup-policy-6bit.c \
+                $(srcdir)/lookup-policy-eytzinger.c \
+                $(srcdir)/lookup-policy-fhedt.c \
+                $(srcdir)/lookup-policy-vptree.c \
+                $(srcdir)/lookup-policy-rbc.c \
+                $(srcdir)/lookup-policy-mahalanobis.c \
                 $(srcdir)/factory.c \
                 $(srcdir)/components.c \
                 $(srcdir)/lookup-8bit.c \
@@ -88,6 +99,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-vptree-float32.h \
                 $(srcdir)/lookup-common.h \
                 $(srcdir)/lookup-policy.h \
+                $(srcdir)/lookup-policy-private.h \
                 $(srcdir)/factory.h \
                 $(srcdir)/components.h \
                 $(srcdir)/palette-heckbert.c \

@@ -445,6 +445,112 @@ cleanup:
     return SIXEL_SUCCEEDED(status);
 }
 
+static int
+test_lookup_policy_all_named_classes_are_polymorphic(void)
+{
+    static char const *const class_names[] = {
+        "lookup/normal",
+        "lookup/mono-darkbg",
+        "lookup/mono-lightbg",
+        "lookup/certlut",
+        "lookup/5bit",
+        "lookup/6bit",
+        "lookup/eytzinger",
+        "lookup/fhedt",
+        "lookup/vptree",
+        "lookup/rbc",
+        "lookup/mahalanobis"
+    };
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_lookup_policy_prepare_request_t request;
+    sixel_lookup_policy_interface_t *lookup_policy;
+    sixel_lookup_policy_vtbl_t const *vtbls[11];
+    unsigned char palette[6];
+    unsigned char pixel[3];
+    size_t class_count;
+    size_t i;
+    size_t j;
+    int mapped;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    memset(&request, 0, sizeof(request));
+    lookup_policy = NULL;
+    memset(vtbls, 0, sizeof(vtbls));
+    memset(palette, 0, sizeof(palette));
+    memset(pixel, 0, sizeof(pixel));
+    class_count = sizeof(class_names) / sizeof(class_names[0]);
+    i = 0U;
+    j = 0U;
+    mapped = -1;
+
+    status = make_allocator(&allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    palette[0] = 0;
+    palette[1] = 0;
+    palette[2] = 0;
+    palette[3] = 255;
+    palette[4] = 0;
+    palette[5] = 0;
+    pixel[0] = 250;
+    pixel[1] = 10;
+    pixel[2] = 10;
+
+    init_lookup_policy_request(&request,
+                               palette,
+                               2,
+                               1,
+                               SIXEL_LUT_POLICY_6BIT,
+                               SIXEL_PIXELFORMAT_RGB888,
+                               NULL,
+                               NULL,
+                               allocator);
+
+    for (i = 0U; i < class_count; ++i) {
+        status = create_lookup_policy(class_names[i], &request, &lookup_policy);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        if (lookup_policy == NULL || lookup_policy->vtbl == NULL) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+
+        vtbls[i] = lookup_policy->vtbl;
+        mapped = sixel_lookup_policy_map_pixel(lookup_policy, pixel);
+        if (mapped < 0 || mapped >= 2) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+
+        sixel_lookup_policy_unref(lookup_policy);
+        lookup_policy = NULL;
+    }
+
+    for (i = 0U; i < class_count; ++i) {
+        for (j = i + 1U; j < class_count; ++j) {
+            if (vtbls[i] == vtbls[j]) {
+                status = SIXEL_BAD_ARGUMENT;
+                goto cleanup;
+            }
+        }
+    }
+
+    status = SIXEL_OK;
+
+cleanup:
+    if (lookup_policy != NULL) {
+        sixel_lookup_policy_unref(lookup_policy);
+    }
+    sixel_allocator_unref(allocator);
+
+    return SIXEL_SUCCEEDED(status);
+}
+
 int
 test_lookup_0001_lookup_policy(int argc, char **argv)
 {
@@ -469,6 +575,10 @@ test_lookup_0001_lookup_policy(int argc, char **argv)
     }
     if (!test_lookup_policy_named_factory_creates_fast_lut()) {
         fprintf(stderr, "lookup policy named factory failed\n");
+        success = 0;
+    }
+    if (!test_lookup_policy_all_named_classes_are_polymorphic()) {
+        fprintf(stderr, "lookup policy polymorphism failed\n");
         success = 0;
     }
 
