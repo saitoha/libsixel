@@ -25,11 +25,6 @@ shift 2 || true
 
 mkdir -p "$(dirname "${output}")"
 
-include_tests=0
-if [ "${SIXEL_AMALGAMATION_INCLUDE_TESTS:-0}" = "1" ]; then
-    include_tests=1
-fi
-
 collect_units_from_dirs() {
     search_dirs=$1
     shift
@@ -166,15 +161,11 @@ END {
 '
 }
 
-# Keep test sources opt-in. Pulling tests into the default amalgamation may
-# inject private include paths (for example "src/allocator.h") that are not
-# valid when --enable-amalgamated-tools generates production units.
-default_source_dirs="src converters assessment gdk-pixbuf-loader"
-default_header_dirs="include src converters assessment"
-if [ "${include_tests}" -eq 1 ]; then
-    default_source_dirs="${default_source_dirs} tests"
-    default_header_dirs="${default_header_dirs} tests"
-fi
+# Keep a single amalgamation contract for every consumer:
+# include production units, test units, and private headers in one file.
+# BUILD_* compile guards decide which entry points are materialized.
+default_source_dirs="src tests converters assessment gdk-pixbuf-loader"
+default_header_dirs="include src converters tests assessment"
 
 default_units=$(collect_units_from_dirs \
     "${default_source_dirs}" \

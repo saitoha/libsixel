@@ -7,24 +7,13 @@ endif
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
-TEST_RUNNER_AMALGAMATION_SIXEL = \
-        $(top_builddir)/amalgamation/test-runner/sixel.c
 if WANT_AMALGAMATED_TOOLS
-BUILT_SOURCES = $(TEST_RUNNER_AMALGAMATION_SIXEL)
+BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-$(TEST_RUNNER_AMALGAMATION_SIXEL): FORCE_TEST_RUNNER_AMALGAMATION \
-        $(top_builddir)/amalgamation/Makefile
+$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
-	$(AM_V_GEN)SIXEL_AMALGAMATION_INCLUDE_TESTS=1 \
-		$(SHELL) $(top_srcdir)/tools/gen-amalgamation.sh \
-		"$(TEST_RUNNER_AMALGAMATION_SIXEL)" \
-		"$(top_srcdir)" "$(top_builddir)"
-
-# The default amalgamation target uses amalgamation/sixel.c without tests.
-# Generate a dedicated file for test_runner to avoid race overwrites when
-# parallel sub-makes regenerate the default amalgamation concurrently.
-FORCE_TEST_RUNNER_AMALGAMATION:
+	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 endif
 TESTS = @SIXEL_CHECK_TESTS@
 XFAIL_TESTS = \
@@ -165,7 +154,7 @@ TESTS_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_test_runner_SOURCES = $(TEST_RUNNER_AMALGAMATION_SIXEL)
+nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
 # Keep fault-injection coverage enabled in amalgamation mode as well, so
 # behavior stays aligned across normal and amalgamated build variants.
 TEST_RUNNER_AMALGAMATION_DEFINES = \
@@ -1442,9 +1431,6 @@ dist-hook:
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
 CLEANFILES =
-if WANT_AMALGAMATED_TOOLS
-CLEANFILES += $(TEST_RUNNER_AMALGAMATION_SIXEL)
-endif
 
 # Avoid deleting in-tree test scripts when "make clean" is invoked.
 # Only remove copied test files in an out-of-tree build so that the
