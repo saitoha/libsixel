@@ -434,7 +434,7 @@ sixel_dither_validate_complexion_limit(int depth, int complexion)
 
 static SIXELSTATUS
 sixel_dither_prepare_lookup_policy(
-    sixel_lookup_policy_t **lookup_policy,
+    sixel_lookup_policy_interface_t **lookup_policy,
     unsigned char const *palette,
     float const *palette_float,
     int depth,
@@ -454,7 +454,7 @@ sixel_dither_prepare_lookup_policy(
 {
     SIXELSTATUS status;
     sixel_lookup_policy_prepare_request_t request;
-    sixel_lookup_policy_t *prepared_policy;
+    sixel_lookup_policy_interface_t *prepared_policy;
     sixel_factory_t *factory;
     void *service;
     char const *policy_name;
@@ -539,7 +539,7 @@ typedef struct sixel_dither_map_pixels_request {
     int method_for_scan;
     int foptimize_palette;
     int complexion;
-    sixel_lookup_policy_t *lookup_policy;
+    sixel_lookup_policy_interface_t *lookup_policy;
     int *ncolors;
     sixel_dither_t *dither;
     int pixelformat;
@@ -577,7 +577,7 @@ sixel_dither_map_pixels(
     int method_for_scan;
     int foptimize_palette;
     int complexion;
-    sixel_lookup_policy_t *lookup_policy;
+    sixel_lookup_policy_interface_t *lookup_policy;
     int *ncolors;
     sixel_dither_t *dither;
     int pixelformat;
@@ -836,7 +836,7 @@ sixel_dither_parallel_worker(tp_job_t job,
     int reuse_lut_is_shared;
     int reuse_lut_preconfigured;
     int restore_context;
-    sixel_lookup_policy_t *lookup_policy;
+    sixel_lookup_policy_interface_t *lookup_policy;
     sixel_dither_map_pixels_request_t map_request;
 
     plan = (sixel_parallel_dither_plan_t *)userdata;

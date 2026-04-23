@@ -1184,7 +1184,7 @@ sixel_dither_apply_fixed_impl(
     int reqcolor,
     int method_for_scan,
     int optimize_palette,
-    sixel_lookup_policy_t const *lookup_policy,
+    sixel_lookup_policy_interface_t const *lookup_policy,
     sixel_dither_lookup_map_fn lookup_map,
     unsigned char new_palette[],
     unsigned short migration_map[],

@@ -62,11 +62,11 @@ init_lookup_policy_request(sixel_lookup_policy_prepare_request_t *request,
 static SIXELSTATUS
 create_lookup_policy(char const *name,
                      sixel_lookup_policy_prepare_request_t const *request,
-                     sixel_lookup_policy_t **lookup_policy)
+                     sixel_lookup_policy_interface_t **lookup_policy)
 {
     SIXELSTATUS status;
     sixel_factory_t *factory;
-    sixel_lookup_policy_t *created;
+    sixel_lookup_policy_interface_t *created;
     void *service;
 
     status = SIXEL_FALSE;
@@ -106,7 +106,7 @@ create_lookup_policy(char const *name,
 static SIXELSTATUS
 create_lookup_policy_by_selected_name(
     sixel_lookup_policy_prepare_request_t const *request,
-    sixel_lookup_policy_t **lookup_policy,
+    sixel_lookup_policy_interface_t **lookup_policy,
     char const **selected_name)
 {
     char const *name;
@@ -137,7 +137,7 @@ test_lookup_policy_normal_mode_maps_expected_color(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
-    sixel_lookup_policy_t *lookup_policy;
+    sixel_lookup_policy_interface_t *lookup_policy;
     sixel_lookup_policy_prepare_request_t request;
     unsigned char palette[6];
     unsigned char pixel[3];
@@ -211,7 +211,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
-    sixel_lookup_policy_t *lookup_policy;
+    sixel_lookup_policy_interface_t *lookup_policy;
     sixel_lookup_policy_prepare_request_t request;
     unsigned char palette[6];
     float pixel_float[3];
@@ -301,7 +301,7 @@ test_lookup_policy_mono_mode_maps_expected_threshold(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
-    sixel_lookup_policy_t *lookup_policy;
+    sixel_lookup_policy_interface_t *lookup_policy;
     sixel_lookup_policy_prepare_request_t request;
     unsigned char palette[6];
     unsigned char dark_pixel[3];
@@ -385,7 +385,7 @@ test_lookup_policy_named_factory_creates_fast_lut(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
-    sixel_lookup_policy_t *lookup_policy;
+    sixel_lookup_policy_interface_t *lookup_policy;
     sixel_lookup_policy_prepare_request_t request;
     unsigned char palette[6];
     unsigned char pixel[3];

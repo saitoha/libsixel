@@ -55,7 +55,7 @@ extern "C" {
  * - policy->prepare(request)
  */
 
-typedef struct sixel_lookup_policy_interface sixel_lookup_policy_t;
+typedef struct sixel_lookup_policy_interface sixel_lookup_policy_interface_t;
 
 typedef struct sixel_lookup_policy_prepare_request {
     unsigned char const *palette;
@@ -77,16 +77,16 @@ typedef struct sixel_lookup_policy_prepare_request {
 } sixel_lookup_policy_prepare_request_t;
 
 typedef struct sixel_lookup_policy_vtbl {
-    void (*ref)(sixel_lookup_policy_t *policy);
-    void (*unref)(sixel_lookup_policy_t *policy);
-    SIXELSTATUS (*prepare)(sixel_lookup_policy_t *policy,
+    void (*ref)(sixel_lookup_policy_interface_t *policy);
+    void (*unref)(sixel_lookup_policy_interface_t *policy);
+    SIXELSTATUS (*prepare)(sixel_lookup_policy_interface_t *policy,
                            sixel_lookup_policy_prepare_request_t const
                            *request);
-    int (*map_pixel)(sixel_lookup_policy_t const *policy,
+    int (*map_pixel)(sixel_lookup_policy_interface_t const *policy,
                      unsigned char const *pixel);
-    int (*lookup_source_is_float)(sixel_lookup_policy_t const *policy);
+    int (*lookup_source_is_float)(sixel_lookup_policy_interface_t const *policy);
     int (*prefer_palette_float_lookup)(
-        sixel_lookup_policy_t const *policy);
+        sixel_lookup_policy_interface_t const *policy);
 } sixel_lookup_policy_vtbl_t;
 
 struct sixel_lookup_policy_interface {
@@ -100,31 +100,31 @@ sixel_lookup_policy_select_name(
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_by_name(
     char const *name,
-    sixel_lookup_policy_t **policy);
+    sixel_lookup_policy_interface_t **policy);
 
 SIXEL_INTERNAL_API void
-sixel_lookup_policy_ref(sixel_lookup_policy_t *policy);
+sixel_lookup_policy_ref(sixel_lookup_policy_interface_t *policy);
 
 SIXEL_INTERNAL_API void
-sixel_lookup_policy_unref(sixel_lookup_policy_t *policy);
+sixel_lookup_policy_unref(sixel_lookup_policy_interface_t *policy);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_prepare(
-    sixel_lookup_policy_t *policy,
+    sixel_lookup_policy_interface_t *policy,
     sixel_lookup_policy_prepare_request_t const *request);
 
 SIXEL_INTERNAL_API int
 sixel_lookup_policy_map_pixel(
-    sixel_lookup_policy_t const *policy,
+    sixel_lookup_policy_interface_t const *policy,
     unsigned char const *pixel);
 
 SIXEL_INTERNAL_API int
 sixel_lookup_policy_lookup_source_is_float(
-    sixel_lookup_policy_t const *policy);
+    sixel_lookup_policy_interface_t const *policy);
 
 SIXEL_INTERNAL_API int
 sixel_lookup_policy_prefer_palette_float_lookup(
-    sixel_lookup_policy_t const *policy);
+    sixel_lookup_policy_interface_t const *policy);
 
 #ifdef __cplusplus
 }

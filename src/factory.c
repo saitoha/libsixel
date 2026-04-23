@@ -80,7 +80,7 @@ sixel_factory_create_default(sixel_factory_t *factory,
     if (strncmp(class_name, "lookup/", 7) == 0) {
         status = sixel_lookup_policy_create_by_name(
             class_name,
-            (sixel_lookup_policy_t **)object);
+            (sixel_lookup_policy_interface_t **)object);
         return status;
     }
 

@@ -74,7 +74,7 @@ typedef struct sixel_lookup_policy_class {
 } sixel_lookup_policy_class_t;
 
 typedef struct sixel_lookup_policy_object {
-    sixel_lookup_policy_t base;
+    sixel_lookup_policy_interface_t base;
     sixel_atomic_u32_t ref;
     sixel_lookup_policy_class_t const *policy_class;
     int lookup_source_is_float;
@@ -370,13 +370,13 @@ sixel_lookup_policy_find_class(char const *name)
 }
 
 static sixel_lookup_policy_object_t *
-sixel_lookup_policy_object_from_base(sixel_lookup_policy_t *policy)
+sixel_lookup_policy_object_from_base(sixel_lookup_policy_interface_t *policy)
 {
     return (sixel_lookup_policy_object_t *)(void *)policy;
 }
 
 static sixel_lookup_policy_object_t const *
-sixel_lookup_policy_object_from_base_const(sixel_lookup_policy_t const *policy)
+sixel_lookup_policy_object_from_base_const(sixel_lookup_policy_interface_t const *policy)
 {
     return (sixel_lookup_policy_object_t const *)(void const *)policy;
 }
@@ -539,7 +539,7 @@ sixel_lookup_policy_prepare_fast_lut(sixel_lookup_policy_object_t *object,
 }
 
 static void
-sixel_lookup_policy_ref_impl(sixel_lookup_policy_t *policy)
+sixel_lookup_policy_ref_impl(sixel_lookup_policy_interface_t *policy)
 {
     sixel_lookup_policy_object_t *object;
 
@@ -553,7 +553,7 @@ sixel_lookup_policy_ref_impl(sixel_lookup_policy_t *policy)
 }
 
 static void
-sixel_lookup_policy_unref_impl(sixel_lookup_policy_t *policy)
+sixel_lookup_policy_unref_impl(sixel_lookup_policy_interface_t *policy)
 {
     sixel_lookup_policy_object_t *object;
     unsigned int previous;
@@ -574,7 +574,7 @@ sixel_lookup_policy_unref_impl(sixel_lookup_policy_t *policy)
 
 static SIXELSTATUS
 sixel_lookup_policy_prepare_impl(
-    sixel_lookup_policy_t *policy,
+    sixel_lookup_policy_interface_t *policy,
     sixel_lookup_policy_prepare_request_t const *request)
 {
     SIXELSTATUS status;
@@ -631,7 +631,7 @@ sixel_lookup_policy_prepare_impl(
 }
 
 static int
-sixel_lookup_policy_map_pixel_impl(sixel_lookup_policy_t const *policy,
+sixel_lookup_policy_map_pixel_impl(sixel_lookup_policy_interface_t const *policy,
                                    unsigned char const *pixel)
 {
     sixel_lookup_policy_object_t const *object;
@@ -668,7 +668,7 @@ sixel_lookup_policy_map_pixel_impl(sixel_lookup_policy_t const *policy,
 
 static int
 sixel_lookup_policy_lookup_source_is_float_impl(
-    sixel_lookup_policy_t const *policy)
+    sixel_lookup_policy_interface_t const *policy)
 {
     sixel_lookup_policy_object_t const *object;
 
@@ -683,7 +683,7 @@ sixel_lookup_policy_lookup_source_is_float_impl(
 
 static int
 sixel_lookup_policy_prefer_palette_float_lookup_impl(
-    sixel_lookup_policy_t const *policy)
+    sixel_lookup_policy_interface_t const *policy)
 {
     sixel_lookup_policy_object_t const *object;
 
@@ -708,7 +708,7 @@ static sixel_lookup_policy_vtbl_t const g_sixel_lookup_policy_vtbl = {
 SIXELSTATUS
 sixel_lookup_policy_create_by_name(
     char const *name,
-    sixel_lookup_policy_t **policy)
+    sixel_lookup_policy_interface_t **policy)
 {
     sixel_lookup_policy_object_t *object;
     sixel_lookup_policy_class_t const *policy_class;
@@ -748,7 +748,7 @@ sixel_lookup_policy_create_by_name(
 }
 
 void
-sixel_lookup_policy_ref(sixel_lookup_policy_t *policy)
+sixel_lookup_policy_ref(sixel_lookup_policy_interface_t *policy)
 {
     if (policy == NULL || policy->vtbl == NULL || policy->vtbl->ref == NULL) {
         return;
@@ -758,7 +758,7 @@ sixel_lookup_policy_ref(sixel_lookup_policy_t *policy)
 }
 
 void
-sixel_lookup_policy_unref(sixel_lookup_policy_t *policy)
+sixel_lookup_policy_unref(sixel_lookup_policy_interface_t *policy)
 {
     if (policy == NULL || policy->vtbl == NULL || policy->vtbl->unref == NULL) {
         return;
@@ -769,7 +769,7 @@ sixel_lookup_policy_unref(sixel_lookup_policy_t *policy)
 
 SIXELSTATUS
 sixel_lookup_policy_prepare(
-    sixel_lookup_policy_t *policy,
+    sixel_lookup_policy_interface_t *policy,
     sixel_lookup_policy_prepare_request_t const *request)
 {
     if (policy == NULL || policy->vtbl == NULL
@@ -782,7 +782,7 @@ sixel_lookup_policy_prepare(
 
 int
 sixel_lookup_policy_map_pixel(
-    sixel_lookup_policy_t const *policy,
+    sixel_lookup_policy_interface_t const *policy,
     unsigned char const *pixel)
 {
     if (policy == NULL || policy->vtbl == NULL
@@ -795,7 +795,7 @@ sixel_lookup_policy_map_pixel(
 
 int
 sixel_lookup_policy_lookup_source_is_float(
-    sixel_lookup_policy_t const *policy)
+    sixel_lookup_policy_interface_t const *policy)
 {
     if (policy == NULL || policy->vtbl == NULL
             || policy->vtbl->lookup_source_is_float == NULL) {
@@ -807,7 +807,7 @@ sixel_lookup_policy_lookup_source_is_float(
 
 int
 sixel_lookup_policy_prefer_palette_float_lookup(
-    sixel_lookup_policy_t const *policy)
+    sixel_lookup_policy_interface_t const *policy)
 {
     if (policy == NULL || policy->vtbl == NULL
             || policy->vtbl->prefer_palette_float_lookup == NULL) {
