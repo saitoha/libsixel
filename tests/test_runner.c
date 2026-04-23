@@ -8,6 +8,13 @@
 #if !defined(_POSIX_C_SOURCE)
 # define _POSIX_C_SOURCE 200809L
 #endif
+#if !defined(_XOPEN_SOURCE)
+/*
+ * NetBSD may keep getpgid() hidden under strict POSIX mode unless the XSI
+ * surface is also requested. Keep this aligned with POSIX.1-2008 visibility.
+ */
+# define _XOPEN_SOURCE 700
+#endif
 
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
