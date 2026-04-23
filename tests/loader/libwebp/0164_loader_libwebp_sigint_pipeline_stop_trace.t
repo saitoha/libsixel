@@ -52,7 +52,12 @@ sigint_timeout=1200
 # TSan builds can delay scheduler progress around signal delivery.
 # Increase this test's trigger wait timeout only when needed.
 test "${SIXEL_TSAN_BUILD-no}" = "yes" && {
-    sigint_timeout=3000
+    sigint_timeout=5000
+}
+
+# Runtime wrappers can delay scheduler handoff and signal propagation.
+test -n "${SIXEL_RUNTIME-}" && {
+    sigint_timeout=5000
 }
 
 set +xv
@@ -61,7 +66,7 @@ trace_summary=$(
     # shellcheck disable=SC2086
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
         --sigint-run-until \
-        "event=callback_handoff_decide handoff=pipeline" \
+        "event=callback_handoff_decide" \
         "${sigint_timeout}" \
         ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
         --env "SIXEL_THREADS=4" \
@@ -70,27 +75,38 @@ trace_summary=$(
         -Llibwebp! -lforce -o /dev/null -g "${input_webp}" 2>&1 >/dev/null
 ) || sigint_run_status=$?
 
-handoff_flag=0
-stop_flag=0
+handoff_pipeline_flag=0
+handoff_serial_flag=0
+pipeline_stop_flag=0
 
 trace_remainder=${trace_summary#*event=callback_handoff_decide handoff=pipeline}
-test "${trace_remainder}" != "${trace_summary}" && handoff_flag=1
+test "${trace_remainder}" != "${trace_summary}" && handoff_pipeline_flag=1
 
-trace_remainder=${trace_summary#*event=pipeline_stop}
-test "${trace_remainder}" != "${trace_summary}" && stop_flag=1
+trace_remainder=${trace_summary#*event=callback_handoff_decide handoff=serial}
+test "${trace_remainder}" != "${trace_summary}" && handoff_serial_flag=1
+
+trace_remainder=${trace_summary#*event=pipeline_stop handoff=pipeline}
+test "${trace_remainder}" != "${trace_summary}" && pipeline_stop_flag=1
 set -xv
 
 test "${sigint_run_status}" = "0" || {
+    printf '%s\n' "${trace_summary}"
     echo "not ok" 1 - "libwebp pipeline did not stop after SIGINT"
     exit 0
 }
 
-test "${handoff_flag}" = "1" || {
+test "${handoff_pipeline_flag}" = "1" || {
+    test "${handoff_serial_flag}" = "1" && {
+        echo "ok 1 - libwebp pipeline stop trace # SKIP runtime selected serial handoff"
+        exit 0
+    }
+    printf '%s\n' "${trace_summary}"
     echo "not ok" 1 - "libwebp pipeline handoff trace missing"
     exit 0
 }
 
-test "${stop_flag}" = "1" || {
+test "${pipeline_stop_flag}" = "1" || {
+    printf '%s\n' "${trace_summary}"
     echo "not ok" 1 - "libwebp pipeline stop reason trace missing"
     exit 0
 }

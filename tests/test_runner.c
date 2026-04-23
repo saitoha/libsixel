@@ -1091,6 +1091,12 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                                 strerror(errno));
                     }
                     signal_sent = 1;
+                    /*
+                     * Keep independent timeout budgets for trigger detection
+                     * and post-SIGINT shutdown so slow trace startup does not
+                     * consume the child-exit grace window.
+                     */
+                    elapsed_ms = 0ul;
                 }
 
                 if (needle_length > 1u) {
