@@ -48,8 +48,10 @@ sixel_webp_apply_decode_plan(sixel_webp_decode_plan_t const *plan)
         { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_MISSING_VP8L,
           "builtin webp: VP8L payload was not found." },
         { SIXEL_OK, NULL, NULL },
-        { SIXEL_NOT_IMPLEMENTED, SIXEL_WEBP_CODE_UNSUP_VP8_LOSSY,
-          "builtin webp: VP8 lossy WebP is not supported." },
+        { SIXEL_NOT_IMPLEMENTED, SIXEL_WEBP_CODE_UNSUP_VP8_STATIC,
+          "builtin webp: VP8 static WebP is not supported." },
+        { SIXEL_NOT_IMPLEMENTED, SIXEL_WEBP_CODE_UNSUP_VP8_ALPHA,
+          "builtin webp: VP8+ALPHA WebP is not supported." },
         { SIXEL_NOT_IMPLEMENTED, SIXEL_WEBP_CODE_UNSUP_ANIM,
           "builtin webp: animated WebP is not supported." }
     };

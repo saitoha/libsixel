@@ -149,6 +149,7 @@ srcs = [
   'fromwebp.h',
   'fromwebp-internal.h',
   'fromwebp-container.c',
+  'fromwebp-vp8.c',
   'fromwebp-vp8l.c',
   'fromwebp-trace.c',
   'frombmp-parser.c',
