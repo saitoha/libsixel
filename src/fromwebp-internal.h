@@ -38,7 +38,7 @@
 #define SIXEL_WEBP_CHUNK_VP8  0x20385056u /* "VP8 " little-endian */
 #define SIXEL_WEBP_CHUNK_VP8L 0x4c385056u /* "VP8L" little-endian */
 #define SIXEL_WEBP_CHUNK_VP8X 0x58385056u /* "VP8X" little-endian */
-#define SIXEL_WEBP_CHUNK_ALPH 0x48504c41u /* "ALPH" little-endian */
+#define SIXEL_WEBP_CHUNK_ALPHA 0x48504c41u /* alpha chunk little-endian */
 #define SIXEL_WEBP_CHUNK_ANIM 0x4d494e41u /* "ANIM" little-endian */
 #define SIXEL_WEBP_CHUNK_ANMF 0x464d4e41u /* "ANMF" little-endian */
 #define SIXEL_WEBP_CHUNK_ICCP 0x50434349u /* "ICCP" little-endian */
@@ -72,28 +72,55 @@ typedef enum sixel_webp_container_kind {
     SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM
 } sixel_webp_container_kind_t;
 
+typedef struct sixel_webp_chunk_ref {
+    int present;
+    size_t chunk_offset;
+    unsigned char const *payload;
+    size_t payload_size;
+} sixel_webp_chunk_ref_t;
+
 typedef struct sixel_webp_container_info {
     /*
-     * The parser stores raw VP8L payload coordinates so that decode logic can
-     * stay independent from RIFF walking details.
+     * The parser stores first chunk references and per-type occurrence counts
+     * so future feature layers can consume container metadata without walking
+     * RIFF again.
      */
+    sixel_webp_chunk_ref_t vp8;
+    sixel_webp_chunk_ref_t vp8l;
+    sixel_webp_chunk_ref_t vp8x;
+    sixel_webp_chunk_ref_t alpha;
+    sixel_webp_chunk_ref_t anim;
+    sixel_webp_chunk_ref_t anmf;
+    sixel_webp_chunk_ref_t iccp;
+    sixel_webp_chunk_ref_t exif;
+    sixel_webp_chunk_ref_t xmp;
+    unsigned int vp8_count;
+    unsigned int vp8l_count;
+    unsigned int vp8x_count;
+    unsigned int alpha_count;
+    unsigned int anim_count;
+    unsigned int anmf_count;
+    unsigned int iccp_count;
+    unsigned int exif_count;
+    unsigned int xmp_count;
+    unsigned char vp8x_flags;
+} sixel_webp_container_info_t;
+
+typedef struct sixel_webp_decode_plan {
+    sixel_webp_container_kind_t kind;
     unsigned char const *vp8l_payload;
     size_t vp8l_payload_size;
-    unsigned char vp8x_flags;
-    int saw_vp8x;
-    int saw_vp8;
-    int saw_vp8l;
-    int saw_anim;
-    int saw_anmf;
-    int saw_alph;
-    int saw_iccp;
-    int saw_exif;
-    int saw_xmp;
-} sixel_webp_container_info_t;
+    int meta_iccp_ignored;
+    int meta_exif_ignored;
+} sixel_webp_decode_plan_t;
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_webp_parse_container(sixel_chunk_t const *chunk,
                            sixel_webp_container_info_t *info);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
+                             sixel_webp_decode_plan_t *plan);
 
 SIXEL_INTERNAL_API sixel_webp_container_kind_t
 sixel_webp_classify_container(sixel_webp_container_info_t const *info);
