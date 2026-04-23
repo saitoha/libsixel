@@ -3249,11 +3249,6 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 
-# Keep this recipe tab-indented; GNU make requires tabs for commands.
-@WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
-@WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
-@WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
-
 .PHONY: \
 	staticcheck \
 	staticcheck-actionlint \
