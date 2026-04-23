@@ -175,25 +175,6 @@ lsqa_getenv_dup(char const *name)
 #endif
 }
 
-static FILE *
-lsqa_fopen_write(char const *path)
-{
-    /* fopen_s depends on errno_t, which is MSVC-specific. */
-#if defined(HAVE_FOPEN_S) && defined(_MSC_VER)
-    FILE *stream;
-    errno_t rc;
-
-    stream = NULL;
-    rc = fopen_s(&stream, path, "w");
-    if (rc != 0) {
-        return NULL;
-    }
-    return stream;
-#else
-    return fopen(path, "w");
-#endif
-}
-
 typedef struct LoaderCapture {
     sixel_frame_t *frame;
 } LoaderCapture;
@@ -1427,8 +1408,6 @@ lsqa_copy_option_text(char *buffer,
 typedef struct Options {
     const char *ref_path;
     const char *out_path;
-    const char *prefix;
-    char prefix_buffer[PATH_MAX];
     char loader_order_buffer[PATH_MAX];
     const MetricSpec *metric_spec;
     const char *metric_key;
@@ -1939,7 +1918,6 @@ show_help(void)
             "  LSQA_COMPARE_COLORSPACE=reference|gamma|linear|oklab|cielab|din99d\n"
             "  LSQA_COMPARE_PRECISION=reference|8bit|float32\n"
             "  LSQA_LOADERS=LIST\n"
-            "  LSQA_PREFIX=NAME\n"
             "  LSQA_VERBOSE=0|1\n"
             "\n"
             "Exit codes:\n"
@@ -2221,19 +2199,10 @@ parse_args(int argc, char **argv, Options *opts)
 {
     const char *ref_arg;
     const char *out_arg;
-    const char *base_start;
-    const char *dot_pos;
-    const char *slash_pos;
-#if defined(_WIN32)
-    const char *alt_slash_pos;
-#endif
     char *verbose_env;
-    char *prefix_env;
     const char *metrics_arg;
     const char *baseline_arg;
     const MetricSpec *metric_spec;
-    size_t prefix_len;
-    int status;
     int argi;
     int parse_status;
     char **scan_argv;
@@ -2248,7 +2217,6 @@ parse_args(int argc, char **argv, Options *opts)
 
     opts->ref_path = NULL;
     opts->out_path = "-";
-    opts->prefix = "report";
     opts->metric_spec = NULL;
     opts->metric_key = NULL;
     opts->baseline_spec = NULL;
@@ -2266,7 +2234,6 @@ parse_args(int argc, char **argv, Options *opts)
     opts->compare_colorspace_specified = 0;
     opts->compare_precision_specified = 0;
     opts->loader_order_specified = 0;
-    opts->prefix_buffer[0] = '\0';
     opts->loader_order_buffer[0] = '\0';
     opts->baseline_name[0] = '\0';
     opts->bgcolor[0] = 0u;
@@ -2282,7 +2249,6 @@ parse_args(int argc, char **argv, Options *opts)
     verbose_value = 0;
     detail_buffer[0] = '\0';
     verbose_env = NULL;
-    prefix_env = NULL;
 #if HAVE_GETOPT_LONG
     long_opt = 0;
     option_index = 0;
@@ -2506,59 +2472,6 @@ parse_args(int argc, char **argv, Options *opts)
         goto cleanup;
     }
 
-    base_start = opts->out_path;
-    if (strcmp(opts->out_path, "-") == 0) {
-        base_start = ref_arg;
-    }
-
-    slash_pos = strrchr(base_start, '/');
-#if defined(_WIN32)
-    alt_slash_pos = strrchr(base_start, '\\');
-    if (alt_slash_pos != NULL) {
-        if (slash_pos == NULL || alt_slash_pos > slash_pos) {
-            slash_pos = alt_slash_pos;
-        }
-    }
-#endif
-    if (slash_pos != NULL) {
-        base_start = slash_pos + 1;
-    }
-    dot_pos = strrchr(base_start, '.');
-    if (dot_pos != NULL && dot_pos > base_start) {
-        prefix_len = (size_t)(dot_pos - base_start);
-    } else {
-        prefix_len = strlen(base_start);
-    }
-    if (prefix_len >= sizeof(opts->prefix_buffer)) {
-        prefix_len = sizeof(opts->prefix_buffer) - 1u;
-    }
-    if (prefix_len == 0) {
-        status = snprintf(opts->prefix_buffer,
-                          sizeof(opts->prefix_buffer),
-                          "report");
-        if (status < 0) {
-            parse_status = -1;
-            goto cleanup;
-        }
-    } else {
-        memcpy(opts->prefix_buffer, base_start, prefix_len);
-        opts->prefix_buffer[prefix_len] = '\0';
-    }
-    opts->prefix = opts->prefix_buffer;
-
-    prefix_env = lsqa_getenv_dup("LSQA_PREFIX");
-    if (prefix_env != NULL && prefix_env[0] != '\0') {
-        status = snprintf(opts->prefix_buffer,
-                          sizeof(opts->prefix_buffer),
-                          "%s",
-                          prefix_env);
-        if (status < 0) {
-            parse_status = -1;
-            goto cleanup;
-        }
-        opts->prefix = opts->prefix_buffer;
-    }
-
     verbose_env = lsqa_getenv_dup("LSQA_VERBOSE");
     if (verbose_env != NULL && verbose_env[0] != '\0') {
         if (lsqa_parse_boolean(verbose_env, &verbose_value) != 0) {
@@ -2573,7 +2486,6 @@ parse_args(int argc, char **argv, Options *opts)
     parse_status = 0;
 
 cleanup:
-    free(prefix_env);
     free(verbose_env);
     free(scan_argv);
     return parse_status;
@@ -2590,9 +2502,6 @@ main(int argc, char **argv)
     sixel_frame_t *out_frame;
     Metrics metrics;
     JsonCollector collector;
-    size_t path_len;
-    char *json_path;
-    FILE *fp;
     int exit_code;
     int metric_status;
     float metric_value;
@@ -2609,8 +2518,6 @@ main(int argc, char **argv)
     assessment = NULL;
     ref_frame = NULL;
     out_frame = NULL;
-    fp = NULL;
-    json_path = NULL;
     exit_code = LSQA_EXIT_RUNTIME_FAILED;
     metric_status = 0;
     metric_value = 0.0f;
@@ -2839,54 +2746,7 @@ main(int argc, char **argv)
         return exit_code;
     }
 
-    path_len = strlen(opts.prefix) + strlen("_metrics.json") + 1u;
-    json_path = (char *)malloc(path_len);
-    if (json_path == NULL) {
-        fprintf(stderr, "Out of memory while building JSON path\n");
-        sixel_assessment_unref(assessment);
-        sixel_frame_unref(ref_frame);
-        sixel_frame_unref(out_frame);
-        sixel_allocator_unref(allocator);
-        return LSQA_EXIT_RUNTIME_FAILED;
-    }
-    snprintf(json_path, path_len, "%s_metrics.json", opts.prefix);
-
-    fp = lsqa_fopen_write(json_path);
-    if (fp == NULL) {
-        char errbuf[128];
-
-        fprintf(stderr,
-                "Failed to open %s for writing: %s\n",
-                json_path,
-                lsqa_strerror(errno, errbuf, sizeof(errbuf)));
-        free(json_path);
-        sixel_assessment_unref(assessment);
-        sixel_frame_unref(ref_frame);
-        sixel_frame_unref(out_frame);
-        sixel_allocator_unref(allocator);
-        return LSQA_EXIT_RUNTIME_FAILED;
-    }
-
-    collector.stream = fp;
-    status = sixel_assessment_get_json(assessment,
-                                       SIXEL_ASSESSMENT_SECTION_QUALITY,
-                                       json_collect_callback,
-                                       &collector);
-    fclose(fp);
-    if (SIXEL_FAILED(status)) {
-        fprintf(stderr,
-                "Failed to write JSON file: %s\n",
-                sixel_helper_format_error(status));
-        free(json_path);
-        sixel_assessment_unref(assessment);
-        sixel_frame_unref(ref_frame);
-        sixel_frame_unref(out_frame);
-        sixel_allocator_unref(allocator);
-        return LSQA_EXIT_RUNTIME_FAILED;
-    }
-
     collector.stream = stdout;
-    collector.metrics = NULL;
     status = sixel_assessment_get_json(assessment,
                                        SIXEL_ASSESSMENT_SECTION_QUALITY,
                                        json_collect_callback,
@@ -2895,7 +2755,6 @@ main(int argc, char **argv)
         fprintf(stderr,
                 "Failed to emit JSON: %s\n",
                 sixel_helper_format_error(status));
-        free(json_path);
         sixel_assessment_unref(assessment);
         sixel_frame_unref(ref_frame);
         sixel_frame_unref(out_frame);
@@ -2905,7 +2764,6 @@ main(int argc, char **argv)
 
     if (opts.verbose) {
         verbose_print(&metrics);
-        fprintf(stderr, "\nWrote: %s\n", json_path);
     }
 
     baseline_status = lsqa_check_baseline(&opts, &metrics, &baseline_value);
@@ -2932,7 +2790,6 @@ main(int argc, char **argv)
         exit_code = LSQA_EXIT_SUCCESS;
     }
 
-    free(json_path);
     sixel_assessment_unref(assessment);
     sixel_frame_unref(ref_frame);
     sixel_frame_unref(out_frame);
