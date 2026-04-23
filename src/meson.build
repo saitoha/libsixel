@@ -145,6 +145,8 @@ srcs = [
   'frompsd.c',
   'frompsd.h',
   'fromgif.c',
+  'fromwebp.c',
+  'fromwebp.h',
   'frombmp-parser.c',
   'frombmp.c',
   'frombmp.h',
