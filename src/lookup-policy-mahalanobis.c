@@ -58,8 +58,10 @@
 typedef struct sixel_lookup_policy_mahalanobis_object {
     sixel_lookup_policy_interface_t base;
     sixel_atomic_u32_t ref;
-    sixel_lut_t *lut;
-    int owns_lut;
+    int backend_initialized;
+    int prepared;
+    sixel_lookup_8bit_t state_8bit;
+    sixel_lookup_float32_t state_float;
     int lookup_source_is_float;
 } sixel_lookup_policy_mahalanobis_object_t;
 
@@ -707,12 +709,30 @@ sixel_lookup_policy_mahalanobis_reset_state(
         return;
     }
 
-    if (object->owns_lut != 0 && object->lut != NULL) {
-        sixel_lut_unref(object->lut);
+    if (object->backend_initialized != 0) {
+        sixel_lookup_8bit_finalize(&object->state_8bit);
+        sixel_lookup_float32_finalize(&object->state_float);
     }
 
-    object->lut = NULL;
-    object->owns_lut = 0;
+    memset(&object->state_8bit, 0, sizeof(object->state_8bit));
+    memset(&object->state_float, 0, sizeof(object->state_float));
+    object->backend_initialized = 0;
+    object->prepared = 0;
+    object->lookup_source_is_float = 0;
+}
+
+static void
+sixel_lookup_policy_mahalanobis_detach_state(
+    sixel_lookup_policy_mahalanobis_object_t *object)
+{
+    if (object == NULL) {
+        return;
+    }
+
+    memset(&object->state_8bit, 0, sizeof(object->state_8bit));
+    memset(&object->state_float, 0, sizeof(object->state_float));
+    object->backend_initialized = 0;
+    object->prepared = 0;
     object->lookup_source_is_float = 0;
 }
 
@@ -759,14 +779,12 @@ sixel_lookup_policy_mahalanobis_prepare(
     sixel_lookup_policy_mahalanobis_object_t *object;
     sixel_lookup_policy_interface_t *reuse_policy;
     sixel_lookup_policy_mahalanobis_object_t *reuse_object;
-    int normalized_lut_policy;
     int shared_lut;
 
     status = SIXEL_FALSE;
     object = NULL;
     reuse_policy = NULL;
     reuse_object = NULL;
-    normalized_lut_policy = SIXEL_LUT_POLICY_6BIT;
     shared_lut = 1;
 
     if (policy == NULL || request == NULL || request->palette == NULL
@@ -786,6 +804,9 @@ sixel_lookup_policy_mahalanobis_prepare(
 
     object = sixel_lookup_policy_mahalanobis_from_base(policy);
     sixel_lookup_policy_mahalanobis_reset_state(object);
+    object->backend_initialized = 1;
+    sixel_lookup_8bit_init(&object->state_8bit, request->allocator);
+    sixel_lookup_float32_init(&object->state_float, request->allocator);
 
     if (request->depth != 3) {
         sixel_helper_set_additional_message(
@@ -793,10 +814,8 @@ sixel_lookup_policy_mahalanobis_prepare(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    normalized_lut_policy = sixel_lookup_policy_normalize_fast_lut_policy(
-        SIXEL_LUT_POLICY_MAHALANOBIS);
     shared_lut = sixel_lookup_policy_shared_cache_enabled(
-        normalized_lut_policy);
+        SIXEL_LUT_POLICY_MAHALANOBIS);
 
     reuse_policy = request->reuse_policy;
     if (sixel_lookup_parallel_dither_active() != 0
@@ -812,13 +831,18 @@ sixel_lookup_policy_mahalanobis_prepare(
     if (reuse_policy != NULL
             && reuse_policy->vtbl == policy->vtbl) {
         reuse_object = sixel_lookup_policy_mahalanobis_from_base(reuse_policy);
-        if (reuse_object->lut != NULL) {
-            object->lut = reuse_object->lut;
-            object->owns_lut = reuse_object->owns_lut;
+        if (reuse_object->prepared != 0
+                && reuse_object->lookup_source_is_float
+                == object->lookup_source_is_float) {
+            sixel_lookup_policy_mahalanobis_reset_state(object);
+            object->state_8bit = reuse_object->state_8bit;
+            object->state_float = reuse_object->state_float;
+            object->backend_initialized =
+                reuse_object->backend_initialized;
+            object->prepared = reuse_object->prepared;
             object->lookup_source_is_float =
                 reuse_object->lookup_source_is_float;
-            reuse_object->lut = NULL;
-            reuse_object->owns_lut = 0;
+            sixel_lookup_policy_mahalanobis_detach_state(reuse_object);
             if (request->reuse_policy_slot != NULL
                     && *request->reuse_policy_slot == NULL) {
                 *request->reuse_policy_slot = policy;
@@ -828,27 +852,20 @@ sixel_lookup_policy_mahalanobis_prepare(
         }
     }
 
-    status = sixel_lut_new(&object->lut,
-                           normalized_lut_policy,
-                           request->allocator);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    object->owns_lut = 1;
-
     if (object->lookup_source_is_float != 0) {
         status = sixel_lookup_policy_mahalanobis_configure_float32(
-            sixel_lut_backend_float32(object->lut),
+            &object->state_float,
             request);
     } else {
         status = sixel_lookup_policy_mahalanobis_configure_8bit(
-            sixel_lut_backend_8bit(object->lut),
+            &object->state_8bit,
             request);
     }
     if (SIXEL_FAILED(status)) {
         sixel_lookup_policy_mahalanobis_reset_state(object);
         return status;
     }
+    object->prepared = 1;
 
     if (request->reuse_policy_slot != NULL
             && *request->reuse_policy_slot == NULL) {
@@ -872,18 +889,18 @@ sixel_lookup_policy_mahalanobis_map_pixel(
     }
 
     object = sixel_lookup_policy_mahalanobis_from_base_const(policy);
-    if (object->lut == NULL) {
+    if (object->prepared == 0) {
         return 0;
     }
 
     if (object->lookup_source_is_float != 0) {
         return sixel_lookup_policy_mahalanobis_float32_search(
-            sixel_lut_backend_float32(object->lut),
+            &object->state_float,
             (float const *)(void const *)pixel);
     }
 
     return sixel_lookup_policy_mahalanobis_map_8bit(
-        sixel_lut_backend_8bit(object->lut),
+        &object->state_8bit,
         pixel);
 }
 
