@@ -25671,6 +25671,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         int base_has_clipping_children;
         int apply_effects_without_overlay;
         int dual_stroke_candidate;
+        int defer_effect_stroke_ownership;
         int defer_dual_stroke_ownership;
         layer = &model.layers[(size_t)i];
         memset(&synthetic_layer, 0, sizeof(synthetic_layer));
@@ -25689,6 +25690,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         base_has_clipping_children = 0;
         apply_effects_without_overlay = 0;
         dual_stroke_candidate = 0;
+        defer_effect_stroke_ownership = 0;
         defer_dual_stroke_ownership = 0;
         pending_overlay_interior_enabled = 1;
         apply_effects_subset = 0;
@@ -26305,9 +26307,15 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             effective_composite_layer->effect_stroke_from_vector_style == 0 &&
             effective_composite_layer->vector_stroke_opacity > 0.0f &&
             effective_composite_layer->vector_stroke_size > 0.0f ? 1 : 0;
-        defer_dual_stroke_ownership = dual_stroke_candidate != 0 &&
+        defer_effect_stroke_ownership =
+            pending_overlay_defer_stroke != 0 &&
+            effective_composite_layer->has_effect_stroke != 0 &&
+            effective_composite_layer->effect_stroke_from_vector_style == 0 &&
             deferred_dual_stroke_owner_map[(size_t)i] != 0 ? 1 : 0;
-        if (defer_dual_stroke_ownership != 0) {
+        defer_dual_stroke_ownership =
+            dual_stroke_candidate != 0 &&
+            defer_effect_stroke_ownership != 0 ? 1 : 0;
+        if (defer_effect_stroke_ownership != 0) {
             /*
              * Resolve clbl=1 dual-stroke ownership before effect application.
              * This keeps clipping siblings from repainting the same contour
@@ -26315,22 +26323,24 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
              * Emit base dual-stroke diagnostics before delegation so existing
              * mode-aware trace contracts remain observable in one decode.
              */
-            sixel_builtin_psd_trace_message(
-                "psd_decode",
-                "builtin PSD: applying vector stroke and layer effect stroke "
-                "in layer fallback");
-            sixel_builtin_psd_trace_message(
-                "psd_decode",
-                "builtin PSD: applying dual-stroke union coverage in layer "
-                "fallback");
-            sixel_builtin_psd_trace_message(
-                "psd_decode",
-                "builtin PSD: applying dual-stroke overlap decomposition in "
-                "layer fallback");
-            sixel_builtin_psd_trace_message(
-                "psd_decode",
-                "builtin PSD: applying mode-aware dual-stroke blend in layer "
-                "fallback");
+            if (defer_dual_stroke_ownership != 0) {
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: applying vector stroke and layer effect "
+                    "stroke in layer fallback");
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: applying dual-stroke union coverage in "
+                    "layer fallback");
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: applying dual-stroke overlap decomposition "
+                    "in layer fallback");
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: applying mode-aware dual-stroke blend in "
+                    "layer fallback");
+            }
             sixel_builtin_psd_trace_message(
                 "psd_decode",
                 "builtin PSD: applying distance-map effect stroke coverage in "
