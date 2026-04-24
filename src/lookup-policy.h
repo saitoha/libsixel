@@ -27,8 +27,6 @@
 
 #include <sixel.h>
 
-#include "lookup-common.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -54,6 +52,11 @@ extern "C" {
  * - services/factory -> create("lookup/...", &policy)
  * - create() resolves names via per-class constructors
  * - policy->prepare(request)
+ *
+ * Reuse path:
+ * - Callers may pass a prepared policy object through
+ *   request.reuse_policy/request.reuse_policy_slot.
+ * - Implementations may choose to ignore reuse hints.
  */
 
 typedef struct sixel_lookup_policy_interface sixel_lookup_policy_interface_t;
@@ -73,11 +76,9 @@ typedef struct sixel_lookup_policy_prepare_request {
     int float_depth;
     int reqcolor;
     int complexion;
-    int method_for_largest;
     int pixelformat;
-    int reuse_lut_preconfigured;
-    sixel_lut_t *reuse_lut;
-    sixel_lut_t **reuse_lut_slot;
+    sixel_lookup_policy_interface_t *reuse_policy;
+    sixel_lookup_policy_interface_t **reuse_policy_slot;
     sixel_allocator_t *allocator;
 } sixel_lookup_policy_prepare_request_t;
 

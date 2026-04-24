@@ -27,6 +27,14 @@
  * Backend implementations live in lookup-8bit.c and lookup-float32.c so
  * additional search structures can be added without touching callers.
  */
+/*
+ * IDL usage in this unit
+ *
+ * ILookup8Bit.configure(policy, ...);
+ * ILookup8Bit.map_pixel(pixel);
+ * ILookupFloat32.configure(policy, ...);
+ * ILookupFloat32.map_pixel(pixel);
+ */
 
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
@@ -251,6 +259,11 @@ sixel_lut_configure(sixel_lut_t *lut,
 
     palette_depth = depth;
     float_components = 0;
+    /*
+     * Complexion is kept in public/internal APIs for compatibility, but
+     * lookup now treats it as a deprecated no-op.
+     */
+    complexion = 1;
 
     if (lut == NULL) {
         return SIXEL_BAD_ARGUMENT;

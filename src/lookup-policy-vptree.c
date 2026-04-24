@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "filter-lookup.h"
+#include "lookup-common.h"
 #include "lookup-policy-private.h"
 #include "sixel_atomic.h"
 
@@ -124,25 +124,22 @@ sixel_lookup_policy_vptree_prepare(
     sixel_lookup_policy_prepare_request_t const *request)
 {
     SIXELSTATUS status;
-    sixel_filter_lookup_config_t lookup_config;
-    sixel_filter_lookup_result_t lookup_result;
     sixel_lookup_policy_vptree_object_t *object;
-    sixel_lut_t *reuse_lut;
+    sixel_lookup_policy_interface_t *reuse_policy;
+    sixel_lookup_policy_vptree_object_t *reuse_object;
     int normalized_lut_policy;
     int shared_lut;
-    int reuse_lut_preconfigured;
 
     status = SIXEL_FALSE;
-    memset(&lookup_config, 0, sizeof(lookup_config));
-    memset(&lookup_result, 0, sizeof(lookup_result));
     object = NULL;
-    reuse_lut = NULL;
+    reuse_policy = NULL;
+    reuse_object = NULL;
     normalized_lut_policy = SIXEL_LUT_POLICY_6BIT;
     shared_lut = 1;
-    reuse_lut_preconfigured = 0;
 
     if (policy == NULL || request == NULL || request->palette == NULL
-            || request->depth <= 0 || request->reqcolor <= 0) {
+            || request->depth <= 0 || request->reqcolor <= 0
+            || request->allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -169,53 +166,65 @@ sixel_lookup_policy_vptree_prepare(
     shared_lut = sixel_lookup_policy_shared_cache_enabled(
         normalized_lut_policy);
 
-    reuse_lut = request->reuse_lut;
+    reuse_policy = request->reuse_policy;
     if (sixel_lookup_parallel_dither_active() != 0
-            /* Reuse slot NULL means the LUT comes from shared plan cache. */
+            /* Reuse slot NULL means shared cache cannot migrate ownership. */
             && shared_lut == 0
-            && request->reuse_lut_slot == NULL) {
-        reuse_lut = NULL;
-    }
-    if (reuse_lut != NULL && request->reuse_lut_preconfigured != 0) {
-        reuse_lut_preconfigured = 1;
+            && request->reuse_policy_slot == NULL) {
+        reuse_policy = NULL;
     }
 
     object->lookup_source_is_float =
         SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
 
-    if (reuse_lut_preconfigured != 0) {
-        object->lut = reuse_lut;
-        object->owns_lut = 0;
-        return SIXEL_OK;
+    if (reuse_policy != NULL
+            && reuse_policy->vtbl == policy->vtbl) {
+        reuse_object = sixel_lookup_policy_vptree_from_base(reuse_policy);
+        if (reuse_object->lut != NULL) {
+            object->lut = reuse_object->lut;
+            object->owns_lut = reuse_object->owns_lut;
+            object->lookup_source_is_float =
+                reuse_object->lookup_source_is_float;
+            reuse_object->lut = NULL;
+            reuse_object->owns_lut = 0;
+            if (request->reuse_policy_slot != NULL
+                    && *request->reuse_policy_slot == NULL) {
+                *request->reuse_policy_slot = policy;
+                policy->vtbl->ref(policy);
+            }
+            return SIXEL_OK;
+        }
     }
 
-    lookup_config.palette = request->palette;
-    lookup_config.palette_float = request->palette_float;
-    lookup_config.depth = request->depth;
-    lookup_config.float_depth = request->float_depth;
-    lookup_config.ncolors = request->reqcolor;
-    lookup_config.complexion = request->complexion;
-    lookup_config.method_for_largest = request->method_for_largest;
-    lookup_config.lut_policy = normalized_lut_policy;
-    lookup_config.pixelformat = request->pixelformat;
-    lookup_config.reuse_lut = reuse_lut;
-
-    status = sixel_filter_lookup_build(&lookup_config,
-                                       request->allocator,
-                                       NULL,
-                                       &lookup_result);
+    status = sixel_lut_new(&object->lut,
+                           normalized_lut_policy,
+                           request->allocator);
     if (SIXEL_FAILED(status)) {
         return status;
     }
+    object->owns_lut = 1;
 
-    object->lut = lookup_result.lut;
-    object->owns_lut = lookup_result.owned;
+    status = sixel_lut_configure(object->lut,
+                                 request->palette,
+                                 request->palette_float,
+                                 request->depth,
+                                 request->float_depth,
+                                 request->reqcolor,
+                                 1,
+                                 1,
+                                 1,
+                                 1,
+                                 normalized_lut_policy,
+                                 request->pixelformat);
+    if (SIXEL_FAILED(status)) {
+        sixel_lookup_policy_vptree_reset_state(object);
+        return status;
+    }
 
-    if (object->owns_lut != 0
-            && request->reuse_lut_slot != NULL
-            && *request->reuse_lut_slot == NULL) {
-        *request->reuse_lut_slot = object->lut;
-        object->owns_lut = 0;
+    if (request->reuse_policy_slot != NULL
+            && *request->reuse_policy_slot == NULL) {
+        *request->reuse_policy_slot = policy;
+        policy->vtbl->ref(policy);
     }
 
     return SIXEL_OK;

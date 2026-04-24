@@ -38,7 +38,7 @@ test_fhedt_builds_owned_lut_and_transfers_result(void)
     filter = NULL;
     /* Zero-init config to avoid uninitialized optional lookup fields. */
     memset(&config, 0, sizeof(config));
-    result.lut = NULL;
+    result.policy = NULL;
     result.owned = 0;
     palette[0] = 0;
     palette[1] = 0;
@@ -66,8 +66,8 @@ test_fhedt_builds_owned_lut_and_transfers_result(void)
     config.lookup_config.complexion = 1;
     config.lookup_config.lut_policy = SIXEL_LUT_POLICY_FHEDT;
     config.lookup_config.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    config.lookup_config.reuse_lut = NULL;
-    config.lookup_config.method_for_largest = SIXEL_LARGE_AUTO;
+    config.lookup_config.reuse_policy = NULL;
+    config.lookup_config.reuse_policy_slot = NULL;
     config.result_out = &result;
 
     status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_FHEDT,
@@ -84,12 +84,12 @@ test_fhedt_builds_owned_lut_and_transfers_result(void)
         goto cleanup;
     }
 
-    if (result.lut == NULL || result.owned == 0) {
+    if (result.policy == NULL || result.owned == 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
 
-    mapped = sixel_lut_map_pixel(result.lut, pixel);
+    mapped = result.policy->vtbl->map_pixel(result.policy, pixel);
     if (mapped < 0 || mapped >= config.lookup_config.ncolors) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
@@ -103,8 +103,8 @@ test_fhedt_builds_owned_lut_and_transfers_result(void)
 cleanup:
     sixel_filter_teardown(filter);
     sixel_filter_free(filter);
-    if (result.lut != NULL && result.owned != 0) {
-        sixel_lut_unref(result.lut);
+    if (result.policy != NULL && result.owned != 0) {
+        result.policy->vtbl->unref(result.policy);
     }
     sixel_allocator_unref(allocator);
 
@@ -125,10 +125,10 @@ test_fhedt_init_rejects_non_fhedt_policy(void)
     config.lookup_config.depth = 0;
     config.lookup_config.ncolors = 0;
     config.lookup_config.complexion = 1;
-    config.lookup_config.method_for_largest = SIXEL_LARGE_AUTO;
     config.lookup_config.lut_policy = SIXEL_LUT_POLICY_AUTO;
     config.lookup_config.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    config.lookup_config.reuse_lut = NULL;
+    config.lookup_config.reuse_policy = NULL;
+    config.lookup_config.reuse_policy_slot = NULL;
     config.result_out = NULL;
 
     status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_FHEDT,

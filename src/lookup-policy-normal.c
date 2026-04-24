@@ -169,7 +169,7 @@ sixel_lookup_policy_normal_prepare(
     object->palette = request->palette;
     object->depth = request->depth;
     object->reqcolor = request->reqcolor;
-    object->complexion = request->complexion;
+    object->complexion = 1;
     object->prefer_palette_float_lookup = 0;
 
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)

@@ -444,9 +444,8 @@ sixel_dither_prepare_lookup_policy(
     int complexion,
     int lut_policy,
     int pixelformat,
-    int reuse_lut_preconfigured,
-    sixel_lut_t *reuse_lut,
-    sixel_lut_t **reuse_lut_slot,
+    sixel_lookup_policy_interface_t *reuse_policy,
+    sixel_lookup_policy_interface_t **reuse_policy_slot,
     sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -477,9 +476,8 @@ sixel_dither_prepare_lookup_policy(
     request.reqcolor = reqcolor;
     request.complexion = 1;
     request.pixelformat = pixelformat;
-    request.reuse_lut_preconfigured = reuse_lut_preconfigured;
-    request.reuse_lut = reuse_lut;
-    request.reuse_lut_slot = reuse_lut_slot;
+    request.reuse_policy = reuse_policy;
+    request.reuse_policy_slot = reuse_policy_slot;
     request.allocator = allocator;
 
     select_request.palette = palette;
@@ -766,7 +764,7 @@ typedef struct sixel_parallel_dither_plan {
     sixel_index_t *dest;
     unsigned char *pixels;
     sixel_palette_t *palette;
-    sixel_lut_t *lut;
+    sixel_lookup_policy_interface_t *lookup_policy;
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
     size_t row_bytes;
@@ -791,7 +789,7 @@ typedef struct sixel_parallel_dither_plan {
  * encoder worker bookkeeping when compiled as a single translation unit.
  */
 typedef struct sixel_parallel_dither_state {
-    sixel_lut_t *lut;
+    sixel_lookup_policy_interface_t *lookup_policy;
 } sixel_parallel_dither_state_t;
 
 static void
@@ -803,16 +801,13 @@ sixel_parallel_dither_cleanup(void *workspace)
     if (state == NULL) {
         return;
     }
-    if (state->lut != NULL) {
+    if (state->lookup_policy != NULL) {
         /*
-         * Each worker owns its private LUT instance when shared caches are
-         * disabled.  Release it here so threadpool teardown can free the
-         * workspace without leaking per-thread caches.  The mutex inside the
-         * LUT was already removed during configuration for the private mode,
-         * so this final drop is the only step needed to return allocator
-         * ownership.
+         * Each worker owns its private lookup policy instance when shared
+         * caches are disabled. Release it here so threadpool teardown can
+         * free the workspace without leaking per-thread caches.
          */
-        sixel_lut_unref(state->lut);
+        state->lookup_policy->vtbl->unref(state->lookup_policy);
     }
 }
 
@@ -835,9 +830,7 @@ sixel_dither_parallel_worker(tp_job_t job,
     int local_ncolors;
     SIXELSTATUS status;
     sixel_parallel_dither_state_t *state;
-    sixel_lut_t *reuse_lut;
-    sixel_lut_t **reuse_lut_slot;
-    int reuse_lut_preconfigured;
+    sixel_lookup_policy_interface_t *reuse_policy;
     int restore_context;
     sixel_lookup_policy_interface_t *lookup_policy;
     sixel_dither_map_pixels_request_t map_request;
@@ -908,17 +901,12 @@ sixel_dither_parallel_worker(tp_job_t job,
 
     local_ncolors = plan->reqcolor;
     state = (sixel_parallel_dither_state_t *)workspace;
-    reuse_lut = plan->lut;
-    reuse_lut_slot = NULL;
-    reuse_lut_preconfigured = 0;
+    reuse_policy = plan->lookup_policy;
     restore_context = 0;
-    if (reuse_lut != NULL) {
-        reuse_lut_preconfigured = 1;
+    if (reuse_policy != NULL) {
+        /* shared prepared policy */
     } else if (state != NULL) {
-        reuse_lut_slot = &state->lut;
-        if (state->lut != NULL) {
-            reuse_lut_preconfigured = 1;
-        }
+        reuse_policy = state->lookup_policy;
     }
     lookup_policy = NULL;
     status = sixel_dither_prepare_lookup_policy(
@@ -932,12 +920,19 @@ sixel_dither_parallel_worker(tp_job_t job,
         plan->complexion,
         plan->lut_policy,
         plan->pixelformat,
-        reuse_lut_preconfigured,
-        reuse_lut,
-        reuse_lut_slot,
+        reuse_policy,
+        NULL,
         plan->allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
+    }
+    if (state != NULL && plan->lookup_policy == NULL) {
+        if (state->lookup_policy != NULL
+                && state->lookup_policy != lookup_policy) {
+            state->lookup_policy->vtbl->unref(state->lookup_policy);
+        }
+        state->lookup_policy = lookup_policy;
+        lookup_policy->vtbl->ref(lookup_policy);
     }
 
     /*
@@ -1053,7 +1048,8 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
 
     workspace_size = 0U;
     cleanup = NULL;
-    if (plan->lut == NULL && plan->lut_policy != SIXEL_LUT_POLICY_NONE) {
+    if (plan->lookup_policy == NULL
+            && plan->lut_policy != SIXEL_LUT_POLICY_NONE) {
         workspace_size = sizeof(sixel_parallel_dither_state_t);
         cleanup = sixel_parallel_dither_cleanup;
         /*
@@ -1105,38 +1101,6 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
 }
 #endif
 
-
-/*
- * Helper that detects whether the palette currently matches either of the
- * builtin monochrome definitions.  These tables skip cache initialization
- * during fast-path dithering because they already match the terminal
- * defaults.
- */
-static int
-sixel_palette_is_builtin_mono(sixel_palette_t const *palette)
-{
-    if (palette == NULL) {
-        return 0;
-    }
-    if (palette->entries == NULL) {
-        return 0;
-    }
-    if (palette->entry_count < 2U) {
-        return 0;
-    }
-    if (palette->depth != 3) {
-        return 0;
-    }
-    if (memcmp(palette->entries, pal_mono_dark,
-               sizeof(pal_mono_dark)) == 0) {
-        return 1;
-    }
-    if (memcmp(palette->entries, pal_mono_light,
-               sizeof(pal_mono_light)) == 0) {
-        return 1;
-    }
-    return 0;
-}
 
 /* Bundle serial index-resolution inputs to avoid pcc ICE on long signatures. */
 typedef struct sixel_dither_resolve_indexes_request {
@@ -1192,7 +1156,6 @@ sixel_dither_resolve_indexes(
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
     int pixelformat;
-    int reuse_lut_preconfigured;
     sixel_dither_map_pixels_request_t map_request;
 
     status = SIXEL_FALSE;
@@ -1217,10 +1180,6 @@ sixel_dither_resolve_indexes(
     allocator = request->allocator;
     dither = request->dither;
     pixelformat = request->pixelformat;
-    reuse_lut_preconfigured = 0;
-    if (palette->lut != NULL) {
-        reuse_lut_preconfigured = 1;
-    }
 
     sixel_palette_set_lut_policy(lut_policy);
 
@@ -1235,9 +1194,8 @@ sixel_dither_resolve_indexes(
         complexion,
         lut_policy,
         pixelformat,
-        reuse_lut_preconfigured,
-        palette->lut,
-        &palette->lut,
+        palette->lookup_policy,
+        NULL,
         allocator);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -1262,10 +1220,6 @@ sixel_dither_resolve_indexes(
     map_request.dither = dither;
     map_request.pixelformat = pixelformat;
     status = sixel_dither_map_pixels(&map_request);
-    if (palette->lookup_policy != NULL) {
-        palette->lookup_policy->vtbl->unref(palette->lookup_policy);
-        palette->lookup_policy = NULL;
-    }
 
     return status;
 }
@@ -1962,19 +1916,12 @@ sixel_dither_set_lut_policy(
     }
 
     /*
-     * Policy transitions for the shared LUT mirror the previous cache flow:
-     *
-     *   [lut] --policy change--> (drop) --rebuild--> [lut]
+     * Policy transitions invalidate prepared lookup policy caches so the
+     * next apply call rebuilds under the new class.
      */
     dither->lut_policy = normalized;
     if (dither->palette != NULL) {
         dither->palette->lut_policy = normalized;
-    }
-    if (dither->palette != NULL && dither->palette->lut != NULL) {
-        sixel_lut_unref(dither->palette->lut);
-        dither->palette->lut = NULL;
-    }
-    if (dither->palette != NULL) {
         if (dither->palette->lookup_policy != NULL) {
             dither->palette->lookup_policy->vtbl->unref(
                 dither->palette->lookup_policy);
@@ -2895,9 +2842,6 @@ sixel_dither_apply_palette_with_mode(
     int parallel_threads = 1;
 #endif  /* SIXEL_ENABLE_THREADS */
     sixel_logger_t *logger = NULL;
-    int wcomp1;
-    int wcomp2;
-    int wcomp3;
     int resolved_apply_mode = SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE;
     int needs_size_reset = 0;
     int pipeline_depth = 0;
@@ -3108,53 +3052,6 @@ sixel_dither_apply_palette_with_mode(
         dither->optimized = 0;
     }
 
-    if (dither->optimized) {
-        if (!sixel_palette_is_builtin_mono(palette)) {
-            int policy;
-            policy = dither->lut_policy;
-            if (policy != SIXEL_LUT_POLICY_CERTLUT
-                && policy != SIXEL_LUT_POLICY_5BIT
-                && policy != SIXEL_LUT_POLICY_6BIT
-                && policy != SIXEL_LUT_POLICY_EYTZINGER
-                && policy != SIXEL_LUT_POLICY_FHEDT
-                && policy != SIXEL_LUT_POLICY_VPTREE
-                && policy != SIXEL_LUT_POLICY_RBC
-                && policy != SIXEL_LUT_POLICY_MAHALANOBIS) {
-                policy = SIXEL_LUT_POLICY_6BIT;
-            }
-            if (palette->lut == NULL) {
-                status = sixel_lut_new(&palette->lut,
-                                       policy,
-                                       palette->allocator);
-                if (SIXEL_FAILED(status)) {
-                    sixel_helper_set_additional_message(
-                        "sixel_dither_apply_palette: lut allocation failed.");
-                    goto end;
-                }
-            }
-            wcomp1 = 1;
-            wcomp2 = 1;
-            wcomp3 = 1;
-            status = sixel_lut_configure(palette->lut,
-                                         palette->entries,
-                                         palette->entries_float32,
-                                         palette->depth,
-                                         palette->float_depth,
-                                         (int)palette->entry_count,
-                                         1,
-                                         wcomp1,
-                                         wcomp2,
-                                         wcomp3,
-                                         policy,
-                                         dither->pixelformat);
-            if (SIXEL_FAILED(status)) {
-                sixel_helper_set_additional_message(
-                    "sixel_dither_apply_palette: lut configuration failed.");
-                goto end;
-            }
-        }
-    }
-
     pipeline_pixelformat = dither->pixelformat;
     prefer_float_pipeline =
         sixel_dither_method_supports_float_pipeline(dither);
@@ -3245,6 +3142,24 @@ sixel_dither_apply_palette_with_mode(
         int adjusted_overlap;
         int adjusted_height;
 
+        status = sixel_dither_prepare_lookup_policy(
+            &palette->lookup_policy,
+            palette->entries,
+            palette->entries_float32,
+            palette->depth,
+            palette->float_depth,
+            dither->ncolors,
+            dither->optimized,
+            dither->complexion,
+            dither->lut_policy,
+            pipeline_pixelformat,
+            palette->lookup_policy,
+            NULL,
+            dither->allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
         adjusted_overlap = parallel_overlap;
         if (adjusted_overlap < 0) {
             adjusted_overlap = 0;
@@ -3292,35 +3207,13 @@ sixel_dither_apply_palette_with_mode(
             shared_lut = sixel_lookup_env_shared_6bit();
         }
         if (shared_lut != 0) {
-            plan.lut = palette->lut;
+            plan.lookup_policy = palette->lookup_policy;
         } else {
-            plan.lut = NULL;
+            plan.lookup_policy = NULL;
         }
 #else
-        plan.lut = palette->lut;
+        plan.lookup_policy = palette->lookup_policy;
 #endif  /* SIXEL_ENABLE_THREADS */
-
-        if (plan.lut != NULL && dither->optimized != 0
-                && plan.lut_policy != SIXEL_LUT_POLICY_NONE) {
-            wcomp1 = 1;
-            wcomp2 = 1;
-            wcomp3 = 1;
-            status = sixel_lut_configure(plan.lut,
-                                         plan.palette->entries,
-                                         plan.palette->entries_float32,
-                                         plan.palette->depth,
-                                         plan.palette->float_depth,
-                                         (int)plan.palette->entry_count,
-                                         1,
-                                         wcomp1,
-                                         wcomp2,
-                                         wcomp3,
-                                         plan.lut_policy,
-                                         plan.pixelformat);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-        }
 
         status = sixel_dither_apply_palette_parallel(&plan,
                                                      parallel_threads);

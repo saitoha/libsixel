@@ -38,8 +38,8 @@ init_lookup_policy_request(sixel_lookup_policy_prepare_request_t *request,
                            int optimize_lookup,
                            int lut_policy,
                            int pixelformat,
-                           sixel_lut_t *reuse_lut,
-                           sixel_lut_t **reuse_lut_slot,
+                           sixel_lookup_policy_interface_t *reuse_policy,
+                           sixel_lookup_policy_interface_t **reuse_policy_slot,
                            sixel_allocator_t *allocator)
 {
     memset(request, 0, sizeof(*request));
@@ -57,10 +57,9 @@ init_lookup_policy_request(sixel_lookup_policy_prepare_request_t *request,
     request->float_depth = 0;
     request->reqcolor = reqcolor;
     request->complexion = 1;
-    request->method_for_largest = SIXEL_LARGE_AUTO;
     request->pixelformat = pixelformat;
-    request->reuse_lut = reuse_lut;
-    request->reuse_lut_slot = reuse_lut_slot;
+    request->reuse_policy = reuse_policy;
+    request->reuse_policy_slot = reuse_policy_slot;
     request->allocator = allocator;
 }
 
@@ -229,7 +228,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
     unsigned char palette[6];
     float pixel_float[3];
     int mapped;
-    sixel_lut_t *cached_lut;
+    sixel_lookup_policy_interface_t *cached_policy;
     char const *selected_name;
 
     status = SIXEL_FALSE;
@@ -240,7 +239,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
     memset(palette, 0, sizeof(palette));
     memset(pixel_float, 0, sizeof(pixel_float));
     mapped = -1;
-    cached_lut = NULL;
+    cached_policy = NULL;
     selected_name = NULL;
 
     status = make_allocator(&allocator);
@@ -266,7 +265,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
                                SIXEL_LUT_POLICY_6BIT,
                                SIXEL_PIXELFORMAT_RGBFLOAT32,
                                NULL,
-                               &cached_lut,
+                               &cached_policy,
                                allocator);
 
     status = create_lookup_policy_by_selected_name(&select_request,
@@ -285,7 +284,7 @@ test_lookup_policy_fast_mode_maps_float_input(void)
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
-    if (cached_lut == NULL) {
+    if (cached_policy == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -304,8 +303,8 @@ cleanup:
     if (lookup_policy != NULL) {
         lookup_policy->vtbl->unref(lookup_policy);
     }
-    if (cached_lut != NULL) {
-        sixel_lut_unref(cached_lut);
+    if (cached_policy != NULL) {
+        cached_policy->vtbl->unref(cached_policy);
     }
     sixel_allocator_unref(allocator);
 

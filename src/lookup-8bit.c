@@ -48,6 +48,19 @@
  * CERT LUT accelerator.  Median-cut specific histogram routines now reside in
  * palette-heckbert.c so this file can concentrate on lookup responsibilities.
  */
+/*
+ * IDL (internal contract)
+ *
+ * class Lookup8BitBackend {
+ *   configure(policy, palette, ncolors, context);
+ *   map_pixel(pixel);
+ *   clear();
+ * }
+ *
+ * Ownership/lifetime:
+ * - configure() allocates policy-specific lookup structures owned by backend.
+ * - clear() releases all backend-owned structures.
+ */
 
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
@@ -2324,9 +2337,8 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
                                                   pixelformat);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
-                "sixel_lookup_8bit_configure: FHEDT failed; "
-                "falling back to CERTLUT.");
-            normalized = SIXEL_LUT_POLICY_CERTLUT;
+                "sixel_lookup_8bit_configure: FHEDT failed.");
+            return status;
         } else {
             return SIXEL_OK;
         }
@@ -2337,7 +2349,7 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
             if (SIXEL_FAILED(status)) {
                 sixel_helper_set_additional_message(
                     "sixel_lookup_8bit_configure: VP-tree allocation failed.");
-                normalized = SIXEL_LUT_POLICY_CERTLUT;
+                return status;
             }
         }
         if (normalized == SIXEL_LUT_POLICY_VPTREE) {
@@ -2348,9 +2360,8 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
                                                         complexion);
             if (SIXEL_FAILED(status)) {
                 sixel_helper_set_additional_message(
-                    "sixel_lookup_8bit_configure: VP-tree failed; "
-                    "falling back to CERTLUT.");
-                normalized = SIXEL_LUT_POLICY_CERTLUT;
+                    "sixel_lookup_8bit_configure: VP-tree failed.");
+                return status;
             } else {
                 lut->vptree_ready = 1;
                 return SIXEL_OK;
@@ -2365,9 +2376,8 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
                                                        wcomp3);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
-                "sixel_lookup_8bit_configure: Eytzinger failed; "
-                "falling back to CERTLUT.");
-            normalized = SIXEL_LUT_POLICY_CERTLUT;
+                "sixel_lookup_8bit_configure: Eytzinger failed.");
+            return status;
         } else {
             lut->policy = normalized;
             return SIXEL_OK;

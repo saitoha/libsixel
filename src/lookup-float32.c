@@ -28,6 +28,19 @@
  * The CERT LUT path uses a lightweight kd-tree while other policies fall back
  * to a linear scan over the palette.
  */
+/*
+ * IDL (internal contract)
+ *
+ * class LookupFloat32Backend {
+ *   configure(policy, palette, ncolors, context);
+ *   map_pixel(pixel);
+ *   clear();
+ * }
+ *
+ * Ownership/lifetime:
+ * - configure() allocates policy-specific lookup structures owned by backend.
+ * - clear() releases all backend-owned structures.
+ */
 
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
@@ -1557,9 +1570,8 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
             lut->policy == SIXEL_LUT_POLICY_MAHALANOBIS);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
-                "sixel_lookup_float32_configure: RBC failed; "
-                "falling back to CERTLUT.");
-            lut->policy = SIXEL_LUT_POLICY_CERTLUT;
+                "sixel_lookup_float32_configure: RBC failed.");
+            return status;
         } else {
             return SIXEL_OK;
         }
@@ -1568,9 +1580,8 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
         status = sixel_lookup_float32_configure_fhedt(lut, pixelformat);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
-                "sixel_lookup_float32_configure: FHEDT failed; "
-                "falling back to CERTLUT.");
-            lut->policy = SIXEL_LUT_POLICY_CERTLUT;
+                "sixel_lookup_float32_configure: FHEDT failed.");
+            return status;
         } else {
             return SIXEL_OK;
         }
@@ -1582,7 +1593,7 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
                 sixel_helper_set_additional_message(
                     "sixel_lookup_float32_configure: VP-tree allocation "
                     "failed.");
-                lut->policy = SIXEL_LUT_POLICY_CERTLUT;
+                return status;
             }
         }
         if (lut->policy == SIXEL_LUT_POLICY_VPTREE) {
@@ -1593,9 +1604,8 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
                                                            lut->weights);
             if (SIXEL_FAILED(status)) {
                 sixel_helper_set_additional_message(
-                    "sixel_lookup_float32_configure: VP-tree failed; "
-                    "falling back to CERTLUT.");
-                lut->policy = SIXEL_LUT_POLICY_CERTLUT;
+                    "sixel_lookup_float32_configure: VP-tree failed.");
+                return status;
             } else {
                 lut->vptree_ready = 1;
                 return SIXEL_OK;
@@ -1605,9 +1615,8 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
         status = sixel_lookup_float32_configure_1d_eytzinger(lut);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
-                "sixel_lookup_float32_configure: Eytzinger failed; "
-                "falling back to CERTLUT.");
-            lut->policy = SIXEL_LUT_POLICY_CERTLUT;
+                "sixel_lookup_float32_configure: Eytzinger failed.");
+            return status;
         } else {
             return SIXEL_OK;
         }

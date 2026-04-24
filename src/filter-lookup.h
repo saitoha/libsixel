@@ -28,16 +28,28 @@
 #include <sixel.h>
 
 #include "filter.h"
-#include "lookup-common.h"
+#include "lookup-policy.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*
- * Configuration for the lookup filter. The filter configures a LUT using the
- * provided palette and weighting rules. A pre-existing LUT can be reused when
- * `reuse_lut` is set.
+ * IDL (internal contract)
+ *
+ * interface ILookupFilter {
+ *   build(config, out result);
+ * }
+ *
+ * Ownership/lifetime:
+ * - build() returns result.policy with refcount ownership described by
+ *   result.owned.
+ * - Callers must unref result.policy only when result.owned != 0.
+ *
+ * Creation path:
+ * - build() selects the lookup class from config and creates it through
+ *   services/factory.
+ * - The created object is prepared via ILookupPolicy.prepare().
  */
 typedef struct sixel_filter_lookup_config {
     unsigned char const *palette;
@@ -48,18 +60,19 @@ typedef struct sixel_filter_lookup_config {
     int float_depth;
     int ncolors;
     int complexion;
-    int method_for_largest;
     int lut_policy;
     int pixelformat;
-    sixel_lut_t *reuse_lut;
+    sixel_lookup_policy_interface_t *reuse_policy;
+    sixel_lookup_policy_interface_t **reuse_policy_slot;
 } sixel_filter_lookup_config_t;
 
 /*
- * Result bundle describing the configured LUT and whether the filter owns its
- * lifetime. Callers should unref the LUT only when `owned` is non-zero.
+ * Result bundle describing the prepared lookup policy and whether the filter
+ * owns its lifetime. Callers should unref the policy only when `owned`
+ * is non-zero.
  */
 typedef struct sixel_filter_lookup_result {
-    sixel_lut_t *lut;
+    sixel_lookup_policy_interface_t *policy;
     int owned;
 } sixel_filter_lookup_result_t;
 

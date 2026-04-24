@@ -27,6 +27,7 @@
 
 #include <limits.h>
 
+#include "lookup-common.h"
 #include "lookup-policy.h"
 
 #ifdef __cplusplus
@@ -69,29 +70,8 @@ typedef struct sixel_lookup_policy_registry_entry {
 static inline SIXELSTATUS
 sixel_lookup_policy_validate_complexion_limit(int depth, int complexion)
 {
-    enum { max_channel_diff_sq = 255 * 255 };
-    int non_weighted_components;
-    long long weighted_budget;
-    long long max_complexion;
-
-    if (complexion <= 1) {
-        return SIXEL_OK;
-    }
-
-    non_weighted_components = (depth > 1) ? (depth - 1) : 0;
-    weighted_budget = (long long)INT_MAX
-        - (long long)max_channel_diff_sq * (long long)non_weighted_components;
-    if (weighted_budget <= 0) {
-        max_complexion = 0;
-    } else {
-        max_complexion = weighted_budget / (long long)max_channel_diff_sq;
-    }
-
-    if ((long long)complexion > max_complexion) {
-        sixel_helper_set_additional_message(
-            "sixel_lookup_policy_prepare: complexion parameter is too large.");
-        return SIXEL_BAD_ARGUMENT;
-    }
+    (void)depth;
+    (void)complexion;
 
     return SIXEL_OK;
 }

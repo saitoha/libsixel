@@ -37,9 +37,22 @@
 #include "status.h"
 
 /*
+ * IDL (internal contract)
+ *
+ * class FhedtFilterState {
+ *   config: IFhedtFilterConfig;
+ *   result: ILookupFilterResult;
+ * }
+ *
+ * Ownership/lifetime:
+ * - State owns result.policy only when result.owned != 0.
+ * - Dispose unrefs the owned policy object.
+ */
+
+/*
  * Internal state retained by the FHEDT filter. The filter uses the lookup
- * builder to assemble a FHEDT-specific LUT and tracks ownership so dispose can
- * release it when the caller does not take over.
+ * builder to assemble a FHEDT policy object and tracks ownership so dispose
+ * can release it when the caller does not take over.
  */
 typedef struct sixel_filter_fhedt_state {
     sixel_filter_fhedt_config_t config;
@@ -101,7 +114,7 @@ sixel_filter_fhedt_apply(sixel_filter_t *filter,
     result_out = state->config.result_out;
     if (result_out != NULL) {
         *result_out = state->result;
-        state->result.lut = NULL;
+        state->result.policy = NULL;
         state->result.owned = 0;
     }
 
@@ -124,8 +137,8 @@ sixel_filter_fhedt_dispose(sixel_filter_t *filter)
 
     state = (sixel_filter_fhedt_state_t *)filter->userdata;
     if (state != NULL) {
-        if (state->result.owned != 0 && state->result.lut != NULL) {
-            sixel_lut_unref(state->result.lut);
+        if (state->result.owned != 0 && state->result.policy != NULL) {
+            state->result.policy->vtbl->unref(state->result.policy);
         }
         free(state);
         filter->userdata = NULL;

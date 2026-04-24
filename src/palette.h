@@ -38,6 +38,23 @@ struct sixel_final_merge_cluster;
 typedef struct sixel_final_merge_cluster sixel_final_merge_cluster_t;
 
 /*
+ * IDL (internal contract)
+ *
+ * interface IPalette {
+ *   make_palette(data, options);
+ *   free_palette(buffer);
+ * }
+ *
+ * Ownership/lifetime:
+ * - palette.lookup_policy holds an ILookupPolicy reference while prepared.
+ * - Replacing the cached policy requires unref on the previous instance.
+ *
+ * Creation path:
+ * - Quantizers populate palette entries first.
+ * - Lookup policies are created via services/factory on apply paths.
+ */
+
+/*
  * Control how the final merge phase consolidates provisional clusters
  * into the target palette.  The Ward path merges clusters using
  * linkage costs while the remaining options keep the provisional
@@ -93,9 +110,8 @@ struct sixel_palette {
     int lut_policy;                 /* histogram LUT selection */
     int sixel_reversible;           /* reversible tone flag proxy */
     int final_merge;                /* final merge flag proxy */
-    struct sixel_lut *lut;          /* reusable lookup table */
     sixel_lookup_policy_interface_t *lookup_policy;
-    /* lookup dispatch contract */
+    /* reusable lookup policy contract */
 };
 
 void
