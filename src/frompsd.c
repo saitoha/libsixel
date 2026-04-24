@@ -16171,11 +16171,12 @@ sixel_builtin_psd_prepare_deferred_dual_stroke_owner_map(
         if (!sixel_builtin_psd_layer_is_deferred_dual_stroke_base(base_layer)) {
             continue;
         }
-        if (base_index + 1u >= model->layer_count ||
-            model->layers[base_index + 1u].clipping == 0u) {
-            continue;
-        }
         has_clipping_child = 0;
+        /*
+         * Do not require clipping siblings to be adjacent to the base record.
+         * Some fixtures interleave metadata layers, so ownership is resolved
+         * from clip-base indices only.
+         */
         for (layer_index = 0u;
              layer_index < model->layer_count;
              ++layer_index) {
