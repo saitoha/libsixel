@@ -108,50 +108,6 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
                             int pixelformat);
 
 SIXELSTATUS
-sixel_lookup_8bit_configure_5bit(sixel_lookup_8bit_t *lut,
-                                 unsigned char const *palette,
-                                 int depth,
-                                 int ncolors,
-                                 int complexion,
-                                 int wcomp1,
-                                 int wcomp2,
-                                 int wcomp3,
-                                 int pixelformat);
-
-SIXELSTATUS
-sixel_lookup_8bit_configure_6bit(sixel_lookup_8bit_t *lut,
-                                 unsigned char const *palette,
-                                 int depth,
-                                 int ncolors,
-                                 int complexion,
-                                 int wcomp1,
-                                 int wcomp2,
-                                 int wcomp3,
-                                 int pixelformat);
-
-SIXELSTATUS
-sixel_lookup_8bit_configure_certlut(sixel_lookup_8bit_t *lut,
-                                    unsigned char const *palette,
-                                    int depth,
-                                    int ncolors,
-                                    int complexion,
-                                    int wcomp1,
-                                    int wcomp2,
-                                    int wcomp3,
-                                    int pixelformat);
-
-SIXELSTATUS
-sixel_lookup_8bit_configure_eytzinger(sixel_lookup_8bit_t *lut,
-                                      unsigned char const *palette,
-                                      int depth,
-                                      int ncolors,
-                                      int complexion,
-                                      int wcomp1,
-                                      int wcomp2,
-                                      int wcomp3,
-                                      int pixelformat);
-
-SIXELSTATUS
 sixel_lookup_8bit_configure_fhedt(sixel_lookup_8bit_t *lut,
                                   unsigned char const *palette,
                                   int depth,
@@ -198,22 +154,6 @@ sixel_lookup_8bit_configure_mahalanobis(sixel_lookup_8bit_t *lut,
 int
 sixel_lookup_8bit_map_pixel(sixel_lookup_8bit_t *lut,
                             unsigned char const *pixel);
-
-int
-sixel_lookup_8bit_map_pixel_5bit(sixel_lookup_8bit_t *lut,
-                                 unsigned char const *pixel);
-
-int
-sixel_lookup_8bit_map_pixel_6bit(sixel_lookup_8bit_t *lut,
-                                 unsigned char const *pixel);
-
-int
-sixel_lookup_8bit_map_pixel_certlut(sixel_lookup_8bit_t *lut,
-                                    unsigned char const *pixel);
-
-int
-sixel_lookup_8bit_map_pixel_eytzinger(sixel_lookup_8bit_t *lut,
-                                      unsigned char const *pixel);
 
 int
 sixel_lookup_8bit_map_pixel_fhedt(sixel_lookup_8bit_t *lut,

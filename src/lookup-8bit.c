@@ -119,9 +119,12 @@ enum { SIXEL_CERTLUT_COMPONENTS = 3 };
 # define SIXEL_LOOKUP_EYTZINGER_PREFETCH(base, index, count) ((void)0)
 #endif
 
+#ifndef SIXEL_CERTLUT_COLOR_T_DEFINED
+#define SIXEL_CERTLUT_COLOR_T_DEFINED 1
 typedef struct sixel_certlut_color {
     uint8_t comp[SIXEL_CERTLUT_COMPONENTS];
 } sixel_certlut_color_t;
+#endif
 
 typedef struct sixel_certlut_node {
     int index;
@@ -2429,98 +2432,6 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
 }
 
 SIXELSTATUS
-sixel_lookup_8bit_configure_5bit(sixel_lookup_8bit_t *lut,
-                                 unsigned char const *palette,
-                                 int depth,
-                                 int ncolors,
-                                 int complexion,
-                                 int wcomp1,
-                                 int wcomp2,
-                                 int wcomp3,
-                                 int pixelformat)
-{
-    return sixel_lookup_8bit_configure(lut,
-                                       palette,
-                                       depth,
-                                       ncolors,
-                                       complexion,
-                                       wcomp1,
-                                       wcomp2,
-                                       wcomp3,
-                                       SIXEL_LUT_POLICY_5BIT,
-                                       pixelformat);
-}
-
-SIXELSTATUS
-sixel_lookup_8bit_configure_6bit(sixel_lookup_8bit_t *lut,
-                                 unsigned char const *palette,
-                                 int depth,
-                                 int ncolors,
-                                 int complexion,
-                                 int wcomp1,
-                                 int wcomp2,
-                                 int wcomp3,
-                                 int pixelformat)
-{
-    return sixel_lookup_8bit_configure(lut,
-                                       palette,
-                                       depth,
-                                       ncolors,
-                                       complexion,
-                                       wcomp1,
-                                       wcomp2,
-                                       wcomp3,
-                                       SIXEL_LUT_POLICY_6BIT,
-                                       pixelformat);
-}
-
-SIXELSTATUS
-sixel_lookup_8bit_configure_certlut(sixel_lookup_8bit_t *lut,
-                                    unsigned char const *palette,
-                                    int depth,
-                                    int ncolors,
-                                    int complexion,
-                                    int wcomp1,
-                                    int wcomp2,
-                                    int wcomp3,
-                                    int pixelformat)
-{
-    return sixel_lookup_8bit_configure(lut,
-                                       palette,
-                                       depth,
-                                       ncolors,
-                                       complexion,
-                                       wcomp1,
-                                       wcomp2,
-                                       wcomp3,
-                                       SIXEL_LUT_POLICY_CERTLUT,
-                                       pixelformat);
-}
-
-SIXELSTATUS
-sixel_lookup_8bit_configure_eytzinger(sixel_lookup_8bit_t *lut,
-                                      unsigned char const *palette,
-                                      int depth,
-                                      int ncolors,
-                                      int complexion,
-                                      int wcomp1,
-                                      int wcomp2,
-                                      int wcomp3,
-                                      int pixelformat)
-{
-    return sixel_lookup_8bit_configure(lut,
-                                       palette,
-                                       depth,
-                                       ncolors,
-                                       complexion,
-                                       wcomp1,
-                                       wcomp2,
-                                       wcomp3,
-                                       SIXEL_LUT_POLICY_EYTZINGER,
-                                       pixelformat);
-}
-
-SIXELSTATUS
 sixel_lookup_8bit_configure_fhedt(sixel_lookup_8bit_t *lut,
                                   unsigned char const *palette,
                                   int depth,
@@ -2645,56 +2556,6 @@ sixel_lookup_8bit_map_pixel(sixel_lookup_8bit_t *lut,
     }
 
     return sixel_lookup_8bit_lookup_fast(lut, pixel);
-}
-
-int
-sixel_lookup_8bit_map_pixel_5bit(sixel_lookup_8bit_t *lut,
-                                 unsigned char const *pixel)
-{
-    if (lut == NULL || pixel == NULL) {
-        return 0;
-    }
-
-    return sixel_lookup_8bit_lookup_fast(lut, pixel);
-}
-
-int
-sixel_lookup_8bit_map_pixel_6bit(sixel_lookup_8bit_t *lut,
-                                 unsigned char const *pixel)
-{
-    if (lut == NULL || pixel == NULL) {
-        return 0;
-    }
-
-    return sixel_lookup_8bit_lookup_fast(lut, pixel);
-}
-
-int
-sixel_lookup_8bit_map_pixel_certlut(sixel_lookup_8bit_t *lut,
-                                    unsigned char const *pixel)
-{
-    if (lut == NULL || pixel == NULL) {
-        return 0;
-    }
-    if (!lut->cert_ready || lut->cert == NULL) {
-        return 0;
-    }
-
-    return (int)sixel_certlut_lookup(lut->cert,
-                                     pixel[0],
-                                     pixel[1],
-                                     pixel[2]);
-}
-
-int
-sixel_lookup_8bit_map_pixel_eytzinger(sixel_lookup_8bit_t *lut,
-                                      unsigned char const *pixel)
-{
-    if (lut == NULL || pixel == NULL) {
-        return 0;
-    }
-
-    return sixel_lookup_8bit_lookup_1d_eytzinger(lut, pixel);
 }
 
 int
