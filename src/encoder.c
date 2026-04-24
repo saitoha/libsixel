@@ -6454,7 +6454,14 @@ sixel_encoder_prepare_palette(
     if (reserve_alpha_key) {
         palette_reqcolors = encoder->reqcolors - 1;
     }
-    effective_method_for_largest = encoder->method_for_largest;
+    effective_method_for_largest = SIXEL_LARGE_NORM;
+    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
+        /*
+         * Largest-axis selection only applies to the Heckbert median-cut
+         * palette builder.
+         */
+        effective_method_for_largest = encoder->method_for_largest;
+    }
     effective_final_merge_mode = encoder->final_merge_mode;
     effective_merge_oversplit_override
         = encoder->quantize_model_merge_oversplit_override;
@@ -7008,8 +7015,7 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     lookup_config.depth = palette->depth;
     lookup_config.float_depth = palette->float_depth;
     lookup_config.ncolors = (int)palette->entry_count;
-    lookup_config.complexion = dither->complexion;
-    lookup_config.method_for_largest = dither->method_for_largest;
+    lookup_config.complexion = 1;
     lookup_config.lut_policy = policy;
     lookup_config.pixelformat = dither->pixelformat;
     lookup_config.reuse_lut = palette->lut;
@@ -10431,7 +10437,12 @@ sixel_encoder_apply_complexion_option(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    encoder->complexion = (int)parsed_value;
+    (void)parsed_value;
+    /*
+     * Keep accepting -C for compatibility, but pin the runtime value so
+     * complexion no longer influences output.
+     */
+    encoder->complexion = 1;
     return SIXEL_OK;
 }
 

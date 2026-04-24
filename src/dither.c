@@ -443,7 +443,6 @@ sixel_dither_prepare_lookup_policy(
     int foptimize,
     int complexion,
     int lut_policy,
-    int method_for_largest,
     int pixelformat,
     int reuse_lut_preconfigured,
     sixel_lut_t *reuse_lut,
@@ -470,13 +469,13 @@ sixel_dither_prepare_lookup_policy(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    (void)complexion;
     request.palette = palette;
     request.palette_float = palette_float;
     request.depth = depth;
     request.float_depth = float_depth;
     request.reqcolor = reqcolor;
-    request.complexion = complexion;
-    request.method_for_largest = method_for_largest;
+    request.complexion = 1;
     request.pixelformat = pixelformat;
     request.reuse_lut_preconfigured = reuse_lut_preconfigured;
     request.reuse_lut = reuse_lut;
@@ -781,7 +780,6 @@ typedef struct sixel_parallel_dither_plan {
     int optimize_palette_entries;
     int complexion;
     int lut_policy;
-    int method_for_largest;
     int reqcolor;
     int pixelformat;
     int pin_threads;
@@ -933,7 +931,6 @@ sixel_dither_parallel_worker(tp_job_t job,
         plan->optimize_palette,
         plan->complexion,
         plan->lut_policy,
-        plan->method_for_largest,
         plan->pixelformat,
         reuse_lut_preconfigured,
         reuse_lut,
@@ -1156,7 +1153,6 @@ typedef struct sixel_dither_resolve_indexes_request {
     int foptimize_palette;
     int complexion;
     int lut_policy;
-    int method_for_largest;
     int *ncolors;
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
@@ -1192,7 +1188,6 @@ sixel_dither_resolve_indexes(
     int foptimize_palette;
     int complexion;
     int lut_policy;
-    int method_for_largest;
     int *ncolors;
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
@@ -1218,7 +1213,6 @@ sixel_dither_resolve_indexes(
     foptimize_palette = request->foptimize_palette;
     complexion = request->complexion;
     lut_policy = request->lut_policy;
-    method_for_largest = request->method_for_largest;
     ncolors = request->ncolors;
     allocator = request->allocator;
     dither = request->dither;
@@ -1229,7 +1223,6 @@ sixel_dither_resolve_indexes(
     }
 
     sixel_palette_set_lut_policy(lut_policy);
-    sixel_palette_set_method_for_largest(method_for_largest);
 
     status = sixel_dither_prepare_lookup_policy(
         &palette->lookup_policy,
@@ -1241,7 +1234,6 @@ sixel_dither_resolve_indexes(
         foptimize,
         complexion,
         lut_policy,
-        method_for_largest,
         pixelformat,
         reuse_lut_preconfigured,
         palette->lut,
@@ -1729,6 +1721,7 @@ sixel_dither_initialize(
     SIXELSTATUS status = SIXEL_FALSE;
     size_t total_pixels;
     unsigned int payload_length;
+    int method_for_largest_for_palette;
     int palette_pixelformat;
     int prefer_float32;
 
@@ -1871,6 +1864,14 @@ sixel_dither_initialize(
     sixel_dither_set_method_for_largest(dither, method_for_largest);
     sixel_dither_set_method_for_rep(dither, method_for_rep);
     sixel_dither_set_quality_mode(dither, quality_mode);
+    /*
+     * Largest-axis heuristics belong to Heckbert median-cut only. Other
+     * quantizers keep a neutral value so -f does not affect their output.
+     */
+    method_for_largest_for_palette = SIXEL_LARGE_NORM;
+    if (dither->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
+        method_for_largest_for_palette = dither->method_for_largest;
+    }
 
     status = sixel_palette_make_palette(&buf,
                                         input_pixels,
@@ -1879,7 +1880,7 @@ sixel_dither_initialize(
                                         (unsigned int)dither->reqcolors,
                                         (unsigned int *)&dither->ncolors,
                                         (unsigned int *)&dither->origcolors,
-                                        dither->method_for_largest,
+                                        method_for_largest_for_palette,
                                         dither->method_for_rep,
                                         dither->quality_mode,
                                         dither->force_palette,
@@ -2108,15 +2109,23 @@ sixel_dither_set_palette(
 }
 
 
-/* set the factor of complexion color correcting */
+/*
+ * Keep the complexion API for backward compatibility, but the value is
+ * deprecated and no longer affects any lookup or dither calculations.
+ */
 SIXELAPI void
 sixel_dither_set_complexion_score(
     sixel_dither_t /* in */ *dither,  /* dither context object */
     int            /* in */ score)    /* complexion score (>= 1) */
 {
-    dither->complexion = score;
+    (void)score;
+    if (dither == NULL) {
+        return;
+    }
+
+    dither->complexion = 1;
     if (dither->palette != NULL) {
-        dither->palette->complexion = score;
+        dither->palette->complexion = 1;
     }
 }
 
@@ -3123,28 +3132,16 @@ sixel_dither_apply_palette_with_mode(
                     goto end;
                 }
             }
-            if (policy == SIXEL_LUT_POLICY_CERTLUT) {
-                if (dither->method_for_largest == SIXEL_LARGE_LUM) {
-                    wcomp1 = dither->complexion * 299;
-                    wcomp2 = 587;
-                    wcomp3 = 114;
-                } else {
-                    wcomp1 = dither->complexion;
-                    wcomp2 = 1;
-                    wcomp3 = 1;
-                }
-            } else {
-                wcomp1 = dither->complexion;
-                wcomp2 = 1;
-                wcomp3 = 1;
-            }
+            wcomp1 = 1;
+            wcomp2 = 1;
+            wcomp3 = 1;
             status = sixel_lut_configure(palette->lut,
                                          palette->entries,
                                          palette->entries_float32,
                                          palette->depth,
                                          palette->float_depth,
                                          (int)palette->entry_count,
-                                         dither->complexion,
+                                         1,
                                          wcomp1,
                                          wcomp2,
                                          wcomp3,
@@ -3241,7 +3238,6 @@ sixel_dither_apply_palette_with_mode(
     }
 
     palette->lut_policy = dither->lut_policy;
-    palette->method_for_largest = dither->method_for_largest;
 #if SIXEL_ENABLE_THREADS
     if (parallel_active && parallel_threads > 1
             && parallel_band_height > 0) {
@@ -3280,7 +3276,6 @@ sixel_dither_apply_palette_with_mode(
         plan.optimize_palette_entries = dither->optimize_palette;
         plan.complexion = dither->complexion;
         plan.lut_policy = dither->lut_policy;
-        plan.method_for_largest = dither->method_for_largest;
         plan.reqcolor = dither->ncolors;
         plan.pixelformat = pipeline_pixelformat;
         /* Carry the pipeline pinning preference as a strict 0/1 flag. */
@@ -3307,28 +3302,16 @@ sixel_dither_apply_palette_with_mode(
 
         if (plan.lut != NULL && dither->optimized != 0
                 && plan.lut_policy != SIXEL_LUT_POLICY_NONE) {
-            if (plan.lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
-                if (plan.method_for_largest == SIXEL_LARGE_LUM) {
-                    wcomp1 = dither->complexion * 299;
-                    wcomp2 = 587;
-                    wcomp3 = 114;
-                } else {
-                    wcomp1 = dither->complexion;
-                    wcomp2 = 1;
-                    wcomp3 = 1;
-                }
-            } else {
-                wcomp1 = dither->complexion;
-                wcomp2 = 1;
-                wcomp3 = 1;
-            }
+            wcomp1 = 1;
+            wcomp2 = 1;
+            wcomp3 = 1;
             status = sixel_lut_configure(plan.lut,
                                          plan.palette->entries,
                                          plan.palette->entries_float32,
                                          plan.palette->depth,
                                          plan.palette->float_depth,
                                          (int)plan.palette->entry_count,
-                                         dither->complexion,
+                                         1,
                                          wcomp1,
                                          wcomp2,
                                          wcomp3,
@@ -3358,7 +3341,6 @@ sixel_dither_apply_palette_with_mode(
         resolve_request.foptimize_palette = dither->optimize_palette;
         resolve_request.complexion = dither->complexion;
         resolve_request.lut_policy = dither->lut_policy;
-        resolve_request.method_for_largest = dither->method_for_largest;
         resolve_request.ncolors = &ncolors;
         resolve_request.allocator = dither->allocator;
         resolve_request.dither = dither;
