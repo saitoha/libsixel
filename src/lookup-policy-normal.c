@@ -238,6 +238,10 @@ static sixel_lookup_policy_vtbl_t const g_sixel_lookup_policy_normal_vtbl = {
     sixel_lookup_policy_normal_prefer_palette_float_lookup
 };
 
+#if defined(__GNUC__) && !defined(__clang__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+#endif
 SIXELSTATUS
 sixel_lookup_policy_create_normal(sixel_lookup_policy_interface_t **policy)
 {
@@ -266,6 +270,9 @@ sixel_lookup_policy_create_normal(sixel_lookup_policy_interface_t **policy)
     *policy = &object->base;
     return SIXEL_OK;
 }
+#if defined(__GNUC__) && !defined(__clang__)
+# pragma GCC diagnostic pop
+#endif
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

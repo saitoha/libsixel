@@ -501,7 +501,9 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
     memset(&select_request, 0, sizeof(select_request));
     memset(&request, 0, sizeof(request));
     lookup_policy = NULL;
-    memset(vtbls, 0, sizeof(vtbls));
+    for (i = 0U; i < sizeof(vtbls) / sizeof(vtbls[0]); ++i) {
+        vtbls[i] = NULL;
+    }
     memset(palette, 0, sizeof(palette));
     memset(pixel, 0, sizeof(pixel));
     class_count = sizeof(class_names) / sizeof(class_names[0]);

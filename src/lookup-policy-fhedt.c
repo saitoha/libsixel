@@ -538,14 +538,12 @@ sixel_lookup_policy_fhedt_prepare(
     sixel_lookup_policy_fhedt_object_t *object;
     sixel_lookup_policy_interface_t *reuse_policy;
     sixel_lookup_policy_fhedt_object_t *reuse_object;
-    int shared_lut;
     int expected_float_depth;
 
     status = SIXEL_FALSE;
     object = NULL;
     reuse_policy = NULL;
     reuse_object = NULL;
-    shared_lut = 1;
     expected_float_depth = 0;
 
     if (policy == NULL || request == NULL || request->palette == NULL
@@ -575,13 +573,9 @@ sixel_lookup_policy_fhedt_prepare(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    shared_lut = sixel_lookup_policy_shared_cache_enabled(
-        SIXEL_LUT_POLICY_FHEDT);
-
     reuse_policy = request->reuse_policy;
     if (sixel_lookup_parallel_dither_active() != 0
-            /* Reuse slot NULL means shared cache cannot migrate ownership. */
-            && shared_lut == 0
+            /* Reuse slot NULL means ownership migration is unsafe. */
             && request->reuse_policy_slot == NULL) {
         reuse_policy = NULL;
     }
