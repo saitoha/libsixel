@@ -290,6 +290,11 @@ img2sixel_trace_topic_message(const char *topic, const char *format, ...)
     }
 
     fprintf(stderr, "\n");
+    /*
+     * Runtime stderr buffering differs across toolchains and wrappers.
+     * Flush topic traces so external token waiters observe lines promptly.
+     */
+    fflush(stderr);
 }
 
 static int

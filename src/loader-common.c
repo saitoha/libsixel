@@ -1320,6 +1320,11 @@ sixel_trace_topic_message(
     va_end(args);
 
     fprintf(stderr, "\n");
+    /*
+     * Some runtimes keep stderr fully buffered when redirected to pipes.
+     * Flush trace lines so test_runner token waits do not stall forever.
+     */
+    fflush(stderr);
 }
 
 void
