@@ -26,18 +26,26 @@
 #include "config.h"
 #endif
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #if HAVE_FLOAT_H
 # include <float.h>
 #endif
 
+#include "compat_stub.h"
 #include "lookup-8bit.h"
 #include "lookup-common.h"
 #include "lookup-float32.h"
 #include "lookup-policy-private.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
+
+#define SIXEL_LUT_DENSE_EMPTY (-1)
+
+#define SIXEL_LOOKUP_PACK_LINEAR 0
+#define SIXEL_LOOKUP_PACK_MORTON 1
+#define SIXEL_LOOKUP_PACK_HILBERT 2
 
 /*
  * IDL (internal contract)
@@ -71,6 +79,321 @@ sixel_lookup_policy_bit6_from_base_const(
     sixel_lookup_policy_interface_t const *policy)
 {
     return (sixel_lookup_policy_bit6_object_t const *)(void const *)policy;
+}
+
+static sixel_lookup_8bit_quantization_t
+sixel_lookup_policy_bit6_quant_make(unsigned int depth)
+{
+    sixel_lookup_8bit_quantization_t quant;
+    unsigned int shift;
+
+    shift = 2U;
+    if (depth > 3U) {
+        shift = 3U;
+    }
+
+    quant.channel_shift = shift;
+    quant.channel_bits = 8U - shift;
+    quant.channel_mask = (1U << quant.channel_bits) - 1U;
+
+    return quant;
+}
+
+static int
+sixel_lookup_policy_bit6_env_packing(void)
+{
+    char const *env;
+
+    env = sixel_compat_getenv("SIXEL_LOOKUP_PACKING");
+    if (env == NULL || env[0] == '\0') {
+        return SIXEL_LOOKUP_PACK_LINEAR;
+    }
+
+    if (sixel_compat_strcasecmp(env, "linear") == 0) {
+        return SIXEL_LOOKUP_PACK_LINEAR;
+    }
+    if (sixel_compat_strcasecmp(env, "morton") == 0) {
+        return SIXEL_LOOKUP_PACK_MORTON;
+    }
+    if (sixel_compat_strcasecmp(env, "hilbert") == 0) {
+        return SIXEL_LOOKUP_PACK_HILBERT;
+    }
+
+    return SIXEL_LOOKUP_PACK_LINEAR;
+}
+
+static size_t
+sixel_lookup_policy_bit6_dense_size(
+    unsigned int depth,
+    sixel_lookup_8bit_quantization_t const *quant)
+{
+    size_t size;
+    unsigned int exponent;
+    unsigned int i;
+
+    size = 1U;
+    exponent = depth * quant->channel_bits;
+    for (i = 0U; i < exponent; ++i) {
+        if (size > SIZE_MAX / 2U) {
+            size = SIZE_MAX;
+            break;
+        }
+        size <<= 1U;
+    }
+
+    return size;
+}
+
+static unsigned int
+sixel_lookup_policy_bit6_pack_linear(
+    unsigned char const *pixel,
+    unsigned int depth,
+    sixel_lookup_8bit_quantization_t const *quant)
+{
+    unsigned int packed;
+    unsigned int bits;
+    unsigned int shift;
+    unsigned int plane;
+    unsigned int component;
+    unsigned int rounded;
+    unsigned int mask;
+
+    packed = 0U;
+    bits = quant->channel_bits;
+    shift = quant->channel_shift;
+    mask = quant->channel_mask;
+    for (plane = 0U; plane < depth; ++plane) {
+        component = (unsigned int)pixel[depth - 1U - plane];
+        if (shift > 0U) {
+            rounded = (component + (1U << (shift - 1U))) >> shift;
+            if (rounded > mask) {
+                rounded = mask;
+            }
+        } else {
+            rounded = component & mask;
+        }
+        packed |= rounded << (plane * bits);
+    }
+
+    return packed;
+}
+
+static unsigned int
+sixel_lookup_policy_bit6_pack_morton(
+    unsigned char const *pixel,
+    unsigned int depth,
+    sixel_lookup_8bit_quantization_t const *quant)
+{
+    unsigned int packed;
+    unsigned int bits;
+    unsigned int shift;
+    unsigned int mask;
+    unsigned int component;
+    unsigned int rounded;
+    unsigned int plane;
+    unsigned int bit;
+    unsigned int bit_index;
+    unsigned int values[4];
+
+    packed = 0U;
+    bits = quant->channel_bits;
+    shift = quant->channel_shift;
+    mask = quant->channel_mask;
+    if (depth == 0U) {
+        return 0U;
+    }
+    if (depth > 4U || bits == 0U || bits * depth > 32U) {
+        return sixel_lookup_policy_bit6_pack_linear(pixel, depth, quant);
+    }
+
+    for (plane = 0U; plane < depth; ++plane) {
+        component = (unsigned int)pixel[depth - 1U - plane];
+        if (shift > 0U) {
+            rounded = (component + (1U << (shift - 1U))) >> shift;
+            if (rounded > mask) {
+                rounded = mask;
+            }
+        } else {
+            rounded = component & mask;
+        }
+        values[plane] = rounded;
+    }
+
+    for (bit = 0U; bit < bits; ++bit) {
+        for (plane = 0U; plane < depth; ++plane) {
+            bit_index = bit * depth + plane;
+            packed |= ((values[plane] >> bit) & 1U) << bit_index;
+        }
+    }
+
+    return packed;
+}
+
+static unsigned int
+sixel_lookup_policy_bit6_pack_hilbert(
+    unsigned char const *pixel,
+    unsigned int depth,
+    sixel_lookup_8bit_quantization_t const *quant)
+{
+    unsigned int packed;
+    unsigned int bits;
+    unsigned int shift;
+    unsigned int mask;
+    unsigned int component;
+    unsigned int rounded;
+    unsigned int plane;
+    unsigned int bit;
+    unsigned int bit_index;
+    unsigned int q;
+    unsigned int p;
+    unsigned int t;
+    unsigned int coords[3];
+
+    packed = 0U;
+    bits = quant->channel_bits;
+    shift = quant->channel_shift;
+    mask = quant->channel_mask;
+    if (depth != 3U || bits == 0U || bits * depth > 30U) {
+        return sixel_lookup_policy_bit6_pack_linear(pixel, depth, quant);
+    }
+
+    for (plane = 0U; plane < depth; ++plane) {
+        component = (unsigned int)pixel[depth - 1U - plane];
+        if (shift > 0U) {
+            rounded = (component + (1U << (shift - 1U))) >> shift;
+            if (rounded > mask) {
+                rounded = mask;
+            }
+        } else {
+            rounded = component & mask;
+        }
+        coords[plane] = rounded;
+    }
+
+    q = 1U << (bits - 1U);
+    while (q > 1U) {
+        p = q - 1U;
+        for (plane = 0U; plane < depth; ++plane) {
+            if ((coords[plane] & q) != 0U) {
+                coords[0] ^= p;
+            } else {
+                t = (coords[0] ^ coords[plane]) & p;
+                coords[0] ^= t;
+                coords[plane] ^= t;
+            }
+        }
+        q >>= 1U;
+    }
+
+    for (plane = 1U; plane < depth; ++plane) {
+        coords[plane] ^= coords[plane - 1U];
+    }
+
+    t = 0U;
+    q = 1U << (bits - 1U);
+    while (q > 1U) {
+        if ((coords[depth - 1U] & q) != 0U) {
+            t ^= q - 1U;
+        }
+        q >>= 1U;
+    }
+    for (plane = 0U; plane < depth; ++plane) {
+        coords[plane] ^= t;
+    }
+
+    for (bit = 0U; bit < bits; ++bit) {
+        for (plane = 0U; plane < depth; ++plane) {
+            bit_index = bit * depth + plane;
+            packed |= ((coords[plane] >> bit) & 1U) << bit_index;
+        }
+    }
+
+    return packed;
+}
+
+static unsigned int
+sixel_lookup_policy_bit6_pack(
+    sixel_lookup_8bit_t const *lut,
+    unsigned char const *pixel)
+{
+    if (lut->packing == SIXEL_LOOKUP_PACK_MORTON) {
+        return sixel_lookup_policy_bit6_pack_morton(
+            pixel,
+            (unsigned int)lut->depth,
+            &lut->quant);
+    }
+    if (lut->packing == SIXEL_LOOKUP_PACK_HILBERT) {
+        return sixel_lookup_policy_bit6_pack_hilbert(
+            pixel,
+            (unsigned int)lut->depth,
+            &lut->quant);
+    }
+
+    return sixel_lookup_policy_bit6_pack_linear(
+        pixel,
+        (unsigned int)lut->depth,
+        &lut->quant);
+}
+
+static void
+sixel_lookup_policy_bit6_release_cache(sixel_lookup_8bit_t *lut)
+{
+    if (lut == NULL || lut->dense == NULL) {
+        return;
+    }
+
+    sixel_allocator_free(lut->allocator, lut->dense);
+    lut->dense = NULL;
+    lut->dense_size = 0U;
+    lut->dense_ready = 0;
+}
+
+static SIXELSTATUS
+sixel_lookup_policy_bit6_prepare_cache(sixel_lookup_8bit_t *lut)
+{
+    size_t expected;
+    size_t bytes;
+    size_t index;
+
+    expected = 0U;
+    bytes = 0U;
+    index = 0U;
+    if (lut == NULL || lut->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    expected = sixel_lookup_policy_bit6_dense_size(
+        (unsigned int)lut->depth,
+        &lut->quant);
+    if (expected == 0U) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (expected > SIZE_MAX / sizeof(int32_t)) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_policy_6bit: dense cache too large.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    if (lut->dense != NULL && lut->dense_size != expected) {
+        sixel_lookup_policy_bit6_release_cache(lut);
+    }
+    if (lut->dense == NULL) {
+        bytes = expected * sizeof(int32_t);
+        lut->dense = (int32_t *)sixel_allocator_malloc(lut->allocator, bytes);
+        if (lut->dense == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_policy_6bit: cache allocation failed.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+    }
+
+    for (index = 0U; index < expected; ++index) {
+        lut->dense[index] = SIXEL_LUT_DENSE_EMPTY;
+    }
+    lut->dense_size = expected;
+    lut->dense_ready = 1;
+
+    return SIXEL_OK;
 }
 
 static float
@@ -226,31 +549,108 @@ sixel_lookup_policy_bit6_configure_8bit(
     sixel_lookup_8bit_t *lut,
     sixel_lookup_policy_prepare_request_t const *request)
 {
+    SIXELSTATUS status;
+
+    status = SIXEL_FALSE;
     if (lut == NULL || request == NULL || request->palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    return sixel_lookup_8bit_configure(lut,
-                                       request->palette,
-                                       request->depth,
-                                       request->reqcolor,
-                                       1,
-                                       1,
-                                       1,
-                                       1,
-                                       SIXEL_LUT_POLICY_6BIT,
-                                       request->pixelformat);
+    sixel_lookup_8bit_clear(lut);
+    lut->policy = SIXEL_LUT_POLICY_6BIT;
+    lut->depth = request->depth;
+    lut->ncolors = request->reqcolor;
+    lut->complexion = 1;
+    lut->palette = request->palette;
+    lut->packing = sixel_lookup_policy_bit6_env_packing();
+    lut->quant = sixel_lookup_policy_bit6_quant_make((unsigned int)lut->depth);
+
+    status = sixel_lookup_policy_bit6_prepare_cache(lut);
+    if (SIXEL_FAILED(status)) {
+        sixel_lookup_policy_bit6_release_cache(lut);
+        return status;
+    }
+
+    return SIXEL_OK;
 }
 
 static int
 sixel_lookup_policy_bit6_map_8bit(sixel_lookup_8bit_t *lut,
                                   unsigned char const *pixel)
 {
+    int result;
+    int diff;
+    int i;
+    int distant;
+    unsigned char const *entry;
+    unsigned char const *end;
+    int pixel0;
+    int pixel1;
+    int pixel2;
+    int delta;
+    unsigned int bucket;
+    int32_t cached;
+
+    result = 0;
+    diff = INT_MAX;
+    i = 0;
+    distant = 0;
+    entry = NULL;
+    end = NULL;
+    pixel0 = 0;
+    pixel1 = 0;
+    pixel2 = 0;
+    delta = 0;
+    bucket = 0U;
+    cached = SIXEL_LUT_DENSE_EMPTY;
     if (lut == NULL || pixel == NULL) {
         return 0;
     }
 
-    return sixel_lookup_8bit_map_pixel(lut, pixel);
+    if (lut->palette == NULL || lut->ncolors <= 0) {
+        return 0;
+    }
+
+    if (lut->dense_ready != 0 && lut->dense != NULL) {
+        bucket = sixel_lookup_policy_bit6_pack(lut, pixel);
+        if ((size_t)bucket < lut->dense_size) {
+            cached = lut->dense[bucket];
+            if (cached >= 0) {
+                return cached;
+            }
+        }
+    }
+
+    entry = lut->palette;
+    end = lut->palette + (size_t)lut->ncolors * (size_t)lut->depth;
+    pixel0 = (int)pixel[0];
+    pixel1 = (int)pixel[1];
+    pixel2 = (int)pixel[2];
+    result = -1;
+    for (i = 0; entry < end; ++i, entry += lut->depth) {
+        delta = pixel0 - (int)entry[0];
+        distant = delta * delta * lut->complexion;
+        delta = pixel1 - (int)entry[1];
+        distant += delta * delta;
+        delta = pixel2 - (int)entry[2];
+        distant += delta * delta;
+        if (distant < diff) {
+            diff = distant;
+            result = i;
+        }
+    }
+
+    if (lut->dense_ready != 0 && lut->dense != NULL && result >= 0
+            && sixel_lookup_parallel_dither_active() == 0
+            && (size_t)bucket < lut->dense_size) {
+        lut->dense[bucket] = result;
+    }
+
+    if (result < 0) {
+        result = 0;
+    }
+
+    return result;
 }
 
 static SIXELSTATUS

@@ -26,13 +26,19 @@
 #include "config.h"
 #endif
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#if HAVE_MATH_H
+# include <math.h>
+#endif
 
+#include "compat_stub.h"
 #include "lookup-8bit.h"
 #include "lookup-common.h"
 #include "lookup-float32.h"
 #include "lookup-policy-private.h"
+#include "pixelformat.h"
 #include "sixel_atomic.h"
 
 /*
@@ -67,6 +73,386 @@ sixel_lookup_policy_fhedt_from_base_const(
     sixel_lookup_policy_interface_t const *policy)
 {
     return (sixel_lookup_policy_fhedt_object_t const *)(void const *)policy;
+}
+
+static int
+sixel_lookup_policy_fhedt_parse_flag(char const *text, int default_value)
+{
+    long parsed;
+    char *endptr;
+
+    parsed = 0L;
+    endptr = NULL;
+    if (text == NULL || text[0] == '\0') {
+        return default_value;
+    }
+
+    errno = 0;
+    parsed = strtol(text, &endptr, 10);
+    if (errno == ERANGE || endptr == text || *endptr != '\0') {
+        return default_value;
+    }
+
+    if (parsed == 0L) {
+        return 0;
+    }
+    if (parsed == 1L) {
+        return 1;
+    }
+
+    return default_value;
+}
+
+static int
+sixel_lookup_policy_fhedt_env_resolution(void)
+{
+    char const *env;
+    long parsed;
+    char *endptr;
+
+    env = NULL;
+    parsed = 0L;
+    endptr = NULL;
+    env = sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_RESOLUTION");
+    if (env == NULL || env[0] == '\0') {
+        return 64;
+    }
+
+    errno = 0;
+    parsed = strtol(env, &endptr, 10);
+    if (errno == ERANGE || endptr == env || *endptr != '\0') {
+        return 64;
+    }
+
+    if (parsed == 64L || parsed == 128L || parsed == 256L) {
+        return (int)parsed;
+    }
+
+    return 64;
+}
+
+static int
+sixel_lookup_policy_fhedt_env_refine(void)
+{
+    return sixel_lookup_policy_fhedt_parse_flag(
+        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_REFINE"),
+        1);
+}
+
+static int
+sixel_lookup_policy_fhedt_env_shared(void)
+{
+    return sixel_lookup_policy_fhedt_parse_flag(
+        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_SHARED"),
+        1);
+}
+
+static int
+sixel_lookup_policy_fhedt_env_use_dist2(void)
+{
+    return sixel_lookup_policy_fhedt_parse_flag(
+        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_USE_DIST2"),
+        0);
+}
+
+static int
+sixel_lookup_policy_fhedt_env_use_cache(void)
+{
+    return sixel_lookup_policy_fhedt_parse_flag(
+        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_USE_CACHE"),
+        0);
+}
+
+static SIXELSTATUS
+sixel_lookup_policy_fhedt_prepare_float_palette(
+    sixel_lookup_float32_t *lut,
+    unsigned char const *palette,
+    float const *palette_float,
+    int float_depth,
+    int pixelformat)
+{
+    size_t total;
+    size_t float_payload;
+    int index;
+    int component;
+    float *cursor;
+    float const *float_cursor;
+    int expected_float_depth;
+
+    total = 0U;
+    float_payload = 0U;
+    index = 0;
+    component = 0;
+    cursor = NULL;
+    float_cursor = NULL;
+    expected_float_depth = 0;
+
+    if (lut == NULL || palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (lut->palette != NULL) {
+        sixel_allocator_free(lut->allocator, lut->palette);
+        lut->palette = NULL;
+    }
+
+    total = (size_t)lut->ncolors * (size_t)lut->depth;
+    lut->palette = (float *)sixel_allocator_malloc(lut->allocator,
+                                                   total * sizeof(float));
+    if (lut->palette == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_policy_fhedt: float palette allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    cursor = lut->palette;
+    float_cursor = palette_float;
+    expected_float_depth = lut->depth * (int)sizeof(float);
+    if (float_cursor != NULL && float_depth > 0) {
+        if (float_depth < expected_float_depth) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_policy_fhedt: float palette depth mismatch.");
+            sixel_allocator_free(lut->allocator, lut->palette);
+            lut->palette = NULL;
+            return SIXEL_BAD_ARGUMENT;
+        }
+        float_payload = (size_t)lut->ncolors * (size_t)expected_float_depth;
+        if (float_payload > 0U) {
+            memcpy(cursor, float_cursor, float_payload);
+            return SIXEL_OK;
+        }
+    }
+
+    for (index = 0; index < lut->ncolors; ++index) {
+        for (component = 0; component < lut->depth; ++component) {
+            *cursor = sixel_pixelformat_byte_to_float(
+                pixelformat,
+                component,
+                palette[index * lut->depth + component]);
+            ++cursor;
+        }
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_lookup_policy_fhedt_configure_8bit(
+    sixel_lookup_8bit_t *lut,
+    sixel_lookup_policy_prepare_request_t const *request)
+{
+    SIXELSTATUS status;
+    int resolution;
+    int refine;
+    int shared_flag;
+    int use_dist2;
+    int use_cache;
+    uint32_t signature;
+
+    status = SIXEL_FALSE;
+    resolution = 0;
+    refine = 0;
+    shared_flag = 0;
+    use_dist2 = 0;
+    use_cache = 0;
+    signature = 0U;
+
+    if (lut == NULL || request == NULL || request->palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_lookup_8bit_clear(lut);
+    lut->policy = SIXEL_LUT_POLICY_FHEDT;
+    lut->depth = request->depth;
+    lut->ncolors = request->reqcolor;
+    lut->complexion = 1;
+    lut->palette = request->palette;
+
+    if (lut->fhedt == NULL) {
+        status = sixel_lookup_fhedt_8bit_create(lut->allocator, &lut->fhedt);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_policy_fhedt: FHEDT allocation failed.");
+            return status;
+        }
+    }
+
+    resolution = sixel_lookup_policy_fhedt_env_resolution();
+    refine = sixel_lookup_policy_fhedt_env_refine();
+    shared_flag = sixel_lookup_policy_fhedt_env_shared();
+    use_dist2 = sixel_lookup_policy_fhedt_env_use_dist2();
+    use_cache = sixel_lookup_policy_fhedt_env_use_cache();
+
+    signature = sixel_lookup_fhedt_8bit_signature(request->palette,
+                                                  request->reqcolor,
+                                                  resolution,
+                                                  refine,
+                                                  1,
+                                                  1,
+                                                  1,
+                                                  request->depth);
+    status = sixel_lookup_fhedt_8bit_configure(lut->fhedt,
+                                               request->palette,
+                                               request->reqcolor,
+                                               resolution,
+                                               refine,
+                                               use_dist2,
+                                               use_cache,
+                                               shared_flag,
+                                               1,
+                                               1,
+                                               1,
+                                               request->pixelformat,
+                                               request->depth);
+    if (SIXEL_FAILED(status)) {
+        lut->fhedt_ready = 0;
+        return status;
+    }
+
+    sixel_lookup_fhedt_8bit_shared_set_signature(lut->fhedt->shared,
+                                                 signature);
+    lut->fhedt_ready = 1;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_lookup_policy_fhedt_configure_float32(
+    sixel_lookup_float32_t *lut,
+    sixel_lookup_policy_prepare_request_t const *request)
+{
+    SIXELSTATUS status;
+    float base_weights[SIXEL_LOOKUP_FLOAT_COMPONENTS];
+    float range;
+    float scale;
+    int component;
+    int resolution;
+    int refine;
+    int shared_flag;
+    int use_dist2;
+    int use_cache;
+    uint32_t signature;
+
+    status = SIXEL_FALSE;
+    base_weights[0] = 0.0f;
+    base_weights[1] = 0.0f;
+    base_weights[2] = 0.0f;
+    range = 1.0f;
+    scale = 1.0f;
+    component = 0;
+    resolution = 0;
+    refine = 0;
+    shared_flag = 0;
+    use_dist2 = 0;
+    use_cache = 0;
+    signature = 0U;
+
+    if (lut == NULL || request == NULL || request->palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_lookup_float32_clear(lut);
+    lut->policy = SIXEL_LUT_POLICY_FHEDT;
+    lut->depth = request->depth;
+    lut->ncolors = request->reqcolor;
+    lut->complexion = 1;
+
+    base_weights[0] = 1.0f;
+    base_weights[1] = 1.0f;
+    base_weights[2] = 1.0f;
+    for (component = 0; component < SIXEL_LOOKUP_FLOAT_COMPONENTS;
+            ++component) {
+        range = sixel_pixelformat_float_channel_range(request->pixelformat,
+                                                      component);
+        if (range <= 0.0f) {
+            range = 1.0f;
+        }
+        scale = 1.0f / range;
+        lut->weights[component] = base_weights[component] * scale * scale;
+    }
+
+    status = sixel_lookup_policy_fhedt_prepare_float_palette(
+        lut,
+        request->palette,
+        request->palette_float,
+        request->float_depth,
+        request->pixelformat);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    if (lut->fhedt == NULL) {
+        status = sixel_lookup_fhedt_float32_create(lut->allocator, &lut->fhedt);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_policy_fhedt: FHEDT allocation failed.");
+            return status;
+        }
+    }
+
+    resolution = sixel_lookup_policy_fhedt_env_resolution();
+    refine = sixel_lookup_policy_fhedt_env_refine();
+    shared_flag = sixel_lookup_policy_fhedt_env_shared();
+    use_dist2 = sixel_lookup_policy_fhedt_env_use_dist2();
+    use_cache = sixel_lookup_policy_fhedt_env_use_cache();
+
+    signature = sixel_lookup_fhedt_float32_signature(lut->palette,
+                                                     lut->ncolors,
+                                                     resolution,
+                                                     refine,
+                                                     lut->weights[0],
+                                                     lut->weights[1],
+                                                     lut->weights[2],
+                                                     lut->depth,
+                                                     request->pixelformat);
+    status = sixel_lookup_fhedt_float32_configure(lut->fhedt,
+                                                  lut->palette,
+                                                  lut->ncolors,
+                                                  resolution,
+                                                  refine,
+                                                  use_dist2,
+                                                  use_cache,
+                                                  shared_flag,
+                                                  lut->weights[0],
+                                                  lut->weights[1],
+                                                  lut->weights[2],
+                                                  request->pixelformat);
+    if (SIXEL_FAILED(status)) {
+        lut->fhedt_ready = 0;
+        return status;
+    }
+
+    sixel_lookup_fhedt_float32_shared_set_signature(lut->fhedt->shared,
+                                                    signature);
+    lut->fhedt_ready = 1;
+    return SIXEL_OK;
+}
+
+static int
+sixel_lookup_policy_fhedt_map_float32(sixel_lookup_float32_t const *lut,
+                                      unsigned char const *pixel)
+{
+    float const *sample;
+
+    sample = NULL;
+    if (lut == NULL || pixel == NULL || lut->fhedt_ready == 0
+            || lut->fhedt == NULL) {
+        return 0;
+    }
+
+    sample = (float const *)(void const *)pixel;
+    return sixel_lookup_fhedt_float32_map(lut->fhedt, sample);
+}
+
+static int
+sixel_lookup_policy_fhedt_map_8bit(sixel_lookup_8bit_t const *lut,
+                                   unsigned char const *pixel)
+{
+    if (lut == NULL || pixel == NULL || lut->fhedt_ready == 0
+            || lut->fhedt == NULL) {
+        return 0;
+    }
+
+    return sixel_lookup_fhedt_8bit_map(lut->fhedt, pixel);
 }
 
 static void
@@ -207,29 +593,13 @@ sixel_lookup_policy_fhedt_prepare(
     object->owns_lut = 1;
 
     if (object->lookup_source_is_float != 0) {
-        status = sixel_lookup_float32_configure_fhedt(
+        status = sixel_lookup_policy_fhedt_configure_float32(
             sixel_lut_backend_float32(object->lut),
-            request->palette,
-            request->palette_float,
-            request->depth,
-            request->float_depth,
-            request->reqcolor,
-            1,
-            1,
-            1,
-            1,
-            request->pixelformat);
+            request);
     } else {
-        status = sixel_lookup_8bit_configure_fhedt(
+        status = sixel_lookup_policy_fhedt_configure_8bit(
             sixel_lut_backend_8bit(object->lut),
-            request->palette,
-            request->depth,
-            request->reqcolor,
-            1,
-            1,
-            1,
-            1,
-            request->pixelformat);
+            request);
     }
     if (SIXEL_FAILED(status)) {
         sixel_lookup_policy_fhedt_reset_state(object);
@@ -262,13 +632,13 @@ sixel_lookup_policy_fhedt_map_pixel(
         return 0;
     }
 
-    if (sixel_lut_uses_float(object->lut) != 0) {
-        return sixel_lookup_float32_map_pixel_fhedt(
+    if (object->lookup_source_is_float != 0) {
+        return sixel_lookup_policy_fhedt_map_float32(
             sixel_lut_backend_float32(object->lut),
             pixel);
     }
 
-    return sixel_lookup_8bit_map_pixel_fhedt(
+    return sixel_lookup_policy_fhedt_map_8bit(
         sixel_lut_backend_8bit(object->lut),
         pixel);
 }

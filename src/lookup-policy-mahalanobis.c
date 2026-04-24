@@ -629,6 +629,76 @@ sixel_lookup_policy_mahalanobis_configure_float32(
     return sixel_lookup_policy_mahalanobis_float32_configure_clusters(lut);
 }
 
+static SIXELSTATUS
+sixel_lookup_policy_mahalanobis_configure_8bit(
+    sixel_lookup_8bit_t *lut,
+    sixel_lookup_policy_prepare_request_t const *request)
+{
+    if (lut == NULL || request == NULL || request->palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_lookup_8bit_clear(lut);
+    lut->policy = SIXEL_LUT_POLICY_MAHALANOBIS;
+    lut->depth = request->depth;
+    lut->ncolors = request->reqcolor;
+    lut->complexion = 1;
+    lut->palette = request->palette;
+
+    return SIXEL_OK;
+}
+
+static int
+sixel_lookup_policy_mahalanobis_map_8bit(sixel_lookup_8bit_t const *lut,
+                                         unsigned char const *pixel)
+{
+    int result;
+    int diff;
+    int i;
+    int distant;
+    int pixel0;
+    int pixel1;
+    int pixel2;
+    int delta;
+    unsigned char const *entry;
+    unsigned char const *end;
+
+    result = 0;
+    diff = INT_MAX;
+    i = 0;
+    distant = 0;
+    pixel0 = 0;
+    pixel1 = 0;
+    pixel2 = 0;
+    delta = 0;
+    entry = NULL;
+    end = NULL;
+    if (lut == NULL || pixel == NULL || lut->palette == NULL
+            || lut->ncolors <= 0 || lut->depth <= 0) {
+        return 0;
+    }
+
+    entry = lut->palette;
+    end = lut->palette + (size_t)lut->ncolors * (size_t)lut->depth;
+    pixel0 = (int)pixel[0];
+    pixel1 = (int)pixel[1];
+    pixel2 = (int)pixel[2];
+    for (i = 0; entry < end; ++i, entry += lut->depth) {
+        delta = pixel0 - (int)entry[0];
+        distant = delta * delta * lut->complexion;
+        delta = pixel1 - (int)entry[1];
+        distant += delta * delta;
+        delta = pixel2 - (int)entry[2];
+        distant += delta * delta;
+        if (distant < diff) {
+            diff = distant;
+            result = i;
+        }
+    }
+
+    return result;
+}
+
 static void
 sixel_lookup_policy_mahalanobis_reset_state(
     sixel_lookup_policy_mahalanobis_object_t *object)
@@ -771,16 +841,9 @@ sixel_lookup_policy_mahalanobis_prepare(
             sixel_lut_backend_float32(object->lut),
             request);
     } else {
-        status = sixel_lookup_8bit_configure_mahalanobis(
+        status = sixel_lookup_policy_mahalanobis_configure_8bit(
             sixel_lut_backend_8bit(object->lut),
-            request->palette,
-            request->depth,
-            request->reqcolor,
-            1,
-            1,
-            1,
-            1,
-            request->pixelformat);
+            request);
     }
     if (SIXEL_FAILED(status)) {
         sixel_lookup_policy_mahalanobis_reset_state(object);
@@ -813,13 +876,13 @@ sixel_lookup_policy_mahalanobis_map_pixel(
         return 0;
     }
 
-    if (sixel_lut_uses_float(object->lut) != 0) {
+    if (object->lookup_source_is_float != 0) {
         return sixel_lookup_policy_mahalanobis_float32_search(
             sixel_lut_backend_float32(object->lut),
             (float const *)(void const *)pixel);
     }
 
-    return sixel_lookup_8bit_map_pixel_mahalanobis(
+    return sixel_lookup_policy_mahalanobis_map_8bit(
         sixel_lut_backend_8bit(object->lut),
         pixel);
 }

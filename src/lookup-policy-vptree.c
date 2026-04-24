@@ -33,6 +33,7 @@
 #include "lookup-common.h"
 #include "lookup-float32.h"
 #include "lookup-policy-private.h"
+#include "pixelformat.h"
 #include "sixel_atomic.h"
 
 /*
@@ -67,6 +68,229 @@ sixel_lookup_policy_vptree_from_base_const(
     sixel_lookup_policy_interface_t const *policy)
 {
     return (sixel_lookup_policy_vptree_object_t const *)(void const *)policy;
+}
+
+static SIXELSTATUS
+sixel_lookup_policy_vptree_prepare_float_palette(
+    sixel_lookup_float32_t *lut,
+    unsigned char const *palette,
+    float const *palette_float,
+    int float_depth,
+    int pixelformat)
+{
+    size_t total;
+    size_t float_payload;
+    int index;
+    int component;
+    float *cursor;
+    float const *float_cursor;
+    int expected_float_depth;
+
+    total = 0U;
+    float_payload = 0U;
+    index = 0;
+    component = 0;
+    cursor = NULL;
+    float_cursor = NULL;
+    expected_float_depth = 0;
+
+    if (lut == NULL || palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (lut->palette != NULL) {
+        sixel_allocator_free(lut->allocator, lut->palette);
+        lut->palette = NULL;
+    }
+
+    total = (size_t)lut->ncolors * (size_t)lut->depth;
+    lut->palette = (float *)sixel_allocator_malloc(lut->allocator,
+                                                   total * sizeof(float));
+    if (lut->palette == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_policy_vptree: float palette allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    cursor = lut->palette;
+    float_cursor = palette_float;
+    expected_float_depth = lut->depth * (int)sizeof(float);
+    if (float_cursor != NULL && float_depth > 0) {
+        if (float_depth < expected_float_depth) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_policy_vptree: float palette depth mismatch.");
+            sixel_allocator_free(lut->allocator, lut->palette);
+            lut->palette = NULL;
+            return SIXEL_BAD_ARGUMENT;
+        }
+        float_payload = (size_t)lut->ncolors * (size_t)expected_float_depth;
+        if (float_payload > 0U) {
+            memcpy(cursor, float_cursor, float_payload);
+            return SIXEL_OK;
+        }
+    }
+
+    for (index = 0; index < lut->ncolors; ++index) {
+        for (component = 0; component < lut->depth; ++component) {
+            *cursor = sixel_pixelformat_byte_to_float(
+                pixelformat,
+                component,
+                palette[index * lut->depth + component]);
+            ++cursor;
+        }
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_lookup_policy_vptree_configure_float32(
+    sixel_lookup_float32_t *lut,
+    sixel_lookup_policy_prepare_request_t const *request)
+{
+    SIXELSTATUS status;
+    float base_weights[SIXEL_LOOKUP_FLOAT_COMPONENTS];
+    float range;
+    float scale;
+    int component;
+
+    status = SIXEL_FALSE;
+    base_weights[0] = 0.0f;
+    base_weights[1] = 0.0f;
+    base_weights[2] = 0.0f;
+    range = 1.0f;
+    scale = 1.0f;
+    component = 0;
+
+    if (lut == NULL || request == NULL || request->palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_lookup_float32_clear(lut);
+    lut->policy = SIXEL_LUT_POLICY_VPTREE;
+    lut->depth = request->depth;
+    lut->ncolors = request->reqcolor;
+    lut->complexion = 1;
+
+    base_weights[0] = 1.0f;
+    base_weights[1] = 1.0f;
+    base_weights[2] = 1.0f;
+    for (component = 0; component < SIXEL_LOOKUP_FLOAT_COMPONENTS;
+            ++component) {
+        range = sixel_pixelformat_float_channel_range(request->pixelformat,
+                                                      component);
+        if (range <= 0.0f) {
+            range = 1.0f;
+        }
+        scale = 1.0f / range;
+        lut->weights[component] = base_weights[component] * scale * scale;
+    }
+
+    status = sixel_lookup_policy_vptree_prepare_float_palette(
+        lut,
+        request->palette,
+        request->palette_float,
+        request->float_depth,
+        request->pixelformat);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    if (lut->vptree == NULL) {
+        status = sixel_lookup_vptree_float32_create(lut->allocator,
+                                                    &lut->vptree);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_policy_vptree: VP-tree allocation failed.");
+            return status;
+        }
+    }
+
+    status = sixel_lookup_vptree_float32_configure(lut->vptree,
+                                                   lut->palette,
+                                                   lut->ncolors,
+                                                   lut->depth,
+                                                   lut->weights);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_policy_vptree: VP-tree configure failed.");
+        return status;
+    }
+
+    lut->vptree_ready = 1;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_lookup_policy_vptree_configure_8bit(
+    sixel_lookup_8bit_t *lut,
+    sixel_lookup_policy_prepare_request_t const *request)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_FALSE;
+    if (lut == NULL || request == NULL || request->palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_lookup_8bit_clear(lut);
+    lut->policy = SIXEL_LUT_POLICY_VPTREE;
+    lut->depth = request->depth;
+    lut->ncolors = request->reqcolor;
+    lut->complexion = 1;
+    lut->palette = request->palette;
+
+    if (lut->vptree == NULL) {
+        status = sixel_lookup_vptree_8bit_create(lut->allocator, &lut->vptree);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_policy_vptree: VP-tree allocation failed.");
+            return status;
+        }
+    }
+
+    status = sixel_lookup_vptree_8bit_configure(lut->vptree,
+                                                request->palette,
+                                                request->reqcolor,
+                                                request->depth,
+                                                1);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_policy_vptree: VP-tree configure failed.");
+        return status;
+    }
+
+    lut->vptree_ready = 1;
+    return SIXEL_OK;
+}
+
+static int
+sixel_lookup_policy_vptree_map_float32(
+    sixel_lookup_float32_t const *lut,
+    unsigned char const *pixel)
+{
+    float const *sample;
+
+    sample = NULL;
+    if (lut == NULL || pixel == NULL || lut->vptree_ready == 0
+            || lut->vptree == NULL) {
+        return 0;
+    }
+
+    sample = (float const *)(void const *)pixel;
+    return sixel_lookup_vptree_float32_map(lut->vptree, sample);
+}
+
+static int
+sixel_lookup_policy_vptree_map_8bit(sixel_lookup_8bit_t const *lut,
+                                    unsigned char const *pixel)
+{
+    if (lut == NULL || pixel == NULL || lut->vptree_ready == 0
+            || lut->vptree == NULL) {
+        return 0;
+    }
+
+    return sixel_lookup_vptree_8bit_map(lut->vptree, pixel);
 }
 
 static void
@@ -207,29 +431,13 @@ sixel_lookup_policy_vptree_prepare(
     object->owns_lut = 1;
 
     if (object->lookup_source_is_float != 0) {
-        status = sixel_lookup_float32_configure_vptree(
+        status = sixel_lookup_policy_vptree_configure_float32(
             sixel_lut_backend_float32(object->lut),
-            request->palette,
-            request->palette_float,
-            request->depth,
-            request->float_depth,
-            request->reqcolor,
-            1,
-            1,
-            1,
-            1,
-            request->pixelformat);
+            request);
     } else {
-        status = sixel_lookup_8bit_configure_vptree(
+        status = sixel_lookup_policy_vptree_configure_8bit(
             sixel_lut_backend_8bit(object->lut),
-            request->palette,
-            request->depth,
-            request->reqcolor,
-            1,
-            1,
-            1,
-            1,
-            request->pixelformat);
+            request);
     }
     if (SIXEL_FAILED(status)) {
         sixel_lookup_policy_vptree_reset_state(object);
@@ -262,13 +470,13 @@ sixel_lookup_policy_vptree_map_pixel(
         return 0;
     }
 
-    if (sixel_lut_uses_float(object->lut) != 0) {
-        return sixel_lookup_float32_map_pixel_vptree(
+    if (object->lookup_source_is_float != 0) {
+        return sixel_lookup_policy_vptree_map_float32(
             sixel_lut_backend_float32(object->lut),
             pixel);
     }
 
-    return sixel_lookup_8bit_map_pixel_vptree(
+    return sixel_lookup_policy_vptree_map_8bit(
         sixel_lut_backend_8bit(object->lut),
         pixel);
 }
