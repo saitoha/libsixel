@@ -200,6 +200,28 @@ sixel_lookup_policy_mahalanobis_float32_clear_state(
     lut->rbc.ready = 0;
 }
 
+static int
+sixel_lookup_policy_mahalanobis_member_index_at(
+    sixel_lookup_float32_t const *lut,
+    int position,
+    int *member_index)
+{
+    int member_count;
+
+    member_count = 0;
+    if (lut == NULL || member_index == NULL || lut->rbc.member_index == NULL) {
+        return 0;
+    }
+
+    member_count = lut->ncolors;
+    if (member_count <= 0 || position < 0 || position >= member_count) {
+        return 0;
+    }
+
+    *member_index = lut->rbc.member_index[position];
+    return 1;
+}
+
 static SIXELSTATUS
 sixel_lookup_policy_mahalanobis_float32_prepare_palette(
     sixel_lookup_float32_t *lut,
@@ -423,7 +445,12 @@ sixel_lookup_policy_mahalanobis_float32_configure_clusters(
         }
 
         for (k = start; k < end; ++k) {
-            c = lut->rbc.member_index[k];
+            if (!sixel_lookup_policy_mahalanobis_member_index_at(
+                    lut,
+                    k,
+                    &c)) {
+                continue;
+            }
             if (c < 0 || c >= lut->ncolors) {
                 continue;
             }
@@ -448,7 +475,12 @@ sixel_lookup_policy_mahalanobis_float32_configure_clusters(
 
         memset(cov, 0, sizeof(cov));
         for (k = start; k < end; ++k) {
-            c = lut->rbc.member_index[k];
+            if (!sixel_lookup_policy_mahalanobis_member_index_at(
+                    lut,
+                    k,
+                    &c)) {
+                continue;
+            }
             if (c < 0 || c >= lut->ncolors) {
                 continue;
             }
@@ -557,7 +589,12 @@ sixel_lookup_policy_mahalanobis_float32_search(
             return 0;
         }
         for (k = start; k < end; ++k) {
-            idx = lut->rbc.member_index[k];
+            if (!sixel_lookup_policy_mahalanobis_member_index_at(
+                    lut,
+                    k,
+                    &idx)) {
+                continue;
+            }
             if (idx < 0 || idx >= lut->ncolors) {
                 continue;
             }

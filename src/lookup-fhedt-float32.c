@@ -66,13 +66,19 @@
 
 #ifndef SIXEL_FHEDT_TLS
 # if defined(SIXEL_ENABLE_THREADS)
+   /*
+    * TinyCC reports TLS keywords but does not provide stable semantics for
+    * the FHEDT worker scratch buffers. Keep it on the non-TLS fallback path
+    * so resolve_threads() forces a single worker and avoids data races.
+    */
 #  if defined(_MSC_VER)
 #   define SIXEL_FHEDT_TLS __declspec(thread)
 #   define SIXEL_FHEDT_TLS_AVAILABLE 1
-#  elif !defined(__STDC_NO_THREADS__) && !defined(__PCC__)
+#  elif !defined(__STDC_NO_THREADS__) && !defined(__PCC__) \
+      && !defined(__TINYC__)
 #   define SIXEL_FHEDT_TLS _Thread_local
 #   define SIXEL_FHEDT_TLS_AVAILABLE 1
-#  elif defined(__GNUC__) && !defined(__PCC__)
+#  elif defined(__GNUC__) && !defined(__PCC__) && !defined(__TINYC__)
 #   define SIXEL_FHEDT_TLS __thread
 #   define SIXEL_FHEDT_TLS_AVAILABLE 1
 #  else

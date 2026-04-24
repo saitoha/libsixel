@@ -96,23 +96,6 @@ sixel_lookup_policy_normalize_fast_lut_policy(int lut_policy)
     return normalized;
 }
 
-static inline int
-sixel_lookup_policy_shared_cache_enabled(int lut_policy)
-{
-    int shared;
-
-    shared = 1;
-    if (lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
-        shared = sixel_lookup_env_shared_certlut();
-    } else if (lut_policy == SIXEL_LUT_POLICY_5BIT) {
-        shared = sixel_lookup_env_shared_5bit();
-    } else if (lut_policy == SIXEL_LUT_POLICY_6BIT) {
-        shared = sixel_lookup_env_shared_6bit();
-    }
-
-    return shared;
-}
-
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_normal(sixel_lookup_policy_interface_t **policy);
 

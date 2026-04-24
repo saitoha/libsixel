@@ -2899,10 +2899,11 @@ sixel_dither_apply_palette_with_mode(
     }
 
     parallel_active = dither->pipeline_parallel_active;
-#if defined(__PCC__)
+#if defined(__PCC__) || defined(__TINYC__)
     /*
-     * pcc builds avoid compiler TLS codegen.  The resulting shared LUT
-     * context is not thread-safe, so keep palette application serial.
+     * pcc and TinyCC builds do not provide the thread-safety guarantees that
+     * the parallel palette-application path expects, so keep this path
+     * serial.
      */
     parallel_active = 0;
 #endif

@@ -139,6 +139,27 @@ create_lookup_policy_by_selected_name(
     return create_lookup_policy(name, request, lookup_policy);
 }
 
+static void
+safe_unref_lookup_policy(sixel_lookup_policy_interface_t **lookup_policy)
+{
+    sixel_lookup_policy_interface_t *policy_object;
+    sixel_lookup_policy_vtbl_t const *policy_vtbl;
+
+    policy_object = NULL;
+    policy_vtbl = NULL;
+
+    if (lookup_policy == NULL || *lookup_policy == NULL) {
+        return;
+    }
+
+    policy_object = *lookup_policy;
+    policy_vtbl = policy_object->vtbl;
+    if (policy_vtbl != NULL) {
+        policy_vtbl->unref(policy_object);
+    }
+    *lookup_policy = NULL;
+}
+
 static int
 test_lookup_policy_normal_mode_maps_expected_color(void)
 {
@@ -209,9 +230,7 @@ test_lookup_policy_normal_mode_maps_expected_color(void)
     status = SIXEL_OK;
 
 cleanup:
-    if (lookup_policy != NULL) {
-        lookup_policy->vtbl->unref(lookup_policy);
-    }
+    safe_unref_lookup_policy(&lookup_policy);
     sixel_allocator_unref(allocator);
 
     return SIXEL_SUCCEEDED(status);
@@ -300,12 +319,8 @@ test_lookup_policy_fast_mode_maps_float_input(void)
     status = SIXEL_OK;
 
 cleanup:
-    if (lookup_policy != NULL) {
-        lookup_policy->vtbl->unref(lookup_policy);
-    }
-    if (cached_policy != NULL) {
-        cached_policy->vtbl->unref(cached_policy);
-    }
+    safe_unref_lookup_policy(&lookup_policy);
+    safe_unref_lookup_policy(&cached_policy);
     sixel_allocator_unref(allocator);
 
     return SIXEL_SUCCEEDED(status);
@@ -391,9 +406,7 @@ test_lookup_policy_mono_mode_maps_expected_threshold(void)
     status = SIXEL_OK;
 
 cleanup:
-    if (lookup_policy != NULL) {
-        lookup_policy->vtbl->unref(lookup_policy);
-    }
+    safe_unref_lookup_policy(&lookup_policy);
     sixel_allocator_unref(allocator);
 
     return SIXEL_SUCCEEDED(status);
@@ -459,9 +472,7 @@ test_lookup_policy_named_factory_creates_fast_lut(void)
     status = SIXEL_OK;
 
 cleanup:
-    if (lookup_policy != NULL) {
-        lookup_policy->vtbl->unref(lookup_policy);
-    }
+    safe_unref_lookup_policy(&lookup_policy);
     sixel_allocator_unref(allocator);
 
     return SIXEL_SUCCEEDED(status);
@@ -554,8 +565,7 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
             goto cleanup;
         }
 
-        lookup_policy->vtbl->unref(lookup_policy);
-        lookup_policy = NULL;
+        safe_unref_lookup_policy(&lookup_policy);
     }
 
     for (i = 0U; i < class_count; ++i) {
@@ -570,9 +580,7 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
     status = SIXEL_OK;
 
 cleanup:
-    if (lookup_policy != NULL) {
-        lookup_policy->vtbl->unref(lookup_policy);
-    }
+    safe_unref_lookup_policy(&lookup_policy);
     sixel_allocator_unref(allocator);
 
     return SIXEL_SUCCEEDED(status);
