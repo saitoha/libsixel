@@ -43,6 +43,7 @@
 
 #include "compat_stub.h"
 #include "fromwebp-vp8-private.h"
+#include "loader-common.h"
 
 #define SIXEL_WEBP_VP8_BOOL_BASE_PROB 128u
 #define SIXEL_WEBP_VP8_CONTROL_OFFSET 10u
@@ -64,6 +65,8 @@
 #define SIXEL_WEBP_VP8_COEFF_TYPE_Y2 1u
 #define SIXEL_WEBP_VP8_COEFF_TYPE_UV 2u
 #define SIXEL_WEBP_VP8_COEFF_TYPE_Y1_B 3u
+#define SIXEL_WEBP_VP8_YUV_FIX2 6u
+#define SIXEL_WEBP_VP8_YUV_MASK2 ((256u << SIXEL_WEBP_VP8_YUV_FIX2) - 1u)
 
 #define SIXEL_WEBP_VP8_IDCT_COSPI8SQRT2_MINUS1 20091
 #define SIXEL_WEBP_VP8_IDCT_SINPI8SQRT2 35468
@@ -436,7 +439,6 @@ sixel_webp_vp8_bool_read(sixel_webp_vp8_bool_decoder_t *decoder,
             goto end;
         }
     }
-
     *pbit = bit;
 
 end:
@@ -475,6 +477,62 @@ sixel_webp_vp8_bool_read_literal(sixel_webp_vp8_bool_decoder_t *decoder,
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+sixel_webp_vp8_bool_read_signed_value(sixel_webp_vp8_bool_decoder_t *decoder,
+                                      unsigned int value,
+                                      int *psigned)
+{
+    SIXELSTATUS status;
+    unsigned int split;
+    uint32_t bigsplit;
+    int signed_value;
+
+    status = SIXEL_OK;
+    split = 0u;
+    bigsplit = 0u;
+    signed_value = 0;
+    if (decoder == NULL || psigned == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (decoder->count < 0) {
+        sixel_webp_vp8_bool_fill(decoder);
+        if (decoder->count < 0) {
+            sixel_helper_set_additional_message(
+                "builtin webp: VP8 bitstream partition is truncated.");
+            return SIXEL_BAD_INPUT;
+        }
+    }
+
+    split = (decoder->range + 1u) >> 1;
+    bigsplit = (uint32_t)split << SIXEL_WEBP_VP8_BOOL_SHIFT_BASE;
+    if (decoder->value < bigsplit) {
+        decoder->range = split;
+        signed_value = (int)value;
+    } else {
+        decoder->range -= split;
+        decoder->value -= bigsplit;
+        signed_value = -(int)value;
+    }
+    decoder->range <<= 1;
+    decoder->value <<= 1;
+    decoder->count--;
+    if (decoder->count < 0) {
+        sixel_webp_vp8_bool_fill(decoder);
+        if (decoder->count < 0) {
+            sixel_helper_set_additional_message(
+                "builtin webp: VP8 bitstream partition is truncated.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+    }
+
+    *psigned = signed_value;
+
+end:
+    return status;
+}
+
 static unsigned char
 sixel_webp_vp8_clamp_u8(int value)
 {
@@ -485,6 +543,18 @@ sixel_webp_vp8_clamp_u8(int value)
         return 255u;
     }
     return (unsigned char)value;
+}
+
+static unsigned char
+sixel_webp_vp8_clip_yuv2(int value)
+{
+    if ((value & ~(int)SIXEL_WEBP_VP8_YUV_MASK2) == 0) {
+        return (unsigned char)(value >> SIXEL_WEBP_VP8_YUV_FIX2);
+    }
+    if (value < 0) {
+        return 0u;
+    }
+    return 255u;
 }
 
 static unsigned char
@@ -714,17 +784,16 @@ sixel_webp_vp8_read_kf_ymode(sixel_webp_vp8_bool_decoder_t *decoder,
         return status;
     }
     if (bit == 0) {
-        *pymode = SIXEL_WEBP_VP8_MODE_DC;
-        return SIXEL_OK;
-    }
-
-    status = sixel_webp_vp8_bool_read(
-        decoder, sixel_webp_vp8_kf_ymode_prob[2], &bit);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    if (bit == 0) {
-        *pymode = SIXEL_WEBP_VP8_MODE_V;
+        status = sixel_webp_vp8_bool_read(
+            decoder, sixel_webp_vp8_kf_ymode_prob[2], &bit);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (bit == 0) {
+            *pymode = SIXEL_WEBP_VP8_MODE_DC;
+        } else {
+            *pymode = SIXEL_WEBP_VP8_MODE_V;
+        }
         return SIXEL_OK;
     }
 
@@ -908,6 +977,7 @@ sixel_webp_vp8_predict_bmode(unsigned int bmode,
     unsigned int i;
     unsigned int ref_x;
     unsigned int ref_y;
+    unsigned int mb_right;
     unsigned char above[8];
     unsigned char left[4];
     unsigned char top_left;
@@ -928,6 +998,10 @@ sixel_webp_vp8_predict_bmode(unsigned int bmode,
     i = 0u;
     ref_x = 0u;
     ref_y = 0u;
+    mb_right = (x & ~15u) + 15u;
+    if (mb_right >= width) {
+        mb_right = width - 1u;
+    }
     top_left = SIXEL_WEBP_VP8_BORDER_TOP;
     a = 0;
     b = 0;
@@ -948,6 +1022,9 @@ sixel_webp_vp8_predict_bmode(unsigned int bmode,
 
     for (i = 0u; i < 8u; ++i) {
         ref_x = x + i;
+        if ((y & 15u) != 0u && ref_x > mb_right) {
+            ref_x = mb_right;
+        }
         if (ref_x >= width) {
             ref_x = width - 1u;
         }
@@ -1328,7 +1405,6 @@ sixel_webp_vp8_decode_coeff_block(
 {
     SIXELSTATUS status;
     unsigned int n;
-    unsigned int band;
     unsigned int value;
     unsigned int j;
     unsigned int cat;
@@ -1337,13 +1413,12 @@ sixel_webp_vp8_decode_coeff_block(
     unsigned int k;
     unsigned int cat_len;
     int bit;
-    int sign;
+    int signed_value;
     unsigned char const *p;
     unsigned int const *cat_prob;
 
     status = SIXEL_OK;
     n = 0u;
-    band = 0u;
     value = 0u;
     j = 0u;
     cat = 0u;
@@ -1352,7 +1427,7 @@ sixel_webp_vp8_decode_coeff_block(
     k = 0u;
     cat_len = 0u;
     bit = 0;
-    sign = 0;
+    signed_value = 0;
     p = NULL;
     cat_prob = NULL;
     if (decoder == NULL || probs == NULL || coeffs == NULL || peob == NULL ||
@@ -1362,177 +1437,160 @@ sixel_webp_vp8_decode_coeff_block(
     }
 
     memset(coeffs, 0, sizeof(int16_t) * SIXEL_WEBP_VP8_BLOCK_COEFFS);
+    *peob = start_coeff;
     if (start_coeff >= SIXEL_WEBP_VP8_BLOCK_COEFFS) {
-        *peob = start_coeff;
         return SIXEL_OK;
     }
 
     n = start_coeff;
     p = probs[n][coeff_context];
-    status = sixel_webp_vp8_bool_read(decoder, p[0], &bit);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    if (bit == 0) {
-        *peob = 0u;
-        return SIXEL_OK;
-    }
-
-    while (1) {
-        ++n;
-        if (n > SIXEL_WEBP_VP8_BLOCK_COEFFS) {
-            return SIXEL_BAD_INPUT;
+    while (n < SIXEL_WEBP_VP8_BLOCK_COEFFS) {
+        status = sixel_webp_vp8_bool_read(decoder, p[0], &bit);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (bit == 0) {
+            *peob = n;
+            return SIXEL_OK;
         }
 
         status = sixel_webp_vp8_bool_read(decoder, p[1], &bit);
         if (SIXEL_FAILED(status)) {
             return status;
         }
-        if (bit == 0) {
-            band = sixel_webp_vp8_coeff_band[n];
-            p = probs[band][0];
-        } else {
-            status = sixel_webp_vp8_bool_read(decoder, p[2], &bit);
-            if (SIXEL_FAILED(status)) {
-                return status;
-            }
-            if (bit == 0) {
-                value = 1u;
-                band = sixel_webp_vp8_coeff_band[n];
-                p = probs[band][1];
-            } else {
-                status = sixel_webp_vp8_bool_read(decoder, p[3], &bit);
-                if (SIXEL_FAILED(status)) {
-                    return status;
-                }
-                if (bit == 0) {
-                    status = sixel_webp_vp8_bool_read(decoder, p[4], &bit);
-                    if (SIXEL_FAILED(status)) {
-                        return status;
-                    }
-                    if (bit == 0) {
-                        value = 2u;
-                    } else {
-                        status = sixel_webp_vp8_bool_read(
-                            decoder, p[5], &bit);
-                        if (SIXEL_FAILED(status)) {
-                            return status;
-                        }
-                        value = 3u + (unsigned int)bit;
-                    }
-                } else {
-                    status = sixel_webp_vp8_bool_read(decoder, p[6], &bit);
-                    if (SIXEL_FAILED(status)) {
-                        return status;
-                    }
-                    if (bit == 0) {
-                        status = sixel_webp_vp8_bool_read(
-                            decoder, p[7], &bit);
-                        if (SIXEL_FAILED(status)) {
-                            return status;
-                        }
-                        if (bit == 0) {
-                            status = sixel_webp_vp8_bool_read(
-                                decoder, 159u, &bit);
-                            if (SIXEL_FAILED(status)) {
-                                return status;
-                            }
-                            value = 5u + (unsigned int)bit;
-                        } else {
-                            status = sixel_webp_vp8_bool_read(
-                                decoder, 165u, &bit);
-                            if (SIXEL_FAILED(status)) {
-                                return status;
-                            }
-                            value = 7u + ((unsigned int)bit << 1);
-                            status = sixel_webp_vp8_bool_read(
-                                decoder, 145u, &bit);
-                            if (SIXEL_FAILED(status)) {
-                                return status;
-                            }
-                            value += (unsigned int)bit;
-                        }
-                    } else {
-                        status = sixel_webp_vp8_bool_read(
-                            decoder, p[8], &bit);
-                        if (SIXEL_FAILED(status)) {
-                            return status;
-                        }
-                        bit1 = (unsigned int)bit;
-                        status = sixel_webp_vp8_bool_read(
-                            decoder, p[9u + bit1], &bit);
-                        if (SIXEL_FAILED(status)) {
-                            return status;
-                        }
-                        bit0 = (unsigned int)bit;
-                        cat = (bit1 << 1) + bit0;
-                        value = 0u;
-                        switch (cat) {
-                        case 0u:
-                            cat_prob = sixel_webp_vp8_cat3_prob;
-                            cat_len = 3u;
-                            break;
-                        case 1u:
-                            cat_prob = sixel_webp_vp8_cat4_prob;
-                            cat_len = 4u;
-                            break;
-                        case 2u:
-                            cat_prob = sixel_webp_vp8_cat5_prob;
-                            cat_len = 5u;
-                            break;
-                        default:
-                            cat_prob = sixel_webp_vp8_cat6_prob;
-                            cat_len = 11u;
-                            break;
-                        }
-                        for (k = 0u; k < cat_len; ++k) {
-                            status = sixel_webp_vp8_bool_read(
-                                decoder, cat_prob[k], &bit);
-                            if (SIXEL_FAILED(status)) {
-                                return status;
-                            }
-                            value = (value << 1) + (unsigned int)bit;
-                        }
-                        value += 3u + (8u << cat);
-                    }
-                }
-                band = sixel_webp_vp8_coeff_band[n];
-                p = probs[band][2];
-            }
-
-            j = sixel_webp_vp8_zigzag[n - 1u];
-            if (j >= SIXEL_WEBP_VP8_BLOCK_COEFFS) {
-                return SIXEL_BAD_INPUT;
-            }
-            status = sixel_webp_vp8_bool_read(
-                decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB, &sign);
-            if (SIXEL_FAILED(status)) {
-                return status;
-            }
-            if (sign != 0) {
-                coeffs[j] = -(int16_t)value;
-            } else {
-                coeffs[j] = (int16_t)value;
-            }
-
+        while (bit == 0) {
+            ++n;
             if (n == SIXEL_WEBP_VP8_BLOCK_COEFFS) {
                 *peob = n;
                 return SIXEL_OK;
             }
-            status = sixel_webp_vp8_bool_read(decoder, p[0], &bit);
+            p = probs[sixel_webp_vp8_coeff_band[n]][0];
+            status = sixel_webp_vp8_bool_read(decoder, p[1], &bit);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        }
+
+        status = sixel_webp_vp8_bool_read(decoder, p[2], &bit);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (bit == 0) {
+            value = 1u;
+            p = probs[sixel_webp_vp8_coeff_band[n + 1u]][1];
+        } else {
+            status = sixel_webp_vp8_bool_read(decoder, p[3], &bit);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
             if (bit == 0) {
-                *peob = n;
-                return SIXEL_OK;
+                status = sixel_webp_vp8_bool_read(decoder, p[4], &bit);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                if (bit == 0) {
+                    value = 2u;
+                } else {
+                    status = sixel_webp_vp8_bool_read(decoder, p[5], &bit);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                    value = 3u + (unsigned int)bit;
+                }
+            } else {
+                status = sixel_webp_vp8_bool_read(decoder, p[6], &bit);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                if (bit == 0) {
+                    status = sixel_webp_vp8_bool_read(decoder, p[7], &bit);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                    if (bit == 0) {
+                        status = sixel_webp_vp8_bool_read(
+                            decoder, 159u, &bit);
+                        if (SIXEL_FAILED(status)) {
+                            return status;
+                        }
+                        value = 5u + (unsigned int)bit;
+                    } else {
+                        status = sixel_webp_vp8_bool_read(
+                            decoder, 165u, &bit);
+                        if (SIXEL_FAILED(status)) {
+                            return status;
+                        }
+                        value = 7u + ((unsigned int)bit << 1);
+                        status = sixel_webp_vp8_bool_read(
+                            decoder, 145u, &bit);
+                        if (SIXEL_FAILED(status)) {
+                            return status;
+                        }
+                        value += (unsigned int)bit;
+                    }
+                } else {
+                    status = sixel_webp_vp8_bool_read(decoder, p[8], &bit);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                    bit1 = (unsigned int)bit;
+                    status = sixel_webp_vp8_bool_read(
+                        decoder, p[9u + bit1], &bit);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                    bit0 = (unsigned int)bit;
+                    cat = (bit1 << 1) + bit0;
+                    value = 0u;
+                    switch (cat) {
+                    case 0u:
+                        cat_prob = sixel_webp_vp8_cat3_prob;
+                        cat_len = 3u;
+                        break;
+                    case 1u:
+                        cat_prob = sixel_webp_vp8_cat4_prob;
+                        cat_len = 4u;
+                        break;
+                    case 2u:
+                        cat_prob = sixel_webp_vp8_cat5_prob;
+                        cat_len = 5u;
+                        break;
+                    default:
+                        cat_prob = sixel_webp_vp8_cat6_prob;
+                        cat_len = 11u;
+                        break;
+                    }
+                    for (k = 0u; k < cat_len; ++k) {
+                        status = sixel_webp_vp8_bool_read(
+                            decoder, cat_prob[k], &bit);
+                        if (SIXEL_FAILED(status)) {
+                            return status;
+                        }
+                        value = (value << 1) + (unsigned int)bit;
+                    }
+                    value += 3u + (8u << cat);
+                }
             }
+            p = probs[sixel_webp_vp8_coeff_band[n + 1u]][2];
         }
-        if (n == SIXEL_WEBP_VP8_BLOCK_COEFFS) {
-            *peob = n;
-            return SIXEL_OK;
+
+        j = sixel_webp_vp8_zigzag[n];
+        if (j >= SIXEL_WEBP_VP8_BLOCK_COEFFS) {
+            return SIXEL_BAD_INPUT;
         }
+        status = sixel_webp_vp8_bool_read_signed_value(decoder,
+                                                       value,
+                                                       &signed_value);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        coeffs[j] = (int16_t)signed_value;
+
+        ++n;
     }
+
+    *peob = SIXEL_WEBP_VP8_BLOCK_COEFFS;
+    return SIXEL_OK;
 }
 
 static void
@@ -1812,6 +1870,7 @@ sixel_webp_vp8_decode_native_intra(
     unsigned int uv_mode;
     unsigned int above_mode;
     unsigned int left_mode;
+    unsigned int y_start_coeff;
     unsigned int b_modes[16];
     unsigned int coeff_context;
     unsigned int eob;
@@ -1825,6 +1884,10 @@ sixel_webp_vp8_decode_native_intra(
     unsigned int dst_y;
     unsigned int copy_w;
     unsigned int copy_h;
+    unsigned int nz_y;
+    unsigned int nz_u;
+    unsigned int nz_v;
+    unsigned int nz_y2;
     int bit;
     int skip_coeff;
     int y2_output[16];
@@ -1843,6 +1906,11 @@ sixel_webp_vp8_decode_native_intra(
     size_t above_y2_size;
     size_t above_mb_mode_size;
     size_t above_bottom_bmode_size;
+    unsigned int total_mb;
+    unsigned int total_nz_y;
+    unsigned int total_nz_u;
+    unsigned int total_nz_v;
+    unsigned int total_nz_y2;
 
     status = SIXEL_OK;
     above_y = NULL;
@@ -1868,6 +1936,7 @@ sixel_webp_vp8_decode_native_intra(
     uv_mode = 0u;
     above_mode = 0u;
     left_mode = 0u;
+    y_start_coeff = 0u;
     memset(b_modes, 0, sizeof(b_modes));
     coeff_context = 0u;
     eob = 0u;
@@ -1881,6 +1950,10 @@ sixel_webp_vp8_decode_native_intra(
     dst_y = 0u;
     copy_w = 0u;
     copy_h = 0u;
+    nz_y = 0u;
+    nz_u = 0u;
+    nz_v = 0u;
+    nz_y2 = 0u;
     bit = 0;
     skip_coeff = 0;
     memset(y2_output, 0, sizeof(y2_output));
@@ -1899,6 +1972,11 @@ sixel_webp_vp8_decode_native_intra(
     above_y2_size = 0u;
     above_mb_mode_size = 0u;
     above_bottom_bmode_size = 0u;
+    total_mb = 0u;
+    total_nz_y = 0u;
+    total_nz_u = 0u;
+    total_nz_v = 0u;
+    total_nz_y2 = 0u;
     if (token_decoders == NULL || header == NULL || context == NULL ||
         planes == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1957,6 +2035,10 @@ sixel_webp_vp8_decode_native_intra(
             ymode = SIXEL_WEBP_VP8_MODE_DC;
             uv_mode = SIXEL_WEBP_VP8_MODE_DC;
             skip_coeff = 0;
+            nz_y = 0u;
+            nz_u = 0u;
+            nz_v = 0u;
+            nz_y2 = 0u;
             memset(coeffs, 0, sizeof(coeffs));
             memset(y2_output, 0, sizeof(y2_output));
             memset(b_modes, 0, sizeof(b_modes));
@@ -2047,13 +2129,17 @@ sixel_webp_vp8_decode_native_intra(
                     if (SIXEL_FAILED(status)) {
                         goto cleanup;
                     }
-                    above_y2[mb_x] = (eob > 0u) ? 1u : 0u;
+                    above_y2[mb_x] = (eob != 0u) ? 1u : 0u;
+                    if (eob != 0u) {
+                        nz_y2 = 1u;
+                    }
                     left_y2 = above_y2[mb_x];
                 } else {
                     above_y2[mb_x] = 0u;
                     left_y2 = 0u;
                 }
 
+                y_start_coeff = (ymode == SIXEL_WEBP_VP8_MODE_B) ? 0u : 1u;
                 for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_Y; ++block) {
                     coeff_context = (unsigned int)above_y[mb_x * 4u +
                                                           (block & 3u)] +
@@ -2067,15 +2153,19 @@ sixel_webp_vp8_decode_native_intra(
                                                      SIXEL_WEBP_VP8_MODE_B) ?
                                 SIXEL_WEBP_VP8_COEFF_TYPE_Y1_B :
                                 SIXEL_WEBP_VP8_COEFF_TYPE_Y1],
-                        (ymode == SIXEL_WEBP_VP8_MODE_B) ? 0u : 1u,
+                        y_start_coeff,
                         coeff_context,
                         coeffs[block],
                         &eob);
                     if (SIXEL_FAILED(status)) {
                         goto cleanup;
                     }
-                    above_y[mb_x * 4u + (block & 3u)] = (eob > 0u) ? 1u : 0u;
-                    left_y[block >> 2u] = (eob > 0u) ? 1u : 0u;
+                    above_y[mb_x * 4u + (block & 3u)] =
+                        (eob != y_start_coeff) ? 1u : 0u;
+                    left_y[block >> 2u] = (eob != y_start_coeff) ? 1u : 0u;
+                    if (eob != y_start_coeff) {
+                        ++nz_y;
+                    }
                 }
 
                 for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_UV; ++block) {
@@ -2096,8 +2186,11 @@ sixel_webp_vp8_decode_native_intra(
                     if (SIXEL_FAILED(status)) {
                         goto cleanup;
                     }
-                    above_u[mb_x * 2u + (block & 1u)] = (eob > 0u) ? 1u : 0u;
-                    left_u[block >> 1u] = (eob > 0u) ? 1u : 0u;
+                    above_u[mb_x * 2u + (block & 1u)] = (eob != 0u) ? 1u : 0u;
+                    left_u[block >> 1u] = (eob != 0u) ? 1u : 0u;
+                    if (eob != 0u) {
+                        ++nz_u;
+                    }
                 }
 
                 for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_UV; ++block) {
@@ -2118,8 +2211,11 @@ sixel_webp_vp8_decode_native_intra(
                     if (SIXEL_FAILED(status)) {
                         goto cleanup;
                     }
-                    above_v[mb_x * 2u + (block & 1u)] = (eob > 0u) ? 1u : 0u;
-                    left_v[block >> 1u] = (eob > 0u) ? 1u : 0u;
+                    above_v[mb_x * 2u + (block & 1u)] = (eob != 0u) ? 1u : 0u;
+                    left_v[block >> 1u] = (eob != 0u) ? 1u : 0u;
+                    if (eob != 0u) {
+                        ++nz_v;
+                    }
                 }
             } else {
                 above_y2[mb_x] = 0u;
@@ -2135,6 +2231,28 @@ sixel_webp_vp8_decode_native_intra(
                     left_v[block] = 0u;
                 }
             }
+            if (mb_x < 2u && mb_y < 2u &&
+                sixel_trace_topic_is_enabled("webp_decode") != 0) {
+                sixel_trace_topic_message(
+                    "webp_decode",
+                    "LSXWEBP1|diag=VP8MB|x=%u|y=%u|seg=%u|ym=%u|uv=%u|"
+                    "skip=%d|nzy2=%u|nzy=%u|nzu=%u|nzv=%u",
+                    mb_x,
+                    mb_y,
+                    segment_id,
+                    ymode,
+                    uv_mode,
+                    skip_coeff,
+                    nz_y2,
+                    nz_y,
+                    nz_u,
+                    nz_v);
+            }
+            ++total_mb;
+            total_nz_y += nz_y;
+            total_nz_u += nz_u;
+            total_nz_v += nz_v;
+            total_nz_y2 += nz_y2;
 
             x0 = mb_x * 16u;
             y0 = mb_y * 16u;
@@ -2356,6 +2474,16 @@ sixel_webp_vp8_decode_native_intra(
             left_mb_mode = (unsigned char)ymode;
         }
     }
+    if (sixel_trace_topic_is_enabled("webp_decode") != 0) {
+        sixel_trace_topic_message(
+            "webp_decode",
+            "LSXWEBP1|diag=VP8SUM|mb=%u|nzy=%u|nzu=%u|nzv=%u|nzy2=%u",
+            total_mb,
+            total_nz_y,
+            total_nz_u,
+            total_nz_v,
+            total_nz_y2);
+    }
 
 cleanup:
     sixel_allocator_free(allocator, above_y);
@@ -2387,9 +2515,6 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
     int yv;
     int u;
     int v;
-    int c;
-    int d;
-    int e;
     int r;
     int g;
     int b;
@@ -2407,9 +2532,6 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
     yv = 0;
     u = 0;
     v = 0;
-    c = 0;
-    d = 0;
-    e = 0;
     r = 0;
     g = 0;
     b = 0;
@@ -2442,18 +2564,16 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
             yv = (int)planes->y[y * planes->y_stride + x];
             u = (int)planes->u[uv_y * planes->uv_stride + uv_x];
             v = (int)planes->v[uv_y * planes->uv_stride + uv_x];
-            c = yv;
-            d = u - 128;
-            e = v - 128;
-            r = c + ((359 * e) >> 8);
-            g = c - ((88 * d + 183 * e) >> 8);
-            b = c + ((454 * d) >> 8);
+            r = ((yv * 19077) >> 8) + ((v * 26149) >> 8) - 14234;
+            g = ((yv * 19077) >> 8) - ((u * 6419) >> 8) -
+                ((v * 13320) >> 8) + 8708;
+            b = ((yv * 19077) >> 8) + ((u * 33050) >> 8) - 17685;
             rgba[((size_t)y * width + x) * 4u + 0u] =
-                sixel_webp_vp8_clamp_u8(r);
+                sixel_webp_vp8_clip_yuv2(r);
             rgba[((size_t)y * width + x) * 4u + 1u] =
-                sixel_webp_vp8_clamp_u8(g);
+                sixel_webp_vp8_clip_yuv2(g);
             rgba[((size_t)y * width + x) * 4u + 2u] =
-                sixel_webp_vp8_clamp_u8(b);
+                sixel_webp_vp8_clip_yuv2(b);
             rgba[((size_t)y * width + x) * 4u + 3u] = 255u;
         }
     }
@@ -2803,40 +2923,31 @@ sixel_webp_vp8_parse_entropy_header(
     }
     entropy->refresh_entropy_probs = bit;
 
-    status = sixel_webp_vp8_bool_read(decoder,
-                                      SIXEL_WEBP_VP8_BOOL_BASE_PROB,
-                                      &bit);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    if (bit != 0) {
-        for (type = 0u; type < SIXEL_WEBP_VP8_COEFF_TYPES; ++type) {
-            for (band = 0u; band < SIXEL_WEBP_VP8_COEFF_BANDS; ++band) {
-                for (context = 0u;
-                     context < SIXEL_WEBP_VP8_PREV_COEFF_CONTEXTS;
-                     ++context) {
-                    for (node = 0u; node < SIXEL_WEBP_VP8_COEFF_NODES;
-                         ++node) {
-                        update_prob = (unsigned int)
-                            sixel_webp_vp8_coef_update_probs[type]
-                                                           [band]
-                                                           [context]
-                                                           [node];
-                        status = sixel_webp_vp8_bool_read(
-                            decoder, update_prob, &bit);
+    for (type = 0u; type < SIXEL_WEBP_VP8_COEFF_TYPES; ++type) {
+        for (band = 0u; band < SIXEL_WEBP_VP8_COEFF_BANDS; ++band) {
+            for (context = 0u;
+                 context < SIXEL_WEBP_VP8_PREV_COEFF_CONTEXTS;
+                 ++context) {
+                for (node = 0u; node < SIXEL_WEBP_VP8_COEFF_NODES; ++node) {
+                    update_prob = (unsigned int)
+                        sixel_webp_vp8_coef_update_probs[type]
+                                                       [band]
+                                                       [context]
+                                                       [node];
+                    status = sixel_webp_vp8_bool_read(
+                        decoder, update_prob, &bit);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                    if (bit != 0) {
+                        status = sixel_webp_vp8_bool_read_literal(
+                            decoder, 8u, &literal);
                         if (SIXEL_FAILED(status)) {
                             return status;
                         }
-                        if (bit != 0) {
-                            status = sixel_webp_vp8_bool_read_literal(
-                                decoder, 8u, &literal);
-                            if (SIXEL_FAILED(status)) {
-                                return status;
-                            }
-                            entropy->coef_probs[type][band][context][node] =
-                                (unsigned char)literal;
-                            ++entropy->coef_prob_update_count;
-                        }
+                        entropy->coef_probs[type][band][context][node] =
+                            (unsigned char)literal;
+                        ++entropy->coef_prob_update_count;
                     }
                 }
             }
@@ -2915,6 +3026,56 @@ sixel_webp_vp8_parse_control_header(
     }
 
     return SIXEL_OK;
+}
+
+static void
+sixel_webp_vp8_trace_frame_context(
+    sixel_webp_vp8_frame_header_t const *header,
+    sixel_webp_vp8_partition_layout_t const *layout,
+    sixel_webp_vp8_frame_context_t const *context)
+{
+    if (header == NULL || layout == NULL || context == NULL) {
+        return;
+    }
+    if (sixel_trace_topic_is_enabled("webp_decode") == 0) {
+        return;
+    }
+
+    sixel_trace_topic_message(
+        "webp_decode",
+        "LSXWEBP1|diag=VP8CTRL|part0=%zu|tok=%u|seg=%d,%d,%d,%d|"
+        "q=%d,%d,%d,%d,%d,%d|lf=%d,%u,%u,%d|skip=%d,%d|cupd=%d|"
+        "segq=%d,%d,%d,%d|segf=%d,%d,%d,%d|sprob=%d,%d,%d",
+        layout->control_partition_size,
+        layout->token_partition_count,
+        context->segment.enabled,
+        context->segment.update_map,
+        context->segment.update_data,
+        context->segment.absolute_delta,
+        context->quant.y_ac_qi,
+        context->quant.y_dc_delta,
+        context->quant.y2_dc_delta,
+        context->quant.y2_ac_delta,
+        context->quant.uv_dc_delta,
+        context->quant.uv_ac_delta,
+        context->filter.simple,
+        context->filter.level,
+        context->filter.sharpness,
+        context->filter.update_delta,
+        context->entropy.mb_no_coeff_skip,
+        context->entropy.prob_skip_false,
+        context->entropy.coef_prob_update_count,
+        context->segment.quant_delta[0],
+        context->segment.quant_delta[1],
+        context->segment.quant_delta[2],
+        context->segment.quant_delta[3],
+        context->segment.filter_delta[0],
+        context->segment.filter_delta[1],
+        context->segment.filter_delta[2],
+        context->segment.filter_delta[3],
+        context->segment.map_prob[0],
+        context->segment.map_prob[1],
+        context->segment.map_prob[2]);
 }
 
 static SIXELSTATUS
@@ -3018,6 +3179,7 @@ sixel_webp_vp8_parse_partition_layout(
 
     context->mb_cols = (unsigned int)((header->width + 15) / 16);
     context->mb_rows = (unsigned int)((header->height + 15) / 16);
+    sixel_webp_vp8_trace_frame_context(header, layout, context);
 
     return SIXEL_OK;
 }
