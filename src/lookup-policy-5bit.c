@@ -27,6 +27,7 @@
 #endif
 
 #include <limits.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #if HAVE_FLOAT_H
@@ -34,9 +35,7 @@
 #endif
 
 #include "compat_stub.h"
-#include "lookup-8bit.h"
 #include "lookup-common.h"
-#include "lookup-float32.h"
 #include "lookup-policy-private.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
@@ -60,11 +59,35 @@
  * }
  */
 
+typedef struct sixel_lookup_policy_bit5_quantization {
+    unsigned int channel_shift;
+    unsigned int channel_bits;
+    unsigned int channel_mask;
+} sixel_lookup_policy_bit5_quantization_t;
+
 typedef struct sixel_lookup_policy_bit5_object {
     sixel_lookup_policy_interface_t base;
     sixel_atomic_u32_t ref;
-    sixel_lut_t *lut;
-    int owns_lut;
+    int prepared;
+    struct {
+        int depth;
+        int ncolors;
+        int complexion;
+        int packing;
+        unsigned char const *palette;
+        sixel_allocator_t *allocator;
+        sixel_lookup_policy_bit5_quantization_t quant;
+        int32_t *dense;
+        size_t dense_size;
+        int dense_ready;
+    } state_8bit;
+    struct {
+        int depth;
+        int ncolors;
+        float weights[3];
+        float *palette;
+        sixel_allocator_t *allocator;
+    } state_float;
     int lookup_source_is_float;
 } sixel_lookup_policy_bit5_object_t;
 
@@ -81,10 +104,10 @@ sixel_lookup_policy_bit5_from_base_const(
     return (sixel_lookup_policy_bit5_object_t const *)(void const *)policy;
 }
 
-static sixel_lookup_8bit_quantization_t
+static sixel_lookup_policy_bit5_quantization_t
 sixel_lookup_policy_bit5_quant_make(unsigned int depth)
 {
-    sixel_lookup_8bit_quantization_t quant;
+    sixel_lookup_policy_bit5_quantization_t quant;
     unsigned int shift;
 
     shift = 3U;
@@ -125,12 +148,11 @@ sixel_lookup_policy_bit5_env_packing(void)
 static size_t
 sixel_lookup_policy_bit5_dense_size(
     unsigned int depth,
-    sixel_lookup_8bit_quantization_t const *quant)
+    sixel_lookup_policy_bit5_quantization_t const *quant)
 {
     size_t size;
     unsigned int exponent;
     unsigned int i;
-
     size = 1U;
     exponent = depth * quant->channel_bits;
     for (i = 0U; i < exponent; ++i) {
@@ -148,7 +170,7 @@ static unsigned int
 sixel_lookup_policy_bit5_pack_linear(
     unsigned char const *pixel,
     unsigned int depth,
-    sixel_lookup_8bit_quantization_t const *quant)
+    sixel_lookup_policy_bit5_quantization_t const *quant)
 {
     unsigned int packed;
     unsigned int bits;
@@ -157,7 +179,6 @@ sixel_lookup_policy_bit5_pack_linear(
     unsigned int component;
     unsigned int rounded;
     unsigned int mask;
-
     packed = 0U;
     bits = quant->channel_bits;
     shift = quant->channel_shift;
@@ -182,7 +203,7 @@ static unsigned int
 sixel_lookup_policy_bit5_pack_morton(
     unsigned char const *pixel,
     unsigned int depth,
-    sixel_lookup_8bit_quantization_t const *quant)
+    sixel_lookup_policy_bit5_quantization_t const *quant)
 {
     unsigned int packed;
     unsigned int bits;
@@ -194,7 +215,6 @@ sixel_lookup_policy_bit5_pack_morton(
     unsigned int bit;
     unsigned int bit_index;
     unsigned int values[4];
-
     packed = 0U;
     bits = quant->channel_bits;
     shift = quant->channel_shift;
@@ -233,7 +253,7 @@ static unsigned int
 sixel_lookup_policy_bit5_pack_hilbert(
     unsigned char const *pixel,
     unsigned int depth,
-    sixel_lookup_8bit_quantization_t const *quant)
+    sixel_lookup_policy_bit5_quantization_t const *quant)
 {
     unsigned int packed;
     unsigned int bits;
@@ -248,7 +268,6 @@ sixel_lookup_policy_bit5_pack_hilbert(
     unsigned int p;
     unsigned int t;
     unsigned int coords[3];
-
     packed = 0U;
     bits = quant->channel_bits;
     shift = quant->channel_shift;
@@ -313,43 +332,58 @@ sixel_lookup_policy_bit5_pack_hilbert(
 
 static unsigned int
 sixel_lookup_policy_bit5_pack(
-    sixel_lookup_8bit_t const *lut,
+    sixel_lookup_policy_bit5_object_t const *object,
     unsigned char const *pixel)
 {
-    if (lut->packing == SIXEL_LOOKUP_PACK_MORTON) {
+    if (object->state_8bit.packing == SIXEL_LOOKUP_PACK_MORTON) {
         return sixel_lookup_policy_bit5_pack_morton(
             pixel,
-            (unsigned int)lut->depth,
-            &lut->quant);
+            (unsigned int)object->state_8bit.depth,
+            &object->state_8bit.quant);
     }
-    if (lut->packing == SIXEL_LOOKUP_PACK_HILBERT) {
+    if (object->state_8bit.packing == SIXEL_LOOKUP_PACK_HILBERT) {
         return sixel_lookup_policy_bit5_pack_hilbert(
             pixel,
-            (unsigned int)lut->depth,
-            &lut->quant);
+            (unsigned int)object->state_8bit.depth,
+            &object->state_8bit.quant);
     }
 
     return sixel_lookup_policy_bit5_pack_linear(
         pixel,
-        (unsigned int)lut->depth,
-        &lut->quant);
+        (unsigned int)object->state_8bit.depth,
+        &object->state_8bit.quant);
 }
 
 static void
-sixel_lookup_policy_bit5_release_cache(sixel_lookup_8bit_t *lut)
+sixel_lookup_policy_bit5_clear_8bit_state(sixel_lookup_policy_bit5_object_t
+                                          *object)
 {
-    if (lut == NULL || lut->dense == NULL) {
+    if (object == NULL) {
         return;
     }
 
-    sixel_allocator_free(lut->allocator, lut->dense);
-    lut->dense = NULL;
-    lut->dense_size = 0U;
-    lut->dense_ready = 0;
+    if (object->state_8bit.dense != NULL
+            && object->state_8bit.allocator != NULL) {
+        sixel_allocator_free(object->state_8bit.allocator,
+                             object->state_8bit.dense);
+    }
+    object->state_8bit.depth = 0;
+    object->state_8bit.ncolors = 0;
+    object->state_8bit.complexion = 0;
+    object->state_8bit.packing = 0;
+    object->state_8bit.palette = NULL;
+    object->state_8bit.allocator = NULL;
+    object->state_8bit.quant.channel_shift = 0U;
+    object->state_8bit.quant.channel_bits = 0U;
+    object->state_8bit.quant.channel_mask = 0U;
+    object->state_8bit.dense = NULL;
+    object->state_8bit.dense_size = 0U;
+    object->state_8bit.dense_ready = 0;
 }
 
 static SIXELSTATUS
-sixel_lookup_policy_bit5_prepare_cache(sixel_lookup_8bit_t *lut)
+sixel_lookup_policy_bit5_prepare_cache(sixel_lookup_policy_bit5_object_t
+                                       *object)
 {
     size_t expected;
     size_t bytes;
@@ -358,13 +392,13 @@ sixel_lookup_policy_bit5_prepare_cache(sixel_lookup_8bit_t *lut)
     expected = 0U;
     bytes = 0U;
     index = 0U;
-    if (lut == NULL || lut->allocator == NULL) {
+    if (object == NULL || object->state_8bit.allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     expected = sixel_lookup_policy_bit5_dense_size(
-        (unsigned int)lut->depth,
-        &lut->quant);
+        (unsigned int)object->state_8bit.depth,
+        &object->state_8bit.quant);
     if (expected == 0U) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -374,13 +408,17 @@ sixel_lookup_policy_bit5_prepare_cache(sixel_lookup_8bit_t *lut)
         return SIXEL_BAD_ALLOCATION;
     }
 
-    if (lut->dense != NULL && lut->dense_size != expected) {
-        sixel_lookup_policy_bit5_release_cache(lut);
+    if (object->state_8bit.dense != NULL
+            && object->state_8bit.dense_size != expected) {
+        sixel_lookup_policy_bit5_clear_8bit_state(object);
+        return SIXEL_BAD_ARGUMENT;
     }
-    if (lut->dense == NULL) {
+    if (object->state_8bit.dense == NULL) {
         bytes = expected * sizeof(int32_t);
-        lut->dense = (int32_t *)sixel_allocator_malloc(lut->allocator, bytes);
-        if (lut->dense == NULL) {
+        object->state_8bit.dense = (int32_t *)sixel_allocator_malloc(
+            object->state_8bit.allocator,
+            bytes);
+        if (object->state_8bit.dense == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_lookup_policy_5bit: cache allocation failed.");
             return SIXEL_BAD_ALLOCATION;
@@ -388,10 +426,10 @@ sixel_lookup_policy_bit5_prepare_cache(sixel_lookup_8bit_t *lut)
     }
 
     for (index = 0U; index < expected; ++index) {
-        lut->dense[index] = SIXEL_LUT_DENSE_EMPTY;
+        object->state_8bit.dense[index] = SIXEL_LUT_DENSE_EMPTY;
     }
-    lut->dense_size = expected;
-    lut->dense_ready = 1;
+    object->state_8bit.dense_size = expected;
+    object->state_8bit.dense_ready = 1;
 
     return SIXEL_OK;
 }
@@ -402,23 +440,26 @@ sixel_lookup_policy_bit5_float_component(float const *palette,
                                          int index,
                                          int axis)
 {
+    enum { SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS = 3 };
     int clamped_axis;
 
     clamped_axis = axis;
     if (clamped_axis < 0) {
         clamped_axis = 0;
-    } else if (clamped_axis >= SIXEL_LOOKUP_FLOAT_COMPONENTS) {
-        clamped_axis = SIXEL_LOOKUP_FLOAT_COMPONENTS - 1;
+    } else if (clamped_axis >= SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS) {
+        clamped_axis = SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS - 1;
     }
 
     return palette[index * depth + clamped_axis];
 }
 
 static float
-sixel_lookup_policy_bit5_float_distance(sixel_lookup_float32_t const *lut,
-                                        float const *sample,
-                                        int palette_index)
+sixel_lookup_policy_bit5_float_distance(
+    sixel_lookup_policy_bit5_object_t const *object,
+    float const *sample,
+    int palette_index)
 {
+    enum { SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS = 3 };
     float diff;
     float distance;
     int component;
@@ -426,16 +467,16 @@ sixel_lookup_policy_bit5_float_distance(sixel_lookup_float32_t const *lut,
     diff = 0.0f;
     distance = 0.0f;
     component = 0;
-    for (component = 0; component < SIXEL_LOOKUP_FLOAT_COMPONENTS;
+    for (component = 0; component < SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS;
             ++component) {
         diff = sample[component]
              - sixel_lookup_policy_bit5_float_component(
-                   lut->palette,
-                   lut->depth,
+                   object->state_float.palette,
+                   object->state_float.depth,
                    palette_index,
                    component);
         diff *= diff;
-        diff *= lut->weights[component];
+        diff *= object->state_float.weights[component];
         distance += diff;
     }
 
@@ -444,7 +485,7 @@ sixel_lookup_policy_bit5_float_distance(sixel_lookup_float32_t const *lut,
 
 static int
 sixel_lookup_policy_bit5_float_linear_search(
-    sixel_lookup_float32_t const *lut,
+    sixel_lookup_policy_bit5_object_t const *object,
     float const *sample)
 {
     int index;
@@ -456,12 +497,15 @@ sixel_lookup_policy_bit5_float_linear_search(
     best_index = 0;
     distance = 0.0f;
     best_distance = FLT_MAX;
-    if (lut == NULL || sample == NULL || lut->ncolors <= 0) {
+    if (object == NULL || sample == NULL || object->state_float.ncolors <= 0) {
         return 0;
     }
 
-    for (index = 0; index < lut->ncolors; ++index) {
-        distance = sixel_lookup_policy_bit5_float_distance(lut, sample, index);
+    for (index = 0; index < object->state_float.ncolors; ++index) {
+        distance = sixel_lookup_policy_bit5_float_distance(
+            object,
+            sample,
+            index);
         if (distance < best_distance) {
             best_distance = distance;
             best_index = index;
@@ -473,7 +517,7 @@ sixel_lookup_policy_bit5_float_linear_search(
 
 static SIXELSTATUS
 sixel_lookup_policy_bit5_prepare_float_palette(
-    sixel_lookup_float32_t *lut,
+    sixel_lookup_policy_bit5_object_t *object,
     unsigned char const *palette,
     float const *palette_float,
     int float_depth,
@@ -495,48 +539,55 @@ sixel_lookup_policy_bit5_prepare_float_palette(
     float_cursor = NULL;
     expected_float_depth = 0;
 
-    if (lut == NULL || palette == NULL) {
+    if (object == NULL || palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (lut->palette != NULL) {
-        sixel_allocator_free(lut->allocator, lut->palette);
-        lut->palette = NULL;
+    if (object->state_float.palette != NULL
+            && object->state_float.allocator != NULL) {
+        sixel_allocator_free(object->state_float.allocator,
+                             object->state_float.palette);
+        object->state_float.palette = NULL;
     }
 
-    total = (size_t)lut->ncolors * (size_t)lut->depth;
-    lut->palette = (float *)sixel_allocator_malloc(lut->allocator,
-                                                   total * sizeof(float));
-    if (lut->palette == NULL) {
+    total = (size_t)object->state_float.ncolors
+        * (size_t)object->state_float.depth;
+    object->state_float.palette = (float *)sixel_allocator_malloc(
+        object->state_float.allocator,
+        total * sizeof(float));
+    if (object->state_float.palette == NULL) {
         sixel_helper_set_additional_message(
             "sixel_lookup_policy_5bit: float palette allocation failed.");
         return SIXEL_BAD_ALLOCATION;
     }
 
-    cursor = lut->palette;
+    cursor = object->state_float.palette;
     float_cursor = palette_float;
-    expected_float_depth = lut->depth * (int)sizeof(float);
+    expected_float_depth = object->state_float.depth * (int)sizeof(float);
     if (float_cursor != NULL && float_depth > 0) {
         if (float_depth < expected_float_depth) {
             sixel_helper_set_additional_message(
                 "sixel_lookup_policy_5bit: float palette depth mismatch.");
-            sixel_allocator_free(lut->allocator, lut->palette);
-            lut->palette = NULL;
+            sixel_allocator_free(object->state_float.allocator,
+                                 object->state_float.palette);
+            object->state_float.palette = NULL;
             return SIXEL_BAD_ARGUMENT;
         }
-        float_payload = (size_t)lut->ncolors * (size_t)expected_float_depth;
+        float_payload = (size_t)object->state_float.ncolors
+            * (size_t)expected_float_depth;
         if (float_payload > 0U) {
             memcpy(cursor, float_cursor, float_payload);
             return SIXEL_OK;
         }
     }
 
-    for (index = 0; index < lut->ncolors; ++index) {
-        for (component = 0; component < lut->depth; ++component) {
+    for (index = 0; index < object->state_float.ncolors; ++index) {
+        for (component = 0; component < object->state_float.depth;
+                ++component) {
             *cursor = sixel_pixelformat_byte_to_float(
                 pixelformat,
                 component,
-                palette[index * lut->depth + component]);
+                palette[index * object->state_float.depth + component]);
             ++cursor;
         }
     }
@@ -546,28 +597,29 @@ sixel_lookup_policy_bit5_prepare_float_palette(
 
 static SIXELSTATUS
 sixel_lookup_policy_bit5_configure_8bit(
-    sixel_lookup_8bit_t *lut,
+    sixel_lookup_policy_bit5_object_t *object,
     sixel_lookup_policy_prepare_request_t const *request)
 {
     SIXELSTATUS status;
 
     status = SIXEL_FALSE;
-    if (lut == NULL || request == NULL || request->palette == NULL) {
+    if (object == NULL || request == NULL || request->palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_lookup_8bit_clear(lut);
-    lut->policy = SIXEL_LUT_POLICY_5BIT;
-    lut->depth = request->depth;
-    lut->ncolors = request->reqcolor;
-    lut->complexion = 1;
-    lut->palette = request->palette;
-    lut->packing = sixel_lookup_policy_bit5_env_packing();
-    lut->quant = sixel_lookup_policy_bit5_quant_make((unsigned int)lut->depth);
+    sixel_lookup_policy_bit5_clear_8bit_state(object);
+    object->state_8bit.depth = request->depth;
+    object->state_8bit.ncolors = request->reqcolor;
+    object->state_8bit.complexion = 1;
+    object->state_8bit.palette = request->palette;
+    object->state_8bit.allocator = request->allocator;
+    object->state_8bit.packing = sixel_lookup_policy_bit5_env_packing();
+    object->state_8bit.quant = sixel_lookup_policy_bit5_quant_make(
+        (unsigned int)object->state_8bit.depth);
 
-    status = sixel_lookup_policy_bit5_prepare_cache(lut);
+    status = sixel_lookup_policy_bit5_prepare_cache(object);
     if (SIXEL_FAILED(status)) {
-        sixel_lookup_policy_bit5_release_cache(lut);
+        sixel_lookup_policy_bit5_clear_8bit_state(object);
         return status;
     }
 
@@ -575,7 +627,8 @@ sixel_lookup_policy_bit5_configure_8bit(
 }
 
 static int
-sixel_lookup_policy_bit5_map_8bit(sixel_lookup_8bit_t *lut,
+sixel_lookup_policy_bit5_map_8bit(
+    sixel_lookup_policy_bit5_object_t *object,
                                   unsigned char const *pixel)
 {
     int result;
@@ -603,33 +656,37 @@ sixel_lookup_policy_bit5_map_8bit(sixel_lookup_8bit_t *lut,
     delta = 0;
     bucket = 0U;
     cached = SIXEL_LUT_DENSE_EMPTY;
-    if (lut == NULL || pixel == NULL) {
+    if (object == NULL || pixel == NULL) {
         return 0;
     }
 
-    if (lut->palette == NULL || lut->ncolors <= 0) {
+    if (object->state_8bit.palette == NULL
+            || object->state_8bit.ncolors <= 0) {
         return 0;
     }
 
-    if (lut->dense_ready != 0 && lut->dense != NULL) {
-        bucket = sixel_lookup_policy_bit5_pack(lut, pixel);
-        if ((size_t)bucket < lut->dense_size) {
-            cached = lut->dense[bucket];
+    if (object->state_8bit.dense_ready != 0
+            && object->state_8bit.dense != NULL) {
+        bucket = sixel_lookup_policy_bit5_pack(object, pixel);
+        if ((size_t)bucket < object->state_8bit.dense_size) {
+            cached = object->state_8bit.dense[bucket];
             if (cached >= 0) {
                 return cached;
             }
         }
     }
 
-    entry = lut->palette;
-    end = lut->palette + (size_t)lut->ncolors * (size_t)lut->depth;
+    entry = object->state_8bit.palette;
+    end = object->state_8bit.palette
+        + (size_t)object->state_8bit.ncolors
+        * (size_t)object->state_8bit.depth;
     pixel0 = (int)pixel[0];
     pixel1 = (int)pixel[1];
     pixel2 = (int)pixel[2];
     result = -1;
-    for (i = 0; entry < end; ++i, entry += lut->depth) {
+    for (i = 0; entry < end; ++i, entry += object->state_8bit.depth) {
         delta = pixel0 - (int)entry[0];
-        distant = delta * delta * lut->complexion;
+        distant = delta * delta * object->state_8bit.complexion;
         delta = pixel1 - (int)entry[1];
         distant += delta * delta;
         delta = pixel2 - (int)entry[2];
@@ -640,10 +697,12 @@ sixel_lookup_policy_bit5_map_8bit(sixel_lookup_8bit_t *lut,
         }
     }
 
-    if (lut->dense_ready != 0 && lut->dense != NULL && result >= 0
+    if (object->state_8bit.dense_ready != 0
+            && object->state_8bit.dense != NULL
+            && result >= 0
             && sixel_lookup_parallel_dither_active() == 0
-            && (size_t)bucket < lut->dense_size) {
-        lut->dense[bucket] = result;
+            && (size_t)bucket < object->state_8bit.dense_size) {
+        object->state_8bit.dense[bucket] = result;
     }
 
     if (result < 0) {
@@ -655,11 +714,12 @@ sixel_lookup_policy_bit5_map_8bit(sixel_lookup_8bit_t *lut,
 
 static SIXELSTATUS
 sixel_lookup_policy_bit5_configure_float32(
-    sixel_lookup_float32_t *lut,
+    sixel_lookup_policy_bit5_object_t *object,
     sixel_lookup_policy_prepare_request_t const *request)
 {
+    enum { SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS = 3 };
     SIXELSTATUS status;
-    float base_weights[SIXEL_LOOKUP_FLOAT_COMPONENTS];
+    float base_weights[SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS];
     float range;
     float scale;
     int component;
@@ -672,20 +732,25 @@ sixel_lookup_policy_bit5_configure_float32(
     scale = 1.0f;
     component = 0;
 
-    if (lut == NULL || request == NULL || request->palette == NULL) {
+    if (object == NULL || request == NULL || request->palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_lookup_float32_clear(lut);
-    lut->policy = SIXEL_LUT_POLICY_5BIT;
-    lut->depth = request->depth;
-    lut->ncolors = request->reqcolor;
-    lut->complexion = 1;
+    if (object->state_float.palette != NULL
+            && object->state_float.allocator != NULL) {
+        sixel_allocator_free(object->state_float.allocator,
+                             object->state_float.palette);
+    }
+    object->state_float.depth = request->depth;
+    object->state_float.ncolors = request->reqcolor;
+    object->state_float.allocator = request->allocator;
+    object->state_float.palette = NULL;
 
     base_weights[0] = 1.0f;
     base_weights[1] = 1.0f;
     base_weights[2] = 1.0f;
-    for (component = 0; component < SIXEL_LOOKUP_FLOAT_COMPONENTS;
+    for (component = 0;
+            component < SIXEL_LOOKUP_POLICY_BIT5_FLOAT_COMPONENTS;
             ++component) {
         range = sixel_pixelformat_float_channel_range(request->pixelformat,
                                                       component);
@@ -693,11 +758,12 @@ sixel_lookup_policy_bit5_configure_float32(
             range = 1.0f;
         }
         scale = 1.0f / range;
-        lut->weights[component] = base_weights[component] * scale * scale;
+        object->state_float.weights[component] =
+            base_weights[component] * scale * scale;
     }
 
     status = sixel_lookup_policy_bit5_prepare_float_palette(
-        lut,
+        object,
         request->palette,
         request->palette_float,
         request->float_depth,
@@ -710,19 +776,21 @@ sixel_lookup_policy_bit5_configure_float32(
 }
 
 static int
-sixel_lookup_policy_bit5_map_float32(sixel_lookup_float32_t const *lut,
+sixel_lookup_policy_bit5_map_float32(
+                                     sixel_lookup_policy_bit5_object_t const
+                                     *object,
                                      unsigned char const *pixel)
 {
     float const *sample;
 
     sample = NULL;
-    if (lut == NULL || pixel == NULL || lut->palette == NULL
-            || lut->ncolors <= 0) {
+    if (object == NULL || pixel == NULL || object->state_float.palette == NULL
+            || object->state_float.ncolors <= 0) {
         return 0;
     }
 
     sample = (float const *)(void const *)pixel;
-    return sixel_lookup_policy_bit5_float_linear_search(lut, sample);
+    return sixel_lookup_policy_bit5_float_linear_search(object, sample);
 }
 
 static void
@@ -733,12 +801,21 @@ sixel_lookup_policy_bit5_reset_state(
         return;
     }
 
-    if (object->owns_lut != 0 && object->lut != NULL) {
-        sixel_lut_unref(object->lut);
+    if (object->state_float.palette != NULL
+            && object->state_float.allocator != NULL) {
+        sixel_allocator_free(object->state_float.allocator,
+                             object->state_float.palette);
     }
+    object->state_float.depth = 0;
+    object->state_float.ncolors = 0;
+    object->state_float.weights[0] = 0.0f;
+    object->state_float.weights[1] = 0.0f;
+    object->state_float.weights[2] = 0.0f;
+    object->state_float.palette = NULL;
+    object->state_float.allocator = NULL;
 
-    object->lut = NULL;
-    object->owns_lut = 0;
+    sixel_lookup_policy_bit5_clear_8bit_state(object);
+    object->prepared = 0;
     object->lookup_source_is_float = 0;
 }
 
@@ -785,14 +862,12 @@ sixel_lookup_policy_bit5_prepare(
     sixel_lookup_policy_bit5_object_t *object;
     sixel_lookup_policy_interface_t *reuse_policy;
     sixel_lookup_policy_bit5_object_t *reuse_object;
-    int normalized_lut_policy;
     int shared_lut;
 
     status = SIXEL_FALSE;
     object = NULL;
     reuse_policy = NULL;
     reuse_object = NULL;
-    normalized_lut_policy = SIXEL_LUT_POLICY_6BIT;
     shared_lut = 1;
 
     if (policy == NULL || request == NULL || request->palette == NULL
@@ -819,10 +894,8 @@ sixel_lookup_policy_bit5_prepare(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    normalized_lut_policy = sixel_lookup_policy_normalize_fast_lut_policy(
-        SIXEL_LUT_POLICY_5BIT);
     shared_lut = sixel_lookup_policy_shared_cache_enabled(
-        normalized_lut_policy);
+        SIXEL_LUT_POLICY_5BIT);
 
     reuse_policy = request->reuse_policy;
     if (sixel_lookup_parallel_dither_active() != 0
@@ -838,13 +911,21 @@ sixel_lookup_policy_bit5_prepare(
     if (reuse_policy != NULL
             && reuse_policy->vtbl == policy->vtbl) {
         reuse_object = sixel_lookup_policy_bit5_from_base(reuse_policy);
-        if (reuse_object->lut != NULL) {
-            object->lut = reuse_object->lut;
-            object->owns_lut = reuse_object->owns_lut;
-            object->lookup_source_is_float =
-                reuse_object->lookup_source_is_float;
-            reuse_object->lut = NULL;
-            reuse_object->owns_lut = 0;
+        if (reuse_object->prepared != 0
+                && reuse_object->lookup_source_is_float
+                == object->lookup_source_is_float) {
+            object->state_8bit = reuse_object->state_8bit;
+            object->state_float = reuse_object->state_float;
+            object->prepared = reuse_object->prepared;
+            reuse_object->state_8bit.palette = NULL;
+            reuse_object->state_8bit.allocator = NULL;
+            reuse_object->state_8bit.dense = NULL;
+            reuse_object->state_8bit.dense_size = 0U;
+            reuse_object->state_8bit.dense_ready = 0;
+            reuse_object->state_float.palette = NULL;
+            reuse_object->state_float.allocator = NULL;
+            reuse_object->prepared = 0;
+            reuse_object->lookup_source_is_float = 0;
             if (request->reuse_policy_slot != NULL
                     && *request->reuse_policy_slot == NULL) {
                 *request->reuse_policy_slot = policy;
@@ -854,27 +935,20 @@ sixel_lookup_policy_bit5_prepare(
         }
     }
 
-    status = sixel_lut_new(&object->lut,
-                           normalized_lut_policy,
-                           request->allocator);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    object->owns_lut = 1;
-
     if (object->lookup_source_is_float != 0) {
         status = sixel_lookup_policy_bit5_configure_float32(
-            sixel_lut_backend_float32(object->lut),
+            object,
             request);
     } else {
         status = sixel_lookup_policy_bit5_configure_8bit(
-            sixel_lut_backend_8bit(object->lut),
+            object,
             request);
     }
     if (SIXEL_FAILED(status)) {
         sixel_lookup_policy_bit5_reset_state(object);
         return status;
     }
+    object->prepared = 1;
 
     if (request->reuse_policy_slot != NULL
             && *request->reuse_policy_slot == NULL) {
@@ -898,18 +972,18 @@ sixel_lookup_policy_bit5_map_pixel(
     }
 
     object = sixel_lookup_policy_bit5_from_base_const(policy);
-    if (object->lut == NULL) {
+    if (object->prepared == 0) {
         return 0;
     }
 
     if (object->lookup_source_is_float != 0) {
         return sixel_lookup_policy_bit5_map_float32(
-            sixel_lut_backend_float32(object->lut),
+            object,
             pixel);
     }
 
     return sixel_lookup_policy_bit5_map_8bit(
-        sixel_lut_backend_8bit(object->lut),
+        (sixel_lookup_policy_bit5_object_t *)(void *)object,
         pixel);
 }
 
