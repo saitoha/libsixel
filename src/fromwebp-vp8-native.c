@@ -47,7 +47,6 @@
 
 #define SIXEL_WEBP_VP8_BOOL_BASE_PROB 128u
 #define SIXEL_WEBP_VP8_CONTROL_OFFSET 10u
-#define SIXEL_WEBP_VP8_BOOL_SHIFT_BASE 24u
 #define SIXEL_WEBP_VP8_MAX_TOKEN_PARTITIONS 8u
 #define SIXEL_WEBP_VP8_COEFF_TYPES 4u
 #define SIXEL_WEBP_VP8_COEFF_BANDS 8u
@@ -75,18 +74,18 @@
 #define SIXEL_WEBP_VP8_BORDER_LEFT 129u
 
 #define SIXEL_WEBP_VP8_MODE_DC 0u
-#define SIXEL_WEBP_VP8_MODE_V  1u
-#define SIXEL_WEBP_VP8_MODE_H  2u
-#define SIXEL_WEBP_VP8_MODE_TM 3u
+#define SIXEL_WEBP_VP8_MODE_TM 1u
+#define SIXEL_WEBP_VP8_MODE_V  2u
+#define SIXEL_WEBP_VP8_MODE_H  3u
 #define SIXEL_WEBP_VP8_MODE_B  4u
 
 #define SIXEL_WEBP_VP8_BMODE_DC 0u
 #define SIXEL_WEBP_VP8_BMODE_TM 1u
 #define SIXEL_WEBP_VP8_BMODE_VE 2u
 #define SIXEL_WEBP_VP8_BMODE_HE 3u
-#define SIXEL_WEBP_VP8_BMODE_LD 4u
-#define SIXEL_WEBP_VP8_BMODE_RD 5u
-#define SIXEL_WEBP_VP8_BMODE_VR 6u
+#define SIXEL_WEBP_VP8_BMODE_RD 4u
+#define SIXEL_WEBP_VP8_BMODE_VR 5u
+#define SIXEL_WEBP_VP8_BMODE_LD 6u
 #define SIXEL_WEBP_VP8_BMODE_VL 7u
 #define SIXEL_WEBP_VP8_BMODE_HD 8u
 #define SIXEL_WEBP_VP8_BMODE_HU 9u
@@ -101,106 +100,127 @@ static unsigned int const sixel_webp_vp8_kf_uvmode_prob[3] =
 static unsigned int const
 sixel_webp_vp8_kf_bmode_prob[SIXEL_WEBP_VP8_BMODES]
                             [SIXEL_WEBP_VP8_BMODES][9] = {
-    {{231u, 120u, 48u, 89u, 115u, 113u, 120u, 152u, 112u},
+    {
+     {231u, 120u, 48u, 89u, 115u, 113u, 120u, 152u, 112u},
      {152u, 179u, 64u, 126u, 170u, 118u, 46u, 70u, 95u},
      {175u, 69u, 143u, 80u, 85u, 82u, 72u, 155u, 103u},
      {56u, 58u, 10u, 171u, 218u, 189u, 17u, 13u, 152u},
-     {144u, 71u, 10u, 38u, 171u, 213u, 144u, 34u, 26u},
      {114u, 26u, 17u, 163u, 44u, 195u, 21u, 10u, 173u},
      {121u, 24u, 80u, 195u, 26u, 62u, 44u, 64u, 85u},
+     {144u, 71u, 10u, 38u, 171u, 213u, 144u, 34u, 26u},
      {170u, 46u, 55u, 19u, 136u, 160u, 33u, 206u, 71u},
      {63u, 20u, 8u, 114u, 114u, 208u, 12u, 9u, 226u},
-     {81u, 40u, 11u, 96u, 182u, 84u, 29u, 16u, 36u}},
-    {{134u, 183u, 89u, 137u, 98u, 101u, 106u, 165u, 148u},
+     {81u, 40u, 11u, 96u, 182u, 84u, 29u, 16u, 36u}
+    },
+    {
+     {134u, 183u, 89u, 137u, 98u, 101u, 106u, 165u, 148u},
      {72u, 187u, 100u, 130u, 157u, 111u, 32u, 75u, 80u},
      {66u, 102u, 167u, 99u, 74u, 62u, 40u, 234u, 128u},
      {41u, 53u, 9u, 178u, 241u, 141u, 26u, 8u, 107u},
-     {104u, 79u, 12u, 27u, 217u, 255u, 87u, 17u, 7u},
      {74u, 43u, 26u, 146u, 73u, 166u, 49u, 23u, 157u},
      {65u, 38u, 105u, 160u, 51u, 52u, 31u, 115u, 128u},
+     {104u, 79u, 12u, 27u, 217u, 255u, 87u, 17u, 7u},
      {87u, 68u, 71u, 44u, 114u, 51u, 15u, 186u, 23u},
      {47u, 41u, 14u, 110u, 182u, 183u, 21u, 17u, 194u},
-     {66u, 45u, 25u, 102u, 197u, 189u, 23u, 18u, 22u}},
-    {{88u, 88u, 147u, 150u, 42u, 46u, 45u, 196u, 205u},
+     {66u, 45u, 25u, 102u, 197u, 189u, 23u, 18u, 22u}
+    },
+    {
+     {88u, 88u, 147u, 150u, 42u, 46u, 45u, 196u, 205u},
      {43u, 97u, 183u, 117u, 85u, 38u, 35u, 179u, 61u},
      {39u, 53u, 200u, 87u, 26u, 21u, 43u, 232u, 171u},
      {56u, 34u, 51u, 104u, 114u, 102u, 29u, 93u, 77u},
-     {107u, 54u, 32u, 26u, 51u, 1u, 81u, 43u, 31u},
      {39u, 28u, 85u, 171u, 58u, 165u, 90u, 98u, 64u},
      {34u, 22u, 116u, 206u, 23u, 34u, 43u, 166u, 73u},
+     {107u, 54u, 32u, 26u, 51u, 1u, 81u, 43u, 31u},
      {68u, 25u, 106u, 22u, 64u, 171u, 36u, 225u, 114u},
      {34u, 19u, 21u, 102u, 132u, 188u, 16u, 76u, 124u},
-     {62u, 18u, 78u, 95u, 85u, 57u, 50u, 48u, 51u}},
-    {{193u, 101u, 35u, 159u, 215u, 111u, 89u, 46u, 111u},
+     {62u, 18u, 78u, 95u, 85u, 57u, 50u, 48u, 51u}
+    },
+    {
+     {193u, 101u, 35u, 159u, 215u, 111u, 89u, 46u, 111u},
      {60u, 148u, 31u, 172u, 219u, 228u, 21u, 18u, 111u},
      {112u, 113u, 77u, 85u, 179u, 255u, 38u, 120u, 114u},
      {40u, 42u, 1u, 196u, 245u, 209u, 10u, 25u, 109u},
-     {100u, 80u, 8u, 43u, 154u, 1u, 51u, 26u, 71u},
      {88u, 43u, 29u, 140u, 166u, 213u, 37u, 43u, 154u},
      {61u, 63u, 30u, 155u, 67u, 45u, 68u, 1u, 209u},
+     {100u, 80u, 8u, 43u, 154u, 1u, 51u, 26u, 71u},
      {142u, 78u, 78u, 16u, 255u, 128u, 34u, 197u, 171u},
      {41u, 40u, 5u, 102u, 211u, 183u, 4u, 1u, 221u},
-     {51u, 50u, 17u, 168u, 209u, 192u, 23u, 25u, 82u}},
-    {{125u, 98u, 42u, 88u, 104u, 85u, 117u, 175u, 82u},
-     {95u, 84u, 53u, 89u, 128u, 100u, 113u, 101u, 45u},
-     {75u, 79u, 123u, 47u, 51u, 128u, 81u, 171u, 1u},
-     {57u, 17u, 5u, 71u, 102u, 57u, 53u, 41u, 49u},
-     {115u, 21u, 2u, 10u, 102u, 255u, 166u, 23u, 6u},
-     {38u, 33u, 13u, 121u, 57u, 73u, 26u, 1u, 85u},
-     {41u, 10u, 67u, 138u, 77u, 110u, 90u, 47u, 114u},
-     {101u, 29u, 16u, 10u, 85u, 128u, 101u, 196u, 26u},
-     {57u, 18u, 10u, 102u, 102u, 213u, 34u, 20u, 43u},
-     {117u, 20u, 15u, 36u, 163u, 128u, 68u, 1u, 26u}},
-    {{138u, 31u, 36u, 171u, 27u, 166u, 38u, 44u, 229u},
+     {51u, 50u, 17u, 168u, 209u, 192u, 23u, 25u, 82u}
+    },
+    {
+     {138u, 31u, 36u, 171u, 27u, 166u, 38u, 44u, 229u},
      {67u, 87u, 58u, 169u, 82u, 115u, 26u, 59u, 179u},
      {63u, 59u, 90u, 180u, 59u, 166u, 93u, 73u, 154u},
      {40u, 40u, 21u, 116u, 143u, 209u, 34u, 39u, 175u},
-     {57u, 46u, 22u, 24u, 128u, 1u, 54u, 17u, 37u},
      {47u, 15u, 16u, 183u, 34u, 223u, 49u, 45u, 183u},
      {46u, 17u, 33u, 183u, 6u, 98u, 15u, 32u, 183u},
+     {57u, 46u, 22u, 24u, 128u, 1u, 54u, 17u, 37u},
      {65u, 32u, 73u, 115u, 28u, 128u, 23u, 128u, 205u},
      {40u, 3u, 9u, 115u, 51u, 192u, 18u, 6u, 223u},
-     {87u, 37u, 9u, 115u, 59u, 77u, 64u, 21u, 47u}},
-    {{104u, 55u, 44u, 218u, 9u, 54u, 53u, 130u, 226u},
+     {87u, 37u, 9u, 115u, 59u, 77u, 64u, 21u, 47u}
+    },
+    {
+     {104u, 55u, 44u, 218u, 9u, 54u, 53u, 130u, 226u},
      {64u, 90u, 70u, 205u, 40u, 41u, 23u, 26u, 57u},
      {54u, 57u, 112u, 184u, 5u, 41u, 38u, 166u, 213u},
      {30u, 34u, 26u, 133u, 152u, 116u, 10u, 32u, 134u},
-     {75u, 32u, 12u, 51u, 192u, 255u, 160u, 43u, 51u},
      {39u, 19u, 53u, 221u, 26u, 114u, 32u, 73u, 255u},
      {31u, 9u, 65u, 234u, 2u, 15u, 1u, 118u, 73u},
+     {75u, 32u, 12u, 51u, 192u, 255u, 160u, 43u, 51u},
      {88u, 31u, 35u, 67u, 102u, 85u, 55u, 186u, 85u},
      {56u, 21u, 23u, 111u, 59u, 205u, 45u, 37u, 192u},
-     {55u, 38u, 70u, 124u, 73u, 102u, 1u, 34u, 98u}},
-    {{102u, 61u, 71u, 37u, 34u, 53u, 31u, 243u, 192u},
+     {55u, 38u, 70u, 124u, 73u, 102u, 1u, 34u, 98u}
+    },
+    {
+     {125u, 98u, 42u, 88u, 104u, 85u, 117u, 175u, 82u},
+     {95u, 84u, 53u, 89u, 128u, 100u, 113u, 101u, 45u},
+     {75u, 79u, 123u, 47u, 51u, 128u, 81u, 171u, 1u},
+     {57u, 17u, 5u, 71u, 102u, 57u, 53u, 41u, 49u},
+     {38u, 33u, 13u, 121u, 57u, 73u, 26u, 1u, 85u},
+     {41u, 10u, 67u, 138u, 77u, 110u, 90u, 47u, 114u},
+     {115u, 21u, 2u, 10u, 102u, 255u, 166u, 23u, 6u},
+     {101u, 29u, 16u, 10u, 85u, 128u, 101u, 196u, 26u},
+     {57u, 18u, 10u, 102u, 102u, 213u, 34u, 20u, 43u},
+     {117u, 20u, 15u, 36u, 163u, 128u, 68u, 1u, 26u}
+    },
+    {
+     {102u, 61u, 71u, 37u, 34u, 53u, 31u, 243u, 192u},
      {69u, 60u, 71u, 38u, 73u, 119u, 28u, 222u, 37u},
      {68u, 45u, 128u, 34u, 1u, 47u, 11u, 245u, 171u},
      {62u, 17u, 19u, 70u, 146u, 85u, 55u, 62u, 70u},
-     {75u, 15u, 9u, 9u, 64u, 255u, 184u, 119u, 16u},
      {37u, 43u, 37u, 154u, 100u, 163u, 85u, 160u, 1u},
      {63u, 9u, 92u, 136u, 28u, 64u, 32u, 201u, 85u},
+     {75u, 15u, 9u, 9u, 64u, 255u, 184u, 119u, 16u},
      {86u, 6u, 28u, 5u, 64u, 255u, 25u, 248u, 1u},
      {56u, 8u, 17u, 132u, 137u, 255u, 55u, 116u, 128u},
-     {58u, 15u, 20u, 82u, 135u, 57u, 26u, 121u, 40u}},
-    {{164u, 50u, 31u, 137u, 154u, 133u, 25u, 35u, 218u},
+     {58u, 15u, 20u, 82u, 135u, 57u, 26u, 121u, 40u}
+    },
+    {
+     {164u, 50u, 31u, 137u, 154u, 133u, 25u, 35u, 218u},
      {51u, 103u, 44u, 131u, 131u, 123u, 31u, 6u, 158u},
      {86u, 40u, 64u, 135u, 148u, 224u, 45u, 183u, 128u},
      {22u, 26u, 17u, 131u, 240u, 154u, 14u, 1u, 209u},
-     {83u, 12u, 13u, 54u, 192u, 255u, 68u, 47u, 28u},
      {45u, 16u, 21u, 91u, 64u, 222u, 7u, 1u, 197u},
      {56u, 21u, 39u, 155u, 60u, 138u, 23u, 102u, 213u},
+     {83u, 12u, 13u, 54u, 192u, 255u, 68u, 47u, 28u},
      {85u, 26u, 85u, 85u, 128u, 128u, 32u, 146u, 171u},
      {18u, 11u, 7u, 63u, 144u, 171u, 4u, 4u, 246u},
-     {35u, 27u, 10u, 146u, 174u, 171u, 12u, 26u, 128u}},
-    {{190u, 80u, 35u, 99u, 180u, 80u, 126u, 54u, 45u},
+     {35u, 27u, 10u, 146u, 174u, 171u, 12u, 26u, 128u}
+    },
+    {
+     {190u, 80u, 35u, 99u, 180u, 80u, 126u, 54u, 45u},
      {85u, 126u, 47u, 87u, 176u, 51u, 41u, 20u, 32u},
      {101u, 75u, 128u, 139u, 118u, 146u, 116u, 128u, 85u},
      {56u, 41u, 15u, 176u, 236u, 85u, 37u, 9u, 62u},
-     {146u, 36u, 19u, 30u, 171u, 255u, 97u, 27u, 20u},
      {71u, 30u, 17u, 119u, 118u, 255u, 17u, 18u, 138u},
      {101u, 38u, 60u, 138u, 55u, 70u, 43u, 26u, 142u},
+     {146u, 36u, 19u, 30u, 171u, 255u, 97u, 27u, 20u},
      {138u, 45u, 61u, 62u, 219u, 1u, 81u, 188u, 64u},
      {32u, 41u, 20u, 117u, 151u, 142u, 20u, 21u, 163u},
-     {112u, 19u, 12u, 61u, 195u, 128u, 48u, 4u, 24u}}};
+     {112u, 19u, 12u, 61u, 195u, 128u, 48u, 4u, 24u}
+    }
+};
 
 static unsigned int const sixel_webp_vp8_zigzag[16] =
     {0u, 1u, 4u, 8u, 5u, 2u, 3u, 6u,
@@ -248,7 +268,8 @@ typedef struct sixel_webp_vp8_bool_decoder {
     size_t position;
     uint32_t value;
     unsigned int range;
-    int count;
+    int bits;
+    int eof;
 } sixel_webp_vp8_bool_decoder_t;
 
 typedef struct sixel_webp_vp8_partition_layout {
@@ -341,35 +362,47 @@ sixel_webp_vp8_read_u24le(unsigned char const *p)
 }
 
 static void
-sixel_webp_vp8_bool_fill(sixel_webp_vp8_bool_decoder_t *decoder)
+sixel_webp_vp8_bool_load_final_byte(sixel_webp_vp8_bool_decoder_t *decoder)
 {
-    unsigned int shift;
-
-    shift = 0u;
     if (decoder == NULL || decoder->buffer == NULL) {
         return;
     }
 
-    while (decoder->count <= 16 && decoder->position < decoder->size) {
-        shift = (unsigned int)(16 - decoder->count);
-        decoder->value |=
-            (uint32_t)decoder->buffer[decoder->position] << shift;
+    if (decoder->position < decoder->size) {
+        decoder->bits += 8;
+        decoder->value =
+            (uint32_t)decoder->buffer[decoder->position]
+            | (decoder->value << 8);
         decoder->position++;
-        decoder->count += 8;
+    } else if (decoder->eof == 0) {
+        decoder->value <<= 8;
+        decoder->bits += 8;
+        decoder->eof = 1;
+    } else {
+        decoder->bits = 0;
     }
 }
 
-static unsigned int
-sixel_webp_vp8_bool_normalize_shift(unsigned int range)
+static void
+sixel_webp_vp8_bool_fill(sixel_webp_vp8_bool_decoder_t *decoder)
 {
-    unsigned int shift;
+    uint32_t bits;
 
-    shift = 0u;
-    while (range < 128u) {
-        range <<= 1;
-        ++shift;
+    bits = 0u;
+    if (decoder == NULL || decoder->buffer == NULL) {
+        return;
     }
-    return shift;
+
+    if (decoder->position + 3u <= decoder->size) {
+        bits = (uint32_t)decoder->buffer[decoder->position] << 16;
+        bits |= (uint32_t)decoder->buffer[decoder->position + 1u] << 8;
+        bits |= (uint32_t)decoder->buffer[decoder->position + 2u];
+        decoder->position += 3u;
+        decoder->value = bits | (decoder->value << 24);
+        decoder->bits += 24;
+    } else {
+        sixel_webp_vp8_bool_load_final_byte(decoder);
+    }
 }
 
 static SIXELSTATUS
@@ -385,8 +418,9 @@ sixel_webp_vp8_bool_init(sixel_webp_vp8_bool_decoder_t *decoder,
     decoder->size = size;
     decoder->position = 0u;
     decoder->value = 0u;
-    decoder->range = 255u;
-    decoder->count = -8;
+    decoder->range = 254u;
+    decoder->bits = -8;
+    decoder->eof = 0;
     sixel_webp_vp8_bool_fill(decoder);
 
     return SIXEL_OK;
@@ -399,46 +433,54 @@ sixel_webp_vp8_bool_read(sixel_webp_vp8_bool_decoder_t *decoder,
 {
     SIXELSTATUS status;
     unsigned int split;
-    uint32_t bigsplit;
+    unsigned int value;
+    unsigned int range;
+    unsigned int tmp;
     unsigned int shift;
     int bit;
 
     status = SIXEL_OK;
     split = 0u;
-    bigsplit = 0u;
+    value = 0u;
+    range = 0u;
     shift = 0u;
     bit = 0;
     if (decoder == NULL || pbit == NULL || probability > 255u) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (decoder->range == 0u) {
-        return SIXEL_BAD_INPUT;
-    }
-
-    split = 1u + (((decoder->range - 1u) * probability) >> 8);
-    bigsplit = (uint32_t)split << SIXEL_WEBP_VP8_BOOL_SHIFT_BASE;
-    if (decoder->value >= bigsplit) {
-        decoder->range -= split;
-        decoder->value -= bigsplit;
-        bit = 1;
-    } else {
-        decoder->range = split;
-        bit = 0;
-    }
-
-    shift = sixel_webp_vp8_bool_normalize_shift(decoder->range);
-    decoder->range <<= shift;
-    decoder->value <<= shift;
-    decoder->count -= (int)shift;
-    if (decoder->count < 0) {
+    if (decoder->bits < 0) {
         sixel_webp_vp8_bool_fill(decoder);
-        if (decoder->count < 0) {
+        if (decoder->bits < 0) {
             sixel_helper_set_additional_message(
                 "builtin webp: VP8 bitstream partition is truncated.");
             status = SIXEL_BAD_INPUT;
             goto end;
         }
     }
+
+    range = decoder->range;
+    split = (range * probability) >> 8;
+    value = (unsigned int)(decoder->value >> (unsigned int)decoder->bits);
+    if (value > split) {
+        range -= split;
+        decoder->value -=
+            (uint32_t)(split + 1u) << (unsigned int)decoder->bits;
+        bit = 1;
+    } else {
+        range = split + 1u;
+        bit = 0;
+    }
+
+    tmp = range;
+    shift = 0u;
+    while (tmp > 1u) {
+        tmp >>= 1u;
+        shift++;
+    }
+    shift = 7u - shift;
+    range <<= shift;
+    decoder->bits -= (int)shift;
+    decoder->range = range - 1u;
     *pbit = bit;
 
 end:
@@ -482,55 +524,45 @@ sixel_webp_vp8_bool_read_signed_value(sixel_webp_vp8_bool_decoder_t *decoder,
                                       unsigned int value,
                                       int *psigned)
 {
-    SIXELSTATUS status;
     unsigned int split;
-    uint32_t bigsplit;
+    unsigned int dec_value;
+    int32_t mask;
     int signed_value;
 
-    status = SIXEL_OK;
     split = 0u;
-    bigsplit = 0u;
+    dec_value = 0u;
+    mask = 0;
     signed_value = 0;
     if (decoder == NULL || psigned == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (decoder->count < 0) {
+    if (decoder->bits < 0) {
         sixel_webp_vp8_bool_fill(decoder);
-        if (decoder->count < 0) {
+        if (decoder->bits < 0) {
             sixel_helper_set_additional_message(
                 "builtin webp: VP8 bitstream partition is truncated.");
             return SIXEL_BAD_INPUT;
         }
     }
 
-    split = (decoder->range + 1u) >> 1;
-    bigsplit = (uint32_t)split << SIXEL_WEBP_VP8_BOOL_SHIFT_BASE;
-    if (decoder->value < bigsplit) {
-        decoder->range = split;
-        signed_value = (int)value;
-    } else {
-        decoder->range -= split;
-        decoder->value -= bigsplit;
+    split = decoder->range >> 1u;
+    dec_value = (unsigned int)(decoder->value >> (unsigned int)decoder->bits);
+    mask = (int32_t)(split - dec_value) >> 31;
+    decoder->bits--;
+    decoder->range = decoder->range + (unsigned int)mask;
+    decoder->range |= 1u;
+    decoder->value -= (uint32_t)((split + 1u) & (unsigned int)mask)
+        << (unsigned int)(decoder->bits + 1);
+
+    if (mask != 0) {
         signed_value = -(int)value;
-    }
-    decoder->range <<= 1;
-    decoder->value <<= 1;
-    decoder->count--;
-    if (decoder->count < 0) {
-        sixel_webp_vp8_bool_fill(decoder);
-        if (decoder->count < 0) {
-            sixel_helper_set_additional_message(
-                "builtin webp: VP8 bitstream partition is truncated.");
-            status = SIXEL_BAD_INPUT;
-            goto end;
-        }
+    } else {
+        signed_value = (int)value;
     }
 
     *psigned = signed_value;
-
-end:
-    return status;
+    return SIXEL_OK;
 }
 
 static unsigned char
@@ -978,6 +1010,7 @@ sixel_webp_vp8_predict_bmode(unsigned int bmode,
     unsigned int ref_x;
     unsigned int ref_y;
     unsigned int mb_right;
+    unsigned int mb_top_y;
     unsigned char above[8];
     unsigned char left[4];
     unsigned char top_left;
@@ -999,6 +1032,7 @@ sixel_webp_vp8_predict_bmode(unsigned int bmode,
     ref_x = 0u;
     ref_y = 0u;
     mb_right = (x & ~15u) + 15u;
+    mb_top_y = y & ~15u;
     if (mb_right >= width) {
         mb_right = width - 1u;
     }
@@ -1022,14 +1056,20 @@ sixel_webp_vp8_predict_bmode(unsigned int bmode,
 
     for (i = 0u; i < 8u; ++i) {
         ref_x = x + i;
-        if ((y & 15u) != 0u && ref_x > mb_right) {
-            ref_x = mb_right;
-        }
-        if (ref_x >= width) {
-            ref_x = width - 1u;
-        }
+        ref_y = y - 1u;
         if (y != 0u) {
-            above[i] = plane[(y - 1u) * stride + ref_x];
+            if ((y & 15u) != 0u && ref_x > mb_right) {
+                if (mb_top_y == 0u) {
+                    above[i] = SIXEL_WEBP_VP8_BORDER_TOP;
+                    continue;
+                }
+                ref_x = (x & ~15u) + 16u + (ref_x - mb_right - 1u);
+                ref_y = mb_top_y - 1u;
+            }
+            if (ref_x >= width) {
+                ref_x = width - 1u;
+            }
+            above[i] = plane[ref_y * stride + ref_x];
         }
     }
     for (i = 0u; i < 4u; ++i) {
@@ -1269,29 +1309,29 @@ sixel_webp_vp8_idct4x4(int const *input,
              >> 16);
         temp2 = (input[i + 12u] * SIXEL_WEBP_VP8_IDCT_SINPI8SQRT2) >> 16;
         d1 = temp1 + temp2;
-        tmp[i + 0u] = a1 + d1;
-        tmp[i + 12u] = a1 - d1;
-        tmp[i + 4u] = b1 + c1;
-        tmp[i + 8u] = b1 - c1;
+        tmp[i * 4u + 0u] = a1 + d1;
+        tmp[i * 4u + 1u] = b1 + c1;
+        tmp[i * 4u + 2u] = b1 - c1;
+        tmp[i * 4u + 3u] = a1 - d1;
     }
 
     for (i = 0u; i < 4u; ++i) {
-        a1 = tmp[i * 4u + 0u] + tmp[i * 4u + 2u];
-        b1 = tmp[i * 4u + 0u] - tmp[i * 4u + 2u];
-        temp1 = (tmp[i * 4u + 1u] * SIXEL_WEBP_VP8_IDCT_SINPI8SQRT2) >> 16;
-        temp2 = tmp[i * 4u + 3u] +
-            ((tmp[i * 4u + 3u] * SIXEL_WEBP_VP8_IDCT_COSPI8SQRT2_MINUS1)
+        a1 = tmp[i + 0u] + tmp[i + 8u];
+        b1 = tmp[i + 0u] - tmp[i + 8u];
+        temp1 = (tmp[i + 4u] * SIXEL_WEBP_VP8_IDCT_SINPI8SQRT2) >> 16;
+        temp2 = tmp[i + 12u] +
+            ((tmp[i + 12u] * SIXEL_WEBP_VP8_IDCT_COSPI8SQRT2_MINUS1)
              >> 16);
         c1 = temp1 - temp2;
-        temp1 = tmp[i * 4u + 1u] +
-            ((tmp[i * 4u + 1u] * SIXEL_WEBP_VP8_IDCT_COSPI8SQRT2_MINUS1)
+        temp1 = tmp[i + 4u] +
+            ((tmp[i + 4u] * SIXEL_WEBP_VP8_IDCT_COSPI8SQRT2_MINUS1)
              >> 16);
-        temp2 = (tmp[i * 4u + 3u] * SIXEL_WEBP_VP8_IDCT_SINPI8SQRT2) >> 16;
+        temp2 = (tmp[i + 12u] * SIXEL_WEBP_VP8_IDCT_SINPI8SQRT2) >> 16;
         d1 = temp1 + temp2;
         output[i * 4u + 0u] = (a1 + d1 + 4) >> 3;
-        output[i * 4u + 3u] = (a1 - d1 + 4) >> 3;
         output[i * 4u + 1u] = (b1 + c1 + 4) >> 3;
         output[i * 4u + 2u] = (b1 - c1 + 4) >> 3;
+        output[i * 4u + 3u] = (a1 - d1 + 4) >> 3;
     }
 }
 
@@ -1911,6 +1951,9 @@ sixel_webp_vp8_decode_native_intra(
     unsigned int total_nz_u;
     unsigned int total_nz_v;
     unsigned int total_nz_y2;
+    unsigned int ymode_hist[5];
+    unsigned int uv_hist[4];
+    unsigned int bmode_hist[10];
 
     status = SIXEL_OK;
     above_y = NULL;
@@ -1977,6 +2020,9 @@ sixel_webp_vp8_decode_native_intra(
     total_nz_u = 0u;
     total_nz_v = 0u;
     total_nz_y2 = 0u;
+    memset(ymode_hist, 0, sizeof(ymode_hist));
+    memset(uv_hist, 0, sizeof(uv_hist));
+    memset(bmode_hist, 0, sizeof(bmode_hist));
     if (token_decoders == NULL || header == NULL || context == NULL ||
         planes == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -2108,6 +2154,19 @@ sixel_webp_vp8_decode_native_intra(
             if (SIXEL_FAILED(status)) {
                 goto cleanup;
             }
+            if (ymode < 5u) {
+                ymode_hist[ymode]++;
+            }
+            if (uv_mode < 4u) {
+                uv_hist[uv_mode]++;
+            }
+            if (ymode == SIXEL_WEBP_VP8_MODE_B) {
+                for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_Y; ++block) {
+                    if (b_modes[block] < 10u) {
+                        bmode_hist[b_modes[block]]++;
+                    }
+                }
+            }
 
             sixel_webp_vp8_prepare_quant(context, segment_id, &quant_values);
 
@@ -2134,9 +2193,6 @@ sixel_webp_vp8_decode_native_intra(
                         nz_y2 = 1u;
                     }
                     left_y2 = above_y2[mb_x];
-                } else {
-                    above_y2[mb_x] = 0u;
-                    left_y2 = 0u;
                 }
 
                 y_start_coeff = (ymode == SIXEL_WEBP_VP8_MODE_B) ? 0u : 1u;
@@ -2218,8 +2274,10 @@ sixel_webp_vp8_decode_native_intra(
                     }
                 }
             } else {
-                above_y2[mb_x] = 0u;
-                left_y2 = 0u;
+                if (ymode != SIXEL_WEBP_VP8_MODE_B) {
+                    above_y2[mb_x] = 0u;
+                    left_y2 = 0u;
+                }
                 for (block = 0u; block < 4u; ++block) {
                     above_y[mb_x * 4u + block] = 0u;
                     left_y[block] = 0u;
@@ -2235,7 +2293,7 @@ sixel_webp_vp8_decode_native_intra(
                 sixel_trace_topic_is_enabled("webp_decode") != 0) {
                 sixel_trace_topic_message(
                     "webp_decode",
-                    "LSXWEBP1|diag=VP8MB|x=%u|y=%u|seg=%u|ym=%u|uv=%u|"
+                    "LSXWEBPDBG|diag=VP8MB|x=%u|y=%u|seg=%u|ym=%u|uv=%u|"
                     "skip=%d|nzy2=%u|nzy=%u|nzu=%u|nzv=%u",
                     mb_x,
                     mb_y,
@@ -2477,12 +2535,35 @@ sixel_webp_vp8_decode_native_intra(
     if (sixel_trace_topic_is_enabled("webp_decode") != 0) {
         sixel_trace_topic_message(
             "webp_decode",
-            "LSXWEBP1|diag=VP8SUM|mb=%u|nzy=%u|nzu=%u|nzv=%u|nzy2=%u",
+            "LSXWEBPDBG|diag=VP8SUM|mb=%u|nzy=%u|nzu=%u|nzv=%u|nzy2=%u",
             total_mb,
             total_nz_y,
             total_nz_u,
             total_nz_v,
             total_nz_y2);
+        sixel_trace_topic_message(
+            "webp_decode",
+            "LSXWEBPDBG|diag=VP8MODE|y=%u,%u,%u,%u,%u|uv=%u,%u,%u,%u|"
+            "b=%u,%u,%u,%u,%u,%u,%u,%u,%u,%u",
+            ymode_hist[0],
+            ymode_hist[1],
+            ymode_hist[2],
+            ymode_hist[3],
+            ymode_hist[4],
+            uv_hist[0],
+            uv_hist[1],
+            uv_hist[2],
+            uv_hist[3],
+            bmode_hist[0],
+            bmode_hist[1],
+            bmode_hist[2],
+            bmode_hist[3],
+            bmode_hist[4],
+            bmode_hist[5],
+            bmode_hist[6],
+            bmode_hist[7],
+            bmode_hist[8],
+            bmode_hist[9]);
     }
 
 cleanup:
@@ -3043,7 +3124,7 @@ sixel_webp_vp8_trace_frame_context(
 
     sixel_trace_topic_message(
         "webp_decode",
-        "LSXWEBP1|diag=VP8CTRL|part0=%zu|tok=%u|seg=%d,%d,%d,%d|"
+        "LSXWEBPDBG|diag=VP8CTRL|part0=%zu|tok=%u|seg=%d,%d,%d,%d|"
         "q=%d,%d,%d,%d,%d,%d|lf=%d,%u,%u,%d|skip=%d,%d|cupd=%d|"
         "segq=%d,%d,%d,%d|segf=%d,%d,%d,%d|sprob=%d,%d,%d",
         layout->control_partition_size,
