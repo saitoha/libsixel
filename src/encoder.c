@@ -343,6 +343,7 @@ typedef enum sixel_encoder_handoff_trace_event {
     SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENTER = 0,
     SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_PLANNER,
     SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_HANDOFF_DECIDE,
+    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_DISPATCH_START,
     SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENQUEUE_REQUEST,
     SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENQUEUE_RESULT,
     SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_SERIAL_START,
@@ -938,6 +939,8 @@ sixel_encoder_handoff_trace_event_name(
         return "callback_planner";
     case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_HANDOFF_DECIDE:
         return "callback_handoff_decide";
+    case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_DISPATCH_START:
+        return "callback_dispatch_start";
     case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENQUEUE_REQUEST:
         return "callback_enqueue_request";
     case SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_ENQUEUE_RESULT:
@@ -1031,6 +1034,8 @@ sixel_encoder_handoff_trace_emit(
     if (minimal_enabled != 0
             && event !=
                    SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_HANDOFF_DECIDE
+            && event !=
+                   SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_DISPATCH_START
             && event != SIXEL_ENCODER_HANDOFF_TRACE_EVENT_PIPELINE_STOP) {
         return;
     }
@@ -13220,6 +13225,19 @@ load_image_callback(sixel_frame_t *frame, void *data)
     if (SIXEL_FAILED(status)) {
         return status;
     }
+
+    /*
+     * Emit a stable post-handoff marker before dispatching into either
+     * pipeline enqueue or serial encode paths. Tests use this token to send
+     * SIGINT after handoff selection regardless of thread configuration.
+     */
+    sixel_encoder_handoff_trace_emit(
+        pipeline,
+        SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_DISPATCH_START,
+        frame_no,
+        loop_no,
+        SIXEL_OK,
+        SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
 
     return sixel_encoder_load_callback_dispatch(context, frame);
 }
