@@ -264,7 +264,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/fromhdr.h $(srcdir)/frompsd.c $(srcdir)/frompsd.h \
 	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/fromwebp.c \
 	$(srcdir)/fromwebp.h $(srcdir)/fromwebp-internal.h \
-	$(srcdir)/fromwebp-vp8-private.h $(srcdir)/fromwebp-container.c \
+	$(srcdir)/fromwebp-vp8-private.h $(srcdir)/fromwebp-vp8-tables.h \
+	$(srcdir)/fromwebp-container.c \
 	$(srcdir)/fromwebp-vp8.c $(srcdir)/fromwebp-vp8-parse.c \
 	$(srcdir)/fromwebp-vp8-native.c $(srcdir)/fromwebp-vp8l.c \
 	$(srcdir)/fromwebp-trace.c \
@@ -1078,6 +1079,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-internal.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-vp8-private.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-vp8-tables.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-container.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-vp8.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-vp8-parse.c \
