@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
 #if HAVE_TIME_H
 # include <time.h>
 #endif
@@ -381,6 +382,86 @@ test_runner_is_running_under_wine(void)
 #endif
 }
 
+#if defined(_WIN32) || defined(__CYGWIN__)
+/*
+ * CreateProcessA requires native Win32 drive paths.
+ * Convert Cygwin/MSYS drive forms so child launch stays stable when
+ * this runner is invoked from POSIX-like shells.
+ */
+static char *
+test_runner_duplicate_win32_path(char const *path)
+{
+    size_t source_length;
+    size_t source_index;
+    size_t target_length;
+    size_t index;
+    char *converted;
+    int convert_drive;
+
+    source_length = 0u;
+    source_index = 0u;
+    target_length = 0u;
+    index = 0u;
+    converted = NULL;
+    convert_drive = 0;
+
+    if (path == NULL) {
+        return NULL;
+    }
+
+    source_length = strlen(path);
+    if (source_length >= 11u &&
+            strncmp(path, "/cygdrive/", 10u) == 0 &&
+            isalpha((unsigned char)path[10]) &&
+            (path[11] == '/' || path[11] == '\\' || path[11] == '\0')) {
+        source_index = 11u;
+        convert_drive = 1;
+    } else if (source_length >= 2u && path[0] == '/' &&
+               isalpha((unsigned char)path[1]) &&
+               (path[2] == '/' || path[2] == '\\' || path[2] == '\0')) {
+        source_index = 2u;
+        convert_drive = 1;
+    }
+
+    if (!convert_drive) {
+        converted = (char *)malloc(source_length + 1u);
+        if (converted == NULL) {
+            return NULL;
+        }
+        memcpy(converted, path, source_length + 1u);
+        return converted;
+    }
+
+    target_length = source_length - source_index + 4u;
+    converted = (char *)malloc(target_length);
+    if (converted == NULL) {
+        return NULL;
+    }
+
+    converted[0] = (char)toupper((unsigned char)path[source_index - 1u]);
+    converted[1] = ':';
+    converted[2] = '\\';
+    index = 3u;
+
+    if (path[source_index] == '/' || path[source_index] == '\\') {
+        source_index += 1u;
+    }
+
+    while (source_index < source_length) {
+        if (path[source_index] == '/') {
+            converted[index] = '\\';
+        } else {
+            converted[index] = path[source_index];
+        }
+        ++source_index;
+        ++index;
+    }
+    converted[index] = '\0';
+
+    return converted;
+}
+#endif
+
 static int
 test_runner_run_windows_ctrl_break(int argc, char **argv)
 {
@@ -391,12 +472,16 @@ test_runner_run_windows_ctrl_break(int argc, char **argv)
     unsigned long parsed_timeout;
     char *delay_end;
     char *timeout_end;
+    char **command_tokens;
+    size_t command_token_count;
     char const *program;
+    char const *token;
     STARTUPINFOA startup_info;
     PROCESS_INFORMATION process_info;
     char *command_line;
     size_t command_line_length;
     size_t index;
+    size_t token_index;
     size_t token_length;
     char *cursor;
     char const *token_cursor;
@@ -415,12 +500,16 @@ test_runner_run_windows_ctrl_break(int argc, char **argv)
     parsed_timeout = 0ul;
     delay_end = NULL;
     timeout_end = NULL;
+    command_tokens = NULL;
+    command_token_count = 0u;
     program = NULL;
+    token = NULL;
     memset(&startup_info, 0, sizeof(startup_info));
     memset(&process_info, 0, sizeof(process_info));
     command_line = NULL;
     command_line_length = 1u;
     index = 0u;
+    token_index = 0u;
     token_length = 0u;
     cursor = NULL;
     token_cursor = NULL;
@@ -472,9 +561,27 @@ test_runner_run_windows_ctrl_break(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    program = argv[3];
-    for (index = 3u; index < (size_t)argc; index++) {
-        token_length = strlen(argv[index]);
+    command_token_count = (size_t)argc - 3u;
+    command_tokens = (char **)calloc(command_token_count, sizeof(char *));
+    if (command_tokens == NULL) {
+        fprintf(stderr, "test_runner: failed to allocate token array\n");
+        return EXIT_FAILURE;
+    }
+
+    for (index = 0u; index < command_token_count; ++index) {
+        command_tokens[index] =
+            test_runner_duplicate_win32_path(argv[index + 3u]);
+        if (command_tokens[index] == NULL) {
+            fprintf(stderr,
+                    "test_runner: failed to normalize command token\n");
+            goto cleanup;
+        }
+    }
+    program = command_tokens[0];
+
+    for (index = 0u; index < command_token_count; ++index) {
+        token = command_tokens[index];
+        token_length = strlen(token);
         command_line_length += 3u + (token_length * 2u);
     }
 
@@ -485,12 +592,12 @@ test_runner_run_windows_ctrl_break(int argc, char **argv)
     }
 
     cursor = command_line;
-    for (index = 3u; index < (size_t)argc; index++) {
-        if (index != 3u) {
+    for (index = 0u; index < command_token_count; ++index) {
+        if (index != 0u) {
             *cursor++ = ' ';
         }
         *cursor++ = '"';
-        token_cursor = argv[index];
+        token_cursor = command_tokens[index];
         backslash_count = 0u;
         while (*token_cursor != '\0') {
             if (*token_cursor == '\\') {
@@ -598,6 +705,13 @@ cleanup:
     }
     if (process_info.hProcess != NULL) {
         CloseHandle(process_info.hProcess);
+    }
+    if (command_tokens != NULL) {
+        for (token_index = 0u; token_index < command_token_count;
+                ++token_index) {
+            free(command_tokens[token_index]);
+        }
+        free(command_tokens);
     }
     free(command_line);
     return exit_status;
