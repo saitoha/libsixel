@@ -23,17 +23,19 @@
  */
 
 /*
- * Lookup dispatcher that selects either the 8bit or float32 backend.
- * Backend implementations live in lookup-8bit.c and lookup-float32.c so
- * additional search structures can be added without touching callers.
- */
-/*
  * IDL usage in this unit
  *
- * ILookup8Bit.configure(policy, ...);
- * ILookup8Bit.map_pixel(pixel);
- * ILookupFloat32.configure(policy, ...);
- * ILookupFloat32.map_pixel(pixel);
+ * interface ILut {
+ *   configure(...);
+ *   map_pixel(pixel);
+ *   clear();
+ * }
+ *
+ * Ownership/lifetime:
+ * - sixel_lut owns one ILookupPolicy instance while configured.
+ *
+ * Creation path:
+ * - select_name(request) -> services/factory.create(name) -> prepare(request)
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -41,14 +43,15 @@
 #endif
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <sixel.h>
 
 #include "compat_stub.h"
-#include "allocator.h"
-#include "lookup-8bit.h"
-#include "lookup-float32.h"
+#include "components.h"
+#include "factory.h"
 #include "lookup-common.h"
+#include "lookup-policy.h"
 
 #if SIXEL_ENABLE_THREADS
 # if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) && \
@@ -64,9 +67,9 @@ static pthread_once_t sixel_lookup_once = PTHREAD_ONCE_INIT;
 
 struct sixel_lut {
     int input_is_float;
+    int prefer_palette_float_lookup;
     sixel_allocator_t *allocator;
-    sixel_lookup_8bit_t *lookup_8bit;
-    sixel_lookup_float32_t *lookup_float32;
+    sixel_lookup_policy_interface_t *policy;
 };
 
 static int sixel_lookup_parallel_active = 0;
@@ -189,36 +192,6 @@ sixel_lookup_parallel_dither_active(void)
     return sixel_lookup_parallel_active;
 }
 
-SIXELAPI int
-sixel_lut_uses_float(sixel_lut_t const *lut)
-{
-    if (lut == NULL) {
-        return 0;
-    }
-
-    return lut->input_is_float;
-}
-
-SIXELAPI struct sixel_lookup_8bit *
-sixel_lut_backend_8bit(sixel_lut_t *lut)
-{
-    if (lut == NULL) {
-        return NULL;
-    }
-
-    return lut->lookup_8bit;
-}
-
-SIXELAPI struct sixel_lookup_float32 *
-sixel_lut_backend_float32(sixel_lut_t *lut)
-{
-    if (lut == NULL) {
-        return NULL;
-    }
-
-    return lut->lookup_float32;
-}
-
 SIXELAPI SIXELSTATUS
 sixel_lut_new(sixel_lut_t **out,
               int policy,
@@ -236,35 +209,13 @@ sixel_lut_new(sixel_lut_t **out,
     }
 
     lut->input_is_float = 0;
+    lut->prefer_palette_float_lookup = 0;
     lut->allocator = allocator;
-    lut->lookup_8bit = (sixel_lookup_8bit_t *)
-        malloc(sizeof(sixel_lookup_8bit_t));
-    lut->lookup_float32 = (sixel_lookup_float32_t *)
-        malloc(sizeof(sixel_lookup_float32_t));
-    if (lut->lookup_8bit == NULL || lut->lookup_float32 == NULL) {
-        free(lut->lookup_8bit);
-        free(lut->lookup_float32);
-        free(lut);
-        return SIXEL_BAD_ALLOCATION;
-    }
-    sixel_lookup_8bit_init(lut->lookup_8bit, allocator);
-    if (lut->lookup_8bit->cert == NULL) {
-        /*
-         * CERT LUT requires its own workspace.  If allocation failed,
-         * bail out early to avoid later null dereferences during
-         * configuration.
-         */
-        sixel_lookup_8bit_finalize(lut->lookup_8bit);
-        free(lut->lookup_8bit);
-        free(lut->lookup_float32);
-        free(lut);
-        return SIXEL_BAD_ALLOCATION;
-    }
-    sixel_lookup_float32_init(lut->lookup_float32, allocator);
+    lut->policy = NULL;
 
     *out = lut;
 
-    /* policy is normalized inside backend configure functions */
+    /* Policy selection happens at configure time. */
     (void)policy;
 
     return SIXEL_OK;
@@ -284,16 +235,33 @@ sixel_lut_configure(sixel_lut_t *lut,
                     int policy,
                     int pixelformat)
 {
-    int palette_depth;
-    int float_components;
+    SIXELSTATUS status;
+    sixel_lookup_policy_select_request_t select_request;
+    sixel_lookup_policy_prepare_request_t prepare_request;
+    char const *policy_name;
+    sixel_lookup_policy_interface_t *created_policy;
+    sixel_lookup_policy_interface_t *previous_policy;
+    sixel_factory_t *factory;
+    void *service;
+    int optimize_lookup;
 
-    palette_depth = depth;
-    float_components = 0;
+    status = SIXEL_FALSE;
+    memset(&select_request, 0, sizeof(select_request));
+    memset(&prepare_request, 0, sizeof(prepare_request));
+    policy_name = NULL;
+    created_policy = NULL;
+    previous_policy = NULL;
+    factory = NULL;
+    service = NULL;
+    optimize_lookup = 0;
     /*
      * Complexion is kept in public/internal APIs for compatibility, but
      * lookup now treats it as a deprecated no-op.
      */
     complexion = 1;
+    (void)wcomp1;
+    (void)wcomp2;
+    (void)wcomp3;
 
     if (lut == NULL || palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -305,61 +273,78 @@ sixel_lut_configure(sixel_lut_t *lut,
      * consistent with FHEDT behavior and avoids reinterpreting RGB888 bytes as
      * float32 components.
      */
-    lut->input_is_float = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
-    if (lut->input_is_float) {
-        if (palette_float != NULL && float_depth > 0) {
-            if (float_depth % (int)sizeof(float) != 0) {
-                sixel_helper_set_additional_message(
-                    "sixel_lut_configure: float depth is invalid.");
-                return SIXEL_BAD_ARGUMENT;
-            }
-            float_components = float_depth / (int)sizeof(float);
-            if (float_components <= 0) {
-                sixel_helper_set_additional_message(
-                    "sixel_lut_configure: float depth has no components.");
-                return SIXEL_BAD_ARGUMENT;
-            }
-            palette_depth = float_components;
-        }
-
-        return sixel_lookup_float32_configure(lut->lookup_float32,
-                                              palette,
-                                              palette_float,
-                                              palette_depth,
-                                              float_depth,
-                                              ncolors,
-                                              complexion,
-                                              wcomp1,
-                                              wcomp2,
-                                              wcomp3,
-                                              policy,
-                                              pixelformat);
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
+            && palette_float != NULL
+            && float_depth > 0
+            && float_depth % (int)sizeof(float) != 0) {
+        sixel_helper_set_additional_message(
+            "sixel_lut_configure: float depth is invalid.");
+        return SIXEL_BAD_ARGUMENT;
     }
 
-    return sixel_lookup_8bit_configure(lut->lookup_8bit,
-                                       palette,
-                                       depth,
-                                       ncolors,
-                                       complexion,
-                                       wcomp1,
-                                       wcomp2,
-                                       wcomp3,
-                                       policy,
-                                       pixelformat);
+    optimize_lookup = (policy != SIXEL_LUT_POLICY_NONE);
+    select_request.palette = palette;
+    select_request.depth = depth;
+    select_request.reqcolor = ncolors;
+    select_request.optimize_lookup = optimize_lookup;
+    select_request.lut_policy = policy;
+    policy_name = sixel_lookup_policy_select_name(&select_request);
+    if (policy_name == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_components_getservice("services/factory", &service);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    factory = (sixel_factory_t *)service;
+
+    status = factory->vtbl->create(factory,
+                                   policy_name,
+                                   (void **)&created_policy);
+    factory->vtbl->unref(factory);
+    factory = NULL;
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    prepare_request.palette = palette;
+    prepare_request.palette_float = palette_float;
+    prepare_request.depth = depth;
+    prepare_request.float_depth = float_depth;
+    prepare_request.reqcolor = ncolors;
+    prepare_request.complexion = complexion;
+    prepare_request.pixelformat = pixelformat;
+    prepare_request.reuse_policy = lut->policy;
+    prepare_request.reuse_policy_slot = NULL;
+    prepare_request.allocator = lut->allocator;
+    status = created_policy->vtbl->prepare(created_policy, &prepare_request);
+    if (SIXEL_FAILED(status)) {
+        created_policy->vtbl->unref(created_policy);
+        return status;
+    }
+
+    previous_policy = lut->policy;
+    lut->policy = created_policy;
+    lut->input_is_float =
+        lut->policy->vtbl->lookup_source_is_float(lut->policy);
+    lut->prefer_palette_float_lookup =
+        lut->policy->vtbl->prefer_palette_float_lookup(lut->policy);
+    if (previous_policy != NULL) {
+        previous_policy->vtbl->unref(previous_policy);
+    }
+
+    return SIXEL_OK;
 }
 
 SIXELAPI int
 sixel_lut_map_pixel(sixel_lut_t *lut, unsigned char const *pixel)
 {
-    if (lut == NULL) {
+    if (lut == NULL || pixel == NULL || lut->policy == NULL) {
         return 0;
     }
 
-    if (lut->input_is_float) {
-        return sixel_lookup_float32_map_pixel(lut->lookup_float32, pixel);
-    }
-
-    return sixel_lookup_8bit_map_pixel(lut->lookup_8bit, pixel);
+    return lut->policy->vtbl->map_pixel(lut->policy, pixel);
 }
 
 void
@@ -369,9 +354,12 @@ sixel_lut_clear(sixel_lut_t *lut)
         return;
     }
 
-    sixel_lookup_8bit_clear(lut->lookup_8bit);
-    sixel_lookup_float32_clear(lut->lookup_float32);
+    if (lut->policy != NULL) {
+        lut->policy->vtbl->unref(lut->policy);
+        lut->policy = NULL;
+    }
     lut->input_is_float = 0;
+    lut->prefer_palette_float_lookup = 0;
 }
 
 SIXELAPI void
@@ -381,10 +369,7 @@ sixel_lut_unref(sixel_lut_t *lut)
         return;
     }
 
-    sixel_lookup_8bit_finalize(lut->lookup_8bit);
-    sixel_lookup_float32_finalize(lut->lookup_float32);
-    free(lut->lookup_8bit);
-    free(lut->lookup_float32);
+    sixel_lut_clear(lut);
     free(lut);
 }
 

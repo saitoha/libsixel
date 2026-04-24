@@ -64,6 +64,7 @@ typedef struct sixel_lookup_policy_eytzinger_object {
     sixel_lookup_8bit_t state_8bit;
     sixel_lookup_float32_t state_float;
     int lookup_source_is_float;
+    int prefer_palette_float_lookup;
 } sixel_lookup_policy_eytzinger_object_t;
 
 static sixel_lookup_policy_eytzinger_object_t *
@@ -1214,6 +1215,7 @@ sixel_lookup_policy_eytzinger_reset_state(
     object->backend_initialized = 0;
     object->prepared = 0;
     object->lookup_source_is_float = 0;
+    object->prefer_palette_float_lookup = 0;
 }
 
 static void
@@ -1229,6 +1231,7 @@ sixel_lookup_policy_eytzinger_detach_state(
     object->backend_initialized = 0;
     object->prepared = 0;
     object->lookup_source_is_float = 0;
+    object->prefer_palette_float_lookup = 0;
 }
 
 static void
@@ -1275,12 +1278,14 @@ sixel_lookup_policy_eytzinger_prepare(
     sixel_lookup_policy_interface_t *reuse_policy;
     sixel_lookup_policy_eytzinger_object_t *reuse_object;
     int shared_lut;
+    int expected_float_depth;
 
     status = SIXEL_FALSE;
     object = NULL;
     reuse_policy = NULL;
     reuse_object = NULL;
     shared_lut = 1;
+    expected_float_depth = 0;
 
     if (policy == NULL || request == NULL || request->palette == NULL
             || request->depth <= 0 || request->reqcolor <= 0
@@ -1322,6 +1327,13 @@ sixel_lookup_policy_eytzinger_prepare(
 
     object->lookup_source_is_float =
         SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
+    object->prefer_palette_float_lookup = 0;
+    expected_float_depth = request->depth * (int)sizeof(float);
+    if (object->lookup_source_is_float != 0
+            && request->palette_float != NULL
+            && request->float_depth >= expected_float_depth) {
+        object->prefer_palette_float_lookup = 1;
+    }
 
     if (reuse_policy != NULL
             && reuse_policy->vtbl == policy->vtbl) {
@@ -1336,6 +1348,8 @@ sixel_lookup_policy_eytzinger_prepare(
             object->prepared = reuse_object->prepared;
             object->lookup_source_is_float =
                 reuse_object->lookup_source_is_float;
+            object->prefer_palette_float_lookup =
+                reuse_object->prefer_palette_float_lookup;
             sixel_lookup_policy_eytzinger_detach_state(reuse_object);
             if (request->reuse_policy_slot != NULL
                     && *request->reuse_policy_slot == NULL) {
@@ -1417,8 +1431,15 @@ static int
 sixel_lookup_policy_eytzinger_prefer_palette_float_lookup(
     sixel_lookup_policy_interface_t const *policy)
 {
-    (void)policy;
-    return 0;
+    sixel_lookup_policy_eytzinger_object_t const *object;
+
+    object = NULL;
+    if (policy == NULL) {
+        return 0;
+    }
+
+    object = sixel_lookup_policy_eytzinger_from_base_const(policy);
+    return object->prefer_palette_float_lookup;
 }
 
 static sixel_lookup_policy_vtbl_t const g_sixel_lookup_policy_eytzinger_vtbl = {
