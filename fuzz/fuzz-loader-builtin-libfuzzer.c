@@ -185,6 +185,13 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
         0x00u, 0x00u
     };
+    static unsigned char const webp_vp8_header[30] = {
+        'R', 'I', 'F', 'F', 0x16u, 0x00u, 0x00u, 0x00u,
+        'W', 'E', 'B', 'P', 'V', 'P', '8', ' ',
+        0x0au, 0x00u, 0x00u, 0x00u,
+        0xd0u, 0x11u, 0x00u, 0x9du, 0x01u, 0x2au, 0x40u, 0x00u,
+        0x40u, 0x00u
+    };
     static unsigned char const webp_vp8l_header[36] = {
         'R', 'I', 'F', 'F', 0x1cu, 0x00u, 0x00u, 0x00u,
         'W', 'E', 'B', 'P', 'V', 'P', '8', 'L',
@@ -192,7 +199,16 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         0x2fu, 0x0fu, 0xc0u, 0x03u, 0x00u, 0x07u, 0x10u, 0xfdu,
         0x8fu, 0xfeu, 0x07u, 0x22u, 0xa2u, 0xffu, 0x01u, 0x00u
     };
-    static unsigned char const webp_vp8x_header[54] = {
+    static unsigned char const webp_vp8x_vp8_header[48] = {
+        'R', 'I', 'F', 'F', 0x28u, 0x00u, 0x00u, 0x00u,
+        'W', 'E', 'B', 'P', 'V', 'P', '8', 'X',
+        0x0au, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0x00u, 0x00u, 'V', 'P', '8', ' ', 0x0au, 0x00u, 0x00u, 0x00u,
+        0xd0u, 0x11u, 0x00u, 0x9du, 0x01u, 0x2au, 0x40u, 0x00u,
+        0x40u, 0x00u
+    };
+    static unsigned char const webp_vp8x_vp8l_header[54] = {
         'R', 'I', 'F', 'F', 0x2eu, 0x00u, 0x00u, 0x00u,
         'W', 'E', 'B', 'P', 'V', 'P', '8', 'X',
         0x0au, 0x00u, 0x00u, 0x00u,
@@ -202,6 +218,7 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         0x8fu, 0xfeu, 0x07u, 0x22u, 0xa2u, 0xffu, 0x01u, 0x00u
     };
     size_t target_size;
+    unsigned int webp_variant;
 
     if (out_data == NULL || out_size == NULL) {
         return 0;
@@ -212,6 +229,7 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         *out_size = size;
         return 1;
     }
+    webp_variant = 0u;
 
     target_size = size;
     switch (g_force_format) {
@@ -261,8 +279,8 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         }
         break;
     case FUZZ_FORCE_FORMAT_WEBP:
-        if (target_size < sizeof(webp_vp8x_header)) {
-            target_size = sizeof(webp_vp8x_header);
+        if (target_size < sizeof(webp_vp8x_vp8l_header)) {
+            target_size = sizeof(webp_vp8x_vp8l_header);
         }
         break;
     case FUZZ_FORCE_FORMAT_AUTO:
@@ -351,15 +369,20 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
                          sizeof(bmp_header));
         break;
     case FUZZ_FORCE_FORMAT_WEBP:
+        webp_variant = (size > 0u && data != NULL)
+                       ? (unsigned int)(data[0] & 0x3u)
+                       : 0u;
         fuzz_apply_magic(g_forced_chunk_buffer,
                          target_size,
                          0u,
-                         (size > 0u && (data[0] & 1u) != 0u)
-                         ? webp_vp8l_header
-                         : webp_vp8x_header,
-                         (size > 0u && (data[0] & 1u) != 0u)
-                         ? sizeof(webp_vp8l_header)
-                         : sizeof(webp_vp8x_header));
+                         webp_variant == 0u ? webp_vp8_header
+                         : webp_variant == 1u ? webp_vp8x_vp8_header
+                         : webp_variant == 2u ? webp_vp8l_header
+                         : webp_vp8x_vp8l_header,
+                         webp_variant == 0u ? sizeof(webp_vp8_header)
+                         : webp_variant == 1u ? sizeof(webp_vp8x_vp8_header)
+                         : webp_variant == 2u ? sizeof(webp_vp8l_header)
+                         : sizeof(webp_vp8x_vp8l_header));
         break;
     case FUZZ_FORCE_FORMAT_AUTO:
     default:

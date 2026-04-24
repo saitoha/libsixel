@@ -1165,9 +1165,10 @@ what is available):
 - `quicklook`
 - `gnome-thumbnailer`
 
-The `builtin` loader includes an internal WebP MVP path with no extra runtime
-dependency. The current scope is static lossless (`VP8L`) decode only. Lossy
-`VP8` and animation (`ANIM`/`ANMF`) remain unsupported in `builtin`.
+The `builtin` loader includes an internal WebP MVP path. The current scope is
+static decode for `VP8L` and `VP8` (when libwebp support is available at
+build time). `VP8` with `ALPH` and animation (`ANIM`/`ANMF`) remain
+unsupported in `builtin`.
 
 `librsvg` always returns raster frames as `RGB888` or `RGBA8888`.
 Without `-B` and with any non-opaque pixel, alpha is preserved

@@ -362,9 +362,11 @@ sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
     }
 
     if (info->vp8_count != 0u) {
-        plan->kind = SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_VP8_STATIC;
+        plan->kind = SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC;
         plan->vp8_payload = info->vp8.payload;
         plan->vp8_payload_size = info->vp8.payload_size;
+        plan->meta_iccp_ignored = info->iccp_count != 0u ? 1 : 0;
+        plan->meta_exif_ignored = info->exif_count != 0u ? 1 : 0;
         return SIXEL_OK;
     }
 
