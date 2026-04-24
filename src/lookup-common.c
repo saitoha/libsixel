@@ -189,6 +189,36 @@ sixel_lookup_parallel_dither_active(void)
     return sixel_lookup_parallel_active;
 }
 
+SIXELAPI int
+sixel_lut_uses_float(sixel_lut_t const *lut)
+{
+    if (lut == NULL) {
+        return 0;
+    }
+
+    return lut->input_is_float;
+}
+
+SIXELAPI struct sixel_lookup_8bit *
+sixel_lut_backend_8bit(sixel_lut_t *lut)
+{
+    if (lut == NULL) {
+        return NULL;
+    }
+
+    return lut->lookup_8bit;
+}
+
+SIXELAPI struct sixel_lookup_float32 *
+sixel_lut_backend_float32(sixel_lut_t *lut)
+{
+    if (lut == NULL) {
+        return NULL;
+    }
+
+    return lut->lookup_float32;
+}
+
 SIXELAPI SIXELSTATUS
 sixel_lut_new(sixel_lut_t **out,
               int policy,
@@ -265,7 +295,7 @@ sixel_lut_configure(sixel_lut_t *lut,
      */
     complexion = 1;
 
-    if (lut == NULL) {
+    if (lut == NULL || palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -291,6 +321,7 @@ sixel_lut_configure(sixel_lut_t *lut,
             }
             palette_depth = float_components;
         }
+
         return sixel_lookup_float32_configure(lut->lookup_float32,
                                               palette,
                                               palette_float,

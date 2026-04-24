@@ -35,6 +35,8 @@ extern "C" {
 #endif
 
 typedef struct sixel_lut sixel_lut_t;
+struct sixel_lookup_8bit;
+struct sixel_lookup_float32;
 
 #define SIXEL_MAX_CHANNELS 4
 
@@ -60,6 +62,15 @@ sixel_lookup_env_shared_6bit(void);
 
 SIXEL_INTERNAL_API void
 sixel_lut_unref(sixel_lut_t *lut);
+
+SIXEL_INTERNAL_API int
+sixel_lut_uses_float(sixel_lut_t const *lut);
+
+SIXEL_INTERNAL_API struct sixel_lookup_8bit *
+sixel_lut_backend_8bit(sixel_lut_t *lut);
+
+SIXEL_INTERNAL_API struct sixel_lookup_float32 *
+sixel_lut_backend_float32(sixel_lut_t *lut);
 
 /*
  * Configure a lookup object with component weights that remain agnostic to

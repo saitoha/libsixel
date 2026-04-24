@@ -835,8 +835,8 @@ sixel_lookup_float32_inverse3(float const *src,
 }
 
 static SIXELSTATUS
-sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
-                                   int mahalanobis)
+sixel_lookup_float32_configure_rbc_impl(sixel_lookup_float32_t *lut,
+                                        int mahalanobis)
 {
     int pivots;
     int i;
@@ -1430,8 +1430,8 @@ sixel_lookup_float32_prepare_kdtree(sixel_lookup_float32_t *lut)
 }
 
 static SIXELSTATUS
-sixel_lookup_float32_configure_fhedt(sixel_lookup_float32_t *lut,
-                                    int pixelformat)
+sixel_lookup_float32_configure_fhedt_impl(sixel_lookup_float32_t *lut,
+                                          int pixelformat)
 {
     SIXELSTATUS status;
     int resolution;
@@ -1565,7 +1565,7 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
     lut->vptree_ready = 0;
     if (lut->policy == SIXEL_LUT_POLICY_RBC
         || lut->policy == SIXEL_LUT_POLICY_MAHALANOBIS) {
-        status = sixel_lookup_float32_configure_rbc(
+        status = sixel_lookup_float32_configure_rbc_impl(
             lut,
             lut->policy == SIXEL_LUT_POLICY_MAHALANOBIS);
         if (SIXEL_FAILED(status)) {
@@ -1577,7 +1577,7 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
         }
     }
     if (lut->policy == SIXEL_LUT_POLICY_FHEDT) {
-        status = sixel_lookup_float32_configure_fhedt(lut, pixelformat);
+        status = sixel_lookup_float32_configure_fhedt_impl(lut, pixelformat);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
                 "sixel_lookup_float32_configure: FHEDT failed.");
@@ -1635,6 +1635,222 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
     return SIXEL_OK;
 }
 
+SIXELSTATUS
+sixel_lookup_float32_configure_5bit(sixel_lookup_float32_t *lut,
+                                    unsigned char const *palette,
+                                    float const *palette_float,
+                                    int depth,
+                                    int float_depth,
+                                    int ncolors,
+                                    int complexion,
+                                    int wcomp1,
+                                    int wcomp2,
+                                    int wcomp3,
+                                    int pixelformat)
+{
+    return sixel_lookup_float32_configure(lut,
+                                          palette,
+                                          palette_float,
+                                          depth,
+                                          float_depth,
+                                          ncolors,
+                                          complexion,
+                                          wcomp1,
+                                          wcomp2,
+                                          wcomp3,
+                                          SIXEL_LUT_POLICY_5BIT,
+                                          pixelformat);
+}
+
+SIXELSTATUS
+sixel_lookup_float32_configure_6bit(sixel_lookup_float32_t *lut,
+                                    unsigned char const *palette,
+                                    float const *palette_float,
+                                    int depth,
+                                    int float_depth,
+                                    int ncolors,
+                                    int complexion,
+                                    int wcomp1,
+                                    int wcomp2,
+                                    int wcomp3,
+                                    int pixelformat)
+{
+    return sixel_lookup_float32_configure(lut,
+                                          palette,
+                                          palette_float,
+                                          depth,
+                                          float_depth,
+                                          ncolors,
+                                          complexion,
+                                          wcomp1,
+                                          wcomp2,
+                                          wcomp3,
+                                          SIXEL_LUT_POLICY_6BIT,
+                                          pixelformat);
+}
+
+SIXELSTATUS
+sixel_lookup_float32_configure_certlut(sixel_lookup_float32_t *lut,
+                                       unsigned char const *palette,
+                                       float const *palette_float,
+                                       int depth,
+                                       int float_depth,
+                                       int ncolors,
+                                       int complexion,
+                                       int wcomp1,
+                                       int wcomp2,
+                                       int wcomp3,
+                                       int pixelformat)
+{
+    return sixel_lookup_float32_configure(lut,
+                                          palette,
+                                          palette_float,
+                                          depth,
+                                          float_depth,
+                                          ncolors,
+                                          complexion,
+                                          wcomp1,
+                                          wcomp2,
+                                          wcomp3,
+                                          SIXEL_LUT_POLICY_CERTLUT,
+                                          pixelformat);
+}
+
+SIXELSTATUS
+sixel_lookup_float32_configure_eytzinger(sixel_lookup_float32_t *lut,
+                                         unsigned char const *palette,
+                                         float const *palette_float,
+                                         int depth,
+                                         int float_depth,
+                                         int ncolors,
+                                         int complexion,
+                                         int wcomp1,
+                                         int wcomp2,
+                                         int wcomp3,
+                                         int pixelformat)
+{
+    return sixel_lookup_float32_configure(lut,
+                                          palette,
+                                          palette_float,
+                                          depth,
+                                          float_depth,
+                                          ncolors,
+                                          complexion,
+                                          wcomp1,
+                                          wcomp2,
+                                          wcomp3,
+                                          SIXEL_LUT_POLICY_EYTZINGER,
+                                          pixelformat);
+}
+
+SIXELSTATUS
+sixel_lookup_float32_configure_fhedt(sixel_lookup_float32_t *lut,
+                                     unsigned char const *palette,
+                                     float const *palette_float,
+                                     int depth,
+                                     int float_depth,
+                                     int ncolors,
+                                     int complexion,
+                                     int wcomp1,
+                                     int wcomp2,
+                                     int wcomp3,
+                                     int pixelformat)
+{
+    return sixel_lookup_float32_configure(lut,
+                                          palette,
+                                          palette_float,
+                                          depth,
+                                          float_depth,
+                                          ncolors,
+                                          complexion,
+                                          wcomp1,
+                                          wcomp2,
+                                          wcomp3,
+                                          SIXEL_LUT_POLICY_FHEDT,
+                                          pixelformat);
+}
+
+SIXELSTATUS
+sixel_lookup_float32_configure_vptree(sixel_lookup_float32_t *lut,
+                                      unsigned char const *palette,
+                                      float const *palette_float,
+                                      int depth,
+                                      int float_depth,
+                                      int ncolors,
+                                      int complexion,
+                                      int wcomp1,
+                                      int wcomp2,
+                                      int wcomp3,
+                                      int pixelformat)
+{
+    return sixel_lookup_float32_configure(lut,
+                                          palette,
+                                          palette_float,
+                                          depth,
+                                          float_depth,
+                                          ncolors,
+                                          complexion,
+                                          wcomp1,
+                                          wcomp2,
+                                          wcomp3,
+                                          SIXEL_LUT_POLICY_VPTREE,
+                                          pixelformat);
+}
+
+SIXELSTATUS
+sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
+                                   unsigned char const *palette,
+                                   float const *palette_float,
+                                   int depth,
+                                   int float_depth,
+                                   int ncolors,
+                                   int complexion,
+                                   int wcomp1,
+                                   int wcomp2,
+                                   int wcomp3,
+                                   int pixelformat)
+{
+    return sixel_lookup_float32_configure(lut,
+                                          palette,
+                                          palette_float,
+                                          depth,
+                                          float_depth,
+                                          ncolors,
+                                          complexion,
+                                          wcomp1,
+                                          wcomp2,
+                                          wcomp3,
+                                          SIXEL_LUT_POLICY_RBC,
+                                          pixelformat);
+}
+
+SIXELSTATUS
+sixel_lookup_float32_configure_mahalanobis(sixel_lookup_float32_t *lut,
+                                           unsigned char const *palette,
+                                           float const *palette_float,
+                                           int depth,
+                                           int float_depth,
+                                           int ncolors,
+                                           int complexion,
+                                           int wcomp1,
+                                           int wcomp2,
+                                           int wcomp3,
+                                           int pixelformat)
+{
+    return sixel_lookup_float32_configure(lut,
+                                          palette,
+                                          palette_float,
+                                          depth,
+                                          float_depth,
+                                          ncolors,
+                                          complexion,
+                                          wcomp1,
+                                          wcomp2,
+                                          wcomp3,
+                                          SIXEL_LUT_POLICY_MAHALANOBIS,
+                                          pixelformat);
+}
+
 int
 sixel_lookup_float32_map_pixel(sixel_lookup_float32_t *lut,
                                unsigned char const *pixel)
@@ -1681,6 +1897,141 @@ sixel_lookup_float32_map_pixel(sixel_lookup_float32_t *lut,
     }
 
     return sixel_lookup_float32_linear_search(lut, sample);
+}
+
+int
+sixel_lookup_float32_map_pixel_5bit(sixel_lookup_float32_t *lut,
+                                    unsigned char const *pixel)
+{
+    float const *sample;
+
+    sample = NULL;
+    if (lut == NULL || pixel == NULL) {
+        return 0;
+    }
+
+    sample = (float const *)(void const *)pixel;
+    return sixel_lookup_float32_linear_search(lut, sample);
+}
+
+int
+sixel_lookup_float32_map_pixel_6bit(sixel_lookup_float32_t *lut,
+                                    unsigned char const *pixel)
+{
+    float const *sample;
+
+    sample = NULL;
+    if (lut == NULL || pixel == NULL) {
+        return 0;
+    }
+
+    sample = (float const *)(void const *)pixel;
+    return sixel_lookup_float32_linear_search(lut, sample);
+}
+
+int
+sixel_lookup_float32_map_pixel_certlut(sixel_lookup_float32_t *lut,
+                                       unsigned char const *pixel)
+{
+    float const *sample;
+    int best_index;
+    float best_distance;
+
+    sample = NULL;
+    best_index = 0;
+    best_distance = FLT_MAX;
+    if (lut == NULL || pixel == NULL) {
+        return 0;
+    }
+
+    sample = (float const *)(void const *)pixel;
+    sixel_lookup_float32_search_kdtree(lut,
+                                       lut->kdtree_root,
+                                       sample,
+                                       &best_index,
+                                       &best_distance);
+    return best_index;
+}
+
+int
+sixel_lookup_float32_map_pixel_eytzinger(sixel_lookup_float32_t *lut,
+                                         unsigned char const *pixel)
+{
+    float const *sample;
+
+    sample = NULL;
+    if (lut == NULL || pixel == NULL) {
+        return 0;
+    }
+
+    sample = (float const *)(void const *)pixel;
+    return sixel_lookup_float32_lookup_1d_eytzinger(lut, sample);
+}
+
+int
+sixel_lookup_float32_map_pixel_fhedt(sixel_lookup_float32_t *lut,
+                                     unsigned char const *pixel)
+{
+    float const *sample;
+
+    sample = NULL;
+    if (lut == NULL || pixel == NULL) {
+        return 0;
+    }
+    if (lut->fhedt_ready == 0 || lut->fhedt == NULL) {
+        return 0;
+    }
+
+    sample = (float const *)(void const *)pixel;
+    return sixel_lookup_fhedt_float32_map(lut->fhedt, sample);
+}
+
+int
+sixel_lookup_float32_map_pixel_vptree(sixel_lookup_float32_t *lut,
+                                      unsigned char const *pixel)
+{
+    float const *sample;
+
+    sample = NULL;
+    if (lut == NULL || pixel == NULL) {
+        return 0;
+    }
+    if (lut->vptree_ready == 0 || lut->vptree == NULL) {
+        return 0;
+    }
+
+    sample = (float const *)(void const *)pixel;
+    return sixel_lookup_vptree_float32_map(lut->vptree, sample);
+}
+
+int
+sixel_lookup_float32_map_pixel_rbc(sixel_lookup_float32_t *lut,
+                                   unsigned char const *pixel)
+{
+    float const *sample;
+
+    sample = NULL;
+    if (lut == NULL || pixel == NULL) {
+        return 0;
+    }
+
+    sample = (float const *)(void const *)pixel;
+    return sixel_lookup_float32_rbc_search(lut, sample, 0);
+}
+
+int
+sixel_lookup_float32_map_pixel_mahalanobis(sixel_lookup_float32_t *lut,
+                                           unsigned char const *pixel)
+{
+    float const *sample;
+
+    sample = NULL;
+    if (lut == NULL || pixel == NULL) {
+        return 0;
+    }
+
+    sample = (float const *)(void const *)pixel;
+    return sixel_lookup_float32_rbc_search(lut, sample, 1);
 }
 
 /* emacs Local Variables:      */

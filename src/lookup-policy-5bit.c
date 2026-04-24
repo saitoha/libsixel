@@ -29,7 +29,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "lookup-8bit.h"
 #include "lookup-common.h"
+#include "lookup-float32.h"
 #include "lookup-policy-private.h"
 #include "sixel_atomic.h"
 
@@ -204,18 +206,31 @@ sixel_lookup_policy_bit5_prepare(
     }
     object->owns_lut = 1;
 
-    status = sixel_lut_configure(object->lut,
-                                 request->palette,
-                                 request->palette_float,
-                                 request->depth,
-                                 request->float_depth,
-                                 request->reqcolor,
-                                 1,
-                                 1,
-                                 1,
-                                 1,
-                                 normalized_lut_policy,
-                                 request->pixelformat);
+    if (object->lookup_source_is_float != 0) {
+        status = sixel_lookup_float32_configure_5bit(
+            sixel_lut_backend_float32(object->lut),
+            request->palette,
+            request->palette_float,
+            request->depth,
+            request->float_depth,
+            request->reqcolor,
+            1,
+            1,
+            1,
+            1,
+            request->pixelformat);
+    } else {
+        status = sixel_lookup_8bit_configure_5bit(
+            sixel_lut_backend_8bit(object->lut),
+            request->palette,
+            request->depth,
+            request->reqcolor,
+            1,
+            1,
+            1,
+            1,
+            request->pixelformat);
+    }
     if (SIXEL_FAILED(status)) {
         sixel_lookup_policy_bit5_reset_state(object);
         return status;
@@ -247,7 +262,15 @@ sixel_lookup_policy_bit5_map_pixel(
         return 0;
     }
 
-    return sixel_lut_map_pixel(object->lut, pixel);
+    if (sixel_lut_uses_float(object->lut) != 0) {
+        return sixel_lookup_float32_map_pixel_5bit(
+            sixel_lut_backend_float32(object->lut),
+            pixel);
+    }
+
+    return sixel_lookup_8bit_map_pixel_5bit(
+        sixel_lut_backend_8bit(object->lut),
+        pixel);
 }
 
 static int

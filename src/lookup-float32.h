@@ -101,9 +101,145 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
                                int policy,
                                int pixelformat);
 
+SIXELSTATUS
+sixel_lookup_float32_configure_5bit(sixel_lookup_float32_t *lut,
+                                    unsigned char const *palette,
+                                    float const *palette_float,
+                                    int depth,
+                                    int float_depth,
+                                    int ncolors,
+                                    int complexion,
+                                    int wcomp1,
+                                    int wcomp2,
+                                    int wcomp3,
+                                    int pixelformat);
+
+SIXELSTATUS
+sixel_lookup_float32_configure_6bit(sixel_lookup_float32_t *lut,
+                                    unsigned char const *palette,
+                                    float const *palette_float,
+                                    int depth,
+                                    int float_depth,
+                                    int ncolors,
+                                    int complexion,
+                                    int wcomp1,
+                                    int wcomp2,
+                                    int wcomp3,
+                                    int pixelformat);
+
+SIXELSTATUS
+sixel_lookup_float32_configure_certlut(sixel_lookup_float32_t *lut,
+                                       unsigned char const *palette,
+                                       float const *palette_float,
+                                       int depth,
+                                       int float_depth,
+                                       int ncolors,
+                                       int complexion,
+                                       int wcomp1,
+                                       int wcomp2,
+                                       int wcomp3,
+                                       int pixelformat);
+
+SIXELSTATUS
+sixel_lookup_float32_configure_eytzinger(sixel_lookup_float32_t *lut,
+                                         unsigned char const *palette,
+                                         float const *palette_float,
+                                         int depth,
+                                         int float_depth,
+                                         int ncolors,
+                                         int complexion,
+                                         int wcomp1,
+                                         int wcomp2,
+                                         int wcomp3,
+                                         int pixelformat);
+
+SIXELSTATUS
+sixel_lookup_float32_configure_fhedt(sixel_lookup_float32_t *lut,
+                                     unsigned char const *palette,
+                                     float const *palette_float,
+                                     int depth,
+                                     int float_depth,
+                                     int ncolors,
+                                     int complexion,
+                                     int wcomp1,
+                                     int wcomp2,
+                                     int wcomp3,
+                                     int pixelformat);
+
+SIXELSTATUS
+sixel_lookup_float32_configure_vptree(sixel_lookup_float32_t *lut,
+                                      unsigned char const *palette,
+                                      float const *palette_float,
+                                      int depth,
+                                      int float_depth,
+                                      int ncolors,
+                                      int complexion,
+                                      int wcomp1,
+                                      int wcomp2,
+                                      int wcomp3,
+                                      int pixelformat);
+
+SIXELSTATUS
+sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
+                                   unsigned char const *palette,
+                                   float const *palette_float,
+                                   int depth,
+                                   int float_depth,
+                                   int ncolors,
+                                   int complexion,
+                                   int wcomp1,
+                                   int wcomp2,
+                                   int wcomp3,
+                                   int pixelformat);
+
+SIXELSTATUS
+sixel_lookup_float32_configure_mahalanobis(sixel_lookup_float32_t *lut,
+                                           unsigned char const *palette,
+                                           float const *palette_float,
+                                           int depth,
+                                           int float_depth,
+                                           int ncolors,
+                                           int complexion,
+                                           int wcomp1,
+                                           int wcomp2,
+                                           int wcomp3,
+                                           int pixelformat);
+
 int
 sixel_lookup_float32_map_pixel(sixel_lookup_float32_t *lut,
                                unsigned char const *pixel);
+
+int
+sixel_lookup_float32_map_pixel_5bit(sixel_lookup_float32_t *lut,
+                                    unsigned char const *pixel);
+
+int
+sixel_lookup_float32_map_pixel_6bit(sixel_lookup_float32_t *lut,
+                                    unsigned char const *pixel);
+
+int
+sixel_lookup_float32_map_pixel_certlut(sixel_lookup_float32_t *lut,
+                                       unsigned char const *pixel);
+
+int
+sixel_lookup_float32_map_pixel_eytzinger(sixel_lookup_float32_t *lut,
+                                         unsigned char const *pixel);
+
+int
+sixel_lookup_float32_map_pixel_fhedt(sixel_lookup_float32_t *lut,
+                                     unsigned char const *pixel);
+
+int
+sixel_lookup_float32_map_pixel_vptree(sixel_lookup_float32_t *lut,
+                                      unsigned char const *pixel);
+
+int
+sixel_lookup_float32_map_pixel_rbc(sixel_lookup_float32_t *lut,
+                                   unsigned char const *pixel);
+
+int
+sixel_lookup_float32_map_pixel_mahalanobis(sixel_lookup_float32_t *lut,
+                                           unsigned char const *pixel);
 
 #endif /* LIBSIXEL_LOOKUP_FLOAT32_H */
 
