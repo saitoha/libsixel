@@ -49,13 +49,6 @@ sixel_webp_vp8_parse_header(unsigned char const *payload,
                             sixel_webp_vp8_frame_header_t *header);
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_webp_vp8_wrap_riff_payload(unsigned char const *payload,
-                                 size_t payload_size,
-                                 unsigned char **priff_data,
-                                 size_t *priff_size,
-                                 sixel_allocator_t *allocator);
-
-SIXEL_INTERNAL_API SIXELSTATUS
 sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
                                      size_t payload_size,
                                      sixel_webp_vp8_frame_header_t const
@@ -64,17 +57,6 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
                                      int *pwidth,
                                      int *pheight,
                                      sixel_allocator_t *allocator);
-
-#if HAVE_WEBP
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_webp_vp8_decode_with_libwebp(unsigned char const *riff_data,
-                                   size_t riff_size,
-                                   sixel_webp_vp8_frame_header_t const *header,
-                                   unsigned char **prgba,
-                                   int *pwidth,
-                                   int *pheight,
-                                   sixel_allocator_t *allocator);
-#endif
 
 #endif  /* LIBSIXEL_FROMWEBP_VP8_PRIVATE_H */
 

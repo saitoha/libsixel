@@ -379,18 +379,82 @@ sixel_webp_vp8_free_planes(sixel_webp_vp8_planes_t *planes,
     memset(planes, 0, sizeof(*planes));
 }
 
+static unsigned int
+sixel_webp_vp8_partition_index_for_row(unsigned int mb_row,
+                                       unsigned int mb_rows,
+                                       unsigned int partition_count)
+{
+    unsigned int index;
+
+    index = 0u;
+    if (mb_rows == 0u || partition_count == 0u) {
+        return 0u;
+    }
+
+    index = (mb_row * partition_count) / mb_rows;
+    if (index >= partition_count) {
+        index = partition_count - 1u;
+    }
+    return index;
+}
+
+static SIXELSTATUS
+sixel_webp_vp8_init_token_decoders(
+    sixel_webp_vp8_bool_decoder_t *token_decoders,
+    unsigned int token_partition_count,
+    unsigned char const *payload,
+    size_t payload_size,
+    sixel_webp_vp8_partition_layout_t const *layout)
+{
+    SIXELSTATUS status;
+    unsigned int i;
+    size_t offset;
+    size_t partition_size;
+
+    status = SIXEL_OK;
+    i = 0u;
+    offset = 0u;
+    partition_size = 0u;
+    if (token_decoders == NULL || token_partition_count == 0u ||
+        token_partition_count > SIXEL_WEBP_VP8_MAX_TOKEN_PARTITIONS ||
+        payload == NULL || layout == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    offset = layout->token_partition_data_offset;
+    for (i = 0u; i < token_partition_count; ++i) {
+        partition_size = layout->token_partition_size[i];
+        if (partition_size == 0u || offset >= payload_size ||
+            partition_size > payload_size - offset) {
+            sixel_helper_set_additional_message(
+                "builtin webp: VP8 token partition is truncated.");
+            return SIXEL_BAD_INPUT;
+        }
+        status = sixel_webp_vp8_bool_init(token_decoders + i,
+                                          payload + offset,
+                                          partition_size);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        offset += partition_size;
+    }
+
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 sixel_webp_vp8_decode_synthetic_intra(
-    unsigned char const *token_data,
-    size_t token_size,
+    sixel_webp_vp8_bool_decoder_t *token_decoders,
+    unsigned int token_partition_count,
     sixel_webp_vp8_frame_header_t const *header,
     sixel_webp_vp8_frame_context_t const *context,
     sixel_webp_vp8_planes_t *planes)
 {
     SIXELSTATUS status;
-    sixel_webp_vp8_bool_decoder_t decoder;
+    sixel_webp_vp8_bool_decoder_t *decoder;
     unsigned int mb_x;
     unsigned int mb_y;
+    unsigned int partition_index;
     unsigned int px;
     unsigned int py;
     unsigned int y_mode;
@@ -412,9 +476,10 @@ sixel_webp_vp8_decode_synthetic_intra(
     int y_value;
 
     status = SIXEL_OK;
-    memset(&decoder, 0, sizeof(decoder));
+    decoder = NULL;
     mb_x = 0u;
     mb_y = 0u;
+    partition_index = 0u;
     px = 0u;
     py = 0u;
     y_mode = 0u;
@@ -434,7 +499,9 @@ sixel_webp_vp8_decode_synthetic_intra(
     u_base = 0;
     v_base = 0;
     y_value = 0;
-    if (token_data == NULL || token_size == 0u || header == NULL ||
+    if (token_decoders == NULL || token_partition_count == 0u ||
+        token_partition_count > SIXEL_WEBP_VP8_MAX_TOKEN_PARTITIONS ||
+        header == NULL ||
         context == NULL || planes == NULL || planes->y == NULL ||
         planes->u == NULL || planes->v == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -446,33 +513,31 @@ sixel_webp_vp8_decode_synthetic_intra(
      * intra frame into YUV planes. Full VP8 residual reconstruction will be
      * layered on top of this traversal in the next phase.
      */
-    status = sixel_webp_vp8_bool_init(&decoder, token_data, token_size);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
     for (mb_y = 0u; mb_y < context->mb_rows; ++mb_y) {
+        partition_index = sixel_webp_vp8_partition_index_for_row(
+            mb_y, context->mb_rows, token_partition_count);
+        decoder = token_decoders + partition_index;
         for (mb_x = 0u; mb_x < context->mb_cols; ++mb_x) {
-            status = sixel_webp_vp8_bool_read_literal(&decoder, 2u, &y_mode);
+            status = sixel_webp_vp8_bool_read_literal(decoder, 2u, &y_mode);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
-            status = sixel_webp_vp8_bool_read_literal(&decoder, 2u, &uv_mode);
+            status = sixel_webp_vp8_bool_read_literal(decoder, 2u, &uv_mode);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
             status = sixel_webp_vp8_bool_read_literal(
-                &decoder, 7u, &coeff_hint);
+                decoder, 7u, &coeff_hint);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
-            status = sixel_webp_vp8_bool_read(&decoder,
+            status = sixel_webp_vp8_bool_read(decoder,
                                               SIXEL_WEBP_VP8_BOOL_BASE_PROB,
                                               &bit);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
-            status = sixel_webp_vp8_bool_read_literal(&decoder, 3u, &detail);
+            status = sixel_webp_vp8_bool_read_literal(decoder, 3u, &detail);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
@@ -1184,16 +1249,15 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
     SIXELSTATUS status;
     sixel_webp_vp8_partition_layout_t layout;
     sixel_webp_vp8_frame_context_t context;
+    sixel_webp_vp8_bool_decoder_t token_decoders[
+        SIXEL_WEBP_VP8_MAX_TOKEN_PARTITIONS];
     sixel_webp_vp8_planes_t planes;
-    unsigned char const *token_data;
-    size_t token_size;
 
     status = SIXEL_OK;
     memset(&layout, 0, sizeof(layout));
     memset(&context, 0, sizeof(context));
+    memset(token_decoders, 0, sizeof(token_decoders));
     memset(&planes, 0, sizeof(planes));
-    token_data = NULL;
-    token_size = 0u;
 
     /*
      * This entrypoint keeps the stage boundaries explicit:
@@ -1226,29 +1290,22 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
         return status;
     }
 
-    if (layout.token_partition_count > 1u) {
-        sixel_helper_set_additional_message(
-            "builtin webp: VP8 multi-token-partition decode is not ready.");
-        return SIXEL_NOT_IMPLEMENTED;
-    }
-    if (layout.token_partition_size[0] == 0u ||
-        layout.token_partition_data_offset >= payload_size ||
-        layout.token_partition_size[0] >
-            payload_size - layout.token_partition_data_offset) {
-        sixel_helper_set_additional_message(
-            "builtin webp: VP8 token partition is truncated.");
-        return SIXEL_BAD_INPUT;
-    }
-
     status = sixel_webp_vp8_alloc_planes(&planes, header, allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
 
-    token_data = payload + layout.token_partition_data_offset;
-    token_size = layout.token_partition_size[0];
-    status = sixel_webp_vp8_decode_synthetic_intra(token_data,
-                                                   token_size,
+    status = sixel_webp_vp8_init_token_decoders(token_decoders,
+                                                layout.token_partition_count,
+                                                payload,
+                                                payload_size,
+                                                &layout);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_webp_vp8_decode_synthetic_intra(token_decoders,
+                                                   layout.token_partition_count,
                                                    header,
                                                    &context,
                                                    &planes);

@@ -249,7 +249,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/fromwebp-vp8.c \
                 $(srcdir)/fromwebp-vp8-parse.c \
                 $(srcdir)/fromwebp-vp8-native.c \
-                $(srcdir)/fromwebp-vp8-libwebp.c \
                 $(srcdir)/fromwebp-vp8l.c \
                 $(srcdir)/fromwebp-trace.c \
                 $(srcdir)/frombmp-parser.c \

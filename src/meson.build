@@ -153,7 +153,6 @@ srcs = [
   'fromwebp-vp8.c',
   'fromwebp-vp8-parse.c',
   'fromwebp-vp8-native.c',
-  'fromwebp-vp8-libwebp.c',
   'fromwebp-vp8l.c',
   'fromwebp-trace.c',
   'frombmp-parser.c',

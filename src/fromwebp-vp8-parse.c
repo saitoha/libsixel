@@ -27,7 +27,6 @@
 #endif
 
 /* STDC_HEADERS */
-#include <limits.h>
 #include <stddef.h>
 
 #if HAVE_STDINT_H
@@ -62,19 +61,6 @@ sixel_webp_vp8_read_u24le(unsigned char const *p)
     return (unsigned int)p[0]
         | ((unsigned int)p[1] << 8)
         | ((unsigned int)p[2] << 16);
-}
-
-static void
-sixel_webp_vp8_write_u32le(unsigned char *p,
-                           unsigned int value)
-{
-    if (p == NULL) {
-        return;
-    }
-    p[0] = (unsigned char)(value & 0xffu);
-    p[1] = (unsigned char)((value >> 8) & 0xffu);
-    p[2] = (unsigned char)((value >> 16) & 0xffu);
-    p[3] = (unsigned char)((value >> 24) & 0xffu);
 }
 
 SIXELSTATUS
@@ -175,69 +161,6 @@ sixel_webp_vp8_parse_header(unsigned char const *payload,
         return status;
     }
 
-    return SIXEL_OK;
-}
-
-SIXELSTATUS
-sixel_webp_vp8_wrap_riff_payload(unsigned char const *payload,
-                                 size_t payload_size,
-                                 unsigned char **priff_data,
-                                 size_t *priff_size,
-                                 sixel_allocator_t *allocator)
-{
-    unsigned char *riff_data;
-    size_t payload_padded_size;
-    size_t riff_size;
-    unsigned int riff_size_field;
-
-    riff_data = NULL;
-    payload_padded_size = 0u;
-    riff_size = 0u;
-    riff_size_field = 0u;
-    if (payload == NULL || priff_data == NULL || priff_size == NULL ||
-        allocator == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    *priff_data = NULL;
-    *priff_size = 0u;
-
-    if (payload_size > SIZE_MAX - (payload_size & 1u)) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    payload_padded_size = payload_size + (payload_size & 1u);
-
-    if (payload_padded_size > SIZE_MAX - 20u) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-    riff_size = 20u + payload_padded_size;
-
-#if SIZE_MAX > UINT_MAX
-    if (riff_size - 8u > (size_t)UINT_MAX) {
-        return SIXEL_BAD_INTEGER_OVERFLOW;
-    }
-#endif
-    riff_size_field = (unsigned int)(riff_size - 8u);
-
-    riff_data = (unsigned char *)sixel_allocator_malloc(allocator, riff_size);
-    if (riff_data == NULL) {
-        sixel_helper_set_additional_message(
-            "builtin webp: sixel_allocator_malloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
-    }
-
-    memcpy(riff_data, "RIFF", 4u);
-    sixel_webp_vp8_write_u32le(riff_data + 4u, riff_size_field);
-    memcpy(riff_data + 8u, "WEBP", 4u);
-    memcpy(riff_data + 12u, "VP8 ", 4u);
-    sixel_webp_vp8_write_u32le(riff_data + 16u, (unsigned int)payload_size);
-    memcpy(riff_data + 20u, payload, payload_size);
-    if ((payload_size & 1u) != 0u) {
-        riff_data[20u + payload_size] = 0u;
-    }
-
-    *priff_data = riff_data;
-    *priff_size = riff_size;
     return SIXEL_OK;
 }
 
