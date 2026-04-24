@@ -28,9 +28,449 @@
 
 /* STDC_HEADERS */
 #include <stddef.h>
+#include <limits.h>
+
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif
+#if HAVE_STRING_H
+# include <string.h>
+#endif
 
 #include "compat_stub.h"
 #include "fromwebp-vp8-private.h"
+
+#define SIXEL_WEBP_VP8_BOOL_BASE_PROB 128u
+#define SIXEL_WEBP_VP8_CONTROL_OFFSET 10u
+#define SIXEL_WEBP_VP8_BOOL_SHIFT_BASE 24u
+#define SIXEL_WEBP_VP8_MAX_TOKEN_PARTITIONS 8u
+
+typedef struct sixel_webp_vp8_bool_decoder {
+    unsigned char const *buffer;
+    size_t size;
+    size_t position;
+    uint32_t value;
+    unsigned int range;
+    int count;
+} sixel_webp_vp8_bool_decoder_t;
+
+typedef struct sixel_webp_vp8_partition_layout {
+    size_t control_partition_offset;
+    size_t control_partition_size;
+    size_t token_partition_table_offset;
+    size_t token_partition_data_offset;
+    unsigned int token_partition_count;
+    size_t token_partition_size[SIXEL_WEBP_VP8_MAX_TOKEN_PARTITIONS];
+} sixel_webp_vp8_partition_layout_t;
+
+static unsigned int
+sixel_webp_vp8_read_u24le(unsigned char const *p)
+{
+    if (p == NULL) {
+        return 0u;
+    }
+    return (unsigned int)p[0]
+        | ((unsigned int)p[1] << 8)
+        | ((unsigned int)p[2] << 16);
+}
+
+static void
+sixel_webp_vp8_bool_fill(sixel_webp_vp8_bool_decoder_t *decoder)
+{
+    unsigned int shift;
+
+    shift = 0u;
+    if (decoder == NULL || decoder->buffer == NULL) {
+        return;
+    }
+
+    while (decoder->count <= 16 && decoder->position < decoder->size) {
+        shift = (unsigned int)(16 - decoder->count);
+        decoder->value |=
+            (uint32_t)decoder->buffer[decoder->position] << shift;
+        decoder->position++;
+        decoder->count += 8;
+    }
+}
+
+static unsigned int
+sixel_webp_vp8_bool_normalize_shift(unsigned int range)
+{
+    unsigned int shift;
+
+    shift = 0u;
+    while (range < 128u) {
+        range <<= 1;
+        ++shift;
+    }
+    return shift;
+}
+
+static SIXELSTATUS
+sixel_webp_vp8_bool_init(sixel_webp_vp8_bool_decoder_t *decoder,
+                         unsigned char const *buffer,
+                         size_t size)
+{
+    if (decoder == NULL || buffer == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    decoder->buffer = buffer;
+    decoder->size = size;
+    decoder->position = 0u;
+    decoder->value = 0u;
+    decoder->range = 255u;
+    decoder->count = -8;
+    sixel_webp_vp8_bool_fill(decoder);
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_webp_vp8_bool_read(sixel_webp_vp8_bool_decoder_t *decoder,
+                         unsigned int probability,
+                         int *pbit)
+{
+    SIXELSTATUS status;
+    unsigned int split;
+    uint32_t bigsplit;
+    unsigned int shift;
+    int bit;
+
+    status = SIXEL_OK;
+    split = 0u;
+    bigsplit = 0u;
+    shift = 0u;
+    bit = 0;
+    if (decoder == NULL || pbit == NULL || probability > 255u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (decoder->range == 0u) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    split = 1u + (((decoder->range - 1u) * probability) >> 8);
+    bigsplit = (uint32_t)split << SIXEL_WEBP_VP8_BOOL_SHIFT_BASE;
+    if (decoder->value >= bigsplit) {
+        decoder->range -= split;
+        decoder->value -= bigsplit;
+        bit = 1;
+    } else {
+        decoder->range = split;
+        bit = 0;
+    }
+
+    shift = sixel_webp_vp8_bool_normalize_shift(decoder->range);
+    decoder->range <<= shift;
+    decoder->value <<= shift;
+    decoder->count -= (int)shift;
+    if (decoder->count < 0) {
+        sixel_webp_vp8_bool_fill(decoder);
+        if (decoder->count < 0) {
+            sixel_helper_set_additional_message(
+                "builtin webp: VP8 control partition is truncated.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+    }
+
+    *pbit = bit;
+
+end:
+    return status;
+}
+
+static SIXELSTATUS
+sixel_webp_vp8_bool_read_literal(sixel_webp_vp8_bool_decoder_t *decoder,
+                                 unsigned int nbits,
+                                 unsigned int *pvalue)
+{
+    SIXELSTATUS status;
+    unsigned int value;
+    unsigned int i;
+    int bit;
+
+    status = SIXEL_OK;
+    value = 0u;
+    i = 0u;
+    bit = 0;
+    if (decoder == NULL || pvalue == NULL || nbits > 24u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    for (i = 0u; i < nbits; ++i) {
+        status = sixel_webp_vp8_bool_read(decoder,
+                                          SIXEL_WEBP_VP8_BOOL_BASE_PROB,
+                                          &bit);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        value = (value << 1) | (unsigned int)bit;
+    }
+
+    *pvalue = value;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_webp_vp8_parse_partition_layout(
+    unsigned char const *payload,
+    size_t payload_size,
+    sixel_webp_vp8_frame_header_t const *header,
+    sixel_webp_vp8_partition_layout_t *layout)
+{
+    SIXELSTATUS status;
+    sixel_webp_vp8_bool_decoder_t decoder;
+    size_t control_end;
+    size_t table_size;
+    size_t remaining;
+    unsigned int partition_bits;
+    unsigned int i;
+    unsigned int value;
+    int bit;
+
+    status = SIXEL_OK;
+    memset(&decoder, 0, sizeof(decoder));
+    control_end = 0u;
+    table_size = 0u;
+    remaining = 0u;
+    partition_bits = 0u;
+    i = 0u;
+    value = 0u;
+    bit = 0;
+    if (payload == NULL || payload_size == 0u ||
+        header == NULL || layout == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    memset(layout, 0, sizeof(*layout));
+    layout->control_partition_offset = SIXEL_WEBP_VP8_CONTROL_OFFSET;
+    layout->control_partition_size = header->first_partition_size;
+
+    if (layout->control_partition_offset > payload_size ||
+        layout->control_partition_size >
+            payload_size - layout->control_partition_offset) {
+        sixel_helper_set_additional_message(
+            "builtin webp: VP8 first partition is truncated.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    status = sixel_webp_vp8_bool_init(&decoder,
+                                      payload + layout->control_partition_offset,
+                                      layout->control_partition_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    /*
+     * Parse the uncompressed frame header fields in control partition so
+     * native decode can own VP8 partition layout validation.
+     */
+    status = sixel_webp_vp8_bool_read_literal(&decoder, 1u, &value);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_webp_vp8_bool_read_literal(&decoder, 1u, &value);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = sixel_webp_vp8_bool_read(&decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB,
+                                      &bit);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (bit != 0) {
+        status = sixel_webp_vp8_bool_read(
+            &decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB, &bit);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        status = sixel_webp_vp8_bool_read(
+            &decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB, &bit);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (bit != 0) {
+            for (i = 0u; i < 4u; ++i) {
+                status = sixel_webp_vp8_bool_read(
+                    &decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB, &bit);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                if (bit != 0) {
+                    status = sixel_webp_vp8_bool_read_literal(
+                        &decoder, 7u, &value);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                    status = sixel_webp_vp8_bool_read(
+                        &decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB, &bit);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                }
+            }
+            for (i = 0u; i < 4u; ++i) {
+                status = sixel_webp_vp8_bool_read(
+                    &decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB, &bit);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                if (bit != 0) {
+                    status = sixel_webp_vp8_bool_read_literal(
+                        &decoder, 6u, &value);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                    status = sixel_webp_vp8_bool_read(
+                        &decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB, &bit);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                }
+            }
+        }
+        if (bit != 0) {
+            for (i = 0u; i < 3u; ++i) {
+                status = sixel_webp_vp8_bool_read(
+                    &decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB, &bit);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                if (bit != 0) {
+                    status = sixel_webp_vp8_bool_read_literal(
+                        &decoder, 8u, &value);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                }
+            }
+        }
+    }
+
+    status = sixel_webp_vp8_bool_read_literal(&decoder, 1u, &value);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_webp_vp8_bool_read_literal(&decoder, 6u, &value);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_webp_vp8_bool_read_literal(&decoder, 3u, &value);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = sixel_webp_vp8_bool_read(&decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB,
+                                      &bit);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (bit != 0) {
+        status = sixel_webp_vp8_bool_read(
+            &decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB, &bit);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (bit != 0) {
+            for (i = 0u; i < 4u; ++i) {
+                status = sixel_webp_vp8_bool_read(
+                    &decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB, &bit);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                if (bit != 0) {
+                    status = sixel_webp_vp8_bool_read_literal(
+                        &decoder, 6u, &value);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                    status = sixel_webp_vp8_bool_read(
+                        &decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB, &bit);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                }
+            }
+            for (i = 0u; i < 4u; ++i) {
+                status = sixel_webp_vp8_bool_read(
+                    &decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB, &bit);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                if (bit != 0) {
+                    status = sixel_webp_vp8_bool_read_literal(
+                        &decoder, 6u, &value);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                    status = sixel_webp_vp8_bool_read(
+                        &decoder, SIXEL_WEBP_VP8_BOOL_BASE_PROB, &bit);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
+                }
+            }
+        }
+    }
+
+    status = sixel_webp_vp8_bool_read_literal(&decoder, 2u, &partition_bits);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    layout->token_partition_count = 1u << partition_bits;
+    if (layout->token_partition_count == 0u ||
+        layout->token_partition_count > SIXEL_WEBP_VP8_MAX_TOKEN_PARTITIONS) {
+        sixel_helper_set_additional_message(
+            "builtin webp: VP8 token partition count is invalid.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    if (layout->control_partition_size >
+        payload_size - layout->control_partition_offset) {
+        sixel_helper_set_additional_message(
+            "builtin webp: VP8 first partition is truncated.");
+        return SIXEL_BAD_INPUT;
+    }
+    control_end = layout->control_partition_offset +
+                  layout->control_partition_size;
+    layout->token_partition_table_offset = control_end;
+
+    if (layout->token_partition_count > 1u) {
+        if ((size_t)(layout->token_partition_count - 1u) >
+            SIZE_MAX / 3u) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+        table_size = (size_t)(layout->token_partition_count - 1u) * 3u;
+    } else {
+        table_size = 0u;
+    }
+
+    if (control_end > payload_size || table_size > payload_size - control_end) {
+        sixel_helper_set_additional_message(
+            "builtin webp: VP8 token partition table is truncated.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    layout->token_partition_data_offset = control_end + table_size;
+    remaining = payload_size - layout->token_partition_data_offset;
+    for (i = 0u; i + 1u < layout->token_partition_count; ++i) {
+        value = sixel_webp_vp8_read_u24le(
+            payload + control_end + (size_t)i * 3u);
+        if ((size_t)value > remaining) {
+            sixel_helper_set_additional_message(
+                "builtin webp: VP8 token partition exceeds payload.");
+            return SIXEL_BAD_INPUT;
+        }
+        layout->token_partition_size[i] = (size_t)value;
+        remaining -= (size_t)value;
+    }
+    layout->token_partition_size[layout->token_partition_count - 1u] =
+        remaining;
+
+    return SIXEL_OK;
+}
 
 SIXELSTATUS
 sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
@@ -42,6 +482,12 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
                                      int *pheight,
                                      sixel_allocator_t *allocator)
 {
+    SIXELSTATUS status;
+    sixel_webp_vp8_partition_layout_t layout;
+
+    status = SIXEL_OK;
+    memset(&layout, 0, sizeof(layout));
+
     /*
      * The native VP8 pipeline is intentionally split in this translation
      * unit so upcoming stages can add:
@@ -59,11 +505,24 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
     *prgba = NULL;
     *pwidth = 0;
     *pheight = 0;
-    (void)header;
     (void)allocator;
 
+    status = sixel_webp_vp8_parse_partition_layout(payload,
+                                                   payload_size,
+                                                   header,
+                                                   &layout);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    if (layout.token_partition_count > 1u) {
+        sixel_helper_set_additional_message(
+            "builtin webp: VP8 multi-token-partition decode is not ready.");
+        return SIXEL_NOT_IMPLEMENTED;
+    }
+
     sixel_helper_set_additional_message(
-        "builtin webp: native VP8 static decoder is not ready yet.");
+        "builtin webp: native VP8 macroblock decode is not ready yet.");
     return SIXEL_NOT_IMPLEMENTED;
 }
 
