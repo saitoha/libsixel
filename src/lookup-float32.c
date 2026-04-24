@@ -31,15 +31,16 @@
 /*
  * IDL (internal contract)
  *
- * class LookupFloat32Backend {
- *   configure(policy, palette, ncolors, context);
- *   map_pixel(pixel);
+ * interface ILookupFloat32BackendLifecycle {
+ *   init(allocator);
  *   clear();
+ *   finalize();
  * }
  *
  * Ownership/lifetime:
- * - configure() allocates policy-specific lookup structures owned by backend.
- * - clear() releases all backend-owned structures.
+ * - init() allocates optional helper handles used by policy objects.
+ * - clear() releases cached lookup structures while keeping the handle alive.
+ * - finalize() releases both caches and the owned helper handle itself.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -47,10 +48,14 @@
 #endif
 
 #include <errno.h>
-#include <float.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#if HAVE_FLOAT_H
+# include <float.h>
+#endif  /* HAVE_FLOAT_H */
+#if HAVE_MATH_H
+# include <math.h>
+#endif  /* HAVE_MATH_H */
 
 #include <sixel.h>
 
@@ -70,6 +75,19 @@ struct sixel_lookup_float32_node {
     int right;
     int axis;
 };
+#endif
+
+#if defined(__has_attribute)
+# if __has_attribute(unused)
+#  define SIXEL_LOOKUP_BACKEND_UNUSED __attribute__((unused))
+# endif
+#endif
+#ifndef SIXEL_LOOKUP_BACKEND_UNUSED
+# if defined(__GNUC__)
+#  define SIXEL_LOOKUP_BACKEND_UNUSED __attribute__((unused))
+# else
+#  define SIXEL_LOOKUP_BACKEND_UNUSED
+# endif
 #endif
 
 static float
@@ -1494,7 +1512,7 @@ sixel_lookup_float32_configure_fhedt_impl(sixel_lookup_float32_t *lut,
     return SIXEL_OK;
 }
 
-SIXELSTATUS
+static SIXELSTATUS SIXEL_LOOKUP_BACKEND_UNUSED
 sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
                                unsigned char const *palette,
                                float const *palette_float,
@@ -1638,115 +1656,7 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
     return SIXEL_OK;
 }
 
-SIXELSTATUS
-sixel_lookup_float32_configure_fhedt(sixel_lookup_float32_t *lut,
-                                     unsigned char const *palette,
-                                     float const *palette_float,
-                                     int depth,
-                                     int float_depth,
-                                     int ncolors,
-                                     int complexion,
-                                     int wcomp1,
-                                     int wcomp2,
-                                     int wcomp3,
-                                     int pixelformat)
-{
-    return sixel_lookup_float32_configure(lut,
-                                          palette,
-                                          palette_float,
-                                          depth,
-                                          float_depth,
-                                          ncolors,
-                                          complexion,
-                                          wcomp1,
-                                          wcomp2,
-                                          wcomp3,
-                                          SIXEL_LUT_POLICY_FHEDT,
-                                          pixelformat);
-}
-
-SIXELSTATUS
-sixel_lookup_float32_configure_vptree(sixel_lookup_float32_t *lut,
-                                      unsigned char const *palette,
-                                      float const *palette_float,
-                                      int depth,
-                                      int float_depth,
-                                      int ncolors,
-                                      int complexion,
-                                      int wcomp1,
-                                      int wcomp2,
-                                      int wcomp3,
-                                      int pixelformat)
-{
-    return sixel_lookup_float32_configure(lut,
-                                          palette,
-                                          palette_float,
-                                          depth,
-                                          float_depth,
-                                          ncolors,
-                                          complexion,
-                                          wcomp1,
-                                          wcomp2,
-                                          wcomp3,
-                                          SIXEL_LUT_POLICY_VPTREE,
-                                          pixelformat);
-}
-
-SIXELSTATUS
-sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
-                                   unsigned char const *palette,
-                                   float const *palette_float,
-                                   int depth,
-                                   int float_depth,
-                                   int ncolors,
-                                   int complexion,
-                                   int wcomp1,
-                                   int wcomp2,
-                                   int wcomp3,
-                                   int pixelformat)
-{
-    return sixel_lookup_float32_configure(lut,
-                                          palette,
-                                          palette_float,
-                                          depth,
-                                          float_depth,
-                                          ncolors,
-                                          complexion,
-                                          wcomp1,
-                                          wcomp2,
-                                          wcomp3,
-                                          SIXEL_LUT_POLICY_RBC,
-                                          pixelformat);
-}
-
-SIXELSTATUS
-sixel_lookup_float32_configure_mahalanobis(sixel_lookup_float32_t *lut,
-                                           unsigned char const *palette,
-                                           float const *palette_float,
-                                           int depth,
-                                           int float_depth,
-                                           int ncolors,
-                                           int complexion,
-                                           int wcomp1,
-                                           int wcomp2,
-                                           int wcomp3,
-                                           int pixelformat)
-{
-    return sixel_lookup_float32_configure(lut,
-                                          palette,
-                                          palette_float,
-                                          depth,
-                                          float_depth,
-                                          ncolors,
-                                          complexion,
-                                          wcomp1,
-                                          wcomp2,
-                                          wcomp3,
-                                          SIXEL_LUT_POLICY_MAHALANOBIS,
-                                          pixelformat);
-}
-
-int
+static int SIXEL_LOOKUP_BACKEND_UNUSED
 sixel_lookup_float32_map_pixel(sixel_lookup_float32_t *lut,
                                unsigned char const *pixel)
 {
@@ -1792,72 +1702,6 @@ sixel_lookup_float32_map_pixel(sixel_lookup_float32_t *lut,
     }
 
     return sixel_lookup_float32_linear_search(lut, sample);
-}
-
-int
-sixel_lookup_float32_map_pixel_fhedt(sixel_lookup_float32_t *lut,
-                                     unsigned char const *pixel)
-{
-    float const *sample;
-
-    sample = NULL;
-    if (lut == NULL || pixel == NULL) {
-        return 0;
-    }
-    if (lut->fhedt_ready == 0 || lut->fhedt == NULL) {
-        return 0;
-    }
-
-    sample = (float const *)(void const *)pixel;
-    return sixel_lookup_fhedt_float32_map(lut->fhedt, sample);
-}
-
-int
-sixel_lookup_float32_map_pixel_vptree(sixel_lookup_float32_t *lut,
-                                      unsigned char const *pixel)
-{
-    float const *sample;
-
-    sample = NULL;
-    if (lut == NULL || pixel == NULL) {
-        return 0;
-    }
-    if (lut->vptree_ready == 0 || lut->vptree == NULL) {
-        return 0;
-    }
-
-    sample = (float const *)(void const *)pixel;
-    return sixel_lookup_vptree_float32_map(lut->vptree, sample);
-}
-
-int
-sixel_lookup_float32_map_pixel_rbc(sixel_lookup_float32_t *lut,
-                                   unsigned char const *pixel)
-{
-    float const *sample;
-
-    sample = NULL;
-    if (lut == NULL || pixel == NULL) {
-        return 0;
-    }
-
-    sample = (float const *)(void const *)pixel;
-    return sixel_lookup_float32_rbc_search(lut, sample, 0);
-}
-
-int
-sixel_lookup_float32_map_pixel_mahalanobis(sixel_lookup_float32_t *lut,
-                                           unsigned char const *pixel)
-{
-    float const *sample;
-
-    sample = NULL;
-    if (lut == NULL || pixel == NULL) {
-        return 0;
-    }
-
-    sample = (float const *)(void const *)pixel;
-    return sixel_lookup_float32_rbc_search(lut, sample, 1);
 }
 
 /* emacs Local Variables:      */

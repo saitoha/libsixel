@@ -354,6 +354,7 @@ AM_LOG_FLAGS =
 	staticcheck-private-includes \
 	staticcheck-src-no-direct-getenv \
 	staticcheck-test-runner-dllexport \
+	staticcheck-lookup-backend-exports \
 	staticcheck-test-runner-amalgamation-defines-sync \
 	staticcheck-makefile-recipes \
 	staticcheck-src-makefile-dist-sources-sync \
@@ -390,6 +391,7 @@ staticcheck-python-compileall \
 staticcheck-private-includes \
 staticcheck-src-no-direct-getenv \
 staticcheck-test-runner-dllexport \
+staticcheck-lookup-backend-exports \
 staticcheck-test-runner-amalgamation-defines-sync \
 staticcheck-makefile-recipes \
 staticcheck-src-makefile-dist-sources-sync \
@@ -504,6 +506,16 @@ staticcheck-test-runner-dllexport:
 		--trs-file staticcheck-test-runner-dllexport.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-test-runner-dllexport.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-lookup-backend-exports:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-lookup-backend-exports" \
+		--log-file staticcheck-lookup-backend-exports.log \
+		--trs-file staticcheck-lookup-backend-exports.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-lookup-backend-exports.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-test-runner-amalgamation-defines-sync:
@@ -1431,6 +1443,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-private-includes.sh \
     _static/sh/staticcheck-src-no-direct-getenv.sh \
     _static/sh/staticcheck-test-runner-dllexport.sh \
+    _static/sh/staticcheck-lookup-backend-exports.sh \
     _static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-src-makefile-dist-sources-sync.sh \

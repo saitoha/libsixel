@@ -51,15 +51,16 @@
 /*
  * IDL (internal contract)
  *
- * class Lookup8BitBackend {
- *   configure(policy, palette, ncolors, context);
- *   map_pixel(pixel);
+ * interface ILookup8BitBackendLifecycle {
+ *   init(allocator);
  *   clear();
+ *   finalize();
  * }
  *
  * Ownership/lifetime:
- * - configure() allocates policy-specific lookup structures owned by backend.
- * - clear() releases all backend-owned structures.
+ * - init() allocates optional helper handles used by policy objects.
+ * - clear() releases cached lookup structures while keeping the handle alive.
+ * - finalize() releases both caches and the owned helper handle itself.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -155,6 +156,19 @@ typedef struct sixel_lookup_8bit_1d_eytzinger_pair {
     float key;
     int index;
 } sixel_lookup_8bit_1d_eytzinger_pair_t;
+
+#if defined(__has_attribute)
+# if __has_attribute(unused)
+#  define SIXEL_LOOKUP_BACKEND_UNUSED __attribute__((unused))
+# endif
+#endif
+#ifndef SIXEL_LOOKUP_BACKEND_UNUSED
+# if defined(__GNUC__)
+#  define SIXEL_LOOKUP_BACKEND_UNUSED __attribute__((unused))
+# else
+#  define SIXEL_LOOKUP_BACKEND_UNUSED
+# endif
+#endif
 
 static void
 sixel_lookup_8bit_1d_eytzinger_log_event(
@@ -1911,7 +1925,7 @@ sixel_certlut_fallback(sixel_certlut_t const *lut,
     return (uint8_t)best_idx;
 }
 
-SIXELSTATUS
+static SIXELSTATUS
 sixel_certlut_build_cell(sixel_certlut_t *lut, uint32_t *cell,
                          int comp1_min,
                          int comp2_min,
@@ -2225,7 +2239,7 @@ end:
     return result;
 }
 
-void
+static void
 sixel_certlut_free(sixel_certlut_t *lut)
 {
     sixel_certlut_release(lut);
@@ -2280,7 +2294,7 @@ sixel_lookup_8bit_init(sixel_lookup_8bit_t *lut, sixel_allocator_t *allocator)
     (void)sixel_lookup_vptree_8bit_create(allocator, &lut->vptree);
 }
 
-SIXELSTATUS
+static SIXELSTATUS SIXEL_LOOKUP_BACKEND_UNUSED
 sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
                             unsigned char const *palette,
                             int depth,
@@ -2431,99 +2445,7 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
     return SIXEL_OK;
 }
 
-SIXELSTATUS
-sixel_lookup_8bit_configure_fhedt(sixel_lookup_8bit_t *lut,
-                                  unsigned char const *palette,
-                                  int depth,
-                                  int ncolors,
-                                  int complexion,
-                                  int wcomp1,
-                                  int wcomp2,
-                                  int wcomp3,
-                                  int pixelformat)
-{
-    return sixel_lookup_8bit_configure(lut,
-                                       palette,
-                                       depth,
-                                       ncolors,
-                                       complexion,
-                                       wcomp1,
-                                       wcomp2,
-                                       wcomp3,
-                                       SIXEL_LUT_POLICY_FHEDT,
-                                       pixelformat);
-}
-
-SIXELSTATUS
-sixel_lookup_8bit_configure_vptree(sixel_lookup_8bit_t *lut,
-                                   unsigned char const *palette,
-                                   int depth,
-                                   int ncolors,
-                                   int complexion,
-                                   int wcomp1,
-                                   int wcomp2,
-                                   int wcomp3,
-                                   int pixelformat)
-{
-    return sixel_lookup_8bit_configure(lut,
-                                       palette,
-                                       depth,
-                                       ncolors,
-                                       complexion,
-                                       wcomp1,
-                                       wcomp2,
-                                       wcomp3,
-                                       SIXEL_LUT_POLICY_VPTREE,
-                                       pixelformat);
-}
-
-SIXELSTATUS
-sixel_lookup_8bit_configure_rbc(sixel_lookup_8bit_t *lut,
-                                unsigned char const *palette,
-                                int depth,
-                                int ncolors,
-                                int complexion,
-                                int wcomp1,
-                                int wcomp2,
-                                int wcomp3,
-                                int pixelformat)
-{
-    return sixel_lookup_8bit_configure(lut,
-                                       palette,
-                                       depth,
-                                       ncolors,
-                                       complexion,
-                                       wcomp1,
-                                       wcomp2,
-                                       wcomp3,
-                                       SIXEL_LUT_POLICY_RBC,
-                                       pixelformat);
-}
-
-SIXELSTATUS
-sixel_lookup_8bit_configure_mahalanobis(sixel_lookup_8bit_t *lut,
-                                        unsigned char const *palette,
-                                        int depth,
-                                        int ncolors,
-                                        int complexion,
-                                        int wcomp1,
-                                        int wcomp2,
-                                        int wcomp3,
-                                        int pixelformat)
-{
-    return sixel_lookup_8bit_configure(lut,
-                                       palette,
-                                       depth,
-                                       ncolors,
-                                       complexion,
-                                       wcomp1,
-                                       wcomp2,
-                                       wcomp3,
-                                       SIXEL_LUT_POLICY_MAHALANOBIS,
-                                       pixelformat);
-}
-
-int
+static int SIXEL_LOOKUP_BACKEND_UNUSED
 sixel_lookup_8bit_map_pixel(sixel_lookup_8bit_t *lut,
                             unsigned char const *pixel)
 {
@@ -2553,56 +2475,6 @@ sixel_lookup_8bit_map_pixel(sixel_lookup_8bit_t *lut,
                                          pixel[0],
                                          pixel[1],
                                          pixel[2]);
-    }
-
-    return sixel_lookup_8bit_lookup_fast(lut, pixel);
-}
-
-int
-sixel_lookup_8bit_map_pixel_fhedt(sixel_lookup_8bit_t *lut,
-                                  unsigned char const *pixel)
-{
-    if (lut == NULL || pixel == NULL) {
-        return 0;
-    }
-    if (lut->fhedt_ready == 0 || lut->fhedt == NULL) {
-        return 0;
-    }
-
-    return sixel_lookup_fhedt_8bit_map(lut->fhedt, pixel);
-}
-
-int
-sixel_lookup_8bit_map_pixel_vptree(sixel_lookup_8bit_t *lut,
-                                   unsigned char const *pixel)
-{
-    if (lut == NULL || pixel == NULL) {
-        return 0;
-    }
-    if (lut->vptree_ready == 0 || lut->vptree == NULL) {
-        return 0;
-    }
-
-    return sixel_lookup_vptree_8bit_map(lut->vptree, pixel);
-}
-
-int
-sixel_lookup_8bit_map_pixel_rbc(sixel_lookup_8bit_t *lut,
-                                unsigned char const *pixel)
-{
-    if (lut == NULL || pixel == NULL) {
-        return 0;
-    }
-
-    return sixel_lookup_8bit_lookup_fast(lut, pixel);
-}
-
-int
-sixel_lookup_8bit_map_pixel_mahalanobis(sixel_lookup_8bit_t *lut,
-                                        unsigned char const *pixel)
-{
-    if (lut == NULL || pixel == NULL) {
-        return 0;
     }
 
     return sixel_lookup_8bit_lookup_fast(lut, pixel);
