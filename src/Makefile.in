@@ -264,8 +264,11 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/fromhdr.h $(srcdir)/frompsd.c $(srcdir)/frompsd.h \
 	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/fromwebp.c \
 	$(srcdir)/fromwebp.h $(srcdir)/fromwebp-internal.h \
-	$(srcdir)/fromwebp-container.c $(srcdir)/fromwebp-vp8.c \
-	$(srcdir)/fromwebp-vp8l.c $(srcdir)/fromwebp-trace.c \
+	$(srcdir)/fromwebp-vp8-private.h $(srcdir)/fromwebp-container.c \
+	$(srcdir)/fromwebp-vp8.c $(srcdir)/fromwebp-vp8-parse.c \
+	$(srcdir)/fromwebp-vp8-native.c \
+	$(srcdir)/fromwebp-vp8-libwebp.c $(srcdir)/fromwebp-vp8l.c \
+	$(srcdir)/fromwebp-trace.c \
 	$(srcdir)/frombmp-parser.c $(srcdir)/frombmp.c \
 	$(srcdir)/frombmp.h $(srcdir)/frombmp-internal.h \
 	$(srcdir)/clipboard.c $(srcdir)/clipboard.h \
@@ -387,6 +390,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromwebp.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromwebp-container.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromwebp-vp8.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromwebp-vp8-parse.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromwebp-vp8-native.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromwebp-vp8-libwebp.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromwebp-vp8l.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromwebp-trace.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frombmp-parser.lo \
@@ -505,6 +511,9 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-fromwebp-container.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo \
+	./$(DEPDIR)/libsixel_la-fromwebp-vp8-libwebp.Plo \
+	./$(DEPDIR)/libsixel_la-fromwebp-vp8-native.Plo \
+	./$(DEPDIR)/libsixel_la-fromwebp-vp8-parse.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp.Plo \
 	./$(DEPDIR)/libsixel_la-icc-apply.Plo \
@@ -1071,8 +1080,12 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-internal.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-vp8-private.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-container.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-vp8.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-vp8-parse.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-vp8-native.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-vp8-libwebp.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-vp8l.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-trace.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frombmp-parser.c \
@@ -1325,6 +1338,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-container.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8-libwebp.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8-native.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8-parse.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-apply.Plo@am__quote@ # am--include-marker
@@ -2071,6 +2087,27 @@ libsixel_la-fromwebp-vp8.lo: fromwebp-vp8.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-fromwebp-vp8.lo `test -f 'fromwebp-vp8.c' || echo '$(srcdir)/'`fromwebp-vp8.c
 
+libsixel_la-fromwebp-vp8-parse.lo: fromwebp-vp8-parse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-fromwebp-vp8-parse.lo -MD -MP -MF $(DEPDIR)/libsixel_la-fromwebp-vp8-parse.Tpo -c -o libsixel_la-fromwebp-vp8-parse.lo `test -f 'fromwebp-vp8-parse.c' || echo '$(srcdir)/'`fromwebp-vp8-parse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-fromwebp-vp8-parse.Tpo $(DEPDIR)/libsixel_la-fromwebp-vp8-parse.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fromwebp-vp8-parse.c' object='libsixel_la-fromwebp-vp8-parse.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-fromwebp-vp8-parse.lo `test -f 'fromwebp-vp8-parse.c' || echo '$(srcdir)/'`fromwebp-vp8-parse.c
+
+libsixel_la-fromwebp-vp8-native.lo: fromwebp-vp8-native.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-fromwebp-vp8-native.lo -MD -MP -MF $(DEPDIR)/libsixel_la-fromwebp-vp8-native.Tpo -c -o libsixel_la-fromwebp-vp8-native.lo `test -f 'fromwebp-vp8-native.c' || echo '$(srcdir)/'`fromwebp-vp8-native.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-fromwebp-vp8-native.Tpo $(DEPDIR)/libsixel_la-fromwebp-vp8-native.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fromwebp-vp8-native.c' object='libsixel_la-fromwebp-vp8-native.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-fromwebp-vp8-native.lo `test -f 'fromwebp-vp8-native.c' || echo '$(srcdir)/'`fromwebp-vp8-native.c
+
+libsixel_la-fromwebp-vp8-libwebp.lo: fromwebp-vp8-libwebp.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-fromwebp-vp8-libwebp.lo -MD -MP -MF $(DEPDIR)/libsixel_la-fromwebp-vp8-libwebp.Tpo -c -o libsixel_la-fromwebp-vp8-libwebp.lo `test -f 'fromwebp-vp8-libwebp.c' || echo '$(srcdir)/'`fromwebp-vp8-libwebp.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-fromwebp-vp8-libwebp.Tpo $(DEPDIR)/libsixel_la-fromwebp-vp8-libwebp.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fromwebp-vp8-libwebp.c' object='libsixel_la-fromwebp-vp8-libwebp.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-fromwebp-vp8-libwebp.lo `test -f 'fromwebp-vp8-libwebp.c' || echo '$(srcdir)/'`fromwebp-vp8-libwebp.c
+
 libsixel_la-fromwebp-vp8l.lo: fromwebp-vp8l.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-fromwebp-vp8l.lo -MD -MP -MF $(DEPDIR)/libsixel_la-fromwebp-vp8l.Tpo -c -o libsixel_la-fromwebp-vp8l.lo `test -f 'fromwebp-vp8l.c' || echo '$(srcdir)/'`fromwebp-vp8l.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-fromwebp-vp8l.Tpo $(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo
@@ -2543,6 +2580,9 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-container.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-libwebp.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-native.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
@@ -2710,6 +2750,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-container.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-libwebp.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-native.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
