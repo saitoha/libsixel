@@ -883,6 +883,12 @@ static sixel_lookup_policy_vtbl_t const g_sixel_lookup_policy_rbc_vtbl = {
     sixel_lookup_policy_rbc_prefer_palette_float_lookup
 };
 
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK) && \
+    defined(__GNUC__) && (__GNUC__ >= 10) && \
+    !defined(__clang__) && !defined(__PCC__) && !defined(__TINYC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+#endif
 SIXELSTATUS
 sixel_lookup_policy_create_rbc(sixel_lookup_policy_interface_t **policy)
 {
@@ -911,6 +917,11 @@ sixel_lookup_policy_create_rbc(sixel_lookup_policy_interface_t **policy)
     *policy = &object->base;
     return SIXEL_OK;
 }
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK) && \
+    defined(__GNUC__) && (__GNUC__ >= 10) && \
+    !defined(__clang__) && !defined(__PCC__) && !defined(__TINYC__)
+# pragma GCC diagnostic pop
+#endif
 
 
 /* emacs Local Variables:      */

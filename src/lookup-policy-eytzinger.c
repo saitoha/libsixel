@@ -864,10 +864,6 @@ sixel_lookup_policy_eytzinger_8bit_release(sixel_lookup_policy_eytzinger_8bit_t 
     sixel_lookup_policy_eytzinger_8bit_1d_eytzinger_t *eytz;
 
     eytz = NULL;
-    if (lut == NULL) {
-        return;
-    }
-
     eytz = &lut->eytz;
     if (eytz->keys != NULL) {
         sixel_allocator_free(lut->allocator, eytz->keys);
@@ -1580,6 +1576,12 @@ static sixel_lookup_policy_vtbl_t const g_sixel_lookup_policy_eytzinger_vtbl = {
     sixel_lookup_policy_eytzinger_prefer_palette_float_lookup
 };
 
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK) && \
+    defined(__GNUC__) && (__GNUC__ >= 10) && \
+    !defined(__clang__) && !defined(__PCC__) && !defined(__TINYC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+#endif
 SIXELSTATUS
 sixel_lookup_policy_create_eytzinger(sixel_lookup_policy_interface_t **policy)
 {
@@ -1608,6 +1610,11 @@ sixel_lookup_policy_create_eytzinger(sixel_lookup_policy_interface_t **policy)
     *policy = &object->base;
     return SIXEL_OK;
 }
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK) && \
+    defined(__GNUC__) && (__GNUC__ >= 10) && \
+    !defined(__clang__) && !defined(__PCC__) && !defined(__TINYC__)
+# pragma GCC diagnostic pop
+#endif
 
 
 /* emacs Local Variables:      */
