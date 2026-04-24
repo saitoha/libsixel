@@ -31,24 +31,15 @@
 
 #include <sixel.h>
 
-#include "components.h"
-#include "factory.h"
 #include "filter-lookup.h"
 #include "filter.h"
-#include "lookup-policy.h"
+#include "lookup-common.h"
 #include "status.h"
 
 /*
- * IDL (internal contract)
- *
- * class LookupFilterState {
- *   config: ILookupFilterConfig;
- *   result: ILookupFilterResult;
- * }
- *
- * Ownership/lifetime:
- * - State owns result.policy only when result.owned != 0.
- * - Dispose unrefs owned policy objects.
+ * Internal state retained by the lookup filter. The filter either reuses a
+ * caller-provided LUT or allocates a new one and marks ownership so dispose can
+ * release it.
  */
 typedef struct sixel_filter_lookup_state {
     sixel_filter_lookup_config_t config;
@@ -73,6 +64,35 @@ static sixel_filter_vtbl_t const sixel_filter_lookup_vtbl = {
     NULL
 };
 
+static void
+sixel_filter_lookup_weights(const sixel_filter_lookup_config_t *config,
+                            int *wcomp1_out,
+                            int *wcomp2_out,
+                            int *wcomp3_out)
+{
+    int wcomp1;
+    int wcomp2;
+    int wcomp3;
+
+    wcomp1 = 1;
+    wcomp2 = 1;
+    wcomp3 = 1;
+
+    if (config != NULL
+        && config->lut_policy == SIXEL_LUT_POLICY_CERTLUT
+        && config->method_for_largest == SIXEL_LARGE_LUM) {
+        wcomp1 = config->complexion * 299;
+        wcomp2 = 587;
+        wcomp3 = 114;
+    } else if (config != NULL) {
+        wcomp1 = config->complexion;
+    }
+
+    *wcomp1_out = wcomp1;
+    *wcomp2_out = wcomp2;
+    *wcomp3_out = wcomp3;
+}
+
 SIXELAPI SIXELSTATUS
 sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
                           sixel_allocator_t *allocator,
@@ -81,81 +101,63 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
 {
     SIXELSTATUS status;
     sixel_filter_lookup_result_t result;
-    sixel_lookup_policy_select_request_t select_request;
-    sixel_lookup_policy_prepare_request_t request;
-    sixel_factory_t *factory;
-    void *service;
-    char const *policy_name;
-    int optimize_lookup;
+    int wcomp1;
+    int wcomp2;
+    int wcomp3;
+    float const *palette_float;
+    int float_depth;
 
     status = SIXEL_FALSE;
     memset(&result, 0, sizeof(result));
-    memset(&select_request, 0, sizeof(select_request));
-    memset(&request, 0, sizeof(request));
-    factory = NULL;
-    service = NULL;
-    policy_name = NULL;
-    optimize_lookup = 0;
+    wcomp1 = 0;
+    wcomp2 = 0;
+    wcomp3 = 0;
+    palette_float = NULL;
+    float_depth = 0;
 
     if (config == NULL || result_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    result.policy = config->reuse_policy;
+    sixel_filter_lookup_weights(config, &wcomp1, &wcomp2, &wcomp3);
+
+    result.lut = config->reuse_lut;
     result.owned = 0;
-    optimize_lookup = (config->lut_policy != SIXEL_LUT_POLICY_NONE);
 
-    if (result.policy == NULL) {
-        select_request.palette = config->palette;
-        select_request.depth = config->depth;
-        select_request.reqcolor = config->ncolors;
-        select_request.optimize_lookup = optimize_lookup;
-        select_request.lut_policy = config->lut_policy;
-        policy_name = sixel_lookup_policy_select_name(&select_request);
-        if (policy_name == NULL) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-
-        status = sixel_components_getservice("services/factory", &service);
+    if (result.lut == NULL) {
+        status = sixel_lut_new(&result.lut, config->lut_policy, allocator);
         if (SIXEL_FAILED(status)) {
-            return status;
-        }
-        factory = (sixel_factory_t *)service;
-        status = factory->vtbl->create(factory,
-                                       policy_name,
-                                       (void **)&result.policy);
-        factory->vtbl->unref(factory);
-        factory = NULL;
-        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_filter_lookup_build: failed to allocate LUT.");
             return status;
         }
         result.owned = 1;
     }
 
-    request.palette = config->palette;
-    request.palette_float = config->palette_float;
-    request.depth = config->depth;
-    request.float_depth = config->float_depth;
-    request.reqcolor = config->ncolors;
-    request.complexion = config->complexion;
-    request.pixelformat = config->pixelformat;
-    request.reuse_policy = config->reuse_policy;
-    request.reuse_policy_slot = config->reuse_policy_slot;
-    request.allocator = allocator;
-
-    status = result.policy->vtbl->prepare(result.policy, &request);
+    palette_float = config->palette_float;
+    /* Reset float_depth when palette_float is absent to avoid MSan noise. */
+    if (palette_float == NULL) {
+        float_depth = 0;
+    } else {
+        float_depth = config->float_depth;
+    }
+    status = sixel_lut_configure(result.lut,
+                                 config->palette,
+                                 palette_float,
+                                 config->depth,
+                                 float_depth,
+                                 config->ncolors,
+                                 config->complexion,
+                                 wcomp1,
+                                 wcomp2,
+                                 wcomp3,
+                                 config->lut_policy,
+                                 config->pixelformat);
     if (SIXEL_FAILED(status)) {
-        if (result.owned != 0 && result.policy != NULL) {
-            result.policy->vtbl->unref(result.policy);
+        if (result.owned != 0 && result.lut != NULL) {
+            sixel_lut_unref(result.lut);
         }
         return status;
-    }
-
-    if (result.owned != 0
-            && config->reuse_policy_slot != NULL
-            && *config->reuse_policy_slot == NULL) {
-        *config->reuse_policy_slot = result.policy;
-        result.owned = 0;
     }
 
     if (logger != NULL) {
@@ -225,8 +227,8 @@ sixel_filter_lookup_dispose(sixel_filter_t *filter)
 
     state = (sixel_filter_lookup_state_t *)filter->userdata;
     if (state != NULL) {
-        if (state->result.owned != 0 && state->result.policy != NULL) {
-            state->result.policy->vtbl->unref(state->result.policy);
+        if (state->result.owned != 0 && state->result.lut != NULL) {
+            sixel_lut_unref(state->result.lut);
         }
         free(state);
     }

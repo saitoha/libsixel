@@ -35,24 +35,9 @@ extern "C" {
 #endif
 
 /*
- * IDL (internal contract)
- *
- * interface IEytzingerFilter {
- *   init(filter, config);
- * }
- *
- * Ownership/lifetime:
- * - apply() may publish result_out->policy with owned=1.
- * - Caller unrefs the policy only when owned is non-zero.
- *
- * Creation path:
- * - The filter delegates policy construction to ILookupFilter.build().
- */
-
-/*
  * Configuration for the 1d Eytzinger filter. The filter builds a 1d lookup
- * policy object from the merged palette and propagates the result to the
- * caller. The lookup configuration must request `SIXEL_LUT_POLICY_EYTZINGER`.
+ * table from the merged palette and propagates the result to the caller. The
+ * lookup configuration must request `SIXEL_LUT_POLICY_EYTZINGER`.
  */
 typedef struct sixel_filter_1d_eytzinger_config {
     sixel_filter_lookup_config_t lookup_config;

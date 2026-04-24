@@ -35,24 +35,9 @@ extern "C" {
 #endif
 
 /*
- * IDL (internal contract)
- *
- * interface IFhedtFilter {
- *   init(filter, config);
- * }
- *
- * Ownership/lifetime:
- * - apply() may publish result_out->policy with owned=1.
- * - Caller unrefs the policy only when owned is non-zero.
- *
- * Creation path:
- * - The filter delegates policy construction to ILookupFilter.build().
- */
-
-/*
- * Configuration for the FHEDT filter. The filter builds a FHEDT lookup policy
- * object from the merged palette and propagates the result to the caller. The
- * lookup configuration must request `SIXEL_LUT_POLICY_FHEDT`.
+ * Configuration for the FHEDT filter. The filter builds a FHEDT lookup table from
+ * the merged palette and propagates the result to the caller. The lookup
+ * configuration must request `SIXEL_LUT_POLICY_FHEDT`.
  */
 typedef struct sixel_filter_fhedt_config {
     sixel_filter_lookup_config_t lookup_config;

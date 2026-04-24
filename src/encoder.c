@@ -29,15 +29,6 @@
 # define _POSIX_C_SOURCE 200809L
 #endif
 
-/*
- * IDL usage in this unit
- *
- * IFilterFactory.create("lookup/...", &filter)
- * ILookupFilter.apply()
- * ILookupPolicy.ref()
- * ILookupPolicy.unref()
- */
-
 /* STDC_HEADERS */
 #include <stdio.h>
 #include <stdlib.h>
@@ -7027,8 +7018,7 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     lookup_config.complexion = 1;
     lookup_config.lut_policy = policy;
     lookup_config.pixelformat = dither->pixelformat;
-    lookup_config.reuse_policy = palette->lookup_policy;
-    lookup_config.reuse_policy_slot = NULL;
+    lookup_config.reuse_lut = palette->lut;
 
     if (policy == SIXEL_LUT_POLICY_FHEDT) {
         fhedt_config.lookup_config = lookup_config;
@@ -7060,12 +7050,11 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     status = sixel_filter_run(filter,
                               encoder->allocator,
                               encoder->logger);
-    if (SIXEL_SUCCEEDED(status) && result.policy != NULL) {
-        if (palette->lookup_policy != NULL
-                && palette->lookup_policy != result.policy) {
-            palette->lookup_policy->vtbl->unref(palette->lookup_policy);
+    if (SIXEL_SUCCEEDED(status) && result.lut != NULL) {
+        if (palette->lut != NULL && palette->lut != result.lut) {
+            sixel_lut_unref(palette->lut);
         }
-        palette->lookup_policy = result.policy;
+        palette->lut = result.lut;
     }
 
     sixel_filter_free(filter);
