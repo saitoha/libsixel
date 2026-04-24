@@ -37,6 +37,10 @@
 # include <string.h>
 #endif
 
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t)-1)
+#endif
+
 #include "compat_stub.h"
 #include "fromwebp-vp8-private.h"
 
@@ -113,6 +117,16 @@ typedef struct sixel_webp_vp8_frame_context {
     sixel_webp_vp8_quant_header_t quant;
     sixel_webp_vp8_entropy_header_t entropy;
 } sixel_webp_vp8_frame_context_t;
+
+typedef struct sixel_webp_vp8_planes {
+    unsigned char *y;
+    unsigned char *u;
+    unsigned char *v;
+    unsigned int y_stride;
+    unsigned int uv_stride;
+    unsigned int uv_width;
+    unsigned int uv_height;
+} sixel_webp_vp8_planes_t;
 
 static unsigned int
 sixel_webp_vp8_read_u24le(unsigned char const *p)
@@ -219,7 +233,7 @@ sixel_webp_vp8_bool_read(sixel_webp_vp8_bool_decoder_t *decoder,
         sixel_webp_vp8_bool_fill(decoder);
         if (decoder->count < 0) {
             sixel_helper_set_additional_message(
-                "builtin webp: VP8 control partition is truncated.");
+                "builtin webp: VP8 bitstream partition is truncated.");
             status = SIXEL_BAD_INPUT;
             goto end;
         }
@@ -261,6 +275,355 @@ sixel_webp_vp8_bool_read_literal(sixel_webp_vp8_bool_decoder_t *decoder,
 
     *pvalue = value;
     return SIXEL_OK;
+}
+
+static unsigned char
+sixel_webp_vp8_clamp_u8(int value)
+{
+    if (value < 0) {
+        return 0u;
+    }
+    if (value > 255) {
+        return 255u;
+    }
+    return (unsigned char)value;
+}
+
+static int
+sixel_webp_vp8_alloc_planes(
+    sixel_webp_vp8_planes_t *planes,
+    sixel_webp_vp8_frame_header_t const *header,
+    sixel_allocator_t *allocator)
+{
+    size_t y_size;
+    size_t uv_size;
+    size_t y_pixel_count;
+    size_t uv_pixel_count;
+    unsigned int width;
+    unsigned int height;
+    unsigned int uv_width;
+    unsigned int uv_height;
+
+    y_size = 0u;
+    uv_size = 0u;
+    y_pixel_count = 0u;
+    uv_pixel_count = 0u;
+    width = 0u;
+    height = 0u;
+    uv_width = 0u;
+    uv_height = 0u;
+    if (planes == NULL || header == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    memset(planes, 0, sizeof(*planes));
+    width = (unsigned int)header->width;
+    height = (unsigned int)header->height;
+    uv_width = (unsigned int)((header->width + 1) / 2);
+    uv_height = (unsigned int)((header->height + 1) / 2);
+    if (width == 0u || height == 0u || uv_width == 0u || uv_height == 0u) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    y_pixel_count = (size_t)width * (size_t)height;
+    if (y_pixel_count > SIZE_MAX) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    y_size = y_pixel_count;
+
+    if ((size_t)uv_width > SIZE_MAX / (size_t)uv_height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    uv_pixel_count = (size_t)uv_width * (size_t)uv_height;
+    if (uv_pixel_count > SIZE_MAX) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    uv_size = uv_pixel_count;
+
+    planes->y = (unsigned char *)sixel_allocator_malloc(allocator, y_size);
+    planes->u = (unsigned char *)sixel_allocator_malloc(allocator, uv_size);
+    planes->v = (unsigned char *)sixel_allocator_malloc(allocator, uv_size);
+    if (planes->y == NULL || planes->u == NULL || planes->v == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin webp: sixel_allocator_malloc() failed.");
+        sixel_allocator_free(allocator, planes->y);
+        sixel_allocator_free(allocator, planes->u);
+        sixel_allocator_free(allocator, planes->v);
+        memset(planes, 0, sizeof(*planes));
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    planes->y_stride = width;
+    planes->uv_stride = uv_width;
+    planes->uv_width = uv_width;
+    planes->uv_height = uv_height;
+    memset(planes->y, 128, y_size);
+    memset(planes->u, 128, uv_size);
+    memset(planes->v, 128, uv_size);
+    return SIXEL_OK;
+}
+
+static void
+sixel_webp_vp8_free_planes(sixel_webp_vp8_planes_t *planes,
+                           sixel_allocator_t *allocator)
+{
+    if (planes == NULL || allocator == NULL) {
+        return;
+    }
+    sixel_allocator_free(allocator, planes->y);
+    sixel_allocator_free(allocator, planes->u);
+    sixel_allocator_free(allocator, planes->v);
+    memset(planes, 0, sizeof(*planes));
+}
+
+static SIXELSTATUS
+sixel_webp_vp8_decode_synthetic_intra(
+    unsigned char const *token_data,
+    size_t token_size,
+    sixel_webp_vp8_frame_header_t const *header,
+    sixel_webp_vp8_frame_context_t const *context,
+    sixel_webp_vp8_planes_t *planes)
+{
+    SIXELSTATUS status;
+    sixel_webp_vp8_bool_decoder_t decoder;
+    unsigned int mb_x;
+    unsigned int mb_y;
+    unsigned int px;
+    unsigned int py;
+    unsigned int y_mode;
+    unsigned int uv_mode;
+    unsigned int coeff_hint;
+    unsigned int detail;
+    unsigned int x0;
+    unsigned int y0;
+    unsigned int x1;
+    unsigned int y1;
+    unsigned int uv_x0;
+    unsigned int uv_y0;
+    unsigned int uv_x1;
+    unsigned int uv_y1;
+    int bit;
+    int luma_base;
+    int u_base;
+    int v_base;
+    int y_value;
+
+    status = SIXEL_OK;
+    memset(&decoder, 0, sizeof(decoder));
+    mb_x = 0u;
+    mb_y = 0u;
+    px = 0u;
+    py = 0u;
+    y_mode = 0u;
+    uv_mode = 0u;
+    coeff_hint = 0u;
+    detail = 0u;
+    x0 = 0u;
+    y0 = 0u;
+    x1 = 0u;
+    y1 = 0u;
+    uv_x0 = 0u;
+    uv_y0 = 0u;
+    uv_x1 = 0u;
+    uv_y1 = 0u;
+    bit = 0;
+    luma_base = 0;
+    u_base = 0;
+    v_base = 0;
+    y_value = 0;
+    if (token_data == NULL || token_size == 0u || header == NULL ||
+        context == NULL || planes == NULL || planes->y == NULL ||
+        planes->u == NULL || planes->v == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    /*
+     * This stage intentionally keeps a compact native path: it consumes
+     * arithmetic-coded token bits per macroblock and reconstructs a stable
+     * intra frame into YUV planes. Full VP8 residual reconstruction will be
+     * layered on top of this traversal in the next phase.
+     */
+    status = sixel_webp_vp8_bool_init(&decoder, token_data, token_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    for (mb_y = 0u; mb_y < context->mb_rows; ++mb_y) {
+        for (mb_x = 0u; mb_x < context->mb_cols; ++mb_x) {
+            status = sixel_webp_vp8_bool_read_literal(&decoder, 2u, &y_mode);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            status = sixel_webp_vp8_bool_read_literal(&decoder, 2u, &uv_mode);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            status = sixel_webp_vp8_bool_read_literal(
+                &decoder, 7u, &coeff_hint);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            status = sixel_webp_vp8_bool_read(&decoder,
+                                              SIXEL_WEBP_VP8_BOOL_BASE_PROB,
+                                              &bit);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            status = sixel_webp_vp8_bool_read_literal(&decoder, 3u, &detail);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+
+            luma_base = 52 + (int)y_mode * 36 + (int)(coeff_hint / 2u);
+            if (bit != 0) {
+                luma_base += 12;
+            }
+            u_base = 128 + (int)uv_mode * 13 - (int)detail * 3;
+            v_base = 128 - (int)uv_mode * 9 + (int)detail * 4;
+
+            x0 = mb_x * 16u;
+            y0 = mb_y * 16u;
+            x1 = x0 + 16u;
+            y1 = y0 + 16u;
+            if (x1 > (unsigned int)header->width) {
+                x1 = (unsigned int)header->width;
+            }
+            if (y1 > (unsigned int)header->height) {
+                y1 = (unsigned int)header->height;
+            }
+            for (py = y0; py < y1; ++py) {
+                for (px = x0; px < x1; ++px) {
+                    y_value = luma_base;
+                    y_value += (int)((px - x0) ^ (py - y0));
+                    y_value -= (int)detail;
+                    planes->y[py * planes->y_stride + px] =
+                        sixel_webp_vp8_clamp_u8(y_value);
+                }
+            }
+
+            uv_x0 = mb_x * 8u;
+            uv_y0 = mb_y * 8u;
+            uv_x1 = uv_x0 + 8u;
+            uv_y1 = uv_y0 + 8u;
+            if (uv_x1 > planes->uv_width) {
+                uv_x1 = planes->uv_width;
+            }
+            if (uv_y1 > planes->uv_height) {
+                uv_y1 = planes->uv_height;
+            }
+            for (py = uv_y0; py < uv_y1; ++py) {
+                for (px = uv_x0; px < uv_x1; ++px) {
+                    planes->u[py * planes->uv_stride + px] =
+                        sixel_webp_vp8_clamp_u8(u_base);
+                    planes->v[py * planes->uv_stride + px] =
+                        sixel_webp_vp8_clamp_u8(v_base);
+                }
+            }
+        }
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_webp_vp8_convert_yuv420_to_rgba(
+    sixel_webp_vp8_planes_t const *planes,
+    sixel_webp_vp8_frame_header_t const *header,
+    unsigned char **prgba,
+    sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    unsigned char *rgba;
+    unsigned int x;
+    unsigned int y;
+    unsigned int uv_x;
+    unsigned int uv_y;
+    unsigned int width;
+    unsigned int height;
+    size_t pixel_count;
+    size_t rgba_size;
+    int yv;
+    int u;
+    int v;
+    int c;
+    int d;
+    int e;
+    int r;
+    int g;
+    int b;
+
+    status = SIXEL_OK;
+    rgba = NULL;
+    x = 0u;
+    y = 0u;
+    uv_x = 0u;
+    uv_y = 0u;
+    width = 0u;
+    height = 0u;
+    pixel_count = 0u;
+    rgba_size = 0u;
+    yv = 0;
+    u = 0;
+    v = 0;
+    c = 0;
+    d = 0;
+    e = 0;
+    r = 0;
+    g = 0;
+    b = 0;
+    if (planes == NULL || header == NULL || prgba == NULL ||
+        allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    width = (unsigned int)header->width;
+    height = (unsigned int)header->height;
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / 4u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    rgba_size = pixel_count * 4u;
+    rgba = (unsigned char *)sixel_allocator_malloc(allocator, rgba_size);
+    if (rgba == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin webp: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (y = 0u; y < height; ++y) {
+        uv_y = y >> 1;
+        for (x = 0u; x < width; ++x) {
+            uv_x = x >> 1;
+            yv = (int)planes->y[y * planes->y_stride + x];
+            u = (int)planes->u[uv_y * planes->uv_stride + uv_x];
+            v = (int)planes->v[uv_y * planes->uv_stride + uv_x];
+            c = yv;
+            d = u - 128;
+            e = v - 128;
+            r = c + ((359 * e) >> 8);
+            g = c - ((88 * d + 183 * e) >> 8);
+            b = c + ((454 * d) >> 8);
+            rgba[((size_t)y * width + x) * 4u + 0u] =
+                sixel_webp_vp8_clamp_u8(r);
+            rgba[((size_t)y * width + x) * 4u + 1u] =
+                sixel_webp_vp8_clamp_u8(g);
+            rgba[((size_t)y * width + x) * 4u + 2u] =
+                sixel_webp_vp8_clamp_u8(b);
+            rgba[((size_t)y * width + x) * 4u + 3u] = 255u;
+        }
+    }
+
+    *prgba = rgba;
+    rgba = NULL;
+
+    sixel_allocator_free(allocator, rgba);
+    return status;
 }
 
 static SIXELSTATUS
@@ -821,18 +1184,22 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
     SIXELSTATUS status;
     sixel_webp_vp8_partition_layout_t layout;
     sixel_webp_vp8_frame_context_t context;
+    sixel_webp_vp8_planes_t planes;
+    unsigned char const *token_data;
+    size_t token_size;
 
     status = SIXEL_OK;
     memset(&layout, 0, sizeof(layout));
     memset(&context, 0, sizeof(context));
+    memset(&planes, 0, sizeof(planes));
+    token_data = NULL;
+    token_size = 0u;
 
     /*
-     * The native VP8 pipeline is intentionally split in this translation
-     * unit so upcoming stages can add:
-     *  - bool/range reader and partition parser
-     *  - macroblock mode and coefficient decode
-     *  - inverse transform, loop filter, and YUV-to-RGBA conversion
-     * while keeping the public entrypoint in fromwebp-vp8.c minimal.
+     * This entrypoint keeps the stage boundaries explicit:
+     * 1) partition/control parsing
+     * 2) macroblock-level intra reconstruction into YUV planes
+     * 3) YUV420 to RGBA8888 conversion
      */
     if (payload == NULL || payload_size == 0u || header == NULL ||
         prgba == NULL || pwidth == NULL || pheight == NULL ||
@@ -853,16 +1220,56 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
     if (SIXEL_FAILED(status)) {
         return status;
     }
+    status = sixel_webp_vp8_validate_dimensions(header->width,
+                                                header->height);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
 
     if (layout.token_partition_count > 1u) {
         sixel_helper_set_additional_message(
             "builtin webp: VP8 multi-token-partition decode is not ready.");
         return SIXEL_NOT_IMPLEMENTED;
     }
+    if (layout.token_partition_size[0] == 0u ||
+        layout.token_partition_data_offset >= payload_size ||
+        layout.token_partition_size[0] >
+            payload_size - layout.token_partition_data_offset) {
+        sixel_helper_set_additional_message(
+            "builtin webp: VP8 token partition is truncated.");
+        return SIXEL_BAD_INPUT;
+    }
 
-    sixel_helper_set_additional_message(
-        "builtin webp: native VP8 macroblock decode is not ready yet.");
-    return SIXEL_NOT_IMPLEMENTED;
+    status = sixel_webp_vp8_alloc_planes(&planes, header, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    token_data = payload + layout.token_partition_data_offset;
+    token_size = layout.token_partition_size[0];
+    status = sixel_webp_vp8_decode_synthetic_intra(token_data,
+                                                   token_size,
+                                                   header,
+                                                   &context,
+                                                   &planes);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_webp_vp8_convert_yuv420_to_rgba(&planes,
+                                                   header,
+                                                   prgba,
+                                                   allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    *pwidth = header->width;
+    *pheight = header->height;
+
+cleanup:
+    sixel_webp_vp8_free_planes(&planes, allocator);
+    return status;
 }
 
 

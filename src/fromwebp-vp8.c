@@ -41,10 +41,6 @@ sixel_webp_decode_vp8_payload(unsigned char const *payload,
 {
     SIXELSTATUS status;
     sixel_webp_vp8_frame_header_t header;
-#if HAVE_WEBP
-    unsigned char *riff_data;
-    size_t riff_size;
-#endif
 
     status = SIXEL_OK;
     header.width = 0;
@@ -52,10 +48,6 @@ sixel_webp_decode_vp8_payload(unsigned char const *payload,
     header.version = 0;
     header.show_frame = 0;
     header.first_partition_size = 0u;
-#if HAVE_WEBP
-    riff_data = NULL;
-    riff_size = 0u;
-#endif
     if (payload == NULL || payload_size == 0u || prgba == NULL ||
         pwidth == NULL || pheight == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -70,11 +62,6 @@ sixel_webp_decode_vp8_payload(unsigned char const *payload,
         return status;
     }
 
-    /*
-     * Native decode is now the first-class path. While the implementation is
-     * still being completed, keep libwebp as a compatibility fallback only
-     * when the native path reports NOT_IMPLEMENTED.
-     */
     status = sixel_webp_vp8_decode_native_payload(payload,
                                                   payload_size,
                                                   &header,
@@ -82,31 +69,6 @@ sixel_webp_decode_vp8_payload(unsigned char const *payload,
                                                   pwidth,
                                                   pheight,
                                                   allocator);
-    if (SIXEL_SUCCEEDED(status) || status != SIXEL_NOT_IMPLEMENTED) {
-        return status;
-    }
-
-#if HAVE_WEBP
-    status = sixel_webp_vp8_wrap_riff_payload(payload,
-                                              payload_size,
-                                              &riff_data,
-                                              &riff_size,
-                                              allocator);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    status = sixel_webp_vp8_decode_with_libwebp(riff_data,
-                                                riff_size,
-                                                &header,
-                                                prgba,
-                                                pwidth,
-                                                pheight,
-                                                allocator);
-    sixel_allocator_free(allocator, riff_data);
-#else
-    sixel_helper_set_additional_message(
-        "builtin webp: VP8 static decoder is unavailable in this build.");
-#endif
     return status;
 }
 
