@@ -35,12 +35,11 @@
 # include <math.h>
 #endif
 
-#include "lookup-8bit.h"
 #include "lookup-common.h"
-#include "lookup-float32.h"
 #include "lookup-policy-private.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
+
 
 /*
  * IDL (internal contract)
@@ -55,13 +54,129 @@
  * }
  */
 
+enum { SIXEL_LOOKUP_POLICY_MAHALANOBIS_FLOAT_COMPONENTS = 3 };
+
+typedef struct sixel_lookup_policy_mahalanobis_8bit {
+    int policy;
+    int depth;
+    int ncolors;
+    int complexion;
+    unsigned char const *palette;
+    sixel_allocator_t *allocator;
+} sixel_lookup_policy_mahalanobis_8bit_t;
+
+typedef struct sixel_lookup_policy_mahalanobis_float32 {
+    int policy;
+    int depth;
+    int ncolors;
+    int complexion;
+    float weights[SIXEL_LOOKUP_POLICY_MAHALANOBIS_FLOAT_COMPONENTS];
+    float *palette;
+    sixel_allocator_t *allocator;
+    struct {
+        int pivot_count;
+        int *pivots;
+        float *radius;
+        int *member_offset;
+        int *member_index;
+        float *mean;
+        float *inv_cov;
+        int ready;
+    } rbc;
+} sixel_lookup_policy_mahalanobis_float32_t;
+
+static void
+sixel_lookup_policy_mahalanobis_float32_clear_state(
+    sixel_lookup_policy_mahalanobis_float32_t *lut);
+
+static void
+sixel_lookup_policy_mahalanobis_8bit_init(sixel_lookup_policy_mahalanobis_8bit_t *lut,
+                       sixel_allocator_t *allocator)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    memset(lut, 0, sizeof(*lut));
+    lut->allocator = allocator;
+    lut->complexion = 1;
+}
+
+static void
+sixel_lookup_policy_mahalanobis_8bit_clear(sixel_lookup_policy_mahalanobis_8bit_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    lut->palette = NULL;
+    lut->depth = 0;
+    lut->ncolors = 0;
+    lut->complexion = 1;
+}
+
+static void
+sixel_lookup_policy_mahalanobis_8bit_finalize(sixel_lookup_policy_mahalanobis_8bit_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    sixel_lookup_policy_mahalanobis_8bit_clear(lut);
+    lut->allocator = NULL;
+}
+
+static void
+sixel_lookup_policy_mahalanobis_float32_init(sixel_lookup_policy_mahalanobis_float32_t *lut,
+                          sixel_allocator_t *allocator)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    memset(lut, 0, sizeof(*lut));
+    lut->allocator = allocator;
+    lut->complexion = 1;
+    lut->weights[0] = 1.0f;
+    lut->weights[1] = 1.0f;
+    lut->weights[2] = 1.0f;
+}
+
+static void
+sixel_lookup_policy_mahalanobis_float32_clear(sixel_lookup_policy_mahalanobis_float32_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    if (lut->palette != NULL) {
+        sixel_allocator_free(lut->allocator, lut->palette);
+        lut->palette = NULL;
+    }
+    sixel_lookup_policy_mahalanobis_float32_clear_state(lut);
+    lut->depth = 0;
+    lut->ncolors = 0;
+    lut->complexion = 1;
+}
+
+static void
+sixel_lookup_policy_mahalanobis_float32_finalize(sixel_lookup_policy_mahalanobis_float32_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    sixel_lookup_policy_mahalanobis_float32_clear(lut);
+    lut->allocator = NULL;
+}
+
 typedef struct sixel_lookup_policy_mahalanobis_object {
     sixel_lookup_policy_interface_t base;
     sixel_atomic_u32_t ref;
     int backend_initialized;
     int prepared;
-    sixel_lookup_8bit_t state_8bit;
-    sixel_lookup_float32_t state_float;
+    sixel_lookup_policy_mahalanobis_8bit_t state_8bit;
+    sixel_lookup_policy_mahalanobis_float32_t state_float;
     int lookup_source_is_float;
 } sixel_lookup_policy_mahalanobis_object_t;
 
@@ -91,8 +206,8 @@ sixel_lookup_policy_mahalanobis_float32_component(float const *palette,
     clamped_axis = axis;
     if (clamped_axis < 0) {
         clamped_axis = 0;
-    } else if (clamped_axis >= SIXEL_LOOKUP_FLOAT_COMPONENTS) {
-        clamped_axis = SIXEL_LOOKUP_FLOAT_COMPONENTS - 1;
+    } else if (clamped_axis >= SIXEL_LOOKUP_POLICY_MAHALANOBIS_FLOAT_COMPONENTS) {
+        clamped_axis = SIXEL_LOOKUP_POLICY_MAHALANOBIS_FLOAT_COMPONENTS - 1;
     }
 
     return palette[index * depth + clamped_axis];
@@ -100,7 +215,7 @@ sixel_lookup_policy_mahalanobis_float32_component(float const *palette,
 
 static float
 sixel_lookup_policy_mahalanobis_float32_distance(
-    sixel_lookup_float32_t const *lut,
+    sixel_lookup_policy_mahalanobis_float32_t const *lut,
     float const *sample,
     int palette_index)
 {
@@ -111,7 +226,7 @@ sixel_lookup_policy_mahalanobis_float32_distance(
     diff = 0.0f;
     distance = 0.0f;
     component = 0;
-    for (component = 0; component < SIXEL_LOOKUP_FLOAT_COMPONENTS;
+    for (component = 0; component < SIXEL_LOOKUP_POLICY_MAHALANOBIS_FLOAT_COMPONENTS;
             ++component) {
         diff = sample[component]
              - sixel_lookup_policy_mahalanobis_float32_component(
@@ -129,7 +244,7 @@ sixel_lookup_policy_mahalanobis_float32_distance(
 
 static float
 sixel_lookup_policy_mahalanobis_weighted_component(
-    sixel_lookup_float32_t const *lut,
+    sixel_lookup_policy_mahalanobis_float32_t const *lut,
     float value,
     int component)
 {
@@ -182,7 +297,7 @@ sixel_lookup_policy_mahalanobis_inverse3(float const *src, float *dst)
 
 static void
 sixel_lookup_policy_mahalanobis_float32_clear_state(
-    sixel_lookup_float32_t *lut)
+    sixel_lookup_policy_mahalanobis_float32_t *lut)
 {
     free(lut->rbc.pivots);
     free(lut->rbc.radius);
@@ -202,7 +317,7 @@ sixel_lookup_policy_mahalanobis_float32_clear_state(
 
 static int
 sixel_lookup_policy_mahalanobis_member_index_at(
-    sixel_lookup_float32_t const *lut,
+    sixel_lookup_policy_mahalanobis_float32_t const *lut,
     int position,
     int *member_index)
 {
@@ -224,7 +339,7 @@ sixel_lookup_policy_mahalanobis_member_index_at(
 
 static SIXELSTATUS
 sixel_lookup_policy_mahalanobis_float32_prepare_palette(
-    sixel_lookup_float32_t *lut,
+    sixel_lookup_policy_mahalanobis_float32_t *lut,
     unsigned char const *palette,
     float const *palette_float,
     int float_depth,
@@ -295,7 +410,7 @@ sixel_lookup_policy_mahalanobis_float32_prepare_palette(
 
 static SIXELSTATUS
 sixel_lookup_policy_mahalanobis_float32_configure_clusters(
-    sixel_lookup_float32_t *lut)
+    sixel_lookup_policy_mahalanobis_float32_t *lut)
 {
     int pivots;
     int i;
@@ -537,7 +652,7 @@ sixel_lookup_policy_mahalanobis_float32_configure_clusters(
 
 static int
 sixel_lookup_policy_mahalanobis_float32_search(
-    sixel_lookup_float32_t const *lut,
+    sixel_lookup_policy_mahalanobis_float32_t const *lut,
     float const *sample)
 {
     int j;
@@ -614,11 +729,11 @@ sixel_lookup_policy_mahalanobis_float32_search(
 
 static SIXELSTATUS
 sixel_lookup_policy_mahalanobis_configure_float32(
-    sixel_lookup_float32_t *lut,
+    sixel_lookup_policy_mahalanobis_float32_t *lut,
     sixel_lookup_policy_prepare_request_t const *request)
 {
     SIXELSTATUS status;
-    float base_weights[SIXEL_LOOKUP_FLOAT_COMPONENTS];
+    float base_weights[SIXEL_LOOKUP_POLICY_MAHALANOBIS_FLOAT_COMPONENTS];
     float range;
     float scale;
     int component;
@@ -635,7 +750,7 @@ sixel_lookup_policy_mahalanobis_configure_float32(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_lookup_float32_clear(lut);
+    sixel_lookup_policy_mahalanobis_float32_clear(lut);
     lut->policy = SIXEL_LUT_POLICY_MAHALANOBIS;
     lut->depth = request->depth;
     lut->ncolors = request->reqcolor;
@@ -644,7 +759,7 @@ sixel_lookup_policy_mahalanobis_configure_float32(
     base_weights[0] = 1.0f;
     base_weights[1] = 1.0f;
     base_weights[2] = 1.0f;
-    for (component = 0; component < SIXEL_LOOKUP_FLOAT_COMPONENTS;
+    for (component = 0; component < SIXEL_LOOKUP_POLICY_MAHALANOBIS_FLOAT_COMPONENTS;
             ++component) {
         range = sixel_pixelformat_float_channel_range(request->pixelformat,
                                                       component);
@@ -670,14 +785,14 @@ sixel_lookup_policy_mahalanobis_configure_float32(
 
 static SIXELSTATUS
 sixel_lookup_policy_mahalanobis_configure_8bit(
-    sixel_lookup_8bit_t *lut,
+    sixel_lookup_policy_mahalanobis_8bit_t *lut,
     sixel_lookup_policy_prepare_request_t const *request)
 {
     if (lut == NULL || request == NULL || request->palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_lookup_8bit_clear(lut);
+    sixel_lookup_policy_mahalanobis_8bit_clear(lut);
     lut->policy = SIXEL_LUT_POLICY_MAHALANOBIS;
     lut->depth = request->depth;
     lut->ncolors = request->reqcolor;
@@ -688,7 +803,7 @@ sixel_lookup_policy_mahalanobis_configure_8bit(
 }
 
 static int
-sixel_lookup_policy_mahalanobis_map_8bit(sixel_lookup_8bit_t const *lut,
+sixel_lookup_policy_mahalanobis_map_8bit(sixel_lookup_policy_mahalanobis_8bit_t const *lut,
                                          unsigned char const *pixel)
 {
     int result;
@@ -747,8 +862,8 @@ sixel_lookup_policy_mahalanobis_reset_state(
     }
 
     if (object->backend_initialized != 0) {
-        sixel_lookup_8bit_finalize(&object->state_8bit);
-        sixel_lookup_float32_finalize(&object->state_float);
+        sixel_lookup_policy_mahalanobis_8bit_finalize(&object->state_8bit);
+        sixel_lookup_policy_mahalanobis_float32_finalize(&object->state_float);
     }
 
     memset(&object->state_8bit, 0, sizeof(object->state_8bit));
@@ -840,8 +955,8 @@ sixel_lookup_policy_mahalanobis_prepare(
     object = sixel_lookup_policy_mahalanobis_from_base(policy);
     sixel_lookup_policy_mahalanobis_reset_state(object);
     object->backend_initialized = 1;
-    sixel_lookup_8bit_init(&object->state_8bit, request->allocator);
-    sixel_lookup_float32_init(&object->state_float, request->allocator);
+    sixel_lookup_policy_mahalanobis_8bit_init(&object->state_8bit, request->allocator);
+    sixel_lookup_policy_mahalanobis_float32_init(&object->state_float, request->allocator);
 
     if (request->depth != 3) {
         sixel_helper_set_additional_message(
@@ -998,6 +1113,7 @@ sixel_lookup_policy_create_mahalanobis(
     *policy = &object->base;
     return SIXEL_OK;
 }
+
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

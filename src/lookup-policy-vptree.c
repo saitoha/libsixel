@@ -29,12 +29,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lookup-8bit.h"
 #include "lookup-common.h"
-#include "lookup-float32.h"
 #include "lookup-policy-private.h"
+#include "lookup-vptree-8bit.h"
+#include "lookup-vptree-float32.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
+
 
 /*
  * IDL (internal contract)
@@ -49,13 +50,128 @@
  * }
  */
 
+enum { SIXEL_LOOKUP_POLICY_VPTREE_FLOAT_COMPONENTS = 3 };
+
+typedef struct sixel_lookup_policy_vptree_8bit {
+    int policy;
+    int depth;
+    int ncolors;
+    int complexion;
+    unsigned char const *palette;
+    sixel_allocator_t *allocator;
+    sixel_lookup_vptree_8bit_t *vptree;
+    int vptree_ready;
+} sixel_lookup_policy_vptree_8bit_t;
+
+typedef struct sixel_lookup_policy_vptree_float32 {
+    int policy;
+    int depth;
+    int ncolors;
+    int complexion;
+    float weights[SIXEL_LOOKUP_POLICY_VPTREE_FLOAT_COMPONENTS];
+    float *palette;
+    sixel_allocator_t *allocator;
+    sixel_lookup_vptree_float32_t *vptree;
+    int vptree_ready;
+} sixel_lookup_policy_vptree_float32_t;
+
+static void
+sixel_lookup_policy_vptree_8bit_init(sixel_lookup_policy_vptree_8bit_t *lut,
+                       sixel_allocator_t *allocator)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    memset(lut, 0, sizeof(*lut));
+    lut->allocator = allocator;
+    lut->complexion = 1;
+}
+
+static void
+sixel_lookup_policy_vptree_8bit_clear(sixel_lookup_policy_vptree_8bit_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    if (lut->vptree != NULL) {
+        sixel_lookup_vptree_8bit_unref(lut->vptree);
+        lut->vptree = NULL;
+    }
+    lut->vptree_ready = 0;
+    lut->palette = NULL;
+    lut->depth = 0;
+    lut->ncolors = 0;
+    lut->complexion = 1;
+}
+
+static void
+sixel_lookup_policy_vptree_8bit_finalize(sixel_lookup_policy_vptree_8bit_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    sixel_lookup_policy_vptree_8bit_clear(lut);
+    lut->allocator = NULL;
+}
+
+static void
+sixel_lookup_policy_vptree_float32_init(sixel_lookup_policy_vptree_float32_t *lut,
+                          sixel_allocator_t *allocator)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    memset(lut, 0, sizeof(*lut));
+    lut->allocator = allocator;
+    lut->complexion = 1;
+    lut->weights[0] = 1.0f;
+    lut->weights[1] = 1.0f;
+    lut->weights[2] = 1.0f;
+}
+
+static void
+sixel_lookup_policy_vptree_float32_clear(sixel_lookup_policy_vptree_float32_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    if (lut->palette != NULL) {
+        sixel_allocator_free(lut->allocator, lut->palette);
+        lut->palette = NULL;
+    }
+    if (lut->vptree != NULL) {
+        sixel_lookup_vptree_float32_unref(lut->vptree);
+        lut->vptree = NULL;
+    }
+    lut->vptree_ready = 0;
+    lut->depth = 0;
+    lut->ncolors = 0;
+    lut->complexion = 1;
+}
+
+static void
+sixel_lookup_policy_vptree_float32_finalize(sixel_lookup_policy_vptree_float32_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+
+    sixel_lookup_policy_vptree_float32_clear(lut);
+    lut->allocator = NULL;
+}
+
 typedef struct sixel_lookup_policy_vptree_object {
     sixel_lookup_policy_interface_t base;
     sixel_atomic_u32_t ref;
     int backend_initialized;
     int prepared;
-    sixel_lookup_8bit_t state_8bit;
-    sixel_lookup_float32_t state_float;
+    sixel_lookup_policy_vptree_8bit_t state_8bit;
+    sixel_lookup_policy_vptree_float32_t state_float;
     int lookup_source_is_float;
 } sixel_lookup_policy_vptree_object_t;
 
@@ -74,7 +190,7 @@ sixel_lookup_policy_vptree_from_base_const(
 
 static SIXELSTATUS
 sixel_lookup_policy_vptree_prepare_float_palette(
-    sixel_lookup_float32_t *lut,
+    sixel_lookup_policy_vptree_float32_t *lut,
     unsigned char const *palette,
     float const *palette_float,
     int float_depth,
@@ -147,11 +263,11 @@ sixel_lookup_policy_vptree_prepare_float_palette(
 
 static SIXELSTATUS
 sixel_lookup_policy_vptree_configure_float32(
-    sixel_lookup_float32_t *lut,
+    sixel_lookup_policy_vptree_float32_t *lut,
     sixel_lookup_policy_prepare_request_t const *request)
 {
     SIXELSTATUS status;
-    float base_weights[SIXEL_LOOKUP_FLOAT_COMPONENTS];
+    float base_weights[SIXEL_LOOKUP_POLICY_VPTREE_FLOAT_COMPONENTS];
     float range;
     float scale;
     int component;
@@ -168,7 +284,7 @@ sixel_lookup_policy_vptree_configure_float32(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_lookup_float32_clear(lut);
+    sixel_lookup_policy_vptree_float32_clear(lut);
     lut->policy = SIXEL_LUT_POLICY_VPTREE;
     lut->depth = request->depth;
     lut->ncolors = request->reqcolor;
@@ -177,7 +293,7 @@ sixel_lookup_policy_vptree_configure_float32(
     base_weights[0] = 1.0f;
     base_weights[1] = 1.0f;
     base_weights[2] = 1.0f;
-    for (component = 0; component < SIXEL_LOOKUP_FLOAT_COMPONENTS;
+    for (component = 0; component < SIXEL_LOOKUP_POLICY_VPTREE_FLOAT_COMPONENTS;
             ++component) {
         range = sixel_pixelformat_float_channel_range(request->pixelformat,
                                                       component);
@@ -225,7 +341,7 @@ sixel_lookup_policy_vptree_configure_float32(
 
 static SIXELSTATUS
 sixel_lookup_policy_vptree_configure_8bit(
-    sixel_lookup_8bit_t *lut,
+    sixel_lookup_policy_vptree_8bit_t *lut,
     sixel_lookup_policy_prepare_request_t const *request)
 {
     SIXELSTATUS status;
@@ -235,7 +351,7 @@ sixel_lookup_policy_vptree_configure_8bit(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_lookup_8bit_clear(lut);
+    sixel_lookup_policy_vptree_8bit_clear(lut);
     lut->policy = SIXEL_LUT_POLICY_VPTREE;
     lut->depth = request->depth;
     lut->ncolors = request->reqcolor;
@@ -268,7 +384,7 @@ sixel_lookup_policy_vptree_configure_8bit(
 
 static int
 sixel_lookup_policy_vptree_map_float32(
-    sixel_lookup_float32_t const *lut,
+    sixel_lookup_policy_vptree_float32_t const *lut,
     unsigned char const *pixel)
 {
     float const *sample;
@@ -284,7 +400,7 @@ sixel_lookup_policy_vptree_map_float32(
 }
 
 static int
-sixel_lookup_policy_vptree_map_8bit(sixel_lookup_8bit_t const *lut,
+sixel_lookup_policy_vptree_map_8bit(sixel_lookup_policy_vptree_8bit_t const *lut,
                                     unsigned char const *pixel)
 {
     if (lut == NULL || pixel == NULL || lut->vptree_ready == 0
@@ -304,8 +420,8 @@ sixel_lookup_policy_vptree_reset_state(
     }
 
     if (object->backend_initialized != 0) {
-        sixel_lookup_8bit_finalize(&object->state_8bit);
-        sixel_lookup_float32_finalize(&object->state_float);
+        sixel_lookup_policy_vptree_8bit_finalize(&object->state_8bit);
+        sixel_lookup_policy_vptree_float32_finalize(&object->state_float);
     }
 
     memset(&object->state_8bit, 0, sizeof(object->state_8bit));
@@ -397,8 +513,8 @@ sixel_lookup_policy_vptree_prepare(
     object = sixel_lookup_policy_vptree_from_base(policy);
     sixel_lookup_policy_vptree_reset_state(object);
     object->backend_initialized = 1;
-    sixel_lookup_8bit_init(&object->state_8bit, request->allocator);
-    sixel_lookup_float32_init(&object->state_float, request->allocator);
+    sixel_lookup_policy_vptree_8bit_init(&object->state_8bit, request->allocator);
+    sixel_lookup_policy_vptree_float32_init(&object->state_float, request->allocator);
 
     if (request->depth != 3) {
         sixel_helper_set_additional_message(
@@ -551,6 +667,7 @@ sixel_lookup_policy_create_vptree(sixel_lookup_policy_interface_t **policy)
     *policy = &object->base;
     return SIXEL_OK;
 }
+
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

@@ -355,6 +355,7 @@ AM_LOG_FLAGS =
 	staticcheck-src-no-direct-getenv \
 	staticcheck-test-runner-dllexport \
 	staticcheck-lookup-backend-exports \
+	staticcheck-lookup-policy-no-backend-includes \
 	staticcheck-test-runner-amalgamation-defines-sync \
 	staticcheck-makefile-recipes \
 	staticcheck-src-makefile-dist-sources-sync \
@@ -392,6 +393,7 @@ staticcheck-private-includes \
 staticcheck-src-no-direct-getenv \
 staticcheck-test-runner-dllexport \
 staticcheck-lookup-backend-exports \
+staticcheck-lookup-policy-no-backend-includes \
 staticcheck-test-runner-amalgamation-defines-sync \
 staticcheck-makefile-recipes \
 staticcheck-src-makefile-dist-sources-sync \
@@ -517,6 +519,16 @@ staticcheck-lookup-backend-exports:
 		--trs-file staticcheck-lookup-backend-exports.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-lookup-backend-exports.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-lookup-policy-no-backend-includes:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-lookup-policy-no-backend-includes" \
+		--log-file staticcheck-lookup-policy-no-backend-includes.log \
+		--trs-file staticcheck-lookup-policy-no-backend-includes.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-lookup-policy-no-backend-includes.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-test-runner-amalgamation-defines-sync:
@@ -1442,10 +1454,11 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-codespell.sh \
     _static/sh/staticcheck-python-compileall.sh \
     _static/sh/staticcheck-private-includes.sh \
-    _static/sh/staticcheck-src-no-direct-getenv.sh \
-    _static/sh/staticcheck-test-runner-dllexport.sh \
-    _static/sh/staticcheck-lookup-backend-exports.sh \
-    _static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
+	_static/sh/staticcheck-src-no-direct-getenv.sh \
+	_static/sh/staticcheck-test-runner-dllexport.sh \
+	_static/sh/staticcheck-lookup-backend-exports.sh \
+	_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
+	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-src-makefile-dist-sources-sync.sh \
     _static/sh/staticcheck-test-inc-extra-dist-sync.sh \

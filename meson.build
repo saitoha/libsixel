@@ -1831,8 +1831,6 @@ loader_helper_sources = files(
   'src/palette-kmeans-build.h',
   'src/palette-kmedoids.c',
   'src/lookup-common.c',
-  'src/lookup-8bit.c',
-  'src/lookup-float32.c',
   'src/lookup-fhedt-8bit.c',
   'src/lookup-fhedt-float32.c',
   'src/lookup-vptree-8bit.c',

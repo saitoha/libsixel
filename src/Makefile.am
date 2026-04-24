@@ -85,10 +85,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-policy-mahalanobis.c \
                 $(srcdir)/factory.c \
                 $(srcdir)/components.c \
-                $(srcdir)/lookup-8bit.c \
-                $(srcdir)/lookup-8bit.h \
-                $(srcdir)/lookup-float32.c \
-                $(srcdir)/lookup-float32.h \
                 $(srcdir)/lookup-fhedt-8bit.c \
                 $(srcdir)/lookup-fhedt-8bit.h \
                 $(srcdir)/lookup-fhedt-float32.c \

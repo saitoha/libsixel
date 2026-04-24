@@ -271,6 +271,10 @@ run_case_tap "staticcheck-lookup-backend-exports" \
     "$src_root/tests/_static/sh/staticcheck-lookup-backend-exports.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-lookup-policy-no-backend-includes" \
+    "$src_root/tests/_static/sh/staticcheck-lookup-policy-no-backend-includes.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-runner-amalgamation-defines-sync" \
     "$src_root/tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh" \
     "$src_root" || fail_and_exit $?
