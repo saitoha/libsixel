@@ -21865,9 +21865,6 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
     float overlap_alpha;
     float vector_only_alpha;
     float effect_only_alpha;
-    float union_alpha;
-    float union_rgb_premul[3];
-    float union_rgb[3];
     float mixed_r;
     float mixed_g;
     float mixed_b;
@@ -21875,13 +21872,6 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
     overlap_alpha = 0.0f;
     vector_only_alpha = 0.0f;
     effect_only_alpha = 0.0f;
-    union_alpha = 0.0f;
-    union_rgb_premul[0] = 0.0f;
-    union_rgb_premul[1] = 0.0f;
-    union_rgb_premul[2] = 0.0f;
-    union_rgb[0] = 0.0f;
-    union_rgb[1] = 0.0f;
-    union_rgb[2] = 0.0f;
     mixed_r = sixel_builtin_psd_clamp01(base_r);
     mixed_g = sixel_builtin_psd_clamp01(base_g);
     mixed_b = sixel_builtin_psd_clamp01(base_b);
@@ -21891,50 +21881,12 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
         effect_rgb == NULL || vector_rgb == NULL) {
         return;
     }
-    if (effect_mode == vector_mode) {
-        union_alpha = sixel_builtin_psd_clamp_alpha_float32(
-            vector_alpha > effect_alpha ? vector_alpha : effect_alpha);
-        if (union_alpha <= 0.0f) {
-            *pout_r = mixed_r;
-            *pout_g = mixed_g;
-            *pout_b = mixed_b;
-            return;
-        }
-        /*
-         * Keep color and alpha under the same dual-stroke assumption.
-         * We model same-mode overlap as a single pass at max(alpha), with
-         * effect stroke on top of vector stroke in overlap regions.
-         */
-        union_rgb_premul[0] =
-            vector_rgb[0] * vector_alpha +
-            effect_rgb[0] * effect_alpha * (1.0f - vector_alpha);
-        union_rgb_premul[1] =
-            vector_rgb[1] * vector_alpha +
-            effect_rgb[1] * effect_alpha * (1.0f - vector_alpha);
-        union_rgb_premul[2] =
-            vector_rgb[2] * vector_alpha +
-            effect_rgb[2] * effect_alpha * (1.0f - vector_alpha);
-        union_rgb[0] = sixel_builtin_psd_clamp01(
-            union_rgb_premul[0] / union_alpha);
-        union_rgb[1] = sixel_builtin_psd_clamp01(
-            union_rgb_premul[1] / union_alpha);
-        union_rgb[2] = sixel_builtin_psd_clamp01(
-            union_rgb_premul[2] / union_alpha);
-        sixel_builtin_psd_blend_effect_rgb(
-            mixed_r,
-            mixed_g,
-            mixed_b,
-            union_rgb,
-            effect_mode,
-            union_alpha,
-            &mixed_r,
-            &mixed_g,
-            &mixed_b);
-        *pout_r = sixel_builtin_psd_clamp01(mixed_r);
-        *pout_g = sixel_builtin_psd_clamp01(mixed_g);
-        *pout_b = sixel_builtin_psd_clamp01(mixed_b);
-        return;
-    }
+    /*
+     * Decompose dual-stroke coverage into exclusive and overlap regions for
+     * both same-mode and differing-mode paths. Final alpha is resolved by the
+     * caller as max(vector_alpha, effect_alpha), so this helper only computes
+     * the mode-aware color contribution in a single pass.
+     */
     overlap_alpha = effect_alpha;
     if (vector_alpha < overlap_alpha) {
         overlap_alpha = vector_alpha;
@@ -21943,6 +21895,62 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
         vector_alpha - overlap_alpha);
     effect_only_alpha = sixel_builtin_psd_clamp_alpha_float32(
         effect_alpha - overlap_alpha);
+    if (effect_mode == vector_mode) {
+        /*
+         * Same-mode dual stroke still needs overlap decomposition so effect
+         * stroke remains on top in shared coverage regions.
+         */
+        if (vector_only_alpha > 0.0f) {
+            sixel_builtin_psd_blend_effect_rgb(
+                mixed_r,
+                mixed_g,
+                mixed_b,
+                vector_rgb,
+                vector_mode,
+                vector_only_alpha,
+                &mixed_r,
+                &mixed_g,
+                &mixed_b);
+        }
+        if (overlap_alpha > 0.0f) {
+            sixel_builtin_psd_blend_effect_rgb(
+                mixed_r,
+                mixed_g,
+                mixed_b,
+                vector_rgb,
+                vector_mode,
+                overlap_alpha,
+                &mixed_r,
+                &mixed_g,
+                &mixed_b);
+            sixel_builtin_psd_blend_effect_rgb(
+                mixed_r,
+                mixed_g,
+                mixed_b,
+                effect_rgb,
+                effect_mode,
+                overlap_alpha,
+                &mixed_r,
+                &mixed_g,
+                &mixed_b);
+        }
+        if (effect_only_alpha > 0.0f) {
+            sixel_builtin_psd_blend_effect_rgb(
+                mixed_r,
+                mixed_g,
+                mixed_b,
+                effect_rgb,
+                effect_mode,
+                effect_only_alpha,
+                &mixed_r,
+                &mixed_g,
+                &mixed_b);
+        }
+        *pout_r = sixel_builtin_psd_clamp01(mixed_r);
+        *pout_g = sixel_builtin_psd_clamp01(mixed_g);
+        *pout_b = sixel_builtin_psd_clamp01(mixed_b);
+        return;
+    }
     /*
      * Keep overlap decomposition explicit and apply each stroke in
      * vector-then-effect order to preserve mode-aware compositing.
