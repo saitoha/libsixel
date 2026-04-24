@@ -46,7 +46,7 @@
 # endif
 #endif
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN__)
 # include <windows.h>
 #endif
 
@@ -384,7 +384,7 @@ test_runner_is_running_under_wine(void)
 static int
 test_runner_run_windows_ctrl_break(int argc, char **argv)
 {
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN__)
     char const *delay_token;
     char const *timeout_token;
     unsigned long parsed_delay;

@@ -40,9 +40,12 @@ echo "1..1"
 set -v
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop0.gif"
+preflight_input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-anim-netscape-loop2.gif"
 #
 # Drive SIGINT from the trace token itself, not from a wall-clock budget.
 # A zero timeout disables the runner-side watchdog and avoids timing tuning.
+# Use a finite preflight source so trace-gating checks never depend on
+# loop-disable semantics for infinite-loop fixtures under wrapped runtimes.
 #
 
 set +xv
@@ -53,7 +56,7 @@ preflight_trace=$(
         --env "SIXEL_THREADS=4" \
         --env "SIXEL_TRACE_TOPIC=encode_handoff" \
         --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
-        -Lbuiltin! -ldisable -o /dev/null -g "${input_gif}" \
+        -Lbuiltin! -ldisable -o /dev/null -g "${preflight_input_gif}" \
         2>&1 >/dev/null
 ) || preflight_status=$?
 preflight_has_trigger=0
