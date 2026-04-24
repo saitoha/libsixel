@@ -3417,6 +3417,7 @@ staticcheck-test-runner-dllexport:
 		"$(abs_top_srcdir)"
 
 staticcheck-lookup-backend-exports:
+	@$(MAKE) -C '$(top_builddir)/src' $(AM_MAKEFLAGS) libsixel.la
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
 	$(T_LOG_DRIVER) --test-name "staticcheck-lookup-backend-exports" \
