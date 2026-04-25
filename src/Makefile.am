@@ -249,6 +249,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/fromwebp-vp8-tables.h \
                 $(srcdir)/fromwebp-container.c \
                 $(srcdir)/fromwebp-vp8.c \
+                $(srcdir)/fromwebp-vp8-alpha.c \
                 $(srcdir)/fromwebp-vp8-parse.c \
                 $(srcdir)/fromwebp-vp8-native.c \
                 $(srcdir)/fromwebp-vp8-native-token.c \

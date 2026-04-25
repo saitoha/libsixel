@@ -1169,11 +1169,13 @@ what is available):
 - `gnome-thumbnailer`
 
 The `builtin` loader includes an internal WebP MVP path. The current scope is
-static decode for `VP8L` and `VP8`. `VP8` with `ALPH` and
-animation (`ANIM`/`ANMF`) remain
-unsupported in `builtin`. For static decode, embedded `ICCP` is
-applied when builtin CMS is enabled and embedded `EXIF` orientation is
-applied when builtin orientation handling is enabled.
+static decode for `VP8L`, `VP8`, and a first `VP8+ALPH` subset.
+For `VP8+ALPH`, the builtin path currently supports only
+`ALPH` control byte `0x00`
+(compression/filter/preprocess/reserved are all zero); other `ALPH` modes and
+animation (`ANIM`/`ANMF`) remain unsupported in `builtin`. For static decode,
+embedded `ICCP` is applied when builtin CMS is enabled and embedded `EXIF`
+orientation is applied when builtin orientation handling is enabled.
 
 `librsvg` always returns raster frames as `RGB888` or `RGBA8888`.
 Without `-B` and with any non-opaque pixel, alpha is preserved

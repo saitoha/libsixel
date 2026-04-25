@@ -153,6 +153,7 @@ srcs = [
   'fromwebp-vp8-tables.h',
   'fromwebp-container.c',
   'fromwebp-vp8.c',
+  'fromwebp-vp8-alpha.c',
   'fromwebp-vp8-parse.c',
   'fromwebp-vp8-native.c',
   'fromwebp-vp8-native-token.c',

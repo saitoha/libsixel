@@ -59,14 +59,9 @@ sixel_webp_apply_decode_plan(sixel_webp_decode_plan_t const *plan)
         status = SIXEL_BAD_INPUT;
         break;
     case SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC:
+    case SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC:
     case SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC:
         status = SIXEL_OK;
-        break;
-    case SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_VP8_ALPHA:
-        sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_UNSUP_VP8_ALPHA);
-        sixel_helper_set_additional_message(
-            "builtin webp: VP8+ALPHA WebP is not supported.");
-        status = SIXEL_NOT_IMPLEMENTED;
         break;
     case SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM:
         sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_UNSUP_ANIM);
@@ -89,6 +84,7 @@ sixel_webp_trace_unapplied_meta_codes(sixel_webp_decode_plan_t const *plan,
         return;
     }
     if (plan->kind != SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC &&
+        plan->kind != SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC &&
         plan->kind != SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC) {
         return;
     }
@@ -323,7 +319,8 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
         goto cleanup;
     }
 
-    if (plan.kind == SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC) {
+    if (plan.kind == SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC ||
+        plan.kind == SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC) {
         /* Decode layer accepts only VP8 payload bytes and allocator context. */
         status = sixel_webp_decode_vp8_payload(plan.vp8_payload,
                                                plan.vp8_payload_size,
@@ -341,7 +338,29 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
             }
             goto cleanup;
         }
-        sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_OK_VP8_STATIC);
+        if (plan.kind == SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC) {
+            status = sixel_webp_apply_vp8_alpha_payload(
+                rgba,
+                width,
+                height,
+                plan.alpha_payload,
+                plan.alpha_payload_size,
+                chunk->allocator);
+            if (SIXEL_FAILED(status)) {
+                if (status == SIXEL_NOT_IMPLEMENTED) {
+                    sixel_webp_trace_contract_add_code(
+                        SIXEL_WEBP_CODE_UNSUP_VP8_ALPHA);
+                } else {
+                    sixel_webp_trace_contract_add_code(
+                        SIXEL_WEBP_CODE_ERR_VP8_STREAM);
+                }
+                goto cleanup;
+            }
+            sixel_webp_trace_contract_add_code(
+                SIXEL_WEBP_CODE_OK_VP8_ALPHA_STATIC);
+        } else {
+            sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_OK_VP8_STATIC);
+        }
     } else if (plan.kind == SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC) {
         /*
          * Decode layer accepts only VP8L payload bytes and allocator context.

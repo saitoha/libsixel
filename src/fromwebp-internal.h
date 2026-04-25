@@ -48,6 +48,7 @@
 #define SIXEL_WEBP_VP8X_ANIMATION_FLAG 0x02u
 
 #define SIXEL_WEBP_CODE_OK_VP8_STATIC "W_OK_VP8_STATIC"
+#define SIXEL_WEBP_CODE_OK_VP8_ALPHA_STATIC "W_OK_VP8_ALPHA_STATIC"
 #define SIXEL_WEBP_CODE_OK_VP8L_STATIC "W_OK_VP8L_STATIC"
 #define SIXEL_WEBP_CODE_META_ICCP_APPLIED "W_META_ICCP_APPLIED"
 #define SIXEL_WEBP_CODE_META_EXIF_APPLIED "W_META_EXIF_APPLIED"
@@ -73,8 +74,8 @@
 typedef enum sixel_webp_container_kind {
     SIXEL_WEBP_CONTAINER_KIND_CORRUPT = 0,
     SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC,
+    SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC,
     SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC,
-    SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_VP8_ALPHA,
     SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM
 } sixel_webp_container_kind_t;
 
@@ -116,6 +117,8 @@ typedef struct sixel_webp_decode_plan {
     sixel_webp_container_kind_t kind;
     unsigned char const *vp8_payload;
     size_t vp8_payload_size;
+    unsigned char const *alpha_payload;
+    size_t alpha_payload_size;
     unsigned char const *vp8l_payload;
     size_t vp8l_payload_size;
     unsigned char const *iccp_payload;
@@ -152,6 +155,14 @@ sixel_webp_decode_vp8_payload(unsigned char const *payload,
                               int *pwidth,
                               int *pheight,
                               sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
+                                   int width,
+                                   int height,
+                                   unsigned char const *payload,
+                                   size_t payload_size,
+                                   sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API void
 sixel_webp_trace_contract_add_code(char const *code);
