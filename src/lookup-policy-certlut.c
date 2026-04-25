@@ -985,9 +985,7 @@ static sixel_lookup_policy_vtbl_t const g_sixel_lookup_policy_certlut_vtbl = {
     sixel_lookup_policy_certlut_prefer_palette_float_lookup
 };
 
-#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK) && \
-    defined(__GNUC__) && (__GNUC__ >= 10) && \
-    !defined(__clang__) && !defined(__PCC__) && !defined(__TINYC__)
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
 #endif
@@ -1019,9 +1017,7 @@ sixel_lookup_policy_create_certlut(sixel_lookup_policy_interface_t **policy)
     *policy = &object->base;
     return SIXEL_OK;
 }
-#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK) && \
-    defined(__GNUC__) && (__GNUC__ >= 10) && \
-    !defined(__clang__) && !defined(__PCC__) && !defined(__TINYC__)
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)
 # pragma GCC diagnostic pop
 #endif
 
