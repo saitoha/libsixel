@@ -36,7 +36,7 @@
 #include "compat_stub.h"
 #include "lookup-fhedt-8bit.h"
 #include "lookup-fhedt-float32.h"
-#include "lookup-policy-private.h"
+#include "lookup-policy-fhedt.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 

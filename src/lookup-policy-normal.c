@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lookup-policy-private.h"
+#include "lookup-policy-normal.h"
 #include "sixel_atomic.h"
 
 /*

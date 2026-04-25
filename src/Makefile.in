@@ -182,7 +182,15 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-vptree-8bit.c $(srcdir)/lookup-vptree-8bit.h \
 	$(srcdir)/lookup-vptree-float32.c \
 	$(srcdir)/lookup-vptree-float32.h $(srcdir)/lookup-policy.h \
-	$(srcdir)/lookup-policy-private.h $(srcdir)/factory.h \
+	$(srcdir)/lookup-policy-normal.h \
+	$(srcdir)/lookup-policy-mono-darkbg.h \
+	$(srcdir)/lookup-policy-mono-lightbg.h \
+	$(srcdir)/lookup-policy-certlut.h \
+	$(srcdir)/lookup-policy-5bit.h $(srcdir)/lookup-policy-6bit.h \
+	$(srcdir)/lookup-policy-eytzinger.h \
+	$(srcdir)/lookup-policy-fhedt.h \
+	$(srcdir)/lookup-policy-vptree.h $(srcdir)/lookup-policy-rbc.h \
+	$(srcdir)/lookup-policy-mahalanobis.h $(srcdir)/factory.h \
 	$(srcdir)/components.h $(srcdir)/palette-heckbert.c \
 	$(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
@@ -930,7 +938,17 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-float32.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-float32.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-private.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-normal.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mono-darkbg.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mono-lightbg.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-certlut.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-5bit.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-6bit.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-eytzinger.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-fhedt.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-vptree.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-rbc.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mahalanobis.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/factory.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/components.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.c \

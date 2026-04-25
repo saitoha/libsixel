@@ -93,7 +93,17 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-vptree-float32.c \
                 $(srcdir)/lookup-vptree-float32.h \
                 $(srcdir)/lookup-policy.h \
-                $(srcdir)/lookup-policy-private.h \
+                $(srcdir)/lookup-policy-normal.h \
+                $(srcdir)/lookup-policy-mono-darkbg.h \
+                $(srcdir)/lookup-policy-mono-lightbg.h \
+                $(srcdir)/lookup-policy-certlut.h \
+                $(srcdir)/lookup-policy-5bit.h \
+                $(srcdir)/lookup-policy-6bit.h \
+                $(srcdir)/lookup-policy-eytzinger.h \
+                $(srcdir)/lookup-policy-fhedt.h \
+                $(srcdir)/lookup-policy-vptree.h \
+                $(srcdir)/lookup-policy-rbc.h \
+                $(srcdir)/lookup-policy-mahalanobis.h \
                 $(srcdir)/factory.h \
                 $(srcdir)/components.h \
                 $(srcdir)/palette-heckbert.c \

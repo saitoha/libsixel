@@ -35,7 +35,7 @@
 # include <math.h>
 #endif
 
-#include "lookup-policy-private.h"
+#include "lookup-policy-eytzinger.h"
 #include "logger.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"

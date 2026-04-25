@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lookup-policy-private.h"
+#include "lookup-policy-mono-darkbg.h"
 #include "sixel_atomic.h"
 
 /*

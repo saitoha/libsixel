@@ -29,7 +29,18 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "lookup-policy-private.h"
+#include "lookup-policy.h"
+#include "lookup-policy-normal.h"
+#include "lookup-policy-mono-darkbg.h"
+#include "lookup-policy-mono-lightbg.h"
+#include "lookup-policy-certlut.h"
+#include "lookup-policy-5bit.h"
+#include "lookup-policy-6bit.h"
+#include "lookup-policy-eytzinger.h"
+#include "lookup-policy-fhedt.h"
+#include "lookup-policy-vptree.h"
+#include "lookup-policy-rbc.h"
+#include "lookup-policy-mahalanobis.h"
 
 /*
  * IDL (internal contract)
@@ -59,6 +70,14 @@ static char const g_lookup_policy_name_fhedt[] = "lookup/fhedt";
 static char const g_lookup_policy_name_vptree[] = "lookup/vptree";
 static char const g_lookup_policy_name_rbc[] = "lookup/rbc";
 static char const g_lookup_policy_name_mahalanobis[] = "lookup/mahalanobis";
+
+typedef SIXELSTATUS (*sixel_lookup_policy_create_fn)(
+    sixel_lookup_policy_interface_t **policy);
+
+typedef struct sixel_lookup_policy_registry_entry {
+    char const *name;
+    sixel_lookup_policy_create_fn create;
+} sixel_lookup_policy_registry_entry_t;
 
 static sixel_lookup_policy_registry_entry_t const g_lookup_policy_registry[] = {
     { g_lookup_policy_name_normal, sixel_lookup_policy_create_normal },

@@ -26,6 +26,7 @@
 #include "config.h"
 #endif
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 #if HAVE_FLOAT_H
@@ -35,7 +36,7 @@
 # include <math.h>
 #endif
 
-#include "lookup-policy-private.h"
+#include "lookup-policy-mahalanobis.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 

@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lookup-policy-private.h"
+#include "lookup-policy-vptree.h"
 #include "lookup-vptree-8bit.h"
 #include "lookup-vptree-float32.h"
 #include "pixelformat.h"
