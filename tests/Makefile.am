@@ -405,6 +405,7 @@ staticcheck-kmedoids-suboption-env-sync \
 staticcheck-kcenter-suboption-env-sync \
 staticcheck-completion-medoids-tokens \
 staticcheck-kmeans-suboption-env-sync \
+staticcheck-lookup-suboption-shared-sync \
 staticcheck-interframe-strategy-token-sync \
 staticcheck-interframe-c-h-pair-sync \
 staticcheck-interframe-no-compat-getenv-symbol \
@@ -631,6 +632,16 @@ staticcheck-kmeans-suboption-env-sync:
 		--trs-file staticcheck-kmeans-suboption-env-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-kmeans-suboption-env-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-lookup-suboption-shared-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-lookup-suboption-shared-sync" \
+		--log-file staticcheck-lookup-suboption-shared-sync.log \
+		--trs-file staticcheck-lookup-suboption-shared-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-lookup-suboption-shared-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-interframe-strategy-token-sync:
@@ -1480,6 +1491,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-kcenter-suboption-env-sync.sh \
     _static/sh/staticcheck-completion-medoids-tokens.sh \
     _static/sh/staticcheck-kmeans-suboption-env-sync.sh \
+    _static/sh/staticcheck-lookup-suboption-shared-sync.sh \
     _static/sh/staticcheck-interframe-strategy-token-sync.sh \
     _static/sh/staticcheck-interframe-c-h-pair-sync.sh \
     _static/sh/staticcheck-interframe-no-compat-getenv-symbol.sh \

@@ -231,6 +231,10 @@ run_case_tap "staticcheck-kmeans-suboption-env-sync" \
     "$src_root/tests/_static/sh/staticcheck-kmeans-suboption-env-sync.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-lookup-suboption-shared-sync" \
+    "$src_root/tests/_static/sh/staticcheck-lookup-suboption-shared-sync.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-interframe-strategy-token-sync" \
     sh "$src_root/tests/_static/sh/staticcheck-interframe-strategy-token-sync.sh" \
     "$src_root" || fail_and_exit $?

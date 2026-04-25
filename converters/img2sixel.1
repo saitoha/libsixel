@@ -540,7 +540,7 @@ low  -> low quality and high speed mode
 .br
 full -> quality and careful speed mode
 .TP 5
-.B \-\~ \fILOOKUPPOLICY\fP, \-\-lookup\-policy=\fILOOKUPPOLICY\fP
+.B \-\~ \fILOOKUPPOLICY\fP[:shared_instance=\fI0|1\fP], \-\-lookup\-policy=\fILOOKUPPOLICY\fP[:shared_instance=\fI0|1\fP]
 choose histogram lookup width and backend.
 .br
 \fILOOKUPPOLICY\fP is one of them:
@@ -568,6 +568,22 @@ fhedt    -> Voronoi grid built via a 3-pass 3D EDT with optional
 .br
 vptree  -> VP-tree lookup built from palette entries with safe-distance
            pruning.
+.br
+rbc     -> Random Ball Cover cluster pruning.
+.br
+mahalanobis -> RBC clusters with Mahalanobis lower bounds.
+.PP
+The \fIshared_instance\fP suboption is accepted only for \fI5bit\fP,
+\fI6bit\fP, and \fIcertlut\fP:
+.br
+shared_instance=0 -> build worker-local lookup state.
+.br
+shared_instance=1 -> share one lookup state across workers.
+.PP
+When shared_instance is present on the command line, it overrides
+SIXEL_LOOKUP_5BIT_SHARED_INSTANCE,
+SIXEL_LOOKUP_6BIT_SHARED_INSTANCE, and
+SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE.
 .PP
 The \fInone\fP policy skips the lookup caches entirely so each pixel
 comparison scans the palette directly.  This mirrors the behaviour that
@@ -576,7 +592,7 @@ comparison scans the palette directly.  This mirrors the behaviour that
 The \fIfhedt\fP grid honours the following environment variables:
 .br
 SIXEL_DITHER_LOOKUP_POLICY (auto, 5bit, 6bit, none, certlut, eytzinger,
-fhedt, or vptree; default certlut)
+fhedt, vptree, rbc, or mahalanobis; default certlut)
 .br
 SIXEL_LOOKUP_PACKING (linear or morton; default linear) selects dense LUT
 packing for 5bit/6bit lookups; other policies ignore it.
@@ -598,13 +614,16 @@ SIXEL_LOOKUP_FHEDT_SHARED (0 or 1; default 1) builds the grid once
 before worker threads run and shares it read-only.
 .br
 SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE (0 or 1; default 0) toggles whether
-CERTLUT caches are shared across worker threads or rebuilt per worker.
+CERTLUT caches are shared across worker threads or rebuilt per worker
+when \-\-lookup-policy does not set shared_instance explicitly.
 .br
 SIXEL_LOOKUP_5BIT_SHARED_INSTANCE (0 or 1; default 1) controls whether the
-5bit dense LUT is shared across workers without locks.
+5bit dense LUT is shared across workers without locks when
+\-\-lookup-policy does not set shared_instance explicitly.
 .br
 SIXEL_LOOKUP_6BIT_SHARED_INSTANCE (0 or 1; default 1) controls whether the
-6bit dense LUT is shared across workers without locks.
+6bit dense LUT is shared across workers without locks when
+\-\-lookup-policy does not set shared_instance explicitly.
 .br
 SIXEL_LOOKUP_FHEDT_TILE_XY (adaptive default; clamped to the image size and
 falling back to the adaptive choice on invalid input) sets the tile
@@ -1604,7 +1623,7 @@ Accepts 0.0-1.0, default 0.85.
 .B SIXEL_DITHER_LOOKUP_POLICY
 .br
 select palette lookup policy (auto, 5bit, 6bit, none, certlut,
-eytzinger, fhedt, or vptree).
+eytzinger, fhedt, vptree, rbc, or mahalanobis).
 .TP 5
 .B SIXEL_LOOKUP_PACKING
 .br
@@ -1635,15 +1654,18 @@ share the FHEDT grid between workers after building it once (0 or 1; default
 .TP 5
 .B SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE
 .br
-share the CERTLUT cache across threads (0 or 1; default 0).
+share the CERTLUT cache across threads (0 or 1; default 0) when
+\fB\-\-lookup-policy\fP does not set \fIshared_instance\fP explicitly.
 .TP 5
 .B SIXEL_LOOKUP_5BIT_SHARED_INSTANCE
 .br
-share the 5bit LUT across threads without locks (0 or 1; default 1).
+share the 5bit LUT across threads without locks (0 or 1; default 1) when
+\fB\-\-lookup-policy\fP does not set \fIshared_instance\fP explicitly.
 .TP 5
 .B SIXEL_LOOKUP_6BIT_SHARED_INSTANCE
 .br
-share the 6bit LUT across threads without locks (0 or 1; default 1).
+share the 6bit LUT across threads without locks (0 or 1; default 1) when
+\fB\-\-lookup-policy\fP does not set \fIshared_instance\fP explicitly.
 .TP 5
 .B SIXEL_LOOKUP_FHEDT_TILE_XY
 .br
