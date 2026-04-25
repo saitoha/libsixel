@@ -31,8 +31,8 @@
 #endif
 
 #include "factory.h"
-#include "classid.h"
-#include "classid-dither.h"
+#include "classid-lookup-policy.h"
+#include "classid-dither-policy.h"
 
 /*
  * IDL (internal contract)

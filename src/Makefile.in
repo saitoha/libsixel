@@ -325,10 +325,11 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/probe.c $(srcdir)/probe.h \
 	$(srcdir)/sixel_decode_rgba.c $(srcdir)/sixel_decode_rgba.h \
 	$(srcdir)/sixel_atomic_fallback.c $(srcdir)/sixel_atomic.h \
-	$(srcdir)/classid.h $(srcdir)/classid-dither.h \
-	$(srcdir)/rgblookup.h $(srcdir)/lso2.h $(srcdir)/threadpool.c \
-	$(srcdir)/threadpool.h $(srcdir)/quicklook_thumbnailing.m \
-	$(srcdir)/clipboard_macos.m $(srcdir)/clipboard_carbon.c
+	$(srcdir)/classid-lookup-policy.h \
+	$(srcdir)/classid-dither-policy.h $(srcdir)/rgblookup.h \
+	$(srcdir)/lso2.h $(srcdir)/threadpool.c $(srcdir)/threadpool.h \
+	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m \
+	$(srcdir)/clipboard_carbon.c
 @SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-threadpool.lo
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
@@ -1238,8 +1239,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_decode_rgba.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_atomic_fallback.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_atomic.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-dither.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-lookup-policy.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-dither-policy.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/rgblookup.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lso2.h $(am__append_2) \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__append_3) $(am__append_4) \
@@ -3197,26 +3198,26 @@ gen-classid: $(LOOKUP_POLICY_CLASSID_INPUTS) $(DITHER_POLICY_CLASSID_INPUTS)
 	gperf -C -N sixel_lookup_policy_classid_lookup $(GPERF_CLASSID_OPT) \
 	        $(srcdir)/classid.gperf                                    |\
 	sed 's/{""}/\{"", 0\}/g'                                           \
-	        > $(srcdir)/classid.h
+	        > $(srcdir)/classid-lookup-policy.h
 	printf '%s\n' '#undef TOTAL_KEYWORDS'                              \
 	              '#undef MIN_WORD_LENGTH'                             \
 	              '#undef MAX_WORD_LENGTH'                             \
 	              '#undef MIN_HASH_VALUE'                              \
 	              '#undef MAX_HASH_VALUE'                              \
-	        >> $(srcdir)/classid.h
+	        >> $(srcdir)/classid-lookup-policy.h
 	$(AWK) -f $(top_srcdir)/tools/gen_dither_classid_gperf.awk         \
 	        $(DITHER_POLICY_CLASSID_INPUTS) > $(srcdir)/classid-dither.gperf
 	gperf -C -N sixel_dither_policy_classid_lookup                     \
 	        $(GPERF_DITHER_CLASSID_OPT)                                \
 	        $(srcdir)/classid-dither.gperf                             |\
 	sed 's/{""}/\{"", 0\}/g'                                           \
-	        > $(srcdir)/classid-dither.h
+	        > $(srcdir)/classid-dither-policy.h
 	printf '%s\n' '#undef TOTAL_KEYWORDS'                              \
 	              '#undef MIN_WORD_LENGTH'                             \
 	              '#undef MAX_WORD_LENGTH'                             \
 	              '#undef MIN_HASH_VALUE'                              \
 	              '#undef MAX_HASH_VALUE'                              \
-	        >> $(srcdir)/classid-dither.h
+	        >> $(srcdir)/classid-dither-policy.h
 
 @WITH_SHEBANG_FILE_TRUE@check-local: $(SIXEL_SHEBANG_STAMP)
 

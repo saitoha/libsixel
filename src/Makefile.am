@@ -336,8 +336,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/sixel_decode_rgba.h \
                 $(srcdir)/sixel_atomic_fallback.c \
                 $(srcdir)/sixel_atomic.h \
-                $(srcdir)/classid.h \
-                $(srcdir)/classid-dither.h \
+                $(srcdir)/classid-lookup-policy.h \
+                $(srcdir)/classid-dither-policy.h \
                 $(srcdir)/rgblookup.h \
                 $(srcdir)/lso2.h
 if SIXEL_ENABLE_THREADS
@@ -465,26 +465,26 @@ gen-classid: $(LOOKUP_POLICY_CLASSID_INPUTS) $(DITHER_POLICY_CLASSID_INPUTS)
 	gperf -C -N sixel_lookup_policy_classid_lookup $(GPERF_CLASSID_OPT) \
 	        $(srcdir)/classid.gperf                                    |\
 	sed 's/{""}/\{"", 0\}/g'                                           \
-	        > $(srcdir)/classid.h
+	        > $(srcdir)/classid-lookup-policy.h
 	printf '%s\n' '#undef TOTAL_KEYWORDS'                              \
 	              '#undef MIN_WORD_LENGTH'                             \
 	              '#undef MAX_WORD_LENGTH'                             \
 	              '#undef MIN_HASH_VALUE'                              \
 	              '#undef MAX_HASH_VALUE'                              \
-	        >> $(srcdir)/classid.h
+	        >> $(srcdir)/classid-lookup-policy.h
 	$(AWK) -f $(top_srcdir)/tools/gen_dither_classid_gperf.awk         \
 	        $(DITHER_POLICY_CLASSID_INPUTS) > $(srcdir)/classid-dither.gperf
 	gperf -C -N sixel_dither_policy_classid_lookup                     \
 	        $(GPERF_DITHER_CLASSID_OPT)                                \
 	        $(srcdir)/classid-dither.gperf                             |\
 	sed 's/{""}/\{"", 0\}/g'                                           \
-	        > $(srcdir)/classid-dither.h
+	        > $(srcdir)/classid-dither-policy.h
 	printf '%s\n' '#undef TOTAL_KEYWORDS'                              \
 	              '#undef MIN_WORD_LENGTH'                             \
 	              '#undef MAX_WORD_LENGTH'                             \
 	              '#undef MIN_HASH_VALUE'                              \
 	              '#undef MAX_HASH_VALUE'                              \
-	        >> $(srcdir)/classid-dither.h
+	        >> $(srcdir)/classid-dither-policy.h
 
 
 
