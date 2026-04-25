@@ -3068,10 +3068,10 @@ sixel_dither_apply_palette_with_mode(
     }
 
     palette->lut_policy = dither->lut_policy;
+#if SIXEL_ENABLE_THREADS
     shared_lut = sixel_dither_lookup_shared_instance_enabled(
         dither,
         dither->lut_policy);
-#if SIXEL_ENABLE_THREADS
     if (parallel_active && parallel_threads > 1
             && parallel_band_height > 0) {
         sixel_parallel_dither_plan_t plan;
