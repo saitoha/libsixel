@@ -278,6 +278,7 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
     };
     size_t target_size;
     unsigned int webp_variant;
+    unsigned int webp_alpha_control;
     unsigned char const *webp_header;
     size_t webp_header_size;
 
@@ -291,6 +292,7 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         return 1;
     }
     webp_variant = 0u;
+    webp_alpha_control = 0xffu;
     webp_header = NULL;
     webp_header_size = 0u;
 
@@ -433,7 +435,7 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         break;
     case FUZZ_FORCE_FORMAT_WEBP:
         webp_variant = (size > 0u && data != NULL)
-                       ? (unsigned int)(data[0] & 0x7u)
+                       ? (unsigned int)(data[0] & 0x0fu)
                        : 0u;
         switch (webp_variant) {
         case 0u:
@@ -467,6 +469,32 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
         case 7u:
             webp_header = webp_vp8x_alpha_vp8_header;
             webp_header_size = sizeof(webp_vp8x_alpha_vp8_header);
+            webp_alpha_control = 0x00u;
+            break;
+        case 8u:
+            webp_header = webp_vp8x_alpha_vp8_header;
+            webp_header_size = sizeof(webp_vp8x_alpha_vp8_header);
+            webp_alpha_control = 0x04u;
+            break;
+        case 9u:
+            webp_header = webp_vp8x_alpha_vp8_header;
+            webp_header_size = sizeof(webp_vp8x_alpha_vp8_header);
+            webp_alpha_control = 0x08u;
+            break;
+        case 10u:
+            webp_header = webp_vp8x_alpha_vp8_header;
+            webp_header_size = sizeof(webp_vp8x_alpha_vp8_header);
+            webp_alpha_control = 0x0cu;
+            break;
+        case 11u:
+            webp_header = webp_vp8x_alpha_vp8_header;
+            webp_header_size = sizeof(webp_vp8x_alpha_vp8_header);
+            webp_alpha_control = 0x10u;
+            break;
+        case 12u:
+            webp_header = webp_vp8x_alpha_vp8_header;
+            webp_header_size = sizeof(webp_vp8x_alpha_vp8_header);
+            webp_alpha_control = 0x20u;
             break;
         default:
             webp_header = webp_vp8x_vp8l_header;
@@ -478,6 +506,15 @@ fuzz_prepare_input_forced_format(uint8_t const *data,
                          0u,
                          webp_header,
                          webp_header_size);
+        if (webp_header == webp_vp8x_alpha_vp8_header &&
+            webp_alpha_control <= 0xffu &&
+            target_size > 38u) {
+            /*
+             * Offset 38 is the ALPHA control byte in this minimal RIFF sample.
+             * Keep the rest of the payload untouched and mutate only controls.
+             */
+            g_forced_chunk_buffer[38] = (unsigned char)webp_alpha_control;
+        }
         break;
     case FUZZ_FORCE_FORMAT_AUTO:
     default:
