@@ -189,6 +189,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
     -DBUILD_TEST_0010_FILTER_ENCODE \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
+    -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
     -DBUILD_TEST_0011_LOADER_GD_PIXELFORMAT \
     -DBUILD_TEST_0012_LOADER_LIBPNG_PIXELFORMAT \
@@ -255,6 +256,7 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0009_filter_dither.c \
     processing/filter/0010_filter_encode.c \
     processing/lookup/0001_lookup_policy.c \
+    processing/dither/0001_dither_policy.c \
     processing/filter/filter_test_common.h \
     loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
     loader/wic/0009_loader_wic_pixelformat.c \
@@ -357,6 +359,7 @@ AM_LOG_FLAGS =
 	staticcheck-lookup-backend-exports \
 	staticcheck-lookup-policy-no-backend-includes \
 	staticcheck-lookup-classid-registry-sync \
+	staticcheck-dither-classid-registry-sync \
 	staticcheck-test-runner-amalgamation-defines-sync \
 	staticcheck-makefile-recipes \
 	staticcheck-src-makefile-dist-sources-sync \
@@ -396,6 +399,7 @@ staticcheck-test-runner-dllexport \
 staticcheck-lookup-backend-exports \
 staticcheck-lookup-policy-no-backend-includes \
 staticcheck-lookup-classid-registry-sync \
+staticcheck-dither-classid-registry-sync \
 staticcheck-test-runner-amalgamation-defines-sync \
 staticcheck-makefile-recipes \
 staticcheck-src-makefile-dist-sources-sync \
@@ -542,6 +546,16 @@ staticcheck-lookup-classid-registry-sync:
 		--trs-file staticcheck-lookup-classid-registry-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-lookup-classid-registry-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-dither-classid-registry-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-dither-classid-registry-sync" \
+		--log-file staticcheck-dither-classid-registry-sync.log \
+		--trs-file staticcheck-dither-classid-registry-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-dither-classid-registry-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-test-runner-amalgamation-defines-sync:
@@ -1482,6 +1496,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 	_static/sh/staticcheck-lookup-backend-exports.sh \
 	_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
 	_static/sh/staticcheck-lookup-classid-registry-sync.sh \
+	_static/sh/staticcheck-dither-classid-registry-sync.sh \
 	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-src-makefile-dist-sources-sync.sh \

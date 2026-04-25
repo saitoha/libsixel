@@ -126,6 +126,27 @@ libsixel_la_SOURCES = \
                 $(srcdir)/palette.h \
                 $(srcdir)/dither.c \
                 $(srcdir)/dither.h \
+                $(srcdir)/dither-policy.c \
+                $(srcdir)/dither-policy.h \
+                $(srcdir)/dither-policy-backend.c \
+                $(srcdir)/dither-policy-backend.h \
+                $(srcdir)/dither-policy-fixed.c \
+                $(srcdir)/dither-policy-positional.c \
+                $(srcdir)/dither-policy-lso2.c \
+                $(srcdir)/dither-policy-none.h \
+                $(srcdir)/dither-policy-fs.h \
+                $(srcdir)/dither-policy-atkinson.h \
+                $(srcdir)/dither-policy-jajuni.h \
+                $(srcdir)/dither-policy-stucki.h \
+                $(srcdir)/dither-policy-burkes.h \
+                $(srcdir)/dither-policy-sierra1.h \
+                $(srcdir)/dither-policy-sierra2.h \
+                $(srcdir)/dither-policy-sierra3.h \
+                $(srcdir)/dither-policy-lso2.h \
+                $(srcdir)/dither-policy-a-dither.h \
+                $(srcdir)/dither-policy-x-dither.h \
+                $(srcdir)/dither-policy-bluenoise.h \
+                $(srcdir)/dither-policy-interframe.h \
                 $(srcdir)/dither-common-pipeline.c \
                 $(srcdir)/dither-common-pipeline.h \
                 $(srcdir)/bluenoise_64x64.h \
@@ -305,6 +326,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/sixel_atomic_fallback.c \
                 $(srcdir)/sixel_atomic.h \
                 $(srcdir)/classid.h \
+                $(srcdir)/classid-dither.h \
                 $(srcdir)/rgblookup.h \
                 $(srcdir)/lso2.h
 if SIXEL_ENABLE_THREADS
@@ -371,7 +393,8 @@ libsixel_la_LIBADD = -lm \
 
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf \
-             $(srcdir)/classid.gperf
+             $(srcdir)/classid.gperf \
+             $(srcdir)/classid-dither.gperf
 
 .PHONY: libobjs
 
@@ -385,6 +408,9 @@ GPERF_OPT=--ignore-case --language=ANSI-C
 GPERF_CLASSID_OPT=--language=ANSI-C \
                   -H sixel_lookup_policy_classid_hash \
                   -W sixel_lookup_policy_classid_wordlist
+GPERF_DITHER_CLASSID_OPT=--language=ANSI-C \
+                  -H sixel_dither_policy_classid_hash \
+                  -W sixel_dither_policy_classid_wordlist
 
 LOOKUP_POLICY_CLASSID_INPUTS = \
     $(srcdir)/lookup-policy-5bit.h \
@@ -399,6 +425,22 @@ LOOKUP_POLICY_CLASSID_INPUTS = \
     $(srcdir)/lookup-policy-rbc.h \
     $(srcdir)/lookup-policy-vptree.h
 
+DITHER_POLICY_CLASSID_INPUTS = \
+    $(srcdir)/dither-policy-none.h \
+    $(srcdir)/dither-policy-fs.h \
+    $(srcdir)/dither-policy-atkinson.h \
+    $(srcdir)/dither-policy-jajuni.h \
+    $(srcdir)/dither-policy-stucki.h \
+    $(srcdir)/dither-policy-burkes.h \
+    $(srcdir)/dither-policy-sierra1.h \
+    $(srcdir)/dither-policy-sierra2.h \
+    $(srcdir)/dither-policy-sierra3.h \
+    $(srcdir)/dither-policy-lso2.h \
+    $(srcdir)/dither-policy-a-dither.h \
+    $(srcdir)/dither-policy-x-dither.h \
+    $(srcdir)/dither-policy-bluenoise.h \
+    $(srcdir)/dither-policy-interframe.h
+
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb $(GPERF_OPT) $<  |\
@@ -406,9 +448,9 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 	astyle                                  > $(srcdir)/rgblookup.h
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-gen-classid: $(LOOKUP_POLICY_CLASSID_INPUTS)
-	$(AWK) -f $(top_srcdir)/tools/gen_lookup_classid_gperf.awk $^ \
-	        > $(srcdir)/classid.gperf
+gen-classid: $(LOOKUP_POLICY_CLASSID_INPUTS) $(DITHER_POLICY_CLASSID_INPUTS)
+	$(AWK) -f $(top_srcdir)/tools/gen_lookup_classid_gperf.awk \
+	        $(LOOKUP_POLICY_CLASSID_INPUTS) > $(srcdir)/classid.gperf
 	gperf -C -N sixel_lookup_policy_classid_lookup $(GPERF_CLASSID_OPT) \
 	        $(srcdir)/classid.gperf                                    |\
 	sed 's/{""}/\{"", 0\}/g'                                           \
@@ -419,6 +461,19 @@ gen-classid: $(LOOKUP_POLICY_CLASSID_INPUTS)
 	              '#undef MIN_HASH_VALUE'                              \
 	              '#undef MAX_HASH_VALUE'                              \
 	        >> $(srcdir)/classid.h
+	$(AWK) -f $(top_srcdir)/tools/gen_dither_classid_gperf.awk         \
+	        $(DITHER_POLICY_CLASSID_INPUTS) > $(srcdir)/classid-dither.gperf
+	gperf -C -N sixel_dither_policy_classid_lookup                     \
+	        $(GPERF_DITHER_CLASSID_OPT)                                \
+	        $(srcdir)/classid-dither.gperf                             |\
+	sed 's/{""}/\{"", 0\}/g'                                           \
+	        > $(srcdir)/classid-dither.h
+	printf '%s\n' '#undef TOTAL_KEYWORDS'                              \
+	              '#undef MIN_WORD_LENGTH'                             \
+	              '#undef MAX_WORD_LENGTH'                             \
+	              '#undef MIN_HASH_VALUE'                              \
+	              '#undef MAX_HASH_VALUE'                              \
+	        >> $(srcdir)/classid-dither.h
 
 
 

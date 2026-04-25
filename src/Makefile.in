@@ -203,7 +203,26 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette-kmedoids.c $(srcdir)/palette-kmedoids.h \
 	$(srcdir)/palette-kcenter.c $(srcdir)/palette-kcenter.h \
 	$(srcdir)/palette.c $(srcdir)/palette.h $(srcdir)/dither.c \
-	$(srcdir)/dither.h $(srcdir)/dither-common-pipeline.c \
+	$(srcdir)/dither.h $(srcdir)/dither-policy.c \
+	$(srcdir)/dither-policy.h $(srcdir)/dither-policy-backend.c \
+	$(srcdir)/dither-policy-backend.h \
+	$(srcdir)/dither-policy-fixed.c \
+	$(srcdir)/dither-policy-positional.c \
+	$(srcdir)/dither-policy-lso2.c $(srcdir)/dither-policy-none.h \
+	$(srcdir)/dither-policy-fs.h \
+	$(srcdir)/dither-policy-atkinson.h \
+	$(srcdir)/dither-policy-jajuni.h \
+	$(srcdir)/dither-policy-stucki.h \
+	$(srcdir)/dither-policy-burkes.h \
+	$(srcdir)/dither-policy-sierra1.h \
+	$(srcdir)/dither-policy-sierra2.h \
+	$(srcdir)/dither-policy-sierra3.h \
+	$(srcdir)/dither-policy-lso2.h \
+	$(srcdir)/dither-policy-a-dither.h \
+	$(srcdir)/dither-policy-x-dither.h \
+	$(srcdir)/dither-policy-bluenoise.h \
+	$(srcdir)/dither-policy-interframe.h \
+	$(srcdir)/dither-common-pipeline.c \
 	$(srcdir)/dither-common-pipeline.h $(srcdir)/bluenoise_64x64.h \
 	$(srcdir)/dither-positional-8bit.c \
 	$(srcdir)/dither-positional-8bit.h \
@@ -296,10 +315,10 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/probe.c $(srcdir)/probe.h \
 	$(srcdir)/sixel_decode_rgba.c $(srcdir)/sixel_decode_rgba.h \
 	$(srcdir)/sixel_atomic_fallback.c $(srcdir)/sixel_atomic.h \
-	$(srcdir)/classid.h $(srcdir)/rgblookup.h $(srcdir)/lso2.h \
-	$(srcdir)/threadpool.c $(srcdir)/threadpool.h \
-	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m \
-	$(srcdir)/clipboard_carbon.c
+	$(srcdir)/classid.h $(srcdir)/classid-dither.h \
+	$(srcdir)/rgblookup.h $(srcdir)/lso2.h $(srcdir)/threadpool.c \
+	$(srcdir)/threadpool.h $(srcdir)/quicklook_thumbnailing.m \
+	$(srcdir)/clipboard_macos.m $(srcdir)/clipboard_carbon.c
 @SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-threadpool.lo
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
@@ -339,6 +358,11 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kcenter.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-backend.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-fixed.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-positional.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-lso2.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-common-pipeline.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-positional-8bit.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-positional-float32.lo \
@@ -483,6 +507,11 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-pmj.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-backend.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-fixed.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-positional.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy.Plo \
 	./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo \
 	./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo \
@@ -972,6 +1001,27 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-backend.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-backend.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-fixed.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-positional.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-lso2.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-none.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-fs.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-atkinson.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-jajuni.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-stucki.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-burkes.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-sierra1.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-sierra2.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-sierra3.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-lso2.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-a-dither.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-x-dither.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-bluenoise.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-interframe.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-common-pipeline.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-common-pipeline.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/bluenoise_64x64.h \
@@ -1146,6 +1196,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_atomic_fallback.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_atomic.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-dither.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/rgblookup.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lso2.h $(am__append_2) \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__append_3) $(am__append_4) \
@@ -1203,12 +1254,17 @@ libsixel_la_LIBADD = -lm \
 
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf \
-             $(srcdir)/classid.gperf
+             $(srcdir)/classid.gperf \
+             $(srcdir)/classid-dither.gperf
 
 GPERF_OPT = --ignore-case --language=ANSI-C
 GPERF_CLASSID_OPT = --language=ANSI-C \
                   -H sixel_lookup_policy_classid_hash \
                   -W sixel_lookup_policy_classid_wordlist
+
+GPERF_DITHER_CLASSID_OPT = --language=ANSI-C \
+                  -H sixel_dither_policy_classid_hash \
+                  -W sixel_dither_policy_classid_wordlist
 
 LOOKUP_POLICY_CLASSID_INPUTS = \
     $(srcdir)/lookup-policy-5bit.h \
@@ -1222,6 +1278,22 @@ LOOKUP_POLICY_CLASSID_INPUTS = \
     $(srcdir)/lookup-policy-normal.h \
     $(srcdir)/lookup-policy-rbc.h \
     $(srcdir)/lookup-policy-vptree.h
+
+DITHER_POLICY_CLASSID_INPUTS = \
+    $(srcdir)/dither-policy-none.h \
+    $(srcdir)/dither-policy-fs.h \
+    $(srcdir)/dither-policy-atkinson.h \
+    $(srcdir)/dither-policy-jajuni.h \
+    $(srcdir)/dither-policy-stucki.h \
+    $(srcdir)/dither-policy-burkes.h \
+    $(srcdir)/dither-policy-sierra1.h \
+    $(srcdir)/dither-policy-sierra2.h \
+    $(srcdir)/dither-policy-sierra3.h \
+    $(srcdir)/dither-policy-lso2.h \
+    $(srcdir)/dither-policy-a-dither.h \
+    $(srcdir)/dither-policy-x-dither.h \
+    $(srcdir)/dither-policy-bluenoise.h \
+    $(srcdir)/dither-policy-interframe.h
 
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = 
@@ -1335,6 +1407,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-pmj.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-backend.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-fixed.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-positional.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo@am__quote@ # am--include-marker
@@ -1706,6 +1783,41 @@ libsixel_la-dither.lo: dither.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither.c' object='libsixel_la-dither.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither.lo `test -f 'dither.c' || echo '$(srcdir)/'`dither.c
+
+libsixel_la-dither-policy.lo: dither-policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy.Tpo -c -o libsixel_la-dither-policy.lo `test -f 'dither-policy.c' || echo '$(srcdir)/'`dither-policy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy.Tpo $(DEPDIR)/libsixel_la-dither-policy.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy.c' object='libsixel_la-dither-policy.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy.lo `test -f 'dither-policy.c' || echo '$(srcdir)/'`dither-policy.c
+
+libsixel_la-dither-policy-backend.lo: dither-policy-backend.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-backend.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-backend.Tpo -c -o libsixel_la-dither-policy-backend.lo `test -f 'dither-policy-backend.c' || echo '$(srcdir)/'`dither-policy-backend.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-backend.Tpo $(DEPDIR)/libsixel_la-dither-policy-backend.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-backend.c' object='libsixel_la-dither-policy-backend.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-backend.lo `test -f 'dither-policy-backend.c' || echo '$(srcdir)/'`dither-policy-backend.c
+
+libsixel_la-dither-policy-fixed.lo: dither-policy-fixed.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-fixed.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-fixed.Tpo -c -o libsixel_la-dither-policy-fixed.lo `test -f 'dither-policy-fixed.c' || echo '$(srcdir)/'`dither-policy-fixed.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-fixed.Tpo $(DEPDIR)/libsixel_la-dither-policy-fixed.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-fixed.c' object='libsixel_la-dither-policy-fixed.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-fixed.lo `test -f 'dither-policy-fixed.c' || echo '$(srcdir)/'`dither-policy-fixed.c
+
+libsixel_la-dither-policy-positional.lo: dither-policy-positional.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-positional.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-positional.Tpo -c -o libsixel_la-dither-policy-positional.lo `test -f 'dither-policy-positional.c' || echo '$(srcdir)/'`dither-policy-positional.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-positional.Tpo $(DEPDIR)/libsixel_la-dither-policy-positional.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-positional.c' object='libsixel_la-dither-policy-positional.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-positional.lo `test -f 'dither-policy-positional.c' || echo '$(srcdir)/'`dither-policy-positional.c
+
+libsixel_la-dither-policy-lso2.lo: dither-policy-lso2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-lso2.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-lso2.Tpo -c -o libsixel_la-dither-policy-lso2.lo `test -f 'dither-policy-lso2.c' || echo '$(srcdir)/'`dither-policy-lso2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-lso2.Tpo $(DEPDIR)/libsixel_la-dither-policy-lso2.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-lso2.c' object='libsixel_la-dither-policy-lso2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-lso2.lo `test -f 'dither-policy-lso2.c' || echo '$(srcdir)/'`dither-policy-lso2.c
 
 libsixel_la-dither-common-pipeline.lo: dither-common-pipeline.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-common-pipeline.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-common-pipeline.Tpo -c -o libsixel_la-dither-common-pipeline.lo `test -f 'dither-common-pipeline.c' || echo '$(srcdir)/'`dither-common-pipeline.c
@@ -2577,6 +2689,11 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-pmj.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-backend.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fixed.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-positional.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo
@@ -2747,6 +2864,11 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-pmj.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-backend.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fixed.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-positional.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo
@@ -2916,9 +3038,9 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 	astyle                                  > $(srcdir)/rgblookup.h
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-gen-classid: $(LOOKUP_POLICY_CLASSID_INPUTS)
-	$(AWK) -f $(top_srcdir)/tools/gen_lookup_classid_gperf.awk $^ \
-	        > $(srcdir)/classid.gperf
+gen-classid: $(LOOKUP_POLICY_CLASSID_INPUTS) $(DITHER_POLICY_CLASSID_INPUTS)
+	$(AWK) -f $(top_srcdir)/tools/gen_lookup_classid_gperf.awk \
+	        $(LOOKUP_POLICY_CLASSID_INPUTS) > $(srcdir)/classid.gperf
 	gperf -C -N sixel_lookup_policy_classid_lookup $(GPERF_CLASSID_OPT) \
 	        $(srcdir)/classid.gperf                                    |\
 	sed 's/{""}/\{"", 0\}/g'                                           \
@@ -2929,6 +3051,19 @@ gen-classid: $(LOOKUP_POLICY_CLASSID_INPUTS)
 	              '#undef MIN_HASH_VALUE'                              \
 	              '#undef MAX_HASH_VALUE'                              \
 	        >> $(srcdir)/classid.h
+	$(AWK) -f $(top_srcdir)/tools/gen_dither_classid_gperf.awk         \
+	        $(DITHER_POLICY_CLASSID_INPUTS) > $(srcdir)/classid-dither.gperf
+	gperf -C -N sixel_dither_policy_classid_lookup                     \
+	        $(GPERF_DITHER_CLASSID_OPT)                                \
+	        $(srcdir)/classid-dither.gperf                             |\
+	sed 's/{""}/\{"", 0\}/g'                                           \
+	        > $(srcdir)/classid-dither.h
+	printf '%s\n' '#undef TOTAL_KEYWORDS'                              \
+	              '#undef MIN_WORD_LENGTH'                             \
+	              '#undef MAX_WORD_LENGTH'                             \
+	              '#undef MIN_HASH_VALUE'                              \
+	              '#undef MAX_HASH_VALUE'                              \
+	        >> $(srcdir)/classid-dither.h
 
 @WITH_SHEBANG_FILE_TRUE@check-local: $(SIXEL_SHEBANG_STAMP)
 

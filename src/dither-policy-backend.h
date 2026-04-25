@@ -1,0 +1,54 @@
+/*
+ * SPDX-License-Identifier: MIT
+ *
+ * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+#ifndef LIBSIXEL_DITHER_POLICY_BACKEND_H
+#define LIBSIXEL_DITHER_POLICY_BACKEND_H
+
+#include "dither-policy.h"
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_apply_fixed_backend(
+    sixel_dither_policy_apply_request_t const *request,
+    int method_for_diffuse);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_apply_varcoeff_backend(
+    sixel_dither_policy_apply_request_t const *request,
+    int method_for_diffuse);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_apply_positional_backend(
+    sixel_dither_policy_apply_request_t const *request,
+    int method_for_diffuse);
+
+#endif /* LIBSIXEL_DITHER_POLICY_BACKEND_H */
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */

@@ -52,14 +52,9 @@
 #include "components.h"
 #include "factory.h"
 #include "lookup-policy.h"
+#include "dither-policy.h"
 #include "timer.h"
 #include "dither-common-pipeline.h"
-#include "dither-positional-8bit.h"
-#include "dither-positional-float32.h"
-#include "dither-fixed-8bit.h"
-#include "dither-fixed-float32.h"
-#include "dither-varcoeff-8bit.h"
-#include "dither-varcoeff-float32.h"
 #include "dither-internal.h"
 #include "logger.h"
 #include "pixelformat.h"
@@ -74,8 +69,11 @@
  *
  * IComponents.getservice("services/factory", &factory)
  * IFactory.create("lookup/...", &lookup)
+ * IFactory.create("dither/...", &dither_policy)
  * ILookupPolicy.prepare(request{shared_instance_enabled,...})
- * ILookupPolicy.map_pixel(pixel)
+ * IDitherPolicy.prepare(request)
+ * IDitherPolicy.apply(request)
+ * IDitherPolicy.supports_parallel_bands()
  * ILookupPolicySharedConfig.{certlut,5bit,6bit}_shared_instance_enabled()
  */
 
@@ -559,243 +557,86 @@ sixel_dither_prepare_lookup_policy(
     return SIXEL_OK;
 }
 
-/*
- * Bundle palette-application inputs so compilers that are sensitive to long
- * signatures (for example pcc) can compile the mapper reliably.
- */
-typedef struct sixel_dither_map_pixels_request {
-    sixel_index_t *result;
-    unsigned char *data;
-    int width;
-    int height;
-    int band_origin;
-    int output_start;
-    int depth;
-    unsigned char *palette;
-    int reqcolor;
-    int method_for_diffuse;
-    int method_for_scan;
-    int foptimize_palette;
-    int complexion;
-    sixel_lookup_policy_interface_t *lookup_policy;
-    int *ncolors;
-    sixel_dither_t *dither;
-    int pixelformat;
-} sixel_dither_map_pixels_request_t;
-
-/*
- * Apply the palette into the supplied pixel buffer while coordinating the
- * dithering strategy. The lookup policy is prepared by the caller so this
- * routine can focus on building the shared worker context and dispatching the
- * selected diffusion backend.
- */
 static SIXELSTATUS
-sixel_dither_map_pixels(
-    sixel_dither_map_pixels_request_t const *request)
+sixel_dither_prepare_dither_policy(
+    sixel_dither_t *dither,
+    int depth,
+    int reqcolor,
+    int method_for_scan,
+    int pixelformat)
 {
-    unsigned char copy[SIXEL_MAX_CHANNELS];
-    float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
     SIXELSTATUS status;
-    unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
-    unsigned short migration_map[SIXEL_PALETTE_MAX];
-    sixel_dither_context_t context;
-    sixel_dither_lookup_map_fn lookup_map;
-    int use_varerr;
-    int use_positional;
-    sixel_index_t *result;
-    unsigned char *data;
-    int width;
-    int height;
-    int band_origin;
-    int output_start;
-    int depth;
-    unsigned char *palette;
-    int reqcolor;
-    int method_for_diffuse;
-    int method_for_scan;
-    int foptimize_palette;
-    int complexion;
-    sixel_lookup_policy_interface_t *lookup_policy;
-    int *ncolors;
-    sixel_dither_t *dither;
-    int pixelformat;
+    sixel_factory_t *factory;
+    void *service;
+    char const *policy_name;
+    sixel_dither_policy_select_request_t select_request;
+    sixel_dither_policy_prepare_request_t request;
+    sixel_dither_policy_interface_t *prepared_policy;
 
     status = SIXEL_FALSE;
-    lookup_map = NULL;
-    if (request == NULL) {
+    factory = NULL;
+    service = NULL;
+    policy_name = NULL;
+    prepared_policy = NULL;
+    memset(&select_request, 0, sizeof(select_request));
+    memset(&request, 0, sizeof(request));
+
+    if (dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    result = request->result;
-    data = request->data;
-    width = request->width;
-    height = request->height;
-    band_origin = request->band_origin;
-    output_start = request->output_start;
-    depth = request->depth;
-    palette = request->palette;
-    reqcolor = request->reqcolor;
-    method_for_diffuse = request->method_for_diffuse;
-    method_for_scan = request->method_for_scan;
-    foptimize_palette = request->foptimize_palette;
-    complexion = request->complexion;
-    lookup_policy = request->lookup_policy;
-    ncolors = request->ncolors;
-    dither = request->dither;
-    pixelformat = request->pixelformat;
 
-    memset(&context, 0, sizeof(context));
-    context.result = result;
-    context.width = width;
-    context.height = height;
-    context.band_origin = band_origin;
-    context.output_start = output_start;
-    context.depth = depth;
-    context.palette = palette;
-    context.reqcolor = reqcolor;
-    context.new_palette = new_palette;
-    context.migration_map = migration_map;
-    context.ncolors = ncolors;
-    context.scratch = copy;
-    context.lookup_policy = lookup_policy;
-    context.lookup_map = NULL;
-    context.pixels = data;
-    context.pixels_float = NULL;
-    context.pixelformat = pixelformat;
-    context.palette_float = NULL;
-    context.new_palette_float = NULL;
-    context.float_depth = 0;
-    context.lookup_source_is_float = 0;
-    context.prefer_palette_float_lookup = 0;
-    context.transparent_mask = NULL;
-    context.transparent_mask_size = 0;
-    context.transparent_keycolor = (-1);
-    context.bluenoise_gradient_map = NULL;
-    context.bluenoise_gradient_map_size = 0U;
-    context.bluenoise_gradient_width = 0;
-    context.bluenoise_gradient_height = 0;
-    if (lookup_policy == NULL || lookup_policy->vtbl == NULL) {
-        status = SIXEL_BAD_ARGUMENT;
-        sixel_helper_set_additional_message(
-            "sixel_dither_map_pixels: lookup policy is not prepared.");
-        goto end;
-    }
-    lookup_map = lookup_policy->vtbl->map_pixel;
-    context.lookup_map = lookup_map;
-    context.lookup_source_is_float =
-        lookup_policy->vtbl->lookup_source_is_float(lookup_policy);
-    context.prefer_palette_float_lookup =
-        lookup_policy->vtbl->prefer_palette_float_lookup(lookup_policy);
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        context.pixels_float = (float *)(void *)data;
+    select_request.method_for_diffuse = dither->method_for_diffuse;
+    select_request.ncolors = dither->ncolors;
+    policy_name = sixel_dither_policy_select_name(&select_request);
+    if (policy_name == NULL) {
+        return SIXEL_BAD_ARGUMENT;
     }
 
-    if (dither != NULL && dither->palette != NULL) {
-        sixel_palette_t *palette_object;
-        int float_components;
+    request.dither = dither;
+    request.depth = depth;
+    request.reqcolor = reqcolor;
+    request.method_for_scan = method_for_scan;
+    request.pixelformat = pixelformat;
+    request.optimize_palette = dither->optimize_palette;
+    request.complexion = dither->complexion;
 
-        palette_object = dither->palette;
-        if (palette_object->entries_float32 != NULL
-                && palette_object->float_depth > 0) {
-            float_components = palette_object->float_depth
-                / (int)sizeof(float);
-            if (float_components > 0
-                    && (size_t)float_components <= SIXEL_MAX_CHANNELS) {
-                context.palette_float = palette_object->entries_float32;
-                context.float_depth = float_components;
-                context.new_palette_float = new_palette_float;
-            }
-        }
-    }
-    if (dither != NULL
-            && dither->pipeline_transparent_mask != NULL
-            && dither->pipeline_transparent_keycolor >= 0
-            && dither->pipeline_transparent_keycolor < SIXEL_PALETTE_MAX) {
-        context.transparent_mask = dither->pipeline_transparent_mask;
-        context.transparent_mask_size = dither->pipeline_transparent_mask_size;
-        context.transparent_keycolor = dither->pipeline_transparent_keycolor;
-    }
-    if (dither != NULL && dither->bluenoise_gradient_map != NULL) {
-        context.bluenoise_gradient_map = dither->bluenoise_gradient_map;
-        context.bluenoise_gradient_map_size =
-            dither->bluenoise_gradient_map_size;
-        context.bluenoise_gradient_width = dither->bluenoise_gradient_width;
-        context.bluenoise_gradient_height = dither->bluenoise_gradient_height;
+    if (dither->dither_policy != NULL
+            && dither->dither_policy_class_name != NULL
+            && strcmp(dither->dither_policy_class_name, policy_name) == 0) {
+        status = dither->dither_policy->vtbl->prepare(
+            dither->dither_policy,
+            &request);
+        return status;
     }
 
-    if (reqcolor < 1) {
-        status = SIXEL_BAD_ARGUMENT;
-        sixel_helper_set_additional_message(
-            "sixel_dither_map_pixels: "
-            "a bad argument is detected, reqcolor < 0.");
-        goto end;
-    }
-    if (lookup_map == NULL) {
-        status = SIXEL_BAD_ARGUMENT;
-        sixel_helper_set_additional_message(
-            "sixel_dither_map_pixels: lookup policy is not prepared.");
-        goto end;
-    }
-
-    use_varerr = (depth == 3
-                  && method_for_diffuse == SIXEL_DIFFUSE_LSO2);
-    use_positional = (method_for_diffuse == SIXEL_DIFFUSE_A_DITHER
-                      || method_for_diffuse == SIXEL_DIFFUSE_X_DITHER
-                      || method_for_diffuse ==
-                      SIXEL_DIFFUSE_BLUENOISE_DITHER);
-    context.method_for_diffuse = method_for_diffuse;
-    context.method_for_scan = method_for_scan;
-    context.optimize_palette = foptimize_palette;
-    context.complexion = complexion;
-
-    if (use_positional) {
-        if (context.pixels_float != NULL
-            && dither != NULL
-            && dither->prefer_float32 != 0) {
-            status = sixel_dither_apply_positional_float32(dither, &context);
-            if (status == SIXEL_BAD_ARGUMENT) {
-                status = sixel_dither_apply_positional_8bit(dither, &context);
-            }
-        } else {
-            status = sixel_dither_apply_positional_8bit(dither, &context);
-        }
-    } else if (use_varerr) {
-        if (context.pixels_float != NULL
-            && dither != NULL
-            && dither->prefer_float32 != 0) {
-            status = sixel_dither_apply_varcoeff_float32(dither, &context);
-            if (status == SIXEL_BAD_ARGUMENT) {
-                status = sixel_dither_apply_varcoeff_8bit(dither, &context);
-            }
-        } else {
-            status = sixel_dither_apply_varcoeff_8bit(dither, &context);
-        }
-    } else {
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
-            && context.pixels_float != NULL
-            && depth == 3
-            && dither != NULL
-            && dither->prefer_float32 != 0) {
-            /*
-             * Float inputs can reuse the float32 renderer for every
-             * fixed-weight kernel (FS, Sierra, Stucki, etc.), including
-             * interframe diffusion strategies.
-             */
-            status = sixel_dither_apply_fixed_float32(dither, &context);
-            if (status == SIXEL_BAD_ARGUMENT) {
-                status = sixel_dither_apply_fixed_8bit(dither, &context);
-            }
-        } else {
-            status = sixel_dither_apply_fixed_8bit(dither, &context);
-        }
-    }
+    status = sixel_components_getservice("services/factory", &service);
     if (SIXEL_FAILED(status)) {
-        goto end;
+        return status;
+    }
+    factory = (sixel_factory_t *)service;
+
+    status = factory->vtbl->create(factory,
+                                   policy_name,
+                                   (void **)&prepared_policy);
+    factory->vtbl->unref(factory);
+    factory = NULL;
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
-    status = SIXEL_OK;
+    status = prepared_policy->vtbl->prepare(prepared_policy, &request);
+    if (SIXEL_FAILED(status)) {
+        prepared_policy->vtbl->unref(prepared_policy);
+        return status;
+    }
 
-end:
-    return status;
+    if (dither->dither_policy != NULL) {
+        dither->dither_policy->vtbl->unref(dither->dither_policy);
+        dither->dither_policy = NULL;
+    }
+    dither->dither_policy = prepared_policy;
+    dither->dither_policy_class_name = policy_name;
+    return SIXEL_OK;
 }
 
 #if SIXEL_ENABLE_THREADS
@@ -803,6 +644,7 @@ typedef struct sixel_parallel_dither_plan {
     sixel_index_t *dest;
     unsigned char *pixels;
     sixel_palette_t *palette;
+    sixel_dither_policy_interface_t *dither_policy;
     sixel_lookup_policy_interface_t *lookup_policy;
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
@@ -811,7 +653,6 @@ typedef struct sixel_parallel_dither_plan {
     int height;
     int band_height;
     int overlap;
-    int method_for_diffuse;
     int method_for_scan;
     int optimize_palette;
     int optimize_palette_entries;
@@ -874,10 +715,13 @@ sixel_dither_parallel_worker(tp_job_t job,
     sixel_lookup_policy_interface_t *reuse_policy;
     int restore_context;
     sixel_lookup_policy_interface_t *lookup_policy;
-    sixel_dither_map_pixels_request_t map_request;
+    sixel_dither_policy_apply_request_t apply_request;
 
     plan = (sixel_parallel_dither_plan_t *)userdata;
     if (plan == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (plan->dither_policy == NULL || plan->dither_policy->vtbl == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -984,25 +828,26 @@ sixel_dither_parallel_worker(tp_job_t job,
      * check in the renderer, so neighboring bands never clobber each
      * other's body.
      */
-    memset(&map_request, 0, sizeof(map_request));
-    map_request.result = plan->dest + (size_t)in0 * plan->width;
-    map_request.data = (unsigned char *)source;
-    map_request.width = plan->width;
-    map_request.height = rows;
-    map_request.band_origin = in0;
-    map_request.output_start = y0;
-    map_request.depth = 3;
-    map_request.palette = plan->palette->entries;
-    map_request.reqcolor = plan->reqcolor;
-    map_request.method_for_diffuse = plan->method_for_diffuse;
-    map_request.method_for_scan = plan->method_for_scan;
-    map_request.foptimize_palette = plan->optimize_palette_entries;
-    map_request.complexion = plan->complexion;
-    map_request.lookup_policy = lookup_policy;
-    map_request.ncolors = &local_ncolors;
-    map_request.dither = plan->dither;
-    map_request.pixelformat = plan->pixelformat;
-    status = sixel_dither_map_pixels(&map_request);
+    memset(&apply_request, 0, sizeof(apply_request));
+    apply_request.result = plan->dest + (size_t)in0 * plan->width;
+    apply_request.data = (unsigned char *)source;
+    apply_request.width = plan->width;
+    apply_request.height = rows;
+    apply_request.band_origin = in0;
+    apply_request.output_start = y0;
+    apply_request.depth = 3;
+    apply_request.palette = plan->palette->entries;
+    apply_request.reqcolor = plan->reqcolor;
+    apply_request.method_for_scan = plan->method_for_scan;
+    apply_request.foptimize_palette = plan->optimize_palette_entries;
+    apply_request.complexion = plan->complexion;
+    apply_request.lookup_policy = lookup_policy;
+    apply_request.ncolors = &local_ncolors;
+    apply_request.dither = plan->dither;
+    apply_request.pixelformat = plan->pixelformat;
+    status = plan->dither_policy->vtbl->apply(
+        plan->dither_policy,
+        &apply_request);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -1153,7 +998,6 @@ typedef struct sixel_dither_resolve_indexes_request {
     int depth;
     sixel_palette_t *palette;
     int reqcolor;
-    int method_for_diffuse;
     int method_for_scan;
     int foptimize;
     int foptimize_palette;
@@ -1162,6 +1006,7 @@ typedef struct sixel_dither_resolve_indexes_request {
     int *ncolors;
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
+    sixel_dither_policy_interface_t *dither_policy;
     int pixelformat;
 } sixel_dither_resolve_indexes_request_t;
 
@@ -1171,7 +1016,7 @@ typedef struct sixel_dither_resolve_indexes_request {
  * buffers between invocations and later stages.  The flow is:
  *   1. Synchronize the quantizer configuration with the dither object so the
  *      LUT builder honors the requested policy.
- *   2. Invoke sixel_dither_map_pixels() to populate the index buffer and
+ *   2. Invoke IDitherPolicy.apply() to populate the index buffer and
  *      record the resulting palette size.
  *   3. Return the status to the caller so palette application errors can be
  *      reported at a single site.
@@ -1188,7 +1033,6 @@ sixel_dither_resolve_indexes(
     int depth;
     sixel_palette_t *palette;
     int reqcolor;
-    int method_for_diffuse;
     int method_for_scan;
     int foptimize;
     int foptimize_palette;
@@ -1197,9 +1041,10 @@ sixel_dither_resolve_indexes(
     int *ncolors;
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
+    sixel_dither_policy_interface_t *dither_policy;
     int shared_lut;
     int pixelformat;
-    sixel_dither_map_pixels_request_t map_request;
+    sixel_dither_policy_apply_request_t apply_request;
 
     status = SIXEL_FALSE;
     if (request == NULL || request->palette == NULL
@@ -1213,7 +1058,6 @@ sixel_dither_resolve_indexes(
     depth = request->depth;
     palette = request->palette;
     reqcolor = request->reqcolor;
-    method_for_diffuse = request->method_for_diffuse;
     method_for_scan = request->method_for_scan;
     foptimize = request->foptimize;
     foptimize_palette = request->foptimize_palette;
@@ -1222,6 +1066,7 @@ sixel_dither_resolve_indexes(
     ncolors = request->ncolors;
     allocator = request->allocator;
     dither = request->dither;
+    dither_policy = request->dither_policy;
     shared_lut = sixel_dither_lookup_shared_instance_enabled(dither,
                                                              lut_policy);
     pixelformat = request->pixelformat;
@@ -1247,25 +1092,28 @@ sixel_dither_resolve_indexes(
         return status;
     }
 
-    memset(&map_request, 0, sizeof(map_request));
-    map_request.result = result;
-    map_request.data = data;
-    map_request.width = width;
-    map_request.height = height;
-    map_request.band_origin = 0;
-    map_request.output_start = 0;
-    map_request.depth = depth;
-    map_request.palette = palette->entries;
-    map_request.reqcolor = reqcolor;
-    map_request.method_for_diffuse = method_for_diffuse;
-    map_request.method_for_scan = method_for_scan;
-    map_request.foptimize_palette = foptimize_palette;
-    map_request.complexion = complexion;
-    map_request.lookup_policy = palette->lookup_policy;
-    map_request.ncolors = ncolors;
-    map_request.dither = dither;
-    map_request.pixelformat = pixelformat;
-    status = sixel_dither_map_pixels(&map_request);
+    if (dither_policy == NULL || dither_policy->vtbl == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    memset(&apply_request, 0, sizeof(apply_request));
+    apply_request.result = result;
+    apply_request.data = data;
+    apply_request.width = width;
+    apply_request.height = height;
+    apply_request.band_origin = 0;
+    apply_request.output_start = 0;
+    apply_request.depth = depth;
+    apply_request.palette = palette->entries;
+    apply_request.reqcolor = reqcolor;
+    apply_request.method_for_scan = method_for_scan;
+    apply_request.foptimize_palette = foptimize_palette;
+    apply_request.complexion = complexion;
+    apply_request.lookup_policy = palette->lookup_policy;
+    apply_request.ncolors = ncolors;
+    apply_request.dither = dither;
+    apply_request.pixelformat = pixelformat;
+    status = dither_policy->vtbl->apply(dither_policy, &apply_request);
 
     return status;
 }
@@ -1433,6 +1281,8 @@ sixel_dither_new(
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->lut_policy_shared_instance_override = 0;
     (*ppdither)->lut_policy_shared_instance = 0;
+    (*ppdither)->dither_policy = NULL;
+    (*ppdither)->dither_policy_class_name = NULL;
     (*ppdither)->sixel_reversible = 0;
     (*ppdither)->quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
     (*ppdither)->final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
@@ -1525,6 +1375,11 @@ sixel_dither_destroy(
 
     if (dither) {
         allocator = dither->allocator;
+        if (dither->dither_policy != NULL) {
+            dither->dither_policy->vtbl->unref(dither->dither_policy);
+            dither->dither_policy = NULL;
+            dither->dither_policy_class_name = NULL;
+        }
         if (dither->palette != NULL) {
             sixel_palette_unref(dither->palette);
             dither->palette = NULL;
@@ -2001,6 +1856,13 @@ sixel_dither_set_diffusion_type(
     sixel_dither_t  /* in */ *dither,
     int             /* in */ method_for_diffuse)
 {
+    sixel_dither_policy_interface_t *policy;
+
+    policy = NULL;
+    if (dither == NULL) {
+        return;
+    }
+
     if (method_for_diffuse == SIXEL_DIFFUSE_AUTO) {
         if (dither->ncolors > 16) {
             method_for_diffuse = SIXEL_DIFFUSE_FS;
@@ -2008,7 +1870,18 @@ sixel_dither_set_diffusion_type(
             method_for_diffuse = SIXEL_DIFFUSE_ATKINSON;
         }
     }
+
+    if (dither->method_for_diffuse == method_for_diffuse) {
+        return;
+    }
+
     dither->method_for_diffuse = method_for_diffuse;
+    policy = dither->dither_policy;
+    if (policy != NULL) {
+        policy->vtbl->unref(policy);
+        dither->dither_policy = NULL;
+        dither->dither_policy_class_name = NULL;
+    }
 }
 
 
@@ -2893,6 +2766,8 @@ sixel_dither_apply_palette_with_mode(
     int resolved_apply_mode = SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE;
     int needs_size_reset = 0;
     int pipeline_depth = 0;
+    int supports_parallel_bands;
+    sixel_dither_policy_interface_t *dither_policy;
 #if SIXEL_ENABLE_THREADS
     int shared_lut;
 #endif  /* SIXEL_ENABLE_THREADS */
@@ -2938,6 +2813,8 @@ sixel_dither_apply_palette_with_mode(
     palette_entry_limit = (int)palette->entry_count;
     source_depth = 0U;
     index = 0U;
+    dither_policy = NULL;
+    supports_parallel_bands = 0;
     preset_transparent_mask = NULL;
     preset_transparent_mask_size = 0u;
     preset_transparent_keycolor = (-1);
@@ -2962,21 +2839,6 @@ sixel_dither_apply_palette_with_mode(
 #endif  /* SIXEL_ENABLE_THREADS */
     logger = dither->pipeline_logger;
 
-    if (!parallel_active && logger != NULL) {
-        sixel_logger_logf(logger,
-                          "worker",
-                          "dither",
-                          "start",
-                          0,
-                          0,
-                          0,
-                          height,
-                          0,
-                          height,
-                          "serial dither begin height=%d",
-                          height);
-    }
-
     if (parallel_active && dither->optimize_palette != 0) {
         /*
          * Palette minimization rewrites the palette entries in place.
@@ -2985,15 +2847,6 @@ sixel_dither_apply_palette_with_mode(
          */
         parallel_active = 0;
     }
-    if (parallel_active
-            && dither->method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
-        /*
-         * Interframe diffusion keeps frame-wide state. Disable band-parallel
-         * dithering until interframe state synchronization is introduced.
-         */
-        parallel_active = 0;
-    }
-
     /*
      * Resolve shared-instance flags on the caller thread before workers start
      * so policy constructors can reuse parsed environment values when CLI
@@ -3177,6 +3030,43 @@ sixel_dither_apply_palette_with_mode(
         }
     }
 
+    status = sixel_dither_prepare_dither_policy(dither,
+                                                3,
+                                                dither->ncolors,
+                                                method_for_scan,
+                                                pipeline_pixelformat);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    dither_policy = dither->dither_policy;
+    if (dither_policy == NULL || dither_policy->vtbl == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    supports_parallel_bands =
+        dither_policy->vtbl->supports_parallel_bands(dither_policy);
+    if (parallel_active && supports_parallel_bands == 0) {
+        /*
+         * The selected dither class requires frame-global state and
+         * cannot process overlapped bands in parallel.
+         */
+        parallel_active = 0;
+    }
+    if (!parallel_active && logger != NULL) {
+        sixel_logger_logf(logger,
+                          "worker",
+                          "dither",
+                          "start",
+                          0,
+                          0,
+                          0,
+                          height,
+                          0,
+                          height,
+                          "serial dither begin height=%d",
+                          height);
+    }
+
     palette->lut_policy = dither->lut_policy;
     shared_lut = sixel_dither_lookup_shared_instance_enabled(
         dither,
@@ -3232,7 +3122,6 @@ sixel_dither_apply_palette_with_mode(
         plan.height = height;
         plan.band_height = adjusted_height;
         plan.overlap = adjusted_overlap;
-        plan.method_for_diffuse = dither->method_for_diffuse;
         plan.method_for_scan = method_for_scan;
         plan.optimize_palette = dither->optimized;
         plan.optimize_palette_entries = dither->optimize_palette;
@@ -3241,6 +3130,7 @@ sixel_dither_apply_palette_with_mode(
         plan.lookup_shared_instance_enabled = shared_lut;
         plan.reqcolor = dither->ncolors;
         plan.pixelformat = pipeline_pixelformat;
+        plan.dither_policy = dither_policy;
         /* Carry the pipeline pinning preference as a strict 0/1 flag. */
         plan.pin_threads = dither->pipeline_pin_threads != 0 ? 1 : 0;
         plan.logger = logger;
@@ -3263,7 +3153,6 @@ sixel_dither_apply_palette_with_mode(
         resolve_request.depth = 3;
         resolve_request.palette = palette;
         resolve_request.reqcolor = dither->ncolors;
-        resolve_request.method_for_diffuse = dither->method_for_diffuse;
         resolve_request.method_for_scan = method_for_scan;
         resolve_request.foptimize = dither->optimized;
         resolve_request.foptimize_palette = dither->optimize_palette;
@@ -3272,6 +3161,7 @@ sixel_dither_apply_palette_with_mode(
         resolve_request.ncolors = &ncolors;
         resolve_request.allocator = dither->allocator;
         resolve_request.dither = dither;
+        resolve_request.dither_policy = dither_policy;
         resolve_request.pixelformat = pipeline_pixelformat;
         status = sixel_dither_resolve_indexes(&resolve_request);
     }

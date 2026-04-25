@@ -124,6 +124,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0009_filter_dither.c \
 	processing/filter/0010_filter_encode.c \
 	processing/lookup/0001_lookup_policy.c \
+	processing/dither/0001_dither_policy.c \
 	processing/filter/filter_test_common.h \
 	loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
 	loader/wic/0009_loader_wic_pixelformat.c \
@@ -192,6 +193,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0009_filter_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0010_filter_encode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/wic/test_runner-0009_loader_wic_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/gdk-pixbuf2/test_runner-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT) \
@@ -361,6 +363,7 @@ am__depfiles_remade =  \
 	loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po \
 	loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po \
 	loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po \
+	processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po \
 	processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po \
 	processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po \
 	processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po \
@@ -1043,6 +1046,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FILTER_ENCODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LOOKUP_POLICY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DITHER_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_LOADER_GD_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_LOADER_LIBPNG_PIXELFORMAT \
@@ -1133,6 +1137,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0009_filter_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0010_filter_encode.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0001_lookup_policy.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/coregraphics/0008_loader_coregraphics_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/wic/0009_loader_wic_pixelformat.c \
@@ -1219,6 +1224,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 	_static/sh/staticcheck-lookup-backend-exports.sh \
 	_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
 	_static/sh/staticcheck-lookup-classid-registry-sync.sh \
+	_static/sh/staticcheck-dither-classid-registry-sync.sh \
 	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-src-makefile-dist-sources-sync.sh \
@@ -1357,6 +1363,15 @@ processing/lookup/$(DEPDIR)/$(am__dirstamp):
 processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT):  \
 	processing/lookup/$(am__dirstamp) \
 	processing/lookup/$(DEPDIR)/$(am__dirstamp)
+processing/dither/$(am__dirstamp):
+	@$(MKDIR_P) processing/dither
+	@: >>processing/dither/$(am__dirstamp)
+processing/dither/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/dither/$(DEPDIR)
+	@: >>processing/dither/$(DEPDIR)/$(am__dirstamp)
+processing/dither/test_runner-0001_dither_policy.$(OBJEXT):  \
+	processing/dither/$(am__dirstamp) \
+	processing/dither/$(DEPDIR)/$(am__dirstamp)
 loader/coregraphics/$(am__dirstamp):
 	@$(MKDIR_P) loader/coregraphics
 	@: >>loader/coregraphics/$(am__dirstamp)
@@ -1641,6 +1656,7 @@ mostlyclean-compile:
 	-rm -f loader/libwebp/*.$(OBJEXT)
 	-rm -f loader/quicklook/*.$(OBJEXT)
 	-rm -f loader/wic/*.$(OBJEXT)
+	-rm -f processing/dither/*.$(OBJEXT)
 	-rm -f processing/filter/*.$(OBJEXT)
 	-rm -f processing/lookup/*.$(OBJEXT)
 	-rm -f quant/palette/*.$(OBJEXT)
@@ -1699,6 +1715,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po@am__quote@ # am--include-marker
@@ -1967,6 +1984,20 @@ processing/lookup/test_runner-0001_lookup_policy.obj: processing/lookup/0001_loo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/lookup/0001_lookup_policy.c' object='processing/lookup/test_runner-0001_lookup_policy.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/lookup/test_runner-0001_lookup_policy.obj `if test -f 'processing/lookup/0001_lookup_policy.c'; then $(CYGPATH_W) 'processing/lookup/0001_lookup_policy.c'; else $(CYGPATH_W) '$(srcdir)/processing/lookup/0001_lookup_policy.c'; fi`
+
+processing/dither/test_runner-0001_dither_policy.o: processing/dither/0001_dither_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/test_runner-0001_dither_policy.o -MD -MP -MF processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Tpo -c -o processing/dither/test_runner-0001_dither_policy.o `test -f 'processing/dither/0001_dither_policy.c' || echo '$(srcdir)/'`processing/dither/0001_dither_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Tpo processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/0001_dither_policy.c' object='processing/dither/test_runner-0001_dither_policy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/test_runner-0001_dither_policy.o `test -f 'processing/dither/0001_dither_policy.c' || echo '$(srcdir)/'`processing/dither/0001_dither_policy.c
+
+processing/dither/test_runner-0001_dither_policy.obj: processing/dither/0001_dither_policy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/dither/test_runner-0001_dither_policy.obj -MD -MP -MF processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Tpo -c -o processing/dither/test_runner-0001_dither_policy.obj `if test -f 'processing/dither/0001_dither_policy.c'; then $(CYGPATH_W) 'processing/dither/0001_dither_policy.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/0001_dither_policy.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Tpo processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/dither/0001_dither_policy.c' object='processing/dither/test_runner-0001_dither_policy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/dither/test_runner-0001_dither_policy.obj `if test -f 'processing/dither/0001_dither_policy.c'; then $(CYGPATH_W) 'processing/dither/0001_dither_policy.c'; else $(CYGPATH_W) '$(srcdir)/processing/dither/0001_dither_policy.c'; fi`
 
 loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o: loader/coregraphics/0008_loader_coregraphics_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o -MD -MP -MF loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Tpo -c -o loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.o `test -f 'loader/coregraphics/0008_loader_coregraphics_pixelformat.c' || echo '$(srcdir)/'`loader/coregraphics/0008_loader_coregraphics_pixelformat.c
@@ -3024,6 +3055,8 @@ distclean-generic:
 	-$(am__rm_f) loader/quicklook/$(am__dirstamp)
 	-$(am__rm_f) loader/wic/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/wic/$(am__dirstamp)
+	-$(am__rm_f) processing/dither/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/dither/$(am__dirstamp)
 	-$(am__rm_f) processing/filter/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/filter/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/$(DEPDIR)/$(am__dirstamp)
@@ -3092,6 +3125,7 @@ distclean: distclean-am
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
+	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
@@ -3202,6 +3236,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
+	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
@@ -3268,6 +3303,7 @@ SIXEL_INSTALLCHECK ?= 0
 	staticcheck-lookup-backend-exports \
 	staticcheck-lookup-policy-no-backend-includes \
 	staticcheck-lookup-classid-registry-sync \
+	staticcheck-dither-classid-registry-sync \
 	staticcheck-test-runner-amalgamation-defines-sync \
 	staticcheck-makefile-recipes \
 	staticcheck-src-makefile-dist-sources-sync \
@@ -3307,6 +3343,7 @@ staticcheck-test-runner-dllexport \
 staticcheck-lookup-backend-exports \
 staticcheck-lookup-policy-no-backend-includes \
 staticcheck-lookup-classid-registry-sync \
+staticcheck-dither-classid-registry-sync \
 staticcheck-test-runner-amalgamation-defines-sync \
 staticcheck-makefile-recipes \
 staticcheck-src-makefile-dist-sources-sync \
@@ -3453,6 +3490,16 @@ staticcheck-lookup-classid-registry-sync:
 		--trs-file staticcheck-lookup-classid-registry-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-lookup-classid-registry-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-dither-classid-registry-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-dither-classid-registry-sync" \
+		--log-file staticcheck-dither-classid-registry-sync.log \
+		--trs-file staticcheck-dither-classid-registry-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-dither-classid-registry-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-test-runner-amalgamation-defines-sync:
