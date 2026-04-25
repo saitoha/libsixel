@@ -414,6 +414,7 @@ test_runner_duplicate_win32_path(char const *path)
 {
     size_t source_length;
     size_t source_index;
+    size_t drive_index;
     size_t payload_length;
     size_t target_length;
     size_t index;
@@ -422,6 +423,7 @@ test_runner_duplicate_win32_path(char const *path)
 
     source_length = 0u;
     source_index = 0u;
+    drive_index = 0u;
     payload_length = 0u;
     target_length = 0u;
     index = 0u;
@@ -437,11 +439,13 @@ test_runner_duplicate_win32_path(char const *path)
             strncmp(path, "/cygdrive/", 10u) == 0 &&
             isalpha((unsigned char)path[10]) &&
             (path[11] == '/' || path[11] == '\\' || path[11] == '\0')) {
+        drive_index = 10u;
         source_index = 11u;
         convert_drive = 1;
     } else if (source_length >= 2u && path[0] == '/' &&
                isalpha((unsigned char)path[1]) &&
                (path[2] == '/' || path[2] == '\\' || path[2] == '\0')) {
+        drive_index = 1u;
         source_index = 2u;
         convert_drive = 1;
     }
@@ -455,12 +459,20 @@ test_runner_duplicate_win32_path(char const *path)
         return converted;
     }
 
+    /*
+     * Skip the optional slash after the drive token while keeping drive_index
+     * anchored to the original letter position.
+     */
     if (source_index < source_length &&
             (path[source_index] == '/' || path[source_index] == '\\')) {
         source_index += 1u;
     }
 
     if (source_index > source_length) {
+        return NULL;
+    }
+    if (drive_index >= source_length
+            || !isalpha((unsigned char)path[drive_index])) {
         return NULL;
     }
 
@@ -475,12 +487,16 @@ test_runner_duplicate_win32_path(char const *path)
         return NULL;
     }
 
-    converted[0] = (char)toupper((unsigned char)path[source_index - 1u]);
+    converted[0] = (char)toupper((unsigned char)path[drive_index]);
     converted[1] = ':';
     converted[2] = '\\';
     index = 3u;
 
     while (payload_length > 0u) {
+        if (index + 1u >= target_length) {
+            free(converted);
+            return NULL;
+        }
         if (path[source_index] == '/') {
             converted[index] = '\\';
         } else {
@@ -489,6 +505,10 @@ test_runner_duplicate_win32_path(char const *path)
         ++source_index;
         ++index;
         --payload_length;
+    }
+    if (index >= target_length) {
+        free(converted);
+        return NULL;
     }
     converted[index] = '\0';
 
