@@ -37,7 +37,6 @@
 #include "compat_stub.h"
 #include "dither-positional-8bit.h"
 #include "dither-common-pipeline.h"
-#include "lookup-common.h"
 #include "bluenoise_64x64.h"
 
 #if SIXEL_ENABLE_THREADS

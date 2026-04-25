@@ -58,7 +58,6 @@
 #include "cpu.h"
 #include "allocator.h"
 #include "compat_stub.h"
-#include "lookup-common.h"
 #include "lookup-fhedt-8bit.h"
 #include "logger.h"
 #include "threading.h"

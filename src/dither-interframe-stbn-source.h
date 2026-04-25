@@ -30,7 +30,7 @@
 
 #include <stdint.h>
 #include "dither.h"
-#include "lookup-common.h"
+#include "pixelformat.h"
 
 #define SIXEL_INTERFRAME_STBN_SOURCE_HASH 0
 #define SIXEL_INTERFRAME_STBN_SOURCE_MASK 1

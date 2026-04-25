@@ -135,7 +135,6 @@ amalgamation_headers = files(
   '../src/lookup-fhedt-float32.h',
   '../src/lookup-vptree-8bit.h',
   '../src/lookup-vptree-float32.h',
-  '../src/lookup-common.h',
   '../src/frame.h',
   '../src/scale.h',
   '../src/options.h',

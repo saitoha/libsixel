@@ -27,7 +27,6 @@
 
 #include <limits.h>
 
-#include "lookup-common.h"
 #include "lookup-policy.h"
 
 #ifdef __cplusplus
@@ -66,26 +65,6 @@ typedef struct sixel_lookup_policy_registry_entry {
     char const *name;
     sixel_lookup_policy_create_fn create;
 } sixel_lookup_policy_registry_entry_t;
-
-static inline int
-sixel_lookup_policy_normalize_fast_lut_policy(int lut_policy)
-{
-    int normalized;
-
-    normalized = lut_policy;
-    if (normalized != SIXEL_LUT_POLICY_CERTLUT
-        && normalized != SIXEL_LUT_POLICY_5BIT
-        && normalized != SIXEL_LUT_POLICY_6BIT
-        && normalized != SIXEL_LUT_POLICY_EYTZINGER
-        && normalized != SIXEL_LUT_POLICY_FHEDT
-        && normalized != SIXEL_LUT_POLICY_VPTREE
-        && normalized != SIXEL_LUT_POLICY_RBC
-        && normalized != SIXEL_LUT_POLICY_MAHALANOBIS) {
-        normalized = SIXEL_LUT_POLICY_6BIT;
-    }
-
-    return normalized;
-}
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_normal(sixel_lookup_policy_interface_t **policy);

@@ -40,7 +40,7 @@
 
 #include "dither-varcoeff-8bit.h"
 #include "dither-common-pipeline.h"
-#include "lookup-common.h"
+#include "pixelformat.h"
 
 static void
 sixel_dither_scanline_params_varcoeff_8bit(int serpentine,

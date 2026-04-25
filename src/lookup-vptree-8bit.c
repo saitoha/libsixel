@@ -37,7 +37,6 @@
 #include <sixel.h>
 
 #include "allocator.h"
-#include "lookup-common.h"
 #include "lookup-vptree-8bit.h"
 #include "status.h"
 

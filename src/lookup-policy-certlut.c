@@ -34,7 +34,6 @@
 #endif
 
 #include "compat_stub.h"
-#include "lookup-common.h"
 #include "lookup-policy-private.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"

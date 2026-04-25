@@ -35,7 +35,6 @@
 # include <math.h>
 #endif
 
-#include "lookup-common.h"
 #include "lookup-policy-private.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"

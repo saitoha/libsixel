@@ -38,7 +38,7 @@
 #include "dither-fixed-8bit.h"
 #include "dither-interframe-method.h"
 #include "dither-common-pipeline.h"
-#include "lookup-common.h"
+#include "pixelformat.h"
 
 /*
  * Local serpentine traversal helper.  The function mirrors the behaviour used

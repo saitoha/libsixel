@@ -37,7 +37,6 @@
 #include <sixel.h>
 
 #include "allocator.h"
-#include "lookup-common.h"
 #include "lookup-vptree-float32.h"
 #include "status.h"
 

@@ -55,7 +55,6 @@
 #include "cpu.h"
 #include "allocator.h"
 #include "compat_stub.h"
-#include "lookup-common.h"
 #include "lookup-fhedt-float32.h"
 #include "pixelformat.h"
 #include "logger.h"

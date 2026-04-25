@@ -62,7 +62,6 @@
 # include <stdio.h>
 #endif
 
-#include "lookup-common.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-heckbert.h"

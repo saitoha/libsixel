@@ -35,7 +35,6 @@
 # include <math.h>
 #endif
 
-#include "lookup-common.h"
 #include "lookup-policy-private.h"
 #include "logger.h"
 #include "pixelformat.h"

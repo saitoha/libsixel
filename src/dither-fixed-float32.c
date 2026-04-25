@@ -37,7 +37,6 @@
 #include "dither-interframe-method.h"
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
-#include "lookup-common.h"
 
 typedef void (*diffuse_fixed_float_fn)(float *data,
                                        int width,

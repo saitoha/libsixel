@@ -92,7 +92,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-vptree-8bit.h \
                 $(srcdir)/lookup-vptree-float32.c \
                 $(srcdir)/lookup-vptree-float32.h \
-                $(srcdir)/lookup-common.h \
                 $(srcdir)/lookup-policy.h \
                 $(srcdir)/lookup-policy-private.h \
                 $(srcdir)/factory.h \

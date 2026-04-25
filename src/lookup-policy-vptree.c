@@ -29,7 +29,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lookup-common.h"
 #include "lookup-policy-private.h"
 #include "lookup-vptree-8bit.h"
 #include "lookup-vptree-float32.h"

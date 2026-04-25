@@ -185,7 +185,6 @@ srcs = [
   'sixel_decode_rgba.c',
   'sixel_decode_rgba.h',
   'sixel_atomic_fallback.c',
-  'lookup-common.h',
   'lookup-policy.h',
   'lookup-policy-private.h',
   'factory.h',

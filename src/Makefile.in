@@ -181,11 +181,10 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-fhedt-float32.h \
 	$(srcdir)/lookup-vptree-8bit.c $(srcdir)/lookup-vptree-8bit.h \
 	$(srcdir)/lookup-vptree-float32.c \
-	$(srcdir)/lookup-vptree-float32.h $(srcdir)/lookup-common.h \
-	$(srcdir)/lookup-policy.h $(srcdir)/lookup-policy-private.h \
-	$(srcdir)/factory.h $(srcdir)/components.h \
-	$(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
-	$(srcdir)/palette-common-merge.c \
+	$(srcdir)/lookup-vptree-float32.h $(srcdir)/lookup-policy.h \
+	$(srcdir)/lookup-policy-private.h $(srcdir)/factory.h \
+	$(srcdir)/components.h $(srcdir)/palette-heckbert.c \
+	$(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
 	$(srcdir)/palette-common-snap.c \
 	$(srcdir)/palette-common-snap.h $(srcdir)/palette-kmeans.c \
@@ -930,7 +929,6 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-8bit.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-float32.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-float32.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-common.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-private.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/factory.h \

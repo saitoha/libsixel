@@ -38,7 +38,6 @@
 #include "dither-positional-float32.h"
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
-#include "lookup-common.h"
 #include "bluenoise_64x64.h"
 
 #if SIXEL_ENABLE_THREADS

@@ -34,7 +34,6 @@
 #endif
 
 #include "compat_stub.h"
-#include "lookup-common.h"
 #include "lookup-fhedt-8bit.h"
 #include "lookup-fhedt-float32.h"
 #include "lookup-policy-private.h"

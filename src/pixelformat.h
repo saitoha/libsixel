@@ -25,6 +25,12 @@
 #ifndef LIBSIXEL_PIXELFORMAT_H
 #define LIBSIXEL_PIXELFORMAT_H
 
+/*
+ * Shared upper bound for channel-oriented working buffers in dithering and
+ * palette lookup internals.
+ */
+#define SIXEL_MAX_CHANNELS 4
+
 #ifdef __cplusplus
 extern "C" {
 #endif

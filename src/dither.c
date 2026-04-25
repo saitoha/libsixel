@@ -51,7 +51,6 @@
 #include "compat_stub.h"
 #include "components.h"
 #include "factory.h"
-#include "lookup-common.h"
 #include "lookup-policy.h"
 #include "timer.h"
 #include "dither-common-pipeline.h"

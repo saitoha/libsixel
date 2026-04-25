@@ -41,7 +41,6 @@
 
 #include "dither-varcoeff-float32.h"
 #include "dither-common-pipeline.h"
-#include "lookup-common.h"
 #include "pixelformat.h"
 
 static void
