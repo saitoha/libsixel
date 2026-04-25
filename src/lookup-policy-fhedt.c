@@ -422,7 +422,8 @@ sixel_lookup_policy_fhedt_configure_8bit(
                                                1,
                                                1,
                                                request->pixelformat,
-                                               request->depth);
+                                               request->depth,
+                                               request->parallel_dither_active);
     if (SIXEL_FAILED(status)) {
         lut->fhedt_ready = 0;
         return status;
@@ -534,7 +535,8 @@ sixel_lookup_policy_fhedt_configure_float32(
                                                   lut->weights[0],
                                                   lut->weights[1],
                                                   lut->weights[2],
-                                                  request->pixelformat);
+                                                  request->pixelformat,
+                                                  request->parallel_dither_active);
     if (SIXEL_FAILED(status)) {
         lut->fhedt_ready = 0;
         return status;
@@ -690,7 +692,7 @@ sixel_lookup_policy_fhedt_prepare(
     }
 
     reuse_policy = request->reuse_policy;
-    if (sixel_lookup_parallel_dither_active() != 0
+    if (request->parallel_dither_active != 0
             /* Reuse slot NULL means ownership migration is unsafe. */
             && request->reuse_policy_slot == NULL) {
         reuse_policy = NULL;

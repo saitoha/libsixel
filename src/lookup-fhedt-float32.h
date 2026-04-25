@@ -72,6 +72,7 @@ typedef struct sixel_lookup_fhedt_float32 {
     sixel_lookup_fhedt_shared_float32_t *shared;
     int shared_published;
     int use_cache;
+    int parallel_dither_active;
 } sixel_lookup_fhedt_float32_t;
 
 SIXELSTATUS
@@ -93,7 +94,8 @@ sixel_lookup_fhedt_float32_configure(sixel_lookup_fhedt_float32_t *fhedt,
                                  float wcomp1,
                                  float wcomp2,
                                  float wcomp3,
-                                 int pixelformat);
+                                 int pixelformat,
+                                 int parallel_dither_active);
 
 int
 sixel_lookup_fhedt_float32_map(sixel_lookup_fhedt_float32_t *fhedt,

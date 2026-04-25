@@ -71,6 +71,7 @@ typedef struct sixel_lookup_fhedt_8bit {
     sixel_lookup_fhedt_shared_8bit_t *shared;
     int shared_published;
     int use_cache;
+    int parallel_dither_active;
 } sixel_lookup_fhedt_8bit_t;
 
 SIXELSTATUS
@@ -93,7 +94,8 @@ sixel_lookup_fhedt_8bit_configure(sixel_lookup_fhedt_8bit_t *fhedt,
                                  int wcomp2,
                                  int wcomp3,
                                  int pixelformat,
-                                 int depth);
+                                 int depth,
+                                 int parallel_dither_active);
 
 int
 sixel_lookup_fhedt_8bit_map(sixel_lookup_fhedt_8bit_t *fhedt,

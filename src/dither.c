@@ -77,6 +77,7 @@
  * IFactory.create("lookup/...", &lookup)
  * ILookupPolicy.prepare(request)
  * ILookupPolicy.map_pixel(pixel)
+ * ILookupPolicySharedConfig.{certlut,5bit,6bit}_shared_instance_enabled()
  */
 
 static SIXELSTATUS
@@ -444,6 +445,7 @@ sixel_dither_prepare_lookup_policy(
     int complexion,
     int lut_policy,
     int pixelformat,
+    int parallel_dither_active,
     sixel_lookup_policy_interface_t *reuse_policy,
     sixel_lookup_policy_interface_t **reuse_policy_slot,
     sixel_allocator_t *allocator)
@@ -476,6 +478,7 @@ sixel_dither_prepare_lookup_policy(
     request.reqcolor = reqcolor;
     request.complexion = 1;
     request.pixelformat = pixelformat;
+    request.parallel_dither_active = parallel_dither_active;
     request.reuse_policy = reuse_policy;
     request.reuse_policy_slot = reuse_policy_slot;
     request.allocator = allocator;
@@ -920,6 +923,7 @@ sixel_dither_parallel_worker(tp_job_t job,
         plan->complexion,
         plan->lut_policy,
         plan->pixelformat,
+        1,
         reuse_policy,
         NULL,
         plan->allocator);
@@ -1194,6 +1198,7 @@ sixel_dither_resolve_indexes(
         complexion,
         lut_policy,
         pixelformat,
+        0,
         palette->lookup_policy,
         NULL,
         allocator);
@@ -2947,21 +2952,12 @@ sixel_dither_apply_palette_with_mode(
     }
 
     /*
-     * Force lookup shared flags to initialize before worker threads start.
-     * The env helpers use lazy initialization, so touching them here avoids
-     * thread sanitizer reports when parallel dither starts.
+     * Resolve shared-instance flags on the caller thread before workers start
+     * so policy constructors can reuse the parsed environment values.
      */
-    (void)sixel_lookup_env_shared_certlut();
-    (void)sixel_lookup_env_shared_5bit();
-    (void)sixel_lookup_env_shared_6bit();
-
-    /*
-     * Inform lookup helpers whether concurrent palette application will run.
-     * FHEDT caches rely on this hint when TLS is unavailable so they can
-     * disable shared caches during parallel dithering while remaining enabled
-     * for serial passes.
-     */
-    sixel_lookup_set_parallel_dither_active(parallel_active);
+    (void)sixel_lookup_policy_certlut_shared_instance_enabled();
+    (void)sixel_lookup_policy_5bit_shared_instance_enabled();
+    (void)sixel_lookup_policy_6bit_shared_instance_enabled();
 
     bufsize = (size_t)(width * height) * sizeof(sixel_index_t);
     total_pixels = (size_t)width * (size_t)height;
@@ -3154,6 +3150,7 @@ sixel_dither_apply_palette_with_mode(
             dither->complexion,
             dither->lut_policy,
             pipeline_pixelformat,
+            parallel_active,
             palette->lookup_policy,
             NULL,
             dither->allocator);
@@ -3201,11 +3198,11 @@ sixel_dither_apply_palette_with_mode(
 #if SIXEL_ENABLE_THREADS
         shared_lut = 1;
         if (plan.lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
-            shared_lut = sixel_lookup_env_shared_certlut();
+            shared_lut = sixel_lookup_policy_certlut_shared_instance_enabled();
         } else if (plan.lut_policy == SIXEL_LUT_POLICY_5BIT) {
-            shared_lut = sixel_lookup_env_shared_5bit();
+            shared_lut = sixel_lookup_policy_5bit_shared_instance_enabled();
         } else if (plan.lut_policy == SIXEL_LUT_POLICY_6BIT) {
-            shared_lut = sixel_lookup_env_shared_6bit();
+            shared_lut = sixel_lookup_policy_6bit_shared_instance_enabled();
         }
         if (shared_lut != 0) {
             plan.lookup_policy = palette->lookup_policy;
@@ -3306,7 +3303,6 @@ end:
                           "serial status=%d",
                           status);
     }
-    sixel_lookup_set_parallel_dither_active(0);
     if (dither != NULL) {
         sixel_dither_interframe_finish_apply(dither,
                                            resolved_apply_mode,

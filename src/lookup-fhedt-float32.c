@@ -2085,7 +2085,8 @@ sixel_lookup_fhedt_float32_configure(sixel_lookup_fhedt_float32_t *fhedt,
                                     float wcomp1,
                                     float wcomp2,
                                     float wcomp3,
-                                    int pixelformat)
+                                    int pixelformat,
+                                    int parallel_dither_active)
 {
     SIXELSTATUS status;
 
@@ -2127,8 +2128,10 @@ sixel_lookup_fhedt_float32_configure(sixel_lookup_fhedt_float32_t *fhedt,
         fhedt->shared_published = 0;
     }
 
+    fhedt->parallel_dither_active = (parallel_dither_active != 0);
+
 #if SIXEL_FHEDT_TLS_AVAILABLE == 0
-    if (sixel_lookup_parallel_dither_active() != 0) {
+    if (fhedt->parallel_dither_active != 0) {
         /*
          * Thread-local storage is not supported and parallel dithering is
          * active.  Disable the FHEDT cache to avoid sharing a single cache
@@ -2346,7 +2349,7 @@ sixel_lookup_fhedt_float32_map(sixel_lookup_fhedt_float32_t *fhedt,
 
     cache_active = fhedt->use_cache;
 #if SIXEL_FHEDT_TLS_AVAILABLE == 0
-    if (cache_active != 0 && sixel_lookup_parallel_dither_active() != 0) {
+    if (cache_active != 0 && fhedt->parallel_dither_active != 0) {
         cache_active = 0;
     }
 #endif

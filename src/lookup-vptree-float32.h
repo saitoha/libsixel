@@ -47,7 +47,8 @@ sixel_lookup_vptree_float32_configure(sixel_lookup_vptree_float32_t *tree,
                                       float const *palette,
                                       int ncolors,
                                       int depth,
-                                      float const *weights);
+                                      float const *weights,
+                                      int parallel_dither_active);
 
 int
 sixel_lookup_vptree_float32_map(sixel_lookup_vptree_float32_t *tree,

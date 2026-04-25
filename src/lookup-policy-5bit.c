@@ -89,6 +89,7 @@ typedef struct sixel_lookup_policy_bit5_object {
         sixel_allocator_t *allocator;
     } state_float;
     int lookup_source_is_float;
+    int parallel_dither_active;
 } sixel_lookup_policy_bit5_object_t;
 
 static sixel_lookup_policy_bit5_object_t *
@@ -120,6 +121,37 @@ sixel_lookup_policy_bit5_quant_make(unsigned int depth)
     quant.channel_mask = (1U << quant.channel_bits) - 1U;
 
     return quant;
+}
+
+static int
+sixel_lookup_policy_bit5_env_shared_default_on(void)
+{
+    char const *env;
+
+    env = sixel_compat_getenv("SIXEL_LOOKUP_5BIT_SHARED_INSTANCE");
+    if (env == NULL || env[0] == '\0') {
+        return 1;
+    }
+    if (env[0] == '0' && env[1] == '\0') {
+        return 0;
+    }
+    if (env[0] == '1' && env[1] == '\0') {
+        return 1;
+    }
+
+    return 1;
+}
+
+int
+sixel_lookup_policy_5bit_shared_instance_enabled(void)
+{
+    static int cached = -1;
+
+    if (cached < 0) {
+        cached = sixel_lookup_policy_bit5_env_shared_default_on();
+    }
+
+    return cached;
 }
 
 static int
@@ -700,7 +732,7 @@ sixel_lookup_policy_bit5_map_8bit(
     if (object->state_8bit.dense_ready != 0
             && object->state_8bit.dense != NULL
             && result >= 0
-            && sixel_lookup_parallel_dither_active() == 0
+            && object->parallel_dither_active == 0
             && (size_t)bucket < object->state_8bit.dense_size) {
         object->state_8bit.dense[bucket] = result;
     }
@@ -817,6 +849,7 @@ sixel_lookup_policy_bit5_reset_state(
     sixel_lookup_policy_bit5_clear_8bit_state(object);
     object->prepared = 0;
     object->lookup_source_is_float = 0;
+    object->parallel_dither_active = 0;
 }
 
 static void
@@ -885,6 +918,7 @@ sixel_lookup_policy_bit5_prepare(
 
     object = sixel_lookup_policy_bit5_from_base(policy);
     sixel_lookup_policy_bit5_reset_state(object);
+    object->parallel_dither_active = (request->parallel_dither_active != 0);
 
     if (request->depth != 3) {
         sixel_helper_set_additional_message(
@@ -893,7 +927,7 @@ sixel_lookup_policy_bit5_prepare(
     }
 
     reuse_policy = request->reuse_policy;
-    if (sixel_lookup_parallel_dither_active() != 0
+    if (request->parallel_dither_active != 0
             /* Reuse slot NULL means ownership migration is unsafe. */
             && request->reuse_policy_slot == NULL) {
         reuse_policy = NULL;
@@ -911,6 +945,8 @@ sixel_lookup_policy_bit5_prepare(
             object->state_8bit = reuse_object->state_8bit;
             object->state_float = reuse_object->state_float;
             object->prepared = reuse_object->prepared;
+            object->parallel_dither_active =
+                (request->parallel_dither_active != 0);
             reuse_object->state_8bit.palette = NULL;
             reuse_object->state_8bit.allocator = NULL;
             reuse_object->state_8bit.dense = NULL;

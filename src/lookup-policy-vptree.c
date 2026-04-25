@@ -328,7 +328,8 @@ sixel_lookup_policy_vptree_configure_float32(
                                                    lut->palette,
                                                    lut->ncolors,
                                                    lut->depth,
-                                                   lut->weights);
+                                                   lut->weights,
+                                                   request->parallel_dither_active);
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
             "sixel_lookup_policy_vptree: VP-tree configure failed.");
@@ -371,7 +372,8 @@ sixel_lookup_policy_vptree_configure_8bit(
                                                 request->palette,
                                                 request->reqcolor,
                                                 request->depth,
-                                                1);
+                                                1,
+                                                request->parallel_dither_active);
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
             "sixel_lookup_policy_vptree: VP-tree configure failed.");
@@ -523,7 +525,7 @@ sixel_lookup_policy_vptree_prepare(
     }
 
     reuse_policy = request->reuse_policy;
-    if (sixel_lookup_parallel_dither_active() != 0
+    if (request->parallel_dither_active != 0
             /* Reuse slot NULL means ownership migration is unsafe. */
             && request->reuse_policy_slot == NULL) {
         reuse_policy = NULL;

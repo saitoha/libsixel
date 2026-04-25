@@ -33,6 +33,7 @@
 # include <float.h>
 #endif
 
+#include "compat_stub.h"
 #include "lookup-common.h"
 #include "lookup-policy-private.h"
 #include "pixelformat.h"
@@ -242,6 +243,37 @@ sixel_lookup_policy_certlut_from_base_const(
     sixel_lookup_policy_interface_t const *policy)
 {
     return (sixel_lookup_policy_certlut_object_t const *)(void const *)policy;
+}
+
+static int
+sixel_lookup_policy_certlut_parse_shared_default_off(void)
+{
+    char const *env;
+
+    env = sixel_compat_getenv("SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE");
+    if (env == NULL || env[0] == '\0') {
+        return 0;
+    }
+    if (env[0] == '0' && env[1] == '\0') {
+        return 0;
+    }
+    if (env[0] == '1' && env[1] == '\0') {
+        return 1;
+    }
+
+    return 0;
+}
+
+int
+sixel_lookup_policy_certlut_shared_instance_enabled(void)
+{
+    static int cached = -1;
+
+    if (cached < 0) {
+        cached = sixel_lookup_policy_certlut_parse_shared_default_off();
+    }
+
+    return cached;
 }
 
 static SIXELSTATUS
@@ -674,7 +706,7 @@ sixel_lookup_policy_certlut_configure_8bit(
             return SIXEL_BAD_ALLOCATION;
         }
     }
-    if (sixel_lookup_env_shared_certlut() == 0) {
+    if (sixel_lookup_policy_certlut_shared_instance_enabled() == 0) {
         sixel_certlut_disable_locking(lut->cert);
     }
 
@@ -847,7 +879,7 @@ sixel_lookup_policy_certlut_prepare(
     }
 
     reuse_policy = request->reuse_policy;
-    if (sixel_lookup_parallel_dither_active() != 0
+    if (request->parallel_dither_active != 0
             /* Reuse slot NULL means ownership migration is unsafe. */
             && request->reuse_policy_slot == NULL) {
         reuse_policy = NULL;

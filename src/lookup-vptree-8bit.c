@@ -472,7 +472,8 @@ sixel_lookup_vptree_8bit_configure(sixel_lookup_vptree_8bit_t *tree,
                                    unsigned char const *palette,
                                    int ncolors,
                                    int depth,
-                                   int complexion)
+                                   int complexion,
+                                   int parallel_dither_active)
 {
     SIXELSTATUS status;
     int *indices;
@@ -490,7 +491,7 @@ sixel_lookup_vptree_8bit_configure(sixel_lookup_vptree_8bit_t *tree,
     tree->ncolors = ncolors;
     tree->depth = depth;
     tree->complexion = complexion;
-    tree->cache_enabled = (sixel_lookup_parallel_dither_active() == 0);
+    tree->cache_enabled = (parallel_dither_active == 0);
     tree->cached_index = -1;
 
     tree->nodes = (sixel_lookup_vptree_8bit_node_t *)sixel_allocator_malloc(

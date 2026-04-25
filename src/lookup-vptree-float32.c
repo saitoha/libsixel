@@ -444,7 +444,8 @@ sixel_lookup_vptree_float32_configure(sixel_lookup_vptree_float32_t *tree,
                                       float const *palette,
                                       int ncolors,
                                       int depth,
-                                      float const *weights)
+                                      float const *weights,
+                                      int parallel_dither_active)
 {
     SIXELSTATUS status;
     int *indices;
@@ -464,7 +465,7 @@ sixel_lookup_vptree_float32_configure(sixel_lookup_vptree_float32_t *tree,
     tree->weights[0] = weights[0];
     tree->weights[1] = weights[1];
     tree->weights[2] = weights[2];
-    tree->cache_enabled = (sixel_lookup_parallel_dither_active() == 0);
+    tree->cache_enabled = (parallel_dither_active == 0);
     tree->cached_index = -1;
 
     tree->nodes =
