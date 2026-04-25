@@ -292,10 +292,6 @@ foreach t : tests
   test_args = [python_tap_wrapper_file] + test_cmd
   test_protocol = 'tap'
   test_timeout = 90
-  if t.contains('sigint')
-    # Keep hung SIGINT tests from inflating wall clock on CI workers.
-    test_timeout = 20
-  endif
   if test_should_fail
     # TAP tests report failures via "not ok" while keeping exit status 0.
     # Convert TAP result lines to exit status so should_fail behaves like

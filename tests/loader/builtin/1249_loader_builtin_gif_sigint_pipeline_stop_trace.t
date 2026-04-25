@@ -45,13 +45,13 @@ sigint_run_status=0
 trace_summary=$(
     # shellcheck disable=SC2086
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+        --env "SIXEL_THREADS=4" \
+        --env "SIXEL_TRACE_TOPIC=encode_handoff" \
+        --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
         --sigint-run-until \
         "event=callback_dispatch_start" \
         0 \
         ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-        --env "SIXEL_THREADS=4" \
-        --env "SIXEL_TRACE_TOPIC=encode_handoff" \
-        --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
         -Lbuiltin! -lforce -o /dev/null -g "${input_gif}" 2>&1 >/dev/null
 ) || sigint_run_status=$?
 
