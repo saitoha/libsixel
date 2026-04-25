@@ -434,7 +434,8 @@ test_runner_duplicate_win32_path(char const *path)
         return converted;
     }
 
-    if (path[source_index] == '/' || path[source_index] == '\\') {
+    if (source_index < source_length &&
+            (path[source_index] == '/' || path[source_index] == '\\')) {
         source_index += 1u;
     }
 
