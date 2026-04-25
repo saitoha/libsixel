@@ -698,8 +698,7 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                     lookup_pixel_float,
                     depth,
                     palette_float,
-                    reqcolor,
-                    context->complexion);
+                    reqcolor);
             } else {
                 lookup_pixel = quantized;
                 color_index = context->lookup_map(context->lookup_policy,

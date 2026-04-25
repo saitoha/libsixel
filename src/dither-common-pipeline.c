@@ -122,8 +122,7 @@ int
 sixel_dither_lookup_palette_float32(float const *pixel,
                                     int depth,
                                     float const *palette,
-                                    int reqcolor,
-                                    int complexion)
+                                    int reqcolor)
 {
     double best_error;
     double error;
@@ -139,7 +138,6 @@ sixel_dither_lookup_palette_float32(float const *pixel,
     v128_t sample_l_ps;
     v128_t sample_r_ps;
     v128_t sample_g_ps;
-    v128_t complexion_ps;
     v128_t palette_l_ps;
     v128_t palette_r_ps;
     v128_t palette_g_ps;
@@ -174,7 +172,6 @@ sixel_dither_lookup_palette_float32(float const *pixel,
         sample_l_ps = wasm_f32x4_splat(pixel[0]);
         sample_r_ps = wasm_f32x4_splat(pixel[1]);
         sample_g_ps = wasm_f32x4_splat(pixel[2]);
-        complexion_ps = wasm_f32x4_splat((float)complexion);
         color_simd_end = reqcolor & ~3;
         for (color = 0; color < color_simd_end; color += 4) {
             palette_l_ps = wasm_f32x4_make(palette[color * 3],
@@ -191,7 +188,6 @@ sixel_dither_lookup_palette_float32(float const *pixel,
                                            palette[(color + 3) * 3 + 2]);
             diff_l_ps = wasm_f32x4_sub(sample_l_ps, palette_l_ps);
             error_ps = wasm_f32x4_mul(diff_l_ps, diff_l_ps);
-            error_ps = wasm_f32x4_mul(error_ps, complexion_ps);
             diff_r_ps = wasm_f32x4_sub(sample_r_ps, palette_r_ps);
             error_ps = wasm_f32x4_add(error_ps,
                     wasm_f32x4_mul(diff_r_ps, diff_r_ps));
@@ -230,7 +226,7 @@ sixel_dither_lookup_palette_float32(float const *pixel,
         palette_offset = color * depth;
         palette_l = (double)palette[palette_offset];
         delta = sample_l - palette_l;
-        error = delta * delta * (double)complexion;
+        error = delta * delta;
         for (channel = 1; channel < depth; ++channel) {
             delta = (double)pixel[channel]
                   - (double)palette[palette_offset + channel];
