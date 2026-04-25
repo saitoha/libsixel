@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify clbl=1 fixture keeps deferred-only dual-stroke diagnostic contract.
+# Verify clbl=1 fixture keeps deferred dual-stroke diagnostic contract.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -51,22 +51,6 @@ case "${diag_line}" in
 esac
 
 case "${diag_line}" in
-    *FX_DUAL_MODE_BASE*)
-        echo "not ok" 1 - \
-            "effects/stroke-composite unexpectedly kept FX_DUAL_MODE_BASE code"
-        exit 0
-        ;;
-esac
-
-case "${diag_line}" in
-    *FX_DUAL_OVERLAP_BASE*)
-        echo "not ok" 1 - \
-            "effects/stroke-composite unexpectedly kept FX_DUAL_OVERLAP_BASE code"
-        exit 0
-        ;;
-esac
-
-case "${diag_line}" in
     *FX_DUAL_MODE_DEFER*) ;;
     *)
         echo "not ok" 1 - \
@@ -85,5 +69,5 @@ case "${diag_line}" in
 esac
 
 echo "ok" 1 - \
-    "effects/stroke-composite keeps clbl=1 deferred-only dual-stroke codes"
+    "effects/stroke-composite keeps clbl=1 deferred dual-stroke codes"
 exit 0

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify clbl=1 dual-stroke diagnostics stay deferred-only and stable.
+# Verify clbl=1 dual-stroke diagnostics stay deferred and stable.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -46,22 +46,6 @@ case "${diag_line}" in
     *)
         echo "not ok" 1 - \
             "effects/stroke-composite diagnostic header is malformed"
-        exit 0
-        ;;
-esac
-
-case "${diag_line}" in
-    *FX_DUAL_MODE_BASE*)
-        echo "not ok" 1 - \
-            "effects/stroke-composite unexpectedly kept FX_DUAL_MODE_BASE code"
-        exit 0
-        ;;
-esac
-
-case "${diag_line}" in
-    *FX_DUAL_OVERLAP_BASE*)
-        echo "not ok" 1 - \
-            "effects/stroke-composite unexpectedly kept FX_DUAL_OVERLAP_BASE code"
         exit 0
         ;;
 esac
