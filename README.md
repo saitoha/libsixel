@@ -766,18 +766,38 @@ Options:
                            LOOKUPPOLICY is one of them:
                              auto      -> follow pixel depth
                              5bit      -> force classic 5-bit buckets
+                               sub-option:
+                                 :shared_instance=0|1
+                                 0 -> build worker-local lookup state
+                                 1 -> share one lookup state across workers
                              6bit      -> favor 6-bit RGB buckets
+                               sub-option:
+                                 :shared_instance=0|1
+                                 0 -> build worker-local lookup state
+                                 1 -> share one lookup state across workers
                              none      -> disable LUT caching and scan the
                                           palette directly
-                             certlut      -> certified hierarchical LUT
-                                             with zero approximation
+                             certlut   -> certified hierarchical LUT
+                                          with zero approximation
+                               sub-option:
+                                 :shared_instance=0|1
+                                 0 -> build worker-local lookup state
+                                 1 -> share one lookup state across workers
                              eytzinger -> implicit binary tree lookup with
-                                             a small neighbour scan (default)
+                                          a small neighbour scan (default)
                              fhedt      -> Voronoi grid built via a 3-pass
                                            3D EDT with optional boundary
                                            refinement
                              vptree    -> VP-tree lookup built from palette
                                           entries with safe-distance pruning
+                             rbc       -> Random Ball Cover cluster pruning
+                             mahalanobis -> RBC clusters with Mahalanobis
+                                            lower bounds
+
+When `shared_instance` is present on the command line, it overrides
+`SIXEL_LOOKUP_5BIT_SHARED_INSTANCE`,
+`SIXEL_LOOKUP_6BIT_SHARED_INSTANCE`, and
+`SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE`.
 
 The *none* policy skips every lookup acceleration structure so each
 pixel comparison scans the palette directly.  This matches the legacy
@@ -796,7 +816,8 @@ palette index and short-circuits when that cached palette falls within the
 safe distance.
 
 * `SIXEL_DITHER_LOOKUP_POLICY` sets the LUT policy (auto, 5bit, 6bit, none,
-  certlut, eytzinger, fhedt, or vptree; default is eytzinger).
+  certlut, eytzinger, fhedt, vptree, rbc, or mahalanobis; default is
+  certlut).
 * `SIXEL_LOOKUP_PACKING` chooses the dense cache packing for 5bit/6bit
   policies (`linear`, `morton`, or `hilbert`; default `linear`).
 * `SIXEL_LOOKUP_FHEDT_RESOLUTION` sets the grid resolution (64, 128, 256;
@@ -813,11 +834,14 @@ safe distance.
   across threads (0 or 1; default 1).
 * `SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE` selects whether CERTLUT caches are
   shared across worker threads or rebuilt per worker (0 or 1; default 0 so
-  each worker keeps its own lock-free copy).
+  each worker keeps its own lock-free copy) when `--lookup-policy` does not
+  set `shared_instance` explicitly.
 * `SIXEL_LOOKUP_5BIT_SHARED_INSTANCE` controls whether the 5bit dense LUT is
-  shared across workers (0 or 1; default 1 to reuse the cache without locks).
+  shared across workers (0 or 1; default 1 to reuse the cache without locks)
+  when `--lookup-policy` does not set `shared_instance` explicitly.
 * `SIXEL_LOOKUP_6BIT_SHARED_INSTANCE` controls whether the 6bit dense LUT is
-  shared across workers (0 or 1; default 1 to reuse the cache without locks).
+  shared across workers (0 or 1; default 1 to reuse the cache without locks)
+  when `--lookup-policy` does not set `shared_instance` explicitly.
 * `SIXEL_LOOKUP_FHEDT_TILE_XY` sets the tile width/height used by the
   parallel EDT passes (defaults now adapt to palette complexity; values are
   clamped to the image size and fall back to the adaptive choice on invalid
