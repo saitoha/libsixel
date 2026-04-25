@@ -56,9 +56,9 @@ test_runner_setenv_portable(char const *name, char const *value);
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__) && HAVE_SIGNAL_H
 # define TEST_RUNNER_SIGINT_SYNC_PID_ENVVAR \
-    "SIXEL_TEST_SIGINT_NOTIFY_PID"
+    "LSO_TEST_SIGINT_NOTIFY_PID"
 # define TEST_RUNNER_SIGINT_SYNC_EVENT_ENVVAR \
-    "SIXEL_TEST_SIGINT_NOTIFY_EVENT"
+    "LSO_TEST_SIGINT_NOTIFY_EVENT"
 # define TEST_RUNNER_SIGINT_SYNC_EVENT_DISPATCH_START \
     "callback_dispatch_start"
 
