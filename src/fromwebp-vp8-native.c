@@ -1954,6 +1954,8 @@ sixel_webp_vp8_decode_native_intra(
     unsigned int ymode_hist[5];
     unsigned int uv_hist[4];
     unsigned int bmode_hist[10];
+    unsigned int token_partition_count;
+    unsigned int token_partition_idx;
 
     status = SIXEL_OK;
     above_y = NULL;
@@ -2023,13 +2025,23 @@ sixel_webp_vp8_decode_native_intra(
     memset(ymode_hist, 0, sizeof(ymode_hist));
     memset(uv_hist, 0, sizeof(uv_hist));
     memset(bmode_hist, 0, sizeof(bmode_hist));
+    token_partition_count = 0u;
+    token_partition_idx = 0u;
     if (token_decoders == NULL || header == NULL || context == NULL ||
         planes == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     mode_decoder = &context->mode_decoder;
-    token_decoder = &token_decoders[0];
+    token_partition_count = context->token_partition_count;
+    if (token_partition_count == 0u ||
+        token_partition_count > SIXEL_WEBP_VP8_MAX_TOKEN_PARTITIONS) {
+        sixel_helper_set_additional_message(
+            "builtin webp: VP8 token partition count is invalid.");
+        return SIXEL_BAD_INPUT;
+    }
+    token_partition_idx = 0u;
+    token_decoder = &token_decoders[token_partition_idx];
     width = (unsigned int)header->width;
     height = (unsigned int)header->height;
     uv_width = planes->uv_width;
@@ -2068,6 +2080,7 @@ sixel_webp_vp8_decode_native_intra(
            above_bottom_bmode_size);
 
     for (mb_y = 0u; mb_y < context->mb_rows; ++mb_y) {
+        token_decoder = &token_decoders[token_partition_idx];
         memset(left_y, 0, sizeof(left_y));
         memset(left_u, 0, sizeof(left_u));
         memset(left_v, 0, sizeof(left_v));
@@ -2293,10 +2306,11 @@ sixel_webp_vp8_decode_native_intra(
                 sixel_trace_topic_is_enabled("webp_decode") != 0) {
                 sixel_trace_topic_message(
                     "webp_decode",
-                    "LSXWEBPDBG|diag=VP8MB|x=%u|y=%u|seg=%u|ym=%u|uv=%u|"
+                    "LSXWEBPDBG|diag=VP8MB|x=%u|y=%u|part=%u|seg=%u|ym=%u|uv=%u|"
                     "skip=%d|nzy2=%u|nzy=%u|nzu=%u|nzv=%u",
                     mb_x,
                     mb_y,
+                    token_partition_idx,
                     segment_id,
                     ymode,
                     uv_mode,
@@ -2530,6 +2544,14 @@ sixel_webp_vp8_decode_native_intra(
                 left_right_bmode[3] = left_right_bmode[0];
             }
             left_mb_mode = (unsigned char)ymode;
+        }
+        /*
+         * VP8 static maps token partitions at macroblock-row granularity.
+         * Rotate the token decoder in round-robin order after each row.
+         */
+        token_partition_idx++;
+        if (token_partition_idx >= token_partition_count) {
+            token_partition_idx = 0u;
         }
     }
     if (sixel_trace_topic_is_enabled("webp_decode") != 0) {
@@ -3317,11 +3339,6 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
                                                 header->height);
     if (SIXEL_FAILED(status)) {
         return status;
-    }
-    if (layout.token_partition_count != 1u) {
-        sixel_helper_set_additional_message(
-            "builtin webp: VP8 token partition count > 1 is unsupported.");
-        return SIXEL_NOT_IMPLEMENTED;
     }
 
     status = sixel_webp_vp8_alloc_planes(&planes, header, allocator);
