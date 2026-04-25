@@ -42,22 +42,6 @@
 #include "lookup-policy-rbc.h"
 #include "lookup-policy-mahalanobis.h"
 
-/*
- * IDL (internal contract)
- *
- * interface ILookupPolicyDispatcher {
- *   select_name(select_request);
- *   create_by_name(name, out policy);
- * }
- *
- * Ownership/lifetime:
- * - create_by_name() returns refcount=1 objects from concrete classes.
- * - Callers use policy->vtbl methods directly.
- *
- * Creation path:
- * - name selector resolves "lookup/..." names.
- * - registry resolves names to per-class constructors.
- */
 
 static char const g_lookup_policy_name_normal[] = "lookup/normal";
 static char const g_lookup_policy_name_mono_darkbg[] = "lookup/mono-darkbg";

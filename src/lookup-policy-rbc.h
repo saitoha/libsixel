@@ -31,13 +31,6 @@
 extern "C" {
 #endif
 
-/*
- * IDL (internal contract)
- *
- * class LookupRBCFactory {
- *   create(out policy);
- * }
- */
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_rbc(sixel_lookup_policy_interface_t **policy);

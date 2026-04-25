@@ -31,13 +31,6 @@
 extern "C" {
 #endif
 
-/*
- * IDL (internal contract)
- *
- * class Lookup6BitFactory {
- *   create(out policy);
- * }
- */
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_6bit(sixel_lookup_policy_interface_t **policy);

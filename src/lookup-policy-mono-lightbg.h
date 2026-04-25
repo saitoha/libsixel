@@ -31,13 +31,6 @@
 extern "C" {
 #endif
 
-/*
- * IDL (internal contract)
- *
- * class LookupMonoLightBgFactory {
- *   create(out policy);
- * }
- */
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_mono_lightbg(
