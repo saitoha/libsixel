@@ -141,6 +141,8 @@
     "LSO_TEST_SIGINT_NOTIFY_PID"
 #define SIXEL_ENCODER_SIGINT_SYNC_EVENT_ENVVAR \
     "LSO_TEST_SIGINT_NOTIFY_EVENT"
+#define SIXEL_ENCODER_SIGINT_SYNC_FD_ENVVAR \
+    "LSO_TEST_SIGINT_NOTIFY_FD"
 #define SIXEL_ENCODER_SIGINT_SYNC_EVENT_DISPATCH_START \
     "callback_dispatch_start"
 
@@ -1027,17 +1029,28 @@ sixel_encoder_test_sigint_sync_notify_dispatch_start(void)
 {
     static int sync_state = -1;
     static pid_t sync_pid = (pid_t)0;
+    static int sync_fd = -1;
     char const *sync_event;
     char const *sync_pid_text;
+    char const *sync_fd_text;
     unsigned long parsed_pid;
+    unsigned long parsed_fd;
     char *sync_end;
+    char *sync_fd_end;
     int notify_result;
+    ssize_t fd_write_result;
+    char notify_token;
 
     sync_event = NULL;
     sync_pid_text = NULL;
+    sync_fd_text = NULL;
     parsed_pid = 0ul;
+    parsed_fd = 0ul;
     sync_end = NULL;
+    sync_fd_end = NULL;
     notify_result = -1;
+    fd_write_result = (ssize_t)-1;
+    notify_token = '1';
 
     if (sync_state == 0 || sync_state == 2) {
         return;
@@ -1055,31 +1068,61 @@ sixel_encoder_test_sigint_sync_notify_dispatch_start(void)
             return;
         }
 
+        sync_fd_text = sixel_compat_getenv(
+            SIXEL_ENCODER_SIGINT_SYNC_FD_ENVVAR);
+        if (sync_fd_text != NULL && sync_fd_text[0] != '\0') {
+            errno = 0;
+            parsed_fd = strtoul(sync_fd_text, &sync_fd_end, 10);
+            if (errno == 0
+                    && sync_fd_end != sync_fd_text
+                    && *sync_fd_end == '\0'
+                    && parsed_fd > 0ul
+                    && parsed_fd <= (unsigned long)INT_MAX) {
+                sync_fd = (int)parsed_fd;
+            }
+        }
+
         sync_pid_text = sixel_compat_getenv(
             SIXEL_ENCODER_SIGINT_SYNC_PID_ENVVAR);
-        if (sync_pid_text == NULL || sync_pid_text[0] == '\0') {
-            return;
+        if (sync_pid_text != NULL && sync_pid_text[0] != '\0') {
+            errno = 0;
+            parsed_pid = strtoul(sync_pid_text, &sync_end, 10);
+            if (errno == 0
+                    && sync_end != sync_pid_text
+                    && *sync_end == '\0'
+                    && parsed_pid != 0ul
+                    && parsed_pid <= (unsigned long)LONG_MAX) {
+                sync_pid = (pid_t)parsed_pid;
+            }
         }
 
-        errno = 0;
-        parsed_pid = strtoul(sync_pid_text, &sync_end, 10);
-        if (errno != 0 || sync_end == sync_pid_text || *sync_end != '\0') {
-            return;
+        if (sync_fd >= 0 || sync_pid > (pid_t)0) {
+            sync_state = 1;
         }
-        if (parsed_pid == 0ul || parsed_pid > (unsigned long)LONG_MAX) {
-            return;
-        }
-
-        sync_pid = (pid_t)parsed_pid;
-        sync_state = 1;
     }
 
-    if (sync_pid <= (pid_t)0) {
+    if (sync_fd < 0 && sync_pid <= (pid_t)0) {
         return;
     }
 
-    notify_result = kill(sync_pid, SIGUSR1);
-    if (notify_result == 0 || errno != EINTR) {
+    if (sync_fd >= 0) {
+        do {
+            fd_write_result = write(sync_fd, &notify_token, 1u);
+        } while (fd_write_result < (ssize_t)0 && errno == EINTR);
+        if (fd_write_result == (ssize_t)1 || errno != EINTR) {
+            (void)close(sync_fd);
+            sync_fd = -1;
+        }
+    }
+
+    if (sync_pid > (pid_t)0) {
+        notify_result = kill(sync_pid, SIGUSR1);
+        if (notify_result == 0 || errno != EINTR) {
+            sync_pid = (pid_t)0;
+        }
+    }
+
+    if (sync_fd < 0 && sync_pid <= (pid_t)0) {
         /*
          * Emit only once per process and keep retries only for EINTR.
          */

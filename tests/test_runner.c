@@ -54,6 +54,11 @@
 static int
 test_runner_setenv_portable(char const *name, char const *value);
 
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+# define TEST_RUNNER_SIGINT_SYNC_FD_ENVVAR \
+    "LSO_TEST_SIGINT_NOTIFY_FD"
+#endif
+
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__) && HAVE_SIGNAL_H
 # define TEST_RUNNER_SIGINT_SYNC_PID_ENVVAR \
     "LSO_TEST_SIGINT_NOTIFY_PID"
@@ -1113,6 +1118,15 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     int kill_result;
     int signal_sent;
     int found_trigger;
+    int sync_pipe[2];
+    int sync_read_open;
+    int sync_write_open;
+    int sync_closed;
+    int sync_fd_flags;
+    int sync_fd_size;
+    ssize_t sync_read_size;
+    char sync_fd_text[32];
+    char sync_byte;
     char read_buffer[1024];
     char *combined_buffer;
     size_t combined_capacity;
@@ -1156,6 +1170,16 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     kill_result = 0;
     signal_sent = 0;
     found_trigger = 0;
+    sync_pipe[0] = -1;
+    sync_pipe[1] = -1;
+    sync_read_open = 0;
+    sync_write_open = 0;
+    sync_closed = 0;
+    sync_fd_flags = 0;
+    sync_fd_size = 0;
+    sync_read_size = 0;
+    sync_fd_text[0] = '\0';
+    sync_byte = '\0';
     combined_buffer = NULL;
     combined_capacity = 0u;
     fd_flags = 0;
@@ -1255,6 +1279,46 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    /*
+     * Expose a dedicated one-byte handshake pipe so callback-handoff
+     * synchronization does not depend on stderr buffering or signal runtime
+     * behavior. Child-side writes happen in encoder.c at dispatch-start.
+     */
+    if (pipe(sync_pipe) != 0) {
+        fprintf(stderr, "test_runner: sync pipe failed: %s\n",
+                strerror(errno));
+        goto timeout_cleanup;
+    }
+    sync_read_open = 1;
+    sync_write_open = 1;
+
+    sync_fd_flags = fcntl(sync_pipe[1], F_GETFD, 0);
+    if (sync_fd_flags >= 0) {
+        (void)fcntl(sync_pipe[1], F_SETFD, sync_fd_flags & ~FD_CLOEXEC);
+    }
+
+    sync_fd_flags = fcntl(sync_pipe[0], F_GETFL, 0);
+    if (sync_fd_flags >= 0) {
+        (void)fcntl(sync_pipe[0], F_SETFL, sync_fd_flags | O_NONBLOCK);
+    }
+
+    sync_fd_size = snprintf(sync_fd_text,
+                            sizeof(sync_fd_text),
+                            "%d",
+                            sync_pipe[1]);
+    if (sync_fd_size <= 0
+            || (size_t)sync_fd_size >= sizeof(sync_fd_text)) {
+        fprintf(stderr,
+                "test_runner: failed to encode sigint sync fd\n");
+        goto timeout_cleanup;
+    }
+    if (test_runner_setenv_portable(TEST_RUNNER_SIGINT_SYNC_FD_ENVVAR,
+                                    sync_fd_text) != 0) {
+        fprintf(stderr,
+                "test_runner: failed to export sigint sync fd env\n");
+        goto timeout_cleanup;
+    }
+
     if (pipe(stderr_pipe) != 0) {
         fprintf(stderr, "test_runner: pipe failed: %s\n", strerror(errno));
         goto timeout_cleanup;
@@ -1270,6 +1334,7 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
 
     if (child_pid == (pid_t)0) {
         (void)setpgid(0, 0);
+        (void)close(sync_pipe[0]);
         (void)close(stderr_pipe[0]);
         (void)dup2(stderr_pipe[1], STDERR_FILENO);
         (void)close(stderr_pipe[1]);
@@ -1285,6 +1350,8 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
 
     (void)close(stderr_pipe[1]);
     stderr_write_open = 0;
+    (void)close(sync_pipe[1]);
+    sync_write_open = 0;
 
     fd_flags = fcntl(stderr_pipe[0], F_GETFL, 0);
     if (fd_flags >= 0) {
@@ -1297,6 +1364,42 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
 
     for (;;) {
         read_progress = 0;
+        if (signal_sent == 0 && sync_closed == 0) {
+            for (;;) {
+                sync_read_size = read(sync_pipe[0], &sync_byte, 1u);
+                if (sync_read_size > 0) {
+                    found_trigger = 1;
+                    send_result =
+                        test_runner_signal_group_and_child(child_pid, SIGINT);
+                    if (send_result != 0) {
+                        fprintf(stderr,
+                                "test_runner: SIGINT send failed: %s\n",
+                                strerror(errno));
+                    }
+                    signal_sent = 1;
+                    /*
+                     * Keep independent timeout budgets for trigger detection
+                     * and post-SIGINT shutdown so slow trace startup does not
+                     * consume the child-exit grace window.
+                     */
+                    elapsed_ms = 0ul;
+                    break;
+                }
+                if (sync_read_size == 0) {
+                    sync_closed = 1;
+                    break;
+                }
+                if (errno == EINTR) {
+                    continue;
+                }
+                if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                    break;
+                }
+                fprintf(stderr, "test_runner: sync read failed: %s\n",
+                        strerror(errno));
+                goto timeout_cleanup;
+            }
+        }
 #if HAVE_SIGNAL_H
         if (signal_sent == 0
                 && sync_signal_supported != 0
@@ -1453,6 +1556,9 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     if (stderr_read_open != 0) {
         (void)close(stderr_pipe[0]);
     }
+    if (sync_read_open != 0) {
+        (void)close(sync_pipe[0]);
+    }
 #if HAVE_SIGNAL_H
     if (sync_action_installed != 0) {
         (void)sigaction(SIGUSR1, &sync_old_action, NULL);
@@ -1491,6 +1597,12 @@ timeout_cleanup:
     }
     if (stderr_write_open != 0) {
         (void)close(stderr_pipe[1]);
+    }
+    if (sync_read_open != 0) {
+        (void)close(sync_pipe[0]);
+    }
+    if (sync_write_open != 0) {
+        (void)close(sync_pipe[1]);
     }
 #if HAVE_SIGNAL_H
     if (sync_action_installed != 0) {
