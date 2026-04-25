@@ -40,6 +40,19 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
                     int enable_orientation,
                     sixel_frame_t *frame);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
+                              int fstatic,
+                              int loop_control,
+                              int start_frame_no_set,
+                              int start_frame_no_override,
+                              int enable_cms,
+                              int enable_orientation,
+                              sixel_load_image_function fn_load,
+                              void *context,
+                              void *cancel_context,
+                              int *handled);
+
 #ifdef __cplusplus
 }
 #endif

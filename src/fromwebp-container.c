@@ -61,6 +61,17 @@ sixel_webp_read_fourcc(unsigned char const *p)
     return sixel_webp_read_u32le(p);
 }
 
+static uint32_t
+sixel_webp_read_u24le(unsigned char const *p)
+{
+    if (p == NULL) {
+        return 0u;
+    }
+    return (uint32_t)p[0]
+        | ((uint32_t)p[1] << 8)
+        | ((uint32_t)p[2] << 16);
+}
+
 typedef enum sixel_webp_parse_error_id {
     SIXEL_WEBP_PARSE_ERR_RIFF_HEADER_TRUNC = 0,
     SIXEL_WEBP_PARSE_ERR_RIFF_SIGNATURE,
@@ -264,6 +275,10 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
                                     data + offset + 8u,
                                     chunk_size);
             info->vp8x_flags = data[offset + 8u];
+            info->canvas_width = (unsigned int)
+                sixel_webp_read_u24le(data + offset + 12u) + 1u;
+            info->canvas_height = (unsigned int)
+                sixel_webp_read_u24le(data + offset + 15u) + 1u;
         } else if (fourcc == SIXEL_WEBP_CHUNK_VP8) {
             sixel_webp_record_chunk(&info->vp8,
                                     &info->vp8_count,
@@ -291,6 +306,12 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
                                     offset,
                                     data + offset + 8u,
                                     chunk_size);
+            if (chunk_size == 6u) {
+                info->anim_background =
+                    sixel_webp_read_u32le(data + offset + 8u);
+                info->anim_loop_count = (unsigned int)data[offset + 12u]
+                    | ((unsigned int)data[offset + 13u] << 8);
+            }
         } else if (fourcc == SIXEL_WEBP_CHUNK_ANMF) {
             sixel_webp_record_chunk(&info->anmf,
                                     &info->anmf_count,
@@ -338,6 +359,29 @@ sixel_webp_classify_container(sixel_webp_container_info_t const *info)
     return plan.kind;
 }
 
+static int
+sixel_webp_anim_canvas_is_supported(sixel_webp_container_info_t const *info)
+{
+    uint64_t pixel_count;
+
+    pixel_count = 0u;
+    if (info == NULL) {
+        return 0;
+    }
+    if (info->canvas_width == 0u || info->canvas_height == 0u) {
+        return 0;
+    }
+    if (info->canvas_width > (uint32_t)SIXEL_WEBP_MAX_DIMENSION ||
+        info->canvas_height > (uint32_t)SIXEL_WEBP_MAX_DIMENSION) {
+        return 0;
+    }
+    pixel_count = (uint64_t)info->canvas_width * (uint64_t)info->canvas_height;
+    if (pixel_count > (uint64_t)SIXEL_WEBP_MAX_IMAGE_PIXELS) {
+        return 0;
+    }
+    return 1;
+}
+
 SIXELSTATUS
 sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
                              sixel_webp_decode_plan_t *plan)
@@ -350,6 +394,27 @@ sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
     plan->kind = SIXEL_WEBP_CONTAINER_KIND_CORRUPT;
     if (info->anim_count != 0u || info->anmf_count != 0u ||
         ((info->vp8x_flags & SIXEL_WEBP_VP8X_ANIMATION_FLAG) != 0u)) {
+        if (info->vp8x_count == 1u &&
+            (info->vp8x_flags & SIXEL_WEBP_VP8X_ANIMATION_FLAG) != 0u &&
+            info->anim_count != 0u &&
+            info->anmf_count != 0u &&
+            info->anim.payload_size == 6u &&
+            info->anmf.payload_size >= 24u &&
+            info->anmf_count <= SIXEL_WEBP_MAX_ANIMATION_FRAMES &&
+            sixel_webp_anim_canvas_is_supported(info) != 0) {
+            plan->kind = SIXEL_WEBP_CONTAINER_KIND_ANIM_MVP;
+            plan->meta_has_iccp = info->iccp_count != 0u ? 1 : 0;
+            plan->meta_has_exif = info->exif_count != 0u ? 1 : 0;
+            plan->iccp_payload = info->iccp.payload;
+            plan->iccp_payload_size = info->iccp.payload_size;
+            plan->exif_payload = info->exif.payload;
+            plan->exif_payload_size = info->exif.payload_size;
+            plan->canvas_width = (int)info->canvas_width;
+            plan->canvas_height = (int)info->canvas_height;
+            plan->anim_loop_count = (int)info->anim_loop_count;
+            plan->anim_frame_count = (int)info->anmf_count;
+            return SIXEL_OK;
+        }
         plan->kind = SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM;
         return SIXEL_OK;
     }

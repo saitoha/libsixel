@@ -6048,7 +6048,9 @@ sixel_builtin_load_with_builtin_impl(
     sixel_builtin_load_context_t load_context;
     sixel_builtin_decode_path_t decode_path;
     sixel_builtin_stbi_route_options_t stbi_route;
+    sixel_builtin_frame_callback_context_t webp_callback_context;
     int animation_handled;
+    int webp_animation_handled;
     int apply_start_frame;
     int pnm_pixelformat;
 
@@ -6099,8 +6101,10 @@ sixel_builtin_load_with_builtin_impl(
     load_request.callback_context = context;
     memset(&load_context, 0, sizeof(load_context));
     memset(&stbi_route, 0, sizeof(stbi_route));
+    memset(&webp_callback_context, 0, sizeof(webp_callback_context));
     decode_path = SIXEL_BUILTIN_DECODE_PATH_STBI;
     animation_handled = 0;
+    webp_animation_handled = 0;
     apply_start_frame = 0;
     pnm_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     is_tiff = 0;
@@ -6210,6 +6214,28 @@ sixel_builtin_load_with_builtin_impl(
         goto end;
 
     case SIXEL_BUILTIN_DECODE_PATH_WEBP:
+        webp_callback_context.request = &load_request;
+        webp_callback_context.load_context = &load_context;
+        webp_callback_context.cancel_context = context;
+        status = sixel_fromwebp_load_animation(
+            pchunk,
+            fstatic,
+            load_request.loop_control,
+            load_request.start_frame_no_set,
+            load_request.start_frame_no_override,
+            load_request.enable_cms,
+            load_request.enable_orientation,
+            sixel_builtin_finalize_frame_callback,
+            &webp_callback_context,
+            context,
+            &webp_animation_handled);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        if (webp_animation_handled != 0) {
+            status = SIXEL_OK;
+            goto end;
+        }
         status = sixel_builtin_prepare_frame_and_chunk_size(pchunk,
                                                             &frame,
                                                             &chunk_size);

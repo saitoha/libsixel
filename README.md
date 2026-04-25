@@ -1172,7 +1172,11 @@ The `builtin` loader includes an internal WebP MVP path. The current scope is
 static decode for `VP8L`, `VP8`, and a first `VP8+ALPH` subset.
 For `VP8+ALPH`, the builtin path currently supports `compression=0/1` with
 `filter=0..3` and `preprocess=0/1`; `compression=2/3`, `preprocess=2/3`, and
-animation (`ANIM`/`ANMF`) remain unsupported in `builtin`. For static decode,
+animation supports an MVP path that reuses the existing static decoders
+(`VP8L`/`VP8`/`VP8+ALPH`) per frame with `ANMF` rectangle composition,
+blend-over/replace, and dispose-to-background handling. ANMF rectangles must
+stay inside the declared animation canvas; out-of-canvas rectangles are treated
+as malformed input. For static decode,
 embedded `ICCP` is applied when builtin CMS is enabled and embedded `EXIF`
 orientation is applied when builtin orientation handling is enabled.
 

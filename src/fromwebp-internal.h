@@ -34,6 +34,7 @@
 
 #define SIXEL_WEBP_MAX_DIMENSION 32767
 #define SIXEL_WEBP_MAX_IMAGE_PIXELS ((size_t)268435456u)
+#define SIXEL_WEBP_MAX_ANIMATION_FRAMES 1024u
 
 #define SIXEL_WEBP_CHUNK_VP8  0x20385056u /* "VP8 " little-endian */
 #define SIXEL_WEBP_CHUNK_VP8L 0x4c385056u /* "VP8L" little-endian */
@@ -50,6 +51,7 @@
 #define SIXEL_WEBP_CODE_OK_VP8_STATIC "W_OK_VP8_STATIC"
 #define SIXEL_WEBP_CODE_OK_VP8_ALPHA_STATIC "W_OK_VP8_ALPHA_STATIC"
 #define SIXEL_WEBP_CODE_OK_VP8L_STATIC "W_OK_VP8L_STATIC"
+#define SIXEL_WEBP_CODE_OK_ANIM "W_OK_ANIM"
 #define SIXEL_WEBP_CODE_META_ICCP_APPLIED "W_META_ICCP_APPLIED"
 #define SIXEL_WEBP_CODE_META_EXIF_APPLIED "W_META_EXIF_APPLIED"
 #define SIXEL_WEBP_CODE_META_ICCP_IGNORED "W_META_ICCP_IGNORED"
@@ -76,6 +78,7 @@ typedef enum sixel_webp_container_kind {
     SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC,
     SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC,
     SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC,
+    SIXEL_WEBP_CONTAINER_KIND_ANIM_MVP,
     SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM
 } sixel_webp_container_kind_t;
 
@@ -111,6 +114,10 @@ typedef struct sixel_webp_container_info {
     unsigned int exif_count;
     unsigned int xmp_count;
     unsigned char vp8x_flags;
+    unsigned int canvas_width;
+    unsigned int canvas_height;
+    unsigned int anim_loop_count;
+    unsigned int anim_background;
 } sixel_webp_container_info_t;
 
 typedef struct sixel_webp_decode_plan {
@@ -127,6 +134,10 @@ typedef struct sixel_webp_decode_plan {
     size_t exif_payload_size;
     int meta_has_iccp;
     int meta_has_exif;
+    int canvas_width;
+    int canvas_height;
+    int anim_loop_count;
+    int anim_frame_count;
 } sixel_webp_decode_plan_t;
 
 SIXEL_INTERNAL_API SIXELSTATUS
