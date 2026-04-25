@@ -16114,6 +16114,25 @@ sixel_builtin_psd_prepare_clipping_base_indices(
 }
 
 static int
+sixel_builtin_psd_layer_has_dual_stroke_pair(
+    sixel_builtin_psd_layer_record_t const *layer)
+{
+    if (layer == NULL) {
+        return 0;
+    }
+    if (layer->has_vector_stroke_style == 0 ||
+        layer->has_effect_stroke == 0 ||
+        layer->effect_stroke_from_vector_style != 0) {
+        return 0;
+    }
+    if (layer->vector_stroke_opacity <= 0.0f ||
+        layer->vector_stroke_size <= 0.0f) {
+        return 0;
+    }
+    return 1;
+}
+
+static int
 sixel_builtin_psd_layer_is_deferred_dual_stroke_base(
     sixel_builtin_psd_layer_record_t const *layer)
 {
@@ -16124,9 +16143,7 @@ sixel_builtin_psd_layer_is_deferred_dual_stroke_base(
         layer->blend_clipped_elements_enabled == 0) {
         return 0;
     }
-    if (layer->has_effect_stroke == 0 ||
-        layer->effect_stroke_from_vector_style != 0 ||
-        layer->has_vector_stroke_style == 0 ||
+    if (!sixel_builtin_psd_layer_has_dual_stroke_pair(layer) ||
         layer->has_vector_mask == 0) {
         return 0;
     }
@@ -20673,11 +20690,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
         suppress_clbl_nonstroke_glow = 1;
     }
     apply_dual_stroke =
-        layer->has_vector_stroke_style != 0 &&
-        layer->has_effect_stroke != 0 &&
-        layer->effect_stroke_from_vector_style == 0 &&
-        layer->vector_stroke_opacity > 0.0f &&
-        layer->vector_stroke_size > 0.0f ? 1 : 0;
+        sixel_builtin_psd_layer_has_dual_stroke_pair(layer) ? 1 : 0;
     if (apply_dual_stroke != 0) {
         vector_stroke_opacity = sixel_builtin_psd_clamp01(
             layer->vector_stroke_opacity);
@@ -24341,11 +24354,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
         layer->blend_clipped_elements_enabled != 0 ? 1 : 0;
     use_base_silhouette_coverage = stroke_coverage_alpha_map != NULL ? 1 : 0;
     apply_dual_stroke =
-        layer->has_vector_stroke_style != 0 &&
-        layer->has_effect_stroke != 0 &&
-        layer->effect_stroke_from_vector_style == 0 &&
-        layer->vector_stroke_opacity > 0.0f &&
-        layer->vector_stroke_size > 0.0f ? 1 : 0;
+        sixel_builtin_psd_layer_has_dual_stroke_pair(layer) ? 1 : 0;
     if (apply_dual_stroke != 0) {
         vector_stroke_opacity = sixel_builtin_psd_clamp01(
             layer->vector_stroke_opacity);
@@ -25443,6 +25452,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     size_t clip_alpha_index;
     int pending_overlay_interior_enabled;
     int pending_overlay_defer_stroke;
+    int pending_overlay_stroke_consumed;
     int pending_overlay_dual_stroke;
     int pending_overlay_fill_coverage_valid;
     int pending_overlay_stroke_coverage_valid;
@@ -25486,6 +25496,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     clip_alpha_index = 0u;
     pending_overlay_interior_enabled = 1;
     pending_overlay_defer_stroke = 0;
+    pending_overlay_stroke_consumed = 0;
     pending_overlay_dual_stroke = 0;
     pending_overlay_fill_coverage_valid = 0;
     pending_overlay_stroke_coverage_valid = 0;
@@ -25670,9 +25681,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         int pre_softened_alpha_edges;
         int base_has_clipping_children;
         int apply_effects_without_overlay;
-        int dual_stroke_candidate;
         int defer_effect_stroke_ownership;
-        int defer_dual_stroke_ownership;
         layer = &model.layers[(size_t)i];
         memset(&synthetic_layer, 0, sizeof(synthetic_layer));
         memset(&layer_for_composite, 0, sizeof(layer_for_composite));
@@ -25689,9 +25698,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         pre_softened_alpha_edges = 0;
         base_has_clipping_children = 0;
         apply_effects_without_overlay = 0;
-        dual_stroke_candidate = 0;
         defer_effect_stroke_ownership = 0;
-        defer_dual_stroke_ownership = 0;
         pending_overlay_interior_enabled = 1;
         apply_effects_subset = 0;
         has_pixel_channels = sixel_builtin_psd_layer_has_decodable_pixel_channels(
@@ -25764,11 +25771,10 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     info->width,
                     info->height,
                     &pending_overlay_layer);
-                if (pending_overlay_defer_stroke != 0) {
-                    if (pending_overlay_layer.has_vector_stroke_style != 0 &&
-                        pending_overlay_layer.has_effect_stroke != 0 &&
-                        pending_overlay_layer.effect_stroke_from_vector_style ==
-                            0) {
+                if (pending_overlay_defer_stroke != 0 &&
+                    pending_overlay_stroke_consumed == 0) {
+                    if (sixel_builtin_psd_layer_has_dual_stroke_pair(
+                            &pending_overlay_layer)) {
                         sixel_builtin_psd_trace_message(
                             "psd_decode",
                             "builtin PSD: applying owned deferred dual-stroke "
@@ -25788,12 +25794,14 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         info->width,
                         info->height,
                         &pending_overlay_layer);
+                    pending_overlay_stroke_consumed = 1;
                 }
             } else {
                 sixel_builtin_psd_layer_effects_trace_interior_skip();
             }
             pending_clip_group_overlay = 0;
             pending_overlay_defer_stroke = 0;
+            pending_overlay_stroke_consumed = 0;
             pending_overlay_dual_stroke = 0;
             pending_overlay_fill_coverage_valid = 0;
             pending_overlay_stroke_coverage_valid = 0;
@@ -26160,6 +26168,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 pending_clip_group_overlay = 1;
                 pending_overlay_fill_coverage_valid = 0;
                 pending_overlay_stroke_coverage_valid = 0;
+                pending_overlay_stroke_consumed = 0;
                 /*
                  * clbl=1 shape/effect stacks can require stroke application
                  * after clipped siblings are composited. Defer explicit FrFX
@@ -26170,10 +26179,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 if (effective_composite_layer->has_blend_clipped_elements != 0 &&
                     effective_composite_layer->blend_clipped_elements_enabled !=
                     0 &&
-                    effective_composite_layer->has_effect_stroke != 0 &&
-                    effective_composite_layer->effect_stroke_from_vector_style ==
-                    0 &&
-                    effective_composite_layer->has_vector_stroke_style != 0 &&
+                    sixel_builtin_psd_layer_has_dual_stroke_pair(
+                        effective_composite_layer) &&
                     effective_composite_layer->has_vector_mask != 0) {
                     pending_overlay_defer_stroke = 1;
                 }
@@ -26301,73 +26308,18 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             effective_composite_layer->has_effect_stroke != 0 ||
             effective_composite_layer->has_effect_outer_glow != 0 ||
             effective_composite_layer->has_effect_inner_glow != 0;
-        dual_stroke_candidate =
-            effective_composite_layer->has_vector_stroke_style != 0 &&
-            effective_composite_layer->has_effect_stroke != 0 &&
-            effective_composite_layer->effect_stroke_from_vector_style == 0 &&
-            effective_composite_layer->vector_stroke_opacity > 0.0f &&
-            effective_composite_layer->vector_stroke_size > 0.0f ? 1 : 0;
         defer_effect_stroke_ownership =
+            pending_clip_group_overlay != 0 &&
             pending_overlay_defer_stroke != 0 &&
             effective_composite_layer->has_effect_stroke != 0 &&
             effective_composite_layer->effect_stroke_from_vector_style == 0 &&
             deferred_dual_stroke_owner_map[(size_t)i] != 0 ? 1 : 0;
-        defer_dual_stroke_ownership =
-            dual_stroke_candidate != 0 &&
-            defer_effect_stroke_ownership != 0 ? 1 : 0;
         if (defer_effect_stroke_ownership != 0) {
             /*
              * Resolve clbl=1 dual-stroke ownership before effect application.
-             * This keeps clipping siblings from repainting the same contour
-             * when grouped deferred composition owns the shared stroke.
-             * Emit base dual-stroke diagnostics before delegation so existing
-             * mode-aware trace contracts remain observable in one decode.
+             * Base pass keeps only coverage preparation for deferred stroke.
+             * Color and alpha updates must happen only in deferred flush.
              */
-            if (defer_dual_stroke_ownership != 0) {
-                sixel_builtin_psd_trace_message(
-                    "psd_decode",
-                    "builtin PSD: applying vector stroke and layer effect "
-                    "stroke in layer fallback");
-                sixel_builtin_psd_trace_message(
-                    "psd_decode",
-                    "builtin PSD: applying dual-stroke union coverage in "
-                    "layer fallback");
-                sixel_builtin_psd_trace_message(
-                    "psd_decode",
-                    "builtin PSD: applying dual-stroke overlap decomposition "
-                    "in layer fallback");
-                sixel_builtin_psd_trace_message(
-                    "psd_decode",
-                    "builtin PSD: applying mode-aware dual-stroke blend in "
-                    "layer fallback");
-            }
-            sixel_builtin_psd_trace_message(
-                "psd_decode",
-                "builtin PSD: applying distance-map effect stroke coverage in "
-                "layer fallback");
-            if (effective_composite_layer->effect_stroke_position ==
-                SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
-                sixel_builtin_psd_trace_message(
-                    "psd_decode",
-                    "builtin PSD: using distance-map inside stroke "
-                    "coverage in layer fallback");
-                if (clipped_inside_stroke_alpha_valid != 0) {
-                    sixel_builtin_psd_trace_message(
-                        "psd_decode",
-                        "builtin PSD: using clipped source alpha for "
-                        "inside effect stroke coverage in layer fallback");
-                }
-            } else if (effective_composite_layer->effect_stroke_position ==
-                       SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE) {
-                sixel_builtin_psd_trace_message(
-                    "psd_decode",
-                    "builtin PSD: using distance-map outside stroke "
-                    "coverage in layer fallback");
-                sixel_builtin_psd_trace_message(
-                    "psd_decode",
-                    "builtin PSD: writing outside stroke alpha from "
-                    "outside component");
-            }
             layer_for_composite = *effective_composite_layer;
             layer_for_composite.has_effect_stroke = 0;
             layer_for_composite.has_vector_stroke_style = 0;
@@ -26538,9 +26490,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 &pending_overlay_layer);
         pending_overlay_dual_stroke =
             pending_overlay_defer_stroke != 0 &&
-            pending_overlay_layer.has_vector_stroke_style != 0 &&
-            pending_overlay_layer.has_effect_stroke != 0 &&
-            pending_overlay_layer.effect_stroke_from_vector_style == 0 ? 1 : 0;
+            sixel_builtin_psd_layer_has_dual_stroke_pair(
+                &pending_overlay_layer) ? 1 : 0;
         if (pending_overlay_interior_enabled != 0) {
             if (pending_overlay_dual_stroke != 0) {
                 sixel_builtin_psd_trace_message(
@@ -26588,11 +26539,10 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 info->width,
                 info->height,
                 &pending_overlay_layer);
-            if (pending_overlay_defer_stroke != 0) {
-                if (pending_overlay_layer.has_vector_stroke_style != 0 &&
-                    pending_overlay_layer.has_effect_stroke != 0 &&
-                    pending_overlay_layer.effect_stroke_from_vector_style ==
-                        0) {
+            if (pending_overlay_defer_stroke != 0 &&
+                pending_overlay_stroke_consumed == 0) {
+                if (sixel_builtin_psd_layer_has_dual_stroke_pair(
+                        &pending_overlay_layer)) {
                     sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: applying owned deferred dual-stroke "
@@ -26612,12 +26562,14 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     info->width,
                     info->height,
                     &pending_overlay_layer);
+                pending_overlay_stroke_consumed = 1;
             }
         } else {
             sixel_builtin_psd_layer_effects_trace_interior_skip();
         }
         pending_clip_group_overlay = 0;
         pending_overlay_defer_stroke = 0;
+        pending_overlay_stroke_consumed = 0;
         pending_overlay_dual_stroke = 0;
         pending_overlay_fill_coverage_valid = 0;
         pending_overlay_stroke_coverage_valid = 0;
