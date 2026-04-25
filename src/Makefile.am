@@ -70,7 +70,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/tosixel.c \
                 $(srcdir)/tosixel-highcolor.c \
                 $(srcdir)/tosixel-highcolor.h \
-                $(srcdir)/lookup-common.c \
                 $(srcdir)/lookup-policy.c \
                 $(srcdir)/lookup-policy-normal.c \
                 $(srcdir)/lookup-policy-mono-darkbg.c \

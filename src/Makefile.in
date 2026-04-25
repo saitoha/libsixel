@@ -167,8 +167,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/timer.c $(srcdir)/timer.h $(srcdir)/sleep.c \
 	$(srcdir)/sleep.h $(srcdir)/fromsixel.c $(srcdir)/tosixel.c \
 	$(srcdir)/tosixel-highcolor.c $(srcdir)/tosixel-highcolor.h \
-	$(srcdir)/lookup-common.c $(srcdir)/lookup-policy.c \
-	$(srcdir)/lookup-policy-normal.c \
+	$(srcdir)/lookup-policy.c $(srcdir)/lookup-policy-normal.c \
 	$(srcdir)/lookup-policy-mono-darkbg.c \
 	$(srcdir)/lookup-policy-mono-lightbg.c \
 	$(srcdir)/lookup-policy-certlut.c \
@@ -304,7 +303,6 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromsixel.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-tosixel.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-tosixel-highcolor.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-common.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-normal.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-mono-darkbg.lo \
@@ -533,7 +531,6 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-loader-wic.Plo \
 	./$(DEPDIR)/libsixel_la-loader.Plo \
 	./$(DEPDIR)/libsixel_la-logger.Plo \
-	./$(DEPDIR)/libsixel_la-lookup-common.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-fhedt-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-fhedt-float32.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-5bit.Plo \
@@ -911,7 +908,6 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/tosixel.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/tosixel-highcolor.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/tosixel-highcolor.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-common.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-normal.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mono-darkbg.c \
@@ -1358,7 +1354,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-wic.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-logger.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-common.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-fhedt-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-fhedt-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-5bit.Plo@am__quote@ # am--include-marker
@@ -1478,13 +1473,6 @@ libsixel_la-tosixel-highcolor.lo: tosixel-highcolor.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tosixel-highcolor.c' object='libsixel_la-tosixel-highcolor.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-tosixel-highcolor.lo `test -f 'tosixel-highcolor.c' || echo '$(srcdir)/'`tosixel-highcolor.c
-
-libsixel_la-lookup-common.lo: lookup-common.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-common.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-common.Tpo -c -o libsixel_la-lookup-common.lo `test -f 'lookup-common.c' || echo '$(srcdir)/'`lookup-common.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-common.Tpo $(DEPDIR)/libsixel_la-lookup-common.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-common.c' object='libsixel_la-lookup-common.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-common.lo `test -f 'lookup-common.c' || echo '$(srcdir)/'`lookup-common.c
 
 libsixel_la-lookup-policy.lo: lookup-policy.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy.Tpo -c -o libsixel_la-lookup-policy.lo `test -f 'lookup-policy.c' || echo '$(srcdir)/'`lookup-policy.c
@@ -2608,7 +2596,6 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-wic.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-logger.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-lookup-common.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-fhedt-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-fhedt-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-5bit.Plo
@@ -2779,7 +2766,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-wic.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-logger.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-lookup-common.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-fhedt-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-fhedt-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-5bit.Plo

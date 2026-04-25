@@ -18,7 +18,6 @@ amalgamation_units = files(
   '../src/timer.c',
   '../assessment/assessment.c',
   '../src/sleep.c',
-  '../src/lookup-common.c',
   '../src/lookup-fhedt-8bit.c',
   '../src/lookup-fhedt-float32.c',
   '../src/lookup-vptree-8bit.c',

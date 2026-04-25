@@ -34,55 +34,12 @@
 extern "C" {
 #endif
 
-typedef struct sixel_lut sixel_lut_t;
-
-#define SIXEL_MAX_CHANNELS 4
-
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lut_new(sixel_lut_t **out,
-              int policy,
-              sixel_allocator_t *allocator);
-
-SIXEL_INTERNAL_API void
-sixel_lookup_set_parallel_dither_active(int active);
-
-SIXEL_INTERNAL_API int
-sixel_lookup_parallel_dither_active(void);
-
-SIXEL_INTERNAL_API int
-sixel_lookup_env_shared_certlut(void);
-
-SIXEL_INTERNAL_API int
-sixel_lookup_env_shared_5bit(void);
-
-SIXEL_INTERNAL_API int
-sixel_lookup_env_shared_6bit(void);
-
-SIXEL_INTERNAL_API void
-sixel_lut_unref(sixel_lut_t *lut);
-
 /*
- * Configure a lookup object with component weights that remain agnostic to
- * the underlying color space.  Each weight scales the corresponding channel
- * when evaluating palette distance.
+ * Shared channel upper bound used by dithering and palette backends.
+ * Lookup policies now carry runtime behavior through ILookupPolicy, so this
+ * header only keeps cross-module numeric constants.
  */
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lut_configure(sixel_lut_t *lut,
-                    unsigned char const *palette,
-                    float const *palette_float,
-                    int depth,
-                    int float_depth,
-                    int ncolors,
-                    int complexion,
-                    int wcomp1,
-                    int wcomp2,
-                    int wcomp3,
-                    int policy,
-                    int pixelformat);
-
-/* lookup */
-SIXEL_INTERNAL_API int
-sixel_lut_map_pixel(sixel_lut_t *lut, unsigned char const *pixel);
+#define SIXEL_MAX_CHANNELS 4
 
 #ifdef __cplusplus
 }
