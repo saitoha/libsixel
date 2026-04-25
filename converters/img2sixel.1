@@ -549,11 +549,23 @@ auto      -> follow pixel depth to pick bucket size
 .br
 5bit      -> force classic 5-bit buckets
 .br
+           sub-option:
+.br
+             shared_instance=0|1 (0: worker-local, 1: shared)
+.br
 6bit      -> force 6-bit RGB buckets (RGB inputs only)
+.br
+           sub-option:
+.br
+             shared_instance=0|1 (0: worker-local, 1: shared)
 .br
 none      -> disable LUT caching and scan the palette directly
 .br
 certlut -> certified hierarchical LUT with zero approximation
+.br
+          sub-option:
+.br
+            shared_instance=0|1 (0: worker-local, 1: shared)
 .br
           The RGB cube is divided into 64x64x64 cells and refined only
           where necessary.  certlut reuses a single kd-tree built from
@@ -572,22 +584,6 @@ vptree  -> VP-tree lookup built from palette entries with safe-distance
 rbc     -> Random Ball Cover cluster pruning.
 .br
 mahalanobis -> RBC clusters with Mahalanobis lower bounds.
-.PP
-The \fB5bit\fP, \fB6bit\fP, and \fBcertlut\fP base values accept
-suboptions using
-\fBlookup-policy:shared_instance=value\fP.
-.br
-\fBshared_instance\fP:
-.br
-0 -> build worker-local lookup state.
-.br
-1 -> share one lookup state across workers.
-.br
-Examples:
-.br
-\-\-lookup-policy=5bit:shared_instance=0
-.br
-\-\-lookup-policy=certlut:shared_instance=1
 .PP
 When shared_instance is present on the command line, it overrides
 SIXEL_LOOKUP_5BIT_SHARED_INSTANCE,
