@@ -3772,6 +3772,31 @@ typedef enum sixel_builtin_decode_path {
     SIXEL_BUILTIN_DECODE_PATH_STBI
 } sixel_builtin_decode_path_t;
 
+static int
+sixel_builtin_chunk_is_webp_candidate(sixel_chunk_t const *chunk)
+{
+    if (chunk == NULL || chunk->buffer == NULL) {
+        return 0;
+    }
+    if (chunk_is_webp(chunk)) {
+        return 1;
+    }
+
+    /*
+     * Route RIFF-like inputs to fromwebp so malformed WebP headers still
+     * produce deterministic LSXWEBP1 error contracts instead of stbi fallback.
+     */
+    if (chunk->size >= 4u &&
+        chunk->buffer[0] == 'R' &&
+        chunk->buffer[1] == 'I' &&
+        chunk->buffer[2] == 'F' &&
+        chunk->buffer[3] == 'F') {
+        return 1;
+    }
+
+    return 0;
+}
+
 static sixel_builtin_decode_path_t
 sixel_builtin_detect_decode_path(sixel_chunk_t const *chunk)
 {
@@ -3784,7 +3809,7 @@ sixel_builtin_detect_decode_path(sixel_chunk_t const *chunk)
     if (chunk != NULL && chunk_is_gif(chunk)) {
         return SIXEL_BUILTIN_DECODE_PATH_GIF;
     }
-    if (chunk != NULL && chunk_is_webp(chunk)) {
+    if (sixel_builtin_chunk_is_webp_candidate(chunk)) {
         return SIXEL_BUILTIN_DECODE_PATH_WEBP;
     }
     return SIXEL_BUILTIN_DECODE_PATH_STBI;
