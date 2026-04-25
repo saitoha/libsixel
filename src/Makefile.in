@@ -206,8 +206,18 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither.h $(srcdir)/dither-policy.c \
 	$(srcdir)/dither-policy.h $(srcdir)/dither-policy-backend.c \
 	$(srcdir)/dither-policy-backend.h \
-	$(srcdir)/dither-policy-fixed.c \
-	$(srcdir)/dither-policy-positional.c \
+	$(srcdir)/dither-policy-none.c $(srcdir)/dither-policy-fs.c \
+	$(srcdir)/dither-policy-atkinson.c \
+	$(srcdir)/dither-policy-jajuni.c \
+	$(srcdir)/dither-policy-stucki.c \
+	$(srcdir)/dither-policy-burkes.c \
+	$(srcdir)/dither-policy-sierra1.c \
+	$(srcdir)/dither-policy-sierra2.c \
+	$(srcdir)/dither-policy-sierra3.c \
+	$(srcdir)/dither-policy-a-dither.c \
+	$(srcdir)/dither-policy-x-dither.c \
+	$(srcdir)/dither-policy-bluenoise.c \
+	$(srcdir)/dither-policy-interframe.c \
 	$(srcdir)/dither-policy-lso2.c $(srcdir)/dither-policy-none.h \
 	$(srcdir)/dither-policy-fs.h \
 	$(srcdir)/dither-policy-atkinson.h \
@@ -360,8 +370,19 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-backend.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-fixed.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-positional.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-none.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-fs.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-atkinson.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-jajuni.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-stucki.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-burkes.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-sierra1.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-sierra2.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-sierra3.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-a-dither.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-x-dither.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-bluenoise.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-interframe.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-lso2.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-common-pipeline.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-positional-8bit.lo \
@@ -507,10 +528,21 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-pmj.Plo \
 	./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-backend.Plo \
-	./$(DEPDIR)/libsixel_la-dither-policy-fixed.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-burkes.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-interframe.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-jajuni.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo \
-	./$(DEPDIR)/libsixel_la-dither-policy-positional.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-none.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-sierra1.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-sierra2.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-sierra3.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-stucki.Plo \
+	./$(DEPDIR)/libsixel_la-dither-policy-x-dither.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy.Plo \
 	./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo \
@@ -1005,8 +1037,19 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-backend.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-backend.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-fixed.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-positional.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-none.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-fs.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-atkinson.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-jajuni.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-stucki.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-burkes.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-sierra1.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-sierra2.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-sierra3.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-a-dither.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-x-dither.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-bluenoise.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-interframe.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-lso2.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-none.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-fs.h \
@@ -1407,10 +1450,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-pmj.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-backend.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-fixed.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-burkes.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-interframe.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-jajuni.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-positional.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-none.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-sierra1.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-sierra2.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-sierra3.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-stucki.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-x-dither.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo@am__quote@ # am--include-marker
@@ -1798,19 +1852,96 @@ libsixel_la-dither-policy-backend.lo: dither-policy-backend.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-backend.lo `test -f 'dither-policy-backend.c' || echo '$(srcdir)/'`dither-policy-backend.c
 
-libsixel_la-dither-policy-fixed.lo: dither-policy-fixed.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-fixed.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-fixed.Tpo -c -o libsixel_la-dither-policy-fixed.lo `test -f 'dither-policy-fixed.c' || echo '$(srcdir)/'`dither-policy-fixed.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-fixed.Tpo $(DEPDIR)/libsixel_la-dither-policy-fixed.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-fixed.c' object='libsixel_la-dither-policy-fixed.lo' libtool=yes @AMDEPBACKSLASH@
+libsixel_la-dither-policy-none.lo: dither-policy-none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-none.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-none.Tpo -c -o libsixel_la-dither-policy-none.lo `test -f 'dither-policy-none.c' || echo '$(srcdir)/'`dither-policy-none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-none.Tpo $(DEPDIR)/libsixel_la-dither-policy-none.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-none.c' object='libsixel_la-dither-policy-none.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-fixed.lo `test -f 'dither-policy-fixed.c' || echo '$(srcdir)/'`dither-policy-fixed.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-none.lo `test -f 'dither-policy-none.c' || echo '$(srcdir)/'`dither-policy-none.c
 
-libsixel_la-dither-policy-positional.lo: dither-policy-positional.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-positional.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-positional.Tpo -c -o libsixel_la-dither-policy-positional.lo `test -f 'dither-policy-positional.c' || echo '$(srcdir)/'`dither-policy-positional.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-positional.Tpo $(DEPDIR)/libsixel_la-dither-policy-positional.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-positional.c' object='libsixel_la-dither-policy-positional.lo' libtool=yes @AMDEPBACKSLASH@
+libsixel_la-dither-policy-fs.lo: dither-policy-fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-fs.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-fs.Tpo -c -o libsixel_la-dither-policy-fs.lo `test -f 'dither-policy-fs.c' || echo '$(srcdir)/'`dither-policy-fs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-fs.Tpo $(DEPDIR)/libsixel_la-dither-policy-fs.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-fs.c' object='libsixel_la-dither-policy-fs.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-positional.lo `test -f 'dither-policy-positional.c' || echo '$(srcdir)/'`dither-policy-positional.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-fs.lo `test -f 'dither-policy-fs.c' || echo '$(srcdir)/'`dither-policy-fs.c
+
+libsixel_la-dither-policy-atkinson.lo: dither-policy-atkinson.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-atkinson.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-atkinson.Tpo -c -o libsixel_la-dither-policy-atkinson.lo `test -f 'dither-policy-atkinson.c' || echo '$(srcdir)/'`dither-policy-atkinson.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-atkinson.Tpo $(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-atkinson.c' object='libsixel_la-dither-policy-atkinson.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-atkinson.lo `test -f 'dither-policy-atkinson.c' || echo '$(srcdir)/'`dither-policy-atkinson.c
+
+libsixel_la-dither-policy-jajuni.lo: dither-policy-jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-jajuni.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-jajuni.Tpo -c -o libsixel_la-dither-policy-jajuni.lo `test -f 'dither-policy-jajuni.c' || echo '$(srcdir)/'`dither-policy-jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-jajuni.Tpo $(DEPDIR)/libsixel_la-dither-policy-jajuni.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-jajuni.c' object='libsixel_la-dither-policy-jajuni.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-jajuni.lo `test -f 'dither-policy-jajuni.c' || echo '$(srcdir)/'`dither-policy-jajuni.c
+
+libsixel_la-dither-policy-stucki.lo: dither-policy-stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-stucki.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-stucki.Tpo -c -o libsixel_la-dither-policy-stucki.lo `test -f 'dither-policy-stucki.c' || echo '$(srcdir)/'`dither-policy-stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-stucki.Tpo $(DEPDIR)/libsixel_la-dither-policy-stucki.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-stucki.c' object='libsixel_la-dither-policy-stucki.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-stucki.lo `test -f 'dither-policy-stucki.c' || echo '$(srcdir)/'`dither-policy-stucki.c
+
+libsixel_la-dither-policy-burkes.lo: dither-policy-burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-burkes.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-burkes.Tpo -c -o libsixel_la-dither-policy-burkes.lo `test -f 'dither-policy-burkes.c' || echo '$(srcdir)/'`dither-policy-burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-burkes.Tpo $(DEPDIR)/libsixel_la-dither-policy-burkes.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-burkes.c' object='libsixel_la-dither-policy-burkes.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-burkes.lo `test -f 'dither-policy-burkes.c' || echo '$(srcdir)/'`dither-policy-burkes.c
+
+libsixel_la-dither-policy-sierra1.lo: dither-policy-sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-sierra1.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-sierra1.Tpo -c -o libsixel_la-dither-policy-sierra1.lo `test -f 'dither-policy-sierra1.c' || echo '$(srcdir)/'`dither-policy-sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-sierra1.Tpo $(DEPDIR)/libsixel_la-dither-policy-sierra1.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-sierra1.c' object='libsixel_la-dither-policy-sierra1.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-sierra1.lo `test -f 'dither-policy-sierra1.c' || echo '$(srcdir)/'`dither-policy-sierra1.c
+
+libsixel_la-dither-policy-sierra2.lo: dither-policy-sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-sierra2.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-sierra2.Tpo -c -o libsixel_la-dither-policy-sierra2.lo `test -f 'dither-policy-sierra2.c' || echo '$(srcdir)/'`dither-policy-sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-sierra2.Tpo $(DEPDIR)/libsixel_la-dither-policy-sierra2.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-sierra2.c' object='libsixel_la-dither-policy-sierra2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-sierra2.lo `test -f 'dither-policy-sierra2.c' || echo '$(srcdir)/'`dither-policy-sierra2.c
+
+libsixel_la-dither-policy-sierra3.lo: dither-policy-sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-sierra3.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-sierra3.Tpo -c -o libsixel_la-dither-policy-sierra3.lo `test -f 'dither-policy-sierra3.c' || echo '$(srcdir)/'`dither-policy-sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-sierra3.Tpo $(DEPDIR)/libsixel_la-dither-policy-sierra3.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-sierra3.c' object='libsixel_la-dither-policy-sierra3.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-sierra3.lo `test -f 'dither-policy-sierra3.c' || echo '$(srcdir)/'`dither-policy-sierra3.c
+
+libsixel_la-dither-policy-a-dither.lo: dither-policy-a-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-a-dither.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-a-dither.Tpo -c -o libsixel_la-dither-policy-a-dither.lo `test -f 'dither-policy-a-dither.c' || echo '$(srcdir)/'`dither-policy-a-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-a-dither.Tpo $(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-a-dither.c' object='libsixel_la-dither-policy-a-dither.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-a-dither.lo `test -f 'dither-policy-a-dither.c' || echo '$(srcdir)/'`dither-policy-a-dither.c
+
+libsixel_la-dither-policy-x-dither.lo: dither-policy-x-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-x-dither.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-x-dither.Tpo -c -o libsixel_la-dither-policy-x-dither.lo `test -f 'dither-policy-x-dither.c' || echo '$(srcdir)/'`dither-policy-x-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-x-dither.Tpo $(DEPDIR)/libsixel_la-dither-policy-x-dither.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-x-dither.c' object='libsixel_la-dither-policy-x-dither.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-x-dither.lo `test -f 'dither-policy-x-dither.c' || echo '$(srcdir)/'`dither-policy-x-dither.c
+
+libsixel_la-dither-policy-bluenoise.lo: dither-policy-bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-bluenoise.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-bluenoise.Tpo -c -o libsixel_la-dither-policy-bluenoise.lo `test -f 'dither-policy-bluenoise.c' || echo '$(srcdir)/'`dither-policy-bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-bluenoise.Tpo $(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-bluenoise.c' object='libsixel_la-dither-policy-bluenoise.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-bluenoise.lo `test -f 'dither-policy-bluenoise.c' || echo '$(srcdir)/'`dither-policy-bluenoise.c
+
+libsixel_la-dither-policy-interframe.lo: dither-policy-interframe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-interframe.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-interframe.Tpo -c -o libsixel_la-dither-policy-interframe.lo `test -f 'dither-policy-interframe.c' || echo '$(srcdir)/'`dither-policy-interframe.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-interframe.Tpo $(DEPDIR)/libsixel_la-dither-policy-interframe.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-interframe.c' object='libsixel_la-dither-policy-interframe.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-interframe.lo `test -f 'dither-policy-interframe.c' || echo '$(srcdir)/'`dither-policy-interframe.c
 
 libsixel_la-dither-policy-lso2.lo: dither-policy-lso2.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-lso2.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-lso2.Tpo -c -o libsixel_la-dither-policy-lso2.lo `test -f 'dither-policy-lso2.c' || echo '$(srcdir)/'`dither-policy-lso2.c
@@ -2689,10 +2820,21 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-pmj.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-backend.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fixed.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-burkes.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-interframe.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-jajuni.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-positional.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-none.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra1.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra2.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra3.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-stucki.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-x-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo
@@ -2864,10 +3006,21 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-mask.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source-pmj.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-backend.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fixed.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-burkes.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-interframe.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-jajuni.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-lso2.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-positional.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-none.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra1.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra2.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-sierra3.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-stucki.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-x-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo

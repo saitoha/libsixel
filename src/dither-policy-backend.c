@@ -26,6 +26,7 @@
 #include "config.h"
 #endif
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "dither-policy-backend.h"
@@ -39,6 +40,174 @@
 #include "dither-varcoeff-8bit.h"
 #include "dither-varcoeff-float32.h"
 #include "pixelformat.h"
+#include "sixel_atomic.h"
+
+typedef struct sixel_dither_policy_backend_object {
+    sixel_dither_policy_interface_t base;
+    sixel_atomic_u32_t ref;
+    int method_for_scan;
+    int pixelformat;
+} sixel_dither_policy_backend_object_t;
+
+static sixel_dither_policy_backend_object_t *
+sixel_dither_policy_backend_from_base(sixel_dither_policy_interface_t *policy)
+{
+    return (sixel_dither_policy_backend_object_t *)(void *)policy;
+}
+
+static sixel_dither_policy_backend_object_t const *
+sixel_dither_policy_backend_from_base_const(
+    sixel_dither_policy_interface_t const *policy)
+{
+    return (sixel_dither_policy_backend_object_t const *)(void const *)policy;
+}
+
+void
+sixel_dither_policy_backend_ref(sixel_dither_policy_interface_t *policy)
+{
+    sixel_dither_policy_backend_object_t *object;
+
+    object = NULL;
+    if (policy == NULL) {
+        return;
+    }
+
+    object = sixel_dither_policy_backend_from_base(policy);
+    (void)sixel_atomic_fetch_add_u32(&object->ref, 1U);
+}
+
+void
+sixel_dither_policy_backend_unref(sixel_dither_policy_interface_t *policy)
+{
+    sixel_dither_policy_backend_object_t *object;
+    unsigned int previous;
+
+    object = NULL;
+    previous = 0U;
+    if (policy == NULL) {
+        return;
+    }
+
+    object = sixel_dither_policy_backend_from_base(policy);
+    previous = sixel_atomic_fetch_sub_u32(&object->ref, 1U);
+    if (previous == 1U) {
+        free(object);
+    }
+}
+
+SIXELSTATUS
+sixel_dither_policy_backend_prepare(
+    sixel_dither_policy_interface_t *policy,
+    sixel_dither_policy_prepare_request_t const *request)
+{
+    sixel_dither_policy_backend_object_t *object;
+
+    object = NULL;
+    if (policy == NULL || request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    object = sixel_dither_policy_backend_from_base(policy);
+    object->method_for_scan = request->method_for_scan;
+    object->pixelformat = request->pixelformat;
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_dither_policy_backend_create(
+    sixel_dither_policy_interface_t **policy,
+    sixel_dither_policy_vtbl_t const *vtbl)
+{
+    sixel_dither_policy_backend_object_t *object;
+
+    object = NULL;
+    if (policy == NULL || vtbl == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *policy = NULL;
+
+    object = (sixel_dither_policy_backend_object_t *)malloc(sizeof(*object));
+    if (object == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    object->base.vtbl = vtbl;
+    object->ref = 1U;
+    object->method_for_scan = SIXEL_SCAN_AUTO;
+    object->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+
+    *policy = &object->base;
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_dither_policy_backend_apply_fixed(
+    sixel_dither_policy_interface_t const *policy,
+    sixel_dither_policy_apply_request_t const *request,
+    int method_for_diffuse)
+{
+    sixel_dither_policy_backend_object_t const *object;
+    sixel_dither_policy_apply_request_t effective;
+
+    object = NULL;
+    memset(&effective, 0, sizeof(effective));
+    if (policy == NULL || request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    object = sixel_dither_policy_backend_from_base_const(policy);
+    effective = *request;
+    effective.method_for_scan = object->method_for_scan;
+    effective.pixelformat = object->pixelformat;
+    return sixel_dither_policy_apply_fixed_backend(&effective,
+                                                   method_for_diffuse);
+}
+
+SIXELSTATUS
+sixel_dither_policy_backend_apply_varcoeff(
+    sixel_dither_policy_interface_t const *policy,
+    sixel_dither_policy_apply_request_t const *request,
+    int method_for_diffuse)
+{
+    sixel_dither_policy_backend_object_t const *object;
+    sixel_dither_policy_apply_request_t effective;
+
+    object = NULL;
+    memset(&effective, 0, sizeof(effective));
+    if (policy == NULL || request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    object = sixel_dither_policy_backend_from_base_const(policy);
+    effective = *request;
+    effective.method_for_scan = object->method_for_scan;
+    effective.pixelformat = object->pixelformat;
+    return sixel_dither_policy_apply_varcoeff_backend(&effective,
+                                                      method_for_diffuse);
+}
+
+SIXELSTATUS
+sixel_dither_policy_backend_apply_positional(
+    sixel_dither_policy_interface_t const *policy,
+    sixel_dither_policy_apply_request_t const *request,
+    int method_for_diffuse)
+{
+    sixel_dither_policy_backend_object_t const *object;
+    sixel_dither_policy_apply_request_t effective;
+
+    object = NULL;
+    memset(&effective, 0, sizeof(effective));
+    if (policy == NULL || request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    object = sixel_dither_policy_backend_from_base_const(policy);
+    effective = *request;
+    effective.method_for_scan = object->method_for_scan;
+    effective.pixelformat = object->pixelformat;
+    return sixel_dither_policy_apply_positional_backend(&effective,
+                                                        method_for_diffuse);
+}
 
 static SIXELSTATUS
 sixel_dither_policy_build_context(

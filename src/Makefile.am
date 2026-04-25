@@ -130,8 +130,19 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-policy.h \
                 $(srcdir)/dither-policy-backend.c \
                 $(srcdir)/dither-policy-backend.h \
-                $(srcdir)/dither-policy-fixed.c \
-                $(srcdir)/dither-policy-positional.c \
+                $(srcdir)/dither-policy-none.c \
+                $(srcdir)/dither-policy-fs.c \
+                $(srcdir)/dither-policy-atkinson.c \
+                $(srcdir)/dither-policy-jajuni.c \
+                $(srcdir)/dither-policy-stucki.c \
+                $(srcdir)/dither-policy-burkes.c \
+                $(srcdir)/dither-policy-sierra1.c \
+                $(srcdir)/dither-policy-sierra2.c \
+                $(srcdir)/dither-policy-sierra3.c \
+                $(srcdir)/dither-policy-a-dither.c \
+                $(srcdir)/dither-policy-x-dither.c \
+                $(srcdir)/dither-policy-bluenoise.c \
+                $(srcdir)/dither-policy-interframe.c \
                 $(srcdir)/dither-policy-lso2.c \
                 $(srcdir)/dither-policy-none.h \
                 $(srcdir)/dither-policy-fs.h \

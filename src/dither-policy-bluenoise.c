@@ -26,7 +26,7 @@
 #include "config.h"
 #endif
 
-#include "dither-policy-lso2.h"
+#include "dither-policy-bluenoise.h"
 #include "dither-policy-backend.h"
 
 /*
@@ -42,38 +42,41 @@
  */
 
 static SIXELSTATUS
-sixel_dither_policy_lso2_apply(
+sixel_dither_policy_bluenoise_apply(
     sixel_dither_policy_interface_t *policy,
     sixel_dither_policy_apply_request_t const *request)
 {
-    return sixel_dither_policy_backend_apply_varcoeff(policy,
-                                                      request,
-                                                      SIXEL_DIFFUSE_LSO2);
+    int method_for_diffuse;
+
+    method_for_diffuse = SIXEL_DIFFUSE_BLUENOISE_DITHER;
+    return sixel_dither_policy_backend_apply_positional(policy,
+                                                        request,
+                                                        method_for_diffuse);
 }
 
 static sixel_dither_policy_supports_parallel_result_t
-sixel_dither_policy_lso2_supports_parallel_bands(
+sixel_dither_policy_bluenoise_supports_parallel_bands(
     sixel_dither_policy_interface_t const *policy)
 {
     (void)policy;
     return 1;
 }
 
-static sixel_dither_policy_vtbl_t const g_sixel_dither_policy_lso2_vtbl = {
+static sixel_dither_policy_vtbl_t const g_sixel_dither_policy_bluenoise_vtbl = {
     sixel_dither_policy_backend_ref,
     sixel_dither_policy_backend_unref,
     sixel_dither_policy_backend_prepare,
-    sixel_dither_policy_lso2_apply,
-    sixel_dither_policy_lso2_supports_parallel_bands
+    sixel_dither_policy_bluenoise_apply,
+    sixel_dither_policy_bluenoise_supports_parallel_bands
 };
 
 SIXELSTATUS
-sixel_dither_policy_create_lso2(
+sixel_dither_policy_create_bluenoise(
     sixel_dither_policy_interface_t **policy)
 {
     return sixel_dither_policy_backend_create(
         policy,
-        &g_sixel_dither_policy_lso2_vtbl);
+        &g_sixel_dither_policy_bluenoise_vtbl);
 }
 
 /* emacs Local Variables:      */

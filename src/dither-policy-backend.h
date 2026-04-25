@@ -32,13 +32,47 @@ sixel_dither_policy_apply_fixed_backend(
     sixel_dither_policy_apply_request_t const *request,
     int method_for_diffuse);
 
+SIXEL_INTERNAL_API void
+sixel_dither_policy_backend_ref(sixel_dither_policy_interface_t *policy);
+
+SIXEL_INTERNAL_API void
+sixel_dither_policy_backend_unref(sixel_dither_policy_interface_t *policy);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_backend_prepare(
+    sixel_dither_policy_interface_t *policy,
+    sixel_dither_policy_prepare_request_t const *request);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_backend_create(
+    sixel_dither_policy_interface_t **policy,
+    sixel_dither_policy_vtbl_t const *vtbl);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_backend_apply_fixed(
+    sixel_dither_policy_interface_t const *policy,
+    sixel_dither_policy_apply_request_t const *request,
+    int method_for_diffuse);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_policy_apply_varcoeff_backend(
     sixel_dither_policy_apply_request_t const *request,
     int method_for_diffuse);
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_backend_apply_varcoeff(
+    sixel_dither_policy_interface_t const *policy,
+    sixel_dither_policy_apply_request_t const *request,
+    int method_for_diffuse);
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_policy_apply_positional_backend(
+    sixel_dither_policy_apply_request_t const *request,
+    int method_for_diffuse);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_backend_apply_positional(
+    sixel_dither_policy_interface_t const *policy,
     sixel_dither_policy_apply_request_t const *request,
     int method_for_diffuse);
 
