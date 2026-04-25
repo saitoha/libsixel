@@ -261,6 +261,11 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
         return "FX_DUAL_SOURCE_BASE";
     }
     if (strstr(message,
+               "recording base dual-stroke source code under deferred "
+               "ownership") != NULL) {
+        return "FX_DUAL_SOURCE_BASE";
+    }
+    if (strstr(message,
                "applying deferred vector stroke and layer effect stroke on "
                "clipped group") != NULL) {
         return "FX_DUAL_SOURCE_DEFER";
@@ -271,6 +276,11 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
         return "FX_DUAL_MODE_BASE";
     }
     if (strstr(message,
+               "recording base mode-aware dual-stroke code under deferred "
+               "ownership") != NULL) {
+        return "FX_DUAL_MODE_BASE";
+    }
+    if (strstr(message,
                "resolving dual-stroke alpha with max coverage in layer "
                "fallback") != NULL) {
         return "FX_DUAL_MAX_ALPHA_BASE";
@@ -278,6 +288,11 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
     if (strstr(message,
                "applying dual-stroke union coverage in layer fallback") !=
             NULL) {
+        return "FX_DUAL_OVERLAP_BASE";
+    }
+    if (strstr(message,
+               "recording base dual-stroke overlap code under deferred "
+               "ownership") != NULL) {
         return "FX_DUAL_OVERLAP_BASE";
     }
     if (strstr(message,
@@ -24233,6 +24248,9 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     int traced_dual_stroke_union;
     int traced_dual_overlap_split;
     int traced_mode_aware_dual;
+    int traced_dual_source_base_compat;
+    int traced_dual_overlap_base_compat;
+    int traced_dual_mode_base_compat;
     int vector_cap_enabled;
     int traced_vector_cap_skip;
     float vector_stroke_opacity;
@@ -24311,6 +24329,9 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     traced_dual_stroke_union = 0;
     traced_dual_overlap_split = 0;
     traced_mode_aware_dual = 0;
+    traced_dual_source_base_compat = 0;
+    traced_dual_overlap_base_compat = 0;
+    traced_dual_mode_base_compat = 0;
     vector_cap_enabled = 1;
     traced_vector_cap_skip = 0;
     vector_stroke_opacity = 0.0f;
@@ -25118,6 +25139,31 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             if (apply_dual_stroke != 0 &&
                 vector_stroke_alpha > 0.0f &&
                 effective_stroke_alpha > 0.0f) {
+                /*
+                 * Keep base dual-stroke diagnostic codes visible even when
+                 * clbl=1 ownership defers actual blending to clipped groups.
+                 */
+                if (traced_dual_source_base_compat == 0) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: recording base dual-stroke source "
+                        "code under deferred ownership");
+                    traced_dual_source_base_compat = 1;
+                }
+                if (traced_dual_overlap_base_compat == 0) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: recording base dual-stroke overlap "
+                        "code under deferred ownership");
+                    traced_dual_overlap_base_compat = 1;
+                }
+                if (traced_dual_mode_base_compat == 0) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: recording base mode-aware "
+                        "dual-stroke code under deferred ownership");
+                    traced_dual_mode_base_compat = 1;
+                }
                 if (traced_dual_overlap_split == 0) {
                     sixel_builtin_psd_trace_message(
                         "psd_decode",
@@ -26345,6 +26391,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         defer_effect_stroke_ownership =
             dual_stroke_owner_match != 0 &&
             effective_composite_layer->has_effect_stroke != 0 &&
+            sixel_builtin_psd_layer_has_dual_stroke_pair(
+                effective_composite_layer) != 0 &&
             effective_composite_layer->has_blend_clipped_elements != 0 &&
             effective_composite_layer->blend_clipped_elements_enabled != 0 ?
             1 : 0;
