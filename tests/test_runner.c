@@ -393,6 +393,7 @@ test_runner_duplicate_win32_path(char const *path)
 {
     size_t source_length;
     size_t source_index;
+    size_t payload_length;
     size_t target_length;
     size_t index;
     char *converted;
@@ -400,6 +401,7 @@ test_runner_duplicate_win32_path(char const *path)
 
     source_length = 0u;
     source_index = 0u;
+    payload_length = 0u;
     target_length = 0u;
     index = 0u;
     converted = NULL;
@@ -432,7 +434,20 @@ test_runner_duplicate_win32_path(char const *path)
         return converted;
     }
 
-    target_length = source_length - source_index + 4u;
+    if (path[source_index] == '/' || path[source_index] == '\\') {
+        source_index += 1u;
+    }
+
+    if (source_index > source_length) {
+        return NULL;
+    }
+
+    /*
+     * Keep allocation and copy bounds in the same unit after removing
+     * an optional separator so static analyzers can track the limit.
+     */
+    payload_length = source_length - source_index;
+    target_length = payload_length + 4u;
     converted = (char *)malloc(target_length);
     if (converted == NULL) {
         return NULL;
@@ -443,11 +458,7 @@ test_runner_duplicate_win32_path(char const *path)
     converted[2] = '\\';
     index = 3u;
 
-    if (path[source_index] == '/' || path[source_index] == '\\') {
-        source_index += 1u;
-    }
-
-    while (source_index < source_length) {
+    while (payload_length > 0u) {
         if (path[source_index] == '/') {
             converted[index] = '\\';
         } else {
@@ -455,6 +466,7 @@ test_runner_duplicate_win32_path(char const *path)
         }
         ++source_index;
         ++index;
+        --payload_length;
     }
     converted[index] = '\0';
 
