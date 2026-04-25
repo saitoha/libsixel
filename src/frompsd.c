@@ -25473,7 +25473,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     int pending_overlay_defer_stroke;
     int pending_overlay_stroke_consumed;
     int pending_overlay_dual_stroke;
-    int pending_overlay_owner_index;
     int pending_overlay_fill_coverage_valid;
     int pending_overlay_stroke_coverage_valid;
     int clipped_inside_stroke_alpha_valid;
@@ -25518,7 +25517,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     pending_overlay_defer_stroke = 0;
     pending_overlay_stroke_consumed = 0;
     pending_overlay_dual_stroke = 0;
-    pending_overlay_owner_index = -1;
     pending_overlay_fill_coverage_valid = 0;
     pending_overlay_stroke_coverage_valid = 0;
     clipped_inside_stroke_alpha_valid = 0;
@@ -25704,6 +25702,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         int apply_effects_without_overlay;
         int defer_effect_stroke_ownership;
         int dual_stroke_owner_match;
+        int has_adjacent_clipping_child;
+        int has_deferred_dual_owner;
         layer = &model.layers[(size_t)i];
         memset(&synthetic_layer, 0, sizeof(synthetic_layer));
         memset(&layer_for_composite, 0, sizeof(layer_for_composite));
@@ -25722,6 +25722,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         apply_effects_without_overlay = 0;
         defer_effect_stroke_ownership = 0;
         dual_stroke_owner_match = 0;
+        has_adjacent_clipping_child = 0;
+        has_deferred_dual_owner = 0;
         pending_overlay_interior_enabled = 1;
         apply_effects_subset = 0;
         has_pixel_channels = sixel_builtin_psd_layer_has_decodable_pixel_channels(
@@ -25826,7 +25828,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             pending_overlay_defer_stroke = 0;
             pending_overlay_stroke_consumed = 0;
             pending_overlay_dual_stroke = 0;
-            pending_overlay_owner_index = -1;
             pending_overlay_fill_coverage_valid = 0;
             pending_overlay_stroke_coverage_valid = 0;
             memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
@@ -26173,10 +26174,17 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             }
         }
         defer_clip_group_overlay = 0;
+        has_adjacent_clipping_child = 0;
+        has_deferred_dual_owner =
+            deferred_dual_stroke_owner_map[(size_t)i] != 0 ? 1 : 0;
         if (step == 1 && apply_clipping == 0) {
             next_index = (size_t)(i + 1);
             if (next_index < model.layer_count &&
                 model.layers[next_index].clipping != 0u) {
+                has_adjacent_clipping_child = 1;
+                base_has_clipping_children = 1;
+            }
+            if (has_deferred_dual_owner != 0) {
                 base_has_clipping_children = 1;
             }
         }
@@ -26184,16 +26192,14 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             apply_clipping == 0 &&
             (effective_composite_layer->has_effect_solid_overlay != 0 ||
              effective_composite_layer->has_effect_gradient_overlay != 0)) {
-            next_index = (size_t)(i + 1);
-            if (next_index < model.layer_count &&
-                model.layers[next_index].clipping != 0u) {
+            if (has_adjacent_clipping_child != 0 ||
+                has_deferred_dual_owner != 0) {
                 defer_clip_group_overlay = 1;
                 pending_overlay_layer = *effective_composite_layer;
                 pending_clip_group_overlay = 1;
                 pending_overlay_fill_coverage_valid = 0;
                 pending_overlay_stroke_coverage_valid = 0;
                 pending_overlay_stroke_consumed = 0;
-                pending_overlay_owner_index = i;
                 /*
                  * clbl=1 shape/effect stacks can require stroke application
                  * after clipped siblings are composited. Defer explicit FrFX
@@ -26201,12 +26207,13 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                  * stroke on the base-layer pass.
                  */
                 pending_overlay_defer_stroke = 0;
-                if (effective_composite_layer->has_blend_clipped_elements != 0 &&
-                    effective_composite_layer->blend_clipped_elements_enabled !=
-                    0 &&
-                    sixel_builtin_psd_layer_has_dual_stroke_pair(
-                        effective_composite_layer) &&
-                    effective_composite_layer->has_vector_mask != 0) {
+                if (has_deferred_dual_owner != 0 ||
+                    (effective_composite_layer->has_blend_clipped_elements != 0 &&
+                     effective_composite_layer->blend_clipped_elements_enabled !=
+                     0 &&
+                     sixel_builtin_psd_layer_has_dual_stroke_pair(
+                         effective_composite_layer) &&
+                     effective_composite_layer->has_vector_mask != 0)) {
                     pending_overlay_defer_stroke = 1;
                 }
                 if (effective_composite_layer->has_blend_clipped_elements != 0 &&
@@ -26333,27 +26340,16 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             effective_composite_layer->has_effect_stroke != 0 ||
             effective_composite_layer->has_effect_outer_glow != 0 ||
             effective_composite_layer->has_effect_inner_glow != 0;
+        dual_stroke_owner_match =
+            deferred_dual_stroke_owner_map[(size_t)i] != 0 ? 1 : 0;
         defer_effect_stroke_ownership =
-            pending_clip_group_overlay != 0 &&
-            pending_overlay_defer_stroke != 0 &&
+            dual_stroke_owner_match != 0 &&
             effective_composite_layer->has_effect_stroke != 0 &&
-            effective_composite_layer->effect_stroke_from_vector_style == 0 ?
+            sixel_builtin_psd_layer_has_dual_stroke_pair(
+                effective_composite_layer) != 0 &&
+            effective_composite_layer->has_blend_clipped_elements != 0 &&
+            effective_composite_layer->blend_clipped_elements_enabled != 0 ?
             1 : 0;
-        if (defer_effect_stroke_ownership != 0) {
-            dual_stroke_owner_match =
-                deferred_dual_stroke_owner_map[(size_t)i] != 0 ? 1 : 0;
-            if (dual_stroke_owner_match == 0 &&
-                pending_overlay_owner_index >= 0) {
-                if (i == pending_overlay_owner_index) {
-                    dual_stroke_owner_match = 1;
-                } else if (apply_clipping != 0 &&
-                           clipping_base_index == pending_overlay_owner_index) {
-                    dual_stroke_owner_match = 1;
-                }
-            }
-            defer_effect_stroke_ownership =
-                dual_stroke_owner_match != 0 ? 1 : 0;
-        }
         if (defer_effect_stroke_ownership != 0) {
             /*
              * Resolve clbl=1 dual-stroke ownership before effect application.
@@ -26611,7 +26607,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         pending_overlay_defer_stroke = 0;
         pending_overlay_stroke_consumed = 0;
         pending_overlay_dual_stroke = 0;
-        pending_overlay_owner_index = -1;
         pending_overlay_fill_coverage_valid = 0;
         pending_overlay_stroke_coverage_valid = 0;
         memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
