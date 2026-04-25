@@ -2131,6 +2131,17 @@ sixel_builtin_read_be32(unsigned char const *p)
     return value;
 }
 
+static unsigned short
+sixel_builtin_read_u16be(unsigned char const *p)
+{
+    if (p == NULL) {
+        return 0u;
+    }
+
+    return (unsigned short)((unsigned short)p[0] << 8u |
+                            (unsigned short)p[1]);
+}
+
 static void
 sixel_builtin_write_be32(unsigned char *p, uint32_t value)
 {
@@ -3744,10 +3755,12 @@ typedef struct sixel_builtin_load_context {
     int start_frame_no;
     int resolved_start_frame_no;
     int gif_frame_count;
+    int nonwebp_orientation;
 } sixel_builtin_load_context_t;
 
 typedef struct sixel_builtin_frame_callback_context {
     sixel_builtin_load_request_t const *request;
+    sixel_builtin_load_context_t const *load_context;
     void *cancel_context;
 } sixel_builtin_frame_callback_context_t;
 
@@ -3838,6 +3851,185 @@ sixel_builtin_chunk_has_apng_control(sixel_chunk_t const *chunk)
     return 0;
 }
 
+/*
+ * Scan JPEG APP1 markers and parse Exif orientation if present.
+ *
+ * Unknown APP1 payloads (for example XMP) are ignored so callers can keep
+ * the default orientation when metadata is absent or malformed.
+ */
+static int
+sixel_builtin_parse_jpeg_exif_orientation(unsigned char const *data,
+                                          size_t size,
+                                          int *orientation)
+{
+    size_t offset;
+    unsigned char marker;
+    unsigned short segment_length;
+    size_t payload_size;
+
+    offset = 0u;
+    marker = 0u;
+    segment_length = 0u;
+    payload_size = 0u;
+    if (data == NULL || orientation == NULL || size < 4u) {
+        return 0;
+    }
+    if (data[0] != (unsigned char)0xff || data[1] != (unsigned char)0xd8) {
+        return 0;
+    }
+
+    offset = 2u;
+    while (offset + 1u < size) {
+        if (data[offset] != (unsigned char)0xff) {
+            ++offset;
+            continue;
+        }
+        while (offset < size && data[offset] == (unsigned char)0xff) {
+            ++offset;
+        }
+        if (offset >= size) {
+            break;
+        }
+
+        marker = data[offset];
+        ++offset;
+        if (marker == (unsigned char)0xd9 || marker == (unsigned char)0xda) {
+            break;
+        }
+        if (marker == (unsigned char)0x01 ||
+            (marker >= (unsigned char)0xd0 &&
+             marker <= (unsigned char)0xd7)) {
+            continue;
+        }
+        if (offset + 2u > size) {
+            break;
+        }
+
+        segment_length = sixel_builtin_read_u16be(data + offset);
+        offset += 2u;
+        if (segment_length < 2u) {
+            break;
+        }
+        payload_size = (size_t)segment_length - 2u;
+        if (offset > size || payload_size > size - offset) {
+            break;
+        }
+
+        if (marker == (unsigned char)0xe1 &&
+            payload_size >= 6u &&
+            memcmp(data + offset, "Exif\0\0", 6u) == 0 &&
+            loader_exif_parse_orientation(data + offset,
+                                          payload_size,
+                                          orientation)) {
+            return 1;
+        }
+
+        offset += payload_size;
+    }
+
+    return 0;
+}
+
+/*
+ * Parse PNG/APNG eXIf metadata and extract EXIF orientation.
+ *
+ * The eXIf payload can be passed directly to loader_exif_parse_orientation().
+ */
+static int
+sixel_builtin_parse_png_exif_orientation(unsigned char const *buffer,
+                                         size_t size,
+                                         int *orientation)
+{
+    static unsigned char const png_signature[8] = {
+        0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
+    };
+    size_t offset;
+    uint32_t chunk_length;
+    size_t chunk_total;
+    unsigned char const *chunk_type;
+
+    offset = 0u;
+    chunk_length = 0u;
+    chunk_total = 0u;
+    chunk_type = NULL;
+    if (buffer == NULL || orientation == NULL || size < 8u) {
+        return 0;
+    }
+    if (memcmp(buffer, png_signature, sizeof(png_signature)) != 0) {
+        return 0;
+    }
+
+    offset = sizeof(png_signature);
+    while (offset + 12u <= size) {
+        chunk_length = sixel_builtin_read_be32(buffer + offset);
+        chunk_total = 12u + (size_t)chunk_length;
+        if (chunk_total > size - offset) {
+            return 0;
+        }
+
+        chunk_type = buffer + offset + 4u;
+        if (memcmp(chunk_type, "eXIf", 4u) == 0 &&
+            loader_exif_parse_orientation(buffer + offset + 8u,
+                                          (size_t)chunk_length,
+                                          orientation)) {
+            return 1;
+        }
+        if (memcmp(chunk_type, "IEND", 4u) == 0) {
+            break;
+        }
+        offset += chunk_total;
+    }
+
+    return 0;
+}
+
+/*
+ * Resolve EXIF orientation for builtin paths except WebP.
+ *
+ * WebP orientation is already handled inside fromwebp to keep WebP trace
+ * contracts local to that decode layer.
+ */
+static int
+sixel_builtin_resolve_nonwebp_orientation(sixel_chunk_t const *chunk,
+                                          int enable_orientation,
+                                          int *orientation_out)
+{
+    int parsed_orientation;
+    int found;
+
+    parsed_orientation = 1;
+    found = 0;
+    if (chunk == NULL || orientation_out == NULL || chunk->buffer == NULL ||
+        enable_orientation == 0) {
+        return 0;
+    }
+    if (chunk_is_webp(chunk)) {
+        return 0;
+    }
+
+    if (chunk_is_jpeg(chunk)) {
+        found = sixel_builtin_parse_jpeg_exif_orientation(chunk->buffer,
+                                                          chunk->size,
+                                                          &parsed_orientation);
+    } else if (chunk_is_png(chunk)) {
+        found = sixel_builtin_parse_png_exif_orientation(chunk->buffer,
+                                                         chunk->size,
+                                                         &parsed_orientation);
+    } else if (chunk_is_tiff(chunk)) {
+        found = loader_exif_parse_orientation(chunk->buffer,
+                                              chunk->size,
+                                              &parsed_orientation);
+    } else {
+        found = 0;
+    }
+    if (found == 0 || parsed_orientation < 2 || parsed_orientation > 8) {
+        return 0;
+    }
+
+    *orientation_out = parsed_orientation;
+    return 1;
+}
+
 static SIXELSTATUS
 sixel_builtin_prepare_load_context(
     sixel_builtin_load_request_t const *request,
@@ -3857,6 +4049,14 @@ sixel_builtin_prepare_load_context(
     load_context->start_frame_no = INT_MIN;
     load_context->resolved_start_frame_no = -1;
     load_context->gif_frame_count = 0;
+    load_context->nonwebp_orientation = 1;
+
+    if (sixel_builtin_resolve_nonwebp_orientation(
+            request->chunk,
+            request->enable_orientation,
+            &load_context->nonwebp_orientation) == 0) {
+        load_context->nonwebp_orientation = 1;
+    }
 
     if (apply_start_frame == 0) {
         return SIXEL_OK;
@@ -3874,15 +4074,32 @@ sixel_builtin_prepare_load_context(
 static SIXELSTATUS
 sixel_builtin_finalize_loaded_frame(
     sixel_builtin_load_request_t const *request,
+    sixel_builtin_load_context_t const *load_context,
     sixel_frame_t *frame)
 {
     SIXELSTATUS status;
+    int orientation;
     int transparent_policy;
 
     status = SIXEL_OK;
+    orientation = 1;
     transparent_policy = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
     if (request == NULL || frame == NULL || request->fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+    if (load_context != NULL) {
+        orientation = load_context->nonwebp_orientation;
+    }
+
+    if (request->enable_orientation != 0 &&
+        request->chunk != NULL &&
+        !chunk_is_webp(request->chunk) &&
+        orientation >= 2 &&
+        orientation <= 8) {
+        status = loader_frame_apply_orientation(frame, orientation);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
     }
 
     transparent_policy = loader_transparent_policy();
@@ -3921,6 +4138,7 @@ sixel_builtin_finalize_frame_callback(
         return SIXEL_BAD_ARGUMENT;
     }
     return sixel_builtin_finalize_loaded_frame(callback_context->request,
+                                               callback_context->load_context,
                                                frame);
 }
 
@@ -3950,6 +4168,7 @@ sixel_builtin_load_gif_frames(
     status = SIXEL_OK;
     fnp.fn = NULL;
     callback_context.request = NULL;
+    callback_context.load_context = NULL;
     callback_context.cancel_context = NULL;
     chunk_size = 0;
     if (request == NULL ||
@@ -3961,6 +4180,7 @@ sixel_builtin_load_gif_frames(
 
     fnp.fn = sixel_builtin_finalize_frame_callback;
     callback_context.request = request;
+    callback_context.load_context = load_context;
     callback_context.cancel_context = request->callback_context;
     status = sixel_builtin_chunk_size_to_int(request->chunk, &chunk_size);
     if (SIXEL_FAILED(status)) {
@@ -5623,6 +5843,7 @@ sixel_builtin_load_stbi_png_path(
 
     status = SIXEL_FALSE;
     callback_context.request = NULL;
+    callback_context.load_context = NULL;
     callback_context.cancel_context = NULL;
     has_apng_control = 0;
     if (animation_handled != NULL) {
@@ -5641,6 +5862,7 @@ sixel_builtin_load_stbi_png_path(
     has_apng_control = sixel_builtin_chunk_has_apng_control(load_request->chunk);
     if (has_apng_control != 0) {
         callback_context.request = load_request;
+        callback_context.load_context = load_context;
         callback_context.cancel_context = load_request->callback_context;
         status = sixel_builtin_load_apng_frames(
             load_request->chunk,
@@ -5994,7 +6216,9 @@ sixel_builtin_load_with_builtin_impl(
         }
     }
 
-    status = sixel_builtin_finalize_loaded_frame(&load_request, frame);
+    status = sixel_builtin_finalize_loaded_frame(&load_request,
+                                                 &load_context,
+                                                 frame);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
