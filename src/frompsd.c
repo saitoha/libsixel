@@ -26624,22 +26624,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 clip_alpha_map)) {
             clipped_inside_stroke_alpha_valid = 1;
         }
-        if (pending_clip_group_overlay != 0 &&
-            group_active != 0) {
-            /*
-             * Group overlay coverage must use the pre-effect silhouette.
-             * This avoids letting stroke/glow alpha expansion leak into
-             * deferred SoFi/GrFl coverage.
-             */
-            sixel_builtin_psd_composite_layer_alpha_over(
-                pending_overlay_fill_coverage_map,
-                info->width,
-                info->height,
-                effective_composite_layer,
-                &src_layer,
-                apply_clipping != 0 ? clip_alpha_map : NULL);
-            pending_overlay_fill_coverage_valid = 1;
-        }
         if (apply_clipping != 0 &&
             effective_composite_layer->has_blend_clipped_elements != 0 &&
             effective_composite_layer->blend_clipped_elements_enabled != 0 &&
@@ -26833,6 +26817,20 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         }
         if (pending_clip_group_overlay != 0 &&
             group_active != 0) {
+            /*
+             * Deferred SoFi/GrFl coverage should follow the effective group
+             * input that is composited in this base pass. This keeps overlay
+             * coverage aligned with clipped-group ownership instead of using
+             * only the raw pre-effect layer silhouette.
+             */
+            sixel_builtin_psd_composite_layer_alpha_over(
+                pending_overlay_fill_coverage_map,
+                info->width,
+                info->height,
+                effective_composite_layer,
+                &src_layer,
+                apply_clipping != 0 ? clip_alpha_map : NULL);
+            pending_overlay_fill_coverage_valid = 1;
             sixel_builtin_psd_composite_layer_over(
                 group_rgb_premul,
                 group_canvas_alpha,
