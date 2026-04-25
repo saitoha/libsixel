@@ -2686,6 +2686,101 @@ static sixel_option_choice_t const g_option_choices_lut_policy[] = {
     { "mahalanobis", SIXEL_LUT_POLICY_MAHALANOBIS }
 };
 
+static sixel_suboption_choice_t const
+g_option_choices_lut_shared_instance[] = {
+    { "0", 0 },
+    { "1", 1 }
+};
+
+static sixel_suboption_key_t const g_subkeys_lookup_policy_shared[] = {
+    {
+        "shared_instance",
+        NULL,
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_lut_shared_instance,
+        sizeof(g_option_choices_lut_shared_instance)
+        / sizeof(g_option_choices_lut_shared_instance[0])
+    }
+};
+
+enum {
+    G_SUBKEYS_LOOKUP_POLICY_SHARED_COUNT =
+        (int)(sizeof(g_subkeys_lookup_policy_shared)
+              / sizeof(g_subkeys_lookup_policy_shared[0]))
+};
+
+static sixel_option_value_schema_t const g_schema_lookup_policy_values[] = {
+    {
+        "auto",
+        SIXEL_LUT_POLICY_AUTO,
+        NULL,
+        0u
+    },
+    {
+        "5bit",
+        SIXEL_LUT_POLICY_5BIT,
+        g_subkeys_lookup_policy_shared,
+        G_SUBKEYS_LOOKUP_POLICY_SHARED_COUNT
+    },
+    {
+        "6bit",
+        SIXEL_LUT_POLICY_6BIT,
+        g_subkeys_lookup_policy_shared,
+        G_SUBKEYS_LOOKUP_POLICY_SHARED_COUNT
+    },
+    {
+        "none",
+        SIXEL_LUT_POLICY_NONE,
+        NULL,
+        0u
+    },
+    {
+        "certlut",
+        SIXEL_LUT_POLICY_CERTLUT,
+        g_subkeys_lookup_policy_shared,
+        G_SUBKEYS_LOOKUP_POLICY_SHARED_COUNT
+    },
+    {
+        "eytzinger",
+        SIXEL_LUT_POLICY_EYTZINGER,
+        NULL,
+        0u
+    },
+    {
+        "fhedt",
+        SIXEL_LUT_POLICY_FHEDT,
+        NULL,
+        0u
+    },
+    {
+        "vptree",
+        SIXEL_LUT_POLICY_VPTREE,
+        NULL,
+        0u
+    },
+    {
+        "rbc",
+        SIXEL_LUT_POLICY_RBC,
+        NULL,
+        0u
+    },
+    {
+        "mahalanobis",
+        SIXEL_LUT_POLICY_MAHALANOBIS,
+        NULL,
+        0u
+    }
+};
+
+static sixel_option_argument_schema_t const g_schema_lookup_policy = {
+    SIXEL_OPTFLAG_LUT_POLICY,
+    "--lookup-policy",
+    g_schema_lookup_policy_values,
+    sizeof(g_schema_lookup_policy_values)
+    / sizeof(g_schema_lookup_policy_values[0])
+};
+
 static sixel_option_choice_t const g_option_choices_working_colorspace[] = {
     { "gamma", SIXEL_COLORSPACE_GAMMA },
     { "linear", SIXEL_COLORSPACE_LINEAR },
@@ -4703,6 +4798,8 @@ typedef struct sixel_callback_context_for_mapfile {
     sixel_allocator_t *allocator;
     int working_colorspace;
     int lut_policy;
+    int lut_policy_shared_instance_override;
+    int lut_policy_shared_instance;
     int prefer_float32;
 } sixel_callback_context_for_mapfile_t;
 
@@ -4748,6 +4845,10 @@ load_image_callback_for_palette(
 
         sixel_dither_set_lut_policy(callback_context->dither,
                                     callback_context->lut_policy);
+        callback_context->dither->lut_policy_shared_instance_override =
+            callback_context->lut_policy_shared_instance_override;
+        callback_context->dither->lut_policy_shared_instance =
+            callback_context->lut_policy_shared_instance;
 
         /* use palette which is extracted from the image */
         sixel_dither_set_palette(callback_context->dither,
@@ -4792,6 +4893,10 @@ load_image_callback_for_palette(
 
         sixel_dither_set_lut_policy(callback_context->dither,
                                     callback_context->lut_policy);
+        callback_context->dither->lut_policy_shared_instance_override =
+            callback_context->lut_policy_shared_instance_override;
+        callback_context->dither->lut_policy_shared_instance =
+            callback_context->lut_policy_shared_instance;
 
         /* create adaptive palette from given frame object */
         status = sixel_dither_initialize(callback_context->dither,
@@ -5389,6 +5494,10 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     context->dither->bluenoise_size_override =
         context->encoder->bluenoise_size_override;
     context->dither->bluenoise_size = context->encoder->bluenoise_size;
+    context->dither->lut_policy_shared_instance_override =
+        context->encoder->lut_policy_shared_instance_override;
+    context->dither->lut_policy_shared_instance =
+        context->encoder->lut_policy_shared_instance;
     sixel_dither_set_diffusion_scan(context->dither,
                                     context->encoder->method_for_scan);
 
@@ -6141,6 +6250,10 @@ palette_cleanup:
     callback_context.allocator = encoder->allocator;
     callback_context.working_colorspace = encoder->working_colorspace;
     callback_context.lut_policy = encoder->lut_policy;
+    callback_context.lut_policy_shared_instance_override =
+        encoder->lut_policy_shared_instance_override;
+    callback_context.lut_policy_shared_instance =
+        encoder->lut_policy_shared_instance;
     callback_context.prefer_float32 = encoder->prefer_float32;
 
     sixel_helper_set_loader_trace(encoder->verbose);
@@ -6647,6 +6760,10 @@ sixel_encoder_prepare_palette(
     }
 
     sixel_dither_set_lut_policy(*dither, effective_lut_policy);
+    (*dither)->lut_policy_shared_instance_override =
+        encoder->lut_policy_shared_instance_override;
+    (*dither)->lut_policy_shared_instance =
+        encoder->lut_policy_shared_instance;
     sixel_dither_set_sixel_reversible(*dither,
                                       encoder->sixel_reversible);
     memset(&merge_config, 0, sizeof(merge_config));
@@ -6973,6 +7090,10 @@ end:
     }
     if (SIXEL_SUCCEEDED(status) && dither != NULL && *dither != NULL) {
         sixel_dither_set_lut_policy(*dither, encoder->lut_policy);
+        (*dither)->lut_policy_shared_instance_override =
+            encoder->lut_policy_shared_instance_override;
+        (*dither)->lut_policy_shared_instance =
+            encoder->lut_policy_shared_instance;
         /* pass down the user's demand for an exact palette size */
         (*dither)->force_palette = encoder->force_palette;
     }
@@ -8069,6 +8190,8 @@ sixel_encoder_new(
     (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
     (*ppencoder)->lut_policy_override   = 0;
+    (*ppencoder)->lut_policy_shared_instance_override = 0;
+    (*ppencoder)->lut_policy_shared_instance = 0;
     (*ppencoder)->sixel_reversible      = 0;
     (*ppencoder)->method_for_resampling = SIXEL_RES_BILINEAR;
     (*ppencoder)->loop_mode             = SIXEL_LOOP_AUTO;
@@ -8177,6 +8300,8 @@ sixel_encoder_new(
         if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
             (*ppencoder)->lut_policy = env_match_value;
             (*ppencoder)->lut_policy_override = 1;
+            (*ppencoder)->lut_policy_shared_instance_override = 0;
+            (*ppencoder)->lut_policy_shared_instance = 0;
         }
     }
 
@@ -9719,6 +9844,106 @@ sixel_encoder_parse_diffusion_argument(
     return SIXEL_OK;
 }
 
+static int
+sixel_encoder_lut_policy_supports_shared_instance(int lut_policy)
+{
+    if (lut_policy == SIXEL_LUT_POLICY_5BIT
+            || lut_policy == SIXEL_LUT_POLICY_6BIT
+            || lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static SIXELSTATUS
+sixel_encoder_parse_lut_policy_argument(
+    char const *value,
+    int *lut_policy_out,
+    int *shared_override_out,
+    int *shared_value_out,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+    sixel_option_argument_resolution_t resolution;
+    sixel_suboption_assignment_t const *assignment;
+    size_t index;
+    int match_value;
+    int shared_override;
+    int shared_value;
+
+    status = SIXEL_OK;
+    resolution.resolved_base_value = 0;
+    resolution.base_def = NULL;
+    resolution.assignments = NULL;
+    resolution.assignment_count = 0u;
+    assignment = NULL;
+    index = 0u;
+    match_value = SIXEL_LUT_POLICY_AUTO;
+    shared_override = 0;
+    shared_value = 0;
+
+    if (lut_policy_out == NULL || shared_override_out == NULL
+            || shared_value_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_option_parse_argument_with_suboptions(
+        value,
+        &g_schema_lookup_policy,
+        &resolution,
+        diagnostic,
+        diagnostic_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    match_value = resolution.resolved_base_value;
+    if (resolution.assignment_count > 0u
+            && !sixel_encoder_lut_policy_supports_shared_instance(
+                match_value)) {
+        sixel_helper_set_additional_message(
+            "-~ shared_instance is supported only for 5bit, 6bit, and "
+            "certlut.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+
+    while (index < resolution.assignment_count) {
+        assignment = resolution.assignments + index;
+        if (assignment->resolved_key_name != NULL
+                && strcmp(assignment->resolved_key_name,
+                          "shared_instance") != 0) {
+            sixel_helper_set_additional_message(
+                "-~ accepts only shared_instance suboption.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+        if (assignment->resolved_key_name != NULL) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &shared_value)) {
+                sixel_helper_set_additional_message(
+                    "invalid -~ shared_instance resolution.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto cleanup;
+            }
+            shared_override = 1;
+        }
+        ++index;
+    }
+
+    *lut_policy_out = match_value;
+    *shared_override_out = shared_override;
+    *shared_value_out = (shared_value != 0) ? 1 : 0;
+    status = SIXEL_OK;
+
+cleanup:
+    sixel_option_free_argument_resolution(&resolution);
+    return status;
+}
+
 static SIXELSTATUS
 sixel_encoder_resolve_sierra_suboptions(
     sixel_option_argument_resolution_t const *resolution,
@@ -11145,6 +11370,8 @@ sixel_encoder_setopt(
     sixel_suboption_assignment_t const *q_assignment;
     char const *q_key;
     int q_model;
+    int lut_shared_instance_override;
+    int lut_shared_instance_value;
     char match_detail[128];
 
     sixel_encoder_ref(encoder);
@@ -11226,6 +11453,8 @@ sixel_encoder_setopt(
     q_assignment = NULL;
     q_key = NULL;
     q_model = SIXEL_QUANTIZE_MODEL_AUTO;
+    lut_shared_instance_override = 0;
+    lut_shared_instance_value = 0;
 
     switch(arg) {
     case SIXEL_OPTFLAG_OUTFILE:  /* o */
@@ -12385,21 +12614,30 @@ sixel_encoder_setopt(
         encoder->encode_policy = match_value;
         break;
     case SIXEL_OPTFLAG_LUT_POLICY:  /* ~ */
-        status = sixel_encoder_parse_choice_argument(
+        status = sixel_encoder_parse_lut_policy_argument(
             value,
-            g_option_choices_lut_policy,
-            sizeof(g_option_choices_lut_policy) /
-            sizeof(g_option_choices_lut_policy[0]),
-            "cannot parse lut policy option.",
-            &match_value);
+            &match_value,
+            &lut_shared_instance_override,
+            &lut_shared_instance_value,
+            match_detail,
+            sizeof(match_detail));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
         encoder->lut_policy = match_value;
         encoder->lut_policy_override = 1;
+        encoder->lut_policy_shared_instance_override =
+            lut_shared_instance_override;
+        encoder->lut_policy_shared_instance = lut_shared_instance_value;
         if (encoder->dither_cache != NULL) {
             sixel_dither_set_lut_policy(encoder->dither_cache,
                                         encoder->lut_policy);
+            ((sixel_dither_t *)encoder->dither_cache)
+                ->lut_policy_shared_instance_override
+                = encoder->lut_policy_shared_instance_override;
+            ((sixel_dither_t *)encoder->dither_cache)
+                ->lut_policy_shared_instance
+                = encoder->lut_policy_shared_instance;
         }
         break;
     case SIXEL_OPTFLAG_CLUSTERING_COLORSPACE:  /* X */

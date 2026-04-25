@@ -42,7 +42,7 @@
  *
  * IComponents.getservice("services/factory", &factory)
  * IFactory.create("lookup/...", &policy)
- * ILookupPolicy.prepare(request)
+ * ILookupPolicy.prepare(request{shared_instance_enabled,...})
  */
 
 /*
@@ -61,6 +61,22 @@ sixel_filter_lookup_apply(sixel_filter_t *filter,
 
 static void
 sixel_filter_lookup_dispose(sixel_filter_t *filter);
+
+static int
+sixel_filter_lookup_default_shared_instance_enabled(int lut_policy)
+{
+    if (lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
+        return sixel_lookup_policy_certlut_shared_instance_enabled();
+    }
+    if (lut_policy == SIXEL_LUT_POLICY_5BIT) {
+        return sixel_lookup_policy_5bit_shared_instance_enabled();
+    }
+    if (lut_policy == SIXEL_LUT_POLICY_6BIT) {
+        return sixel_lookup_policy_6bit_shared_instance_enabled();
+    }
+
+    return 1;
+}
 
 static sixel_filter_vtbl_t const sixel_filter_lookup_vtbl = {
     "lookup",
@@ -149,6 +165,9 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
     prepare_request.reqcolor = config->ncolors;
     prepare_request.pixelformat = config->pixelformat;
     prepare_request.parallel_dither_active = 0;
+    prepare_request.shared_instance_enabled =
+        sixel_filter_lookup_default_shared_instance_enabled(
+            config->lut_policy);
     prepare_request.reuse_policy = config->reuse_policy;
     prepare_request.reuse_policy_slot = NULL;
     prepare_request.allocator = allocator;

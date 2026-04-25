@@ -74,7 +74,7 @@
  *
  * IComponents.getservice("services/factory", &factory)
  * IFactory.create("lookup/...", &lookup)
- * ILookupPolicy.prepare(request)
+ * ILookupPolicy.prepare(request{shared_instance_enabled,...})
  * ILookupPolicy.map_pixel(pixel)
  * ILookupPolicySharedConfig.{certlut,5bit,6bit}_shared_instance_enabled()
  */
@@ -432,6 +432,44 @@ sixel_dither_validate_complexion_limit(int depth, int complexion)
     return SIXEL_OK;
 }
 
+static int
+sixel_dither_lut_policy_supports_shared_instance(int lut_policy)
+{
+    if (lut_policy == SIXEL_LUT_POLICY_CERTLUT
+            || lut_policy == SIXEL_LUT_POLICY_5BIT
+            || lut_policy == SIXEL_LUT_POLICY_6BIT) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+sixel_dither_lookup_shared_instance_enabled(
+    sixel_dither_t const *dither,
+    int lut_policy)
+{
+    if (!sixel_dither_lut_policy_supports_shared_instance(lut_policy)) {
+        return 1;
+    }
+
+    if (dither != NULL && dither->lut_policy_shared_instance_override != 0) {
+        return dither->lut_policy_shared_instance != 0;
+    }
+
+    if (lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
+        return sixel_lookup_policy_certlut_shared_instance_enabled();
+    }
+    if (lut_policy == SIXEL_LUT_POLICY_5BIT) {
+        return sixel_lookup_policy_5bit_shared_instance_enabled();
+    }
+    if (lut_policy == SIXEL_LUT_POLICY_6BIT) {
+        return sixel_lookup_policy_6bit_shared_instance_enabled();
+    }
+
+    return 1;
+}
+
 static SIXELSTATUS
 sixel_dither_prepare_lookup_policy(
     sixel_lookup_policy_interface_t **lookup_policy,
@@ -442,6 +480,7 @@ sixel_dither_prepare_lookup_policy(
     int reqcolor,
     int foptimize,
     int lut_policy,
+    int shared_instance_enabled,
     int pixelformat,
     int parallel_dither_active,
     sixel_lookup_policy_interface_t *reuse_policy,
@@ -475,6 +514,7 @@ sixel_dither_prepare_lookup_policy(
     request.reqcolor = reqcolor;
     request.pixelformat = pixelformat;
     request.parallel_dither_active = parallel_dither_active;
+    request.shared_instance_enabled = (shared_instance_enabled != 0) ? 1 : 0;
     request.reuse_policy = reuse_policy;
     request.reuse_policy_slot = reuse_policy_slot;
     request.allocator = allocator;
@@ -777,6 +817,8 @@ typedef struct sixel_parallel_dither_plan {
     int optimize_palette_entries;
     int complexion;
     int lut_policy;
+    int shared_lut;
+    int lookup_shared_instance_enabled;
     int reqcolor;
     int pixelformat;
     int pin_threads;
@@ -917,6 +959,7 @@ sixel_dither_parallel_worker(tp_job_t job,
         plan->reqcolor,
         plan->optimize_palette,
         plan->lut_policy,
+        plan->lookup_shared_instance_enabled,
         plan->pixelformat,
         1,
         reuse_policy,
@@ -1154,6 +1197,7 @@ sixel_dither_resolve_indexes(
     int *ncolors;
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
+    int shared_lut;
     int pixelformat;
     sixel_dither_map_pixels_request_t map_request;
 
@@ -1178,6 +1222,8 @@ sixel_dither_resolve_indexes(
     ncolors = request->ncolors;
     allocator = request->allocator;
     dither = request->dither;
+    shared_lut = sixel_dither_lookup_shared_instance_enabled(dither,
+                                                             lut_policy);
     pixelformat = request->pixelformat;
 
     sixel_palette_set_lut_policy(lut_policy);
@@ -1191,6 +1237,7 @@ sixel_dither_resolve_indexes(
         reqcolor,
         foptimize,
         lut_policy,
+        shared_lut,
         pixelformat,
         0,
         palette->lookup_policy,
@@ -1384,6 +1431,8 @@ sixel_dither_new(
     (*ppdither)->prefer_float32 = 0;
     (*ppdither)->allocator = allocator;
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
+    (*ppdither)->lut_policy_shared_instance_override = 0;
+    (*ppdither)->lut_policy_shared_instance = 0;
     (*ppdither)->sixel_reversible = 0;
     (*ppdither)->quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
     (*ppdither)->final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
@@ -2947,11 +2996,14 @@ sixel_dither_apply_palette_with_mode(
 
     /*
      * Resolve shared-instance flags on the caller thread before workers start
-     * so policy constructors can reuse the parsed environment values.
+     * so policy constructors can reuse parsed environment values when CLI
+     * overrides are not active.
      */
-    (void)sixel_lookup_policy_certlut_shared_instance_enabled();
-    (void)sixel_lookup_policy_5bit_shared_instance_enabled();
-    (void)sixel_lookup_policy_6bit_shared_instance_enabled();
+    if (dither->lut_policy_shared_instance_override == 0) {
+        (void)sixel_lookup_policy_certlut_shared_instance_enabled();
+        (void)sixel_lookup_policy_5bit_shared_instance_enabled();
+        (void)sixel_lookup_policy_6bit_shared_instance_enabled();
+    }
 
     bufsize = (size_t)(width * height) * sizeof(sixel_index_t);
     total_pixels = (size_t)width * (size_t)height;
@@ -3126,6 +3178,9 @@ sixel_dither_apply_palette_with_mode(
     }
 
     palette->lut_policy = dither->lut_policy;
+    shared_lut = sixel_dither_lookup_shared_instance_enabled(
+        dither,
+        dither->lut_policy);
 #if SIXEL_ENABLE_THREADS
     if (parallel_active && parallel_threads > 1
             && parallel_band_height > 0) {
@@ -3142,6 +3197,7 @@ sixel_dither_apply_palette_with_mode(
             dither->ncolors,
             dither->optimized,
             dither->lut_policy,
+            shared_lut,
             pipeline_pixelformat,
             parallel_active,
             palette->lookup_policy,
@@ -3182,29 +3238,17 @@ sixel_dither_apply_palette_with_mode(
         plan.optimize_palette_entries = dither->optimize_palette;
         plan.complexion = dither->complexion;
         plan.lut_policy = dither->lut_policy;
+        plan.lookup_shared_instance_enabled = shared_lut;
         plan.reqcolor = dither->ncolors;
         plan.pixelformat = pipeline_pixelformat;
         /* Carry the pipeline pinning preference as a strict 0/1 flag. */
         plan.pin_threads = dither->pipeline_pin_threads != 0 ? 1 : 0;
         plan.logger = logger;
-
-#if SIXEL_ENABLE_THREADS
-        shared_lut = 1;
-        if (plan.lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
-            shared_lut = sixel_lookup_policy_certlut_shared_instance_enabled();
-        } else if (plan.lut_policy == SIXEL_LUT_POLICY_5BIT) {
-            shared_lut = sixel_lookup_policy_5bit_shared_instance_enabled();
-        } else if (plan.lut_policy == SIXEL_LUT_POLICY_6BIT) {
-            shared_lut = sixel_lookup_policy_6bit_shared_instance_enabled();
-        }
         if (shared_lut != 0) {
             plan.lookup_policy = palette->lookup_policy;
         } else {
             plan.lookup_policy = NULL;
         }
-#else
-        plan.lookup_policy = palette->lookup_policy;
-#endif  /* SIXEL_ENABLE_THREADS */
 
         status = sixel_dither_apply_palette_parallel(&plan,
                                                      parallel_threads);

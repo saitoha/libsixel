@@ -46,7 +46,7 @@
  * class LookupCertLut : ILookupPolicy {
  *   ref();
  *   unref();
- *   prepare(request);
+ *   prepare(request{shared_instance_enabled,...});
  *   map_pixel(pixel);
  *   lookup_source_is_float();
  *   prefer_palette_float_lookup();
@@ -229,6 +229,7 @@ typedef struct sixel_lookup_policy_certlut_object {
     sixel_lookup_policy_certlut_8bit_t state_8bit;
     sixel_lookup_policy_certlut_float32_t state_float;
     int lookup_source_is_float;
+    int shared_instance_enabled;
 } sixel_lookup_policy_certlut_object_t;
 
 static sixel_lookup_policy_certlut_object_t *
@@ -697,7 +698,13 @@ sixel_lookup_policy_certlut_configure_8bit(
     lut->ncolors = request->reqcolor;
     lut->complexion = 1;
     lut->palette = request->palette;
-    if (lut->cert == NULL) {
+    if (lut->cert == NULL
+            || request->shared_instance_enabled != 0) {
+        if (lut->cert != NULL) {
+            sixel_certlut_free(lut->cert);
+            free(lut->cert);
+            lut->cert = NULL;
+        }
         lut->cert = (sixel_certlut_t *)calloc(1, sizeof(*lut->cert));
         if (lut->cert == NULL) {
             sixel_helper_set_additional_message(
@@ -705,7 +712,7 @@ sixel_lookup_policy_certlut_configure_8bit(
             return SIXEL_BAD_ALLOCATION;
         }
     }
-    if (sixel_lookup_policy_certlut_shared_instance_enabled() == 0) {
+    if (request->shared_instance_enabled == 0) {
         sixel_certlut_disable_locking(lut->cert);
     }
 
@@ -784,6 +791,7 @@ sixel_lookup_policy_certlut_reset_state(
     object->backend_initialized = 0;
     object->prepared = 0;
     object->lookup_source_is_float = 0;
+    object->shared_instance_enabled = 0;
 }
 
 static void
@@ -877,13 +885,17 @@ sixel_lookup_policy_certlut_prepare(
 
     object->lookup_source_is_float =
         SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
+    object->shared_instance_enabled =
+        (request->shared_instance_enabled != 0) ? 1 : 0;
 
     if (reuse_policy != NULL
             && reuse_policy->vtbl == policy->vtbl) {
         reuse_object = sixel_lookup_policy_certlut_from_base(reuse_policy);
         if (reuse_object->prepared != 0
                 && reuse_object->lookup_source_is_float
-                == object->lookup_source_is_float) {
+                == object->lookup_source_is_float
+                && reuse_object->shared_instance_enabled
+                == object->shared_instance_enabled) {
             sixel_lookup_policy_certlut_reset_state(object);
             object->state_8bit = reuse_object->state_8bit;
             object->state_float = reuse_object->state_float;
@@ -891,6 +903,8 @@ sixel_lookup_policy_certlut_prepare(
             object->prepared = reuse_object->prepared;
             object->lookup_source_is_float =
                 reuse_object->lookup_source_is_float;
+            object->shared_instance_enabled =
+                reuse_object->shared_instance_enabled;
             sixel_lookup_policy_certlut_detach_state(reuse_object);
             if (request->reuse_policy_slot != NULL
                     && *request->reuse_policy_slot == NULL) {

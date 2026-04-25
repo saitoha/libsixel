@@ -139,6 +139,8 @@ struct sixel_dither {
     int prefer_float32;             /* opt-in flag for float32 internals */
     sixel_allocator_t *allocator;   /* allocator */
     int lut_policy;                 /* histogram LUT policy */
+    int lut_policy_shared_instance_override; /* CLI shared override flag */
+    int lut_policy_shared_instance; /* parsed shared instance setting */
     int sixel_reversible;           /* restrict palette to reversible tones */
     int quantize_model;             /* palette solver selector */
     int final_merge_mode;           /* final merge policy */
