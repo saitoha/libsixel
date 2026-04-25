@@ -36,6 +36,8 @@ extern "C" {
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_fromwebp_load(sixel_chunk_t const *chunk,
+                    int enable_cms,
+                    int enable_orientation,
                     sixel_frame_t *frame);
 
 #ifdef __cplusplus

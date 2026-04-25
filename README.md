@@ -908,7 +908,7 @@ steps.
                            loader names such as 'gd,builtin'.
                            Unique prefixes are accepted, so
                            'core,b' expands to 'coregraphics,builtin'.
-                           libpng/libjpeg/libwebp accept
+                           libpng/libjpeg/libwebp/builtin accept
                            :orientation=on|off
                            (or :o=..., default on).
                            libpng/libjpeg/libwebp/libtiff/builtin
@@ -1022,6 +1022,9 @@ SIXEL_LOADER_LIBPNG_ORIENTATION
                            Overrides SIXEL_LOADER_ORIENTATION.
 SIXEL_LOADER_LIBWEBP_ORIENTATION
                            override libwebp EXIF orientation handling.
+                           Overrides SIXEL_LOADER_ORIENTATION.
+SIXEL_LOADER_BUILTIN_ORIENTATION
+                           override builtin loader EXIF orientation handling.
                            Overrides SIXEL_LOADER_ORIENTATION.
 SIXEL_LOADER_CMS_ENGINE    select CMS backend for loader ICC conversion.
                            Accepts none, auto, builtin, lcms2, or colorsync.
@@ -1168,7 +1171,9 @@ what is available):
 The `builtin` loader includes an internal WebP MVP path. The current scope is
 static decode for `VP8L` and `VP8`. `VP8` with `ALPH` and
 animation (`ANIM`/`ANMF`) remain
-unsupported in `builtin`.
+unsupported in `builtin`. For static decode, embedded `ICCP` is
+applied when builtin CMS is enabled and embedded `EXIF` orientation is
+applied when builtin orientation handling is enabled.
 
 `librsvg` always returns raster frames as `RGB888` or `RGBA8888`.
 Without `-B` and with any non-opaque pixel, alpha is preserved

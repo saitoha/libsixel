@@ -1142,7 +1142,8 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_LOADER_ORIENTATION",
-        "default EXIF orientation handling for libjpeg/libpng/libwebp.\n"
+        "default EXIF orientation handling for libjpeg/libpng/libwebp/\n"
+        "builtin loaders.\n"
         "Accepts on/off (preferred) and 1/0 aliases. Defaults to on."
     },
     {
@@ -1158,6 +1159,11 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOADER_LIBWEBP_ORIENTATION",
         "override EXIF orientation handling for libwebp loader only.\n"
+        "Accepts on/off and 1/0. Overrides SIXEL_LOADER_ORIENTATION."
+    },
+    {
+        "SIXEL_LOADER_BUILTIN_ORIENTATION",
+        "override EXIF orientation handling for builtin loader only.\n"
         "Accepts on/off and 1/0. Overrides SIXEL_LOADER_ORIENTATION."
     },
     {

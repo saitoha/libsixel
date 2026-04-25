@@ -49,6 +49,8 @@
 
 #define SIXEL_WEBP_CODE_OK_VP8_STATIC "W_OK_VP8_STATIC"
 #define SIXEL_WEBP_CODE_OK_VP8L_STATIC "W_OK_VP8L_STATIC"
+#define SIXEL_WEBP_CODE_META_ICCP_APPLIED "W_META_ICCP_APPLIED"
+#define SIXEL_WEBP_CODE_META_EXIF_APPLIED "W_META_EXIF_APPLIED"
 #define SIXEL_WEBP_CODE_META_ICCP_IGNORED "W_META_ICCP_IGNORED"
 #define SIXEL_WEBP_CODE_META_EXIF_IGNORED "W_META_EXIF_IGNORED"
 #define SIXEL_WEBP_CODE_UNSUP_VP8_ALPHA "W_UNSUP_VP8_ALPHA"
@@ -116,8 +118,12 @@ typedef struct sixel_webp_decode_plan {
     size_t vp8_payload_size;
     unsigned char const *vp8l_payload;
     size_t vp8l_payload_size;
-    int meta_iccp_ignored;
-    int meta_exif_ignored;
+    unsigned char const *iccp_payload;
+    size_t iccp_payload_size;
+    unsigned char const *exif_payload;
+    size_t exif_payload_size;
+    int meta_has_iccp;
+    int meta_has_exif;
 } sixel_webp_decode_plan_t;
 
 SIXEL_INTERNAL_API SIXELSTATUS

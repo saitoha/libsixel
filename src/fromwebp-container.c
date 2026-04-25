@@ -365,8 +365,12 @@ sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
         plan->kind = SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC;
         plan->vp8_payload = info->vp8.payload;
         plan->vp8_payload_size = info->vp8.payload_size;
-        plan->meta_iccp_ignored = info->iccp_count != 0u ? 1 : 0;
-        plan->meta_exif_ignored = info->exif_count != 0u ? 1 : 0;
+        plan->meta_has_iccp = info->iccp_count != 0u ? 1 : 0;
+        plan->meta_has_exif = info->exif_count != 0u ? 1 : 0;
+        plan->iccp_payload = info->iccp.payload;
+        plan->iccp_payload_size = info->iccp.payload_size;
+        plan->exif_payload = info->exif.payload;
+        plan->exif_payload_size = info->exif.payload_size;
         return SIXEL_OK;
     }
 
@@ -380,8 +384,12 @@ sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
     plan->kind = SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC;
     plan->vp8l_payload = info->vp8l.payload;
     plan->vp8l_payload_size = info->vp8l.payload_size;
-    plan->meta_iccp_ignored = info->iccp_count != 0u ? 1 : 0;
-    plan->meta_exif_ignored = info->exif_count != 0u ? 1 : 0;
+    plan->meta_has_iccp = info->iccp_count != 0u ? 1 : 0;
+    plan->meta_has_exif = info->exif_count != 0u ? 1 : 0;
+    plan->iccp_payload = info->iccp.payload;
+    plan->iccp_payload_size = info->iccp.payload_size;
+    plan->exif_payload = info->exif.payload;
+    plan->exif_payload_size = info->exif.payload_size;
     return SIXEL_OK;
 }
 

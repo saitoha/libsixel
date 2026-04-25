@@ -565,6 +565,10 @@ loader_manager_init_loader_suboptions(
     suboptions->builtin_cms_engine = loader_manager_read_env_cms_engine(
         "SIXEL_LOADER_BUILTIN_CMS_ENGINE",
         default_cms_engine);
+    suboptions->builtin_enable_orientation =
+        loader_manager_read_env_orientation(
+            "SIXEL_LOADER_BUILTIN_ORIENTATION",
+            default_orientation);
     suboptions->builtin_bmp_info40_mode =
         loader_manager_read_env_builtin_bmp_info40_mode(
             "SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE",
@@ -703,6 +707,13 @@ loader_manager_resolve_loader_suboptions(
                            &parsed_value,
                            0)) {
                 suboptions->builtin_bmp_info40_mode = parsed_value;
+            } else if (strcmp(item->base_def->name, "builtin") == 0 &&
+                       strcmp(key_name, "orientation") == 0 &&
+                       loader_manager_parse_orientation(value_text,
+                                                        value_length,
+                                                        &parsed_value,
+                                                        0)) {
+                suboptions->builtin_enable_orientation = parsed_value;
             }
             ++assignment_index;
         }

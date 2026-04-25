@@ -189,6 +189,7 @@ typedef struct sixel_loader_builtin_component {
     int start_frame_no_set;
     int start_frame_no;
     int enable_cms;
+    int enable_orientation;
     int cms_engine;
     int bmp_info40_mode;
 } sixel_loader_builtin_component_t;
@@ -3554,6 +3555,11 @@ sixel_loader_builtin_setopt(sixel_loader_component_t *component,
         int_value = (int const *)value;
         self->enable_cms = (int_value != NULL && *int_value != 0) ? 1 : 0;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_ORIENTATION:
+        int_value = (int const *)value;
+        self->enable_orientation =
+            (int_value == NULL || *int_value != 0) ? 1 : 0;
+        return SIXEL_OK;
     case SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE:
         int_value = (int const *)value;
         if (int_value != NULL && *int_value >= 0) {
@@ -3643,6 +3649,7 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
                                self->start_frame_no_set,
                                self->start_frame_no,
                                self->enable_cms,
+                               self->enable_orientation,
                                self->bmp_info40_mode,
                                loader_timeline_emit_frame_callback,
                                &timeline_state);
@@ -3708,6 +3715,7 @@ sixel_loader_builtin_new(sixel_allocator_t *allocator,
     self->start_frame_no_set = 0;
     self->start_frame_no = INT_MIN;
     self->enable_cms = 0;
+    self->enable_orientation = 1;
     self->cms_engine = -1;
     self->bmp_info40_mode = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO;
 
@@ -3726,6 +3734,7 @@ typedef struct sixel_builtin_load_request {
     int start_frame_no_set;
     int start_frame_no_override;
     int enable_cms;
+    int enable_orientation;
     int bmp_info40_mode;
     sixel_load_image_function fn_load;
     void *callback_context;
@@ -5769,6 +5778,7 @@ sixel_builtin_load_with_builtin_impl(
     int start_frame_no_set;
     int start_frame_no_override;
     int enable_cms;
+    int enable_orientation;
     int bmp_info40_mode;
     sixel_load_image_function fn_load;
     void *context;
@@ -5808,6 +5818,7 @@ sixel_builtin_load_with_builtin_impl(
     start_frame_no_set = args->start_frame_no_set;
     start_frame_no_override = args->start_frame_no_override;
     enable_cms = args->enable_cms;
+    enable_orientation = args->enable_orientation;
     bmp_info40_mode = args->bmp_info40_mode;
     fn_load = args->fn_load;
     context = args->context;
@@ -5835,6 +5846,7 @@ sixel_builtin_load_with_builtin_impl(
     load_request.start_frame_no_set = start_frame_no_set;
     load_request.start_frame_no_override = start_frame_no_override;
     load_request.enable_cms = enable_cms;
+    load_request.enable_orientation = enable_orientation;
     load_request.bmp_info40_mode = bmp_info40_mode;
     load_request.fn_load = fn_load;
     load_request.callback_context = context;
@@ -5957,7 +5969,10 @@ sixel_builtin_load_with_builtin_impl(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        status = sixel_fromwebp_load(pchunk, frame);
+        status = sixel_fromwebp_load(pchunk,
+                                     load_request.enable_cms,
+                                     load_request.enable_orientation,
+                                     frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
