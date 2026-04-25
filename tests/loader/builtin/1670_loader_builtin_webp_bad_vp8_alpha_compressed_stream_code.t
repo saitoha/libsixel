@@ -1,7 +1,7 @@
 #!/bin/sh
-# TAP test confirming unsupported VP8 ALPH compressed mode stays not-implemented.
+# TAP test confirming corrupted VP8 ALPH compressed payload maps to stream error.
 # Fixture is derived from webp-static-alpha-keycolor-lossy.webp by setting the
-# ALPH control byte to 0x01.
+# ALPH control byte to 0x01 without re-encoding the ALPH residual stream.
 
 set -eux
 
@@ -26,13 +26,13 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin! -o /dev/null "${input_webp}" 2>&1) || command_status=$?
 
 test "${command_status}" -ne 0 || {
-    echo "not ok" 1 - "forced builtin loader unsupported VP8 ALPH compressed mode unexpectedly succeeded"
+    echo "not ok" 1 - "forced builtin loader corrupted VP8 ALPH compressed payload unexpectedly succeeded"
     exit 0
 }
 
 diag_line=${trace_output#*LSXWEBP1|}
 test "${diag_line}" != "${trace_output}" || {
-    echo "not ok" 1 - "forced builtin loader unsupported VP8 ALPH compressed mode missing LSXWEBP1 contract header"
+    echo "not ok" 1 - "forced builtin loader corrupted VP8 ALPH compressed payload missing LSXWEBP1 contract header"
     exit 0
 }
 
@@ -40,14 +40,14 @@ diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
 test "${diag_line#LSXWEBP1|rc=1|kind=ERR|codes=}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader unsupported VP8 ALPH compressed mode malformed error contract header"
+    echo "not ok" 1 - "forced builtin loader corrupted VP8 ALPH compressed payload malformed error contract header"
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_VP8_ALPHA*}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader unsupported VP8 ALPH compressed mode missing W_UNSUP_VP8_ALPHA contract code"
+test "${diag_line#*W_ERR_VP8_STREAM*}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader corrupted VP8 ALPH compressed payload missing W_ERR_VP8_STREAM"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader unsupported VP8 ALPH compressed mode emits W_UNSUP_VP8_ALPHA contract code"
+echo "ok" 1 - "forced builtin loader corrupted VP8 ALPH compressed payload emits W_ERR_VP8_STREAM"
 exit 0

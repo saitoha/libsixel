@@ -175,6 +175,153 @@ sixel_webp_vp8_alpha_fail(SIXELSTATUS status, char const *message)
     return status;
 }
 
+static void
+sixel_webp_vp8_alpha_write_vp8l_header(unsigned char *header,
+                                       int width,
+                                       int height)
+{
+    unsigned int width_minus_one;
+    unsigned int height_minus_one;
+
+    width_minus_one = 0u;
+    height_minus_one = 0u;
+
+    if (header == NULL || width <= 0 || height <= 0) {
+        return;
+    }
+
+    /*
+     * ALPHA compression=1 stores a raw VP8L stream without the 5-byte image
+     * header. Rebuild that header from container dimensions so the existing
+     * VP8L payload decoder can parse the alpha residual image.
+     */
+    width_minus_one = (unsigned int)(width - 1);
+    height_minus_one = (unsigned int)(height - 1);
+    header[0] = 0x2fu;
+    header[1] = (unsigned char)(width_minus_one & 0xffu);
+    header[2] = (unsigned char)(((width_minus_one >> 8u) & 0x3fu)
+                                | ((height_minus_one & 0x03u) << 6u));
+    header[3] = (unsigned char)((height_minus_one >> 2u) & 0xffu);
+    header[4] = (unsigned char)((height_minus_one >> 10u) & 0x0fu);
+}
+
+static SIXELSTATUS
+sixel_webp_vp8_alpha_decode_compressed(unsigned char const *payload,
+                                       size_t payload_size,
+                                       int width,
+                                       int height,
+                                       unsigned char **pencoded_payload,
+                                       sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    size_t pixel_count;
+    size_t compressed_size;
+    size_t vp8l_payload_size;
+    size_t i;
+    unsigned char control;
+    unsigned char *vp8l_payload;
+    unsigned char *decoded_rgba;
+    unsigned char *encoded_payload;
+    int decoded_width;
+    int decoded_height;
+
+    status = SIXEL_OK;
+    pixel_count = 0u;
+    compressed_size = 0u;
+    vp8l_payload_size = 0u;
+    i = 0u;
+    control = 0u;
+    vp8l_payload = NULL;
+    decoded_rgba = NULL;
+    encoded_payload = NULL;
+    decoded_width = 0;
+    decoded_height = 0;
+
+    if (payload == NULL || pencoded_payload == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX - 1u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    *pencoded_payload = NULL;
+    if (payload_size <= 1u) {
+        return sixel_webp_vp8_alpha_fail(
+            SIXEL_BAD_INPUT,
+            "builtin webp: VP8 ALPHA compressed payload is empty.");
+    }
+
+    compressed_size = payload_size - 1u;
+    if (compressed_size > SIZE_MAX - 5u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    vp8l_payload_size = compressed_size + 5u;
+    vp8l_payload = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                           vp8l_payload_size);
+    if (vp8l_payload == NULL) {
+        return sixel_webp_vp8_alpha_fail(
+            SIXEL_BAD_ALLOCATION,
+            "builtin webp: sixel_allocator_malloc() failed.");
+    }
+
+    control = payload[0];
+    sixel_webp_vp8_alpha_write_vp8l_header(vp8l_payload, width, height);
+    memcpy(vp8l_payload + 5u, payload + 1u, compressed_size);
+
+    status = sixel_webp_decode_vp8l_payload(vp8l_payload,
+                                            vp8l_payload_size,
+                                            &decoded_rgba,
+                                            &decoded_width,
+                                            &decoded_height,
+                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    if (decoded_width != width || decoded_height != height) {
+        status = sixel_webp_vp8_alpha_fail(
+            SIXEL_BAD_INPUT,
+            "builtin webp: VP8 ALPHA compressed dimensions mismatch.");
+        goto cleanup;
+    }
+
+    encoded_payload = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        pixel_count + 1u);
+    if (encoded_payload == NULL) {
+        status = sixel_webp_vp8_alpha_fail(
+            SIXEL_BAD_ALLOCATION,
+            "builtin webp: sixel_allocator_malloc() failed.");
+        goto cleanup;
+    }
+
+    encoded_payload[0] = control;
+    for (i = 0u; i < pixel_count; ++i) {
+        /* The VP8L alpha stream carries residual bytes in the green channel. */
+        encoded_payload[i + 1u] = decoded_rgba[i * 4u + 1u];
+    }
+    *pencoded_payload = encoded_payload;
+    encoded_payload = NULL;
+
+cleanup:
+    if (decoded_rgba != NULL) {
+        sixel_allocator_free(allocator, decoded_rgba);
+    }
+    if (vp8l_payload != NULL) {
+        sixel_allocator_free(allocator, vp8l_payload);
+    }
+    if (encoded_payload != NULL) {
+        sixel_allocator_free(allocator, encoded_payload);
+    }
+    return status;
+}
+
 SIXELSTATUS
 sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
                                    int width,
@@ -191,6 +338,8 @@ sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
     unsigned int compression_method;
     unsigned int preprocess_method;
     unsigned int reserved_bits;
+    unsigned char const *encoded_payload;
+    unsigned char *encoded_payload_owned;
     unsigned char *alpha_plane;
 
     status = SIXEL_OK;
@@ -201,6 +350,8 @@ sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
     compression_method = 0u;
     preprocess_method = 0u;
     reserved_bits = 0u;
+    encoded_payload = NULL;
+    encoded_payload_owned = NULL;
     alpha_plane = NULL;
 
     if (rgba == NULL || payload == NULL || allocator == NULL) {
@@ -238,7 +389,7 @@ sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
             SIXEL_BAD_INPUT,
             "builtin webp: VP8 ALPHA reserved bits are non-zero.");
     }
-    if (compression_method != 0u) {
+    if (compression_method > 1u) {
         return sixel_webp_vp8_alpha_fail(
             SIXEL_NOT_IMPLEMENTED,
             "builtin webp: VP8 ALPHA compression mode is not supported yet.");
@@ -253,13 +404,6 @@ sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
             "builtin webp: VP8 ALPHA preprocessing mode is not supported yet.");
     }
 
-    expected_size = pixel_count + 1u;
-    if (payload_size != expected_size) {
-        return sixel_webp_vp8_alpha_fail(
-            SIXEL_BAD_INPUT,
-            "builtin webp: VP8 ALPHA payload size mismatch.");
-    }
-
     alpha_plane = (unsigned char *)sixel_allocator_malloc(allocator,
                                                            pixel_count);
     if (alpha_plane == NULL) {
@@ -267,16 +411,46 @@ sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
             SIXEL_BAD_ALLOCATION,
             "builtin webp: sixel_allocator_malloc() failed.");
     }
+
+    if (compression_method == 0u) {
+        expected_size = pixel_count + 1u;
+        if (payload_size != expected_size) {
+            sixel_allocator_free(allocator, alpha_plane);
+            return sixel_webp_vp8_alpha_fail(
+                SIXEL_BAD_INPUT,
+                "builtin webp: VP8 ALPHA payload size mismatch.");
+        }
+        encoded_payload = payload;
+    } else {
+        status = sixel_webp_vp8_alpha_decode_compressed(payload,
+                                                        payload_size,
+                                                        width,
+                                                        height,
+                                                        &encoded_payload_owned,
+                                                        allocator);
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(allocator, alpha_plane);
+            return status;
+        }
+        encoded_payload = encoded_payload_owned;
+    }
+
     status = sixel_webp_vp8_alpha_reconstruct(alpha_plane,
                                               width,
                                               height,
-                                              payload);
+                                              encoded_payload);
     if (SIXEL_FAILED(status)) {
+        if (encoded_payload_owned != NULL) {
+            sixel_allocator_free(allocator, encoded_payload_owned);
+        }
         sixel_allocator_free(allocator, alpha_plane);
         return status;
     }
     for (i = 0u; i < pixel_count; ++i) {
         rgba[i * 4u + 3u] = alpha_plane[i];
+    }
+    if (encoded_payload_owned != NULL) {
+        sixel_allocator_free(allocator, encoded_payload_owned);
     }
     sixel_allocator_free(allocator, alpha_plane);
     return SIXEL_OK;
