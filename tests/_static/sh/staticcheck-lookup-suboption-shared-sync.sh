@@ -102,9 +102,13 @@ if ! cmp -s "$expected" "$actual"; then
 fi
 
 awk '
-BEGIN { ok = 0 }
-index($0, "--lookup-policy=LOOKUPPOLICY[:shared_instance=0|1]") > 0 { ok = 1 }
-END { exit ok ? 0 : 1 }
+BEGIN {
+    has_lookup_signature = 0
+    has_shared_text = 0
+}
+index($0, "--lookup-policy=LOOKUPPOLICY") > 0 { has_lookup_signature = 1 }
+index($0, "shared_instance") > 0 { has_shared_text = 1 }
+END { exit (has_lookup_signature && has_shared_text) ? 0 : 1 }
 ' "$help_file" || {
     echo "# converters/img2sixel.c: missing lookup shared_instance help" >> "$missing"
     status=1

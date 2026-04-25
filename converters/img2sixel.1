@@ -540,7 +540,7 @@ low  -> low quality and high speed mode
 .br
 full -> quality and careful speed mode
 .TP 5
-.B \-\~ \fILOOKUPPOLICY\fP[:shared_instance=\fI0|1\fP], \-\-lookup\-policy=\fILOOKUPPOLICY\fP[:shared_instance=\fI0|1\fP]
+.B \-\~ \fILOOKUPPOLICY\fP, \-\-lookup\-policy=\fILOOKUPPOLICY\fP
 choose histogram lookup width and backend.
 .br
 \fILOOKUPPOLICY\fP is one of them:
@@ -573,12 +573,21 @@ rbc     -> Random Ball Cover cluster pruning.
 .br
 mahalanobis -> RBC clusters with Mahalanobis lower bounds.
 .PP
-The \fIshared_instance\fP suboption is accepted only for \fI5bit\fP,
-\fI6bit\fP, and \fIcertlut\fP:
+The \fB5bit\fP, \fB6bit\fP, and \fBcertlut\fP base values accept
+suboptions using
+\fBlookup-policy:shared_instance=value\fP.
 .br
-shared_instance=0 -> build worker-local lookup state.
+\fBshared_instance\fP:
 .br
-shared_instance=1 -> share one lookup state across workers.
+0 -> build worker-local lookup state.
+.br
+1 -> share one lookup state across workers.
+.br
+Examples:
+.br
+\-\-lookup-policy=5bit:shared_instance=0
+.br
+\-\-lookup-policy=certlut:shared_instance=1
 .PP
 When shared_instance is present on the command line, it overrides
 SIXEL_LOOKUP_5BIT_SHARED_INSTANCE,

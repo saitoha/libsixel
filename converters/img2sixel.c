@@ -606,7 +606,7 @@ static cli_option_help_t const g_option_help_table[] = {
     {
         '~',
         "lookup-policy",
-        "-~ LOOKUPPOLICY[:shared_instance=0|1], --lookup-policy=LOOKUPPOLICY[:shared_instance=0|1]\n"
+        "-~ LOOKUPPOLICY, --lookup-policy=LOOKUPPOLICY\n"
         "    choose histogram lookup width LOOKUPPOLICY is one of them:\n"
         "      auto      -> follow pixel depth\n"
         "      5bit      -> force classic 5-bit buckets\n"
@@ -618,9 +618,13 @@ static cli_option_help_t const g_option_help_table[] = {
         "      vptree    -> VP-tree lookup built from palette entries\n"
         "      rbc       -> Random Ball Cover cluster pruning\n"
         "      mahalanobis -> RBC clusters with Mahalanobis lower bounds\n"
-        "    shared_instance is accepted only for 5bit, 6bit, and certlut:\n"
-        "      shared_instance=0 -> build worker-local lookup state\n"
-        "      shared_instance=1 -> share one lookup state across workers\n"
+        "    5bit/6bit/certlut accept sub-option:\n"
+        "      :shared_instance=0|1\n"
+        "        0 -> build worker-local lookup state\n"
+        "        1 -> share one lookup state across workers\n"
+        "      examples:\n"
+        "        --lookup-policy=5bit:shared_instance=0\n"
+        "        --lookup-policy=certlut:shared_instance=1\n"
         "    CLI shared_instance overrides SIXEL_LOOKUP_*_SHARED_INSTANCE.\n"
     },
     {
