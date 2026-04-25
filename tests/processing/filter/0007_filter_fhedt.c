@@ -63,7 +63,6 @@ test_fhedt_builds_owned_policy_and_transfers_result(void)
     config.lookup_config.palette = palette;
     config.lookup_config.depth = 3;
     config.lookup_config.ncolors = 2;
-    config.lookup_config.complexion = 1;
     config.lookup_config.lut_policy = SIXEL_LUT_POLICY_FHEDT;
     config.lookup_config.pixelformat = SIXEL_PIXELFORMAT_RGB888;
     config.lookup_config.reuse_policy = NULL;
@@ -124,7 +123,6 @@ test_fhedt_init_rejects_non_fhedt_policy(void)
     config.lookup_config.palette = NULL;
     config.lookup_config.depth = 0;
     config.lookup_config.ncolors = 0;
-    config.lookup_config.complexion = 1;
     config.lookup_config.method_for_largest = SIXEL_LARGE_AUTO;
     config.lookup_config.lut_policy = SIXEL_LUT_POLICY_AUTO;
     config.lookup_config.pixelformat = SIXEL_PIXELFORMAT_RGB888;

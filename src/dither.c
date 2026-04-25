@@ -442,7 +442,6 @@ sixel_dither_prepare_lookup_policy(
     int float_depth,
     int reqcolor,
     int foptimize,
-    int complexion,
     int lut_policy,
     int pixelformat,
     int parallel_dither_active,
@@ -470,13 +469,11 @@ sixel_dither_prepare_lookup_policy(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    (void)complexion;
     request.palette = palette;
     request.palette_float = palette_float;
     request.depth = depth;
     request.float_depth = float_depth;
     request.reqcolor = reqcolor;
-    request.complexion = 1;
     request.pixelformat = pixelformat;
     request.parallel_dither_active = parallel_dither_active;
     request.reuse_policy = reuse_policy;
@@ -920,7 +917,6 @@ sixel_dither_parallel_worker(tp_job_t job,
         plan->palette->float_depth,
         plan->reqcolor,
         plan->optimize_palette,
-        plan->complexion,
         plan->lut_policy,
         plan->pixelformat,
         1,
@@ -1195,7 +1191,6 @@ sixel_dither_resolve_indexes(
         palette->float_depth,
         reqcolor,
         foptimize,
-        complexion,
         lut_policy,
         pixelformat,
         0,
@@ -3147,7 +3142,6 @@ sixel_dither_apply_palette_with_mode(
             palette->float_depth,
             dither->ncolors,
             dither->optimized,
-            dither->complexion,
             dither->lut_policy,
             pipeline_pixelformat,
             parallel_active,

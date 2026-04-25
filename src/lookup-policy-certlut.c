@@ -857,15 +857,6 @@ sixel_lookup_policy_certlut_prepare(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
-        status = sixel_lookup_policy_validate_complexion_limit(
-            request->depth,
-            request->complexion);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
-    }
-
     object = sixel_lookup_policy_certlut_from_base(policy);
     sixel_lookup_policy_certlut_reset_state(object);
     object->backend_initialized = 1;

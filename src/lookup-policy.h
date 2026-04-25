@@ -77,7 +77,6 @@ typedef struct sixel_lookup_policy_prepare_request {
     int depth;
     int float_depth;
     int reqcolor;
-    int complexion;
     int pixelformat;
     int parallel_dither_active;
     sixel_lookup_policy_interface_t *reuse_policy;

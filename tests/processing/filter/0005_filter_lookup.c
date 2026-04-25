@@ -56,7 +56,6 @@ test_lookup_build_allocates_owned_policy(void)
     config.palette = palette;
     config.depth = 3;
     config.ncolors = 2;
-    config.complexion = 1;
     config.method_for_largest = SIXEL_LARGE_AUTO;
     config.lut_policy = SIXEL_LUT_POLICY_AUTO;
     config.pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -134,7 +133,6 @@ test_lookup_filter_reuses_lut_and_reports_progress(void)
     config.palette = palette;
     config.depth = 3;
     config.ncolors = 2;
-    config.complexion = 1;
     config.method_for_largest = SIXEL_LARGE_AUTO;
     config.lut_policy = SIXEL_LUT_POLICY_AUTO;
     config.pixelformat = SIXEL_PIXELFORMAT_RGB888;

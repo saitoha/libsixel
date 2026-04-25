@@ -145,24 +145,13 @@ sixel_lookup_policy_normal_prepare(
     sixel_lookup_policy_interface_t *policy,
     sixel_lookup_policy_prepare_request_t const *request)
 {
-    SIXELSTATUS status;
     sixel_lookup_policy_normal_object_t *object;
 
-    status = SIXEL_FALSE;
     object = NULL;
 
     if (policy == NULL || request == NULL || request->palette == NULL
             || request->depth <= 0 || request->reqcolor <= 0) {
         return SIXEL_BAD_ARGUMENT;
-    }
-
-    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
-        status = sixel_lookup_policy_validate_complexion_limit(
-            request->depth,
-            request->complexion);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
     }
 
     object = sixel_lookup_policy_normal_from_base(policy);

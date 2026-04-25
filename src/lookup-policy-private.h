@@ -67,15 +67,6 @@ typedef struct sixel_lookup_policy_registry_entry {
     sixel_lookup_policy_create_fn create;
 } sixel_lookup_policy_registry_entry_t;
 
-static inline SIXELSTATUS
-sixel_lookup_policy_validate_complexion_limit(int depth, int complexion)
-{
-    (void)depth;
-    (void)complexion;
-
-    return SIXEL_OK;
-}
-
 static inline int
 sixel_lookup_policy_normalize_fast_lut_policy(int lut_policy)
 {

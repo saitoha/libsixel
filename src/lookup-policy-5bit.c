@@ -907,15 +907,6 @@ sixel_lookup_policy_bit5_prepare(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)) {
-        status = sixel_lookup_policy_validate_complexion_limit(
-            request->depth,
-            request->complexion);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
-    }
-
     object = sixel_lookup_policy_bit5_from_base(policy);
     sixel_lookup_policy_bit5_reset_state(object);
     object->parallel_dither_active = (request->parallel_dither_active != 0);

@@ -147,11 +147,6 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
     prepare_request.depth = config->depth;
     prepare_request.float_depth = float_depth;
     prepare_request.reqcolor = config->ncolors;
-    /*
-     * Lookup policies keep complexion in the request for compatibility, but
-     * current backends treat it as a no-op.
-     */
-    prepare_request.complexion = 1;
     prepare_request.pixelformat = config->pixelformat;
     prepare_request.parallel_dither_active = 0;
     prepare_request.reuse_policy = config->reuse_policy;

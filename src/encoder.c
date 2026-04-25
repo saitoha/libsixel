@@ -7020,7 +7020,6 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     lookup_config.depth = palette->depth;
     lookup_config.float_depth = palette->float_depth;
     lookup_config.ncolors = (int)palette->entry_count;
-    lookup_config.complexion = 1;
     lookup_config.lut_policy = policy;
     lookup_config.pixelformat = dither->pixelformat;
     lookup_config.reuse_policy = palette->lookup_policy;

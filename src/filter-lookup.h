@@ -47,7 +47,6 @@ typedef struct sixel_filter_lookup_config {
     /* Bytes per float palette entry when palette_float is present. */
     int float_depth;
     int ncolors;
-    int complexion;
     int method_for_largest;
     int lut_policy;
     int pixelformat;
