@@ -741,6 +741,33 @@ sixel_webp_vp8_get_ac2_quant(int qindex,
 }
 
 static SIXELSTATUS
+sixel_webp_vp8_validate_token_partition_count(
+    unsigned int token_partition_count)
+{
+    if (token_partition_count == 0u ||
+        token_partition_count > SIXEL_WEBP_VP8_MAX_TOKEN_PARTITIONS) {
+        sixel_helper_set_additional_message(
+            "builtin webp: VP8 token partition count is invalid.");
+        return SIXEL_BAD_INPUT;
+    }
+    return SIXEL_OK;
+}
+
+static unsigned int
+sixel_webp_vp8_token_partition_for_row(unsigned int mb_y,
+                                       unsigned int token_partition_count)
+{
+    /*
+     * VP8 token partitions are selected per macroblock row.
+     * The bitstream guarantees power-of-two partition counts.
+     */
+    if ((token_partition_count & (token_partition_count - 1u)) == 0u) {
+        return mb_y & (token_partition_count - 1u);
+    }
+    return mb_y % token_partition_count;
+}
+
+static SIXELSTATUS
 sixel_webp_vp8_read_segment_id(
     sixel_webp_vp8_bool_decoder_t *decoder,
     sixel_webp_vp8_segment_header_t const *segment,
@@ -2034,14 +2061,13 @@ sixel_webp_vp8_decode_native_intra(
 
     mode_decoder = &context->mode_decoder;
     token_partition_count = context->token_partition_count;
-    if (token_partition_count == 0u ||
-        token_partition_count > SIXEL_WEBP_VP8_MAX_TOKEN_PARTITIONS) {
-        sixel_helper_set_additional_message(
-            "builtin webp: VP8 token partition count is invalid.");
-        return SIXEL_BAD_INPUT;
+    status = sixel_webp_vp8_validate_token_partition_count(
+        token_partition_count);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
     token_partition_idx = 0u;
-    token_decoder = &token_decoders[token_partition_idx];
+    token_decoder = &token_decoders[0];
     width = (unsigned int)header->width;
     height = (unsigned int)header->height;
     uv_width = planes->uv_width;
@@ -2080,6 +2106,8 @@ sixel_webp_vp8_decode_native_intra(
            above_bottom_bmode_size);
 
     for (mb_y = 0u; mb_y < context->mb_rows; ++mb_y) {
+        token_partition_idx = sixel_webp_vp8_token_partition_for_row(
+            mb_y, token_partition_count);
         token_decoder = &token_decoders[token_partition_idx];
         memset(left_y, 0, sizeof(left_y));
         memset(left_u, 0, sizeof(left_u));
@@ -2544,14 +2572,6 @@ sixel_webp_vp8_decode_native_intra(
                 left_right_bmode[3] = left_right_bmode[0];
             }
             left_mb_mode = (unsigned char)ymode;
-        }
-        /*
-         * VP8 static maps token partitions at macroblock-row granularity.
-         * Rotate the token decoder in round-robin order after each row.
-         */
-        token_partition_idx++;
-        if (token_partition_idx >= token_partition_count) {
-            token_partition_idx = 0u;
         }
     }
     if (sixel_trace_topic_is_enabled("webp_decode") != 0) {
@@ -3237,11 +3257,10 @@ sixel_webp_vp8_parse_partition_layout(
     context->mode_decoder = decoder;
 
     layout->token_partition_count = context->token_partition_count;
-    if (layout->token_partition_count == 0u ||
-        layout->token_partition_count > SIXEL_WEBP_VP8_MAX_TOKEN_PARTITIONS) {
-        sixel_helper_set_additional_message(
-            "builtin webp: VP8 token partition count is invalid.");
-        return SIXEL_BAD_INPUT;
+    status = sixel_webp_vp8_validate_token_partition_count(
+        layout->token_partition_count);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
     control_end = layout->control_partition_offset +
