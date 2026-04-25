@@ -2197,18 +2197,24 @@ typedef struct sixel_builtin_psd_layer_record {
     int has_effect_bevel;
     int has_effect_outer_glow;
     int has_effect_inner_glow;
+    int eff_sofi_seen;
+    int eff_grfl_seen;
     int eff_orgl_seen;
     int eff_irgl_seen;
     int eff_chfx_seen;
     int eff_drsh_seen;
     int eff_irsh_seen;
     int eff_bevl_seen;
+    int eff_sofi_active;
+    int eff_grfl_active;
     int eff_orgl_active;
     int eff_irgl_active;
     int eff_chfx_active;
     int eff_drsh_active;
     int eff_irsh_active;
     int eff_bevl_active;
+    int eff_sofi_explicit_inactive;
+    int eff_grfl_explicit_inactive;
     int eff_orgl_explicit_inactive;
     int eff_irgl_explicit_inactive;
     int eff_chfx_explicit_inactive;
@@ -2397,8 +2403,10 @@ sixel_builtin_psd_layer_has_active_effects(
     if (layer == NULL) {
         return 0;
     }
-    return layer->has_effect_solid_overlay != 0 ||
-           layer->has_effect_gradient_overlay != 0 ||
+    return (layer->has_effect_solid_overlay != 0 &&
+            layer->eff_sofi_explicit_inactive == 0) ||
+           (layer->has_effect_gradient_overlay != 0 &&
+            layer->eff_grfl_explicit_inactive == 0) ||
            layer->has_effect_stroke != 0 ||
            (layer->has_effect_orgl != 0 &&
             layer->eff_orgl_explicit_inactive == 0) ||
@@ -2421,13 +2429,15 @@ sixel_builtin_psd_layer_has_inactive_effect_targets(
     sixel_builtin_psd_layer_record_t const *layer)
 {
     size_t i;
-    int seen_flags[6];
-    int active_flags[6];
+    int seen_flags[8];
+    int active_flags[8];
 
     if (layer == NULL) {
         return 0;
     }
-    if (layer->eff_orgl_explicit_inactive != 0 ||
+    if (layer->eff_sofi_explicit_inactive != 0 ||
+        layer->eff_grfl_explicit_inactive != 0 ||
+        layer->eff_orgl_explicit_inactive != 0 ||
         layer->eff_irgl_explicit_inactive != 0 ||
         layer->eff_chfx_explicit_inactive != 0 ||
         layer->eff_drsh_explicit_inactive != 0 ||
@@ -2435,25 +2445,29 @@ sixel_builtin_psd_layer_has_inactive_effect_targets(
         layer->eff_bevl_explicit_inactive != 0) {
         return 1;
     }
-    seen_flags[0] = layer->eff_orgl_seen;
-    seen_flags[1] = layer->eff_irgl_seen;
-    seen_flags[2] = layer->eff_chfx_seen;
-    seen_flags[3] = layer->eff_drsh_seen;
-    seen_flags[4] = layer->eff_irsh_seen;
+    seen_flags[0] = layer->eff_sofi_seen;
+    seen_flags[1] = layer->eff_grfl_seen;
+    seen_flags[2] = layer->eff_orgl_seen;
+    seen_flags[3] = layer->eff_irgl_seen;
+    seen_flags[4] = layer->eff_chfx_seen;
+    seen_flags[5] = layer->eff_drsh_seen;
+    seen_flags[6] = layer->eff_irsh_seen;
     /*
      * Bevel channels can also be completed from legacy lrFX records when the
      * lfx2 bevel object is present but inactive.
      */
-    seen_flags[5] = layer->eff_bevl_seen;
+    seen_flags[7] = layer->eff_bevl_seen;
 
-    active_flags[0] = layer->has_effect_orgl;
-    active_flags[1] = layer->has_effect_irgl;
-    active_flags[2] = layer->has_effect_chfx;
-    active_flags[3] = layer->has_effect_drsh;
-    active_flags[4] = layer->has_effect_irsh;
-    active_flags[5] = layer->has_effect_bevel;
+    active_flags[0] = layer->has_effect_solid_overlay;
+    active_flags[1] = layer->has_effect_gradient_overlay;
+    active_flags[2] = layer->has_effect_orgl;
+    active_flags[3] = layer->has_effect_irgl;
+    active_flags[4] = layer->has_effect_chfx;
+    active_flags[5] = layer->has_effect_drsh;
+    active_flags[6] = layer->has_effect_irsh;
+    active_flags[7] = layer->has_effect_bevel;
 
-    for (i = 0u; i < 6u; ++i) {
+    for (i = 0u; i < 8u; ++i) {
         if (seen_flags[i] != 0 && active_flags[i] == 0) {
             return 1;
         }
@@ -2483,6 +2497,16 @@ sixel_builtin_psd_apply_lfx2_inactive_effect_overrides(
     has_inner_source = 0;
     if (layer == NULL) {
         return;
+    }
+    if (layer->eff_sofi_explicit_inactive != 0) {
+        layer->has_effect_solid_overlay = 0;
+        layer->effect_solid_overlay_opacity = 0.0f;
+    }
+    if (layer->eff_grfl_explicit_inactive != 0) {
+        layer->has_effect_gradient_overlay = 0;
+        layer->effect_gradient_overlay_opacity = 0.0f;
+        layer->effect_gradient_stop_count = 0u;
+        layer->effect_gradient_op_stop_count = 0u;
     }
     if (layer->eff_orgl_explicit_inactive != 0) {
         layer->has_effect_orgl = 0;
@@ -11189,6 +11213,9 @@ sixel_builtin_psd_parse_effect_solid_overlay_object(
     if (data == NULL || pcursor == NULL || layer == NULL) {
         return 0;
     }
+    layer->eff_sofi_seen = 1;
+    layer->eff_sofi_active = 0;
+    layer->eff_sofi_explicit_inactive = 0;
     cursor = *pcursor;
     if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
                                                           key_length,
@@ -11271,12 +11298,16 @@ sixel_builtin_psd_parse_effect_solid_overlay_object(
     }
     *pcursor = cursor;
     if (enabled != 0 && has_color != 0) {
+        layer->eff_sofi_active = 1;
+        layer->eff_sofi_explicit_inactive = 0;
         layer->has_effect_solid_overlay = 1;
         layer->effect_solid_overlay_rgb[0] = overlay_rgb[0];
         layer->effect_solid_overlay_rgb[1] = overlay_rgb[1];
         layer->effect_solid_overlay_rgb[2] = overlay_rgb[2];
         layer->effect_solid_overlay_opacity = opacity;
         layer->effect_solid_overlay_mode = blend_mode;
+    } else {
+        layer->eff_sofi_explicit_inactive = 1;
     }
     return 1;
 }
@@ -11422,6 +11453,9 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
     if (data == NULL || pcursor == NULL || layer == NULL) {
         return 0;
     }
+    layer->eff_grfl_seen = 1;
+    layer->eff_grfl_active = 0;
+    layer->eff_grfl_explicit_inactive = 0;
     cursor = *pcursor;
     if (!sixel_builtin_psd_descriptor_skip_unicode_string(data,
                                                           key_length,
@@ -11575,12 +11609,15 @@ sixel_builtin_psd_parse_effect_gradient_overlay_object(
     *pcursor = cursor;
     if (enabled == 0 || has_gradient == 0 || stop_count == 0u ||
         opacity <= 0.0f) {
+        layer->eff_grfl_explicit_inactive = 1;
         sixel_builtin_psd_trace_message(
             "psd_decode",
             "builtin PSD: parsed GrFl effect object in layer effects "
             "(inactive)");
         return 1;
     }
+    layer->eff_grfl_active = 1;
+    layer->eff_grfl_explicit_inactive = 0;
     layer->has_effect_gradient_overlay = 1;
     layer->effect_gradient_type = gradient_type;
     layer->effect_gradient_reverse = reverse_flag != 0 ? 1 : 0;
@@ -15254,18 +15291,24 @@ sixel_builtin_psd_layer_record_init(sixel_builtin_psd_layer_record_t *layer)
     layer->has_effect_bevel = 0;
     layer->has_effect_outer_glow = 0;
     layer->has_effect_inner_glow = 0;
+    layer->eff_sofi_seen = 0;
+    layer->eff_grfl_seen = 0;
     layer->eff_orgl_seen = 0;
     layer->eff_irgl_seen = 0;
     layer->eff_chfx_seen = 0;
     layer->eff_drsh_seen = 0;
     layer->eff_irsh_seen = 0;
     layer->eff_bevl_seen = 0;
+    layer->eff_sofi_active = 0;
+    layer->eff_grfl_active = 0;
     layer->eff_orgl_active = 0;
     layer->eff_irgl_active = 0;
     layer->eff_chfx_active = 0;
     layer->eff_drsh_active = 0;
     layer->eff_irsh_active = 0;
     layer->eff_bevl_active = 0;
+    layer->eff_sofi_explicit_inactive = 0;
+    layer->eff_grfl_explicit_inactive = 0;
     layer->eff_orgl_explicit_inactive = 0;
     layer->eff_irgl_explicit_inactive = 0;
     layer->eff_chfx_explicit_inactive = 0;
