@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify stroke-composite applies base inside distance-map stroke coverage.
+# Verify stroke-composite keeps base effect-stroke apply/inside alpha traces.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -50,23 +50,23 @@ case "${diag_line}" in
 esac
 
 case "${diag_line}" in
-    *FX_DISTANCE_MAP_STROKE_BASE*) ;;
+    *FX_EFFECT_STROKE_BASE*) ;;
     *)
         echo "not ok" 1 - \
-            "effects/stroke-composite missing FX_DISTANCE_MAP_STROKE_BASE"
+            "effects/stroke-composite missing FX_EFFECT_STROKE_BASE"
         exit 0
         ;;
 esac
 
 case "${diag_line}" in
-    *FX_DISTANCE_MAP_INSIDE_BASE*) ;;
+    *FX_STROKE_ALPHA_INSIDE_BASE*) ;;
     *)
         echo "not ok" 1 - \
-            "effects/stroke-composite missing FX_DISTANCE_MAP_INSIDE_BASE"
+            "effects/stroke-composite missing FX_STROKE_ALPHA_INSIDE_BASE"
         exit 0
         ;;
 esac
 
 echo "ok" 1 - \
-    "effects/stroke-composite keeps base inside distance-map stroke code contract"
+    "effects/stroke-composite keeps base inside effect-stroke code contract"
 exit 0

@@ -26345,8 +26345,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         defer_effect_stroke_ownership =
             dual_stroke_owner_match != 0 &&
             effective_composite_layer->has_effect_stroke != 0 &&
-            sixel_builtin_psd_layer_has_dual_stroke_pair(
-                effective_composite_layer) != 0 &&
             effective_composite_layer->has_blend_clipped_elements != 0 &&
             effective_composite_layer->blend_clipped_elements_enabled != 0 ?
             1 : 0;
