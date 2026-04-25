@@ -28,16 +28,16 @@
 #include <sixel.h>
 
 #include "filter.h"
-#include "lookup-common.h"
+#include "lookup-policy.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*
- * Configuration for the lookup filter. The filter configures a LUT using the
- * provided palette and weighting rules. A pre-existing LUT can be reused when
- * `reuse_lut` is set.
+ * Configuration for the lookup filter. The filter configures a lookup policy
+ * object using the provided palette and weighting rules. A pre-existing policy
+ * can be reused when `reuse_policy` is set.
  */
 typedef struct sixel_filter_lookup_config {
     unsigned char const *palette;
@@ -51,15 +51,16 @@ typedef struct sixel_filter_lookup_config {
     int method_for_largest;
     int lut_policy;
     int pixelformat;
-    sixel_lut_t *reuse_lut;
+    sixel_lookup_policy_interface_t *reuse_policy;
 } sixel_filter_lookup_config_t;
 
 /*
- * Result bundle describing the configured LUT and whether the filter owns its
- * lifetime. Callers should unref the LUT only when `owned` is non-zero.
+ * Result bundle describing the configured lookup policy and whether the filter
+ * owns its lifetime. Callers should unref the policy only when `owned` is
+ * non-zero.
  */
 typedef struct sixel_filter_lookup_result {
-    sixel_lut_t *lut;
+    sixel_lookup_policy_interface_t *policy;
     int owned;
 } sixel_filter_lookup_result_t;
 

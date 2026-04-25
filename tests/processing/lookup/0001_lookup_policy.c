@@ -58,6 +58,7 @@ init_lookup_policy_request(sixel_lookup_policy_prepare_request_t *request,
     request->reqcolor = reqcolor;
     request->complexion = 1;
     request->pixelformat = pixelformat;
+    request->parallel_dither_active = 0;
     request->reuse_policy = reuse_policy;
     request->reuse_policy_slot = reuse_policy_slot;
     request->allocator = allocator;

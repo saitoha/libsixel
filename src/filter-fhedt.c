@@ -101,7 +101,7 @@ sixel_filter_fhedt_apply(sixel_filter_t *filter,
     result_out = state->config.result_out;
     if (result_out != NULL) {
         *result_out = state->result;
-        state->result.lut = NULL;
+        state->result.policy = NULL;
         state->result.owned = 0;
     }
 
@@ -124,8 +124,8 @@ sixel_filter_fhedt_dispose(sixel_filter_t *filter)
 
     state = (sixel_filter_fhedt_state_t *)filter->userdata;
     if (state != NULL) {
-        if (state->result.owned != 0 && state->result.lut != NULL) {
-            sixel_lut_unref(state->result.lut);
+        if (state->result.owned != 0 && state->result.policy != NULL) {
+            state->result.policy->vtbl->unref(state->result.policy);
         }
         free(state);
         filter->userdata = NULL;

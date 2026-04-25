@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Unit tests for the lookup filter. These tests validate LUT allocation,
+ * Unit tests for the lookup filter. These tests validate policy allocation,
  * reuse, and progress reporting through the common filter interface.
  */
 
@@ -21,7 +21,7 @@
 #include "tests/processing/filter/filter_test_common.h"
 
 static int
-test_lookup_build_allocates_owned_lut(void)
+test_lookup_build_allocates_owned_policy(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -35,7 +35,7 @@ test_lookup_build_allocates_owned_lut(void)
     allocator = NULL;
     /* Ensure optional fields start from a known state for MSan runs. */
     memset(&config, 0, sizeof(config));
-    result.lut = NULL;
+    result.policy = NULL;
     result.owned = 0;
     palette[0] = 0;
     palette[1] = 0;
@@ -60,7 +60,7 @@ test_lookup_build_allocates_owned_lut(void)
     config.method_for_largest = SIXEL_LARGE_AUTO;
     config.lut_policy = SIXEL_LUT_POLICY_AUTO;
     config.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    config.reuse_lut = NULL;
+    config.reuse_policy = NULL;
 
     status = sixel_filter_lookup_build(&config,
                                        allocator,
@@ -70,20 +70,20 @@ test_lookup_build_allocates_owned_lut(void)
         goto cleanup;
     }
 
-    if (result.lut == NULL || result.owned == 0) {
+    if (result.policy == NULL || result.owned == 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
 
-    mapped = sixel_lut_map_pixel(result.lut, pixel);
+    mapped = result.policy->vtbl->map_pixel(result.policy, pixel);
     if (mapped < 0 || mapped >= config.ncolors) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
 
 cleanup:
-    if (result.lut != NULL && result.owned != 0) {
-        sixel_lut_unref(result.lut);
+    if (result.policy != NULL && result.owned != 0) {
+        result.policy->vtbl->unref(result.policy);
     }
     sixel_allocator_unref(allocator);
 
@@ -97,7 +97,8 @@ test_lookup_filter_reuses_lut_and_reports_progress(void)
     sixel_allocator_t *allocator;
     sixel_filter_t *filter;
     sixel_filter_lookup_config_t config;
-    sixel_lut_t *reuse_lut;
+    sixel_filter_lookup_result_t initial;
+    sixel_lookup_policy_interface_t *reuse_policy;
     unsigned char palette[6];
     unsigned char pixel[3];
     test_progress_t progress;
@@ -106,7 +107,8 @@ test_lookup_filter_reuses_lut_and_reports_progress(void)
     status = SIXEL_FALSE;
     allocator = NULL;
     filter = NULL;
-    reuse_lut = NULL;
+    memset(&initial, 0, sizeof(initial));
+    reuse_policy = NULL;
     palette[0] = 0;
     palette[1] = 0;
     palette[2] = 255;
@@ -129,11 +131,6 @@ test_lookup_filter_reuses_lut_and_reports_progress(void)
         goto cleanup;
     }
 
-    status = sixel_lut_new(&reuse_lut, SIXEL_LUT_POLICY_AUTO, allocator);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-
     config.palette = palette;
     config.depth = 3;
     config.ncolors = 2;
@@ -141,7 +138,20 @@ test_lookup_filter_reuses_lut_and_reports_progress(void)
     config.method_for_largest = SIXEL_LARGE_AUTO;
     config.lut_policy = SIXEL_LUT_POLICY_AUTO;
     config.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    config.reuse_lut = reuse_lut;
+    config.reuse_policy = NULL;
+
+    status = sixel_filter_lookup_build(&config,
+                                       allocator,
+                                       NULL,
+                                       &initial);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    reuse_policy = initial.policy;
+    initial.policy = NULL;
+    initial.owned = 0;
+
+    config.reuse_policy = reuse_policy;
 
     status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_LOOKUP,
                                                  &config,
@@ -157,7 +167,7 @@ test_lookup_filter_reuses_lut_and_reports_progress(void)
         goto cleanup;
     }
 
-    mapped = sixel_lut_map_pixel(reuse_lut, pixel);
+    mapped = reuse_policy->vtbl->map_pixel(reuse_policy, pixel);
     if (mapped < 0 || mapped >= config.ncolors) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
@@ -171,8 +181,11 @@ test_lookup_filter_reuses_lut_and_reports_progress(void)
 cleanup:
     sixel_filter_teardown(filter);
     sixel_filter_free(filter);
-    if (reuse_lut != NULL) {
-        sixel_lut_unref(reuse_lut);
+    if (reuse_policy != NULL) {
+        reuse_policy->vtbl->unref(reuse_policy);
+    }
+    if (initial.policy != NULL && initial.owned != 0) {
+        initial.policy->vtbl->unref(initial.policy);
     }
     sixel_allocator_unref(allocator);
 
@@ -189,8 +202,8 @@ test_filter_0005_filter_lookup(int argc, char **argv)
 
     success = 1;
 
-    if (!test_lookup_build_allocates_owned_lut()) {
-        fprintf(stderr, "lookup filter allocates owned lut failed\n");
+    if (!test_lookup_build_allocates_owned_policy()) {
+        fprintf(stderr, "lookup filter allocates owned policy failed\n");
         success = 0;
     }
 

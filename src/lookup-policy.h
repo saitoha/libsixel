@@ -56,6 +56,8 @@ extern "C" {
  * Reuse path:
  * - Callers may pass a prepared policy object through
  *   request.reuse_policy/request.reuse_policy_slot.
+ * - request.parallel_dither_active carries execution context so policies can
+ *   disable non-thread-safe cache paths without relying on global state.
  * - Implementations may choose to ignore reuse hints.
  */
 
@@ -77,6 +79,7 @@ typedef struct sixel_lookup_policy_prepare_request {
     int reqcolor;
     int complexion;
     int pixelformat;
+    int parallel_dither_active;
     sixel_lookup_policy_interface_t *reuse_policy;
     sixel_lookup_policy_interface_t **reuse_policy_slot;
     sixel_allocator_t *allocator;
@@ -112,6 +115,15 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_by_name(
     char const *name,
     sixel_lookup_policy_interface_t **policy);
+
+SIXEL_INTERNAL_API int
+sixel_lookup_policy_certlut_shared_instance_enabled(void);
+
+SIXEL_INTERNAL_API int
+sixel_lookup_policy_5bit_shared_instance_enabled(void);
+
+SIXEL_INTERNAL_API int
+sixel_lookup_policy_6bit_shared_instance_enabled(void);
 
 #ifdef __cplusplus
 }
