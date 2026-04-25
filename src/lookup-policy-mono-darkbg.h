@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 
+/* @classid lookup/mono-darkbg */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_mono_darkbg(
     sixel_lookup_policy_interface_t **policy);

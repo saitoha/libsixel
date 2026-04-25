@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 
+/* @classid lookup/6bit */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_6bit(sixel_lookup_policy_interface_t **policy);
 

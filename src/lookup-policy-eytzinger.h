@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 
+/* @classid lookup/eytzinger */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_eytzinger(sixel_lookup_policy_interface_t **policy);
 

@@ -296,9 +296,10 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/probe.c $(srcdir)/probe.h \
 	$(srcdir)/sixel_decode_rgba.c $(srcdir)/sixel_decode_rgba.h \
 	$(srcdir)/sixel_atomic_fallback.c $(srcdir)/sixel_atomic.h \
-	$(srcdir)/rgblookup.h $(srcdir)/lso2.h $(srcdir)/threadpool.c \
-	$(srcdir)/threadpool.h $(srcdir)/quicklook_thumbnailing.m \
-	$(srcdir)/clipboard_macos.m $(srcdir)/clipboard_carbon.c
+	$(srcdir)/classid.h $(srcdir)/rgblookup.h $(srcdir)/lso2.h \
+	$(srcdir)/threadpool.c $(srcdir)/threadpool.h \
+	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m \
+	$(srcdir)/clipboard_carbon.c
 @SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-threadpool.lo
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
@@ -1144,6 +1145,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_decode_rgba.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_atomic_fallback.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_atomic.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/rgblookup.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lso2.h $(am__append_2) \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__append_3) $(am__append_4) \
@@ -1200,8 +1202,27 @@ libsixel_la_LIBADD = -lm \
                 @THREAD_LIBS@
 
 dist_man_MANS = $(srcdir)/sixel.5
-EXTRA_DIST = $(srcdir)/rgblookup.gperf
+EXTRA_DIST = $(srcdir)/rgblookup.gperf \
+             $(srcdir)/classid.gperf
+
 GPERF_OPT = --ignore-case --language=ANSI-C
+GPERF_CLASSID_OPT = --language=ANSI-C \
+                  -H sixel_lookup_policy_classid_hash \
+                  -W sixel_lookup_policy_classid_wordlist
+
+LOOKUP_POLICY_CLASSID_INPUTS = \
+    $(srcdir)/lookup-policy-5bit.h \
+    $(srcdir)/lookup-policy-6bit.h \
+    $(srcdir)/lookup-policy-certlut.h \
+    $(srcdir)/lookup-policy-eytzinger.h \
+    $(srcdir)/lookup-policy-fhedt.h \
+    $(srcdir)/lookup-policy-mahalanobis.h \
+    $(srcdir)/lookup-policy-mono-darkbg.h \
+    $(srcdir)/lookup-policy-mono-lightbg.h \
+    $(srcdir)/lookup-policy-normal.h \
+    $(srcdir)/lookup-policy-rbc.h \
+    $(srcdir)/lookup-policy-vptree.h
+
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = 
 all: $(BUILT_SOURCES)
@@ -2893,6 +2914,21 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb $(GPERF_OPT) $<  |\
 	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\
 	astyle                                  > $(srcdir)/rgblookup.h
+
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
+gen-classid: $(LOOKUP_POLICY_CLASSID_INPUTS)
+	$(AWK) -f $(top_srcdir)/tools/gen_lookup_classid_gperf.awk $^ \
+	        > $(srcdir)/classid.gperf
+	gperf -C -N sixel_lookup_policy_classid_lookup $(GPERF_CLASSID_OPT) \
+	        $(srcdir)/classid.gperf                                    |\
+	sed 's/{""}/\{"", 0\}/g'                                           \
+	        > $(srcdir)/classid.h
+	printf '%s\n' '#undef TOTAL_KEYWORDS'                              \
+	              '#undef MIN_WORD_LENGTH'                             \
+	              '#undef MAX_WORD_LENGTH'                             \
+	              '#undef MIN_HASH_VALUE'                              \
+	              '#undef MAX_HASH_VALUE'                              \
+	        >> $(srcdir)/classid.h
 
 @WITH_SHEBANG_FILE_TRUE@check-local: $(SIXEL_SHEBANG_STAMP)
 

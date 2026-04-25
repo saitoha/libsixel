@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 
+/* @classid lookup/normal */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_normal(sixel_lookup_policy_interface_t **policy);
 

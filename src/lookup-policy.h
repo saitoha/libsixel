@@ -50,7 +50,7 @@ extern "C" {
  * Creation path:
  * - sixel_lookup_policy_select_name(select_request)
  * - services/factory -> create("lookup/...", &policy)
- * - create() resolves names via per-class constructors
+ * - factory resolves class ids via generated classid registry
  * - policy->prepare(request)
  *
  * Reuse path:
@@ -109,11 +109,6 @@ struct sixel_lookup_policy_interface {
 SIXEL_INTERNAL_API char const *
 sixel_lookup_policy_select_name(
     sixel_lookup_policy_select_request_t const *request);
-
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lookup_policy_create_by_name(
-    char const *name,
-    sixel_lookup_policy_interface_t **policy);
 
 SIXEL_INTERNAL_API int
 sixel_lookup_policy_certlut_shared_instance_enabled(void);

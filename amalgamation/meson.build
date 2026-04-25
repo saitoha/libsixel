@@ -165,6 +165,7 @@ amalgamation_headers = files(
   '../src/loader-wic.h',
   '../src/malloc_stub.h',
   '../src/stdio_stub.h',
+  '../src/classid.h',
   '../src/rgblookup.h',
   '../src/lso2.h',
   '../src/compat_stub.h',

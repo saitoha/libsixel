@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 
+/* @classid lookup/certlut */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_create_certlut(sixel_lookup_policy_interface_t **policy);
 

@@ -59,6 +59,7 @@ srcs = [
   'lookup-policy-rbc.c',
   'lookup-policy-mahalanobis.c',
   'factory.c',
+  'classid.h',
   'components.c',
   'lookup-fhedt-8bit.c',
   'lookup-fhedt-float32.c',

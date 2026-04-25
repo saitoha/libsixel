@@ -483,10 +483,11 @@ EXTRA_DIST = libsixel-config.in \
              update-mime-database.sh \
              update-gdk-pixbuf-cache.sh \
              libsixel-thumbnailer.thumbnailer \
-             sixel.xml \
-             gen_completion_embed.awk \
-             gen-amalgamation.sh \
-             timer.c \
+	             sixel.xml \
+	             gen_completion_embed.awk \
+	             gen_lookup_classid_gperf.awk \
+	             gen-amalgamation.sh \
+	             timer.c \
              lso-timeout.c \
              jpegref.c
 

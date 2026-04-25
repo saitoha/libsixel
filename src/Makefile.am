@@ -304,6 +304,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/sixel_decode_rgba.h \
                 $(srcdir)/sixel_atomic_fallback.c \
                 $(srcdir)/sixel_atomic.h \
+                $(srcdir)/classid.h \
                 $(srcdir)/rgblookup.h \
                 $(srcdir)/lso2.h
 if SIXEL_ENABLE_THREADS
@@ -369,7 +370,8 @@ libsixel_la_LIBADD = -lm \
                 @THREAD_LIBS@
 
 dist_man_MANS = $(srcdir)/sixel.5
-EXTRA_DIST = $(srcdir)/rgblookup.gperf
+EXTRA_DIST = $(srcdir)/rgblookup.gperf \
+             $(srcdir)/classid.gperf
 
 .PHONY: libobjs
 
@@ -380,12 +382,43 @@ EXTRA_DIST = $(srcdir)/rgblookup.gperf
 libobjs: $(libsixel_la_OBJECTS)
 
 GPERF_OPT=--ignore-case --language=ANSI-C
+GPERF_CLASSID_OPT=--language=ANSI-C \
+                  -H sixel_lookup_policy_classid_hash \
+                  -W sixel_lookup_policy_classid_wordlist
+
+LOOKUP_POLICY_CLASSID_INPUTS = \
+    $(srcdir)/lookup-policy-5bit.h \
+    $(srcdir)/lookup-policy-6bit.h \
+    $(srcdir)/lookup-policy-certlut.h \
+    $(srcdir)/lookup-policy-eytzinger.h \
+    $(srcdir)/lookup-policy-fhedt.h \
+    $(srcdir)/lookup-policy-mahalanobis.h \
+    $(srcdir)/lookup-policy-mono-darkbg.h \
+    $(srcdir)/lookup-policy-mono-lightbg.h \
+    $(srcdir)/lookup-policy-normal.h \
+    $(srcdir)/lookup-policy-rbc.h \
+    $(srcdir)/lookup-policy-vptree.h
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb $(GPERF_OPT) $<  |\
 	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\
 	astyle                                  > $(srcdir)/rgblookup.h
+
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
+gen-classid: $(LOOKUP_POLICY_CLASSID_INPUTS)
+	$(AWK) -f $(top_srcdir)/tools/gen_lookup_classid_gperf.awk $^ \
+	        > $(srcdir)/classid.gperf
+	gperf -C -N sixel_lookup_policy_classid_lookup $(GPERF_CLASSID_OPT) \
+	        $(srcdir)/classid.gperf                                    |\
+	sed 's/{""}/\{"", 0\}/g'                                           \
+	        > $(srcdir)/classid.h
+	printf '%s\n' '#undef TOTAL_KEYWORDS'                              \
+	              '#undef MIN_WORD_LENGTH'                             \
+	              '#undef MAX_WORD_LENGTH'                             \
+	              '#undef MIN_HASH_VALUE'                              \
+	              '#undef MAX_HASH_VALUE'                              \
+	        >> $(srcdir)/classid.h
 
 
 
