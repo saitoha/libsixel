@@ -51,6 +51,27 @@
 # include <windows.h>
 #endif
 
+static int
+test_runner_setenv_portable(char const *name, char const *value);
+
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__) && HAVE_SIGNAL_H
+# define TEST_RUNNER_SIGINT_SYNC_PID_ENVVAR \
+    "SIXEL_TEST_SIGINT_NOTIFY_PID"
+# define TEST_RUNNER_SIGINT_SYNC_EVENT_ENVVAR \
+    "SIXEL_TEST_SIGINT_NOTIFY_EVENT"
+# define TEST_RUNNER_SIGINT_SYNC_EVENT_DISPATCH_START \
+    "callback_dispatch_start"
+
+static volatile sig_atomic_t test_runner_sigint_sync_ready;
+
+static void
+test_runner_sigint_sync_handler(int signum)
+{
+    (void)signum;
+    test_runner_sigint_sync_ready = 1;
+}
+#endif
+
 int test_filter_0001_filter_clip(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
@@ -1076,6 +1097,16 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     int fd_flags;
     int sleep_status;
     int read_progress;
+#if HAVE_SIGNAL_H
+    struct sigaction sync_action;
+    struct sigaction sync_old_action;
+    pid_t parent_pid;
+    int sync_action_installed;
+    int sync_signal_supported;
+    int sync_env_status;
+    int sync_pid_size;
+    char sync_pid_text[32];
+#endif
 
     needle_token = NULL;
     timeout_token = NULL;
@@ -1108,6 +1139,16 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     fd_flags = 0;
     sleep_status = 0;
     read_progress = 0;
+#if HAVE_SIGNAL_H
+    memset(&sync_action, 0, sizeof(sync_action));
+    memset(&sync_old_action, 0, sizeof(sync_old_action));
+    parent_pid = (pid_t)0;
+    sync_action_installed = 0;
+    sync_signal_supported = 0;
+    sync_env_status = 0;
+    sync_pid_size = 0;
+    sync_pid_text[0] = '\0';
+#endif
 
     if (argc < 5) {
         fprintf(stderr,
@@ -1135,6 +1176,54 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                 timeout_token);
         return EXIT_FAILURE;
     }
+
+#if HAVE_SIGNAL_H
+    /*
+     * Use a direct signal handshake when available so SIGINT trigger timing
+     * does not depend on runtime-specific stderr forwarding behavior.
+     */
+    test_runner_sigint_sync_ready = 0;
+    sync_action.sa_handler = test_runner_sigint_sync_handler;
+    (void)sigemptyset(&sync_action.sa_mask);
+# if defined(SA_RESTART)
+    sync_action.sa_flags = SA_RESTART;
+# else
+    sync_action.sa_flags = 0;
+# endif
+    if (sigaction(SIGUSR1, &sync_action, &sync_old_action) == 0) {
+        sync_action_installed = 1;
+        sync_signal_supported = 1;
+    }
+
+    if (sync_signal_supported != 0) {
+        parent_pid = getpid();
+        sync_pid_size = snprintf(sync_pid_text,
+                                 sizeof(sync_pid_text),
+                                 "%ld",
+                                 (long)parent_pid);
+        if (sync_pid_size <= 0
+                || (size_t)sync_pid_size >= sizeof(sync_pid_text)) {
+            sync_signal_supported = 0;
+        }
+    }
+
+    if (sync_signal_supported != 0) {
+        sync_env_status = test_runner_setenv_portable(
+            TEST_RUNNER_SIGINT_SYNC_EVENT_ENVVAR,
+            TEST_RUNNER_SIGINT_SYNC_EVENT_DISPATCH_START);
+        if (sync_env_status != 0) {
+            sync_signal_supported = 0;
+        }
+    }
+    if (sync_signal_supported != 0) {
+        sync_env_status = test_runner_setenv_portable(
+            TEST_RUNNER_SIGINT_SYNC_PID_ENVVAR,
+            sync_pid_text);
+        if (sync_env_status != 0) {
+            sync_signal_supported = 0;
+        }
+    }
+#endif
 
     combined_capacity = needle_length + sizeof(read_buffer);
     combined_buffer = (char *)malloc(combined_capacity);
@@ -1186,6 +1275,25 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
 
     for (;;) {
         read_progress = 0;
+#if HAVE_SIGNAL_H
+        if (signal_sent == 0
+                && sync_signal_supported != 0
+                && test_runner_sigint_sync_ready != 0) {
+            found_trigger = 1;
+            send_result = test_runner_signal_group_and_child(child_pid, SIGINT);
+            if (send_result != 0) {
+                fprintf(stderr, "test_runner: SIGINT send failed: %s\n",
+                        strerror(errno));
+            }
+            signal_sent = 1;
+            /*
+             * Keep independent timeout budgets for trigger detection
+             * and post-SIGINT shutdown so slow trigger setup does not
+             * consume the child-exit grace window.
+             */
+            elapsed_ms = 0ul;
+        }
+#endif
         wait_pid = waitpid(child_pid, &wait_status, WNOHANG);
         if (wait_pid == child_pid) {
             child_running = 0;
@@ -1323,6 +1431,11 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     if (stderr_read_open != 0) {
         (void)close(stderr_pipe[0]);
     }
+#if HAVE_SIGNAL_H
+    if (sync_action_installed != 0) {
+        (void)sigaction(SIGUSR1, &sync_old_action, NULL);
+    }
+#endif
     free(combined_buffer);
     return EXIT_SUCCESS;
 
@@ -1357,6 +1470,11 @@ timeout_cleanup:
     if (stderr_write_open != 0) {
         (void)close(stderr_pipe[1]);
     }
+#if HAVE_SIGNAL_H
+    if (sync_action_installed != 0) {
+        (void)sigaction(SIGUSR1, &sync_old_action, NULL);
+    }
+#endif
     free(combined_buffer);
     return EXIT_FAILURE;
 #else
@@ -1368,8 +1486,6 @@ timeout_cleanup:
 #endif
 }
 
-static int
-test_runner_setenv_portable(char const *name, char const *value);
 static int
 test_runner_apply_env_assignment(char const *assignment);
 

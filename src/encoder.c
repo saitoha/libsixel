@@ -42,6 +42,9 @@
 #elif HAVE_SYS_UNISTD_H
 # include <sys/unistd.h>
 #endif  /* HAVE_SYS_UNISTD_H */
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__) && HAVE_SIGNAL_H
+# include <signal.h>
+#endif  /* !_WIN32 && !__EMSCRIPTEN__ && HAVE_SIGNAL_H */
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif  /* HAVE_SYS_TYPES_H */
@@ -134,6 +137,12 @@
     "SIXEL_ANIMATION_HIDE_CURSOR"
 #define SIXEL_ENCODER_PSD_TRACE_ONLY_ENVVAR \
     "SIXEL_PSD_TRACE_ONLY"
+#define SIXEL_ENCODER_SIGINT_SYNC_PID_ENVVAR \
+    "SIXEL_TEST_SIGINT_NOTIFY_PID"
+#define SIXEL_ENCODER_SIGINT_SYNC_EVENT_ENVVAR \
+    "SIXEL_TEST_SIGINT_NOTIFY_EVENT"
+#define SIXEL_ENCODER_SIGINT_SYNC_EVENT_DISPATCH_START \
+    "callback_dispatch_start"
 
 #define SIXEL_QUANTIZE_SCENE_CUT_THRESHOLD_DEFAULT 0.20
 #define SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE 8
@@ -1011,6 +1020,78 @@ sixel_encoder_handoff_trace_minimal_enabled(void)
     }
     return cached;
 }
+
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__) && HAVE_SIGNAL_H
+static void
+sixel_encoder_test_sigint_sync_notify_dispatch_start(void)
+{
+    static int sync_state = -1;
+    static pid_t sync_pid = (pid_t)0;
+    char const *sync_event;
+    char const *sync_pid_text;
+    unsigned long parsed_pid;
+    char *sync_end;
+    int notify_result;
+
+    sync_event = NULL;
+    sync_pid_text = NULL;
+    parsed_pid = 0ul;
+    sync_end = NULL;
+    notify_result = -1;
+
+    if (sync_state == 0 || sync_state == 2) {
+        return;
+    }
+
+    if (sync_state < 0) {
+        sync_state = 0;
+        sync_event = sixel_compat_getenv(
+            SIXEL_ENCODER_SIGINT_SYNC_EVENT_ENVVAR);
+        if (sync_event != NULL
+                && sync_event[0] != '\0'
+                && strcmp(sync_event,
+                          SIXEL_ENCODER_SIGINT_SYNC_EVENT_DISPATCH_START)
+                   != 0) {
+            return;
+        }
+
+        sync_pid_text = sixel_compat_getenv(
+            SIXEL_ENCODER_SIGINT_SYNC_PID_ENVVAR);
+        if (sync_pid_text == NULL || sync_pid_text[0] == '\0') {
+            return;
+        }
+
+        errno = 0;
+        parsed_pid = strtoul(sync_pid_text, &sync_end, 10);
+        if (errno != 0 || sync_end == sync_pid_text || *sync_end != '\0') {
+            return;
+        }
+        if (parsed_pid == 0ul || parsed_pid > (unsigned long)LONG_MAX) {
+            return;
+        }
+
+        sync_pid = (pid_t)parsed_pid;
+        sync_state = 1;
+    }
+
+    if (sync_pid <= (pid_t)0) {
+        return;
+    }
+
+    notify_result = kill(sync_pid, SIGUSR1);
+    if (notify_result == 0 || errno != EINTR) {
+        /*
+         * Emit only once per process and keep retries only for EINTR.
+         */
+        sync_state = 2;
+    }
+}
+#else
+static void
+sixel_encoder_test_sigint_sync_notify_dispatch_start(void)
+{
+}
+#endif
 
 static void
 sixel_encoder_handoff_trace_emit(
@@ -13230,7 +13311,10 @@ load_image_callback(sixel_frame_t *frame, void *data)
      * Emit a stable post-handoff marker before dispatching into either
      * pipeline enqueue or serial encode paths. Tests use this token to send
      * SIGINT after handoff selection regardless of thread configuration.
+     * The test runner can also opt into a direct SIGUSR1 synchronization
+     * signal here so trigger delivery stays deterministic across runtimes.
      */
+    sixel_encoder_test_sigint_sync_notify_dispatch_start();
     sixel_encoder_handoff_trace_emit(
         pipeline,
         SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_DISPATCH_START,
