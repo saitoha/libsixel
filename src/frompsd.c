@@ -24238,9 +24238,20 @@ sixel_builtin_psd_compute_stroke_coverage_join(
             if (use_binary_alpha != 0) {
                 neighbor_alpha = neighbor_alpha >= 0.5f ? 1.0f : 0.0f;
             }
-            neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                neighbor_alpha * radial_weight * adjust_weight +
-                neighbor_alpha * (1.0f - adjust_weight));
+            if (use_binary_alpha != 0 &&
+                source_alpha >= 0.5f &&
+                neighbor_alpha >= 0.5f) {
+                /*
+                 * Preserve fully-opaque interior samples for binary masks.
+                 * Radial weighting on those samples inflates inside coverage
+                 * across flat regions and causes false interior strokes.
+                 */
+                neighbor_alpha = 1.0f;
+            } else {
+                neighbor_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                    neighbor_alpha * radial_weight * adjust_weight +
+                    neighbor_alpha * (1.0f - adjust_weight));
+            }
             if (neighbor_alpha > max_alpha) {
                 max_alpha = neighbor_alpha;
             }
@@ -26757,25 +26768,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 &src_layer,
                 clip_alpha_map)) {
             clipped_inside_stroke_alpha_valid = 1;
-        }
-        if (apply_clipping != 0 &&
-            effective_composite_layer->has_blend_clipped_elements != 0 &&
-            effective_composite_layer->blend_clipped_elements_enabled != 0 &&
-            (effective_composite_layer->has_effect_solid_overlay != 0 ||
-             effective_composite_layer->has_effect_gradient_overlay != 0)) {
-            /*
-             * clbl=1 clipping siblings share SoFi/GrFl ownership through the
-             * deferred clipped-group pass. Keep sibling base passes from
-             * repainting interior overlays before deferred composition.
-             */
-            sixel_builtin_psd_trace_message(
-                "psd_decode",
-                "builtin PSD: suppressing clbl=1 clipping sibling "
-                "interior overlays in base pass");
-            layer_for_composite = *effective_composite_layer;
-            layer_for_composite.has_effect_solid_overlay = 0;
-            layer_for_composite.has_effect_gradient_overlay = 0;
-            effective_composite_layer = &layer_for_composite;
         }
         apply_effects_subset =
             effective_composite_layer->has_effect_solid_overlay != 0 ||
