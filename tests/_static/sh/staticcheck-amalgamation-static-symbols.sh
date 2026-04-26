@@ -6,10 +6,15 @@ set -eu
 echo "1..1"
 
 src_root=$1
-amalg_meson=$src_root/amalgamation/meson.build
+src_makefile=$src_root/src/Makefile.am
+converters_makefile=$src_root/converters/Makefile.am
 
-if test ! -f "$amalg_meson"; then
-    echo "ok 1 # SKIP missing amalgamation/meson.build"
+if test ! -f "$src_makefile"; then
+    echo "ok 1 # SKIP missing src/Makefile.am"
+    exit 0
+fi
+if test ! -f "$converters_makefile"; then
+    echo "ok 1 # SKIP missing converters/Makefile.am"
     exit 0
 fi
 
@@ -22,50 +27,43 @@ raw_symbols=$tmpdir/raw_symbols.tsv
 symbols=$tmpdir/symbols.tsv
 duplicates=$tmpdir/duplicates.tsv
 
-awk '
-/^amalgamation_units[[:space:]]*=[[:space:]]*files\(/ { in_list = 1; next }
-in_list && /^[[:space:]]*\)/ { in_list = 0; next }
-!in_list { next }
+awk -v src_base="$src_root/src" '
 {
     line = $0
-    while (match(line, /\047[^\047]+\047/)) {
-        token = substr(line, RSTART + 1, RLENGTH - 2)
-        print token
+    sub(/#.*/, "", line)
+    while (match(line, /\$\(srcdir\)\/[A-Za-z0-9_.\/-]+\.[cm]/)) {
+        token = substr(line, RSTART, RLENGTH)
+        sub(/^\$\(srcdir\)\//, "", token)
+        print src_base "/" token
         line = substr(line, RSTART + RLENGTH)
     }
 }
-' "$amalg_meson" > "$unit_entries"
+' "$src_makefile" > "$unit_entries"
+
+awk -v src_base="$src_root/converters" '
+{
+    line = $0
+    sub(/#.*/, "", line)
+    while (match(line, /\$\(srcdir\)\/[A-Za-z0-9_.\/-]+\.[cm]/)) {
+        token = substr(line, RSTART, RLENGTH)
+        sub(/^\$\(srcdir\)\//, "", token)
+        print src_base "/" token
+        line = substr(line, RSTART + RLENGTH)
+    }
+}
+' "$converters_makefile" >> "$unit_entries"
+
+LC_ALL=C sort -u "$unit_entries" -o "$unit_entries"
 
 if test ! -s "$unit_entries"; then
-    echo "ok 1 # SKIP no amalgamation_units entries found"
+    echo "ok 1 # SKIP no C/ObjC source entries found"
     exit 0
 fi
 
 : > "$unit_files"
-while IFS= read -r relpath; do
-    test -n "$relpath" || continue
-    case "$relpath" in
-    ../src/*)
-        ;;
-    *)
-        continue
-        ;;
-    esac
-    case "$relpath" in
-    ../*)
-        unit_path=$src_root/${relpath#../}
-        ;;
-    *)
-        unit_path=$src_root/$relpath
-        ;;
-    esac
-    case "$unit_path" in
-    *.c|*.m)
-        ;;
-    *)
-        continue
-        ;;
-    esac
+while IFS= read -r unit_path; do
+    test -n "$unit_path" || continue
+    case "$unit_path" in *.c|*.m) ;; *) continue ;; esac
     test -f "$unit_path" || continue
     printf '%s\n' "$unit_path" >> "$unit_files"
 done < "$unit_entries"

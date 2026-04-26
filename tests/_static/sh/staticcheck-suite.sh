@@ -178,9 +178,9 @@ fail_and_exit() {
 # shellcheck disable=SC2329
 run_staticcheck_webp_strict_compile() {
     source_rel=$1
+    cc_bin=${2:-${CC:-cc}}
     source_path=$src_root/src/$source_rel
-    object_path=$tmpdir/${source_rel##*/}.strict.o
-    cc_bin=${CC:-cc}
+    object_path=$tmpdir/${source_rel##*/}.${cc_bin##*/}.strict.o
 
     "$cc_bin" -DHAVE_CONFIG_H \
         -I"$build_root" -I"$build_root/include" \
@@ -192,9 +192,9 @@ run_staticcheck_webp_strict_compile() {
 
 # shellcheck disable=SC2329
 run_staticcheck_webp_tables_self_include() {
+    cc_bin=${1:-${CC:-cc}}
     source_path=$tmpdir/staticcheck-webp-vp8-tables-self-include.c
-    object_path=$tmpdir/staticcheck-webp-vp8-tables-self-include.o
-    cc_bin=${CC:-cc}
+    object_path=$tmpdir/staticcheck-webp-vp8-tables-self-include.${cc_bin##*/}.o
 
     cat > "$source_path" <<'EOF'
 #if defined(HAVE_CONFIG_H)
@@ -386,12 +386,49 @@ if test -f "$build_root/src/Makefile"; then
     run_case_plain "staticcheck-fromwebp-container-compile-warnings" \
         "${MAKE:-make}" -C "$build_root/src" -W fromwebp-container.c \
         libsixel_la-fromwebp-container.lo || fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-vp8-compile-warnings" \
+        "${MAKE:-make}" -C "$build_root/src" -W fromwebp-vp8.c \
+        libsixel_la-fromwebp-vp8.lo || fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-vp8-alpha-compile-warnings" \
+        "${MAKE:-make}" -C "$build_root/src" -W fromwebp-vp8-alpha.c \
+        libsixel_la-fromwebp-vp8-alpha.lo || fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-vp8-parse-compile-warnings" \
+        "${MAKE:-make}" -C "$build_root/src" -W fromwebp-vp8-parse.c \
+        libsixel_la-fromwebp-vp8-parse.lo || fail_and_exit $?
     run_case_plain "staticcheck-fromwebp-vp8-native-compile-warnings" \
         "${MAKE:-make}" -C "$build_root/src" -W fromwebp-vp8-native.c \
         libsixel_la-fromwebp-vp8-native.lo || fail_and_exit $?
     run_case_plain "staticcheck-fromwebp-vp8-native-token-compile-warnings" \
         "${MAKE:-make}" -C "$build_root/src" -W fromwebp-vp8-native-token.c \
         libsixel_la-fromwebp-vp8-native-token.lo || fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-vp8l-compile-warnings" \
+        "${MAKE:-make}" -C "$build_root/src" -W fromwebp-vp8l.c \
+        libsixel_la-fromwebp-vp8l.lo || fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-trace-compile-warnings" \
+        "${MAKE:-make}" -C "$build_root/src" -W fromwebp-trace.c \
+        libsixel_la-fromwebp-trace.lo || fail_and_exit $?
+else
+    run_case_skip "staticcheck-fromwebp-compile-type-limits" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-container-compile-warnings" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-compile-warnings" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-alpha-compile-warnings" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-parse-compile-warnings" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-native-compile-warnings" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-native-token-compile-warnings" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-vp8l-compile-warnings" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-trace-compile-warnings" \
+        "missing src/Makefile in build root"
+fi
+
+if test -f "$build_root/config.h"; then
     run_case_plain "staticcheck-fromwebp-vp8-tables-self-include" \
         run_staticcheck_webp_tables_self_include || fail_and_exit $?
     run_case_plain "staticcheck-fromwebp-strict-compile" \
@@ -399,31 +436,81 @@ if test -f "$build_root/src/Makefile"; then
     run_case_plain "staticcheck-fromwebp-container-strict-compile" \
         run_staticcheck_webp_strict_compile fromwebp-container.c || \
         fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-vp8-strict-compile" \
+        run_staticcheck_webp_strict_compile fromwebp-vp8.c || \
+        fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-vp8-alpha-strict-compile" \
+        run_staticcheck_webp_strict_compile fromwebp-vp8-alpha.c || \
+        fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-vp8-parse-strict-compile" \
+        run_staticcheck_webp_strict_compile fromwebp-vp8-parse.c || \
+        fail_and_exit $?
     run_case_plain "staticcheck-fromwebp-vp8-native-strict-compile" \
         run_staticcheck_webp_strict_compile fromwebp-vp8-native.c || \
         fail_and_exit $?
     run_case_plain "staticcheck-fromwebp-vp8-native-token-strict-compile" \
         run_staticcheck_webp_strict_compile fromwebp-vp8-native-token.c || \
         fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-vp8l-strict-compile" \
+        run_staticcheck_webp_strict_compile fromwebp-vp8l.c || \
+        fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-trace-strict-compile" \
+        run_staticcheck_webp_strict_compile fromwebp-trace.c || \
+        fail_and_exit $?
+
+    clang_bin=${CLANG:-clang}
+    if tool_is_available "$clang_bin"; then
+        run_case_plain "staticcheck-fromwebp-strict-clang-compile" \
+            run_staticcheck_webp_strict_compile fromwebp.c "$clang_bin" || \
+            fail_and_exit $?
+        run_case_plain "staticcheck-fromwebp-vp8-parse-strict-clang-compile" \
+            run_staticcheck_webp_strict_compile fromwebp-vp8-parse.c \
+            "$clang_bin" || fail_and_exit $?
+        run_case_plain "staticcheck-fromwebp-vp8-native-strict-clang-compile" \
+            run_staticcheck_webp_strict_compile fromwebp-vp8-native.c \
+            "$clang_bin" || fail_and_exit $?
+        run_case_plain "staticcheck-fromwebp-vp8-native-token-strict-clang-compile" \
+            run_staticcheck_webp_strict_compile fromwebp-vp8-native-token.c \
+            "$clang_bin" || fail_and_exit $?
+    else
+        run_case_skip "staticcheck-fromwebp-strict-clang-compile" \
+            "clang not found"
+        run_case_skip "staticcheck-fromwebp-vp8-parse-strict-clang-compile" \
+            "clang not found"
+        run_case_skip "staticcheck-fromwebp-vp8-native-strict-clang-compile" \
+            "clang not found"
+        run_case_skip "staticcheck-fromwebp-vp8-native-token-strict-clang-compile" \
+            "clang not found"
+    fi
 else
-    run_case_skip "staticcheck-fromwebp-compile-type-limits" \
-        "missing src/Makefile in build root"
-    run_case_skip "staticcheck-fromwebp-container-compile-warnings" \
-        "missing src/Makefile in build root"
-    run_case_skip "staticcheck-fromwebp-vp8-native-compile-warnings" \
-        "missing src/Makefile in build root"
-    run_case_skip "staticcheck-fromwebp-vp8-native-token-compile-warnings" \
-        "missing src/Makefile in build root"
     run_case_skip "staticcheck-fromwebp-vp8-tables-self-include" \
-        "missing src/Makefile in build root"
+        "missing config.h in build root"
     run_case_skip "staticcheck-fromwebp-strict-compile" \
-        "missing src/Makefile in build root"
+        "missing config.h in build root"
     run_case_skip "staticcheck-fromwebp-container-strict-compile" \
-        "missing src/Makefile in build root"
+        "missing config.h in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-strict-compile" \
+        "missing config.h in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-alpha-strict-compile" \
+        "missing config.h in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-parse-strict-compile" \
+        "missing config.h in build root"
     run_case_skip "staticcheck-fromwebp-vp8-native-strict-compile" \
-        "missing src/Makefile in build root"
+        "missing config.h in build root"
     run_case_skip "staticcheck-fromwebp-vp8-native-token-strict-compile" \
-        "missing src/Makefile in build root"
+        "missing config.h in build root"
+    run_case_skip "staticcheck-fromwebp-vp8l-strict-compile" \
+        "missing config.h in build root"
+    run_case_skip "staticcheck-fromwebp-trace-strict-compile" \
+        "missing config.h in build root"
+    run_case_skip "staticcheck-fromwebp-strict-clang-compile" \
+        "missing config.h in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-parse-strict-clang-compile" \
+        "missing config.h in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-native-strict-clang-compile" \
+        "missing config.h in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-native-token-strict-clang-compile" \
+        "missing config.h in build root"
 fi
 
 run_case_tap "staticcheck-build-doc-configure-help" \
@@ -474,6 +561,18 @@ run_case_tap "staticcheck-quant-palette-init-0073-static-contract" \
     TOP_BUILDDIR="$TOP_BUILDDIR" \
     sh "$src_root/tests/meson-tap-exitcode-wrapper.sh" \
     "$src_root/tests/quant/palette/init/0073_kcenter_auto_perceptual_oklab_hybrid_preference.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-loader-builtin-1609-webp-vp8l-static-contract" \
+    env ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/staticcheck-loader-builtin-1609" \
+    TOP_SRCDIR="$TOP_SRCDIR" \
+    TOP_BUILDDIR="$TOP_BUILDDIR" \
+    sh "$src_root/tests/loader/builtin/1609_loader_builtin_webp_vp8l_static_decode.t" || fail_and_exit $?
+
+run_case_tap "staticcheck-loader-builtin-1610-webp-vp8-static-contract" \
+    env ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/staticcheck-loader-builtin-1610" \
+    TOP_SRCDIR="$TOP_SRCDIR" \
+    TOP_BUILDDIR="$TOP_BUILDDIR" \
+    sh "$src_root/tests/loader/builtin/1610_loader_builtin_webp_vp8_static_decode_code.t" || fail_and_exit $?
 
 printf 'staticcheck summary: total=%d pass=%d skip=%d fail=%d\n' \
     "$index" "$pass_count" "$skip_count" "$fail_count"
