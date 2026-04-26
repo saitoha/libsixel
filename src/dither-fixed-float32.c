@@ -38,17 +38,6 @@
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
 
-typedef void (*diffuse_fixed_float_fn)(float *data,
-                                       int width,
-                                       int height,
-                                       int x,
-                                       int y,
-                                       int depth,
-                                       float error,
-                                       int direction,
-                                       int pixelformat,
-                                       int channel_index);
-
 typedef SIXELSTATUS (*sixel_interframe_prepare_frame_float32_fn)(
     sixel_dither_t *dither,
     int width,
@@ -1608,7 +1597,6 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     unsigned char const *lookup_pixel;
     int have_palette_float;
     int have_new_palette_float;
-    diffuse_fixed_float_fn f_diffuse;
     int method_for_diffuse;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
@@ -1727,36 +1715,8 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
                 dither);
         method_for_diffuse = interframe_spatial_diffuse;
     }
-    switch (method_for_diffuse) {
-    case SIXEL_DIFFUSE_NONE:
-        f_diffuse = diffuse_none_float;
-        break;
-    case SIXEL_DIFFUSE_ATKINSON:
-        f_diffuse = diffuse_atkinson_float;
-        break;
-    case SIXEL_DIFFUSE_JAJUNI:
-        f_diffuse = diffuse_jajuni_float;
-        break;
-    case SIXEL_DIFFUSE_STUCKI:
-        f_diffuse = diffuse_stucki_float;
-        break;
-    case SIXEL_DIFFUSE_BURKES:
-        f_diffuse = diffuse_burkes_float;
-        break;
-    case SIXEL_DIFFUSE_SIERRA1:
-        f_diffuse = diffuse_sierra1_float;
-        break;
-    case SIXEL_DIFFUSE_SIERRA2:
-        f_diffuse = diffuse_sierra2_float;
-        break;
-    case SIXEL_DIFFUSE_SIERRA3:
-        f_diffuse = diffuse_sierra3_float;
-        break;
-    case SIXEL_DIFFUSE_FS:
-    case SIXEL_DIFFUSE_INTERFRAME:
-    default:
-        f_diffuse = diffuse_fs_float;
-        break;
+    if (context->depth != 3) {
+        method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
 
     if (interframe_enabled) {
@@ -1803,224 +1763,270 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
         *context->ncolors = context->reqcolor;
     }
 
-    for (y = 0; y < context->height; ++y) {
-        absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params_fixed_float32(serpentine, absolute_y,
-                                     context->width,
-                                     &start, &end, &step, &direction);
-        for (x = start; x != end; x += step) {
-            pos = y * context->width + x;
-            base = (size_t)pos * (size_t)context->depth;
-            is_transparent = 0;
-            if (use_transparent_fence && absolute_y >= 0) {
-                absolute_index = (size_t)absolute_y * (size_t)context->width
-                    + (size_t)x;
-                if (absolute_index < transparent_mask_size
-                        && transparent_mask[absolute_index] != 0U) {
-                    is_transparent = 1;
-                }
-            }
-            if (is_transparent) {
-                if (absolute_y >= context->output_start) {
-                    context->result[pos] = (sixel_index_t)transparent_keycolor;
-                }
-                if (interframe_enabled && interframe_ops != NULL) {
-                    interframe_ops->clear_pixel(interframe_error,
-                                              base,
-                                              context->depth,
-                                              interframe_can_update);
-                }
-                continue;
-            }
-            alpha_guard_hit = 0;
-            if (stbn_alpha_guard_enabled != 0 && use_transparent_fence != 0) {
-                alpha_guard_hit = sixel_interframe_alpha_guard_hit_float32(
-                    transparent_mask,
-                    transparent_mask_size,
-                    context->width,
-                    x,
-                    absolute_y);
-            } else if (stbn_alpha_guard_enabled != 0
-                    && (x == 0 || y == 0
-                        || x == context->width - 1
-                        || y == context->height - 1)) {
-                /*
-                 * Fall back to image-border guarding so alpha_guard keeps
-                 * deterministic effect when transparent fences are absent.
-                 */
-                alpha_guard_hit = 1;
-            }
-            source_pixel = data + base;
-
-            /*
-             * Keep the dereference guarded even after the early interframe
-             * setup checks so GCC -fanalyzer can prove this path is safe.
-             */
-            if (interframe_enabled && interframe_ops != NULL) {
-                if (alpha_guard_hit != 0
-                        && interframe_method == SIXEL_INTERFRAME_METHOD_STBN) {
-                    sixel_interframe_diffusion_load_pixel_float32(
-                        dither,
-                        source_pixel,
-                        base,
-                        x,
-                        absolute_y,
-                        context->depth,
-                        context->pixelformat,
-                        interframe_error,
-                        working_float,
-                        corrected);
-                } else {
-                    interframe_ops->load_pixel(dither,
-                                             source_pixel,
-                                             base,
-                                             x,
-                                             absolute_y,
-                                             context->depth,
-                                             context->pixelformat,
-                                             interframe_error,
-                                             working_float,
-                                             corrected);
-                }
-                for (n = 0; n < context->depth; ++n) {
-                    quantized[n] = corrected[n];
-                    if (need_float_pixel) {
-                        lookup_pixel_float[n] = working_float[n];
-                    }
-                }
-            } else {
-                for (n = 0; n < context->depth; ++n) {
-                    working_float[n] = source_pixel[n];
-                    if (!lookup_wants_float
-                            && !use_palette_float_lookup) {
-                        quantized[n]
-                            = sixel_pixelformat_float_channel_to_byte(
-                                context->pixelformat,
-                                n,
-                                source_pixel[n]);
-                    }
-                    if (need_float_pixel) {
-                        lookup_pixel_float[n] = working_float[n];
-                    }
-                }
-            }
-
-            if (lookup_wants_float) {
-                lookup_pixel = (unsigned char const *)(void const *)
-                    working_float;
-                color_index = context->lookup_map(context->lookup_policy,
-                                                  lookup_pixel);
-            } else if (use_palette_float_lookup) {
-                color_index = sixel_dither_lookup_palette_float32(
-                    lookup_pixel_float,
-                    context->depth,
-                    palette_float,
-                    context->reqcolor);
-            } else {
-                lookup_pixel = quantized;
-                color_index = context->lookup_map(context->lookup_policy,
-                                                  lookup_pixel);
-            }
-
-            if (context->optimize_palette) {
-                    if (context->migration_map[color_index] == 0) {
-                        output_index = *context->ncolors;
-                        for (n = 0; n < context->depth; ++n) {
-                            context->new_palette[
-                                output_index * context->depth + n]
-                                = palette[color_index * context->depth + n];
-                    }
-                    if (palette_float != NULL
-                            && new_palette_float != NULL
-                            && float_depth > 0) {
-                        for (float_index = 0;
-                                float_index < float_depth;
-                                ++float_index) {
-                            new_palette_float[output_index * float_depth
-                                              + float_index]
-                                = palette_float[color_index * float_depth
-                                                + float_index];
-                        }
-                    }
-                    ++*context->ncolors;
-                    /*
-                     * The palette count never exceeds SIXEL_PALETTE_MAX (256),
-                     * so storing it in an unsigned short is safe.
-                     */
-                    context->migration_map[color_index]
-                        = (unsigned short)(*context->ncolors);
-                } else {
-                    output_index = context->migration_map[color_index] - 1;
-                }
-                if (absolute_y >= context->output_start) {
-                    /*
-                     * Palette indices are bounded by SIXEL_PALETTE_MAX, which
-                     * fits in sixel_index_t (unsigned char).
-                     */
-                    context->result[pos] = (sixel_index_t)output_index;
-                }
-            } else {
-                output_index = color_index;
-                if (absolute_y >= context->output_start) {
-                    context->result[pos] = (sixel_index_t)output_index;
-                }
-            }
-
-            for (n = 0; n < context->depth; ++n) {
-                if (context->optimize_palette) {
-                    palette_value_u8 = context->new_palette[
-                        output_index * context->depth + n];
-                    if (have_new_palette_float) {
-                        palette_value_float =
-                            new_palette_float[output_index * float_depth
-                                              + n];
-                    } else {
-                        palette_value_float
-                            = sixel_pixelformat_byte_to_float(
-                                  context->pixelformat,
-                                  n,
-                                  palette_value_u8);
-                    }
-                } else {
-                    palette_value_u8 =
-                        palette[color_index * context->depth + n];
-                    if (have_palette_float) {
-                        palette_value_float =
-                            palette_float[color_index * float_depth + n];
-                    } else {
-                        palette_value_float
-                            = sixel_pixelformat_byte_to_float(
-                                  context->pixelformat,
-                                  n,
-                                  palette_value_u8);
-                    }
-                }
-                error = working_float[n] - palette_value_float;
-                if (interframe_enabled && interframe_ops != NULL) {
-                    interframe_ops->store_error(
-                        interframe_error,
-                        base,
-                        n,
-                        (int)corrected[n] - (int)palette_value_u8,
-                        interframe_can_update);
-                }
-                source_pixel[n] = palette_value_float;
-                f_diffuse(data + (size_t)n,
-                          context->width,
-                          context->height,
-                          x,
-                          y,
-                          context->depth,
-                          error,
-                          direction,
-                          context->pixelformat,
-                          n);
-            }
-        }
-        if (absolute_y >= context->output_start) {
-            sixel_dither_pipeline_row_notify(dither, absolute_y);
-        }
+#define SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(DIFFUSE_FN)               \
+    for (y = 0; y < context->height; ++y) {                             \
+        absolute_y = context->band_origin + y;                          \
+        sixel_dither_scanline_params_fixed_float32(                     \
+            serpentine, absolute_y, context->width,                     \
+            &start, &end, &step, &direction);                           \
+        for (x = start; x != end; x += step) {                          \
+            pos = y * context->width + x;                               \
+            base = (size_t)pos * (size_t)context->depth;                \
+            is_transparent = 0;                                         \
+            if (use_transparent_fence && absolute_y >= 0) {             \
+                absolute_index = (size_t)absolute_y                     \
+                    * (size_t)context->width                            \
+                    + (size_t)x;                                        \
+                if (absolute_index < transparent_mask_size              \
+                        && transparent_mask[absolute_index] != 0U) {    \
+                    is_transparent = 1;                                 \
+                }                                                       \
+            }                                                           \
+            if (is_transparent) {                                       \
+                if (absolute_y >= context->output_start) {              \
+                    context->result[pos]                                \
+                        = (sixel_index_t)transparent_keycolor;          \
+                }                                                       \
+                if (interframe_enabled && interframe_ops != NULL) {     \
+                    interframe_ops->clear_pixel(interframe_error,       \
+                                                base,                    \
+                                                context->depth,          \
+                                                interframe_can_update);  \
+                }                                                       \
+                continue;                                               \
+            }                                                           \
+            alpha_guard_hit = 0;                                        \
+            if (stbn_alpha_guard_enabled != 0 &&                        \
+                    use_transparent_fence != 0) {                       \
+                alpha_guard_hit = sixel_interframe_alpha_guard_hit_float32(\
+                    transparent_mask,                                   \
+                            transparent_mask_size,                      \
+                            context->width,                             \
+                            x,                                          \
+                            absolute_y);                                \
+            } else if (stbn_alpha_guard_enabled != 0                    \
+                    && (x == 0 || y == 0                                \
+                        || x == context->width - 1                      \
+                        || y == context->height - 1)) {                 \
+                /*                                                       \
+                 * Fall back to image-border guarding so alpha_guard    \
+                 * keeps deterministic effect when transparent fences   \
+                 * are absent.                                          \
+                 */                                                      \
+                alpha_guard_hit = 1;                                    \
+            }                                                           \
+            source_pixel = data + base;                                 \
+                                                                        \
+            /*                                                           \
+             * Keep the dereference guarded even after the early        \
+             * interframe setup checks so GCC -fanalyzer can prove this \
+             * path is safe.                                            \
+             */                                                          \
+            if (interframe_enabled && interframe_ops != NULL) {         \
+                if (alpha_guard_hit != 0                                \
+                        && interframe_method ==                         \
+                            SIXEL_INTERFRAME_METHOD_STBN) {             \
+                    sixel_interframe_diffusion_load_pixel_float32(      \
+                        dither,                                         \
+                        source_pixel,                                   \
+                        base,                                           \
+                        x,                                              \
+                        absolute_y,                                     \
+                        context->depth,                                 \
+                        context->pixelformat,                           \
+                        interframe_error,                               \
+                        working_float,                                  \
+                        corrected);                                     \
+                } else {                                                \
+                    interframe_ops->load_pixel(                         \
+                        dither,                                         \
+                        source_pixel,                                   \
+                        base,                                           \
+                        x,                                              \
+                        absolute_y,                                     \
+                        context->depth,                                 \
+                        context->pixelformat,                           \
+                        interframe_error,                               \
+                        working_float,                                  \
+                        corrected);                                     \
+                }                                                       \
+                for (n = 0; n < context->depth; ++n) {                 \
+                    quantized[n] = corrected[n];                        \
+                    if (need_float_pixel) {                             \
+                        lookup_pixel_float[n] = working_float[n];       \
+                    }                                                   \
+                }                                                       \
+            } else {                                                    \
+                for (n = 0; n < context->depth; ++n) {                 \
+                    working_float[n] = source_pixel[n];                 \
+                    if (!lookup_wants_float                             \
+                            && !use_palette_float_lookup) {             \
+                        quantized[n]                                    \
+                            = sixel_pixelformat_float_channel_to_byte(  \
+                                context->pixelformat,                   \
+                                n,                                      \
+                                source_pixel[n]);                       \
+                    }                                                   \
+                    if (need_float_pixel) {                             \
+                        lookup_pixel_float[n] = working_float[n];       \
+                    }                                                   \
+                }                                                       \
+            }                                                           \
+                                                                        \
+            if (lookup_wants_float) {                                   \
+                lookup_pixel = (unsigned char const *)(void const *)    \
+                    working_float;                                      \
+                color_index = context->lookup_map(context->lookup_policy,\
+                                                  lookup_pixel);         \
+            } else if (use_palette_float_lookup) {                      \
+                color_index = sixel_dither_lookup_palette_float32(      \
+                    lookup_pixel_float,                                 \
+                    context->depth,                                     \
+                    palette_float,                                      \
+                    context->reqcolor);                                 \
+            } else {                                                    \
+                lookup_pixel = quantized;                               \
+                color_index = context->lookup_map(context->lookup_policy,\
+                                                  lookup_pixel);         \
+            }                                                           \
+                                                                        \
+            if (context->optimize_palette) {                            \
+                if (context->migration_map[color_index] == 0) {         \
+                    output_index = *context->ncolors;                   \
+                    for (n = 0; n < context->depth; ++n) {              \
+                        context->new_palette[                           \
+                            output_index * context->depth + n]          \
+                                = palette[color_index * context->depth  \
+                                          + n];                         \
+                    }                                                   \
+                    if (palette_float != NULL                           \
+                            && new_palette_float != NULL                \
+                            && float_depth > 0) {                       \
+                        for (float_index = 0;                           \
+                                float_index < float_depth;              \
+                                ++float_index) {                        \
+                            new_palette_float[output_index * float_depth\
+                                              + float_index]            \
+                                = palette_float[color_index * float_depth\
+                                                + float_index];         \
+                        }                                               \
+                    }                                                   \
+                    ++*context->ncolors;                                \
+                    /*                                                   \
+                     * The palette count never exceeds                  \
+                     * SIXEL_PALETTE_MAX (256), so storing it in an    \
+                     * unsigned short is safe.                          \
+                     */                                                  \
+                    context->migration_map[color_index]                 \
+                        = (unsigned short)(*context->ncolors);          \
+                } else {                                                \
+                    output_index = context->migration_map[color_index]  \
+                        - 1;                                            \
+                }                                                       \
+                if (absolute_y >= context->output_start) {              \
+                    /*                                                   \
+                     * Palette indices are bounded by                   \
+                     * SIXEL_PALETTE_MAX, which fits in                 \
+                     * sixel_index_t (unsigned char).                   \
+                     */                                                  \
+                    context->result[pos] = (sixel_index_t)output_index; \
+                }                                                       \
+            } else {                                                    \
+                output_index = color_index;                             \
+                if (absolute_y >= context->output_start) {              \
+                    context->result[pos] = (sixel_index_t)output_index; \
+                }                                                       \
+            }                                                           \
+                                                                        \
+            for (n = 0; n < context->depth; ++n) {                     \
+                if (context->optimize_palette) {                        \
+                    palette_value_u8 = context->new_palette[            \
+                        output_index * context->depth + n];             \
+                    if (have_new_palette_float) {                       \
+                        palette_value_float =                           \
+                            new_palette_float[output_index * float_depth\
+                                              + n];                     \
+                    } else {                                            \
+                        palette_value_float                             \
+                            = sixel_pixelformat_byte_to_float(          \
+                                  context->pixelformat,                 \
+                                  n,                                    \
+                                  palette_value_u8);                    \
+                    }                                                   \
+                } else {                                                \
+                    palette_value_u8 =                                  \
+                        palette[color_index * context->depth + n];      \
+                    if (have_palette_float) {                           \
+                        palette_value_float =                           \
+                            palette_float[color_index * float_depth     \
+                                          + n];                         \
+                    } else {                                            \
+                        palette_value_float                             \
+                            = sixel_pixelformat_byte_to_float(          \
+                                  context->pixelformat,                 \
+                                  n,                                    \
+                                  palette_value_u8);                    \
+                    }                                                   \
+                }                                                       \
+                error = working_float[n] - palette_value_float;         \
+                if (interframe_enabled && interframe_ops != NULL) {     \
+                    interframe_ops->store_error(                        \
+                        interframe_error,                               \
+                        base,                                           \
+                        n,                                              \
+                        (int)corrected[n] - (int)palette_value_u8,      \
+                        interframe_can_update);                         \
+                }                                                       \
+                source_pixel[n] = palette_value_float;                  \
+                DIFFUSE_FN(data + (size_t)n,                            \
+                           context->width,                              \
+                           context->height,                             \
+                           x,                                           \
+                           y,                                           \
+                           context->depth,                              \
+                           error,                                       \
+                           direction,                                   \
+                           context->pixelformat,                        \
+                           n);                                          \
+            }                                                           \
+        }                                                               \
+        if (absolute_y >= context->output_start) {                      \
+            sixel_dither_pipeline_row_notify(dither, absolute_y);       \
+        }                                                               \
     }
+
+    switch (method_for_diffuse) {
+    case SIXEL_DIFFUSE_NONE:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_none_float);
+        break;
+    case SIXEL_DIFFUSE_ATKINSON:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_atkinson_float);
+        break;
+    case SIXEL_DIFFUSE_JAJUNI:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_jajuni_float);
+        break;
+    case SIXEL_DIFFUSE_STUCKI:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_stucki_float);
+        break;
+    case SIXEL_DIFFUSE_BURKES:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_burkes_float);
+        break;
+    case SIXEL_DIFFUSE_SIERRA1:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra1_float);
+        break;
+    case SIXEL_DIFFUSE_SIERRA2:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra2_float);
+        break;
+    case SIXEL_DIFFUSE_SIERRA3:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra3_float);
+        break;
+    case SIXEL_DIFFUSE_INTERFRAME:
+    case SIXEL_DIFFUSE_FS:
+    default:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
+        break;
+    }
+#undef SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP
 
     if (context->optimize_palette) {
         memcpy(context->palette,

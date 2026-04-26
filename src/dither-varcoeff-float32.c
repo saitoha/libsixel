@@ -72,31 +72,6 @@ lso2_table_varcoeff_float32(void))[7]
     return var_coefs;
 }
 
-typedef void (*diffuse_varerr_mode_float)(float *data,
-                                          int width,
-                                          int height,
-                                          int x,
-                                          int y,
-                                          int depth,
-                                          float error,
-                                          int index,
-                                          int direction,
-                                          int pixelformat,
-                                          int channel);
-
-typedef void (*diffuse_varerr_carry_mode_float)(float *carry_curr,
-                                                 float *carry_next,
-                                                 float *carry_far,
-                                                 int width,
-                                                 int height,
-                                                 int depth,
-                                                 int x,
-                                                 int y,
-                                                 float error,
-                                                 int index,
-                                                 int direction,
-                                                 int channel);
-
 static int
 sixel_varcoeff_safe_denom_float32(int value)
 {
@@ -460,10 +435,7 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     int serpentine;
     int use_carry;
     size_t carry_len;
-    int method_for_diffuse;
     int method_for_scan;
-    diffuse_varerr_mode_float varerr_diffuse;
-    diffuse_varerr_carry_mode_float varerr_diffuse_carry;
     int optimize_palette;
     int y;
     int absolute_y;
@@ -526,7 +498,6 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
         use_transparent_fence = 1;
     }
     optimize_palette = context->optimize_palette;
-    method_for_diffuse = context->method_for_diffuse;
     method_for_scan = context->method_for_scan;
     palette_float = context->palette_float;
     new_palette_float = context->new_palette_float;
@@ -563,14 +534,6 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
 
     if (channel_count <= 0 || channel_count > SIXEL_MAX_CHANNELS) {
         return SIXEL_BAD_ARGUMENT;
-    }
-
-    switch (method_for_diffuse) {
-    case SIXEL_DIFFUSE_LSO2:
-    default:
-        varerr_diffuse = diffuse_lso2_float;
-        varerr_diffuse_carry = diffuse_lso2_carry_float;
-        break;
     }
 
     use_carry = 0;
@@ -754,9 +717,12 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                     break;
                 }
                 if (n > 0 && (
-                        context->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32 ||
-                        context->pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32 ||
-                        context->pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32
+                        context->pixelformat
+                            == SIXEL_PIXELFORMAT_OKLABFLOAT32
+                        || context->pixelformat
+                            == SIXEL_PIXELFORMAT_CIELABFLOAT32
+                        || context->pixelformat
+                            == SIXEL_PIXELFORMAT_DIN99DFLOAT32
                    )) {
                     break;  /* L or Y only */
                 }
@@ -799,30 +765,30 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                 }
                 table_index = diff;
                 if (use_carry) {
-                    varerr_diffuse_carry(carry_curr,
-                                         carry_next,
-                                         carry_far,
-                                         context->width,
-                                         context->height,
-                                         depth,
-                                         x,
-                                         y,
-                                         error,
-                                         table_index,
-                                         direction,
-                                         n);
+                    diffuse_lso2_carry_float(carry_curr,
+                                             carry_next,
+                                             carry_far,
+                                             context->width,
+                                             context->height,
+                                             depth,
+                                             x,
+                                             y,
+                                             error,
+                                             table_index,
+                                             direction,
+                                             n);
                 } else {
-                    varerr_diffuse(data + n,
-                                   context->width,
-                                   context->height,
-                                   x,
-                                   y,
-                                   depth,
-                                   error,
-                                   table_index,
-                                   direction,
-                                   context->pixelformat,
-                                   n);
+                    diffuse_lso2_float(data + n,
+                                       context->width,
+                                       context->height,
+                                       x,
+                                       y,
+                                       depth,
+                                       error,
+                                       table_index,
+                                       direction,
+                                       context->pixelformat,
+                                       n);
                 }
             }
         }

@@ -77,7 +77,6 @@ sixel_dither_scanline_params_positional_8bit(int serpentine,
 
 static float positional_mask_a_8bit(int x, int y, int c);
 static float positional_mask_x_8bit(int x, int y, int c);
-static float positional_mask_blue_8bit(int x, int y, int c);
 
 /*
  * Cache SIXEL_DITHER_*_DITHER_STRENGTH for positional arithmetic dithers to
@@ -535,12 +534,6 @@ sixel_bluenoise_tri_with_conf_8bit(sixel_bluenoise_conf_8bit_t const *conf,
 }
 
 static float
-sixel_bluenoise_tri_8bit(int x, int y, int c)
-{
-    return sixel_bluenoise_tri_with_conf_8bit(&g_sixel_bn_conf_8bit, x, y, c);
-}
-
-static float
 positional_mask_a_8bit(int x, int y, int c)
 {
     return (((((x + c * 67) + y * 236) * 119) & 255) / 128.0f
@@ -552,13 +545,6 @@ positional_mask_x_8bit(int x, int y, int c)
 {
     return (((((x + c * 29) ^ (y * 149)) * 1234) & 511) / 256.0f
             - 1.0f) * g_sixel_pos_strength_x_8bit;
-}
-
-static float
-positional_mask_blue_8bit(int x, int y, int c)
-{
-    return sixel_bluenoise_tri_8bit(x, y, c)
-        * g_sixel_bn_conf_8bit.strength;
 }
 
 static float
@@ -639,7 +625,7 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     float *new_palette_float;
     int float_depth;
     int float_index;
-    float (*f_mask)(int x, int y, int c);
+    int mask_mode;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -647,7 +633,6 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     int is_transparent;
     size_t absolute_index;
     sixel_bluenoise_conf_8bit_t bluenoise_conf;
-    int use_bluenoise_conf;
     float gradient_factor;
     float gradient_weight;
     float noise;
@@ -661,7 +646,7 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     bluenoise_conf.oy = 0;
     bluenoise_conf.per_channel = 0;
     bluenoise_conf.size = SIXEL_BN_W;
-    use_bluenoise_conf = 0;
+    mask_mode = SIXEL_DIFFUSE_X_DITHER;
     gradient_factor = 0.0f;
     gradient_weight = 1.0f;
     noise = 0.0f;
@@ -682,23 +667,22 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     switch (context->method_for_diffuse) {
     case SIXEL_DIFFUSE_A_DITHER:
         sixel_positional_strength_init_8bit();
-        f_mask = positional_mask_a_8bit;
+        mask_mode = SIXEL_DIFFUSE_A_DITHER;
         break;
     case SIXEL_DIFFUSE_X_DITHER:
         sixel_positional_strength_init_8bit();
-        f_mask = positional_mask_x_8bit;
+        mask_mode = SIXEL_DIFFUSE_X_DITHER;
         break;
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
         sixel_bluenoise_conf_init_from_env_8bit();
         bluenoise_conf = g_sixel_bn_conf_8bit;
         sixel_bluenoise_conf_apply_dither_overrides_8bit(&bluenoise_conf,
                                                          dither);
-        use_bluenoise_conf = 1;
-        f_mask = positional_mask_blue_8bit;
+        mask_mode = SIXEL_DIFFUSE_BLUENOISE_DITHER;
         break;
     default:
         sixel_positional_strength_init_8bit();
-        f_mask = positional_mask_x_8bit;
+        mask_mode = SIXEL_DIFFUSE_X_DITHER;
         break;
     }
 
@@ -715,232 +699,243 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
             && transparent_keycolor < SIXEL_PALETTE_MAX) {
         use_transparent_fence = 1;
     }
-    if (use_bluenoise_conf != 0) {
+    if (mask_mode == SIXEL_DIFFUSE_BLUENOISE_DITHER) {
         gradient_factor = bluenoise_conf.gradient_factor;
     }
 
-    if (context->optimize_palette) {
-        int x;
+#define SIXEL_DITHER_APPLY_POSITIONAL_8BIT(NOISE_EXPR)                  \
+    do {                                                                 \
+        if (context->optimize_palette) {                                 \
+            int x;                                                        \
+                                                                        \
+            *context->ncolors = 0;                                       \
+            memset(context->new_palette, 0x00,                           \
+                   (size_t)SIXEL_PALETTE_MAX * (size_t)context->depth);  \
+            if (new_palette_float != NULL && float_depth > 0) {          \
+                memset(new_palette_float, 0x00,                          \
+                       (size_t)SIXEL_PALETTE_MAX                         \
+                           * (size_t)float_depth * sizeof(float));       \
+            }                                                            \
+            memset(context->migration_map, 0x00,                         \
+                   sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);  \
+            for (y = 0; y < context->height; ++y) {                      \
+                int start;                                                \
+                int end;                                                  \
+                int step;                                                 \
+                int direction;                                            \
+                                                                        \
+                absolute_y = context->band_origin + y;                   \
+                sixel_dither_scanline_params_positional_8bit(            \
+                    serpentine, absolute_y,                              \
+                    context->width,                                      \
+                    &start, &end, &step, &direction);                    \
+                (void)direction;                                         \
+                for (x = start; x != end; x += step) {                   \
+                    int pos;                                              \
+                    int d;                                                \
+                    int color_index;                                      \
+                                                                        \
+                    pos = y * context->width + x;                        \
+                    is_transparent = 0;                                  \
+                    if (use_transparent_fence && absolute_y >= 0) {      \
+                        absolute_index = (size_t)absolute_y              \
+                            * (size_t)context->width                     \
+                            + (size_t)x;                                 \
+                        if (absolute_index < transparent_mask_size        \
+                                && transparent_mask[absolute_index]       \
+                                    != 0U) {                             \
+                            is_transparent = 1;                          \
+                        }                                                \
+                    }                                                    \
+                    if (is_transparent) {                                \
+                        if (absolute_y >= context->output_start) {       \
+                            context->result[pos]                         \
+                                = (sixel_index_t)transparent_keycolor;   \
+                        }                                                \
+                        continue;                                        \
+                    }                                                    \
+                    gradient_weight = 1.0f;                              \
+                    if (gradient_factor > 0.0f) {                        \
+                        gradient_weight =                                \
+                            sixel_bluenoise_gradient_weight_8bit(        \
+                                context,                                 \
+                                x,                                       \
+                                absolute_y,                              \
+                                gradient_factor);                        \
+                    }                                                    \
+                    for (d = 0; d < context->depth; ++d) {               \
+                        int val;                                          \
+                                                                        \
+                        noise = (NOISE_EXPR);                            \
+                        val = context->pixels[pos * context->depth + d]  \
+                            + (int)(noise * 32.0f);                      \
+                        /*                                                \
+                         * The clamp keeps values within the byte range  \
+                         * so the cast to unsigned char is lossless and  \
+                         * silences MSVC C4244 diagnostics.              \
+                         */                                               \
+                        context->scratch[d] = (unsigned char)(           \
+                            val < 0 ? 0 : val > 255 ? 255 : val);       \
+                    }                                                    \
+                    color_index = context->lookup_map(context->lookup_policy,\
+                                                      context->scratch); \
+                    if (context->migration_map[color_index] == 0) {      \
+                        if (absolute_y >= context->output_start) {       \
+                            /*                                            \
+                             * Palette indices never exceed              \
+                             * SIXEL_PALETTE_MAX, so the cast to         \
+                             * sixel_index_t (unsigned char) is safe.    \
+                             */                                           \
+                            context->result[pos] = (sixel_index_t)       \
+                                (*context->ncolors);                     \
+                        }                                                \
+                        for (d = 0; d < context->depth; ++d) {           \
+                            context->new_palette[*context->ncolors       \
+                                                 * context->depth + d]   \
+                                = context->palette[color_index           \
+                                                   * context->depth      \
+                                                   + d];                 \
+                        }                                                \
+                        if (palette_float != NULL                        \
+                                && new_palette_float != NULL             \
+                                && float_depth > 0) {                    \
+                            for (float_index = 0;                        \
+                                    float_index < float_depth;           \
+                                    ++float_index) {                     \
+                                new_palette_float[*context->ncolors      \
+                                                   * float_depth         \
+                                                   + float_index]        \
+                                    = palette_float[color_index          \
+                                                    * float_depth        \
+                                                    + float_index];      \
+                            }                                            \
+                        }                                                \
+                        ++*context->ncolors;                             \
+                        /*                                                \
+                         * Migration map entries are limited to the      \
+                         * palette size (<= 256), so storing them as     \
+                         * unsigned short is safe.                       \
+                         */                                               \
+                        context->migration_map[color_index]              \
+                            = (unsigned short)(*context->ncolors);       \
+                    } else {                                             \
+                        if (absolute_y >= context->output_start) {       \
+                            context->result[pos] = (sixel_index_t)(      \
+                                context->migration_map[color_index] - 1);\
+                        }                                                \
+                    }                                                    \
+                }                                                        \
+                if (absolute_y >= context->output_start) {               \
+                    sixel_dither_pipeline_row_notify(dither, absolute_y);\
+                }                                                        \
+            }                                                            \
+            memcpy(context->palette, context->new_palette,               \
+                   (size_t)(*context->ncolors * context->depth));        \
+            if (palette_float != NULL                                    \
+                    && new_palette_float != NULL                         \
+                    && float_depth > 0) {                                \
+                memcpy(palette_float,                                    \
+                       new_palette_float,                                \
+                       (size_t)(*context->ncolors * float_depth)         \
+                           * sizeof(float));                             \
+            }                                                            \
+        } else {                                                         \
+            int x;                                                        \
+                                                                        \
+            for (y = 0; y < context->height; ++y) {                      \
+                int start;                                                \
+                int end;                                                  \
+                int step;                                                 \
+                int direction;                                            \
+                                                                        \
+                absolute_y = context->band_origin + y;                   \
+                sixel_dither_scanline_params_positional_8bit(            \
+                    serpentine, absolute_y,                              \
+                    context->width,                                      \
+                    &start, &end, &step, &direction);                    \
+                (void)direction;                                         \
+                for (x = start; x != end; x += step) {                   \
+                    int pos;                                              \
+                    int d;                                                \
+                                                                        \
+                    pos = y * context->width + x;                        \
+                    is_transparent = 0;                                  \
+                    if (use_transparent_fence && absolute_y >= 0) {      \
+                        absolute_index = (size_t)absolute_y              \
+                            * (size_t)context->width                     \
+                            + (size_t)x;                                 \
+                        if (absolute_index < transparent_mask_size        \
+                                && transparent_mask[absolute_index]       \
+                                    != 0U) {                             \
+                            is_transparent = 1;                          \
+                        }                                                \
+                    }                                                    \
+                    if (is_transparent) {                                \
+                        if (absolute_y >= context->output_start) {       \
+                            context->result[pos]                         \
+                                = (sixel_index_t)transparent_keycolor;   \
+                        }                                                \
+                        continue;                                        \
+                    }                                                    \
+                    gradient_weight = 1.0f;                              \
+                    if (gradient_factor > 0.0f) {                        \
+                        gradient_weight =                                \
+                            sixel_bluenoise_gradient_weight_8bit(        \
+                                context,                                 \
+                                x,                                       \
+                                absolute_y,                              \
+                                gradient_factor);                        \
+                    }                                                    \
+                    for (d = 0; d < context->depth; ++d) {               \
+                        int val;                                          \
+                                                                        \
+                        noise = (NOISE_EXPR);                            \
+                        val = context->pixels[pos * context->depth + d]  \
+                            + (int)(noise * 32.0f);                      \
+                        /*                                                \
+                         * The clamp keeps values within the byte range  \
+                         * so the cast to unsigned char is lossless and  \
+                         * silences MSVC C4244 diagnostics.              \
+                         */                                               \
+                        context->scratch[d] = (unsigned char)(           \
+                            val < 0 ? 0 : val > 255 ? 255 : val);       \
+                    }                                                    \
+                    if (absolute_y >= context->output_start) {           \
+                        /*                                                \
+                         * Palette indices are limited to                \
+                         * SIXEL_PALETTE_MAX, so the cast to             \
+                         * sixel_index_t (unsigned char) is safe here.   \
+                         */                                               \
+                        context->result[pos] = (sixel_index_t)           \
+                            context->lookup_map(context->lookup_policy,  \
+                                                context->scratch);       \
+                    }                                                    \
+                }                                                        \
+                if (absolute_y >= context->output_start) {               \
+                    sixel_dither_pipeline_row_notify(dither, absolute_y);\
+                }                                                        \
+            }                                                            \
+            *context->ncolors = context->reqcolor;                       \
+        }                                                                \
+    } while (0)
 
-        *context->ncolors = 0;
-        memset(context->new_palette, 0x00,
-               (size_t)SIXEL_PALETTE_MAX * (size_t)context->depth);
-        if (new_palette_float != NULL && float_depth > 0) {
-            memset(new_palette_float, 0x00,
-                   (size_t)SIXEL_PALETTE_MAX
-                       * (size_t)float_depth * sizeof(float));
-        }
-        memset(context->migration_map, 0x00,
-               sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
-        for (y = 0; y < context->height; ++y) {
-            absolute_y = context->band_origin + y;
-            int start;
-            int end;
-            int step;
-            int direction;
-
-            sixel_dither_scanline_params_positional_8bit(serpentine, absolute_y,
-                                         context->width,
-                                         &start, &end, &step, &direction);
-            (void)direction;
-            for (x = start; x != end; x += step) {
-                int pos;
-                int d;
-                int color_index;
-
-                pos = y * context->width + x;
-                is_transparent = 0;
-                if (use_transparent_fence && absolute_y >= 0) {
-                    absolute_index = (size_t)absolute_y
-                        * (size_t)context->width
-                        + (size_t)x;
-                    if (absolute_index < transparent_mask_size
-                            && transparent_mask[absolute_index] != 0U) {
-                        is_transparent = 1;
-                    }
-                }
-                if (is_transparent) {
-                    if (absolute_y >= context->output_start) {
-                        context->result[pos]
-                            = (sixel_index_t)transparent_keycolor;
-                    }
-                    continue;
-                }
-                gradient_weight = 1.0f;
-                if (use_bluenoise_conf != 0 && gradient_factor > 0.0f) {
-                    gradient_weight = sixel_bluenoise_gradient_weight_8bit(
-                        context,
-                        x,
-                        absolute_y,
-                        gradient_factor);
-                }
-                for (d = 0; d < context->depth; ++d) {
-                    int val;
-
-                    if (use_bluenoise_conf != 0) {
-                        noise = positional_mask_blue_with_conf_8bit(
-                            &bluenoise_conf,
-                            x,
-                            y,
-                            d);
-                        noise *= gradient_weight;
-                    } else {
-                        noise = f_mask(x, y, d);
-                    }
-                    val = context->pixels[pos * context->depth + d]
-                        + (int)(noise * 32.0f);
-                    /*
-                     * The clamp keeps values within the byte range so the
-                     * cast to unsigned char is lossless and silences MSVC
-                     * C4244 diagnostics.
-                     */
-                    context->scratch[d] = (unsigned char)(val < 0 ? 0
-                                                      : val > 255 ? 255
-                                                                     : val);
-                }
-                color_index = context->lookup_map(context->lookup_policy,
-                                                  context->scratch);
-                if (context->migration_map[color_index] == 0) {
-                    if (absolute_y >= context->output_start) {
-                        /*
-                         * Palette indices never exceed SIXEL_PALETTE_MAX, so
-                         * the cast to sixel_index_t (unsigned char) is safe.
-                         */
-                        context->result[pos]
-                            = (sixel_index_t)(*context->ncolors);
-                    }
-                    for (d = 0; d < context->depth; ++d) {
-                        context->new_palette[*context->ncolors
-                                             * context->depth + d]
-                            = context->palette[color_index
-                                               * context->depth + d];
-                    }
-                    if (palette_float != NULL
-                            && new_palette_float != NULL
-                            && float_depth > 0) {
-                        for (float_index = 0;
-                                float_index < float_depth;
-                                ++float_index) {
-                            new_palette_float[*context->ncolors
-                                               * float_depth
-                                               + float_index]
-                                = palette_float[color_index * float_depth
-                                                + float_index];
-                        }
-                    }
-                    ++*context->ncolors;
-                    /*
-                     * Migration map entries are limited to the palette size
-                     * (<= 256), so storing them as unsigned short is safe.
-                     */
-                    context->migration_map[color_index]
-                        = (unsigned short)(*context->ncolors);
-                } else {
-                    if (absolute_y >= context->output_start) {
-                        context->result[pos]
-                            = (sixel_index_t)(context->migration_map[
-                                  color_index] - 1);
-                    }
-                }
-            }
-            if (absolute_y >= context->output_start) {
-                sixel_dither_pipeline_row_notify(dither, absolute_y);
-            }
-        }
-        memcpy(context->palette, context->new_palette,
-               (size_t)(*context->ncolors * context->depth));
-        if (palette_float != NULL
-                && new_palette_float != NULL
-                && float_depth > 0) {
-            memcpy(palette_float,
-                   new_palette_float,
-                   (size_t)(*context->ncolors * float_depth)
-                       * sizeof(float));
-        }
-    } else {
-        int x;
-
-        for (y = 0; y < context->height; ++y) {
-            absolute_y = context->band_origin + y;
-            int start;
-            int end;
-            int step;
-            int direction;
-
-            sixel_dither_scanline_params_positional_8bit(serpentine, absolute_y,
-                                         context->width,
-                                         &start, &end, &step, &direction);
-            (void)direction;
-            for (x = start; x != end; x += step) {
-                int pos;
-                int d;
-
-                pos = y * context->width + x;
-                is_transparent = 0;
-                if (use_transparent_fence && absolute_y >= 0) {
-                    absolute_index = (size_t)absolute_y
-                        * (size_t)context->width
-                        + (size_t)x;
-                    if (absolute_index < transparent_mask_size
-                            && transparent_mask[absolute_index] != 0U) {
-                        is_transparent = 1;
-                    }
-                }
-                if (is_transparent) {
-                    if (absolute_y >= context->output_start) {
-                        context->result[pos]
-                            = (sixel_index_t)transparent_keycolor;
-                    }
-                    continue;
-                }
-                gradient_weight = 1.0f;
-                if (use_bluenoise_conf != 0 && gradient_factor > 0.0f) {
-                    gradient_weight = sixel_bluenoise_gradient_weight_8bit(
-                        context,
-                        x,
-                        absolute_y,
-                        gradient_factor);
-                }
-                for (d = 0; d < context->depth; ++d) {
-                    int val;
-
-                    if (use_bluenoise_conf != 0) {
-                        noise = positional_mask_blue_with_conf_8bit(
-                            &bluenoise_conf,
-                            x,
-                            y,
-                            d);
-                        noise *= gradient_weight;
-                    } else {
-                        noise = f_mask(x, y, d);
-                    }
-                    val = context->pixels[pos * context->depth + d]
-                        + (int)(noise * 32.0f);
-                    /*
-                     * The clamp keeps values within the byte range so the
-                     * cast to unsigned char is lossless and silences MSVC
-                     * C4244 diagnostics.
-                     */
-                    context->scratch[d] = (unsigned char)(val < 0 ? 0
-                                                      : val > 255 ? 255
-                                                                     : val);
-                }
-                if (absolute_y >= context->output_start) {
-                    /*
-                     * Palette indices are limited to SIXEL_PALETTE_MAX, so the
-                     * cast to sixel_index_t (unsigned char) is safe here.
-                     */
-                    context->result[pos] = (sixel_index_t)
-                        context->lookup_map(context->lookup_policy,
-                                            context->scratch);
-                }
-            }
-            if (absolute_y >= context->output_start) {
-                sixel_dither_pipeline_row_notify(dither, absolute_y);
-            }
-        }
-        *context->ncolors = context->reqcolor;
+    switch (mask_mode) {
+    case SIXEL_DIFFUSE_A_DITHER:
+        SIXEL_DITHER_APPLY_POSITIONAL_8BIT(
+            positional_mask_a_8bit(x, y, d));
+        break;
+    case SIXEL_DIFFUSE_BLUENOISE_DITHER:
+        SIXEL_DITHER_APPLY_POSITIONAL_8BIT(
+            positional_mask_blue_with_conf_8bit(&bluenoise_conf, x, y, d)
+                * gradient_weight);
+        break;
+    case SIXEL_DIFFUSE_X_DITHER:
+    default:
+        SIXEL_DITHER_APPLY_POSITIONAL_8BIT(
+            positional_mask_x_8bit(x, y, d));
+        break;
     }
+#undef SIXEL_DITHER_APPLY_POSITIONAL_8BIT
 
     return SIXEL_OK;
 }

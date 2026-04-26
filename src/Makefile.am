@@ -35,6 +35,12 @@ endif
 if CFLAGS_HAVE_COVERAGE
 MAYBE_COVERAGE = --coverage
 endif
+if USING_CL
+# Force cl/clang-cl driver mode to DLL when libtool links shared libraries.
+# This keeps linker entrypoint selection consistent even with extra link
+# flags such as coverage instrumentation.
+MAYBE_MSVC_DLL_DRIVER_FLAG = -LD
+endif
 
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.*
 
@@ -129,9 +135,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-policy.c \
                 $(srcdir)/dither-policy.h \
                 $(srcdir)/dither-policy-backend.c \
-                $(srcdir)/dither-policy-backend-fixed.c \
-                $(srcdir)/dither-policy-backend-varcoeff.c \
-                $(srcdir)/dither-policy-backend-positional.c \
                 $(srcdir)/dither-policy-backend.h \
                 $(srcdir)/dither-policy-none.c \
                 $(srcdir)/dither-policy-fs.c \
@@ -396,7 +399,8 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 @THREAD_CFLAGS@
 if BUILDING_ON_WINDOWS
 libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) \
-                $(MAYBE_COVERAGE) $(LIBSIXEL_LDFLAGS)
+                $(MAYBE_MSVC_DLL_DRIVER_FLAG) $(MAYBE_COVERAGE) \
+                $(LIBSIXEL_LDFLAGS)
 else
 libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) \
                 $(MAYBE_COVERAGE) $(LIBSIXEL_LDFLAGS)

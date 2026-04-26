@@ -76,16 +76,6 @@ lso2_table_varcoeff_8bit(void))[7]
 #define VARERR_ROUND       (1 << (VARERR_SCALE_SHIFT - 1))
 #define VARERR_MAX_VALUE   (255 * VARERR_SCALE)
 
-typedef void (*diffuse_varerr_mode)(unsigned char *data,
-                                    int width,
-                                    int height,
-                                    int x,
-                                    int y,
-                                    int depth,
-                                    int32_t error,
-                                    int index,
-                                    int direction);
-
 static int32_t
 sixel_varcoeff_safe_denom_8bit(int value)
 {
@@ -261,9 +251,7 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
     int32_t target_scaled;
     int32_t error_scaled;
     int serpentine;
-    int method_for_diffuse;
     int method_for_scan;
-    diffuse_varerr_mode varerr_diffuse;
     int optimize_palette;
     int y;
     int absolute_y;
@@ -310,7 +298,6 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
     new_palette_float = context->new_palette_float;
     float_depth = context->float_depth;
     optimize_palette = context->optimize_palette;
-    method_for_diffuse = context->method_for_diffuse;
     method_for_scan = context->method_for_scan;
     if (data == NULL || palette == NULL || context->result == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -342,13 +329,6 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
         transparent_mask_size = dither->pipeline_transparent_mask_size;
         transparent_keycolor = dither->pipeline_transparent_keycolor;
         use_transparent_fence = 1;
-    }
-
-    switch (method_for_diffuse) {
-    case SIXEL_DIFFUSE_LSO2:
-    default:
-        varerr_diffuse = diffuse_lso2;
-        break;
     }
 
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
@@ -461,15 +441,15 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
                 target_scaled = (int32_t)palette_value
                               << VARERR_SCALE_SHIFT;
                 error_scaled = sample_scaled[n] - target_scaled;
-                varerr_diffuse(data + n,
-                               context->width,
-                               context->height,
-                               x,
-                               y,
-                               depth,
-                               error_scaled,
-                               table_index,
-                               direction);
+                diffuse_lso2(data + n,
+                             context->width,
+                             context->height,
+                             x,
+                             y,
+                             depth,
+                             error_scaled,
+                             table_index,
+                             direction);
             }
         }
 
