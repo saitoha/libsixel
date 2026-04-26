@@ -1694,6 +1694,7 @@ sixel_dither_apply_fixed_float32_with_mode(
         have_new_palette_float = 0;
     }
 
+#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
     if (method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         /*
          * Keep the interframe strategy token and spatial kernel independent
@@ -1715,6 +1716,7 @@ sixel_dither_apply_fixed_float32_with_mode(
                 dither);
         method_for_diffuse = interframe_spatial_diffuse;
     }
+#endif
     if (context->depth != 3) {
         method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
@@ -1995,6 +1997,25 @@ sixel_dither_apply_fixed_float32_with_mode(
         }                                                               \
     }
 
+#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE)
+    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_none_float);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS)
+    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON)
+    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_atkinson_float);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI)
+    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_jajuni_float);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI)
+    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_stucki_float);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES)
+    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_burkes_float);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1)
+    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra1_float);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2)
+    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra2_float);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3)
+    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra3_float);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
     switch (method_for_diffuse) {
     case SIXEL_DIFFUSE_NONE:
         SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_none_float);
@@ -2029,7 +2050,47 @@ sixel_dither_apply_fixed_float32_with_mode(
     default:
         return SIXEL_BAD_ARGUMENT;
     }
+#else
+    switch (method_for_diffuse) {
+    case SIXEL_DIFFUSE_NONE:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_none_float);
+        break;
+    case SIXEL_DIFFUSE_ATKINSON:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_atkinson_float);
+        break;
+    case SIXEL_DIFFUSE_JAJUNI:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_jajuni_float);
+        break;
+    case SIXEL_DIFFUSE_STUCKI:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_stucki_float);
+        break;
+    case SIXEL_DIFFUSE_BURKES:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_burkes_float);
+        break;
+    case SIXEL_DIFFUSE_SIERRA1:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra1_float);
+        break;
+    case SIXEL_DIFFUSE_SIERRA2:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra2_float);
+        break;
+    case SIXEL_DIFFUSE_SIERRA3:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra3_float);
+        break;
+    case SIXEL_DIFFUSE_INTERFRAME:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
+        break;
+    case SIXEL_DIFFUSE_FS:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
+        break;
+    default:
+        return SIXEL_BAD_ARGUMENT;
+    }
+#endif
 #undef SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP
+
+    (void)method_for_diffuse;
+    (void)strategy_token;
+    (void)interframe_spatial_diffuse;
 
     if (context->optimize_palette) {
         memcpy(context->palette,
@@ -2189,6 +2250,48 @@ sixel_dither_apply_interframe_float32(sixel_dither_t *dither,
 # undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS
 # undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE
 #endif
+
+#if defined(__GNUC__) || defined(__clang__)
+# define SIXEL_DITHER_FIXED_FLOAT32_UNUSED __attribute__((unused))
+#else
+# define SIXEL_DITHER_FIXED_FLOAT32_UNUSED
+#endif
+
+/*
+ * Keep helper symbols referenced in single-policy translation units so
+ * -Wunused-function does not fire when compile-time selection removes
+ * alternate code paths.
+ */
+static void (* const SIXEL_DITHER_FIXED_FLOAT32_UNUSED
+sixel_dither_fixed_float32_keep_diffuse_fns[])(
+    float *,
+    int,
+    int,
+    int,
+    int,
+    int,
+    float,
+    int,
+    int,
+    int) = {
+    diffuse_none_float,
+    diffuse_fs_float,
+    diffuse_atkinson_float,
+    diffuse_jajuni_float,
+    diffuse_stucki_float,
+    diffuse_burkes_float,
+    diffuse_sierra1_float,
+    diffuse_sierra2_float,
+    diffuse_sierra3_float
+};
+
+static sixel_interframe_method_float32_ops_t const *(
+    * const SIXEL_DITHER_FIXED_FLOAT32_UNUSED
+    sixel_dither_fixed_float32_keep_interframe_strategy[])(int) = {
+    sixel_interframe_method_ops_float32_for_id
+};
+
+#undef SIXEL_DITHER_FIXED_FLOAT32_UNUSED
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

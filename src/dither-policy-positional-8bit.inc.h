@@ -663,6 +663,17 @@ sixel_dither_apply_positional_8bit_with_mode(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_A) \
+        || defined(SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_X)
+    (void)mask_mode;
+    sixel_positional_strength_init_8bit();
+#elif defined(SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_BLUENOISE)
+    (void)mask_mode;
+    sixel_bluenoise_conf_init_from_env_8bit();
+    bluenoise_conf = g_sixel_bn_conf_8bit;
+    sixel_bluenoise_conf_apply_dither_overrides_8bit(&bluenoise_conf,
+                                                     dither);
+#else
     if (mask_mode == SIXEL_DIFFUSE_A_DITHER
             || mask_mode == SIXEL_DIFFUSE_X_DITHER) {
         sixel_positional_strength_init_8bit();
@@ -674,6 +685,7 @@ sixel_dither_apply_positional_8bit_with_mode(sixel_dither_t *dither,
     } else {
         return SIXEL_BAD_ARGUMENT;
     }
+#endif
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
     palette_float = context->palette_float;
@@ -688,9 +700,13 @@ sixel_dither_apply_positional_8bit_with_mode(sixel_dither_t *dither,
             && transparent_keycolor < SIXEL_PALETTE_MAX) {
         use_transparent_fence = 1;
     }
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_BLUENOISE)
+    gradient_factor = bluenoise_conf.gradient_factor;
+#else
     if (mask_mode == SIXEL_DIFFUSE_BLUENOISE_DITHER) {
         gradient_factor = bluenoise_conf.gradient_factor;
     }
+#endif
 
 #define SIXEL_DITHER_APPLY_POSITIONAL_8BIT(NOISE_EXPR)                  \
     do {                                                                 \
@@ -908,10 +924,21 @@ sixel_dither_apply_positional_8bit_with_mode(sixel_dither_t *dither,
         }                                                                \
     } while (0)
 
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_A)
+    SIXEL_DITHER_APPLY_POSITIONAL_8BIT(
+        positional_mask_a_8bit(x, y, d) * gradient_weight);
+#elif defined(SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_BLUENOISE)
+    SIXEL_DITHER_APPLY_POSITIONAL_8BIT(
+        positional_mask_blue_with_conf_8bit(&bluenoise_conf, x, y, d)
+            * gradient_weight);
+#elif defined(SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_X)
+    SIXEL_DITHER_APPLY_POSITIONAL_8BIT(
+        positional_mask_x_8bit(x, y, d) * gradient_weight);
+#else
     switch (mask_mode) {
     case SIXEL_DIFFUSE_A_DITHER:
         SIXEL_DITHER_APPLY_POSITIONAL_8BIT(
-            positional_mask_a_8bit(x, y, d));
+            positional_mask_a_8bit(x, y, d) * gradient_weight);
         break;
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
         SIXEL_DITHER_APPLY_POSITIONAL_8BIT(
@@ -921,9 +948,10 @@ sixel_dither_apply_positional_8bit_with_mode(sixel_dither_t *dither,
     case SIXEL_DIFFUSE_X_DITHER:
     default:
         SIXEL_DITHER_APPLY_POSITIONAL_8BIT(
-            positional_mask_x_8bit(x, y, d));
+            positional_mask_x_8bit(x, y, d) * gradient_weight);
         break;
     }
+#endif
 #undef SIXEL_DITHER_APPLY_POSITIONAL_8BIT
 
     return SIXEL_OK;
@@ -979,6 +1007,47 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
 # undef SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_X
 # undef SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_A
 #endif
+
+#if defined(__GNUC__) || defined(__clang__)
+# define SIXEL_DITHER_POSITIONAL_8BIT_UNUSED __attribute__((unused))
+#else
+# define SIXEL_DITHER_POSITIONAL_8BIT_UNUSED
+#endif
+
+/*
+ * Keep helper symbols referenced in single-policy translation units so
+ * -Wunused-function does not fire when compile-time selection removes
+ * alternate code paths.
+ */
+static float (* const SIXEL_DITHER_POSITIONAL_8BIT_UNUSED
+sixel_dither_positional_8bit_keep_mask_fns[])(int, int, int) = {
+    positional_mask_a_8bit,
+    positional_mask_x_8bit
+};
+
+static float (* const SIXEL_DITHER_POSITIONAL_8BIT_UNUSED
+sixel_dither_positional_8bit_keep_blue_mask_fns[])(
+    sixel_bluenoise_conf_8bit_t const *,
+    int,
+    int,
+    int) = {
+    positional_mask_blue_with_conf_8bit
+};
+
+static void (* const SIXEL_DITHER_POSITIONAL_8BIT_UNUSED
+sixel_dither_positional_8bit_keep_init_fns[])(void) = {
+    sixel_positional_strength_init_8bit,
+    sixel_bluenoise_conf_init_from_env_8bit
+};
+
+static void (* const SIXEL_DITHER_POSITIONAL_8BIT_UNUSED
+sixel_dither_positional_8bit_keep_override_fns[])(
+    sixel_bluenoise_conf_8bit_t *,
+    sixel_dither_t const *) = {
+    sixel_bluenoise_conf_apply_dither_overrides_8bit
+};
+
+#undef SIXEL_DITHER_POSITIONAL_8BIT_UNUSED
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

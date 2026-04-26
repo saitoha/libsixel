@@ -1127,6 +1127,7 @@ sixel_dither_apply_fixed_impl(
     interframe_ops = NULL;
     interframe_error = NULL;
 
+#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
     if (method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         /*
          * Interframe strategy (diffusion/stbn/pmj) and spatial kernel are
@@ -1146,6 +1147,7 @@ sixel_dither_apply_fixed_impl(
             use_interframe = 1;
         }
     }
+#endif
     if (depth != 3) {
         effective_diffuse = SIXEL_DIFFUSE_NONE;
     }
@@ -1345,6 +1347,25 @@ sixel_dither_apply_fixed_impl(
         }                                                               \
     }
 
+#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE)
+    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_none);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS)
+    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_fs);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON)
+    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_atkinson);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI)
+    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_jajuni);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI)
+    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_stucki);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES)
+    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_burkes);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1)
+    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra1);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2)
+    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra2);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3)
+    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra3);
+#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
     switch (effective_diffuse) {
     case SIXEL_DIFFUSE_NONE:
         SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_none);
@@ -1380,7 +1401,47 @@ sixel_dither_apply_fixed_impl(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
+#else
+    switch (effective_diffuse) {
+    case SIXEL_DIFFUSE_NONE:
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_none);
+        break;
+    case SIXEL_DIFFUSE_ATKINSON:
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_atkinson);
+        break;
+    case SIXEL_DIFFUSE_JAJUNI:
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_jajuni);
+        break;
+    case SIXEL_DIFFUSE_STUCKI:
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_stucki);
+        break;
+    case SIXEL_DIFFUSE_BURKES:
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_burkes);
+        break;
+    case SIXEL_DIFFUSE_SIERRA1:
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra1);
+        break;
+    case SIXEL_DIFFUSE_SIERRA2:
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra2);
+        break;
+    case SIXEL_DIFFUSE_SIERRA3:
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra3);
+        break;
+    case SIXEL_DIFFUSE_INTERFRAME:
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_fs);
+        break;
+    case SIXEL_DIFFUSE_FS:
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_fs);
+        break;
+    default:
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+#endif
 #undef SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP
+
+    (void)effective_diffuse;
+    (void)interframe_spatial_diffuse;
 
     if (optimize_palette) {
         memcpy(palette, new_palette, (size_t)(*ncolors * depth));
@@ -2074,6 +2135,53 @@ diffuse_sierra3(unsigned char *data, int width, int height,
         }
     }
 }
+
+#if defined(__GNUC__) || defined(__clang__)
+# define SIXEL_DITHER_FIXED_8BIT_UNUSED __attribute__((unused))
+#else
+# define SIXEL_DITHER_FIXED_8BIT_UNUSED
+#endif
+
+/*
+ * Keep helper symbols referenced in single-policy translation units so
+ * -Wunused-function does not fire when compile-time selection removes
+ * alternate code paths.
+ */
+static void (* const SIXEL_DITHER_FIXED_8BIT_UNUSED
+sixel_dither_fixed_8bit_keep_diffuse_fns[])(
+    unsigned char *,
+    int,
+    int,
+    int,
+    int,
+    int,
+    int,
+    int) = {
+    diffuse_none,
+    diffuse_fs,
+    diffuse_atkinson,
+    diffuse_jajuni,
+    diffuse_stucki,
+    diffuse_burkes,
+    diffuse_sierra1,
+    diffuse_sierra2,
+    diffuse_sierra3
+};
+
+static int (* const SIXEL_DITHER_FIXED_8BIT_UNUSED
+sixel_dither_fixed_8bit_keep_interframe_from_diffuse[])(
+    sixel_dither_t const *,
+    int) = {
+    sixel_interframe_method_from_diffuse
+};
+
+static sixel_interframe_method_ops_t const *(
+    * const SIXEL_DITHER_FIXED_8BIT_UNUSED
+    sixel_dither_fixed_8bit_keep_interframe_strategy[])(int) = {
+    sixel_interframe_method_for_strategy
+};
+
+#undef SIXEL_DITHER_FIXED_8BIT_UNUSED
 
 
 /* emacs Local Variables:      */

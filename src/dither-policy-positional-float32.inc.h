@@ -681,6 +681,17 @@ sixel_dither_apply_positional_float32_with_mode(
         return SIXEL_BAD_ARGUMENT;
     }
 
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A) \
+        || defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_X)
+    (void)mask_mode;
+    sixel_positional_strength_init_float32();
+#elif defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE)
+    (void)mask_mode;
+    sixel_bluenoise_conf_init_from_env_float32();
+    bluenoise_conf = g_sixel_bn_conf_float32;
+    sixel_bluenoise_conf_apply_dither_overrides_float32(&bluenoise_conf,
+                                                        dither);
+#else
     if (mask_mode == SIXEL_DIFFUSE_A_DITHER
             || mask_mode == SIXEL_DIFFUSE_X_DITHER) {
         sixel_positional_strength_init_float32();
@@ -692,6 +703,7 @@ sixel_dither_apply_positional_float32_with_mode(
     } else {
         return SIXEL_BAD_ARGUMENT;
     }
+#endif
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
     jitter_scale = 32.0f / 255.0f;
@@ -708,9 +720,13 @@ sixel_dither_apply_positional_float32_with_mode(
             && transparent_keycolor < SIXEL_PALETTE_MAX) {
         use_transparent_fence = 1;
     }
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE)
+    gradient_factor = bluenoise_conf.gradient_factor;
+#else
     if (mask_mode == SIXEL_DIFFUSE_BLUENOISE_DITHER) {
         gradient_factor = bluenoise_conf.gradient_factor;
     }
+#endif
     lookup_wants_float = (context->lookup_source_is_float != 0);
     use_palette_float_lookup = 0;
     if (context->prefer_palette_float_lookup != 0
@@ -983,10 +999,21 @@ sixel_dither_apply_positional_float32_with_mode(
         }                                                                \
     } while (0)
 
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A)
+    SIXEL_DITHER_APPLY_POSITIONAL_FLOAT32(
+        positional_mask_a_float32(x, y, d) * gradient_weight);
+#elif defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE)
+    SIXEL_DITHER_APPLY_POSITIONAL_FLOAT32(
+        positional_mask_blue_with_conf_float32(&bluenoise_conf, x, y, d)
+            * gradient_weight);
+#elif defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_X)
+    SIXEL_DITHER_APPLY_POSITIONAL_FLOAT32(
+        positional_mask_x_float32(x, y, d) * gradient_weight);
+#else
     switch (mask_mode) {
     case SIXEL_DIFFUSE_A_DITHER:
         SIXEL_DITHER_APPLY_POSITIONAL_FLOAT32(
-            positional_mask_a_float32(x, y, d));
+            positional_mask_a_float32(x, y, d) * gradient_weight);
         break;
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
         SIXEL_DITHER_APPLY_POSITIONAL_FLOAT32(
@@ -996,9 +1023,10 @@ sixel_dither_apply_positional_float32_with_mode(
     case SIXEL_DIFFUSE_X_DITHER:
     default:
         SIXEL_DITHER_APPLY_POSITIONAL_FLOAT32(
-            positional_mask_x_float32(x, y, d));
+            positional_mask_x_float32(x, y, d) * gradient_weight);
         break;
     }
+#endif
 #undef SIXEL_DITHER_APPLY_POSITIONAL_FLOAT32
 
     return SIXEL_OK;
@@ -1054,6 +1082,47 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
 # undef SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_X
 # undef SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A
 #endif
+
+#if defined(__GNUC__) || defined(__clang__)
+# define SIXEL_DITHER_POSITIONAL_FLOAT32_UNUSED __attribute__((unused))
+#else
+# define SIXEL_DITHER_POSITIONAL_FLOAT32_UNUSED
+#endif
+
+/*
+ * Keep helper symbols referenced in single-policy translation units so
+ * -Wunused-function does not fire when compile-time selection removes
+ * alternate code paths.
+ */
+static float (* const SIXEL_DITHER_POSITIONAL_FLOAT32_UNUSED
+sixel_dither_positional_float32_keep_mask_fns[])(int, int, int) = {
+    positional_mask_a_float32,
+    positional_mask_x_float32
+};
+
+static float (* const SIXEL_DITHER_POSITIONAL_FLOAT32_UNUSED
+sixel_dither_positional_float32_keep_blue_mask_fns[])(
+    sixel_bluenoise_conf_float32_t const *,
+    int,
+    int,
+    int) = {
+    positional_mask_blue_with_conf_float32
+};
+
+static void (* const SIXEL_DITHER_POSITIONAL_FLOAT32_UNUSED
+sixel_dither_positional_float32_keep_init_fns[])(void) = {
+    sixel_positional_strength_init_float32,
+    sixel_bluenoise_conf_init_from_env_float32
+};
+
+static void (* const SIXEL_DITHER_POSITIONAL_FLOAT32_UNUSED
+sixel_dither_positional_float32_keep_override_fns[])(
+    sixel_bluenoise_conf_float32_t *,
+    sixel_dither_t const *) = {
+    sixel_bluenoise_conf_apply_dither_overrides_float32
+};
+
+#undef SIXEL_DITHER_POSITIONAL_FLOAT32_UNUSED
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
