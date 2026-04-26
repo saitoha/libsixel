@@ -1109,11 +1109,11 @@ clean-noinstPROGRAMS:
 	$(am__rm_f) $(noinst_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(noinst_PROGRAMS:$(EXEEXT)=)
 
-fuzz-encoder-encode-bytes-libfuzzer$(EXEEXT): $(fuzz_encoder_encode_bytes_libfuzzer_OBJECTS) $(fuzz_encoder_encode_bytes_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_encoder_encode_bytes_libfuzzer_DEPENDENCIES)
+fuzz-encoder-encode-bytes-libfuzzer$(EXEEXT): $(fuzz_encoder_encode_bytes_libfuzzer_OBJECTS) $(fuzz_encoder_encode_bytes_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_encoder_encode_bytes_libfuzzer_DEPENDENCIES) 
 	@rm -f fuzz-encoder-encode-bytes-libfuzzer$(EXEEXT)
 	$(AM_V_CCLD)$(fuzz_encoder_encode_bytes_libfuzzer_LINK) $(fuzz_encoder_encode_bytes_libfuzzer_OBJECTS) $(fuzz_encoder_encode_bytes_libfuzzer_LDADD) $(LIBS)
 
-fuzz-helper-write-image-file-libfuzzer$(EXEEXT): $(fuzz_helper_write_image_file_libfuzzer_OBJECTS) $(fuzz_helper_write_image_file_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_helper_write_image_file_libfuzzer_DEPENDENCIES)
+fuzz-helper-write-image-file-libfuzzer$(EXEEXT): $(fuzz_helper_write_image_file_libfuzzer_OBJECTS) $(fuzz_helper_write_image_file_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_helper_write_image_file_libfuzzer_DEPENDENCIES) 
 	@rm -f fuzz-helper-write-image-file-libfuzzer$(EXEEXT)
 	$(AM_V_CCLD)$(fuzz_helper_write_image_file_libfuzzer_LINK) $(fuzz_helper_write_image_file_libfuzzer_OBJECTS) $(fuzz_helper_write_image_file_libfuzzer_LDADD) $(LIBS)
 
