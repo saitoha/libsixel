@@ -1026,7 +1026,7 @@ fuzz_loader_builtin_struct_loader_order_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIB
 @HAVE_WIC_TRUE@fuzz_loader_wic_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
 @HAVE_WIC_TRUE@fuzz_loader_wic_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
 @HAVE_WIC_TRUE@fuzz_loader_wic_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
-FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp
+FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp webp
 all: all-am
 
 .SUFFIXES:

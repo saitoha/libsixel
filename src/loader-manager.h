@@ -51,6 +51,7 @@ typedef struct sixel_loader_suboptions {
     int libtiff_cms_engine;
     int builtin_enable_cms;
     int builtin_cms_engine;
+    int builtin_enable_orientation;
     int builtin_bmp_info40_mode;
 } sixel_loader_suboptions_t;
 

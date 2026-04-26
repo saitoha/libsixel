@@ -44,6 +44,7 @@ typedef struct sixel_builtin_load_with_builtin_args {
     int                        start_frame_no_set;
     int                        start_frame_no_override;
     int                        enable_cms;
+    int                        enable_orientation;
     int                        bmp_info40_mode;
     sixel_load_image_function  fn_load;
     void                      *context;
@@ -69,6 +70,7 @@ SIXELSTATUS load_with_builtin(
     int                        start_frame_no_set,
     int                        start_frame_no,
     int                        enable_cms,
+    int                        enable_orientation,
     int                        bmp_info40_mode,
     sixel_load_image_function  fn_load,
     void                      *context);

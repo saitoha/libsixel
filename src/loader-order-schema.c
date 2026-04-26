@@ -68,13 +68,11 @@ g_suboption_choices_loader_builtin_bmp_info40_mode[] = {
     { "os2", SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_OS2 }
 };
 
-#if HAVE_LIBPNG || HAVE_JPEG || HAVE_WEBP || HAVE_COREGRAPHICS
 static sixel_suboption_choice_t const
 g_suboption_choices_loader_orientation[] = {
     { "on", 1 },
     { "off", 0 }
 };
-#endif
 
 #if HAVE_LIBPNG
 static sixel_suboption_key_t const g_subkeys_loader_libpng[] = {
@@ -182,6 +180,15 @@ static sixel_suboption_key_t const g_subkeys_loader_builtin_enable_cms[] = {
         g_suboption_choices_loader_cms_engine,
         sizeof(g_suboption_choices_loader_cms_engine)
             / sizeof(g_suboption_choices_loader_cms_engine[0])
+    },
+    {
+        "orientation",
+        "o",
+        "SIXEL_LOADER_BUILTIN_ORIENTATION",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_suboption_choices_loader_orientation,
+        sizeof(g_suboption_choices_loader_orientation)
+            / sizeof(g_suboption_choices_loader_orientation[0])
     },
     {
         "bmp_info40_mode",

@@ -3175,6 +3175,7 @@ load_with_gnome_thumbnailer(
                                start_frame_no_set,
                                start_frame_no,
                                enable_cms,
+                               1,
                                SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO,
                                fn_load,
                                context);

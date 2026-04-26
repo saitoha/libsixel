@@ -101,6 +101,7 @@ load_with_builtin(
     int start_frame_no_set,
     int start_frame_no_override,
     int enable_cms,
+    int enable_orientation,
     int bmp_info40_mode,
     sixel_load_image_function fn_load,
     void *context)
@@ -117,6 +118,7 @@ load_with_builtin(
     args.start_frame_no_set = start_frame_no_set;
     args.start_frame_no_override = start_frame_no_override;
     args.enable_cms = enable_cms;
+    args.enable_orientation = enable_orientation;
     args.bmp_info40_mode = bmp_info40_mode;
     args.fn_load = fn_load;
     args.context = context;

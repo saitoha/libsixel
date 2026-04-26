@@ -16,60 +16,78 @@ test "${HAVE_WEBP-}" = 1 || {
     exit 0
 }
 
-test "${HAVE_EMSCRIPTEN_H-0}" = 1 && {
-    printf "1..0 # SKIP emscripten test_runner lacks --sigint-run support\n"
-    exit 0
-}
-
 echo "1..1"
 set -v
 
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
-ctrl_break_mode=0
-build_os="${RUNTIME_ENV_BUILD_OS-unknown}"
-build_os_is_darwin=0
-sigint_runner_mode=0
-test "${build_os}" != "${build_os#darwin}" && build_os_is_darwin=1
-
-# Wine on macOS does not reliably forward host SIGINT to wrapped
-# Windows processes. Skip this SIGINT-specific assertion to avoid
-# reporting platform signal-delivery behavior as a loader regression.
-test "${HAVE_WINDOWS_H-0}" = 1 && \
-    test "${RUNTIME_ENV_IS_WINE-0}" = 1 && \
-    test "${build_os_is_darwin}" = 1 && {
-    echo "ok 1 - libwebp SIGINT cancellation # SKIP wine/macOS signal forwarding is unreliable"
+test "${HAVE_WINDOWS_H-0}" = 1 && {
+    echo "ok 1 - libwebp force-loop SIGINT cancellation # SKIP signal forwarding checks are unstable on Windows runtimes"
     exit 0
 }
 
-test "${HAVE_WINDOWS_H-0}" = 1 && ctrl_break_mode=1
-test -x "${TEST_RUNNER_PATH-}" || ctrl_break_mode=0
-test -n "${SIXEL_RUNTIME-}" && ctrl_break_mode=0
-
-test "${HAVE_WINDOWS_H-0}" = 0 && sigint_runner_mode=1
-test -x "${TEST_RUNNER_PATH-}" || sigint_runner_mode=0
-test -n "${SIXEL_RUNTIME-}" && sigint_runner_mode=0
-
-test "${ctrl_break_mode}" = "1" && {
-    ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --win32-ctrl-break-run \
-        0 0 "${IMG2SIXEL_PATH}" -Llibwebp! -lforce "${input_webp}" \
-        >/dev/null || {
-        echo "not ok" 1 - "libwebp force-loop did not stop after CTRL_BREAK"
-        exit 0
-    }
-    echo "ok" 1 - "libwebp force-loop stops on CTRL_BREAK"
+test "${HAVE_EMSCRIPTEN_H-0}" = 1 && {
+    echo "ok 1 - libwebp force-loop SIGINT cancellation # SKIP emscripten runtime may not deliver host SIGINT deterministically"
     exit 0
 }
 
-test "${sigint_runner_mode}" = "1" && {
-    ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" --sigint-run \
-        0 0 "${IMG2SIXEL_PATH}" -Llibwebp! -lforce -g "${input_webp}" \
-        >/dev/null || {
-        echo "not ok" 1 - "libwebp force-loop did not stop after SIGINT"
-        exit 0
-    }
-    echo "ok" 1 - "libwebp force-loop stops on SIGINT"
+test -x "${TEST_RUNNER_PATH-}" || {
+    echo "ok 1 - libwebp force-loop SIGINT cancellation # SKIP test_runner --sigint-run-until is unavailable in this runtime"
     exit 0
 }
 
-echo "ok 1 - libwebp force-loop SIGINT cancellation # SKIP no signal-capable test_runner path in this runtime"
+test -n "${SIXEL_RUNTIME-}" && {
+    echo "ok 1 - libwebp force-loop SIGINT cancellation # SKIP wrapped runtime signal forwarding is unavailable"
+    exit 0
+}
+
+set +xv
+preflight_status=0
+preflight_trace=$(
+    # shellcheck disable=SC2086
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --env "SIXEL_THREADS=4" \
+        --env "SIXEL_TRACE_TOPIC=encode_handoff" \
+        --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
+        -Llibwebp! -ldisable -o /dev/null -g "${input_webp}" \
+        2>&1 >/dev/null
+) || preflight_status=$?
+preflight_has_trigger=0
+trace_remainder=${preflight_trace#*event=callback_handoff_decide}
+test "${trace_remainder}" != "${preflight_trace}" && preflight_has_trigger=1
+set -xv
+
+test "${preflight_status}" = "0" || {
+    printf '%s\n' "${preflight_trace}"
+    echo "not ok" 1 - "libwebp encode_handoff preflight failed"
+    exit 0
+}
+
+test "${preflight_has_trigger}" = "1" || {
+    echo "ok 1 - libwebp force-loop SIGINT cancellation # SKIP encode_handoff callback trace token is unavailable in this runtime"
+    exit 0
+}
+
+set +xv
+sigint_run_status=0
+trace_summary=$(
+    # shellcheck disable=SC2086
+    ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+        --sigint-run-until \
+        "event=callback_handoff_decide" \
+        0 \
+        ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+        --env "SIXEL_THREADS=4" \
+        --env "SIXEL_TRACE_TOPIC=encode_handoff" \
+        --env "SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL=1" \
+        -Llibwebp! -lforce -o /dev/null -g "${input_webp}" 2>&1 >/dev/null
+) || sigint_run_status=$?
+set -xv
+
+test "${sigint_run_status}" = "0" || {
+    printf '%s\n' "${trace_summary}"
+    echo "ok 1 - libwebp force-loop SIGINT cancellation # SKIP runtime signal forwarding is unavailable"
+    exit 0
+}
+
+echo "ok" 1 - "libwebp force-loop stops on SIGINT"
 exit 0

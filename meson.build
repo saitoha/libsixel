@@ -1802,6 +1802,7 @@ loader_helper_sources = files(
   'src/logger.h',
   'src/frame.c',
   'src/fromgif.c',
+  'src/fromwebp.c',
   'src/frompnm.c',
   'src/fromsixel.c',
   'src/loader.c',

@@ -1241,8 +1241,8 @@ ignored when OSC11 query supplies the background color.
 .TP 5
 .B SIXEL_LOADER_ORIENTATION
 .br
-set the default EXIF orientation handling for libjpeg/libpng/libwebp
-loaders. Accepts "on"/"off" (preferred) and "1"/"0" aliases.
+set the default EXIF orientation handling for libjpeg/libpng/libwebp/
+builtin loaders. Accepts "on"/"off" (preferred) and "1"/"0" aliases.
 defaults to on.
 .TP 5
 .B SIXEL_LOADER_LIBJPEG_ORIENTATION
@@ -1258,6 +1258,11 @@ overrides \fBSIXEL_LOADER_ORIENTATION\fP.
 .B SIXEL_LOADER_LIBWEBP_ORIENTATION
 .br
 override EXIF orientation handling for the libwebp loader.
+overrides \fBSIXEL_LOADER_ORIENTATION\fP.
+.TP 5
+.B SIXEL_LOADER_BUILTIN_ORIENTATION
+.br
+override EXIF orientation handling for the builtin loader.
 overrides \fBSIXEL_LOADER_ORIENTATION\fP.
 .TP 5
 .B SIXEL_LOADER_ANIMATION_START_FRAME_NO

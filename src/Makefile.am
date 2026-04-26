@@ -289,6 +289,20 @@ libsixel_la_SOURCES = \
                 $(srcdir)/frompsd.h \
                 $(srcdir)/fromgif.c \
                 $(srcdir)/fromgif.h \
+                $(srcdir)/fromwebp.c \
+                $(srcdir)/fromwebp.h \
+                $(srcdir)/fromwebp-internal.h \
+                $(srcdir)/fromwebp-vp8-private.h \
+                $(srcdir)/fromwebp-vp8-native-internal.h \
+                $(srcdir)/fromwebp-vp8-tables.h \
+                $(srcdir)/fromwebp-container.c \
+                $(srcdir)/fromwebp-vp8.c \
+                $(srcdir)/fromwebp-vp8-alpha.c \
+                $(srcdir)/fromwebp-vp8-parse.c \
+                $(srcdir)/fromwebp-vp8-native.c \
+                $(srcdir)/fromwebp-vp8-native-token.c \
+                $(srcdir)/fromwebp-vp8l.c \
+                $(srcdir)/fromwebp-trace.c \
                 $(srcdir)/frombmp-parser.c \
                 $(srcdir)/frombmp.c \
                 $(srcdir)/frombmp.h \

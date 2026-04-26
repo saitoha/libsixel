@@ -932,7 +932,7 @@ steps.
                            loader names such as 'gd,builtin'.
                            Unique prefixes are accepted, so
                            'core,b' expands to 'coregraphics,builtin'.
-                           libpng/libjpeg/libwebp accept
+                           libpng/libjpeg/libwebp/builtin accept
                            :orientation=on|off
                            (or :o=..., default on).
                            libpng/libjpeg/libwebp/libtiff/builtin
@@ -1046,6 +1046,9 @@ SIXEL_LOADER_LIBPNG_ORIENTATION
                            Overrides SIXEL_LOADER_ORIENTATION.
 SIXEL_LOADER_LIBWEBP_ORIENTATION
                            override libwebp EXIF orientation handling.
+                           Overrides SIXEL_LOADER_ORIENTATION.
+SIXEL_LOADER_BUILTIN_ORIENTATION
+                           override builtin loader EXIF orientation handling.
                            Overrides SIXEL_LOADER_ORIENTATION.
 SIXEL_LOADER_CMS_ENGINE    select CMS backend for loader ICC conversion.
                            Accepts none, auto, builtin, lcms2, or colorsync.
@@ -1188,6 +1191,18 @@ what is available):
 - `gd`
 - `quicklook`
 - `gnome-thumbnailer`
+
+The `builtin` loader includes an internal WebP MVP path. The current scope is
+static decode for `VP8L`, `VP8`, and a first `VP8+ALPH` subset.
+For `VP8+ALPH`, the builtin path currently supports `compression=0/1` with
+`filter=0..3` and `preprocess=0/1`; `compression=2/3`, `preprocess=2/3`, and
+animation supports an MVP path that reuses the existing static decoders
+(`VP8L`/`VP8`/`VP8+ALPH`) per frame with `ANMF` rectangle composition,
+blend-over/replace, and dispose-to-background handling. ANMF rectangles must
+stay inside the declared animation canvas; out-of-canvas rectangles are treated
+as malformed input. For static decode,
+embedded `ICCP` is applied when builtin CMS is enabled and embedded `EXIF`
+orientation is applied when builtin orientation handling is enabled.
 
 `librsvg` always returns raster frames as `RGB888` or `RGBA8888`.
 Without `-B` and with any non-opaque pixel, alpha is preserved
