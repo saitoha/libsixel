@@ -20,6 +20,156 @@
 #include "tests/processing/filter/filter_test_common.h"
 #include "src/output.h"
 
+static int g_issue222_capture_enabled;
+static int g_issue222_capture_complete;
+static size_t g_issue222_first_size;
+
+/*
+ * Capture the first allocation request issued during the encode_bytes call.
+ * The regression test uses this to verify that packed formats allocate the
+ * packed source length instead of width*height bytes.
+ */
+static void
+issue222_record_allocation(size_t size)
+{
+    if (g_issue222_capture_enabled != 0 &&
+            g_issue222_capture_complete == 0) {
+        g_issue222_capture_complete = 1;
+        g_issue222_first_size = size;
+    }
+}
+
+static void *
+issue222_malloc(size_t size)
+{
+    void *result;
+
+    result = malloc(size);
+    issue222_record_allocation(size);
+    return result;
+}
+
+static void *
+issue222_calloc(size_t nmemb, size_t size)
+{
+    void *result;
+
+    result = calloc(nmemb, size);
+    issue222_record_allocation(nmemb * size);
+    return result;
+}
+
+static void *
+issue222_realloc(void *ptr, size_t size)
+{
+    void *result;
+
+    result = realloc(ptr, size);
+    issue222_record_allocation(size);
+    return result;
+}
+
+static void
+issue222_free(void *ptr)
+{
+    free(ptr);
+}
+
+static int
+test_encode_bytes_uses_packed_byte_count_issue222(void)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_encoder_t *encoder;
+    unsigned char packed[17];
+    size_t expected_packed_bytes;
+    char const *sink_path;
+    int i;
+    int success;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    encoder = NULL;
+    expected_packed_bytes = 0u;
+    sink_path = NULL;
+    i = 0;
+    success = 0;
+
+#if defined(_WIN32)
+    sink_path = "NUL";
+#else
+    sink_path = "/dev/null";
+#endif
+
+    for (i = 0; i < (int)sizeof(packed); ++i) {
+        packed[i] = 0u;
+    }
+    packed[0] = 0xaau;
+    packed[1] = 0x55u;
+    packed[2] = 0x80u;
+
+    expected_packed_bytes = ((size_t)17u + 7u) / 8u;
+
+    status = sixel_allocator_new(&allocator,
+                                 issue222_malloc,
+                                 issue222_calloc,
+                                 issue222_realloc,
+                                 issue222_free);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_encoder_new(&encoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_OUTPUT, sink_path);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    g_issue222_capture_enabled = 1;
+    g_issue222_capture_complete = 0;
+    g_issue222_first_size = 0u;
+    status = sixel_encoder_encode_bytes(encoder,
+                                        packed,
+                                        17,
+                                        1,
+                                        SIXEL_PIXELFORMAT_G1,
+                                        NULL,
+                                        0);
+    g_issue222_capture_enabled = 0;
+    if (g_issue222_capture_complete == 0) {
+        fprintf(stderr,
+                "issue #222: encode_bytes finished without source copy "
+                "allocation (%d): %s\n",
+                status,
+                sixel_helper_get_additional_message());
+        goto cleanup;
+    }
+
+    if (g_issue222_first_size != expected_packed_bytes) {
+        fprintf(stderr,
+                "issue #222: expected first allocation %zu, got %zu\n",
+                expected_packed_bytes,
+                g_issue222_first_size);
+        goto cleanup;
+    }
+
+    success = 1;
+
+cleanup:
+    if (encoder != NULL) {
+        sixel_encoder_unref(encoder);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
+
+    return success;
+}
+
 static int
 test_encode_updates_output_and_progress(void)
 {
@@ -150,6 +300,26 @@ test_filter_0010_filter_encode(int argc, char **argv)
     if (!test_encode_updates_output_and_progress()) {
         fprintf(stderr,
                 "encode filter writes metadata and streams data failed\n");
+        success = 0;
+    }
+
+    return success ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+int
+test_security_0001_issue222_encoder_encode_bytes_packed_g1(int argc,
+                                                            char **argv)
+{
+    int success;
+
+    (void) argc;
+    (void) argv;
+
+    success = 1;
+
+    if (!test_encode_bytes_uses_packed_byte_count_issue222()) {
+        fprintf(stderr,
+                "issue #222: packed G1 encode_bytes size handling failed\n");
         success = 0;
     }
 

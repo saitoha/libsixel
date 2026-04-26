@@ -105,6 +105,8 @@ int test_palette_0003_kcenter_constraints(int argc, char **argv);
 int test_cli_0029_cli_token_is_known_option(int argc, char **argv);
 int test_cli_0030_cli_option_requires_argument(int argc, char **argv);
 int test_cli_0031_cli_guard_missing_argument(int argc, char **argv);
+int test_security_0001_issue222_encoder_encode_bytes_packed_g1(int argc,
+                                                                char **argv);
 
 int test_loader_0008_loader_coregraphics_pixelformat(int argc, char **argv);
 int test_loader_0009_loader_wic_pixelformat(int argc, char **argv);
@@ -211,6 +213,8 @@ static test_entry_t const test_entries[] = {
     { "filter/0008_filter_load", test_filter_0008_filter_load },
     { "filter/0009_filter_dither", test_filter_0009_filter_dither },
     { "filter/0010_filter_encode", test_filter_0010_filter_encode },
+    { "security/0001_issue222_encoder_encode_bytes_packed_g1",
+      test_security_0001_issue222_encoder_encode_bytes_packed_g1 },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },
