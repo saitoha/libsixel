@@ -43,6 +43,8 @@ FUZZ_STRUCT_FULL_SET = $(FUZZ_STRUCT_TARGETS)
 
 if COND_FUZZ
 noinst_PROGRAMS = \
+    fuzz-encoder-encode-bytes-libfuzzer \
+    fuzz-helper-write-image-file-libfuzzer \
     fuzz-loader-builtin-libfuzzer \
     fuzz-loader-builtin-struct-png-chunk-libfuzzer \
     fuzz-loader-builtin-struct-png-apng-libfuzzer \
@@ -88,6 +90,8 @@ EXTRA_DIST = \
     corpus/img2sixel-cli/seed-snake64.pbm \
     corpus/img2sixel-cli/seed-static.gif \
     corpus/img2sixel-cli/seed-truncated.pic \
+    fuzz-encoder-encode-bytes-libfuzzer.c \
+    fuzz-helper-write-image-file-libfuzzer.c \
     fuzz-loader-builtin-libfuzzer.c \
     fuzz-loader-component-libfuzzer.c \
     fuzz-loader-builtin-struct-common.h \
@@ -131,6 +135,20 @@ FUZZ_COMMON_LINK_FLAGS = \
 FUZZ_COMMON_LINK_LIBS = \
     $(top_builddir)/src/libsixel.la \
     $(LIBS)
+
+fuzz_encoder_encode_bytes_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-encoder-encode-bytes-libfuzzer.c
+fuzz_encoder_encode_bytes_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_encoder_encode_bytes_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_encoder_encode_bytes_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_encoder_encode_bytes_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_helper_write_image_file_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-helper-write-image-file-libfuzzer.c
+fuzz_helper_write_image_file_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_helper_write_image_file_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_helper_write_image_file_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_helper_write_image_file_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
 
 fuzz_loader_builtin_libfuzzer_SOURCES = \
     $(srcdir)/fuzz-loader-builtin-libfuzzer.c
@@ -304,15 +322,36 @@ endif
 
 FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
 FUZZ_BUILTIN_ARGS ?=
+FUZZ_ENCODE_BYTES_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/encode-bytes
+FUZZ_ENCODE_BYTES_ARGS ?= $(FUZZ_BUILTIN_ARGS)
+FUZZ_WRITE_IMAGE_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/write-image-file
+FUZZ_WRITE_IMAGE_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 FUZZ_BUILTIN_FORMATS = png gif jpeg pnm sixel hdr psd pic bmp webp
 FUZZ_STRUCT_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/struct
 FUZZ_STRUCT_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 FUZZ_COMPONENT_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/component
 FUZZ_COMPONENT_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 
-.PHONY: run-loader-builtin run-loader-builtin-formats \
+.PHONY: run-encoder-encode-bytes run-helper-write-image-file \
+    run-loader-builtin run-loader-builtin-formats \
     run-loader-coregraphics run-loader-wic \
     run-struct-push-set run-struct-full-set
+
+run-encoder-encode-bytes: fuzz-encoder-encode-bytes-libfuzzer$(EXEEXT)
+	@set -eu; \
+	target="$(abs_builddir)/fuzz-encoder-encode-bytes-libfuzzer$(EXEEXT)"; \
+	corpus="$(FUZZ_ENCODE_BYTES_CORPUS)"; \
+	mkdir -p "$$corpus"; \
+	echo "fuzz[encode-bytes]: running $$target $(FUZZ_ENCODE_BYTES_ARGS) $$corpus"; \
+	exec "$$target" $(FUZZ_ENCODE_BYTES_ARGS) "$$corpus"
+
+run-helper-write-image-file: fuzz-helper-write-image-file-libfuzzer$(EXEEXT)
+	@set -eu; \
+	target="$(abs_builddir)/fuzz-helper-write-image-file-libfuzzer$(EXEEXT)"; \
+	corpus="$(FUZZ_WRITE_IMAGE_CORPUS)"; \
+	mkdir -p "$$corpus"; \
+	echo "fuzz[write-image-file]: running $$target $(FUZZ_WRITE_IMAGE_ARGS) $$corpus"; \
+	exec "$$target" $(FUZZ_WRITE_IMAGE_ARGS) "$$corpus"
 
 run-loader-builtin: fuzz-loader-builtin-libfuzzer$(EXEEXT)
 	@set -eu; \

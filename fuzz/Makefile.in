@@ -95,6 +95,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @COND_FUZZ_TRUE@noinst_PROGRAMS =  \
+@COND_FUZZ_TRUE@	fuzz-encoder-encode-bytes-libfuzzer$(EXEEXT) \
+@COND_FUZZ_TRUE@	fuzz-helper-write-image-file-libfuzzer$(EXEEXT) \
 @COND_FUZZ_TRUE@	fuzz-loader-builtin-libfuzzer$(EXEEXT) \
 @COND_FUZZ_TRUE@	fuzz-loader-builtin-struct-png-chunk-libfuzzer$(EXEEXT) \
 @COND_FUZZ_TRUE@	fuzz-loader-builtin-struct-png-apng-libfuzzer$(EXEEXT) \
@@ -141,17 +143,37 @@ CONFIG_CLEAN_VPATH_FILES =
 @COND_FUZZ_TRUE@@HAVE_COREGRAPHICS_TRUE@am__EXEEXT_1 = fuzz-loader-coregraphics-libfuzzer$(EXEEXT)
 @COND_FUZZ_TRUE@@HAVE_WIC_TRUE@am__EXEEXT_2 = fuzz-loader-wic-libfuzzer$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
-am_fuzz_loader_builtin_libfuzzer_OBJECTS = fuzz_loader_builtin_libfuzzer-fuzz-loader-builtin-libfuzzer.$(OBJEXT)
-fuzz_loader_builtin_libfuzzer_OBJECTS =  \
-	$(am_fuzz_loader_builtin_libfuzzer_OBJECTS)
+am_fuzz_encoder_encode_bytes_libfuzzer_OBJECTS = fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.$(OBJEXT)
+fuzz_encoder_encode_bytes_libfuzzer_OBJECTS =  \
+	$(am_fuzz_encoder_encode_bytes_libfuzzer_OBJECTS)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(top_builddir)/src/libsixel.la \
 	$(am__DEPENDENCIES_1)
-fuzz_loader_builtin_libfuzzer_DEPENDENCIES = $(am__DEPENDENCIES_2)
+fuzz_encoder_encode_bytes_libfuzzer_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_2)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+fuzz_encoder_encode_bytes_libfuzzer_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(fuzz_encoder_encode_bytes_libfuzzer_CFLAGS) \
+	$(CFLAGS) $(fuzz_encoder_encode_bytes_libfuzzer_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_fuzz_helper_write_image_file_libfuzzer_OBJECTS = fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.$(OBJEXT)
+fuzz_helper_write_image_file_libfuzzer_OBJECTS =  \
+	$(am_fuzz_helper_write_image_file_libfuzzer_OBJECTS)
+fuzz_helper_write_image_file_libfuzzer_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_2)
+fuzz_helper_write_image_file_libfuzzer_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(fuzz_helper_write_image_file_libfuzzer_CFLAGS) \
+	$(CFLAGS) $(fuzz_helper_write_image_file_libfuzzer_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_fuzz_loader_builtin_libfuzzer_OBJECTS = fuzz_loader_builtin_libfuzzer-fuzz-loader-builtin-libfuzzer.$(OBJEXT)
+fuzz_loader_builtin_libfuzzer_OBJECTS =  \
+	$(am_fuzz_loader_builtin_libfuzzer_OBJECTS)
+fuzz_loader_builtin_libfuzzer_DEPENDENCIES = $(am__DEPENDENCIES_2)
 fuzz_loader_builtin_libfuzzer_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(fuzz_loader_builtin_libfuzzer_CFLAGS) $(CFLAGS) \
@@ -412,7 +434,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/fuzz_loader_builtin_libfuzzer-fuzz-loader-builtin-libfuzzer.Po \
+am__depfiles_remade = ./$(DEPDIR)/fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.Po \
+	./$(DEPDIR)/fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.Po \
+	./$(DEPDIR)/fuzz_loader_builtin_libfuzzer-fuzz-loader-builtin-libfuzzer.Po \
 	./$(DEPDIR)/fuzz_loader_builtin_struct_bmp_dib_libfuzzer-fuzz-loader-builtin-struct-bmp-dib-libfuzzer.Po \
 	./$(DEPDIR)/fuzz_loader_builtin_struct_bmp_dib_libfuzzer-fuzz-loader-builtin-struct-runtime.Po \
 	./$(DEPDIR)/fuzz_loader_builtin_struct_bmp_rle_bitfields_libfuzzer-fuzz-loader-builtin-struct-bmp-rle-bitfields-libfuzzer.Po \
@@ -466,7 +490,9 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(fuzz_loader_builtin_libfuzzer_SOURCES) \
+SOURCES = $(fuzz_encoder_encode_bytes_libfuzzer_SOURCES) \
+	$(fuzz_helper_write_image_file_libfuzzer_SOURCES) \
+	$(fuzz_loader_builtin_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_bmp_dib_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_bmp_rle_bitfields_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_gif_block_libfuzzer_SOURCES) \
@@ -487,7 +513,9 @@ SOURCES = $(fuzz_loader_builtin_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_sixel_stream_libfuzzer_SOURCES) \
 	$(fuzz_loader_coregraphics_libfuzzer_SOURCES) \
 	$(fuzz_loader_wic_libfuzzer_SOURCES)
-DIST_SOURCES = $(fuzz_loader_builtin_libfuzzer_SOURCES) \
+DIST_SOURCES = $(fuzz_encoder_encode_bytes_libfuzzer_SOURCES) \
+	$(fuzz_helper_write_image_file_libfuzzer_SOURCES) \
+	$(fuzz_loader_builtin_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_bmp_dib_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_bmp_rle_bitfields_libfuzzer_SOURCES) \
 	$(fuzz_loader_builtin_struct_gif_block_libfuzzer_SOURCES) \
@@ -815,6 +843,8 @@ EXTRA_DIST = \
     corpus/img2sixel-cli/seed-snake64.pbm \
     corpus/img2sixel-cli/seed-static.gif \
     corpus/img2sixel-cli/seed-truncated.pic \
+    fuzz-encoder-encode-bytes-libfuzzer.c \
+    fuzz-helper-write-image-file-libfuzzer.c \
     fuzz-loader-builtin-libfuzzer.c \
     fuzz-loader-component-libfuzzer.c \
     fuzz-loader-builtin-struct-common.h \
@@ -859,6 +889,20 @@ FUZZ_COMMON_LINK_LIBS = \
     $(top_builddir)/src/libsixel.la \
     $(LIBS)
 
+fuzz_encoder_encode_bytes_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-encoder-encode-bytes-libfuzzer.c
+
+fuzz_encoder_encode_bytes_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_encoder_encode_bytes_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_encoder_encode_bytes_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_encoder_encode_bytes_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+fuzz_helper_write_image_file_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-helper-write-image-file-libfuzzer.c
+
+fuzz_helper_write_image_file_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_helper_write_image_file_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_helper_write_image_file_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_helper_write_image_file_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
 fuzz_loader_builtin_libfuzzer_SOURCES = \
     $(srcdir)/fuzz-loader-builtin-libfuzzer.c
 
@@ -1065,6 +1109,14 @@ clean-noinstPROGRAMS:
 	$(am__rm_f) $(noinst_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(noinst_PROGRAMS:$(EXEEXT)=)
 
+fuzz-encoder-encode-bytes-libfuzzer$(EXEEXT): $(fuzz_encoder_encode_bytes_libfuzzer_OBJECTS) $(fuzz_encoder_encode_bytes_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_encoder_encode_bytes_libfuzzer_DEPENDENCIES)
+	@rm -f fuzz-encoder-encode-bytes-libfuzzer$(EXEEXT)
+	$(AM_V_CCLD)$(fuzz_encoder_encode_bytes_libfuzzer_LINK) $(fuzz_encoder_encode_bytes_libfuzzer_OBJECTS) $(fuzz_encoder_encode_bytes_libfuzzer_LDADD) $(LIBS)
+
+fuzz-helper-write-image-file-libfuzzer$(EXEEXT): $(fuzz_helper_write_image_file_libfuzzer_OBJECTS) $(fuzz_helper_write_image_file_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_helper_write_image_file_libfuzzer_DEPENDENCIES)
+	@rm -f fuzz-helper-write-image-file-libfuzzer$(EXEEXT)
+	$(AM_V_CCLD)$(fuzz_helper_write_image_file_libfuzzer_LINK) $(fuzz_helper_write_image_file_libfuzzer_OBJECTS) $(fuzz_helper_write_image_file_libfuzzer_LDADD) $(LIBS)
+
 fuzz-loader-builtin-libfuzzer$(EXEEXT): $(fuzz_loader_builtin_libfuzzer_OBJECTS) $(fuzz_loader_builtin_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_loader_builtin_libfuzzer_DEPENDENCIES) 
 	@rm -f fuzz-loader-builtin-libfuzzer$(EXEEXT)
 	$(AM_V_CCLD)$(fuzz_loader_builtin_libfuzzer_LINK) $(fuzz_loader_builtin_libfuzzer_OBJECTS) $(fuzz_loader_builtin_libfuzzer_LDADD) $(LIBS)
@@ -1155,6 +1207,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_loader_builtin_libfuzzer-fuzz-loader-builtin-libfuzzer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_loader_builtin_struct_bmp_dib_libfuzzer-fuzz-loader-builtin-struct-bmp-dib-libfuzzer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fuzz_loader_builtin_struct_bmp_dib_libfuzzer-fuzz-loader-builtin-struct-runtime.Po@am__quote@ # am--include-marker
@@ -1220,6 +1274,34 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.o: fuzz-encoder-encode-bytes-libfuzzer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_encoder_encode_bytes_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_encoder_encode_bytes_libfuzzer_CFLAGS) $(CFLAGS) -MT fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.o -MD -MP -MF $(DEPDIR)/fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.Tpo -c -o fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.o `test -f 'fuzz-encoder-encode-bytes-libfuzzer.c' || echo '$(srcdir)/'`fuzz-encoder-encode-bytes-libfuzzer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.Tpo $(DEPDIR)/fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fuzz-encoder-encode-bytes-libfuzzer.c' object='fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_encoder_encode_bytes_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_encoder_encode_bytes_libfuzzer_CFLAGS) $(CFLAGS) -c -o fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.o `test -f 'fuzz-encoder-encode-bytes-libfuzzer.c' || echo '$(srcdir)/'`fuzz-encoder-encode-bytes-libfuzzer.c
+
+fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.obj: fuzz-encoder-encode-bytes-libfuzzer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_encoder_encode_bytes_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_encoder_encode_bytes_libfuzzer_CFLAGS) $(CFLAGS) -MT fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.obj -MD -MP -MF $(DEPDIR)/fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.Tpo -c -o fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.obj `if test -f 'fuzz-encoder-encode-bytes-libfuzzer.c'; then $(CYGPATH_W) 'fuzz-encoder-encode-bytes-libfuzzer.c'; else $(CYGPATH_W) '$(srcdir)/fuzz-encoder-encode-bytes-libfuzzer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.Tpo $(DEPDIR)/fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fuzz-encoder-encode-bytes-libfuzzer.c' object='fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_encoder_encode_bytes_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_encoder_encode_bytes_libfuzzer_CFLAGS) $(CFLAGS) -c -o fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.obj `if test -f 'fuzz-encoder-encode-bytes-libfuzzer.c'; then $(CYGPATH_W) 'fuzz-encoder-encode-bytes-libfuzzer.c'; else $(CYGPATH_W) '$(srcdir)/fuzz-encoder-encode-bytes-libfuzzer.c'; fi`
+
+fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.o: fuzz-helper-write-image-file-libfuzzer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_helper_write_image_file_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_helper_write_image_file_libfuzzer_CFLAGS) $(CFLAGS) -MT fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.o -MD -MP -MF $(DEPDIR)/fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.Tpo -c -o fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.o `test -f 'fuzz-helper-write-image-file-libfuzzer.c' || echo '$(srcdir)/'`fuzz-helper-write-image-file-libfuzzer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.Tpo $(DEPDIR)/fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fuzz-helper-write-image-file-libfuzzer.c' object='fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_helper_write_image_file_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_helper_write_image_file_libfuzzer_CFLAGS) $(CFLAGS) -c -o fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.o `test -f 'fuzz-helper-write-image-file-libfuzzer.c' || echo '$(srcdir)/'`fuzz-helper-write-image-file-libfuzzer.c
+
+fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.obj: fuzz-helper-write-image-file-libfuzzer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_helper_write_image_file_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_helper_write_image_file_libfuzzer_CFLAGS) $(CFLAGS) -MT fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.obj -MD -MP -MF $(DEPDIR)/fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.Tpo -c -o fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.obj `if test -f 'fuzz-helper-write-image-file-libfuzzer.c'; then $(CYGPATH_W) 'fuzz-helper-write-image-file-libfuzzer.c'; else $(CYGPATH_W) '$(srcdir)/fuzz-helper-write-image-file-libfuzzer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.Tpo $(DEPDIR)/fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fuzz-helper-write-image-file-libfuzzer.c' object='fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_helper_write_image_file_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_helper_write_image_file_libfuzzer_CFLAGS) $(CFLAGS) -c -o fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.obj `if test -f 'fuzz-helper-write-image-file-libfuzzer.c'; then $(CYGPATH_W) 'fuzz-helper-write-image-file-libfuzzer.c'; else $(CYGPATH_W) '$(srcdir)/fuzz-helper-write-image-file-libfuzzer.c'; fi`
 
 fuzz_loader_builtin_libfuzzer-fuzz-loader-builtin-libfuzzer.o: fuzz-loader-builtin-libfuzzer.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fuzz_loader_builtin_libfuzzer_CPPFLAGS) $(CPPFLAGS) $(fuzz_loader_builtin_libfuzzer_CFLAGS) $(CFLAGS) -MT fuzz_loader_builtin_libfuzzer-fuzz-loader-builtin-libfuzzer.o -MD -MP -MF $(DEPDIR)/fuzz_loader_builtin_libfuzzer-fuzz-loader-builtin-libfuzzer.Tpo -c -o fuzz_loader_builtin_libfuzzer-fuzz-loader-builtin-libfuzzer.o `test -f 'fuzz-loader-builtin-libfuzzer.c' || echo '$(srcdir)/'`fuzz-loader-builtin-libfuzzer.c
@@ -1842,6 +1924,8 @@ clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
 	mostlyclean-am
 
 distclean: distclean-am
+	-rm -f ./$(DEPDIR)/fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.Po
+	-rm -f ./$(DEPDIR)/fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_libfuzzer-fuzz-loader-builtin-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_bmp_dib_libfuzzer-fuzz-loader-builtin-struct-bmp-dib-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_bmp_dib_libfuzzer-fuzz-loader-builtin-struct-runtime.Po
@@ -1922,6 +2006,8 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -f ./$(DEPDIR)/fuzz_encoder_encode_bytes_libfuzzer-fuzz-encoder-encode-bytes-libfuzzer.Po
+	-rm -f ./$(DEPDIR)/fuzz_helper_write_image_file_libfuzzer-fuzz-helper-write-image-file-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_libfuzzer-fuzz-loader-builtin-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_bmp_dib_libfuzzer-fuzz-loader-builtin-struct-bmp-dib-libfuzzer.Po
 	-rm -f ./$(DEPDIR)/fuzz_loader_builtin_struct_bmp_dib_libfuzzer-fuzz-loader-builtin-struct-runtime.Po
@@ -1996,14 +2082,35 @@ uninstall-am:
 
 FUZZ_BUILTIN_CORPUS ?= $(top_srcdir)/images
 FUZZ_BUILTIN_ARGS ?=
+FUZZ_ENCODE_BYTES_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/encode-bytes
+FUZZ_ENCODE_BYTES_ARGS ?= $(FUZZ_BUILTIN_ARGS)
+FUZZ_WRITE_IMAGE_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/write-image-file
+FUZZ_WRITE_IMAGE_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 FUZZ_STRUCT_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/struct
 FUZZ_STRUCT_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 FUZZ_COMPONENT_CORPUS ?= $(FUZZ_BUILTIN_CORPUS)/component
 FUZZ_COMPONENT_ARGS ?= $(FUZZ_BUILTIN_ARGS)
 
-.PHONY: run-loader-builtin run-loader-builtin-formats \
+.PHONY: run-encoder-encode-bytes run-helper-write-image-file \
+    run-loader-builtin run-loader-builtin-formats \
     run-loader-coregraphics run-loader-wic \
     run-struct-push-set run-struct-full-set
+
+run-encoder-encode-bytes: fuzz-encoder-encode-bytes-libfuzzer$(EXEEXT)
+	@set -eu; \
+	target="$(abs_builddir)/fuzz-encoder-encode-bytes-libfuzzer$(EXEEXT)"; \
+	corpus="$(FUZZ_ENCODE_BYTES_CORPUS)"; \
+	mkdir -p "$$corpus"; \
+	echo "fuzz[encode-bytes]: running $$target $(FUZZ_ENCODE_BYTES_ARGS) $$corpus"; \
+	exec "$$target" $(FUZZ_ENCODE_BYTES_ARGS) "$$corpus"
+
+run-helper-write-image-file: fuzz-helper-write-image-file-libfuzzer$(EXEEXT)
+	@set -eu; \
+	target="$(abs_builddir)/fuzz-helper-write-image-file-libfuzzer$(EXEEXT)"; \
+	corpus="$(FUZZ_WRITE_IMAGE_CORPUS)"; \
+	mkdir -p "$$corpus"; \
+	echo "fuzz[write-image-file]: running $$target $(FUZZ_WRITE_IMAGE_ARGS) $$corpus"; \
+	exec "$$target" $(FUZZ_WRITE_IMAGE_ARGS) "$$corpus"
 
 run-loader-builtin: fuzz-loader-builtin-libfuzzer$(EXEEXT)
 	@set -eu; \

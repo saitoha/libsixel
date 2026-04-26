@@ -74,6 +74,72 @@ fuzz_loader_builtin = executable('fuzz-loader-builtin-libfuzzer',
   build_by_default: true,
 )
 
+fuzz_encoder_encode_bytes = executable('fuzz-encoder-encode-bytes-libfuzzer',
+  'fuzz-encoder-encode-bytes-libfuzzer.c',
+  include_directories: project_inc,
+  dependencies: [libsixel_dep],
+  c_args: fuzz_common_c_args,
+  link_args: fuzz_common_link_args,
+  build_by_default: true,
+)
+
+run_target('fuzz-run-encoder-encode-bytes',
+  command: [sh, '-c', '''
+set -eu
+
+target="$1"
+source_root="$2"
+corpus="${FUZZ_ENCODE_BYTES_CORPUS:-${FUZZ_BUILTIN_CORPUS:-$source_root/images}/encode-bytes}"
+args="${FUZZ_ENCODE_BYTES_ARGS:-${FUZZ_BUILTIN_ARGS:-}}"
+
+mkdir -p "$corpus"
+echo "fuzz-run-encoder-encode-bytes: target=$target corpus=$corpus"
+if test -n "$args"; then
+  echo "fuzz-run-encoder-encode-bytes: args=$args"
+  # shellcheck disable=SC2086
+  exec "$target" $args "$corpus"
+fi
+
+exec "$target" "$corpus"
+''',
+            'sh',
+            fuzz_encoder_encode_bytes.full_path(),
+            meson.project_source_root()],
+  depends: [fuzz_encoder_encode_bytes])
+
+fuzz_helper_write_image_file = executable('fuzz-helper-write-image-file-libfuzzer',
+  'fuzz-helper-write-image-file-libfuzzer.c',
+  include_directories: project_inc,
+  dependencies: [libsixel_dep],
+  c_args: fuzz_common_c_args,
+  link_args: fuzz_common_link_args,
+  build_by_default: true,
+)
+
+run_target('fuzz-run-helper-write-image-file',
+  command: [sh, '-c', '''
+set -eu
+
+target="$1"
+source_root="$2"
+corpus="${FUZZ_WRITE_IMAGE_CORPUS:-${FUZZ_BUILTIN_CORPUS:-$source_root/images}/write-image-file}"
+args="${FUZZ_WRITE_IMAGE_ARGS:-${FUZZ_BUILTIN_ARGS:-}}"
+
+mkdir -p "$corpus"
+echo "fuzz-run-helper-write-image-file: target=$target corpus=$corpus"
+if test -n "$args"; then
+  echo "fuzz-run-helper-write-image-file: args=$args"
+  # shellcheck disable=SC2086
+  exec "$target" $args "$corpus"
+fi
+
+exec "$target" "$corpus"
+''',
+            'sh',
+            fuzz_helper_write_image_file.full_path(),
+            meson.project_source_root()],
+  depends: [fuzz_helper_write_image_file])
+
 run_target('fuzz-run-loader-builtin',
   command: [sh, '-c', '''
 set -eu

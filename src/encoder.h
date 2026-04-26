@@ -290,7 +290,6 @@ struct sixel_encoder {
     unsigned short drcs_charset_no;
     int drcs_mmv;
     int capture_quantized;
-    int capture_source;
     unsigned char *capture_pixels;
     size_t capture_pixels_size;
     unsigned char *capture_palette;
@@ -302,7 +301,6 @@ struct sixel_encoder {
     int capture_colorspace;
     int capture_ncolors;
     int capture_valid;
-    struct sixel_frame *capture_source_frame;
     char last_loader_name[64];
     char last_source_path[PATH_MAX];
     size_t last_input_bytes;

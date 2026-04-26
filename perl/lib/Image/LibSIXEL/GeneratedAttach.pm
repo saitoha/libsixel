@@ -135,10 +135,6 @@ sub attach_all {
     $ffi->attach(['sixel_encoder_setopt' => 'Image::LibSIXEL::_sixel_encoder_setopt'] => ['opaque', 'int', 'string'] => 'int');
     $ffi->attach(['sixel_encoder_encode' => 'Image::LibSIXEL::_sixel_encoder_encode'] => ['opaque', 'string'] => 'int');
     $ffi->attach(['sixel_encoder_encode_bytes' => 'Image::LibSIXEL::sixel_encoder_encode_bytes'] => ['opaque', 'opaque', 'int', 'int', 'int', 'opaque', 'int'] => 'int');
-    $ffi->attach(['sixel_encoder_enable_quantized_capture' => 'Image::LibSIXEL::sixel_encoder_enable_quantized_capture'] => ['opaque', 'int'] => 'int');
-    $ffi->attach(['sixel_encoder_enable_source_capture' => 'Image::LibSIXEL::sixel_encoder_enable_source_capture'] => ['opaque', 'int'] => 'int');
-    $ffi->attach(['sixel_encoder_copy_quantized_frame' => 'Image::LibSIXEL::sixel_encoder_copy_quantized_frame'] => ['opaque', 'opaque', 'opaque*'] => 'int');
-    $ffi->attach(['sixel_encoder_copy_source_frame' => 'Image::LibSIXEL::sixel_encoder_copy_source_frame'] => ['opaque', 'opaque*'] => 'int');
     $ffi->attach(['sixel_decoder_new' => 'Image::LibSIXEL::_sixel_decoder_new'] => ['opaque*', 'opaque'] => 'int');
     $ffi->attach(['sixel_decoder_create' => 'Image::LibSIXEL::sixel_decoder_create'] => [] => 'opaque');
     $ffi->attach(['sixel_decoder_ref' => 'Image::LibSIXEL::sixel_decoder_ref'] => ['opaque'] => 'void');

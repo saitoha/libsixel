@@ -1797,27 +1797,6 @@ sixel_encoder_encode_bytes(
     unsigned char       /* in */    *palette,
     int                 /* in */    ncolors);
 
-SIXELAPI SIXELSTATUS
-sixel_encoder_enable_quantized_capture(
-    sixel_encoder_t /* in */ *encoder,
-    int             /* in */ enable);
-
-SIXELAPI SIXELSTATUS
-sixel_encoder_enable_source_capture(
-    sixel_encoder_t /* in */ *encoder,
-    int             /* in */ enable);
-
-SIXELAPI SIXELSTATUS
-sixel_encoder_copy_quantized_frame(
-    sixel_encoder_t     /* in */  *encoder,
-    sixel_allocator_t   /* in */  *allocator,
-    sixel_frame_t       /* out */ **ppframe);
-
-SIXELAPI SIXELSTATUS
-sixel_encoder_copy_source_frame(
-    sixel_encoder_t     /* in */  *encoder,
-    sixel_frame_t       /* out */ **ppframe);
-
 #ifdef __cplusplus
 }
 #endif

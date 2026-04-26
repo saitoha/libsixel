@@ -4974,6 +4974,17 @@ end:
 static SIXELSTATUS
 sixel_encoder_emit_palette_output(sixel_encoder_t *encoder);
 
+static SIXELSTATUS
+sixel_encoder_enable_quantized_capture_internal(
+    sixel_encoder_t *encoder,
+    int enable);
+
+static SIXELSTATUS
+sixel_encoder_copy_quantized_frame_internal(
+    sixel_encoder_t *encoder,
+    sixel_allocator_t *allocator,
+    sixel_frame_t **ppframe);
+
 
 static int
 sixel_encoder_parse_sample_target(char const *text, size_t *value_out)
@@ -8379,7 +8390,6 @@ sixel_encoder_new(
     (*ppencoder)->drcs_charset_no       = 1u;
     (*ppencoder)->drcs_mmv              = 2;
     (*ppencoder)->capture_quantized     = 0;
-    (*ppencoder)->capture_source        = 0;
     (*ppencoder)->capture_pixels        = NULL;
     (*ppencoder)->capture_pixels_size   = 0;
     (*ppencoder)->capture_palette       = NULL;
@@ -8391,7 +8401,6 @@ sixel_encoder_new(
     (*ppencoder)->capture_colorspace    = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->capture_ncolors       = 0;
     (*ppencoder)->capture_valid         = 0;
-    (*ppencoder)->capture_source_frame  = NULL;
     (*ppencoder)->last_loader_name[0]   = '\0';
     (*ppencoder)->last_source_path[0]   = '\0';
     (*ppencoder)->last_input_bytes      = 0u;
@@ -8538,9 +8547,6 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
             && encoder->tile_outfd != STDOUT_FILENO
             && encoder->tile_outfd != STDERR_FILENO) {
             (void)sixel_compat_close(encoder->tile_outfd);
-        }
-        if (encoder->capture_source_frame != NULL) {
-            sixel_frame_unref(encoder->capture_source_frame);
         }
         if (encoder->clipboard_output_path != NULL) {
             (void)sixel_compat_unlink(encoder->clipboard_output_path);
@@ -11052,7 +11058,7 @@ sixel_encoder_apply_mapfile_output_option(
         return SIXEL_BAD_ALLOCATION;
     }
 
-    status = sixel_encoder_enable_quantized_capture(encoder, 1);
+    status = sixel_encoder_enable_quantized_capture_internal(encoder, 1);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(encoder->allocator, opt_copy);
         return status;
@@ -13662,11 +13668,6 @@ load_image_callback(sixel_frame_t *frame, void *data)
         return SIXEL_INTERRUPTED;
     }
 
-    if (encoder->capture_source && encoder->capture_source_frame == NULL) {
-        sixel_frame_ref(frame);
-        encoder->capture_source_frame = frame;
-    }
-
     if (context->psd_trace_only != 0) {
         /*
          * PSD trace-only mode keeps loader-side diagnostics but skips frame
@@ -14747,11 +14748,6 @@ sixel_encoder_encode(
         encoder->reqcolors = SIXEL_PALETTE_MAX;
     }
 
-    if (encoder->capture_source && encoder->capture_source_frame != NULL) {
-        sixel_frame_unref(encoder->capture_source_frame);
-        encoder->capture_source_frame = NULL;
-    }
-
     /* if required color is less then 2, set the min value */
     if (encoder->reqcolors < 2) {
         encoder->reqcolors = SIXEL_PALETTE_MIN;
@@ -15278,37 +15274,13 @@ end:
 
 
 /*
- * Toggle source-frame capture for downstream consumers.
- */
-SIXELAPI SIXELSTATUS
-sixel_encoder_enable_source_capture(
-    sixel_encoder_t *encoder,
-    int enable)
-{
-    if (encoder == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_encoder_enable_source_capture: encoder is null.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    encoder->capture_source = enable ? 1 : 0;
-    if (!encoder->capture_source && encoder->capture_source_frame != NULL) {
-        sixel_frame_unref(encoder->capture_source_frame);
-        encoder->capture_source_frame = NULL;
-    }
-
-    return SIXEL_OK;
-}
-
-
-/*
  * Enable or disable the quantized-frame capture facility.
  *
  *     capture on --> encoder keeps the latest palette-quantized frame.
  *     capture off --> encoder forgets previously stored frames.
  */
-SIXELAPI SIXELSTATUS
-sixel_encoder_enable_quantized_capture(
+static SIXELSTATUS
+sixel_encoder_enable_quantized_capture_internal(
     sixel_encoder_t *encoder,
     int enable)
 {
@@ -15331,8 +15303,8 @@ sixel_encoder_enable_quantized_capture(
  * Materialize the captured quantized frame as a heap-allocated
  * sixel_frame_t instance.
  */
-SIXELAPI SIXELSTATUS
-sixel_encoder_copy_quantized_frame(
+static SIXELSTATUS
+sixel_encoder_copy_quantized_frame_internal(
     sixel_encoder_t   *encoder,
     sixel_allocator_t *allocator,
     sixel_frame_t     **ppframe)
@@ -15476,9 +15448,9 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
         return SIXEL_OK;
     }
 
-    status = sixel_encoder_copy_quantized_frame(encoder,
-                                                encoder->allocator,
-                                                &frame);
+    status = sixel_encoder_copy_quantized_frame_internal(encoder,
+                                                         encoder->allocator,
+                                                         &frame);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -15661,32 +15633,6 @@ cleanup:
     return status;
 }
 
-
-/*
- * Share the captured source frame with downstream consumers.
- */
-SIXELAPI SIXELSTATUS
-sixel_encoder_copy_source_frame(
-    sixel_encoder_t *encoder,
-    sixel_frame_t  **ppframe)
-{
-    if (encoder == NULL || ppframe == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_encoder_copy_source_frame: invalid argument.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    if (!encoder->capture_source || encoder->capture_source_frame == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_encoder_copy_source_frame: no frame captured.");
-        return SIXEL_RUNTIME_ERROR;
-    }
-
-    sixel_frame_ref(encoder->capture_source_frame);
-    *ppframe = encoder->capture_source_frame;
-
-    return SIXEL_OK;
-}
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
