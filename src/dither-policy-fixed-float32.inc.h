@@ -33,7 +33,7 @@
 #include <string.h>
 
 #include "compat_stub.h"
-#include "dither-fixed-float32.h"
+#include "dither-internal.h"
 #include "dither-interframe-method.h"
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
@@ -2049,85 +2049,146 @@ sixel_dither_apply_fixed_float32_with_mode(
     return status;
 }
 
-SIXELSTATUS
+/*
+ * Policy TUs define a single enable macro. In amalgamation, this file may be
+ * compiled as a standalone unit, so enable all wrappers by default.
+ */
+#if !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
+# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE 1
+# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS 1
+# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON 1
+# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI 1
+# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI 1
+# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES 1
+# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1 1
+# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2 1
+# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3 1
+# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME 1
+# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_DEFAULT_ALL 1
+#endif
+
+#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE)
+static SIXELSTATUS
 sixel_dither_apply_none_float32(sixel_dither_t *dither,
                                 sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_NONE);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS)
+static SIXELSTATUS
 sixel_dither_apply_fs_float32(sixel_dither_t *dither,
                               sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_FS);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON)
+static SIXELSTATUS
 sixel_dither_apply_atkinson_float32(sixel_dither_t *dither,
                                     sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_ATKINSON);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI)
+static SIXELSTATUS
 sixel_dither_apply_jajuni_float32(sixel_dither_t *dither,
                                   sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_JAJUNI);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI)
+static SIXELSTATUS
 sixel_dither_apply_stucki_float32(sixel_dither_t *dither,
                                   sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_STUCKI);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES)
+static SIXELSTATUS
 sixel_dither_apply_burkes_float32(sixel_dither_t *dither,
                                   sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_BURKES);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1)
+static SIXELSTATUS
 sixel_dither_apply_sierra1_float32(sixel_dither_t *dither,
                                    sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_SIERRA1);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2)
+static SIXELSTATUS
 sixel_dither_apply_sierra2_float32(sixel_dither_t *dither,
                                    sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_SIERRA2);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3)
+static SIXELSTATUS
 sixel_dither_apply_sierra3_float32(sixel_dither_t *dither,
                                    sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_SIERRA3);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
+static SIXELSTATUS
 sixel_dither_apply_interframe_float32(sixel_dither_t *dither,
                                       sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_INTERFRAME);
 }
+#endif
+
+#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_DEFAULT_ALL)
+# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_DEFAULT_ALL
+# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME
+# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3
+# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2
+# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1
+# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES
+# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI
+# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI
+# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON
+# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS
+# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE
+#endif
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

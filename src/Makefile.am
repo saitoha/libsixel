@@ -39,7 +39,10 @@ if USING_CL
 # Force cl/clang-cl driver mode to DLL when libtool links shared libraries.
 # This keeps linker entrypoint selection consistent even with extra link
 # flags such as coverage instrumentation.
-MAYBE_MSVC_DLL_DRIVER_FLAG = -LD
+#
+# Pass '-LD' via libtool's compiler-driver escape hatch so it is not
+# misparsed as '-L<path>' during libtool argument scanning.
+MAYBE_MSVC_DLL_DRIVER_FLAG = -XCClinker -LD
 endif
 
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.*
@@ -50,10 +53,13 @@ if WANT_AMALGAMATED_LIB
 libsixel_la_SOURCES =
 libsixel_la_SOURCES += \
                 $(srcdir)/dither.c \
-                $(srcdir)/dither.h
-libsixel_la_SOURCES += \
-                $(srcdir)/dither-fixed-float32.c \
-                $(srcdir)/dither-fixed-float32.h
+                $(srcdir)/dither.h \
+                $(srcdir)/dither-policy-positional-8bit.inc.h \
+                $(srcdir)/dither-policy-positional-float32.inc.h \
+                $(srcdir)/dither-policy-fixed-8bit.inc.h \
+                $(srcdir)/dither-policy-fixed-float32.inc.h \
+                $(srcdir)/dither-policy-varcoeff-8bit.inc.h \
+                $(srcdir)/dither-policy-varcoeff-float32.inc.h
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
@@ -165,12 +171,9 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-common-pipeline.c \
                 $(srcdir)/dither-common-pipeline.h \
                 $(srcdir)/bluenoise_64x64.h \
-                $(srcdir)/dither-positional-8bit.c \
-                $(srcdir)/dither-positional-8bit.h \
-                $(srcdir)/dither-positional-float32.c \
-                $(srcdir)/dither-positional-float32.h \
-                $(srcdir)/dither-fixed-8bit.c \
-                $(srcdir)/dither-fixed-8bit.h \
+                $(srcdir)/dither-policy-positional-8bit.inc.h \
+                $(srcdir)/dither-policy-positional-float32.inc.h \
+                $(srcdir)/dither-policy-fixed-8bit.inc.h \
                 $(srcdir)/dither-interframe-method.c \
                 $(srcdir)/dither-interframe-method.h \
                 $(srcdir)/dither-interframe-stbn-source.c \
@@ -183,13 +186,10 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-interframe-stbn-source-mask-table.h \
                 $(srcdir)/dither-interframe-stbn-source-pmj.c \
                 $(srcdir)/dither-interframe-stbn-source-pmj.h \
-                $(srcdir)/dither-fixed-float32.c \
-                $(srcdir)/dither-fixed-float32.h \
+                $(srcdir)/dither-policy-fixed-float32.inc.h \
                 $(srcdir)/dither-internal.h \
-                $(srcdir)/dither-varcoeff-8bit.c \
-                $(srcdir)/dither-varcoeff-8bit.h \
-                $(srcdir)/dither-varcoeff-float32.c \
-                $(srcdir)/dither-varcoeff-float32.h \
+                $(srcdir)/dither-policy-varcoeff-8bit.inc.h \
+                $(srcdir)/dither-policy-varcoeff-float32.inc.h \
                 $(srcdir)/logger.c \
                 $(srcdir)/logger.h \
                 $(srcdir)/colorspace.c \

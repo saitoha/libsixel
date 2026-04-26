@@ -30,8 +30,12 @@
 #include <string.h>
 
 #include "dither-policy-interframe.h"
-#include "dither-fixed-8bit.h"
-#include "dither-fixed-float32.h"
+#define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME 1
+#define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME 1
+#include "dither-policy-fixed-8bit.inc.h"
+#include "dither-policy-fixed-float32.inc.h"
+#undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME
+#undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME
 #include "dither.h"
 #include "dither-common-pipeline.h"
 #include "dither-internal.h"

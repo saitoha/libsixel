@@ -35,7 +35,7 @@
 #endif  /* HAVE_MATH_H */
 
 #include "compat_stub.h"
-#include "dither-fixed-8bit.h"
+#include "dither-internal.h"
 #include "dither-interframe-method.h"
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
@@ -1443,85 +1443,146 @@ sixel_dither_apply_fixed_8bit_with_mode(sixel_dither_t *dither,
                                          dither);
 }
 
-SIXELSTATUS
+/*
+ * Policy TUs define a single enable macro. In amalgamation, this file may be
+ * compiled as a standalone unit, so enable all wrappers by default.
+ */
+#if !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
+# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE 1
+# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS 1
+# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON 1
+# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI 1
+# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI 1
+# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES 1
+# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1 1
+# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2 1
+# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3 1
+# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME 1
+# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_DEFAULT_ALL 1
+#endif
+
+#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE)
+static SIXELSTATUS
 sixel_dither_apply_none_8bit(sixel_dither_t *dither,
                              sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context, SIXEL_DIFFUSE_NONE);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS)
+static SIXELSTATUS
 sixel_dither_apply_fs_8bit(sixel_dither_t *dither,
                            sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context, SIXEL_DIFFUSE_FS);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON)
+static SIXELSTATUS
 sixel_dither_apply_atkinson_8bit(sixel_dither_t *dither,
                                  sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context, SIXEL_DIFFUSE_ATKINSON);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI)
+static SIXELSTATUS
 sixel_dither_apply_jajuni_8bit(sixel_dither_t *dither,
                                sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context, SIXEL_DIFFUSE_JAJUNI);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI)
+static SIXELSTATUS
 sixel_dither_apply_stucki_8bit(sixel_dither_t *dither,
                                sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context, SIXEL_DIFFUSE_STUCKI);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES)
+static SIXELSTATUS
 sixel_dither_apply_burkes_8bit(sixel_dither_t *dither,
                                sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context, SIXEL_DIFFUSE_BURKES);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1)
+static SIXELSTATUS
 sixel_dither_apply_sierra1_8bit(sixel_dither_t *dither,
                                 sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context, SIXEL_DIFFUSE_SIERRA1);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2)
+static SIXELSTATUS
 sixel_dither_apply_sierra2_8bit(sixel_dither_t *dither,
                                 sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context, SIXEL_DIFFUSE_SIERRA2);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3)
+static SIXELSTATUS
 sixel_dither_apply_sierra3_8bit(sixel_dither_t *dither,
                                 sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context, SIXEL_DIFFUSE_SIERRA3);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
+static SIXELSTATUS
 sixel_dither_apply_interframe_8bit(sixel_dither_t *dither,
                                    sixel_dither_context_t *context)
 {
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context, SIXEL_DIFFUSE_INTERFRAME);
 }
+#endif
+
+#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_DEFAULT_ALL)
+# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_DEFAULT_ALL
+# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME
+# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3
+# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2
+# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1
+# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES
+# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI
+# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI
+# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON
+# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS
+# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE
+#endif
 
 static void
 diffuse_none(unsigned char *data, int width, int height,

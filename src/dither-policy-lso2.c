@@ -30,13 +30,14 @@
 #include <string.h>
 
 #include "dither-policy-lso2.h"
-#include "dither-varcoeff-8bit.h"
-#include "dither-varcoeff-float32.h"
 #include "dither.h"
 #include "dither-common-pipeline.h"
 #include "dither-internal.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
+
+#include "dither-policy-varcoeff-8bit.inc.h"
+#include "dither-policy-varcoeff-float32.inc.h"
 
 /*
  * IDL (internal contract)

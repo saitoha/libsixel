@@ -38,8 +38,8 @@
 #include <stdint.h>
 #include <limits.h>
 
-#include "dither-varcoeff-8bit.h"
 #include "dither-common-pipeline.h"
+#include "dither-internal.h"
 #include "pixelformat.h"
 
 static void
@@ -237,7 +237,7 @@ diffuse_lso2(unsigned char *data,
     }
 }
 
-SIXELSTATUS
+static SIXELSTATUS
 sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
                              sixel_dither_context_t *context)
 {

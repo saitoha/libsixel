@@ -35,8 +35,8 @@
 #include <string.h>
 
 #include "compat_stub.h"
-#include "dither-positional-float32.h"
 #include "dither-common-pipeline.h"
+#include "dither-internal.h"
 #include "pixelformat.h"
 #include "bluenoise_64x64.h"
 
@@ -1004,29 +1004,56 @@ sixel_dither_apply_positional_float32_with_mode(
     return SIXEL_OK;
 }
 
-SIXELSTATUS
+/*
+ * The non-amalgamated build defines exactly one enable macro per policy TU.
+ * In amalgamation, this file is emitted as a standalone unit, so enable all
+ * wrappers by default when no policy macro is present.
+ */
+#if !defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A) \
+        && !defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_X) \
+        && !defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE)
+# define SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A 1
+# define SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_X 1
+# define SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE 1
+# define SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_DEFAULT_ALL 1
+#endif
+
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A)
+static SIXELSTATUS
 sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
                                     sixel_dither_context_t *context)
 {
     return sixel_dither_apply_positional_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_A_DITHER);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_X)
+static SIXELSTATUS
 sixel_dither_apply_x_dither_float32(sixel_dither_t *dither,
                                     sixel_dither_context_t *context)
 {
     return sixel_dither_apply_positional_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_X_DITHER);
 }
+#endif
 
-SIXELSTATUS
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE)
+static SIXELSTATUS
 sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
                                      sixel_dither_context_t *context)
 {
     return sixel_dither_apply_positional_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_BLUENOISE_DITHER);
 }
+#endif
+
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_DEFAULT_ALL)
+# undef SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_DEFAULT_ALL
+# undef SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE
+# undef SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_X
+# undef SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A
+#endif
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

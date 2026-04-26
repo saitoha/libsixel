@@ -14,7 +14,19 @@ bad=$tmpdir/bad.txt
 
 for path in \
     "$src_root/src/dither-policy-backend.c" \
-    "$src_root/src/dither-policy-backend.h"
+    "$src_root/src/dither-policy-backend.h" \
+    "$src_root/src/dither-fixed-8bit.c" \
+    "$src_root/src/dither-fixed-8bit.h" \
+    "$src_root/src/dither-fixed-float32.c" \
+    "$src_root/src/dither-fixed-float32.h" \
+    "$src_root/src/dither-positional-8bit.c" \
+    "$src_root/src/dither-positional-8bit.h" \
+    "$src_root/src/dither-positional-float32.c" \
+    "$src_root/src/dither-positional-float32.h" \
+    "$src_root/src/dither-varcoeff-8bit.c" \
+    "$src_root/src/dither-varcoeff-8bit.h" \
+    "$src_root/src/dither-varcoeff-float32.c" \
+    "$src_root/src/dither-varcoeff-float32.h"
 do
     test -f "$path" || continue
     printf "%s:1:obsolete dither policy backend file must not exist\n" \
@@ -39,6 +51,24 @@ find "$src_root/src" -maxdepth 1 -type f -name 'dither-policy-*.c' \
     -print | LC_ALL=C sort | while IFS= read -r path
 do
     awk '
+    /#include "dither-fixed-8bit.h"/ {
+        printf "%s:%d:%s\n", FILENAME, NR, $0
+    }
+    /#include "dither-fixed-float32.h"/ {
+        printf "%s:%d:%s\n", FILENAME, NR, $0
+    }
+    /#include "dither-positional-8bit.h"/ {
+        printf "%s:%d:%s\n", FILENAME, NR, $0
+    }
+    /#include "dither-positional-float32.h"/ {
+        printf "%s:%d:%s\n", FILENAME, NR, $0
+    }
+    /#include "dither-varcoeff-8bit.h"/ {
+        printf "%s:%d:%s\n", FILENAME, NR, $0
+    }
+    /#include "dither-varcoeff-float32.h"/ {
+        printf "%s:%d:%s\n", FILENAME, NR, $0
+    }
     /#include "dither-policy-backend.h"/ {
         printf "%s:%d:%s\n", FILENAME, NR, $0
     }
@@ -55,12 +85,12 @@ do
 done >> "$bad"
 
 for path in \
-    "$src_root/src/dither-fixed-8bit.c" \
-    "$src_root/src/dither-fixed-float32.c" \
-    "$src_root/src/dither-varcoeff-8bit.c" \
-    "$src_root/src/dither-varcoeff-float32.c" \
-    "$src_root/src/dither-positional-8bit.c" \
-    "$src_root/src/dither-positional-float32.c"
+    "$src_root/src/dither-policy-fixed-8bit.inc.h" \
+    "$src_root/src/dither-policy-fixed-float32.inc.h" \
+    "$src_root/src/dither-policy-varcoeff-8bit.inc.h" \
+    "$src_root/src/dither-policy-varcoeff-float32.inc.h" \
+    "$src_root/src/dither-policy-positional-8bit.inc.h" \
+    "$src_root/src/dither-policy-positional-float32.inc.h"
 do
     test -f "$path" || continue
     awk '

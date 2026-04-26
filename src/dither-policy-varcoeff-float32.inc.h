@@ -39,8 +39,8 @@
 # include <math.h>
 #endif  /* HAVE_MATH_H */
 
-#include "dither-varcoeff-float32.h"
 #include "dither-common-pipeline.h"
+#include "dither-internal.h"
 #include "pixelformat.h"
 
 static void
@@ -414,7 +414,7 @@ diffuse_lso2_carry_float(float *carry_curr,
     }
 }
 
-SIXELSTATUS
+static SIXELSTATUS
 sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                                 sixel_dither_context_t *context)
 {

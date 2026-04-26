@@ -30,13 +30,18 @@
 #include <string.h>
 
 #include "dither-policy-a-dither.h"
-#include "dither-positional-8bit.h"
-#include "dither-positional-float32.h"
 #include "dither.h"
 #include "dither-common-pipeline.h"
 #include "dither-internal.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
+
+#define SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_A 1
+#define SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A 1
+#include "dither-policy-positional-8bit.inc.h"
+#include "dither-policy-positional-float32.inc.h"
+#undef SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A
+#undef SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_A
 
 /*
  * IDL (internal contract)

@@ -13,13 +13,13 @@ fi
 echo "1..1"
 
 if rg -n --fixed-strings "bluenoise_conf = g_sixel_bn_conf_8bit;" \
-        "$src_root/src/dither-positional-8bit.c" >/dev/null 2>&1; then
+        "$src_root/src/dither-policy-positional-8bit.inc.h" >/dev/null 2>&1; then
     echo "not ok 1 - positional 8bit copies global bluenoise conf before init"
     exit 0
 fi
 
 if rg -n --fixed-strings "bluenoise_conf = g_sixel_bn_conf_float32;" \
-        "$src_root/src/dither-positional-float32.c" >/dev/null 2>&1; then
+        "$src_root/src/dither-policy-positional-float32.inc.h" >/dev/null 2>&1; then
     echo "not ok 1 - positional float32 copies global bluenoise conf before init"
     exit 0
 fi

@@ -30,8 +30,12 @@
 #include <string.h>
 
 #include "dither-policy-atkinson.h"
-#include "dither-fixed-8bit.h"
-#include "dither-fixed-float32.h"
+#define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON 1
+#define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON 1
+#include "dither-policy-fixed-8bit.inc.h"
+#include "dither-policy-fixed-float32.inc.h"
+#undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON
+#undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON
 #include "dither.h"
 #include "dither-common-pipeline.h"
 #include "dither-internal.h"
