@@ -38,6 +38,19 @@
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
 
+#if !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
+# error "Missing fixed-float32 policy enable macro."
+#endif
+
 typedef SIXELSTATUS (*sixel_interframe_prepare_frame_float32_fn)(
     sixel_dither_t *dither,
     int width,
@@ -2050,41 +2063,6 @@ sixel_dither_apply_fixed_float32_with_mode(
     default:
         return SIXEL_BAD_ARGUMENT;
     }
-#else
-    switch (method_for_diffuse) {
-    case SIXEL_DIFFUSE_NONE:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_none_float);
-        break;
-    case SIXEL_DIFFUSE_ATKINSON:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_atkinson_float);
-        break;
-    case SIXEL_DIFFUSE_JAJUNI:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_jajuni_float);
-        break;
-    case SIXEL_DIFFUSE_STUCKI:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_stucki_float);
-        break;
-    case SIXEL_DIFFUSE_BURKES:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_burkes_float);
-        break;
-    case SIXEL_DIFFUSE_SIERRA1:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra1_float);
-        break;
-    case SIXEL_DIFFUSE_SIERRA2:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra2_float);
-        break;
-    case SIXEL_DIFFUSE_SIERRA3:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra3_float);
-        break;
-    case SIXEL_DIFFUSE_INTERFRAME:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
-        break;
-    case SIXEL_DIFFUSE_FS:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
-        break;
-    default:
-        return SIXEL_BAD_ARGUMENT;
-    }
 #endif
 #undef SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP
 
@@ -2109,33 +2087,6 @@ sixel_dither_apply_fixed_float32_with_mode(
     status = SIXEL_OK;
     return status;
 }
-
-/*
- * Policy TUs define a single enable macro. In amalgamation, this file may be
- * compiled as a standalone unit, so enable all wrappers by default.
- */
-#if !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
-# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE 1
-# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS 1
-# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON 1
-# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI 1
-# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI 1
-# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES 1
-# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1 1
-# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2 1
-# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3 1
-# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME 1
-# define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_DEFAULT_ALL 1
-#endif
 
 #if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE)
 static SIXELSTATUS
@@ -2235,20 +2186,6 @@ sixel_dither_apply_interframe_float32(sixel_dither_t *dither,
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_INTERFRAME);
 }
-#endif
-
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_DEFAULT_ALL)
-# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_DEFAULT_ALL
-# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME
-# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3
-# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2
-# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1
-# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES
-# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI
-# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI
-# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON
-# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS
-# undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)

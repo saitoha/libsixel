@@ -40,6 +40,12 @@
 #include "pixelformat.h"
 #include "bluenoise_64x64.h"
 
+#if !defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A) \
+        && !defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_X) \
+        && !defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE)
+# error "Missing positional-float32 policy enable macro."
+#endif
+
 #if SIXEL_ENABLE_THREADS
 # if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) && \
         !defined(WITH_WINPTHREAD)
@@ -1009,42 +1015,11 @@ sixel_dither_apply_positional_float32_with_mode(
 #elif defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_X)
     SIXEL_DITHER_APPLY_POSITIONAL_FLOAT32(
         positional_mask_x_float32(x, y, d) * gradient_weight);
-#else
-    switch (mask_mode) {
-    case SIXEL_DIFFUSE_A_DITHER:
-        SIXEL_DITHER_APPLY_POSITIONAL_FLOAT32(
-            positional_mask_a_float32(x, y, d) * gradient_weight);
-        break;
-    case SIXEL_DIFFUSE_BLUENOISE_DITHER:
-        SIXEL_DITHER_APPLY_POSITIONAL_FLOAT32(
-            positional_mask_blue_with_conf_float32(&bluenoise_conf, x, y, d)
-                * gradient_weight);
-        break;
-    case SIXEL_DIFFUSE_X_DITHER:
-    default:
-        SIXEL_DITHER_APPLY_POSITIONAL_FLOAT32(
-            positional_mask_x_float32(x, y, d) * gradient_weight);
-        break;
-    }
 #endif
 #undef SIXEL_DITHER_APPLY_POSITIONAL_FLOAT32
 
     return SIXEL_OK;
 }
-
-/*
- * The non-amalgamated build defines exactly one enable macro per policy TU.
- * In amalgamation, this file is emitted as a standalone unit, so enable all
- * wrappers by default when no policy macro is present.
- */
-#if !defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A) \
-        && !defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_X) \
-        && !defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE)
-# define SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A 1
-# define SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_X 1
-# define SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE 1
-# define SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_DEFAULT_ALL 1
-#endif
 
 #if defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A)
 static SIXELSTATUS
@@ -1074,13 +1049,6 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     return sixel_dither_apply_positional_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_BLUENOISE_DITHER);
 }
-#endif
-
-#if defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_DEFAULT_ALL)
-# undef SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_DEFAULT_ALL
-# undef SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE
-# undef SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_X
-# undef SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)

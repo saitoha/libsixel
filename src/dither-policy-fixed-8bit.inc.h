@@ -40,6 +40,19 @@
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
 
+#if !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3) \
+        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
+# error "Missing fixed-8bit policy enable macro."
+#endif
+
 /*
  * Local serpentine traversal helper.  The function mirrors the behaviour used
  * by other dithering strategies without forcing additional shared headers.
@@ -1401,42 +1414,6 @@ sixel_dither_apply_fixed_impl(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
-#else
-    switch (effective_diffuse) {
-    case SIXEL_DIFFUSE_NONE:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_none);
-        break;
-    case SIXEL_DIFFUSE_ATKINSON:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_atkinson);
-        break;
-    case SIXEL_DIFFUSE_JAJUNI:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_jajuni);
-        break;
-    case SIXEL_DIFFUSE_STUCKI:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_stucki);
-        break;
-    case SIXEL_DIFFUSE_BURKES:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_burkes);
-        break;
-    case SIXEL_DIFFUSE_SIERRA1:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra1);
-        break;
-    case SIXEL_DIFFUSE_SIERRA2:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra2);
-        break;
-    case SIXEL_DIFFUSE_SIERRA3:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra3);
-        break;
-    case SIXEL_DIFFUSE_INTERFRAME:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_fs);
-        break;
-    case SIXEL_DIFFUSE_FS:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_fs);
-        break;
-    default:
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
 #endif
 #undef SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP
 
@@ -1503,33 +1480,6 @@ sixel_dither_apply_fixed_8bit_with_mode(sixel_dither_t *dither,
                                          context->float_depth,
                                          dither);
 }
-
-/*
- * Policy TUs define a single enable macro. In amalgamation, this file may be
- * compiled as a standalone unit, so enable all wrappers by default.
- */
-#if !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
-# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE 1
-# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS 1
-# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON 1
-# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI 1
-# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI 1
-# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES 1
-# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1 1
-# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2 1
-# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3 1
-# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME 1
-# define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_DEFAULT_ALL 1
-#endif
 
 #if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE)
 static SIXELSTATUS
@@ -1629,20 +1579,6 @@ sixel_dither_apply_interframe_8bit(sixel_dither_t *dither,
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context, SIXEL_DIFFUSE_INTERFRAME);
 }
-#endif
-
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_DEFAULT_ALL)
-# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_DEFAULT_ALL
-# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME
-# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3
-# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2
-# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1
-# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES
-# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI
-# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI
-# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON
-# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS
-# undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE
 #endif
 
 static void
