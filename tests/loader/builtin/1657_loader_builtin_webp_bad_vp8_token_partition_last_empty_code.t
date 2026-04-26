@@ -21,8 +21,9 @@ command_status=0
 nl='
 '
 
-trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env SIXEL_TRACE_TOPIC=webp_decode \
+trace_output=$(set +xv; \
+    SIXEL_TRACE_TOPIC=webp_decode \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin! -o /dev/null "${input_webp}" 2>&1) || command_status=$?
 
 test "${command_status}" -ne 0 || {

@@ -18,15 +18,15 @@ output_off="${ARTIFACT_ROOT}/${0##*/}.off.png"
 dims_on=''
 dims_off=''
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env SIXEL_LOADER_BUILTIN_ORIENTATION=on \
+    SIXEL_LOADER_BUILTIN_ORIENTATION=on \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin! -o "${output_on}" "${input_jpeg}" >/dev/null || {
     echo "not ok" 1 - "builtin JPEG orientation on decode failed"
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    --env SIXEL_LOADER_BUILTIN_ORIENTATION=off \
+    SIXEL_LOADER_BUILTIN_ORIENTATION=off \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin! -o "${output_off}" "${input_jpeg}" >/dev/null || {
     echo "not ok" 1 - "builtin JPEG orientation off decode failed"
     exit 0
