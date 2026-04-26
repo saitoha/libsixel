@@ -621,9 +621,8 @@ sixel_bluenoise_gradient_weight_8bit(
 }
 
 static SIXELSTATUS
-sixel_dither_apply_positional_8bit_with_mode(sixel_dither_t *dither,
-                                             sixel_dither_context_t *context,
-                                             int mask_mode)
+sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
+                                   sixel_dither_context_t *context)
 {
     int serpentine;
     int y;
@@ -671,10 +670,8 @@ sixel_dither_apply_positional_8bit_with_mode(sixel_dither_t *dither,
 
 #if defined(SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_A) \
         || defined(SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_X)
-    (void)mask_mode;
     sixel_positional_strength_init_8bit();
 #elif defined(SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_BLUENOISE)
-    (void)mask_mode;
     sixel_bluenoise_conf_init_from_env_8bit();
     bluenoise_conf = g_sixel_bn_conf_8bit;
     sixel_bluenoise_conf_apply_dither_overrides_8bit(&bluenoise_conf,
@@ -935,8 +932,7 @@ static SIXELSTATUS
 sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
                                  sixel_dither_context_t *context)
 {
-    return sixel_dither_apply_positional_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_A_DITHER);
+    return sixel_dither_apply_positional_8bit(dither, context);
 }
 #endif
 
@@ -945,8 +941,7 @@ static SIXELSTATUS
 sixel_dither_apply_x_dither_8bit(sixel_dither_t *dither,
                                  sixel_dither_context_t *context)
 {
-    return sixel_dither_apply_positional_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_X_DITHER);
+    return sixel_dither_apply_positional_8bit(dither, context);
 }
 #endif
 
@@ -955,8 +950,7 @@ static SIXELSTATUS
 sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
                                   sixel_dither_context_t *context)
 {
-    return sixel_dither_apply_positional_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_BLUENOISE_DITHER);
+    return sixel_dither_apply_positional_8bit(dither, context);
 }
 #endif
 

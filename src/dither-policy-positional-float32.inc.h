@@ -625,10 +625,9 @@ sixel_bluenoise_gradient_weight_float32(
 }
 
 static SIXELSTATUS
-sixel_dither_apply_positional_float32_with_mode(
+sixel_dither_apply_positional_float32(
     sixel_dither_t *dither,
-    sixel_dither_context_t *context,
-    int mask_mode)
+    sixel_dither_context_t *context)
 {
     int serpentine;
     int y;
@@ -689,10 +688,8 @@ sixel_dither_apply_positional_float32_with_mode(
 
 #if defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_A) \
         || defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_X)
-    (void)mask_mode;
     sixel_positional_strength_init_float32();
 #elif defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE)
-    (void)mask_mode;
     sixel_bluenoise_conf_init_from_env_float32();
     bluenoise_conf = g_sixel_bn_conf_float32;
     sixel_bluenoise_conf_apply_dither_overrides_float32(&bluenoise_conf,
@@ -1010,8 +1007,7 @@ static SIXELSTATUS
 sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
                                     sixel_dither_context_t *context)
 {
-    return sixel_dither_apply_positional_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_A_DITHER);
+    return sixel_dither_apply_positional_float32(dither, context);
 }
 #endif
 
@@ -1020,8 +1016,7 @@ static SIXELSTATUS
 sixel_dither_apply_x_dither_float32(sixel_dither_t *dither,
                                     sixel_dither_context_t *context)
 {
-    return sixel_dither_apply_positional_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_X_DITHER);
+    return sixel_dither_apply_positional_float32(dither, context);
 }
 #endif
 
@@ -1030,8 +1025,7 @@ static SIXELSTATUS
 sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
                                      sixel_dither_context_t *context)
 {
-    return sixel_dither_apply_positional_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_BLUENOISE_DITHER);
+    return sixel_dither_apply_positional_float32(dither, context);
 }
 #endif
 
