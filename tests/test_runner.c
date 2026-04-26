@@ -1475,21 +1475,21 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                     needle_token,
                     needle_length);
                 if (token_matched != 0) {
-                    /*
-                     * Some runtimes can drop a single external SIGINT while
-                     * forwarding through wrapper layers. Re-send whenever the
-                     * same trigger token appears again in the child trace.
-                     */
                     found_trigger = 1;
-                    send_result = test_runner_signal_group_and_child(
-                        child_pid,
-                        SIGINT);
-                    if (send_result != 0) {
-                        fprintf(stderr,
-                                "test_runner: SIGINT send failed: %s\n",
-                                strerror(errno));
-                    }
+                    /*
+                     * Send the first SIGINT at token detection. Subsequent
+                     * retries are rate-limited in the main loop to avoid
+                     * per-frame signal storms on looped animations.
+                     */
                     if (signal_sent == 0) {
+                        send_result = test_runner_signal_group_and_child(
+                            child_pid,
+                            SIGINT);
+                        if (send_result != 0) {
+                            fprintf(stderr,
+                                    "test_runner: SIGINT send failed: %s\n",
+                                    strerror(errno));
+                        }
                         signal_sent = 1;
                         /*
                          * Keep independent timeout budgets for trigger
