@@ -28,40 +28,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-#include "dither-policy-interframe.h"
-#define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME 1
-#define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME 1
-/*
- * SPDX-License-Identifier: MIT
- *
- * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-#if defined(HAVE_CONFIG_H)
-#include "config.h"
-#endif
-
-#include <stdlib.h>
-#include <string.h>
 #include <stdint.h>
 #include <limits.h>
 #if HAVE_MATH_H
@@ -69,28 +35,17 @@
 #endif  /* HAVE_MATH_H */
 
 #include "compat_stub.h"
+#include "dither-policy-interframe.h"
+#include "dither.h"
+#include "dither-common-pipeline.h"
 #include "dither-internal.h"
 #include "dither-interframe-method.h"
-#include "dither-common-pipeline.h"
 #include "pixelformat.h"
+#include "sixel_atomic.h"
 
-#if !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
-# error "Missing fixed-8bit policy enable macro."
-#endif
+#define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME 1
+#define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME 1
 
-/*
- * Local serpentine traversal helper.  The function mirrors the behaviour used
- * by other dithering strategies without forcing additional shared headers.
- */
 static void
 sixel_dither_scanline_params_fixed_8bit(int serpentine,
                              int index,
@@ -2152,68 +2107,6 @@ static sixel_interframe_method_ops_t const *(
 };
 
 #undef SIXEL_DITHER_FIXED_8BIT_UNUSED
-
-
-/* emacs Local Variables:      */
-/* emacs mode: c               */
-/* emacs tab-width: 4          */
-/* emacs indent-tabs-mode: nil */
-/* emacs c-basic-offset: 4     */
-/* emacs End:                  */
-/* vim: set expandtab ts=4 sts=4 sw=4 : */
-/* EOF */
-/*
- * SPDX-License-Identifier: MIT
- *
- * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-#if defined(HAVE_CONFIG_H)
-#include "config.h"
-#endif
-
-#if HAVE_MATH_H
-# include <math.h>
-#endif  /* HAVE_MATH_H */
-#include <stdint.h>
-#include <string.h>
-
-#include "compat_stub.h"
-#include "dither-internal.h"
-#include "dither-interframe-method.h"
-#include "dither-common-pipeline.h"
-#include "pixelformat.h"
-
-#if !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
-# error "Missing fixed-float32 policy enable macro."
-#endif
 
 typedef SIXELSTATUS (*sixel_interframe_prepare_frame_float32_fn)(
     sixel_dither_t *dither,
@@ -4393,22 +4286,6 @@ static sixel_interframe_method_float32_ops_t const *(
 };
 
 #undef SIXEL_DITHER_FIXED_FLOAT32_UNUSED
-
-/* emacs Local Variables:      */
-/* emacs mode: c               */
-/* emacs tab-width: 4          */
-/* emacs indent-tabs-mode: nil */
-/* emacs c-basic-offset: 4     */
-/* emacs End:                  */
-/* vim: set expandtab ts=4 sts=4 sw=4 : */
-/* EOF */
-#undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME
-#undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME
-#include "dither.h"
-#include "dither-common-pipeline.h"
-#include "dither-internal.h"
-#include "pixelformat.h"
-#include "sixel_atomic.h"
 
 /*
  * IDL (internal contract)

@@ -28,40 +28,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-#include "dither-policy-stucki.h"
-#define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI 1
-#define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI 1
-/*
- * SPDX-License-Identifier: MIT
- *
- * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-#if defined(HAVE_CONFIG_H)
-#include "config.h"
-#endif
-
-#include <stdlib.h>
-#include <string.h>
 #include <stdint.h>
 #include <limits.h>
 #if HAVE_MATH_H
@@ -69,28 +35,17 @@
 #endif  /* HAVE_MATH_H */
 
 #include "compat_stub.h"
+#include "dither-policy-stucki.h"
+#include "dither.h"
+#include "dither-common-pipeline.h"
 #include "dither-internal.h"
 #include "dither-interframe-method.h"
-#include "dither-common-pipeline.h"
 #include "pixelformat.h"
+#include "sixel_atomic.h"
 
-#if !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
-# error "Missing fixed-8bit policy enable macro."
-#endif
+#define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI 1
+#define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI 1
 
-/*
- * Local serpentine traversal helper.  The function mirrors the behaviour used
- * by other dithering strategies without forcing additional shared headers.
- */
 static void
 sixel_dither_scanline_params_fixed_8bit(int serpentine,
                              int index,
@@ -1394,61 +1349,7 @@ sixel_dither_apply_fixed_impl(
         }                                                               \
     }
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_none);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_fs);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_atkinson);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_jajuni);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI)
     SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_stucki);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_burkes);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra1);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra2);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra3);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
-    switch (effective_diffuse) {
-    case SIXEL_DIFFUSE_NONE:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_none);
-        break;
-    case SIXEL_DIFFUSE_ATKINSON:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_atkinson);
-        break;
-    case SIXEL_DIFFUSE_JAJUNI:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_jajuni);
-        break;
-    case SIXEL_DIFFUSE_STUCKI:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_stucki);
-        break;
-    case SIXEL_DIFFUSE_BURKES:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_burkes);
-        break;
-    case SIXEL_DIFFUSE_SIERRA1:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra1);
-        break;
-    case SIXEL_DIFFUSE_SIERRA2:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra2);
-        break;
-    case SIXEL_DIFFUSE_SIERRA3:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra3);
-        break;
-    case SIXEL_DIFFUSE_INTERFRAME:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_fs);
-        break;
-    case SIXEL_DIFFUSE_FS:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_fs);
-        break;
-    default:
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-#endif
 #undef SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP
 
     (void)effective_diffuse;
@@ -2152,68 +2053,6 @@ static sixel_interframe_method_ops_t const *(
 };
 
 #undef SIXEL_DITHER_FIXED_8BIT_UNUSED
-
-
-/* emacs Local Variables:      */
-/* emacs mode: c               */
-/* emacs tab-width: 4          */
-/* emacs indent-tabs-mode: nil */
-/* emacs c-basic-offset: 4     */
-/* emacs End:                  */
-/* vim: set expandtab ts=4 sts=4 sw=4 : */
-/* EOF */
-/*
- * SPDX-License-Identifier: MIT
- *
- * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-#if defined(HAVE_CONFIG_H)
-#include "config.h"
-#endif
-
-#if HAVE_MATH_H
-# include <math.h>
-#endif  /* HAVE_MATH_H */
-#include <stdint.h>
-#include <string.h>
-
-#include "compat_stub.h"
-#include "dither-internal.h"
-#include "dither-interframe-method.h"
-#include "dither-common-pipeline.h"
-#include "pixelformat.h"
-
-#if !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3) \
-        && !defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
-# error "Missing fixed-float32 policy enable macro."
-#endif
 
 typedef SIXELSTATUS (*sixel_interframe_prepare_frame_float32_fn)(
     sixel_dither_t *dither,
@@ -4174,60 +4013,7 @@ sixel_dither_apply_fixed_float32_with_mode(
         }                                                               \
     }
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_none_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_atkinson_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_jajuni_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI)
     SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_stucki_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_burkes_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra1_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra2_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra3_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
-    switch (method_for_diffuse) {
-    case SIXEL_DIFFUSE_NONE:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_none_float);
-        break;
-    case SIXEL_DIFFUSE_ATKINSON:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_atkinson_float);
-        break;
-    case SIXEL_DIFFUSE_JAJUNI:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_jajuni_float);
-        break;
-    case SIXEL_DIFFUSE_STUCKI:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_stucki_float);
-        break;
-    case SIXEL_DIFFUSE_BURKES:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_burkes_float);
-        break;
-    case SIXEL_DIFFUSE_SIERRA1:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra1_float);
-        break;
-    case SIXEL_DIFFUSE_SIERRA2:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra2_float);
-        break;
-    case SIXEL_DIFFUSE_SIERRA3:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra3_float);
-        break;
-    case SIXEL_DIFFUSE_INTERFRAME:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
-        break;
-    case SIXEL_DIFFUSE_FS:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
-        break;
-    default:
-        return SIXEL_BAD_ARGUMENT;
-    }
-#endif
 #undef SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP
 
     (void)method_for_diffuse;
@@ -4393,22 +4179,6 @@ static sixel_interframe_method_float32_ops_t const *(
 };
 
 #undef SIXEL_DITHER_FIXED_FLOAT32_UNUSED
-
-/* emacs Local Variables:      */
-/* emacs mode: c               */
-/* emacs tab-width: 4          */
-/* emacs indent-tabs-mode: nil */
-/* emacs c-basic-offset: 4     */
-/* emacs End:                  */
-/* vim: set expandtab ts=4 sts=4 sw=4 : */
-/* EOF */
-#undef SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI
-#undef SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI
-#include "dither.h"
-#include "dither-common-pipeline.h"
-#include "dither-internal.h"
-#include "pixelformat.h"
-#include "sixel_atomic.h"
 
 /*
  * IDL (internal contract)
