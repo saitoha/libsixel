@@ -679,18 +679,6 @@ sixel_dither_apply_positional_8bit_with_mode(sixel_dither_t *dither,
     bluenoise_conf = g_sixel_bn_conf_8bit;
     sixel_bluenoise_conf_apply_dither_overrides_8bit(&bluenoise_conf,
                                                      dither);
-#else
-    if (mask_mode == SIXEL_DIFFUSE_A_DITHER
-            || mask_mode == SIXEL_DIFFUSE_X_DITHER) {
-        sixel_positional_strength_init_8bit();
-    } else if (mask_mode == SIXEL_DIFFUSE_BLUENOISE_DITHER) {
-        sixel_bluenoise_conf_init_from_env_8bit();
-        bluenoise_conf = g_sixel_bn_conf_8bit;
-        sixel_bluenoise_conf_apply_dither_overrides_8bit(&bluenoise_conf,
-                                                         dither);
-    } else {
-        return SIXEL_BAD_ARGUMENT;
-    }
 #endif
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
@@ -708,10 +696,6 @@ sixel_dither_apply_positional_8bit_with_mode(sixel_dither_t *dither,
     }
 #if defined(SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_BLUENOISE)
     gradient_factor = bluenoise_conf.gradient_factor;
-#else
-    if (mask_mode == SIXEL_DIFFUSE_BLUENOISE_DITHER) {
-        gradient_factor = bluenoise_conf.gradient_factor;
-    }
 #endif
 
 #define SIXEL_DITHER_APPLY_POSITIONAL_8BIT(NOISE_EXPR)                  \

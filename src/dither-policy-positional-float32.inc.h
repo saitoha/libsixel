@@ -697,18 +697,6 @@ sixel_dither_apply_positional_float32_with_mode(
     bluenoise_conf = g_sixel_bn_conf_float32;
     sixel_bluenoise_conf_apply_dither_overrides_float32(&bluenoise_conf,
                                                         dither);
-#else
-    if (mask_mode == SIXEL_DIFFUSE_A_DITHER
-            || mask_mode == SIXEL_DIFFUSE_X_DITHER) {
-        sixel_positional_strength_init_float32();
-    } else if (mask_mode == SIXEL_DIFFUSE_BLUENOISE_DITHER) {
-        sixel_bluenoise_conf_init_from_env_float32();
-        bluenoise_conf = g_sixel_bn_conf_float32;
-        sixel_bluenoise_conf_apply_dither_overrides_float32(&bluenoise_conf,
-                                                            dither);
-    } else {
-        return SIXEL_BAD_ARGUMENT;
-    }
 #endif
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
@@ -728,10 +716,6 @@ sixel_dither_apply_positional_float32_with_mode(
     }
 #if defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE)
     gradient_factor = bluenoise_conf.gradient_factor;
-#else
-    if (mask_mode == SIXEL_DIFFUSE_BLUENOISE_DITHER) {
-        gradient_factor = bluenoise_conf.gradient_factor;
-    }
 #endif
     lookup_wants_float = (context->lookup_source_is_float != 0);
     use_palette_float_lookup = 0;
