@@ -114,13 +114,42 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__lsqa_SOURCES_DIST = $(srcdir)/lsqa.c $(srcdir)/assessment.c \
-	$(srcdir)/assessment.h $(top_srcdir)/converters/cli.c
+	$(srcdir)/assessment.h $(top_srcdir)/converters/cli.c \
+	$(top_srcdir)/src/dither-policy-none.c \
+	$(top_srcdir)/src/dither-policy-fs.c \
+	$(top_srcdir)/src/dither-policy-atkinson.c \
+	$(top_srcdir)/src/dither-policy-jajuni.c \
+	$(top_srcdir)/src/dither-policy-stucki.c \
+	$(top_srcdir)/src/dither-policy-burkes.c \
+	$(top_srcdir)/src/dither-policy-sierra1.c \
+	$(top_srcdir)/src/dither-policy-sierra2.c \
+	$(top_srcdir)/src/dither-policy-sierra3.c \
+	$(top_srcdir)/src/dither-policy-a-dither.c \
+	$(top_srcdir)/src/dither-policy-x-dither.c \
+	$(top_srcdir)/src/dither-policy-bluenoise.c \
+	$(top_srcdir)/src/dither-policy-interframe.c \
+	$(top_srcdir)/src/dither-policy-lso2.c
 am__dirstamp = $(am__leading_dot)dirstamp
+am__objects_1 = $(top_builddir)/src/lsqa-dither-policy-none.$(OBJEXT) \
+	$(top_builddir)/src/lsqa-dither-policy-fs.$(OBJEXT) \
+	$(top_builddir)/src/lsqa-dither-policy-atkinson.$(OBJEXT) \
+	$(top_builddir)/src/lsqa-dither-policy-jajuni.$(OBJEXT) \
+	$(top_builddir)/src/lsqa-dither-policy-stucki.$(OBJEXT) \
+	$(top_builddir)/src/lsqa-dither-policy-burkes.$(OBJEXT) \
+	$(top_builddir)/src/lsqa-dither-policy-sierra1.$(OBJEXT) \
+	$(top_builddir)/src/lsqa-dither-policy-sierra2.$(OBJEXT) \
+	$(top_builddir)/src/lsqa-dither-policy-sierra3.$(OBJEXT) \
+	$(top_builddir)/src/lsqa-dither-policy-a-dither.$(OBJEXT) \
+	$(top_builddir)/src/lsqa-dither-policy-x-dither.$(OBJEXT) \
+	$(top_builddir)/src/lsqa-dither-policy-bluenoise.$(OBJEXT) \
+	$(top_builddir)/src/lsqa-dither-policy-interframe.$(OBJEXT) \
+	$(top_builddir)/src/lsqa-dither-policy-lso2.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_lsqa_OBJECTS = lsqa-lsqa.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	lsqa-assessment.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/lsqa-cli.$(OBJEXT)
-am__objects_1 = $(top_builddir)/amalgamation/lsqa-sixel.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_OBJECTS = $(am__objects_1)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_lsqa_OBJECTS = $(am__objects_1)
+am__objects_2 = $(top_builddir)/amalgamation/lsqa-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_OBJECTS = $(am__objects_2)
 lsqa_OBJECTS = $(am_lsqa_OBJECTS) $(nodist_lsqa_OBJECTS)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -172,6 +201,20 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade =  \
 	$(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po \
 	$(top_builddir)/converters/$(DEPDIR)/lsqa-cli.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-a-dither.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-atkinson.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-bluenoise.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-burkes.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-fs.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-interframe.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-jajuni.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-lso2.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-none.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra1.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra2.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra3.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-stucki.Po \
+	$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-x-dither.Po \
 	./$(DEPDIR)/lsqa-assessment.Po ./$(DEPDIR)/lsqa-lsqa.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -485,12 +528,28 @@ AMALGAMATION_LSQA_LIBS = -lm \
         $(CLIPBOARD_LIBS) \
         @THREAD_LIBS@
 
+AMALGAMATION_DITHER_POLICY_SOURCES = \
+        $(top_srcdir)/src/dither-policy-none.c \
+        $(top_srcdir)/src/dither-policy-fs.c \
+        $(top_srcdir)/src/dither-policy-atkinson.c \
+        $(top_srcdir)/src/dither-policy-jajuni.c \
+        $(top_srcdir)/src/dither-policy-stucki.c \
+        $(top_srcdir)/src/dither-policy-burkes.c \
+        $(top_srcdir)/src/dither-policy-sierra1.c \
+        $(top_srcdir)/src/dither-policy-sierra2.c \
+        $(top_srcdir)/src/dither-policy-sierra3.c \
+        $(top_srcdir)/src/dither-policy-a-dither.c \
+        $(top_srcdir)/src/dither-policy-x-dither.c \
+        $(top_srcdir)/src/dither-policy-bluenoise.c \
+        $(top_srcdir)/src/dither-policy-interframe.c \
+        $(top_srcdir)/src/dither-policy-lso2.c
+
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_SOURCES = $(srcdir)/lsqa.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/assessment.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/assessment.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@               $(top_srcdir)/converters/cli.c
 
-@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_SOURCES = 
+@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_SOURCES = $(AMALGAMATION_DITHER_POLICY_SOURCES)
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
 @WANT_AMALGAMATED_TOOLS_FALSE@                -I$(top_srcdir)/src \
@@ -500,6 +559,7 @@ AMALGAMATION_LSQA_LIBS = -lm \
 
 @WANT_AMALGAMATED_TOOLS_TRUE@lsqa_CPPFLAGS = $(AMALGAMATION_LSQA_CPPFLAGS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        -I$(top_srcdir)/converters \
+@WANT_AMALGAMATED_TOOLS_TRUE@        -DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1 \
 @WANT_AMALGAMATED_TOOLS_TRUE@        -DBUILD_LSQA
 
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
@@ -610,6 +670,54 @@ $(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp):
 $(top_builddir)/converters/lsqa-cli.$(OBJEXT):  \
 	$(top_builddir)/converters/$(am__dirstamp) \
 	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src
+	@: >>$(top_builddir)/src/$(am__dirstamp)
+$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src/$(DEPDIR)
+	@: >>$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-none.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-fs.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-atkinson.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-jajuni.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-stucki.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-burkes.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-sierra1.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-sierra2.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-sierra3.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-a-dither.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-x-dither.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-bluenoise.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-interframe.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/lsqa-dither-policy-lso2.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/amalgamation/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/amalgamation
 	@: >>$(top_builddir)/amalgamation/$(am__dirstamp)
@@ -628,12 +736,27 @@ mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
 	-rm -f $(top_builddir)/converters/*.$(OBJEXT)
+	-rm -f $(top_builddir)/src/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/lsqa-cli.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-a-dither.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-atkinson.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-bluenoise.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-burkes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-fs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-interframe.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-jajuni.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-lso2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-none.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra1.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-stucki.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-x-dither.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-assessment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-lsqa.Po@am__quote@ # am--include-marker
 
@@ -708,6 +831,202 @@ $(top_builddir)/converters/lsqa-cli.obj: $(top_builddir)/converters/cli.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/cli.c' object='$(top_builddir)/converters/lsqa-cli.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/lsqa-cli.obj `if test -f '$(top_builddir)/converters/cli.c'; then $(CYGPATH_W) '$(top_builddir)/converters/cli.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/cli.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-none.o: $(top_builddir)/src/dither-policy-none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-none.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-none.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-none.o `test -f '$(top_builddir)/src/dither-policy-none.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-none.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-none.c' object='$(top_builddir)/src/lsqa-dither-policy-none.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-none.o `test -f '$(top_builddir)/src/dither-policy-none.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-none.c
+
+$(top_builddir)/src/lsqa-dither-policy-none.obj: $(top_builddir)/src/dither-policy-none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-none.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-none.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-none.obj `if test -f '$(top_builddir)/src/dither-policy-none.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-none.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-none.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-none.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-none.c' object='$(top_builddir)/src/lsqa-dither-policy-none.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-none.obj `if test -f '$(top_builddir)/src/dither-policy-none.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-none.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-none.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-fs.o: $(top_builddir)/src/dither-policy-fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-fs.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-fs.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-fs.o `test -f '$(top_builddir)/src/dither-policy-fs.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-fs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-fs.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-fs.c' object='$(top_builddir)/src/lsqa-dither-policy-fs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-fs.o `test -f '$(top_builddir)/src/dither-policy-fs.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-fs.c
+
+$(top_builddir)/src/lsqa-dither-policy-fs.obj: $(top_builddir)/src/dither-policy-fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-fs.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-fs.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-fs.obj `if test -f '$(top_builddir)/src/dither-policy-fs.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-fs.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-fs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-fs.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-fs.c' object='$(top_builddir)/src/lsqa-dither-policy-fs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-fs.obj `if test -f '$(top_builddir)/src/dither-policy-fs.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-fs.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-fs.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-atkinson.o: $(top_builddir)/src/dither-policy-atkinson.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-atkinson.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-atkinson.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-atkinson.o `test -f '$(top_builddir)/src/dither-policy-atkinson.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-atkinson.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-atkinson.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-atkinson.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-atkinson.c' object='$(top_builddir)/src/lsqa-dither-policy-atkinson.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-atkinson.o `test -f '$(top_builddir)/src/dither-policy-atkinson.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-atkinson.c
+
+$(top_builddir)/src/lsqa-dither-policy-atkinson.obj: $(top_builddir)/src/dither-policy-atkinson.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-atkinson.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-atkinson.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-atkinson.obj `if test -f '$(top_builddir)/src/dither-policy-atkinson.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-atkinson.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-atkinson.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-atkinson.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-atkinson.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-atkinson.c' object='$(top_builddir)/src/lsqa-dither-policy-atkinson.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-atkinson.obj `if test -f '$(top_builddir)/src/dither-policy-atkinson.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-atkinson.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-atkinson.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-jajuni.o: $(top_builddir)/src/dither-policy-jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-jajuni.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-jajuni.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-jajuni.o `test -f '$(top_builddir)/src/dither-policy-jajuni.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-jajuni.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-jajuni.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-jajuni.c' object='$(top_builddir)/src/lsqa-dither-policy-jajuni.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-jajuni.o `test -f '$(top_builddir)/src/dither-policy-jajuni.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-jajuni.c
+
+$(top_builddir)/src/lsqa-dither-policy-jajuni.obj: $(top_builddir)/src/dither-policy-jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-jajuni.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-jajuni.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-jajuni.obj `if test -f '$(top_builddir)/src/dither-policy-jajuni.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-jajuni.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-jajuni.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-jajuni.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-jajuni.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-jajuni.c' object='$(top_builddir)/src/lsqa-dither-policy-jajuni.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-jajuni.obj `if test -f '$(top_builddir)/src/dither-policy-jajuni.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-jajuni.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-jajuni.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-stucki.o: $(top_builddir)/src/dither-policy-stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-stucki.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-stucki.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-stucki.o `test -f '$(top_builddir)/src/dither-policy-stucki.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-stucki.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-stucki.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-stucki.c' object='$(top_builddir)/src/lsqa-dither-policy-stucki.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-stucki.o `test -f '$(top_builddir)/src/dither-policy-stucki.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-stucki.c
+
+$(top_builddir)/src/lsqa-dither-policy-stucki.obj: $(top_builddir)/src/dither-policy-stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-stucki.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-stucki.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-stucki.obj `if test -f '$(top_builddir)/src/dither-policy-stucki.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-stucki.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-stucki.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-stucki.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-stucki.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-stucki.c' object='$(top_builddir)/src/lsqa-dither-policy-stucki.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-stucki.obj `if test -f '$(top_builddir)/src/dither-policy-stucki.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-stucki.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-stucki.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-burkes.o: $(top_builddir)/src/dither-policy-burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-burkes.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-burkes.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-burkes.o `test -f '$(top_builddir)/src/dither-policy-burkes.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-burkes.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-burkes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-burkes.c' object='$(top_builddir)/src/lsqa-dither-policy-burkes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-burkes.o `test -f '$(top_builddir)/src/dither-policy-burkes.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-burkes.c
+
+$(top_builddir)/src/lsqa-dither-policy-burkes.obj: $(top_builddir)/src/dither-policy-burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-burkes.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-burkes.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-burkes.obj `if test -f '$(top_builddir)/src/dither-policy-burkes.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-burkes.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-burkes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-burkes.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-burkes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-burkes.c' object='$(top_builddir)/src/lsqa-dither-policy-burkes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-burkes.obj `if test -f '$(top_builddir)/src/dither-policy-burkes.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-burkes.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-burkes.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-sierra1.o: $(top_builddir)/src/dither-policy-sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-sierra1.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra1.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-sierra1.o `test -f '$(top_builddir)/src/dither-policy-sierra1.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra1.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra1.c' object='$(top_builddir)/src/lsqa-dither-policy-sierra1.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-sierra1.o `test -f '$(top_builddir)/src/dither-policy-sierra1.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra1.c
+
+$(top_builddir)/src/lsqa-dither-policy-sierra1.obj: $(top_builddir)/src/dither-policy-sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-sierra1.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra1.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-sierra1.obj `if test -f '$(top_builddir)/src/dither-policy-sierra1.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra1.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra1.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra1.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra1.c' object='$(top_builddir)/src/lsqa-dither-policy-sierra1.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-sierra1.obj `if test -f '$(top_builddir)/src/dither-policy-sierra1.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra1.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra1.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-sierra2.o: $(top_builddir)/src/dither-policy-sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-sierra2.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra2.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-sierra2.o `test -f '$(top_builddir)/src/dither-policy-sierra2.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra2.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra2.c' object='$(top_builddir)/src/lsqa-dither-policy-sierra2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-sierra2.o `test -f '$(top_builddir)/src/dither-policy-sierra2.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra2.c
+
+$(top_builddir)/src/lsqa-dither-policy-sierra2.obj: $(top_builddir)/src/dither-policy-sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-sierra2.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra2.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-sierra2.obj `if test -f '$(top_builddir)/src/dither-policy-sierra2.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra2.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra2.c' object='$(top_builddir)/src/lsqa-dither-policy-sierra2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-sierra2.obj `if test -f '$(top_builddir)/src/dither-policy-sierra2.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra2.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-sierra3.o: $(top_builddir)/src/dither-policy-sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-sierra3.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra3.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-sierra3.o `test -f '$(top_builddir)/src/dither-policy-sierra3.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra3.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra3.c' object='$(top_builddir)/src/lsqa-dither-policy-sierra3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-sierra3.o `test -f '$(top_builddir)/src/dither-policy-sierra3.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra3.c
+
+$(top_builddir)/src/lsqa-dither-policy-sierra3.obj: $(top_builddir)/src/dither-policy-sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-sierra3.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra3.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-sierra3.obj `if test -f '$(top_builddir)/src/dither-policy-sierra3.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra3.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra3.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra3.c' object='$(top_builddir)/src/lsqa-dither-policy-sierra3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-sierra3.obj `if test -f '$(top_builddir)/src/dither-policy-sierra3.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra3.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra3.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-a-dither.o: $(top_builddir)/src/dither-policy-a-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-a-dither.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-a-dither.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-a-dither.o `test -f '$(top_builddir)/src/dither-policy-a-dither.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-a-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-a-dither.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-a-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-a-dither.c' object='$(top_builddir)/src/lsqa-dither-policy-a-dither.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-a-dither.o `test -f '$(top_builddir)/src/dither-policy-a-dither.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-a-dither.c
+
+$(top_builddir)/src/lsqa-dither-policy-a-dither.obj: $(top_builddir)/src/dither-policy-a-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-a-dither.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-a-dither.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-a-dither.obj `if test -f '$(top_builddir)/src/dither-policy-a-dither.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-a-dither.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-a-dither.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-a-dither.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-a-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-a-dither.c' object='$(top_builddir)/src/lsqa-dither-policy-a-dither.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-a-dither.obj `if test -f '$(top_builddir)/src/dither-policy-a-dither.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-a-dither.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-a-dither.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-x-dither.o: $(top_builddir)/src/dither-policy-x-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-x-dither.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-x-dither.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-x-dither.o `test -f '$(top_builddir)/src/dither-policy-x-dither.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-x-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-x-dither.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-x-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-x-dither.c' object='$(top_builddir)/src/lsqa-dither-policy-x-dither.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-x-dither.o `test -f '$(top_builddir)/src/dither-policy-x-dither.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-x-dither.c
+
+$(top_builddir)/src/lsqa-dither-policy-x-dither.obj: $(top_builddir)/src/dither-policy-x-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-x-dither.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-x-dither.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-x-dither.obj `if test -f '$(top_builddir)/src/dither-policy-x-dither.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-x-dither.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-x-dither.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-x-dither.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-x-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-x-dither.c' object='$(top_builddir)/src/lsqa-dither-policy-x-dither.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-x-dither.obj `if test -f '$(top_builddir)/src/dither-policy-x-dither.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-x-dither.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-x-dither.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-bluenoise.o: $(top_builddir)/src/dither-policy-bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-bluenoise.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-bluenoise.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-bluenoise.o `test -f '$(top_builddir)/src/dither-policy-bluenoise.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-bluenoise.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-bluenoise.c' object='$(top_builddir)/src/lsqa-dither-policy-bluenoise.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-bluenoise.o `test -f '$(top_builddir)/src/dither-policy-bluenoise.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-bluenoise.c
+
+$(top_builddir)/src/lsqa-dither-policy-bluenoise.obj: $(top_builddir)/src/dither-policy-bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-bluenoise.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-bluenoise.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-bluenoise.obj `if test -f '$(top_builddir)/src/dither-policy-bluenoise.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-bluenoise.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-bluenoise.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-bluenoise.c' object='$(top_builddir)/src/lsqa-dither-policy-bluenoise.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-bluenoise.obj `if test -f '$(top_builddir)/src/dither-policy-bluenoise.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-bluenoise.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-interframe.o: $(top_builddir)/src/dither-policy-interframe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-interframe.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-interframe.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-interframe.o `test -f '$(top_builddir)/src/dither-policy-interframe.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-interframe.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-interframe.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-interframe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-interframe.c' object='$(top_builddir)/src/lsqa-dither-policy-interframe.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-interframe.o `test -f '$(top_builddir)/src/dither-policy-interframe.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-interframe.c
+
+$(top_builddir)/src/lsqa-dither-policy-interframe.obj: $(top_builddir)/src/dither-policy-interframe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-interframe.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-interframe.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-interframe.obj `if test -f '$(top_builddir)/src/dither-policy-interframe.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-interframe.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-interframe.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-interframe.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-interframe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-interframe.c' object='$(top_builddir)/src/lsqa-dither-policy-interframe.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-interframe.obj `if test -f '$(top_builddir)/src/dither-policy-interframe.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-interframe.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-interframe.c'; fi`
+
+$(top_builddir)/src/lsqa-dither-policy-lso2.o: $(top_builddir)/src/dither-policy-lso2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-lso2.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-lso2.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-lso2.o `test -f '$(top_builddir)/src/dither-policy-lso2.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-lso2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-lso2.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-lso2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-lso2.c' object='$(top_builddir)/src/lsqa-dither-policy-lso2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-lso2.o `test -f '$(top_builddir)/src/dither-policy-lso2.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-lso2.c
+
+$(top_builddir)/src/lsqa-dither-policy-lso2.obj: $(top_builddir)/src/dither-policy-lso2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-dither-policy-lso2.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-lso2.Tpo -c -o $(top_builddir)/src/lsqa-dither-policy-lso2.obj `if test -f '$(top_builddir)/src/dither-policy-lso2.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-lso2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-lso2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-lso2.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-lso2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-lso2.c' object='$(top_builddir)/src/lsqa-dither-policy-lso2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-dither-policy-lso2.obj `if test -f '$(top_builddir)/src/dither-policy-lso2.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-lso2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-lso2.c'; fi`
 
 $(top_builddir)/amalgamation/lsqa-sixel.o: $(top_builddir)/amalgamation/sixel.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/lsqa-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Tpo -c -o $(top_builddir)/amalgamation/lsqa-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
@@ -856,6 +1175,8 @@ distclean-generic:
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/converters/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/src/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -868,6 +1189,20 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 distclean: distclean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/lsqa-cli.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-a-dither.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-atkinson.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-bluenoise.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-burkes.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-fs.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-interframe.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-jajuni.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-lso2.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-none.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra1.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra2.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra3.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-stucki.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-x-dither.Po
 	-rm -f ./$(DEPDIR)/lsqa-assessment.Po
 	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
 	-rm -f Makefile
@@ -917,6 +1252,20 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/lsqa-cli.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-a-dither.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-atkinson.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-bluenoise.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-burkes.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-fs.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-interframe.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-jajuni.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-lso2.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-none.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra1.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra2.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-sierra3.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-stucki.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-dither-policy-x-dither.Po
 	-rm -f ./$(DEPDIR)/lsqa-assessment.Po
 	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
 	-rm -f Makefile

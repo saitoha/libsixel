@@ -489,6 +489,12 @@ emit_header_unit() {
 emit_all_headers() {
     echo "${header_units}" | while IFS= read -r unit; do
         [ -z "${unit}" ] && continue
+        case "${unit}" in
+            *.inc.h)
+                # Include fragments are expanded inside policy source files.
+                continue
+                ;;
+        esac
 
         case "${unit}" in
             converters/completion_embed.h)
@@ -591,11 +597,11 @@ emit_all_units() {
                 emit_unit "${unit}" \
                     "!defined(SIXEL_AMALGAMATION_SPLIT_DITHER)"
                 ;;
-            src/dither-fixed-float32.c)
-                # libsixel.amalgamation may split this unit into a dedicated
-                # object file to avoid compiler ICEs on very large sources.
+            src/dither-policy-*.c)
+                # Policy units are compiled as standalone objects when
+                # amalgamated builds enable dither-policy splitting.
                 emit_unit "${unit}" \
-                    "!defined(SIXEL_AMALGAMATION_SPLIT_DITHER_FIXED_FLOAT32)"
+                    "!defined(SIXEL_AMALGAMATION_SPLIT_DITHER_POLICY)"
                 ;;
             *)
                 emit_unit "${unit}" ""

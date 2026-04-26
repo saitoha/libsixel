@@ -20,11 +20,11 @@ else
 AMALGAMATION_COMPILE = $(LTCOMPILE)
 AMALGAMATION_CPPFLAGS =
 endif
-# Compile large dither units as separate translation units for libsixel
-# amalgamation to avoid compiler ICEs on very large sources.
+# Compile the large dither unit as a separate translation unit for
+# libsixel amalgamation to avoid compiler ICEs on very large sources.
 AMALGAMATION_CPPFLAGS += \
         -DSIXEL_AMALGAMATION_SPLIT_DITHER=1 \
-        -DSIXEL_AMALGAMATION_SPLIT_DITHER_FIXED_FLOAT32=1
+        -DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1
 BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 nodist_libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
 endif
@@ -54,12 +54,20 @@ libsixel_la_SOURCES =
 libsixel_la_SOURCES += \
                 $(srcdir)/dither.c \
                 $(srcdir)/dither.h \
-                $(srcdir)/dither-policy-positional-8bit.inc.h \
-                $(srcdir)/dither-policy-positional-float32.inc.h \
-                $(srcdir)/dither-policy-fixed-8bit.inc.h \
-                $(srcdir)/dither-policy-fixed-float32.inc.h \
-                $(srcdir)/dither-policy-varcoeff-8bit.inc.h \
-                $(srcdir)/dither-policy-varcoeff-float32.inc.h
+                $(srcdir)/dither-policy-none.c \
+                $(srcdir)/dither-policy-fs.c \
+                $(srcdir)/dither-policy-atkinson.c \
+                $(srcdir)/dither-policy-jajuni.c \
+                $(srcdir)/dither-policy-stucki.c \
+                $(srcdir)/dither-policy-burkes.c \
+                $(srcdir)/dither-policy-sierra1.c \
+                $(srcdir)/dither-policy-sierra2.c \
+                $(srcdir)/dither-policy-sierra3.c \
+                $(srcdir)/dither-policy-a-dither.c \
+                $(srcdir)/dither-policy-x-dither.c \
+                $(srcdir)/dither-policy-bluenoise.c \
+                $(srcdir)/dither-policy-interframe.c \
+                $(srcdir)/dither-policy-lso2.c
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
@@ -171,9 +179,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-common-pipeline.c \
                 $(srcdir)/dither-common-pipeline.h \
                 $(srcdir)/bluenoise_64x64.h \
-                $(srcdir)/dither-policy-positional-8bit.inc.h \
-                $(srcdir)/dither-policy-positional-float32.inc.h \
-                $(srcdir)/dither-policy-fixed-8bit.inc.h \
                 $(srcdir)/dither-interframe-method.c \
                 $(srcdir)/dither-interframe-method.h \
                 $(srcdir)/dither-interframe-stbn-source.c \
@@ -186,10 +191,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-interframe-stbn-source-mask-table.h \
                 $(srcdir)/dither-interframe-stbn-source-pmj.c \
                 $(srcdir)/dither-interframe-stbn-source-pmj.h \
-                $(srcdir)/dither-policy-fixed-float32.inc.h \
                 $(srcdir)/dither-internal.h \
-                $(srcdir)/dither-policy-varcoeff-8bit.inc.h \
-                $(srcdir)/dither-policy-varcoeff-float32.inc.h \
                 $(srcdir)/logger.c \
                 $(srcdir)/logger.h \
                 $(srcdir)/colorspace.c \

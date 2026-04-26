@@ -83,12 +83,6 @@ srcs = [
   'dither-policy-interframe.c',
   'dither-policy-lso2.c',
   'dither-common-pipeline.c',
-  'dither-policy-positional-8bit.inc.h',
-  'dither-policy-positional-float32.inc.h',
-  'dither-policy-fixed-8bit.inc.h',
-  'dither-policy-fixed-float32.inc.h',
-  'dither-policy-varcoeff-8bit.inc.h',
-  'dither-policy-varcoeff-float32.inc.h',
   'logger.c',
   'logger.h',
   'colorspace.c',
@@ -289,17 +283,37 @@ lt_soversion = ls_lt_current - ls_lt_age
 lt_version = '@0@.@1@.@2@'.format(lt_soversion, ls_lt_age, ls_lt_revision)
 
 if amalgamated_lib_enabled
-  libsixel_sources = [amalgamation_out]
+  libsixel_sources = [
+    amalgamation_out,
+    'dither-policy-none.c',
+    'dither-policy-fs.c',
+    'dither-policy-atkinson.c',
+    'dither-policy-jajuni.c',
+    'dither-policy-stucki.c',
+    'dither-policy-burkes.c',
+    'dither-policy-sierra1.c',
+    'dither-policy-sierra2.c',
+    'dither-policy-sierra3.c',
+    'dither-policy-a-dither.c',
+    'dither-policy-x-dither.c',
+    'dither-policy-bluenoise.c',
+    'dither-policy-interframe.c',
+    'dither-policy-lso2.c',
+  ]
+  libsixel_c_args = libsixel_posix_defs + [
+    '-DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1',
+  ]
 else
   libsixel_sources = srcs
+  libsixel_c_args = libsixel_posix_defs
 endif
 libsixel_build_deps = deps + msvc_pgo_post_wic_deps
 
 libsixel = library('sixel',
                    libsixel_sources,
                    include_directories: project_inc,
-                   c_args: libsixel_posix_defs,
-                   objc_args: libsixel_posix_defs,
+                   c_args: libsixel_c_args,
+                   objc_args: libsixel_c_args,
                    dependencies: libsixel_build_deps,
                    version: lt_version,
                    soversion: lt_soversion.to_string(),

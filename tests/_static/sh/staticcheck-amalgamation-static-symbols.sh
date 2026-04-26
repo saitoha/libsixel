@@ -55,6 +55,26 @@ awk -v src_base="$src_root/converters" '
 
 LC_ALL=C sort -u "$unit_entries" -o "$unit_entries"
 
+if awk '
+/SIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1/ {
+    found = 1
+}
+END {
+    exit found ? 0 : 1
+}
+' "$src_makefile"; then
+    awk '
+{
+    is_dither_policy = (index($0, "/src/dither-policy-") > 0)
+    is_c_file = ($0 ~ /\.c$/)
+    if (!(is_dither_policy && is_c_file)) {
+        print
+    }
+}
+' "$unit_entries" > "$tmpdir/unit_entries.filtered"
+    mv "$tmpdir/unit_entries.filtered" "$unit_entries"
+fi
+
 if test ! -s "$unit_entries"; then
     echo "ok 1 # SKIP no C/ObjC source entries found"
     exit 0

@@ -15,6 +15,12 @@ bad=$tmpdir/bad.txt
 for path in \
     "$src_root/src/dither-policy-backend.c" \
     "$src_root/src/dither-policy-backend.h" \
+    "$src_root/src/dither-policy-fixed-8bit.inc.h" \
+    "$src_root/src/dither-policy-fixed-float32.inc.h" \
+    "$src_root/src/dither-policy-positional-8bit.inc.h" \
+    "$src_root/src/dither-policy-positional-float32.inc.h" \
+    "$src_root/src/dither-policy-varcoeff-8bit.inc.h" \
+    "$src_root/src/dither-policy-varcoeff-float32.inc.h" \
     "$src_root/src/dither-fixed-8bit.c" \
     "$src_root/src/dither-fixed-8bit.h" \
     "$src_root/src/dither-fixed-float32.c" \
@@ -72,29 +78,13 @@ do
     /#include "dither-policy-backend.h"/ {
         printf "%s:%d:%s\n", FILENAME, NR, $0
     }
+    /#include "dither-policy-.*\.inc\.h"/ {
+        printf "%s:%d:%s\n", FILENAME, NR, $0
+    }
     /sixel_dither_policy_backend_apply_(fixed|varcoeff|positional)/ {
         printf "%s:%d:%s\n", FILENAME, NR, $0
     }
     /context[[:space:]]*\.[[:space:]]*method_for_diffuse[[:space:]]*=/ {
-        printf "%s:%d:%s\n", FILENAME, NR, $0
-    }
-    /sixel_dither_apply_(fixed|positional|varcoeff)_(8bit|float32)[[:space:]]*\(/ {
-        printf "%s:%d:%s\n", FILENAME, NR, $0
-    }
-    ' "$path"
-done >> "$bad"
-
-for path in \
-    "$src_root/src/dither-policy-fixed-8bit.inc.h" \
-    "$src_root/src/dither-policy-fixed-float32.inc.h" \
-    "$src_root/src/dither-policy-varcoeff-8bit.inc.h" \
-    "$src_root/src/dither-policy-varcoeff-float32.inc.h" \
-    "$src_root/src/dither-policy-positional-8bit.inc.h" \
-    "$src_root/src/dither-policy-positional-float32.inc.h"
-do
-    test -f "$path" || continue
-    awk '
-    /(^|[^A-Za-z0-9_])(f_diffuse|f_mask|varerr_diffuse)([^A-Za-z0-9_]|$)/ {
         printf "%s:%d:%s\n", FILENAME, NR, $0
     }
     ' "$path"

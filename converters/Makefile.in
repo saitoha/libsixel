@@ -103,7 +103,10 @@ noinst_PROGRAMS =
 @WANT_IMG2SIXEL_TRUE@am__append_8 = $(srcdir)/shell-completion/zsh/_img2sixel
 @WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@am__append_9 = sixel2png
 @WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_FALSE@am__append_10 = sixel2png
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_11 = $(AMALGAMATION_TOOL_CPPFLAGS) -DBUILD_SIXEL2PNG
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_11 = $(AMALGAMATION_TOOL_CPPFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@        -DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1 \
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@        -DBUILD_SIXEL2PNG
+
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_12 = -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
 @HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_13 = $(ABORTTRACE_LIBS)
 @WANT_SIXEL2PNG_TRUE@am__append_14 = $(srcdir)/sixel2png.1
@@ -144,7 +147,36 @@ am__img2sixel_SOURCES_DIST = $(srcdir)/img2sixel.c \
 	$(srcdir)/path.h $(srcdir)/cli.c $(srcdir)/cli.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/getopt_stub.h $(srcdir)/aborttrace.c \
-	$(srcdir)/aborttrace.h
+	$(srcdir)/aborttrace.h $(top_srcdir)/src/dither-policy-none.c \
+	$(top_srcdir)/src/dither-policy-fs.c \
+	$(top_srcdir)/src/dither-policy-atkinson.c \
+	$(top_srcdir)/src/dither-policy-jajuni.c \
+	$(top_srcdir)/src/dither-policy-stucki.c \
+	$(top_srcdir)/src/dither-policy-burkes.c \
+	$(top_srcdir)/src/dither-policy-sierra1.c \
+	$(top_srcdir)/src/dither-policy-sierra2.c \
+	$(top_srcdir)/src/dither-policy-sierra3.c \
+	$(top_srcdir)/src/dither-policy-a-dither.c \
+	$(top_srcdir)/src/dither-policy-x-dither.c \
+	$(top_srcdir)/src/dither-policy-bluenoise.c \
+	$(top_srcdir)/src/dither-policy-interframe.c \
+	$(top_srcdir)/src/dither-policy-lso2.c
+am__dirstamp = $(am__leading_dot)dirstamp
+am__objects_1 =  \
+	$(top_builddir)/src/img2sixel-dither-policy-none.$(OBJEXT) \
+	$(top_builddir)/src/img2sixel-dither-policy-fs.$(OBJEXT) \
+	$(top_builddir)/src/img2sixel-dither-policy-atkinson.$(OBJEXT) \
+	$(top_builddir)/src/img2sixel-dither-policy-jajuni.$(OBJEXT) \
+	$(top_builddir)/src/img2sixel-dither-policy-stucki.$(OBJEXT) \
+	$(top_builddir)/src/img2sixel-dither-policy-burkes.$(OBJEXT) \
+	$(top_builddir)/src/img2sixel-dither-policy-sierra1.$(OBJEXT) \
+	$(top_builddir)/src/img2sixel-dither-policy-sierra2.$(OBJEXT) \
+	$(top_builddir)/src/img2sixel-dither-policy-sierra3.$(OBJEXT) \
+	$(top_builddir)/src/img2sixel-dither-policy-a-dither.$(OBJEXT) \
+	$(top_builddir)/src/img2sixel-dither-policy-x-dither.$(OBJEXT) \
+	$(top_builddir)/src/img2sixel-dither-policy-bluenoise.$(OBJEXT) \
+	$(top_builddir)/src/img2sixel-dither-policy-interframe.$(OBJEXT) \
+	$(top_builddir)/src/img2sixel-dither-policy-lso2.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@am_img2sixel_OBJECTS = img2sixel-img2sixel.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-completion_utils.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-compat.$(OBJEXT) \
@@ -152,10 +184,10 @@ am__img2sixel_SOURCES_DIST = $(srcdir)/img2sixel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-cli.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-malloc_stub.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-aborttrace.$(OBJEXT)
-am__dirstamp = $(am__leading_dot)dirstamp
-am__objects_1 =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@am_img2sixel_OBJECTS = $(am__objects_1)
+am__objects_2 =  \
 	$(top_builddir)/amalgamation/img2sixel-sixel.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@nodist_img2sixel_OBJECTS = $(am__objects_1)
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@nodist_img2sixel_OBJECTS = $(am__objects_2)
 img2sixel_OBJECTS = $(am_img2sixel_OBJECTS) \
 	$(nodist_img2sixel_OBJECTS)
 am__DEPENDENCIES_1 =
@@ -193,14 +225,44 @@ img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 am__sixel2png_SOURCES_DIST = $(srcdir)/sixel2png.c $(srcdir)/cli.c \
 	$(srcdir)/cli.h $(srcdir)/malloc_stub.c \
 	$(srcdir)/malloc_stub.h $(srcdir)/getopt_stub.h \
-	$(srcdir)/aborttrace.c $(srcdir)/aborttrace.h
+	$(srcdir)/aborttrace.c $(srcdir)/aborttrace.h \
+	$(top_srcdir)/src/dither-policy-none.c \
+	$(top_srcdir)/src/dither-policy-fs.c \
+	$(top_srcdir)/src/dither-policy-atkinson.c \
+	$(top_srcdir)/src/dither-policy-jajuni.c \
+	$(top_srcdir)/src/dither-policy-stucki.c \
+	$(top_srcdir)/src/dither-policy-burkes.c \
+	$(top_srcdir)/src/dither-policy-sierra1.c \
+	$(top_srcdir)/src/dither-policy-sierra2.c \
+	$(top_srcdir)/src/dither-policy-sierra3.c \
+	$(top_srcdir)/src/dither-policy-a-dither.c \
+	$(top_srcdir)/src/dither-policy-x-dither.c \
+	$(top_srcdir)/src/dither-policy-bluenoise.c \
+	$(top_srcdir)/src/dither-policy-interframe.c \
+	$(top_srcdir)/src/dither-policy-lso2.c
+am__objects_3 =  \
+	$(top_builddir)/src/sixel2png-dither-policy-none.$(OBJEXT) \
+	$(top_builddir)/src/sixel2png-dither-policy-fs.$(OBJEXT) \
+	$(top_builddir)/src/sixel2png-dither-policy-atkinson.$(OBJEXT) \
+	$(top_builddir)/src/sixel2png-dither-policy-jajuni.$(OBJEXT) \
+	$(top_builddir)/src/sixel2png-dither-policy-stucki.$(OBJEXT) \
+	$(top_builddir)/src/sixel2png-dither-policy-burkes.$(OBJEXT) \
+	$(top_builddir)/src/sixel2png-dither-policy-sierra1.$(OBJEXT) \
+	$(top_builddir)/src/sixel2png-dither-policy-sierra2.$(OBJEXT) \
+	$(top_builddir)/src/sixel2png-dither-policy-sierra3.$(OBJEXT) \
+	$(top_builddir)/src/sixel2png-dither-policy-a-dither.$(OBJEXT) \
+	$(top_builddir)/src/sixel2png-dither-policy-x-dither.$(OBJEXT) \
+	$(top_builddir)/src/sixel2png-dither-policy-bluenoise.$(OBJEXT) \
+	$(top_builddir)/src/sixel2png-dither-policy-interframe.$(OBJEXT) \
+	$(top_builddir)/src/sixel2png-dither-policy-lso2.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am_sixel2png_OBJECTS = sixel2png-sixel2png.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	sixel2png-cli.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	sixel2png-malloc_stub.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	sixel2png-aborttrace.$(OBJEXT)
-am__objects_2 =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am_sixel2png_OBJECTS = $(am__objects_3)
+am__objects_4 =  \
 	$(top_builddir)/amalgamation/sixel2png-sixel.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@nodist_sixel2png_OBJECTS = $(am__objects_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@nodist_sixel2png_OBJECTS = $(am__objects_4)
 sixel2png_OBJECTS = $(am_sixel2png_OBJECTS) \
 	$(nodist_sixel2png_OBJECTS)
 @HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__DEPENDENCIES_4 = $(am__DEPENDENCIES_1)
@@ -241,6 +303,34 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade =  \
 	$(top_builddir)/amalgamation/$(DEPDIR)/img2sixel-sixel.Po \
 	$(top_builddir)/amalgamation/$(DEPDIR)/sixel2png-sixel.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-a-dither.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-atkinson.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-bluenoise.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-burkes.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-fs.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-interframe.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-jajuni.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-lso2.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-none.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra1.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra2.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra3.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-stucki.Po \
+	$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-x-dither.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-a-dither.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-atkinson.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-bluenoise.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-burkes.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-fs.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-interframe.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-jajuni.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-lso2.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-none.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra1.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra2.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra3.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-stucki.Po \
+	$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-x-dither.Po \
 	./$(DEPDIR)/img2sixel-aborttrace.Po \
 	./$(DEPDIR)/img2sixel-cli.Po ./$(DEPDIR)/img2sixel-compat.Po \
 	./$(DEPDIR)/img2sixel-completion_utils.Po \
@@ -651,6 +741,22 @@ AMALGAMATION_TOOL_LIBS = -lm \
         $(CLIPBOARD_LIBS) \
         @THREAD_LIBS@
 
+AMALGAMATION_DITHER_POLICY_SOURCES = \
+        $(top_srcdir)/src/dither-policy-none.c \
+        $(top_srcdir)/src/dither-policy-fs.c \
+        $(top_srcdir)/src/dither-policy-atkinson.c \
+        $(top_srcdir)/src/dither-policy-jajuni.c \
+        $(top_srcdir)/src/dither-policy-stucki.c \
+        $(top_srcdir)/src/dither-policy-burkes.c \
+        $(top_srcdir)/src/dither-policy-sierra1.c \
+        $(top_srcdir)/src/dither-policy-sierra2.c \
+        $(top_srcdir)/src/dither-policy-sierra3.c \
+        $(top_srcdir)/src/dither-policy-a-dither.c \
+        $(top_srcdir)/src/dither-policy-x-dither.c \
+        $(top_srcdir)/src/dither-policy-bluenoise.c \
+        $(top_srcdir)/src/dither-policy-interframe.c \
+        $(top_srcdir)/src/dither-policy-lso2.c
+
 CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(srcdir)/img2sixel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.c \
@@ -667,7 +773,7 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/aborttrace.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/aborttrace.h
 
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = 
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(AMALGAMATION_DITHER_POLICY_SOURCES)
 # Track the generated header so dependency ordering stays stable.
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@nodist_img2sixel_SOURCES = completion_embed.h
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@nodist_img2sixel_SOURCES = $(AMALGAMATION_SIXEL)
@@ -677,6 +783,7 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@        $(AM_CPPFLAGS)
 
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_CPPFLAGS = $(AMALGAMATION_TOOL_CPPFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@        -DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1 \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@        -DBUILD_IMG2SIXEL -DHAVE_COMPLETION_EMBED_H
 
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
@@ -711,7 +818,7 @@ CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h $(am__append_15)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/aborttrace.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/aborttrace.h
 
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = 
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(AMALGAMATION_DITHER_POLICY_SOURCES)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@nodist_sixel2png_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
@@ -872,6 +979,54 @@ uninstall-pkglibexecPROGRAMS:
 clean-pkglibexecPROGRAMS:
 	$(am__rm_f) $(pkglibexec_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(pkglibexec_PROGRAMS:$(EXEEXT)=)
+$(top_builddir)/src/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src
+	@: >>$(top_builddir)/src/$(am__dirstamp)
+$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src/$(DEPDIR)
+	@: >>$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-none.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-fs.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-atkinson.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-jajuni.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-stucki.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-burkes.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-sierra1.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-sierra2.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-sierra3.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-a-dither.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-x-dither.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-bluenoise.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-interframe.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/img2sixel-dither-policy-lso2.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/amalgamation/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/amalgamation
 	@: >>$(top_builddir)/amalgamation/$(am__dirstamp)
@@ -885,6 +1040,48 @@ $(top_builddir)/amalgamation/img2sixel-sixel.$(OBJEXT):  \
 img2sixel$(EXEEXT): $(img2sixel_OBJECTS) $(img2sixel_DEPENDENCIES) $(EXTRA_img2sixel_DEPENDENCIES) 
 	@rm -f img2sixel$(EXEEXT)
 	$(AM_V_CCLD)$(img2sixel_LINK) $(img2sixel_OBJECTS) $(img2sixel_LDADD) $(LIBS)
+$(top_builddir)/src/sixel2png-dither-policy-none.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/sixel2png-dither-policy-fs.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/sixel2png-dither-policy-atkinson.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/sixel2png-dither-policy-jajuni.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/sixel2png-dither-policy-stucki.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/sixel2png-dither-policy-burkes.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/sixel2png-dither-policy-sierra1.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/sixel2png-dither-policy-sierra2.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/sixel2png-dither-policy-sierra3.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/sixel2png-dither-policy-a-dither.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/sixel2png-dither-policy-x-dither.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/sixel2png-dither-policy-bluenoise.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/sixel2png-dither-policy-interframe.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/sixel2png-dither-policy-lso2.$(OBJEXT):  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/amalgamation/sixel2png-sixel.$(OBJEXT):  \
 	$(top_builddir)/amalgamation/$(am__dirstamp) \
 	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
@@ -896,12 +1093,41 @@ sixel2png$(EXEEXT): $(sixel2png_OBJECTS) $(sixel2png_DEPENDENCIES) $(EXTRA_sixel
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
+	-rm -f $(top_builddir)/src/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/img2sixel-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/sixel2png-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-a-dither.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-atkinson.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-bluenoise.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-burkes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-fs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-interframe.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-jajuni.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-lso2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-none.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra1.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-stucki.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-x-dither.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-a-dither.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-atkinson.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-bluenoise.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-burkes.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-fs.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-interframe.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-jajuni.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-lso2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-none.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra1.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra3.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-stucki.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-x-dither.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-compat.Po@am__quote@ # am--include-marker
@@ -1042,6 +1268,202 @@ img2sixel-aborttrace.obj: aborttrace.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-aborttrace.obj `if test -f 'aborttrace.c'; then $(CYGPATH_W) 'aborttrace.c'; else $(CYGPATH_W) '$(srcdir)/aborttrace.c'; fi`
 
+$(top_builddir)/src/img2sixel-dither-policy-none.o: $(top_builddir)/src/dither-policy-none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-none.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-none.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-none.o `test -f '$(top_builddir)/src/dither-policy-none.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-none.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-none.c' object='$(top_builddir)/src/img2sixel-dither-policy-none.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-none.o `test -f '$(top_builddir)/src/dither-policy-none.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-none.c
+
+$(top_builddir)/src/img2sixel-dither-policy-none.obj: $(top_builddir)/src/dither-policy-none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-none.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-none.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-none.obj `if test -f '$(top_builddir)/src/dither-policy-none.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-none.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-none.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-none.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-none.c' object='$(top_builddir)/src/img2sixel-dither-policy-none.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-none.obj `if test -f '$(top_builddir)/src/dither-policy-none.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-none.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-none.c'; fi`
+
+$(top_builddir)/src/img2sixel-dither-policy-fs.o: $(top_builddir)/src/dither-policy-fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-fs.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-fs.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-fs.o `test -f '$(top_builddir)/src/dither-policy-fs.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-fs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-fs.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-fs.c' object='$(top_builddir)/src/img2sixel-dither-policy-fs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-fs.o `test -f '$(top_builddir)/src/dither-policy-fs.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-fs.c
+
+$(top_builddir)/src/img2sixel-dither-policy-fs.obj: $(top_builddir)/src/dither-policy-fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-fs.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-fs.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-fs.obj `if test -f '$(top_builddir)/src/dither-policy-fs.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-fs.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-fs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-fs.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-fs.c' object='$(top_builddir)/src/img2sixel-dither-policy-fs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-fs.obj `if test -f '$(top_builddir)/src/dither-policy-fs.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-fs.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-fs.c'; fi`
+
+$(top_builddir)/src/img2sixel-dither-policy-atkinson.o: $(top_builddir)/src/dither-policy-atkinson.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-atkinson.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-atkinson.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-atkinson.o `test -f '$(top_builddir)/src/dither-policy-atkinson.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-atkinson.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-atkinson.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-atkinson.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-atkinson.c' object='$(top_builddir)/src/img2sixel-dither-policy-atkinson.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-atkinson.o `test -f '$(top_builddir)/src/dither-policy-atkinson.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-atkinson.c
+
+$(top_builddir)/src/img2sixel-dither-policy-atkinson.obj: $(top_builddir)/src/dither-policy-atkinson.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-atkinson.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-atkinson.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-atkinson.obj `if test -f '$(top_builddir)/src/dither-policy-atkinson.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-atkinson.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-atkinson.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-atkinson.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-atkinson.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-atkinson.c' object='$(top_builddir)/src/img2sixel-dither-policy-atkinson.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-atkinson.obj `if test -f '$(top_builddir)/src/dither-policy-atkinson.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-atkinson.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-atkinson.c'; fi`
+
+$(top_builddir)/src/img2sixel-dither-policy-jajuni.o: $(top_builddir)/src/dither-policy-jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-jajuni.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-jajuni.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-jajuni.o `test -f '$(top_builddir)/src/dither-policy-jajuni.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-jajuni.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-jajuni.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-jajuni.c' object='$(top_builddir)/src/img2sixel-dither-policy-jajuni.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-jajuni.o `test -f '$(top_builddir)/src/dither-policy-jajuni.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-jajuni.c
+
+$(top_builddir)/src/img2sixel-dither-policy-jajuni.obj: $(top_builddir)/src/dither-policy-jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-jajuni.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-jajuni.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-jajuni.obj `if test -f '$(top_builddir)/src/dither-policy-jajuni.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-jajuni.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-jajuni.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-jajuni.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-jajuni.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-jajuni.c' object='$(top_builddir)/src/img2sixel-dither-policy-jajuni.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-jajuni.obj `if test -f '$(top_builddir)/src/dither-policy-jajuni.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-jajuni.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-jajuni.c'; fi`
+
+$(top_builddir)/src/img2sixel-dither-policy-stucki.o: $(top_builddir)/src/dither-policy-stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-stucki.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-stucki.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-stucki.o `test -f '$(top_builddir)/src/dither-policy-stucki.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-stucki.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-stucki.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-stucki.c' object='$(top_builddir)/src/img2sixel-dither-policy-stucki.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-stucki.o `test -f '$(top_builddir)/src/dither-policy-stucki.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-stucki.c
+
+$(top_builddir)/src/img2sixel-dither-policy-stucki.obj: $(top_builddir)/src/dither-policy-stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-stucki.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-stucki.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-stucki.obj `if test -f '$(top_builddir)/src/dither-policy-stucki.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-stucki.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-stucki.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-stucki.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-stucki.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-stucki.c' object='$(top_builddir)/src/img2sixel-dither-policy-stucki.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-stucki.obj `if test -f '$(top_builddir)/src/dither-policy-stucki.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-stucki.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-stucki.c'; fi`
+
+$(top_builddir)/src/img2sixel-dither-policy-burkes.o: $(top_builddir)/src/dither-policy-burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-burkes.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-burkes.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-burkes.o `test -f '$(top_builddir)/src/dither-policy-burkes.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-burkes.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-burkes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-burkes.c' object='$(top_builddir)/src/img2sixel-dither-policy-burkes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-burkes.o `test -f '$(top_builddir)/src/dither-policy-burkes.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-burkes.c
+
+$(top_builddir)/src/img2sixel-dither-policy-burkes.obj: $(top_builddir)/src/dither-policy-burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-burkes.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-burkes.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-burkes.obj `if test -f '$(top_builddir)/src/dither-policy-burkes.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-burkes.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-burkes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-burkes.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-burkes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-burkes.c' object='$(top_builddir)/src/img2sixel-dither-policy-burkes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-burkes.obj `if test -f '$(top_builddir)/src/dither-policy-burkes.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-burkes.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-burkes.c'; fi`
+
+$(top_builddir)/src/img2sixel-dither-policy-sierra1.o: $(top_builddir)/src/dither-policy-sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-sierra1.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra1.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-sierra1.o `test -f '$(top_builddir)/src/dither-policy-sierra1.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra1.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra1.c' object='$(top_builddir)/src/img2sixel-dither-policy-sierra1.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-sierra1.o `test -f '$(top_builddir)/src/dither-policy-sierra1.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra1.c
+
+$(top_builddir)/src/img2sixel-dither-policy-sierra1.obj: $(top_builddir)/src/dither-policy-sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-sierra1.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra1.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-sierra1.obj `if test -f '$(top_builddir)/src/dither-policy-sierra1.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra1.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra1.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra1.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra1.c' object='$(top_builddir)/src/img2sixel-dither-policy-sierra1.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-sierra1.obj `if test -f '$(top_builddir)/src/dither-policy-sierra1.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra1.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra1.c'; fi`
+
+$(top_builddir)/src/img2sixel-dither-policy-sierra2.o: $(top_builddir)/src/dither-policy-sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-sierra2.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra2.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-sierra2.o `test -f '$(top_builddir)/src/dither-policy-sierra2.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra2.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra2.c' object='$(top_builddir)/src/img2sixel-dither-policy-sierra2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-sierra2.o `test -f '$(top_builddir)/src/dither-policy-sierra2.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra2.c
+
+$(top_builddir)/src/img2sixel-dither-policy-sierra2.obj: $(top_builddir)/src/dither-policy-sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-sierra2.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra2.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-sierra2.obj `if test -f '$(top_builddir)/src/dither-policy-sierra2.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra2.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra2.c' object='$(top_builddir)/src/img2sixel-dither-policy-sierra2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-sierra2.obj `if test -f '$(top_builddir)/src/dither-policy-sierra2.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra2.c'; fi`
+
+$(top_builddir)/src/img2sixel-dither-policy-sierra3.o: $(top_builddir)/src/dither-policy-sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-sierra3.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra3.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-sierra3.o `test -f '$(top_builddir)/src/dither-policy-sierra3.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra3.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra3.c' object='$(top_builddir)/src/img2sixel-dither-policy-sierra3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-sierra3.o `test -f '$(top_builddir)/src/dither-policy-sierra3.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra3.c
+
+$(top_builddir)/src/img2sixel-dither-policy-sierra3.obj: $(top_builddir)/src/dither-policy-sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-sierra3.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra3.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-sierra3.obj `if test -f '$(top_builddir)/src/dither-policy-sierra3.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra3.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra3.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra3.c' object='$(top_builddir)/src/img2sixel-dither-policy-sierra3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-sierra3.obj `if test -f '$(top_builddir)/src/dither-policy-sierra3.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra3.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra3.c'; fi`
+
+$(top_builddir)/src/img2sixel-dither-policy-a-dither.o: $(top_builddir)/src/dither-policy-a-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-a-dither.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-a-dither.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-a-dither.o `test -f '$(top_builddir)/src/dither-policy-a-dither.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-a-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-a-dither.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-a-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-a-dither.c' object='$(top_builddir)/src/img2sixel-dither-policy-a-dither.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-a-dither.o `test -f '$(top_builddir)/src/dither-policy-a-dither.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-a-dither.c
+
+$(top_builddir)/src/img2sixel-dither-policy-a-dither.obj: $(top_builddir)/src/dither-policy-a-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-a-dither.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-a-dither.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-a-dither.obj `if test -f '$(top_builddir)/src/dither-policy-a-dither.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-a-dither.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-a-dither.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-a-dither.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-a-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-a-dither.c' object='$(top_builddir)/src/img2sixel-dither-policy-a-dither.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-a-dither.obj `if test -f '$(top_builddir)/src/dither-policy-a-dither.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-a-dither.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-a-dither.c'; fi`
+
+$(top_builddir)/src/img2sixel-dither-policy-x-dither.o: $(top_builddir)/src/dither-policy-x-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-x-dither.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-x-dither.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-x-dither.o `test -f '$(top_builddir)/src/dither-policy-x-dither.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-x-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-x-dither.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-x-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-x-dither.c' object='$(top_builddir)/src/img2sixel-dither-policy-x-dither.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-x-dither.o `test -f '$(top_builddir)/src/dither-policy-x-dither.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-x-dither.c
+
+$(top_builddir)/src/img2sixel-dither-policy-x-dither.obj: $(top_builddir)/src/dither-policy-x-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-x-dither.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-x-dither.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-x-dither.obj `if test -f '$(top_builddir)/src/dither-policy-x-dither.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-x-dither.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-x-dither.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-x-dither.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-x-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-x-dither.c' object='$(top_builddir)/src/img2sixel-dither-policy-x-dither.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-x-dither.obj `if test -f '$(top_builddir)/src/dither-policy-x-dither.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-x-dither.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-x-dither.c'; fi`
+
+$(top_builddir)/src/img2sixel-dither-policy-bluenoise.o: $(top_builddir)/src/dither-policy-bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-bluenoise.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-bluenoise.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-bluenoise.o `test -f '$(top_builddir)/src/dither-policy-bluenoise.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-bluenoise.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-bluenoise.c' object='$(top_builddir)/src/img2sixel-dither-policy-bluenoise.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-bluenoise.o `test -f '$(top_builddir)/src/dither-policy-bluenoise.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-bluenoise.c
+
+$(top_builddir)/src/img2sixel-dither-policy-bluenoise.obj: $(top_builddir)/src/dither-policy-bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-bluenoise.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-bluenoise.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-bluenoise.obj `if test -f '$(top_builddir)/src/dither-policy-bluenoise.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-bluenoise.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-bluenoise.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-bluenoise.c' object='$(top_builddir)/src/img2sixel-dither-policy-bluenoise.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-bluenoise.obj `if test -f '$(top_builddir)/src/dither-policy-bluenoise.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-bluenoise.c'; fi`
+
+$(top_builddir)/src/img2sixel-dither-policy-interframe.o: $(top_builddir)/src/dither-policy-interframe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-interframe.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-interframe.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-interframe.o `test -f '$(top_builddir)/src/dither-policy-interframe.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-interframe.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-interframe.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-interframe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-interframe.c' object='$(top_builddir)/src/img2sixel-dither-policy-interframe.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-interframe.o `test -f '$(top_builddir)/src/dither-policy-interframe.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-interframe.c
+
+$(top_builddir)/src/img2sixel-dither-policy-interframe.obj: $(top_builddir)/src/dither-policy-interframe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-interframe.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-interframe.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-interframe.obj `if test -f '$(top_builddir)/src/dither-policy-interframe.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-interframe.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-interframe.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-interframe.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-interframe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-interframe.c' object='$(top_builddir)/src/img2sixel-dither-policy-interframe.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-interframe.obj `if test -f '$(top_builddir)/src/dither-policy-interframe.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-interframe.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-interframe.c'; fi`
+
+$(top_builddir)/src/img2sixel-dither-policy-lso2.o: $(top_builddir)/src/dither-policy-lso2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-lso2.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-lso2.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-lso2.o `test -f '$(top_builddir)/src/dither-policy-lso2.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-lso2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-lso2.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-lso2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-lso2.c' object='$(top_builddir)/src/img2sixel-dither-policy-lso2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-lso2.o `test -f '$(top_builddir)/src/dither-policy-lso2.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-lso2.c
+
+$(top_builddir)/src/img2sixel-dither-policy-lso2.obj: $(top_builddir)/src/dither-policy-lso2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/img2sixel-dither-policy-lso2.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-lso2.Tpo -c -o $(top_builddir)/src/img2sixel-dither-policy-lso2.obj `if test -f '$(top_builddir)/src/dither-policy-lso2.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-lso2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-lso2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-lso2.Tpo $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-lso2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-lso2.c' object='$(top_builddir)/src/img2sixel-dither-policy-lso2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/img2sixel-dither-policy-lso2.obj `if test -f '$(top_builddir)/src/dither-policy-lso2.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-lso2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-lso2.c'; fi`
+
 $(top_builddir)/amalgamation/img2sixel-sixel.o: $(top_builddir)/amalgamation/sixel.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/img2sixel-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/img2sixel-sixel.Tpo -c -o $(top_builddir)/amalgamation/img2sixel-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/img2sixel-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/img2sixel-sixel.Po
@@ -1111,6 +1533,202 @@ sixel2png-aborttrace.obj: aborttrace.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='aborttrace.c' object='sixel2png-aborttrace.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o sixel2png-aborttrace.obj `if test -f 'aborttrace.c'; then $(CYGPATH_W) 'aborttrace.c'; else $(CYGPATH_W) '$(srcdir)/aborttrace.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-none.o: $(top_builddir)/src/dither-policy-none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-none.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-none.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-none.o `test -f '$(top_builddir)/src/dither-policy-none.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-none.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-none.c' object='$(top_builddir)/src/sixel2png-dither-policy-none.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-none.o `test -f '$(top_builddir)/src/dither-policy-none.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-none.c
+
+$(top_builddir)/src/sixel2png-dither-policy-none.obj: $(top_builddir)/src/dither-policy-none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-none.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-none.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-none.obj `if test -f '$(top_builddir)/src/dither-policy-none.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-none.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-none.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-none.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-none.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-none.c' object='$(top_builddir)/src/sixel2png-dither-policy-none.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-none.obj `if test -f '$(top_builddir)/src/dither-policy-none.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-none.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-none.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-fs.o: $(top_builddir)/src/dither-policy-fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-fs.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-fs.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-fs.o `test -f '$(top_builddir)/src/dither-policy-fs.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-fs.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-fs.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-fs.c' object='$(top_builddir)/src/sixel2png-dither-policy-fs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-fs.o `test -f '$(top_builddir)/src/dither-policy-fs.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-fs.c
+
+$(top_builddir)/src/sixel2png-dither-policy-fs.obj: $(top_builddir)/src/dither-policy-fs.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-fs.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-fs.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-fs.obj `if test -f '$(top_builddir)/src/dither-policy-fs.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-fs.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-fs.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-fs.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-fs.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-fs.c' object='$(top_builddir)/src/sixel2png-dither-policy-fs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-fs.obj `if test -f '$(top_builddir)/src/dither-policy-fs.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-fs.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-fs.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-atkinson.o: $(top_builddir)/src/dither-policy-atkinson.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-atkinson.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-atkinson.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-atkinson.o `test -f '$(top_builddir)/src/dither-policy-atkinson.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-atkinson.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-atkinson.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-atkinson.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-atkinson.c' object='$(top_builddir)/src/sixel2png-dither-policy-atkinson.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-atkinson.o `test -f '$(top_builddir)/src/dither-policy-atkinson.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-atkinson.c
+
+$(top_builddir)/src/sixel2png-dither-policy-atkinson.obj: $(top_builddir)/src/dither-policy-atkinson.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-atkinson.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-atkinson.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-atkinson.obj `if test -f '$(top_builddir)/src/dither-policy-atkinson.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-atkinson.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-atkinson.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-atkinson.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-atkinson.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-atkinson.c' object='$(top_builddir)/src/sixel2png-dither-policy-atkinson.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-atkinson.obj `if test -f '$(top_builddir)/src/dither-policy-atkinson.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-atkinson.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-atkinson.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-jajuni.o: $(top_builddir)/src/dither-policy-jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-jajuni.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-jajuni.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-jajuni.o `test -f '$(top_builddir)/src/dither-policy-jajuni.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-jajuni.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-jajuni.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-jajuni.c' object='$(top_builddir)/src/sixel2png-dither-policy-jajuni.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-jajuni.o `test -f '$(top_builddir)/src/dither-policy-jajuni.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-jajuni.c
+
+$(top_builddir)/src/sixel2png-dither-policy-jajuni.obj: $(top_builddir)/src/dither-policy-jajuni.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-jajuni.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-jajuni.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-jajuni.obj `if test -f '$(top_builddir)/src/dither-policy-jajuni.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-jajuni.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-jajuni.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-jajuni.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-jajuni.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-jajuni.c' object='$(top_builddir)/src/sixel2png-dither-policy-jajuni.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-jajuni.obj `if test -f '$(top_builddir)/src/dither-policy-jajuni.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-jajuni.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-jajuni.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-stucki.o: $(top_builddir)/src/dither-policy-stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-stucki.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-stucki.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-stucki.o `test -f '$(top_builddir)/src/dither-policy-stucki.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-stucki.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-stucki.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-stucki.c' object='$(top_builddir)/src/sixel2png-dither-policy-stucki.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-stucki.o `test -f '$(top_builddir)/src/dither-policy-stucki.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-stucki.c
+
+$(top_builddir)/src/sixel2png-dither-policy-stucki.obj: $(top_builddir)/src/dither-policy-stucki.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-stucki.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-stucki.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-stucki.obj `if test -f '$(top_builddir)/src/dither-policy-stucki.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-stucki.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-stucki.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-stucki.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-stucki.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-stucki.c' object='$(top_builddir)/src/sixel2png-dither-policy-stucki.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-stucki.obj `if test -f '$(top_builddir)/src/dither-policy-stucki.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-stucki.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-stucki.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-burkes.o: $(top_builddir)/src/dither-policy-burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-burkes.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-burkes.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-burkes.o `test -f '$(top_builddir)/src/dither-policy-burkes.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-burkes.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-burkes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-burkes.c' object='$(top_builddir)/src/sixel2png-dither-policy-burkes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-burkes.o `test -f '$(top_builddir)/src/dither-policy-burkes.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-burkes.c
+
+$(top_builddir)/src/sixel2png-dither-policy-burkes.obj: $(top_builddir)/src/dither-policy-burkes.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-burkes.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-burkes.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-burkes.obj `if test -f '$(top_builddir)/src/dither-policy-burkes.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-burkes.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-burkes.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-burkes.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-burkes.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-burkes.c' object='$(top_builddir)/src/sixel2png-dither-policy-burkes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-burkes.obj `if test -f '$(top_builddir)/src/dither-policy-burkes.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-burkes.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-burkes.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-sierra1.o: $(top_builddir)/src/dither-policy-sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-sierra1.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra1.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-sierra1.o `test -f '$(top_builddir)/src/dither-policy-sierra1.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra1.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra1.c' object='$(top_builddir)/src/sixel2png-dither-policy-sierra1.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-sierra1.o `test -f '$(top_builddir)/src/dither-policy-sierra1.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra1.c
+
+$(top_builddir)/src/sixel2png-dither-policy-sierra1.obj: $(top_builddir)/src/dither-policy-sierra1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-sierra1.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra1.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-sierra1.obj `if test -f '$(top_builddir)/src/dither-policy-sierra1.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra1.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra1.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra1.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra1.c' object='$(top_builddir)/src/sixel2png-dither-policy-sierra1.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-sierra1.obj `if test -f '$(top_builddir)/src/dither-policy-sierra1.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra1.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra1.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-sierra2.o: $(top_builddir)/src/dither-policy-sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-sierra2.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra2.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-sierra2.o `test -f '$(top_builddir)/src/dither-policy-sierra2.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra2.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra2.c' object='$(top_builddir)/src/sixel2png-dither-policy-sierra2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-sierra2.o `test -f '$(top_builddir)/src/dither-policy-sierra2.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra2.c
+
+$(top_builddir)/src/sixel2png-dither-policy-sierra2.obj: $(top_builddir)/src/dither-policy-sierra2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-sierra2.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra2.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-sierra2.obj `if test -f '$(top_builddir)/src/dither-policy-sierra2.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra2.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra2.c' object='$(top_builddir)/src/sixel2png-dither-policy-sierra2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-sierra2.obj `if test -f '$(top_builddir)/src/dither-policy-sierra2.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra2.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-sierra3.o: $(top_builddir)/src/dither-policy-sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-sierra3.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra3.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-sierra3.o `test -f '$(top_builddir)/src/dither-policy-sierra3.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra3.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra3.c' object='$(top_builddir)/src/sixel2png-dither-policy-sierra3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-sierra3.o `test -f '$(top_builddir)/src/dither-policy-sierra3.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-sierra3.c
+
+$(top_builddir)/src/sixel2png-dither-policy-sierra3.obj: $(top_builddir)/src/dither-policy-sierra3.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-sierra3.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra3.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-sierra3.obj `if test -f '$(top_builddir)/src/dither-policy-sierra3.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra3.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra3.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra3.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra3.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-sierra3.c' object='$(top_builddir)/src/sixel2png-dither-policy-sierra3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-sierra3.obj `if test -f '$(top_builddir)/src/dither-policy-sierra3.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-sierra3.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-sierra3.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-a-dither.o: $(top_builddir)/src/dither-policy-a-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-a-dither.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-a-dither.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-a-dither.o `test -f '$(top_builddir)/src/dither-policy-a-dither.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-a-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-a-dither.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-a-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-a-dither.c' object='$(top_builddir)/src/sixel2png-dither-policy-a-dither.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-a-dither.o `test -f '$(top_builddir)/src/dither-policy-a-dither.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-a-dither.c
+
+$(top_builddir)/src/sixel2png-dither-policy-a-dither.obj: $(top_builddir)/src/dither-policy-a-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-a-dither.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-a-dither.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-a-dither.obj `if test -f '$(top_builddir)/src/dither-policy-a-dither.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-a-dither.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-a-dither.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-a-dither.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-a-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-a-dither.c' object='$(top_builddir)/src/sixel2png-dither-policy-a-dither.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-a-dither.obj `if test -f '$(top_builddir)/src/dither-policy-a-dither.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-a-dither.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-a-dither.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-x-dither.o: $(top_builddir)/src/dither-policy-x-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-x-dither.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-x-dither.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-x-dither.o `test -f '$(top_builddir)/src/dither-policy-x-dither.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-x-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-x-dither.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-x-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-x-dither.c' object='$(top_builddir)/src/sixel2png-dither-policy-x-dither.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-x-dither.o `test -f '$(top_builddir)/src/dither-policy-x-dither.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-x-dither.c
+
+$(top_builddir)/src/sixel2png-dither-policy-x-dither.obj: $(top_builddir)/src/dither-policy-x-dither.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-x-dither.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-x-dither.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-x-dither.obj `if test -f '$(top_builddir)/src/dither-policy-x-dither.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-x-dither.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-x-dither.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-x-dither.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-x-dither.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-x-dither.c' object='$(top_builddir)/src/sixel2png-dither-policy-x-dither.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-x-dither.obj `if test -f '$(top_builddir)/src/dither-policy-x-dither.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-x-dither.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-x-dither.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-bluenoise.o: $(top_builddir)/src/dither-policy-bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-bluenoise.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-bluenoise.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-bluenoise.o `test -f '$(top_builddir)/src/dither-policy-bluenoise.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-bluenoise.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-bluenoise.c' object='$(top_builddir)/src/sixel2png-dither-policy-bluenoise.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-bluenoise.o `test -f '$(top_builddir)/src/dither-policy-bluenoise.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-bluenoise.c
+
+$(top_builddir)/src/sixel2png-dither-policy-bluenoise.obj: $(top_builddir)/src/dither-policy-bluenoise.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-bluenoise.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-bluenoise.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-bluenoise.obj `if test -f '$(top_builddir)/src/dither-policy-bluenoise.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-bluenoise.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-bluenoise.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-bluenoise.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-bluenoise.c' object='$(top_builddir)/src/sixel2png-dither-policy-bluenoise.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-bluenoise.obj `if test -f '$(top_builddir)/src/dither-policy-bluenoise.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-bluenoise.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-bluenoise.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-interframe.o: $(top_builddir)/src/dither-policy-interframe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-interframe.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-interframe.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-interframe.o `test -f '$(top_builddir)/src/dither-policy-interframe.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-interframe.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-interframe.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-interframe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-interframe.c' object='$(top_builddir)/src/sixel2png-dither-policy-interframe.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-interframe.o `test -f '$(top_builddir)/src/dither-policy-interframe.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-interframe.c
+
+$(top_builddir)/src/sixel2png-dither-policy-interframe.obj: $(top_builddir)/src/dither-policy-interframe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-interframe.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-interframe.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-interframe.obj `if test -f '$(top_builddir)/src/dither-policy-interframe.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-interframe.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-interframe.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-interframe.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-interframe.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-interframe.c' object='$(top_builddir)/src/sixel2png-dither-policy-interframe.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-interframe.obj `if test -f '$(top_builddir)/src/dither-policy-interframe.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-interframe.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-interframe.c'; fi`
+
+$(top_builddir)/src/sixel2png-dither-policy-lso2.o: $(top_builddir)/src/dither-policy-lso2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-lso2.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-lso2.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-lso2.o `test -f '$(top_builddir)/src/dither-policy-lso2.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-lso2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-lso2.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-lso2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-lso2.c' object='$(top_builddir)/src/sixel2png-dither-policy-lso2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-lso2.o `test -f '$(top_builddir)/src/dither-policy-lso2.c' || echo '$(srcdir)/'`$(top_builddir)/src/dither-policy-lso2.c
+
+$(top_builddir)/src/sixel2png-dither-policy-lso2.obj: $(top_builddir)/src/dither-policy-lso2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/sixel2png-dither-policy-lso2.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-lso2.Tpo -c -o $(top_builddir)/src/sixel2png-dither-policy-lso2.obj `if test -f '$(top_builddir)/src/dither-policy-lso2.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-lso2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-lso2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-lso2.Tpo $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-lso2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/dither-policy-lso2.c' object='$(top_builddir)/src/sixel2png-dither-policy-lso2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/sixel2png-dither-policy-lso2.obj `if test -f '$(top_builddir)/src/dither-policy-lso2.c'; then $(CYGPATH_W) '$(top_builddir)/src/dither-policy-lso2.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/dither-policy-lso2.c'; fi`
 
 $(top_builddir)/amalgamation/sixel2png-sixel.o: $(top_builddir)/amalgamation/sixel.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/sixel2png-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/sixel2png-sixel.Tpo -c -o $(top_builddir)/amalgamation/sixel2png-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
@@ -1415,6 +2033,8 @@ distclean-generic:
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/src/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -1430,6 +2050,34 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool \
 distclean: distclean-recursive
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/img2sixel-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/sixel2png-sixel.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-a-dither.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-atkinson.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-bluenoise.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-burkes.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-fs.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-interframe.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-jajuni.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-lso2.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-none.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra1.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra2.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra3.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-stucki.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-x-dither.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-a-dither.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-atkinson.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-bluenoise.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-burkes.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-fs.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-interframe.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-jajuni.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-lso2.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-none.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra1.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra2.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra3.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-stucki.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-x-dither.Po
 	-rm -f ./$(DEPDIR)/img2sixel-aborttrace.Po
 	-rm -f ./$(DEPDIR)/img2sixel-cli.Po
 	-rm -f ./$(DEPDIR)/img2sixel-compat.Po
@@ -1490,6 +2138,34 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/img2sixel-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/sixel2png-sixel.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-a-dither.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-atkinson.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-bluenoise.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-burkes.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-fs.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-interframe.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-jajuni.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-lso2.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-none.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra1.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra2.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-sierra3.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-stucki.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/img2sixel-dither-policy-x-dither.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-a-dither.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-atkinson.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-bluenoise.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-burkes.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-fs.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-interframe.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-jajuni.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-lso2.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-none.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra1.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra2.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-sierra3.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-stucki.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/sixel2png-dither-policy-x-dither.Po
 	-rm -f ./$(DEPDIR)/img2sixel-aborttrace.Po
 	-rm -f ./$(DEPDIR)/img2sixel-cli.Po
 	-rm -f ./$(DEPDIR)/img2sixel-compat.Po

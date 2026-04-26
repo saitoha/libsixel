@@ -1791,13 +1791,7 @@ loader_helper_sources = files(
   'src/colorspace.c',
   'src/dither-common-pipeline.c',
   'src/dither.c',
-  'src/dither-policy-fixed-8bit.inc.h',
   'src/dither-interframe-method.h',
-  'src/dither-policy-fixed-float32.inc.h',
-  'src/dither-policy-positional-8bit.inc.h',
-  'src/dither-policy-positional-float32.inc.h',
-  'src/dither-policy-varcoeff-8bit.inc.h',
-  'src/dither-policy-varcoeff-float32.inc.h',
   'src/logger.c',
   'src/logger.h',
   'src/frame.c',
@@ -1874,6 +1868,23 @@ loader_helpers_dep = declare_dependency(link_with: loader_helpers,
 amalgamated_lib_enabled = get_option('amalgamated_lib')
 amalgamated_tools_enabled = get_option('amalgamated_tools')
 amalgamated_sources_enabled = amalgamated_lib_enabled or amalgamated_tools_enabled
+
+amalgamated_dither_policy_sources = files(
+  'src/dither-policy-none.c',
+  'src/dither-policy-fs.c',
+  'src/dither-policy-atkinson.c',
+  'src/dither-policy-jajuni.c',
+  'src/dither-policy-stucki.c',
+  'src/dither-policy-burkes.c',
+  'src/dither-policy-sierra1.c',
+  'src/dither-policy-sierra2.c',
+  'src/dither-policy-sierra3.c',
+  'src/dither-policy-a-dither.c',
+  'src/dither-policy-x-dither.c',
+  'src/dither-policy-bluenoise.c',
+  'src/dither-policy-interframe.c',
+  'src/dither-policy-lso2.c',
+)
 
 bash_completion_opt = get_option('bashcompletiondir')
 bash_completion_dir = ''
