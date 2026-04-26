@@ -26,11 +26,28 @@
 #define LIBSIXEL_DITHER_POLICY_BACKEND_H
 
 #include "dither-policy.h"
+#include "dither-internal.h"
+#include "pixelformat.h"
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dither_policy_apply_fixed_backend(
     sixel_dither_policy_apply_request_t const *request,
     int method_for_diffuse);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_backend_make_effective_request(
+    sixel_dither_policy_interface_t const *policy,
+    sixel_dither_policy_apply_request_t const *request,
+    sixel_dither_policy_apply_request_t *effective);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_backend_build_context(
+    sixel_dither_policy_apply_request_t const *request,
+    sixel_dither_context_t *context,
+    unsigned char scratch[SIXEL_MAX_CHANNELS],
+    unsigned char new_palette[SIXEL_PALETTE_MAX * 4],
+    float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS],
+    unsigned short migration_map[SIXEL_PALETTE_MAX]);
 
 SIXEL_INTERNAL_API void
 sixel_dither_policy_backend_ref(sixel_dither_policy_interface_t *policy);

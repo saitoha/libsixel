@@ -33,12 +33,6 @@
 #include "dither.h"
 #include "dither-internal.h"
 #include "dither-common-pipeline.h"
-#include "dither-positional-8bit.h"
-#include "dither-positional-float32.h"
-#include "dither-fixed-8bit.h"
-#include "dither-fixed-float32.h"
-#include "dither-varcoeff-8bit.h"
-#include "dither-varcoeff-float32.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 
@@ -141,76 +135,27 @@ sixel_dither_policy_backend_create(
 }
 
 SIXELSTATUS
-sixel_dither_policy_backend_apply_fixed(
+sixel_dither_policy_backend_make_effective_request(
     sixel_dither_policy_interface_t const *policy,
     sixel_dither_policy_apply_request_t const *request,
-    int method_for_diffuse)
+    sixel_dither_policy_apply_request_t *effective)
 {
     sixel_dither_policy_backend_object_t const *object;
-    sixel_dither_policy_apply_request_t effective;
 
     object = NULL;
-    memset(&effective, 0, sizeof(effective));
-    if (policy == NULL || request == NULL) {
+    if (policy == NULL || request == NULL || effective == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     object = sixel_dither_policy_backend_from_base_const(policy);
-    effective = *request;
-    effective.method_for_scan = object->method_for_scan;
-    effective.pixelformat = object->pixelformat;
-    return sixel_dither_policy_apply_fixed_backend(&effective,
-                                                   method_for_diffuse);
+    *effective = *request;
+    effective->method_for_scan = object->method_for_scan;
+    effective->pixelformat = object->pixelformat;
+    return SIXEL_OK;
 }
 
 SIXELSTATUS
-sixel_dither_policy_backend_apply_varcoeff(
-    sixel_dither_policy_interface_t const *policy,
-    sixel_dither_policy_apply_request_t const *request,
-    int method_for_diffuse)
-{
-    sixel_dither_policy_backend_object_t const *object;
-    sixel_dither_policy_apply_request_t effective;
-
-    object = NULL;
-    memset(&effective, 0, sizeof(effective));
-    if (policy == NULL || request == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    object = sixel_dither_policy_backend_from_base_const(policy);
-    effective = *request;
-    effective.method_for_scan = object->method_for_scan;
-    effective.pixelformat = object->pixelformat;
-    return sixel_dither_policy_apply_varcoeff_backend(&effective,
-                                                      method_for_diffuse);
-}
-
-SIXELSTATUS
-sixel_dither_policy_backend_apply_positional(
-    sixel_dither_policy_interface_t const *policy,
-    sixel_dither_policy_apply_request_t const *request,
-    int method_for_diffuse)
-{
-    sixel_dither_policy_backend_object_t const *object;
-    sixel_dither_policy_apply_request_t effective;
-
-    object = NULL;
-    memset(&effective, 0, sizeof(effective));
-    if (policy == NULL || request == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    object = sixel_dither_policy_backend_from_base_const(policy);
-    effective = *request;
-    effective.method_for_scan = object->method_for_scan;
-    effective.pixelformat = object->pixelformat;
-    return sixel_dither_policy_apply_positional_backend(&effective,
-                                                        method_for_diffuse);
-}
-
-static SIXELSTATUS
-sixel_dither_policy_build_context(
+sixel_dither_policy_backend_build_context(
     sixel_dither_policy_apply_request_t const *request,
     sixel_dither_context_t *context,
     unsigned char scratch[SIXEL_MAX_CHANNELS],
@@ -312,145 +257,6 @@ sixel_dither_policy_build_context(
     }
 
     return SIXEL_OK;
-}
-
-SIXELSTATUS
-sixel_dither_policy_apply_fixed_backend(
-    sixel_dither_policy_apply_request_t const *request,
-    int method_for_diffuse)
-{
-    SIXELSTATUS status;
-    sixel_dither_context_t context;
-    unsigned char scratch[SIXEL_MAX_CHANNELS];
-    unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
-    float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
-    unsigned short migration_map[SIXEL_PALETTE_MAX];
-
-    status = SIXEL_FALSE;
-    memset(scratch, 0, sizeof(scratch));
-    memset(new_palette, 0, sizeof(new_palette));
-    memset(new_palette_float, 0, sizeof(new_palette_float));
-    memset(migration_map, 0, sizeof(migration_map));
-
-    status = sixel_dither_policy_build_context(request,
-                                               &context,
-                                               scratch,
-                                               new_palette,
-                                               new_palette_float,
-                                               migration_map);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    context.method_for_diffuse = method_for_diffuse;
-
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(context.pixelformat)
-            && context.pixels_float != NULL
-            && context.depth == 3
-            && request->dither != NULL
-            && request->dither->prefer_float32 != 0) {
-        status = sixel_dither_apply_fixed_float32(request->dither, &context);
-        if (status == SIXEL_BAD_ARGUMENT) {
-            status = sixel_dither_apply_fixed_8bit(request->dither,
-                                                   &context);
-        }
-    } else {
-        status = sixel_dither_apply_fixed_8bit(request->dither, &context);
-    }
-
-    return status;
-}
-
-SIXELSTATUS
-sixel_dither_policy_apply_varcoeff_backend(
-    sixel_dither_policy_apply_request_t const *request,
-    int method_for_diffuse)
-{
-    SIXELSTATUS status;
-    sixel_dither_context_t context;
-    unsigned char scratch[SIXEL_MAX_CHANNELS];
-    unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
-    float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
-    unsigned short migration_map[SIXEL_PALETTE_MAX];
-
-    status = SIXEL_FALSE;
-    memset(scratch, 0, sizeof(scratch));
-    memset(new_palette, 0, sizeof(new_palette));
-    memset(new_palette_float, 0, sizeof(new_palette_float));
-    memset(migration_map, 0, sizeof(migration_map));
-
-    status = sixel_dither_policy_build_context(request,
-                                               &context,
-                                               scratch,
-                                               new_palette,
-                                               new_palette_float,
-                                               migration_map);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    context.method_for_diffuse = method_for_diffuse;
-
-    if (context.pixels_float != NULL
-            && request->dither != NULL
-            && request->dither->prefer_float32 != 0) {
-        status = sixel_dither_apply_varcoeff_float32(request->dither,
-                                                     &context);
-        if (status == SIXEL_BAD_ARGUMENT) {
-            status = sixel_dither_apply_varcoeff_8bit(request->dither,
-                                                      &context);
-        }
-    } else {
-        status = sixel_dither_apply_varcoeff_8bit(request->dither, &context);
-    }
-
-    return status;
-}
-
-SIXELSTATUS
-sixel_dither_policy_apply_positional_backend(
-    sixel_dither_policy_apply_request_t const *request,
-    int method_for_diffuse)
-{
-    SIXELSTATUS status;
-    sixel_dither_context_t context;
-    unsigned char scratch[SIXEL_MAX_CHANNELS];
-    unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
-    float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
-    unsigned short migration_map[SIXEL_PALETTE_MAX];
-
-    status = SIXEL_FALSE;
-    memset(scratch, 0, sizeof(scratch));
-    memset(new_palette, 0, sizeof(new_palette));
-    memset(new_palette_float, 0, sizeof(new_palette_float));
-    memset(migration_map, 0, sizeof(migration_map));
-
-    status = sixel_dither_policy_build_context(request,
-                                               &context,
-                                               scratch,
-                                               new_palette,
-                                               new_palette_float,
-                                               migration_map);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    context.method_for_diffuse = method_for_diffuse;
-
-    if (context.pixels_float != NULL
-            && request->dither != NULL
-            && request->dither->prefer_float32 != 0) {
-        status = sixel_dither_apply_positional_float32(request->dither,
-                                                       &context);
-        if (status == SIXEL_BAD_ARGUMENT) {
-            status = sixel_dither_apply_positional_8bit(request->dither,
-                                                        &context);
-        }
-    } else {
-        status = sixel_dither_apply_positional_8bit(request->dither, &context);
-    }
-
-    return status;
 }
 
 /* emacs Local Variables:      */
