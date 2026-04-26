@@ -144,6 +144,8 @@ sixel_filter_sample_copy_frame(
     int clip_h;
     int src_width;
     int src_height;
+    int src_pixelformat;
+    int normalized_src_pixelformat;
     int width;
     int height;
     int depth;
@@ -156,6 +158,7 @@ sixel_filter_sample_copy_frame(
     size_t src_offset;
     int x;
     int y;
+    unsigned char *normalized_src_pixels;
 
     status = SIXEL_FALSE;
     sample = NULL;
@@ -171,6 +174,8 @@ sixel_filter_sample_copy_frame(
     clip_h = 0;
     src_width = 0;
     src_height = 0;
+    src_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    normalized_src_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     width = 0;
     height = 0;
     depth = 0;
@@ -183,27 +188,63 @@ sixel_filter_sample_copy_frame(
     src_offset = 0u;
     x = 0;
     y = 0;
+    normalized_src_pixels = NULL;
 
     if (frame == NULL || sample_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if ((sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE)) {
+    src_pixelformat = sixel_frame_get_pixelformat(frame);
+    if ((src_pixelformat & SIXEL_FORMATTYPE_PALETTE)) {
         return SIXEL_FEATURE_ERROR;
     }
 
     src_pixels = sixel_frame_get_pixels(frame);
     src_width = sixel_frame_get_width(frame);
     src_height = sixel_frame_get_height(frame);
-    depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
     src_mask = frame->transparent_mask;
     src_pixel_count = (size_t)src_width * (size_t)src_height;
 
-    if (depth <= 0 || src_pixels == NULL) {
+    if (src_pixels == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (src_width > 0 && src_height > 0 &&
         src_pixel_count / (size_t)src_height != (size_t)src_width) {
         return SIXEL_RUNTIME_ERROR;
+    }
+
+    /*
+     * Packed grayscale frames use sub-byte storage, but the sampling loop
+     * below advances with byte-based offsets. Normalize packed inputs first
+     * so clip/stride calculations cannot read beyond source row boundaries.
+     */
+    if (src_pixelformat == SIXEL_PIXELFORMAT_G1 ||
+            src_pixelformat == SIXEL_PIXELFORMAT_G2 ||
+            src_pixelformat == SIXEL_PIXELFORMAT_G4) {
+        normalized_src_pixels = (unsigned char *)sixel_allocator_malloc(
+            allocator, src_pixel_count);
+        if (normalized_src_pixels == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        normalized_src_pixelformat = src_pixelformat;
+        status = sixel_helper_normalize_pixelformat(
+            normalized_src_pixels,
+            &normalized_src_pixelformat,
+            src_pixels,
+            src_pixelformat,
+            src_width,
+            src_height);
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(allocator, normalized_src_pixels);
+            return status;
+        }
+        src_pixels = normalized_src_pixels;
+        src_pixelformat = normalized_src_pixelformat;
+    }
+
+    depth = sixel_helper_compute_depth(src_pixelformat);
+    if (depth <= 0) {
+        sixel_allocator_free(allocator, normalized_src_pixels);
+        return SIXEL_BAD_ARGUMENT;
     }
 
     /*
@@ -242,6 +283,7 @@ sixel_filter_sample_copy_frame(
         }
 
         if (clip_w <= 0 || clip_h <= 0) {
+            sixel_allocator_free(allocator, normalized_src_pixels);
             return SIXEL_BAD_ARGUMENT;
         }
     }
@@ -253,6 +295,7 @@ sixel_filter_sample_copy_frame(
     sample_width = (width + (int)stride - 1) / (int)stride;
     sample_height = (height + (int)stride - 1) / (int)stride;
     if (sample_width <= 0 || sample_height <= 0) {
+        sixel_allocator_free(allocator, normalized_src_pixels);
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -266,29 +309,33 @@ sixel_filter_sample_copy_frame(
     sample_count = (size_t)sample_width * (size_t)sample_height;
     if (sample_count != 0u
             && sample_count / (size_t)sample_height != (size_t)sample_width) {
+        sixel_allocator_free(allocator, normalized_src_pixels);
         return SIXEL_RUNTIME_ERROR;
     }
 
     payload_size = sample_count * (size_t)depth;
     if (sample_count != 0u && payload_size / sample_count != (size_t)depth) {
+        sixel_allocator_free(allocator, normalized_src_pixels);
         return SIXEL_RUNTIME_ERROR;
     }
 
     status = sixel_frame_new(&sample, allocator);
     if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, normalized_src_pixels);
         return status;
     }
     dst_pixels = (unsigned char *)sixel_allocator_malloc(allocator,
                                                          payload_size);
     if (dst_pixels == NULL) {
         sixel_frame_unref(sample);
+        sixel_allocator_free(allocator, normalized_src_pixels);
         return SIXEL_BAD_ALLOCATION;
     }
 
     sample->pixels.u8ptr = dst_pixels;
     sample->width = sample_width;
     sample->height = sample_height;
-    sample->pixelformat = sixel_frame_get_pixelformat(frame);
+    sample->pixelformat = src_pixelformat;
     sample->colorspace = sixel_frame_get_colorspace(frame);
     sample->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
     /*
@@ -308,6 +355,7 @@ sixel_filter_sample_copy_frame(
                                                            mask_size);
         if (dst_mask == NULL) {
             sixel_frame_unref(sample);
+            sixel_allocator_free(allocator, normalized_src_pixels);
             return SIXEL_BAD_ALLOCATION;
         }
         sample->transparent_mask = dst_mask;
@@ -334,6 +382,7 @@ sixel_filter_sample_copy_frame(
     }
 
     *sample_out = sample;
+    sixel_allocator_free(allocator, normalized_src_pixels);
 
     return SIXEL_OK;
 }

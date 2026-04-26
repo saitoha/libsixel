@@ -15158,11 +15158,16 @@ sixel_encoder_encode_bytes(
     sixel_frame_t *frame = NULL;
     unsigned char *owned_pixels = NULL;
     unsigned char *owned_palette = NULL;
+    unsigned char *normalized_pixels = NULL;
     size_t pixel_bytes;
     size_t pixel_total;
     size_t palette_bytes;
+    size_t normalized_bytes;
     int depth;
+    int normalized_pixelformat;
+    int normalize_packed_pixels;
 
+    normalized_pixels = NULL;
     if (encoder == NULL || bytes == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
@@ -15209,6 +15214,56 @@ sixel_encoder_encode_bytes(
         goto end;
     }
     memcpy(owned_pixels, bytes, pixel_bytes);
+
+    normalize_packed_pixels = 0;
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_G1:
+    case SIXEL_PIXELFORMAT_G2:
+    case SIXEL_PIXELFORMAT_G4:
+    case SIXEL_PIXELFORMAT_PAL1:
+    case SIXEL_PIXELFORMAT_PAL2:
+    case SIXEL_PIXELFORMAT_PAL4:
+        normalize_packed_pixels = 1;
+        break;
+    default:
+        break;
+    }
+
+    if (normalize_packed_pixels != 0) {
+        normalized_bytes = pixel_total;
+        normalized_pixels = (unsigned char *)sixel_allocator_malloc(
+            encoder->allocator, normalized_bytes);
+        if (normalized_pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_bytes: sixel_allocator_malloc() "
+                "failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        normalized_pixelformat = pixelformat;
+        status = sixel_helper_normalize_pixelformat(normalized_pixels,
+                                                    &normalized_pixelformat,
+                                                    owned_pixels,
+                                                    pixelformat,
+                                                    width,
+                                                    height);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_bytes: "
+                "sixel_helper_normalize_pixelformat() failed.");
+            goto end;
+        }
+
+        /*
+         * Downstream sampling/palette filters index source rows as
+         * one-byte-per-pixel buffers. Promote packed inputs here so all
+         * encoder paths observe consistent frame storage semantics.
+         */
+        sixel_allocator_free(encoder->allocator, owned_pixels);
+        owned_pixels = normalized_pixels;
+        normalized_pixels = NULL;
+        pixelformat = normalized_pixelformat;
+    }
 
     palette_bytes = 0u;
     if (pixelformat & SIXEL_FORMATTYPE_PALETTE) {
@@ -15261,6 +15316,9 @@ end:
     (void)sixel_tty_end_animation_input_guard();
     if (encoder != NULL) {
         (void)sixel_tty_restore_cursor(encoder->outfd);
+        sixel_allocator_free(encoder->allocator, normalized_pixels);
+        sixel_allocator_free(encoder->allocator, owned_pixels);
+        sixel_allocator_free(encoder->allocator, owned_palette);
     }
     if (frame != NULL) {
         /*
