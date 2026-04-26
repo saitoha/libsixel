@@ -746,6 +746,25 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-dither-policy-create-analyzer-guard-sync',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-dither-policy-create-analyzer-guard-sync.sh',
+      meson.project_source_root()],
+  ],
+  [
+    'staticcheck-dither-positional-macro-guarded-locals',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-dither-positional-macro-guarded-locals.sh',
+      meson.project_source_root()],
+  ],
+  [
+    'staticcheck-dither-policy-warning-compile',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-dither-policy-warning-compile.sh',
+      meson.project_source_root(),
+      meson.project_build_root()],
+  ],
+  [
     'staticcheck-quantize-merge-suboption-sync',
     [meson.current_source_dir() / '_static/sh/staticcheck-quantize-merge-suboption-sync.sh',
       meson.project_source_root()],

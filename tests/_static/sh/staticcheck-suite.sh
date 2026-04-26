@@ -333,6 +333,18 @@ run_case_tap "staticcheck-dither-policy-no-backend-dispatch" \
     "$src_root/tests/_static/sh/staticcheck-dither-policy-no-backend-dispatch.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-dither-policy-create-analyzer-guard-sync" \
+    "$src_root/tests/_static/sh/staticcheck-dither-policy-create-analyzer-guard-sync.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-dither-positional-macro-guarded-locals" \
+    "$src_root/tests/_static/sh/staticcheck-dither-positional-macro-guarded-locals.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-dither-policy-warning-compile" \
+    "$src_root/tests/_static/sh/staticcheck-dither-policy-warning-compile.sh" \
+    "$src_root" "$build_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-test-runner-amalgamation-defines-sync" \
     "$src_root/tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh" \
     "$src_root" || fail_and_exit $?
