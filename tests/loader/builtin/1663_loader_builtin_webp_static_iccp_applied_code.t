@@ -19,10 +19,11 @@ command_status=0
 nl='
 '
 
-trace_output=$(set +xv; \
-    SIXEL_TRACE_TOPIC=webp_decode \
-    SIXEL_LOADER_BUILTIN_CMS_ENGINE=auto \
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+SIXEL_TRACE_TOPIC=webp_decode
+export SIXEL_TRACE_TOPIC
+SIXEL_LOADER_BUILTIN_CMS_ENGINE=auto
+export SIXEL_LOADER_BUILTIN_CMS_ENGINE
+trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin! -o /dev/null "${input_webp}" 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
