@@ -2008,7 +2008,7 @@ diffuse_sierra3(unsigned char *data, int width, int height,
 }
 
 #if defined(__GNUC__) || defined(__clang__)
-# define SIXEL_DITHER_FIXED_8BIT_UNUSED __attribute__((unused))
+# define SIXEL_DITHER_FIXED_8BIT_UNUSED __attribute__((used))
 #else
 # define SIXEL_DITHER_FIXED_8BIT_UNUSED
 #endif
@@ -4139,7 +4139,7 @@ sixel_dither_apply_interframe_float32(sixel_dither_t *dither,
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
-# define SIXEL_DITHER_FIXED_FLOAT32_UNUSED __attribute__((unused))
+# define SIXEL_DITHER_FIXED_FLOAT32_UNUSED __attribute__((used))
 #else
 # define SIXEL_DITHER_FIXED_FLOAT32_UNUSED
 #endif
