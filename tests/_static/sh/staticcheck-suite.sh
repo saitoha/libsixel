@@ -175,6 +175,48 @@ fail_and_exit() {
     exit "$rc"
 }
 
+# shellcheck disable=SC2329
+run_staticcheck_webp_strict_compile() {
+    source_rel=$1
+    source_path=$src_root/src/$source_rel
+    object_path=$tmpdir/${source_rel##*/}.strict.o
+    cc_bin=${CC:-cc}
+
+    "$cc_bin" -DHAVE_CONFIG_H \
+        -I"$build_root" -I"$build_root/include" \
+        -I"$src_root" -I"$src_root/src" -I"$src_root/include" \
+        -std=c99 -Wall -Wextra -Wpedantic \
+        -Wconversion -Wsign-conversion -Wtype-limits -Werror \
+        -c "$source_path" -o "$object_path"
+}
+
+# shellcheck disable=SC2329
+run_staticcheck_webp_tables_self_include() {
+    source_path=$tmpdir/staticcheck-webp-vp8-tables-self-include.c
+    object_path=$tmpdir/staticcheck-webp-vp8-tables-self-include.o
+    cc_bin=${CC:-cc}
+
+    cat > "$source_path" <<'EOF'
+#if defined(HAVE_CONFIG_H)
+# include "config.h"
+#endif
+
+#include "fromwebp-vp8-tables.h"
+
+int
+sixel_staticcheck_webp_vp8_tables_probe(void)
+{
+    return (int)sixel_webp_vp8_default_coef_probs[0][0][0][0];
+}
+EOF
+
+    "$cc_bin" -DHAVE_CONFIG_H \
+        -I"$build_root" -I"$build_root/include" \
+        -I"$src_root" -I"$src_root/src" -I"$src_root/include" \
+        -std=c99 -Wall -Wextra -Wpedantic -Werror \
+        -c "$source_path" -o "$object_path"
+}
+
 run_case_tap "staticcheck-private-includes" \
     "$src_root/tests/_static/sh/staticcheck-private-includes.sh" \
     "$src_root" "$python_bin" || fail_and_exit $?
@@ -341,13 +383,46 @@ if test -f "$build_root/src/Makefile"; then
     run_case_plain "staticcheck-fromwebp-compile-type-limits" \
         "${MAKE:-make}" -C "$build_root/src" -W fromwebp.c \
         libsixel_la-fromwebp.lo || fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-container-compile-warnings" \
+        "${MAKE:-make}" -C "$build_root/src" -W fromwebp-container.c \
+        libsixel_la-fromwebp-container.lo || fail_and_exit $?
     run_case_plain "staticcheck-fromwebp-vp8-native-compile-warnings" \
         "${MAKE:-make}" -C "$build_root/src" -W fromwebp-vp8-native.c \
         libsixel_la-fromwebp-vp8-native.lo || fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-vp8-native-token-compile-warnings" \
+        "${MAKE:-make}" -C "$build_root/src" -W fromwebp-vp8-native-token.c \
+        libsixel_la-fromwebp-vp8-native-token.lo || fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-vp8-tables-self-include" \
+        run_staticcheck_webp_tables_self_include || fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-strict-compile" \
+        run_staticcheck_webp_strict_compile fromwebp.c || fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-container-strict-compile" \
+        run_staticcheck_webp_strict_compile fromwebp-container.c || \
+        fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-vp8-native-strict-compile" \
+        run_staticcheck_webp_strict_compile fromwebp-vp8-native.c || \
+        fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-vp8-native-token-strict-compile" \
+        run_staticcheck_webp_strict_compile fromwebp-vp8-native-token.c || \
+        fail_and_exit $?
 else
     run_case_skip "staticcheck-fromwebp-compile-type-limits" \
         "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-container-compile-warnings" \
+        "missing src/Makefile in build root"
     run_case_skip "staticcheck-fromwebp-vp8-native-compile-warnings" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-native-token-compile-warnings" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-tables-self-include" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-strict-compile" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-container-strict-compile" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-native-strict-compile" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-native-token-strict-compile" \
         "missing src/Makefile in build root"
 fi
 
