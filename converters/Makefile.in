@@ -1264,6 +1264,14 @@ test_impl:
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png$(WINEEXT) -i $(builddir)/tmp/snake.sixel -o $(builddir)/tmp/snake4.png
 @WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(WINE) $(builddir)/sixel2png$(WINEEXT) -i $(top_srcdir)/tests/issue/220/poc2_sixel_dcs_signed_integer_overflow.sixel -o/dev/null; test $$? = 255 -o $$? = 127
 @WANT_IMG2SIXEL_TRUE@	@echo '[test13] regression test'
+@WANT_IMG2SIXEL_TRUE@	$(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) $(AM_CFLAGS) \
+@WANT_IMG2SIXEL_TRUE@		-I$(top_builddir)/include/ \
+@WANT_IMG2SIXEL_TRUE@		-I$(top_srcdir)/include \
+@WANT_IMG2SIXEL_TRUE@		$(top_srcdir)/tests/issue/222/poc_encode_bytes_packed_g1.c \
+@WANT_IMG2SIXEL_TRUE@		$(top_builddir)/src/libsixel.la \
+@WANT_IMG2SIXEL_TRUE@		-o $(builddir)/tmp/issue222_encode_bytes_packed_g1
+@WANT_IMG2SIXEL_TRUE@	$(LIBTOOL) --mode=execute \
+@WANT_IMG2SIXEL_TRUE@		$(builddir)/tmp/issue222_encode_bytes_packed_g1
 @WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000" -B ""; test $$? = 255 -o $$? = 127
 @WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/167/poc -h128 ; test $$? = 255 -o $$? = 127
 @WANT_IMG2SIXEL_TRUE@	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/166/poc -w128 ; test $$? = 255 -o $$? = 127

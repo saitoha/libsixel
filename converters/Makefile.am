@@ -279,6 +279,14 @@ if WANT_SIXEL2PNG
 	$(WINE) $(builddir)/sixel2png$(WINEEXT) -i $(top_srcdir)/tests/issue/220/poc2_sixel_dcs_signed_integer_overflow.sixel -o/dev/null; test $$? = 255 -o $$? = 127
 endif
 	@echo '[test13] regression test'
+	$(LIBTOOL) --mode=link $(CC) $(CPPFLAGS) $(CFLAGS) $(AM_CFLAGS) \
+		-I$(top_builddir)/include/ \
+		-I$(top_srcdir)/include \
+		$(top_srcdir)/tests/issue/222/poc_encode_bytes_packed_g1.c \
+		$(top_builddir)/src/libsixel.la \
+		-o $(builddir)/tmp/issue222_encode_bytes_packed_g1
+	$(LIBTOOL) --mode=execute \
+		$(builddir)/tmp/issue222_encode_bytes_packed_g1
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) -B "#000" -B ""; test $$? = 255 -o $$? = 127
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/167/poc -h128 ; test $$? = 255 -o $$? = 127
 	$(WINE) $(builddir)/img2sixel$(WINEEXT) $(top_srcdir)/tests/issue/166/poc -w128 ; test $$? = 255 -o $$? = 127

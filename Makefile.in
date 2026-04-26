@@ -414,7 +414,8 @@ DIST_TEST_FIXTURES = \
 	tests/issue/220/poc2_sixel_dcs_signed_integer_overflow.sixel \
 	tests/issue/220/poc3_encoder_integer_overflow.gif \
 	tests/issue/220/poc5_encode_integer_overflow.gif \
-	tests/issue/220/poc6_quant_integer_overflow_8x8.png
+	tests/issue/220/poc6_quant_integer_overflow_8x8.png \
+	tests/issue/222/poc_encode_bytes_packed_g1.c
 
 EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
 	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb \
