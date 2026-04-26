@@ -12,6 +12,29 @@ trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 bad=$tmpdir/bad.txt
 : > "$bad"
 
+for path in \
+    "$src_root/src/dither-policy-backend.c" \
+    "$src_root/src/dither-policy-backend.h"
+do
+    test -f "$path" || continue
+    printf "%s:1:obsolete dither policy backend file must not exist\n" \
+        "$path" >> "$bad"
+done
+
+for path in \
+    "$src_root/src/Makefile.am" \
+    "$src_root/src/Makefile.in" \
+    "$src_root/src/meson.build" \
+    "$src_root/amalgamation/meson.build"
+do
+    test -f "$path" || continue
+    awk '
+    /dither-policy-backend/ {
+        printf "%s:%d:%s\n", FILENAME, NR, $0
+    }
+    ' "$path"
+done >> "$bad"
+
 find "$src_root/src" -maxdepth 1 -type f -name 'dither-policy-*.c' \
     -print | LC_ALL=C sort | while IFS= read -r path
 do
