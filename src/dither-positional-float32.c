@@ -618,14 +618,15 @@ sixel_bluenoise_gradient_weight_float32(
     return 1.0f - attenuated;
 }
 
-SIXELSTATUS
-sixel_dither_apply_positional_float32(sixel_dither_t *dither,
-                                      sixel_dither_context_t *context)
+static SIXELSTATUS
+sixel_dither_apply_positional_float32_with_mode(
+    sixel_dither_t *dither,
+    sixel_dither_context_t *context,
+    int mask_mode)
 {
     int serpentine;
     int y;
     int absolute_y;
-    int mask_mode;
     float jitter_scale;
     float *palette_float;
     float *new_palette_float;
@@ -659,7 +660,6 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
     bluenoise_conf.oy = 0;
     bluenoise_conf.per_channel = 0;
     bluenoise_conf.size = SIXEL_BN_W;
-    mask_mode = SIXEL_DIFFUSE_X_DITHER;
     gradient_factor = 0.0f;
     gradient_weight = 1.0f;
     noise = 0.0f;
@@ -681,26 +681,16 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    switch (context->method_for_diffuse) {
-    case SIXEL_DIFFUSE_A_DITHER:
+    if (mask_mode == SIXEL_DIFFUSE_A_DITHER
+            || mask_mode == SIXEL_DIFFUSE_X_DITHER) {
         sixel_positional_strength_init_float32();
-        mask_mode = SIXEL_DIFFUSE_A_DITHER;
-        break;
-    case SIXEL_DIFFUSE_X_DITHER:
-        sixel_positional_strength_init_float32();
-        mask_mode = SIXEL_DIFFUSE_X_DITHER;
-        break;
-    case SIXEL_DIFFUSE_BLUENOISE_DITHER:
+    } else if (mask_mode == SIXEL_DIFFUSE_BLUENOISE_DITHER) {
         sixel_bluenoise_conf_init_from_env_float32();
         bluenoise_conf = g_sixel_bn_conf_float32;
         sixel_bluenoise_conf_apply_dither_overrides_float32(&bluenoise_conf,
                                                             dither);
-        mask_mode = SIXEL_DIFFUSE_BLUENOISE_DITHER;
-        break;
-    default:
-        sixel_positional_strength_init_float32();
-        mask_mode = SIXEL_DIFFUSE_X_DITHER;
-        break;
+    } else {
+        return SIXEL_BAD_ARGUMENT;
     }
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
@@ -1012,6 +1002,30 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
 #undef SIXEL_DITHER_APPLY_POSITIONAL_FLOAT32
 
     return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
+                                    sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_positional_float32_with_mode(
+        dither, context, SIXEL_DIFFUSE_A_DITHER);
+}
+
+SIXELSTATUS
+sixel_dither_apply_x_dither_float32(sixel_dither_t *dither,
+                                    sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_positional_float32_with_mode(
+        dither, context, SIXEL_DIFFUSE_X_DITHER);
+}
+
+SIXELSTATUS
+sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
+                                     sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_positional_float32_with_mode(
+        dither, context, SIXEL_DIFFUSE_BLUENOISE_DITHER);
 }
 
 /* emacs Local Variables:      */

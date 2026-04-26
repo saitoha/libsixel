@@ -238,8 +238,8 @@ diffuse_lso2(unsigned char *data,
 }
 
 SIXELSTATUS
-sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
-                                 sixel_dither_context_t *context)
+sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
+                             sixel_dither_context_t *context)
 {
     SIXELSTATUS status;
     unsigned char *data;

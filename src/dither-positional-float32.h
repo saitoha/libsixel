@@ -31,8 +31,16 @@
 #include "dither-internal.h"
 
 SIXELSTATUS
-sixel_dither_apply_positional_float32(sixel_dither_t *dither,
-                                      sixel_dither_context_t *context);
+sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
+                                    sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_x_dither_float32(sixel_dither_t *dither,
+                                    sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
+                                     sixel_dither_context_t *context);
 
 #endif /* LIBSIXEL_DITHER_POSITIONAL_FLOAT32_H */
 

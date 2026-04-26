@@ -614,9 +614,10 @@ sixel_bluenoise_gradient_weight_8bit(
     return 1.0f - attenuated;
 }
 
-SIXELSTATUS
-sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
-                                   sixel_dither_context_t *context)
+static SIXELSTATUS
+sixel_dither_apply_positional_8bit_with_mode(sixel_dither_t *dither,
+                                             sixel_dither_context_t *context,
+                                             int mask_mode)
 {
     int serpentine;
     int y;
@@ -625,7 +626,6 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     float *new_palette_float;
     int float_depth;
     int float_index;
-    int mask_mode;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -646,7 +646,6 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     bluenoise_conf.oy = 0;
     bluenoise_conf.per_channel = 0;
     bluenoise_conf.size = SIXEL_BN_W;
-    mask_mode = SIXEL_DIFFUSE_X_DITHER;
     gradient_factor = 0.0f;
     gradient_weight = 1.0f;
     noise = 0.0f;
@@ -664,26 +663,16 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    switch (context->method_for_diffuse) {
-    case SIXEL_DIFFUSE_A_DITHER:
+    if (mask_mode == SIXEL_DIFFUSE_A_DITHER
+            || mask_mode == SIXEL_DIFFUSE_X_DITHER) {
         sixel_positional_strength_init_8bit();
-        mask_mode = SIXEL_DIFFUSE_A_DITHER;
-        break;
-    case SIXEL_DIFFUSE_X_DITHER:
-        sixel_positional_strength_init_8bit();
-        mask_mode = SIXEL_DIFFUSE_X_DITHER;
-        break;
-    case SIXEL_DIFFUSE_BLUENOISE_DITHER:
+    } else if (mask_mode == SIXEL_DIFFUSE_BLUENOISE_DITHER) {
         sixel_bluenoise_conf_init_from_env_8bit();
         bluenoise_conf = g_sixel_bn_conf_8bit;
         sixel_bluenoise_conf_apply_dither_overrides_8bit(&bluenoise_conf,
                                                          dither);
-        mask_mode = SIXEL_DIFFUSE_BLUENOISE_DITHER;
-        break;
-    default:
-        sixel_positional_strength_init_8bit();
-        mask_mode = SIXEL_DIFFUSE_X_DITHER;
-        break;
+    } else {
+        return SIXEL_BAD_ARGUMENT;
     }
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
@@ -938,6 +927,30 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
 #undef SIXEL_DITHER_APPLY_POSITIONAL_8BIT
 
     return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_dither_apply_a_dither_8bit(sixel_dither_t *dither,
+                                 sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_positional_8bit_with_mode(
+        dither, context, SIXEL_DIFFUSE_A_DITHER);
+}
+
+SIXELSTATUS
+sixel_dither_apply_x_dither_8bit(sixel_dither_t *dither,
+                                 sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_positional_8bit_with_mode(
+        dither, context, SIXEL_DIFFUSE_X_DITHER);
+}
+
+SIXELSTATUS
+sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
+                                  sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_positional_8bit_with_mode(
+        dither, context, SIXEL_DIFFUSE_BLUENOISE_DITHER);
 }
 
 /* emacs Local Variables:      */

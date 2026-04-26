@@ -283,20 +283,19 @@ sixel_dither_policy_lso2_apply(
         return status;
     }
 
-    context.method_for_diffuse = SIXEL_DIFFUSE_LSO2;
     if (context.pixels_float != NULL
             && effective.dither != NULL
             && effective.dither->prefer_float32 != 0) {
-        status = sixel_dither_apply_varcoeff_float32(
+        status = sixel_dither_apply_lso2_float32(
             effective.dither,
             &context);
         if (status == SIXEL_BAD_ARGUMENT) {
-            status = sixel_dither_apply_varcoeff_8bit(
+            status = sixel_dither_apply_lso2_8bit(
                 effective.dither,
                 &context);
         }
     } else {
-        status = sixel_dither_apply_varcoeff_8bit(
+        status = sixel_dither_apply_lso2_8bit(
             effective.dither,
             &context);
     }
