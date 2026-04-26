@@ -47,6 +47,14 @@ do
     ' "$path"
 done >> "$bad"
 
+if test -f "$src_root/src/dither-internal.h"; then
+    awk '
+    /(^|[^A-Za-z0-9_])method_for_diffuse([^A-Za-z0-9_]|$)/ {
+        printf "%s:%d:%s\n", FILENAME, NR, $0
+    }
+    ' "$src_root/src/dither-internal.h" >> "$bad"
+fi
+
 if test -s "$bad"; then
     echo "not ok 1 - dither policies avoid backend dispatch remnants"
     sed 's/^/# /' "$bad"
