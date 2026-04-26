@@ -60,8 +60,16 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-dims_on=$(od -An -tx1 -j16 -N8 "${output_on}" | tr -d ' \n')
-dims_off=$(od -An -tx1 -j16 -N8 "${output_off}" | tr -d ' \n')
+dims_on=''
+for token in $(od -tx1 -j16 -N8 "${output_on}"); do
+    test "${token#??}" = "" || continue
+    dims_on="${dims_on}${token}"
+done
+dims_off=''
+for token in $(od -tx1 -j16 -N8 "${output_off}"); do
+    test "${token#??}" = "" || continue
+    dims_off="${dims_off}${token}"
+done
 
 test "${dims_on}" = "0000000c00000008" || {
     echo "not ok" 1 - "fuzz0008 malformed eXIf was incorrectly applied"
