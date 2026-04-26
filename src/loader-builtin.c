@@ -2132,7 +2132,7 @@ sixel_builtin_read_be32(unsigned char const *p)
 }
 
 static unsigned short
-sixel_builtin_read_u16be(unsigned char const *p)
+sixel_builtin_apng_read_u16be(unsigned char const *p)
 {
     if (p == NULL) {
         return 0u;
@@ -3930,7 +3930,7 @@ sixel_builtin_parse_jpeg_exif_orientation(unsigned char const *data,
             break;
         }
 
-        segment_length = sixel_builtin_read_u16be(data + offset);
+        segment_length = sixel_builtin_apng_read_u16be(data + offset);
         offset += 2u;
         if (segment_length < 2u) {
             break;

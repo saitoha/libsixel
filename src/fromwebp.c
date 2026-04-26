@@ -75,7 +75,7 @@ typedef struct sixel_webp_anim_stream {
 } sixel_webp_anim_stream_t;
 
 static unsigned int
-sixel_webp_read_u24le(unsigned char const *p)
+sixel_webp_anim_read_u24le(unsigned char const *p)
 {
     if (p == NULL) {
         return 0u;
@@ -86,7 +86,7 @@ sixel_webp_read_u24le(unsigned char const *p)
 }
 
 static unsigned int
-sixel_webp_read_u32le(unsigned char const *p)
+sixel_webp_anim_read_u32le(unsigned char const *p)
 {
     if (p == NULL) {
         return 0u;
@@ -491,13 +491,13 @@ sixel_webp_parse_anmf_frame(unsigned char const *payload,
     }
 
     memset(frame, 0, sizeof(*frame));
-    x = sixel_webp_read_u24le(payload + 0u) * 2u;
-    y = sixel_webp_read_u24le(payload + 3u) * 2u;
-    width_minus_one = sixel_webp_read_u24le(payload + 6u);
-    height_minus_one = sixel_webp_read_u24le(payload + 9u);
+    x = sixel_webp_anim_read_u24le(payload + 0u) * 2u;
+    y = sixel_webp_anim_read_u24le(payload + 3u) * 2u;
+    width_minus_one = sixel_webp_anim_read_u24le(payload + 6u);
+    height_minus_one = sixel_webp_anim_read_u24le(payload + 9u);
     frame_width_u = width_minus_one + 1u;
     frame_height_u = height_minus_one + 1u;
-    duration_ms = sixel_webp_read_u24le(payload + 12u);
+    duration_ms = sixel_webp_anim_read_u24le(payload + 12u);
     flags = (unsigned int)payload[15u];
     if ((flags & 0xfcu) != 0u) {
         sixel_helper_set_additional_message(
@@ -540,8 +540,8 @@ sixel_webp_parse_anmf_frame(unsigned char const *payload,
         if (payload_size - offset < 8u) {
             return SIXEL_BAD_INPUT;
         }
-        fourcc = sixel_webp_read_u32le(payload + offset);
-        chunk_size_u32 = sixel_webp_read_u32le(payload + offset + 4u);
+        fourcc = sixel_webp_anim_read_u32le(payload + offset);
+        chunk_size_u32 = sixel_webp_anim_read_u32le(payload + offset + 4u);
         chunk_size = (size_t)chunk_size_u32;
         chunk_total_size = 8u + chunk_size + (chunk_size & 1u);
         if (chunk_total_size > payload_size - offset) {
@@ -647,7 +647,7 @@ sixel_webp_parse_anim_stream(sixel_chunk_t const *chunk,
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    riff_size_u32 = sixel_webp_read_u32le(data + 4u);
+    riff_size_u32 = sixel_webp_anim_read_u32le(data + 4u);
     riff_total_size = (size_t)riff_size_u32 + 8u;
     if (riff_total_size < (size_t)riff_size_u32) {
         status = SIXEL_BAD_INTEGER_OVERFLOW;
@@ -664,8 +664,8 @@ sixel_webp_parse_anim_stream(sixel_chunk_t const *chunk,
             status = SIXEL_BAD_INPUT;
             goto end;
         }
-        fourcc = sixel_webp_read_u32le(data + offset);
-        chunk_size_u32 = sixel_webp_read_u32le(data + offset + 4u);
+        fourcc = sixel_webp_anim_read_u32le(data + offset);
+        chunk_size_u32 = sixel_webp_anim_read_u32le(data + offset + 4u);
         chunk_size = (size_t)chunk_size_u32;
         chunk_total_size = 8u + chunk_size + (chunk_size & 1u);
         if (chunk_total_size > riff_total_size - offset) {

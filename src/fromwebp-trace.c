@@ -35,6 +35,7 @@
 
 #include "compat_stub.h"
 #include "fromwebp-internal.h"
+#include "loader-common.h"
 
 #define SIXEL_WEBP_TRACE_CODE_MAX 32u
 
@@ -75,6 +76,10 @@ sixel_webp_trace_topic_enabled(void)
     token_end = NULL;
     topic_length = sizeof(topic) - 1u;
     token_length = 0u;
+
+    if (sixel_trace_topic_is_enabled("webp_decode") != 0) {
+        return 1;
+    }
 
     topics = sixel_compat_getenv("SIXEL_TRACE_TOPIC");
     if (topics == NULL || topics[0] == '\0') {

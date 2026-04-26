@@ -44,7 +44,7 @@
 #include "fromwebp-vp8-private.h"
 
 static unsigned int
-sixel_webp_vp8_read_u16le(unsigned char const *p)
+sixel_webp_vp8_parse_read_u16le(unsigned char const *p)
 {
     if (p == NULL) {
         return 0u;
@@ -53,7 +53,7 @@ sixel_webp_vp8_read_u16le(unsigned char const *p)
 }
 
 static unsigned int
-sixel_webp_vp8_read_u24le(unsigned char const *p)
+sixel_webp_vp8_parse_read_u24le(unsigned char const *p)
 {
     if (p == NULL) {
         return 0u;
@@ -115,7 +115,7 @@ sixel_webp_vp8_parse_header(unsigned char const *payload,
         return SIXEL_BAD_INPUT;
     }
 
-    frame_tag = sixel_webp_vp8_read_u24le(payload);
+    frame_tag = sixel_webp_vp8_parse_read_u24le(payload);
     if ((frame_tag & 1u) != 0u) {
         sixel_helper_set_additional_message(
             "builtin webp: VP8 interframes are not supported yet.");
@@ -150,8 +150,8 @@ sixel_webp_vp8_parse_header(unsigned char const *payload,
         return SIXEL_BAD_INPUT;
     }
 
-    width_raw = sixel_webp_vp8_read_u16le(payload + 6u);
-    height_raw = sixel_webp_vp8_read_u16le(payload + 8u);
+    width_raw = sixel_webp_vp8_parse_read_u16le(payload + 6u);
+    height_raw = sixel_webp_vp8_parse_read_u16le(payload + 8u);
     header->width = (int)(width_raw & 0x3fffu);
     header->height = (int)(height_raw & 0x3fffu);
 

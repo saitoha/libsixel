@@ -44,7 +44,7 @@
 #include "fromwebp-internal.h"
 
 static uint32_t
-sixel_webp_read_u32le(unsigned char const *p)
+sixel_webp_container_read_u32le(unsigned char const *p)
 {
     if (p == NULL) {
         return 0u;
@@ -58,11 +58,11 @@ sixel_webp_read_u32le(unsigned char const *p)
 static uint32_t
 sixel_webp_read_fourcc(unsigned char const *p)
 {
-    return sixel_webp_read_u32le(p);
+    return sixel_webp_container_read_u32le(p);
 }
 
 static uint32_t
-sixel_webp_read_u24le(unsigned char const *p)
+sixel_webp_container_read_u24le(unsigned char const *p)
 {
     if (p == NULL) {
         return 0u;
@@ -206,7 +206,7 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
         return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_RIFF_SIGNATURE);
     }
 
-    riff_size = sixel_webp_read_u32le(data + 4u);
+    riff_size = sixel_webp_container_read_u32le(data + 4u);
     if (riff_size < 4u) {
         return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_RIFF_SIZE_FIELD);
     }
@@ -230,7 +230,7 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
         }
 
         fourcc = sixel_webp_read_fourcc(data + offset);
-        chunk_size_u32 = sixel_webp_read_u32le(data + offset + 4u);
+        chunk_size_u32 = sixel_webp_container_read_u32le(data + offset + 4u);
         chunk_size = (size_t)chunk_size_u32;
         chunk_total_size = 8u + chunk_size + (chunk_size & 1u);
 
@@ -269,9 +269,9 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
                                     chunk_size);
             info->vp8x_flags = data[offset + 8u];
             info->canvas_width = (unsigned int)
-                sixel_webp_read_u24le(data + offset + 12u) + 1u;
+                sixel_webp_container_read_u24le(data + offset + 12u) + 1u;
             info->canvas_height = (unsigned int)
-                sixel_webp_read_u24le(data + offset + 15u) + 1u;
+                sixel_webp_container_read_u24le(data + offset + 15u) + 1u;
         } else if (fourcc == SIXEL_WEBP_CHUNK_VP8) {
             sixel_webp_record_chunk(&info->vp8,
                                     &info->vp8_count,
@@ -301,7 +301,7 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
                                     chunk_size);
             if (chunk_size == 6u) {
                 info->anim_background =
-                    sixel_webp_read_u32le(data + offset + 8u);
+                    sixel_webp_container_read_u32le(data + offset + 8u);
                 info->anim_loop_count = (unsigned int)data[offset + 12u]
                     | ((unsigned int)data[offset + 13u] << 8);
             }
