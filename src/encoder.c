@@ -1136,6 +1136,38 @@ sixel_encoder_test_sigint_sync_notify_dispatch_start(void)
 }
 #endif
 
+static int
+sixel_encoder_test_sigint_sync_wait_enabled(void)
+{
+    int wait_enabled;
+    char const *sync_event;
+    char const *sync_pid_text;
+    char const *sync_fd_text;
+
+    wait_enabled = 0;
+    sync_event = NULL;
+    sync_pid_text = NULL;
+    sync_fd_text = NULL;
+
+    sync_event = sixel_compat_getenv(SIXEL_ENCODER_SIGINT_SYNC_EVENT_ENVVAR);
+    if (sync_event != NULL
+            && sync_event[0] != '\0'
+            && strcmp(sync_event,
+                      SIXEL_ENCODER_SIGINT_SYNC_EVENT_DISPATCH_START)
+                   != 0) {
+        return wait_enabled;
+    }
+
+    sync_pid_text = sixel_compat_getenv(SIXEL_ENCODER_SIGINT_SYNC_PID_ENVVAR);
+    sync_fd_text = sixel_compat_getenv(SIXEL_ENCODER_SIGINT_SYNC_FD_ENVVAR);
+    if ((sync_pid_text != NULL && sync_pid_text[0] != '\0')
+            || (sync_fd_text != NULL && sync_fd_text[0] != '\0')) {
+        wait_enabled = 1;
+    }
+
+    return wait_enabled;
+}
+
 static void
 sixel_encoder_handoff_trace_emit(
     sixel_encoder_frame_pipeline_t *pipeline,
@@ -1231,6 +1263,8 @@ static void sixel_encoder_handoff_trace_emit(
     int loop_no,
     SIXELSTATUS status,
     sixel_encoder_handoff_trace_reason_t reason);
+static void sixel_encoder_test_sigint_sync_wait_for_cancel(
+    sixel_encoder_t *encoder);
 static void sixel_encoder_frame_pipeline_request_stop_locked(
     sixel_encoder_frame_pipeline_t *pipeline,
     SIXELSTATUS status,
@@ -1424,6 +1458,32 @@ sixel_encoder_is_cancel_requested(sixel_encoder_t const *encoder)
     }
 
     return canceled;
+}
+
+static void
+sixel_encoder_test_sigint_sync_wait_for_cancel(sixel_encoder_t *encoder)
+{
+    int sync_wait_enabled;
+
+    sync_wait_enabled = 0;
+    if (encoder == NULL) {
+        return;
+    }
+
+    sync_wait_enabled = sixel_encoder_test_sigint_sync_wait_enabled();
+    if (sync_wait_enabled == 0) {
+        return;
+    }
+
+    /*
+     * Keep callback dispatch at a deterministic synchronization point while
+     * running --sigint-run-until. The host sends SIGINT after observing the
+     * dispatch marker; waiting here prevents tiny inputs from finishing before
+     * cancel delivery can be observed by the loader callback.
+     */
+    while (sixel_encoder_is_cancel_requested(encoder) == 0) {
+        sixel_sleep(1000u);
+    }
 }
 
 static SIXELSTATUS
@@ -13690,6 +13750,8 @@ load_image_callback(sixel_frame_t *frame, void *data)
      * SIGINT after handoff selection regardless of thread configuration.
      * The test runner can also opt into a direct SIGUSR1 synchronization
      * signal here so trigger delivery stays deterministic across runtimes.
+     * When the runner exports sync metadata, wait for cancel so tiny inputs
+     * cannot finish before the injected SIGINT reaches the callback path.
      */
     sixel_encoder_test_sigint_sync_notify_dispatch_start();
     sixel_encoder_handoff_trace_emit(
@@ -13699,6 +13761,7 @@ load_image_callback(sixel_frame_t *frame, void *data)
         loop_no,
         SIXEL_OK,
         SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
+    sixel_encoder_test_sigint_sync_wait_for_cancel(encoder);
 
     return sixel_encoder_load_callback_dispatch(context, frame);
 }

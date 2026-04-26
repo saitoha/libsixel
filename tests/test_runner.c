@@ -1138,6 +1138,8 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     int sleep_status;
     int read_progress;
     int token_matched;
+    unsigned long resend_interval_ms;
+    unsigned long resend_elapsed_ms;
 #if HAVE_SIGNAL_H
     struct sigaction sync_action;
     struct sigaction sync_old_action;
@@ -1191,6 +1193,8 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     sleep_status = 0;
     read_progress = 0;
     token_matched = 0;
+    resend_interval_ms = 200ul;
+    resend_elapsed_ms = 0ul;
 #if HAVE_SIGNAL_H
     memset(&sync_action, 0, sizeof(sync_action));
     memset(&sync_old_action, 0, sizeof(sync_old_action));
@@ -1389,6 +1393,7 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                      * consume the child-exit grace window.
                      */
                     elapsed_ms = 0ul;
+                    resend_elapsed_ms = 0ul;
                     break;
                 }
                 if (sync_read_size == 0) {
@@ -1423,6 +1428,7 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
              * consume the child-exit grace window.
              */
             elapsed_ms = 0ul;
+            resend_elapsed_ms = 0ul;
         }
 #endif
         wait_pid = waitpid(child_pid, &wait_status, WNOHANG);
@@ -1492,6 +1498,7 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                          * window.
                          */
                         elapsed_ms = 0ul;
+                        resend_elapsed_ms = 0ul;
                     }
                 }
 
@@ -1542,6 +1549,20 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
             }
             continue;
         }
+        if (signal_sent != 0
+                && child_running != 0
+                && resend_elapsed_ms >= resend_interval_ms) {
+            /*
+             * Keep nudging wrapped runtimes that can drop the first SIGINT
+             * forwarded from the parent process tree.
+             */
+            send_result = test_runner_signal_group_and_child(child_pid, SIGINT);
+            if (send_result != 0) {
+                fprintf(stderr, "test_runner: SIGINT send failed: %s\n",
+                        strerror(errno));
+            }
+            resend_elapsed_ms = 0ul;
+        }
         if (parsed_timeout > 0ul && elapsed_ms >= parsed_timeout) {
             if (found_trigger == 0) {
                 fprintf(stderr,
@@ -1564,6 +1585,13 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                 elapsed_ms = parsed_timeout;
             } else {
                 elapsed_ms += poll_interval_ms;
+            }
+        }
+        if (signal_sent != 0 && child_running != 0) {
+            if (resend_elapsed_ms > resend_interval_ms - poll_interval_ms) {
+                resend_elapsed_ms = resend_interval_ms;
+            } else {
+                resend_elapsed_ms += poll_interval_ms;
             }
         }
     }
