@@ -1395,9 +1395,10 @@ end:
     return status;
 }
 
-SIXELSTATUS
-sixel_dither_apply_fixed_8bit(sixel_dither_t *dither,
-                              sixel_dither_context_t *context)
+static SIXELSTATUS
+sixel_dither_apply_fixed_8bit_with_mode(sixel_dither_t *dither,
+                                        sixel_dither_context_t *context,
+                                        int method_for_diffuse)
 {
     if (dither == NULL || context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1431,11 +1432,91 @@ sixel_dither_apply_fixed_8bit(sixel_dither_t *dither,
                                          context->new_palette,
                                          context->migration_map,
                                          context->ncolors,
-                                         context->method_for_diffuse,
+                                         method_for_diffuse,
                                          context->palette_float,
                                          context->new_palette_float,
                                          context->float_depth,
                                          dither);
+}
+
+SIXELSTATUS
+sixel_dither_apply_none_8bit(sixel_dither_t *dither,
+                             sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_8bit_with_mode(
+        dither, context, SIXEL_DIFFUSE_NONE);
+}
+
+SIXELSTATUS
+sixel_dither_apply_fs_8bit(sixel_dither_t *dither,
+                           sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_8bit_with_mode(
+        dither, context, SIXEL_DIFFUSE_FS);
+}
+
+SIXELSTATUS
+sixel_dither_apply_atkinson_8bit(sixel_dither_t *dither,
+                                 sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_8bit_with_mode(
+        dither, context, SIXEL_DIFFUSE_ATKINSON);
+}
+
+SIXELSTATUS
+sixel_dither_apply_jajuni_8bit(sixel_dither_t *dither,
+                               sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_8bit_with_mode(
+        dither, context, SIXEL_DIFFUSE_JAJUNI);
+}
+
+SIXELSTATUS
+sixel_dither_apply_stucki_8bit(sixel_dither_t *dither,
+                               sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_8bit_with_mode(
+        dither, context, SIXEL_DIFFUSE_STUCKI);
+}
+
+SIXELSTATUS
+sixel_dither_apply_burkes_8bit(sixel_dither_t *dither,
+                               sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_8bit_with_mode(
+        dither, context, SIXEL_DIFFUSE_BURKES);
+}
+
+SIXELSTATUS
+sixel_dither_apply_sierra1_8bit(sixel_dither_t *dither,
+                                sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_8bit_with_mode(
+        dither, context, SIXEL_DIFFUSE_SIERRA1);
+}
+
+SIXELSTATUS
+sixel_dither_apply_sierra2_8bit(sixel_dither_t *dither,
+                                sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_8bit_with_mode(
+        dither, context, SIXEL_DIFFUSE_SIERRA2);
+}
+
+SIXELSTATUS
+sixel_dither_apply_sierra3_8bit(sixel_dither_t *dither,
+                                sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_8bit_with_mode(
+        dither, context, SIXEL_DIFFUSE_SIERRA3);
+}
+
+SIXELSTATUS
+sixel_dither_apply_interframe_8bit(sixel_dither_t *dither,
+                                   sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_8bit_with_mode(
+        dither, context, SIXEL_DIFFUSE_INTERFRAME);
 }
 
 static void

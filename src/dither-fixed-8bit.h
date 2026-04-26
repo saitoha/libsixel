@@ -31,8 +31,44 @@
 #include "dither-internal.h"
 
 SIXELSTATUS
-sixel_dither_apply_fixed_8bit(sixel_dither_t *dither,
-                              sixel_dither_context_t *context);
+sixel_dither_apply_none_8bit(sixel_dither_t *dither,
+                             sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_fs_8bit(sixel_dither_t *dither,
+                           sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_atkinson_8bit(sixel_dither_t *dither,
+                                 sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_jajuni_8bit(sixel_dither_t *dither,
+                               sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_stucki_8bit(sixel_dither_t *dither,
+                               sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_burkes_8bit(sixel_dither_t *dither,
+                               sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_sierra1_8bit(sixel_dither_t *dither,
+                                sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_sierra2_8bit(sixel_dither_t *dither,
+                                sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_sierra3_8bit(sixel_dither_t *dither,
+                                sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_interframe_8bit(sixel_dither_t *dither,
+                                   sixel_dither_context_t *context);
 
 #endif /* LIBSIXEL_DITHER_FIXED_8BIT_H */
 

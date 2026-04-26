@@ -31,8 +31,44 @@
 #include "dither-internal.h"
 
 SIXELSTATUS
-sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
-                                 sixel_dither_context_t *context);
+sixel_dither_apply_none_float32(sixel_dither_t *dither,
+                                sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_fs_float32(sixel_dither_t *dither,
+                              sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_atkinson_float32(sixel_dither_t *dither,
+                                    sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_jajuni_float32(sixel_dither_t *dither,
+                                  sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_stucki_float32(sixel_dither_t *dither,
+                                  sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_burkes_float32(sixel_dither_t *dither,
+                                  sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_sierra1_float32(sixel_dither_t *dither,
+                                   sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_sierra2_float32(sixel_dither_t *dither,
+                                   sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_sierra3_float32(sixel_dither_t *dither,
+                                   sixel_dither_context_t *context);
+
+SIXELSTATUS
+sixel_dither_apply_interframe_float32(sixel_dither_t *dither,
+                                      sixel_dither_context_t *context);
 
 
 #endif /* LIBSIXEL_DITHER_FIXED_FLOAT32_H */

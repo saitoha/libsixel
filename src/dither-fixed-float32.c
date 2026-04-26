@@ -1558,9 +1558,11 @@ sixel_interframe_method_ops_float32_for_id(int method_id)
     return NULL;
 }
 
-SIXELSTATUS
-sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
-                                 sixel_dither_context_t *context)
+static SIXELSTATUS
+sixel_dither_apply_fixed_float32_with_mode(
+    sixel_dither_t *dither,
+    sixel_dither_context_t *context,
+    int method_for_diffuse)
 {
     SIXELSTATUS status;
     float *palette_float;
@@ -1597,7 +1599,6 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     unsigned char const *lookup_pixel;
     int have_palette_float;
     int have_new_palette_float;
-    int method_for_diffuse;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -1693,7 +1694,6 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
         have_new_palette_float = 0;
     }
 
-    method_for_diffuse = context->method_for_diffuse;
     if (method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         /*
          * Keep the interframe strategy token and spatial kernel independent
@@ -2044,6 +2044,86 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
 
     status = SIXEL_OK;
     return status;
+}
+
+SIXELSTATUS
+sixel_dither_apply_none_float32(sixel_dither_t *dither,
+                                sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_float32_with_mode(
+        dither, context, SIXEL_DIFFUSE_NONE);
+}
+
+SIXELSTATUS
+sixel_dither_apply_fs_float32(sixel_dither_t *dither,
+                              sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_float32_with_mode(
+        dither, context, SIXEL_DIFFUSE_FS);
+}
+
+SIXELSTATUS
+sixel_dither_apply_atkinson_float32(sixel_dither_t *dither,
+                                    sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_float32_with_mode(
+        dither, context, SIXEL_DIFFUSE_ATKINSON);
+}
+
+SIXELSTATUS
+sixel_dither_apply_jajuni_float32(sixel_dither_t *dither,
+                                  sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_float32_with_mode(
+        dither, context, SIXEL_DIFFUSE_JAJUNI);
+}
+
+SIXELSTATUS
+sixel_dither_apply_stucki_float32(sixel_dither_t *dither,
+                                  sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_float32_with_mode(
+        dither, context, SIXEL_DIFFUSE_STUCKI);
+}
+
+SIXELSTATUS
+sixel_dither_apply_burkes_float32(sixel_dither_t *dither,
+                                  sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_float32_with_mode(
+        dither, context, SIXEL_DIFFUSE_BURKES);
+}
+
+SIXELSTATUS
+sixel_dither_apply_sierra1_float32(sixel_dither_t *dither,
+                                   sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_float32_with_mode(
+        dither, context, SIXEL_DIFFUSE_SIERRA1);
+}
+
+SIXELSTATUS
+sixel_dither_apply_sierra2_float32(sixel_dither_t *dither,
+                                   sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_float32_with_mode(
+        dither, context, SIXEL_DIFFUSE_SIERRA2);
+}
+
+SIXELSTATUS
+sixel_dither_apply_sierra3_float32(sixel_dither_t *dither,
+                                   sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_float32_with_mode(
+        dither, context, SIXEL_DIFFUSE_SIERRA3);
+}
+
+SIXELSTATUS
+sixel_dither_apply_interframe_float32(sixel_dither_t *dither,
+                                      sixel_dither_context_t *context)
+{
+    return sixel_dither_apply_fixed_float32_with_mode(
+        dither, context, SIXEL_DIFFUSE_INTERFRAME);
 }
 
 /* emacs Local Variables:      */

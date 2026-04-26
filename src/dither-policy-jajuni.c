@@ -283,22 +283,21 @@ sixel_dither_policy_jajuni_apply(
         return status;
     }
 
-    context.method_for_diffuse = SIXEL_DIFFUSE_JAJUNI;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(context.pixelformat)
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(context.pixelformat)
             && context.pixels_float != NULL
             && context.depth == 3
             && effective.dither != NULL
             && effective.dither->prefer_float32 != 0) {
-        status = sixel_dither_apply_fixed_float32(
+        status = sixel_dither_apply_jajuni_float32(
             effective.dither,
             &context);
         if (status == SIXEL_BAD_ARGUMENT) {
-            status = sixel_dither_apply_fixed_8bit(
+            status = sixel_dither_apply_jajuni_8bit(
             effective.dither,
             &context);
         }
     } else {
-        status = sixel_dither_apply_fixed_8bit(
+        status = sixel_dither_apply_jajuni_8bit(
             effective.dither,
             &context);
     }
