@@ -28,6 +28,12 @@
 #ifndef LIBSIXEL_FROMWEBP_VP8_TABLES_H
 #define LIBSIXEL_FROMWEBP_VP8_TABLES_H
 
+/*
+ * Keep this header self-contained for amalgamation builds where the include
+ * order may differ from normal translation units.
+ */
+#include "fromwebp-vp8-native-internal.h"
+
 static unsigned char const
 sixel_webp_vp8_default_coef_probs
 [SIXEL_WEBP_VP8_COEFF_TYPES]

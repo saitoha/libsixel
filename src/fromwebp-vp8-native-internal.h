@@ -186,9 +186,9 @@ sixel_webp_vp8_bool_read_literal(sixel_webp_vp8_bool_decoder_t *decoder,
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_webp_vp8_decode_coeff_block(
     sixel_webp_vp8_bool_decoder_t *decoder,
-    unsigned char const probs[SIXEL_WEBP_VP8_COEFF_BANDS]
-                             [SIXEL_WEBP_VP8_PREV_COEFF_CONTEXTS]
-                             [SIXEL_WEBP_VP8_COEFF_NODES],
+    unsigned char probs[SIXEL_WEBP_VP8_COEFF_BANDS]
+                       [SIXEL_WEBP_VP8_PREV_COEFF_CONTEXTS]
+                       [SIXEL_WEBP_VP8_COEFF_NODES],
     unsigned int start_coeff,
     unsigned int coeff_context,
     int16_t coeffs[SIXEL_WEBP_VP8_BLOCK_COEFFS],

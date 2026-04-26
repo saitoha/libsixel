@@ -2717,11 +2717,7 @@ sixel_webp_vp8_parse_partition_layout(
     layout->token_partition_table_offset = control_end;
 
     if (layout->token_partition_count > 1u) {
-        if ((size_t)(layout->token_partition_count - 1u) >
-            SIZE_MAX / 3u) {
-            return SIXEL_BAD_INTEGER_OVERFLOW;
-        }
-        table_size = (size_t)(layout->token_partition_count - 1u) * 3u;
+        table_size = ((size_t)layout->token_partition_count - 1u) * 3u;
     } else {
         table_size = 0u;
     }

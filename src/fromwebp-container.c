@@ -210,17 +210,10 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
     if (riff_size < 4u) {
         return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_RIFF_SIZE_FIELD);
     }
-#if SIZE_MAX <= UINT32_MAX
-    /*
-     * RIFF size is a 32-bit field. Overflow can only happen when size_t is
-     * also 32-bit or narrower, so keep this guard off on wider targets.
-     */
-    if ((size_t)riff_size > SIZE_MAX - 8u) {
+    riff_total_size = (size_t)riff_size + 8u;
+    if (riff_total_size < (size_t)riff_size) {
         return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_RIFF_SIZE_OVERFLOW);
     }
-#endif
-
-    riff_total_size = (size_t)riff_size + 8u;
     if (riff_total_size > size) {
         return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_RIFF_SIZE_EXCEEDS);
     }

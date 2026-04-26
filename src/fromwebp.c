@@ -648,17 +648,11 @@ sixel_webp_parse_anim_stream(sixel_chunk_t const *chunk,
         goto end;
     }
     riff_size_u32 = sixel_webp_read_u32le(data + 4u);
-#if SIZE_MAX <= UINT_MAX
-    /*
-     * RIFF size is a 32-bit field. Overflow can only happen when size_t is
-     * not wider than unsigned int, so keep this guard off on wider targets.
-     */
-    if ((size_t)riff_size_u32 > SIZE_MAX - 8u) {
+    riff_total_size = (size_t)riff_size_u32 + 8u;
+    if (riff_total_size < (size_t)riff_size_u32) {
         status = SIXEL_BAD_INTEGER_OVERFLOW;
         goto end;
     }
-#endif
-    riff_total_size = (size_t)riff_size_u32 + 8u;
     if (riff_total_size > size) {
         status = SIXEL_BAD_INPUT;
         goto end;
