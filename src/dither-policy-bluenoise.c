@@ -326,6 +326,10 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_bluenoise_supports_parallel_bands
 };
 
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+#endif
 SIXELSTATUS
 sixel_dither_policy_create_bluenoise(
     sixel_dither_policy_interface_t **policy)
@@ -351,6 +355,9 @@ sixel_dither_policy_create_bluenoise(
     *policy = &object->base;
     return SIXEL_OK;
 }
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)
+# pragma GCC diagnostic pop
+#endif
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

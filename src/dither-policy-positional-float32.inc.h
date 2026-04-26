@@ -649,7 +649,9 @@ sixel_dither_apply_positional_float32(
     int use_transparent_fence;
     int is_transparent;
     size_t absolute_index;
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE)
     sixel_bluenoise_conf_float32_t bluenoise_conf;
+#endif
     float gradient_factor;
     float gradient_weight;
     float noise;
@@ -659,12 +661,14 @@ sixel_dither_apply_positional_float32(
     float_depth = 0;
     quantized = NULL;
     lookup_wants_float = 0;
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_FLOAT32_ENABLE_BLUENOISE)
     bluenoise_conf.strength = 0.055f;
     bluenoise_conf.gradient_factor = 0.0f;
     bluenoise_conf.ox = 0;
     bluenoise_conf.oy = 0;
     bluenoise_conf.per_channel = 0;
     bluenoise_conf.size = SIXEL_BN_W;
+#endif
     gradient_factor = 0.0f;
     gradient_weight = 1.0f;
     noise = 0.0f;

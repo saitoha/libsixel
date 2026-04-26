@@ -637,7 +637,9 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     int use_transparent_fence;
     int is_transparent;
     size_t absolute_index;
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_BLUENOISE)
     sixel_bluenoise_conf_8bit_t bluenoise_conf;
+#endif
     float gradient_factor;
     float gradient_weight;
     float noise;
@@ -645,12 +647,14 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     palette_float = NULL;
     new_palette_float = NULL;
     float_depth = 0;
+#if defined(SIXEL_DITHER_POLICY_POSITIONAL_8BIT_ENABLE_BLUENOISE)
     bluenoise_conf.strength = 0.055f;
     bluenoise_conf.gradient_factor = 0.0f;
     bluenoise_conf.ox = 0;
     bluenoise_conf.oy = 0;
     bluenoise_conf.per_channel = 0;
     bluenoise_conf.size = SIXEL_BN_W;
+#endif
     gradient_factor = 0.0f;
     gradient_weight = 1.0f;
     noise = 0.0f;
