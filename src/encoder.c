@@ -2010,18 +2010,9 @@ sixel_encoder_encode_bytes(
     size_t pixel_bytes;
     size_t pixel_total;
     size_t palette_bytes;
-    int depth;
 
     if (encoder == NULL || bytes == NULL) {
         status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-
-    depth = sixel_helper_compute_depth(pixelformat);
-    if (depth <= 0) {
-        sixel_helper_set_additional_message(
-            "sixel_encoder_encode_bytes: invalid pixelformat depth.");
-        status = SIXEL_BAD_INPUT;
         goto end;
     }
 
@@ -2039,14 +2030,15 @@ sixel_encoder_encode_bytes(
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    if (pixel_total > SIZE_MAX / (size_t)depth) {
+    pixel_bytes = sixel_encoder_compute_frame_size(pixelformat,
+                                                   width,
+                                                   height);
+    if (pixel_bytes == 0) {
         sixel_helper_set_additional_message(
             "sixel_encoder_encode_bytes: buffer size overflow.");
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-
-    pixel_bytes = pixel_total * (size_t)depth;
     owned_pixels = (unsigned char *)sixel_allocator_malloc(
         encoder->allocator, pixel_bytes);
     if (owned_pixels == NULL) {
