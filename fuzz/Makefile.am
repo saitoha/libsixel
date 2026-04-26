@@ -30,6 +30,7 @@ FUZZ_STRUCT_TARGETS = \
     mapfile-spec \
     mapfile-palette \
     option-arglist \
+    exif-orientation \
     loader-order
 
 FUZZ_STRUCT_PUSH_SET = \
@@ -63,6 +64,7 @@ noinst_PROGRAMS = \
     fuzz-loader-builtin-struct-mapfile-spec-libfuzzer \
     fuzz-loader-builtin-struct-mapfile-palette-libfuzzer \
     fuzz-loader-builtin-struct-option-arglist-libfuzzer \
+    fuzz-loader-builtin-struct-exif-orientation-libfuzzer \
     fuzz-loader-builtin-struct-loader-order-libfuzzer
 if HAVE_COREGRAPHICS
 noinst_PROGRAMS += \
@@ -113,6 +115,7 @@ EXTRA_DIST = \
     fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c \
     fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.c \
     fuzz-loader-builtin-struct-option-arglist-libfuzzer.c \
+    fuzz-loader-builtin-struct-exif-orientation-libfuzzer.c \
     fuzz-loader-builtin-struct-loader-order-libfuzzer.c \
     loader-builtin.dict
 
@@ -290,6 +293,13 @@ fuzz_loader_builtin_struct_option_arglist_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPP
 fuzz_loader_builtin_struct_option_arglist_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
 fuzz_loader_builtin_struct_option_arglist_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
 fuzz_loader_builtin_struct_option_arglist_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
+
+fuzz_loader_builtin_struct_exif_orientation_libfuzzer_SOURCES = \
+    $(srcdir)/fuzz-loader-builtin-struct-exif-orientation-libfuzzer.c
+fuzz_loader_builtin_struct_exif_orientation_libfuzzer_CPPFLAGS = $(FUZZ_COMMON_CPPFLAGS)
+fuzz_loader_builtin_struct_exif_orientation_libfuzzer_CFLAGS = $(FUZZ_COMMON_CFLAGS)
+fuzz_loader_builtin_struct_exif_orientation_libfuzzer_LDFLAGS = $(FUZZ_COMMON_LINK_FLAGS)
+fuzz_loader_builtin_struct_exif_orientation_libfuzzer_LDADD = $(FUZZ_COMMON_LINK_LIBS)
 
 fuzz_loader_builtin_struct_loader_order_libfuzzer_SOURCES = \
     $(srcdir)/fuzz-loader-builtin-struct-loader-order-libfuzzer.c

@@ -399,7 +399,7 @@ jobs:
       FUZZ_AFL: afl-fuzz
       FUZZ_TIMEOUT: 600
       FUZZ_AFL_WORKERS: ${{ github.event_name == 'push' && '6' || '2' }}
-      FUZZ_AFL_MODE: ${{ github.event_name == 'push' && 'cmplog' || 'normal' }}
+      FUZZ_AFL_MODE: ${{ github.event_name == 'push' && matrix.buildtool == 'autotools' && 'cmplog' || 'normal' }}
       FUZZ_AFL_CMPLOG_RUNNER: ""
       FUZZ_AFL_EXTRA_OPTS: ""
       AFL_USE_ASAN: 1
