@@ -310,10 +310,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/fromwebp-vp8-native-internal.h \
 	$(srcdir)/fromwebp-vp8-tables.h $(srcdir)/fromwebp-container.c \
 	$(srcdir)/fromwebp-vp8.c $(srcdir)/fromwebp-vp8-alpha.c \
-	$(srcdir)/fromwebp-vp8-parse.c \
-	$(srcdir)/fromwebp-vp8-native.c \
-	$(srcdir)/fromwebp-vp8-native-token.c $(srcdir)/fromwebp-vp8l.c \
-	$(srcdir)/fromwebp-trace.c \
+	$(srcdir)/fromwebp-vp8-parse.c $(srcdir)/fromwebp-vp8-native.c \
+	$(srcdir)/fromwebp-vp8-native-token.c \
+	$(srcdir)/fromwebp-vp8l.c $(srcdir)/fromwebp-trace.c \
 	$(srcdir)/frombmp-parser.c $(srcdir)/frombmp.c \
 	$(srcdir)/frombmp.h $(srcdir)/frombmp-internal.h \
 	$(srcdir)/clipboard.c $(srcdir)/clipboard.h \
@@ -598,11 +597,11 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-fromsixel.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp-container.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo \
-	./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp-vp8-alpha.Plo \
-	./$(DEPDIR)/libsixel_la-fromwebp-vp8-native.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp-vp8-native-token.Plo \
+	./$(DEPDIR)/libsixel_la-fromwebp-vp8-native.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp-vp8-parse.Plo \
+	./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp.Plo \
 	./$(DEPDIR)/libsixel_la-icc-apply.Plo \
@@ -1543,11 +1542,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-container.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8-alpha.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8-native.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8-native-token.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8-native.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8-parse.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-apply.Plo@am__quote@ # am--include-marker
@@ -2985,11 +2984,11 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-container.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-alpha.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-native.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-native-token.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-native.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-parse.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
@@ -3180,11 +3179,11 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-container.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-trace.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-alpha.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-native.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-native-token.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-native.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8-parse.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
