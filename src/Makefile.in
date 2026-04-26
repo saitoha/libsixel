@@ -204,9 +204,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette-kcenter.c $(srcdir)/palette-kcenter.h \
 	$(srcdir)/palette.c $(srcdir)/palette.h $(srcdir)/dither.c \
 	$(srcdir)/dither.h $(srcdir)/dither-policy.c \
-	$(srcdir)/dither-policy.h $(srcdir)/dither-policy-backend.c \
-	$(srcdir)/dither-policy-backend.h \
-	$(srcdir)/dither-policy-none.c $(srcdir)/dither-policy-fs.c \
+	$(srcdir)/dither-policy.h $(srcdir)/dither-policy-none.c \
+	$(srcdir)/dither-policy-fs.c \
 	$(srcdir)/dither-policy-atkinson.c \
 	$(srcdir)/dither-policy-jajuni.c \
 	$(srcdir)/dither-policy-stucki.c \
@@ -378,7 +377,6 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-backend.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-none.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-fs.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-policy-atkinson.lo \
@@ -548,7 +546,6 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo \
-	./$(DEPDIR)/libsixel_la-dither-policy-backend.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-burkes.Plo \
 	./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo \
@@ -1066,8 +1063,6 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-backend.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-backend.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-none.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-fs.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-atkinson.c \
@@ -1498,7 +1493,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-backend.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-burkes.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo@am__quote@ # am--include-marker
@@ -1899,13 +1893,6 @@ libsixel_la-dither-policy.lo: dither-policy.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy.c' object='libsixel_la-dither-policy.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy.lo `test -f 'dither-policy.c' || echo '$(srcdir)/'`dither-policy.c
-
-libsixel_la-dither-policy-backend.lo: dither-policy-backend.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-backend.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-backend.Tpo -c -o libsixel_la-dither-policy-backend.lo `test -f 'dither-policy-backend.c' || echo '$(srcdir)/'`dither-policy-backend.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-policy-backend.Tpo $(DEPDIR)/libsixel_la-dither-policy-backend.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-policy-backend.c' object='libsixel_la-dither-policy-backend.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-policy-backend.lo `test -f 'dither-policy-backend.c' || echo '$(srcdir)/'`dither-policy-backend.c
 
 libsixel_la-dither-policy-none.lo: dither-policy-none.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-policy-none.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-policy-none.Tpo -c -o libsixel_la-dither-policy-none.lo `test -f 'dither-policy-none.c' || echo '$(srcdir)/'`dither-policy-none.c
@@ -2940,7 +2927,6 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-backend.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-burkes.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo
@@ -3135,7 +3121,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-interframe-stbn-source.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-a-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-atkinson.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-backend.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-bluenoise.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-burkes.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-policy-fs.Plo

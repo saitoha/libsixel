@@ -134,8 +134,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither.h \
                 $(srcdir)/dither-policy.c \
                 $(srcdir)/dither-policy.h \
-                $(srcdir)/dither-policy-backend.c \
-                $(srcdir)/dither-policy-backend.h \
                 $(srcdir)/dither-policy-none.c \
                 $(srcdir)/dither-policy-fs.c \
                 $(srcdir)/dither-policy-atkinson.c \

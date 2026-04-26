@@ -16,6 +16,9 @@ find "$src_root/src" -maxdepth 1 -type f -name 'dither-policy-*.c' \
     -print | LC_ALL=C sort | while IFS= read -r path
 do
     awk '
+    /#include "dither-policy-backend.h"/ {
+        printf "%s:%d:%s\n", FILENAME, NR, $0
+    }
     /sixel_dither_policy_backend_apply_(fixed|varcoeff|positional)/ {
         printf "%s:%d:%s\n", FILENAME, NR, $0
     }
