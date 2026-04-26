@@ -43,17 +43,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Run every matrix job on push to avoid effectively skipped fuzz
+          # configurations. Duration is controlled by per-target fuzz limits.
           run_target=1
-          if [ "${{ github.event_name }}" = "push" ]; then
-            run_target=0
-            if [ "${{ matrix.buildtool }}" = "meson" ]; then
-              case "${{ matrix.target }}" in
-                gif-lzw-codes|psd-resource|option-arglist|exif-orientation|loader-order)
-                  run_target=1
-                  ;;
-              esac
-            fi
-          fi
           echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v6
@@ -239,17 +231,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Keep all loader-format matrix jobs active on push. Individual fuzz
+          # runtimes are governed by max_total_time settings in each job.
           run_target=1
-          if [ "${{ github.event_name }}" = "push" ]; then
-            run_target=0
-            if [ "${{ matrix.buildtool }}" = "meson" ]; then
-              case "${{ matrix.target }}" in
-                png|gif|psd|hdr|bmp)
-                  run_target=1
-                  ;;
-              esac
-            fi
-          fi
           echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v6
@@ -432,17 +416,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Execute all CLI fuzz matrix jobs on push; timeout policy is handled
+          # by FUZZ_TIMEOUT/fuzz_timeout below.
           run_target=1
-          if [ "${{ github.event_name }}" = "push" ]; then
-            run_target=0
-            if [ "${{ matrix.buildtool }}" = "autotools" ]; then
-              case "${{ matrix.target }}" in
-                combo|parser|boundary|pathenv|numeric)
-                  run_target=1
-                  ;;
-              esac
-            fi
-          fi
           echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v6
@@ -800,11 +776,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Keep both build systems enabled so coregraphics fuzzing does not
+          # silently skip half of the matrix on push.
           run_target=1
-          if [ "${{ github.event_name }}" = "push" ] &&
-             [ "${{ matrix.buildtool }}" != "meson" ]; then
-            run_target=0
-          fi
           echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
 
       - name: Disable Spotlight (macOS)
