@@ -2021,10 +2021,13 @@ sixel_dither_apply_fixed_float32_with_mode(
         SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra3_float);
         break;
     case SIXEL_DIFFUSE_INTERFRAME:
-    case SIXEL_DIFFUSE_FS:
-    default:
         SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
         break;
+    case SIXEL_DIFFUSE_FS:
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
+        break;
+    default:
+        return SIXEL_BAD_ARGUMENT;
     }
 #undef SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP
 

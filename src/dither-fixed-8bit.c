@@ -1371,10 +1371,14 @@ sixel_dither_apply_fixed_impl(
         SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra3);
         break;
     case SIXEL_DIFFUSE_INTERFRAME:
-    case SIXEL_DIFFUSE_FS:
-    default:
         SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_fs);
         break;
+    case SIXEL_DIFFUSE_FS:
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_fs);
+        break;
+    default:
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
     }
 #undef SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP
 
