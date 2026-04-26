@@ -749,6 +749,7 @@ loader_exif_parse_orientation(unsigned char const *data,
     unsigned int count;
     unsigned int value_field;
     int parsed_orientation;
+    size_t max_entries;
 
     little_endian = 0;
     magic = 0u;
@@ -761,6 +762,7 @@ loader_exif_parse_orientation(unsigned char const *data,
     count = 0u;
     value_field = 0u;
     parsed_orientation = 0;
+    max_entries = 0u;
 
     if (data == NULL || orientation == NULL) {
         return 0;
@@ -789,13 +791,25 @@ loader_exif_parse_orientation(unsigned char const *data,
     }
 
     ifd_offset = loader_exif_read_u32(data + 4u, little_endian);
-    if ((size_t)ifd_offset > size - 2u) {
+    /*
+     * TIFF IFD offsets are relative to the TIFF header start and must
+     * reference data after the 8-byte header itself. Offsets before this
+     * point are malformed and can cause unbounded entry scans.
+     */
+    if (ifd_offset < 8u || (size_t)ifd_offset > size - 2u) {
         return 0;
     }
     entry_count = loader_exif_read_u16(data + ifd_offset, little_endian);
     entries_offset = (size_t)ifd_offset + 2u;
-    if (entry_count > 0u &&
-        entries_offset > size - (size_t)entry_count * 12u) {
+    if (entries_offset > size) {
+        return 0;
+    }
+    /*
+     * Validate entry_count without subtracting untrusted values from size.
+     * This avoids unsigned underflow when entry_count is corrupted.
+     */
+    max_entries = (size - entries_offset) / 12u;
+    if ((size_t)entry_count > max_entries) {
         return 0;
     }
 
