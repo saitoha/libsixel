@@ -22,6 +22,12 @@ do
     /sixel_dither_policy_backend_apply_(fixed|varcoeff|positional)/ {
         printf "%s:%d:%s\n", FILENAME, NR, $0
     }
+    /context[[:space:]]*\.[[:space:]]*method_for_diffuse[[:space:]]*=/ {
+        printf "%s:%d:%s\n", FILENAME, NR, $0
+    }
+    /sixel_dither_apply_(fixed|positional|varcoeff)_(8bit|float32)[[:space:]]*\(/ {
+        printf "%s:%d:%s\n", FILENAME, NR, $0
+    }
     ' "$path"
 done >> "$bad"
 
