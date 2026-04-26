@@ -1137,6 +1137,7 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     int fd_flags;
     int sleep_status;
     int read_progress;
+    int token_matched;
 #if HAVE_SIGNAL_H
     struct sigaction sync_action;
     struct sigaction sync_old_action;
@@ -1189,6 +1190,7 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
     fd_flags = 0;
     sleep_status = 0;
     read_progress = 0;
+    token_matched = 0;
 #if HAVE_SIGNAL_H
     memset(&sync_action, 0, sizeof(sync_action));
     memset(&sync_old_action, 0, sizeof(sync_old_action));
@@ -1461,11 +1463,17 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                        read_buffer,
                        (size_t)read_size);
                 combined_length = carry_length + (size_t)read_size;
-                if (signal_sent == 0 &&
-                    test_runner_buffer_contains(combined_buffer,
-                                                combined_length,
-                                                needle_token,
-                                                needle_length)) {
+                token_matched = test_runner_buffer_contains(
+                    combined_buffer,
+                    combined_length,
+                    needle_token,
+                    needle_length);
+                if (token_matched != 0) {
+                    /*
+                     * Some runtimes can drop a single external SIGINT while
+                     * forwarding through wrapper layers. Re-send whenever the
+                     * same trigger token appears again in the child trace.
+                     */
                     found_trigger = 1;
                     send_result = test_runner_signal_group_and_child(
                         child_pid,
@@ -1475,13 +1483,16 @@ test_runner_run_posix_sigint_until(int argc, char **argv)
                                 "test_runner: SIGINT send failed: %s\n",
                                 strerror(errno));
                     }
-                    signal_sent = 1;
-                    /*
-                     * Keep independent timeout budgets for trigger detection
-                     * and post-SIGINT shutdown so slow trace startup does not
-                     * consume the child-exit grace window.
-                     */
-                    elapsed_ms = 0ul;
+                    if (signal_sent == 0) {
+                        signal_sent = 1;
+                        /*
+                         * Keep independent timeout budgets for trigger
+                         * detection and post-SIGINT shutdown so slow trace
+                         * startup does not consume the child-exit grace
+                         * window.
+                         */
+                        elapsed_ms = 0ul;
+                    }
                 }
 
                 if (needle_length > 1u) {
