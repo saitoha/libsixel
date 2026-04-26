@@ -700,6 +700,7 @@ sixel_webp_vp8_predict_bmode(unsigned int bmode,
     int l1;
     int l2;
     int l3;
+    unsigned char l3_u8;
     int t;
 
     i = 0u;
@@ -723,6 +724,7 @@ sixel_webp_vp8_predict_bmode(unsigned int bmode,
     l1 = 0;
     l2 = 0;
     l3 = 0;
+    l3_u8 = 0u;
     t = 0;
     memset(above, SIXEL_WEBP_VP8_BORDER_TOP, sizeof(above));
     memset(left, SIXEL_WEBP_VP8_BORDER_LEFT, sizeof(left));
@@ -872,6 +874,7 @@ sixel_webp_vp8_predict_bmode(unsigned int bmode,
         pred[13] = sixel_webp_vp8_avg3(l3, l2, l1);
         break;
     default:
+        l3_u8 = (unsigned char)l3;
         pred[0] = sixel_webp_vp8_avg2(l0, l1);
         pred[2] = pred[4] = sixel_webp_vp8_avg2(l1, l2);
         pred[6] = pred[8] = sixel_webp_vp8_avg2(l2, l3);
@@ -879,7 +882,7 @@ sixel_webp_vp8_predict_bmode(unsigned int bmode,
         pred[3] = pred[5] = sixel_webp_vp8_avg3(l1, l2, l3);
         pred[7] = pred[9] = sixel_webp_vp8_avg3(l2, l3, l3);
         pred[15] = pred[14] = pred[13] = pred[12] =
-            pred[11] = pred[10] = l3;
+            pred[11] = pred[10] = l3_u8;
         break;
     }
 }

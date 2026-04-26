@@ -337,6 +337,20 @@ run_case_tap "staticcheck-c-header-modeline" \
     "$src_root/tests/_static/sh/staticcheck-c-header-modeline.sh" \
     "$src_root" || fail_and_exit $?
 
+if test -f "$build_root/src/Makefile"; then
+    run_case_plain "staticcheck-fromwebp-compile-type-limits" \
+        "${MAKE:-make}" -C "$build_root/src" -W fromwebp.c \
+        libsixel_la-fromwebp.lo || fail_and_exit $?
+    run_case_plain "staticcheck-fromwebp-vp8-native-compile-warnings" \
+        "${MAKE:-make}" -C "$build_root/src" -W fromwebp-vp8-native.c \
+        libsixel_la-fromwebp-vp8-native.lo || fail_and_exit $?
+else
+    run_case_skip "staticcheck-fromwebp-compile-type-limits" \
+        "missing src/Makefile in build root"
+    run_case_skip "staticcheck-fromwebp-vp8-native-compile-warnings" \
+        "missing src/Makefile in build root"
+fi
+
 run_case_tap "staticcheck-build-doc-configure-help" \
     "$src_root/tests/_static/sh/staticcheck-build-doc-configure-help.sh" \
     "$src_root" || fail_and_exit $?
