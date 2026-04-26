@@ -42,9 +42,13 @@
 #include "dither-interframe-method.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
+#if defined(__GNUC__) || defined(__clang__)
+# define SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED __attribute__((unused))
+#else
+# define SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
+#endif
 
-#define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2 1
-#define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2 1
+
 
 static void
 sixel_dither_scanline_params_fixed_8bit(int serpentine,
@@ -70,7 +74,7 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
 
 typedef sixel_interframe_stbn_state_common_t sixel_interframe_stbn_state_t;
 
-static SIXELSTATUS
+static SIXELSTATUS SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_diffusion_prepare_frame(sixel_dither_t *dither,
                                        int width,
                                        int height,
@@ -79,7 +83,7 @@ sixel_interframe_diffusion_prepare_frame(sixel_dither_t *dither,
                                        int *enabled,
                                        int32_t **frame);
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_diffusion_load_pixel(
     sixel_dither_t *dither,
     unsigned char const *data,
@@ -91,20 +95,20 @@ sixel_interframe_diffusion_load_pixel(
     unsigned char corrected[SIXEL_MAX_CHANNELS],
     int32_t accum_scaled[SIXEL_MAX_CHANNELS]);
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_diffusion_clear_pixel(int32_t *frame,
                                      size_t base,
                                      int depth,
                                      int can_update);
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_diffusion_store_error(int32_t *frame,
                                      size_t base,
                                      int channel,
                                      int offset,
                                      int can_update);
 
-static SIXELSTATUS
+static SIXELSTATUS SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_prepare_frame(sixel_dither_t *dither,
                                   int width,
                                   int height,
@@ -113,7 +117,7 @@ sixel_interframe_stbn_prepare_frame(sixel_dither_t *dither,
                                   int *enabled,
                                   int32_t **frame);
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_load_pixel(
     sixel_dither_t *dither,
     unsigned char const *data,
@@ -125,92 +129,27 @@ sixel_interframe_stbn_load_pixel(
     unsigned char corrected[SIXEL_MAX_CHANNELS],
     int32_t accum_scaled[SIXEL_MAX_CHANNELS]);
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_clear_pixel(int32_t *frame,
                                 size_t base,
                                 int depth,
                                 int can_update);
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_store_error(int32_t *frame,
                                 size_t base,
                                 int channel,
                                 int offset,
                                 int can_update);
 
-static sixel_interframe_method_ops_t const
-sixel_interframe_diffusion_ops = {
-    SIXEL_INTERFRAME_METHOD_DIFFUSION,
-    sixel_interframe_diffusion_prepare_frame,
-    sixel_interframe_diffusion_load_pixel,
-    sixel_interframe_diffusion_clear_pixel,
-    sixel_interframe_diffusion_store_error
-};
 
-static sixel_interframe_method_ops_t const
-sixel_interframe_stbn_ops = {
-    SIXEL_INTERFRAME_METHOD_STBN,
-    sixel_interframe_stbn_prepare_frame,
-    sixel_interframe_stbn_load_pixel,
-    sixel_interframe_stbn_clear_pixel,
-    sixel_interframe_stbn_store_error
-};
 
-static int
-sixel_interframe_method_from_diffuse(sixel_dither_t const *dither,
-                                   int method_for_diffuse);
 
-static sixel_interframe_method_ops_t const *
-sixel_interframe_method_for_strategy(int interframe_method);
 
-static void
-error_diffuse_normal(
-    unsigned char /* in */    *data,      /* base address of pixel buffer */
-    int           /* in */    pos,        /* address of the destination pixel */
-    int           /* in */    depth,      /* color depth in bytes */
-    int           /* in */    error,      /* error energy */
-    int           /* in */    numerator,  /* numerator of diffusion coefficient */
-    int           /* in */    denominator /* denominator of diffusion coefficient */)
-{
-    int c;
 
-    data += pos * depth;
-
-    c = *data + (error * numerator * 2 / denominator + 1) / 2;
-    if (c < 0) {
-        c = 0;
-    }
-    if (c >= 1 << 8) {
-        c = (1 << 8) - 1;
-    }
-    *data = (unsigned char)c;
-}
-
-static void
-error_diffuse_fast(
-    unsigned char /* in */    *data,      /* base address of pixel buffer */
-    int           /* in */    pos,        /* address of the destination pixel */
-    int           /* in */    depth,      /* color depth in bytes */
-    int           /* in */    error,      /* error energy */
-    int           /* in */    numerator,  /* numerator of diffusion coefficient */
-    int           /* in */    denominator /* denominator of diffusion coefficient */)
-{
-    int c;
-
-    data += pos * depth;
-
-    c = *data + error * numerator / denominator;
-    if (c < 0) {
-        c = 0;
-    }
-    if (c >= 1 << 8) {
-        c = (1 << 8) - 1;
-    }
-    *data = (unsigned char)c;
-}
 
 /* error diffusion with precise strategy */
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 error_diffuse_precise(
     unsigned char /* in */    *data,      /* base address of pixel buffer */
     int           /* in */    pos,        /* address of the destination pixel */
@@ -233,7 +172,7 @@ error_diffuse_precise(
     *data = (unsigned char)c;
 }
 
-static SIXELSTATUS
+static SIXELSTATUS SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_diffusion_prepare_frame(sixel_dither_t *dither,
                                        int width,
                                        int height,
@@ -252,7 +191,7 @@ sixel_interframe_diffusion_prepare_frame(sixel_dither_t *dither,
                                                frame);
 }
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_diffusion_load_pixel(
     sixel_dither_t *dither,
     unsigned char const *data,
@@ -304,7 +243,7 @@ sixel_interframe_diffusion_load_pixel(
     }
 }
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_diffusion_clear_pixel(int32_t *frame,
                                      size_t base,
                                      int depth,
@@ -322,7 +261,7 @@ sixel_interframe_diffusion_clear_pixel(int32_t *frame,
     }
 }
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_diffusion_store_error(int32_t *frame,
                                      size_t base,
                                      int channel,
@@ -343,7 +282,7 @@ sixel_interframe_diffusion_store_error(int32_t *frame,
     frame[base + (size_t)channel] = scaled;
 }
 
-static int
+static int SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_scene_detect_reset_8bit(int32_t const *frame,
                                          int width,
                                          int height,
@@ -386,7 +325,7 @@ sixel_interframe_scene_detect_reset_8bit(int32_t const *frame,
     return max_u8 >= SIXEL_INTERFRAME_SCENE_DETECT_ERROR_THRESHOLD_U8;
 }
 
-static SIXELSTATUS
+static SIXELSTATUS SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_prepare_frame(sixel_dither_t *dither,
                                   int width,
                                   int height,
@@ -469,7 +408,7 @@ sixel_interframe_stbn_prepare_frame(sixel_dither_t *dither,
     return status;
 }
 
-static int32_t
+static int32_t SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_bias_scaled_sampled(
     sixel_interframe_stbn_sample_u16_fn sample_fn,
     uint32_t sequence_index,
@@ -492,7 +431,7 @@ sixel_interframe_stbn_bias_scaled_sampled(
     return bias_u8 * SIXEL_INTERFRAME_VARERR_SCALE;
 }
 
-static int32_t
+static int32_t SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_bias_scaled_sampled_row_cached(
     sixel_interframe_stbn_state_t *stbn_state,
     int x,
@@ -519,7 +458,7 @@ sixel_interframe_stbn_bias_scaled_sampled_row_cached(
     return bias_u8 * SIXEL_INTERFRAME_VARERR_SCALE;
 }
 
-static int32_t
+static int32_t SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_bias_scaled_sampled_tiled(
     sixel_interframe_stbn_state_t const *stbn_state,
     int x,
@@ -546,7 +485,7 @@ sixel_interframe_stbn_bias_scaled_sampled_tiled(
     return bias_u8 * SIXEL_INTERFRAME_VARERR_SCALE;
 }
 
-static int
+static int SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_motion_strength_u8_8bit(int strength_u8,
                                               int32_t const *frame,
                                               size_t base,
@@ -595,7 +534,7 @@ sixel_interframe_stbn_motion_strength_u8_8bit(int strength_u8,
     return (strength_u8 * scaled_u8 + 127) / 255;
 }
 
-static int
+static int SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_scene_detect_hit_8bit(int32_t const *frame,
                                        size_t base,
                                        int depth)
@@ -625,7 +564,7 @@ sixel_interframe_scene_detect_hit_8bit(int32_t const *frame,
     return energy >= threshold;
 }
 
-static int
+static int SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_perceptual_strength_u8_8bit(int strength_u8,
                                                   int channel,
                                                   int depth,
@@ -643,7 +582,7 @@ sixel_interframe_stbn_perceptual_strength_u8_8bit(int strength_u8,
     return (strength_u8 * weights_rgb_u8[channel] + 127) / 255;
 }
 
-static int
+static int SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_alpha_guard_hit_8bit(unsigned char const *transparent_mask,
                                      size_t transparent_mask_size,
                                      int width,
@@ -693,7 +632,7 @@ sixel_interframe_alpha_guard_hit_8bit(unsigned char const *transparent_mask,
     return 0;
 }
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_load_pixel(
     sixel_dither_t *dither,
     unsigned char const *data,
@@ -904,7 +843,7 @@ sixel_interframe_stbn_load_pixel(
     }
 }
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_clear_pixel(int32_t *frame,
                                 size_t base,
                                 int depth,
@@ -916,7 +855,7 @@ sixel_interframe_stbn_clear_pixel(int32_t *frame,
                                          can_update);
 }
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_store_error(int32_t *frame,
                                 size_t base,
                                 int channel,
@@ -930,95 +869,14 @@ sixel_interframe_stbn_store_error(int32_t *frame,
                                          can_update);
 }
 
-static int
-sixel_interframe_method_from_diffuse(sixel_dither_t const *dither,
-                                   int method_for_diffuse)
-{
-    int token;
 
-    token = sixel_interframe_strategy_token_from_dither_or_env_common(dither);
-    return sixel_interframe_method_from_diffuse_and_token(
-        method_for_diffuse,
-        token);
-}
 
-static sixel_interframe_method_ops_t const *
-sixel_interframe_method_for_strategy(int interframe_method)
-{
-    switch (interframe_method) {
-    case SIXEL_INTERFRAME_METHOD_DIFFUSION:
-        return &sixel_interframe_diffusion_ops;
-    case SIXEL_INTERFRAME_METHOD_STBN:
-        return &sixel_interframe_stbn_ops;
-    default:
-        break;
-    }
 
-    return NULL;
-}
 
-static void diffuse_none(unsigned char *data,
-                         int width,
-                         int height,
-                         int x,
-                         int y,
-                         int depth,
-                         int error,
-                         int direction);
 
-static void diffuse_fs(unsigned char *data,
-                       int width,
-                       int height,
-                       int x,
-                       int y,
-                       int depth,
-                       int error,
-                       int direction);
 
-static void diffuse_atkinson(unsigned char *data,
-                             int width,
-                             int height,
-                             int x,
-                             int y,
-                             int depth,
-                             int error,
-                             int direction);
 
-static void diffuse_jajuni(unsigned char *data,
-                           int width,
-                           int height,
-                           int x,
-                           int y,
-                           int depth,
-                           int error,
-                           int direction);
 
-static void diffuse_stucki(unsigned char *data,
-                           int width,
-                           int height,
-                           int x,
-                           int y,
-                           int depth,
-                           int error,
-                           int direction);
-
-static void diffuse_burkes(unsigned char *data,
-                           int width,
-                           int height,
-                           int x,
-                           int y,
-                           int depth,
-                           int error,
-                           int direction);
-
-static void diffuse_sierra1(unsigned char *data,
-                            int width,
-                            int height,
-                            int x,
-                            int y,
-                            int depth,
-                            int error,
-                            int direction);
 
 static void diffuse_sierra2(unsigned char *data,
                             int width,
@@ -1029,14 +887,6 @@ static void diffuse_sierra2(unsigned char *data,
                             int error,
                             int direction);
 
-static void diffuse_sierra3(unsigned char *data,
-                            int width,
-                            int height,
-                            int x,
-                            int y,
-                            int depth,
-                            int error,
-                            int direction);
 
 static SIXELSTATUS
 sixel_dither_apply_fixed_impl(
@@ -1129,27 +979,6 @@ sixel_dither_apply_fixed_impl(
     interframe_ops = NULL;
     interframe_error = NULL;
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
-    if (method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
-        /*
-         * Interframe strategy (diffusion/stbn/pmj) and spatial kernel are
-         * resolved independently so -d interframe:diffusion=... and
-         * -d stbn:diffusion=... share the same kernel selector.
-         */
-        interframe_spatial_diffuse =
-            sixel_interframe_spatial_diffuse_from_dither_or_env_common(
-                dither);
-        effective_diffuse = interframe_spatial_diffuse;
-        interframe_method = sixel_interframe_method_from_diffuse(
-            dither,
-            method_for_diffuse);
-        interframe_ops = sixel_interframe_method_for_strategy(
-            interframe_method);
-        if (interframe_ops != NULL) {
-            use_interframe = 1;
-        }
-    }
-#endif
     if (depth != 3) {
         effective_diffuse = SIXEL_DIFFUSE_NONE;
     }
@@ -1416,77 +1245,13 @@ sixel_dither_apply_fixed_8bit_with_mode(sixel_dither_t *dither,
                                          dither);
 }
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE)
-static SIXELSTATUS
-sixel_dither_apply_none_8bit(sixel_dither_t *dither,
-                             sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_NONE);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS)
-static SIXELSTATUS
-sixel_dither_apply_fs_8bit(sixel_dither_t *dither,
-                           sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_FS);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON)
-static SIXELSTATUS
-sixel_dither_apply_atkinson_8bit(sixel_dither_t *dither,
-                                 sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_ATKINSON);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI)
-static SIXELSTATUS
-sixel_dither_apply_jajuni_8bit(sixel_dither_t *dither,
-                               sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_JAJUNI);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI)
-static SIXELSTATUS
-sixel_dither_apply_stucki_8bit(sixel_dither_t *dither,
-                               sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_STUCKI);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES)
-static SIXELSTATUS
-sixel_dither_apply_burkes_8bit(sixel_dither_t *dither,
-                               sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_BURKES);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1)
-static SIXELSTATUS
-sixel_dither_apply_sierra1_8bit(sixel_dither_t *dither,
-                                sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_SIERRA1);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2)
 static SIXELSTATUS
 sixel_dither_apply_sierra2_8bit(sixel_dither_t *dither,
                                 sixel_dither_context_t *context)
@@ -1494,386 +1259,20 @@ sixel_dither_apply_sierra2_8bit(sixel_dither_t *dither,
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context, SIXEL_DIFFUSE_SIERRA2);
 }
-#endif
-
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3)
-static SIXELSTATUS
-sixel_dither_apply_sierra3_8bit(sixel_dither_t *dither,
-                                sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_SIERRA3);
-}
-#endif
-
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
-static SIXELSTATUS
-sixel_dither_apply_interframe_8bit(sixel_dither_t *dither,
-                                   sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_INTERFRAME);
-}
-#endif
-
-static void
-diffuse_none(unsigned char *data, int width, int height,
-             int x, int y, int depth, int error, int direction)
-{
-    /* unused */ (void) data;
-    /* unused */ (void) width;
-    /* unused */ (void) height;
-    /* unused */ (void) x;
-    /* unused */ (void) y;
-    /* unused */ (void) depth;
-    /* unused */ (void) error;
-    /* unused */ (void) direction;
-}
 
 
-static void
-diffuse_fs(unsigned char *data, int width, int height,
-           int x, int y, int depth, int error, int direction)
-{
-    /* Floyd Steinberg Method
-     *          curr    7/16
-     *  3/16    5/16    1/16
-     */
-    int pos;
-    int forward;
-
-    pos = y * width + x;
-    forward = direction >= 0;
-
-    if (forward) {
-        if (x < width - 1) {
-            error_diffuse_normal(data, pos + 1, depth, error, 7, 16);
-        }
-        if (y < height - 1) {
-            if (x > 0) {
-                error_diffuse_normal(data,
-                                     pos + width - 1,
-                                     depth, error, 3, 16);
-            }
-            error_diffuse_normal(data,
-                                 pos + width,
-                                 depth, error, 5, 16);
-            if (x < width - 1) {
-                error_diffuse_normal(data,
-                                     pos + width + 1,
-                                     depth, error, 1, 16);
-            }
-        }
-    } else {
-        if (x > 0) {
-            error_diffuse_normal(data, pos - 1, depth, error, 7, 16);
-        }
-        if (y < height - 1) {
-            if (x < width - 1) {
-                error_diffuse_normal(data,
-                                     pos + width + 1,
-                                     depth, error, 3, 16);
-            }
-            error_diffuse_normal(data,
-                                 pos + width,
-                                 depth, error, 5, 16);
-            if (x > 0) {
-                error_diffuse_normal(data,
-                                     pos + width - 1,
-                                     depth, error, 1, 16);
-            }
-        }
-    }
-}
 
 
-static void
-diffuse_atkinson(unsigned char *data, int width, int height,
-                 int x, int y, int depth, int error, int direction)
-{
-    /* Atkinson's Method
-     *          curr    1/8    1/8
-     *   1/8     1/8    1/8
-     *           1/8
-     */
-    int pos;
-    int sign;
-
-    pos = y * width + x;
-    sign = direction >= 0 ? 1 : -1;
-
-    if (x + sign >= 0 && x + sign < width) {
-        error_diffuse_fast(data, pos + sign, depth, error, 1, 8);
-    }
-    if (x + sign * 2 >= 0 && x + sign * 2 < width) {
-        error_diffuse_fast(data, pos + sign * 2, depth, error, 1, 8);
-    }
-    if (y < height - 1) {
-        int row;
-
-        row = pos + width;
-        if (x - sign >= 0 && x - sign < width) {
-            error_diffuse_fast(data,
-                               row + (-sign),
-                               depth, error, 1, 8);
-        }
-        error_diffuse_fast(data, row, depth, error, 1, 8);
-        if (x + sign >= 0 && x + sign < width) {
-            error_diffuse_fast(data,
-                               row + sign,
-                               depth, error, 1, 8);
-        }
-    }
-    if (y < height - 2) {
-        error_diffuse_fast(data, pos + width * 2, depth, error, 1, 8);
-    }
-}
 
 
-static void
-diffuse_jajuni(unsigned char *data, int width, int height,
-               int x, int y, int depth, int error, int direction)
-{
-    /* Jarvis, Judice & Ninke Method
-     *                  curr    7/48    5/48
-     *  3/48    5/48    7/48    5/48    3/48
-     *  1/48    3/48    5/48    3/48    1/48
-     */
-    int pos;
-    int sign;
-    static const int row0_offsets[] = { 1, 2 };
-    static const int row0_weights[] = { 7, 5 };
-    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row1_weights[] = { 3, 5, 7, 5, 3 };
-    static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row2_weights[] = { 1, 3, 5, 3, 1 };
-    int i;
-
-    pos = y * width + x;
-    sign = direction >= 0 ? 1 : -1;
-
-    for (i = 0; i < 2; ++i) {
-        int neighbor;
-
-        neighbor = x + sign * row0_offsets[i];
-        if (neighbor < 0 || neighbor >= width) {
-            continue;
-        }
-        error_diffuse_precise(data,
-                              pos + (neighbor - x),
-                              depth, error,
-                              row0_weights[i], 48);
-    }
-    if (y < height - 1) {
-        int row;
-
-        row = pos + width;
-        for (i = 0; i < 5; ++i) {
-            int neighbor;
-
-            neighbor = x + sign * row1_offsets[i];
-            if (neighbor < 0 || neighbor >= width) {
-                continue;
-            }
-            error_diffuse_precise(data,
-                                  row + (neighbor - x),
-                                  depth, error,
-                                  row1_weights[i], 48);
-        }
-    }
-    if (y < height - 2) {
-        int row;
-
-        row = pos + width * 2;
-        for (i = 0; i < 5; ++i) {
-            int neighbor;
-
-            neighbor = x + sign * row2_offsets[i];
-            if (neighbor < 0 || neighbor >= width) {
-                continue;
-            }
-            error_diffuse_precise(data,
-                                  row + (neighbor - x),
-                                  depth, error,
-                                  row2_weights[i], 48);
-        }
-    }
-}
 
 
-static void
-diffuse_stucki(unsigned char *data, int width, int height,
-               int x, int y, int depth, int error, int direction)
-{
-    /* Stucki's Method
-     *                  curr    8/48    4/48
-     *  2/48    4/48    8/48    4/48    2/48
-     *  1/48    2/48    4/48    2/48    1/48
-     */
-    int pos;
-    int sign;
-    static const int row0_offsets[] = { 1, 2 };
-    static const int row0_num[] = { 1, 1 };
-    static const int row0_den[] = { 6, 12 };
-    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row1_num[] = { 1, 1, 1, 1, 1 };
-    static const int row1_den[] = { 24, 12, 6, 12, 24 };
-    static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row2_num[] = { 1, 1, 1, 1, 1 };
-    static const int row2_den[] = { 48, 24, 12, 24, 48 };
-    int i;
-
-    pos = y * width + x;
-    sign = direction >= 0 ? 1 : -1;
-
-    for (i = 0; i < 2; ++i) {
-        int neighbor;
-
-        neighbor = x + sign * row0_offsets[i];
-        if (neighbor < 0 || neighbor >= width) {
-            continue;
-        }
-        error_diffuse_precise(data,
-                              pos + (neighbor - x),
-                              depth, error,
-                              row0_num[i], row0_den[i]);
-    }
-    if (y < height - 1) {
-        int row;
-
-        row = pos + width;
-        for (i = 0; i < 5; ++i) {
-            int neighbor;
-
-            neighbor = x + sign * row1_offsets[i];
-            if (neighbor < 0 || neighbor >= width) {
-                continue;
-            }
-            error_diffuse_precise(data,
-                                  row + (neighbor - x),
-                                  depth, error,
-                                  row1_num[i], row1_den[i]);
-        }
-    }
-    if (y < height - 2) {
-        int row;
-
-        row = pos + width * 2;
-        for (i = 0; i < 5; ++i) {
-            int neighbor;
-
-            neighbor = x + sign * row2_offsets[i];
-            if (neighbor < 0 || neighbor >= width) {
-                continue;
-            }
-            error_diffuse_precise(data,
-                                  row + (neighbor - x),
-                                  depth, error,
-                                  row2_num[i], row2_den[i]);
-        }
-    }
-}
 
 
-static void
-diffuse_burkes(unsigned char *data, int width, int height,
-               int x, int y, int depth, int error, int direction)
-{
-    /* Burkes' Method
-     *                  curr    4/16    2/16
-     *  1/16    2/16    4/16    2/16    1/16
-     */
-    int pos;
-    int sign;
-    static const int row0_offsets[] = { 1, 2 };
-    static const int row0_num[] = { 1, 1 };
-    static const int row0_den[] = { 4, 8 };
-    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row1_num[] = { 1, 1, 1, 1, 1 };
-    static const int row1_den[] = { 16, 8, 4, 8, 16 };
-    int i;
 
-    pos = y * width + x;
-    sign = direction >= 0 ? 1 : -1;
 
-    for (i = 0; i < 2; ++i) {
-        int neighbor;
 
-        neighbor = x + sign * row0_offsets[i];
-        if (neighbor < 0 || neighbor >= width) {
-            continue;
-        }
-        error_diffuse_normal(data,
-                             pos + (neighbor - x),
-                             depth, error,
-                             row0_num[i], row0_den[i]);
-    }
-    if (y < height - 1) {
-        int row;
 
-        row = pos + width;
-        for (i = 0; i < 5; ++i) {
-            int neighbor;
-
-            neighbor = x + sign * row1_offsets[i];
-            if (neighbor < 0 || neighbor >= width) {
-                continue;
-            }
-            error_diffuse_normal(data,
-                                 row + (neighbor - x),
-                                 depth, error,
-                                 row1_num[i], row1_den[i]);
-        }
-    }
-}
-
-static void
-diffuse_sierra1(unsigned char *data, int width, int height,
-                int x, int y, int depth, int error, int direction)
-{
-    /* Sierra Lite Method
-     *          curr    2/4
-     *  1/4     1/4
-     */
-    static const int row0_offsets[] = { 1 };
-    static const int row0_num[] = { 1 };
-    static const int row0_den[] = { 2 };
-    static const int row1_offsets[] = { -1, 0 };
-    static const int row1_num[] = { 1, 1 };
-    static const int row1_den[] = { 4, 4 };
-    int pos;
-    int sign;
-    int i;
-    int neighbor;
-    int row;
-
-    pos = y * width + x;
-    sign = direction >= 0 ? 1 : -1;
-
-    for (i = 0; i < 1; ++i) {
-        neighbor = x + sign * row0_offsets[i];
-        if (neighbor < 0 || neighbor >= width) {
-            continue;
-        }
-        error_diffuse_normal(data,
-                             pos + (neighbor - x),
-                             depth, error,
-                             row0_num[i], row0_den[i]);
-    }
-    if (y < height - 1) {
-        row = pos + width;
-        for (i = 0; i < 2; ++i) {
-            neighbor = x + sign * row1_offsets[i];
-            if (neighbor < 0 || neighbor >= width) {
-                continue;
-            }
-            error_diffuse_normal(data,
-                                 row + (neighbor - x),
-                                 depth, error,
-                                 row1_num[i], row1_den[i]);
-        }
-    }
-}
 
 
 static void
@@ -1942,117 +1341,6 @@ diffuse_sierra2(unsigned char *data, int width, int height,
 }
 
 
-static void
-diffuse_sierra3(unsigned char *data, int width, int height,
-                int x, int y, int depth, int error, int direction)
-{
-    /* Sierra-3 Method
-     *                  curr    5/32    3/32
-     *  2/32    4/32    5/32    4/32    2/32
-     *                  2/32    3/32    2/32
-     */
-    static const int row0_offsets[] = { 1, 2 };
-    static const int row0_num[] = { 5, 3 };
-    static const int row0_den[] = { 32, 32 };
-    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row1_num[] = { 2, 4, 5, 4, 2 };
-    static const int row1_den[] = { 32, 32, 32, 32, 32 };
-    static const int row2_offsets[] = { -1, 0, 1 };
-    static const int row2_num[] = { 2, 3, 2 };
-    static const int row2_den[] = { 32, 32, 32 };
-    int pos;
-    int sign;
-    int i;
-    int neighbor;
-    int row;
-
-    pos = y * width + x;
-    sign = direction >= 0 ? 1 : -1;
-
-    for (i = 0; i < 2; ++i) {
-        neighbor = x + sign * row0_offsets[i];
-        if (neighbor < 0 || neighbor >= width) {
-            continue;
-        }
-        error_diffuse_precise(data,
-                              pos + (neighbor - x),
-                              depth, error,
-                              row0_num[i], row0_den[i]);
-    }
-    if (y < height - 1) {
-        row = pos + width;
-        for (i = 0; i < 5; ++i) {
-            neighbor = x + sign * row1_offsets[i];
-            if (neighbor < 0 || neighbor >= width) {
-                continue;
-            }
-            error_diffuse_precise(data,
-                                  row + (neighbor - x),
-                                  depth, error,
-                                  row1_num[i], row1_den[i]);
-        }
-    }
-    if (y < height - 2) {
-        row = pos + width * 2;
-        for (i = 0; i < 3; ++i) {
-            neighbor = x + sign * row2_offsets[i];
-            if (neighbor < 0 || neighbor >= width) {
-                continue;
-            }
-            error_diffuse_precise(data,
-                                  row + (neighbor - x),
-                                  depth, error,
-                                  row2_num[i], row2_den[i]);
-        }
-    }
-}
-
-#if defined(__GNUC__) || defined(__clang__)
-# define SIXEL_DITHER_FIXED_8BIT_UNUSED __attribute__((used))
-#else
-# define SIXEL_DITHER_FIXED_8BIT_UNUSED
-#endif
-
-/*
- * Keep helper symbols referenced in single-policy translation units so
- * -Wunused-function does not fire when compile-time selection removes
- * alternate code paths.
- */
-static void (* const SIXEL_DITHER_FIXED_8BIT_UNUSED
-sixel_dither_fixed_8bit_keep_diffuse_fns[])(
-    unsigned char *,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int,
-    int) = {
-    diffuse_none,
-    diffuse_fs,
-    diffuse_atkinson,
-    diffuse_jajuni,
-    diffuse_stucki,
-    diffuse_burkes,
-    diffuse_sierra1,
-    diffuse_sierra2,
-    diffuse_sierra3
-};
-
-static int (* const SIXEL_DITHER_FIXED_8BIT_UNUSED
-sixel_dither_fixed_8bit_keep_interframe_from_diffuse[])(
-    sixel_dither_t const *,
-    int) = {
-    sixel_interframe_method_from_diffuse
-};
-
-static sixel_interframe_method_ops_t const *(
-    * const SIXEL_DITHER_FIXED_8BIT_UNUSED
-    sixel_dither_fixed_8bit_keep_interframe_strategy[])(int) = {
-    sixel_interframe_method_for_strategy
-};
-
-#undef SIXEL_DITHER_FIXED_8BIT_UNUSED
 
 typedef SIXELSTATUS (*sixel_interframe_prepare_frame_float32_fn)(
     sixel_dither_t *dither,
@@ -2099,7 +1387,7 @@ typedef struct sixel_interframe_method_float32_ops {
 typedef sixel_interframe_stbn_state_common_t
     sixel_interframe_stbn_state_float32_t;
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 error_diffuse_float(float *data,
                     int pos,
                     int depth,
@@ -2142,219 +1430,13 @@ sixel_dither_scanline_params_fixed_float32(int serpentine,
     }
 }
 
-static void
-diffuse_none_float(float *data,
-                   int width,
-                   int height,
-                   int x,
-                   int y,
-                   int depth,
-                   float error,
-                   int direction,
-                   int pixelformat,
-                   int channel_index)
-{
-    (void)data;
-    (void)width;
-    (void)height;
-    (void)x;
-    (void)y;
-    (void)depth;
-    (void)error;
-    (void)direction;
-    (void)pixelformat;
-    (void)channel_index;
-}
 
-static void
-diffuse_fs_float(float *data,
-                 int width,
-                 int height,
-                 int x,
-                 int y,
-                 int depth,
-                 float error,
-                 int direction,
-                 int pixelformat,
-                 int channel_index)
-{
-    int pos;
-    int forward;
-
-    pos = y * width + x;
-    forward = direction >= 0;
-
-    if (forward) {
-        if (x < width - 1) {
-            error_diffuse_float(data,
-                                pos + 1,
-                                depth,
-                                error,
-                                7,
-                                16,
-                                pixelformat,
-                                channel_index);
-        }
-        if (y < height - 1) {
-            if (x > 0) {
-                error_diffuse_float(data,
-                                    pos + width - 1,
-                                    depth,
-                                    error,
-                                    3,
-                                    16,
-                                    pixelformat,
-                                    channel_index);
-            }
-            error_diffuse_float(data,
-                                pos + width,
-                                depth,
-                                error,
-                                5,
-                                16,
-                                pixelformat,
-                                channel_index);
-            if (x < width - 1) {
-                error_diffuse_float(data,
-                                    pos + width + 1,
-                                    depth,
-                                    error,
-                                    1,
-                                    16,
-                                    pixelformat,
-                                    channel_index);
-            }
-        }
-    } else {
-        if (x > 0) {
-            error_diffuse_float(data,
-                                pos - 1,
-                                depth,
-                                error,
-                                7,
-                                16,
-                                pixelformat,
-                                channel_index);
-        }
-        if (y < height - 1) {
-            if (x < width - 1) {
-                error_diffuse_float(data,
-                                    pos + width + 1,
-                                    depth,
-                                    error,
-                                    3,
-                                    16,
-                                    pixelformat,
-                                    channel_index);
-            }
-            error_diffuse_float(data,
-                                pos + width,
-                                depth,
-                                error,
-                                5,
-                                16,
-                                pixelformat,
-                                channel_index);
-            if (x > 0) {
-                error_diffuse_float(data,
-                                    pos + width - 1,
-                                    depth,
-                                    error,
-                                    1,
-                                    16,
-                                    pixelformat,
-                                    channel_index);
-            }
-        }
-    }
-}
 
 /*
  * Atkinson's kernel spreads the error within a 3x3 neighborhood using
  * symmetric 1/8 weights.  The float variant mirrors the integer version
  * but keeps the higher precision samples intact.
  */
-static void
-diffuse_atkinson_float(float *data,
-                       int width,
-                       int height,
-                       int x,
-                       int y,
-                       int depth,
-                       float error,
-                       int direction,
-                       int pixelformat,
-                       int channel_index)
-{
-    int pos;
-    int sign;
-    int row;
-
-    pos = y * width + x;
-    sign = direction >= 0 ? 1 : -1;
-
-    if (x + sign >= 0 && x + sign < width) {
-        error_diffuse_float(data,
-                            pos + sign,
-                            depth,
-                            error,
-                            1,
-                            8,
-                            pixelformat,
-                            channel_index);
-    }
-    if (x + sign * 2 >= 0 && x + sign * 2 < width) {
-        error_diffuse_float(data,
-                            pos + sign * 2,
-                            depth,
-                            error,
-                            1,
-                            8,
-                            pixelformat,
-                            channel_index);
-    }
-    if (y < height - 1) {
-        row = pos + width;
-        if (x - sign >= 0 && x - sign < width) {
-            error_diffuse_float(data,
-                                row - sign,
-                                depth,
-                                error,
-                                1,
-                                8,
-                                pixelformat,
-                                channel_index);
-        }
-        error_diffuse_float(data,
-                            row,
-                            depth,
-                            error,
-                            1,
-                            8,
-                            pixelformat,
-                            channel_index);
-        if (x + sign >= 0 && x + sign < width) {
-            error_diffuse_float(data,
-                                row + sign,
-                                depth,
-                                error,
-                                1,
-                                8,
-                                pixelformat,
-                                channel_index);
-        }
-    }
-    if (y < height - 2) {
-        error_diffuse_float(data,
-                            pos + width * 2,
-                            depth,
-                            error,
-                            1,
-                            8,
-                            pixelformat,
-                            channel_index);
-    }
-}
 
 /*
  * Shared helper that applies a row of diffusion weights to neighbors on the
@@ -2362,7 +1444,7 @@ diffuse_atkinson_float(float *data,
  * numerator/denominator pairs so the classic kernels can be described using a
  * compact table instead of open-coded loops.
  */
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 diffuse_weighted_row(float *data,
                      int pos,
                      int depth,
@@ -2406,268 +1488,22 @@ diffuse_weighted_row(float *data,
  * of weights are applied with consistent 1/48 denominators to preserve the
  * reference diffusion matrix.
  */
-static void
-diffuse_jajuni_float(float *data,
-                     int width,
-                     int height,
-                     int x,
-                     int y,
-                     int depth,
-                     float error,
-                     int direction,
-                     int pixelformat,
-                     int channel_index)
-{
-    static const int row0_offsets[] = { 1, 2 };
-    static const int row0_num[] = { 7, 5 };
-    static const int row0_den[] = { 48, 48 };
-    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row1_num[] = { 3, 5, 7, 5, 3 };
-    static const int row1_den[] = { 48, 48, 48, 48, 48 };
-    static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row2_num[] = { 1, 3, 5, 3, 1 };
-    static const int row2_den[] = { 48, 48, 48, 48, 48 };
-    int pos;
-
-    pos = y * width + x;
-    diffuse_weighted_row(data,
-                         pos,
-                         depth,
-                         error,
-                         direction,
-                         pixelformat,
-                         channel_index,
-                         x,
-                         width,
-                         0,
-                         row0_offsets,
-                         row0_num,
-                         row0_den,
-                         2);
-    if (y < height - 1) {
-        diffuse_weighted_row(data,
-                             pos,
-                             depth,
-                             error,
-                             direction,
-                             pixelformat,
-                             channel_index,
-                             x,
-                             width,
-                             width,
-                             row1_offsets,
-                             row1_num,
-                             row1_den,
-                             5);
-    }
-    if (y < height - 2) {
-        diffuse_weighted_row(data,
-                             pos,
-                             depth,
-                             error,
-                             direction,
-                             pixelformat,
-                             channel_index,
-                             x,
-                             width,
-                             width * 2,
-                             row2_offsets,
-                             row2_num,
-                             row2_den,
-                             5);
-    }
-}
 
 /*
  * Stucki's method spreads the error across a 5x3 neighborhood with larger
  * emphasis on closer pixels.  The numerators/denominators match the classic
  * 8/48, 4/48, and related fractions from the integer backend.
  */
-static void
-diffuse_stucki_float(float *data,
-                     int width,
-                     int height,
-                     int x,
-                     int y,
-                     int depth,
-                     float error,
-                     int direction,
-                     int pixelformat,
-                     int channel_index)
-{
-    static const int row0_offsets[] = { 1, 2 };
-    static const int row0_num[] = { 1, 1 };
-    static const int row0_den[] = { 6, 12 };
-    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row1_num[] = { 1, 1, 1, 1, 1 };
-    static const int row1_den[] = { 24, 12, 6, 12, 24 };
-    static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row2_num[] = { 1, 1, 1, 1, 1 };
-    static const int row2_den[] = { 48, 24, 12, 24, 48 };
-    int pos;
-
-    pos = y * width + x;
-    diffuse_weighted_row(data,
-                         pos,
-                         depth,
-                         error,
-                         direction,
-                         pixelformat,
-                         channel_index,
-                         x,
-                         width,
-                         0,
-                         row0_offsets,
-                         row0_num,
-                         row0_den,
-                         2);
-    if (y < height - 1) {
-        diffuse_weighted_row(data,
-                             pos,
-                             depth,
-                             error,
-                             direction,
-                             pixelformat,
-                             channel_index,
-                             x,
-                             width,
-                             width,
-                             row1_offsets,
-                             row1_num,
-                             row1_den,
-                             5);
-    }
-    if (y < height - 2) {
-        diffuse_weighted_row(data,
-                             pos,
-                             depth,
-                             error,
-                             direction,
-                             pixelformat,
-                             channel_index,
-                             x,
-                             width,
-                             width * 2,
-                             row2_offsets,
-                             row2_num,
-                             row2_den,
-                             5);
-    }
-}
 
 /*
  * Burkes' kernel limits the spread to two rows to reduce directional artifacts
  * while keeping the symmetric 1/16-4/16 pattern.
  */
-static void
-diffuse_burkes_float(float *data,
-                     int width,
-                     int height,
-                     int x,
-                     int y,
-                     int depth,
-                     float error,
-                     int direction,
-                     int pixelformat,
-                     int channel_index)
-{
-    static const int row0_offsets[] = { 1, 2 };
-    static const int row0_num[] = { 1, 1 };
-    static const int row0_den[] = { 4, 8 };
-    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row1_num[] = { 1, 1, 1, 1, 1 };
-    static const int row1_den[] = { 16, 8, 4, 8, 16 };
-    int pos;
-
-    pos = y * width + x;
-    diffuse_weighted_row(data,
-                         pos,
-                         depth,
-                         error,
-                         direction,
-                         pixelformat,
-                         channel_index,
-                         x,
-                         width,
-                         0,
-                         row0_offsets,
-                         row0_num,
-                         row0_den,
-                         2);
-    if (y < height - 1) {
-        diffuse_weighted_row(data,
-                             pos,
-                             depth,
-                             error,
-                             direction,
-                             pixelformat,
-                             channel_index,
-                             x,
-                             width,
-                             width,
-                             row1_offsets,
-                             row1_num,
-                             row1_den,
-                             5);
-    }
-}
 
 /*
  * Sierra Lite (Sierra1) uses a compact 2x2 mask to reduce ringing while
  * keeping serpentine traversal stable.
  */
-static void
-diffuse_sierra1_float(float *data,
-                      int width,
-                      int height,
-                      int x,
-                      int y,
-                      int depth,
-                      float error,
-                      int direction,
-                      int pixelformat,
-                      int channel_index)
-{
-    static const int row0_offsets[] = { 1 };
-    static const int row0_num[] = { 1 };
-    static const int row0_den[] = { 2 };
-    static const int row1_offsets[] = { -1, 0 };
-    static const int row1_num[] = { 1, 1 };
-    static const int row1_den[] = { 4, 4 };
-    int pos;
-
-    pos = y * width + x;
-    diffuse_weighted_row(data,
-                         pos,
-                         depth,
-                         error,
-                         direction,
-                         pixelformat,
-                         channel_index,
-                         x,
-                         width,
-                         0,
-                         row0_offsets,
-                         row0_num,
-                         row0_den,
-                         1);
-    if (y < height - 1) {
-        diffuse_weighted_row(data,
-                             pos,
-                             depth,
-                             error,
-                             direction,
-                             pixelformat,
-                             channel_index,
-                             x,
-                             width,
-                             width,
-                             row1_offsets,
-                             row1_num,
-                             row1_den,
-                             2);
-    }
-}
 
 /*
  * Sierra Two-row keeps the full 5x3 footprint but halves the lower row weights
@@ -2749,79 +1585,8 @@ diffuse_sierra2_float(float *data,
  * Sierra-3 restores the heavier middle-row contributions (5/32) that
  * characterize the original kernel.
  */
-static void
-diffuse_sierra3_float(float *data,
-                      int width,
-                      int height,
-                      int x,
-                      int y,
-                      int depth,
-                      float error,
-                      int direction,
-                      int pixelformat,
-                      int channel_index)
-{
-    static const int row0_offsets[] = { 1, 2 };
-    static const int row0_num[] = { 5, 3 };
-    static const int row0_den[] = { 32, 32 };
-    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
-    static const int row1_num[] = { 2, 4, 5, 4, 2 };
-    static const int row1_den[] = { 32, 32, 32, 32, 32 };
-    static const int row2_offsets[] = { -1, 0, 1 };
-    static const int row2_num[] = { 2, 3, 2 };
-    static const int row2_den[] = { 32, 32, 32 };
-    int pos;
 
-    pos = y * width + x;
-    diffuse_weighted_row(data,
-                         pos,
-                         depth,
-                         error,
-                         direction,
-                         pixelformat,
-                         channel_index,
-                         x,
-                         width,
-                         0,
-                         row0_offsets,
-                         row0_num,
-                         row0_den,
-                         2);
-    if (y < height - 1) {
-        diffuse_weighted_row(data,
-                             pos,
-                             depth,
-                             error,
-                             direction,
-                             pixelformat,
-                             channel_index,
-                             x,
-                             width,
-                             width,
-                             row1_offsets,
-                             row1_num,
-                             row1_den,
-                             5);
-    }
-    if (y < height - 2) {
-        diffuse_weighted_row(data,
-                             pos,
-                             depth,
-                             error,
-                             direction,
-                             pixelformat,
-                             channel_index,
-                             x,
-                             width,
-                             width * 2,
-                             row2_offsets,
-                             row2_num,
-                             row2_den,
-                             3);
-    }
-}
-
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_clear_pixel_float32(int32_t *frame,
                                    size_t base,
                                    int depth,
@@ -2838,7 +1603,7 @@ sixel_interframe_clear_pixel_float32(int32_t *frame,
     }
 }
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_store_error_float32(int32_t *frame,
                                    size_t base,
                                    int channel,
@@ -2859,7 +1624,7 @@ sixel_interframe_store_error_float32(int32_t *frame,
     frame[base + (size_t)channel] = scaled;
 }
 
-static int
+static int SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_scene_detect_reset_float32(int32_t const *frame,
                                             int width,
                                             int height,
@@ -2902,7 +1667,7 @@ sixel_interframe_scene_detect_reset_float32(int32_t const *frame,
     return max_u8 >= SIXEL_INTERFRAME_SCENE_DETECT_ERROR_THRESHOLD_U8;
 }
 
-static SIXELSTATUS
+static SIXELSTATUS SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_diffusion_prepare_frame_float32(sixel_dither_t *dither,
                                                int width,
                                                int height,
@@ -2922,7 +1687,7 @@ sixel_interframe_diffusion_prepare_frame_float32(sixel_dither_t *dither,
         frame);
 }
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_diffusion_load_pixel_float32(
     sixel_dither_t *dither,
     float const *source_pixel,
@@ -2968,7 +1733,7 @@ sixel_interframe_diffusion_load_pixel_float32(
     }
 }
 
-static int
+static int SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_bias_u8_sampled_float32(
     sixel_interframe_stbn_sample_u16_fn sample_fn,
     uint32_t sequence_index,
@@ -2995,7 +1760,7 @@ sixel_interframe_stbn_bias_u8_sampled_float32(
     return (int)bias_u8;
 }
 
-static int
+static int SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_bias_u8_sampled_row_cached_float32(
     sixel_interframe_stbn_state_float32_t *stbn_state,
     int x,
@@ -3023,7 +1788,7 @@ sixel_interframe_stbn_bias_u8_sampled_row_cached_float32(
     return (int)bias_u8;
 }
 
-static int
+static int SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_bias_u8_sampled_tiled_float32(
     sixel_interframe_stbn_state_float32_t const *stbn_state,
     int x,
@@ -3051,7 +1816,7 @@ sixel_interframe_stbn_bias_u8_sampled_tiled_float32(
     return (int)bias_u8;
 }
 
-static int
+static int SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_prepare_pmj_float_lut_float32(
     sixel_interframe_stbn_state_float32_t *stbn_state,
     int pixelformat,
@@ -3088,7 +1853,7 @@ sixel_interframe_stbn_prepare_pmj_float_lut_float32(
     return 1;
 }
 
-static SIXELSTATUS
+static SIXELSTATUS SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_prepare_frame_float32(sixel_dither_t *dither,
                                           int width,
                                           int height,
@@ -3168,7 +1933,7 @@ sixel_interframe_stbn_prepare_frame_float32(sixel_dither_t *dither,
     return status;
 }
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_motion_strength_u8_float32(int *strength_u8,
                                                 int32_t const *frame,
                                                 size_t base,
@@ -3219,7 +1984,7 @@ sixel_interframe_stbn_motion_strength_u8_float32(int *strength_u8,
     *strength_u8 = (*strength_u8 * scaled_u8 + 127) / 255;
 }
 
-static int
+static int SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_scene_detect_hit_float32(int32_t const *frame,
                                           size_t base,
                                           int depth)
@@ -3249,7 +2014,7 @@ sixel_interframe_scene_detect_hit_float32(int32_t const *frame,
     return energy >= threshold;
 }
 
-static int
+static int SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_perceptual_strength_u8_float32(int strength_u8,
                                                     int channel,
                                                     int depth,
@@ -3267,7 +2032,7 @@ sixel_interframe_stbn_perceptual_strength_u8_float32(int strength_u8,
     return (strength_u8 * weights_rgb_u8[channel] + 127) / 255;
 }
 
-static int
+static int SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_alpha_guard_hit_float32(unsigned char const *transparent_mask,
                                        size_t transparent_mask_size,
                                        int width,
@@ -3317,7 +2082,7 @@ sixel_interframe_alpha_guard_hit_float32(unsigned char const *transparent_mask,
     return 0;
 }
 
-static void
+static void SIXEL_DITHER_POLICY_FIXED_HELPER_UNUSED
 sixel_interframe_stbn_load_pixel_float32(
     sixel_dither_t *dither,
     float const *source_pixel,
@@ -3541,38 +2306,8 @@ sixel_interframe_stbn_load_pixel_float32(
     }
 }
 
-static sixel_interframe_method_float32_ops_t const
-sixel_interframe_diffusion_ops_float32 = {
-    SIXEL_INTERFRAME_METHOD_DIFFUSION,
-    sixel_interframe_diffusion_prepare_frame_float32,
-    sixel_interframe_diffusion_load_pixel_float32,
-    sixel_interframe_clear_pixel_float32,
-    sixel_interframe_store_error_float32
-};
 
-static sixel_interframe_method_float32_ops_t const
-sixel_interframe_stbn_ops_float32 = {
-    SIXEL_INTERFRAME_METHOD_STBN,
-    sixel_interframe_stbn_prepare_frame_float32,
-    sixel_interframe_stbn_load_pixel_float32,
-    sixel_interframe_clear_pixel_float32,
-    sixel_interframe_store_error_float32
-};
 
-static sixel_interframe_method_float32_ops_t const *
-sixel_interframe_method_ops_float32_for_id(int method_id)
-{
-    switch (method_id) {
-    case SIXEL_INTERFRAME_METHOD_DIFFUSION:
-        return &sixel_interframe_diffusion_ops_float32;
-    case SIXEL_INTERFRAME_METHOD_STBN:
-        return &sixel_interframe_stbn_ops_float32;
-    default:
-        break;
-    }
-
-    return NULL;
-}
 
 static SIXELSTATUS
 sixel_dither_apply_fixed_float32_with_mode(
@@ -3710,29 +2445,6 @@ sixel_dither_apply_fixed_float32_with_mode(
         have_new_palette_float = 0;
     }
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
-    if (method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
-        /*
-         * Keep the interframe strategy token and spatial kernel independent
-         * so callers can choose kernels with
-         * -d interframe:diffusion=... or -d stbn:diffusion=....
-         */
-        strategy_token =
-            sixel_interframe_strategy_token_from_dither_or_env_common(dither);
-        interframe_method = sixel_interframe_method_from_diffuse_and_token(
-            method_for_diffuse,
-            strategy_token);
-        interframe_ops = sixel_interframe_method_ops_float32_for_id(
-            interframe_method);
-        if (interframe_ops != NULL) {
-            interframe_enabled = 1;
-        }
-        interframe_spatial_diffuse =
-            sixel_interframe_spatial_diffuse_from_dither_or_env_common(
-                dither);
-        method_for_diffuse = interframe_spatial_diffuse;
-    }
-#endif
     if (context->depth != 3) {
         method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
@@ -4038,77 +2750,13 @@ sixel_dither_apply_fixed_float32_with_mode(
     return status;
 }
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE)
-static SIXELSTATUS
-sixel_dither_apply_none_float32(sixel_dither_t *dither,
-                                sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_NONE);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS)
-static SIXELSTATUS
-sixel_dither_apply_fs_float32(sixel_dither_t *dither,
-                              sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_FS);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON)
-static SIXELSTATUS
-sixel_dither_apply_atkinson_float32(sixel_dither_t *dither,
-                                    sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_ATKINSON);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI)
-static SIXELSTATUS
-sixel_dither_apply_jajuni_float32(sixel_dither_t *dither,
-                                  sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_JAJUNI);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI)
-static SIXELSTATUS
-sixel_dither_apply_stucki_float32(sixel_dither_t *dither,
-                                  sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_STUCKI);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES)
-static SIXELSTATUS
-sixel_dither_apply_burkes_float32(sixel_dither_t *dither,
-                                  sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_BURKES);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1)
-static SIXELSTATUS
-sixel_dither_apply_sierra1_float32(sixel_dither_t *dither,
-                                   sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_SIERRA1);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2)
 static SIXELSTATUS
 sixel_dither_apply_sierra2_float32(sixel_dither_t *dither,
                                    sixel_dither_context_t *context)
@@ -4116,69 +2764,8 @@ sixel_dither_apply_sierra2_float32(sixel_dither_t *dither,
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_SIERRA2);
 }
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3)
-static SIXELSTATUS
-sixel_dither_apply_sierra3_float32(sixel_dither_t *dither,
-                                   sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_SIERRA3);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
-static SIXELSTATUS
-sixel_dither_apply_interframe_float32(sixel_dither_t *dither,
-                                      sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_INTERFRAME);
-}
-#endif
-
-#if defined(__GNUC__) || defined(__clang__)
-# define SIXEL_DITHER_FIXED_FLOAT32_UNUSED __attribute__((used))
-#else
-# define SIXEL_DITHER_FIXED_FLOAT32_UNUSED
-#endif
-
-/*
- * Keep helper symbols referenced in single-policy translation units so
- * -Wunused-function does not fire when compile-time selection removes
- * alternate code paths.
- */
-static void (* const SIXEL_DITHER_FIXED_FLOAT32_UNUSED
-sixel_dither_fixed_float32_keep_diffuse_fns[])(
-    float *,
-    int,
-    int,
-    int,
-    int,
-    int,
-    float,
-    int,
-    int,
-    int) = {
-    diffuse_none_float,
-    diffuse_fs_float,
-    diffuse_atkinson_float,
-    diffuse_jajuni_float,
-    diffuse_stucki_float,
-    diffuse_burkes_float,
-    diffuse_sierra1_float,
-    diffuse_sierra2_float,
-    diffuse_sierra3_float
-};
-
-static sixel_interframe_method_float32_ops_t const *(
-    * const SIXEL_DITHER_FIXED_FLOAT32_UNUSED
-    sixel_dither_fixed_float32_keep_interframe_strategy[])(int) = {
-    sixel_interframe_method_ops_float32_for_id
-};
-
-#undef SIXEL_DITHER_FIXED_FLOAT32_UNUSED
 
 /*
  * IDL (internal contract)
@@ -4377,13 +2964,6 @@ sixel_dither_policy_sierra2_build_context(
         context->transparent_keycolor = dither->pipeline_transparent_keycolor;
     }
 
-    if (dither != NULL && dither->bluenoise_gradient_map != NULL) {
-        context->bluenoise_gradient_map = dither->bluenoise_gradient_map;
-        context->bluenoise_gradient_map_size =
-            dither->bluenoise_gradient_map_size;
-        context->bluenoise_gradient_width = dither->bluenoise_gradient_width;
-        context->bluenoise_gradient_height = dither->bluenoise_gradient_height;
-    }
 
     return SIXEL_OK;
 }

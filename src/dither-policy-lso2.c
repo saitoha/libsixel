@@ -1512,13 +1512,6 @@ sixel_dither_policy_lso2_build_context(
         context->transparent_keycolor = dither->pipeline_transparent_keycolor;
     }
 
-    if (dither != NULL && dither->bluenoise_gradient_map != NULL) {
-        context->bluenoise_gradient_map = dither->bluenoise_gradient_map;
-        context->bluenoise_gradient_map_size =
-            dither->bluenoise_gradient_map_size;
-        context->bluenoise_gradient_width = dither->bluenoise_gradient_width;
-        context->bluenoise_gradient_height = dither->bluenoise_gradient_height;
-    }
 
     return SIXEL_OK;
 }

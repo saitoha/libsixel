@@ -43,8 +43,6 @@
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 
-#define SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME 1
-#define SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME 1
 
 static void
 sixel_dither_scanline_params_fixed_8bit(int serpentine,
@@ -1129,7 +1127,6 @@ sixel_dither_apply_fixed_impl(
     interframe_ops = NULL;
     interframe_error = NULL;
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
     if (method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         /*
          * Interframe strategy (diffusion/stbn/pmj) and spatial kernel are
@@ -1149,7 +1146,6 @@ sixel_dither_apply_fixed_impl(
             use_interframe = 1;
         }
     }
-#endif
     if (depth != 3) {
         effective_diffuse = SIXEL_DIFFUSE_NONE;
     }
@@ -1349,25 +1345,6 @@ sixel_dither_apply_fixed_impl(
         }                                                               \
     }
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_none);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_fs);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_atkinson);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_jajuni);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_stucki);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_burkes);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra1);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra2);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3)
-    SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra3);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
     switch (effective_diffuse) {
     case SIXEL_DIFFUSE_NONE:
         SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_none);
@@ -1403,7 +1380,6 @@ sixel_dither_apply_fixed_impl(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
-#endif
 #undef SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP
 
     (void)effective_diffuse;
@@ -1470,97 +1446,15 @@ sixel_dither_apply_fixed_8bit_with_mode(sixel_dither_t *dither,
                                          dither);
 }
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_NONE)
-static SIXELSTATUS
-sixel_dither_apply_none_8bit(sixel_dither_t *dither,
-                             sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_NONE);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_FS)
-static SIXELSTATUS
-sixel_dither_apply_fs_8bit(sixel_dither_t *dither,
-                           sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_FS);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_ATKINSON)
-static SIXELSTATUS
-sixel_dither_apply_atkinson_8bit(sixel_dither_t *dither,
-                                 sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_ATKINSON);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_JAJUNI)
-static SIXELSTATUS
-sixel_dither_apply_jajuni_8bit(sixel_dither_t *dither,
-                               sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_JAJUNI);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_STUCKI)
-static SIXELSTATUS
-sixel_dither_apply_stucki_8bit(sixel_dither_t *dither,
-                               sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_STUCKI);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_BURKES)
-static SIXELSTATUS
-sixel_dither_apply_burkes_8bit(sixel_dither_t *dither,
-                               sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_BURKES);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA1)
-static SIXELSTATUS
-sixel_dither_apply_sierra1_8bit(sixel_dither_t *dither,
-                                sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_SIERRA1);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA2)
-static SIXELSTATUS
-sixel_dither_apply_sierra2_8bit(sixel_dither_t *dither,
-                                sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_SIERRA2);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_SIERRA3)
-static SIXELSTATUS
-sixel_dither_apply_sierra3_8bit(sixel_dither_t *dither,
-                                sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_SIERRA3);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_8BIT_ENABLE_INTERFRAME)
 static SIXELSTATUS
 sixel_dither_apply_interframe_8bit(sixel_dither_t *dither,
                                    sixel_dither_context_t *context)
@@ -1568,7 +1462,6 @@ sixel_dither_apply_interframe_8bit(sixel_dither_t *dither,
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context, SIXEL_DIFFUSE_INTERFRAME);
 }
-#endif
 
 static void
 diffuse_none(unsigned char *data, int width, int height,
@@ -3764,7 +3657,6 @@ sixel_dither_apply_fixed_float32_with_mode(
         have_new_palette_float = 0;
     }
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
     if (method_for_diffuse == SIXEL_DIFFUSE_INTERFRAME) {
         /*
          * Keep the interframe strategy token and spatial kernel independent
@@ -3786,7 +3678,6 @@ sixel_dither_apply_fixed_float32_with_mode(
                 dither);
         method_for_diffuse = interframe_spatial_diffuse;
     }
-#endif
     if (context->depth != 3) {
         method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
@@ -4067,25 +3958,6 @@ sixel_dither_apply_fixed_float32_with_mode(
         }                                                               \
     }
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_none_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_atkinson_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_jajuni_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_stucki_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_burkes_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra1_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra2_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3)
-    SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra3_float);
-#elif defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
     switch (method_for_diffuse) {
     case SIXEL_DIFFUSE_NONE:
         SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_none_float);
@@ -4120,7 +3992,6 @@ sixel_dither_apply_fixed_float32_with_mode(
     default:
         return SIXEL_BAD_ARGUMENT;
     }
-#endif
 #undef SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP
 
     (void)method_for_diffuse;
@@ -4145,97 +4016,15 @@ sixel_dither_apply_fixed_float32_with_mode(
     return status;
 }
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_NONE)
-static SIXELSTATUS
-sixel_dither_apply_none_float32(sixel_dither_t *dither,
-                                sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_NONE);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_FS)
-static SIXELSTATUS
-sixel_dither_apply_fs_float32(sixel_dither_t *dither,
-                              sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_FS);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_ATKINSON)
-static SIXELSTATUS
-sixel_dither_apply_atkinson_float32(sixel_dither_t *dither,
-                                    sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_ATKINSON);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_JAJUNI)
-static SIXELSTATUS
-sixel_dither_apply_jajuni_float32(sixel_dither_t *dither,
-                                  sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_JAJUNI);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_STUCKI)
-static SIXELSTATUS
-sixel_dither_apply_stucki_float32(sixel_dither_t *dither,
-                                  sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_STUCKI);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_BURKES)
-static SIXELSTATUS
-sixel_dither_apply_burkes_float32(sixel_dither_t *dither,
-                                  sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_BURKES);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA1)
-static SIXELSTATUS
-sixel_dither_apply_sierra1_float32(sixel_dither_t *dither,
-                                   sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_SIERRA1);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA2)
-static SIXELSTATUS
-sixel_dither_apply_sierra2_float32(sixel_dither_t *dither,
-                                   sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_SIERRA2);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_SIERRA3)
-static SIXELSTATUS
-sixel_dither_apply_sierra3_float32(sixel_dither_t *dither,
-                                   sixel_dither_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_SIERRA3);
-}
-#endif
 
-#if defined(SIXEL_DITHER_POLICY_FIXED_FLOAT32_ENABLE_INTERFRAME)
 static SIXELSTATUS
 sixel_dither_apply_interframe_float32(sixel_dither_t *dither,
                                       sixel_dither_context_t *context)
@@ -4243,7 +4032,6 @@ sixel_dither_apply_interframe_float32(sixel_dither_t *dither,
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context, SIXEL_DIFFUSE_INTERFRAME);
 }
-#endif
 
 #if defined(__GNUC__) || defined(__clang__)
 # define SIXEL_DITHER_FIXED_FLOAT32_UNUSED __attribute__((used))
@@ -4486,13 +4274,6 @@ sixel_dither_policy_interframe_build_context(
         context->transparent_keycolor = dither->pipeline_transparent_keycolor;
     }
 
-    if (dither != NULL && dither->bluenoise_gradient_map != NULL) {
-        context->bluenoise_gradient_map = dither->bluenoise_gradient_map;
-        context->bluenoise_gradient_map_size =
-            dither->bluenoise_gradient_map_size;
-        context->bluenoise_gradient_width = dither->bluenoise_gradient_width;
-        context->bluenoise_gradient_height = dither->bluenoise_gradient_height;
-    }
 
     return SIXEL_OK;
 }
