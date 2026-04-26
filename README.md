@@ -1200,7 +1200,10 @@ animation supports an MVP path that reuses the existing static decoders
 (`VP8L`/`VP8`/`VP8+ALPH`) per frame with `ANMF` rectangle composition,
 blend-over/replace, and dispose-to-background handling. ANMF rectangles must
 stay inside the declared animation canvas; out-of-canvas rectangles are treated
-as malformed input. For static decode,
+as malformed input. Top-level chunk strictness is enforced for deterministic
+error contracts: duplicate `VP8`/`VP8X`/`VP8L`/`ALPH`/`ANIM`/`ICCP`/`EXIF`/`XMP`
+chunks are rejected, and static `VP8+VP8L` or `VP8L+ALPH` coexistence is
+treated as malformed input. For static decode,
 embedded `ICCP` is applied when builtin CMS is enabled and embedded `EXIF`
 orientation is applied when builtin orientation handling is enabled.
 

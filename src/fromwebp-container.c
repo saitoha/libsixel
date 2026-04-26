@@ -83,9 +83,17 @@ typedef enum sixel_webp_parse_error_id {
     SIXEL_WEBP_PARSE_ERR_CHUNK_PAYLOAD_EXCEEDS,
     SIXEL_WEBP_PARSE_ERR_ODD_PADDING_NONZERO,
     SIXEL_WEBP_PARSE_ERR_FIRST_CHUNK,
+    SIXEL_WEBP_PARSE_ERR_DUP_VP8,
     SIXEL_WEBP_PARSE_ERR_DUP_VP8X,
     SIXEL_WEBP_PARSE_ERR_VP8X_SIZE,
-    SIXEL_WEBP_PARSE_ERR_DUP_VP8L
+    SIXEL_WEBP_PARSE_ERR_DUP_ALPHA,
+    SIXEL_WEBP_PARSE_ERR_DUP_ANIM,
+    SIXEL_WEBP_PARSE_ERR_DUP_ICCP,
+    SIXEL_WEBP_PARSE_ERR_DUP_EXIF,
+    SIXEL_WEBP_PARSE_ERR_DUP_XMP,
+    SIXEL_WEBP_PARSE_ERR_DUP_VP8L,
+    SIXEL_WEBP_PARSE_ERR_CONFLICT_VP8_VP8L,
+    SIXEL_WEBP_PARSE_ERR_CONFLICT_VP8L_ALPHA
 } sixel_webp_parse_error_id_t;
 
 typedef struct sixel_webp_parse_error_entry {
@@ -116,12 +124,28 @@ sixel_webp_parse_error_table[] = {
       "builtin webp: odd-sized chunk has non-zero padding." },
     { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_FIRST_CHUNK,
       "builtin webp: first chunk must be VP8/VP8L/VP8X." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_DUP_VP8,
+      "builtin webp: duplicate VP8 chunk is invalid." },
     { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_DUP_VP8X,
       "builtin webp: duplicate VP8X chunk is invalid." },
     { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_VP8X_SIZE,
       "builtin webp: VP8X chunk size is invalid." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_DUP_ALPHA,
+      "builtin webp: duplicate alpha chunk is invalid." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_DUP_ANIM,
+      "builtin webp: duplicate ANIM chunk is invalid." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_DUP_ICCP,
+      "builtin webp: duplicate ICCP chunk is invalid." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_DUP_EXIF,
+      "builtin webp: duplicate EXIF chunk is invalid." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_DUP_XMP,
+      "builtin webp: duplicate XMP chunk is invalid." },
     { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_VP8L_STREAM,
-      "builtin webp: duplicate VP8L chunk is invalid." }
+      "builtin webp: duplicate VP8L chunk is invalid." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_CONFLICT_VP8_VP8L,
+      "builtin webp: VP8 and VP8L chunks cannot coexist." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_CONFLICT_VP8L_ALPHA,
+      "builtin webp: VP8L and alpha chunks cannot coexist." }
 };
 
 static SIXELSTATUS
@@ -273,6 +297,13 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
             info->canvas_height = (unsigned int)
                 sixel_webp_container_read_u24le(data + offset + 15u) + 1u;
         } else if (fourcc == SIXEL_WEBP_CHUNK_VP8) {
+            if (info->vp8_count != 0u) {
+                return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_DUP_VP8);
+            }
+            if (info->vp8l_count != 0u) {
+                return sixel_webp_parse_fail(
+                    SIXEL_WEBP_PARSE_ERR_CONFLICT_VP8_VP8L);
+            }
             sixel_webp_record_chunk(&info->vp8,
                                     &info->vp8_count,
                                     offset,
@@ -282,18 +313,36 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
             if (info->vp8l_count != 0u) {
                 return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_DUP_VP8L);
             }
+            if (info->vp8_count != 0u) {
+                return sixel_webp_parse_fail(
+                    SIXEL_WEBP_PARSE_ERR_CONFLICT_VP8_VP8L);
+            }
+            if (info->alpha_count != 0u) {
+                return sixel_webp_parse_fail(
+                    SIXEL_WEBP_PARSE_ERR_CONFLICT_VP8L_ALPHA);
+            }
             sixel_webp_record_chunk(&info->vp8l,
                                     &info->vp8l_count,
                                     offset,
                                     data + offset + 8u,
                                     chunk_size);
         } else if (fourcc == SIXEL_WEBP_CHUNK_ALPHA) {
+            if (info->alpha_count != 0u) {
+                return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_DUP_ALPHA);
+            }
+            if (info->vp8l_count != 0u) {
+                return sixel_webp_parse_fail(
+                    SIXEL_WEBP_PARSE_ERR_CONFLICT_VP8L_ALPHA);
+            }
             sixel_webp_record_chunk(&info->alpha,
                                     &info->alpha_count,
                                     offset,
                                     data + offset + 8u,
                                     chunk_size);
         } else if (fourcc == SIXEL_WEBP_CHUNK_ANIM) {
+            if (info->anim_count != 0u) {
+                return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_DUP_ANIM);
+            }
             sixel_webp_record_chunk(&info->anim,
                                     &info->anim_count,
                                     offset,
@@ -312,18 +361,27 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
                                     data + offset + 8u,
                                     chunk_size);
         } else if (fourcc == SIXEL_WEBP_CHUNK_ICCP) {
+            if (info->iccp_count != 0u) {
+                return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_DUP_ICCP);
+            }
             sixel_webp_record_chunk(&info->iccp,
                                     &info->iccp_count,
                                     offset,
                                     data + offset + 8u,
                                     chunk_size);
         } else if (fourcc == SIXEL_WEBP_CHUNK_EXIF) {
+            if (info->exif_count != 0u) {
+                return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_DUP_EXIF);
+            }
             sixel_webp_record_chunk(&info->exif,
                                     &info->exif_count,
                                     offset,
                                     data + offset + 8u,
                                     chunk_size);
         } else if (fourcc == SIXEL_WEBP_CHUNK_XMP) {
+            if (info->xmp_count != 0u) {
+                return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_DUP_XMP);
+            }
             sixel_webp_record_chunk(&info->xmp,
                                     &info->xmp_count,
                                     offset,
