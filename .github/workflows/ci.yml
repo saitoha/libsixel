@@ -1796,6 +1796,7 @@ jobs:
               RANLIB=:
             setup_options: >-
               --host=x86_64-pc-windows-msvc
+              --enable-threads
               --enable-gcov
             extra_packages: >-
               make

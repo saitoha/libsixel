@@ -16722,7 +16722,7 @@ fi
 
 # Emscripten cannot run lso-timeout, so skip building it there.
 case "$host_os" in
-  mingw*|msys*|cygwin*)
+  mingw*|msys*|cygwin*|windows*|msvc*)
       build_windows=yes
       ;;
   *)

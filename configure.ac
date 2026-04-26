@@ -548,7 +548,7 @@ AC_SUBST([LSO_TAP_DATE_CMD])
 
 # Emscripten cannot run lso-timeout, so skip building it there.
 case "$host_os" in
-  mingw*|msys*|cygwin*)
+  mingw*|msys*|cygwin*|windows*|msvc*)
       build_windows=yes
       ;;
   *)
