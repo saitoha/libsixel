@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         buildtool: [autotools, meson]
-        target: [png-chunk, png-apng, png-icc-gamma, png-plte-trns, jpeg-icc, pnm-ascii, psd-resource, gif-block, gif-lzw-codes, sixel-stream, hdr-header, pic-structure, bmp-dib, bmp-rle-bitfields, mapfile-spec, mapfile-palette, option-arglist, loader-order]
+        target: [png-chunk, png-apng, png-icc-gamma, png-plte-trns, jpeg-icc, pnm-ascii, psd-resource, gif-block, gif-lzw-codes, sixel-stream, hdr-header, pic-structure, bmp-dib, bmp-rle-bitfields, mapfile-spec, mapfile-palette, option-arglist, exif-orientation, loader-order]
     env:
       FUZZ_STRUCT_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-struct
       FUZZ_STRUCT_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-struct/${{ matrix.target }}
@@ -48,7 +48,7 @@ jobs:
             run_target=0
             if [ "${{ matrix.buildtool }}" = "meson" ]; then
               case "${{ matrix.target }}" in
-                gif-lzw-codes|psd-resource|option-arglist|loader-order)
+                gif-lzw-codes|psd-resource|option-arglist|exif-orientation|loader-order)
                   run_target=1
                   ;;
               esac
@@ -126,7 +126,7 @@ jobs:
           fi
           struct_max_len=4096
           case "${{ matrix.target }}" in
-            hdr-header|mapfile-spec|mapfile-palette|pnm-ascii|option-arglist|loader-order)
+            hdr-header|mapfile-spec|mapfile-palette|pnm-ascii|option-arglist|exif-orientation|loader-order)
               struct_max_len=2048
               ;;
             gif-lzw-codes)

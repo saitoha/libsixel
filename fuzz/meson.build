@@ -279,6 +279,7 @@ fuzz_struct_specs = [
   ['mapfile-spec', 'fuzz-loader-builtin-struct-mapfile-spec-libfuzzer.c', false],
   ['mapfile-palette', 'fuzz-loader-builtin-struct-mapfile-palette-libfuzzer.c', false],
   ['option-arglist', 'fuzz-loader-builtin-struct-option-arglist-libfuzzer.c', false],
+  ['exif-orientation', 'fuzz-loader-builtin-struct-exif-orientation-libfuzzer.c', false],
   ['loader-order', 'fuzz-loader-builtin-struct-loader-order-libfuzzer.c', false],
 ]
 
@@ -308,6 +309,7 @@ fuzz_struct_full_set = [
   'mapfile-spec',
   'mapfile-palette',
   'option-arglist',
+  'exif-orientation',
   'loader-order',
 ]
 
@@ -433,7 +435,8 @@ target_bmp_rle_bitfields="${15}"
 target_mapfile_spec="${16}"
 target_mapfile_palette="${17}"
 target_option_arglist="${18}"
-target_loader_order="${19}"
+target_exif_orientation="${19}"
+target_loader_order="${20}"
 corpus_base="${FUZZ_STRUCT_CORPUS:-${FUZZ_BUILTIN_CORPUS:-$source_root/images}/struct}"
 args="${FUZZ_STRUCT_ARGS:-${FUZZ_BUILTIN_ARGS:-}}"
 
@@ -469,6 +472,7 @@ run_one bmp-rle-bitfields "$target_bmp_rle_bitfields"
 run_one mapfile-spec "$target_mapfile_spec"
 run_one mapfile-palette "$target_mapfile_palette"
 run_one option-arglist "$target_option_arglist"
+run_one exif-orientation "$target_exif_orientation"
 run_one loader-order "$target_loader_order"
 ''',
             'sh',
@@ -490,6 +494,7 @@ run_one loader-order "$target_loader_order"
             struct_exe_by_name['mapfile-spec'].full_path(),
             struct_exe_by_name['mapfile-palette'].full_path(),
             struct_exe_by_name['option-arglist'].full_path(),
+            struct_exe_by_name['exif-orientation'].full_path(),
             struct_exe_by_name['loader-order'].full_path()],
   depends: [
     struct_exe_by_name['png-chunk'],
@@ -509,6 +514,7 @@ run_one loader-order "$target_loader_order"
     struct_exe_by_name['mapfile-spec'],
     struct_exe_by_name['mapfile-palette'],
     struct_exe_by_name['option-arglist'],
+    struct_exe_by_name['exif-orientation'],
     struct_exe_by_name['loader-order'],
   ])
 
