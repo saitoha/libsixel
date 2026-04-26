@@ -58,7 +58,7 @@ create_policy_object(char const *name,
 }
 
 static void
-safe_unref_lookup_policy(sixel_lookup_policy_interface_t **lookup_policy)
+safe_unref_lookup_policy_dither(sixel_lookup_policy_interface_t **lookup_policy)
 {
     if (lookup_policy == NULL || *lookup_policy == NULL) {
         return;
@@ -114,7 +114,7 @@ prepare_normal_lookup_policy(sixel_dither_t *dither,
 
     status = (*lookup_policy)->vtbl->prepare(*lookup_policy, &request);
     if (SIXEL_FAILED(status)) {
-        safe_unref_lookup_policy(lookup_policy);
+        safe_unref_lookup_policy_dither(lookup_policy);
         return 0;
     }
 
@@ -194,7 +194,7 @@ test_dither_policy_named_classes_contract(void)
         status = create_policy_object(class_names[i], (void **)&dither_policy);
         if (SIXEL_FAILED(status) || dither_policy == NULL
                 || dither_policy->vtbl == NULL) {
-            safe_unref_lookup_policy(&lookup_policy);
+            safe_unref_lookup_policy_dither(&lookup_policy);
             sixel_dither_unref(dither);
             return 0;
         }
@@ -211,7 +211,7 @@ test_dither_policy_named_classes_contract(void)
         status = dither_policy->vtbl->prepare(dither_policy, &prepare_request);
         if (SIXEL_FAILED(status)) {
             safe_unref_dither_policy(&dither_policy);
-            safe_unref_lookup_policy(&lookup_policy);
+            safe_unref_lookup_policy_dither(&lookup_policy);
             sixel_dither_unref(dither);
             return 0;
         }
@@ -221,14 +221,14 @@ test_dither_policy_named_classes_contract(void)
         if (strcmp(class_names[i], "dither/interframe") == 0) {
             if (supports_parallel != 0) {
                 safe_unref_dither_policy(&dither_policy);
-                safe_unref_lookup_policy(&lookup_policy);
+                safe_unref_lookup_policy_dither(&lookup_policy);
                 sixel_dither_unref(dither);
                 return 0;
             }
         } else {
             if (supports_parallel == 0) {
                 safe_unref_dither_policy(&dither_policy);
-                safe_unref_lookup_policy(&lookup_policy);
+                safe_unref_lookup_policy_dither(&lookup_policy);
                 sixel_dither_unref(dither);
                 return 0;
             }
@@ -256,13 +256,13 @@ test_dither_policy_named_classes_contract(void)
         status = dither_policy->vtbl->apply(dither_policy, &apply_request);
         safe_unref_dither_policy(&dither_policy);
         if (SIXEL_FAILED(status)) {
-            safe_unref_lookup_policy(&lookup_policy);
+            safe_unref_lookup_policy_dither(&lookup_policy);
             sixel_dither_unref(dither);
             return 0;
         }
     }
 
-    safe_unref_lookup_policy(&lookup_policy);
+    safe_unref_lookup_policy_dither(&lookup_policy);
     sixel_dither_unref(dither);
     return 1;
 }
