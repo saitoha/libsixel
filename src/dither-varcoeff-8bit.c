@@ -86,19 +86,6 @@ typedef void (*diffuse_varerr_mode)(unsigned char *data,
                                     int index,
                                     int direction);
 
-typedef void (*diffuse_varerr_carry_mode)(int32_t *carry_curr,
-                                          int32_t *carry_next,
-                                          int32_t *carry_far,
-                                          int width,
-                                          int height,
-                                          int depth,
-                                          int x,
-                                          int y,
-                                          int32_t error,
-                                          int index,
-                                          int direction,
-                                          int channel);
-
 static int32_t
 sixel_varcoeff_safe_denom_8bit(int value)
 {
@@ -260,113 +247,6 @@ diffuse_lso2(unsigned char *data,
     }
 }
 
-static void
-diffuse_lso2_carry(int32_t *carry_curr,
-                   int32_t *carry_next,
-                   int32_t *carry_far,
-                   int width,
-                   int height,
-                   int depth,
-                   int x,
-                   int y,
-                   int32_t error,
-                   int index,
-                   int direction,
-                   int channel)
-{
-    const int (*table)[7];
-    const int *entry;
-    int denom;
-    int32_t term_r;
-    int32_t term_r2;
-    int32_t term_dl;
-    int32_t term_d;
-    int32_t term_dr;
-    int32_t term_d2;
-    size_t base;
-
-    if (error == 0) {
-        return;
-    }
-    if (index < 0) {
-        index = 0;
-    }
-    if (index > 255) {
-        index = 255;
-    }
-
-    table = lso2_table_varcoeff_8bit();
-    entry = table[index];
-    denom = sixel_varcoeff_safe_denom_8bit(entry[6]);
-
-    term_r = diffuse_varerr_term(error, entry[0], denom);
-    term_r2 = diffuse_varerr_term(error, entry[1], denom);
-    term_dl = diffuse_varerr_term(error, entry[2], denom);
-    term_d = diffuse_varerr_term(error, entry[3], denom);
-    term_dr = diffuse_varerr_term(error, entry[4], denom);
-    term_d2 = error - term_r - term_r2 - term_dl - term_d - term_dr;
-
-    if (direction >= 0) {
-        if (x + 1 < width) {
-            base = ((size_t)(x + 1) * (size_t)depth)
-                 + (size_t)channel;
-            carry_curr[base] += term_r;
-        }
-        if (x + 2 < width) {
-            base = ((size_t)(x + 2) * (size_t)depth)
-                 + (size_t)channel;
-            carry_curr[base] += term_r2;
-        }
-        if (y + 1 < height && x - 1 >= 0) {
-            base = ((size_t)(x - 1) * (size_t)depth)
-                 + (size_t)channel;
-            carry_next[base] += term_dl;
-        }
-        if (y + 1 < height) {
-            base = ((size_t)x * (size_t)depth) + (size_t)channel;
-            carry_next[base] += term_d;
-        }
-        if (y + 1 < height && x + 1 < width) {
-            base = ((size_t)(x + 1) * (size_t)depth)
-                 + (size_t)channel;
-            carry_next[base] += term_dr;
-        }
-        if (y + 2 < height) {
-            base = ((size_t)x * (size_t)depth) + (size_t)channel;
-            carry_far[base] += term_d2;
-        }
-    } else {
-        if (x - 1 >= 0) {
-            base = ((size_t)(x - 1) * (size_t)depth)
-                 + (size_t)channel;
-            carry_curr[base] += term_r;
-        }
-        if (x - 2 >= 0) {
-            base = ((size_t)(x - 2) * (size_t)depth)
-                 + (size_t)channel;
-            carry_curr[base] += term_r2;
-        }
-        if (y + 1 < height && x + 1 < width) {
-            base = ((size_t)(x + 1) * (size_t)depth)
-                 + (size_t)channel;
-            carry_next[base] += term_dl;
-        }
-        if (y + 1 < height) {
-            base = ((size_t)x * (size_t)depth) + (size_t)channel;
-            carry_next[base] += term_d;
-        }
-        if (y + 1 < height && x - 1 >= 0) {
-            base = ((size_t)(x - 1) * (size_t)depth)
-                 + (size_t)channel;
-            carry_next[base] += term_dr;
-        }
-        if (y + 2 < height) {
-            base = ((size_t)x * (size_t)depth) + (size_t)channel;
-            carry_far[base] += term_d2;
-        }
-    }
-}
-
 SIXELSTATUS
 sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
                                  sixel_dither_context_t *context)
@@ -377,21 +257,13 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
     unsigned char *new_palette;
     unsigned char *source_pixel;
     unsigned char palette_value;
-    unsigned char corrected[SIXEL_MAX_CHANNELS];
     int32_t sample_scaled[SIXEL_MAX_CHANNELS];
-    int32_t accum_scaled[SIXEL_MAX_CHANNELS];
     int32_t target_scaled;
     int32_t error_scaled;
-    int32_t *carry_curr;
-    int32_t *carry_next;
-    int32_t *carry_far;
     int serpentine;
-    int use_carry;
-    size_t carry_len;
     int method_for_diffuse;
     int method_for_scan;
     diffuse_varerr_mode varerr_diffuse;
-    diffuse_varerr_carry_mode varerr_diffuse_carry;
     int optimize_palette;
     int y;
     int absolute_y;
@@ -402,7 +274,6 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
     int x;
     int pos;
     size_t base;
-    size_t carry_base;
     int depth;
     int reqcolor;
     int n;
@@ -477,24 +348,7 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
     case SIXEL_DIFFUSE_LSO2:
     default:
         varerr_diffuse = diffuse_lso2;
-        varerr_diffuse_carry = diffuse_lso2_carry;
         break;
-    }
-
-    use_carry = 0;
-    carry_curr = NULL;
-    carry_next = NULL;
-    carry_far = NULL;
-    carry_len = 0;
-
-    if (use_carry) {
-        carry_len = (size_t)context->width * (size_t)depth;
-        carry_curr = (int32_t *)calloc(carry_len, sizeof(int32_t));
-        carry_next = (int32_t *)calloc(carry_len, sizeof(int32_t));
-        carry_far = (int32_t *)calloc(carry_len, sizeof(int32_t));
-        if (carry_curr == NULL || carry_next == NULL || carry_far == NULL) {
-            goto end;
-        }
     }
 
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
@@ -523,7 +377,6 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
         for (x = start; x != end; x += step) {
             pos = y * context->width + x;
             base = (size_t)pos * (size_t)depth;
-            carry_base = (size_t)x * (size_t)depth;
             is_transparent = 0;
             if (use_transparent_fence && absolute_y >= 0) {
                 absolute_index = (size_t)absolute_y * (size_t)context->width
@@ -537,47 +390,14 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
                 if (absolute_y >= context->output_start) {
                     context->result[pos] = (sixel_index_t)transparent_keycolor;
                 }
-                if (use_carry) {
-                    for (n = 0; n < depth; ++n) {
-                        carry_curr[carry_base + (size_t)n] = 0;
-                    }
-                }
                 continue;
             }
-            if (use_carry) {
-                for (n = 0; n < depth; ++n) {
-                    int64_t accum;
-                    int32_t clamped;
-
-                    accum = ((int64_t)data[base + (size_t)n]
-                             << VARERR_SCALE_SHIFT)
-                          + carry_curr[carry_base + (size_t)n];
-                    if (accum < INT32_MIN) {
-                        accum = INT32_MIN;
-                    } else if (accum > INT32_MAX) {
-                        accum = INT32_MAX;
-                    }
-                    carry_curr[carry_base + (size_t)n] = 0;
-                    clamped = (int32_t)accum;
-                    if (clamped < 0) {
-                        clamped = 0;
-                    } else if (clamped > VARERR_MAX_VALUE) {
-                        clamped = VARERR_MAX_VALUE;
-                    }
-                    accum_scaled[n] = clamped;
-                    corrected[n]
-                        = (unsigned char)((clamped + VARERR_ROUND)
-                                          >> VARERR_SCALE_SHIFT);
-                }
-                source_pixel = corrected;
-            } else {
-                for (n = 0; n < depth; ++n) {
-                    sample_scaled[n]
-                        = (int32_t)data[base + (size_t)n]
-                        << VARERR_SCALE_SHIFT;
-                }
-                source_pixel = data + base;
+            for (n = 0; n < depth; ++n) {
+                sample_scaled[n]
+                    = (int32_t)data[base + (size_t)n]
+                    << VARERR_SCALE_SHIFT;
             }
+            source_pixel = data + base;
 
             color_index = context->lookup_map(context->lookup_policy,
                                               source_pixel);
@@ -638,50 +458,21 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
                     diff = 255;
                 }
                 table_index = diff;
-                if (use_carry) {
-                    target_scaled = (int32_t)palette_value
-                                  << VARERR_SCALE_SHIFT;
-                    error_scaled = accum_scaled[n] - target_scaled;
-                    varerr_diffuse_carry(carry_curr,
-                                         carry_next,
-                                         carry_far,
-                                         context->width,
-                                         context->height,
-                                         depth,
-                                         x,
-                                         y,
-                                         error_scaled,
-                                         table_index,
-                                         direction,
-                                         n);
-                } else {
-                    target_scaled = (int32_t)palette_value
-                                  << VARERR_SCALE_SHIFT;
-                    error_scaled = sample_scaled[n] - target_scaled;
-                    varerr_diffuse(data + n,
-                                   context->width,
-                                   context->height,
-                                   x,
-                                   y,
-                                   depth,
-                                   error_scaled,
-                                   table_index,
-                                   direction);
-                }
+                target_scaled = (int32_t)palette_value
+                              << VARERR_SCALE_SHIFT;
+                error_scaled = sample_scaled[n] - target_scaled;
+                varerr_diffuse(data + n,
+                               context->width,
+                               context->height,
+                               x,
+                               y,
+                               depth,
+                               error_scaled,
+                               table_index,
+                               direction);
             }
         }
 
-        if (use_carry) {
-            int32_t *tmp;
-
-            tmp = carry_curr;
-            carry_curr = carry_next;
-            carry_next = carry_far;
-            carry_far = tmp;
-            if (carry_len > 0) {
-                memset(carry_far, 0x00, carry_len * sizeof(int32_t));
-            }
-        }
         if (absolute_y >= context->output_start) {
             sixel_dither_pipeline_row_notify(dither, absolute_y);
         }
@@ -702,11 +493,6 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
     }
 
     status = SIXEL_OK;
-
-end:
-    free(carry_curr);
-    free(carry_next);
-    free(carry_far);
     return status;
 }
 
