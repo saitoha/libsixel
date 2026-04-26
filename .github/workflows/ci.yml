@@ -5633,6 +5633,7 @@ jobs:
   dragonflybsd:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       max-parallel: 1

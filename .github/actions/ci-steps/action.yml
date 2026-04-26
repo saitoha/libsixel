@@ -875,36 +875,141 @@ runs:
             meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
           fi
 
-    - name: Build and test (Autotools, DragonFlyBSD)
+    - name: Build and test (Autotools, DragonFlyBSD) (attempt 1)
+      id: dragonflybsd_autotools_1
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm' }}
-      uses: vmactions/dragonflybsd-vm@v1
-      with:
-        release: ${{ fromJSON(inputs.matrix_json).version || '' }}
-        sync-time: true
-        sync: nfs
-        prepare: |
-          #pkg update -f
-          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
-        run: |
-          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
-          gmake V=1
-          gmake ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
-
-    - name: Configure, build, and test (Meson, DragonFlyBSD)
-      if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm' }}
+      continue-on-error: true
       uses: vmactions/dragonflybsd-vm@v1
       with:
         release: ${{ fromJSON(inputs.matrix_json).version || '' }}
         sync-time: true
         sync: rsync
+        cpu: 2
+        mem: 4096
         prepare: |
+          echo "__DFBSD_PHASE_PREPARE__"
+          #pkg update -f
+          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
+        run: |
+          echo "__DFBSD_PHASE_RUN__"
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          gmake V=1
+          gmake ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
+
+    - name: Wait before DragonFlyBSD retry (Autotools)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
+            && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
+            && steps.dragonflybsd_autotools_1.outcome != 'success' }}
+      shell: bash
+      run: |
+        set -o igncr 2>/dev/null || true
+        sleep 30
+
+    - name: Build and test (Autotools, DragonFlyBSD) (attempt 2)
+      id: dragonflybsd_autotools_2
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
+            && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
+            && steps.dragonflybsd_autotools_1.outcome != 'success' }}
+      continue-on-error: true
+      uses: vmactions/dragonflybsd-vm@v1
+      with:
+        release: ${{ fromJSON(inputs.matrix_json).version || '' }}
+        sync-time: true
+        sync: rsync
+        cpu: 2
+        mem: 4096
+        prepare: |
+          echo "__DFBSD_PHASE_PREPARE__"
+          #pkg update -f
+          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
+        run: |
+          echo "__DFBSD_PHASE_RUN__"
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          gmake V=1
+          gmake ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
+
+    - name: Validate DragonFlyBSD retry result (Autotools)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
+            && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
+            && steps.dragonflybsd_autotools_1.outcome != 'success'
+            && steps.dragonflybsd_autotools_2.outcome != 'success' }}
+      shell: bash
+      run: |
+        set -o igncr 2>/dev/null || true
+        echo "DragonFlyBSD Autotools failed on both retry attempts."
+        exit 1
+
+    - name: Configure, build, and test (Meson, DragonFlyBSD) (attempt 1)
+      id: dragonflybsd_meson_1
+      if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm' }}
+      continue-on-error: true
+      uses: vmactions/dragonflybsd-vm@v1
+      with:
+        release: ${{ fromJSON(inputs.matrix_json).version || '' }}
+        sync-time: true
+        sync: rsync
+        cpu: 2
+        mem: 4096
+        prepare: |
+          echo "__DFBSD_PHASE_PREPARE__"
           #pkg update -f
           pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'meson' }}
         run: |
+          echo "__DFBSD_PHASE_RUN__"
           cd "$GITHUB_WORKSPACE"
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           meson compile -C builddir
           meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+
+    - name: Wait before DragonFlyBSD retry (Meson)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'meson'
+            && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
+            && steps.dragonflybsd_meson_1.outcome != 'success' }}
+      shell: bash
+      run: |
+        set -o igncr 2>/dev/null || true
+        sleep 30
+
+    - name: Configure, build, and test (Meson, DragonFlyBSD) (attempt 2)
+      id: dragonflybsd_meson_2
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'meson'
+            && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
+            && steps.dragonflybsd_meson_1.outcome != 'success' }}
+      continue-on-error: true
+      uses: vmactions/dragonflybsd-vm@v1
+      with:
+        release: ${{ fromJSON(inputs.matrix_json).version || '' }}
+        sync-time: true
+        sync: rsync
+        cpu: 2
+        mem: 4096
+        prepare: |
+          echo "__DFBSD_PHASE_PREPARE__"
+          #pkg update -f
+          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'meson' }}
+        run: |
+          echo "__DFBSD_PHASE_RUN__"
+          cd "$GITHUB_WORKSPACE"
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          meson compile -C builddir
+          meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+
+    - name: Validate DragonFlyBSD retry result (Meson)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'meson'
+            && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
+            && steps.dragonflybsd_meson_1.outcome != 'success'
+            && steps.dragonflybsd_meson_2.outcome != 'success' }}
+      shell: bash
+      run: |
+        set -o igncr 2>/dev/null || true
+        echo "DragonFlyBSD Meson failed on both retry attempts."
+        exit 1
 
     - name: Build and test (Autotools, OpenIndiana)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'openindiana-vm' }}
