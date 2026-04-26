@@ -32,7 +32,7 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-ctrl_line=${trace_output#*LSXWEBPDBG|diag=VP8CTRL}
+ctrl_line=${trace_output#*LSXWEBPDBG\|diag=VP8CTRL}
 test "${ctrl_line}" != "${trace_output}" || {
     echo "not ok" 1 - "forced builtin loader VP8 token partition round robin trace missing VP8CTRL diagnostics"
     exit 0
@@ -41,24 +41,24 @@ test "${ctrl_line}" != "${trace_output}" || {
 ctrl_line="LSXWEBPDBG|diag=VP8CTRL${ctrl_line}"
 ctrl_line=${ctrl_line%%"${nl}"*}
 
-test "${ctrl_line#*|tok=2|}" != "${ctrl_line}" || {
+test "${ctrl_line#*\|tok=2\|}" != "${ctrl_line}" || {
     echo "not ok" 1 - "forced builtin loader VP8 token partition round robin trace missing tok=2 diagnostics"
     exit 0
 }
 
-probe=${trace_output#*LSXWEBPDBG|diag=VP8MB|x=0|y=0|part=0|}
+probe=${trace_output#*LSXWEBPDBG\|diag=VP8MB\|x=0\|y=0\|part=0\|}
 test "${probe}" != "${trace_output}" || {
     echo "not ok" 1 - "forced builtin loader VP8 token partition round robin trace missing row0 partition0 diagnostics"
     exit 0
 }
 
-probe=${trace_output#*LSXWEBPDBG|diag=VP8MB|x=0|y=1|part=1|}
+probe=${trace_output#*LSXWEBPDBG\|diag=VP8MB\|x=0\|y=1\|part=1\|}
 test "${probe}" != "${trace_output}" || {
     echo "not ok" 1 - "forced builtin loader VP8 token partition round robin trace missing row1 partition1 diagnostics"
     exit 0
 }
 
-probe=${trace_output#*LSXWEBPDBG|diag=VP8MB|x=0|y=1|part=0|}
+probe=${trace_output#*LSXWEBPDBG\|diag=VP8MB\|x=0\|y=1\|part=0\|}
 test "${probe}" = "${trace_output}" || {
     echo "not ok" 1 - "forced builtin loader VP8 token partition round robin trace emitted unexpected row1 partition0 diagnostics"
     exit 0

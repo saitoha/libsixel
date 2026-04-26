@@ -34,8 +34,24 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-dims_on=$(od -An -tx1 -j16 -N8 "${output_on}" | tr -d ' \n')
-dims_off=$(od -An -tx1 -j16 -N8 "${output_off}" | tr -d ' \n')
+dims_on=$(od -tx1 -j16 -N8 "${output_on}" | awk '
+    NR == 1 {
+        i = NF - 7
+        while (i <= NF) {
+            printf "%s", $i
+            i = i + 1
+        }
+        exit
+    }')
+dims_off=$(od -tx1 -j16 -N8 "${output_off}" | awk '
+    NR == 1 {
+        i = NF - 7
+        while (i <= NF) {
+            printf "%s", $i
+            i = i + 1
+        }
+        exit
+    }')
 
 test "${dims_on}" = "000000080000000c" || {
     echo "not ok" 1 - "builtin PNG orientation on expected 8x12 PNG IHDR"

@@ -31,7 +31,7 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-diag_line=${trace_output#*LSXWEBP1|}
+diag_line=${trace_output#*LSXWEBP1\|}
 test "${diag_line}" != "${trace_output}" || {
     echo "not ok" 1 - "builtin WebP animation ICCP ignored contract missing header"
     exit 0
@@ -40,7 +40,7 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#LSXWEBP1|rc=0|kind=OK|codes=}" != "${diag_line}" || {
+test "${diag_line#LSXWEBP1\|rc=0\|kind=OK\|codes=}" != "${diag_line}" || {
     echo "not ok" 1 - "builtin WebP animation ICCP ignored contract malformed header"
     exit 0
 }

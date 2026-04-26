@@ -30,7 +30,7 @@ test "${command_status}" -ne 0 || {
     exit 0
 }
 
-diag_line=${trace_output#*LSXWEBP1|}
+diag_line=${trace_output#*LSXWEBP1\|}
 test "${diag_line}" != "${trace_output}" || {
     echo "not ok" 1 - "forced builtin loader corrupted VP8 interframe fixture missing LSXWEBP1 contract header"
     exit 0
@@ -39,7 +39,7 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#LSXWEBP1|rc=1|kind=ERR|codes=}" != "${diag_line}" || {
+test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
     echo "not ok" 1 - "forced builtin loader corrupted VP8 interframe fixture malformed error contract header"
     exit 0
 }

@@ -32,7 +32,7 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-ctrl_line=${trace_output#*LSXWEBPDBG|diag=VP8CTRL}
+ctrl_line=${trace_output#*LSXWEBPDBG\|diag=VP8CTRL}
 test "${ctrl_line}" != "${trace_output}" || {
     echo "not ok" 1 - "forced builtin loader decodes VP8 token partition=2 missing VP8CTRL diagnostics"
     exit 0
@@ -41,12 +41,12 @@ test "${ctrl_line}" != "${trace_output}" || {
 ctrl_line="LSXWEBPDBG|diag=VP8CTRL${ctrl_line}"
 ctrl_line=${ctrl_line%%"${nl}"*}
 
-test "${ctrl_line#*|tok=2|}" != "${ctrl_line}" || {
+test "${ctrl_line#*\|tok=2\|}" != "${ctrl_line}" || {
     echo "not ok" 1 - "forced builtin loader decodes VP8 token partition=2 missing tok=2 diagnostics"
     exit 0
 }
 
-diag_line=${trace_output#*LSXWEBP1|}
+diag_line=${trace_output#*LSXWEBP1\|}
 test "${diag_line}" != "${trace_output}" || {
     echo "not ok" 1 - "forced builtin loader decodes VP8 token partition=2 missing LSXWEBP1 contract header"
     exit 0
@@ -55,7 +55,7 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#LSXWEBP1|rc=0|kind=OK|codes=}" != "${diag_line}" || {
+test "${diag_line#LSXWEBP1\|rc=0\|kind=OK\|codes=}" != "${diag_line}" || {
     echo "not ok" 1 - "forced builtin loader decodes VP8 token partition=2 malformed success contract header"
     exit 0
 }
