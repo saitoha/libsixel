@@ -405,6 +405,7 @@ else
 libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) \
                 $(MAYBE_COVERAGE) $(LIBSIXEL_LDFLAGS)
 endif
+LS_LT_CURRENT = $(word 1,$(subst :, ,$(LS_LTVERSION)))
 libsixel_la_LIBADD = -lm \
                 $(LIBCURL_LIBS) \
                 $(LIBFETCH_LIBS) \
@@ -435,6 +436,17 @@ EXTRA_DIST = $(srcdir)/rgblookup.gperf \
 # This target lets the top-level Makefile overlap executable object
 # compilation in other directories with the libsixel link step.
 libobjs: $(libsixel_la_OBJECTS)
+
+if BUILDING_ON_WINDOWS
+# clang-cl/link.exe may emit only the versioned import library
+# (for example '.libs/sixel-1.lib') even when libtool asks for
+# '.libs/sixel.dll.lib'. Dependent targets link against the latter,
+# so provide the expected alias after building libsixel.la.
+all-local: libsixel.la
+	@if test -f .libs/sixel-$(LS_LT_CURRENT).lib; then \
+		cp .libs/sixel-$(LS_LT_CURRENT).lib .libs/sixel.dll.lib; \
+	fi
+endif
 
 GPERF_OPT=--ignore-case --language=ANSI-C
 GPERF_CLASSID_OPT=--language=ANSI-C \

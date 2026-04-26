@@ -1312,6 +1312,7 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 @BUILDING_ON_WINDOWS_TRUE@                $(MAYBE_MSVC_DLL_DRIVER_FLAG) $(MAYBE_COVERAGE) \
 @BUILDING_ON_WINDOWS_TRUE@                $(LIBSIXEL_LDFLAGS)
 
+LS_LT_CURRENT = $(word 1,$(subst :, ,$(LS_LTVERSION)))
 libsixel_la_LIBADD = -lm \
                 $(LIBCURL_LIBS) \
                 $(LIBFETCH_LIBS) \
@@ -3238,6 +3239,15 @@ uninstall-man: uninstall-man5
 # This target lets the top-level Makefile overlap executable object
 # compilation in other directories with the libsixel link step.
 libobjs: $(libsixel_la_OBJECTS)
+
+# clang-cl/link.exe may emit only the versioned import library
+# (for example '.libs/sixel-1.lib') even when libtool asks for
+# '.libs/sixel.dll.lib'. Dependent targets link against the latter,
+# so provide the expected alias after building libsixel.la.
+@BUILDING_ON_WINDOWS_TRUE@all-local: libsixel.la
+@BUILDING_ON_WINDOWS_TRUE@	@if test -f .libs/sixel-$(LS_LT_CURRENT).lib; then \
+@BUILDING_ON_WINDOWS_TRUE@		cp .libs/sixel-$(LS_LT_CURRENT).lib .libs/sixel.dll.lib; \
+@BUILDING_ON_WINDOWS_TRUE@	fi
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 gen-rgblookup: $(srcdir)/rgblookup.gperf
