@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming VP8+ALPHA preprocess=3 is treated as unsupported.
+# TAP test confirming VP8+ALPHA preprocess=3 is treated as invalid.
 # Fixture is derived from webp-vp8-alpha-snake64-alpha00.webp by setting
 # ALPH control byte to 0x30.
 
@@ -45,10 +45,10 @@ test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_VP8_ALPHA*}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader VP8+ALPHA preprocess=3 fixture missing W_UNSUP_VP8_ALPHA"
+test "${diag_line#*W_ERR_VP8_STREAM*}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader VP8+ALPHA preprocess=3 fixture missing W_ERR_VP8_STREAM"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader VP8+ALPHA preprocess=3 fixture emits W_UNSUP_VP8_ALPHA"
+echo "ok" 1 - "forced builtin loader VP8+ALPHA preprocess=3 fixture emits W_ERR_VP8_STREAM"
 exit 0

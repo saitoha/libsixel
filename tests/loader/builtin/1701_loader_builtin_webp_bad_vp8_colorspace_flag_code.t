@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming unsupported VP8 colorspace flag maps to UNSUP feature.
+# TAP test confirming invalid VP8 colorspace flag maps to ERR feature.
 
 set -eux
 
@@ -43,10 +43,10 @@ test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_VP8_FEATURE*}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader corrupted VP8 colorspace fixture missing W_UNSUP_VP8_FEATURE contract code"
+test "${diag_line#*W_ERR_VP8_STREAM*}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader corrupted VP8 colorspace fixture missing W_ERR_VP8_STREAM contract code"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader corrupted VP8 colorspace fixture emits W_UNSUP_VP8_FEATURE contract code"
+echo "ok" 1 - "forced builtin loader corrupted VP8 colorspace fixture emits W_ERR_VP8_STREAM contract code"
 exit 0

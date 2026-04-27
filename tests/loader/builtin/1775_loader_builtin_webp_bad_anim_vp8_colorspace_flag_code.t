@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming unsupported VP8 colorspace flag inside ANMF stays UNSUP.
+# TAP test confirming invalid VP8 colorspace flag inside ANMF stays ERR.
 # Fixture is derived from animated-lossy-8x8-2frame-min.webp by patching
 # first frame VP8 payload byte at offset 0x56 from 0x02 to 0xfd.
 
@@ -45,10 +45,10 @@ test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_VP8_FEATURE*}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader bad_anim_vp8_colorspace_flag.webp missing W_UNSUP_VP8_FEATURE"
+test "${diag_line#*W_ERR_VP8_STREAM*}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader bad_anim_vp8_colorspace_flag.webp missing W_ERR_VP8_STREAM"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader bad_anim_vp8_colorspace_flag.webp emits W_UNSUP_VP8_FEATURE"
+echo "ok" 1 - "forced builtin loader bad_anim_vp8_colorspace_flag.webp emits W_ERR_VP8_STREAM"
 exit 0

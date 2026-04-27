@@ -125,8 +125,8 @@ sixel_webp_vp8_parse_header(unsigned char const *payload,
     header->version = (int)((frame_tag >> 1) & 0x7u);
     if (header->version > 3) {
         sixel_helper_set_additional_message(
-            "builtin webp: unsupported VP8 profile version.");
-        return SIXEL_NOT_IMPLEMENTED;
+            "builtin webp: invalid VP8 profile version.");
+        return SIXEL_BAD_INPUT;
     }
 
     header->show_frame = (int)((frame_tag >> 4) & 1u);

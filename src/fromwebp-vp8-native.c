@@ -2564,8 +2564,8 @@ sixel_webp_vp8_parse_control_header(
     }
     if (value != 0u) {
         sixel_helper_set_additional_message(
-            "builtin webp: unsupported VP8 colorspace flag.");
-        return SIXEL_NOT_IMPLEMENTED;
+            "builtin webp: invalid VP8 colorspace flag.");
+        return SIXEL_BAD_INPUT;
     }
 
     status = sixel_webp_vp8_bool_read_literal(decoder, 1u, &value);

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming unsupported VP8+ALPH compression=3 in ANMF stays UNSUP.
+# TAP test confirming invalid VP8+ALPH compression=3 in ANMF stays ERR.
 # Fixture is derived from animated-lossy-alpha-8x8-2frame-min.webp by patching
 # first ALPH control byte at offset 0x4c from 0x01 to 0x03.
 
@@ -45,10 +45,10 @@ test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_VP8_ALPHA*}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader bad_anim_vp8_alpha_compression3.webp missing W_UNSUP_VP8_ALPHA"
+test "${diag_line#*W_ERR_VP8_STREAM*}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader bad_anim_vp8_alpha_compression3.webp missing W_ERR_VP8_STREAM"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader bad_anim_vp8_alpha_compression3.webp emits W_UNSUP_VP8_ALPHA"
+echo "ok" 1 - "forced builtin loader bad_anim_vp8_alpha_compression3.webp emits W_ERR_VP8_STREAM"
 exit 0

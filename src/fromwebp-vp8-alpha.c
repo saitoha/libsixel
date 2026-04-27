@@ -391,8 +391,8 @@ sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
     }
     if (compression_method > 1u) {
         return sixel_webp_vp8_alpha_fail(
-            SIXEL_NOT_IMPLEMENTED,
-            "builtin webp: VP8 ALPHA compression mode is not supported yet.");
+            SIXEL_BAD_INPUT,
+            "builtin webp: VP8 ALPHA compression mode is invalid.");
     }
     /*
      * Preprocess bits 0 and 1 are accepted in this phase. The decoded alpha
@@ -400,8 +400,8 @@ sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
      */
     if (preprocess_method > 1u) {
         return sixel_webp_vp8_alpha_fail(
-            SIXEL_NOT_IMPLEMENTED,
-            "builtin webp: VP8 ALPHA preprocessing mode is not supported yet.");
+            SIXEL_BAD_INPUT,
+            "builtin webp: VP8 ALPHA preprocessing mode is invalid.");
     }
 
     alpha_plane = (unsigned char *)sixel_allocator_malloc(allocator,

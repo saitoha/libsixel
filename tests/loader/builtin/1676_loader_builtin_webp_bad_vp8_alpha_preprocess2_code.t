@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming unsupported VP8 ALPHA preprocess=2 maps to UNSUP code.
+# TAP test confirming invalid VP8 ALPHA preprocess=2 maps to ERR code.
 # Fixture is derived from webp-vp8-alpha-snake64-alpha00.webp.
 
 set -eux
@@ -26,13 +26,13 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L builtin! -o /dev/null "${input_webp}" 2>&1) || command_status=$?
 
 test "${command_status}" -ne 0 || {
-    echo "not ok" 1 - "forced builtin loader unsupported VP8 ALPHA preprocess=2 unexpectedly succeeded"
+    echo "not ok" 1 - "forced builtin loader invalid VP8 ALPHA preprocess=2 unexpectedly succeeded"
     exit 0
 }
 
 diag_line=${trace_output#*LSXWEBP1\|}
 test "${diag_line}" != "${trace_output}" || {
-    echo "not ok" 1 - "forced builtin loader unsupported VP8 ALPHA preprocess=2 missing LSXWEBP1 contract header"
+    echo "not ok" 1 - "forced builtin loader invalid VP8 ALPHA preprocess=2 missing LSXWEBP1 contract header"
     exit 0
 }
 
@@ -40,14 +40,14 @@ diag_line="LSXWEBP1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
 test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader unsupported VP8 ALPHA preprocess=2 malformed error contract header"
+    echo "not ok" 1 - "forced builtin loader invalid VP8 ALPHA preprocess=2 malformed error contract header"
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_VP8_ALPHA*}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader unsupported VP8 ALPHA preprocess=2 missing W_UNSUP_VP8_ALPHA"
+test "${diag_line#*W_ERR_VP8_STREAM*}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader invalid VP8 ALPHA preprocess=2 missing W_ERR_VP8_STREAM"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader unsupported VP8 ALPHA preprocess=2 emits W_UNSUP_VP8_ALPHA"
+echo "ok" 1 - "forced builtin loader invalid VP8 ALPHA preprocess=2 emits W_ERR_VP8_STREAM"
 exit 0

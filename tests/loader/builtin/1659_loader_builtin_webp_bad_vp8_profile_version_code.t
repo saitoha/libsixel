@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming unsupported VP8 profile maps to feature-not-implemented.
+# TAP test confirming invalid VP8 profile maps to stream-error.
 # Fixture is derived from vp80-04-partitions-1404.webp by rewriting frame tag
 # profile bits at payload offset 0 to value 7.
 
@@ -45,10 +45,10 @@ test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_VP8_FEATURE*}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader corrupted VP8 profile fixture missing W_UNSUP_VP8_FEATURE contract code"
+test "${diag_line#*W_ERR_VP8_STREAM*}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader corrupted VP8 profile fixture missing W_ERR_VP8_STREAM contract code"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader corrupted VP8 profile fixture emits W_UNSUP_VP8_FEATURE contract code"
+echo "ok" 1 - "forced builtin loader corrupted VP8 profile fixture emits W_ERR_VP8_STREAM contract code"
 exit 0
