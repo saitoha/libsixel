@@ -42,6 +42,8 @@ MAYBE_COVERAGE = --coverage
 endif
 
 AMALGAMATION_TOOL_CPPFLAGS = $(AM_CPPFLAGS) \
+        -I$(top_builddir)/include/ \
+        -I$(top_srcdir)/include/ \
         -I$(top_srcdir) \
         $(LIBCURL_CFLAGS) \
         $(WINHTTP_CFLAGS) \
