@@ -92,8 +92,7 @@ host_triplet = @host@
 # Compile the large dither unit as a separate translation unit for
 # libsixel amalgamation to avoid compiler ICEs on very large sources.
 @WANT_AMALGAMATED_LIB_TRUE@am__append_1 = \
-@WANT_AMALGAMATED_LIB_TRUE@        -DSIXEL_AMALGAMATION_SPLIT_DITHER=1 \
-@WANT_AMALGAMATED_LIB_TRUE@        -DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1
+@WANT_AMALGAMATED_LIB_TRUE@        -DSIXEL_AMALGAMATION_SPLIT_DITHER=1
 
 @SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_2 = \
 @SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/threadpool.c \
@@ -473,20 +472,6 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_3) $(am__objects_4)
 @WANT_AMALGAMATED_LIB_TRUE@am_libsixel_la_OBJECTS =  \
 @WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-none.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-fs.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-atkinson.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-jajuni.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-stucki.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-burkes.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-sierra1.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-sierra2.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-sierra3.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-a-dither.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-x-dither.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-bluenoise.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-interframe.lo \
-@WANT_AMALGAMATED_LIB_TRUE@	libsixel_la-dither-policy-lso2.lo \
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_1) $(am__objects_2) \
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_3) $(am__objects_4)
 am__dirstamp = $(am__leading_dot)dirstamp
@@ -1266,23 +1251,9 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__append_3) $(am__append_4) \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__append_5)
 @WANT_AMALGAMATED_LIB_TRUE@libsixel_la_SOURCES = $(srcdir)/dither.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither.h \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-none.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-fs.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-atkinson.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-jajuni.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-stucki.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-burkes.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-sierra1.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-sierra2.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-sierra3.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-a-dither.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-x-dither.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-bluenoise.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-interframe.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither-policy-lso2.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_2) $(am__append_3) \
-@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_4) $(am__append_5)
+@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither.h $(am__append_2) \
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_3) $(am__append_4) \
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_5)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir) $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)
 

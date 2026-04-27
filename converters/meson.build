@@ -61,12 +61,10 @@ if img2sixel_opt.enabled()
   img2sixel_core_sources += sources_common + aborttrace_sources
   if amalgamated_tools_enabled
     img2sixel_exe = executable('img2sixel',
-      [amalgamation_out] + amalgamated_dither_policy_sources,
-      c_args: libsixel_posix_defs + ['-DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1',
-                                     '-DBUILD_IMG2SIXEL',
+      [amalgamation_out],
+      c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
                                      '-DHAVE_COMPLETION_EMBED_H'],
-      objc_args: libsixel_posix_defs + ['-DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1',
-                                        '-DBUILD_IMG2SIXEL',
+      objc_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
                                         '-DHAVE_COMPLETION_EMBED_H'],
       include_directories: [project_inc, local_inc],
       dependencies: deps + aborttrace_deps_local,
@@ -418,11 +416,9 @@ sixel2png_deps = []
 if sixel2png_opt.enabled()
   if amalgamated_tools_enabled
     sixel2png_exe = executable('sixel2png',
-      [amalgamation_out] + amalgamated_dither_policy_sources,
-      c_args: libsixel_posix_defs + ['-DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1',
-                                     '-DBUILD_SIXEL2PNG'],
-      objc_args: libsixel_posix_defs + ['-DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1',
-                                        '-DBUILD_SIXEL2PNG'],
+      [amalgamation_out],
+      c_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
+      objc_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
       include_directories: [project_inc, local_inc],
       dependencies: deps + aborttrace_deps_local,
       install: true,

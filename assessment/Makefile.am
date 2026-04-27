@@ -58,30 +58,13 @@ AMALGAMATION_LSQA_LIBS = -lm \
         $(CLIPBOARD_LIBS) \
         @THREAD_LIBS@
 
-AMALGAMATION_DITHER_POLICY_SOURCES = \
-        $(top_srcdir)/src/dither-policy-none.c \
-        $(top_srcdir)/src/dither-policy-fs.c \
-        $(top_srcdir)/src/dither-policy-atkinson.c \
-        $(top_srcdir)/src/dither-policy-jajuni.c \
-        $(top_srcdir)/src/dither-policy-stucki.c \
-        $(top_srcdir)/src/dither-policy-burkes.c \
-        $(top_srcdir)/src/dither-policy-sierra1.c \
-        $(top_srcdir)/src/dither-policy-sierra2.c \
-        $(top_srcdir)/src/dither-policy-sierra3.c \
-        $(top_srcdir)/src/dither-policy-a-dither.c \
-        $(top_srcdir)/src/dither-policy-x-dither.c \
-        $(top_srcdir)/src/dither-policy-bluenoise.c \
-        $(top_srcdir)/src/dither-policy-interframe.c \
-        $(top_srcdir)/src/dither-policy-lso2.c
-
 bin_PROGRAMS = lsqa
 
 if WANT_AMALGAMATED_TOOLS
-lsqa_SOURCES = $(AMALGAMATION_DITHER_POLICY_SOURCES)
+lsqa_SOURCES =
 nodist_lsqa_SOURCES = $(AMALGAMATION_SIXEL)
 lsqa_CPPFLAGS = $(AMALGAMATION_LSQA_CPPFLAGS) \
         -I$(top_srcdir)/converters \
-        -DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1 \
         -DBUILD_LSQA
 lsqa_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
         $(THREAD_CFLAGS)

@@ -597,12 +597,6 @@ emit_all_units() {
                 emit_unit "${unit}" \
                     "!defined(SIXEL_AMALGAMATION_SPLIT_DITHER)"
                 ;;
-            src/dither-policy-*.c)
-                # Policy units are compiled as standalone objects when
-                # amalgamated builds enable dither-policy splitting.
-                emit_unit "${unit}" \
-                    "!defined(SIXEL_AMALGAMATION_SPLIT_DITHER_POLICY)"
-                ;;
             *)
                 emit_unit "${unit}" ""
                 ;;

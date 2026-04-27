@@ -17,10 +17,9 @@ lsqa_objc_args = lsqa_c_args
 lsqa_rpath = src_build_dir
 
 if amalgamated_tools_enabled
-  lsqa_sources = [amalgamation_out] + amalgamated_dither_policy_sources
+  lsqa_sources = [amalgamation_out]
   lsqa_dependencies = deps
   lsqa_c_args = libsixel_posix_defs + [
-    '-DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1',
     '-DBUILD_LSQA',
   ]
   lsqa_objc_args = lsqa_c_args

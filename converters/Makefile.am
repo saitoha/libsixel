@@ -81,22 +81,6 @@ AMALGAMATION_TOOL_LIBS = -lm \
         $(CLIPBOARD_LIBS) \
         @THREAD_LIBS@
 
-AMALGAMATION_DITHER_POLICY_SOURCES = \
-        $(top_srcdir)/src/dither-policy-none.c \
-        $(top_srcdir)/src/dither-policy-fs.c \
-        $(top_srcdir)/src/dither-policy-atkinson.c \
-        $(top_srcdir)/src/dither-policy-jajuni.c \
-        $(top_srcdir)/src/dither-policy-stucki.c \
-        $(top_srcdir)/src/dither-policy-burkes.c \
-        $(top_srcdir)/src/dither-policy-sierra1.c \
-        $(top_srcdir)/src/dither-policy-sierra2.c \
-        $(top_srcdir)/src/dither-policy-sierra3.c \
-        $(top_srcdir)/src/dither-policy-a-dither.c \
-        $(top_srcdir)/src/dither-policy-x-dither.c \
-        $(top_srcdir)/src/dither-policy-bluenoise.c \
-        $(top_srcdir)/src/dither-policy-interframe.c \
-        $(top_srcdir)/src/dither-policy-lso2.c
-
 CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h
 
 # +--------------------------------------------------------------+
@@ -124,10 +108,9 @@ else
 bin_PROGRAMS += img2sixel
 endif
 if WANT_AMALGAMATED_TOOLS
-img2sixel_SOURCES = $(AMALGAMATION_DITHER_POLICY_SOURCES)
+img2sixel_SOURCES =
 nodist_img2sixel_SOURCES = $(AMALGAMATION_SIXEL)
 img2sixel_CPPFLAGS = $(AMALGAMATION_TOOL_CPPFLAGS) \
-        -DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1 \
         -DBUILD_IMG2SIXEL -DHAVE_COMPLETION_EMBED_H
 img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 img2sixel_LDFLAGS = $(MAYBE_COVERAGE)
@@ -194,10 +177,9 @@ bin_PROGRAMS += sixel2png
 endif
 sixel2png_CPPFLAGS = $(AM_CPPFLAGS)
 if WANT_AMALGAMATED_TOOLS
-sixel2png_SOURCES = $(AMALGAMATION_DITHER_POLICY_SOURCES)
+sixel2png_SOURCES =
 nodist_sixel2png_SOURCES = $(AMALGAMATION_SIXEL)
 sixel2png_CPPFLAGS += $(AMALGAMATION_TOOL_CPPFLAGS) \
-        -DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1 \
         -DBUILD_SIXEL2PNG
 sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 sixel2png_LDFLAGS = $(MAYBE_COVERAGE)

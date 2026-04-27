@@ -285,24 +285,8 @@ lt_version = '@0@.@1@.@2@'.format(lt_soversion, ls_lt_age, ls_lt_revision)
 if amalgamated_lib_enabled
   libsixel_sources = [
     amalgamation_out,
-    'dither-policy-none.c',
-    'dither-policy-fs.c',
-    'dither-policy-atkinson.c',
-    'dither-policy-jajuni.c',
-    'dither-policy-stucki.c',
-    'dither-policy-burkes.c',
-    'dither-policy-sierra1.c',
-    'dither-policy-sierra2.c',
-    'dither-policy-sierra3.c',
-    'dither-policy-a-dither.c',
-    'dither-policy-x-dither.c',
-    'dither-policy-bluenoise.c',
-    'dither-policy-interframe.c',
-    'dither-policy-lso2.c',
   ]
-  libsixel_c_args = libsixel_posix_defs + [
-    '-DSIXEL_AMALGAMATION_SPLIT_DITHER_POLICY=1',
-  ]
+  libsixel_c_args = libsixel_posix_defs
 else
   libsixel_sources = srcs
   libsixel_c_args = libsixel_posix_defs
