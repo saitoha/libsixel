@@ -1153,7 +1153,7 @@ fuzz-loader-builtin-struct-bmp-rle-bitfields-libfuzzer$(EXEEXT): $(fuzz_loader_b
 	@rm -f fuzz-loader-builtin-struct-bmp-rle-bitfields-libfuzzer$(EXEEXT)
 	$(AM_V_CCLD)$(fuzz_loader_builtin_struct_bmp_rle_bitfields_libfuzzer_LINK) $(fuzz_loader_builtin_struct_bmp_rle_bitfields_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_bmp_rle_bitfields_libfuzzer_LDADD) $(LIBS)
 
-fuzz-loader-builtin-struct-exif-orientation-libfuzzer$(EXEEXT): $(fuzz_loader_builtin_struct_exif_orientation_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_exif_orientation_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_loader_builtin_struct_exif_orientation_libfuzzer_DEPENDENCIES)
+fuzz-loader-builtin-struct-exif-orientation-libfuzzer$(EXEEXT): $(fuzz_loader_builtin_struct_exif_orientation_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_exif_orientation_libfuzzer_DEPENDENCIES) $(EXTRA_fuzz_loader_builtin_struct_exif_orientation_libfuzzer_DEPENDENCIES) 
 	@rm -f fuzz-loader-builtin-struct-exif-orientation-libfuzzer$(EXEEXT)
 	$(AM_V_CCLD)$(fuzz_loader_builtin_struct_exif_orientation_libfuzzer_LINK) $(fuzz_loader_builtin_struct_exif_orientation_libfuzzer_OBJECTS) $(fuzz_loader_builtin_struct_exif_orientation_libfuzzer_LDADD) $(LIBS)
 
