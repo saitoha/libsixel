@@ -1229,6 +1229,8 @@ For color management, builtin WebP applies embedded `ICCP` first.
 When `ICCP` is absent and builtin CMS is enabled, builtin WebP also accepts a
 minimal `XMP` color profile name fallback (`photoshop:ICCProfile`) for
 `sRGB IEC61966-2.1`, `Display P3`, and `Adobe RGB (1998)`.
+The profile-name resolver also accepts compact aliases such as `sRGB`,
+`IEC61966-2.1`, `DisplayP3`, `AdobeRGB1998`, and `AdobeRGB`.
 Unknown XMP color profile names are ignored.
 
 `librsvg` always returns raster frames as `RGB888` or `RGBA8888`.

@@ -82,6 +82,11 @@ typedef enum sixel_webp_xmp_cms_profile_kind {
     SIXEL_WEBP_XMP_CMS_PROFILE_ADOBE_RGB_1998
 } sixel_webp_xmp_cms_profile_kind_t;
 
+typedef struct sixel_webp_xmp_profile_alias {
+    char const *name;
+    sixel_webp_xmp_cms_profile_kind_t kind;
+} sixel_webp_xmp_profile_alias_t;
+
 static unsigned int
 sixel_webp_anim_read_u24le(unsigned char const *p)
 {
@@ -641,27 +646,62 @@ sixel_webp_xmp_ascii_tolower(unsigned char ch)
 }
 
 static int
+sixel_webp_xmp_span_case_equal(unsigned char const *payload,
+                               size_t begin,
+                               size_t end,
+                               char const *text)
+{
+    size_t index;
+    size_t text_size;
+    unsigned char left;
+    unsigned char right;
+
+    index = 0u;
+    text_size = 0u;
+    left = '\0';
+    right = '\0';
+    if (payload == NULL || text == NULL || begin > end) {
+        return 0;
+    }
+
+    text_size = strlen(text);
+    if (end - begin != text_size) {
+        return 0;
+    }
+
+    for (index = 0u; index < text_size; ++index) {
+        left = sixel_webp_xmp_ascii_tolower(payload[begin + index]);
+        right = sixel_webp_xmp_ascii_tolower((unsigned char)text[index]);
+        if (left != right) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int
 sixel_webp_xmp_match_profile_name(unsigned char const *payload,
                                   size_t value_begin,
                                   size_t value_end,
                                   sixel_webp_xmp_cms_profile_kind_t *kind)
 {
-    static char const profile_srgb[] = "sRGB IEC61966-2.1";
-    static char const profile_display_p3[] = "Display P3";
-    static char const profile_adobe_rgb[] = "Adobe RGB (1998)";
-    size_t text_size;
-    size_t index;
-    size_t profile_size;
-    unsigned char ch;
-    char const *profile_text;
-    int profile_index;
+    static sixel_webp_xmp_profile_alias_t const profile_aliases[] = {
+        { "sRGB IEC61966-2.1", SIXEL_WEBP_XMP_CMS_PROFILE_SRGB },
+        { "sRGB", SIXEL_WEBP_XMP_CMS_PROFILE_SRGB },
+        { "IEC 61966-2-1", SIXEL_WEBP_XMP_CMS_PROFILE_SRGB },
+        { "IEC61966-2.1", SIXEL_WEBP_XMP_CMS_PROFILE_SRGB },
+        { "Display P3", SIXEL_WEBP_XMP_CMS_PROFILE_DISPLAY_P3 },
+        { "DisplayP3", SIXEL_WEBP_XMP_CMS_PROFILE_DISPLAY_P3 },
+        { "Adobe RGB (1998)", SIXEL_WEBP_XMP_CMS_PROFILE_ADOBE_RGB_1998 },
+        { "Adobe RGB 1998", SIXEL_WEBP_XMP_CMS_PROFILE_ADOBE_RGB_1998 },
+        { "AdobeRGB1998", SIXEL_WEBP_XMP_CMS_PROFILE_ADOBE_RGB_1998 },
+        { "AdobeRGB", SIXEL_WEBP_XMP_CMS_PROFILE_ADOBE_RGB_1998 }
+    };
+    size_t alias_count;
+    size_t alias_index;
 
-    text_size = 0u;
-    index = 0u;
-    profile_size = 0u;
-    ch = '\0';
-    profile_text = NULL;
-    profile_index = 0;
+    alias_count = sizeof(profile_aliases) / sizeof(profile_aliases[0]);
+    alias_index = 0u;
     if (payload == NULL || kind == NULL || value_begin > value_end) {
         return 0;
     }
@@ -678,32 +718,13 @@ sixel_webp_xmp_match_profile_name(unsigned char const *payload,
         return 0;
     }
 
-    text_size = value_end - value_begin;
-    for (profile_index = 0; profile_index < 3; ++profile_index) {
-        if (profile_index == 0) {
-            profile_text = profile_srgb;
-            profile_size = sizeof(profile_srgb) - 1u;
-            *kind = SIXEL_WEBP_XMP_CMS_PROFILE_SRGB;
-        } else if (profile_index == 1) {
-            profile_text = profile_display_p3;
-            profile_size = sizeof(profile_display_p3) - 1u;
-            *kind = SIXEL_WEBP_XMP_CMS_PROFILE_DISPLAY_P3;
-        } else {
-            profile_text = profile_adobe_rgb;
-            profile_size = sizeof(profile_adobe_rgb) - 1u;
-            *kind = SIXEL_WEBP_XMP_CMS_PROFILE_ADOBE_RGB_1998;
-        }
-        if (text_size != profile_size) {
-            continue;
-        }
-        for (index = 0u; index < text_size; ++index) {
-            ch = sixel_webp_xmp_ascii_tolower(payload[value_begin + index]);
-            if (ch != sixel_webp_xmp_ascii_tolower(
-                    (unsigned char)profile_text[index])) {
-                break;
-            }
-        }
-        if (index == text_size) {
+    for (alias_index = 0u; alias_index < alias_count; ++alias_index) {
+        if (sixel_webp_xmp_span_case_equal(payload,
+                                           value_begin,
+                                           value_end,
+                                           profile_aliases[alias_index].name) !=
+            0) {
+            *kind = profile_aliases[alias_index].kind;
             return 1;
         }
     }
