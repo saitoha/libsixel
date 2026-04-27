@@ -1216,6 +1216,9 @@ VP8 and `VP8+ALPH` decode failures are normalized to `W_ERR_VP8_STREAM`.
 (`frame_count`/canvas ceilings) only.
 Limit reasons are exposed as `W_UNSUP_ANIM_FRAME_LIMIT`,
 `W_UNSUP_ANIM_DIMENSION_LIMIT`, and `W_UNSUP_ANIM_PIXEL_LIMIT`.
+Thresholds are inclusive: `frame_count==1024`, canvas dimensions up to
+`32767`, and pixel count up to `268435456` stay supported. Only values above
+those limits map to `W_UNSUP_ANIM_*` limit reasons.
 For static decode,
 embedded `ICCP` is applied when builtin CMS is enabled and embedded `EXIF`
 orientation is applied when builtin orientation handling is enabled.

@@ -154,6 +154,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/0057_loader_gd_can_try_policy.c \
 	loader/0058_loader_gd_status_policy.c \
 	loader/0059_loader_gd_pixelpolicy_detail.c \
+	loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
 	loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
 	quant/palette/0002_kmedoids_constraints.c \
@@ -222,6 +223,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0057_loader_gd_can_try_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0058_loader_gd_status_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0059_loader_gd_pixelpolicy_detail.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0002_kmedoids_constraints.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0003_kcenter_constraints.$(OBJEXT) \
@@ -345,6 +347,7 @@ am__depfiles_remade =  \
 	loader/$(DEPDIR)/test_runner-0057_loader_gd_can_try_policy.Po \
 	loader/$(DEPDIR)/test_runner-0058_loader_gd_status_policy.Po \
 	loader/$(DEPDIR)/test_runner-0059_loader_gd_pixelpolicy_detail.Po \
+	loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po \
 	loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po \
 	loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po \
@@ -1076,6 +1079,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0057_LOADER_GD_CAN_TRY_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0058_LOADER_GD_STATUS_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0059_LOADER_GD_PIXELPOLICY_DETAIL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0060_LOADER_BUILTIN_WEBP_ANIM_POLICY_LIMITS_PLAN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_ABORTTRACE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI
 
@@ -1167,6 +1171,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0057_loader_gd_can_try_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0058_loader_gd_status_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0059_loader_gd_pixelpolicy_detail.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0002_kmedoids_constraints.c \
@@ -1518,6 +1523,9 @@ loader/test_runner-0058_loader_gd_status_policy.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-0059_loader_gd_pixelpolicy_detail.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.$(OBJEXT):  \
+	loader/builtin/$(am__dirstamp) \
+	loader/builtin/$(DEPDIR)/$(am__dirstamp)
 quant/palette/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette
 	@: >>quant/palette/$(am__dirstamp)
@@ -1698,6 +1706,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0057_loader_gd_can_try_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0058_loader_gd_status_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0059_loader_gd_pixelpolicy_detail.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po@am__quote@ # am--include-marker
@@ -2391,6 +2400,20 @@ loader/test_runner-0059_loader_gd_pixelpolicy_detail.obj: loader/0059_loader_gd_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0059_loader_gd_pixelpolicy_detail.c' object='loader/test_runner-0059_loader_gd_pixelpolicy_detail.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0059_loader_gd_pixelpolicy_detail.obj `if test -f 'loader/0059_loader_gd_pixelpolicy_detail.c'; then $(CYGPATH_W) 'loader/0059_loader_gd_pixelpolicy_detail.c'; else $(CYGPATH_W) '$(srcdir)/loader/0059_loader_gd_pixelpolicy_detail.c'; fi`
+
+loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.o: loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.o -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Tpo -c -o loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.o `test -f 'loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c' || echo '$(srcdir)/'`loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Tpo loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c' object='loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.o `test -f 'loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c' || echo '$(srcdir)/'`loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c
+
+loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.obj: loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.obj -MD -MP -MF loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Tpo -c -o loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.obj `if test -f 'loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c'; then $(CYGPATH_W) 'loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Tpo loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c' object='loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/builtin/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.obj `if test -f 'loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c'; then $(CYGPATH_W) 'loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c'; else $(CYGPATH_W) '$(srcdir)/loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c'; fi`
 
 quant/palette/test_runner-0001_kmeans_init.o: quant/palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0001_kmeans_init.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Tpo -c -o quant/palette/test_runner-0001_kmeans_init.o `test -f 'quant/palette/0001_kmeans_init.c' || echo '$(srcdir)/'`quant/palette/0001_kmeans_init.c
@@ -3108,6 +3131,7 @@ distclean: distclean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0057_loader_gd_can_try_policy.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0058_loader_gd_status_policy.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0059_loader_gd_pixelpolicy_detail.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
@@ -3219,6 +3243,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0057_loader_gd_can_try_policy.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0058_loader_gd_status_policy.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0059_loader_gd_pixelpolicy_detail.Po
+	-rm -f loader/builtin/$(DEPDIR)/test_runner-0060_loader_builtin_webp_anim_policy_limits_plan.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/builtin/$(DEPDIR)/test_runner-0021_loader_builtin_indexed_png_reqcolors_fallback.Po
 	-rm -f loader/coregraphics/$(DEPDIR)/test_runner-0008_loader_coregraphics_pixelformat.Po
