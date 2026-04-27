@@ -1004,34 +1004,6 @@ sixel_lookup_policy_mahalanobis_prepare(
 }
 
 static int
-sixel_lookup_policy_mahalanobis_map_pixel(
-    sixel_lookup_policy_interface_t const *policy,
-    unsigned char const *pixel)
-{
-    sixel_lookup_policy_mahalanobis_object_t const *object;
-
-    object = NULL;
-    if (policy == NULL || pixel == NULL) {
-        return 0;
-    }
-
-    object = sixel_lookup_policy_mahalanobis_from_base_const(policy);
-    if (object->prepared == 0) {
-        return 0;
-    }
-
-    if (object->lookup_source_is_float != 0) {
-        return sixel_lookup_policy_mahalanobis_float32_search(
-            &object->state_float,
-            (float const *)(void const *)pixel);
-    }
-
-    return sixel_lookup_policy_mahalanobis_map_8bit(
-        &object->state_8bit,
-        pixel);
-}
-
-static int
 sixel_lookup_policy_mahalanobis_map_pixel_8bit(
     sixel_lookup_policy_interface_t const *policy,
     unsigned char const *pixel)
@@ -1075,54 +1047,6 @@ sixel_lookup_policy_mahalanobis_map_pixel_float32(
         (float const *)(void const *)pixel);
 }
 
-static sixel_lookup_policy_vtbl_t const
-g_sixel_lookup_policy_mahalanobis_vtbl = {
-    sixel_lookup_policy_mahalanobis_ref,
-    sixel_lookup_policy_mahalanobis_unref,
-    sixel_lookup_policy_mahalanobis_prepare,
-    sixel_lookup_policy_mahalanobis_map_pixel,
-};
-
-#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
-#endif
-SIXELSTATUS
-sixel_lookup_policy_create_mahalanobis(
-    sixel_lookup_policy_interface_t **policy)
-{
-    sixel_lookup_policy_mahalanobis_object_t *object;
-
-    object = NULL;
-    if (policy != NULL) {
-        *policy = NULL;
-    }
-
-    if (policy == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    object = (sixel_lookup_policy_mahalanobis_object_t *)
-        malloc(sizeof(*object));
-    if (object == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_lookup_policy_create_mahalanobis: allocation failed.");
-        return SIXEL_BAD_ALLOCATION;
-    }
-
-    memset(object, 0, sizeof(*object));
-    object->base.vtbl = &g_sixel_lookup_policy_mahalanobis_vtbl;
-    object->ref = 1U;
-
-    *policy = &object->base;
-    return SIXEL_OK;
-}
-#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)
-# pragma GCC diagnostic pop
-#endif
-
-
-
 static sixel_lookup_policy_vtbl_t
     g_sixel_lookup_policy_mahalanobis_8bit_vtbl = {
     sixel_lookup_policy_mahalanobis_ref,
@@ -1139,32 +1063,61 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_mahalanobis_map_pixel_float32,
 };
 
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
+#endif
+static SIXELSTATUS
+sixel_lookup_policy_mahalanobis_create_with_vtbl(
+    sixel_lookup_policy_interface_t **policy,
+    sixel_lookup_policy_vtbl_t const *vtbl)
+{
+    sixel_lookup_policy_mahalanobis_object_t *object;
+
+    object = NULL;
+    if (policy != NULL) {
+        *policy = NULL;
+    }
+
+    if (policy == NULL || vtbl == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    object = (sixel_lookup_policy_mahalanobis_object_t *)
+        malloc(sizeof(*object));
+    if (object == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_policy_create_mahalanobis: allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    memset(object, 0, sizeof(*object));
+    object->base.vtbl = vtbl;
+    object->ref = 1U;
+
+    *policy = &object->base;
+    return SIXEL_OK;
+}
+#if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)
+# pragma GCC diagnostic pop
+#endif
+
 SIXELSTATUS
 sixel_lookup_policy_create_mahalanobis_8bit(
     sixel_lookup_policy_interface_t **policy)
 {
-    SIXELSTATUS status;
-
-    status = sixel_lookup_policy_create_mahalanobis(policy);
-    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
-        (*policy)->vtbl = &g_sixel_lookup_policy_mahalanobis_8bit_vtbl;
-    }
-
-    return status;
+    return sixel_lookup_policy_mahalanobis_create_with_vtbl(
+        policy,
+        &g_sixel_lookup_policy_mahalanobis_8bit_vtbl);
 }
 
 SIXELSTATUS
 sixel_lookup_policy_create_mahalanobis_float32(
     sixel_lookup_policy_interface_t **policy)
 {
-    SIXELSTATUS status;
-
-    status = sixel_lookup_policy_create_mahalanobis(policy);
-    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
-        (*policy)->vtbl = &g_sixel_lookup_policy_mahalanobis_float32_vtbl;
-    }
-
-    return status;
+    return sixel_lookup_policy_mahalanobis_create_with_vtbl(
+        policy,
+        &g_sixel_lookup_policy_mahalanobis_float32_vtbl);
 }
 
 /* emacs Local Variables:      */
