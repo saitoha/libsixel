@@ -372,7 +372,6 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
                     context->result[pos] = (sixel_index_t)output_index;
                 }
             
-
             for (n = 0; n < depth; ++n) {
                 palette_value = palette[color_index * depth + n];
                 diff = (int)source_pixel[n] - (int)palette_value;
@@ -406,36 +405,6 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
     status = SIXEL_OK;
     return status;
 }
-
-/*
- * SPDX-License-Identifier: MIT
- *
- * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
-/*
- * Adaptive diffusion backend operating on RGBFLOAT32 buffers.  The worker
- * mirrors the 8bit implementation but keeps intermediate values in float so
- * rounding happens only at palette lookups.
- */
 
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
@@ -1110,7 +1079,6 @@ sixel_dither_policy_lso2_build_context(
         context->transparent_mask_size = dither->pipeline_transparent_mask_size;
         context->transparent_keycolor = dither->pipeline_transparent_keycolor;
     }
-
 
     return SIXEL_OK;
 }

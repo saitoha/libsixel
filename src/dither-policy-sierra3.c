@@ -315,7 +315,6 @@ sierra3_diffuse_sierra3(unsigned char *data, int width, int height,
     }
 }
 
-
 static void
 sierra3_error_diffuse_float(float *data,
                     int pos,
@@ -416,31 +415,6 @@ sierra3_diffuse_weighted_row(float *data,
  * reference diffusion matrix.
  */
 
-/*
- * Stucki's method spreads the error across a 5x3 neighborhood with larger
- * emphasis on closer pixels.  The numerators/denominators match the classic
- * 8/48, 4/48, and related fractions from the integer backend.
- */
-
-/*
- * Burkes' kernel limits the spread to two rows to reduce directional artifacts
- * while keeping the symmetric 1/16-4/16 pattern.
- */
-
-/*
- * Sierra Lite (Sierra1) uses a compact 2x2 mask to reduce ringing while
- * keeping serpentine traversal stable.
- */
-
-/*
- * Sierra Two-row keeps the full 5x3 footprint but halves the lower row weights
- * relative to Sierra-3, matching the 32-denominator formulation.
- */
-
-/*
- * Sierra-3 restores the heavier middle-row contributions (5/32) that
- * characterize the original kernel.
- */
 static void
 sierra3_diffuse_sierra3_float(float *data,
                       int width,
@@ -554,7 +528,6 @@ sixel_dither_apply_sierra3_float32(
     palette_float = NULL;
     float_depth = 0;
 
-
     if (dither == NULL || context == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -597,7 +570,6 @@ sixel_dither_apply_sierra3_float32(
     } else {
         have_palette_float = 0;
     }
-
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
@@ -670,7 +642,6 @@ sixel_dither_apply_sierra3_float32(
             sixel_dither_pipeline_row_notify(dither, absolute_y);
         }
     }
-
 
     status = SIXEL_OK;
     return status;

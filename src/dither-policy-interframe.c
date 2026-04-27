@@ -69,7 +69,6 @@ typedef struct sixel_dither_policy_interframe_context {
     int valid;
 } sixel_dither_policy_interframe_context_t;
 
-
 static void
 interframe_sixel_dither_scanline_params_fixed_8bit(int serpentine,
                              int index,
@@ -1383,7 +1382,6 @@ interframe_diffuse_none(unsigned char *data, int width, int height,
     /* unused */ (void) direction;
 }
 
-
 static void
 interframe_diffuse_fs(unsigned char *data, int width, int height,
            int x, int y, int depth, int error, int direction)
@@ -1439,7 +1437,6 @@ interframe_diffuse_fs(unsigned char *data, int width, int height,
     }
 }
 
-
 static void
 interframe_diffuse_atkinson(unsigned char *data, int width, int height,
                  int x, int y, int depth, int error, int direction)
@@ -1481,7 +1478,6 @@ interframe_diffuse_atkinson(unsigned char *data, int width, int height,
         interframe_error_diffuse_fast(data, pos + width * 2, depth, error, 1, 8);
     }
 }
-
 
 static void
 interframe_diffuse_jajuni(unsigned char *data, int width, int height,
@@ -1552,7 +1548,6 @@ interframe_diffuse_jajuni(unsigned char *data, int width, int height,
         }
     }
 }
-
 
 static void
 interframe_diffuse_stucki(unsigned char *data, int width, int height,
@@ -1626,7 +1621,6 @@ interframe_diffuse_stucki(unsigned char *data, int width, int height,
         }
     }
 }
-
 
 static void
 interframe_diffuse_burkes(unsigned char *data, int width, int height,
@@ -1728,7 +1722,6 @@ interframe_diffuse_sierra1(unsigned char *data, int width, int height,
     }
 }
 
-
 static void
 interframe_diffuse_sierra2(unsigned char *data, int width, int height,
                 int x, int y, int depth, int error, int direction)
@@ -1793,7 +1786,6 @@ interframe_diffuse_sierra2(unsigned char *data, int width, int height,
         }
     }
 }
-
 
 static void
 interframe_diffuse_sierra3(unsigned char *data, int width, int height,
@@ -2331,11 +2323,6 @@ interframe_diffuse_jajuni_float(float *data,
     }
 }
 
-/*
- * Stucki's method spreads the error across a 5x3 neighborhood with larger
- * emphasis on closer pixels.  The numerators/denominators match the classic
- * 8/48, 4/48, and related fractions from the integer backend.
- */
 static void
 interframe_diffuse_stucki_float(float *data,
                      int width,
@@ -2408,10 +2395,6 @@ interframe_diffuse_stucki_float(float *data,
     }
 }
 
-/*
- * Burkes' kernel limits the spread to two rows to reduce directional artifacts
- * while keeping the symmetric 1/16-4/16 pattern.
- */
 static void
 interframe_diffuse_burkes_float(float *data,
                      int width,
@@ -2465,10 +2448,6 @@ interframe_diffuse_burkes_float(float *data,
     }
 }
 
-/*
- * Sierra Lite (Sierra1) uses a compact 2x2 mask to reduce ringing while
- * keeping serpentine traversal stable.
- */
 static void
 interframe_diffuse_sierra1_float(float *data,
                       int width,
@@ -2522,10 +2501,6 @@ interframe_diffuse_sierra1_float(float *data,
     }
 }
 
-/*
- * Sierra Two-row keeps the full 5x3 footprint but halves the lower row weights
- * relative to Sierra-3, matching the 32-denominator formulation.
- */
 static void
 interframe_diffuse_sierra2_float(float *data,
                       int width,
@@ -2598,10 +2573,6 @@ interframe_diffuse_sierra2_float(float *data,
     }
 }
 
-/*
- * Sierra-3 restores the heavier middle-row contributions (5/32) that
- * characterize the original kernel.
- */
 static void
 interframe_diffuse_sierra3_float(float *data,
                       int width,
@@ -3769,7 +3740,6 @@ sixel_dither_apply_interframe_float32(
     (void)strategy_token;
     (void)interframe_spatial_diffuse;
 
-
     status = SIXEL_OK;
     return status;
 }
@@ -3988,7 +3958,6 @@ sixel_dither_policy_interframe_build_context(
         context->transparent_mask_size = dither->pipeline_transparent_mask_size;
         context->transparent_keycolor = dither->pipeline_transparent_keycolor;
     }
-
 
     return SIXEL_OK;
 }
