@@ -861,6 +861,8 @@ static void
 sixel_webp_trace_anim_frame_error(sixel_webp_anim_frame_t const *anim_frame,
                                   SIXELSTATUS status)
 {
+    (void)status;
+
     if (anim_frame == NULL) {
         return;
     }
@@ -868,16 +870,12 @@ sixel_webp_trace_anim_frame_error(sixel_webp_anim_frame_t const *anim_frame,
         sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_ERR_VP8L_STREAM);
         return;
     }
-    if (status == SIXEL_NOT_IMPLEMENTED) {
-        if (anim_frame->kind == SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC) {
-            sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_UNSUP_VP8_ALPHA);
-        } else {
-            sixel_webp_trace_contract_add_code(
-                SIXEL_WEBP_CODE_UNSUP_VP8_FEATURE);
-        }
-    } else {
-        sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_ERR_VP8_STREAM);
-    }
+
+    /*
+     * VP8 and VP8+ALPHA frame decode failures are both normalized to stream
+     * corruption in the current builtin WebP contract.
+     */
+    sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_ERR_VP8_STREAM);
 }
 
 static void
@@ -1252,7 +1250,8 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             }
             if (subframe_width != stream.frames[source_frame_no].width ||
                 subframe_height != stream.frames[source_frame_no].height) {
-                sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_ERR_VP8_STREAM);
+                sixel_webp_trace_contract_add_code(
+                    SIXEL_WEBP_CODE_ERR_VP8_STREAM);
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
@@ -1467,13 +1466,8 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
                                                &height,
                                                chunk->allocator);
         if (SIXEL_FAILED(status)) {
-            if (status == SIXEL_NOT_IMPLEMENTED) {
-                sixel_webp_trace_contract_add_code(
-                    SIXEL_WEBP_CODE_UNSUP_VP8_FEATURE);
-            } else {
-                sixel_webp_trace_contract_add_code(
-                    SIXEL_WEBP_CODE_ERR_VP8_STREAM);
-            }
+            sixel_webp_trace_contract_add_code(
+                SIXEL_WEBP_CODE_ERR_VP8_STREAM);
             goto cleanup;
         }
         if (plan.kind == SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC) {
@@ -1485,13 +1479,8 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
                 plan.alpha_payload_size,
                 chunk->allocator);
             if (SIXEL_FAILED(status)) {
-                if (status == SIXEL_NOT_IMPLEMENTED) {
-                    sixel_webp_trace_contract_add_code(
-                        SIXEL_WEBP_CODE_UNSUP_VP8_ALPHA);
-                } else {
-                    sixel_webp_trace_contract_add_code(
-                        SIXEL_WEBP_CODE_ERR_VP8_STREAM);
-                }
+                sixel_webp_trace_contract_add_code(
+                    SIXEL_WEBP_CODE_ERR_VP8_STREAM);
                 goto cleanup;
             }
             sixel_webp_trace_contract_add_code(
