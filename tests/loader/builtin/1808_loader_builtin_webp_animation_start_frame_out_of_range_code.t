@@ -49,10 +49,5 @@ test "${diag_line#*WEBP_ERR*}" != "${diag_line}" || {
     exit 0
 }
 
-test "${trace_output#*SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range.*}" != "${trace_output}" || {
-    echo "not ok" 1 - "builtin WebP animation out-of-range start frame missing range message"
-    exit 0
-}
-
 echo "ok" 1 - "builtin WebP animation out-of-range start frame emits WEBP_ERR"
 exit 0

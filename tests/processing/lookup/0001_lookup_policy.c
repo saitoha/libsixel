@@ -602,6 +602,8 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
     unsigned char palette[6];
     float palette_float[6];
     unsigned char pixel[3];
+    float pixel_float[3];
+    unsigned char const *mapped_pixel;
     size_t class_count;
     size_t i;
     size_t j;
@@ -619,6 +621,8 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
     memset(palette, 0, sizeof(palette));
     memset(palette_float, 0, sizeof(palette_float));
     memset(pixel, 0, sizeof(pixel));
+    memset(pixel_float, 0, sizeof(pixel_float));
+    mapped_pixel = NULL;
     class_count = sizeof(class_names) / sizeof(class_names[0]);
     i = 0U;
     j = 0U;
@@ -645,6 +649,9 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
     pixel[0] = 250;
     pixel[1] = 10;
     pixel[2] = 10;
+    pixel_float[0] = 250.0f;
+    pixel_float[1] = 10.0f;
+    pixel_float[2] = 10.0f;
 
     init_lookup_policy_request(&request,
                                &select_request,
@@ -660,10 +667,13 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
     for (i = 0U; i < class_count; ++i) {
         is_float_class = strstr(class_names[i], ".float32") != NULL;
         request.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        mapped_pixel = pixel;
         if (is_float_class != 0) {
             request.pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
             request.palette_float = palette_float;
             request.float_depth = 3 * (int)sizeof(float);
+            /* float32 policies expect the map source to be float triplets. */
+            mapped_pixel = (unsigned char const *)(void const *)pixel_float;
         } else {
             request.palette_float = NULL;
             request.float_depth = 0;
@@ -678,7 +688,7 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
         }
 
         vtbls[i] = lookup_policy->vtbl;
-        mapped = lookup_policy->vtbl->map_pixel(lookup_policy, pixel);
+        mapped = lookup_policy->vtbl->map_pixel(lookup_policy, mapped_pixel);
         if (mapped < 0 || mapped >= 2) {
             status = SIXEL_BAD_ARGUMENT;
             goto cleanup;
