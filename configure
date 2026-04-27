@@ -11495,7 +11495,11 @@ fi
 	# Tell ltmain to make .dll files, not .so files.
 	shrext_cmds=.dll
 	# FIXME: Setting linknames here is a bad hack.
-	archive_cmds='$CC -Fe$output_objdir/$soname $libobjs $compiler_flags $deplibs -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~linknames='
+	archive_cmds='$CC -Fe$output_objdir/$soname $libobjs $compiler_flags $deplibs -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~
+            if test ! -f "$tool_output_objdir$libname.dll.lib" && test -f "$output_objdir/${soname%.dll}.lib"; then
+              cp "$output_objdir/${soname%.dll}.lib" "$tool_output_objdir$libname.dll.lib";
+            fi~
+            linknames='
 	archive_expsym_cmds='if   test DEF = "`$SED -n     -e '\''s/^[	 ]*//'\''     -e '\''/^\(;.*\)*$/d'\''     -e '\''s/^\(EXPORTS\|LIBRARY\)\([	 ].*\)*$/DEF/p'\''     -e q     $export_symbols`" ; then
             cp "$export_symbols" "$output_objdir/$soname.def";
             echo "$tool_output_objdir$soname.def" > "$output_objdir/$soname.exp";
@@ -11503,6 +11507,9 @@ fi
             $SED -e '\''s/^/-link -EXPORT:/'\'' < $export_symbols > $output_objdir/$soname.exp;
           fi~
           $CC -Fe$tool_output_objdir$soname $libobjs $compiler_flags $deplibs "@$tool_output_objdir$soname.exp" -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~
+          if test ! -f "$tool_output_objdir$libname.dll.lib" && test -f "$output_objdir/${soname%.dll}.lib"; then
+            cp "$output_objdir/${soname%.dll}.lib" "$tool_output_objdir$libname.dll.lib";
+          fi~
           linknames='
 	# The linker will not automatically build a static lib if we build a DLL.
 	# _LT_TAGVAR(old_archive_from_new_cmds, )='true'
