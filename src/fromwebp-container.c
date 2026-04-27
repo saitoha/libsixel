@@ -588,10 +588,13 @@ sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
             plan->kind = SIXEL_WEBP_CONTAINER_KIND_ANIM_MVP;
             plan->meta_has_iccp = info->iccp_count != 0u ? 1 : 0;
             plan->meta_has_exif = info->exif_count != 0u ? 1 : 0;
+            plan->meta_has_xmp = info->xmp_count != 0u ? 1 : 0;
             plan->iccp_payload = info->iccp.payload;
             plan->iccp_payload_size = info->iccp.payload_size;
             plan->exif_payload = info->exif.payload;
             plan->exif_payload_size = info->exif.payload_size;
+            plan->xmp_payload = info->xmp.payload;
+            plan->xmp_payload_size = info->xmp.payload_size;
             plan->canvas_width = (int)info->canvas_width;
             plan->canvas_height = (int)info->canvas_height;
             plan->anim_loop_count = (int)info->anim_loop_count;
@@ -610,10 +613,13 @@ sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
         plan->alpha_payload_size = info->alpha.payload_size;
         plan->meta_has_iccp = info->iccp_count != 0u ? 1 : 0;
         plan->meta_has_exif = info->exif_count != 0u ? 1 : 0;
+        plan->meta_has_xmp = info->xmp_count != 0u ? 1 : 0;
         plan->iccp_payload = info->iccp.payload;
         plan->iccp_payload_size = info->iccp.payload_size;
         plan->exif_payload = info->exif.payload;
         plan->exif_payload_size = info->exif.payload_size;
+        plan->xmp_payload = info->xmp.payload;
+        plan->xmp_payload_size = info->xmp.payload_size;
         return SIXEL_OK;
     }
 
@@ -623,10 +629,13 @@ sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
         plan->vp8_payload_size = info->vp8.payload_size;
         plan->meta_has_iccp = info->iccp_count != 0u ? 1 : 0;
         plan->meta_has_exif = info->exif_count != 0u ? 1 : 0;
+        plan->meta_has_xmp = info->xmp_count != 0u ? 1 : 0;
         plan->iccp_payload = info->iccp.payload;
         plan->iccp_payload_size = info->iccp.payload_size;
         plan->exif_payload = info->exif.payload;
         plan->exif_payload_size = info->exif.payload_size;
+        plan->xmp_payload = info->xmp.payload;
+        plan->xmp_payload_size = info->xmp.payload_size;
         return SIXEL_OK;
     }
 
@@ -642,10 +651,13 @@ sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
     plan->vp8l_payload_size = info->vp8l.payload_size;
     plan->meta_has_iccp = info->iccp_count != 0u ? 1 : 0;
     plan->meta_has_exif = info->exif_count != 0u ? 1 : 0;
+    plan->meta_has_xmp = info->xmp_count != 0u ? 1 : 0;
     plan->iccp_payload = info->iccp.payload;
     plan->iccp_payload_size = info->iccp.payload_size;
     plan->exif_payload = info->exif.payload;
     plan->exif_payload_size = info->exif.payload_size;
+    plan->xmp_payload = info->xmp.payload;
+    plan->xmp_payload_size = info->xmp.payload_size;
     return SIXEL_OK;
 }
 

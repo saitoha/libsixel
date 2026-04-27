@@ -1217,6 +1217,10 @@ VP8 and `VP8+ALPH` decode failures are normalized to `W_ERR_VP8_STREAM`.
 For static decode,
 embedded `ICCP` is applied when builtin CMS is enabled and embedded `EXIF`
 orientation is applied when builtin orientation handling is enabled.
+When `EXIF` metadata is absent, builtin WebP also tries a minimal
+`XMP` orientation fallback (`tiff:Orientation`) for values `2..8`.
+`EXIF` always takes precedence over `XMP` when both are present.
+`XMP` remains non-applied for color management in the current scope.
 
 `librsvg` always returns raster frames as `RGB888` or `RGBA8888`.
 Without `-B` and with any non-opaque pixel, alpha is preserved

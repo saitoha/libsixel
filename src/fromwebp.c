@@ -238,7 +238,8 @@ sixel_webp_apply_decode_plan(sixel_webp_decode_plan_t const *plan)
 static void
 sixel_webp_trace_unapplied_meta_codes(sixel_webp_decode_plan_t const *plan,
                                       int iccp_reported,
-                                      int exif_reported)
+                                      int exif_reported,
+                                      int xmp_reported)
 {
     if (plan == NULL) {
         return;
@@ -254,6 +255,9 @@ sixel_webp_trace_unapplied_meta_codes(sixel_webp_decode_plan_t const *plan,
     }
     if (plan->meta_has_exif != 0 && exif_reported == 0) {
         sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_META_EXIF_IGNORED);
+    }
+    if (plan->meta_has_xmp != 0 && xmp_reported == 0) {
+        sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_META_XMP_IGNORED);
     }
 }
 
@@ -417,6 +421,194 @@ sixel_webp_try_apply_exif_orientation(sixel_webp_decode_plan_t const *plan,
     found_orientation = loader_exif_parse_orientation(plan->exif_payload,
                                                       plan->exif_payload_size,
                                                       &parsed_orientation);
+    if (found_orientation == 0 ||
+        parsed_orientation < 2 ||
+        parsed_orientation > 8) {
+        return SIXEL_OK;
+    }
+
+    status = loader_frame_apply_orientation(frame, parsed_orientation);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    *applied = 1;
+    return SIXEL_OK;
+}
+
+static int
+sixel_webp_xmp_is_space(unsigned char ch)
+{
+    return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n';
+}
+
+static int
+sixel_webp_xmp_find_token(unsigned char const *payload,
+                          size_t payload_size,
+                          char const *token,
+                          size_t token_size,
+                          size_t start,
+                          size_t *found_offset)
+{
+    size_t offset;
+
+    offset = 0u;
+    if (payload == NULL || token == NULL || found_offset == NULL ||
+        token_size == 0u || payload_size < token_size || start > payload_size) {
+        return 0;
+    }
+    for (offset = start; offset + token_size <= payload_size; ++offset) {
+        if (memcmp(payload + offset, token, token_size) == 0) {
+            *found_offset = offset;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static int
+sixel_webp_xmp_parse_orientation(unsigned char const *payload,
+                                 size_t payload_size,
+                                 int *orientation)
+{
+    static char const attr_token[] = "tiff:Orientation";
+    static char const elem_begin[] = "<tiff:Orientation>";
+    static char const elem_end[] = "</tiff:Orientation>";
+    size_t offset;
+    size_t cursor;
+    size_t end_offset;
+    unsigned char quote;
+    unsigned char digit;
+    int parsed;
+
+    offset = 0u;
+    cursor = 0u;
+    end_offset = 0u;
+    quote = '\0';
+    digit = 0u;
+    parsed = 0;
+    if (payload == NULL || orientation == NULL) {
+        return 0;
+    }
+    *orientation = 1;
+
+    while (sixel_webp_xmp_find_token(payload,
+                                     payload_size,
+                                     attr_token,
+                                     sizeof(attr_token) - 1u,
+                                     offset,
+                                     &cursor) != 0) {
+        cursor += sizeof(attr_token) - 1u;
+        while (cursor < payload_size &&
+               sixel_webp_xmp_is_space(payload[cursor]) != 0) {
+            ++cursor;
+        }
+        if (cursor >= payload_size || payload[cursor] != '=') {
+            offset = cursor;
+            continue;
+        }
+        ++cursor;
+        while (cursor < payload_size &&
+               sixel_webp_xmp_is_space(payload[cursor]) != 0) {
+            ++cursor;
+        }
+        if (cursor >= payload_size) {
+            break;
+        }
+        quote = payload[cursor];
+        if (quote != '"' && quote != '\'') {
+            offset = cursor;
+            continue;
+        }
+        ++cursor;
+        if (cursor >= payload_size || payload[cursor] < '1' ||
+            payload[cursor] > '8') {
+            offset = cursor;
+            continue;
+        }
+        digit = payload[cursor];
+        ++cursor;
+        while (cursor < payload_size &&
+               sixel_webp_xmp_is_space(payload[cursor]) != 0) {
+            ++cursor;
+        }
+        if (cursor >= payload_size || payload[cursor] != quote) {
+            offset = cursor;
+            continue;
+        }
+        parsed = (int)(digit - (unsigned char)'0');
+        *orientation = parsed;
+        return 1;
+    }
+
+    offset = 0u;
+    while (sixel_webp_xmp_find_token(payload,
+                                     payload_size,
+                                     elem_begin,
+                                     sizeof(elem_begin) - 1u,
+                                     offset,
+                                     &cursor) != 0) {
+        cursor += sizeof(elem_begin) - 1u;
+        while (cursor < payload_size &&
+               sixel_webp_xmp_is_space(payload[cursor]) != 0) {
+            ++cursor;
+        }
+        if (cursor >= payload_size || payload[cursor] < '1' ||
+            payload[cursor] > '8') {
+            offset = cursor;
+            continue;
+        }
+        digit = payload[cursor];
+        ++cursor;
+        while (cursor < payload_size &&
+               sixel_webp_xmp_is_space(payload[cursor]) != 0) {
+            ++cursor;
+        }
+        if (sixel_webp_xmp_find_token(payload,
+                                      payload_size,
+                                      elem_end,
+                                      sizeof(elem_end) - 1u,
+                                      cursor,
+                                      &end_offset) == 0 ||
+            end_offset != cursor) {
+            offset = cursor;
+            continue;
+        }
+        parsed = (int)(digit - (unsigned char)'0');
+        *orientation = parsed;
+        return 1;
+    }
+    return 0;
+}
+
+static SIXELSTATUS
+sixel_webp_try_apply_xmp_orientation(sixel_webp_decode_plan_t const *plan,
+                                     int enable_orientation,
+                                     sixel_frame_t *frame,
+                                     int *applied)
+{
+    SIXELSTATUS status;
+    int parsed_orientation;
+    int found_orientation;
+
+    status = SIXEL_OK;
+    parsed_orientation = 1;
+    found_orientation = 0;
+
+    if (plan == NULL || frame == NULL || applied == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *applied = 0;
+    if (plan->meta_has_xmp == 0 ||
+        enable_orientation == 0 ||
+        plan->xmp_payload == NULL ||
+        plan->xmp_payload_size == 0u ||
+        plan->meta_has_exif != 0) {
+        return SIXEL_OK;
+    }
+
+    found_orientation = sixel_webp_xmp_parse_orientation(plan->xmp_payload,
+                                                         plan->xmp_payload_size,
+                                                         &parsed_orientation);
     if (found_orientation == 0 ||
         parsed_orientation < 2 ||
         parsed_orientation > 8) {
@@ -1095,8 +1287,10 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     int effective_start_frame_set;
     int iccp_code_reported;
     int exif_code_reported;
+    int xmp_code_reported;
     int iccp_applied;
     int exif_applied;
+    int xmp_applied;
 
     status = SIXEL_OK;
     memset(&container, 0, sizeof(container));
@@ -1121,8 +1315,10 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     effective_start_frame_set = 0;
     iccp_code_reported = 0;
     exif_code_reported = 0;
+    xmp_code_reported = 0;
     iccp_applied = 0;
     exif_applied = 0;
+    xmp_applied = 0;
     if (handled == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1342,6 +1538,28 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                 exif_code_reported = 1;
             }
 
+            if (plan.meta_has_xmp != 0) {
+                status = sixel_webp_try_apply_xmp_orientation(
+                    &plan,
+                    enable_orientation,
+                    frame,
+                    &xmp_applied);
+                if (SIXEL_FAILED(status)) {
+                    sixel_webp_trace_contract_add_code(
+                        SIXEL_WEBP_CODE_META_XMP_IGNORED);
+                    xmp_code_reported = 1;
+                    goto end;
+                }
+                if (xmp_applied != 0) {
+                    sixel_webp_trace_contract_add_code(
+                        SIXEL_WEBP_CODE_META_XMP_APPLIED);
+                } else {
+                    sixel_webp_trace_contract_add_code(
+                        SIXEL_WEBP_CODE_META_XMP_IGNORED);
+                }
+                xmp_code_reported = 1;
+            }
+
             status = fn_load(frame, context);
             if (SIXEL_FAILED(status)) {
                 goto end;
@@ -1395,7 +1613,8 @@ end:
                                                         : NULL);
     sixel_webp_trace_unapplied_meta_codes(&plan,
                                           iccp_code_reported,
-                                          exif_code_reported);
+                                          exif_code_reported,
+                                          xmp_code_reported);
     sixel_webp_trace_contract_flush(SIXEL_SUCCEEDED(status) ? 0 : 1);
     return status;
 }
@@ -1414,8 +1633,10 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     int height;
     int iccp_code_reported;
     int exif_code_reported;
+    int xmp_code_reported;
     int iccp_applied;
     int exif_applied;
+    int xmp_applied;
 
     status = SIXEL_OK;
     memset(&container, 0, sizeof(container));
@@ -1425,8 +1646,10 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     height = 0;
     iccp_code_reported = 0;
     exif_code_reported = 0;
+    xmp_code_reported = 0;
     iccp_applied = 0;
     exif_applied = 0;
+    xmp_applied = 0;
 
     if (chunk == NULL || frame == NULL || chunk->allocator == NULL) {
         status = SIXEL_BAD_ARGUMENT;
@@ -1558,13 +1781,35 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
         exif_code_reported = 1;
     }
 
+    if (plan.meta_has_xmp != 0) {
+        status = sixel_webp_try_apply_xmp_orientation(&plan,
+                                                      enable_orientation,
+                                                      frame,
+                                                      &xmp_applied);
+        if (SIXEL_FAILED(status)) {
+            sixel_webp_trace_contract_add_code(
+                SIXEL_WEBP_CODE_META_XMP_IGNORED);
+            xmp_code_reported = 1;
+            goto cleanup;
+        }
+        if (xmp_applied != 0) {
+            sixel_webp_trace_contract_add_code(
+                SIXEL_WEBP_CODE_META_XMP_APPLIED);
+        } else {
+            sixel_webp_trace_contract_add_code(
+                SIXEL_WEBP_CODE_META_XMP_IGNORED);
+        }
+        xmp_code_reported = 1;
+    }
+
 cleanup:
     if (rgba != NULL && chunk != NULL && chunk->allocator != NULL) {
         sixel_allocator_free(chunk->allocator, rgba);
     }
     sixel_webp_trace_unapplied_meta_codes(&plan,
                                           iccp_code_reported,
-                                          exif_code_reported);
+                                          exif_code_reported,
+                                          xmp_code_reported);
     sixel_webp_trace_contract_flush(SIXEL_SUCCEEDED(status) ? 0 : 1);
     return status;
 }

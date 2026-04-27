@@ -58,8 +58,10 @@
 #define SIXEL_WEBP_CODE_OK_ANIM "W_OK_ANIM"
 #define SIXEL_WEBP_CODE_META_ICCP_APPLIED "W_META_ICCP_APPLIED"
 #define SIXEL_WEBP_CODE_META_EXIF_APPLIED "W_META_EXIF_APPLIED"
+#define SIXEL_WEBP_CODE_META_XMP_APPLIED "W_META_XMP_APPLIED"
 #define SIXEL_WEBP_CODE_META_ICCP_IGNORED "W_META_ICCP_IGNORED"
 #define SIXEL_WEBP_CODE_META_EXIF_IGNORED "W_META_EXIF_IGNORED"
+#define SIXEL_WEBP_CODE_META_XMP_IGNORED "W_META_XMP_IGNORED"
 #define SIXEL_WEBP_CODE_UNSUP_ANIM "W_UNSUP_ANIM"
 #define SIXEL_WEBP_CODE_ERR_RIFF_SIGNATURE "W_ERR_RIFF_SIGNATURE"
 #define SIXEL_WEBP_CODE_ERR_RIFF_HEADER_TRUNC "W_ERR_RIFF_HEADER_TRUNC"
@@ -154,8 +156,11 @@ typedef struct sixel_webp_decode_plan {
     size_t iccp_payload_size;
     unsigned char const *exif_payload;
     size_t exif_payload_size;
+    unsigned char const *xmp_payload;
+    size_t xmp_payload_size;
     int meta_has_iccp;
     int meta_has_exif;
+    int meta_has_xmp;
     int canvas_width;
     int canvas_height;
     int anim_loop_count;
