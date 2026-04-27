@@ -42,7 +42,7 @@
 #include "lookup-policy-mahalanobis.h"
 #include "lookup-policy-mono-darkbg.h"
 #include "lookup-policy-mono-lightbg.h"
-#include "lookup-policy-normal.h"
+#include "lookup-policy-none.h"
 #include "lookup-policy-rbc.h"
 #include "lookup-policy-vptree.h"
 
@@ -58,8 +58,8 @@ struct sixel_lookup_policy_classid_entry {
 #define MIN_WORD_LENGTH 10
 #define MAX_WORD_LENGTH 19
 #define MIN_HASH_VALUE 10
-#define MAX_HASH_VALUE 28
-/* maximum key range = 19, duplicates = 0 */
+#define MAX_HASH_VALUE 26
+/* maximum key range = 17, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -73,32 +73,32 @@ sixel_lookup_policy_classid_hash (register const char *str, register unsigned in
 {
   static const unsigned char asso_values[] =
     {
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 10,  0, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 10,  0,  0,
-      29,  0,  0, 29,  0, 29, 29, 29, 29,  0,
-      10,  0,  0, 29,  0, 29, 29, 29,  0, 29,
-      29,  0, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-      29, 29, 29, 29, 29, 29
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 15, 10, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27,  5,  0,  0,
+      27,  0,  0, 27,  0, 27, 27, 27, 27,  0,
+       0,  0,  0, 27,  0, 27, 27, 27,  0, 27,
+      27,  0, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
+      27, 27, 27, 27, 27, 27
     };
   return len + asso_values[(unsigned char)str[8]] + asso_values[(unsigned char)str[7]];
 }
@@ -109,8 +109,8 @@ static const struct sixel_lookup_policy_classid_entry sixel_lookup_policy_classi
     {"", 0},
 #line 39 "src/classid.gperf"
     {"lookup/rbc", sixel_lookup_policy_create_rbc},
-#line 31 "src/classid.gperf"
-    {"lookup/6bit", sixel_lookup_policy_create_6bit},
+#line 38 "src/classid.gperf"
+    {"lookup/none", sixel_lookup_policy_create_none},
 #line 34 "src/classid.gperf"
     {"lookup/fhedt", sixel_lookup_policy_create_fhedt},
 #line 40 "src/classid.gperf"
@@ -126,14 +126,14 @@ static const struct sixel_lookup_policy_classid_entry sixel_lookup_policy_classi
 #line 37 "src/classid.gperf"
     {"lookup/mono-lightbg", sixel_lookup_policy_create_mono_lightbg},
     {"", 0},
-#line 30 "src/classid.gperf"
-    {"lookup/5bit", sixel_lookup_policy_create_5bit},
+#line 31 "src/classid.gperf"
+    {"lookup/6bit", sixel_lookup_policy_create_6bit},
     {"", 0},
-#line 38 "src/classid.gperf"
-    {"lookup/normal", sixel_lookup_policy_create_normal},
-    {"", 0}, {"", 0}, {"", 0}, {"", 0},
 #line 35 "src/classid.gperf"
-    {"lookup/mahalanobis", sixel_lookup_policy_create_mahalanobis}
+    {"lookup/mahalanobis", sixel_lookup_policy_create_mahalanobis},
+    {"", 0}, {"", 0},
+#line 30 "src/classid.gperf"
+    {"lookup/5bit", sixel_lookup_policy_create_5bit}
   };
 
 const struct sixel_lookup_policy_classid_entry *
@@ -154,6 +154,7 @@ sixel_lookup_policy_classid_lookup (register const char *str, register unsigned 
   return 0;
 }
 #line 41 "src/classid.gperf"
+
 
 #undef TOTAL_KEYWORDS
 #undef MIN_WORD_LENGTH

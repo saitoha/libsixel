@@ -167,7 +167,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/timer.c $(srcdir)/timer.h $(srcdir)/sleep.c \
 	$(srcdir)/sleep.h $(srcdir)/fromsixel.c $(srcdir)/tosixel.c \
 	$(srcdir)/tosixel-highcolor.c $(srcdir)/tosixel-highcolor.h \
-	$(srcdir)/lookup-policy.c $(srcdir)/lookup-policy-normal.c \
+	$(srcdir)/lookup-policy.c $(srcdir)/lookup-policy-none.c \
 	$(srcdir)/lookup-policy-mono-darkbg.c \
 	$(srcdir)/lookup-policy-mono-lightbg.c \
 	$(srcdir)/lookup-policy-certlut.c \
@@ -182,7 +182,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-vptree-8bit.c $(srcdir)/lookup-vptree-8bit.h \
 	$(srcdir)/lookup-vptree-float32.c \
 	$(srcdir)/lookup-vptree-float32.h $(srcdir)/lookup-policy.h \
-	$(srcdir)/lookup-policy-normal.h \
+	$(srcdir)/lookup-policy-none.h \
 	$(srcdir)/lookup-policy-mono-darkbg.h \
 	$(srcdir)/lookup-policy-mono-lightbg.h \
 	$(srcdir)/lookup-policy-certlut.h \
@@ -338,7 +338,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-tosixel.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-tosixel-highcolor.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-normal.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-none.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-mono-darkbg.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-mono-lightbg.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-policy-certlut.lo \
@@ -624,7 +624,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo \
-	./$(DEPDIR)/libsixel_la-lookup-policy-normal.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-policy-none.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-rbc.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-policy.Plo \
@@ -999,7 +999,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/tosixel-highcolor.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/tosixel-highcolor.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-normal.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-none.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mono-darkbg.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mono-lightbg.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-certlut.c \
@@ -1021,7 +1021,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-float32.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-float32.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-normal.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-none.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mono-darkbg.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mono-lightbg.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-certlut.h \
@@ -1353,7 +1353,7 @@ LOOKUP_POLICY_CLASSID_INPUTS = \
     $(srcdir)/lookup-policy-mahalanobis.h \
     $(srcdir)/lookup-policy-mono-darkbg.h \
     $(srcdir)/lookup-policy-mono-lightbg.h \
-    $(srcdir)/lookup-policy-normal.h \
+    $(srcdir)/lookup-policy-none.h \
     $(srcdir)/lookup-policy-rbc.h \
     $(srcdir)/lookup-policy-vptree.h
 
@@ -1569,7 +1569,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-normal.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-none.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-rbc.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-policy.Plo@am__quote@ # am--include-marker
@@ -1686,12 +1686,12 @@ libsixel_la-lookup-policy.lo: lookup-policy.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy.lo `test -f 'lookup-policy.c' || echo '$(srcdir)/'`lookup-policy.c
 
-libsixel_la-lookup-policy-normal.lo: lookup-policy-normal.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-normal.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-normal.Tpo -c -o libsixel_la-lookup-policy-normal.lo `test -f 'lookup-policy-normal.c' || echo '$(srcdir)/'`lookup-policy-normal.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-normal.Tpo $(DEPDIR)/libsixel_la-lookup-policy-normal.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-normal.c' object='libsixel_la-lookup-policy-normal.lo' libtool=yes @AMDEPBACKSLASH@
+libsixel_la-lookup-policy-none.lo: lookup-policy-none.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-none.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-none.Tpo -c -o libsixel_la-lookup-policy-none.lo `test -f 'lookup-policy-none.c' || echo '$(srcdir)/'`lookup-policy-none.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-policy-none.Tpo $(DEPDIR)/libsixel_la-lookup-policy-none.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-policy-none.c' object='libsixel_la-lookup-policy-none.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-normal.lo `test -f 'lookup-policy-normal.c' || echo '$(srcdir)/'`lookup-policy-normal.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-policy-none.lo `test -f 'lookup-policy-none.c' || echo '$(srcdir)/'`lookup-policy-none.c
 
 libsixel_la-lookup-policy-mono-darkbg.lo: lookup-policy-mono-darkbg.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-policy-mono-darkbg.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Tpo -c -o libsixel_la-lookup-policy-mono-darkbg.lo `test -f 'lookup-policy-mono-darkbg.c' || echo '$(srcdir)/'`lookup-policy-mono-darkbg.c
@@ -2956,7 +2956,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-normal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-none.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-rbc.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy.Plo
@@ -3144,7 +3144,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mahalanobis.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-darkbg.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-mono-lightbg.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-normal.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-none.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-rbc.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-policy.Plo

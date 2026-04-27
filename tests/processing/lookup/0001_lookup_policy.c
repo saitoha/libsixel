@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Unit tests for lookup-policy dispatch. These checks validate that normal,
+ * Unit tests for lookup-policy dispatch. These checks validate that none,
  * fast LUT, and monochrome lookup modes share the same create/prepare/map
  * contract via the component factory service.
  */
@@ -161,7 +161,7 @@ safe_unref_lookup_policy(sixel_lookup_policy_interface_t **lookup_policy)
 }
 
 static int
-test_lookup_policy_normal_mode_maps_expected_color(void)
+test_lookup_policy_none_mode_maps_expected_color(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -217,7 +217,7 @@ test_lookup_policy_normal_mode_maps_expected_color(void)
         goto cleanup;
     }
 
-    if (selected_name == NULL || strcmp(selected_name, "lookup/normal") != 0) {
+    if (selected_name == NULL || strcmp(selected_name, "lookup/none") != 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -482,7 +482,7 @@ static int
 test_lookup_policy_all_named_classes_are_polymorphic(void)
 {
     static char const *const class_names[] = {
-        "lookup/normal",
+        "lookup/none",
         "lookup/mono-darkbg",
         "lookup/mono-lightbg",
         "lookup/certlut",
@@ -596,8 +596,8 @@ test_lookup_0001_lookup_policy(int argc, char **argv)
 
     success = 1;
 
-    if (!test_lookup_policy_normal_mode_maps_expected_color()) {
-        fprintf(stderr, "lookup policy normal mode failed\n");
+    if (!test_lookup_policy_none_mode_maps_expected_color()) {
+        fprintf(stderr, "lookup policy none mode failed\n");
         success = 0;
     }
     if (!test_lookup_policy_fast_mode_maps_float_input()) {

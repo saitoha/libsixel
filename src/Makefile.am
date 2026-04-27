@@ -91,7 +91,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/tosixel-highcolor.c \
                 $(srcdir)/tosixel-highcolor.h \
                 $(srcdir)/lookup-policy.c \
-                $(srcdir)/lookup-policy-normal.c \
+                $(srcdir)/lookup-policy-none.c \
                 $(srcdir)/lookup-policy-mono-darkbg.c \
                 $(srcdir)/lookup-policy-mono-lightbg.c \
                 $(srcdir)/lookup-policy-certlut.c \
@@ -113,7 +113,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-vptree-float32.c \
                 $(srcdir)/lookup-vptree-float32.h \
                 $(srcdir)/lookup-policy.h \
-                $(srcdir)/lookup-policy-normal.h \
+                $(srcdir)/lookup-policy-none.h \
                 $(srcdir)/lookup-policy-mono-darkbg.h \
                 $(srcdir)/lookup-policy-mono-lightbg.h \
                 $(srcdir)/lookup-policy-certlut.h \
@@ -470,7 +470,7 @@ LOOKUP_POLICY_CLASSID_INPUTS = \
     $(srcdir)/lookup-policy-mahalanobis.h \
     $(srcdir)/lookup-policy-mono-darkbg.h \
     $(srcdir)/lookup-policy-mono-lightbg.h \
-    $(srcdir)/lookup-policy-normal.h \
+    $(srcdir)/lookup-policy-none.h \
     $(srcdir)/lookup-policy-rbc.h \
     $(srcdir)/lookup-policy-vptree.h
 

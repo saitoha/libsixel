@@ -22,8 +22,8 @@
  * SOFTWARE.
  */
 
-#ifndef LIBSIXEL_LOOKUP_POLICY_NORMAL_H
-#define LIBSIXEL_LOOKUP_POLICY_NORMAL_H
+#ifndef LIBSIXEL_LOOKUP_POLICY_NONE_H
+#define LIBSIXEL_LOOKUP_POLICY_NONE_H
 
 #include "lookup-policy.h"
 
@@ -32,15 +32,15 @@ extern "C" {
 #endif
 
 
-/* @classid lookup/normal */
+/* @classid lookup/none */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lookup_policy_create_normal(sixel_lookup_policy_interface_t **policy);
+sixel_lookup_policy_create_none(sixel_lookup_policy_interface_t **policy);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBSIXEL_LOOKUP_POLICY_NORMAL_H */
+#endif /* LIBSIXEL_LOOKUP_POLICY_NONE_H */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

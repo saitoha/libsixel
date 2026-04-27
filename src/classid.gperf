@@ -15,7 +15,7 @@
 #include "lookup-policy-mahalanobis.h"
 #include "lookup-policy-mono-darkbg.h"
 #include "lookup-policy-mono-lightbg.h"
-#include "lookup-policy-normal.h"
+#include "lookup-policy-none.h"
 #include "lookup-policy-rbc.h"
 #include "lookup-policy-vptree.h"
 
@@ -35,7 +35,7 @@ lookup/fhedt, sixel_lookup_policy_create_fhedt
 lookup/mahalanobis, sixel_lookup_policy_create_mahalanobis
 lookup/mono-darkbg, sixel_lookup_policy_create_mono_darkbg
 lookup/mono-lightbg, sixel_lookup_policy_create_mono_lightbg
-lookup/normal, sixel_lookup_policy_create_normal
+lookup/none, sixel_lookup_policy_create_none
 lookup/rbc, sixel_lookup_policy_create_rbc
 lookup/vptree, sixel_lookup_policy_create_vptree
 %%

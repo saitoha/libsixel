@@ -29,7 +29,7 @@
 #include "lookup-policy.h"
 
 
-static char const g_lookup_policy_name_normal[] = "lookup/normal";
+static char const g_lookup_policy_name_none[] = "lookup/none";
 static char const g_lookup_policy_name_mono_darkbg[] = "lookup/mono-darkbg";
 static char const g_lookup_policy_name_mono_lightbg[] = "lookup/mono-lightbg";
 static char const g_lookup_policy_name_certlut[] = "lookup/certlut";
@@ -100,7 +100,7 @@ sixel_lookup_policy_select_name(
     normalized_lut_policy = SIXEL_LUT_POLICY_6BIT;
 
     if (request == NULL) {
-        return g_lookup_policy_name_normal;
+        return g_lookup_policy_name_none;
     }
 
     if (request->reqcolor == 2 && request->palette != NULL
@@ -124,7 +124,7 @@ sixel_lookup_policy_select_name(
     if (request->optimize_lookup == 0
             || request->depth != 3
             || request->lut_policy == SIXEL_LUT_POLICY_NONE) {
-        return g_lookup_policy_name_normal;
+        return g_lookup_policy_name_none;
     }
 
     normalized_lut_policy = sixel_lookup_policy_normalize_fast_lut_policy(

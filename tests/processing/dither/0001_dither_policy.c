@@ -82,8 +82,8 @@ safe_unref_dither_policy(sixel_dither_policy_interface_t **dither_policy)
 }
 
 static int
-prepare_normal_lookup_policy(sixel_dither_t *dither,
-                             sixel_lookup_policy_interface_t **lookup_policy)
+prepare_none_lookup_policy(sixel_dither_t *dither,
+                           sixel_lookup_policy_interface_t **lookup_policy)
 {
     SIXELSTATUS status;
     sixel_lookup_policy_prepare_request_t request;
@@ -95,7 +95,7 @@ prepare_normal_lookup_policy(sixel_dither_t *dither,
         return 0;
     }
 
-    status = create_policy_object("lookup/normal", (void **)lookup_policy);
+    status = create_policy_object("lookup/none", (void **)lookup_policy);
     if (SIXEL_FAILED(status)) {
         return 0;
     }
@@ -183,7 +183,7 @@ test_dither_policy_named_classes_contract(void)
     dither->method_for_scan = SIXEL_SCAN_RASTER;
     dither->pixelformat = SIXEL_PIXELFORMAT_RGB888;
 
-    if (!prepare_normal_lookup_policy(dither, &lookup_policy)) {
+    if (!prepare_none_lookup_policy(dither, &lookup_policy)) {
         sixel_dither_unref(dither);
         return 0;
     }
