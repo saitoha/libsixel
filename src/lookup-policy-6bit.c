@@ -84,7 +84,6 @@ typedef struct sixel_lookup_policy_bit6_object {
         float *palette;
         sixel_allocator_t *allocator;
     } state_float;
-    int lookup_source_is_float;
     int parallel_dither_active;
 } sixel_lookup_policy_bit6_object_t;
 
@@ -842,7 +841,6 @@ sixel_lookup_policy_bit6_reset_state(
 
     sixel_lookup_policy_bit6_clear_8bit_state(object);
     object->prepared = 0;
-    object->lookup_source_is_float = 0;
     object->parallel_dither_active = 0;
 }
 
@@ -881,7 +879,7 @@ sixel_lookup_policy_bit6_unref(sixel_lookup_policy_interface_t *policy)
 }
 
 static SIXELSTATUS
-sixel_lookup_policy_bit6_prepare(
+sixel_lookup_policy_bit6_prepare_8bit(
     sixel_lookup_policy_interface_t *policy,
     sixel_lookup_policy_prepare_request_t const *request)
 {
@@ -918,15 +916,10 @@ sixel_lookup_policy_bit6_prepare(
         reuse_policy = NULL;
     }
 
-    object->lookup_source_is_float =
-        SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
-
     if (reuse_policy != NULL
             && reuse_policy->vtbl == policy->vtbl) {
         reuse_object = sixel_lookup_policy_bit6_from_base(reuse_policy);
-        if (reuse_object->prepared != 0
-                && reuse_object->lookup_source_is_float
-                == object->lookup_source_is_float) {
+        if (reuse_object->prepared != 0) {
             object->state_8bit = reuse_object->state_8bit;
             object->state_float = reuse_object->state_float;
             object->prepared = reuse_object->prepared;
@@ -940,7 +933,6 @@ sixel_lookup_policy_bit6_prepare(
             reuse_object->state_float.palette = NULL;
             reuse_object->state_float.allocator = NULL;
             reuse_object->prepared = 0;
-            reuse_object->lookup_source_is_float = 0;
             if (request->reuse_policy_slot != NULL
                     && *request->reuse_policy_slot == NULL) {
                 *request->reuse_policy_slot = policy;
@@ -950,15 +942,91 @@ sixel_lookup_policy_bit6_prepare(
         }
     }
 
-    if (object->lookup_source_is_float != 0) {
-        status = sixel_lookup_policy_bit6_configure_float32(
-            object,
-            request);
-    } else {
-        status = sixel_lookup_policy_bit6_configure_8bit(
-            object,
-            request);
+    status = sixel_lookup_policy_bit6_configure_8bit(
+        object,
+        request);
+    if (SIXEL_FAILED(status)) {
+        sixel_lookup_policy_bit6_reset_state(object);
+        return status;
     }
+    object->prepared = 1;
+
+    if (request->reuse_policy_slot != NULL
+            && *request->reuse_policy_slot == NULL) {
+        *request->reuse_policy_slot = policy;
+        policy->vtbl->ref(policy);
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_lookup_policy_bit6_prepare_float32(
+    sixel_lookup_policy_interface_t *policy,
+    sixel_lookup_policy_prepare_request_t const *request)
+{
+    SIXELSTATUS status;
+    sixel_lookup_policy_bit6_object_t *object;
+    sixel_lookup_policy_interface_t *reuse_policy;
+    sixel_lookup_policy_bit6_object_t *reuse_object;
+
+    status = SIXEL_FALSE;
+    object = NULL;
+    reuse_policy = NULL;
+    reuse_object = NULL;
+
+    if (policy == NULL || request == NULL || request->palette == NULL
+            || request->depth <= 0 || request->reqcolor <= 0
+            || request->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    object = sixel_lookup_policy_bit6_from_base(policy);
+    sixel_lookup_policy_bit6_reset_state(object);
+    object->parallel_dither_active = (request->parallel_dither_active != 0);
+
+    if (request->depth != 3) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_policy_prepare: fast lookup requires RGB pixels.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    reuse_policy = request->reuse_policy;
+    if (request->parallel_dither_active != 0
+            /* Reuse slot NULL means ownership migration is unsafe. */
+            && request->reuse_policy_slot == NULL) {
+        reuse_policy = NULL;
+    }
+
+    if (reuse_policy != NULL
+            && reuse_policy->vtbl == policy->vtbl) {
+        reuse_object = sixel_lookup_policy_bit6_from_base(reuse_policy);
+        if (reuse_object->prepared != 0) {
+            object->state_8bit = reuse_object->state_8bit;
+            object->state_float = reuse_object->state_float;
+            object->prepared = reuse_object->prepared;
+            object->parallel_dither_active =
+                (request->parallel_dither_active != 0);
+            reuse_object->state_8bit.palette = NULL;
+            reuse_object->state_8bit.allocator = NULL;
+            reuse_object->state_8bit.dense = NULL;
+            reuse_object->state_8bit.dense_size = 0U;
+            reuse_object->state_8bit.dense_ready = 0;
+            reuse_object->state_float.palette = NULL;
+            reuse_object->state_float.allocator = NULL;
+            reuse_object->prepared = 0;
+            if (request->reuse_policy_slot != NULL
+                    && *request->reuse_policy_slot == NULL) {
+                *request->reuse_policy_slot = policy;
+                policy->vtbl->ref(policy);
+            }
+            return SIXEL_OK;
+        }
+    }
+
+    status = sixel_lookup_policy_bit6_configure_float32(
+        object,
+        request);
     if (SIXEL_FAILED(status)) {
         sixel_lookup_policy_bit6_reset_state(object);
         return status;
@@ -1022,7 +1090,7 @@ static sixel_lookup_policy_vtbl_t
     g_sixel_lookup_policy_6bit_8bit_vtbl = {
     sixel_lookup_policy_bit6_ref,
     sixel_lookup_policy_bit6_unref,
-    sixel_lookup_policy_bit6_prepare,
+    sixel_lookup_policy_bit6_prepare_8bit,
     sixel_lookup_policy_bit6_map_pixel_8bit,
 };
 
@@ -1030,7 +1098,7 @@ static sixel_lookup_policy_vtbl_t
     g_sixel_lookup_policy_6bit_float32_vtbl = {
     sixel_lookup_policy_bit6_ref,
     sixel_lookup_policy_bit6_unref,
-    sixel_lookup_policy_bit6_prepare,
+    sixel_lookup_policy_bit6_prepare_float32,
     sixel_lookup_policy_bit6_map_pixel_float32,
 };
 
