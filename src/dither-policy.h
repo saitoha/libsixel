@@ -82,10 +82,8 @@ typedef struct sixel_dither_policy_apply_request {
     int output_start;
     int depth;
     unsigned char *palette;
-    int reqcolor;
     int method_for_scan;
     sixel_lookup_policy_interface_t *lookup_policy;
-    int *ncolors;
     sixel_dither_t *dither;
     int pixelformat;
 } sixel_dither_policy_apply_request_t;

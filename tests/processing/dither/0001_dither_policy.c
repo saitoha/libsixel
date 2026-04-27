@@ -133,7 +133,6 @@ test_dither_policy_named_classes_contract(void)
     unsigned char palette[6];
     unsigned char pixel[3];
     sixel_index_t result[1];
-    int ncolors;
     size_t i;
     static char const * const class_names[] = {
         "dither/none",
@@ -232,7 +231,6 @@ test_dither_policy_named_classes_contract(void)
             }
         }
 
-        ncolors = 2;
         memset(&apply_request, 0, sizeof(apply_request));
         apply_request.result = result;
         apply_request.data = pixel;
@@ -242,10 +240,8 @@ test_dither_policy_named_classes_contract(void)
         apply_request.output_start = 0;
         apply_request.depth = 3;
         apply_request.palette = dither->palette->entries;
-        apply_request.reqcolor = 2;
         apply_request.method_for_scan = SIXEL_SCAN_RASTER;
         apply_request.lookup_policy = lookup_policy;
-        apply_request.ncolors = &ncolors;
         apply_request.dither = dither;
         apply_request.pixelformat = SIXEL_PIXELFORMAT_RGB888;
 

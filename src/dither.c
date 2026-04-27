@@ -790,7 +790,6 @@ sixel_dither_parallel_worker(tp_job_t job,
     int in0;
     int in1;
     int rows;
-    int local_ncolors;
     SIXELSTATUS status;
     sixel_parallel_dither_state_t *state;
     sixel_lookup_policy_interface_t *reuse_policy;
@@ -865,7 +864,6 @@ sixel_dither_parallel_worker(tp_job_t job,
         }
     }
 
-    local_ncolors = plan->reqcolor;
     state = (sixel_parallel_dither_state_t *)workspace;
     reuse_policy = plan->lookup_policy;
     restore_context = 0;
@@ -918,10 +916,8 @@ sixel_dither_parallel_worker(tp_job_t job,
     apply_request.output_start = y0;
     apply_request.depth = 3;
     apply_request.palette = plan->palette->entries;
-    apply_request.reqcolor = plan->reqcolor;
     apply_request.method_for_scan = plan->method_for_scan;
     apply_request.lookup_policy = lookup_policy;
-    apply_request.ncolors = &local_ncolors;
     apply_request.dither = plan->dither;
     apply_request.pixelformat = plan->pixelformat;
     status = plan->dither_policy->vtbl->apply(
@@ -1088,10 +1084,9 @@ typedef struct sixel_dither_resolve_indexes_request {
  * buffers between invocations and later stages.  The flow is:
  *   1. Synchronize the quantizer configuration with the dither object so the
  *      LUT builder honors the requested policy.
- *   2. Invoke IDitherPolicy.apply() to populate the index buffer and
- *      record the resulting palette size.
- *   3. Return the status to the caller so palette application errors can be
- *      reported at a single site.
+ *   2. Invoke IDitherPolicy.apply() to populate the index buffer.
+ *   3. Return the status to the caller so palette application errors can
+ *      be reported at a single site.
  */
 static SIXELSTATUS
 sixel_dither_resolve_indexes(
@@ -1176,10 +1171,8 @@ sixel_dither_resolve_indexes(
     apply_request.output_start = 0;
     apply_request.depth = depth;
     apply_request.palette = palette->entries;
-    apply_request.reqcolor = reqcolor;
     apply_request.method_for_scan = method_for_scan;
     apply_request.lookup_policy = palette->lookup_policy;
-    apply_request.ncolors = ncolors;
     apply_request.dither = dither;
     apply_request.pixelformat = pixelformat;
     status = dither_policy->vtbl->apply(dither_policy, &apply_request);

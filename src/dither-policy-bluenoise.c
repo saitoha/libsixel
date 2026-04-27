@@ -901,13 +901,6 @@ sixel_dither_policy_bluenoise_build_context(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (request->reqcolor < 1) {
-        sixel_helper_set_additional_message(
-            "sixel_dither_map_pixels: "
-            "a bad argument is detected, reqcolor < 0.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
     memset(context, 0, sizeof(*context));
     context->result = request->result;
     context->width = request->width;
@@ -982,15 +975,24 @@ sixel_dither_policy_bluenoise_apply(
     SIXELSTATUS status;
     sixel_dither_policy_apply_request_t effective;
     sixel_dither_policy_bluenoise_context_t context;
+    int reqcolor;
+    int ncolors;
 
     status = SIXEL_FALSE;
     memset(&effective, 0, sizeof(effective));
+    reqcolor = SIXEL_PALETTE_MAX;
+    ncolors = reqcolor;
 
     status = sixel_dither_policy_bluenoise_make_effective_request(policy,
                                                            request,
                                                            &effective);
     if (SIXEL_FAILED(status)) {
         return status;
+    }
+
+    if (effective.dither != NULL && effective.dither->ncolors > 0) {
+        reqcolor = effective.dither->ncolors;
+        ncolors = reqcolor;
     }
 
     status = sixel_dither_policy_bluenoise_build_context(&effective,
@@ -1006,21 +1008,21 @@ sixel_dither_policy_bluenoise_apply(
         status = sixel_dither_apply_bluenoise_float32(
             effective.dither,
             &context,
-            effective.reqcolor,
-            effective.ncolors);
+            reqcolor,
+            &ncolors);
         if (status == SIXEL_BAD_ARGUMENT) {
             status = sixel_dither_apply_bluenoise_8bit(
             effective.dither,
             &context,
-            effective.reqcolor,
-            effective.ncolors);
+            reqcolor,
+            &ncolors);
         }
     } else {
         status = sixel_dither_apply_bluenoise_8bit(
             effective.dither,
             &context,
-            effective.reqcolor,
-            effective.ncolors);
+            reqcolor,
+            &ncolors);
     }
 
     return status;
