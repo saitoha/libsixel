@@ -1206,10 +1206,10 @@ runs:
           fi
         fi
         if [ "$coverage_captured" -ne 1 ] && command -v gcovr >/dev/null 2>&1; then
-          # Generated rgblookup.h maps lines to rgblookup.gperf via #line.
+          # Generated headers map lines to *.gperf via #line directives.
           # In some out-of-tree builds the virtual builddir path does not
-          # exist, so exclude that source to prevent gcovr report failures.
-          GCOVR_GPERF_EXCLUDE='.*rgblookup\.gperf$'
+          # exist, so exclude those sources to prevent gcovr report failures.
+          GCOVR_GPERF_EXCLUDE='.*\.gperf$'
           GCOV_TOOL=""
           # Prefer llvm-cov for clang coverage so gcovr can read
           # llvm-generated profiling data correctly.
@@ -1279,7 +1279,7 @@ runs:
           echo "coverage.info already exists; skipping capture"
           exit 0
         fi
-        GCOVR_GPERF_EXCLUDE='.*rgblookup\.gperf$'
+        GCOVR_GPERF_EXCLUDE='.*\.gperf$'
         if command -v gcovr >/dev/null 2>&1; then
           gcovr -r . --lcov -o coverage.info \
             --exclude "$GCOVR_GPERF_EXCLUDE"
@@ -1318,7 +1318,7 @@ runs:
           echo "coverage.info already exists; skipping capture"
           exit 0
         fi
-        GCOVR_GPERF_EXCLUDE='.*rgblookup\.gperf$'
+        GCOVR_GPERF_EXCLUDE='.*\.gperf$'
         if command -v gcovr >/dev/null 2>&1; then
           GCOV_TOOL=""
           # clang-cl generated coverage needs llvm-cov gcov for format compatibility.
