@@ -1463,7 +1463,6 @@ sixel_dither_policy_lso2_build_context(
     context->pixelformat = request->pixelformat;
     context->method_for_scan = request->method_for_scan;
     context->optimize_palette = request->foptimize_palette;
-    context->complexion = request->complexion;
 
     lookup_map = request->lookup_policy->vtbl->map_pixel;
     context->lookup_map = lookup_map;

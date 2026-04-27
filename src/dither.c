@@ -598,7 +598,6 @@ sixel_dither_prepare_dither_policy(
     request.method_for_scan = method_for_scan;
     request.pixelformat = pixelformat;
     request.optimize_palette = dither->optimize_palette;
-    request.complexion = dither->complexion;
 
     if (dither->dither_policy != NULL
             && dither->dither_policy_class_name != NULL
@@ -840,7 +839,6 @@ sixel_dither_parallel_worker(tp_job_t job,
     apply_request.reqcolor = plan->reqcolor;
     apply_request.method_for_scan = plan->method_for_scan;
     apply_request.foptimize_palette = plan->optimize_palette_entries;
-    apply_request.complexion = plan->complexion;
     apply_request.lookup_policy = lookup_policy;
     apply_request.ncolors = &local_ncolors;
     apply_request.dither = plan->dither;
@@ -1001,7 +999,6 @@ typedef struct sixel_dither_resolve_indexes_request {
     int method_for_scan;
     int foptimize;
     int foptimize_palette;
-    int complexion;
     int lut_policy;
     int *ncolors;
     sixel_allocator_t *allocator;
@@ -1036,7 +1033,6 @@ sixel_dither_resolve_indexes(
     int method_for_scan;
     int foptimize;
     int foptimize_palette;
-    int complexion;
     int lut_policy;
     int *ncolors;
     sixel_allocator_t *allocator;
@@ -1061,7 +1057,6 @@ sixel_dither_resolve_indexes(
     method_for_scan = request->method_for_scan;
     foptimize = request->foptimize;
     foptimize_palette = request->foptimize_palette;
-    complexion = request->complexion;
     lut_policy = request->lut_policy;
     ncolors = request->ncolors;
     allocator = request->allocator;
@@ -1108,7 +1103,6 @@ sixel_dither_resolve_indexes(
     apply_request.reqcolor = reqcolor;
     apply_request.method_for_scan = method_for_scan;
     apply_request.foptimize_palette = foptimize_palette;
-    apply_request.complexion = complexion;
     apply_request.lookup_policy = palette->lookup_policy;
     apply_request.ncolors = ncolors;
     apply_request.dither = dither;
@@ -3156,7 +3150,6 @@ sixel_dither_apply_palette_with_mode(
         resolve_request.method_for_scan = method_for_scan;
         resolve_request.foptimize = dither->optimized;
         resolve_request.foptimize_palette = dither->optimize_palette;
-        resolve_request.complexion = dither->complexion;
         resolve_request.lut_policy = dither->lut_policy;
         resolve_request.ncolors = &ncolors;
         resolve_request.allocator = dither->allocator;

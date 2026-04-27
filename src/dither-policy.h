@@ -68,7 +68,6 @@ typedef struct sixel_dither_policy_prepare_request {
     int method_for_scan;
     int pixelformat;
     int optimize_palette;
-    int complexion;
 } sixel_dither_policy_prepare_request_t;
 
 typedef struct sixel_dither_policy_apply_request {
@@ -83,7 +82,6 @@ typedef struct sixel_dither_policy_apply_request {
     int reqcolor;
     int method_for_scan;
     int foptimize_palette;
-    int complexion;
     sixel_lookup_policy_interface_t *lookup_policy;
     int *ncolors;
     sixel_dither_t *dither;

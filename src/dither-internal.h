@@ -55,7 +55,6 @@ typedef struct sixel_dither_context {
     int reqcolor;
     int method_for_scan;
     int optimize_palette;
-    int complexion;
     struct sixel_lookup_policy_interface *lookup_policy;
     sixel_dither_lookup_map_fn lookup_map;
     unsigned char *scratch;
