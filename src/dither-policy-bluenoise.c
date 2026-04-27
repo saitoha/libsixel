@@ -81,7 +81,7 @@ typedef struct sixel_bluenoise_conf {
 } sixel_bluenoise_conf_t;
 
 static int
-sixel_dither_parse_float_env(char const *text, float *out_value)
+sixel_dither_bluenoise_parse_float_env(char const *text, float *out_value)
 {
     char *endptr;
     double value;
@@ -102,7 +102,7 @@ sixel_dither_parse_float_env(char const *text, float *out_value)
 }
 
 static int
-sixel_dither_parse_int_env(char const *text, int *out_value)
+sixel_dither_bluenoise_parse_int_env(char const *text, int *out_value)
 {
     char *endptr;
     long value;
@@ -123,7 +123,7 @@ sixel_dither_parse_int_env(char const *text, int *out_value)
 }
 
 static int
-sixel_dither_parse_phase_env(char const *text, int *out_x, int *out_y)
+sixel_dither_bluenoise_parse_phase_env(char const *text, int *out_x, int *out_y)
 {
     char *endptr;
     int x;
@@ -153,7 +153,7 @@ sixel_dither_parse_phase_env(char const *text, int *out_x, int *out_y)
 }
 
 static int
-sixel_dither_channel_is_rgb(char const *text)
+sixel_dither_bluenoise_channel_is_rgb(char const *text)
 {
     char value0;
     char value1;
@@ -209,12 +209,12 @@ sixel_bluenoise_conf_init(sixel_bluenoise_conf_t *conf)
 
     text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_STRENGTH");
     if (text != NULL) {
-        (void)sixel_dither_parse_float_env(text, &conf->strength);
+        (void)sixel_dither_bluenoise_parse_float_env(text, &conf->strength);
     }
 
     text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR");
     if (text != NULL) {
-        (void)sixel_dither_parse_float_env(text, &conf->gradient_factor);
+        (void)sixel_dither_bluenoise_parse_float_env(text, &conf->gradient_factor);
         if (conf->gradient_factor < 0.0f) {
             conf->gradient_factor = 0.0f;
         }
@@ -222,26 +222,26 @@ sixel_bluenoise_conf_init(sixel_bluenoise_conf_t *conf)
 
     text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_CHANNEL");
     if (text != NULL) {
-        conf->channel_rgb = sixel_dither_channel_is_rgb(text);
+        conf->channel_rgb = sixel_dither_bluenoise_channel_is_rgb(text);
     }
 
     text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_SIZE");
     if (text != NULL
-            && sixel_dither_parse_int_env(text, &value) != 0
+            && sixel_dither_bluenoise_parse_int_env(text, &value) != 0
             && value == SIXEL_BN_W) {
         conf->size = value;
     }
 
     text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_PHASE");
     if (text != NULL
-            && sixel_dither_parse_phase_env(text,
+            && sixel_dither_bluenoise_parse_phase_env(text,
                                             &conf->phase_x,
                                             &conf->phase_y) != 0) {
         return;
     }
 
     text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_SEED");
-    if (text != NULL && sixel_dither_parse_int_env(text, &value) != 0) {
+    if (text != NULL && sixel_dither_bluenoise_parse_int_env(text, &value) != 0) {
         hash = sixel_bluenoise_hash32((unsigned int)value);
         conf->phase_x = (int)(hash & 63U);
         conf->phase_y = (int)((hash >> 8) & 63U);
@@ -392,7 +392,7 @@ sixel_bluenoise_gradient_weight(sixel_dither_policy_bluenoise_context_t const *c
 }
 
 static void
-sixel_dither_scanline_params_8bit(int serpentine,
+sixel_dither_bluenoise_scanline_params_8bit(int serpentine,
                                   int index,
                                   int limit,
                                   int *start,
@@ -414,7 +414,7 @@ sixel_dither_scanline_params_8bit(int serpentine,
 }
 
 static void
-sixel_dither_scanline_params_float32(int serpentine,
+sixel_dither_bluenoise_scanline_params_float32(int serpentine,
                                      int index,
                                      int limit,
                                      int *start,
@@ -422,7 +422,7 @@ sixel_dither_scanline_params_float32(int serpentine,
                                      int *step,
                                      int *direction)
 {
-    sixel_dither_scanline_params_8bit(serpentine,
+    sixel_dither_bluenoise_scanline_params_8bit(serpentine,
                                       index,
                                       limit,
                                       start,
@@ -436,7 +436,7 @@ sixel_dither_scanline_params_float32(int serpentine,
  * keycolor.
  */
 static int
-sixel_dither_is_transparent_pixel(sixel_dither_policy_bluenoise_context_t const *context,
+sixel_dither_bluenoise_is_transparent_pixel(sixel_dither_policy_bluenoise_context_t const *context,
                                   unsigned char const *transparent_mask,
                                   size_t transparent_mask_size,
                                   int use_transparent_fence,
@@ -532,7 +532,7 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params_8bit(serpentine,
+        sixel_dither_bluenoise_scanline_params_8bit(serpentine,
                                           absolute_y,
                                           context->width,
                                           &start,
@@ -543,7 +543,7 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
 
         for (x = start; x != end; x += step) {
             pos = y * context->width + x;
-            is_transparent = sixel_dither_is_transparent_pixel(
+            is_transparent = sixel_dither_bluenoise_is_transparent_pixel(
                 context,
                 transparent_mask,
                 transparent_mask_size,
@@ -672,7 +672,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params_float32(serpentine,
+        sixel_dither_bluenoise_scanline_params_float32(serpentine,
                                              absolute_y,
                                              context->width,
                                              &start,
@@ -683,7 +683,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
 
         for (x = start; x != end; x += step) {
             pos = y * context->width + x;
-            is_transparent = sixel_dither_is_transparent_pixel(
+            is_transparent = sixel_dither_bluenoise_is_transparent_pixel(
                 context,
                 transparent_mask,
                 transparent_mask_size,

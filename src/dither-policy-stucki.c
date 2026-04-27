@@ -67,7 +67,7 @@ typedef struct sixel_dither_policy_stucki_context {
 } sixel_dither_policy_stucki_context_t;
 
 static void
-sixel_dither_scanline_params_fixed_8bit(int serpentine,
+stucki_sixel_dither_scanline_params_fixed_8bit(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -90,7 +90,7 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
 
 /* Shared diffusion helper kernels. */
 static void
-error_diffuse_precise(
+stucki_error_diffuse_precise(
     unsigned char /* in */    *data,      /* base address of pixel buffer */
     int           /* in */    pos,        /* address of the destination pixel */
     int           /* in */    depth,      /* color depth in bytes */
@@ -112,7 +112,7 @@ error_diffuse_precise(
     *data = (unsigned char)c;
 }
 
-static void diffuse_stucki(unsigned char *data,
+static void stucki_diffuse_stucki(unsigned char *data,
                            int width,
                            int height,
                            int x,
@@ -198,7 +198,7 @@ sixel_dither_apply_stucki_8bit(
 
     for (y = 0; y < height; ++y) {
         absolute_y = band_origin + y;
-        sixel_dither_scanline_params_fixed_8bit(
+        stucki_sixel_dither_scanline_params_fixed_8bit(
             serpentine, absolute_y, width,
             &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
@@ -235,7 +235,7 @@ sixel_dither_apply_stucki_8bit(
             for (n = 0; n < depth; ++n) {
                 palette_value = palette[color_index * depth + n];
                 offset = (int)source_pixel[n] - palette_value;
-                diffuse_stucki(data + n, width, height, x, y,
+                stucki_diffuse_stucki(data + n, width, height, x, y,
                           depth, offset, direction);
             }
         }
@@ -251,7 +251,7 @@ end:
 }
 
 static void
-diffuse_stucki(unsigned char *data, int width, int height,
+stucki_diffuse_stucki(unsigned char *data, int width, int height,
                int x, int y, int depth, int error, int direction)
 {
     /* Stucki's Method
@@ -282,7 +282,7 @@ diffuse_stucki(unsigned char *data, int width, int height,
         if (neighbor < 0 || neighbor >= width) {
             continue;
         }
-        error_diffuse_precise(data,
+        stucki_error_diffuse_precise(data,
                               pos + (neighbor - x),
                               depth, error,
                               row0_num[i], row0_den[i]);
@@ -298,7 +298,7 @@ diffuse_stucki(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_precise(data,
+            stucki_error_diffuse_precise(data,
                                   row + (neighbor - x),
                                   depth, error,
                                   row1_num[i], row1_den[i]);
@@ -315,7 +315,7 @@ diffuse_stucki(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_precise(data,
+            stucki_error_diffuse_precise(data,
                                   row + (neighbor - x),
                                   depth, error,
                                   row2_num[i], row2_den[i]);
@@ -325,7 +325,7 @@ diffuse_stucki(unsigned char *data, int width, int height,
 
 
 static void
-error_diffuse_float(float *data,
+stucki_error_diffuse_float(float *data,
                     int pos,
                     int depth,
                     float error,
@@ -346,7 +346,7 @@ error_diffuse_float(float *data,
 }
 
 static void
-sixel_dither_scanline_params_fixed_float32(int serpentine,
+stucki_sixel_dither_scanline_params_fixed_float32(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -380,7 +380,7 @@ sixel_dither_scanline_params_fixed_float32(int serpentine,
  * compact table instead of open-coded loops.
  */
 static void
-diffuse_weighted_row(float *data,
+stucki_diffuse_weighted_row(float *data,
                      int pos,
                      int depth,
                      float error,
@@ -407,7 +407,7 @@ diffuse_weighted_row(float *data,
         if (neighbor < 0 || neighbor >= width) {
             continue;
         }
-        error_diffuse_float(data,
+        stucki_error_diffuse_float(data,
                             row_base + (neighbor - x),
                             depth,
                             error,
@@ -430,7 +430,7 @@ diffuse_weighted_row(float *data,
  * 8/48, 4/48, and related fractions from the integer backend.
  */
 static void
-diffuse_stucki_float(float *data,
+stucki_diffuse_stucki_float(float *data,
                      int width,
                      int height,
                      int x,
@@ -453,7 +453,7 @@ diffuse_stucki_float(float *data,
     int pos;
 
     pos = y * width + x;
-    diffuse_weighted_row(data,
+    stucki_diffuse_weighted_row(data,
                          pos,
                          depth,
                          error,
@@ -468,7 +468,7 @@ diffuse_stucki_float(float *data,
                          row0_den,
                          2);
     if (y < height - 1) {
-        diffuse_weighted_row(data,
+        stucki_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -484,7 +484,7 @@ diffuse_stucki_float(float *data,
                              5);
     }
     if (y < height - 2) {
-        diffuse_weighted_row(data,
+        stucki_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -609,7 +609,7 @@ sixel_dither_apply_stucki_float32(
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params_fixed_float32(
+        stucki_sixel_dither_scanline_params_fixed_float32(
             serpentine, absolute_y, context->width,
             &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
@@ -662,7 +662,7 @@ sixel_dither_apply_stucki_float32(
                     }
                 error = working_float[n] - palette_value_float;
                 source_pixel[n] = palette_value_float;
-                diffuse_stucki_float(data + (size_t)n,
+                stucki_diffuse_stucki_float(data + (size_t)n,
                           context->width,
                           context->height,
                           x,

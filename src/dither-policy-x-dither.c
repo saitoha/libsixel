@@ -63,7 +63,7 @@ typedef struct sixel_dither_policy_x_dither_context {
  * keep their default values.
  */
 static int
-sixel_dither_parse_float_env(char const *text, float *out_value)
+sixel_dither_x_parse_float_env(char const *text, float *out_value)
 {
     char *endptr;
     double value;
@@ -97,7 +97,7 @@ sixel_dither_get_x_strength(float default_strength)
 
     text = sixel_compat_getenv("SIXEL_DITHER_X_DITHER_STRENGTH");
     if (text != NULL
-            && sixel_dither_parse_float_env(text, &value) == 0) {
+            && sixel_dither_x_parse_float_env(text, &value) == 0) {
         value = default_strength;
     }
 
@@ -105,7 +105,7 @@ sixel_dither_get_x_strength(float default_strength)
 }
 
 static void
-sixel_dither_scanline_params_8bit(int serpentine,
+sixel_dither_x_scanline_params_8bit(int serpentine,
                                   int index,
                                   int limit,
                                   int *start,
@@ -127,7 +127,7 @@ sixel_dither_scanline_params_8bit(int serpentine,
 }
 
 static void
-sixel_dither_scanline_params_float32(int serpentine,
+sixel_dither_x_scanline_params_float32(int serpentine,
                                      int index,
                                      int limit,
                                      int *start,
@@ -135,7 +135,7 @@ sixel_dither_scanline_params_float32(int serpentine,
                                      int *step,
                                      int *direction)
 {
-    sixel_dither_scanline_params_8bit(serpentine,
+    sixel_dither_x_scanline_params_8bit(serpentine,
                                       index,
                                       limit,
                                       start,
@@ -156,7 +156,7 @@ sixel_dither_x_noise(int x, int y, int c, float strength)
  * keycolor.
  */
 static int
-sixel_dither_is_transparent_pixel(sixel_dither_policy_x_dither_context_t const *context,
+sixel_dither_x_is_transparent_pixel(sixel_dither_policy_x_dither_context_t const *context,
                                   unsigned char const *transparent_mask,
                                   size_t transparent_mask_size,
                                   int use_transparent_fence,
@@ -250,7 +250,7 @@ sixel_dither_apply_x_dither_8bit(sixel_dither_t *dither,
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params_8bit(serpentine,
+        sixel_dither_x_scanline_params_8bit(serpentine,
                                           absolute_y,
                                           context->width,
                                           &start,
@@ -261,7 +261,7 @@ sixel_dither_apply_x_dither_8bit(sixel_dither_t *dither,
 
         for (x = start; x != end; x += step) {
             pos = y * context->width + x;
-            is_transparent = sixel_dither_is_transparent_pixel(
+            is_transparent = sixel_dither_x_is_transparent_pixel(
                 context,
                 transparent_mask,
                 transparent_mask_size,
@@ -374,7 +374,7 @@ sixel_dither_apply_x_dither_float32(sixel_dither_t *dither,
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params_float32(serpentine,
+        sixel_dither_x_scanline_params_float32(serpentine,
                                              absolute_y,
                                              context->width,
                                              &start,
@@ -385,7 +385,7 @@ sixel_dither_apply_x_dither_float32(sixel_dither_t *dither,
 
         for (x = start; x != end; x += step) {
             pos = y * context->width + x;
-            is_transparent = sixel_dither_is_transparent_pixel(
+            is_transparent = sixel_dither_x_is_transparent_pixel(
                 context,
                 transparent_mask,
                 transparent_mask_size,

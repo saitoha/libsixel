@@ -67,7 +67,7 @@ typedef struct sixel_dither_policy_none_context {
 } sixel_dither_policy_none_context_t;
 
 static void
-sixel_dither_scanline_params_fixed_8bit(int serpentine,
+none_sixel_dither_scanline_params_fixed_8bit(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -90,7 +90,7 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
 
 /* Shared diffusion helper kernels. */
 
-static void diffuse_none(unsigned char *data,
+static void none_diffuse_none(unsigned char *data,
                          int width,
                          int height,
                          int x,
@@ -176,7 +176,7 @@ sixel_dither_apply_none_8bit(
 
     for (y = 0; y < height; ++y) {
         absolute_y = band_origin + y;
-        sixel_dither_scanline_params_fixed_8bit(
+        none_sixel_dither_scanline_params_fixed_8bit(
             serpentine, absolute_y, width,
             &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
@@ -213,7 +213,7 @@ sixel_dither_apply_none_8bit(
             for (n = 0; n < depth; ++n) {
                 palette_value = palette[color_index * depth + n];
                 offset = (int)source_pixel[n] - palette_value;
-                diffuse_none(data + n, width, height, x, y,
+                none_diffuse_none(data + n, width, height, x, y,
                           depth, offset, direction);
             }
         }
@@ -229,7 +229,7 @@ end:
 }
 
 static void
-diffuse_none(unsigned char *data, int width, int height,
+none_diffuse_none(unsigned char *data, int width, int height,
              int x, int y, int depth, int error, int direction)
 {
     /* unused */ (void) data;
@@ -244,7 +244,7 @@ diffuse_none(unsigned char *data, int width, int height,
 
 
 static void
-sixel_dither_scanline_params_fixed_float32(int serpentine,
+none_sixel_dither_scanline_params_fixed_float32(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -266,7 +266,7 @@ sixel_dither_scanline_params_fixed_float32(int serpentine,
 }
 
 static void
-diffuse_none_float(float *data,
+none_diffuse_none_float(float *data,
                    int width,
                    int height,
                    int x,
@@ -422,7 +422,7 @@ sixel_dither_apply_none_float32(
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params_fixed_float32(
+        none_sixel_dither_scanline_params_fixed_float32(
             serpentine, absolute_y, context->width,
             &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
@@ -475,7 +475,7 @@ sixel_dither_apply_none_float32(
                     }
                 error = working_float[n] - palette_value_float;
                 source_pixel[n] = palette_value_float;
-                diffuse_none_float(data + (size_t)n,
+                none_diffuse_none_float(data + (size_t)n,
                           context->width,
                           context->height,
                           x,

@@ -71,7 +71,7 @@ typedef struct sixel_dither_policy_interframe_context {
 
 
 static void
-sixel_dither_scanline_params_fixed_8bit(int serpentine,
+interframe_sixel_dither_scanline_params_fixed_8bit(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -188,7 +188,7 @@ static sixel_interframe_method_ops_t const *
 sixel_interframe_method_for_strategy(int interframe_method);
 
 static void
-error_diffuse_normal(
+interframe_error_diffuse_normal(
     unsigned char /* in */    *data,      /* base address of pixel buffer */
     int           /* in */    pos,        /* address of the destination pixel */
     int           /* in */    depth,      /* color depth in bytes */
@@ -211,7 +211,7 @@ error_diffuse_normal(
 }
 
 static void
-error_diffuse_fast(
+interframe_error_diffuse_fast(
     unsigned char /* in */    *data,      /* base address of pixel buffer */
     int           /* in */    pos,        /* address of the destination pixel */
     int           /* in */    depth,      /* color depth in bytes */
@@ -235,7 +235,7 @@ error_diffuse_fast(
 
 /* error diffusion with precise strategy */
 static void
-error_diffuse_precise(
+interframe_error_diffuse_precise(
     unsigned char /* in */    *data,      /* base address of pixel buffer */
     int           /* in */    pos,        /* address of the destination pixel */
     int           /* in */    depth,      /* color depth in bytes */
@@ -981,7 +981,7 @@ sixel_interframe_method_for_strategy(int interframe_method)
     return NULL;
 }
 
-static void diffuse_none(unsigned char *data,
+static void interframe_diffuse_none(unsigned char *data,
                          int width,
                          int height,
                          int x,
@@ -990,7 +990,7 @@ static void diffuse_none(unsigned char *data,
                          int error,
                          int direction);
 
-static void diffuse_fs(unsigned char *data,
+static void interframe_diffuse_fs(unsigned char *data,
                        int width,
                        int height,
                        int x,
@@ -999,7 +999,7 @@ static void diffuse_fs(unsigned char *data,
                        int error,
                        int direction);
 
-static void diffuse_atkinson(unsigned char *data,
+static void interframe_diffuse_atkinson(unsigned char *data,
                              int width,
                              int height,
                              int x,
@@ -1008,7 +1008,7 @@ static void diffuse_atkinson(unsigned char *data,
                              int error,
                              int direction);
 
-static void diffuse_jajuni(unsigned char *data,
+static void interframe_diffuse_jajuni(unsigned char *data,
                            int width,
                            int height,
                            int x,
@@ -1017,7 +1017,7 @@ static void diffuse_jajuni(unsigned char *data,
                            int error,
                            int direction);
 
-static void diffuse_stucki(unsigned char *data,
+static void interframe_diffuse_stucki(unsigned char *data,
                            int width,
                            int height,
                            int x,
@@ -1026,7 +1026,7 @@ static void diffuse_stucki(unsigned char *data,
                            int error,
                            int direction);
 
-static void diffuse_burkes(unsigned char *data,
+static void interframe_diffuse_burkes(unsigned char *data,
                            int width,
                            int height,
                            int x,
@@ -1035,7 +1035,7 @@ static void diffuse_burkes(unsigned char *data,
                            int error,
                            int direction);
 
-static void diffuse_sierra1(unsigned char *data,
+static void interframe_diffuse_sierra1(unsigned char *data,
                             int width,
                             int height,
                             int x,
@@ -1044,7 +1044,7 @@ static void diffuse_sierra1(unsigned char *data,
                             int error,
                             int direction);
 
-static void diffuse_sierra2(unsigned char *data,
+static void interframe_diffuse_sierra2(unsigned char *data,
                             int width,
                             int height,
                             int x,
@@ -1053,7 +1053,7 @@ static void diffuse_sierra2(unsigned char *data,
                             int error,
                             int direction);
 
-static void diffuse_sierra3(unsigned char *data,
+static void interframe_diffuse_sierra3(unsigned char *data,
                             int width,
                             int height,
                             int x,
@@ -1214,7 +1214,7 @@ sixel_dither_apply_interframe_8bit(
 #define SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(DIFFUSE_FN)                 \
     for (y = 0; y < height; ++y) {                                      \
         absolute_y = band_origin + y;                                   \
-        sixel_dither_scanline_params_fixed_8bit(                        \
+        interframe_sixel_dither_scanline_params_fixed_8bit(                        \
             serpentine, absolute_y, width,                              \
             &start, &end, &step, &direction);                           \
         for (x = start; x != end; x += step) {                          \
@@ -1325,34 +1325,34 @@ sixel_dither_apply_interframe_8bit(
 
     switch (effective_diffuse) {
     case SIXEL_DIFFUSE_NONE:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_none);
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(interframe_diffuse_none);
         break;
     case SIXEL_DIFFUSE_ATKINSON:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_atkinson);
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(interframe_diffuse_atkinson);
         break;
     case SIXEL_DIFFUSE_JAJUNI:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_jajuni);
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(interframe_diffuse_jajuni);
         break;
     case SIXEL_DIFFUSE_STUCKI:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_stucki);
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(interframe_diffuse_stucki);
         break;
     case SIXEL_DIFFUSE_BURKES:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_burkes);
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(interframe_diffuse_burkes);
         break;
     case SIXEL_DIFFUSE_SIERRA1:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra1);
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(interframe_diffuse_sierra1);
         break;
     case SIXEL_DIFFUSE_SIERRA2:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra2);
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(interframe_diffuse_sierra2);
         break;
     case SIXEL_DIFFUSE_SIERRA3:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_sierra3);
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(interframe_diffuse_sierra3);
         break;
     case SIXEL_DIFFUSE_INTERFRAME:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_fs);
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(interframe_diffuse_fs);
         break;
     case SIXEL_DIFFUSE_FS:
-        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(diffuse_fs);
+        SIXEL_DITHER_APPLY_FIXED_8BIT_LOOP(interframe_diffuse_fs);
         break;
     default:
         status = SIXEL_BAD_ARGUMENT;
@@ -1370,7 +1370,7 @@ end:
 }
 
 static void
-diffuse_none(unsigned char *data, int width, int height,
+interframe_diffuse_none(unsigned char *data, int width, int height,
              int x, int y, int depth, int error, int direction)
 {
     /* unused */ (void) data;
@@ -1385,7 +1385,7 @@ diffuse_none(unsigned char *data, int width, int height,
 
 
 static void
-diffuse_fs(unsigned char *data, int width, int height,
+interframe_diffuse_fs(unsigned char *data, int width, int height,
            int x, int y, int depth, int error, int direction)
 {
     /* Floyd Steinberg Method
@@ -1400,38 +1400,38 @@ diffuse_fs(unsigned char *data, int width, int height,
 
     if (forward) {
         if (x < width - 1) {
-            error_diffuse_normal(data, pos + 1, depth, error, 7, 16);
+            interframe_error_diffuse_normal(data, pos + 1, depth, error, 7, 16);
         }
         if (y < height - 1) {
             if (x > 0) {
-                error_diffuse_normal(data,
+                interframe_error_diffuse_normal(data,
                                      pos + width - 1,
                                      depth, error, 3, 16);
             }
-            error_diffuse_normal(data,
+            interframe_error_diffuse_normal(data,
                                  pos + width,
                                  depth, error, 5, 16);
             if (x < width - 1) {
-                error_diffuse_normal(data,
+                interframe_error_diffuse_normal(data,
                                      pos + width + 1,
                                      depth, error, 1, 16);
             }
         }
     } else {
         if (x > 0) {
-            error_diffuse_normal(data, pos - 1, depth, error, 7, 16);
+            interframe_error_diffuse_normal(data, pos - 1, depth, error, 7, 16);
         }
         if (y < height - 1) {
             if (x < width - 1) {
-                error_diffuse_normal(data,
+                interframe_error_diffuse_normal(data,
                                      pos + width + 1,
                                      depth, error, 3, 16);
             }
-            error_diffuse_normal(data,
+            interframe_error_diffuse_normal(data,
                                  pos + width,
                                  depth, error, 5, 16);
             if (x > 0) {
-                error_diffuse_normal(data,
+                interframe_error_diffuse_normal(data,
                                      pos + width - 1,
                                      depth, error, 1, 16);
             }
@@ -1441,7 +1441,7 @@ diffuse_fs(unsigned char *data, int width, int height,
 
 
 static void
-diffuse_atkinson(unsigned char *data, int width, int height,
+interframe_diffuse_atkinson(unsigned char *data, int width, int height,
                  int x, int y, int depth, int error, int direction)
 {
     /* Atkinson's Method
@@ -1456,35 +1456,35 @@ diffuse_atkinson(unsigned char *data, int width, int height,
     sign = direction >= 0 ? 1 : -1;
 
     if (x + sign >= 0 && x + sign < width) {
-        error_diffuse_fast(data, pos + sign, depth, error, 1, 8);
+        interframe_error_diffuse_fast(data, pos + sign, depth, error, 1, 8);
     }
     if (x + sign * 2 >= 0 && x + sign * 2 < width) {
-        error_diffuse_fast(data, pos + sign * 2, depth, error, 1, 8);
+        interframe_error_diffuse_fast(data, pos + sign * 2, depth, error, 1, 8);
     }
     if (y < height - 1) {
         int row;
 
         row = pos + width;
         if (x - sign >= 0 && x - sign < width) {
-            error_diffuse_fast(data,
+            interframe_error_diffuse_fast(data,
                                row + (-sign),
                                depth, error, 1, 8);
         }
-        error_diffuse_fast(data, row, depth, error, 1, 8);
+        interframe_error_diffuse_fast(data, row, depth, error, 1, 8);
         if (x + sign >= 0 && x + sign < width) {
-            error_diffuse_fast(data,
+            interframe_error_diffuse_fast(data,
                                row + sign,
                                depth, error, 1, 8);
         }
     }
     if (y < height - 2) {
-        error_diffuse_fast(data, pos + width * 2, depth, error, 1, 8);
+        interframe_error_diffuse_fast(data, pos + width * 2, depth, error, 1, 8);
     }
 }
 
 
 static void
-diffuse_jajuni(unsigned char *data, int width, int height,
+interframe_diffuse_jajuni(unsigned char *data, int width, int height,
                int x, int y, int depth, int error, int direction)
 {
     /* Jarvis, Judice & Ninke Method
@@ -1512,7 +1512,7 @@ diffuse_jajuni(unsigned char *data, int width, int height,
         if (neighbor < 0 || neighbor >= width) {
             continue;
         }
-        error_diffuse_precise(data,
+        interframe_error_diffuse_precise(data,
                               pos + (neighbor - x),
                               depth, error,
                               row0_weights[i], 48);
@@ -1528,7 +1528,7 @@ diffuse_jajuni(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_precise(data,
+            interframe_error_diffuse_precise(data,
                                   row + (neighbor - x),
                                   depth, error,
                                   row1_weights[i], 48);
@@ -1545,7 +1545,7 @@ diffuse_jajuni(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_precise(data,
+            interframe_error_diffuse_precise(data,
                                   row + (neighbor - x),
                                   depth, error,
                                   row2_weights[i], 48);
@@ -1555,7 +1555,7 @@ diffuse_jajuni(unsigned char *data, int width, int height,
 
 
 static void
-diffuse_stucki(unsigned char *data, int width, int height,
+interframe_diffuse_stucki(unsigned char *data, int width, int height,
                int x, int y, int depth, int error, int direction)
 {
     /* Stucki's Method
@@ -1586,7 +1586,7 @@ diffuse_stucki(unsigned char *data, int width, int height,
         if (neighbor < 0 || neighbor >= width) {
             continue;
         }
-        error_diffuse_precise(data,
+        interframe_error_diffuse_precise(data,
                               pos + (neighbor - x),
                               depth, error,
                               row0_num[i], row0_den[i]);
@@ -1602,7 +1602,7 @@ diffuse_stucki(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_precise(data,
+            interframe_error_diffuse_precise(data,
                                   row + (neighbor - x),
                                   depth, error,
                                   row1_num[i], row1_den[i]);
@@ -1619,7 +1619,7 @@ diffuse_stucki(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_precise(data,
+            interframe_error_diffuse_precise(data,
                                   row + (neighbor - x),
                                   depth, error,
                                   row2_num[i], row2_den[i]);
@@ -1629,7 +1629,7 @@ diffuse_stucki(unsigned char *data, int width, int height,
 
 
 static void
-diffuse_burkes(unsigned char *data, int width, int height,
+interframe_diffuse_burkes(unsigned char *data, int width, int height,
                int x, int y, int depth, int error, int direction)
 {
     /* Burkes' Method
@@ -1656,7 +1656,7 @@ diffuse_burkes(unsigned char *data, int width, int height,
         if (neighbor < 0 || neighbor >= width) {
             continue;
         }
-        error_diffuse_normal(data,
+        interframe_error_diffuse_normal(data,
                              pos + (neighbor - x),
                              depth, error,
                              row0_num[i], row0_den[i]);
@@ -1672,7 +1672,7 @@ diffuse_burkes(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_normal(data,
+            interframe_error_diffuse_normal(data,
                                  row + (neighbor - x),
                                  depth, error,
                                  row1_num[i], row1_den[i]);
@@ -1681,7 +1681,7 @@ diffuse_burkes(unsigned char *data, int width, int height,
 }
 
 static void
-diffuse_sierra1(unsigned char *data, int width, int height,
+interframe_diffuse_sierra1(unsigned char *data, int width, int height,
                 int x, int y, int depth, int error, int direction)
 {
     /* Sierra Lite Method
@@ -1708,7 +1708,7 @@ diffuse_sierra1(unsigned char *data, int width, int height,
         if (neighbor < 0 || neighbor >= width) {
             continue;
         }
-        error_diffuse_normal(data,
+        interframe_error_diffuse_normal(data,
                              pos + (neighbor - x),
                              depth, error,
                              row0_num[i], row0_den[i]);
@@ -1720,7 +1720,7 @@ diffuse_sierra1(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_normal(data,
+            interframe_error_diffuse_normal(data,
                                  row + (neighbor - x),
                                  depth, error,
                                  row1_num[i], row1_den[i]);
@@ -1730,7 +1730,7 @@ diffuse_sierra1(unsigned char *data, int width, int height,
 
 
 static void
-diffuse_sierra2(unsigned char *data, int width, int height,
+interframe_diffuse_sierra2(unsigned char *data, int width, int height,
                 int x, int y, int depth, int error, int direction)
 {
     /* Sierra Two-row Method
@@ -1761,7 +1761,7 @@ diffuse_sierra2(unsigned char *data, int width, int height,
         if (neighbor < 0 || neighbor >= width) {
             continue;
         }
-        error_diffuse_precise(data,
+        interframe_error_diffuse_precise(data,
                               pos + (neighbor - x),
                               depth, error,
                               row0_num[i], row0_den[i]);
@@ -1773,7 +1773,7 @@ diffuse_sierra2(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_precise(data,
+            interframe_error_diffuse_precise(data,
                                   row + (neighbor - x),
                                   depth, error,
                                   row1_num[i], row1_den[i]);
@@ -1786,7 +1786,7 @@ diffuse_sierra2(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_precise(data,
+            interframe_error_diffuse_precise(data,
                                   row + (neighbor - x),
                                   depth, error,
                                   row2_num[i], row2_den[i]);
@@ -1796,7 +1796,7 @@ diffuse_sierra2(unsigned char *data, int width, int height,
 
 
 static void
-diffuse_sierra3(unsigned char *data, int width, int height,
+interframe_diffuse_sierra3(unsigned char *data, int width, int height,
                 int x, int y, int depth, int error, int direction)
 {
     /* Sierra-3 Method
@@ -1827,7 +1827,7 @@ diffuse_sierra3(unsigned char *data, int width, int height,
         if (neighbor < 0 || neighbor >= width) {
             continue;
         }
-        error_diffuse_precise(data,
+        interframe_error_diffuse_precise(data,
                               pos + (neighbor - x),
                               depth, error,
                               row0_num[i], row0_den[i]);
@@ -1839,7 +1839,7 @@ diffuse_sierra3(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_precise(data,
+            interframe_error_diffuse_precise(data,
                                   row + (neighbor - x),
                                   depth, error,
                                   row1_num[i], row1_den[i]);
@@ -1852,7 +1852,7 @@ diffuse_sierra3(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_precise(data,
+            interframe_error_diffuse_precise(data,
                                   row + (neighbor - x),
                                   depth, error,
                                   row2_num[i], row2_den[i]);
@@ -1881,15 +1881,15 @@ sixel_dither_fixed_8bit_keep_diffuse_fns[])(
     int,
     int,
     int) = {
-    diffuse_none,
-    diffuse_fs,
-    diffuse_atkinson,
-    diffuse_jajuni,
-    diffuse_stucki,
-    diffuse_burkes,
-    diffuse_sierra1,
-    diffuse_sierra2,
-    diffuse_sierra3
+    interframe_diffuse_none,
+    interframe_diffuse_fs,
+    interframe_diffuse_atkinson,
+    interframe_diffuse_jajuni,
+    interframe_diffuse_stucki,
+    interframe_diffuse_burkes,
+    interframe_diffuse_sierra1,
+    interframe_diffuse_sierra2,
+    interframe_diffuse_sierra3
 };
 
 static int (* const SIXEL_DITHER_FIXED_8BIT_UNUSED
@@ -1953,7 +1953,7 @@ typedef sixel_interframe_stbn_state_common_t
     sixel_interframe_stbn_state_float32_t;
 
 static void
-error_diffuse_float(float *data,
+interframe_error_diffuse_float(float *data,
                     int pos,
                     int depth,
                     float error,
@@ -1974,7 +1974,7 @@ error_diffuse_float(float *data,
 }
 
 static void
-sixel_dither_scanline_params_fixed_float32(int serpentine,
+interframe_sixel_dither_scanline_params_fixed_float32(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -1996,7 +1996,7 @@ sixel_dither_scanline_params_fixed_float32(int serpentine,
 }
 
 static void
-diffuse_none_float(float *data,
+interframe_diffuse_none_float(float *data,
                    int width,
                    int height,
                    int x,
@@ -2020,7 +2020,7 @@ diffuse_none_float(float *data,
 }
 
 static void
-diffuse_fs_float(float *data,
+interframe_diffuse_fs_float(float *data,
                  int width,
                  int height,
                  int x,
@@ -2039,7 +2039,7 @@ diffuse_fs_float(float *data,
 
     if (forward) {
         if (x < width - 1) {
-            error_diffuse_float(data,
+            interframe_error_diffuse_float(data,
                                 pos + 1,
                                 depth,
                                 error,
@@ -2050,7 +2050,7 @@ diffuse_fs_float(float *data,
         }
         if (y < height - 1) {
             if (x > 0) {
-                error_diffuse_float(data,
+                interframe_error_diffuse_float(data,
                                     pos + width - 1,
                                     depth,
                                     error,
@@ -2059,7 +2059,7 @@ diffuse_fs_float(float *data,
                                     pixelformat,
                                     channel_index);
             }
-            error_diffuse_float(data,
+            interframe_error_diffuse_float(data,
                                 pos + width,
                                 depth,
                                 error,
@@ -2068,7 +2068,7 @@ diffuse_fs_float(float *data,
                                 pixelformat,
                                 channel_index);
             if (x < width - 1) {
-                error_diffuse_float(data,
+                interframe_error_diffuse_float(data,
                                     pos + width + 1,
                                     depth,
                                     error,
@@ -2080,7 +2080,7 @@ diffuse_fs_float(float *data,
         }
     } else {
         if (x > 0) {
-            error_diffuse_float(data,
+            interframe_error_diffuse_float(data,
                                 pos - 1,
                                 depth,
                                 error,
@@ -2091,7 +2091,7 @@ diffuse_fs_float(float *data,
         }
         if (y < height - 1) {
             if (x < width - 1) {
-                error_diffuse_float(data,
+                interframe_error_diffuse_float(data,
                                     pos + width + 1,
                                     depth,
                                     error,
@@ -2100,7 +2100,7 @@ diffuse_fs_float(float *data,
                                     pixelformat,
                                     channel_index);
             }
-            error_diffuse_float(data,
+            interframe_error_diffuse_float(data,
                                 pos + width,
                                 depth,
                                 error,
@@ -2109,7 +2109,7 @@ diffuse_fs_float(float *data,
                                 pixelformat,
                                 channel_index);
             if (x > 0) {
-                error_diffuse_float(data,
+                interframe_error_diffuse_float(data,
                                     pos + width - 1,
                                     depth,
                                     error,
@@ -2128,7 +2128,7 @@ diffuse_fs_float(float *data,
  * but keeps the higher precision samples intact.
  */
 static void
-diffuse_atkinson_float(float *data,
+interframe_diffuse_atkinson_float(float *data,
                        int width,
                        int height,
                        int x,
@@ -2147,7 +2147,7 @@ diffuse_atkinson_float(float *data,
     sign = direction >= 0 ? 1 : -1;
 
     if (x + sign >= 0 && x + sign < width) {
-        error_diffuse_float(data,
+        interframe_error_diffuse_float(data,
                             pos + sign,
                             depth,
                             error,
@@ -2157,7 +2157,7 @@ diffuse_atkinson_float(float *data,
                             channel_index);
     }
     if (x + sign * 2 >= 0 && x + sign * 2 < width) {
-        error_diffuse_float(data,
+        interframe_error_diffuse_float(data,
                             pos + sign * 2,
                             depth,
                             error,
@@ -2169,7 +2169,7 @@ diffuse_atkinson_float(float *data,
     if (y < height - 1) {
         row = pos + width;
         if (x - sign >= 0 && x - sign < width) {
-            error_diffuse_float(data,
+            interframe_error_diffuse_float(data,
                                 row - sign,
                                 depth,
                                 error,
@@ -2178,7 +2178,7 @@ diffuse_atkinson_float(float *data,
                                 pixelformat,
                                 channel_index);
         }
-        error_diffuse_float(data,
+        interframe_error_diffuse_float(data,
                             row,
                             depth,
                             error,
@@ -2187,7 +2187,7 @@ diffuse_atkinson_float(float *data,
                             pixelformat,
                             channel_index);
         if (x + sign >= 0 && x + sign < width) {
-            error_diffuse_float(data,
+            interframe_error_diffuse_float(data,
                                 row + sign,
                                 depth,
                                 error,
@@ -2198,7 +2198,7 @@ diffuse_atkinson_float(float *data,
         }
     }
     if (y < height - 2) {
-        error_diffuse_float(data,
+        interframe_error_diffuse_float(data,
                             pos + width * 2,
                             depth,
                             error,
@@ -2216,7 +2216,7 @@ diffuse_atkinson_float(float *data,
  * compact table instead of open-coded loops.
  */
 static void
-diffuse_weighted_row(float *data,
+interframe_diffuse_weighted_row(float *data,
                      int pos,
                      int depth,
                      float error,
@@ -2243,7 +2243,7 @@ diffuse_weighted_row(float *data,
         if (neighbor < 0 || neighbor >= width) {
             continue;
         }
-        error_diffuse_float(data,
+        interframe_error_diffuse_float(data,
                             row_base + (neighbor - x),
                             depth,
                             error,
@@ -2260,7 +2260,7 @@ diffuse_weighted_row(float *data,
  * reference diffusion matrix.
  */
 static void
-diffuse_jajuni_float(float *data,
+interframe_diffuse_jajuni_float(float *data,
                      int width,
                      int height,
                      int x,
@@ -2283,7 +2283,7 @@ diffuse_jajuni_float(float *data,
     int pos;
 
     pos = y * width + x;
-    diffuse_weighted_row(data,
+    interframe_diffuse_weighted_row(data,
                          pos,
                          depth,
                          error,
@@ -2298,7 +2298,7 @@ diffuse_jajuni_float(float *data,
                          row0_den,
                          2);
     if (y < height - 1) {
-        diffuse_weighted_row(data,
+        interframe_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -2314,7 +2314,7 @@ diffuse_jajuni_float(float *data,
                              5);
     }
     if (y < height - 2) {
-        diffuse_weighted_row(data,
+        interframe_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -2337,7 +2337,7 @@ diffuse_jajuni_float(float *data,
  * 8/48, 4/48, and related fractions from the integer backend.
  */
 static void
-diffuse_stucki_float(float *data,
+interframe_diffuse_stucki_float(float *data,
                      int width,
                      int height,
                      int x,
@@ -2360,7 +2360,7 @@ diffuse_stucki_float(float *data,
     int pos;
 
     pos = y * width + x;
-    diffuse_weighted_row(data,
+    interframe_diffuse_weighted_row(data,
                          pos,
                          depth,
                          error,
@@ -2375,7 +2375,7 @@ diffuse_stucki_float(float *data,
                          row0_den,
                          2);
     if (y < height - 1) {
-        diffuse_weighted_row(data,
+        interframe_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -2391,7 +2391,7 @@ diffuse_stucki_float(float *data,
                              5);
     }
     if (y < height - 2) {
-        diffuse_weighted_row(data,
+        interframe_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -2413,7 +2413,7 @@ diffuse_stucki_float(float *data,
  * while keeping the symmetric 1/16-4/16 pattern.
  */
 static void
-diffuse_burkes_float(float *data,
+interframe_diffuse_burkes_float(float *data,
                      int width,
                      int height,
                      int x,
@@ -2433,7 +2433,7 @@ diffuse_burkes_float(float *data,
     int pos;
 
     pos = y * width + x;
-    diffuse_weighted_row(data,
+    interframe_diffuse_weighted_row(data,
                          pos,
                          depth,
                          error,
@@ -2448,7 +2448,7 @@ diffuse_burkes_float(float *data,
                          row0_den,
                          2);
     if (y < height - 1) {
-        diffuse_weighted_row(data,
+        interframe_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -2470,7 +2470,7 @@ diffuse_burkes_float(float *data,
  * keeping serpentine traversal stable.
  */
 static void
-diffuse_sierra1_float(float *data,
+interframe_diffuse_sierra1_float(float *data,
                       int width,
                       int height,
                       int x,
@@ -2490,7 +2490,7 @@ diffuse_sierra1_float(float *data,
     int pos;
 
     pos = y * width + x;
-    diffuse_weighted_row(data,
+    interframe_diffuse_weighted_row(data,
                          pos,
                          depth,
                          error,
@@ -2505,7 +2505,7 @@ diffuse_sierra1_float(float *data,
                          row0_den,
                          1);
     if (y < height - 1) {
-        diffuse_weighted_row(data,
+        interframe_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -2527,7 +2527,7 @@ diffuse_sierra1_float(float *data,
  * relative to Sierra-3, matching the 32-denominator formulation.
  */
 static void
-diffuse_sierra2_float(float *data,
+interframe_diffuse_sierra2_float(float *data,
                       int width,
                       int height,
                       int x,
@@ -2550,7 +2550,7 @@ diffuse_sierra2_float(float *data,
     int pos;
 
     pos = y * width + x;
-    diffuse_weighted_row(data,
+    interframe_diffuse_weighted_row(data,
                          pos,
                          depth,
                          error,
@@ -2565,7 +2565,7 @@ diffuse_sierra2_float(float *data,
                          row0_den,
                          2);
     if (y < height - 1) {
-        diffuse_weighted_row(data,
+        interframe_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -2581,7 +2581,7 @@ diffuse_sierra2_float(float *data,
                              5);
     }
     if (y < height - 2) {
-        diffuse_weighted_row(data,
+        interframe_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -2603,7 +2603,7 @@ diffuse_sierra2_float(float *data,
  * characterize the original kernel.
  */
 static void
-diffuse_sierra3_float(float *data,
+interframe_diffuse_sierra3_float(float *data,
                       int width,
                       int height,
                       int x,
@@ -2626,7 +2626,7 @@ diffuse_sierra3_float(float *data,
     int pos;
 
     pos = y * width + x;
-    diffuse_weighted_row(data,
+    interframe_diffuse_weighted_row(data,
                          pos,
                          depth,
                          error,
@@ -2641,7 +2641,7 @@ diffuse_sierra3_float(float *data,
                          row0_den,
                          2);
     if (y < height - 1) {
-        diffuse_weighted_row(data,
+        interframe_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -2657,7 +2657,7 @@ diffuse_sierra3_float(float *data,
                              5);
     }
     if (y < height - 2) {
-        diffuse_weighted_row(data,
+        interframe_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -3588,7 +3588,7 @@ sixel_dither_apply_interframe_float32(
 #define SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(DIFFUSE_FN)               \
     for (y = 0; y < context->height; ++y) {                             \
         absolute_y = context->band_origin + y;                          \
-        sixel_dither_scanline_params_fixed_float32(                     \
+        interframe_sixel_dither_scanline_params_fixed_float32(                     \
             serpentine, absolute_y, context->width,                     \
             &start, &end, &step, &direction);                           \
         for (x = start; x != end; x += step) {                          \
@@ -3731,34 +3731,34 @@ sixel_dither_apply_interframe_float32(
 
     switch (method_for_diffuse) {
     case SIXEL_DIFFUSE_NONE:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_none_float);
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(interframe_diffuse_none_float);
         break;
     case SIXEL_DIFFUSE_ATKINSON:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_atkinson_float);
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(interframe_diffuse_atkinson_float);
         break;
     case SIXEL_DIFFUSE_JAJUNI:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_jajuni_float);
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(interframe_diffuse_jajuni_float);
         break;
     case SIXEL_DIFFUSE_STUCKI:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_stucki_float);
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(interframe_diffuse_stucki_float);
         break;
     case SIXEL_DIFFUSE_BURKES:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_burkes_float);
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(interframe_diffuse_burkes_float);
         break;
     case SIXEL_DIFFUSE_SIERRA1:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra1_float);
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(interframe_diffuse_sierra1_float);
         break;
     case SIXEL_DIFFUSE_SIERRA2:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra2_float);
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(interframe_diffuse_sierra2_float);
         break;
     case SIXEL_DIFFUSE_SIERRA3:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_sierra3_float);
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(interframe_diffuse_sierra3_float);
         break;
     case SIXEL_DIFFUSE_INTERFRAME:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(interframe_diffuse_fs_float);
         break;
     case SIXEL_DIFFUSE_FS:
-        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(diffuse_fs_float);
+        SIXEL_DITHER_APPLY_FIXED_FLOAT32_LOOP(interframe_diffuse_fs_float);
         break;
     default:
         return SIXEL_BAD_ARGUMENT;
@@ -3796,15 +3796,15 @@ sixel_dither_fixed_float32_keep_diffuse_fns[])(
     int,
     int,
     int) = {
-    diffuse_none_float,
-    diffuse_fs_float,
-    diffuse_atkinson_float,
-    diffuse_jajuni_float,
-    diffuse_stucki_float,
-    diffuse_burkes_float,
-    diffuse_sierra1_float,
-    diffuse_sierra2_float,
-    diffuse_sierra3_float
+    interframe_diffuse_none_float,
+    interframe_diffuse_fs_float,
+    interframe_diffuse_atkinson_float,
+    interframe_diffuse_jajuni_float,
+    interframe_diffuse_stucki_float,
+    interframe_diffuse_burkes_float,
+    interframe_diffuse_sierra1_float,
+    interframe_diffuse_sierra2_float,
+    interframe_diffuse_sierra3_float
 };
 
 static sixel_interframe_method_float32_ops_t const *(

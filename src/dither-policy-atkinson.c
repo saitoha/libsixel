@@ -67,7 +67,7 @@ typedef struct sixel_dither_policy_atkinson_context {
 } sixel_dither_policy_atkinson_context_t;
 
 static void
-sixel_dither_scanline_params_fixed_8bit(int serpentine,
+atkinson_sixel_dither_scanline_params_fixed_8bit(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -89,7 +89,7 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
 }
 
 static void
-error_diffuse_fast(
+atkinson_error_diffuse_fast(
     unsigned char /* in */    *data,      /* base address of pixel buffer */
     int           /* in */    pos,        /* address of the destination pixel */
     int           /* in */    depth,      /* color depth in bytes */
@@ -113,7 +113,7 @@ error_diffuse_fast(
 
 /* Shared diffusion helper kernels. */
 
-static void diffuse_atkinson(unsigned char *data,
+static void atkinson_diffuse_atkinson(unsigned char *data,
                              int width,
                              int height,
                              int x,
@@ -199,7 +199,7 @@ sixel_dither_apply_atkinson_8bit(
 
     for (y = 0; y < height; ++y) {
         absolute_y = band_origin + y;
-        sixel_dither_scanline_params_fixed_8bit(
+        atkinson_sixel_dither_scanline_params_fixed_8bit(
             serpentine, absolute_y, width,
             &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
@@ -236,7 +236,7 @@ sixel_dither_apply_atkinson_8bit(
             for (n = 0; n < depth; ++n) {
                 palette_value = palette[color_index * depth + n];
                 offset = (int)source_pixel[n] - palette_value;
-                diffuse_atkinson(data + n, width, height, x, y,
+                atkinson_diffuse_atkinson(data + n, width, height, x, y,
                           depth, offset, direction);
             }
         }
@@ -252,7 +252,7 @@ end:
 }
 
 static void
-diffuse_atkinson(unsigned char *data, int width, int height,
+atkinson_diffuse_atkinson(unsigned char *data, int width, int height,
                  int x, int y, int depth, int error, int direction)
 {
     /* Atkinson's Method
@@ -267,35 +267,35 @@ diffuse_atkinson(unsigned char *data, int width, int height,
     sign = direction >= 0 ? 1 : -1;
 
     if (x + sign >= 0 && x + sign < width) {
-        error_diffuse_fast(data, pos + sign, depth, error, 1, 8);
+        atkinson_error_diffuse_fast(data, pos + sign, depth, error, 1, 8);
     }
     if (x + sign * 2 >= 0 && x + sign * 2 < width) {
-        error_diffuse_fast(data, pos + sign * 2, depth, error, 1, 8);
+        atkinson_error_diffuse_fast(data, pos + sign * 2, depth, error, 1, 8);
     }
     if (y < height - 1) {
         int row;
 
         row = pos + width;
         if (x - sign >= 0 && x - sign < width) {
-            error_diffuse_fast(data,
+            atkinson_error_diffuse_fast(data,
                                row + (-sign),
                                depth, error, 1, 8);
         }
-        error_diffuse_fast(data, row, depth, error, 1, 8);
+        atkinson_error_diffuse_fast(data, row, depth, error, 1, 8);
         if (x + sign >= 0 && x + sign < width) {
-            error_diffuse_fast(data,
+            atkinson_error_diffuse_fast(data,
                                row + sign,
                                depth, error, 1, 8);
         }
     }
     if (y < height - 2) {
-        error_diffuse_fast(data, pos + width * 2, depth, error, 1, 8);
+        atkinson_error_diffuse_fast(data, pos + width * 2, depth, error, 1, 8);
     }
 }
 
 
 static void
-error_diffuse_float(float *data,
+atkinson_error_diffuse_float(float *data,
                     int pos,
                     int depth,
                     float error,
@@ -316,7 +316,7 @@ error_diffuse_float(float *data,
 }
 
 static void
-sixel_dither_scanline_params_fixed_float32(int serpentine,
+atkinson_sixel_dither_scanline_params_fixed_float32(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -343,7 +343,7 @@ sixel_dither_scanline_params_fixed_float32(int serpentine,
  * but keeps the higher precision samples intact.
  */
 static void
-diffuse_atkinson_float(float *data,
+atkinson_diffuse_atkinson_float(float *data,
                        int width,
                        int height,
                        int x,
@@ -362,7 +362,7 @@ diffuse_atkinson_float(float *data,
     sign = direction >= 0 ? 1 : -1;
 
     if (x + sign >= 0 && x + sign < width) {
-        error_diffuse_float(data,
+        atkinson_error_diffuse_float(data,
                             pos + sign,
                             depth,
                             error,
@@ -372,7 +372,7 @@ diffuse_atkinson_float(float *data,
                             channel_index);
     }
     if (x + sign * 2 >= 0 && x + sign * 2 < width) {
-        error_diffuse_float(data,
+        atkinson_error_diffuse_float(data,
                             pos + sign * 2,
                             depth,
                             error,
@@ -384,7 +384,7 @@ diffuse_atkinson_float(float *data,
     if (y < height - 1) {
         row = pos + width;
         if (x - sign >= 0 && x - sign < width) {
-            error_diffuse_float(data,
+            atkinson_error_diffuse_float(data,
                                 row - sign,
                                 depth,
                                 error,
@@ -393,7 +393,7 @@ diffuse_atkinson_float(float *data,
                                 pixelformat,
                                 channel_index);
         }
-        error_diffuse_float(data,
+        atkinson_error_diffuse_float(data,
                             row,
                             depth,
                             error,
@@ -402,7 +402,7 @@ diffuse_atkinson_float(float *data,
                             pixelformat,
                             channel_index);
         if (x + sign >= 0 && x + sign < width) {
-            error_diffuse_float(data,
+            atkinson_error_diffuse_float(data,
                                 row + sign,
                                 depth,
                                 error,
@@ -413,7 +413,7 @@ diffuse_atkinson_float(float *data,
         }
     }
     if (y < height - 2) {
-        error_diffuse_float(data,
+        atkinson_error_diffuse_float(data,
                             pos + width * 2,
                             depth,
                             error,
@@ -551,7 +551,7 @@ sixel_dither_apply_atkinson_float32(
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params_fixed_float32(
+        atkinson_sixel_dither_scanline_params_fixed_float32(
             serpentine, absolute_y, context->width,
             &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
@@ -604,7 +604,7 @@ sixel_dither_apply_atkinson_float32(
                     }
                 error = working_float[n] - palette_value_float;
                 source_pixel[n] = palette_value_float;
-                diffuse_atkinson_float(data + (size_t)n,
+                atkinson_diffuse_atkinson_float(data + (size_t)n,
                           context->width,
                           context->height,
                           x,

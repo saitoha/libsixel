@@ -67,7 +67,7 @@ typedef struct sixel_dither_policy_fs_context {
 } sixel_dither_policy_fs_context_t;
 
 static void
-sixel_dither_scanline_params_fixed_8bit(int serpentine,
+fs_sixel_dither_scanline_params_fixed_8bit(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -89,7 +89,7 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
 }
 
 static void
-error_diffuse_normal(
+fs_error_diffuse_normal(
     unsigned char /* in */    *data,      /* base address of pixel buffer */
     int           /* in */    pos,        /* address of the destination pixel */
     int           /* in */    depth,      /* color depth in bytes */
@@ -113,7 +113,7 @@ error_diffuse_normal(
 
 /* Shared diffusion helper kernels. */
 
-static void diffuse_fs(unsigned char *data,
+static void fs_diffuse_fs(unsigned char *data,
                        int width,
                        int height,
                        int x,
@@ -199,7 +199,7 @@ sixel_dither_apply_fs_8bit(
 
     for (y = 0; y < height; ++y) {
         absolute_y = band_origin + y;
-        sixel_dither_scanline_params_fixed_8bit(
+        fs_sixel_dither_scanline_params_fixed_8bit(
             serpentine, absolute_y, width,
             &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
@@ -236,7 +236,7 @@ sixel_dither_apply_fs_8bit(
             for (n = 0; n < depth; ++n) {
                 palette_value = palette[color_index * depth + n];
                 offset = (int)source_pixel[n] - palette_value;
-                diffuse_fs(data + n, width, height, x, y,
+                fs_diffuse_fs(data + n, width, height, x, y,
                           depth, offset, direction);
             }
         }
@@ -252,7 +252,7 @@ end:
 }
 
 static void
-diffuse_fs(unsigned char *data, int width, int height,
+fs_diffuse_fs(unsigned char *data, int width, int height,
            int x, int y, int depth, int error, int direction)
 {
     /* Floyd Steinberg Method
@@ -267,38 +267,38 @@ diffuse_fs(unsigned char *data, int width, int height,
 
     if (forward) {
         if (x < width - 1) {
-            error_diffuse_normal(data, pos + 1, depth, error, 7, 16);
+            fs_error_diffuse_normal(data, pos + 1, depth, error, 7, 16);
         }
         if (y < height - 1) {
             if (x > 0) {
-                error_diffuse_normal(data,
+                fs_error_diffuse_normal(data,
                                      pos + width - 1,
                                      depth, error, 3, 16);
             }
-            error_diffuse_normal(data,
+            fs_error_diffuse_normal(data,
                                  pos + width,
                                  depth, error, 5, 16);
             if (x < width - 1) {
-                error_diffuse_normal(data,
+                fs_error_diffuse_normal(data,
                                      pos + width + 1,
                                      depth, error, 1, 16);
             }
         }
     } else {
         if (x > 0) {
-            error_diffuse_normal(data, pos - 1, depth, error, 7, 16);
+            fs_error_diffuse_normal(data, pos - 1, depth, error, 7, 16);
         }
         if (y < height - 1) {
             if (x < width - 1) {
-                error_diffuse_normal(data,
+                fs_error_diffuse_normal(data,
                                      pos + width + 1,
                                      depth, error, 3, 16);
             }
-            error_diffuse_normal(data,
+            fs_error_diffuse_normal(data,
                                  pos + width,
                                  depth, error, 5, 16);
             if (x > 0) {
-                error_diffuse_normal(data,
+                fs_error_diffuse_normal(data,
                                      pos + width - 1,
                                      depth, error, 1, 16);
             }
@@ -308,7 +308,7 @@ diffuse_fs(unsigned char *data, int width, int height,
 
 
 static void
-error_diffuse_float(float *data,
+fs_error_diffuse_float(float *data,
                     int pos,
                     int depth,
                     float error,
@@ -329,7 +329,7 @@ error_diffuse_float(float *data,
 }
 
 static void
-sixel_dither_scanline_params_fixed_float32(int serpentine,
+fs_sixel_dither_scanline_params_fixed_float32(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -351,7 +351,7 @@ sixel_dither_scanline_params_fixed_float32(int serpentine,
 }
 
 static void
-diffuse_fs_float(float *data,
+fs_diffuse_fs_float(float *data,
                  int width,
                  int height,
                  int x,
@@ -370,7 +370,7 @@ diffuse_fs_float(float *data,
 
     if (forward) {
         if (x < width - 1) {
-            error_diffuse_float(data,
+            fs_error_diffuse_float(data,
                                 pos + 1,
                                 depth,
                                 error,
@@ -381,7 +381,7 @@ diffuse_fs_float(float *data,
         }
         if (y < height - 1) {
             if (x > 0) {
-                error_diffuse_float(data,
+                fs_error_diffuse_float(data,
                                     pos + width - 1,
                                     depth,
                                     error,
@@ -390,7 +390,7 @@ diffuse_fs_float(float *data,
                                     pixelformat,
                                     channel_index);
             }
-            error_diffuse_float(data,
+            fs_error_diffuse_float(data,
                                 pos + width,
                                 depth,
                                 error,
@@ -399,7 +399,7 @@ diffuse_fs_float(float *data,
                                 pixelformat,
                                 channel_index);
             if (x < width - 1) {
-                error_diffuse_float(data,
+                fs_error_diffuse_float(data,
                                     pos + width + 1,
                                     depth,
                                     error,
@@ -411,7 +411,7 @@ diffuse_fs_float(float *data,
         }
     } else {
         if (x > 0) {
-            error_diffuse_float(data,
+            fs_error_diffuse_float(data,
                                 pos - 1,
                                 depth,
                                 error,
@@ -422,7 +422,7 @@ diffuse_fs_float(float *data,
         }
         if (y < height - 1) {
             if (x < width - 1) {
-                error_diffuse_float(data,
+                fs_error_diffuse_float(data,
                                     pos + width + 1,
                                     depth,
                                     error,
@@ -431,7 +431,7 @@ diffuse_fs_float(float *data,
                                     pixelformat,
                                     channel_index);
             }
-            error_diffuse_float(data,
+            fs_error_diffuse_float(data,
                                 pos + width,
                                 depth,
                                 error,
@@ -440,7 +440,7 @@ diffuse_fs_float(float *data,
                                 pixelformat,
                                 channel_index);
             if (x > 0) {
-                error_diffuse_float(data,
+                fs_error_diffuse_float(data,
                                     pos + width - 1,
                                     depth,
                                     error,
@@ -585,7 +585,7 @@ sixel_dither_apply_fs_float32(
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params_fixed_float32(
+        fs_sixel_dither_scanline_params_fixed_float32(
             serpentine, absolute_y, context->width,
             &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
@@ -638,7 +638,7 @@ sixel_dither_apply_fs_float32(
                     }
                 error = working_float[n] - palette_value_float;
                 source_pixel[n] = palette_value_float;
-                diffuse_fs_float(data + (size_t)n,
+                fs_diffuse_fs_float(data + (size_t)n,
                           context->width,
                           context->height,
                           x,

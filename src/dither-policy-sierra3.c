@@ -67,7 +67,7 @@ typedef struct sixel_dither_policy_sierra3_context {
 } sixel_dither_policy_sierra3_context_t;
 
 static void
-sixel_dither_scanline_params_fixed_8bit(int serpentine,
+sierra3_sixel_dither_scanline_params_fixed_8bit(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -90,7 +90,7 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
 
 /* Shared diffusion helper kernels. */
 static void
-error_diffuse_precise(
+sierra3_error_diffuse_precise(
     unsigned char /* in */    *data,      /* base address of pixel buffer */
     int           /* in */    pos,        /* address of the destination pixel */
     int           /* in */    depth,      /* color depth in bytes */
@@ -112,7 +112,7 @@ error_diffuse_precise(
     *data = (unsigned char)c;
 }
 
-static void diffuse_sierra3(unsigned char *data,
+static void sierra3_diffuse_sierra3(unsigned char *data,
                             int width,
                             int height,
                             int x,
@@ -198,7 +198,7 @@ sixel_dither_apply_sierra3_8bit(
 
     for (y = 0; y < height; ++y) {
         absolute_y = band_origin + y;
-        sixel_dither_scanline_params_fixed_8bit(
+        sierra3_sixel_dither_scanline_params_fixed_8bit(
             serpentine, absolute_y, width,
             &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
@@ -235,7 +235,7 @@ sixel_dither_apply_sierra3_8bit(
             for (n = 0; n < depth; ++n) {
                 palette_value = palette[color_index * depth + n];
                 offset = (int)source_pixel[n] - palette_value;
-                diffuse_sierra3(data + n, width, height, x, y,
+                sierra3_diffuse_sierra3(data + n, width, height, x, y,
                           depth, offset, direction);
             }
         }
@@ -251,7 +251,7 @@ end:
 }
 
 static void
-diffuse_sierra3(unsigned char *data, int width, int height,
+sierra3_diffuse_sierra3(unsigned char *data, int width, int height,
                 int x, int y, int depth, int error, int direction)
 {
     /* Sierra-3 Method
@@ -282,7 +282,7 @@ diffuse_sierra3(unsigned char *data, int width, int height,
         if (neighbor < 0 || neighbor >= width) {
             continue;
         }
-        error_diffuse_precise(data,
+        sierra3_error_diffuse_precise(data,
                               pos + (neighbor - x),
                               depth, error,
                               row0_num[i], row0_den[i]);
@@ -294,7 +294,7 @@ diffuse_sierra3(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_precise(data,
+            sierra3_error_diffuse_precise(data,
                                   row + (neighbor - x),
                                   depth, error,
                                   row1_num[i], row1_den[i]);
@@ -307,7 +307,7 @@ diffuse_sierra3(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_precise(data,
+            sierra3_error_diffuse_precise(data,
                                   row + (neighbor - x),
                                   depth, error,
                                   row2_num[i], row2_den[i]);
@@ -317,7 +317,7 @@ diffuse_sierra3(unsigned char *data, int width, int height,
 
 
 static void
-error_diffuse_float(float *data,
+sierra3_error_diffuse_float(float *data,
                     int pos,
                     int depth,
                     float error,
@@ -338,7 +338,7 @@ error_diffuse_float(float *data,
 }
 
 static void
-sixel_dither_scanline_params_fixed_float32(int serpentine,
+sierra3_sixel_dither_scanline_params_fixed_float32(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -372,7 +372,7 @@ sixel_dither_scanline_params_fixed_float32(int serpentine,
  * compact table instead of open-coded loops.
  */
 static void
-diffuse_weighted_row(float *data,
+sierra3_diffuse_weighted_row(float *data,
                      int pos,
                      int depth,
                      float error,
@@ -399,7 +399,7 @@ diffuse_weighted_row(float *data,
         if (neighbor < 0 || neighbor >= width) {
             continue;
         }
-        error_diffuse_float(data,
+        sierra3_error_diffuse_float(data,
                             row_base + (neighbor - x),
                             depth,
                             error,
@@ -442,7 +442,7 @@ diffuse_weighted_row(float *data,
  * characterize the original kernel.
  */
 static void
-diffuse_sierra3_float(float *data,
+sierra3_diffuse_sierra3_float(float *data,
                       int width,
                       int height,
                       int x,
@@ -465,7 +465,7 @@ diffuse_sierra3_float(float *data,
     int pos;
 
     pos = y * width + x;
-    diffuse_weighted_row(data,
+    sierra3_diffuse_weighted_row(data,
                          pos,
                          depth,
                          error,
@@ -480,7 +480,7 @@ diffuse_sierra3_float(float *data,
                          row0_den,
                          2);
     if (y < height - 1) {
-        diffuse_weighted_row(data,
+        sierra3_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -496,7 +496,7 @@ diffuse_sierra3_float(float *data,
                              5);
     }
     if (y < height - 2) {
-        diffuse_weighted_row(data,
+        sierra3_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -601,7 +601,7 @@ sixel_dither_apply_sierra3_float32(
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params_fixed_float32(
+        sierra3_sixel_dither_scanline_params_fixed_float32(
             serpentine, absolute_y, context->width,
             &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
@@ -654,7 +654,7 @@ sixel_dither_apply_sierra3_float32(
                     }
                 error = working_float[n] - palette_value_float;
                 source_pixel[n] = palette_value_float;
-                diffuse_sierra3_float(data + (size_t)n,
+                sierra3_diffuse_sierra3_float(data + (size_t)n,
                           context->width,
                           context->height,
                           x,

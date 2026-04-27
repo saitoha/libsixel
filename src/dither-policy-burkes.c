@@ -67,7 +67,7 @@ typedef struct sixel_dither_policy_burkes_context {
 } sixel_dither_policy_burkes_context_t;
 
 static void
-sixel_dither_scanline_params_fixed_8bit(int serpentine,
+burkes_sixel_dither_scanline_params_fixed_8bit(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -89,7 +89,7 @@ sixel_dither_scanline_params_fixed_8bit(int serpentine,
 }
 
 static void
-error_diffuse_normal(
+burkes_error_diffuse_normal(
     unsigned char /* in */    *data,      /* base address of pixel buffer */
     int           /* in */    pos,        /* address of the destination pixel */
     int           /* in */    depth,      /* color depth in bytes */
@@ -113,7 +113,7 @@ error_diffuse_normal(
 
 /* Shared diffusion helper kernels. */
 
-static void diffuse_burkes(unsigned char *data,
+static void burkes_diffuse_burkes(unsigned char *data,
                            int width,
                            int height,
                            int x,
@@ -199,7 +199,7 @@ sixel_dither_apply_burkes_8bit(
 
     for (y = 0; y < height; ++y) {
         absolute_y = band_origin + y;
-        sixel_dither_scanline_params_fixed_8bit(
+        burkes_sixel_dither_scanline_params_fixed_8bit(
             serpentine, absolute_y, width,
             &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
@@ -236,7 +236,7 @@ sixel_dither_apply_burkes_8bit(
             for (n = 0; n < depth; ++n) {
                 palette_value = palette[color_index * depth + n];
                 offset = (int)source_pixel[n] - palette_value;
-                diffuse_burkes(data + n, width, height, x, y,
+                burkes_diffuse_burkes(data + n, width, height, x, y,
                           depth, offset, direction);
             }
         }
@@ -252,7 +252,7 @@ end:
 }
 
 static void
-diffuse_burkes(unsigned char *data, int width, int height,
+burkes_diffuse_burkes(unsigned char *data, int width, int height,
                int x, int y, int depth, int error, int direction)
 {
     /* Burkes' Method
@@ -279,7 +279,7 @@ diffuse_burkes(unsigned char *data, int width, int height,
         if (neighbor < 0 || neighbor >= width) {
             continue;
         }
-        error_diffuse_normal(data,
+        burkes_error_diffuse_normal(data,
                              pos + (neighbor - x),
                              depth, error,
                              row0_num[i], row0_den[i]);
@@ -295,7 +295,7 @@ diffuse_burkes(unsigned char *data, int width, int height,
             if (neighbor < 0 || neighbor >= width) {
                 continue;
             }
-            error_diffuse_normal(data,
+            burkes_error_diffuse_normal(data,
                                  row + (neighbor - x),
                                  depth, error,
                                  row1_num[i], row1_den[i]);
@@ -305,7 +305,7 @@ diffuse_burkes(unsigned char *data, int width, int height,
 
 
 static void
-error_diffuse_float(float *data,
+burkes_error_diffuse_float(float *data,
                     int pos,
                     int depth,
                     float error,
@@ -326,7 +326,7 @@ error_diffuse_float(float *data,
 }
 
 static void
-sixel_dither_scanline_params_fixed_float32(int serpentine,
+burkes_sixel_dither_scanline_params_fixed_float32(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -360,7 +360,7 @@ sixel_dither_scanline_params_fixed_float32(int serpentine,
  * compact table instead of open-coded loops.
  */
 static void
-diffuse_weighted_row(float *data,
+burkes_diffuse_weighted_row(float *data,
                      int pos,
                      int depth,
                      float error,
@@ -387,7 +387,7 @@ diffuse_weighted_row(float *data,
         if (neighbor < 0 || neighbor >= width) {
             continue;
         }
-        error_diffuse_float(data,
+        burkes_error_diffuse_float(data,
                             row_base + (neighbor - x),
                             depth,
                             error,
@@ -415,7 +415,7 @@ diffuse_weighted_row(float *data,
  * while keeping the symmetric 1/16-4/16 pattern.
  */
 static void
-diffuse_burkes_float(float *data,
+burkes_diffuse_burkes_float(float *data,
                      int width,
                      int height,
                      int x,
@@ -435,7 +435,7 @@ diffuse_burkes_float(float *data,
     int pos;
 
     pos = y * width + x;
-    diffuse_weighted_row(data,
+    burkes_diffuse_weighted_row(data,
                          pos,
                          depth,
                          error,
@@ -450,7 +450,7 @@ diffuse_burkes_float(float *data,
                          row0_den,
                          2);
     if (y < height - 1) {
-        diffuse_weighted_row(data,
+        burkes_diffuse_weighted_row(data,
                              pos,
                              depth,
                              error,
@@ -570,7 +570,7 @@ sixel_dither_apply_burkes_float32(
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params_fixed_float32(
+        burkes_sixel_dither_scanline_params_fixed_float32(
             serpentine, absolute_y, context->width,
             &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
@@ -623,7 +623,7 @@ sixel_dither_apply_burkes_float32(
                     }
                 error = working_float[n] - palette_value_float;
                 source_pixel[n] = palette_value_float;
-                diffuse_burkes_float(data + (size_t)n,
+                burkes_diffuse_burkes_float(data + (size_t)n,
                           context->width,
                           context->height,
                           x,
