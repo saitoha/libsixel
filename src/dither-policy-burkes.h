@@ -33,12 +33,14 @@ extern "C" {
 
 /* @classid dither/burkes.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_dither_policy_create_burkes_8bit(
+sixel_dither_policy_burkes_8bit_new(
+    sixel_allocator_t *allocator,
     sixel_dither_policy_interface_t **policy);
 
 /* @classid dither/burkes.float32 */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_dither_policy_create_burkes_float32(
+sixel_dither_policy_burkes_float32_new(
+    sixel_allocator_t *allocator,
     sixel_dither_policy_interface_t **policy);
 
 #ifdef __cplusplus

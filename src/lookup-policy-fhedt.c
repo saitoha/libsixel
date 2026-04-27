@@ -164,6 +164,7 @@ sixel_lookup_policy_fhedt_float32_finalize(sixel_lookup_policy_fhedt_float32_t *
 typedef struct sixel_lookup_policy_fhedt_object {
     sixel_lookup_policy_interface_t base;
     sixel_atomic_u32_t ref;
+    sixel_allocator_t *allocator;
     int backend_initialized;
     int prepared;
     sixel_lookup_policy_fhedt_8bit_t state_8bit;
@@ -843,7 +844,8 @@ static sixel_lookup_policy_vtbl_t
 };
 
 SIXELSTATUS
-sixel_lookup_policy_create_fhedt_8bit(
+sixel_lookup_policy_fhedt_8bit_new(
+    sixel_allocator_t *allocator,
     sixel_lookup_policy_interface_t **policy)
 {
     sixel_lookup_policy_fhedt_object_t *object;
@@ -854,10 +856,10 @@ sixel_lookup_policy_create_fhedt_8bit(
     }
     *policy = NULL;
 
-    object = (sixel_lookup_policy_fhedt_object_t *)malloc(sizeof(*object));
+    object = (sixel_lookup_policy_fhedt_object_t *))sixel_allocator_malloc(allocator, sizeof(*object));
     if (object == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_lookup_policy_create_fhedt_8bit: allocation failed.");
+            "sixel_lookup_policy_fhedt_8bit_new: allocation failed.");
         return SIXEL_BAD_ALLOCATION;
     }
 
@@ -869,7 +871,8 @@ sixel_lookup_policy_create_fhedt_8bit(
 }
 
 SIXELSTATUS
-sixel_lookup_policy_create_fhedt_float32(
+sixel_lookup_policy_fhedt_float32_new(
+    sixel_allocator_t *allocator,
     sixel_lookup_policy_interface_t **policy)
 {
     sixel_lookup_policy_fhedt_object_t *object;
@@ -880,10 +883,10 @@ sixel_lookup_policy_create_fhedt_float32(
     }
     *policy = NULL;
 
-    object = (sixel_lookup_policy_fhedt_object_t *)malloc(sizeof(*object));
+    object = (sixel_lookup_policy_fhedt_object_t *))sixel_allocator_malloc(allocator, sizeof(*object));
     if (object == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_lookup_policy_create_fhedt_float32: allocation failed.");
+            "sixel_lookup_policy_fhedt_float32_new: allocation failed.");
         return SIXEL_BAD_ALLOCATION;
     }
 

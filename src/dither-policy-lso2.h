@@ -33,12 +33,14 @@ extern "C" {
 
 /* @classid dither/lso2.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_dither_policy_create_lso2_8bit(
+sixel_dither_policy_lso2_8bit_new(
+    sixel_allocator_t *allocator,
     sixel_dither_policy_interface_t **policy);
 
 /* @classid dither/lso2.float32 */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_dither_policy_create_lso2_float32(
+sixel_dither_policy_lso2_float32_new(
+    sixel_allocator_t *allocator,
     sixel_dither_policy_interface_t **policy);
 
 #ifdef __cplusplus

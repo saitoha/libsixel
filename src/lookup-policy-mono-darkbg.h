@@ -34,12 +34,14 @@ extern "C" {
 
 /* @classid lookup/mono-darkbg.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lookup_policy_create_mono_darkbg_8bit(
+sixel_lookup_policy_mono_darkbg_8bit_new(
+    sixel_allocator_t *allocator,
     sixel_lookup_policy_interface_t **policy);
 
 /* @classid lookup/mono-darkbg.float32 */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lookup_policy_create_mono_darkbg_float32(
+sixel_lookup_policy_mono_darkbg_float32_new(
+    sixel_allocator_t *allocator,
     sixel_lookup_policy_interface_t **policy);
 
 #ifdef __cplusplus

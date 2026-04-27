@@ -31,6 +31,7 @@
 
 static SIXELSTATUS
 create_policy_object(char const *name,
+                     sixel_allocator_t *allocator,
                      void **object)
 {
     SIXELSTATUS status;
@@ -41,7 +42,7 @@ create_policy_object(char const *name,
     factory = NULL;
     service = NULL;
 
-    if (name == NULL || object == NULL) {
+    if (name == NULL || allocator == NULL || object == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *object = NULL;
@@ -52,7 +53,7 @@ create_policy_object(char const *name,
     }
     factory = (sixel_factory_t *)service;
 
-    status = factory->vtbl->create(factory, name, object);
+    status = factory->vtbl->create(factory, allocator, name, object);
     factory->vtbl->unref(factory);
     return status;
 }
@@ -103,7 +104,9 @@ prepare_none_lookup_policy(sixel_dither_t *dither,
         class_name = "lookup/none.float32";
     }
 
-    status = create_policy_object(class_name, (void **)lookup_policy);
+    status = create_policy_object(class_name,
+                                  dither->allocator,
+                                  (void **)lookup_policy);
     if (SIXEL_FAILED(status)) {
         return 0;
     }
@@ -228,7 +231,9 @@ test_dither_policy_named_classes_contract(void)
             return 0;
         }
 
-        status = create_policy_object(class_names[i], (void **)&dither_policy);
+        status = create_policy_object(class_names[i],
+                                      dither->allocator,
+                                      (void **)&dither_policy);
         if (SIXEL_FAILED(status) || dither_policy == NULL
                 || dither_policy->vtbl == NULL) {
             safe_unref_lookup_policy_dither(&lookup_policy);

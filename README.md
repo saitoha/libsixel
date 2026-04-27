@@ -1225,7 +1225,11 @@ orientation is applied when builtin orientation handling is enabled.
 When `EXIF` metadata is absent, builtin WebP also tries a minimal
 `XMP` orientation fallback (`tiff:Orientation`) for values `2..8`.
 `EXIF` always takes precedence over `XMP` when both are present.
-`XMP` remains non-applied for color management in the current scope.
+For color management, builtin WebP applies embedded `ICCP` first.
+When `ICCP` is absent and builtin CMS is enabled, builtin WebP also accepts a
+minimal `XMP` color profile name fallback (`photoshop:ICCProfile`) for
+`sRGB IEC61966-2.1`, `Display P3`, and `Adobe RGB (1998)`.
+Unknown XMP color profile names are ignored.
 
 `librsvg` always returns raster frames as `RGB888` or `RGBA8888`.
 Without `-B` and with any non-opaque pixel, alpha is preserved

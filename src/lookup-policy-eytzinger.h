@@ -34,12 +34,14 @@ extern "C" {
 
 /* @classid lookup/eytzinger.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lookup_policy_create_eytzinger_8bit(
+sixel_lookup_policy_eytzinger_8bit_new(
+    sixel_allocator_t *allocator,
     sixel_lookup_policy_interface_t **policy);
 
 /* @classid lookup/eytzinger.float32 */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lookup_policy_create_eytzinger_float32(
+sixel_lookup_policy_eytzinger_float32_new(
+    sixel_allocator_t *allocator,
     sixel_lookup_policy_interface_t **policy);
 
 #ifdef __cplusplus

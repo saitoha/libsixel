@@ -23,6 +23,7 @@
 #include "dither-policy-interframe.h"
 
 typedef SIXELSTATUS (*sixel_dither_policy_create_fn)(
+    sixel_allocator_t *allocator,
     sixel_dither_policy_interface_t **policy);
 %}
 struct sixel_dither_policy_classid_entry {
@@ -30,32 +31,32 @@ struct sixel_dither_policy_classid_entry {
     sixel_dither_policy_create_fn create;
 };
 %%
-dither/none.8bit, sixel_dither_policy_create_none_8bit
-dither/none.float32, sixel_dither_policy_create_none_float32
-dither/fs.8bit, sixel_dither_policy_create_fs_8bit
-dither/fs.float32, sixel_dither_policy_create_fs_float32
-dither/atkinson.8bit, sixel_dither_policy_create_atkinson_8bit
-dither/atkinson.float32, sixel_dither_policy_create_atkinson_float32
-dither/jajuni.8bit, sixel_dither_policy_create_jajuni_8bit
-dither/jajuni.float32, sixel_dither_policy_create_jajuni_float32
-dither/stucki.8bit, sixel_dither_policy_create_stucki_8bit
-dither/stucki.float32, sixel_dither_policy_create_stucki_float32
-dither/burkes.8bit, sixel_dither_policy_create_burkes_8bit
-dither/burkes.float32, sixel_dither_policy_create_burkes_float32
-dither/sierra1.8bit, sixel_dither_policy_create_sierra1_8bit
-dither/sierra1.float32, sixel_dither_policy_create_sierra1_float32
-dither/sierra2.8bit, sixel_dither_policy_create_sierra2_8bit
-dither/sierra2.float32, sixel_dither_policy_create_sierra2_float32
-dither/sierra3.8bit, sixel_dither_policy_create_sierra3_8bit
-dither/sierra3.float32, sixel_dither_policy_create_sierra3_float32
-dither/lso2.8bit, sixel_dither_policy_create_lso2_8bit
-dither/lso2.float32, sixel_dither_policy_create_lso2_float32
-dither/a_dither.8bit, sixel_dither_policy_create_a_dither_8bit
-dither/a_dither.float32, sixel_dither_policy_create_a_dither_float32
-dither/x_dither.8bit, sixel_dither_policy_create_x_dither_8bit
-dither/x_dither.float32, sixel_dither_policy_create_x_dither_float32
-dither/bluenoise.8bit, sixel_dither_policy_create_bluenoise_8bit
-dither/bluenoise.float32, sixel_dither_policy_create_bluenoise_float32
-dither/interframe.8bit, sixel_dither_policy_create_interframe_8bit
-dither/interframe.float32, sixel_dither_policy_create_interframe_float32
+dither/none.8bit, sixel_dither_policy_none_8bit_new
+dither/none.float32, sixel_dither_policy_none_float32_new
+dither/fs.8bit, sixel_dither_policy_fs_8bit_new
+dither/fs.float32, sixel_dither_policy_fs_float32_new
+dither/atkinson.8bit, sixel_dither_policy_atkinson_8bit_new
+dither/atkinson.float32, sixel_dither_policy_atkinson_float32_new
+dither/jajuni.8bit, sixel_dither_policy_jajuni_8bit_new
+dither/jajuni.float32, sixel_dither_policy_jajuni_float32_new
+dither/stucki.8bit, sixel_dither_policy_stucki_8bit_new
+dither/stucki.float32, sixel_dither_policy_stucki_float32_new
+dither/burkes.8bit, sixel_dither_policy_burkes_8bit_new
+dither/burkes.float32, sixel_dither_policy_burkes_float32_new
+dither/sierra1.8bit, sixel_dither_policy_sierra1_8bit_new
+dither/sierra1.float32, sixel_dither_policy_sierra1_float32_new
+dither/sierra2.8bit, sixel_dither_policy_sierra2_8bit_new
+dither/sierra2.float32, sixel_dither_policy_sierra2_float32_new
+dither/sierra3.8bit, sixel_dither_policy_sierra3_8bit_new
+dither/sierra3.float32, sixel_dither_policy_sierra3_float32_new
+dither/lso2.8bit, sixel_dither_policy_lso2_8bit_new
+dither/lso2.float32, sixel_dither_policy_lso2_float32_new
+dither/a_dither.8bit, sixel_dither_policy_a_dither_8bit_new
+dither/a_dither.float32, sixel_dither_policy_a_dither_float32_new
+dither/x_dither.8bit, sixel_dither_policy_x_dither_8bit_new
+dither/x_dither.float32, sixel_dither_policy_x_dither_float32_new
+dither/bluenoise.8bit, sixel_dither_policy_bluenoise_8bit_new
+dither/bluenoise.float32, sixel_dither_policy_bluenoise_float32_new
+dither/interframe.8bit, sixel_dither_policy_interframe_8bit_new
+dither/interframe.float32, sixel_dither_policy_interframe_float32_new
 %%

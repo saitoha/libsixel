@@ -646,6 +646,7 @@ sixel_dither_apply_fs_float32(
 typedef struct sixel_dither_policy_fs_object {
     sixel_dither_policy_interface_t base;
     sixel_atomic_u32_t ref;
+    sixel_allocator_t *allocator;
     int method_for_scan;
     int pixelformat;
 } sixel_dither_policy_fs_object_t;
@@ -898,7 +899,8 @@ static sixel_dither_policy_vtbl_t const
 # pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
 #endif
 SIXELSTATUS
-sixel_dither_policy_create_fs(
+sixel_dither_policy_fs_new(
+    sixel_allocator_t *allocator,
     sixel_dither_policy_interface_t **policy)
 {
     sixel_dither_policy_fs_object_t *object;
@@ -909,7 +911,7 @@ sixel_dither_policy_create_fs(
     }
     *policy = NULL;
 
-    object = (sixel_dither_policy_fs_object_t *)malloc(sizeof(*object));
+    object = (sixel_dither_policy_fs_object_t *))sixel_allocator_malloc(allocator, sizeof(*object));
     if (object == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
@@ -945,12 +947,13 @@ static sixel_dither_policy_vtbl_t const
 };
 
 SIXELSTATUS
-sixel_dither_policy_create_fs_8bit(
+sixel_dither_policy_fs_8bit_new(
+    sixel_allocator_t *allocator,
     sixel_dither_policy_interface_t **policy)
 {
     SIXELSTATUS status;
 
-    status = sixel_dither_policy_create_fs(policy);
+    status = sixel_dither_policy_fs_new(allocator, policy);
     if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
         (*policy)->vtbl = &g_sixel_dither_policy_fs_8bit_vtbl;
     }
@@ -959,12 +962,13 @@ sixel_dither_policy_create_fs_8bit(
 }
 
 SIXELSTATUS
-sixel_dither_policy_create_fs_float32(
+sixel_dither_policy_fs_float32_new(
+    sixel_allocator_t *allocator,
     sixel_dither_policy_interface_t **policy)
 {
     SIXELSTATUS status;
 
-    status = sixel_dither_policy_create_fs(policy);
+    status = sixel_dither_policy_fs_new(allocator, policy);
     if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
         (*policy)->vtbl = &g_sixel_dither_policy_fs_float32_vtbl;
     }

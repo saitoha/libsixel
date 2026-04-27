@@ -442,6 +442,7 @@ sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
 typedef struct sixel_dither_policy_a_dither_object {
     sixel_dither_policy_interface_t base;
     sixel_atomic_u32_t ref;
+    sixel_allocator_t *allocator;
     int method_for_scan;
     int pixelformat;
 } sixel_dither_policy_a_dither_object_t;
@@ -667,7 +668,8 @@ static sixel_dither_policy_vtbl_t const
 # pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
 #endif
 SIXELSTATUS
-sixel_dither_policy_create_a_dither(
+sixel_dither_policy_a_dither_new(
+    sixel_allocator_t *allocator,
     sixel_dither_policy_interface_t **policy)
 {
     sixel_dither_policy_a_dither_object_t *object;
@@ -678,7 +680,7 @@ sixel_dither_policy_create_a_dither(
     }
     *policy = NULL;
 
-    object = (sixel_dither_policy_a_dither_object_t *)malloc(sizeof(*object));
+    object = (sixel_dither_policy_a_dither_object_t *))sixel_allocator_malloc(allocator, sizeof(*object));
     if (object == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
@@ -714,12 +716,13 @@ static sixel_dither_policy_vtbl_t const
 };
 
 SIXELSTATUS
-sixel_dither_policy_create_a_dither_8bit(
+sixel_dither_policy_a_dither_8bit_new(
+    sixel_allocator_t *allocator,
     sixel_dither_policy_interface_t **policy)
 {
     SIXELSTATUS status;
 
-    status = sixel_dither_policy_create_a_dither(policy);
+    status = sixel_dither_policy_a_dither_new(allocator, policy);
     if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
         (*policy)->vtbl = &g_sixel_dither_policy_a_dither_8bit_vtbl;
     }
@@ -728,12 +731,13 @@ sixel_dither_policy_create_a_dither_8bit(
 }
 
 SIXELSTATUS
-sixel_dither_policy_create_a_dither_float32(
+sixel_dither_policy_a_dither_float32_new(
+    sixel_allocator_t *allocator,
     sixel_dither_policy_interface_t **policy)
 {
     SIXELSTATUS status;
 
-    status = sixel_dither_policy_create_a_dither(policy);
+    status = sixel_dither_policy_a_dither_new(allocator, policy);
     if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
         (*policy)->vtbl = &g_sixel_dither_policy_a_dither_float32_vtbl;
     }

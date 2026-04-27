@@ -63,6 +63,7 @@ sixel_factory_unref_noop(sixel_factory_t *factory)
 
 static SIXELSTATUS
 sixel_factory_create_default(sixel_factory_t *factory,
+                             sixel_allocator_t *allocator,
                              char const *class_name,
                              void **object)
 {
@@ -81,7 +82,7 @@ sixel_factory_create_default(sixel_factory_t *factory,
         *object = NULL;
     }
 
-    if (class_name == NULL || object == NULL) {
+    if (allocator == NULL || class_name == NULL || object == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -96,6 +97,7 @@ sixel_factory_create_default(sixel_factory_t *factory,
             return SIXEL_BAD_ARGUMENT;
         }
         status = lookup_entry->create(
+            allocator,
             (sixel_lookup_policy_interface_t **)object);
         return status;
     }
@@ -111,6 +113,7 @@ sixel_factory_create_default(sixel_factory_t *factory,
             return SIXEL_BAD_ARGUMENT;
         }
         status = dither_entry->create(
+            allocator,
             (sixel_dither_policy_interface_t **)object);
         return status;
     }

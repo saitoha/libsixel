@@ -55,6 +55,7 @@ typedef struct sixel_factory_vtbl {
     void (*ref)(sixel_factory_t *factory);
     void (*unref)(sixel_factory_t *factory);
     SIXELSTATUS (*create)(sixel_factory_t *factory,
+                          sixel_allocator_t *allocator,
                           char const *class_name,
                           void **object);
 } sixel_factory_vtbl_t;

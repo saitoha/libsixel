@@ -41,7 +41,8 @@ FNR == 1 {
         next
     }
 
-    if (pending_classid != "" && match($0, /sixel_lookup_policy_create_[A-Za-z0-9_]+/)) {
+    if (pending_classid != "" &&
+            match($0, /sixel_lookup_policy_[A-Za-z0-9_]+_new/)) {
         constructor_name = substr($0, RSTART, RLENGTH)
         if (pending_classid in classid_to_constructor) {
             report_error("duplicate @classid " pending_classid)
@@ -85,6 +86,7 @@ END {
     }
     print ""
     print "typedef SIXELSTATUS (*sixel_lookup_policy_create_fn)("
+    print "    sixel_allocator_t *allocator,"
     print "    sixel_lookup_policy_interface_t **policy);"
     print "%}"
     print "struct sixel_lookup_policy_classid_entry {"

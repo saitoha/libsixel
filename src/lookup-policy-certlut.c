@@ -216,6 +216,7 @@ sixel_lookup_policy_certlut_float32_finalize(sixel_lookup_policy_certlut_float32
 typedef struct sixel_lookup_policy_certlut_object {
     sixel_lookup_policy_interface_t base;
     sixel_atomic_u32_t ref;
+    sixel_allocator_t *allocator;
     int backend_initialized;
     int prepared;
     sixel_lookup_policy_certlut_8bit_t state_8bit;
@@ -2052,7 +2053,8 @@ sixel_certlut_free(sixel_certlut_t *lut)
 
 
 SIXELSTATUS
-sixel_lookup_policy_create_certlut_8bit(
+sixel_lookup_policy_certlut_8bit_new(
+    sixel_allocator_t *allocator,
     sixel_lookup_policy_interface_t **policy)
 {
     sixel_lookup_policy_certlut_object_t *object;
@@ -2063,10 +2065,10 @@ sixel_lookup_policy_create_certlut_8bit(
     }
     *policy = NULL;
 
-    object = (sixel_lookup_policy_certlut_object_t *)malloc(sizeof(*object));
+    object = (sixel_lookup_policy_certlut_object_t *))sixel_allocator_malloc(allocator, sizeof(*object));
     if (object == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_lookup_policy_create_certlut_8bit: allocation failed.");
+            "sixel_lookup_policy_certlut_8bit_new: allocation failed.");
         return SIXEL_BAD_ALLOCATION;
     }
 
@@ -2078,7 +2080,8 @@ sixel_lookup_policy_create_certlut_8bit(
 }
 
 SIXELSTATUS
-sixel_lookup_policy_create_certlut_float32(
+sixel_lookup_policy_certlut_float32_new(
+    sixel_allocator_t *allocator,
     sixel_lookup_policy_interface_t **policy)
 {
     sixel_lookup_policy_certlut_object_t *object;
@@ -2089,10 +2092,10 @@ sixel_lookup_policy_create_certlut_float32(
     }
     *policy = NULL;
 
-    object = (sixel_lookup_policy_certlut_object_t *)malloc(sizeof(*object));
+    object = (sixel_lookup_policy_certlut_object_t *))sixel_allocator_malloc(allocator, sizeof(*object));
     if (object == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_lookup_policy_create_certlut_float32: allocation failed.");
+            "sixel_lookup_policy_certlut_float32_new: allocation failed.");
         return SIXEL_BAD_ALLOCATION;
     }
 

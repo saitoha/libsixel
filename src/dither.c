@@ -622,6 +622,7 @@ sixel_dither_prepare_lookup_policy(
     factory = (sixel_factory_t *)service;
 
     status = factory->vtbl->create(factory,
+                                   allocator,
                                    policy_name,
                                    (void **)&prepared_policy);
     factory->vtbl->unref(factory);
@@ -700,6 +701,7 @@ sixel_dither_prepare_dither_policy(
     factory = (sixel_factory_t *)service;
 
     status = factory->vtbl->create(factory,
+                                   dither->allocator,
                                    policy_name,
                                    (void **)&prepared_policy);
     factory->vtbl->unref(factory);

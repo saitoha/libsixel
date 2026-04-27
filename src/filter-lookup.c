@@ -151,6 +151,7 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
     }
     factory = (sixel_factory_t *)service;
     status = factory->vtbl->create(factory,
+                                   allocator,
                                    policy_name,
                                    (void **)&policy);
     factory->vtbl->unref(factory);

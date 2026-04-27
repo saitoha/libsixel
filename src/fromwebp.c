@@ -75,6 +75,13 @@ typedef struct sixel_webp_anim_stream {
     int loop_count;
 } sixel_webp_anim_stream_t;
 
+typedef enum sixel_webp_xmp_cms_profile_kind {
+    SIXEL_WEBP_XMP_CMS_PROFILE_UNKNOWN = 0,
+    SIXEL_WEBP_XMP_CMS_PROFILE_SRGB,
+    SIXEL_WEBP_XMP_CMS_PROFILE_DISPLAY_P3,
+    SIXEL_WEBP_XMP_CMS_PROFILE_ADOBE_RGB_1998
+} sixel_webp_xmp_cms_profile_kind_t;
+
 static unsigned int
 sixel_webp_anim_read_u24le(unsigned char const *p)
 {
@@ -260,7 +267,8 @@ static void
 sixel_webp_trace_unapplied_meta_codes(sixel_webp_decode_plan_t const *plan,
                                       int iccp_reported,
                                       int exif_reported,
-                                      int xmp_reported)
+                                      int xmp_reported,
+                                      int xmp_cms_reported)
 {
     if (plan == NULL) {
         return;
@@ -280,42 +288,38 @@ sixel_webp_trace_unapplied_meta_codes(sixel_webp_decode_plan_t const *plan,
     if (plan->meta_has_xmp != 0 && xmp_reported == 0) {
         sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_META_XMP_IGNORED);
     }
+    if (plan->meta_has_xmp != 0 && xmp_cms_reported == 0) {
+        sixel_webp_trace_contract_add_code(
+            SIXEL_WEBP_CODE_META_XMP_CMS_IGNORED);
+    }
 }
 
 static int
-sixel_webp_apply_iccp_to_srgb_rgba(unsigned char *pixels,
-                                   int width,
-                                   int height,
-                                   unsigned char const *profile,
-                                   size_t profile_size,
-                                   sixel_allocator_t *allocator)
+sixel_webp_apply_profile_to_srgb_rgba(unsigned char *pixels,
+                                      int width,
+                                      int height,
+                                      sixel_cms_profile_t *src_profile,
+                                      sixel_allocator_t *allocator)
 {
 #if HAVE_LCMS2
-    sixel_cms_profile_t *src_profile;
     sixel_cms_profile_t *dst_profile;
     sixel_cms_transform_t *transform;
     size_t pixel_count;
     int converted;
 
-    src_profile = NULL;
     dst_profile = NULL;
     transform = NULL;
     pixel_count = 0u;
     converted = 0;
     (void)allocator;
 
-    if (pixels == NULL || width <= 0 || height <= 0 ||
-        profile == NULL || profile_size == 0u) {
+    if (pixels == NULL || width <= 0 || height <= 0 || src_profile == NULL) {
         return 0;
     }
     if ((size_t)width > SIZE_MAX / (size_t)height) {
         return 0;
     }
 
-    src_profile = sixel_cms_open_profile_from_mem(profile, profile_size);
-    if (src_profile == NULL) {
-        return 0;
-    }
     dst_profile = sixel_cms_create_srgb_profile();
     if (dst_profile == NULL) {
         goto cleanup;
@@ -344,9 +348,6 @@ cleanup:
     if (dst_profile != NULL) {
         sixel_cms_close_profile(dst_profile);
     }
-    if (src_profile != NULL) {
-        sixel_cms_close_profile(src_profile);
-    }
     return converted;
 #else
     unsigned char *rgb_pixels;
@@ -366,8 +367,7 @@ cleanup:
     converted = 0;
 
     if (pixels == NULL || width <= 0 || height <= 0 ||
-        profile == NULL || profile_size == 0u ||
-        allocator == NULL) {
+        src_profile == NULL || allocator == NULL) {
         return 0;
     }
     if ((size_t)width > SIZE_MAX / (size_t)height) {
@@ -392,13 +392,12 @@ cleanup:
         rgb_pixels[dst_offset + 2u] = pixels[src_offset + 2u];
     }
 
-    converted = sixel_cms_convert_to_srgb_with_profile_bytes(
+    converted = sixel_cms_convert_profile_to_srgb(
         rgb_pixels,
         width,
         height,
         SIXEL_PIXELFORMAT_RGB888,
-        profile,
-        profile_size);
+        src_profile);
     if (converted != 0) {
         for (i = 0u; i < pixel_count; ++i) {
             src_offset = i * 3u;
@@ -412,6 +411,37 @@ cleanup:
     sixel_allocator_free(allocator, rgb_pixels);
     return converted;
 #endif
+}
+
+static int
+sixel_webp_apply_iccp_to_srgb_rgba(unsigned char *pixels,
+                                   int width,
+                                   int height,
+                                   unsigned char const *profile,
+                                   size_t profile_size,
+                                   sixel_allocator_t *allocator)
+{
+    sixel_cms_profile_t *src_profile;
+    int converted;
+
+    src_profile = NULL;
+    converted = 0;
+    if (pixels == NULL || width <= 0 || height <= 0 ||
+        profile == NULL || profile_size == 0u) {
+        return 0;
+    }
+
+    src_profile = sixel_cms_open_profile_from_mem(profile, profile_size);
+    if (src_profile == NULL) {
+        return 0;
+    }
+    converted = sixel_webp_apply_profile_to_srgb_rgba(pixels,
+                                                      width,
+                                                      height,
+                                                      src_profile,
+                                                      allocator);
+    sixel_cms_close_profile(src_profile);
+    return converted;
 }
 
 static SIXELSTATUS
@@ -599,6 +629,271 @@ sixel_webp_xmp_parse_orientation(unsigned char const *payload,
         return 1;
     }
     return 0;
+}
+
+static unsigned char
+sixel_webp_xmp_ascii_tolower(unsigned char ch)
+{
+    if (ch >= 'A' && ch <= 'Z') {
+        return (unsigned char)(ch + ('a' - 'A'));
+    }
+    return ch;
+}
+
+static int
+sixel_webp_xmp_match_profile_name(unsigned char const *payload,
+                                  size_t value_begin,
+                                  size_t value_end,
+                                  sixel_webp_xmp_cms_profile_kind_t *kind)
+{
+    static char const profile_srgb[] = "sRGB IEC61966-2.1";
+    static char const profile_display_p3[] = "Display P3";
+    static char const profile_adobe_rgb[] = "Adobe RGB (1998)";
+    size_t text_size;
+    size_t index;
+    size_t profile_size;
+    unsigned char ch;
+    char const *profile_text;
+    int profile_index;
+
+    text_size = 0u;
+    index = 0u;
+    profile_size = 0u;
+    ch = '\0';
+    profile_text = NULL;
+    profile_index = 0;
+    if (payload == NULL || kind == NULL || value_begin > value_end) {
+        return 0;
+    }
+
+    while (value_begin < value_end &&
+           sixel_webp_xmp_is_space(payload[value_begin]) != 0) {
+        ++value_begin;
+    }
+    while (value_end > value_begin &&
+           sixel_webp_xmp_is_space(payload[value_end - 1u]) != 0) {
+        --value_end;
+    }
+    if (value_begin >= value_end) {
+        return 0;
+    }
+
+    text_size = value_end - value_begin;
+    for (profile_index = 0; profile_index < 3; ++profile_index) {
+        if (profile_index == 0) {
+            profile_text = profile_srgb;
+            profile_size = sizeof(profile_srgb) - 1u;
+            *kind = SIXEL_WEBP_XMP_CMS_PROFILE_SRGB;
+        } else if (profile_index == 1) {
+            profile_text = profile_display_p3;
+            profile_size = sizeof(profile_display_p3) - 1u;
+            *kind = SIXEL_WEBP_XMP_CMS_PROFILE_DISPLAY_P3;
+        } else {
+            profile_text = profile_adobe_rgb;
+            profile_size = sizeof(profile_adobe_rgb) - 1u;
+            *kind = SIXEL_WEBP_XMP_CMS_PROFILE_ADOBE_RGB_1998;
+        }
+        if (text_size != profile_size) {
+            continue;
+        }
+        for (index = 0u; index < text_size; ++index) {
+            ch = sixel_webp_xmp_ascii_tolower(payload[value_begin + index]);
+            if (ch != sixel_webp_xmp_ascii_tolower(
+                    (unsigned char)profile_text[index])) {
+                break;
+            }
+        }
+        if (index == text_size) {
+            return 1;
+        }
+    }
+    *kind = SIXEL_WEBP_XMP_CMS_PROFILE_UNKNOWN;
+    return 0;
+}
+
+static int
+sixel_webp_xmp_parse_icc_profile_kind(unsigned char const *payload,
+                                      size_t payload_size,
+                                      sixel_webp_xmp_cms_profile_kind_t *kind)
+{
+    static char const attr_token[] = "photoshop:ICCProfile";
+    static char const elem_begin[] = "<photoshop:ICCProfile>";
+    static char const elem_end[] = "</photoshop:ICCProfile>";
+    size_t offset;
+    size_t cursor;
+    size_t value_begin;
+    size_t value_end;
+    unsigned char quote;
+
+    offset = 0u;
+    cursor = 0u;
+    value_begin = 0u;
+    value_end = 0u;
+    quote = '\0';
+    if (payload == NULL || kind == NULL) {
+        return 0;
+    }
+    *kind = SIXEL_WEBP_XMP_CMS_PROFILE_UNKNOWN;
+
+    while (sixel_webp_xmp_find_token(payload,
+                                     payload_size,
+                                     attr_token,
+                                     sizeof(attr_token) - 1u,
+                                     offset,
+                                     &cursor) != 0) {
+        cursor += sizeof(attr_token) - 1u;
+        while (cursor < payload_size &&
+               sixel_webp_xmp_is_space(payload[cursor]) != 0) {
+            ++cursor;
+        }
+        if (cursor >= payload_size || payload[cursor] != '=') {
+            offset = cursor;
+            continue;
+        }
+        ++cursor;
+        while (cursor < payload_size &&
+               sixel_webp_xmp_is_space(payload[cursor]) != 0) {
+            ++cursor;
+        }
+        if (cursor >= payload_size) {
+            break;
+        }
+        quote = payload[cursor];
+        if (quote != '"' && quote != '\'') {
+            offset = cursor;
+            continue;
+        }
+        ++cursor;
+        value_begin = cursor;
+        while (cursor < payload_size && payload[cursor] != quote) {
+            ++cursor;
+        }
+        if (cursor >= payload_size) {
+            break;
+        }
+        value_end = cursor;
+        if (sixel_webp_xmp_match_profile_name(payload,
+                                              value_begin,
+                                              value_end,
+                                              kind) != 0) {
+            return 1;
+        }
+        offset = cursor + 1u;
+    }
+
+    offset = 0u;
+    while (sixel_webp_xmp_find_token(payload,
+                                     payload_size,
+                                     elem_begin,
+                                     sizeof(elem_begin) - 1u,
+                                     offset,
+                                     &cursor) != 0) {
+        cursor += sizeof(elem_begin) - 1u;
+        value_begin = cursor;
+        if (sixel_webp_xmp_find_token(payload,
+                                      payload_size,
+                                      elem_end,
+                                      sizeof(elem_end) - 1u,
+                                      cursor,
+                                      &value_end) == 0) {
+            break;
+        }
+        if (sixel_webp_xmp_match_profile_name(payload,
+                                              value_begin,
+                                              value_end,
+                                              kind) != 0) {
+            return 1;
+        }
+        offset = value_end + sizeof(elem_end) - 1u;
+    }
+    return 0;
+}
+
+static sixel_cms_profile_t *
+sixel_webp_create_xmp_profile(sixel_webp_xmp_cms_profile_kind_t kind)
+{
+    switch (kind) {
+    case SIXEL_WEBP_XMP_CMS_PROFILE_SRGB:
+        return sixel_cms_create_srgb_profile();
+    case SIXEL_WEBP_XMP_CMS_PROFILE_DISPLAY_P3:
+        return sixel_cms_create_rgb_profile_from_gamma_chrm(
+            2.2,
+            0.3127,
+            0.3290,
+            0.6800,
+            0.3200,
+            0.2650,
+            0.6900,
+            0.1500,
+            0.0600);
+    case SIXEL_WEBP_XMP_CMS_PROFILE_ADOBE_RGB_1998:
+        return sixel_cms_create_rgb_profile_from_gamma_chrm(
+            2.2,
+            0.3127,
+            0.3290,
+            0.6400,
+            0.3300,
+            0.2100,
+            0.7100,
+            0.1500,
+            0.0600);
+    default:
+        break;
+    }
+    return NULL;
+}
+
+static SIXELSTATUS
+sixel_webp_try_apply_xmp_cms(sixel_webp_decode_plan_t const *plan,
+                             int enable_cms,
+                             sixel_frame_t *frame,
+                             sixel_allocator_t *allocator,
+                             int *applied)
+{
+    sixel_webp_xmp_cms_profile_kind_t kind;
+    sixel_cms_profile_t *src_profile;
+    int found_profile;
+    int converted;
+
+    kind = SIXEL_WEBP_XMP_CMS_PROFILE_UNKNOWN;
+    src_profile = NULL;
+    found_profile = 0;
+    converted = 0;
+    if (plan == NULL || frame == NULL || applied == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *applied = 0;
+    if (plan->meta_has_xmp == 0 ||
+        enable_cms == 0 ||
+        plan->meta_has_iccp != 0 ||
+        plan->xmp_payload == NULL ||
+        plan->xmp_payload_size == 0u) {
+        return SIXEL_OK;
+    }
+
+    found_profile = sixel_webp_xmp_parse_icc_profile_kind(
+        plan->xmp_payload,
+        plan->xmp_payload_size,
+        &kind);
+    if (found_profile == 0 || kind == SIXEL_WEBP_XMP_CMS_PROFILE_UNKNOWN) {
+        return SIXEL_OK;
+    }
+
+    src_profile = sixel_webp_create_xmp_profile(kind);
+    if (src_profile == NULL) {
+        return SIXEL_OK;
+    }
+    converted = sixel_webp_apply_profile_to_srgb_rgba(frame->pixels.u8ptr,
+                                                      frame->width,
+                                                      frame->height,
+                                                      src_profile,
+                                                      allocator);
+    sixel_cms_close_profile(src_profile);
+    if (converted != 0) {
+        *applied = 1;
+    }
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS
@@ -1309,7 +1604,9 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     int iccp_code_reported;
     int exif_code_reported;
     int xmp_code_reported;
+    int xmp_cms_code_reported;
     int iccp_applied;
+    int xmp_cms_applied;
     int exif_applied;
     int xmp_applied;
 
@@ -1337,7 +1634,9 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     iccp_code_reported = 0;
     exif_code_reported = 0;
     xmp_code_reported = 0;
+    xmp_cms_code_reported = 0;
     iccp_applied = 0;
+    xmp_cms_applied = 0;
     exif_applied = 0;
     xmp_applied = 0;
     if (handled == NULL) {
@@ -1530,6 +1829,29 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                 iccp_code_reported = 1;
             }
 
+            if (plan.meta_has_xmp != 0) {
+                status = sixel_webp_try_apply_xmp_cms(
+                    &plan,
+                    enable_cms,
+                    frame,
+                    chunk->allocator,
+                    &xmp_cms_applied);
+                if (SIXEL_FAILED(status)) {
+                    sixel_webp_trace_contract_add_code(
+                        SIXEL_WEBP_CODE_META_XMP_CMS_IGNORED);
+                    xmp_cms_code_reported = 1;
+                    goto end;
+                }
+                if (xmp_cms_applied != 0) {
+                    sixel_webp_trace_contract_add_code(
+                        SIXEL_WEBP_CODE_META_XMP_CMS_APPLIED);
+                } else {
+                    sixel_webp_trace_contract_add_code(
+                        SIXEL_WEBP_CODE_META_XMP_CMS_IGNORED);
+                }
+                xmp_cms_code_reported = 1;
+            }
+
             if (plan.meta_has_exif != 0) {
                 status = sixel_webp_try_apply_exif_orientation(
                     &plan,
@@ -1628,7 +1950,8 @@ end:
     sixel_webp_trace_unapplied_meta_codes(&plan,
                                           iccp_code_reported,
                                           exif_code_reported,
-                                          xmp_code_reported);
+                                          xmp_code_reported,
+                                          xmp_cms_code_reported);
     sixel_webp_trace_contract_flush(SIXEL_SUCCEEDED(status) ? 0 : 1);
     return status;
 }
@@ -1648,7 +1971,9 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     int iccp_code_reported;
     int exif_code_reported;
     int xmp_code_reported;
+    int xmp_cms_code_reported;
     int iccp_applied;
+    int xmp_cms_applied;
     int exif_applied;
     int xmp_applied;
 
@@ -1661,7 +1986,9 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     iccp_code_reported = 0;
     exif_code_reported = 0;
     xmp_code_reported = 0;
+    xmp_cms_code_reported = 0;
     iccp_applied = 0;
+    xmp_cms_applied = 0;
     exif_applied = 0;
     xmp_applied = 0;
 
@@ -1774,6 +2101,28 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
         iccp_code_reported = 1;
     }
 
+    if (plan.meta_has_xmp != 0) {
+        status = sixel_webp_try_apply_xmp_cms(&plan,
+                                              enable_cms,
+                                              frame,
+                                              chunk->allocator,
+                                              &xmp_cms_applied);
+        if (SIXEL_FAILED(status)) {
+            sixel_webp_trace_contract_add_code(
+                SIXEL_WEBP_CODE_META_XMP_CMS_IGNORED);
+            xmp_cms_code_reported = 1;
+            goto cleanup;
+        }
+        if (xmp_cms_applied != 0) {
+            sixel_webp_trace_contract_add_code(
+                SIXEL_WEBP_CODE_META_XMP_CMS_APPLIED);
+        } else {
+            sixel_webp_trace_contract_add_code(
+                SIXEL_WEBP_CODE_META_XMP_CMS_IGNORED);
+        }
+        xmp_cms_code_reported = 1;
+    }
+
     if (plan.meta_has_exif != 0) {
         status = sixel_webp_try_apply_exif_orientation(&plan,
                                                        enable_orientation,
@@ -1823,7 +2172,8 @@ cleanup:
     sixel_webp_trace_unapplied_meta_codes(&plan,
                                           iccp_code_reported,
                                           exif_code_reported,
-                                          xmp_code_reported);
+                                          xmp_code_reported,
+                                          xmp_cms_code_reported);
     sixel_webp_trace_contract_flush(SIXEL_SUCCEEDED(status) ? 0 : 1);
     return status;
 }

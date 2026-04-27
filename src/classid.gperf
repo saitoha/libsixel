@@ -20,6 +20,7 @@
 #include "lookup-policy-vptree.h"
 
 typedef SIXELSTATUS (*sixel_lookup_policy_create_fn)(
+    sixel_allocator_t *allocator,
     sixel_lookup_policy_interface_t **policy);
 %}
 struct sixel_lookup_policy_classid_entry {
@@ -27,26 +28,26 @@ struct sixel_lookup_policy_classid_entry {
     sixel_lookup_policy_create_fn create;
 };
 %%
-lookup/5bit.8bit, sixel_lookup_policy_create_5bit_8bit
-lookup/5bit.float32, sixel_lookup_policy_create_5bit_float32
-lookup/6bit.8bit, sixel_lookup_policy_create_6bit_8bit
-lookup/6bit.float32, sixel_lookup_policy_create_6bit_float32
-lookup/certlut.8bit, sixel_lookup_policy_create_certlut_8bit
-lookup/certlut.float32, sixel_lookup_policy_create_certlut_float32
-lookup/eytzinger.8bit, sixel_lookup_policy_create_eytzinger_8bit
-lookup/eytzinger.float32, sixel_lookup_policy_create_eytzinger_float32
-lookup/fhedt.8bit, sixel_lookup_policy_create_fhedt_8bit
-lookup/fhedt.float32, sixel_lookup_policy_create_fhedt_float32
-lookup/mahalanobis.8bit, sixel_lookup_policy_create_mahalanobis_8bit
-lookup/mahalanobis.float32, sixel_lookup_policy_create_mahalanobis_float32
-lookup/mono-darkbg.8bit, sixel_lookup_policy_create_mono_darkbg_8bit
-lookup/mono-darkbg.float32, sixel_lookup_policy_create_mono_darkbg_float32
-lookup/mono-lightbg.8bit, sixel_lookup_policy_create_mono_lightbg_8bit
-lookup/mono-lightbg.float32, sixel_lookup_policy_create_mono_lightbg_float32
-lookup/none.8bit, sixel_lookup_policy_create_none_8bit
-lookup/none.float32, sixel_lookup_policy_create_none_float32
-lookup/rbc.8bit, sixel_lookup_policy_create_rbc_8bit
-lookup/rbc.float32, sixel_lookup_policy_create_rbc_float32
-lookup/vptree.8bit, sixel_lookup_policy_create_vptree_8bit
-lookup/vptree.float32, sixel_lookup_policy_create_vptree_float32
+lookup/5bit.8bit, sixel_lookup_policy_5bit_8bit_new
+lookup/5bit.float32, sixel_lookup_policy_5bit_float32_new
+lookup/6bit.8bit, sixel_lookup_policy_6bit_8bit_new
+lookup/6bit.float32, sixel_lookup_policy_6bit_float32_new
+lookup/certlut.8bit, sixel_lookup_policy_certlut_8bit_new
+lookup/certlut.float32, sixel_lookup_policy_certlut_float32_new
+lookup/eytzinger.8bit, sixel_lookup_policy_eytzinger_8bit_new
+lookup/eytzinger.float32, sixel_lookup_policy_eytzinger_float32_new
+lookup/fhedt.8bit, sixel_lookup_policy_fhedt_8bit_new
+lookup/fhedt.float32, sixel_lookup_policy_fhedt_float32_new
+lookup/mahalanobis.8bit, sixel_lookup_policy_mahalanobis_8bit_new
+lookup/mahalanobis.float32, sixel_lookup_policy_mahalanobis_float32_new
+lookup/mono-darkbg.8bit, sixel_lookup_policy_mono_darkbg_8bit_new
+lookup/mono-darkbg.float32, sixel_lookup_policy_mono_darkbg_float32_new
+lookup/mono-lightbg.8bit, sixel_lookup_policy_mono_lightbg_8bit_new
+lookup/mono-lightbg.float32, sixel_lookup_policy_mono_lightbg_float32_new
+lookup/none.8bit, sixel_lookup_policy_none_8bit_new
+lookup/none.float32, sixel_lookup_policy_none_float32_new
+lookup/rbc.8bit, sixel_lookup_policy_rbc_8bit_new
+lookup/rbc.float32, sixel_lookup_policy_rbc_float32_new
+lookup/vptree.8bit, sixel_lookup_policy_vptree_8bit_new
+lookup/vptree.float32, sixel_lookup_policy_vptree_float32_new
 %%

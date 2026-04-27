@@ -91,7 +91,10 @@ create_lookup_policy(char const *name,
     }
     factory = (sixel_factory_t *)service;
 
-    status = factory->vtbl->create(factory, name, (void **)&created);
+    status = factory->vtbl->create(factory,
+                                   request->allocator,
+                                   name,
+                                   (void **)&created);
     factory->vtbl->unref(factory);
     factory = NULL;
     if (SIXEL_FAILED(status)) {

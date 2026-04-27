@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_lookup_policy_classid_lookup --language=ANSI-C -H sixel_lookup_policy_classid_hash -W sixel_lookup_policy_classid_wordlist src/classid.gperf  */
+/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_lookup_policy_classid_lookup --language=ANSI-C -H sixel_lookup_policy_classid_hash -W sixel_lookup_policy_classid_wordlist ../../src/classid.gperf  */
 /* Computed positions: -k'8-9' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -29,7 +29,7 @@
 #error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
 #endif
 
-#line 6 "src/classid.gperf"
+#line 6 "../../src/classid.gperf"
 
 #if defined(HAVE_STRING_H) && HAVE_STRING_H
 #include <string.h>
@@ -47,8 +47,9 @@
 #include "lookup-policy-vptree.h"
 
 typedef SIXELSTATUS (*sixel_lookup_policy_create_fn)(
+    sixel_allocator_t *allocator,
     sixel_lookup_policy_interface_t **policy);
-#line 25 "src/classid.gperf"
+#line 26 "../../src/classid.gperf"
 struct sixel_lookup_policy_classid_entry {
     char const *name;
     sixel_lookup_policy_create_fn create;
@@ -107,57 +108,57 @@ static const struct sixel_lookup_policy_classid_entry sixel_lookup_policy_classi
   {
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-#line 46 "src/classid.gperf"
-    {"lookup/none.8bit", sixel_lookup_policy_create_none_8bit},
-#line 38 "src/classid.gperf"
-    {"lookup/fhedt.8bit", sixel_lookup_policy_create_fhedt_8bit},
-#line 50 "src/classid.gperf"
-    {"lookup/vptree.8bit", sixel_lookup_policy_create_vptree_8bit},
-#line 47 "src/classid.gperf"
-    {"lookup/none.float32", sixel_lookup_policy_create_none_float32},
-#line 39 "src/classid.gperf"
-    {"lookup/fhedt.float32", sixel_lookup_policy_create_fhedt_float32},
-#line 51 "src/classid.gperf"
-    {"lookup/vptree.float32", sixel_lookup_policy_create_vptree_float32},
+#line 47 "../../src/classid.gperf"
+    {"lookup/none.8bit", sixel_lookup_policy_none_8bit_new},
+#line 39 "../../src/classid.gperf"
+    {"lookup/fhedt.8bit", sixel_lookup_policy_fhedt_8bit_new},
+#line 51 "../../src/classid.gperf"
+    {"lookup/vptree.8bit", sixel_lookup_policy_vptree_8bit_new},
+#line 48 "../../src/classid.gperf"
+    {"lookup/none.float32", sixel_lookup_policy_none_float32_new},
+#line 40 "../../src/classid.gperf"
+    {"lookup/fhedt.float32", sixel_lookup_policy_fhedt_float32_new},
+#line 52 "../../src/classid.gperf"
+    {"lookup/vptree.float32", sixel_lookup_policy_vptree_float32_new},
     {"", 0},
-#line 42 "src/classid.gperf"
-    {"lookup/mono-darkbg.8bit", sixel_lookup_policy_create_mono_darkbg_8bit},
-#line 44 "src/classid.gperf"
-    {"lookup/mono-lightbg.8bit", sixel_lookup_policy_create_mono_lightbg_8bit},
-#line 48 "src/classid.gperf"
-    {"lookup/rbc.8bit", sixel_lookup_policy_create_rbc_8bit},
-#line 43 "src/classid.gperf"
-    {"lookup/mono-darkbg.float32", sixel_lookup_policy_create_mono_darkbg_float32},
-#line 45 "src/classid.gperf"
-    {"lookup/mono-lightbg.float32", sixel_lookup_policy_create_mono_lightbg_float32},
-#line 49 "src/classid.gperf"
-    {"lookup/rbc.float32", sixel_lookup_policy_create_rbc_float32},
-#line 34 "src/classid.gperf"
-    {"lookup/certlut.8bit", sixel_lookup_policy_create_certlut_8bit},
+#line 43 "../../src/classid.gperf"
+    {"lookup/mono-darkbg.8bit", sixel_lookup_policy_mono_darkbg_8bit_new},
+#line 45 "../../src/classid.gperf"
+    {"lookup/mono-lightbg.8bit", sixel_lookup_policy_mono_lightbg_8bit_new},
+#line 49 "../../src/classid.gperf"
+    {"lookup/rbc.8bit", sixel_lookup_policy_rbc_8bit_new},
+#line 44 "../../src/classid.gperf"
+    {"lookup/mono-darkbg.float32", sixel_lookup_policy_mono_darkbg_float32_new},
+#line 46 "../../src/classid.gperf"
+    {"lookup/mono-lightbg.float32", sixel_lookup_policy_mono_lightbg_float32_new},
+#line 50 "../../src/classid.gperf"
+    {"lookup/rbc.float32", sixel_lookup_policy_rbc_float32_new},
+#line 35 "../../src/classid.gperf"
+    {"lookup/certlut.8bit", sixel_lookup_policy_certlut_8bit_new},
     {"", 0},
-#line 36 "src/classid.gperf"
-    {"lookup/eytzinger.8bit", sixel_lookup_policy_create_eytzinger_8bit},
-#line 35 "src/classid.gperf"
-    {"lookup/certlut.float32", sixel_lookup_policy_create_certlut_float32},
-#line 40 "src/classid.gperf"
-    {"lookup/mahalanobis.8bit", sixel_lookup_policy_create_mahalanobis_8bit},
-#line 37 "src/classid.gperf"
-    {"lookup/eytzinger.float32", sixel_lookup_policy_create_eytzinger_float32},
+#line 37 "../../src/classid.gperf"
+    {"lookup/eytzinger.8bit", sixel_lookup_policy_eytzinger_8bit_new},
+#line 36 "../../src/classid.gperf"
+    {"lookup/certlut.float32", sixel_lookup_policy_certlut_float32_new},
+#line 41 "../../src/classid.gperf"
+    {"lookup/mahalanobis.8bit", sixel_lookup_policy_mahalanobis_8bit_new},
+#line 38 "../../src/classid.gperf"
+    {"lookup/eytzinger.float32", sixel_lookup_policy_eytzinger_float32_new},
     {"", 0},
-#line 41 "src/classid.gperf"
-    {"lookup/mahalanobis.float32", sixel_lookup_policy_create_mahalanobis_float32},
+#line 42 "../../src/classid.gperf"
+    {"lookup/mahalanobis.float32", sixel_lookup_policy_mahalanobis_float32_new},
     {"", 0}, {"", 0}, {"", 0}, {"", 0},
-#line 32 "src/classid.gperf"
-    {"lookup/6bit.8bit", sixel_lookup_policy_create_6bit_8bit},
+#line 33 "../../src/classid.gperf"
+    {"lookup/6bit.8bit", sixel_lookup_policy_6bit_8bit_new},
     {"", 0}, {"", 0},
-#line 33 "src/classid.gperf"
-    {"lookup/6bit.float32", sixel_lookup_policy_create_6bit_float32},
+#line 34 "../../src/classid.gperf"
+    {"lookup/6bit.float32", sixel_lookup_policy_6bit_float32_new},
     {"", 0},
-#line 30 "src/classid.gperf"
-    {"lookup/5bit.8bit", sixel_lookup_policy_create_5bit_8bit},
+#line 31 "../../src/classid.gperf"
+    {"lookup/5bit.8bit", sixel_lookup_policy_5bit_8bit_new},
     {"", 0}, {"", 0},
-#line 31 "src/classid.gperf"
-    {"lookup/5bit.float32", sixel_lookup_policy_create_5bit_float32}
+#line 32 "../../src/classid.gperf"
+    {"lookup/5bit.float32", sixel_lookup_policy_5bit_float32_new}
   };
 
 const struct sixel_lookup_policy_classid_entry *
@@ -177,7 +178,7 @@ sixel_lookup_policy_classid_lookup (register const char *str, register unsigned 
     }
   return 0;
 }
-#line 52 "src/classid.gperf"
+#line 53 "../../src/classid.gperf"
 
 #undef TOTAL_KEYWORDS
 #undef MIN_WORD_LENGTH
