@@ -20711,9 +20711,10 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
         if (effect_priority_inside != 0) {
             /*
              * FXPRI_INSIDE keeps exclusive vector/effect bands intact while
-             * resolving overlap color with FrFX-priority weighting.
-             * This keeps the policy behaviorally distinct from the default
-             * stack-order overlap path in same-mode Normal blends.
+             * resolving overlap color with FrFX-priority continuous weighting:
+             * C_overlap = C_stack * (1 - w_fx) + C_fx * w_fx, where
+             * C_stack is base->vector->effect, C_fx is base->effect, and
+             * w_fx = effect_alpha / (effect_alpha + vector_alpha).
              */
             sixel_builtin_psd_blend_effect_rgb(
                 base_rgb[0],
@@ -20735,28 +20736,33 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
                 &overlap_tmp_rgb[0],
                 &overlap_tmp_rgb[1],
                 &overlap_tmp_rgb[2]);
-            overlap_effect_weight = effect_alpha;
-            overlap_vector_weight = vector_alpha;
-            if (overlap_effect_weight + overlap_vector_weight > 0.0f) {
-                overlap_effect_weight =
-                    overlap_effect_weight /
-                    (overlap_effect_weight + overlap_vector_weight);
+            sixel_builtin_psd_blend_effect_rgb(
+                overlap_tmp_rgb[0],
+                overlap_tmp_rgb[1],
+                overlap_tmp_rgb[2],
+                effect_rgb,
+                effect_mode,
+                1.0f,
+                &overlap_tmp_rgb[0],
+                &overlap_tmp_rgb[1],
+                &overlap_tmp_rgb[2]);
+            overlap_effect_weight = effect_alpha + vector_alpha;
+            if (overlap_effect_weight > 0.0f) {
+                overlap_effect_weight = sixel_builtin_psd_clamp01(
+                    effect_alpha / overlap_effect_weight);
             } else {
                 overlap_effect_weight = 1.0f;
             }
-            if (overlap_effect_weight < 0.5f) {
-                overlap_effect_weight = 0.5f;
-            }
             overlap_vector_weight = 1.0f - overlap_effect_weight;
             overlap_full_rgb[0] = sixel_builtin_psd_clamp01(
-                overlap_full_rgb[0] * overlap_effect_weight +
-                overlap_tmp_rgb[0] * overlap_vector_weight);
+                overlap_tmp_rgb[0] * overlap_vector_weight +
+                overlap_full_rgb[0] * overlap_effect_weight);
             overlap_full_rgb[1] = sixel_builtin_psd_clamp01(
-                overlap_full_rgb[1] * overlap_effect_weight +
-                overlap_tmp_rgb[1] * overlap_vector_weight);
+                overlap_tmp_rgb[1] * overlap_vector_weight +
+                overlap_full_rgb[1] * overlap_effect_weight);
             overlap_full_rgb[2] = sixel_builtin_psd_clamp01(
-                overlap_full_rgb[2] * overlap_effect_weight +
-                overlap_tmp_rgb[2] * overlap_vector_weight);
+                overlap_tmp_rgb[2] * overlap_vector_weight +
+                overlap_full_rgb[2] * overlap_effect_weight);
         } else {
             sixel_builtin_psd_blend_effect_rgb(
                 overlap_tmp_rgb[0],
