@@ -53,7 +53,6 @@ typedef struct sixel_lookup_policy_vptree_8bit {
     int policy;
     int depth;
     int ncolors;
-    int complexion;
     unsigned char const *palette;
     sixel_allocator_t *allocator;
     sixel_lookup_vptree_8bit_t *vptree;
@@ -64,7 +63,6 @@ typedef struct sixel_lookup_policy_vptree_float32 {
     int policy;
     int depth;
     int ncolors;
-    int complexion;
     float weights[SIXEL_LOOKUP_POLICY_VPTREE_FLOAT_COMPONENTS];
     float *palette;
     sixel_allocator_t *allocator;
@@ -82,7 +80,6 @@ sixel_lookup_policy_vptree_8bit_init(sixel_lookup_policy_vptree_8bit_t *lut,
 
     memset(lut, 0, sizeof(*lut));
     lut->allocator = allocator;
-    lut->complexion = 1;
 }
 
 static void
@@ -100,7 +97,6 @@ sixel_lookup_policy_vptree_8bit_clear(sixel_lookup_policy_vptree_8bit_t *lut)
     lut->palette = NULL;
     lut->depth = 0;
     lut->ncolors = 0;
-    lut->complexion = 1;
 }
 
 static void
@@ -124,7 +120,6 @@ sixel_lookup_policy_vptree_float32_init(sixel_lookup_policy_vptree_float32_t *lu
 
     memset(lut, 0, sizeof(*lut));
     lut->allocator = allocator;
-    lut->complexion = 1;
     lut->weights[0] = 1.0f;
     lut->weights[1] = 1.0f;
     lut->weights[2] = 1.0f;
@@ -148,7 +143,6 @@ sixel_lookup_policy_vptree_float32_clear(sixel_lookup_policy_vptree_float32_t *l
     lut->vptree_ready = 0;
     lut->depth = 0;
     lut->ncolors = 0;
-    lut->complexion = 1;
 }
 
 static void
@@ -285,7 +279,6 @@ sixel_lookup_policy_vptree_configure_float32(
     lut->policy = SIXEL_LUT_POLICY_VPTREE;
     lut->depth = request->depth;
     lut->ncolors = request->reqcolor;
-    lut->complexion = 1;
 
     base_weights[0] = 1.0f;
     base_weights[1] = 1.0f;
@@ -353,7 +346,6 @@ sixel_lookup_policy_vptree_configure_8bit(
     lut->policy = SIXEL_LUT_POLICY_VPTREE;
     lut->depth = request->depth;
     lut->ncolors = request->reqcolor;
-    lut->complexion = 1;
     lut->palette = request->palette;
 
     if (lut->vptree == NULL) {
@@ -369,7 +361,6 @@ sixel_lookup_policy_vptree_configure_8bit(
                                                 request->palette,
                                                 request->reqcolor,
                                                 request->depth,
-                                                1,
                                                 request->parallel_dither_active);
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(

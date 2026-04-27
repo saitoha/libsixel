@@ -57,7 +57,6 @@ typedef struct sixel_lookup_policy_none_object {
     int depth;
     int float_stride;
     int reqcolor;
-    int complexion;
     int lookup_source_is_float;
 } sixel_lookup_policy_none_object_t;
 
@@ -78,8 +77,7 @@ static int
 sixel_lookup_policy_none_map_core(unsigned char const *pixel,
                                   int depth,
                                   unsigned char const *palette,
-                                  int reqcolor,
-                                  int complexion)
+                                  int reqcolor)
 {
     int result;
     int diff;
@@ -94,7 +92,7 @@ sixel_lookup_policy_none_map_core(unsigned char const *pixel,
     for (i = 0; i < reqcolor; ++i) {
         distant = 0;
         r = pixel[0] - palette[i * depth + 0];
-        distant += r * r * complexion;
+        distant += r * r;
         for (n = 1; n < depth; ++n) {
             r = pixel[n] - palette[i * depth + n];
             distant += r * r;
@@ -114,8 +112,7 @@ sixel_lookup_policy_none_map_core_float_palette(
     int depth,
     float const *palette,
     int palette_stride,
-    int reqcolor,
-    int complexion)
+    int reqcolor)
 {
     int result;
     double diff;
@@ -132,7 +129,7 @@ sixel_lookup_policy_none_map_core_float_palette(
         offset = i * palette_stride;
         distant = 0.0;
         r = (double)pixel[0] - (double)palette[offset + 0];
-        distant += r * r * (double)complexion;
+        distant += r * r;
         for (n = 1; n < depth; ++n) {
             r = (double)pixel[n] - (double)palette[offset + n];
             distant += r * r;
@@ -151,8 +148,7 @@ sixel_lookup_policy_none_map_core_float_byte_palette(
     float const *pixel,
     int depth,
     unsigned char const *palette,
-    int reqcolor,
-    int complexion)
+    int reqcolor)
 {
     int result;
     double diff;
@@ -167,7 +163,7 @@ sixel_lookup_policy_none_map_core_float_byte_palette(
     for (i = 0; i < reqcolor; ++i) {
         distant = 0.0;
         r = (double)pixel[0] - (double)palette[i * depth + 0];
-        distant += r * r * (double)complexion;
+        distant += r * r;
         for (n = 1; n < depth; ++n) {
             r = (double)pixel[n] - (double)palette[i * depth + n];
             distant += r * r;
@@ -234,7 +230,6 @@ sixel_lookup_policy_none_prepare(
     object->depth = request->depth;
     object->float_stride = 0;
     object->reqcolor = request->reqcolor;
-    object->complexion = 1;
     object->lookup_source_is_float =
         SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
 
@@ -275,23 +270,20 @@ sixel_lookup_policy_none_map_pixel(
                 object->depth,
                 object->palette_float,
                 object->float_stride,
-                object->reqcolor,
-                object->complexion);
+                object->reqcolor);
         }
 
         return sixel_lookup_policy_none_map_core_float_byte_palette(
             (float const *)(void const *)pixel,
             object->depth,
             object->palette,
-            object->reqcolor,
-            object->complexion);
+            object->reqcolor);
     }
 
     return sixel_lookup_policy_none_map_core(pixel,
                                              object->depth,
                                              object->palette,
-                                             object->reqcolor,
-                                             object->complexion);
+                                             object->reqcolor);
 }
 
 static sixel_lookup_policy_vtbl_t const g_sixel_lookup_policy_none_vtbl = {

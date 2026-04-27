@@ -9,7 +9,6 @@ begin
   dither = Dither.new(ncolors: 16)
   dither.set_diffusion_type(Libsixel::API::SIXEL_DIFFUSE_ATKINSON)
   dither.set_diffusion_scan(Libsixel::API::SIXEL_SCAN_SERPENTINE)
-  dither.set_complexion_score(1)
   dither.set_body_only(0)
   dither.set_optimize_palette(1)
   dither.set_pixelformat(Libsixel::API::SIXEL_PIXELFORMAT_RGB888)

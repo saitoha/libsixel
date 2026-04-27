@@ -69,7 +69,6 @@ typedef struct sixel_lookup_policy_bit6_object {
     struct {
         int depth;
         int ncolors;
-        int complexion;
         int packing;
         unsigned char const *palette;
         sixel_allocator_t *allocator;
@@ -398,7 +397,6 @@ sixel_lookup_policy_bit6_clear_8bit_state(sixel_lookup_policy_bit6_object_t
     }
     object->state_8bit.depth = 0;
     object->state_8bit.ncolors = 0;
-    object->state_8bit.complexion = 0;
     object->state_8bit.packing = 0;
     object->state_8bit.palette = NULL;
     object->state_8bit.allocator = NULL;
@@ -639,7 +637,6 @@ sixel_lookup_policy_bit6_configure_8bit(
     sixel_lookup_policy_bit6_clear_8bit_state(object);
     object->state_8bit.depth = request->depth;
     object->state_8bit.ncolors = request->reqcolor;
-    object->state_8bit.complexion = 1;
     object->state_8bit.palette = request->palette;
     object->state_8bit.allocator = request->allocator;
     object->state_8bit.packing = sixel_lookup_policy_bit6_env_packing();
@@ -715,7 +712,7 @@ sixel_lookup_policy_bit6_map_8bit(
     result = -1;
     for (i = 0; entry < end; ++i, entry += object->state_8bit.depth) {
         delta = pixel0 - (int)entry[0];
-        distant = delta * delta * object->state_8bit.complexion;
+        distant = delta * delta;
         delta = pixel1 - (int)entry[1];
         distant += delta * delta;
         delta = pixel2 - (int)entry[2];

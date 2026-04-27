@@ -1,9 +1,9 @@
 #!/bin/sh
-# TAP test covering fixed float32 dither with lookup none and complexion.
+# TAP test covering fixed float32 dither with lookup none and deprecated -C.
 #
 # Flow:
 # - Convert the snake reference with float32 precision and no LUT lookup.
-# - Apply a non-default complexion score to exercise weighted distance.
+# - Pass a non-default complexion score to verify the deprecated no-op path.
 # - Validate quality with lsqa to keep output stability.
 
 set -eux
@@ -20,9 +20,8 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 # Threshold rationale:
 # - lookup-policy=none disables LUT shortcuts and keeps this test focused on
 #   float32 nearest-color scanning behavior.
-# - fixed/fs plus complexion weighting causes slightly larger variance than the
-#   default gamma path, so 0.94 keeps false negatives low across platforms
-#   while still catching visible regressions.
+# - fixed/fs with lookup-policy=none has moderate variance across platforms, so
+#   0.94 keeps false negatives low while still catching visible regressions.
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.94}
 
 
@@ -31,7 +30,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/fixed-float32-lookup-none-complexion.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -d fs --precision=float32 --lookup-policy=none \
         -C 8 -p 16 -o "${output_sixel}" "${input_image}" || {
-    echo "not ok" 1 - "fixed float32 lookup none complexion conversion failed"
+    echo "not ok" 1 - "fixed float32 lookup none deprecated option conversion failed"
     exit 0
 }
 
@@ -42,7 +41,7 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    echo "ok" 1 - "fixed float32 lookup none complexion lsqa passed"
+    echo "ok" 1 - "fixed float32 lookup none deprecated option lsqa passed"
     exit 0
 }
 
@@ -51,6 +50,6 @@ test "${lsqa_run_status}" -eq 5 && {
     exit 0
 }
 
-echo "not ok" 1 - "fixed float32 lookup none complexion lsqa failed"
+echo "not ok" 1 - "fixed float32 lookup none deprecated option lsqa failed"
 
 exit 0

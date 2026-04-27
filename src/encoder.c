@@ -5620,10 +5620,6 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     sixel_dither_set_diffusion_scan(context->dither,
                                     context->encoder->method_for_scan);
 
-    if (context->encoder->complexion > 1) {
-        sixel_dither_set_complexion_score(context->dither,
-                                          context->encoder->complexion);
-    }
     if (sixel_trace_topic_is_enabled("dither_contract")) {
         sixel_encoder_update_diagnostic_dither(context->encoder,
                                                context->dither);
@@ -8411,7 +8407,6 @@ sixel_encoder_new(
     (*ppencoder)->fuse_macro            = 0;
     (*ppencoder)->fdrcs                 = 0;
     (*ppencoder)->fignore_delay         = 0;
-    (*ppencoder)->complexion            = 1;
     (*ppencoder)->fstatic               = 0;
     (*ppencoder)->cell_width            = 0;
     (*ppencoder)->cell_height           = 0;
@@ -10925,44 +10920,6 @@ sixel_encoder_apply_macro_number_option(
 
 
 static SIXELSTATUS
-sixel_encoder_apply_complexion_option(
-    sixel_encoder_t *encoder,
-    char const *value)
-{
-    char *endptr;
-    long parsed_value;
-    long max_complexion;
-
-    endptr = NULL;
-    parsed_value = 0L;
-    max_complexion = 0L;
-    errno = 0;
-    parsed_value = strtol(value, &endptr, 10);
-    if (endptr == value || *endptr != '\0' || errno == ERANGE ||
-        parsed_value < 1L || parsed_value > (long)INT_MAX) {
-        sixel_helper_set_additional_message(
-            "complexion parameter must be 1 or more.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-    max_complexion = ((long)INT_MAX - (255L * 255L * 3L))
-        / (255L * 255L);
-    if (parsed_value > max_complexion) {
-        sixel_helper_set_additional_message(
-            "complexion parameter is too large.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    (void)parsed_value;
-    /*
-     * Keep accepting -C for compatibility, but pin the runtime value so
-     * complexion no longer influences output.
-     */
-    encoder->complexion = 1;
-    return SIXEL_OK;
-}
-
-
-static SIXELSTATUS
 sixel_encoder_apply_mapfile_option(
     sixel_encoder_t *encoder,
     char const *value)
@@ -12956,10 +12913,7 @@ sixel_encoder_setopt(
         encoder->ormode = 1;
         break;
     case SIXEL_OPTFLAG_COMPLEXION_SCORE:  /* C */
-        status = sixel_encoder_apply_complexion_option(encoder, value);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
+        (void)value;  /* deprecated no-op option */
         break;
     case SIXEL_OPTFLAG_PIPE_MODE:  /* D */
         encoder->pipe_mode = 1;

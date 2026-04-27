@@ -846,7 +846,6 @@ sixel_palette_new(sixel_palette_t **palette, sixel_allocator_t *allocator)
     object->use_reversible = 0;
     object->quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
     object->final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
-    object->complexion = 1;
     object->lut_policy = SIXEL_LUT_POLICY_AUTO;
     object->sixel_reversible = 0;
     object->final_merge = 0;

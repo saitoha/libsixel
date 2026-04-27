@@ -58,7 +58,6 @@ typedef struct sixel_lookup_policy_rbc_8bit {
     int policy;
     int depth;
     int ncolors;
-    int complexion;
     unsigned char const *palette;
     sixel_allocator_t *allocator;
 } sixel_lookup_policy_rbc_8bit_t;
@@ -67,7 +66,6 @@ typedef struct sixel_lookup_policy_rbc_float32 {
     int policy;
     int depth;
     int ncolors;
-    int complexion;
     float weights[SIXEL_LOOKUP_POLICY_RBC_FLOAT_COMPONENTS];
     float *palette;
     sixel_allocator_t *allocator;
@@ -96,7 +94,6 @@ sixel_lookup_policy_rbc_8bit_init(sixel_lookup_policy_rbc_8bit_t *lut,
 
     memset(lut, 0, sizeof(*lut));
     lut->allocator = allocator;
-    lut->complexion = 1;
 }
 
 static void
@@ -109,7 +106,6 @@ sixel_lookup_policy_rbc_8bit_clear(sixel_lookup_policy_rbc_8bit_t *lut)
     lut->palette = NULL;
     lut->depth = 0;
     lut->ncolors = 0;
-    lut->complexion = 1;
 }
 
 static void
@@ -133,7 +129,6 @@ sixel_lookup_policy_rbc_float32_init(sixel_lookup_policy_rbc_float32_t *lut,
 
     memset(lut, 0, sizeof(*lut));
     lut->allocator = allocator;
-    lut->complexion = 1;
     lut->weights[0] = 1.0f;
     lut->weights[1] = 1.0f;
     lut->weights[2] = 1.0f;
@@ -153,7 +148,6 @@ sixel_lookup_policy_rbc_float32_clear(sixel_lookup_policy_rbc_float32_t *lut)
     sixel_lookup_policy_rbc_float32_clear_state(lut);
     lut->depth = 0;
     lut->ncolors = 0;
-    lut->complexion = 1;
 }
 
 static void
@@ -554,7 +548,6 @@ sixel_lookup_policy_rbc_configure_float32(
     lut->policy = SIXEL_LUT_POLICY_RBC;
     lut->depth = request->depth;
     lut->ncolors = request->reqcolor;
-    lut->complexion = 1;
 
     base_weights[0] = 1.0f;
     base_weights[1] = 1.0f;
@@ -596,7 +589,6 @@ sixel_lookup_policy_rbc_configure_8bit(
     lut->policy = SIXEL_LUT_POLICY_RBC;
     lut->depth = request->depth;
     lut->ncolors = request->reqcolor;
-    lut->complexion = 1;
     lut->palette = request->palette;
 
     return SIXEL_OK;
@@ -639,7 +631,7 @@ sixel_lookup_policy_rbc_map_8bit(sixel_lookup_policy_rbc_8bit_t const *lut,
     pixel2 = (int)pixel[2];
     for (i = 0; entry < end; ++i, entry += lut->depth) {
         delta = pixel0 - (int)entry[0];
-        distant = delta * delta * lut->complexion;
+        distant = delta * delta;
         delta = pixel1 - (int)entry[1];
         distant += delta * delta;
         delta = pixel2 - (int)entry[2];

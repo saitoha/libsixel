@@ -89,7 +89,6 @@ struct sixel_palette {
     int use_reversible;             /* reversible tone enforcement */
     int quantize_model;             /* palette solver selector */
     int final_merge_mode;           /* palette merge strategy */
-    int complexion;                 /* complexion correction score */
     int lut_policy;                 /* histogram LUT selection */
     int sixel_reversible;           /* reversible tone flag proxy */
     int final_merge;                /* final merge flag proxy */

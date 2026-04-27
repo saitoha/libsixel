@@ -93,10 +93,6 @@ class Dither
     Libsixel::API.sixel_dither_set_palette(@ptr, buf); nil
   end
 
-  def set_complexion_score(score)
-    Libsixel::API.sixel_dither_set_complexion_score(@ptr, score.to_i); nil
-  end
-
   def set_body_only(v)
     Libsixel::API.sixel_dither_set_body_only(@ptr, v.to_i); nil
   end

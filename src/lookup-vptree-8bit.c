@@ -57,7 +57,6 @@ struct sixel_lookup_vptree_8bit {
     unsigned char const *palette;
     int ncolors;
     int depth;
-    int complexion;
     sixel_lookup_vptree_8bit_node_t *nodes;
     int node_count;
     int root;
@@ -130,7 +129,7 @@ sixel_lookup_vptree_8bit_palette_distance(
     right2 = (depth > 2) ? (int)right[2] : 0;
 
     diff = left0 - right0;
-    distance = diff * diff * tree->complexion;
+    distance = diff * diff;
     diff = left1 - right1;
     distance += diff * diff;
     diff = left2 - right2;
@@ -166,7 +165,7 @@ sixel_lookup_vptree_8bit_pixel_distance(
     entry2 = (depth > 2) ? (int)entry[2] : 0;
 
     diff = pixel0 - entry0;
-    distance = diff * diff * tree->complexion;
+    distance = diff * diff;
     diff = pixel1 - entry1;
     distance += diff * diff;
     diff = pixel2 - entry2;
@@ -471,7 +470,6 @@ sixel_lookup_vptree_8bit_configure(sixel_lookup_vptree_8bit_t *tree,
                                    unsigned char const *palette,
                                    int ncolors,
                                    int depth,
-                                   int complexion,
                                    int parallel_dither_active)
 {
     SIXELSTATUS status;
@@ -489,7 +487,6 @@ sixel_lookup_vptree_8bit_configure(sixel_lookup_vptree_8bit_t *tree,
     tree->palette = palette;
     tree->ncolors = ncolors;
     tree->depth = depth;
-    tree->complexion = complexion;
     tree->cache_enabled = (parallel_dither_active == 0);
     tree->cached_index = -1;
 

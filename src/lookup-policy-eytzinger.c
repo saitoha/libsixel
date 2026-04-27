@@ -82,7 +82,6 @@ typedef struct sixel_lookup_policy_eytzinger_8bit {
     int policy;
     int depth;
     int ncolors;
-    int complexion;
     unsigned char const *palette;
     sixel_allocator_t *allocator;
     sixel_lookup_policy_eytzinger_8bit_1d_eytzinger_t eytz;
@@ -92,7 +91,6 @@ typedef struct sixel_lookup_policy_eytzinger_float32 {
     int policy;
     int depth;
     int ncolors;
-    int complexion;
     float weights[SIXEL_LOOKUP_POLICY_EYTZINGER_FLOAT_COMPONENTS];
     float *palette;
     sixel_allocator_t *allocator;
@@ -116,7 +114,6 @@ sixel_lookup_policy_eytzinger_8bit_init(sixel_lookup_policy_eytzinger_8bit_t *lu
 
     memset(lut, 0, sizeof(*lut));
     lut->allocator = allocator;
-    lut->complexion = 1;
 }
 
 static void
@@ -130,7 +127,6 @@ sixel_lookup_policy_eytzinger_8bit_clear(sixel_lookup_policy_eytzinger_8bit_t *l
     lut->palette = NULL;
     lut->depth = 0;
     lut->ncolors = 0;
-    lut->complexion = 1;
 }
 
 static void
@@ -154,7 +150,6 @@ sixel_lookup_policy_eytzinger_float32_init(sixel_lookup_policy_eytzinger_float32
 
     memset(lut, 0, sizeof(*lut));
     lut->allocator = allocator;
-    lut->complexion = 1;
     lut->weights[0] = 1.0f;
     lut->weights[1] = 1.0f;
     lut->weights[2] = 1.0f;
@@ -174,7 +169,6 @@ sixel_lookup_policy_eytzinger_float32_clear(sixel_lookup_policy_eytzinger_float3
     sixel_lookup_policy_eytzinger_float32_release(lut);
     lut->depth = 0;
     lut->ncolors = 0;
-    lut->complexion = 1;
 }
 
 static void
@@ -703,7 +697,6 @@ sixel_lookup_policy_eytzinger_configure_float32(
     lut->policy = SIXEL_LUT_POLICY_EYTZINGER;
     lut->depth = request->depth;
     lut->ncolors = request->reqcolor;
-    lut->complexion = 1;
 
     base_weights[0] = 1.0f;
     base_weights[1] = 1.0f;
@@ -1043,7 +1036,7 @@ sixel_lookup_policy_eytzinger_8bit_distance(
     entry2 = (depth > 2) ? (int)entry[2] : 0;
 
     diff = pixel0 - entry0;
-    distance = diff * diff * lut->complexion;
+    distance = diff * diff;
     diff = pixel1 - entry1;
     distance += diff * diff;
     diff = pixel2 - entry2;
@@ -1178,7 +1171,6 @@ sixel_lookup_policy_eytzinger_configure_8bit(
     lut->policy = SIXEL_LUT_POLICY_EYTZINGER;
     lut->depth = request->depth;
     lut->ncolors = request->reqcolor;
-    lut->complexion = 1;
     lut->palette = request->palette;
 
     return sixel_lookup_policy_eytzinger_configure_8bit_1d(

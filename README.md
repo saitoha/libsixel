@@ -554,9 +554,7 @@ Options:
                            SIXEL image. No image is shown if
                            this option is specified
 -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE
-                           [[deprecated]] specify an number
-                           argument for the score of complexion
-                           correction.
+                           [[deprecated]] accepted but ignored.
                            COMPLEXIONSCORE must be 1 or more.
 -g, --ignore-delay         render GIF animation without delay
 -S, --static               render animated GIF as a static image
@@ -1213,6 +1211,9 @@ the `VP8X` alpha flag does not match `ANMF` `VP8+ALPH` frame presence, and
 top-level `ALPH` chunks are rejected for animated streams.
 In current builtin WebP scope, VP8 interframe tags and `show_frame=0` are
 also treated as malformed input and map to stream error contracts.
+VP8 and `VP8+ALPH` decode failures are normalized to `W_ERR_VP8_STREAM`.
+`W_UNSUP_ANIM` is reserved for animation policy limits
+(`frame_count`/canvas ceilings) only.
 For static decode,
 embedded `ICCP` is applied when builtin CMS is enabled and embedded `EXIF`
 orientation is applied when builtin orientation handling is enabled.
@@ -1584,11 +1585,6 @@ SIXELAPI void
 sixel_dither_set_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     unsigned char  /* in */ *palette);
-
-SIXELAPI void
-sixel_dither_set_complexion_score(
-    sixel_dither_t /* in */ *dither,   /* dither context object */
-    int            /* in */ score);    /* complexion score (>= 1) */
 
 SIXELAPI void
 sixel_dither_set_body_only(

@@ -26,7 +26,6 @@ my $ok = eval {
         $dither,
         Image::LibSIXEL::Constants::SIXEL_SCAN_SERPENTINE()
     );
-    Image::LibSIXEL::sixel_dither_set_complexion_score($dither, 1);
     Image::LibSIXEL::sixel_dither_set_body_only($dither, 0);
     Image::LibSIXEL::sixel_dither_set_optimize_palette($dither, 1);
     Image::LibSIXEL::sixel_dither_set_pixelformat(

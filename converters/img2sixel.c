@@ -418,7 +418,7 @@ static cli_option_help_t const g_option_help_table[] = {
         'C',
         "complexion-score",
         "-C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE\n"
-        "    [[deprecated]] specify an number argument for the score of complexion correction.\n"
+        "    [[deprecated]] accepted but ignored.\n"
         "    COMPLEXIONSCORE must be 1 or more.\n"
     },
     {

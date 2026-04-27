@@ -292,8 +292,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_MACRO_NUMBER      ('n')  /* -n MACRONO, --macro-number=MACRONO:
                                                   specify macro register number */
 #define SIXEL_OPTFLAG_COMPLEXION_SCORE  ('C')  /* -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE:
-                                                  (deprecated) specify an number argument for the
-                                                  score of complexion correction. */
+                                                  (deprecated) accepted but ignored. */
 #define SIXEL_OPTFLAG_IGNORE_DELAY      ('g')  /* -g, --ignore-delay: render GIF animation without delay */
 #define SIXEL_OPTFLAG_STATIC            ('S')  /* -S, --static: render animated GIF as a static image */
 #define SIXEL_OPTFLAG_DIFFUSION         ('d')  /* -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE:
@@ -1178,12 +1177,6 @@ SIXELAPI void
 sixel_dither_set_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     unsigned char  /* in */ *palette);
-
-/* set the factor of complexion color correcting */
-SIXELAPI void
-sixel_dither_set_complexion_score(
-    sixel_dither_t /* in */ *dither,   /* dither context object */
-    int            /* in */ score);    /* complexion score (>= 1) */
 
 /* set whether omitting palette difinition */
 SIXELAPI void

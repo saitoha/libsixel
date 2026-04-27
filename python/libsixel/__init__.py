@@ -400,8 +400,7 @@ SIXEL_OPTFLAG_USE_MACRO        = 'u'  # -u, --use-macro: use DECDMAC and DECINVM
 SIXEL_OPTFLAG_MACRO_NUMBER     = 'n'  # -n MACRONO, --macro-number=MACRONO:
                                       #        specify macro register number
 SIXEL_OPTFLAG_COMPLEXION_SCORE = 'C'  # -C COMPLEXIONSCORE, --complexion-score=COMPLEXIONSCORE:
-                                      #        (deprecated) specify an number argument for the
-                                      #        score of complexion correction.
+                                      #        (deprecated) accepted but ignored.
 SIXEL_OPTFLAG_IGNORE_DELAY     = 'g'  # -g, --ignore-delay: render GIF animation without delay
 SIXEL_OPTFLAG_STATIC           = 'S'  # -S, --static: render animated GIF as a static image
 #
@@ -1172,12 +1171,6 @@ def sixel_dither_set_palette(dither, palette):
     _sixel.sixel_dither_set_palette.argtypes = [c_void_p, c_char_p]
     cpalette = bytes(palette)
     _sixel.sixel_dither_set_palette(dither, cpalette)
-
-
-def sixel_dither_set_complexion_score(dither, score):
-    _sixel.sixel_dither_set_complexion_score.restype = None
-    _sixel.sixel_dither_set_complexion_score.argtypes = [c_void_p, c_int]
-    _sixel.sixel_dither_set_complexion_score(dither, score)
 
 
 def sixel_dither_set_body_only(dither, bodyonly):

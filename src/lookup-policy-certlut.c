@@ -98,7 +98,6 @@ typedef struct sixel_lookup_policy_certlut_8bit {
     int policy;
     int depth;
     int ncolors;
-    int complexion;
     unsigned char const *palette;
     sixel_allocator_t *allocator;
     sixel_certlut_t *cert;
@@ -109,7 +108,6 @@ typedef struct sixel_lookup_policy_certlut_float32 {
     int policy;
     int depth;
     int ncolors;
-    int complexion;
     float weights[SIXEL_LOOKUP_POLICY_CERTLUT_FLOAT_COMPONENTS];
     float *palette;
     sixel_lookup_policy_certlut_float32_node_t *kdnodes;
@@ -137,7 +135,6 @@ sixel_lookup_policy_certlut_8bit_init(sixel_lookup_policy_certlut_8bit_t *lut,
 
     memset(lut, 0, sizeof(*lut));
     lut->allocator = allocator;
-    lut->complexion = 1;
     lut->cert_ready = 0;
 }
 
@@ -155,7 +152,6 @@ sixel_lookup_policy_certlut_8bit_clear(sixel_lookup_policy_certlut_8bit_t *lut)
     lut->palette = NULL;
     lut->depth = 0;
     lut->ncolors = 0;
-    lut->complexion = 1;
 }
 
 static void
@@ -184,7 +180,6 @@ sixel_lookup_policy_certlut_float32_init(sixel_lookup_policy_certlut_float32_t *
 
     memset(lut, 0, sizeof(*lut));
     lut->allocator = allocator;
-    lut->complexion = 1;
     lut->kdtree_root = -1;
     lut->weights[0] = 1.0f;
     lut->weights[1] = 1.0f;
@@ -205,7 +200,6 @@ sixel_lookup_policy_certlut_float32_clear(sixel_lookup_policy_certlut_float32_t 
     sixel_lookup_policy_certlut_release_kdtree(lut);
     lut->depth = 0;
     lut->ncolors = 0;
-    lut->complexion = 1;
 }
 
 static void
@@ -649,7 +643,6 @@ sixel_lookup_policy_certlut_configure_float32(
     lut->policy = SIXEL_LUT_POLICY_CERTLUT;
     lut->depth = request->depth;
     lut->ncolors = request->reqcolor;
-    lut->complexion = 1;
 
     base_weights[0] = 1.0f;
     base_weights[1] = 1.0f;
@@ -694,7 +687,6 @@ sixel_lookup_policy_certlut_configure_8bit(
     lut->policy = SIXEL_LUT_POLICY_CERTLUT;
     lut->depth = request->depth;
     lut->ncolors = request->reqcolor;
-    lut->complexion = 1;
     lut->palette = request->palette;
     if (lut->cert == NULL
             || request->shared_instance_enabled != 0) {

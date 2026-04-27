@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring img2sixel rejects invalid complexion score.
+# TAP test ensuring img2sixel rejects missing complexion-score argument.
 
 set -eux
 
@@ -12,10 +12,10 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -C0.5 </dev/null >/dev/null  && {
-    echo "not ok" 1 - "unexpected success: invalid complexion score"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -C </dev/null >/dev/null 2>&1 && {
+    echo "not ok" 1 - "unexpected success: missing complexion score argument"
     exit 0
 }
 
-echo "ok" 1 - "invalid option rejected"
+echo "ok" 1 - "missing complexion score argument rejected"
 exit 0

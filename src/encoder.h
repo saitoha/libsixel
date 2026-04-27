@@ -250,7 +250,6 @@ struct sixel_encoder {
     int fuse_macro;
     int fdrcs;
     int fignore_delay;
-    int complexion;
     int fstatic;
     int cell_width;
     int cell_height;

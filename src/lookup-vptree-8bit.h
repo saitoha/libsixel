@@ -47,7 +47,6 @@ sixel_lookup_vptree_8bit_configure(sixel_lookup_vptree_8bit_t *tree,
                                    unsigned char const *palette,
                                    int ncolors,
                                    int depth,
-                                   int complexion,
                                    int parallel_dither_active);
 
 int

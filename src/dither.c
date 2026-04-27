@@ -516,36 +516,6 @@ static const unsigned char pal_xterm256[] = {
 };
 
 
-static SIXELSTATUS
-sixel_dither_validate_complexion_limit(int depth, int complexion)
-{
-    enum { max_channel_diff_sq = 255 * 255 };
-    int non_weighted_components;
-    long long weighted_budget;
-    long long max_complexion;
-
-    if (complexion <= 1) {
-        return SIXEL_OK;
-    }
-
-    non_weighted_components = (depth > 1) ? (depth - 1) : 0;
-    weighted_budget = (long long)INT_MAX
-        - (long long)max_channel_diff_sq * (long long)non_weighted_components;
-    if (weighted_budget <= 0) {
-        max_complexion = 0;
-    } else {
-        max_complexion = weighted_budget / (long long)max_channel_diff_sq;
-    }
-
-    if ((long long)complexion > max_complexion) {
-        sixel_helper_set_additional_message(
-            "sixel_dither_map_pixels: complexion parameter is too large.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    return SIXEL_OK;
-}
-
 static int
 sixel_dither_lut_policy_supports_shared_instance(int lut_policy)
 {
@@ -768,7 +738,6 @@ typedef struct sixel_parallel_dither_plan {
     int band_height;
     int overlap;
     int method_for_scan;
-    int complexion;
     int lut_policy;
     int shared_lut;
     int lookup_shared_instance_enabled;
@@ -1012,11 +981,6 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
     if (plan == NULL || plan->palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    status = sixel_dither_validate_complexion_limit(3, plan->complexion);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
     depth_bytes = (size_t)sixel_helper_compute_depth(plan->pixelformat);
     if (depth_bytes == 0U) {
         return SIXEL_BAD_ARGUMENT;
@@ -1336,7 +1300,6 @@ sixel_dither_new(
     (*ppdither)->keycolor = (-1);
     sixel_dither_clear_transparent_bgcolor_hint(*ppdither);
     (*ppdither)->optimized = 0;
-    (*ppdither)->complexion = 1;
     (*ppdither)->bodyonly = 0;
     (*ppdither)->method_for_largest = SIXEL_LARGE_NORM;
     (*ppdither)->method_for_rep = SIXEL_REP_CENTER_BOX;
@@ -2074,27 +2037,6 @@ sixel_dither_set_palette(
                                     (unsigned int)dither->ncolors,
                                     3,
                                     dither->allocator);
-}
-
-
-/*
- * Keep the complexion API for backward compatibility, but the value is
- * deprecated and no longer affects any lookup or dither calculations.
- */
-SIXELAPI void
-sixel_dither_set_complexion_score(
-    sixel_dither_t /* in */ *dither,  /* dither context object */
-    int            /* in */ score)    /* complexion score (>= 1) */
-{
-    (void)score;
-    if (dither == NULL) {
-        return;
-    }
-
-    dither->complexion = 1;
-    if (dither->palette != NULL) {
-        dither->palette->complexion = 1;
-    }
 }
 
 
@@ -2930,11 +2872,6 @@ sixel_dither_apply_palette_with_mode(
     preset_transparent_mask = NULL;
     preset_transparent_mask_size = 0u;
     preset_transparent_keycolor = (-1);
-    status = sixel_dither_validate_complexion_limit(3, dither->complexion);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
     parallel_active = dither->pipeline_parallel_active;
 #if defined(__PCC__) || defined(__TINYC__)
     /*
@@ -3270,7 +3207,6 @@ sixel_dither_apply_palette_with_mode(
         plan.band_height = adjusted_height;
         plan.overlap = adjusted_overlap;
         plan.method_for_scan = method_for_scan;
-        plan.complexion = dither->complexion;
         plan.lut_policy = dither->lut_policy;
         plan.lookup_shared_instance_enabled = shared_lut;
         plan.reqcolor = dither->ncolors;

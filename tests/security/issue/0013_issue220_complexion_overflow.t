@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test for issue #220 item6 (complexion arithmetic overflow in quant path).
+# TAP test for issue #220 item6 after complexion retirement.
 
 set -eux
 
@@ -18,11 +18,11 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -p4 -C 2147483647 -o /dev/null "${fixture}
 command_status=$?
 set -e
 
-test "${command_status}" -ge 1 -a "${command_status}" -le 3 || {
-    echo "not ok" 1 - "issue #220 item6 did not return mapped error status"
+test "${command_status}" -eq 0 || {
+    echo "not ok" 1 - "deprecated complexion option must be accepted as no-op"
     exit 0
 }
 
-echo "ok" 1 - "issue #220 item6 rejected with mapped error status"
+echo "ok" 1 - "deprecated complexion option is accepted without overflow path"
 
 exit 0
