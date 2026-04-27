@@ -26545,6 +26545,10 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 sixel_builtin_psd_layer_effects_trace_interior_skip();
             }
             if (group_active != 0) {
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: compositing deferred offscreen clipped group "
+                    "buffer to canvas");
                 memcpy(canvas_rgb_premul,
                        group_rgb_premul,
                        pixel_count * 3u * sizeof(float));
@@ -27395,6 +27399,10 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             sixel_builtin_psd_layer_effects_trace_interior_skip();
         }
         if (group_active != 0) {
+            sixel_builtin_psd_trace_message(
+                "psd_decode",
+                "builtin PSD: compositing deferred offscreen clipped group "
+                "buffer to canvas");
             memcpy(canvas_rgb_premul,
                    group_rgb_premul,
                    pixel_count * 3u * sizeof(float));
