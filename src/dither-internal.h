@@ -23,15 +23,11 @@
  */
 
 /*
- * Internal dithering helpers shared between the 8bit and float32
- * implementations.  The header exposes the context descriptor passed to the
- * per-algorithm workers so each backend can access the relevant buffers
- * without expanding their public signatures.
+ * Internal helper typedefs shared by dither policy implementations.
+ * Each policy now owns its private context structure in the policy .c file.
  */
 #ifndef LIBSIXEL_DITHER_INTERNAL_H
 #define LIBSIXEL_DITHER_INTERNAL_H
-
-#include <stddef.h>
 
 #include "dither.h"
 
@@ -40,40 +36,6 @@ struct sixel_lookup_policy_interface;
 typedef int (*sixel_dither_lookup_map_fn)(
     struct sixel_lookup_policy_interface const *policy,
     unsigned char const *pixel);
-
-typedef struct sixel_dither_context {
-    sixel_index_t *result;
-    unsigned char *pixels;
-    float *pixels_float;
-    int width;
-    int height;
-    int band_origin;
-    int output_start;
-    int depth;
-    unsigned char *palette;
-    float *palette_float;
-    int reqcolor;
-    int method_for_scan;
-    int optimize_palette;
-    struct sixel_lookup_policy_interface *lookup_policy;
-    sixel_dither_lookup_map_fn lookup_map;
-    unsigned char *scratch;
-    unsigned char *new_palette;
-    float *new_palette_float;
-    unsigned short *migration_map;
-    int *ncolors;
-    int pixelformat;
-    int float_depth;
-    int lookup_source_is_float;
-    int prefer_palette_float_lookup;
-    unsigned char const *transparent_mask;
-    size_t transparent_mask_size;
-    int transparent_keycolor;
-    unsigned char const *bluenoise_gradient_map;
-    size_t bluenoise_gradient_map_size;
-    int bluenoise_gradient_width;
-    int bluenoise_gradient_height;
-} sixel_dither_context_t;
 
 #endif /* LIBSIXEL_DITHER_INTERNAL_H */
 

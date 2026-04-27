@@ -43,6 +43,44 @@
 #include "bluenoise_64x64.h"
 
 /*
+ * Private dither context for this policy implementation.
+ * Keep only members used by this translation unit.
+ */
+typedef struct sixel_dither_policy_bluenoise_context {
+    sixel_index_t *result;
+    unsigned char *pixels;
+    float *pixels_float;
+    int width;
+    int height;
+    int band_origin;
+    int output_start;
+    int depth;
+    unsigned char *palette;
+    float *palette_float;
+    int reqcolor;
+    int method_for_scan;
+    int optimize_palette;
+    struct sixel_lookup_policy_interface *lookup_policy;
+    sixel_dither_lookup_map_fn lookup_map;
+    unsigned char *scratch;
+    unsigned char *new_palette;
+    float *new_palette_float;
+    unsigned short *migration_map;
+    int *ncolors;
+    int pixelformat;
+    int float_depth;
+    int lookup_source_is_float;
+    int prefer_palette_float_lookup;
+    unsigned char const *transparent_mask;
+    size_t transparent_mask_size;
+    int transparent_keycolor;
+    unsigned char const *bluenoise_gradient_map;
+    size_t bluenoise_gradient_map_size;
+    int bluenoise_gradient_width;
+    int bluenoise_gradient_height;
+} sixel_dither_policy_bluenoise_context_t;
+
+/*
  * The bluenoise policy resolves all runtime options once per apply call so
  * the inner loops do not need to re-read environment or CLI override state.
  */
@@ -317,7 +355,7 @@ sixel_dither_bluenoise_noise(sixel_bluenoise_conf_t const *conf,
 }
 
 static float
-sixel_bluenoise_gradient_weight(sixel_dither_context_t const *context,
+sixel_bluenoise_gradient_weight(sixel_dither_policy_bluenoise_context_t const *context,
                                 int x,
                                 int absolute_y,
                                 float gamma)
@@ -411,7 +449,7 @@ sixel_dither_scanline_params_float32(int serpentine,
  * keycolor.
  */
 static int
-sixel_dither_is_transparent_pixel(sixel_dither_context_t const *context,
+sixel_dither_is_transparent_pixel(sixel_dither_policy_bluenoise_context_t const *context,
                                   unsigned char const *transparent_mask,
                                   size_t transparent_mask_size,
                                   int use_transparent_fence,
@@ -439,7 +477,7 @@ sixel_dither_is_transparent_pixel(sixel_dither_context_t const *context,
 
 static SIXELSTATUS
 sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
-                                 sixel_dither_context_t *context)
+                                 sixel_dither_policy_bluenoise_context_t *context)
 {
     int serpentine;
     int y;
@@ -650,7 +688,7 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
 
 static SIXELSTATUS
 sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
-                                    sixel_dither_context_t *context)
+                                    sixel_dither_policy_bluenoise_context_t *context)
 {
     int serpentine;
     int y;
@@ -1025,7 +1063,7 @@ sixel_dither_policy_bluenoise_make_effective_request(
 static SIXELSTATUS
 sixel_dither_policy_bluenoise_build_context(
     sixel_dither_policy_apply_request_t const *request,
-    sixel_dither_context_t *context,
+    sixel_dither_policy_bluenoise_context_t *context,
     unsigned char scratch[SIXEL_MAX_CHANNELS],
     unsigned char new_palette[SIXEL_PALETTE_MAX * 4],
     float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS],
@@ -1133,7 +1171,7 @@ sixel_dither_policy_bluenoise_apply(
 {
     SIXELSTATUS status;
     sixel_dither_policy_apply_request_t effective;
-    sixel_dither_context_t context;
+    sixel_dither_policy_bluenoise_context_t context;
     unsigned char scratch[SIXEL_MAX_CHANNELS];
     unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
     float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];

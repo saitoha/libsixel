@@ -42,6 +42,40 @@
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 
+/*
+ * Private dither context for this policy implementation.
+ * Keep only members used by this translation unit.
+ */
+typedef struct sixel_dither_policy_none_context {
+    sixel_index_t *result;
+    unsigned char *pixels;
+    float *pixels_float;
+    int width;
+    int height;
+    int band_origin;
+    int output_start;
+    int depth;
+    unsigned char *palette;
+    float *palette_float;
+    int reqcolor;
+    int method_for_scan;
+    int optimize_palette;
+    struct sixel_lookup_policy_interface *lookup_policy;
+    sixel_dither_lookup_map_fn lookup_map;
+    unsigned char *scratch;
+    unsigned char *new_palette;
+    float *new_palette_float;
+    unsigned short *migration_map;
+    int *ncolors;
+    int pixelformat;
+    int float_depth;
+    int lookup_source_is_float;
+    int prefer_palette_float_lookup;
+    unsigned char const *transparent_mask;
+    size_t transparent_mask_size;
+    int transparent_keycolor;
+} sixel_dither_policy_none_context_t;
+
 static void
 sixel_dither_scanline_params_fixed_8bit(int serpentine,
                              int index,
@@ -266,7 +300,7 @@ end:
 
 static SIXELSTATUS
 sixel_dither_apply_fixed_8bit_with_mode(sixel_dither_t *dither,
-                                        sixel_dither_context_t *context)
+                                        sixel_dither_policy_none_context_t *context)
 {
     if (dither == NULL || context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -308,7 +342,7 @@ sixel_dither_apply_fixed_8bit_with_mode(sixel_dither_t *dither,
 
 static SIXELSTATUS
 sixel_dither_apply_none_8bit(sixel_dither_t *dither,
-                             sixel_dither_context_t *context)
+                             sixel_dither_policy_none_context_t *context)
 {
     return sixel_dither_apply_fixed_8bit_with_mode(
         dither, context);
@@ -423,7 +457,7 @@ diffuse_none_float(float *data,
 static SIXELSTATUS
 sixel_dither_apply_fixed_float32_with_mode(
     sixel_dither_t *dither,
-    sixel_dither_context_t *context)
+    sixel_dither_policy_none_context_t *context)
 {
     SIXELSTATUS status;
     float *palette_float;
@@ -720,7 +754,7 @@ sixel_dither_apply_fixed_float32_with_mode(
 
 static SIXELSTATUS
 sixel_dither_apply_none_float32(sixel_dither_t *dither,
-                                sixel_dither_context_t *context)
+                                sixel_dither_policy_none_context_t *context)
 {
     return sixel_dither_apply_fixed_float32_with_mode(
         dither, context);
@@ -832,7 +866,7 @@ sixel_dither_policy_none_make_effective_request(
 static SIXELSTATUS
 sixel_dither_policy_none_build_context(
     sixel_dither_policy_apply_request_t const *request,
-    sixel_dither_context_t *context,
+    sixel_dither_policy_none_context_t *context,
     unsigned char scratch[SIXEL_MAX_CHANNELS],
     unsigned char new_palette[SIXEL_PALETTE_MAX * 4],
     float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS],
@@ -932,7 +966,7 @@ sixel_dither_policy_none_apply(
 {
     SIXELSTATUS status;
     sixel_dither_policy_apply_request_t effective;
-    sixel_dither_context_t context;
+    sixel_dither_policy_none_context_t context;
     unsigned char scratch[SIXEL_MAX_CHANNELS];
     unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
     float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
