@@ -1460,7 +1460,6 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     int nbands;
     int queue_depth;
     int waited;
-    int saved_optimize_palette;
     int dither_threads_budget;
     int worker_capacity;
     int boost_target;
@@ -1577,19 +1576,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
         goto cleanup;
     }
 
-    saved_optimize_palette = dither->optimize_palette;
-    if (saved_optimize_palette != 0) {
-        /*
-         * Palette optimization reorders palette entries after dithering.  The
-         * pipeline emits the palette up-front, so workers must see the exact
-         * order that we already sent to the output stream.  Disable palette
-         * reordering while the pipeline is active and restore the caller
-         * preference afterwards.
-         */
-        dither->optimize_palette = 0;
-    }
     result = sixel_dither_apply_palette(dither, pixels, width, height);
-    dither->optimize_palette = saved_optimize_palette;
     if (result == NULL) {
         status = SIXEL_RUNTIME_ERROR;
         goto cleanup;

@@ -58,7 +58,6 @@ typedef struct sixel_dither_policy_bluenoise_context {
     float *palette_float;
     int reqcolor;
     int method_for_scan;
-    int optimize_palette;
     struct sixel_lookup_policy_interface *lookup_policy;
     sixel_dither_lookup_map_fn lookup_map;
     unsigned char *scratch;
@@ -533,7 +532,6 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
             || context->scratch == NULL
             || context->lookup_policy == NULL
             || context->lookup_map == NULL
-            || context->migration_map == NULL
             || context->ncolors == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -555,7 +553,7 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
         use_transparent_fence = 1;
     }
 
-    if (context->optimize_palette != 0) {
+    if (0 != 0) {
         *context->ncolors = 0;
         memset(context->new_palette,
                0x00,
@@ -622,7 +620,7 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
             color_index = context->lookup_map(context->lookup_policy,
                                               context->scratch);
 
-            if (context->optimize_palette != 0) {
+            if (0 != 0) {
                 if (context->migration_map[color_index] == 0) {
                     if (absolute_y >= context->output_start) {
                         context->result[pos] =
@@ -666,7 +664,7 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
         }
     }
 
-    if (context->optimize_palette != 0) {
+    if (0 != 0) {
         memcpy(context->palette,
                context->new_palette,
                (size_t)(*context->ncolors * context->depth));
@@ -760,7 +758,6 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
             || context->result == NULL
             || context->lookup_policy == NULL
             || context->lookup_map == NULL
-            || context->migration_map == NULL
             || context->ncolors == NULL
             || context->depth <= 0
             || context->depth > SIXEL_MAX_CHANNELS) {
@@ -793,7 +790,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     }
     need_float_pixel = lookup_wants_float || use_palette_float_lookup;
 
-    if (context->optimize_palette != 0) {
+    if (0 != 0) {
         *context->ncolors = 0;
         memset(context->new_palette,
                0x00,
@@ -883,7 +880,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
                                                   lookup_pixel);
             }
 
-            if (context->optimize_palette != 0) {
+            if (0 != 0) {
                 if (context->migration_map[color_index] == 0) {
                     if (absolute_y >= context->output_start) {
                         context->result[pos] =
@@ -927,7 +924,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
         }
     }
 
-    if (context->optimize_palette != 0) {
+    if (0 != 0) {
         memcpy(context->palette,
                context->new_palette,
                (size_t)(*context->ncolors * context->depth));
@@ -1103,7 +1100,6 @@ sixel_dither_policy_bluenoise_build_context(
     context->pixels = request->data;
     context->pixelformat = request->pixelformat;
     context->method_for_scan = request->method_for_scan;
-    context->optimize_palette = request->foptimize_palette;
 
     lookup_map = request->lookup_policy->vtbl->map_pixel;
     context->lookup_map = lookup_map;
@@ -1172,16 +1168,10 @@ sixel_dither_policy_bluenoise_apply(
     sixel_dither_policy_apply_request_t effective;
     sixel_dither_policy_bluenoise_context_t context;
     unsigned char scratch[SIXEL_MAX_CHANNELS];
-    unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
-    float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
-    unsigned short migration_map[SIXEL_PALETTE_MAX];
 
     status = SIXEL_FALSE;
     memset(&effective, 0, sizeof(effective));
     memset(scratch, 0, sizeof(scratch));
-    memset(new_palette, 0, sizeof(new_palette));
-    memset(new_palette_float, 0, sizeof(new_palette_float));
-    memset(migration_map, 0, sizeof(migration_map));
 
     status = sixel_dither_policy_bluenoise_make_effective_request(policy,
                                                            request,
@@ -1193,9 +1183,9 @@ sixel_dither_policy_bluenoise_apply(
     status = sixel_dither_policy_bluenoise_build_context(&effective,
                                                   &context,
                                                   scratch,
-                                                  new_palette,
-                                                  new_palette_float,
-                                                  migration_map);
+                                                  NULL,
+                                                  NULL,
+                                                  NULL);
     if (SIXEL_FAILED(status)) {
         return status;
     }

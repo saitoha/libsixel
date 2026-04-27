@@ -1191,12 +1191,14 @@ sixel_dither_set_body_only(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int            /* in */ bodyonly); /* 0: output palette section(default)
                                           1: do not output palette section */
-/* set whether optimize palette size */
+/*
+ * Keep this API for backward compatibility.
+ * Palette-entry minimization is retired and this setter is a no-op.
+ */
 SIXELAPI void
 sixel_dither_set_optimize_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
-    int            /* in */ do_opt);   /* 0: optimize palette size
-                                          1: don't optimize palette size */
+    int            /* in */ do_opt);   /* ignored */
 /* set pixelformat */
 SIXELAPI void
 sixel_dither_set_pixelformat(

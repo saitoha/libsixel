@@ -596,7 +596,6 @@ sixel_dither_prepare_dither_policy(
     request.reqcolor = reqcolor;
     request.method_for_scan = method_for_scan;
     request.pixelformat = pixelformat;
-    request.optimize_palette = dither->optimize_palette;
 
     if (dither->dither_policy != NULL
             && dither->dither_policy_class_name != NULL
@@ -652,8 +651,6 @@ typedef struct sixel_parallel_dither_plan {
     int band_height;
     int overlap;
     int method_for_scan;
-    int optimize_palette;
-    int optimize_palette_entries;
     int complexion;
     int lut_policy;
     int shared_lut;
@@ -799,7 +796,7 @@ sixel_dither_parallel_worker(tp_job_t job,
         3,
         plan->palette->float_depth,
         plan->reqcolor,
-        plan->optimize_palette,
+        (plan->dither != NULL) ? plan->dither->optimized : 0,
         plan->lut_policy,
         plan->lookup_shared_instance_enabled,
         plan->pixelformat,
@@ -837,7 +834,6 @@ sixel_dither_parallel_worker(tp_job_t job,
     apply_request.palette = plan->palette->entries;
     apply_request.reqcolor = plan->reqcolor;
     apply_request.method_for_scan = plan->method_for_scan;
-    apply_request.foptimize_palette = plan->optimize_palette_entries;
     apply_request.lookup_policy = lookup_policy;
     apply_request.ncolors = &local_ncolors;
     apply_request.dither = plan->dither;
@@ -997,7 +993,6 @@ typedef struct sixel_dither_resolve_indexes_request {
     int reqcolor;
     int method_for_scan;
     int foptimize;
-    int foptimize_palette;
     int lut_policy;
     int *ncolors;
     sixel_allocator_t *allocator;
@@ -1031,7 +1026,6 @@ sixel_dither_resolve_indexes(
     int reqcolor;
     int method_for_scan;
     int foptimize;
-    int foptimize_palette;
     int lut_policy;
     int *ncolors;
     sixel_allocator_t *allocator;
@@ -1055,7 +1049,6 @@ sixel_dither_resolve_indexes(
     reqcolor = request->reqcolor;
     method_for_scan = request->method_for_scan;
     foptimize = request->foptimize;
-    foptimize_palette = request->foptimize_palette;
     lut_policy = request->lut_policy;
     ncolors = request->ncolors;
     allocator = request->allocator;
@@ -1101,7 +1094,6 @@ sixel_dither_resolve_indexes(
     apply_request.palette = palette->entries;
     apply_request.reqcolor = reqcolor;
     apply_request.method_for_scan = method_for_scan;
-    apply_request.foptimize_palette = foptimize_palette;
     apply_request.lookup_policy = palette->lookup_policy;
     apply_request.ncolors = ncolors;
     apply_request.dither = dither;
@@ -1227,7 +1219,6 @@ sixel_dither_new(
     (*ppdither)->keycolor = (-1);
     sixel_dither_clear_transparent_bgcolor_hint(*ppdither);
     (*ppdither)->optimized = 0;
-    (*ppdither)->optimize_palette = 0;
     (*ppdither)->complexion = 1;
     (*ppdither)->bodyonly = 0;
     (*ppdither)->method_for_largest = SIXEL_LARGE_NORM;
@@ -1503,7 +1494,6 @@ sixel_dither_get(
     dither->palette->depth = 3;
     dither->keycolor = keycolor;
     dither->optimized = 1;
-    dither->optimize_palette = 0;
 
 end:
     return dither;
@@ -2002,14 +1992,18 @@ sixel_dither_set_body_only(
 }
 
 
-/* set whether optimize palette size */
+/*
+ * Keep this API for source compatibility.
+ * Palette-entry minimization is retired and always disabled internally.
+ */
 SIXELAPI void
 sixel_dither_set_optimize_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     int            /* in */ do_opt)    /* 0: don't optimize palette size
                                           1: optimize palette size */
 {
-    dither->optimize_palette = do_opt;
+    (void)dither;
+    (void)do_opt;
 }
 
 
@@ -2832,14 +2826,6 @@ sixel_dither_apply_palette_with_mode(
 #endif  /* SIXEL_ENABLE_THREADS */
     logger = dither->pipeline_logger;
 
-    if (parallel_active && dither->optimize_palette != 0) {
-        /*
-         * Palette minimization rewrites the palette entries in place.
-         * Parallel bands would race on the shared table, so fall back to
-         * the serial path when the feature is active.
-         */
-        parallel_active = 0;
-    }
     /*
      * Resolve shared-instance flags on the caller thread before workers start
      * so policy constructors can reuse parsed environment values when CLI
@@ -3116,8 +3102,6 @@ sixel_dither_apply_palette_with_mode(
         plan.band_height = adjusted_height;
         plan.overlap = adjusted_overlap;
         plan.method_for_scan = method_for_scan;
-        plan.optimize_palette = dither->optimized;
-        plan.optimize_palette_entries = dither->optimize_palette;
         plan.complexion = dither->complexion;
         plan.lut_policy = dither->lut_policy;
         plan.lookup_shared_instance_enabled = shared_lut;
@@ -3148,7 +3132,6 @@ sixel_dither_apply_palette_with_mode(
         resolve_request.reqcolor = dither->ncolors;
         resolve_request.method_for_scan = method_for_scan;
         resolve_request.foptimize = dither->optimized;
-        resolve_request.foptimize_palette = dither->optimize_palette;
         resolve_request.lut_policy = dither->lut_policy;
         resolve_request.ncolors = &ncolors;
         resolve_request.allocator = dither->allocator;

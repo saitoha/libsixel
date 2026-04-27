@@ -59,7 +59,6 @@ typedef struct sixel_dither_policy_interframe_context {
     float *palette_float;
     int reqcolor;
     int method_for_scan;
-    int optimize_palette;
     struct sixel_lookup_policy_interface *lookup_policy;
     sixel_dither_lookup_map_fn lookup_map;
     unsigned char *scratch;
@@ -1448,10 +1447,10 @@ sixel_dither_apply_fixed_8bit_with_mode(sixel_dither_t *dither,
     if (context->pixels == NULL || context->palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (context->result == NULL || context->new_palette == NULL) {
+    if (context->result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (context->migration_map == NULL || context->ncolors == NULL) {
+    if (context->ncolors == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (context->lookup_policy == NULL || context->lookup_map == NULL) {
@@ -1468,7 +1467,7 @@ sixel_dither_apply_fixed_8bit_with_mode(sixel_dither_t *dither,
                                          context->palette,
                                          context->reqcolor,
                                          context->method_for_scan,
-                                         context->optimize_palette,
+                                         0,
                                          context->lookup_policy,
                                          context->lookup_map,
                                          context->new_palette,
@@ -3635,10 +3634,10 @@ sixel_dither_apply_fixed_float32_with_mode(
     if (data == NULL || context->palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (context->result == NULL || context->new_palette == NULL) {
+    if (context->result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (context->migration_map == NULL || context->ncolors == NULL) {
+    if (context->ncolors == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (context->lookup_policy == NULL || context->lookup_map == NULL) {
@@ -3746,7 +3745,7 @@ sixel_dither_apply_fixed_float32_with_mode(
         }
     }
 
-    if (context->optimize_palette) {
+    if (0) {
         *context->ncolors = 0;
         memset(context->new_palette, 0x00,
                (size_t)SIXEL_PALETTE_MAX * (size_t)context->depth);
@@ -3888,7 +3887,7 @@ sixel_dither_apply_fixed_float32_with_mode(
                                                   lookup_pixel);         \
             }                                                           \
                                                                         \
-            if (context->optimize_palette) {                            \
+            if (0) {                            \
                 if (context->migration_map[color_index] == 0) {         \
                     output_index = *context->ncolors;                   \
                     for (n = 0; n < context->depth; ++n) {              \
@@ -3937,7 +3936,7 @@ sixel_dither_apply_fixed_float32_with_mode(
             }                                                           \
                                                                         \
             for (n = 0; n < context->depth; ++n) {                     \
-                if (context->optimize_palette) {                        \
+                if (0) {                        \
                     palette_value_u8 = context->new_palette[            \
                         output_index * context->depth + n];             \
                     if (have_new_palette_float) {                       \
@@ -4033,7 +4032,7 @@ sixel_dither_apply_fixed_float32_with_mode(
     (void)strategy_token;
     (void)interframe_spatial_diffuse;
 
-    if (context->optimize_palette) {
+    if (0) {
         memcpy(context->palette,
                context->new_palette,
                (size_t)(*context->ncolors * context->depth));
@@ -4259,7 +4258,6 @@ sixel_dither_policy_interframe_build_context(
     context->pixels = request->data;
     context->pixelformat = request->pixelformat;
     context->method_for_scan = request->method_for_scan;
-    context->optimize_palette = request->foptimize_palette;
 
     lookup_map = request->lookup_policy->vtbl->map_pixel;
     context->lookup_map = lookup_map;
@@ -4321,16 +4319,10 @@ sixel_dither_policy_interframe_apply(
     sixel_dither_policy_apply_request_t effective;
     sixel_dither_policy_interframe_context_t context;
     unsigned char scratch[SIXEL_MAX_CHANNELS];
-    unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
-    float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
-    unsigned short migration_map[SIXEL_PALETTE_MAX];
 
     status = SIXEL_FALSE;
     memset(&effective, 0, sizeof(effective));
     memset(scratch, 0, sizeof(scratch));
-    memset(new_palette, 0, sizeof(new_palette));
-    memset(new_palette_float, 0, sizeof(new_palette_float));
-    memset(migration_map, 0, sizeof(migration_map));
 
     status = sixel_dither_policy_interframe_make_effective_request(policy,
                                                            request,
@@ -4342,9 +4334,9 @@ sixel_dither_policy_interframe_apply(
     status = sixel_dither_policy_interframe_build_context(&effective,
                                                   &context,
                                                   scratch,
-                                                  new_palette,
-                                                  new_palette_float,
-                                                  migration_map);
+                                                  NULL,
+                                                  NULL,
+                                                  NULL);
     if (SIXEL_FAILED(status)) {
         return status;
     }

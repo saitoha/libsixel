@@ -205,7 +205,6 @@ test_dither_policy_named_classes_contract(void)
         prepare_request.reqcolor = 2;
         prepare_request.method_for_scan = SIXEL_SCAN_RASTER;
         prepare_request.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        prepare_request.optimize_palette = 0;
 
         status = dither_policy->vtbl->prepare(dither_policy, &prepare_request);
         if (SIXEL_FAILED(status)) {
@@ -245,7 +244,6 @@ test_dither_policy_named_classes_contract(void)
         apply_request.palette = dither->palette->entries;
         apply_request.reqcolor = 2;
         apply_request.method_for_scan = SIXEL_SCAN_RASTER;
-        apply_request.foptimize_palette = 0;
         apply_request.lookup_policy = lookup_policy;
         apply_request.ncolors = &ncolors;
         apply_request.dither = dither;
