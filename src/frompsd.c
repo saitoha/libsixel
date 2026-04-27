@@ -22248,24 +22248,13 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
     if (overlap_alpha > 0.0f) {
         if (effect_priority_inside != 0) {
             /*
-             * Keep the overlap color on layer-stack order (vstk -> FrFX).
-             * FXPRI_INSIDE narrows responsibility to overlap handling, but it
-             * should not collapse overlap color to FrFX-only.
+             * FXPRI_INSIDE keeps exclusive vector/effect bands intact while
+             * pinning overlap color to FrFX priority.
              */
             sixel_builtin_psd_blend_effect_rgb(
-                overlap_tmp_rgb[0],
-                overlap_tmp_rgb[1],
-                overlap_tmp_rgb[2],
-                vector_rgb,
-                vector_mode,
-                1.0f,
-                &overlap_tmp_rgb[0],
-                &overlap_tmp_rgb[1],
-                &overlap_tmp_rgb[2]);
-            sixel_builtin_psd_blend_effect_rgb(
-                overlap_tmp_rgb[0],
-                overlap_tmp_rgb[1],
-                overlap_tmp_rgb[2],
+                base_rgb[0],
+                base_rgb[1],
+                base_rgb[2],
                 effect_rgb,
                 effect_mode,
                 1.0f,
