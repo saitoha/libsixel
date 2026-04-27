@@ -1207,8 +1207,8 @@ treated as malformed input. `VP8X` metadata flag mismatches
 `ALPH` chunk usage is validated strictly as malformed input when `VP8X` alpha
 flags or `VP8` payload presence are inconsistent.
 In animation decode, alpha consistency is validated as malformed input when
-the `VP8X` alpha flag does not match `ANMF` `VP8+ALPH` frame presence, and
-top-level `ALPH` chunks are rejected for animated streams.
+`ANMF` frames carry alpha while the `VP8X` alpha flag is clear, and top-level
+`ALPH` chunks are rejected for animated streams.
 In current builtin WebP scope, VP8 interframe tags and `show_frame=0` are
 also treated as malformed input and map to stream error contracts.
 VP8 and `VP8+ALPH` decode failures are normalized to `W_ERR_VP8_STREAM`.

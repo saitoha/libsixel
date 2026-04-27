@@ -519,6 +519,7 @@ sixel_webp_read_normal_code_lengths(sixel_webp_bit_reader_t *br,
     int use_reduced_alphabet;
     int length_nbits;
     int max_symbol;
+    int symbols_remaining;
     int index;
     int symbol;
     int repeat;
@@ -531,6 +532,7 @@ sixel_webp_read_normal_code_lengths(sixel_webp_bit_reader_t *br,
     use_reduced_alphabet = 0;
     length_nbits = 0;
     max_symbol = 0;
+    symbols_remaining = 0;
     index = 0;
     symbol = 0;
     repeat = 0;
@@ -613,7 +615,16 @@ sixel_webp_read_normal_code_lengths(sixel_webp_bit_reader_t *br,
     memset(lengths, 0, (size_t)alphabet_size);
     index = 0;
     repeat_value = 8;
-    while (index < max_symbol) {
+    /*
+     * max_symbol limits how many code-length symbols are read from the
+     * bitstream, not how many output entries those symbols expand to.
+     */
+    symbols_remaining = max_symbol;
+    while (index < alphabet_size) {
+        if (symbols_remaining <= 0) {
+            break;
+        }
+        --symbols_remaining;
         status = sixel_webp_huffman_read_symbol(&code_length_tree,
                                                 br,
                                                 &symbol);
@@ -638,7 +649,7 @@ sixel_webp_read_normal_code_lengths(sixel_webp_bit_reader_t *br,
                 return SIXEL_BAD_INPUT;
             }
             repeat = 3 + (int)bits;
-            if (index + repeat > max_symbol) {
+            if (index + repeat > alphabet_size) {
                 sixel_webp_huffman_reset(&code_length_tree, allocator);
                 sixel_helper_set_additional_message(
                     "builtin webp: code-length repeat exceeds range.");
@@ -659,7 +670,7 @@ sixel_webp_read_normal_code_lengths(sixel_webp_bit_reader_t *br,
                 return SIXEL_BAD_INPUT;
             }
             repeat = 3 + (int)bits;
-            if (index + repeat > max_symbol) {
+            if (index + repeat > alphabet_size) {
                 sixel_webp_huffman_reset(&code_length_tree, allocator);
                 sixel_helper_set_additional_message(
                     "builtin webp: zero-run exceeds code-length range.");
@@ -680,7 +691,7 @@ sixel_webp_read_normal_code_lengths(sixel_webp_bit_reader_t *br,
                 return SIXEL_BAD_INPUT;
             }
             repeat = 11 + (int)bits;
-            if (index + repeat > max_symbol) {
+            if (index + repeat > alphabet_size) {
                 sixel_webp_huffman_reset(&code_length_tree, allocator);
                 sixel_helper_set_additional_message(
                     "builtin webp: long zero-run exceeds range.");

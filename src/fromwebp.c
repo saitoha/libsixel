@@ -725,13 +725,11 @@ sixel_webp_validate_anim_alpha_flag(sixel_webp_anim_stream_t const *stream,
 {
     unsigned int alpha_flag_set;
     int has_anim_alpha;
-    int alpha_unknown;
     int vp8l_has_alpha;
     int frame_index;
 
     alpha_flag_set = 0u;
     has_anim_alpha = 0;
-    alpha_unknown = 0;
     vp8l_has_alpha = 0;
     frame_index = 0;
 
@@ -755,7 +753,6 @@ sixel_webp_validate_anim_alpha_flag(sixel_webp_anim_stream_t const *stream,
                 stream->frames[frame_index].vp8l_payload,
                 stream->frames[frame_index].vp8l_payload_size,
                 &vp8l_has_alpha) == 0) {
-            alpha_unknown = 1;
             continue;
         }
         if (vp8l_has_alpha != 0) {
@@ -773,15 +770,11 @@ sixel_webp_validate_anim_alpha_flag(sixel_webp_anim_stream_t const *stream,
     if (has_anim_alpha != 0) {
         return SIXEL_OK;
     }
-    if (alpha_flag_set == 0u) {
-        return SIXEL_OK;
-    }
-    if (alpha_unknown != 0) {
-        return SIXEL_OK;
-    }
-    sixel_helper_set_additional_message(
-        "builtin webp: VP8X alpha flag does not match ANMF alpha frames.");
-    return SIXEL_BAD_INPUT;
+    /*
+     * Keep decoder compatibility with libwebp: ANIM streams with VP8X alpha
+     * set but no actual frame alpha stay decodable.
+     */
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS
