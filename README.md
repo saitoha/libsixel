@@ -1203,7 +1203,8 @@ stay inside the declared animation canvas; out-of-canvas rectangles are treated
 as malformed input. Top-level chunk strictness is enforced for deterministic
 error contracts: duplicate `VP8`/`VP8X`/`VP8L`/`ALPH`/`ANIM`/`ICCP`/`EXIF`/`XMP`
 chunks are rejected, and static `VP8+VP8L` or `VP8L+ALPH` coexistence is
-treated as malformed input. For static decode,
+treated as malformed input. `VP8X` metadata flag mismatches
+(`ICCP`/`EXIF`/`XMP`/`ANIM`) are also treated as malformed input. For static decode,
 embedded `ICCP` is applied when builtin CMS is enabled and embedded `EXIF`
 orientation is applied when builtin orientation handling is enabled.
 
@@ -1588,8 +1589,8 @@ sixel_dither_set_body_only(
 SIXELAPI void
 sixel_dither_set_optimize_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
-    int            /* in */ do_opt);   /* 0: optimize palette size
-                                          1: don't optimize palette size */
+    int            /* in */ do_opt);   /* 0: don't optimize palette size
+                                          1: optimize palette size */
 /* set pixelformat */
 SIXELAPI void
 sixel_dither_set_pixelformat(

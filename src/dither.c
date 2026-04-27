@@ -2006,8 +2006,8 @@ sixel_dither_set_body_only(
 SIXELAPI void
 sixel_dither_set_optimize_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
-    int            /* in */ do_opt)    /* 0: optimize palette size
-                                          1: don't optimize palette size */
+    int            /* in */ do_opt)    /* 0: don't optimize palette size
+                                          1: optimize palette size */
 {
     dither->optimize_palette = do_opt;
 }
