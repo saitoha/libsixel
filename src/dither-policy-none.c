@@ -59,7 +59,6 @@ typedef struct sixel_dither_policy_none_context {
     int method_for_scan;
     struct sixel_lookup_policy_interface *lookup_policy;
     sixel_dither_lookup_map_fn lookup_map;
-    unsigned char *scratch;
     int pixelformat;
     int float_depth;
     int lookup_source_is_float;
@@ -640,8 +639,7 @@ sixel_dither_policy_none_make_effective_request(
 static SIXELSTATUS
 sixel_dither_policy_none_build_context(
     sixel_dither_policy_apply_request_t const *request,
-    sixel_dither_policy_none_context_t *context,
-    unsigned char scratch[SIXEL_MAX_CHANNELS])
+    sixel_dither_policy_none_context_t *context)
 {
     sixel_dither_lookup_map_fn lookup_map;
     sixel_dither_t *dither;
@@ -669,7 +667,6 @@ sixel_dither_policy_none_build_context(
     context->output_start = request->output_start;
     context->depth = request->depth;
     context->palette = request->palette;
-    context->scratch = scratch;
     context->lookup_policy = request->lookup_policy;
     context->pixels = request->data;
     context->pixelformat = request->pixelformat;
@@ -729,11 +726,9 @@ sixel_dither_policy_none_apply(
     SIXELSTATUS status;
     sixel_dither_policy_apply_request_t effective;
     sixel_dither_policy_none_context_t context;
-    unsigned char scratch[SIXEL_MAX_CHANNELS];
 
     status = SIXEL_FALSE;
     memset(&effective, 0, sizeof(effective));
-    memset(scratch, 0, sizeof(scratch));
 
     status = sixel_dither_policy_none_make_effective_request(policy,
                                                            request,
@@ -743,8 +738,7 @@ sixel_dither_policy_none_apply(
     }
 
     status = sixel_dither_policy_none_build_context(&effective,
-                                                  &context,
-                                                  scratch);
+                                                  &context);
     if (SIXEL_FAILED(status)) {
         return status;
     }

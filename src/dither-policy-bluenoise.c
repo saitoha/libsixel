@@ -58,7 +58,6 @@ typedef struct sixel_dither_policy_bluenoise_context {
     int method_for_scan;
     struct sixel_lookup_policy_interface *lookup_policy;
     sixel_dither_lookup_map_fn lookup_map;
-    unsigned char *scratch;
     int pixelformat;
     int float_depth;
     int lookup_source_is_float;
@@ -487,6 +486,7 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
     int color_index;
     sixel_bluenoise_conf_t bluenoise_conf;
     float gradient_weight;
+    unsigned char quantized[SIXEL_MAX_CHANNELS];
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -516,7 +516,6 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
     if (dither == NULL || context == NULL
             || context->pixels == NULL
             || context->result == NULL
-            || context->scratch == NULL
             || context->lookup_policy == NULL
             || context->lookup_map == NULL
             || ncolors == NULL) {
@@ -580,12 +579,12 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
                                 x,
                                 y,
                                 d) * gradient_weight * 32.0f);
-                context->scratch[d] = (unsigned char)(
+                quantized[d] = (unsigned char)(
                     val < 0 ? 0 : val > 255 ? 255 : val);
             }
 
             color_index = context->lookup_map(context->lookup_policy,
-                                              context->scratch);
+                                              quantized);
 
             if (absolute_y >= context->output_start) {
                 context->result[pos] = (sixel_index_t)color_index;
@@ -624,7 +623,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     float jitter_scale;
     float noise;
     float val;
-    unsigned char *quantized;
+    unsigned char quantized[SIXEL_MAX_CHANNELS];
     float lookup_pixel_float[SIXEL_MAX_CHANNELS];
     unsigned char const *lookup_pixel;
     int lookup_wants_float;
@@ -651,7 +650,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     jitter_scale = 32.0f / 255.0f;
     noise = 0.0f;
     val = 0.0f;
-    quantized = NULL;
+    memset(quantized, 0, sizeof(quantized));
     memset(lookup_pixel_float, 0, sizeof(lookup_pixel_float));
     lookup_pixel = NULL;
     lookup_wants_float = 0;
@@ -664,7 +663,6 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
 
     if (dither == NULL || context == NULL
             || context->pixels_float == NULL
-            || context->scratch == NULL
             || context->result == NULL
             || context->lookup_policy == NULL
             || context->lookup_map == NULL
@@ -678,7 +676,6 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     sixel_bluenoise_conf_apply_dither_overrides(&bluenoise_conf, dither);
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
-    quantized = context->scratch;
 
     transparent_mask = context->transparent_mask;
     transparent_mask_size = context->transparent_mask_size;
@@ -891,8 +888,7 @@ sixel_dither_policy_bluenoise_make_effective_request(
 static SIXELSTATUS
 sixel_dither_policy_bluenoise_build_context(
     sixel_dither_policy_apply_request_t const *request,
-    sixel_dither_policy_bluenoise_context_t *context,
-    unsigned char scratch[SIXEL_MAX_CHANNELS])
+    sixel_dither_policy_bluenoise_context_t *context)
 {
     sixel_dither_lookup_map_fn lookup_map;
     sixel_dither_t *dither;
@@ -919,7 +915,6 @@ sixel_dither_policy_bluenoise_build_context(
     context->band_origin = request->band_origin;
     context->output_start = request->output_start;
     context->depth = request->depth;
-    context->scratch = scratch;
     context->lookup_policy = request->lookup_policy;
     context->pixels = request->data;
     context->pixelformat = request->pixelformat;
@@ -987,11 +982,9 @@ sixel_dither_policy_bluenoise_apply(
     SIXELSTATUS status;
     sixel_dither_policy_apply_request_t effective;
     sixel_dither_policy_bluenoise_context_t context;
-    unsigned char scratch[SIXEL_MAX_CHANNELS];
 
     status = SIXEL_FALSE;
     memset(&effective, 0, sizeof(effective));
-    memset(scratch, 0, sizeof(scratch));
 
     status = sixel_dither_policy_bluenoise_make_effective_request(policy,
                                                            request,
@@ -1001,8 +994,7 @@ sixel_dither_policy_bluenoise_apply(
     }
 
     status = sixel_dither_policy_bluenoise_build_context(&effective,
-                                                  &context,
-                                                  scratch);
+                                                  &context);
     if (SIXEL_FAILED(status)) {
         return status;
     }
