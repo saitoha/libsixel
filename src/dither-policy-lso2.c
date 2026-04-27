@@ -55,9 +55,6 @@ typedef struct sixel_dither_policy_lso2_context {
     int method_for_scan;
     struct sixel_lookup_policy_interface *lookup_policy;
     sixel_dither_lookup_map_fn lookup_map;
-    unsigned char *new_palette;
-    float *new_palette_float;
-    unsigned short *migration_map;
     int pixelformat;
     int float_depth;
     int lookup_source_is_float;
@@ -271,14 +268,12 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
     SIXELSTATUS status;
     unsigned char *data;
     unsigned char *palette;
-    unsigned char *new_palette;
     unsigned char *source_pixel;
     unsigned char palette_value;
     int32_t sample_scaled[SIXEL_MAX_CHANNELS];
     int32_t target_scaled;
     int32_t error_scaled;
     int serpentine;
-    int optimize_palette;
     int method_for_scan;
     int y;
     int absolute_y;
@@ -295,11 +290,6 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
     int output_index;
     int diff;
     int table_index;
-    unsigned short *migration_map;
-    float *palette_float;
-    float *new_palette_float;
-    int float_depth;
-    int float_index;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -314,16 +304,7 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
     status = SIXEL_BAD_ARGUMENT;
     data = context->pixels;
     palette = context->palette;
-    new_palette = context->new_palette;
-    migration_map = context->migration_map;
-    
     depth = context->depth;
-    
-    palette_float = context->palette_float;
-    new_palette_float = context->new_palette_float;
-    float_depth = context->float_depth;
-    /* palette minimization is disabled */
-    optimize_palette = 0;
     method_for_scan = context->method_for_scan;
     if (data == NULL || palette == NULL || context->result == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -331,11 +312,7 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
     if (context->lookup_policy == NULL || context->lookup_map == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (optimize_palette) {
-        if (ncolors == NULL) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-    } else if (ncolors == NULL) {
+    if (ncolors == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -358,18 +335,7 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
     }
 
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
-    if (optimize_palette) {
-        *ncolors = 0;
-        memset(new_palette, 0x00,
-               (size_t)SIXEL_PALETTE_MAX * (size_t)depth);
-        if (new_palette_float != NULL && float_depth > 0) {
-            memset(new_palette_float, 0x00,
-                   (size_t)SIXEL_PALETTE_MAX
-                       * (size_t)float_depth * sizeof(float));
-        }
-        memset(migration_map, 0x00,
-               sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
-    }
+    *ncolors = reqcolor;
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
@@ -408,54 +374,14 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
             color_index = context->lookup_map(context->lookup_policy,
                                               source_pixel);
 
-                if (optimize_palette) {
-                    if (migration_map[color_index] == 0) {
-                        output_index = *ncolors;
-                        for (n = 0; n < depth; ++n) {
-                            new_palette[output_index * depth + n]
-                                = palette[color_index * depth + n];
-                    }
-                    if (palette_float != NULL
-                            && new_palette_float != NULL
-                            && float_depth > 0) {
-                        for (float_index = 0;
-                                float_index < float_depth;
-                                ++float_index) {
-                            new_palette_float[output_index * float_depth
-                                              + float_index]
-                                = palette_float[color_index * float_depth
-                                                + float_index];
-                        }
-                    }
-                    ++*ncolors;
-                    /*
-                     * Palette entries are capped at SIXEL_PALETTE_MAX (256),
-                     * so storing them in unsigned short is safe.
-                     */
-                    migration_map[color_index] = (unsigned short)(*ncolors);
-                } else {
-                    output_index = migration_map[color_index] - 1;
-                }
-                if (absolute_y >= context->output_start) {
-                    /*
-                     * Palette indices are bounded by SIXEL_PALETTE_MAX and fit
-                     * in sixel_index_t (unsigned char).
-                     */
-                    context->result[pos] = (sixel_index_t)output_index;
-                }
-            } else {
                 output_index = color_index;
                 if (absolute_y >= context->output_start) {
                     context->result[pos] = (sixel_index_t)output_index;
                 }
-            }
+            
 
             for (n = 0; n < depth; ++n) {
-                if (optimize_palette) {
-                    palette_value = new_palette[output_index * depth + n];
-                } else {
-                    palette_value = palette[color_index * depth + n];
-                }
+                palette_value = palette[color_index * depth + n];
                 diff = (int)source_pixel[n] - (int)palette_value;
                 if (diff < 0) {
                     diff = -diff;
@@ -482,20 +408,6 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
         if (absolute_y >= context->output_start) {
             sixel_dither_pipeline_row_notify(dither, absolute_y);
         }
-    }
-
-    if (optimize_palette) {
-        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
-        if (palette_float != NULL
-                && new_palette_float != NULL
-                && float_depth > 0) {
-            memcpy(palette_float,
-                   new_palette_float,
-                   (size_t)(*ncolors * float_depth)
-                       * sizeof(float));
-        }
-    } else {
-        *ncolors = reqcolor;
     }
 
     status = SIXEL_OK;
@@ -926,20 +838,17 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     SIXELSTATUS status;
     float *data;
     unsigned char *palette;
-    unsigned char *new_palette;
     float *source_pixel;
     float quantized_float;
-    /* Keep lookup inputs initialized across all branch combinations. */
     unsigned char quantized[SIXEL_MAX_CHANNELS] = { 0 };
-    float *carry_curr = NULL;
-    float *carry_next = NULL;
-    float *carry_far = NULL;
+    float *carry_curr;
+    float *carry_next;
+    float *carry_far;
     float palette_value_float;
     unsigned char palette_value;
     float error;
     int serpentine;
     int use_carry;
-    int optimize_palette;
     size_t carry_len;
     int method_for_scan;
     int y;
@@ -959,17 +868,13 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     int output_index;
     int diff;
     int table_index;
-    unsigned short *migration_map;
     float *palette_float;
-    float *new_palette_float;
     int float_depth;
-    int float_index;
     float lookup_pixel_float[SIXEL_MAX_CHANNELS] = { 0.0f };
     unsigned char const *lookup_pixel;
     int lookup_wants_float;
     int need_float_pixel;
     int have_palette_float;
-    int have_new_palette_float;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -977,73 +882,91 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     int is_transparent;
     size_t absolute_index;
 
+    status = SIXEL_BAD_ARGUMENT;
+    data = NULL;
+    palette = NULL;
+    source_pixel = NULL;
+    quantized_float = 0.0f;
+    carry_curr = NULL;
+    carry_next = NULL;
+    carry_far = NULL;
+    palette_value_float = 0.0f;
+    palette_value = 0U;
+    error = 0.0f;
+    serpentine = 0;
+    use_carry = 0;
+    carry_len = 0U;
+    method_for_scan = SIXEL_SCAN_RASTER;
+    y = 0;
+    absolute_y = 0;
+    start = 0;
+    end = 0;
+    step = 0;
+    direction = 0;
+    x = 0;
+    pos = 0;
+    base = 0U;
+    carry_base = 0U;
+    depth = 0;
+    channel_count = 0;
+    n = 0;
+    color_index = 0;
+    output_index = 0;
+    diff = 0;
+    table_index = 0;
+    palette_float = NULL;
+    float_depth = 0;
+    lookup_pixel = NULL;
+    lookup_wants_float = 0;
+    need_float_pixel = 0;
+    have_palette_float = 0;
+    transparent_mask = NULL;
+    transparent_mask_size = 0U;
+    transparent_keycolor = -1;
+    use_transparent_fence = 0;
+    is_transparent = 0;
+    absolute_index = 0U;
+
     if (dither == NULL || context == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = SIXEL_BAD_ARGUMENT;
     data = context->pixels_float;
     palette = context->palette;
-    new_palette = context->new_palette;
-    migration_map = context->migration_map;
-    
     depth = context->depth;
     channel_count = depth;
-    
-    transparent_mask = context->transparent_mask;
-    transparent_mask_size = context->transparent_mask_size;
-    transparent_keycolor = context->transparent_keycolor;
-    use_transparent_fence = 0;
-    if (transparent_mask != NULL
-            && transparent_keycolor >= 0
-            && transparent_keycolor < SIXEL_PALETTE_MAX) {
-        use_transparent_fence = 1;
-    }
-    /* palette minimization is disabled */
-    optimize_palette = 0;
     method_for_scan = context->method_for_scan;
     palette_float = context->palette_float;
-    new_palette_float = context->new_palette_float;
     float_depth = context->float_depth;
+
     if (data == NULL || palette == NULL || context->result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (context->lookup_policy == NULL || context->lookup_map == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    /*
-     * Track float palette availability separately for the original palette
-     * and the palette-optimization buffer so later loops can skip
-     * byte-to-float round-trips when computing the quantization error.
-     */
-    if (palette_float != NULL && float_depth >= depth) {
-        have_palette_float = 1;
-    } else {
-        have_palette_float = 0;
-    }
-    if (new_palette_float != NULL && float_depth >= depth) {
-        have_new_palette_float = 1;
-    } else {
-        have_new_palette_float = 0;
-    }
-
-    if (optimize_palette) {
-        if (ncolors == NULL) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-    } else if (ncolors == NULL) {
+    if (ncolors == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-
+    if (reqcolor < 1) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     if (channel_count <= 0 || channel_count > SIXEL_MAX_CHANNELS) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    use_carry = 0;
-    carry_curr = NULL;
-    carry_next = NULL;
-    carry_far = NULL;
-    carry_len = 0;
+    transparent_mask = context->transparent_mask;
+    transparent_mask_size = context->transparent_mask_size;
+    transparent_keycolor = context->transparent_keycolor;
+    if (transparent_mask != NULL
+            && transparent_keycolor >= 0
+            && transparent_keycolor < SIXEL_PALETTE_MAX) {
+        use_transparent_fence = 1;
+    }
+
+    if (palette_float != NULL && float_depth >= depth) {
+        have_palette_float = 1;
+    }
 
     if (use_carry) {
         carry_len = (size_t)context->width * (size_t)depth;
@@ -1058,18 +981,7 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
     lookup_wants_float = (context->lookup_source_is_float != 0);
     need_float_pixel = lookup_wants_float;
-    if (optimize_palette) {
-        *ncolors = 0;
-        memset(new_palette, 0x00,
-               (size_t)SIXEL_PALETTE_MAX * (size_t)depth);
-        if (new_palette_float != NULL && float_depth > 0) {
-            memset(new_palette_float, 0x00,
-                   (size_t)SIXEL_PALETTE_MAX
-                       * (size_t)float_depth * sizeof(float));
-        }
-        memset(migration_map, 0x00,
-               sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
-    }
+    *ncolors = reqcolor;
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
@@ -1107,14 +1019,15 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                 }
                 continue;
             }
+
             source_pixel = data + base;
             if (use_carry) {
                 for (n = 0; n < channel_count; ++n) {
                     float accum;
+
                     if (n >= SIXEL_MAX_CHANNELS) {
                         break;
                     }
-
                     accum = data[base + (size_t)n]
                            + carry_curr[carry_base + (size_t)n];
                     carry_curr[carry_base + (size_t)n] = 0.0f;
@@ -1148,6 +1061,7 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                         quantized_float);
                 }
             }
+
             if (lookup_wants_float) {
                 lookup_pixel = (unsigned char const *)(void const *)
                     lookup_pixel_float;
@@ -1159,50 +1073,11 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                                                   lookup_pixel);
             }
 
-                if (optimize_palette) {
-                    if (migration_map[color_index] == 0) {
-                        output_index = *ncolors;
-                        for (n = 0; n < channel_count; ++n) {
-                            if (n >= SIXEL_MAX_CHANNELS) {
-                                break;
-                            }
-                            new_palette[output_index * depth + n]
-                                = palette[color_index * depth + n];
-                    }
-                    if (palette_float != NULL
-                            && new_palette_float != NULL
-                            && float_depth > 0) {
-                        for (float_index = 0;
-                                float_index < float_depth;
-                                ++float_index) {
-                            new_palette_float[output_index * float_depth
-                                              + float_index]
-                                = palette_float[color_index * float_depth
-                                                + float_index];
-                        }
-                    }
-                    ++*ncolors;
-                    /*
-                     * Palette entries are capped at SIXEL_PALETTE_MAX (256),
-                     * so storing them in unsigned short is safe.
-                     */
-                    migration_map[color_index] = (unsigned short)(*ncolors);
-                } else {
-                    output_index = migration_map[color_index] - 1;
-                }
-                if (absolute_y >= context->output_start) {
-                    /*
-                     * Palette indices are bounded by SIXEL_PALETTE_MAX and fit
-                     * in sixel_index_t (unsigned char).
-                     */
-                    context->result[pos] = (sixel_index_t)output_index;
-                }
-            } else {
-                output_index = color_index;
-                if (absolute_y >= context->output_start) {
-                    context->result[pos] = (sixel_index_t)output_index;
-                }
+            output_index = color_index;
+            if (absolute_y >= context->output_start) {
+                context->result[pos] = (sixel_index_t)output_index;
             }
+
             for (n = 0; n < channel_count; ++n) {
                 if (n >= SIXEL_MAX_CHANNELS) {
                     break;
@@ -1217,33 +1092,16 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                    )) {
                     break;  /* L or Y only */
                 }
-                if (optimize_palette) {
-                    if (have_new_palette_float) {
-                        palette_value_float =
-                            new_palette_float[output_index * float_depth
-                                              + n];
-                    } else {
-                        palette_value =
-                            new_palette[output_index * depth + n];
-                        palette_value_float
-                            = sixel_pixelformat_byte_to_float(
-                                  context->pixelformat,
-                                  n,
-                                  palette_value);
-                    }
+
+                if (have_palette_float) {
+                    palette_value_float =
+                        palette_float[color_index * float_depth + n];
                 } else {
-                    if (have_palette_float) {
-                        palette_value_float =
-                            palette_float[color_index * float_depth + n];
-                    } else {
-                        palette_value =
-                            palette[color_index * depth + n];
-                        palette_value_float
-                            = sixel_pixelformat_byte_to_float(
-                                  context->pixelformat,
-                                  n,
-                                  palette_value);
-                    }
+                    palette_value = palette[color_index * depth + n];
+                    palette_value_float = sixel_pixelformat_byte_to_float(
+                        context->pixelformat,
+                        n,
+                        palette_value);
                 }
                 error = source_pixel[n] - palette_value_float;
                 if (error < 0.0f) {
@@ -1298,20 +1156,6 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
         if (absolute_y >= context->output_start) {
             sixel_dither_pipeline_row_notify(dither, absolute_y);
         }
-    }
-
-    if (optimize_palette) {
-        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
-        if (palette_float != NULL
-                && new_palette_float != NULL
-                && float_depth > 0) {
-            memcpy(palette_float,
-                   new_palette_float,
-                   (size_t)(*ncolors * float_depth)
-                       * sizeof(float));
-        }
-    } else {
-        *ncolors = reqcolor;
     }
 
     status = SIXEL_OK;
