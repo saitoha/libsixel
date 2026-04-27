@@ -147,7 +147,6 @@ amalgamation_headers = files(
   '../src/dither-policy-x-dither.h',
   '../src/dither-policy-bluenoise.h',
   '../src/dither-policy-interframe.h',
-  '../src/dither-internal.h',
   '../src/dither-common-pipeline.h',
   '../src/lookup-fhedt-8bit.h',
   '../src/lookup-fhedt-float32.h',

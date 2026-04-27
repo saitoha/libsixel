@@ -245,7 +245,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-interframe-stbn-source-mask-table.h \
 	$(srcdir)/dither-interframe-stbn-source-pmj.c \
 	$(srcdir)/dither-interframe-stbn-source-pmj.h \
-	$(srcdir)/dither-internal.h $(srcdir)/logger.c \
+	$(srcdir)/logger.c \
 	$(srcdir)/logger.h $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/cpu.c $(srcdir)/cpu.h $(srcdir)/pixelformat.c \
@@ -1101,7 +1101,6 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-interframe-stbn-source-mask-table.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-interframe-stbn-source-pmj.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-interframe-stbn-source-pmj.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-internal.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/logger.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/logger.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/colorspace.c \

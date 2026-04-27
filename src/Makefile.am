@@ -191,7 +191,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-interframe-stbn-source-mask-table.h \
                 $(srcdir)/dither-interframe-stbn-source-pmj.c \
                 $(srcdir)/dither-interframe-stbn-source-pmj.h \
-                $(srcdir)/dither-internal.h \
                 $(srcdir)/logger.c \
                 $(srcdir)/logger.h \
                 $(srcdir)/colorspace.c \

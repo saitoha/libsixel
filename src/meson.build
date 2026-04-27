@@ -241,7 +241,6 @@ srcs = [
   'dither-interframe-stbn-source-mask-table.h',
   'dither-interframe-stbn-source-pmj.c',
   'dither-interframe-stbn-source-pmj.h',
-  'dither-internal.h',
   'dither-policy.h',
   'dither-policy-none.h',
   'dither-policy-fs.h',

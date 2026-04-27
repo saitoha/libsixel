@@ -34,7 +34,6 @@
 #include "dither-policy-lso2.h"
 #include "dither.h"
 #include "dither-common-pipeline.h"
-#include "dither-internal.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 
@@ -548,7 +547,6 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
 #endif  /* HAVE_MATH_H */
 
 #include "dither-common-pipeline.h"
-#include "dither-internal.h"
 #include "pixelformat.h"
 
 static void

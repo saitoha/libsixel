@@ -55,7 +55,6 @@
 #include "dither-policy.h"
 #include "timer.h"
 #include "dither-common-pipeline.h"
-#include "dither-internal.h"
 #include "logger.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"

@@ -38,7 +38,6 @@
 #include "dither-policy-sierra1.h"
 #include "dither.h"
 #include "dither-common-pipeline.h"
-#include "dither-internal.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 

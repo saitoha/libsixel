@@ -38,7 +38,6 @@
 #include "dither-policy-interframe.h"
 #include "dither.h"
 #include "dither-common-pipeline.h"
-#include "dither-internal.h"
 #include "dither-interframe-method.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
