@@ -22247,9 +22247,31 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
     }
     if (overlap_alpha > 0.0f) {
         if (effect_priority_inside != 0) {
-            overlap_full_rgb[0] = effect_full_rgb[0];
-            overlap_full_rgb[1] = effect_full_rgb[1];
-            overlap_full_rgb[2] = effect_full_rgb[2];
+            /*
+             * Keep the overlap color on layer-stack order (vstk -> FrFX).
+             * FXPRI_INSIDE narrows responsibility to overlap handling, but it
+             * should not collapse overlap color to FrFX-only.
+             */
+            sixel_builtin_psd_blend_effect_rgb(
+                overlap_tmp_rgb[0],
+                overlap_tmp_rgb[1],
+                overlap_tmp_rgb[2],
+                vector_rgb,
+                vector_mode,
+                1.0f,
+                &overlap_tmp_rgb[0],
+                &overlap_tmp_rgb[1],
+                &overlap_tmp_rgb[2]);
+            sixel_builtin_psd_blend_effect_rgb(
+                overlap_tmp_rgb[0],
+                overlap_tmp_rgb[1],
+                overlap_tmp_rgb[2],
+                effect_rgb,
+                effect_mode,
+                1.0f,
+                &overlap_full_rgb[0],
+                &overlap_full_rgb[1],
+                &overlap_full_rgb[2]);
         } else {
             sixel_builtin_psd_blend_effect_rgb(
                 overlap_tmp_rgb[0],
