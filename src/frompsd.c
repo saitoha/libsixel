@@ -89,6 +89,7 @@
 #define SIXEL_BUILTIN_PSD_STROKE_APPLY_DUAL 3
 #define SIXEL_BUILTIN_PSD_DUAL_OVL_DEFAULT 0
 #define SIXEL_BUILTIN_PSD_DUAL_OVL_FXPRI_INSIDE 1
+#define SIXEL_BUILTIN_PSD_DUAL_OVL_FRFX_ONLY_DEFER 2
 
 #if defined(_MSC_VER)
 # define SIXEL_PSD_TRACE_TLS __declspec(thread)
@@ -275,6 +276,11 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
                "applying deferred vector stroke and layer effect stroke on "
                "clipped group") != NULL) {
         return "FX_DUAL_SOURCE_DEFER";
+    }
+    if (strstr(message,
+               "applying FrFX-only deferred stroke on clipped group") !=
+            NULL) {
+        return "FX_DUAL_FRFX_ONLY_DEFER";
     }
     if (strstr(message,
                "applying mode-aware dual-stroke blend in layer fallback") !=
@@ -24523,6 +24529,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     int dual_ovl_policy;
     int use_fxpri_inside_dual;
     int traced_fxpri_dual;
+    int traced_frfx_only_defer;
     int vector_cap_enabled;
     int traced_vector_cap_skip;
     float vector_stroke_opacity;
@@ -24612,6 +24619,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     dual_ovl_policy = SIXEL_BUILTIN_PSD_DUAL_OVL_DEFAULT;
     use_fxpri_inside_dual = 0;
     traced_fxpri_dual = 0;
+    traced_frfx_only_defer = 0;
     vector_cap_enabled = 1;
     traced_vector_cap_skip = 0;
     vector_stroke_opacity = 0.0f;
@@ -24726,7 +24734,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             stroke_position == SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE &&
             vector_stroke_position == SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
             use_fxpri_inside_dual = 1;
-            dual_ovl_policy = SIXEL_BUILTIN_PSD_DUAL_OVL_FXPRI_INSIDE;
+            dual_ovl_policy = SIXEL_BUILTIN_PSD_DUAL_OVL_FRFX_ONLY_DEFER;
         }
     }
     if (apply_dual_stroke != 0 &&
@@ -24832,10 +24840,12 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             float vector_stroke_outer_coverage;
             float vector_stroke_alpha = 0.0f;
             float vector_stroke_outer_alpha = 0.0f;
+            float dual_blend_vector_alpha = 0.0f;
             float final_stroke_alpha;
             float final_stroke_outer_alpha;
             float union_stroke_alpha = 0.0f;
             float union_stroke_outer_alpha = 0.0f;
+            int frfx_only_pixel;
             float base_alpha;
             float base_r;
             float base_g;
@@ -24844,6 +24854,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             float blended_g;
             float blended_b;
 
+            frfx_only_pixel = 0;
             idx = row_offset + x;
             local_x = (int)x - layer->left;
             local_y = (int)y - layer->top;
@@ -25376,11 +25387,23 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             }
             final_stroke_alpha = effective_stroke_alpha;
             final_stroke_outer_alpha = effective_stroke_outer_alpha;
+            if (dual_ovl_policy ==
+                    SIXEL_BUILTIN_PSD_DUAL_OVL_FRFX_ONLY_DEFER &&
+                vector_stroke_alpha >
+                    effective_stroke_alpha + 0.0001f) {
+                frfx_only_pixel = 1;
+            }
             if (apply_dual_stroke != 0 &&
                 vector_stroke_alpha > 0.0f &&
                 effective_stroke_alpha > 0.0f) {
                 if (dual_ovl_policy ==
                     SIXEL_BUILTIN_PSD_DUAL_OVL_FXPRI_INSIDE) {
+                    final_stroke_alpha = effective_stroke_alpha;
+                    final_stroke_outer_alpha =
+                        effective_stroke_outer_alpha;
+                } else if (dual_ovl_policy ==
+                               SIXEL_BUILTIN_PSD_DUAL_OVL_FRFX_ONLY_DEFER &&
+                           frfx_only_pixel != 0) {
                     final_stroke_alpha = effective_stroke_alpha;
                     final_stroke_outer_alpha =
                         effective_stroke_outer_alpha;
@@ -25472,6 +25495,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             if (apply_dual_stroke != 0 &&
                 vector_stroke_alpha > 0.0f &&
                 effective_stroke_alpha > 0.0f) {
+                dual_blend_vector_alpha = vector_stroke_alpha;
                 /*
                  * Keep base dual-stroke diagnostic codes visible even when
                  * clbl=1 ownership defers actual blending to clipped groups.
@@ -25519,6 +25543,18 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                         "dual-stroke overlap on clipped group");
                     traced_fxpri_dual = 1;
                 }
+                if (dual_ovl_policy ==
+                        SIXEL_BUILTIN_PSD_DUAL_OVL_FRFX_ONLY_DEFER &&
+                    frfx_only_pixel != 0) {
+                    dual_blend_vector_alpha = 0.0f;
+                    if (traced_frfx_only_defer == 0) {
+                        sixel_builtin_psd_trace_message(
+                            "psd_decode",
+                            "builtin PSD: applying FrFX-only deferred "
+                            "stroke on clipped group");
+                        traced_frfx_only_defer = 1;
+                    }
+                }
                 sixel_builtin_psd_blend_dual_stroke_rgb(
                     base_r,
                     base_g,
@@ -25528,7 +25564,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     effective_stroke_alpha,
                     vector_stroke_rgb,
                     layer->vector_stroke_mode,
-                    vector_stroke_alpha,
+                    dual_blend_vector_alpha,
                     dual_ovl_policy,
                     &blended_r,
                     &blended_g,
