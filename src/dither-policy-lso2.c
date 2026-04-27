@@ -714,7 +714,6 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     unsigned char *palette;
     float *source_pixel;
     float quantized_float;
-    unsigned char quantized[SIXEL_MAX_CHANNELS] = { 0 };
     float palette_value_float;
     unsigned char palette_value;
     float error;
@@ -740,8 +739,6 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     int float_depth;
     float lookup_pixel_float[SIXEL_MAX_CHANNELS] = { 0.0f };
     unsigned char const *lookup_pixel;
-    int lookup_wants_float;
-    int need_float_pixel;
     int have_palette_float;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
@@ -779,8 +776,6 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     palette_float = NULL;
     float_depth = 0;
     lookup_pixel = NULL;
-    lookup_wants_float = 0;
-    need_float_pixel = 0;
     have_palette_float = 0;
     transparent_mask = NULL;
     transparent_mask_size = 0U;
@@ -866,27 +861,13 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                 if (source_pixel == data + base) {
                     source_pixel[n] = quantized_float;
                 }
-                if (need_float_pixel) {
-                    lookup_pixel_float[n] = quantized_float;
-                }
-                if (!lookup_wants_float) {
-                    quantized[n] = sixel_pixelformat_float_channel_to_byte(
-                        context->pixelformat,
-                        n,
-                        quantized_float);
-                }
+                lookup_pixel_float[n] = quantized_float;
             }
 
-            if (lookup_wants_float) {
-                lookup_pixel = (unsigned char const *)(void const *)
-                    lookup_pixel_float;
-                color_index = context->lookup_map(context->lookup_policy,
-                                                  lookup_pixel);
-            } else {
-                lookup_pixel = quantized;
-                color_index = context->lookup_map(context->lookup_policy,
-                                                  lookup_pixel);
-            }
+            lookup_pixel = (unsigned char const *)(void const *)
+                lookup_pixel_float;
+            color_index = context->lookup_map(context->lookup_policy,
+                                              lookup_pixel);
 
             output_index = color_index;
             if (absolute_y >= context->output_start) {

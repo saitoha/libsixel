@@ -3449,11 +3449,8 @@ sixel_dither_apply_interframe_float32(
     int pos;
     size_t base;
     float *source_pixel;
-    /* Keep lookup inputs initialized across all branch combinations. */
-    unsigned char quantized[SIXEL_MAX_CHANNELS] = { 0 };
     unsigned char corrected[SIXEL_MAX_CHANNELS] = { 0 };
     float working_float[SIXEL_MAX_CHANNELS] = { 0.0f };
-    float lookup_pixel_float[SIXEL_MAX_CHANNELS] = { 0.0f };
     int color_index;
     int output_index;
     unsigned char palette_value_u8;
@@ -3463,8 +3460,6 @@ sixel_dither_apply_interframe_float32(
     float *data;
     unsigned char *palette;
     unsigned char const *lookup_pixel;
-    int lookup_wants_float;
-    int need_float_pixel;
     int have_palette_float;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
@@ -3528,8 +3523,6 @@ sixel_dither_apply_interframe_float32(
     }
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
-    lookup_wants_float = 1;
-    need_float_pixel = 1;
     /*
      * Remember whether each palette buffer exposes float32 components so
      * later loops can preserve precision instead of converting back to
@@ -3681,38 +3674,16 @@ sixel_dither_apply_interframe_float32(
                         working_float,                                  \
                         corrected);                                     \
                 }                                                       \
-                for (n = 0; n < context->depth; ++n) {                 \
-                    quantized[n] = corrected[n];                        \
-                    if (need_float_pixel) {                             \
-                        lookup_pixel_float[n] = working_float[n];       \
-                    }                                                   \
-                }                                                       \
             } else {                                                    \
                 for (n = 0; n < context->depth; ++n) {                 \
                     working_float[n] = source_pixel[n];                 \
-                    if (!lookup_wants_float) {                         \
-                        quantized[n]                                    \
-                            = sixel_pixelformat_float_channel_to_byte(  \
-                                context->pixelformat,                   \
-                                n,                                      \
-                                source_pixel[n]);                       \
-                    }                                                   \
-                    if (need_float_pixel) {                             \
-                        lookup_pixel_float[n] = working_float[n];       \
-                    }                                                   \
                 }                                                       \
             }                                                           \
                                                                         \
-            if (lookup_wants_float) {                                   \
-                lookup_pixel = (unsigned char const *)(void const *)    \
-                    working_float;                                      \
-                color_index = context->lookup_map(context->lookup_policy,\
-                                                  lookup_pixel);         \
-            } else {                                                    \
-                lookup_pixel = quantized;                               \
-                color_index = context->lookup_map(context->lookup_policy,\
-                                                  lookup_pixel);         \
-            }                                                           \
+            lookup_pixel = (unsigned char const *)(void const *)        \
+                working_float;                                          \
+            color_index = context->lookup_map(context->lookup_policy,   \
+                                              lookup_pixel);             \
                                                                         \
                 output_index = color_index;                             \
                 if (absolute_y >= context->output_start) {              \

@@ -322,11 +322,8 @@ sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
     float jitter_scale;
     float noise;
     float val;
-    unsigned char quantized[SIXEL_MAX_CHANNELS];
     float lookup_pixel_float[SIXEL_MAX_CHANNELS];
     unsigned char const *lookup_pixel;
-    int lookup_wants_float;
-    int need_float_pixel;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -348,11 +345,8 @@ sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
     jitter_scale = 32.0f / 255.0f;
     noise = 0.0f;
     val = 0.0f;
-    memset(quantized, 0, sizeof(quantized));
     memset(lookup_pixel_float, 0, sizeof(lookup_pixel_float));
     lookup_pixel = NULL;
-    lookup_wants_float = 0;
-    need_float_pixel = 0;
     transparent_mask = NULL;
     transparent_mask_size = 0U;
     transparent_keycolor = -1;
@@ -417,27 +411,13 @@ sixel_dither_apply_a_dither_float32(sixel_dither_t *dither,
                     context->pixelformat,
                     d,
                     val);
-                if (need_float_pixel) {
-                    lookup_pixel_float[d] = val;
-                }
-                if (!lookup_wants_float) {
-                    quantized[d] = sixel_pixelformat_float_channel_to_byte(
-                        context->pixelformat,
-                        d,
-                        val);
-                }
+                lookup_pixel_float[d] = val;
             }
 
-            if (lookup_wants_float) {
-                lookup_pixel = (unsigned char const *)(void const *)
-                    lookup_pixel_float;
-                color_index = context->lookup_map(context->lookup_policy,
-                                                  lookup_pixel);
-            } else {
-                lookup_pixel = quantized;
-                color_index = context->lookup_map(context->lookup_policy,
-                                                  lookup_pixel);
-            }
+            lookup_pixel = (unsigned char const *)(void const *)
+                lookup_pixel_float;
+            color_index = context->lookup_map(context->lookup_policy,
+                                              lookup_pixel);
 
             if (absolute_y >= context->output_start) {
                 context->result[pos] = (sixel_index_t)color_index;
