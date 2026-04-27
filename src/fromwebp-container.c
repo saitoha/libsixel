@@ -576,10 +576,39 @@ sixel_webp_anim_canvas_is_supported(sixel_webp_container_info_t const *info)
     return 1;
 }
 
+static sixel_webp_anim_unsupported_reason_t
+sixel_webp_anim_detect_limit_reason(sixel_webp_container_info_t const *info)
+{
+    uint64_t pixel_count;
+
+    pixel_count = 0u;
+    if (info == NULL) {
+        return SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE;
+    }
+    if (info->anmf_count > SIXEL_WEBP_MAX_ANIMATION_FRAMES) {
+        return SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_FRAME_LIMIT;
+    }
+    if (info->canvas_width > (uint32_t)SIXEL_WEBP_MAX_DIMENSION ||
+        info->canvas_height > (uint32_t)SIXEL_WEBP_MAX_DIMENSION) {
+        return SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_DIMENSION_LIMIT;
+    }
+    if (info->canvas_width == 0u || info->canvas_height == 0u) {
+        return SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE;
+    }
+    pixel_count = (uint64_t)info->canvas_width * (uint64_t)info->canvas_height;
+    if (pixel_count > (uint64_t)SIXEL_WEBP_MAX_IMAGE_PIXELS) {
+        return SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_PIXEL_LIMIT;
+    }
+    return SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE;
+}
+
 SIXELSTATUS
 sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
                              sixel_webp_decode_plan_t *plan)
 {
+    sixel_webp_anim_unsupported_reason_t anim_limit_reason;
+
+    anim_limit_reason = SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE;
     if (info == NULL || plan == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -588,13 +617,14 @@ sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
     plan->kind = SIXEL_WEBP_CONTAINER_KIND_CORRUPT;
     if (info->anim_count != 0u || info->anmf_count != 0u ||
         ((info->vp8x_flags & SIXEL_WEBP_VP8X_ANIMATION_FLAG) != 0u)) {
+        anim_limit_reason = sixel_webp_anim_detect_limit_reason(info);
         if (info->vp8x_count == 1u &&
             (info->vp8x_flags & SIXEL_WEBP_VP8X_ANIMATION_FLAG) != 0u &&
             info->anim_count != 0u &&
             info->anmf_count != 0u &&
             info->anim.payload_size == 6u &&
             info->anmf.payload_size >= 24u &&
-            info->anmf_count <= SIXEL_WEBP_MAX_ANIMATION_FRAMES &&
+            anim_limit_reason == SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE &&
             sixel_webp_anim_canvas_is_supported(info) != 0) {
             plan->kind = SIXEL_WEBP_CONTAINER_KIND_ANIM_MVP;
             plan->meta_has_iccp = info->iccp_count != 0u ? 1 : 0;
@@ -610,9 +640,12 @@ sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
             plan->canvas_height = (int)info->canvas_height;
             plan->anim_loop_count = (int)info->anim_loop_count;
             plan->anim_frame_count = (int)info->anmf_count;
+            plan->anim_unsupported_reason =
+                SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE;
             return SIXEL_OK;
         }
         plan->kind = SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM;
+        plan->anim_unsupported_reason = anim_limit_reason;
         return SIXEL_OK;
     }
 

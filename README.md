@@ -1214,6 +1214,8 @@ also treated as malformed input and map to stream error contracts.
 VP8 and `VP8+ALPH` decode failures are normalized to `W_ERR_VP8_STREAM`.
 `W_UNSUP_ANIM` is reserved for animation policy limits
 (`frame_count`/canvas ceilings) only.
+Limit reasons are exposed as `W_UNSUP_ANIM_FRAME_LIMIT`,
+`W_UNSUP_ANIM_DIMENSION_LIMIT`, and `W_UNSUP_ANIM_PIXEL_LIMIT`.
 For static decode,
 embedded `ICCP` is applied when builtin CMS is enabled and embedded `EXIF`
 orientation is applied when builtin orientation handling is enabled.

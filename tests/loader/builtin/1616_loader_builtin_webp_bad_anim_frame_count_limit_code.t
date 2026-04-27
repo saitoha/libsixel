@@ -48,5 +48,10 @@ test "${diag_line#*W_UNSUP_ANIM*}" != "${diag_line}" || {
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader corrupted fixture bad_anim_frame_count_exceeds_limit.webp emits W_UNSUP_ANIM contract code"
+test "${diag_line#*W_UNSUP_ANIM_FRAME_LIMIT*}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader corrupted fixture bad_anim_frame_count_exceeds_limit.webp missing W_UNSUP_ANIM_FRAME_LIMIT contract code"
+    exit 0
+}
+
+echo "ok" 1 - "forced builtin loader corrupted fixture bad_anim_frame_count_exceeds_limit.webp emits W_UNSUP_ANIM_FRAME_LIMIT contract code"
 exit 0

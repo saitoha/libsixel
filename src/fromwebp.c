@@ -223,8 +223,29 @@ sixel_webp_apply_decode_plan(sixel_webp_decode_plan_t const *plan)
         status = SIXEL_OK;
         break;
     case SIXEL_WEBP_CONTAINER_KIND_ANIM_MVP:
+        sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_UNSUP_ANIM);
+        sixel_helper_set_additional_message(
+            "builtin webp: animated WebP is not supported.");
+        status = SIXEL_NOT_IMPLEMENTED;
+        break;
     case SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM:
         sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_UNSUP_ANIM);
+        switch (plan->anim_unsupported_reason) {
+        case SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_FRAME_LIMIT:
+            sixel_webp_trace_contract_add_code(
+                SIXEL_WEBP_CODE_UNSUP_ANIM_FRAME_LIMIT);
+            break;
+        case SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_DIMENSION_LIMIT:
+            sixel_webp_trace_contract_add_code(
+                SIXEL_WEBP_CODE_UNSUP_ANIM_DIMENSION_LIMIT);
+            break;
+        case SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_PIXEL_LIMIT:
+            sixel_webp_trace_contract_add_code(
+                SIXEL_WEBP_CODE_UNSUP_ANIM_PIXEL_LIMIT);
+            break;
+        default:
+            break;
+        }
         sixel_helper_set_additional_message(
             "builtin webp: animated WebP is not supported.");
         status = SIXEL_NOT_IMPLEMENTED;

@@ -64,6 +64,10 @@
 #define SIXEL_WEBP_CODE_META_EXIF_IGNORED "W_META_EXIF_IGNORED"
 #define SIXEL_WEBP_CODE_META_XMP_IGNORED "W_META_XMP_IGNORED"
 #define SIXEL_WEBP_CODE_UNSUP_ANIM "W_UNSUP_ANIM"
+#define SIXEL_WEBP_CODE_UNSUP_ANIM_FRAME_LIMIT "W_UNSUP_ANIM_FRAME_LIMIT"
+#define SIXEL_WEBP_CODE_UNSUP_ANIM_DIMENSION_LIMIT \
+    "W_UNSUP_ANIM_DIMENSION_LIMIT"
+#define SIXEL_WEBP_CODE_UNSUP_ANIM_PIXEL_LIMIT "W_UNSUP_ANIM_PIXEL_LIMIT"
 #define SIXEL_WEBP_CODE_ERR_RIFF_SIGNATURE "W_ERR_RIFF_SIGNATURE"
 #define SIXEL_WEBP_CODE_ERR_RIFF_HEADER_TRUNC "W_ERR_RIFF_HEADER_TRUNC"
 #define SIXEL_WEBP_CODE_ERR_RIFF_SIZE_FIELD "W_ERR_RIFF_SIZE_FIELD"
@@ -107,6 +111,13 @@ typedef enum sixel_webp_container_kind {
     SIXEL_WEBP_CONTAINER_KIND_ANIM_MVP,
     SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM
 } sixel_webp_container_kind_t;
+
+typedef enum sixel_webp_anim_unsupported_reason {
+    SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE = 0,
+    SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_FRAME_LIMIT,
+    SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_DIMENSION_LIMIT,
+    SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_PIXEL_LIMIT
+} sixel_webp_anim_unsupported_reason_t;
 
 typedef struct sixel_webp_chunk_ref {
     int present;
@@ -167,6 +178,7 @@ typedef struct sixel_webp_decode_plan {
     int canvas_height;
     int anim_loop_count;
     int anim_frame_count;
+    sixel_webp_anim_unsupported_reason_t anim_unsupported_reason;
 } sixel_webp_decode_plan_t;
 
 SIXEL_INTERNAL_API SIXELSTATUS
