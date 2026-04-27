@@ -19713,103 +19713,6 @@ sixel_builtin_psd_composite_layer_over(
 }
 
 static void
-sixel_builtin_psd_composite_layer_alpha_over(
-    float *dst_alpha_map,
-    unsigned int canvas_width,
-    unsigned int canvas_height,
-    sixel_builtin_psd_layer_record_t const *layer,
-    sixel_builtin_psd_layer_buffers_t const *src,
-    float const *clip_alpha_map)
-{
-    unsigned int x;
-    unsigned int y;
-    size_t src_index;
-    size_t dst_index;
-    int dst_x;
-    int dst_y;
-
-    x = 0u;
-    y = 0u;
-    src_index = 0u;
-    dst_index = 0u;
-    dst_x = 0;
-    dst_y = 0;
-    if (dst_alpha_map == NULL || layer == NULL || src == NULL ||
-        src->alpha == NULL) {
-        return;
-    }
-    for (y = 0u; y < layer->height; ++y) {
-        dst_y = layer->top + (int)y;
-        if (dst_y < 0 || dst_y >= (int)canvas_height) {
-            continue;
-        }
-        for (x = 0u; x < layer->width; ++x) {
-            float as;
-            float ab;
-            float out_a;
-
-            dst_x = layer->left + (int)x;
-            if (dst_x < 0 || dst_x >= (int)canvas_width) {
-                continue;
-            }
-            src_index = (size_t)y * (size_t)layer->width + (size_t)x;
-            dst_index = (size_t)dst_y * (size_t)canvas_width + (size_t)dst_x;
-            as = src->alpha[src_index];
-            if (clip_alpha_map != NULL) {
-                as *= sixel_builtin_psd_clamp_alpha_float32(
-                    clip_alpha_map[dst_index]);
-            }
-            if (layer->has_vector_mask_bbox != 0) {
-                float xn;
-                float yn;
-                float cover_left;
-                float cover_right;
-                float cover_top;
-                float cover_bottom;
-                float mask_cover;
-
-                xn = ((float)dst_x + 0.5f) / (float)canvas_width;
-                yn = ((float)dst_y + 0.5f) / (float)canvas_height;
-                cover_left = sixel_builtin_psd_clamp01(
-                    (xn - layer->vector_mask_left_norm) *
-                    (float)canvas_width + 1.0f);
-                cover_right = sixel_builtin_psd_clamp01(
-                    (layer->vector_mask_right_norm - xn) *
-                    (float)canvas_width + 1.0f);
-                cover_top = sixel_builtin_psd_clamp01(
-                    (yn - layer->vector_mask_top_norm) *
-                    (float)canvas_height + 1.0f);
-                cover_bottom = sixel_builtin_psd_clamp01(
-                    (layer->vector_mask_bottom_norm - yn) *
-                    (float)canvas_height + 1.0f);
-                mask_cover = cover_left;
-                if (mask_cover > cover_right) {
-                    mask_cover = cover_right;
-                }
-                if (mask_cover > cover_top) {
-                    mask_cover = cover_top;
-                }
-                if (mask_cover > cover_bottom) {
-                    mask_cover = cover_bottom;
-                }
-                as *= mask_cover;
-                if (mask_cover <= 0.0f) {
-                    continue;
-                }
-            }
-            as = sixel_builtin_psd_clamp_alpha_float32(as);
-            if (as <= 0.0f) {
-                continue;
-            }
-            ab = sixel_builtin_psd_clamp_alpha_float32(dst_alpha_map[dst_index]);
-            out_a = as + ab - as * ab;
-            dst_alpha_map[dst_index] = sixel_builtin_psd_clamp_alpha_float32(
-                out_a);
-        }
-    }
-}
-
-static void
 sixel_builtin_psd_build_clip_alpha_map(
     float *clip_alpha_map,
     unsigned int canvas_width,
@@ -26133,7 +26036,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     int traced_clip_sibling_harden;
     int traced_dual_stroke_deferred_ownership;
     int apply_effects_subset;
-    int pending_overlay_fill_coverage_recorded;
     sixel_builtin_psd_layer_record_t pending_overlay_layer;
     SIXELSTATUS status;
 
@@ -26189,7 +26091,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     traced_clip_sibling_harden = 0;
     traced_dual_stroke_deferred_ownership = 0;
     apply_effects_subset = 0;
-    pending_overlay_fill_coverage_recorded = 0;
     memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
     status = SIXEL_FALSE;
 
@@ -26484,6 +26385,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                  * Snapshot the group backdrop before deferred overlays/strokes
                  * so every deferred effect in this flush reads the same input.
                  */
+                memcpy(pending_overlay_fill_coverage_map,
+                       group_canvas_alpha,
+                       pixel_count * sizeof(float));
                 memcpy(group_backdrop_rgb_premul,
                        group_rgb_premul,
                        pixel_count * 3u * sizeof(float));
@@ -26491,6 +26395,9 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                        group_canvas_alpha,
                        pixel_count * sizeof(float));
             } else {
+                memset(pending_overlay_fill_coverage_map,
+                       0,
+                       pixel_count * sizeof(float));
                 memset(group_backdrop_rgb_premul,
                        0,
                        pixel_count * 3u * sizeof(float));
@@ -26948,7 +26855,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         has_adjacent_clipping_child = 0;
         has_deferred_dual_owner =
             deferred_dual_stroke_owner_map[(size_t)i] != 0 ? 1 : 0;
-        pending_overlay_fill_coverage_recorded = 0;
         if (step == 1 && apply_clipping == 0) {
             next_index = (size_t)(i + 1);
             if (next_index < model.layer_count &&
@@ -27188,23 +27094,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 effective_composite_layer->has_effect_outer_glow != 0 ||
                 effective_composite_layer->has_effect_inner_glow != 0;
         }
-        if (pending_clip_group_overlay != 0 &&
-            group_active != 0 &&
-            pending_overlay_fill_coverage_recorded == 0) {
-            /*
-             * Deferred overlay coverage must use the clipped-group input alpha
-             * before layer effects expand src_layer alpha.
-             */
-            sixel_builtin_psd_composite_layer_alpha_over(
-                pending_overlay_fill_coverage_map,
-                info->width,
-                info->height,
-                effective_composite_layer,
-                &src_layer,
-                apply_clipping != 0 ? clip_alpha_map : NULL);
-            pending_overlay_fill_coverage_valid = 1;
-            pending_overlay_fill_coverage_recorded = 1;
-        }
         if (defer_clip_group_overlay == 0 &&
             apply_effects_subset != 0) {
             sixel_builtin_psd_apply_layer_effects_subset(
@@ -27313,21 +27202,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         }
         if (pending_clip_group_overlay != 0 &&
             group_active != 0) {
-            /*
-             * Keep deferred overlay coverage deterministic. If this layer was
-             * not recorded in the pre-effect pass above, fall back here.
-             */
-            if (pending_overlay_fill_coverage_recorded == 0) {
-                sixel_builtin_psd_composite_layer_alpha_over(
-                    pending_overlay_fill_coverage_map,
-                    info->width,
-                    info->height,
-                    effective_composite_layer,
-                    &src_layer,
-                    apply_clipping != 0 ? clip_alpha_map : NULL);
-                pending_overlay_fill_coverage_valid = 1;
-                pending_overlay_fill_coverage_recorded = 1;
-            }
             sixel_builtin_psd_composite_layer_over(
                 group_rgb_premul,
                 group_canvas_alpha,
@@ -27351,23 +27225,29 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         composed_layer_count++;
         sixel_builtin_psd_layer_buffers_destroy(chunk->allocator, &src_layer);
     }
-    if (pending_clip_group_overlay != 0) {
-        pending_overlay_fill_coverage_valid = group_active != 0 ? 1 : 0;
-        if (group_active != 0) {
-            /*
-             * Final deferred flush must reuse the same pre-effect group
-             * backdrop for all deferred effect passes.
-             */
-            memcpy(group_backdrop_rgb_premul,
-                   group_rgb_premul,
-                   pixel_count * 3u * sizeof(float));
-            memcpy(group_backdrop_alpha,
-                   group_canvas_alpha,
-                   pixel_count * sizeof(float));
-        } else {
-            memset(group_backdrop_rgb_premul,
-                   0,
-                   pixel_count * 3u * sizeof(float));
+        if (pending_clip_group_overlay != 0) {
+            pending_overlay_fill_coverage_valid = group_active != 0 ? 1 : 0;
+            if (group_active != 0) {
+                /*
+                 * Final deferred flush must reuse the same pre-effect group
+                 * backdrop for all deferred effect passes.
+                 */
+                memcpy(pending_overlay_fill_coverage_map,
+                       group_canvas_alpha,
+                       pixel_count * sizeof(float));
+                memcpy(group_backdrop_rgb_premul,
+                       group_rgb_premul,
+                       pixel_count * 3u * sizeof(float));
+                memcpy(group_backdrop_alpha,
+                       group_canvas_alpha,
+                       pixel_count * sizeof(float));
+            } else {
+                memset(pending_overlay_fill_coverage_map,
+                       0,
+                       pixel_count * sizeof(float));
+                memset(group_backdrop_rgb_premul,
+                       0,
+                       pixel_count * 3u * sizeof(float));
             memset(group_backdrop_alpha,
                    0,
                    pixel_count * sizeof(float));
@@ -27393,8 +27273,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 pending_overlay_fill_coverage_valid != 0
                     ? pending_overlay_fill_coverage_map
                     : NULL,
-                NULL,
-                NULL,
+                group_backdrop_rgb_premul,
+                group_backdrop_alpha,
                 info->width,
                 info->height,
                 &pending_overlay_layer);
@@ -27405,8 +27285,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 pending_overlay_fill_coverage_valid != 0
                     ? pending_overlay_fill_coverage_map
                     : NULL,
-                NULL,
-                NULL,
+                group_backdrop_rgb_premul,
+                group_backdrop_alpha,
                 info->width,
                 info->height,
                 &pending_overlay_layer);
