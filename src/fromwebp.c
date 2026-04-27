@@ -705,6 +705,56 @@ end:
 }
 
 static SIXELSTATUS
+sixel_webp_validate_anim_alpha_flag(sixel_webp_anim_stream_t const *stream,
+                                    unsigned int vp8x_flags)
+{
+    unsigned int alpha_flag_set;
+    int has_vp8_frame;
+    int has_vp8_alpha_frame;
+    int frame_index;
+
+    alpha_flag_set = 0u;
+    has_vp8_frame = 0;
+    has_vp8_alpha_frame = 0;
+    frame_index = 0;
+
+    if (stream == NULL || stream->frames == NULL || stream->frame_count <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    alpha_flag_set = (vp8x_flags & SIXEL_WEBP_VP8X_ALPHA_FLAG) != 0u;
+    for (frame_index = 0; frame_index < stream->frame_count; ++frame_index) {
+        if (stream->frames[frame_index].kind ==
+            SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC) {
+            has_vp8_frame = 1;
+            has_vp8_alpha_frame = 1;
+            break;
+        }
+        if (stream->frames[frame_index].kind ==
+            SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC) {
+            has_vp8_frame = 1;
+        }
+    }
+
+    /*
+     * Keep this check scoped to VP8-based animation frames. VP8L-only
+     * animation streams keep current behavior in this phase.
+     */
+    if (has_vp8_frame == 0) {
+        return SIXEL_OK;
+    }
+
+    if ((alpha_flag_set != 0u && has_vp8_alpha_frame == 0) ||
+        (alpha_flag_set == 0u && has_vp8_alpha_frame != 0)) {
+        sixel_helper_set_additional_message(
+            "builtin webp: VP8X alpha flag does not match ANMF VP8+alpha "
+            "frames.");
+        return SIXEL_BAD_INPUT;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
                                   sixel_allocator_t *allocator,
                                   unsigned char **prgba,
@@ -1083,6 +1133,13 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
         } else {
             sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_ERR_VP8_STREAM);
         }
+        goto end;
+    }
+    status = sixel_webp_validate_anim_alpha_flag(&stream,
+                                                 container.vp8x_flags);
+    if (SIXEL_FAILED(status)) {
+        sixel_webp_trace_contract_add_code(
+            SIXEL_WEBP_CODE_ERR_VP8X_FLAG_ALPHA_MISMATCH);
         goto end;
     }
     if ((size_t)stream.canvas_width > SIZE_MAX / (size_t)stream.canvas_height ||

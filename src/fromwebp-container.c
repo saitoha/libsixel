@@ -288,6 +288,14 @@ sixel_webp_validate_vp8x_flags(sixel_webp_container_info_t const *info)
         return sixel_webp_parse_fail(
             SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_ANIM_MISMATCH);
     }
+    /*
+     * Animated streams carry frame-local alpha inside each ANMF payload.
+     * Reject top-level alpha chunks for ANIM containers as malformed input.
+     */
+    if (is_anim_container != 0u && has_alpha_chunk != 0u) {
+        return sixel_webp_parse_fail(
+            SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_ALPHA_MISMATCH);
+    }
     if (is_anim_container == 0u) {
         if (alpha_flag_set != has_alpha_chunk) {
             return sixel_webp_parse_fail(

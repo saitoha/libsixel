@@ -1207,6 +1207,9 @@ treated as malformed input. `VP8X` metadata flag mismatches
 (`ICCP`/`EXIF`/`XMP`/`ANIM`) are also treated as malformed input. In static decode,
 `ALPH` chunk usage is validated strictly as malformed input when `VP8X` alpha
 flags or `VP8` payload presence are inconsistent.
+In animation decode, alpha consistency is validated as malformed input when
+the `VP8X` alpha flag does not match `ANMF` `VP8+ALPH` frame presence, and
+top-level `ALPH` chunks are rejected for animated streams.
 For static decode,
 embedded `ICCP` is applied when builtin CMS is enabled and embedded `EXIF`
 orientation is applied when builtin orientation handling is enabled.
