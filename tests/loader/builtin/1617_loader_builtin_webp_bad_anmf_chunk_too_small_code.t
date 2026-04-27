@@ -43,10 +43,10 @@ test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
     exit 0
 }
 
-test "${diag_line#*W_ERR_VP8X_FLAG_ANIM_MISMATCH*}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader corrupted fixture bad_anmf_chunk_too_small.webp missing W_ERR_VP8X_FLAG_ANIM_MISMATCH contract code"
+test "${diag_line#*W_ERR_ANMF_CHUNK_SIZE*}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader corrupted fixture bad_anmf_chunk_too_small.webp missing W_ERR_ANMF_CHUNK_SIZE contract code"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader corrupted fixture bad_anmf_chunk_too_small.webp emits W_ERR_VP8X_FLAG_ANIM_MISMATCH contract code"
+echo "ok" 1 - "forced builtin loader corrupted fixture bad_anmf_chunk_too_small.webp emits W_ERR_ANMF_CHUNK_SIZE contract code"
 exit 0

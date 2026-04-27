@@ -98,7 +98,9 @@ typedef enum sixel_webp_parse_error_id {
     SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_EXIF_MISMATCH,
     SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_XMP_MISMATCH,
     SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_ANIM_MISMATCH,
-    SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_ALPHA_MISMATCH
+    SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_ALPHA_MISMATCH,
+    SIXEL_WEBP_PARSE_ERR_ANIM_CHUNK_SIZE,
+    SIXEL_WEBP_PARSE_ERR_ANMF_CHUNK_SIZE
 } sixel_webp_parse_error_id_t;
 
 typedef struct sixel_webp_parse_error_entry {
@@ -160,7 +162,11 @@ sixel_webp_parse_error_table[] = {
     { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_VP8X_FLAG_ANIM_MISMATCH,
       "builtin webp: VP8X animation flag does not match ANIM/ANMF chunks." },
     { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_VP8X_FLAG_ALPHA_MISMATCH,
-      "builtin webp: alpha chunk requires VP8 payload and VP8X alpha flag." }
+      "builtin webp: alpha chunk requires VP8 payload and VP8X alpha flag." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_ANIM_CHUNK_SIZE,
+      "builtin webp: ANIM chunk size must be exactly 6 bytes." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_ANMF_CHUNK_SIZE,
+      "builtin webp: ANMF chunk size must be at least 24 bytes." }
 };
 
 static SIXELSTATUS
@@ -236,6 +242,10 @@ sixel_webp_validate_vp8x_flags(sixel_webp_container_info_t const *info)
     }
     has_alpha_chunk = info->alpha_count != 0u;
     if (info->vp8x_count == 0u) {
+        if (info->anim_count != 0u || info->anmf_count != 0u) {
+            return sixel_webp_parse_fail(
+                SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_ANIM_MISMATCH);
+        }
         if (has_alpha_chunk != 0u) {
             return sixel_webp_parse_fail(
                 SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_ALPHA_MISMATCH);
@@ -446,18 +456,24 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
             if (info->anim_count != 0u) {
                 return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_DUP_ANIM);
             }
+            if (chunk_size != 6u) {
+                return sixel_webp_parse_fail(
+                    SIXEL_WEBP_PARSE_ERR_ANIM_CHUNK_SIZE);
+            }
             sixel_webp_record_chunk(&info->anim,
                                     &info->anim_count,
                                     offset,
                                     data + offset + 8u,
                                     chunk_size);
-            if (chunk_size == 6u) {
-                info->anim_background =
-                    sixel_webp_container_read_u32le(data + offset + 8u);
-                info->anim_loop_count = (unsigned int)data[offset + 12u]
-                    | ((unsigned int)data[offset + 13u] << 8);
-            }
+            info->anim_background =
+                sixel_webp_container_read_u32le(data + offset + 8u);
+            info->anim_loop_count = (unsigned int)data[offset + 12u]
+                | ((unsigned int)data[offset + 13u] << 8);
         } else if (fourcc == SIXEL_WEBP_CHUNK_ANMF) {
+            if (chunk_size < 24u) {
+                return sixel_webp_parse_fail(
+                    SIXEL_WEBP_PARSE_ERR_ANMF_CHUNK_SIZE);
+            }
             sixel_webp_record_chunk(&info->anmf,
                                     &info->anmf_count,
                                     offset,
@@ -495,10 +511,7 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
         offset += chunk_total_size;
     }
 
-    /*
-     * Strictly reject VP8X metadata flag mismatches as malformed input.
-     * Alpha-flag alignment is intentionally excluded in this phase.
-     */
+    /* Strictly reject VP8X metadata mismatches as malformed input. */
     status = sixel_webp_validate_vp8x_flags(info);
     if (SIXEL_FAILED(status)) {
         return status;
