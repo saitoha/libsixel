@@ -438,14 +438,19 @@ EXTRA_DIST = $(srcdir)/rgblookup.gperf \
 libobjs: $(libsixel_la_OBJECTS)
 
 if BUILDING_ON_WINDOWS
-# clang-cl/link.exe may emit only the versioned import library
-# (for example '.libs/sixel-1.lib') even when libtool asks for
-# '.libs/sixel.dll.lib'. Dependent targets link against the latter,
-# so provide the expected alias after building libsixel.la.
-all-local: libsixel.la
-	@if test -f .libs/sixel-$(LS_LT_CURRENT).lib; then \
+if USING_CL
+# clang-cl/link.exe may emit only versioned import libraries such as
+# '.libs/sixel-1.lib'. Provide the stable '.libs/sixel.dll.lib' alias
+# explicitly so dependent program links can always resolve it.
+$(top_builddir)/src/.libs/sixel.dll.lib: libsixel.la
+	@if test -f .libs/sixel.dll.lib; then \
+		:; \
+	elif test -f .libs/sixel-$(LS_LT_CURRENT).lib; then \
 		cp .libs/sixel-$(LS_LT_CURRENT).lib .libs/sixel.dll.lib; \
+	elif test -f .libs/sixel.lib; then \
+		cp .libs/sixel.lib .libs/sixel.dll.lib; \
 	fi
+endif
 endif
 
 GPERF_OPT=--ignore-case --language=ANSI-C

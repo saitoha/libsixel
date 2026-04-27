@@ -173,6 +173,11 @@ img2sixel_LDADD += \
 if HAVE_ABORT_TRACE
 img2sixel_LDADD += $(ABORTTRACE_LIBS)
 endif
+if BUILDING_ON_WINDOWS
+if USING_CL
+img2sixel_DEPENDENCIES += $(top_builddir)/src/.libs/sixel.dll.lib
+endif
+endif
 endif
 dist_man_MANS += $(srcdir)/img2sixel.1
 dist_bashcompletion_DATA += $(srcdir)/shell-completion/bash/img2sixel
@@ -224,6 +229,11 @@ sixel2png_LDADD += \
         @THREAD_CFLAGS@
 if HAVE_ABORT_TRACE
 sixel2png_LDADD += $(ABORTTRACE_LIBS)
+endif
+if BUILDING_ON_WINDOWS
+if USING_CL
+sixel2png_DEPENDENCIES += $(top_builddir)/src/.libs/sixel.dll.lib
+endif
 endif
 endif
 dist_man_MANS += $(srcdir)/sixel2png.1

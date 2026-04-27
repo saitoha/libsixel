@@ -3242,14 +3242,17 @@ uninstall-man: uninstall-man5
 # compilation in other directories with the libsixel link step.
 libobjs: $(libsixel_la_OBJECTS)
 
-# clang-cl/link.exe may emit only the versioned import library
-# (for example '.libs/sixel-1.lib') even when libtool asks for
-# '.libs/sixel.dll.lib'. Dependent targets link against the latter,
-# so provide the expected alias after building libsixel.la.
-@BUILDING_ON_WINDOWS_TRUE@all-local: libsixel.la
-@BUILDING_ON_WINDOWS_TRUE@	@if test -f .libs/sixel-$(LS_LT_CURRENT).lib; then \
-@BUILDING_ON_WINDOWS_TRUE@		cp .libs/sixel-$(LS_LT_CURRENT).lib .libs/sixel.dll.lib; \
-@BUILDING_ON_WINDOWS_TRUE@	fi
+# clang-cl/link.exe may emit only versioned import libraries such as
+# '.libs/sixel-1.lib'. Provide the stable '.libs/sixel.dll.lib' alias
+# explicitly so dependent program links can always resolve it.
+@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@$(top_builddir)/src/.libs/sixel.dll.lib: libsixel.la
+@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@	@if test -f .libs/sixel.dll.lib; then \
+@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@		:; \
+@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@	elif test -f .libs/sixel-$(LS_LT_CURRENT).lib; then \
+@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@		cp .libs/sixel-$(LS_LT_CURRENT).lib .libs/sixel.dll.lib; \
+@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@	elif test -f .libs/sixel.lib; then \
+@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@		cp .libs/sixel.lib .libs/sixel.dll.lib; \
+@BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@	fi
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 gen-rgblookup: $(srcdir)/rgblookup.gperf

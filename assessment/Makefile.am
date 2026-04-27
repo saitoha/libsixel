@@ -114,6 +114,11 @@ lsqa_LDADD += -lm \
         $(QUICKLOOK_LIBS) \
         $(CLIPBOARD_LIBS) \
         @THREAD_LIBS@
+if BUILDING_ON_WINDOWS
+if USING_CL
+lsqa_DEPENDENCIES += $(top_builddir)/src/.libs/sixel.dll.lib
+endif
+endif
 endif
 
 if WITH_SHEBANG_FILE
