@@ -147,21 +147,14 @@ sixel_lookup_policy_mono_lightbg_map_pixel(
     return distant < 128 * object->reqcolor ? 1 : 0;
 }
 
-static sixel_lookup_policy_vtbl_t const
-g_sixel_lookup_policy_mono_lightbg_vtbl = {
-    sixel_lookup_policy_mono_lightbg_ref,
-    sixel_lookup_policy_mono_lightbg_unref,
-    sixel_lookup_policy_mono_lightbg_prepare,
-    sixel_lookup_policy_mono_lightbg_map_pixel,
-};
-
 #if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
 #endif
-SIXELSTATUS
-sixel_lookup_policy_create_mono_lightbg(
-    sixel_lookup_policy_interface_t **policy)
+static SIXELSTATUS
+sixel_lookup_policy_mono_lightbg_create_with_vtbl(
+    sixel_lookup_policy_interface_t **policy,
+    sixel_lookup_policy_vtbl_t const *vtbl)
 {
     sixel_lookup_policy_mono_lightbg_object_t *object;
 
@@ -170,7 +163,7 @@ sixel_lookup_policy_create_mono_lightbg(
         *policy = NULL;
     }
 
-    if (policy == NULL) {
+    if (policy == NULL || vtbl == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -183,7 +176,7 @@ sixel_lookup_policy_create_mono_lightbg(
     }
 
     memset(object, 0, sizeof(*object));
-    object->base.vtbl = &g_sixel_lookup_policy_mono_lightbg_vtbl;
+    object->base.vtbl = vtbl;
     object->ref = 1U;
 
     *policy = &object->base;
@@ -213,28 +206,18 @@ SIXELSTATUS
 sixel_lookup_policy_create_mono_lightbg_8bit(
     sixel_lookup_policy_interface_t **policy)
 {
-    SIXELSTATUS status;
-
-    status = sixel_lookup_policy_create_mono_lightbg(policy);
-    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
-        (*policy)->vtbl = &g_sixel_lookup_policy_mono_lightbg_8bit_vtbl;
-    }
-
-    return status;
+    return sixel_lookup_policy_mono_lightbg_create_with_vtbl(
+        policy,
+        &g_sixel_lookup_policy_mono_lightbg_8bit_vtbl);
 }
 
 SIXELSTATUS
 sixel_lookup_policy_create_mono_lightbg_float32(
     sixel_lookup_policy_interface_t **policy)
 {
-    SIXELSTATUS status;
-
-    status = sixel_lookup_policy_create_mono_lightbg(policy);
-    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
-        (*policy)->vtbl = &g_sixel_lookup_policy_mono_lightbg_float32_vtbl;
-    }
-
-    return status;
+    return sixel_lookup_policy_mono_lightbg_create_with_vtbl(
+        policy,
+        &g_sixel_lookup_policy_mono_lightbg_float32_vtbl);
 }
 
 /* emacs Local Variables:      */

@@ -648,7 +648,6 @@ static SIXELSTATUS
 sixel_dither_prepare_dither_policy(
     sixel_dither_t *dither,
     int depth,
-    int reqcolor,
     int method_for_scan,
     int pixelformat)
 {
@@ -682,7 +681,6 @@ sixel_dither_prepare_dither_policy(
 
     request.dither = dither;
     request.depth = depth;
-    request.reqcolor = reqcolor;
     request.method_for_scan = method_for_scan;
     request.pixelformat = pixelformat;
 
@@ -3114,7 +3112,6 @@ sixel_dither_apply_palette_with_mode(
 
     status = sixel_dither_prepare_dither_policy(dither,
                                                 3,
-                                                dither->ncolors,
                                                 method_for_scan,
                                                 pipeline_pixelformat);
     if (SIXEL_FAILED(status)) {

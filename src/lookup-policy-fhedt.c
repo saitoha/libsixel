@@ -642,13 +642,11 @@ sixel_lookup_policy_fhedt_prepare(
     sixel_lookup_policy_fhedt_object_t *object;
     sixel_lookup_policy_interface_t *reuse_policy;
     sixel_lookup_policy_fhedt_object_t *reuse_object;
-    int expected_float_depth;
 
     status = SIXEL_FALSE;
     object = NULL;
     reuse_policy = NULL;
     reuse_object = NULL;
-    expected_float_depth = 0;
 
     if (policy == NULL || request == NULL || request->palette == NULL
             || request->depth <= 0 || request->reqcolor <= 0
@@ -677,11 +675,6 @@ sixel_lookup_policy_fhedt_prepare(
 
     object->lookup_source_is_float =
         SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
-    expected_float_depth = request->depth * (int)sizeof(float);
-    if (object->lookup_source_is_float != 0
-            && request->palette_float != NULL
-            && request->float_depth >= expected_float_depth) {
-    }
 
     if (reuse_policy != NULL
             && reuse_policy->vtbl == policy->vtbl) {
