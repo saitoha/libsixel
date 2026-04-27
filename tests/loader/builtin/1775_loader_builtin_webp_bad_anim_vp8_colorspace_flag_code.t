@@ -1,0 +1,54 @@
+#!/bin/sh
+# TAP test confirming unsupported VP8 colorspace flag inside ANMF stays UNSUP.
+# Fixture is derived from animated-lossy-8x8-2frame-min.webp by patching
+# first frame VP8 payload byte at offset 0x56 from 0x02 to 0xfd.
+
+set -eux
+
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build\n"
+    exit 0
+}
+
+echo "1..1"
+set -v
+set +x
+
+input_webp="${TOP_SRCDIR}/tests/data/corrupted/bad_anim_vp8_colorspace_flag.webp"
+trace_output=''
+diag_line=''
+command_status=0
+nl='
+'
+
+SIXEL_TRACE_TOPIC=webp_decode
+export SIXEL_TRACE_TOPIC
+trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    -L builtin! -o /dev/null "${input_webp}" 2>&1) || command_status=$?
+
+test "${command_status}" -ne 0 || {
+    echo "not ok" 1 - "forced builtin loader bad_anim_vp8_colorspace_flag.webp unexpectedly succeeded"
+    exit 0
+}
+
+diag_line=${trace_output#*LSXWEBP1\|}
+test "${diag_line}" != "${trace_output}" || {
+    echo "not ok" 1 - "forced builtin loader bad_anim_vp8_colorspace_flag.webp missing LSXWEBP1 contract header"
+    exit 0
+}
+
+diag_line="LSXWEBP1|${diag_line}"
+diag_line=${diag_line%%"${nl}"*}
+
+test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader bad_anim_vp8_colorspace_flag.webp malformed error contract header"
+    exit 0
+}
+
+test "${diag_line#*W_UNSUP_VP8_FEATURE*}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader bad_anim_vp8_colorspace_flag.webp missing W_UNSUP_VP8_FEATURE"
+    exit 0
+}
+
+echo "ok" 1 - "forced builtin loader bad_anim_vp8_colorspace_flag.webp emits W_UNSUP_VP8_FEATURE"
+exit 0
