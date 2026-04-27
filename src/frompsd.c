@@ -24958,6 +24958,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             float final_stroke_outer_alpha;
             float union_stroke_alpha = 0.0f;
             float union_stroke_outer_alpha = 0.0f;
+            int frfx_only_pixel;
             float base_alpha;
             float base_r;
             float base_g;
@@ -24966,6 +24967,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             float blended_g;
             float blended_b;
 
+            frfx_only_pixel = 0;
             use_join_coverage_sample = 0;
             vector_use_join_coverage_sample = 0;
             idx = row_offset + x;
@@ -25528,6 +25530,12 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             }
             final_stroke_alpha = effective_stroke_alpha;
             final_stroke_outer_alpha = effective_stroke_outer_alpha;
+            if (dual_ovl_policy ==
+                    SIXEL_BUILTIN_PSD_DUAL_OVL_FRFX_ONLY_DEFER &&
+                vector_stroke_alpha >
+                    effective_stroke_alpha + 0.0001f) {
+                frfx_only_pixel = 1;
+            }
             if (apply_dual_stroke != 0 &&
                 vector_stroke_alpha > 0.0f &&
                 effective_stroke_alpha > 0.0f) {
@@ -25537,7 +25545,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     final_stroke_outer_alpha =
                         effective_stroke_outer_alpha;
                 } else if (dual_ovl_policy ==
-                               SIXEL_BUILTIN_PSD_DUAL_OVL_FRFX_ONLY_DEFER) {
+                               SIXEL_BUILTIN_PSD_DUAL_OVL_FRFX_ONLY_DEFER &&
+                           frfx_only_pixel != 0) {
                     final_stroke_alpha = effective_stroke_alpha;
                     final_stroke_outer_alpha =
                         effective_stroke_outer_alpha;
@@ -25678,7 +25687,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     traced_fxpri_dual = 1;
                 }
                 if (dual_ovl_policy ==
-                        SIXEL_BUILTIN_PSD_DUAL_OVL_FRFX_ONLY_DEFER) {
+                        SIXEL_BUILTIN_PSD_DUAL_OVL_FRFX_ONLY_DEFER &&
+                    frfx_only_pixel != 0) {
                     dual_blend_vector_alpha = 0.0f;
                     if (traced_frfx_only_defer == 0) {
                         sixel_builtin_psd_trace_message(
