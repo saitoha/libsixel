@@ -3462,9 +3462,9 @@ sixel_dither_apply_interframe_float32(
     int n;
     float *data;
     unsigned char *palette;
+    unsigned char const *lookup_pixel;
     int lookup_wants_float;
     int need_float_pixel;
-    unsigned char const *lookup_pixel;
     int have_palette_float;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
@@ -3528,9 +3528,8 @@ sixel_dither_apply_interframe_float32(
     }
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
-    lookup_wants_float = (context->lookup_source_is_float != 0);
-    need_float_pixel = lookup_wants_float;
-
+    lookup_wants_float = 1;
+    need_float_pixel = 1;
     /*
      * Remember whether each palette buffer exposes float32 components so
      * later loops can preserve precision instead of converting back to
@@ -4028,8 +4027,8 @@ sixel_dither_policy_interframe_build_context(
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_dither_policy_interframe_apply(
+ static SIXELSTATUS
+sixel_dither_policy_interframe_apply_8bit(
     sixel_dither_policy_interface_t *policy,
     sixel_dither_policy_apply_request_t const *request)
 {
@@ -4041,62 +4040,63 @@ sixel_dither_policy_interframe_apply(
     memset(&effective, 0, sizeof(effective));
 
     status = sixel_dither_policy_interframe_make_effective_request(policy,
-                                                           request,
-                                                           &effective);
+                                                                   request,
+                                                                   &effective);
     if (SIXEL_FAILED(status)) {
         return status;
     }
-
 
     status = sixel_dither_policy_interframe_build_context(&effective,
-                                                  &context);
+                                                          &context);
     if (SIXEL_FAILED(status)) {
         return status;
     }
 
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(context.pixelformat)
-            && context.pixels_float != NULL
-            && context.depth == 3
-            && effective.dither != NULL
-            && effective.dither->prefer_float32 != 0) {
-        status = sixel_dither_apply_interframe_float32(
-            effective.dither,
-            &context,
-            SIXEL_DIFFUSE_INTERFRAME);
-        if (status == SIXEL_BAD_ARGUMENT) {
-            status = sixel_dither_apply_interframe_8bit(
-            context.result,
-            context.pixels,
-            context.width,
-            context.height,
-            context.band_origin,
-            context.output_start,
-            context.depth,
-            context.palette,
-            context.method_for_scan,
-            context.lookup_policy,
-            context.lookup_map,
-            SIXEL_DIFFUSE_INTERFRAME,
-            effective.dither);
-        }
-    } else {
-        status = sixel_dither_apply_interframe_8bit(
-            context.result,
-            context.pixels,
-            context.width,
-            context.height,
-            context.band_origin,
-            context.output_start,
-            context.depth,
-            context.palette,
-            context.method_for_scan,
-            context.lookup_policy,
-            context.lookup_map,
-            SIXEL_DIFFUSE_INTERFRAME,
-            effective.dither);
+    return sixel_dither_apply_interframe_8bit(
+        context.result,
+        context.pixels,
+        context.width,
+        context.height,
+        context.band_origin,
+        context.output_start,
+        context.depth,
+        context.palette,
+        context.method_for_scan,
+        context.lookup_policy,
+        context.lookup_map,
+        SIXEL_DIFFUSE_INTERFRAME,
+        effective.dither);
+}
+
+static SIXELSTATUS
+sixel_dither_policy_interframe_apply_float32(
+    sixel_dither_policy_interface_t *policy,
+    sixel_dither_policy_apply_request_t const *request)
+{
+    SIXELSTATUS status;
+    sixel_dither_policy_apply_request_t effective;
+    sixel_dither_policy_interframe_context_t context;
+
+    status = SIXEL_FALSE;
+    memset(&effective, 0, sizeof(effective));
+
+    status = sixel_dither_policy_interframe_make_effective_request(policy,
+                                                                   request,
+                                                                   &effective);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
-    return status;
+    status = sixel_dither_policy_interframe_build_context(&effective,
+                                                          &context);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    return sixel_dither_apply_interframe_float32(
+        effective.dither,
+        &context,
+        SIXEL_DIFFUSE_INTERFRAME);
 }
 
 static sixel_dither_policy_supports_parallel_result_t
@@ -4112,7 +4112,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_interframe_ref,
     sixel_dither_policy_interframe_unref,
     sixel_dither_policy_interframe_prepare,
-    sixel_dither_policy_interframe_apply,
+    sixel_dither_policy_interframe_apply_8bit,
     sixel_dither_policy_interframe_supports_parallel_bands
 };
 
@@ -4154,7 +4154,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_interframe_ref,
     sixel_dither_policy_interframe_unref,
     sixel_dither_policy_interframe_prepare,
-    sixel_dither_policy_interframe_apply,
+    sixel_dither_policy_interframe_apply_8bit,
     sixel_dither_policy_interframe_supports_parallel_bands
 };
 
@@ -4163,7 +4163,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_interframe_ref,
     sixel_dither_policy_interframe_unref,
     sixel_dither_policy_interframe_prepare,
-    sixel_dither_policy_interframe_apply,
+    sixel_dither_policy_interframe_apply_float32,
     sixel_dither_policy_interframe_supports_parallel_bands
 };
 

@@ -680,10 +680,6 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
         use_transparent_fence = 1;
     }
 
-    lookup_wants_float = (context->lookup_source_is_float != 0);
-    need_float_pixel = lookup_wants_float;
-
-
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
         sixel_dither_scanline_params_float32(serpentine,
@@ -959,8 +955,8 @@ sixel_dither_policy_bluenoise_build_context(
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_dither_policy_bluenoise_apply(
+ static SIXELSTATUS
+sixel_dither_policy_bluenoise_apply_8bit(
     sixel_dither_policy_interface_t *policy,
     sixel_dither_policy_apply_request_t const *request)
 {
@@ -972,37 +968,51 @@ sixel_dither_policy_bluenoise_apply(
     memset(&effective, 0, sizeof(effective));
 
     status = sixel_dither_policy_bluenoise_make_effective_request(policy,
-                                                           request,
-                                                           &effective);
+                                                             request,
+                                                             &effective);
     if (SIXEL_FAILED(status)) {
         return status;
     }
 
     status = sixel_dither_policy_bluenoise_build_context(&effective,
-                                                  &context);
+                                                    &context);
     if (SIXEL_FAILED(status)) {
         return status;
     }
 
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(context.pixelformat)
-            && context.pixels_float != NULL
-            && effective.dither != NULL
-            && effective.dither->prefer_float32 != 0) {
-        status = sixel_dither_apply_bluenoise_float32(
-            effective.dither,
-            &context);
-        if (status == SIXEL_BAD_ARGUMENT) {
-            status = sixel_dither_apply_bluenoise_8bit(
-            effective.dither,
-            &context);
-        }
-    } else {
-        status = sixel_dither_apply_bluenoise_8bit(
-            effective.dither,
-            &context);
+    return sixel_dither_apply_bluenoise_8bit(
+        effective.dither,
+        &context);
+}
+
+static SIXELSTATUS
+sixel_dither_policy_bluenoise_apply_float32(
+    sixel_dither_policy_interface_t *policy,
+    sixel_dither_policy_apply_request_t const *request)
+{
+    SIXELSTATUS status;
+    sixel_dither_policy_apply_request_t effective;
+    sixel_dither_policy_bluenoise_context_t context;
+
+    status = SIXEL_FALSE;
+    memset(&effective, 0, sizeof(effective));
+
+    status = sixel_dither_policy_bluenoise_make_effective_request(policy,
+                                                             request,
+                                                             &effective);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
-    return status;
+    status = sixel_dither_policy_bluenoise_build_context(&effective,
+                                                    &context);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    return sixel_dither_apply_bluenoise_float32(
+        effective.dither,
+        &context);
 }
 
 static sixel_dither_policy_supports_parallel_result_t
@@ -1018,7 +1028,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_bluenoise_ref,
     sixel_dither_policy_bluenoise_unref,
     sixel_dither_policy_bluenoise_prepare,
-    sixel_dither_policy_bluenoise_apply,
+    sixel_dither_policy_bluenoise_apply_8bit,
     sixel_dither_policy_bluenoise_supports_parallel_bands
 };
 
@@ -1060,7 +1070,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_bluenoise_ref,
     sixel_dither_policy_bluenoise_unref,
     sixel_dither_policy_bluenoise_prepare,
-    sixel_dither_policy_bluenoise_apply,
+    sixel_dither_policy_bluenoise_apply_8bit,
     sixel_dither_policy_bluenoise_supports_parallel_bands
 };
 
@@ -1069,7 +1079,7 @@ static sixel_dither_policy_vtbl_t const
     sixel_dither_policy_bluenoise_ref,
     sixel_dither_policy_bluenoise_unref,
     sixel_dither_policy_bluenoise_prepare,
-    sixel_dither_policy_bluenoise_apply,
+    sixel_dither_policy_bluenoise_apply_float32,
     sixel_dither_policy_bluenoise_supports_parallel_bands
 };
 

@@ -286,6 +286,65 @@ sixel_lookup_policy_none_map_pixel(
                                              object->reqcolor);
 }
 
+static int
+sixel_lookup_policy_none_map_pixel_8bit(
+    sixel_lookup_policy_interface_t const *policy,
+    unsigned char const *pixel)
+{
+    sixel_lookup_policy_none_object_t const *object;
+
+    object = NULL;
+    if (policy == NULL || pixel == NULL) {
+        return 0;
+    }
+
+    object = sixel_lookup_policy_none_from_base_const(policy);
+    if (object->palette == NULL || object->depth <= 0
+            || object->reqcolor <= 0) {
+        return 0;
+    }
+
+    return sixel_lookup_policy_none_map_core(pixel,
+                                             object->depth,
+                                             object->palette,
+                                             object->reqcolor);
+}
+
+static int
+sixel_lookup_policy_none_map_pixel_float32(
+    sixel_lookup_policy_interface_t const *policy,
+    unsigned char const *pixel)
+{
+    sixel_lookup_policy_none_object_t const *object;
+
+    object = NULL;
+    if (policy == NULL || pixel == NULL) {
+        return 0;
+    }
+
+    object = sixel_lookup_policy_none_from_base_const(policy);
+    if (object->palette == NULL || object->depth <= 0
+            || object->reqcolor <= 0) {
+        return 0;
+    }
+
+    if (object->palette_float != NULL
+            && object->float_stride >= object->depth) {
+        return sixel_lookup_policy_none_map_core_float_palette(
+            (float const *)(void const *)pixel,
+            object->depth,
+            object->palette_float,
+            object->float_stride,
+            object->reqcolor);
+    }
+
+    return sixel_lookup_policy_none_map_core_float_byte_palette(
+        (float const *)(void const *)pixel,
+        object->depth,
+        object->palette,
+        object->reqcolor);
+}
+
 static sixel_lookup_policy_vtbl_t const g_sixel_lookup_policy_none_vtbl = {
     sixel_lookup_policy_none_ref,
     sixel_lookup_policy_none_unref,
@@ -334,7 +393,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_none_ref,
     sixel_lookup_policy_none_unref,
     sixel_lookup_policy_none_prepare,
-    sixel_lookup_policy_none_map_pixel,
+    sixel_lookup_policy_none_map_pixel_8bit,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -342,7 +401,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_none_ref,
     sixel_lookup_policy_none_unref,
     sixel_lookup_policy_none_prepare,
-    sixel_lookup_policy_none_map_pixel,
+    sixel_lookup_policy_none_map_pixel_float32,
 };
 
 SIXELSTATUS

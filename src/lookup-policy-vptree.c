@@ -588,6 +588,50 @@ sixel_lookup_policy_vptree_map_pixel(
         pixel);
 }
 
+static int
+sixel_lookup_policy_vptree_map_pixel_8bit(
+    sixel_lookup_policy_interface_t const *policy,
+    unsigned char const *pixel)
+{
+    sixel_lookup_policy_vptree_object_t const *object;
+
+    object = NULL;
+    if (policy == NULL || pixel == NULL) {
+        return 0;
+    }
+
+    object = sixel_lookup_policy_vptree_from_base_const(policy);
+    if (object->prepared == 0) {
+        return 0;
+    }
+
+    return sixel_lookup_policy_vptree_map_8bit(
+        &object->state_8bit,
+        pixel);
+}
+
+static int
+sixel_lookup_policy_vptree_map_pixel_float32(
+    sixel_lookup_policy_interface_t const *policy,
+    unsigned char const *pixel)
+{
+    sixel_lookup_policy_vptree_object_t const *object;
+
+    object = NULL;
+    if (policy == NULL || pixel == NULL) {
+        return 0;
+    }
+
+    object = sixel_lookup_policy_vptree_from_base_const(policy);
+    if (object->prepared == 0) {
+        return 0;
+    }
+
+    return sixel_lookup_policy_vptree_map_float32(
+        &object->state_float,
+        pixel);
+}
+
 static sixel_lookup_policy_vtbl_t const g_sixel_lookup_policy_vptree_vtbl = {
     sixel_lookup_policy_vptree_ref,
     sixel_lookup_policy_vptree_unref,
@@ -638,7 +682,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_vptree_ref,
     sixel_lookup_policy_vptree_unref,
     sixel_lookup_policy_vptree_prepare,
-    sixel_lookup_policy_vptree_map_pixel,
+    sixel_lookup_policy_vptree_map_pixel_8bit,
 };
 
 static sixel_lookup_policy_vtbl_t
@@ -646,7 +690,7 @@ static sixel_lookup_policy_vtbl_t
     sixel_lookup_policy_vptree_ref,
     sixel_lookup_policy_vptree_unref,
     sixel_lookup_policy_vptree_prepare,
-    sixel_lookup_policy_vptree_map_pixel,
+    sixel_lookup_policy_vptree_map_pixel_float32,
 };
 
 SIXELSTATUS
