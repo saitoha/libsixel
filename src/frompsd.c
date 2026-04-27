@@ -20575,6 +20575,14 @@ sixel_builtin_psd_compute_stroke_coverage_distance(
     float *poutside_coverage,
     float *pinside_coverage);
 
+static int
+sixel_builtin_psd_should_use_join_coverage_sample(
+    float const *foreground_distance_map,
+    float const *background_distance_map,
+    size_t index,
+    int stroke_position,
+    float stroke_size);
+
 static void
 sixel_builtin_psd_compute_stroke_coverage_join(
     float const *alpha_map,
@@ -21488,6 +21496,8 @@ sixel_builtin_psd_apply_layer_effects_subset(
     for (i = 0u; i < src->pixel_count; ++i) {
         int dx;
         int dy;
+        int use_join_coverage_sample;
+        int vector_use_join_coverage_sample;
         float source_alpha;
         float vector_source_alpha;
         float max_alpha;
@@ -21538,12 +21548,24 @@ sixel_builtin_psd_apply_layer_effects_subset(
         blended_r = 0.0f;
         blended_g = 0.0f;
         blended_b = 0.0f;
+        use_join_coverage_sample = 0;
+        vector_use_join_coverage_sample = 0;
         source_alpha = sixel_builtin_psd_clamp_alpha_float32(
             original_alpha[i]);
         if (use_binary_stroke_alpha != 0) {
             source_alpha = source_alpha >= 0.5f ? 1.0f : 0.0f;
         }
         if (use_join_coverage != 0) {
+            use_join_coverage_sample =
+                sixel_builtin_psd_should_use_join_coverage_sample(
+                    stroke_foreground_distance_map,
+                    stroke_background_distance_map,
+                    i,
+                    stroke_position,
+                    stroke_coverage_size);
+        }
+        if (use_join_coverage != 0 &&
+            use_join_coverage_sample != 0) {
             if (stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER &&
                 traced_miter_join == 0) {
                 sixel_builtin_psd_trace_message(
@@ -21726,6 +21748,16 @@ sixel_builtin_psd_apply_layer_effects_subset(
                     vector_source_alpha >= 0.5f ? 1.0f : 0.0f;
             }
             if (vector_use_join_coverage != 0) {
+                vector_use_join_coverage_sample =
+                    sixel_builtin_psd_should_use_join_coverage_sample(
+                        stroke_foreground_distance_map,
+                        stroke_background_distance_map,
+                        i,
+                        vector_stroke_position,
+                        vector_stroke_coverage_size);
+            }
+            if (vector_use_join_coverage != 0 &&
+                vector_use_join_coverage_sample != 0) {
                 sixel_builtin_psd_compute_stroke_coverage_join(
                     original_alpha,
                     layer->width,
@@ -24055,6 +24087,38 @@ sixel_builtin_psd_select_stroke_outer_coverage(
     return sixel_builtin_psd_clamp_alpha_float32(outside_coverage);
 }
 
+static int
+sixel_builtin_psd_should_use_join_coverage_sample(
+    float const *foreground_distance_map,
+    float const *background_distance_map,
+    size_t index,
+    int stroke_position,
+    float stroke_size)
+{
+    float edge_distance;
+    float stroke_band;
+
+    edge_distance = 0.0f;
+    stroke_band = 0.0f;
+    if (foreground_distance_map == NULL || background_distance_map == NULL ||
+        stroke_size <= 0.0f) {
+        return 1;
+    }
+    stroke_band = stroke_size + 1.0f;
+    if (stroke_position == SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
+        edge_distance = background_distance_map[index];
+    } else if (stroke_position ==
+               SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE) {
+        edge_distance = foreground_distance_map[index];
+    } else {
+        edge_distance = foreground_distance_map[index];
+        if (background_distance_map[index] < edge_distance) {
+            edge_distance = background_distance_map[index];
+        }
+    }
+    return edge_distance <= stroke_band + 0.5f ? 1 : 0;
+}
+
 static void
 sixel_builtin_psd_apply_stroke_cap_coverage(
     int stroke_cap_type,
@@ -24549,12 +24613,19 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     unsigned char *outside_background_map;
     float *stroke_foreground_distance_map;
     float *stroke_background_distance_map;
+    float *vector_stroke_foreground_distance_map;
+    float *vector_stroke_background_distance_map;
     float const *stroke_distance_source_map;
+    float const *vector_distance_source_map;
     float const *vector_stroke_source_alpha_map;
+    float const *vector_foreground_distance_map;
+    float const *vector_background_distance_map;
     size_t outside_background_pixel_count;
     size_t stroke_map_pixels;
     float stroke_distance_threshold;
+    float vector_stroke_distance_threshold;
     int stroke_distance_map_valid;
+    int vector_stroke_distance_map_valid;
     int use_outside_background_map;
     int use_clip_weight;
     int use_base_silhouette_coverage;
@@ -24641,12 +24712,19 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     outside_background_map = NULL;
     stroke_foreground_distance_map = NULL;
     stroke_background_distance_map = NULL;
+    vector_stroke_foreground_distance_map = NULL;
+    vector_stroke_background_distance_map = NULL;
     stroke_distance_source_map = NULL;
+    vector_distance_source_map = NULL;
     vector_stroke_source_alpha_map = NULL;
+    vector_foreground_distance_map = NULL;
+    vector_background_distance_map = NULL;
     outside_background_pixel_count = 0u;
     stroke_map_pixels = 0u;
     stroke_distance_threshold = 0.001f;
+    vector_stroke_distance_threshold = 0.001f;
     stroke_distance_map_valid = 0;
+    vector_stroke_distance_map_valid = 0;
     use_outside_background_map = 0;
     use_clip_weight = 0;
     use_base_silhouette_coverage = 0;
@@ -24751,8 +24829,10 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     stroke_distance_source_map = use_base_silhouette_coverage != 0 ?
         effective_stroke_coverage_alpha_map : blend_alpha_map;
     vector_stroke_source_alpha_map = stroke_distance_source_map;
+    vector_distance_source_map = stroke_distance_source_map;
     if (use_dual_clipped_source != 0) {
         vector_stroke_source_alpha_map = dual_stroke_source_alpha_map;
+        vector_distance_source_map = vector_stroke_source_alpha_map;
     }
     stroke_map_pixels = (size_t)canvas_width * (size_t)canvas_height;
     if (canvas_width != 0u &&
@@ -24775,6 +24855,35 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     canvas_height,
                     stroke_distance_threshold);
         }
+    }
+    if (apply_dual_stroke != 0 &&
+        vector_distance_source_map != stroke_distance_source_map &&
+        canvas_width != 0u &&
+        stroke_map_pixels / (size_t)canvas_width == (size_t)canvas_height) {
+        vector_stroke_foreground_distance_map = (float *)malloc(
+            stroke_map_pixels * sizeof(float));
+        vector_stroke_background_distance_map = (float *)malloc(
+            stroke_map_pixels * sizeof(float));
+        if (vector_stroke_foreground_distance_map != NULL &&
+            vector_stroke_background_distance_map != NULL &&
+            vector_distance_source_map != NULL) {
+            vector_stroke_distance_threshold =
+                use_base_silhouette_coverage != 0 ? 0.001f : 0.5f;
+            vector_stroke_distance_map_valid =
+                sixel_builtin_psd_build_alpha_distance_maps(
+                    vector_stroke_foreground_distance_map,
+                    vector_stroke_background_distance_map,
+                    vector_distance_source_map,
+                    canvas_width,
+                    canvas_height,
+                    vector_stroke_distance_threshold);
+        }
+    }
+    vector_foreground_distance_map = stroke_foreground_distance_map;
+    vector_background_distance_map = stroke_background_distance_map;
+    if (vector_stroke_distance_map_valid != 0) {
+        vector_foreground_distance_map = vector_stroke_foreground_distance_map;
+        vector_background_distance_map = vector_stroke_background_distance_map;
     }
     if (use_base_silhouette_coverage != 0 &&
         stroke_position == SIXEL_BUILTIN_PSD_EFFECT_STROKE_OUTSIDE) {
@@ -24800,6 +24909,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
         free(outside_background_map);
         free(stroke_foreground_distance_map);
         free(stroke_background_distance_map);
+        free(vector_stroke_foreground_distance_map);
+        free(vector_stroke_background_distance_map);
         return;
     }
     stroke_radius = (int)ceilf(stroke_coverage_size);
@@ -24820,6 +24931,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             int dy;
             int local_x;
             int local_y;
+            int use_join_coverage_sample;
+            int vector_use_join_coverage_sample;
             float source_alpha;
             float max_alpha;
             float min_alpha;
@@ -24855,6 +24968,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             float blended_b;
 
             frfx_only_pixel = 0;
+            use_join_coverage_sample = 0;
+            vector_use_join_coverage_sample = 0;
             idx = row_offset + x;
             local_x = (int)x - layer->left;
             local_y = (int)y - layer->top;
@@ -24899,6 +25014,16 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                 continue;
             }
             if (use_join_coverage != 0) {
+                use_join_coverage_sample =
+                    sixel_builtin_psd_should_use_join_coverage_sample(
+                        stroke_foreground_distance_map,
+                        stroke_background_distance_map,
+                        idx,
+                        stroke_position,
+                        stroke_coverage_size);
+            }
+            if (use_join_coverage != 0 &&
+                use_join_coverage_sample != 0) {
                 if (stroke_join_type == SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER &&
                     traced_miter_join == 0) {
                     sixel_builtin_psd_trace_message(
@@ -25171,6 +25296,16 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                         vector_source_alpha >= 0.5f ? 1.0f : 0.0f;
                 }
                 if (vector_use_join_coverage != 0) {
+                    vector_use_join_coverage_sample =
+                        sixel_builtin_psd_should_use_join_coverage_sample(
+                            vector_foreground_distance_map,
+                            vector_background_distance_map,
+                            idx,
+                            vector_stroke_position,
+                            vector_stroke_coverage_size);
+                }
+                if (vector_use_join_coverage != 0 &&
+                    vector_use_join_coverage_sample != 0) {
                     if (vector_stroke_join_type ==
                             SIXEL_BUILTIN_PSD_STROKE_JOIN_MITER &&
                         traced_miter_join == 0) {
@@ -25253,8 +25388,16 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     }
                     vector_stroke_outside_coverage = miter_outside_coverage;
                     vector_stroke_inside_coverage = miter_inside_coverage;
-                } else if (stroke_distance_map_valid != 0 &&
-                           use_dual_clipped_source == 0) {
+                } else if (vector_stroke_distance_map_valid != 0) {
+                    sixel_builtin_psd_compute_stroke_coverage_distance(
+                        vector_stroke_foreground_distance_map,
+                        vector_stroke_background_distance_map,
+                        idx,
+                        vector_source_alpha,
+                        vector_stroke_coverage_size,
+                        &vector_stroke_outside_coverage,
+                        &vector_stroke_inside_coverage);
+                } else if (stroke_distance_map_valid != 0) {
                     sixel_builtin_psd_compute_stroke_coverage_distance(
                         stroke_foreground_distance_map,
                         stroke_background_distance_map,
@@ -25608,6 +25751,8 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     free(outside_background_map);
     free(stroke_foreground_distance_map);
     free(stroke_background_distance_map);
+    free(vector_stroke_foreground_distance_map);
+    free(vector_stroke_background_distance_map);
 }
 
 static void
