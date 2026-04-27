@@ -49,14 +49,10 @@ typedef struct sixel_dither_policy_a_dither_context {
     int band_origin;
     int output_start;
     int depth;
-    float *palette_float;
     int method_for_scan;
     struct sixel_lookup_policy_interface *lookup_policy;
     sixel_dither_lookup_map_fn lookup_map;
     int pixelformat;
-    int float_depth;
-    int lookup_source_is_float;
-    int prefer_palette_float_lookup;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -564,9 +560,6 @@ sixel_dither_policy_a_dither_build_context(
 
     lookup_map = request->lookup_policy->vtbl->map_pixel;
     context->lookup_map = lookup_map;
-    context->lookup_source_is_float =
-        SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
-    context->prefer_palette_float_lookup = 0;
 
     if (lookup_map == NULL) {
         sixel_helper_set_additional_message(
@@ -579,23 +572,6 @@ sixel_dither_policy_a_dither_build_context(
     }
 
     dither = request->dither;
-    if (dither != NULL && dither->palette != NULL) {
-        sixel_palette_t *palette_object;
-        int float_components;
-
-        palette_object = dither->palette;
-        if (palette_object->entries_float32 != NULL
-                && palette_object->float_depth > 0) {
-            float_components = palette_object->float_depth
-                / (int)sizeof(float);
-            if (float_components > 0
-                    && (size_t)float_components <= SIXEL_MAX_CHANNELS) {
-                context->palette_float = palette_object->entries_float32;
-                context->float_depth = float_components;
-            }
-        }
-    }
-
     if (dither != NULL
             && dither->pipeline_transparent_mask != NULL
             && dither->pipeline_transparent_keycolor >= 0

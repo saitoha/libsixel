@@ -61,8 +61,6 @@ typedef struct sixel_dither_policy_burkes_context {
     sixel_dither_lookup_map_fn lookup_map;
     int pixelformat;
     int float_depth;
-    int lookup_source_is_float;
-    int prefer_palette_float_lookup;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -781,9 +779,6 @@ sixel_dither_policy_burkes_build_context(
 
     lookup_map = request->lookup_policy->vtbl->map_pixel;
     context->lookup_map = lookup_map;
-    context->lookup_source_is_float =
-        SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
-    context->prefer_palette_float_lookup = 0;
 
     if (lookup_map == NULL) {
         sixel_helper_set_additional_message(

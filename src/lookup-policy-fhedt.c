@@ -169,7 +169,6 @@ typedef struct sixel_lookup_policy_fhedt_object {
     sixel_lookup_policy_fhedt_8bit_t state_8bit;
     sixel_lookup_policy_fhedt_float32_t state_float;
     int lookup_source_is_float;
-    int prefer_palette_float_lookup;
 } sixel_lookup_policy_fhedt_object_t;
 
 static sixel_lookup_policy_fhedt_object_t *
@@ -583,7 +582,6 @@ sixel_lookup_policy_fhedt_reset_state(
     object->backend_initialized = 0;
     object->prepared = 0;
     object->lookup_source_is_float = 0;
-    object->prefer_palette_float_lookup = 0;
 }
 
 static void
@@ -599,7 +597,6 @@ sixel_lookup_policy_fhedt_detach_state(
     object->backend_initialized = 0;
     object->prepared = 0;
     object->lookup_source_is_float = 0;
-    object->prefer_palette_float_lookup = 0;
 }
 
 static void
@@ -680,12 +677,10 @@ sixel_lookup_policy_fhedt_prepare(
 
     object->lookup_source_is_float =
         SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
-    object->prefer_palette_float_lookup = 0;
     expected_float_depth = request->depth * (int)sizeof(float);
     if (object->lookup_source_is_float != 0
             && request->palette_float != NULL
             && request->float_depth >= expected_float_depth) {
-        object->prefer_palette_float_lookup = 1;
     }
 
     if (reuse_policy != NULL
@@ -701,8 +696,6 @@ sixel_lookup_policy_fhedt_prepare(
             object->prepared = reuse_object->prepared;
             object->lookup_source_is_float =
                 reuse_object->lookup_source_is_float;
-            object->prefer_palette_float_lookup =
-                reuse_object->prefer_palette_float_lookup;
             sixel_lookup_policy_fhedt_detach_state(reuse_object);
             if (request->reuse_policy_slot != NULL
                     && *request->reuse_policy_slot == NULL) {
