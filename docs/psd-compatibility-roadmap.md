@@ -64,6 +64,9 @@ Key points used by this roadmap:
     composition so sibling base passes do not repaint interior overlays.
     PASS trace representatives `1603..1605` lock deferred overlay ownership
     and deferred stroke non-regression behavior.
+  - `1318`-focused LSQA representatives `1823..1826` now lock quality
+    baselines for deferred `SoFi/GrFl`, same-mode inside dual-stroke overlap,
+    and post-effect backdrop stroke blending while `1318` itself stays XFAIL.
   - clbl=1 dual-stroke ownership is now resolved before base-layer effect
     application in missing-composite fallback. When deferred clipped-group
     composition owns `vstk + FrFX`, base passes keep coverage preparation only,
