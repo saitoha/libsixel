@@ -704,126 +704,6 @@ diffuse_lso2_float(float *data,
     }
 }
 
-static void
-diffuse_lso2_carry_float(float *carry_curr,
-                          float *carry_next,
-                          float *carry_far,
-                          int width,
-                          int height,
-                          int depth,
-                          int x,
-                          int y,
-                          float error,
-                          int index,
-                          int direction,
-                          int channel)
-{
-    const int (*table)[7];
-    const int *entry;
-    int denom;
-    float factor;
-    float term_r;
-    float term_r2;
-    float term_dl;
-    float term_d;
-    float term_dr;
-    float term_d2;
-    size_t base_curr;
-    size_t base_next;
-    size_t base_far;
-    size_t stride;
-    int has_left;
-    int has_two_left;
-    int has_right;
-    int has_two_right;
-    int has_next;
-    int has_far;
-
-    if (error == 0.0f) {
-        return;
-    }
-    if (index < 0) {
-        index = 0;
-    }
-    if (index > 255) {
-        index = 255;
-    }
-
-    table = lso2_table_varcoeff_float32();
-    entry = table[index];
-    denom = sixel_varcoeff_safe_denom_float32(entry[6]);
-
-    /*
-     * Share a single division across the error terms so the carry path is
-     * competitive with the direct-write variant even on large frames.
-     */
-    factor = error / (float)denom;
-    term_r = factor * (float)entry[0];
-    term_r2 = factor * (float)entry[1];
-    term_dl = factor * (float)entry[2];
-    term_d = factor * (float)entry[3];
-    term_dr = factor * (float)entry[4];
-    term_d2 = error - term_r - term_r2 - term_dl - term_d - term_dr;
-
-    stride = (size_t)depth;
-    base_curr = ((size_t)x * stride) + (size_t)channel;
-    base_next = base_curr;
-    base_far = base_curr;
-    /*
-     * Compute stride- and row-aligned offsets once so the carry buffers do
-     * not pay for repeated multiplications.  Keeping the neighbor flags in
-     * registers trims branch conditions to quick boolean checks during the
-     * innermost diffusion loop.
-     */
-    
-    has_left = (x - 1) >= 0;
-    has_two_left = (x - 2) >= 0;
-    has_right = (x + 1) < width;
-    has_two_right = (x + 2) < width;
-    has_next = (y + 1) < height;
-    has_far = (y + 2) < height;
-
-    if (direction >= 0) {
-        if (has_right) {
-            carry_curr[base_curr + stride] += term_r;
-        }
-        if (has_two_right) {
-            carry_curr[base_curr + (stride * 2)] += term_r2;
-        }
-        if (has_next && has_left) {
-            carry_next[base_next - stride] += term_dl;
-        }
-        if (has_next) {
-            carry_next[base_next] += term_d;
-        }
-        if (has_next && has_right) {
-            carry_next[base_next + stride] += term_dr;
-        }
-        if (has_far) {
-            carry_far[base_far] += term_d2;
-        }
-    } else {
-        if (has_left) {
-            carry_curr[base_curr - stride] += term_r;
-        }
-        if (has_two_left) {
-            carry_curr[base_curr - (stride * 2)] += term_r2;
-        }
-        if (has_next && has_right) {
-            carry_next[base_next + stride] += term_dl;
-        }
-        if (has_next) {
-            carry_next[base_next] += term_d;
-        }
-        if (has_next && has_left) {
-            carry_next[base_next - stride] += term_dr;
-        }
-        if (has_far) {
-            carry_far[base_far] += term_d2;
-        }
-    }
-}
-
 static SIXELSTATUS
 sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                                 sixel_dither_policy_lso2_context_t *context
@@ -835,15 +715,10 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     float *source_pixel;
     float quantized_float;
     unsigned char quantized[SIXEL_MAX_CHANNELS] = { 0 };
-    float *carry_curr;
-    float *carry_next;
-    float *carry_far;
     float palette_value_float;
     unsigned char palette_value;
     float error;
     int serpentine;
-    int use_carry;
-    size_t carry_len;
     int method_for_scan;
     int y;
     int absolute_y;
@@ -854,7 +729,6 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     int x;
     int pos;
     size_t base;
-    size_t carry_base;
     int depth;
     int channel_count;
     int n;
@@ -881,15 +755,10 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     palette = NULL;
     source_pixel = NULL;
     quantized_float = 0.0f;
-    carry_curr = NULL;
-    carry_next = NULL;
-    carry_far = NULL;
     palette_value_float = 0.0f;
     palette_value = 0U;
     error = 0.0f;
     serpentine = 0;
-    use_carry = 0;
-    carry_len = 0U;
     method_for_scan = SIXEL_SCAN_RASTER;
     y = 0;
     absolute_y = 0;
@@ -900,7 +769,6 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     x = 0;
     pos = 0;
     base = 0U;
-    carry_base = 0U;
     depth = 0;
     channel_count = 0;
     n = 0;
@@ -956,16 +824,6 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
         have_palette_float = 1;
     }
 
-    if (use_carry) {
-        carry_len = (size_t)context->width * (size_t)depth;
-        carry_curr = (float *)calloc(carry_len, sizeof(float));
-        carry_next = (float *)calloc(carry_len, sizeof(float));
-        carry_far = (float *)calloc(carry_len, sizeof(float));
-        if (carry_curr == NULL || carry_next == NULL || carry_far == NULL) {
-            goto end;
-        }
-    }
-
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
     lookup_wants_float = (context->lookup_source_is_float != 0);
     need_float_pixel = lookup_wants_float;
@@ -982,7 +840,6 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
         for (x = start; x != end; x += step) {
             pos = y * context->width + x;
             base = (size_t)pos * (size_t)depth;
-            carry_base = (size_t)x * (size_t)depth;
             is_transparent = 0;
             if (use_transparent_fence && absolute_y >= 0) {
                 absolute_index = (size_t)absolute_y * (size_t)context->width
@@ -996,36 +853,10 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                 if (absolute_y >= context->output_start) {
                     context->result[pos] = (sixel_index_t)transparent_keycolor;
                 }
-                if (use_carry) {
-                    for (n = 0; n < channel_count; ++n) {
-                        if (n >= SIXEL_MAX_CHANNELS) {
-                            break;
-                        }
-                        carry_curr[carry_base + (size_t)n] = 0.0f;
-                    }
-                }
                 continue;
             }
 
             source_pixel = data + base;
-            if (use_carry) {
-                for (n = 0; n < channel_count; ++n) {
-                    float accum;
-
-                    if (n >= SIXEL_MAX_CHANNELS) {
-                        break;
-                    }
-                    accum = data[base + (size_t)n]
-                           + carry_curr[carry_base + (size_t)n];
-                    carry_curr[carry_base + (size_t)n] = 0.0f;
-                    accum = sixel_pixelformat_float_channel_clamp(
-                        context->pixelformat,
-                        n,
-                        accum);
-                    source_pixel[n] = accum;
-                }
-            }
-
             for (n = 0; n < channel_count; ++n) {
                 if (n >= SIXEL_MAX_CHANNELS) {
                     break;
@@ -1100,57 +931,26 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                     diff = 255;
                 }
                 table_index = diff;
-                if (use_carry) {
-                    diffuse_lso2_carry_float(carry_curr,
-                                             carry_next,
-                                             carry_far,
-                                             context->width,
-                                             context->height,
-                                             depth,
-                                             x,
-                                             y,
-                                             error,
-                                             table_index,
-                                             direction,
-                                             n);
-                } else {
-                    diffuse_lso2_float(data + n,
-                                       context->width,
-                                       context->height,
-                                       x,
-                                       y,
-                                       depth,
-                                       error,
-                                       table_index,
-                                       direction,
-                                       context->pixelformat,
-                                       n);
-                }
+                diffuse_lso2_float(data + n,
+                                   context->width,
+                                   context->height,
+                                   x,
+                                   y,
+                                   depth,
+                                   error,
+                                   table_index,
+                                   direction,
+                                   context->pixelformat,
+                                   n);
             }
         }
 
-        if (use_carry) {
-            float *tmp;
-
-            tmp = carry_curr;
-            carry_curr = carry_next;
-            carry_next = carry_far;
-            carry_far = tmp;
-            if (carry_len > 0) {
-                memset(carry_far, 0x00, carry_len * sizeof(float));
-            }
-        }
         if (absolute_y >= context->output_start) {
             sixel_dither_pipeline_row_notify(dither, absolute_y);
         }
     }
 
     status = SIXEL_OK;
-
-end:
-    free(carry_curr);
-    free(carry_next);
-    free(carry_far);
     return status;
 }
 
