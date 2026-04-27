@@ -1071,7 +1071,7 @@ static void diffuse_sierra3(unsigned char *data,
                             int direction);
 
 static SIXELSTATUS
-sixel_dither_apply_fixed_impl(
+sixel_dither_apply_interframe_8bit(
     sixel_index_t *result,
     unsigned char *data,
     int width,
@@ -1130,6 +1130,19 @@ sixel_dither_apply_fixed_impl(
     sixel_interframe_stbn_state_t const *stbn_state;
     int stbn_alpha_guard_enabled;
     int alpha_guard_hit;
+
+    if (dither == NULL || result == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    if (data == NULL || palette == NULL || ncolors == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    if (lookup_policy == NULL || lookup_map == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
 
     if (depth > SIXEL_MAX_CHANNELS) {
         status = SIXEL_BAD_ARGUMENT;
@@ -1434,67 +1447,6 @@ sixel_dither_apply_fixed_impl(
 
 end:
     return status;
-}
-
-static SIXELSTATUS
-sixel_dither_apply_fixed_8bit_with_mode(sixel_dither_t *dither,
-                                        sixel_dither_policy_interframe_context_t *context,
-                                        int method_for_diffuse)
-{
-    if (dither == NULL || context == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (context->pixels == NULL || context->palette == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (context->result == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (context->ncolors == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (context->lookup_policy == NULL || context->lookup_map == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    return sixel_dither_apply_fixed_impl(context->result,
-                                         context->pixels,
-                                         context->width,
-                                         context->height,
-                                         context->band_origin,
-                                         context->output_start,
-                                         context->depth,
-                                         context->palette,
-                                         context->reqcolor,
-                                         context->method_for_scan,
-                                         0,
-                                         context->lookup_policy,
-                                         context->lookup_map,
-                                         context->new_palette,
-                                         context->migration_map,
-                                         context->ncolors,
-                                         method_for_diffuse,
-                                         context->palette_float,
-                                         context->new_palette_float,
-                                         context->float_depth,
-                                         dither);
-}
-
-
-
-
-
-
-
-
-
-
-static SIXELSTATUS
-sixel_dither_apply_interframe_8bit(sixel_dither_t *dither,
-                                   sixel_dither_policy_interframe_context_t *context)
-{
-    return sixel_dither_apply_fixed_8bit_with_mode(
-        dither, context, SIXEL_DIFFUSE_INTERFRAME);
 }
 
 static void
@@ -3556,7 +3508,7 @@ sixel_interframe_method_ops_float32_for_id(int method_id)
 }
 
 static SIXELSTATUS
-sixel_dither_apply_fixed_float32_with_mode(
+sixel_dither_apply_interframe_float32(
     sixel_dither_t *dither,
     sixel_dither_policy_interframe_context_t *context,
     int method_for_diffuse)
@@ -3953,24 +3905,6 @@ sixel_dither_apply_fixed_float32_with_mode(
     status = SIXEL_OK;
     return status;
 }
-
-
-
-
-
-
-
-
-
-
-static SIXELSTATUS
-sixel_dither_apply_interframe_float32(sixel_dither_t *dither,
-                                      sixel_dither_policy_interframe_context_t *context)
-{
-    return sixel_dither_apply_fixed_float32_with_mode(
-        dither, context, SIXEL_DIFFUSE_INTERFRAME);
-}
-
 #if defined(__GNUC__) || defined(__clang__)
 # define SIXEL_DITHER_FIXED_FLOAT32_UNUSED __attribute__((used))
 #else
@@ -4240,16 +4174,55 @@ sixel_dither_policy_interframe_apply(
             && effective.dither->prefer_float32 != 0) {
         status = sixel_dither_apply_interframe_float32(
             effective.dither,
-            &context);
+            &context,
+            SIXEL_DIFFUSE_INTERFRAME);
         if (status == SIXEL_BAD_ARGUMENT) {
             status = sixel_dither_apply_interframe_8bit(
-            effective.dither,
-            &context);
+            context.result,
+            context.pixels,
+            context.width,
+            context.height,
+            context.band_origin,
+            context.output_start,
+            context.depth,
+            context.palette,
+            context.reqcolor,
+            context.method_for_scan,
+            0,
+            context.lookup_policy,
+            context.lookup_map,
+            context.new_palette,
+            context.migration_map,
+            context.ncolors,
+            SIXEL_DIFFUSE_INTERFRAME,
+            context.palette_float,
+            context.new_palette_float,
+            context.float_depth,
+            effective.dither);
         }
     } else {
         status = sixel_dither_apply_interframe_8bit(
-            effective.dither,
-            &context);
+            context.result,
+            context.pixels,
+            context.width,
+            context.height,
+            context.band_origin,
+            context.output_start,
+            context.depth,
+            context.palette,
+            context.reqcolor,
+            context.method_for_scan,
+            0,
+            context.lookup_policy,
+            context.lookup_map,
+            context.new_palette,
+            context.migration_map,
+            context.ncolors,
+            SIXEL_DIFFUSE_INTERFRAME,
+            context.palette_float,
+            context.new_palette_float,
+            context.float_depth,
+            effective.dither);
     }
 
     return status;
