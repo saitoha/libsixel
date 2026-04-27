@@ -165,6 +165,7 @@ srcs = [
   'frompsd.h',
   'frompsd-internal.h',
   'frompsd-trace.c',
+  'frompsd-header.c',
   'fromgif.c',
   'fromwebp.c',
   'fromwebp.h',

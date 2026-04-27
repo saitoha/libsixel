@@ -80,6 +80,11 @@ sixel_builtin_psd_trace_message(char const *topic,
 void
 sixel_builtin_psd_trace_reset(void);
 
+int
+sixel_builtin_psd_should_try_multilayer_fallback(
+    sixel_chunk_t const *chunk,
+    sixel_builtin_psd_info_t const *info);
+
 #endif /* LIBSIXEL_FROMPSD_INTERNAL_H */
 
 /* emacs Local Variables:      */
