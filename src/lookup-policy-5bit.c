@@ -53,8 +53,6 @@
  *   unref();
  *   prepare(request);
  *   map_pixel(pixel);
- *   lookup_source_is_float();
- *   prefer_palette_float_lookup();
  * }
  */
 
@@ -1007,36 +1005,11 @@ sixel_lookup_policy_bit5_map_pixel(
         pixel);
 }
 
-static int
-sixel_lookup_policy_bit5_lookup_source_is_float(
-    sixel_lookup_policy_interface_t const *policy)
-{
-    sixel_lookup_policy_bit5_object_t const *object;
-
-    object = NULL;
-    if (policy == NULL) {
-        return 0;
-    }
-
-    object = sixel_lookup_policy_bit5_from_base_const(policy);
-    return object->lookup_source_is_float;
-}
-
-static int
-sixel_lookup_policy_bit5_prefer_palette_float_lookup(
-    sixel_lookup_policy_interface_t const *policy)
-{
-    (void)policy;
-    return 0;
-}
-
 static sixel_lookup_policy_vtbl_t const g_sixel_lookup_policy_bit5_vtbl = {
     sixel_lookup_policy_bit5_ref,
     sixel_lookup_policy_bit5_unref,
     sixel_lookup_policy_bit5_prepare,
     sixel_lookup_policy_bit5_map_pixel,
-    sixel_lookup_policy_bit5_lookup_source_is_float,
-    sixel_lookup_policy_bit5_prefer_palette_float_lookup
 };
 
 #if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)

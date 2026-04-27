@@ -862,11 +862,8 @@ sixel_dither_policy_atkinson_build_context(
     lookup_map = request->lookup_policy->vtbl->map_pixel;
     context->lookup_map = lookup_map;
     context->lookup_source_is_float =
-        request->lookup_policy->vtbl->lookup_source_is_float(
-            request->lookup_policy);
-    context->prefer_palette_float_lookup =
-        request->lookup_policy->vtbl->prefer_palette_float_lookup(
-            request->lookup_policy);
+        SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
+    context->prefer_palette_float_lookup = 0;
 
     if (lookup_map == NULL) {
         sixel_helper_set_additional_message(

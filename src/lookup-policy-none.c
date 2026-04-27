@@ -45,8 +45,6 @@
  *   unref();
  *   prepare(request);
  *   map_pixel(pixel);
- *   lookup_source_is_float();
- *   prefer_palette_float_lookup();
  * }
  *
  * Ownership/lifetime:
@@ -60,7 +58,7 @@ typedef struct sixel_lookup_policy_none_object {
     unsigned char const *palette;
     float const *palette_float;
     int depth;
-    int float_depth;
+    int float_stride;
     int reqcolor;
     int complexion;
     int lookup_source_is_float;
@@ -102,6 +100,79 @@ sixel_lookup_policy_none_map_core(unsigned char const *pixel,
         distant += r * r * complexion;
         for (n = 1; n < depth; ++n) {
             r = pixel[n] - palette[i * depth + n];
+            distant += r * r;
+        }
+        if (distant < diff) {
+            diff = distant;
+            result = i;
+        }
+    }
+
+    return result;
+}
+
+static int
+sixel_lookup_policy_none_map_core_float_palette(
+    float const *pixel,
+    int depth,
+    float const *palette,
+    int palette_stride,
+    int reqcolor,
+    int complexion)
+{
+    int result;
+    double diff;
+    double distant;
+    double r;
+    int i;
+    int n;
+    int offset;
+
+    result = -1;
+    diff = DBL_MAX;
+
+    for (i = 0; i < reqcolor; ++i) {
+        offset = i * palette_stride;
+        distant = 0.0;
+        r = (double)pixel[0] - (double)palette[offset + 0];
+        distant += r * r * (double)complexion;
+        for (n = 1; n < depth; ++n) {
+            r = (double)pixel[n] - (double)palette[offset + n];
+            distant += r * r;
+        }
+        if (distant < diff) {
+            diff = distant;
+            result = i;
+        }
+    }
+
+    return result;
+}
+
+static int
+sixel_lookup_policy_none_map_core_float_byte_palette(
+    float const *pixel,
+    int depth,
+    unsigned char const *palette,
+    int reqcolor,
+    int complexion)
+{
+    int result;
+    double diff;
+    double distant;
+    double r;
+    int i;
+    int n;
+
+    result = -1;
+    diff = DBL_MAX;
+
+    for (i = 0; i < reqcolor; ++i) {
+        distant = 0.0;
+        r = (double)pixel[0] - (double)palette[i * depth + 0];
+        distant += r * r * (double)complexion;
+        for (n = 1; n < depth; ++n) {
+            r = (double)pixel[n] - (double)palette[i * depth + n];
             distant += r * r;
         }
         if (distant < diff) {
@@ -275,10 +346,8 @@ sixel_lookup_policy_none_prepare(
     sixel_lookup_policy_prepare_request_t const *request)
 {
     sixel_lookup_policy_none_object_t *object;
-    int expected_float_depth;
 
     object = NULL;
-    expected_float_depth = 0;
 
     if (policy == NULL || request == NULL || request->palette == NULL
             || request->depth <= 0 || request->reqcolor <= 0) {
@@ -289,16 +358,18 @@ sixel_lookup_policy_none_prepare(
     object->palette = request->palette;
     object->palette_float = request->palette_float;
     object->depth = request->depth;
-    object->float_depth = request->float_depth;
+    object->float_stride = 0;
     object->reqcolor = request->reqcolor;
     object->complexion = 1;
-    object->lookup_source_is_float = 0;
+    object->lookup_source_is_float =
+        SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
 
-    expected_float_depth = request->depth * (int)sizeof(float);
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat)
-            && request->palette_float != NULL
-            && request->float_depth >= expected_float_depth) {
-        object->lookup_source_is_float = 1;
+    if (request->palette_float != NULL
+            && request->float_depth >= request->depth * (int)sizeof(float)) {
+        object->float_stride = request->float_depth / (int)sizeof(float);
+        if (object->float_stride < request->depth) {
+            object->float_stride = 0;
+        }
     }
 
     return SIXEL_OK;
@@ -323,14 +394,23 @@ sixel_lookup_policy_none_map_pixel(
     }
 
     if (object->lookup_source_is_float != 0) {
-        if (object->palette_float == NULL || object->float_depth <= 0) {
-            return 0;
+        if (object->palette_float != NULL
+                && object->float_stride >= object->depth) {
+            return sixel_lookup_policy_none_map_core_float_palette(
+                (float const *)(void const *)pixel,
+                object->depth,
+                object->palette_float,
+                object->float_stride,
+                object->reqcolor,
+                object->complexion);
         }
-        return sixel_dither_lookup_palette_float32(
+
+        return sixel_lookup_policy_none_map_core_float_byte_palette(
             (float const *)(void const *)pixel,
             object->depth,
-            object->palette_float,
-            object->reqcolor);
+            object->palette,
+            object->reqcolor,
+            object->complexion);
     }
 
     return sixel_lookup_policy_none_map_core(pixel,
@@ -340,36 +420,11 @@ sixel_lookup_policy_none_map_pixel(
                                              object->complexion);
 }
 
-static int
-sixel_lookup_policy_none_lookup_source_is_float(
-    sixel_lookup_policy_interface_t const *policy)
-{
-    sixel_lookup_policy_none_object_t const *object;
-
-    object = NULL;
-    if (policy == NULL) {
-        return 0;
-    }
-
-    object = sixel_lookup_policy_none_from_base_const(policy);
-    return object->lookup_source_is_float;
-}
-
-static int
-sixel_lookup_policy_none_prefer_palette_float_lookup(
-    sixel_lookup_policy_interface_t const *policy)
-{
-    (void)policy;
-    return 0;
-}
-
 static sixel_lookup_policy_vtbl_t const g_sixel_lookup_policy_none_vtbl = {
     sixel_lookup_policy_none_ref,
     sixel_lookup_policy_none_unref,
     sixel_lookup_policy_none_prepare,
     sixel_lookup_policy_none_map_pixel,
-    sixel_lookup_policy_none_lookup_source_is_float,
-    sixel_lookup_policy_none_prefer_palette_float_lookup
 };
 
 #if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)

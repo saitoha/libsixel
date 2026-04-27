@@ -237,6 +237,84 @@ cleanup:
 }
 
 static int
+test_lookup_policy_none_mode_maps_float_without_palette_float(void)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_lookup_policy_interface_t *lookup_policy;
+    sixel_lookup_policy_select_request_t select_request;
+    sixel_lookup_policy_prepare_request_t request;
+    unsigned char palette[6];
+    float pixel_float[3];
+    int mapped;
+    char const *selected_name;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    lookup_policy = NULL;
+    memset(&select_request, 0, sizeof(select_request));
+    memset(&request, 0, sizeof(request));
+    memset(palette, 0, sizeof(palette));
+    memset(pixel_float, 0, sizeof(pixel_float));
+    mapped = -1;
+    selected_name = NULL;
+
+    status = make_allocator(&allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    palette[0] = 0;
+    palette[1] = 0;
+    palette[2] = 0;
+    palette[3] = 255;
+    palette[4] = 0;
+    palette[5] = 0;
+    pixel_float[0] = 255.0f;
+    pixel_float[1] = 5.0f;
+    pixel_float[2] = 5.0f;
+
+    init_lookup_policy_request(&request,
+                               &select_request,
+                               palette,
+                               2,
+                               0,
+                               SIXEL_LUT_POLICY_NONE,
+                               SIXEL_PIXELFORMAT_RGBFLOAT32,
+                               NULL,
+                               NULL,
+                               allocator);
+
+    status = create_lookup_policy_by_selected_name(&select_request,
+                                                   &request,
+                                                   &lookup_policy,
+                                                   &selected_name);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    if (selected_name == NULL || strcmp(selected_name, "lookup/none") != 0) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+    mapped = lookup_policy->vtbl->map_pixel(
+        lookup_policy,
+        (unsigned char const *)(void const *)pixel_float);
+    if (mapped != 1) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+
+    status = SIXEL_OK;
+
+cleanup:
+    safe_unref_lookup_policy(&lookup_policy);
+    sixel_allocator_unref(allocator);
+
+    return SIXEL_SUCCEEDED(status);
+}
+
+static int
 test_lookup_policy_fast_mode_maps_float_input(void)
 {
     SIXELSTATUS status;
@@ -296,10 +374,6 @@ test_lookup_policy_fast_mode_maps_float_input(void)
     }
 
     if (selected_name == NULL || strcmp(selected_name, "lookup/6bit") != 0) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto cleanup;
-    }
-    if (lookup_policy->vtbl->lookup_source_is_float(lookup_policy) == 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -598,6 +672,10 @@ test_lookup_0001_lookup_policy(int argc, char **argv)
 
     if (!test_lookup_policy_none_mode_maps_expected_color()) {
         fprintf(stderr, "lookup policy none mode failed\n");
+        success = 0;
+    }
+    if (!test_lookup_policy_none_mode_maps_float_without_palette_float()) {
+        fprintf(stderr, "lookup policy none float mode failed\n");
         success = 0;
     }
     if (!test_lookup_policy_fast_mode_maps_float_input()) {

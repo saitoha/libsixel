@@ -49,8 +49,6 @@
  *   unref();
  *   prepare(request);
  *   map_pixel(pixel);
- *   lookup_source_is_float();
- *   prefer_palette_float_lookup();
  * }
  */
 
@@ -775,43 +773,11 @@ sixel_lookup_policy_fhedt_map_pixel(
         pixel);
 }
 
-static int
-sixel_lookup_policy_fhedt_lookup_source_is_float(
-    sixel_lookup_policy_interface_t const *policy)
-{
-    sixel_lookup_policy_fhedt_object_t const *object;
-
-    object = NULL;
-    if (policy == NULL) {
-        return 0;
-    }
-
-    object = sixel_lookup_policy_fhedt_from_base_const(policy);
-    return object->lookup_source_is_float;
-}
-
-static int
-sixel_lookup_policy_fhedt_prefer_palette_float_lookup(
-    sixel_lookup_policy_interface_t const *policy)
-{
-    sixel_lookup_policy_fhedt_object_t const *object;
-
-    object = NULL;
-    if (policy == NULL) {
-        return 0;
-    }
-
-    object = sixel_lookup_policy_fhedt_from_base_const(policy);
-    return object->prefer_palette_float_lookup;
-}
-
 static sixel_lookup_policy_vtbl_t const g_sixel_lookup_policy_fhedt_vtbl = {
     sixel_lookup_policy_fhedt_ref,
     sixel_lookup_policy_fhedt_unref,
     sixel_lookup_policy_fhedt_prepare,
     sixel_lookup_policy_fhedt_map_pixel,
-    sixel_lookup_policy_fhedt_lookup_source_is_float,
-    sixel_lookup_policy_fhedt_prefer_palette_float_lookup
 };
 
 #if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)

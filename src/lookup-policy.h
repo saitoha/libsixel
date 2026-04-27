@@ -39,8 +39,6 @@ extern "C" {
  *   unref();
  *   prepare(request);
  *   map_pixel(pixel);
- *   lookup_source_is_float();
- *   prefer_palette_float_lookup();
  * }
  *
  * Ownership/lifetime:
@@ -98,11 +96,6 @@ typedef struct sixel_lookup_policy_vtbl {
     sixel_lookup_policy_result_t
     (*map_pixel)(sixel_lookup_policy_interface_t const *policy,
                  unsigned char const *pixel);
-    sixel_lookup_policy_result_t
-    (*lookup_source_is_float)(sixel_lookup_policy_interface_t const *policy);
-    sixel_lookup_policy_result_t
-    (*prefer_palette_float_lookup)(
-        sixel_lookup_policy_interface_t const *policy);
 } sixel_lookup_policy_vtbl_t;
 
 struct sixel_lookup_policy_interface {
