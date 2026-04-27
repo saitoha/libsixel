@@ -133,11 +133,9 @@ sixel_dither_apply_jajuni_8bit(
     int output_start,
     int depth,
     unsigned char *palette,
-    int reqcolor,
     int method_for_scan,
     sixel_lookup_policy_interface_t const *lookup_policy,
     sixel_dither_lookup_map_fn lookup_map,
-    int *ncolors,
     sixel_dither_t *dither)
 {
     SIXELSTATUS status;
@@ -170,7 +168,7 @@ sixel_dither_apply_jajuni_8bit(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
-    if (data == NULL || palette == NULL || ncolors == NULL) {
+    if (data == NULL || palette == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -199,7 +197,6 @@ sixel_dither_apply_jajuni_8bit(
     }
 
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
-    *ncolors = reqcolor;
 
     for (y = 0; y < height; ++y) {
         absolute_y = band_origin + y;
@@ -526,9 +523,8 @@ diffuse_jajuni_float(float *data,
 static SIXELSTATUS
 sixel_dither_apply_jajuni_float32(
     sixel_dither_t *dither,
-    sixel_dither_policy_jajuni_context_t *context,
-    int reqcolor,
-    int *ncolors)
+    sixel_dither_policy_jajuni_context_t *context
+    )
 {
     SIXELSTATUS status;
     float *palette_float;
@@ -581,9 +577,6 @@ sixel_dither_apply_jajuni_float32(
     if (context->result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (ncolors == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
     if (context->lookup_policy == NULL || context->lookup_map == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -592,9 +585,6 @@ sixel_dither_apply_jajuni_float32(
     palette_float = context->palette_float;
     float_depth = context->float_depth;
     if (context->depth > SIXEL_MAX_CHANNELS || context->depth != 3) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (reqcolor < 1) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -623,7 +613,6 @@ sixel_dither_apply_jajuni_float32(
         have_palette_float = 0;
     }
 
-    *ncolors = reqcolor;
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
@@ -903,13 +892,9 @@ sixel_dither_policy_jajuni_apply(
     SIXELSTATUS status;
     sixel_dither_policy_apply_request_t effective;
     sixel_dither_policy_jajuni_context_t context;
-    int reqcolor;
-    int ncolors;
 
     status = SIXEL_FALSE;
     memset(&effective, 0, sizeof(effective));
-    reqcolor = SIXEL_PALETTE_MAX;
-    ncolors = reqcolor;
 
     status = sixel_dither_policy_jajuni_make_effective_request(policy,
                                                            request,
@@ -918,10 +903,6 @@ sixel_dither_policy_jajuni_apply(
         return status;
     }
 
-    if (effective.dither != NULL && effective.dither->ncolors > 0) {
-        reqcolor = effective.dither->ncolors;
-        ncolors = reqcolor;
-    }
 
     status = sixel_dither_policy_jajuni_build_context(&effective,
                                                   &context);
@@ -936,9 +917,7 @@ sixel_dither_policy_jajuni_apply(
             && effective.dither->prefer_float32 != 0) {
         status = sixel_dither_apply_jajuni_float32(
             effective.dither,
-            &context,
-            reqcolor,
-            &ncolors);
+            &context);
         if (status == SIXEL_BAD_ARGUMENT) {
             status = sixel_dither_apply_jajuni_8bit(
             context.result,
@@ -949,11 +928,9 @@ sixel_dither_policy_jajuni_apply(
             context.output_start,
             context.depth,
             context.palette,
-            reqcolor,
             context.method_for_scan,
             context.lookup_policy,
             context.lookup_map,
-            &ncolors,
             effective.dither);
         }
     } else {
@@ -966,11 +943,9 @@ sixel_dither_policy_jajuni_apply(
             context.output_start,
             context.depth,
             context.palette,
-            reqcolor,
             context.method_for_scan,
             context.lookup_policy,
             context.lookup_map,
-            &ncolors,
             effective.dither);
     }
 

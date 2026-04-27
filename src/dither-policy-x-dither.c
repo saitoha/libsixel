@@ -188,9 +188,8 @@ sixel_dither_is_transparent_pixel(sixel_dither_policy_x_dither_context_t const *
 
 static SIXELSTATUS
 sixel_dither_apply_x_dither_8bit(sixel_dither_t *dither,
-                                 sixel_dither_policy_x_dither_context_t *context,
-                                 int reqcolor,
-                                 int *ncolors)
+                                 sixel_dither_policy_x_dither_context_t *context
+                                 )
 {
     int serpentine;
     int y;
@@ -235,8 +234,7 @@ sixel_dither_apply_x_dither_8bit(sixel_dither_t *dither,
             || context->pixels == NULL
             || context->result == NULL
             || context->lookup_policy == NULL
-            || context->lookup_map == NULL
-            || ncolors == NULL) {
+            || context->lookup_map == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -301,16 +299,13 @@ sixel_dither_apply_x_dither_8bit(sixel_dither_t *dither,
         }
     }
 
-        *ncolors = reqcolor;
-
     return SIXEL_OK;
 }
 
 static SIXELSTATUS
 sixel_dither_apply_x_dither_float32(sixel_dither_t *dither,
-                                    sixel_dither_policy_x_dither_context_t *context,
-                                    int reqcolor,
-                                    int *ncolors)
+                                    sixel_dither_policy_x_dither_context_t *context
+                                    )
 {
     int serpentine;
     int y;
@@ -369,8 +364,7 @@ sixel_dither_apply_x_dither_float32(sixel_dither_t *dither,
             || context->result == NULL
             || context->lookup_policy == NULL
             || context->lookup_map == NULL
-            || ncolors == NULL
-            || context->depth <= 0
+                        || context->depth <= 0
             || context->depth > SIXEL_MAX_CHANNELS) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -458,8 +452,6 @@ sixel_dither_apply_x_dither_float32(sixel_dither_t *dither,
             sixel_dither_pipeline_row_notify(dither, absolute_y);
         }
     }
-
-        *ncolors = reqcolor;
 
     return SIXEL_OK;
 }
@@ -649,24 +641,15 @@ sixel_dither_policy_x_dither_apply(
     SIXELSTATUS status;
     sixel_dither_policy_apply_request_t effective;
     sixel_dither_policy_x_dither_context_t context;
-    int reqcolor;
-    int ncolors;
 
     status = SIXEL_FALSE;
     memset(&effective, 0, sizeof(effective));
-    reqcolor = SIXEL_PALETTE_MAX;
-    ncolors = reqcolor;
 
     status = sixel_dither_policy_x_dither_make_effective_request(policy,
                                                            request,
                                                            &effective);
     if (SIXEL_FAILED(status)) {
         return status;
-    }
-
-    if (effective.dither != NULL && effective.dither->ncolors > 0) {
-        reqcolor = effective.dither->ncolors;
-        ncolors = reqcolor;
     }
 
     status = sixel_dither_policy_x_dither_build_context(&effective,
@@ -681,22 +664,16 @@ sixel_dither_policy_x_dither_apply(
             && effective.dither->prefer_float32 != 0) {
         status = sixel_dither_apply_x_dither_float32(
             effective.dither,
-            &context,
-            reqcolor,
-            &ncolors);
+            &context);
         if (status == SIXEL_BAD_ARGUMENT) {
             status = sixel_dither_apply_x_dither_8bit(
             effective.dither,
-            &context,
-            reqcolor,
-            &ncolors);
+            &context);
         }
     } else {
         status = sixel_dither_apply_x_dither_8bit(
             effective.dither,
-            &context,
-            reqcolor,
-            &ncolors);
+            &context);
     }
 
     return status;
