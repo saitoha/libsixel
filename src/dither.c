@@ -175,6 +175,126 @@ sixel_dither_promote_rgb888_to_float32(float **out_pixels,
     return status;
 }
 
+static int
+sixel_dither_palette_has_float_entries(
+    sixel_palette_t const *palette,
+    int channels)
+{
+    size_t required_size;
+    int required_depth;
+
+    required_size = 0U;
+    required_depth = 0;
+    if (palette == NULL) {
+        return 0;
+    }
+    if (channels <= 0) {
+        return 0;
+    }
+    if (palette->entries_float32 == NULL || palette->entry_count == 0U) {
+        return 0;
+    }
+    required_depth = channels * (int)sizeof(float);
+    if (palette->float_depth < required_depth) {
+        return 0;
+    }
+    required_size = (size_t)palette->entry_count
+                  * (size_t)palette->float_depth;
+    if (palette->entries_float32_size < required_size) {
+        return 0;
+    }
+
+    return 1;
+}
+
+/*
+ * Convert the current byte palette into float entries so float32 dither
+ * kernels and float lookup policies can share the same value domain.
+ */
+static SIXELSTATUS
+sixel_dither_promote_palette_rgb888_to_float32(
+    sixel_palette_t *palette,
+    int pixelformat,
+    sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    float *converted;
+    size_t payload_size;
+    size_t row_stride;
+    size_t row_offset;
+    unsigned int color;
+    int channel;
+    int channels;
+
+    status = SIXEL_FALSE;
+    converted = NULL;
+    payload_size = 0U;
+    row_stride = 0U;
+    row_offset = 0U;
+    color = 0U;
+    channel = 0;
+    channels = 0;
+
+    if (palette == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (palette->entries == NULL || palette->entry_count == 0U) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    channels = sixel_helper_compute_depth(pixelformat);
+    if (channels <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    channels /= (int)sizeof(float);
+    if (channels <= 0 || channels > SIXEL_MAX_CHANNELS) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (palette->depth < channels) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    row_stride = (size_t)channels;
+    if ((size_t)palette->entry_count > SIZE_MAX / row_stride) {
+        return SIXEL_BAD_INPUT;
+    }
+    payload_size = (size_t)palette->entry_count * row_stride;
+    if (payload_size > SIZE_MAX / sizeof(float)) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    converted = (float *)sixel_allocator_malloc(
+        allocator,
+        payload_size * sizeof(float));
+    if (converted == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (color = 0U; color < palette->entry_count; ++color) {
+        row_offset = (size_t)color * row_stride;
+        for (channel = 0; channel < channels; ++channel) {
+            converted[row_offset + (size_t)channel]
+                = sixel_pixelformat_byte_to_float(
+                    pixelformat,
+                    channel,
+                    palette->entries[(size_t)color * (size_t)palette->depth
+                                     + (size_t)channel]);
+        }
+    }
+
+    status = sixel_palette_set_entries_float32(
+        palette,
+        converted,
+        palette->entry_count,
+        channels * (int)sizeof(float),
+        allocator);
+    sixel_allocator_free(allocator, converted);
+    return status;
+}
+
 #if SIXEL_ENABLE_THREADS
 static int
 sixel_dither_logger_set_frame_context(sixel_logger_t *logger,
@@ -206,9 +326,6 @@ sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
     int method;
 
     if (dither == NULL) {
-        return 0;
-    }
-    if (dither->prefer_float32 == 0) {
         return 0;
     }
     method = dither->method_for_diffuse;
@@ -2730,6 +2847,10 @@ sixel_dither_apply_palette_with_mode(
     int pipeline_pixelformat;
     int source_pixelformat;
     int prefer_float_pipeline;
+    int float_backend_available;
+    int source_has_float;
+    int palette_has_float;
+    int float_channels;
     sixel_palette_t *palette;
     int dest_owned;
     int palette_entry_limit;
@@ -2802,6 +2923,10 @@ sixel_dither_apply_palette_with_mode(
     index = 0U;
     dither_policy = NULL;
     supports_parallel_bands = 0;
+    float_backend_available = 0;
+    source_has_float = 0;
+    palette_has_float = 0;
+    float_channels = 0;
     preset_transparent_mask = NULL;
     preset_transparent_mask_size = 0u;
     preset_transparent_keycolor = (-1);
@@ -2928,8 +3053,23 @@ sixel_dither_apply_palette_with_mode(
     }
 
     pipeline_pixelformat = dither->pixelformat;
-    prefer_float_pipeline =
+    source_has_float = SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat);
+    float_backend_available =
         sixel_dither_method_supports_float_pipeline(dither);
+    float_channels = sixel_helper_compute_depth(pipeline_pixelformat);
+    if (source_has_float != 0 && float_channels > 0) {
+        float_channels /= (int)sizeof(float);
+    }
+    palette_has_float = sixel_dither_palette_has_float_entries(
+        palette,
+        (float_channels > 0) ? float_channels : 3);
+    prefer_float_pipeline = 0;
+    if (float_backend_available != 0
+            && (dither->prefer_float32 != 0
+                || source_has_float != 0
+                || palette_has_float != 0)) {
+        prefer_float_pipeline = 1;
+    }
     if (pipeline_pixelformat == SIXEL_PIXELFORMAT_RGB888) {
         input_pixels = pixels;
     } else if (SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat)
@@ -2993,6 +3133,34 @@ sixel_dither_apply_palette_with_mode(
     } else if (prefer_float_pipeline
                && !SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat)) {
         prefer_float_pipeline = 0;
+    }
+
+    /*
+     * Keep source and palette precision aligned.  Once float32 dither is
+     * selected, ensure palette entries are available in float32 too.
+     */
+    if (prefer_float_pipeline
+            && SIXEL_PIXELFORMAT_IS_FLOAT32(pipeline_pixelformat)) {
+        float_channels = sixel_helper_compute_depth(pipeline_pixelformat);
+        if (float_channels <= 0) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        float_channels /= (int)sizeof(float);
+        if (float_channels <= 0 || float_channels > SIXEL_MAX_CHANNELS) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (!sixel_dither_palette_has_float_entries(palette,
+                                                    float_channels)) {
+            status = sixel_dither_promote_palette_rgb888_to_float32(
+                palette,
+                pipeline_pixelformat,
+                dither->allocator);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
     }
 
     method_for_scan = dither->method_for_scan;
