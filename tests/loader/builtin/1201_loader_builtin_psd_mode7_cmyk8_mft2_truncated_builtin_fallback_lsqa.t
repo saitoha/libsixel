@@ -26,7 +26,8 @@ test -f "${reference_six}" || {
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=builtin! "${input_psd}" >"${output_six}" || {
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --lookup-policy=none \
+    -Lbuiltin:cms_engine=builtin! "${input_psd}" >"${output_six}" || {
     echo "not ok" 1 - "builtin decode failed: stbi_minimal_mode7_cmyk8_mft2_truncated_icc_profile.psd"
     exit 0
 }
