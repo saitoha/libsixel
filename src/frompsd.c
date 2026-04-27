@@ -87,6 +87,8 @@
 #define SIXEL_BUILTIN_PSD_STROKE_APPLY_VECTOR_ONLY 1
 #define SIXEL_BUILTIN_PSD_STROKE_APPLY_EFFECT_ONLY 2
 #define SIXEL_BUILTIN_PSD_STROKE_APPLY_DUAL 3
+#define SIXEL_BUILTIN_PSD_DUAL_OVL_DEFAULT 0
+#define SIXEL_BUILTIN_PSD_DUAL_OVL_FXPRI_INSIDE 1
 
 #if defined(_MSC_VER)
 # define SIXEL_PSD_TRACE_TLS __declspec(thread)
@@ -20552,6 +20554,7 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
     float const vector_rgb[3],
     sixel_builtin_psd_layer_blend_mode_t vector_mode,
     float vector_alpha,
+    int dual_ovl_policy,
     float *pout_r,
     float *pout_g,
     float *pout_b);
@@ -21916,6 +21919,7 @@ sixel_builtin_psd_apply_layer_effects_subset(
                 vector_stroke_rgb,
                 layer->vector_stroke_mode,
                 vector_stroke_alpha,
+                SIXEL_BUILTIN_PSD_DUAL_OVL_DEFAULT,
                 &blended_r,
                 &blended_g,
                 &blended_b);
@@ -22070,6 +22074,7 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
     float const vector_rgb[3],
     sixel_builtin_psd_layer_blend_mode_t vector_mode,
     float vector_alpha,
+    int dual_ovl_policy,
     float *pout_r,
     float *pout_g,
     float *pout_b)
@@ -22087,6 +22092,7 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
     float mixed_g;
     float mixed_b;
     int same_mode;
+    int effect_priority_inside;
 
     overlap_alpha = 0.0f;
     vector_only_alpha = 0.0f;
@@ -22111,6 +22117,7 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
     mixed_g = 0.0f;
     mixed_b = 0.0f;
     same_mode = 0;
+    effect_priority_inside = 0;
     effect_alpha = sixel_builtin_psd_clamp_alpha_float32(effect_alpha);
     vector_alpha = sixel_builtin_psd_clamp_alpha_float32(vector_alpha);
     if (pout_r == NULL || pout_g == NULL || pout_b == NULL ||
@@ -22167,7 +22174,19 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
         effect_alpha - overlap_alpha);
     union_alpha = vector_alpha > effect_alpha ? vector_alpha : effect_alpha;
     same_mode = effect_mode == vector_mode ? 1 : 0;
-    (void)same_mode;
+    if (dual_ovl_policy == SIXEL_BUILTIN_PSD_DUAL_OVL_FXPRI_INSIDE &&
+        same_mode != 0 &&
+        effect_mode == SIXEL_BUILTIN_PSD_BLEND_NORMAL) {
+        /*
+         * In deferred clbl=1 same-mode inside overlap, FrFX should own the
+         * overlap contribution to avoid red bias from vector-first mixing.
+         */
+        overlap_alpha = effect_alpha;
+        vector_only_alpha = 0.0f;
+        effect_only_alpha = 0.0f;
+        union_alpha = effect_alpha;
+        effect_priority_inside = 1;
+    }
     vector_full_rgb[0] = base_rgb[0];
     vector_full_rgb[1] = base_rgb[1];
     vector_full_rgb[2] = base_rgb[2];
@@ -22205,26 +22224,39 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
             &effect_full_rgb[2]);
     }
     if (overlap_alpha > 0.0f) {
-        sixel_builtin_psd_blend_effect_rgb(
-            overlap_tmp_rgb[0],
-            overlap_tmp_rgb[1],
-            overlap_tmp_rgb[2],
-            vector_rgb,
-            vector_mode,
-            1.0f,
-            &overlap_tmp_rgb[0],
-            &overlap_tmp_rgb[1],
-            &overlap_tmp_rgb[2]);
-        sixel_builtin_psd_blend_effect_rgb(
-            overlap_tmp_rgb[0],
-            overlap_tmp_rgb[1],
-            overlap_tmp_rgb[2],
-            effect_rgb,
-            effect_mode,
-            1.0f,
-            &overlap_full_rgb[0],
-            &overlap_full_rgb[1],
-            &overlap_full_rgb[2]);
+        if (effect_priority_inside != 0) {
+            sixel_builtin_psd_blend_effect_rgb(
+                overlap_tmp_rgb[0],
+                overlap_tmp_rgb[1],
+                overlap_tmp_rgb[2],
+                effect_rgb,
+                effect_mode,
+                1.0f,
+                &overlap_full_rgb[0],
+                &overlap_full_rgb[1],
+                &overlap_full_rgb[2]);
+        } else {
+            sixel_builtin_psd_blend_effect_rgb(
+                overlap_tmp_rgb[0],
+                overlap_tmp_rgb[1],
+                overlap_tmp_rgb[2],
+                vector_rgb,
+                vector_mode,
+                1.0f,
+                &overlap_tmp_rgb[0],
+                &overlap_tmp_rgb[1],
+                &overlap_tmp_rgb[2]);
+            sixel_builtin_psd_blend_effect_rgb(
+                overlap_tmp_rgb[0],
+                overlap_tmp_rgb[1],
+                overlap_tmp_rgb[2],
+                effect_rgb,
+                effect_mode,
+                1.0f,
+                &overlap_full_rgb[0],
+                &overlap_full_rgb[1],
+                &overlap_full_rgb[2]);
+        }
     }
     /*
      * Regions are weighted once to avoid stacking the same pixel multiple
@@ -24487,6 +24519,9 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     int traced_dual_source_base_compat;
     int traced_dual_overlap_base_compat;
     int traced_dual_mode_base_compat;
+    int dual_ovl_policy;
+    int use_fxpri_inside_dual;
+    int traced_fxpri_dual;
     int vector_cap_enabled;
     int traced_vector_cap_skip;
     float vector_stroke_opacity;
@@ -24570,6 +24605,9 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     traced_dual_source_base_compat = 0;
     traced_dual_overlap_base_compat = 0;
     traced_dual_mode_base_compat = 0;
+    dual_ovl_policy = SIXEL_BUILTIN_PSD_DUAL_OVL_DEFAULT;
+    use_fxpri_inside_dual = 0;
+    traced_fxpri_dual = 0;
     vector_cap_enabled = 1;
     traced_vector_cap_skip = 0;
     vector_stroke_opacity = 0.0f;
@@ -24673,6 +24711,16 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                 SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE ? 1 : 0;
         vector_use_binary_stroke_alpha = layer->has_vector_mask != 0 ? 1 : 0;
         vector_cap_enabled = sixel_builtin_psd_use_vector_stroke_cap(layer);
+        if (backdrop_rgb_premul != NULL &&
+            backdrop_alpha != NULL &&
+            use_clip_weight != 0 &&
+            effect_mode == SIXEL_BUILTIN_PSD_BLEND_NORMAL &&
+            layer->vector_stroke_mode == SIXEL_BUILTIN_PSD_BLEND_NORMAL &&
+            stroke_position == SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE &&
+            vector_stroke_position == SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
+            use_fxpri_inside_dual = 1;
+            dual_ovl_policy = SIXEL_BUILTIN_PSD_DUAL_OVL_FXPRI_INSIDE;
+        }
     }
     stroke_distance_source_map = use_base_silhouette_coverage != 0 ?
         stroke_coverage_alpha_map : blend_alpha_map;
@@ -25288,7 +25336,9 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                         vector_stroke_outer_alpha :
                         effective_stroke_outer_alpha);
                 if (union_stroke_alpha > 0.0f &&
-                    traced_dual_stroke_union == 0) {
+                    traced_dual_stroke_union == 0 &&
+                    dual_ovl_policy ==
+                        SIXEL_BUILTIN_PSD_DUAL_OVL_DEFAULT) {
                     sixel_builtin_psd_trace_message(
                         "psd_decode",
                         "builtin PSD: applying deferred dual-stroke "
@@ -25301,8 +25351,15 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             if (apply_dual_stroke != 0 &&
                 vector_stroke_alpha > 0.0f &&
                 effective_stroke_alpha > 0.0f) {
-                final_stroke_alpha = union_stroke_alpha;
-                final_stroke_outer_alpha = union_stroke_outer_alpha;
+                if (dual_ovl_policy ==
+                    SIXEL_BUILTIN_PSD_DUAL_OVL_FXPRI_INSIDE) {
+                    final_stroke_alpha = effective_stroke_alpha;
+                    final_stroke_outer_alpha =
+                        effective_stroke_outer_alpha;
+                } else {
+                    final_stroke_alpha = union_stroke_alpha;
+                    final_stroke_outer_alpha = union_stroke_outer_alpha;
+                }
             } else if (apply_dual_stroke != 0 &&
                        vector_stroke_alpha > 0.0f) {
                 final_stroke_alpha = vector_stroke_alpha;
@@ -25426,6 +25483,14 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                         "blend on clipped group");
                     traced_mode_aware_dual = 1;
                 }
+                if (use_fxpri_inside_dual != 0 &&
+                    traced_fxpri_dual == 0) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: applying effect-priority "
+                        "dual-stroke overlap on clipped group");
+                    traced_fxpri_dual = 1;
+                }
                 sixel_builtin_psd_blend_dual_stroke_rgb(
                     base_r,
                     base_g,
@@ -25436,6 +25501,7 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                     vector_stroke_rgb,
                     layer->vector_stroke_mode,
                     vector_stroke_alpha,
+                    dual_ovl_policy,
                     &blended_r,
                     &blended_g,
                     &blended_b);
