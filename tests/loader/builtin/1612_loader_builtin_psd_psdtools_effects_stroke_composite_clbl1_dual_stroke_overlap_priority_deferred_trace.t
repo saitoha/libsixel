@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify clbl=1 deferred dual-stroke enters FrFX-only overlap handling.
+# Verify clbl=1 deferred dual-stroke uses overlap-only effect priority.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -31,25 +31,26 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying FrFX-only deferred stroke on clipped group*}" \
+test "${trace_output#*builtin PSD: applying effect-priority dual-stroke overlap on clipped group*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite missing FrFX-only deferred stroke trace"
+        "effects/stroke-composite missing overlap-priority deferred trace"
     exit 0
 }
 
-test "${trace_output#*FX_DUAL_FRFX_ONLY_DEFER*}" != "${trace_output}" || {
+test "${trace_output#*FX_DUAL_FXPRI_OVL_DEFER*}" != "${trace_output}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite missing FX_DUAL_FRFX_ONLY_DEFER code"
+        "effects/stroke-composite missing FX_DUAL_FXPRI_OVL_DEFER code"
     exit 0
 }
 
-test "${trace_output#*FX_DUAL_MODE_DEFER*}" != "${trace_output}" || {
+test "${trace_output#*builtin PSD: applying FrFX-only deferred stroke on clipped group*}" \
+    = "${trace_output}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite missing FX_DUAL_MODE_DEFER code"
+        "effects/stroke-composite kept removed FrFX-only deferred trace"
     exit 0
 }
 
 echo "ok" 1 - \
-    "effects/stroke-composite keeps clbl=1 FrFX-only deferred dual-stroke"
+    "effects/stroke-composite keeps clbl=1 deferred dual-stroke overlap-priority contract"
 exit 0
