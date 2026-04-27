@@ -43,10 +43,10 @@ test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_ANIM*}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader corrupted fixture bad_anim_chunks_without_vp8x_anim_flag.webp missing W_UNSUP_ANIM contract code"
+test "${diag_line#*W_ERR_VP8X_FLAG_ANIM_MISMATCH*}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader corrupted fixture bad_anim_chunks_without_vp8x_anim_flag.webp missing W_ERR_VP8X_FLAG_ANIM_MISMATCH contract code"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader corrupted fixture bad_anim_chunks_without_vp8x_anim_flag.webp emits W_UNSUP_ANIM contract code"
+echo "ok" 1 - "forced builtin loader corrupted fixture bad_anim_chunks_without_vp8x_anim_flag.webp emits W_ERR_VP8X_FLAG_ANIM_MISMATCH contract code"
 exit 0
