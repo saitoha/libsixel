@@ -704,18 +704,35 @@ end:
     return status;
 }
 
+static int
+sixel_webp_vp8l_payload_header_has_alpha(unsigned char const *payload,
+                                         size_t payload_size,
+                                         int *has_alpha)
+{
+    if (payload == NULL || has_alpha == NULL || payload_size < 5u) {
+        return 0;
+    }
+    if (payload[0] != 0x2fu) {
+        return 0;
+    }
+    *has_alpha = (payload[4] & 0x10u) != 0u ? 1 : 0;
+    return 1;
+}
+
 static SIXELSTATUS
 sixel_webp_validate_anim_alpha_flag(sixel_webp_anim_stream_t const *stream,
                                     unsigned int vp8x_flags)
 {
     unsigned int alpha_flag_set;
-    int has_vp8_frame;
-    int has_vp8_alpha_frame;
+    int has_anim_alpha;
+    int alpha_unknown;
+    int vp8l_has_alpha;
     int frame_index;
 
     alpha_flag_set = 0u;
-    has_vp8_frame = 0;
-    has_vp8_alpha_frame = 0;
+    has_anim_alpha = 0;
+    alpha_unknown = 0;
+    vp8l_has_alpha = 0;
     frame_index = 0;
 
     if (stream == NULL || stream->frames == NULL || stream->frame_count <= 0) {
@@ -726,32 +743,45 @@ sixel_webp_validate_anim_alpha_flag(sixel_webp_anim_stream_t const *stream,
     for (frame_index = 0; frame_index < stream->frame_count; ++frame_index) {
         if (stream->frames[frame_index].kind ==
             SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC) {
-            has_vp8_frame = 1;
-            has_vp8_alpha_frame = 1;
+            has_anim_alpha = 1;
             break;
         }
-        if (stream->frames[frame_index].kind ==
-            SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC) {
-            has_vp8_frame = 1;
+        if (stream->frames[frame_index].kind !=
+            SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC) {
+            continue;
+        }
+        vp8l_has_alpha = 0;
+        if (sixel_webp_vp8l_payload_header_has_alpha(
+                stream->frames[frame_index].vp8l_payload,
+                stream->frames[frame_index].vp8l_payload_size,
+                &vp8l_has_alpha) == 0) {
+            alpha_unknown = 1;
+            continue;
+        }
+        if (vp8l_has_alpha != 0) {
+            has_anim_alpha = 1;
+            break;
         }
     }
 
-    /*
-     * Keep this check scoped to VP8-based animation frames. VP8L-only
-     * animation streams keep current behavior in this phase.
-     */
-    if (has_vp8_frame == 0) {
-        return SIXEL_OK;
-    }
-
-    if ((alpha_flag_set != 0u && has_vp8_alpha_frame == 0) ||
-        (alpha_flag_set == 0u && has_vp8_alpha_frame != 0)) {
+    if (has_anim_alpha != 0 && alpha_flag_set == 0u) {
         sixel_helper_set_additional_message(
-            "builtin webp: VP8X alpha flag does not match ANMF VP8+alpha "
+            "builtin webp: VP8X alpha flag does not match ANMF alpha "
             "frames.");
         return SIXEL_BAD_INPUT;
     }
-    return SIXEL_OK;
+    if (has_anim_alpha != 0) {
+        return SIXEL_OK;
+    }
+    if (alpha_flag_set == 0u) {
+        return SIXEL_OK;
+    }
+    if (alpha_unknown != 0) {
+        return SIXEL_OK;
+    }
+    sixel_helper_set_additional_message(
+        "builtin webp: VP8X alpha flag does not match ANMF alpha frames.");
+    return SIXEL_BAD_INPUT;
 }
 
 static SIXELSTATUS
