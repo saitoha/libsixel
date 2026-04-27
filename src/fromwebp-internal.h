@@ -46,6 +46,9 @@
 #define SIXEL_WEBP_CHUNK_EXIF 0x46495845u /* "EXIF" little-endian */
 #define SIXEL_WEBP_CHUNK_XMP  0x20504d58u /* "XMP " little-endian */
 
+#define SIXEL_WEBP_VP8X_ICCP_FLAG 0x20u
+#define SIXEL_WEBP_VP8X_EXIF_FLAG 0x08u
+#define SIXEL_WEBP_VP8X_XMP_FLAG 0x04u
 #define SIXEL_WEBP_VP8X_ANIMATION_FLAG 0x02u
 
 #define SIXEL_WEBP_CODE_OK_VP8_STATIC "W_OK_VP8_STATIC"
@@ -74,6 +77,14 @@
 #define SIXEL_WEBP_CODE_ERR_DUP_XMP "W_ERR_DUP_XMP"
 #define SIXEL_WEBP_CODE_ERR_CONFLICT_VP8_VP8L "W_ERR_CONFLICT_VP8_VP8L"
 #define SIXEL_WEBP_CODE_ERR_CONFLICT_VP8L_ALPHA "W_ERR_CONFLICT_VP8L_ALPHA"
+#define SIXEL_WEBP_CODE_ERR_VP8X_FLAG_ICCP_MISMATCH \
+    "W_ERR_VP8X_FLAG_ICCP_MISMATCH"
+#define SIXEL_WEBP_CODE_ERR_VP8X_FLAG_EXIF_MISMATCH \
+    "W_ERR_VP8X_FLAG_EXIF_MISMATCH"
+#define SIXEL_WEBP_CODE_ERR_VP8X_FLAG_XMP_MISMATCH \
+    "W_ERR_VP8X_FLAG_XMP_MISMATCH"
+#define SIXEL_WEBP_CODE_ERR_VP8X_FLAG_ANIM_MISMATCH \
+    "W_ERR_VP8X_FLAG_ANIM_MISMATCH"
 #define SIXEL_WEBP_CODE_ERR_CHUNK_HDR_TRUNC "W_ERR_CHUNK_HDR_TRUNC"
 #define SIXEL_WEBP_CODE_ERR_CHUNK_PAYLOAD_EXCEEDS "W_ERR_CHUNK_PAYLOAD_EXCEEDS"
 #define SIXEL_WEBP_CODE_ERR_ODD_PADDING_NONZERO "W_ERR_ODD_PADDING_NONZERO"
@@ -147,17 +158,6 @@ typedef struct sixel_webp_decode_plan {
     int anim_loop_count;
     int anim_frame_count;
 } sixel_webp_decode_plan_t;
-
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_webp_parse_container(sixel_chunk_t const *chunk,
-                           sixel_webp_container_info_t *info);
-
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_webp_build_decode_plan(sixel_webp_container_info_t const *info,
-                             sixel_webp_decode_plan_t *plan);
-
-SIXEL_INTERNAL_API sixel_webp_container_kind_t
-sixel_webp_classify_container(sixel_webp_container_info_t const *info);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_webp_decode_vp8l_payload(unsigned char const *payload,

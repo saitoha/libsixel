@@ -293,8 +293,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/loader-wic.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
 	$(srcdir)/frompng.c $(srcdir)/frompng.h $(srcdir)/fromhdr.c \
 	$(srcdir)/fromhdr.h $(srcdir)/frompsd.c $(srcdir)/frompsd.h \
-	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/fromwebp.c \
-	$(srcdir)/fromwebp.h $(srcdir)/fromwebp-internal.h \
+		$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/fromwebp.c \
+		$(srcdir)/fromwebp.h $(srcdir)/fromwebp-container.h \
+		$(srcdir)/fromwebp-internal.h \
 	$(srcdir)/fromwebp-vp8-private.h \
 	$(srcdir)/fromwebp-vp8-native-internal.h \
 	$(srcdir)/fromwebp-vp8-tables.h $(srcdir)/fromwebp-container.c \
@@ -1204,6 +1205,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromgif.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-container.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-internal.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-vp8-private.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp-vp8-native-internal.h \
@@ -2803,7 +2805,8 @@ check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LTLIBRARIES) $(MANS)
+@BUILDING_ON_WINDOWS_FALSE@all-local:
+all-am: Makefile $(LTLIBRARIES) $(MANS) all-local
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man5dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -3204,8 +3207,8 @@ uninstall-man: uninstall-man5
 .MAKE: all check check-am install install-am install-exec \
 	install-strip
 
-.PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am \
-	check-local clean clean-generic clean-libLTLIBRARIES \
+.PHONY: CTAGS GTAGS TAGS all all-am all-local am--depfiles check \
+	check-am check-local clean clean-generic clean-libLTLIBRARIES \
 	clean-libtool cscopelist-am ctags ctags-am distclean \
 	distclean-compile distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \

@@ -297,6 +297,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/fromgif.h \
                 $(srcdir)/fromwebp.c \
                 $(srcdir)/fromwebp.h \
+                $(srcdir)/fromwebp-container.h \
                 $(srcdir)/fromwebp-internal.h \
                 $(srcdir)/fromwebp-vp8-private.h \
                 $(srcdir)/fromwebp-vp8-native-internal.h \

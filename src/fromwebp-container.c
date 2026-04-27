@@ -41,7 +41,7 @@
 #endif
 
 #include "compat_stub.h"
-#include "fromwebp-internal.h"
+#include "fromwebp-container.h"
 
 static uint32_t
 sixel_webp_container_read_u32le(unsigned char const *p)
@@ -93,7 +93,11 @@ typedef enum sixel_webp_parse_error_id {
     SIXEL_WEBP_PARSE_ERR_DUP_XMP,
     SIXEL_WEBP_PARSE_ERR_DUP_VP8L,
     SIXEL_WEBP_PARSE_ERR_CONFLICT_VP8_VP8L,
-    SIXEL_WEBP_PARSE_ERR_CONFLICT_VP8L_ALPHA
+    SIXEL_WEBP_PARSE_ERR_CONFLICT_VP8L_ALPHA,
+    SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_ICCP_MISMATCH,
+    SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_EXIF_MISMATCH,
+    SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_XMP_MISMATCH,
+    SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_ANIM_MISMATCH
 } sixel_webp_parse_error_id_t;
 
 typedef struct sixel_webp_parse_error_entry {
@@ -145,7 +149,15 @@ sixel_webp_parse_error_table[] = {
     { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_CONFLICT_VP8_VP8L,
       "builtin webp: VP8 and VP8L chunks cannot coexist." },
     { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_CONFLICT_VP8L_ALPHA,
-      "builtin webp: VP8L and alpha chunks cannot coexist." }
+      "builtin webp: VP8L and alpha chunks cannot coexist." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_VP8X_FLAG_ICCP_MISMATCH,
+      "builtin webp: VP8X ICCP flag does not match ICCP chunk presence." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_VP8X_FLAG_EXIF_MISMATCH,
+      "builtin webp: VP8X EXIF flag does not match EXIF chunk presence." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_VP8X_FLAG_XMP_MISMATCH,
+      "builtin webp: VP8X XMP flag does not match XMP chunk presence." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_VP8X_FLAG_ANIM_MISMATCH,
+      "builtin webp: VP8X animation flag does not match ANIM/ANMF chunks." }
 };
 
 static SIXELSTATUS
@@ -186,6 +198,68 @@ sixel_webp_record_chunk(sixel_webp_chunk_ref_t *ref,
     ref->chunk_offset = chunk_offset;
     ref->payload = payload;
     ref->payload_size = payload_size;
+}
+
+static SIXELSTATUS
+sixel_webp_validate_vp8x_flags(sixel_webp_container_info_t const *info)
+{
+    unsigned int iccp_flag_set;
+    unsigned int exif_flag_set;
+    unsigned int xmp_flag_set;
+    unsigned int anim_flag_set;
+    unsigned int has_iccp_chunk;
+    unsigned int has_exif_chunk;
+    unsigned int has_xmp_chunk;
+    unsigned int has_anim_chunk;
+    unsigned int has_anmf_chunk;
+
+    iccp_flag_set = 0u;
+    exif_flag_set = 0u;
+    xmp_flag_set = 0u;
+    anim_flag_set = 0u;
+    has_iccp_chunk = 0u;
+    has_exif_chunk = 0u;
+    has_xmp_chunk = 0u;
+    has_anim_chunk = 0u;
+    has_anmf_chunk = 0u;
+    if (info == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (info->vp8x_count == 0u) {
+        return SIXEL_OK;
+    }
+    iccp_flag_set = (info->vp8x_flags & SIXEL_WEBP_VP8X_ICCP_FLAG) != 0u;
+    exif_flag_set = (info->vp8x_flags & SIXEL_WEBP_VP8X_EXIF_FLAG) != 0u;
+    xmp_flag_set = (info->vp8x_flags & SIXEL_WEBP_VP8X_XMP_FLAG) != 0u;
+    anim_flag_set =
+        (info->vp8x_flags & SIXEL_WEBP_VP8X_ANIMATION_FLAG) != 0u;
+    has_iccp_chunk = info->iccp_count != 0u;
+    has_exif_chunk = info->exif_count != 0u;
+    has_xmp_chunk = info->xmp_count != 0u;
+    has_anim_chunk = info->anim_count != 0u;
+    has_anmf_chunk = info->anmf_count != 0u;
+
+    if (iccp_flag_set != has_iccp_chunk) {
+        return sixel_webp_parse_fail(
+            SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_ICCP_MISMATCH);
+    }
+    if (exif_flag_set != has_exif_chunk) {
+        return sixel_webp_parse_fail(
+            SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_EXIF_MISMATCH);
+    }
+    if (xmp_flag_set != has_xmp_chunk) {
+        return sixel_webp_parse_fail(
+            SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_XMP_MISMATCH);
+    }
+    if (anim_flag_set == 0u && (has_anim_chunk != 0u || has_anmf_chunk != 0u)) {
+        return sixel_webp_parse_fail(
+            SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_ANIM_MISMATCH);
+    }
+    if (anim_flag_set != 0u && (has_anim_chunk == 0u || has_anmf_chunk == 0u)) {
+        return sixel_webp_parse_fail(
+            SIXEL_WEBP_PARSE_ERR_VP8X_FLAG_ANIM_MISMATCH);
+    }
+    return SIXEL_OK;
 }
 
 SIXELSTATUS
@@ -392,6 +466,14 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
         offset += chunk_total_size;
     }
 
+    /*
+     * Strictly reject VP8X metadata flag mismatches as malformed input.
+     * Alpha-flag alignment is intentionally excluded in this phase.
+     */
+    status = sixel_webp_validate_vp8x_flags(info);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     return status;
 }
 

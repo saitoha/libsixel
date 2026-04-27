@@ -166,6 +166,7 @@ srcs = [
   'fromgif.c',
   'fromwebp.c',
   'fromwebp.h',
+  'fromwebp-container.h',
   'fromwebp-internal.h',
   'fromwebp-vp8-private.h',
   'fromwebp-vp8-native-internal.h',
