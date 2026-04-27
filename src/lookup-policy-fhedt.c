@@ -655,7 +655,6 @@ sixel_lookup_policy_fhedt_prepare_8bit(
     sixel_lookup_policy_fhedt_reset_state(object);
     object->backend_initialized = 1;
     sixel_lookup_policy_fhedt_8bit_init(&object->state_8bit, request->allocator);
-    sixel_lookup_policy_fhedt_float32_init(&object->state_float, request->allocator);
 
     if (request->depth != 3) {
         sixel_helper_set_additional_message(
@@ -677,7 +676,6 @@ sixel_lookup_policy_fhedt_prepare_8bit(
         if (reuse_object->prepared != 0) {
             sixel_lookup_policy_fhedt_reset_state(object);
             object->state_8bit = reuse_object->state_8bit;
-            object->state_float = reuse_object->state_float;
             object->backend_initialized = reuse_object->backend_initialized;
             object->prepared = reuse_object->prepared;
             sixel_lookup_policy_fhedt_detach_state(reuse_object);
@@ -732,7 +730,6 @@ sixel_lookup_policy_fhedt_prepare_float32(
     object = sixel_lookup_policy_fhedt_from_base(policy);
     sixel_lookup_policy_fhedt_reset_state(object);
     object->backend_initialized = 1;
-    sixel_lookup_policy_fhedt_8bit_init(&object->state_8bit, request->allocator);
     sixel_lookup_policy_fhedt_float32_init(&object->state_float,
                                            request->allocator);
 
@@ -754,7 +751,6 @@ sixel_lookup_policy_fhedt_prepare_float32(
         reuse_object = sixel_lookup_policy_fhedt_from_base(reuse_policy);
         if (reuse_object->prepared != 0) {
             sixel_lookup_policy_fhedt_reset_state(object);
-            object->state_8bit = reuse_object->state_8bit;
             object->state_float = reuse_object->state_float;
             object->backend_initialized = reuse_object->backend_initialized;
             object->prepared = reuse_object->prepared;

@@ -855,7 +855,6 @@ sixel_lookup_policy_certlut_prepare_8bit(
     sixel_lookup_policy_certlut_reset_state(object);
     object->backend_initialized = 1;
     sixel_lookup_policy_certlut_8bit_init(&object->state_8bit, request->allocator);
-    sixel_lookup_policy_certlut_float32_init(&object->state_float, request->allocator);
 
     if (request->depth != 3) {
         sixel_helper_set_additional_message(
@@ -881,7 +880,6 @@ sixel_lookup_policy_certlut_prepare_8bit(
                 == object->shared_instance_enabled) {
             sixel_lookup_policy_certlut_reset_state(object);
             object->state_8bit = reuse_object->state_8bit;
-            object->state_float = reuse_object->state_float;
             object->backend_initialized = reuse_object->backend_initialized;
             object->prepared = reuse_object->prepared;
             object->shared_instance_enabled =
@@ -938,8 +936,6 @@ sixel_lookup_policy_certlut_prepare_float32(
     object = sixel_lookup_policy_certlut_from_base(policy);
     sixel_lookup_policy_certlut_reset_state(object);
     object->backend_initialized = 1;
-    sixel_lookup_policy_certlut_8bit_init(&object->state_8bit,
-                                          request->allocator);
     sixel_lookup_policy_certlut_float32_init(&object->state_float,
                                              request->allocator);
 
@@ -966,7 +962,6 @@ sixel_lookup_policy_certlut_prepare_float32(
                 && reuse_object->shared_instance_enabled
                 == object->shared_instance_enabled) {
             sixel_lookup_policy_certlut_reset_state(object);
-            object->state_8bit = reuse_object->state_8bit;
             object->state_float = reuse_object->state_float;
             object->backend_initialized = reuse_object->backend_initialized;
             object->prepared = reuse_object->prepared;
