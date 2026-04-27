@@ -26,7 +26,7 @@
  * IDL usage in this unit
  *
  * IComponents.getservice("services/factory", &factory)
- * IFactory.create("lookup/...", &policy)
+ * IFactory.create(allocator, "lookup/...", &policy)
  * ILookupPolicy.prepare(request)
  */
 

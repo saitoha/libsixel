@@ -697,9 +697,11 @@ sixel_lookup_policy_rbc_unref(sixel_lookup_policy_interface_t *policy)
 {
     sixel_lookup_policy_rbc_object_t *object;
     unsigned int previous;
+    sixel_allocator_t *allocator;
 
     object = NULL;
     previous = 0U;
+    allocator = NULL;
     if (policy == NULL) {
         return;
     }
@@ -708,7 +710,12 @@ sixel_lookup_policy_rbc_unref(sixel_lookup_policy_interface_t *policy)
     previous = sixel_atomic_fetch_sub_u32(&object->ref, 1U);
     if (previous == 1U) {
         sixel_lookup_policy_rbc_reset_state(object);
-        free(object);
+        allocator = object->allocator;
+        object->allocator = NULL;
+        if (allocator != NULL) {
+            sixel_allocator_free(allocator, object);
+            sixel_allocator_unref(allocator);
+        }
     }
 }
 
@@ -932,12 +939,13 @@ sixel_lookup_policy_rbc_8bit_new(
     sixel_lookup_policy_rbc_object_t *object;
 
     object = NULL;
-    if (policy == NULL) {
+    if (allocator == NULL || policy == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *policy = NULL;
 
-    object = (sixel_lookup_policy_rbc_object_t *))sixel_allocator_malloc(allocator, sizeof(*object));
+    object = (sixel_lookup_policy_rbc_object_t *)
+        sixel_allocator_malloc(allocator, sizeof(*object));
     if (object == NULL) {
         sixel_helper_set_additional_message(
             "sixel_lookup_policy_rbc_8bit_new: allocation failed.");
@@ -947,6 +955,8 @@ sixel_lookup_policy_rbc_8bit_new(
     memset(object, 0, sizeof(*object));
     object->base.vtbl = &g_sixel_lookup_policy_rbc_8bit_vtbl;
     object->ref = 1U;
+    object->allocator = allocator;
+    sixel_allocator_ref(allocator);
     *policy = &object->base;
     return SIXEL_OK;
 }
@@ -959,12 +969,13 @@ sixel_lookup_policy_rbc_float32_new(
     sixel_lookup_policy_rbc_object_t *object;
 
     object = NULL;
-    if (policy == NULL) {
+    if (allocator == NULL || policy == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *policy = NULL;
 
-    object = (sixel_lookup_policy_rbc_object_t *))sixel_allocator_malloc(allocator, sizeof(*object));
+    object = (sixel_lookup_policy_rbc_object_t *)
+        sixel_allocator_malloc(allocator, sizeof(*object));
     if (object == NULL) {
         sixel_helper_set_additional_message(
             "sixel_lookup_policy_rbc_float32_new: allocation failed.");
@@ -974,6 +985,8 @@ sixel_lookup_policy_rbc_float32_new(
     memset(object, 0, sizeof(*object));
     object->base.vtbl = &g_sixel_lookup_policy_rbc_float32_vtbl;
     object->ref = 1U;
+    object->allocator = allocator;
+    sixel_allocator_ref(allocator);
     *policy = &object->base;
     return SIXEL_OK;
 }

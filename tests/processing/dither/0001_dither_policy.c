@@ -23,8 +23,8 @@
  * IDL usage in this unit
  *
  * IComponents.getservice("services/factory", &factory)
- * IFactory.create("dither/...", &policy)
- * IFactory.create("lookup/...", &policy)
+ * IFactory.create(allocator, "dither/...", &policy)
+ * IFactory.create(allocator, "lookup/...", &policy)
  * IDitherPolicy.prepare(request)
  * IDitherPolicy.apply(request)
  */
@@ -244,7 +244,6 @@ test_dither_policy_named_classes_contract(void)
         memset(&prepare_request, 0, sizeof(prepare_request));
         prepare_request.dither = dither;
         prepare_request.depth = 3;
-        prepare_request.reqcolor = 2;
         prepare_request.method_for_scan = SIXEL_SCAN_RASTER;
         prepare_request.pixelformat = pixelformat;
 

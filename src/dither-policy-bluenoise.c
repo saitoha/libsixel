@@ -798,9 +798,11 @@ sixel_dither_policy_bluenoise_unref(sixel_dither_policy_interface_t *policy)
 {
     sixel_dither_policy_bluenoise_object_t *object;
     unsigned int previous;
+    sixel_allocator_t *allocator;
 
     object = NULL;
     previous = 0U;
+    allocator = NULL;
     if (policy == NULL) {
         return;
     }
@@ -808,7 +810,12 @@ sixel_dither_policy_bluenoise_unref(sixel_dither_policy_interface_t *policy)
     object = sixel_dither_policy_bluenoise_from_base(policy);
     previous = sixel_atomic_fetch_sub_u32(&object->ref, 1U);
     if (previous == 1U) {
-        free(object);
+        allocator = object->allocator;
+        object->allocator = NULL;
+        if (allocator != NULL) {
+            sixel_allocator_free(allocator, object);
+            sixel_allocator_unref(allocator);
+        }
     }
 }
 
@@ -1001,18 +1008,21 @@ sixel_dither_policy_bluenoise_new(
     sixel_dither_policy_bluenoise_object_t *object;
 
     object = NULL;
-    if (policy == NULL) {
+    if (allocator == NULL || policy == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *policy = NULL;
 
-    object = (sixel_dither_policy_bluenoise_object_t *))sixel_allocator_malloc(allocator, sizeof(*object));
+    object = (sixel_dither_policy_bluenoise_object_t *)
+        sixel_allocator_malloc(allocator, sizeof(*object));
     if (object == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
 
     object->base.vtbl = &g_sixel_dither_policy_bluenoise_vtbl;
     object->ref = 1U;
+    object->allocator = allocator;
+    sixel_allocator_ref(allocator);
     object->method_for_scan = SIXEL_SCAN_AUTO;
     object->pixelformat = SIXEL_PIXELFORMAT_RGB888;
 

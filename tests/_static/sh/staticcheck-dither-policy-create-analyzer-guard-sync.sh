@@ -1,5 +1,5 @@
 #!/bin/sh
-# Emit TAP for dither policy create-function analyzer guard synchronization.
+# Emit TAP for dither policy new-function analyzer guard synchronization.
 
 set -eu
 
@@ -8,7 +8,7 @@ src_root=${1:-}
 echo "1..1"
 
 if test -z "$src_root"; then
-    echo "not ok 1 - dither policy create analyzer guards stay synchronized"
+    echo "not ok 1 - dither policy new analyzer guards stay synchronized"
     echo "# src_root argument is required"
     exit 1
 fi
@@ -23,7 +23,7 @@ find "$src_root/src" -maxdepth 1 -type f -name 'dither-policy-*.c' \
     -print | LC_ALL=C sort | while IFS= read -r path
 do
     create_line=$(awk '
-    /sixel_dither_policy_create_[A-Za-z0-9_]+[[:space:]]*\(/ {
+    /sixel_dither_policy_[A-Za-z0-9_]+_new[[:space:]]*\(/ {
         print NR
         exit 0
     }
@@ -65,11 +65,10 @@ do
 done
 
 if test -s "$bad"; then
-    echo "not ok 1 - dither policy create analyzer guards stay synchronized"
+    echo "not ok 1 - dither policy new analyzer guards stay synchronized"
     sed 's/^/# /' "$bad"
     exit 1
 fi
 
-echo "ok 1 - dither policy create analyzer guards stay synchronized"
+echo "ok 1 - dither policy new analyzer guards stay synchronized"
 exit 0
-

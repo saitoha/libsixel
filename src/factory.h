@@ -37,7 +37,7 @@ extern "C" {
  * interface IFactory {
  *   ref();
  *   unref();
- *   create(class_name, out object);
+ *   create(allocator, class_name, out object);
  * }
  *
  * Ownership/lifetime:
@@ -46,7 +46,7 @@ extern "C" {
  *
  * Creation path:
  * - services/factory -> IFactory
- * - IFactory.create("lookup/...", &policy)
+ * - IFactory.create(allocator, "lookup/...", &policy)
  */
 
 typedef struct sixel_factory_interface sixel_factory_t;

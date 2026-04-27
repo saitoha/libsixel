@@ -47,7 +47,7 @@ extern "C" {
  *
  * Creation path:
  * - sixel_lookup_policy_select_name(select_request)
- * - services/factory -> create("lookup/...", &policy)
+ * - services/factory -> create(allocator, "lookup/...", &policy)
  * - factory resolves class ids via generated classid registry
  * - policy->prepare(request)
  *
