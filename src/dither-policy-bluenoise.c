@@ -622,13 +622,10 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     float jitter_scale;
     float noise;
     float val;
-    float *palette_float;
-    int float_depth;
     unsigned char *quantized;
     float lookup_pixel_float[SIXEL_MAX_CHANNELS];
     unsigned char const *lookup_pixel;
     int lookup_wants_float;
-    int use_palette_float_lookup;
     int need_float_pixel;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
@@ -652,13 +649,10 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     jitter_scale = 32.0f / 255.0f;
     noise = 0.0f;
     val = 0.0f;
-    palette_float = NULL;
-    float_depth = 0;
     quantized = NULL;
     memset(lookup_pixel_float, 0, sizeof(lookup_pixel_float));
     lookup_pixel = NULL;
     lookup_wants_float = 0;
-    use_palette_float_lookup = 0;
     need_float_pixel = 0;
     transparent_mask = NULL;
     transparent_mask_size = 0U;
@@ -682,8 +676,6 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     sixel_bluenoise_conf_apply_dither_overrides(&bluenoise_conf, dither);
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
-    palette_float = context->palette_float;
-    float_depth = context->float_depth;
     quantized = context->scratch;
 
     transparent_mask = context->transparent_mask;
@@ -696,12 +688,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     }
 
     lookup_wants_float = (context->lookup_source_is_float != 0);
-    if (context->prefer_palette_float_lookup != 0
-            && palette_float != NULL
-            && float_depth >= context->depth) {
-        use_palette_float_lookup = 1;
-    }
-    need_float_pixel = lookup_wants_float || use_palette_float_lookup;
+    need_float_pixel = lookup_wants_float;
 
 
     for (y = 0; y < context->height; ++y) {
@@ -752,7 +739,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
                 if (need_float_pixel) {
                     lookup_pixel_float[d] = val;
                 }
-                if (!lookup_wants_float && !use_palette_float_lookup) {
+                if (!lookup_wants_float) {
                     quantized[d] = sixel_pixelformat_float_channel_to_byte(
                         context->pixelformat,
                         d,
@@ -765,12 +752,6 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
                     lookup_pixel_float;
                 color_index = context->lookup_map(context->lookup_policy,
                                                   lookup_pixel);
-            } else if (use_palette_float_lookup) {
-                color_index = sixel_dither_lookup_palette_float32(
-                    lookup_pixel_float,
-                    context->depth,
-                    palette_float,
-                    context->reqcolor);
             } else {
                 lookup_pixel = quantized;
                 color_index = context->lookup_map(context->lookup_policy,

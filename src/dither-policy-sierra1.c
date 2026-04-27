@@ -550,7 +550,6 @@ sixel_dither_apply_fixed_float32_with_mode(
     float *data;
     unsigned char *palette;
     int lookup_wants_float;
-    int use_palette_float_lookup;
     int need_float_pixel;
     unsigned char const *lookup_pixel;
     int have_palette_float;
@@ -604,13 +603,7 @@ sixel_dither_apply_fixed_float32_with_mode(
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
     lookup_wants_float = (context->lookup_source_is_float != 0);
-    use_palette_float_lookup = 0;
-    if (context->prefer_palette_float_lookup != 0
-            && palette_float != NULL
-            && float_depth >= context->depth) {
-        use_palette_float_lookup = 1;
-    }
-    need_float_pixel = lookup_wants_float || use_palette_float_lookup;
+    need_float_pixel = lookup_wants_float;
 
     /*
      * Remember whether each palette buffer exposes float32 components so
@@ -653,7 +646,7 @@ sixel_dither_apply_fixed_float32_with_mode(
             source_pixel = data + base;
             for (n = 0; n < context->depth; ++n) {
                 working_float[n] = source_pixel[n];
-                if (!lookup_wants_float && !use_palette_float_lookup) {
+                if (!lookup_wants_float) {
                     quantized[n] = sixel_pixelformat_float_channel_to_byte(
                         context->pixelformat,
                         n,
@@ -669,12 +662,6 @@ sixel_dither_apply_fixed_float32_with_mode(
                     working_float;
                 color_index = context->lookup_map(context->lookup_policy,
                                                   lookup_pixel);
-            } else if (use_palette_float_lookup) {
-                color_index = sixel_dither_lookup_palette_float32(
-                    lookup_pixel_float,
-                    context->depth,
-                    palette_float,
-                    context->reqcolor);
             } else {
                 lookup_pixel = quantized;
                 color_index = context->lookup_map(context->lookup_policy,

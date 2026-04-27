@@ -970,7 +970,6 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     float lookup_pixel_float[SIXEL_MAX_CHANNELS] = { 0.0f };
     unsigned char const *lookup_pixel;
     int lookup_wants_float;
-    int use_palette_float_lookup;
     int need_float_pixel;
     int have_palette_float;
     int have_new_palette_float;
@@ -1061,13 +1060,7 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
 
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
     lookup_wants_float = (context->lookup_source_is_float != 0);
-    use_palette_float_lookup = 0;
-    if (context->prefer_palette_float_lookup != 0
-            && palette_float != NULL
-            && float_depth >= depth) {
-        use_palette_float_lookup = 1;
-    }
-    need_float_pixel = lookup_wants_float || use_palette_float_lookup;
+    need_float_pixel = lookup_wants_float;
     if (optimize_palette) {
         *ncolors = 0;
         memset(new_palette, 0x00,
@@ -1151,7 +1144,7 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                 if (need_float_pixel) {
                     lookup_pixel_float[n] = quantized_float;
                 }
-                if (!lookup_wants_float && !use_palette_float_lookup) {
+                if (!lookup_wants_float) {
                     quantized[n] = sixel_pixelformat_float_channel_to_byte(
                         context->pixelformat,
                         n,
@@ -1163,12 +1156,6 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
                     lookup_pixel_float;
                 color_index = context->lookup_map(context->lookup_policy,
                                                   lookup_pixel);
-            } else if (use_palette_float_lookup) {
-                color_index = sixel_dither_lookup_palette_float32(
-                    lookup_pixel_float,
-                    depth,
-                    palette_float,
-                    reqcolor);
             } else {
                 lookup_pixel = quantized;
                 color_index = context->lookup_map(context->lookup_policy,
