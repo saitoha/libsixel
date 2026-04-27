@@ -490,7 +490,7 @@ sixel_encoder_path_has_extension(char const *path, char const *extension)
 }
 
 static int
-sixel_encoder_should_force_none_lut_for_psd(
+sixel_encoder_should_force_auto_lut_for_psd(
     sixel_encoder_t const *encoder,
     char const *path)
 {
@@ -14526,7 +14526,7 @@ sixel_encoder_encode(
     SIXELSTATUS pipeline_wait_status;
     int saved_errno;
     int saved_lut_policy;
-    int force_none_lut_for_psd;
+    int force_auto_lut_for_psd;
     int psd_trace_only;
 
     clipboard_input_format[0] = '\0';
@@ -14545,7 +14545,7 @@ sixel_encoder_encode(
     png_open_errno = 0;
     saved_errno = 0;
     saved_lut_policy = SIXEL_LUT_POLICY_AUTO;
-    force_none_lut_for_psd = 0;
+    force_auto_lut_for_psd = 0;
     psd_trace_only = 0;
     memset(&load_context, 0, sizeof(load_context));
     sixel_logger_init(&logger);
@@ -14653,16 +14653,17 @@ sixel_encoder_encode(
         effective_filename = clipboard_input_path;
     }
 
-    if (sixel_encoder_should_force_none_lut_for_psd(encoder, effective_filename)) {
+    if (sixel_encoder_should_force_auto_lut_for_psd(encoder,
+                                                    effective_filename)) {
         saved_lut_policy = encoder->lut_policy;
-        encoder->lut_policy = SIXEL_LUT_POLICY_NONE;
-        force_none_lut_for_psd = 1;
+        encoder->lut_policy = SIXEL_LUT_POLICY_AUTO;
+        force_auto_lut_for_psd = 1;
         sixel_encoder_log_stage(encoder,
                                 NULL,
                                 "main",
                                 "encoder",
                                 "lut_policy_override",
-                                "source=%s policy=none reason=psd-default",
+                                "source=%s policy=auto reason=psd-default",
                                 effective_filename != NULL
                                     ? effective_filename
                                     : "(null)");
@@ -15127,7 +15128,7 @@ load_end:
 
 end:
     saved_errno = errno;
-    if (encoder != NULL && force_none_lut_for_psd != 0) {
+    if (encoder != NULL && force_auto_lut_for_psd != 0) {
         encoder->lut_policy = saved_lut_policy;
     }
     (void)sixel_encoder_frame_pipeline_finish(&load_context.frame_pipeline);
