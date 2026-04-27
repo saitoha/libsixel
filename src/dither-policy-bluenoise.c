@@ -519,6 +519,10 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
     palette_float = NULL;
     new_palette_float = NULL;
     float_depth = 0;
+    (void)float_index;
+    (void)palette_float;
+    (void)new_palette_float;
+    (void)float_depth;
     transparent_mask = NULL;
     transparent_mask_size = 0U;
     transparent_keycolor = -1;
@@ -553,22 +557,6 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
         use_transparent_fence = 1;
     }
 
-    if (0 != 0) {
-        *context->ncolors = 0;
-        memset(context->new_palette,
-               0x00,
-               (size_t)SIXEL_PALETTE_MAX * (size_t)context->depth);
-        memset(context->migration_map,
-               0x00,
-               sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
-        if (new_palette_float != NULL && float_depth > 0) {
-            memset(new_palette_float,
-                   0x00,
-                   (size_t)SIXEL_PALETTE_MAX
-                       * (size_t)float_depth
-                       * sizeof(float));
-        }
-    }
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
@@ -620,41 +608,7 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
             color_index = context->lookup_map(context->lookup_policy,
                                               context->scratch);
 
-            if (0 != 0) {
-                if (context->migration_map[color_index] == 0) {
-                    if (absolute_y >= context->output_start) {
-                        context->result[pos] =
-                            (sixel_index_t)(*context->ncolors);
-                    }
-
-                    for (d = 0; d < context->depth; ++d) {
-                        context->new_palette[*context->ncolors
-                                             * context->depth + d]
-                            = context->palette[color_index
-                                               * context->depth + d];
-                    }
-
-                    if (palette_float != NULL
-                            && new_palette_float != NULL
-                            && float_depth > 0) {
-                        for (float_index = 0;
-                                float_index < float_depth;
-                                ++float_index) {
-                            new_palette_float[*context->ncolors
-                                               * float_depth + float_index]
-                                = palette_float[color_index
-                                                * float_depth + float_index];
-                        }
-                    }
-
-                    ++*context->ncolors;
-                    context->migration_map[color_index]
-                        = (unsigned short)(*context->ncolors);
-                } else if (absolute_y >= context->output_start) {
-                    context->result[pos] = (sixel_index_t)(
-                        context->migration_map[color_index] - 1);
-                }
-            } else if (absolute_y >= context->output_start) {
+            if (absolute_y >= context->output_start) {
                 context->result[pos] = (sixel_index_t)color_index;
             }
         }
@@ -664,21 +618,7 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
         }
     }
 
-    if (0 != 0) {
-        memcpy(context->palette,
-               context->new_palette,
-               (size_t)(*context->ncolors * context->depth));
-        if (palette_float != NULL
-                && new_palette_float != NULL
-                && float_depth > 0) {
-            memcpy(palette_float,
-                   new_palette_float,
-                   (size_t)(*context->ncolors * float_depth)
-                       * sizeof(float));
-        }
-    } else {
         *context->ncolors = context->reqcolor;
-    }
 
     return SIXEL_OK;
 }
@@ -739,6 +679,8 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     palette_float = NULL;
     new_palette_float = NULL;
     float_depth = 0;
+    (void)float_index;
+    (void)new_palette_float;
     quantized = NULL;
     memset(lookup_pixel_float, 0, sizeof(lookup_pixel_float));
     lookup_pixel = NULL;
@@ -790,22 +732,6 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     }
     need_float_pixel = lookup_wants_float || use_palette_float_lookup;
 
-    if (0 != 0) {
-        *context->ncolors = 0;
-        memset(context->new_palette,
-               0x00,
-               (size_t)SIXEL_PALETTE_MAX * (size_t)context->depth);
-        memset(context->migration_map,
-               0x00,
-               sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
-        if (new_palette_float != NULL && float_depth > 0) {
-            memset(new_palette_float,
-                   0x00,
-                   (size_t)SIXEL_PALETTE_MAX
-                       * (size_t)float_depth
-                       * sizeof(float));
-        }
-    }
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
@@ -880,41 +806,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
                                                   lookup_pixel);
             }
 
-            if (0 != 0) {
-                if (context->migration_map[color_index] == 0) {
-                    if (absolute_y >= context->output_start) {
-                        context->result[pos] =
-                            (sixel_index_t)(*context->ncolors);
-                    }
-
-                    for (d = 0; d < context->depth; ++d) {
-                        context->new_palette[*context->ncolors
-                                             * context->depth + d]
-                            = context->palette[color_index
-                                               * context->depth + d];
-                    }
-
-                    if (palette_float != NULL
-                            && new_palette_float != NULL
-                            && float_depth > 0) {
-                        for (float_index = 0;
-                                float_index < float_depth;
-                                ++float_index) {
-                            new_palette_float[*context->ncolors
-                                               * float_depth + float_index]
-                                = palette_float[color_index
-                                                * float_depth + float_index];
-                        }
-                    }
-
-                    ++*context->ncolors;
-                    context->migration_map[color_index]
-                        = (unsigned short)(*context->ncolors);
-                } else if (absolute_y >= context->output_start) {
-                    context->result[pos] = (sixel_index_t)(
-                        context->migration_map[color_index] - 1);
-                }
-            } else if (absolute_y >= context->output_start) {
+            if (absolute_y >= context->output_start) {
                 context->result[pos] = (sixel_index_t)color_index;
             }
         }
@@ -924,21 +816,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
         }
     }
 
-    if (0 != 0) {
-        memcpy(context->palette,
-               context->new_palette,
-               (size_t)(*context->ncolors * context->depth));
-        if (palette_float != NULL
-                && new_palette_float != NULL
-                && float_depth > 0) {
-            memcpy(palette_float,
-                   new_palette_float,
-                   (size_t)(*context->ncolors * float_depth)
-                       * sizeof(float));
-        }
-    } else {
         *context->ncolors = context->reqcolor;
-    }
 
     return SIXEL_OK;
 }
@@ -1060,10 +938,7 @@ static SIXELSTATUS
 sixel_dither_policy_bluenoise_build_context(
     sixel_dither_policy_apply_request_t const *request,
     sixel_dither_policy_bluenoise_context_t *context,
-    unsigned char scratch[SIXEL_MAX_CHANNELS],
-    unsigned char new_palette[SIXEL_PALETTE_MAX * 4],
-    float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS],
-    unsigned short migration_map[SIXEL_PALETTE_MAX])
+    unsigned char scratch[SIXEL_MAX_CHANNELS])
 {
     sixel_dither_lookup_map_fn lookup_map;
     sixel_dither_t *dither;
@@ -1092,8 +967,6 @@ sixel_dither_policy_bluenoise_build_context(
     context->depth = request->depth;
     context->palette = request->palette;
     context->reqcolor = request->reqcolor;
-    context->new_palette = new_palette;
-    context->migration_map = migration_map;
     context->ncolors = request->ncolors;
     context->scratch = scratch;
     context->lookup_policy = request->lookup_policy;
@@ -1134,7 +1007,6 @@ sixel_dither_policy_bluenoise_build_context(
                     && (size_t)float_components <= SIXEL_MAX_CHANNELS) {
                 context->palette_float = palette_object->entries_float32;
                 context->float_depth = float_components;
-                context->new_palette_float = new_palette_float;
             }
         }
     }
@@ -1182,10 +1054,7 @@ sixel_dither_policy_bluenoise_apply(
 
     status = sixel_dither_policy_bluenoise_build_context(&effective,
                                                   &context,
-                                                  scratch,
-                                                  NULL,
-                                                  NULL,
-                                                  NULL);
+                                                  scratch);
     if (SIXEL_FAILED(status)) {
         return status;
     }

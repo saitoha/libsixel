@@ -1455,10 +1455,7 @@ static SIXELSTATUS
 sixel_dither_policy_lso2_build_context(
     sixel_dither_policy_apply_request_t const *request,
     sixel_dither_policy_lso2_context_t *context,
-    unsigned char scratch[SIXEL_MAX_CHANNELS],
-    unsigned char new_palette[SIXEL_PALETTE_MAX * 4],
-    float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS],
-    unsigned short migration_map[SIXEL_PALETTE_MAX])
+    unsigned char scratch[SIXEL_MAX_CHANNELS])
 {
     sixel_dither_lookup_map_fn lookup_map;
     sixel_dither_t *dither;
@@ -1487,8 +1484,6 @@ sixel_dither_policy_lso2_build_context(
     context->depth = request->depth;
     context->palette = request->palette;
     context->reqcolor = request->reqcolor;
-    context->new_palette = new_palette;
-    context->migration_map = migration_map;
     context->ncolors = request->ncolors;
     context->scratch = scratch;
     context->lookup_policy = request->lookup_policy;
@@ -1529,7 +1524,6 @@ sixel_dither_policy_lso2_build_context(
                     && (size_t)float_components <= SIXEL_MAX_CHANNELS) {
                 context->palette_float = palette_object->entries_float32;
                 context->float_depth = float_components;
-                context->new_palette_float = new_palette_float;
             }
         }
     }
@@ -1570,10 +1564,7 @@ sixel_dither_policy_lso2_apply(
 
     status = sixel_dither_policy_lso2_build_context(&effective,
                                                   &context,
-                                                  scratch,
-                                                  NULL,
-                                                  NULL,
-                                                  NULL);
+                                                  scratch);
     if (SIXEL_FAILED(status)) {
         return status;
     }

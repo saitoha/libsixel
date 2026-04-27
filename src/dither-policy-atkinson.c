@@ -696,20 +696,10 @@ sixel_dither_apply_fixed_float32_with_mode(
         have_new_palette_float = 0;
     }
 
-    if (0) {
-        *context->ncolors = 0;
-        memset(context->new_palette, 0x00,
-               (size_t)SIXEL_PALETTE_MAX * (size_t)context->depth);
-        if (new_palette_float != NULL && float_depth > 0) {
-            memset(new_palette_float, 0x00,
-                   (size_t)SIXEL_PALETTE_MAX
-                       * (size_t)float_depth * sizeof(float));
-        }
-        memset(context->migration_map, 0x00,
-               sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
-    } else {
+    (void)float_index;
+    (void)have_new_palette_float;
+
         *context->ncolors = context->reqcolor;
-    }
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
@@ -767,68 +757,12 @@ sixel_dither_apply_fixed_float32_with_mode(
                                                   lookup_pixel);
             }
 
-            if (0) {
-                if (context->migration_map[color_index] == 0) {
-                    output_index = *context->ncolors;
-                    for (n = 0; n < context->depth; ++n) {
-                        context->new_palette[
-                            output_index * context->depth + n]
-                                = palette[color_index * context->depth
-                                          + n];
-                    }
-                    if (palette_float != NULL
-                            && new_palette_float != NULL
-                            && float_depth > 0) {
-                        for (float_index = 0;
-                                float_index < float_depth;
-                                ++float_index) {
-                            new_palette_float[output_index * float_depth
-                                              + float_index]
-                                = palette_float[color_index * float_depth
-                                                + float_index];
-                        }
-                    }
-                    ++*context->ncolors;
-                    /*
-                     * The palette count never exceeds
-                     * SIXEL_PALETTE_MAX (256), so storing it in an
-                     * unsigned short is safe.
-                     */
-                    context->migration_map[color_index]
-                        = (unsigned short)(*context->ncolors);
-                } else {
-                    output_index = context->migration_map[color_index] - 1;
-                }
-                if (absolute_y >= context->output_start) {
-                    /*
-                     * Palette indices are bounded by
-                     * SIXEL_PALETTE_MAX, which fits in
-                     * sixel_index_t (unsigned char).
-                     */
-                    context->result[pos] = (sixel_index_t)output_index;
-                }
-            } else {
                 output_index = color_index;
                 if (absolute_y >= context->output_start) {
                     context->result[pos] = (sixel_index_t)output_index;
                 }
-            }
 
             for (n = 0; n < context->depth; ++n) {
-                if (0) {
-                    palette_value_u8 = context->new_palette[
-                        output_index * context->depth + n];
-                    if (have_new_palette_float) {
-                        palette_value_float =
-                            new_palette_float[output_index * float_depth + n];
-                    } else {
-                        palette_value_float
-                            = sixel_pixelformat_byte_to_float(
-                                  context->pixelformat,
-                                  n,
-                                  palette_value_u8);
-                    }
-                } else {
                     palette_value_u8 =
                         palette[color_index * context->depth + n];
                     if (have_palette_float) {
@@ -841,7 +775,6 @@ sixel_dither_apply_fixed_float32_with_mode(
                                   n,
                                   palette_value_u8);
                     }
-                }
                 error = working_float[n] - palette_value_float;
                 source_pixel[n] = palette_value_float;
                 diffuse_atkinson_float(data + (size_t)n,
@@ -861,19 +794,6 @@ sixel_dither_apply_fixed_float32_with_mode(
         }
     }
 
-    if (0) {
-        memcpy(context->palette,
-               context->new_palette,
-               (size_t)(*context->ncolors * context->depth));
-        if (palette_float != NULL
-                && new_palette_float != NULL
-                && float_depth > 0) {
-            memcpy(palette_float,
-                   new_palette_float,
-                   (size_t)(*context->ncolors * float_depth)
-                       * sizeof(float));
-        }
-    }
 
     status = SIXEL_OK;
     return status;
@@ -994,10 +914,7 @@ static SIXELSTATUS
 sixel_dither_policy_atkinson_build_context(
     sixel_dither_policy_apply_request_t const *request,
     sixel_dither_policy_atkinson_context_t *context,
-    unsigned char scratch[SIXEL_MAX_CHANNELS],
-    unsigned char new_palette[SIXEL_PALETTE_MAX * 4],
-    float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS],
-    unsigned short migration_map[SIXEL_PALETTE_MAX])
+    unsigned char scratch[SIXEL_MAX_CHANNELS])
 {
     sixel_dither_lookup_map_fn lookup_map;
     sixel_dither_t *dither;
@@ -1026,8 +943,6 @@ sixel_dither_policy_atkinson_build_context(
     context->depth = request->depth;
     context->palette = request->palette;
     context->reqcolor = request->reqcolor;
-    context->new_palette = new_palette;
-    context->migration_map = migration_map;
     context->ncolors = request->ncolors;
     context->scratch = scratch;
     context->lookup_policy = request->lookup_policy;
@@ -1068,7 +983,6 @@ sixel_dither_policy_atkinson_build_context(
                     && (size_t)float_components <= SIXEL_MAX_CHANNELS) {
                 context->palette_float = palette_object->entries_float32;
                 context->float_depth = float_components;
-                context->new_palette_float = new_palette_float;
             }
         }
     }
@@ -1108,10 +1022,7 @@ sixel_dither_policy_atkinson_apply(
 
     status = sixel_dither_policy_atkinson_build_context(&effective,
                                                   &context,
-                                                  scratch,
-                                                  NULL,
-                                                  NULL,
-                                                  NULL);
+                                                  scratch);
     if (SIXEL_FAILED(status)) {
         return status;
     }
