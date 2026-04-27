@@ -86,6 +86,7 @@ typedef enum sixel_webp_parse_error_id {
     SIXEL_WEBP_PARSE_ERR_DUP_VP8,
     SIXEL_WEBP_PARSE_ERR_DUP_VP8X,
     SIXEL_WEBP_PARSE_ERR_VP8X_SIZE,
+    SIXEL_WEBP_PARSE_ERR_VP8X_RESERVED,
     SIXEL_WEBP_PARSE_ERR_DUP_ALPHA,
     SIXEL_WEBP_PARSE_ERR_DUP_ANIM,
     SIXEL_WEBP_PARSE_ERR_DUP_ICCP,
@@ -137,6 +138,8 @@ sixel_webp_parse_error_table[] = {
       "builtin webp: duplicate VP8X chunk is invalid." },
     { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_VP8X_SIZE,
       "builtin webp: VP8X chunk size is invalid." },
+    { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_VP8X_RESERVED,
+      "builtin webp: VP8X reserved fields must be zero." },
     { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_DUP_ALPHA,
       "builtin webp: duplicate alpha chunk is invalid." },
     { SIXEL_BAD_INPUT, SIXEL_WEBP_CODE_ERR_DUP_ANIM,
@@ -406,6 +409,14 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
             }
             if (chunk_size != 10u) {
                 return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_VP8X_SIZE);
+            }
+            if ((data[offset + 8u] & SIXEL_WEBP_VP8X_RESERVED_FLAG_MASK)
+                    != 0u ||
+                data[offset + 9u] != 0u ||
+                data[offset + 10u] != 0u ||
+                data[offset + 11u] != 0u) {
+                return sixel_webp_parse_fail(
+                    SIXEL_WEBP_PARSE_ERR_VP8X_RESERVED);
             }
             sixel_webp_record_chunk(&info->vp8x,
                                     &info->vp8x_count,

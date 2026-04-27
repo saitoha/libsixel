@@ -1342,14 +1342,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     *handled = 1;
     status = sixel_webp_parse_anim_stream(chunk, &plan, &stream);
     if (SIXEL_FAILED(status)) {
-        if (status == SIXEL_NOT_IMPLEMENTED) {
-            sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_UNSUP_ANIM);
-            sixel_helper_set_additional_message(
-                "builtin webp: animation blend/region is not supported.");
-            status = SIXEL_NOT_IMPLEMENTED;
-        } else {
-            sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_ERR_VP8_STREAM);
-        }
+        sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_ERR_VP8_STREAM);
         goto end;
     }
     status = sixel_webp_validate_anim_alpha_flag(&stream,
