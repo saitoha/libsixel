@@ -54,16 +54,12 @@ typedef struct sixel_dither_policy_bluenoise_context {
     int band_origin;
     int output_start;
     int depth;
-    unsigned char *palette;
     float *palette_float;
     int reqcolor;
     int method_for_scan;
     struct sixel_lookup_policy_interface *lookup_policy;
     sixel_dither_lookup_map_fn lookup_map;
     unsigned char *scratch;
-    unsigned char *new_palette;
-    float *new_palette_float;
-    unsigned short *migration_map;
     int *ncolors;
     int pixelformat;
     int float_depth;
@@ -489,12 +485,8 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
     int d;
     int val;
     int color_index;
-    int float_index;
     sixel_bluenoise_conf_t bluenoise_conf;
     float gradient_weight;
-    float *palette_float;
-    float *new_palette_float;
-    int float_depth;
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
@@ -513,16 +505,8 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
     d = 0;
     val = 0;
     color_index = 0;
-    float_index = 0;
     memset(&bluenoise_conf, 0, sizeof(bluenoise_conf));
     gradient_weight = 1.0f;
-    palette_float = NULL;
-    new_palette_float = NULL;
-    float_depth = 0;
-    (void)float_index;
-    (void)palette_float;
-    (void)new_palette_float;
-    (void)float_depth;
     transparent_mask = NULL;
     transparent_mask_size = 0U;
     transparent_keycolor = -1;
@@ -531,7 +515,6 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
 
     if (dither == NULL || context == NULL
             || context->pixels == NULL
-            || context->palette == NULL
             || context->result == NULL
             || context->scratch == NULL
             || context->lookup_policy == NULL
@@ -544,10 +527,6 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
     sixel_bluenoise_conf_apply_dither_overrides(&bluenoise_conf, dither);
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
-    palette_float = context->palette_float;
-    new_palette_float = context->new_palette_float;
-    float_depth = context->float_depth;
-
     transparent_mask = context->transparent_mask;
     transparent_mask_size = context->transparent_mask_size;
     transparent_keycolor = context->transparent_keycolor;
@@ -638,14 +617,12 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     int pos;
     int d;
     int color_index;
-    int float_index;
     sixel_bluenoise_conf_t bluenoise_conf;
     float gradient_weight;
     float jitter_scale;
     float noise;
     float val;
     float *palette_float;
-    float *new_palette_float;
     int float_depth;
     unsigned char *quantized;
     float lookup_pixel_float[SIXEL_MAX_CHANNELS];
@@ -670,17 +647,13 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     pos = 0;
     d = 0;
     color_index = 0;
-    float_index = 0;
     memset(&bluenoise_conf, 0, sizeof(bluenoise_conf));
     gradient_weight = 1.0f;
     jitter_scale = 32.0f / 255.0f;
     noise = 0.0f;
     val = 0.0f;
     palette_float = NULL;
-    new_palette_float = NULL;
     float_depth = 0;
-    (void)float_index;
-    (void)new_palette_float;
     quantized = NULL;
     memset(lookup_pixel_float, 0, sizeof(lookup_pixel_float));
     lookup_pixel = NULL;
@@ -696,7 +669,6 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
     if (dither == NULL || context == NULL
             || context->pixels_float == NULL
             || context->scratch == NULL
-            || context->palette == NULL
             || context->result == NULL
             || context->lookup_policy == NULL
             || context->lookup_map == NULL
@@ -711,7 +683,6 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
     palette_float = context->palette_float;
-    new_palette_float = context->new_palette_float;
     float_depth = context->float_depth;
     quantized = context->scratch;
 
@@ -965,7 +936,6 @@ sixel_dither_policy_bluenoise_build_context(
     context->band_origin = request->band_origin;
     context->output_start = request->output_start;
     context->depth = request->depth;
-    context->palette = request->palette;
     context->reqcolor = request->reqcolor;
     context->ncolors = request->ncolors;
     context->scratch = scratch;
