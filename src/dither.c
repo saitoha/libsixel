@@ -1163,6 +1163,9 @@ sixel_dither_resolve_indexes(
     if (dither_policy == NULL || dither_policy->vtbl == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    if (ncolors != NULL && dither != NULL) {
+        *ncolors = dither->ncolors;
+    }
 
     memset(&apply_request, 0, sizeof(apply_request));
     apply_request.result = result;
@@ -3127,6 +3130,7 @@ sixel_dither_apply_palette_with_mode(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
+    ncolors = dither->ncolors;
     supports_parallel_bands =
         dither_policy->vtbl->supports_parallel_bands(dither_policy);
     if (parallel_active && supports_parallel_bands == 0) {

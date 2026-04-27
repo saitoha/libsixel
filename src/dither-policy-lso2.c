@@ -52,7 +52,6 @@ typedef struct sixel_dither_policy_lso2_context {
     int depth;
     unsigned char *palette;
     float *palette_float;
-    int reqcolor;
     int method_for_scan;
     struct sixel_lookup_policy_interface *lookup_policy;
     sixel_dither_lookup_map_fn lookup_map;
@@ -60,7 +59,6 @@ typedef struct sixel_dither_policy_lso2_context {
     unsigned char *new_palette;
     float *new_palette_float;
     unsigned short *migration_map;
-    int *ncolors;
     int pixelformat;
     int float_depth;
     int lookup_source_is_float;
@@ -267,7 +265,9 @@ diffuse_lso2(unsigned char *data,
 
 static SIXELSTATUS
 sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
-                             sixel_dither_policy_lso2_context_t *context)
+                             sixel_dither_policy_lso2_context_t *context,
+                             int reqcolor,
+                             int *ncolors)
 {
     SIXELSTATUS status;
     unsigned char *data;
@@ -291,14 +291,12 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
     int pos;
     size_t base;
     int depth;
-    int reqcolor;
     int n;
     int color_index;
     int output_index;
     int diff;
     int table_index;
     unsigned short *migration_map;
-    int *ncolors;
     float *palette_float;
     float *new_palette_float;
     int float_depth;
@@ -319,9 +317,9 @@ sixel_dither_apply_lso2_8bit(sixel_dither_t *dither,
     palette = context->palette;
     new_palette = context->new_palette;
     migration_map = context->migration_map;
-    ncolors = context->ncolors;
+    
     depth = context->depth;
-    reqcolor = context->reqcolor;
+    
     palette_float = context->palette_float;
     new_palette_float = context->new_palette_float;
     float_depth = context->float_depth;
@@ -922,7 +920,9 @@ diffuse_lso2_carry_float(float *carry_curr,
 
 static SIXELSTATUS
 sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
-                                sixel_dither_policy_lso2_context_t *context)
+                                sixel_dither_policy_lso2_context_t *context,
+                                int reqcolor,
+                                int *ncolors)
 {
     SIXELSTATUS status;
     float *data;
@@ -955,14 +955,12 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     size_t carry_base;
     int depth;
     int channel_count;
-    int reqcolor;
     int n;
     int color_index;
     int output_index;
     int diff;
     int table_index;
     unsigned short *migration_map;
-    int *ncolors;
     float *palette_float;
     float *new_palette_float;
     int float_depth;
@@ -989,10 +987,10 @@ sixel_dither_apply_lso2_float32(sixel_dither_t *dither,
     palette = context->palette;
     new_palette = context->new_palette;
     migration_map = context->migration_map;
-    ncolors = context->ncolors;
+    
     depth = context->depth;
     channel_count = depth;
-    reqcolor = context->reqcolor;
+    
     transparent_mask = context->transparent_mask;
     transparent_mask_size = context->transparent_mask_size;
     transparent_keycolor = context->transparent_keycolor;
@@ -1470,8 +1468,6 @@ sixel_dither_policy_lso2_build_context(
     context->output_start = request->output_start;
     context->depth = request->depth;
     context->palette = request->palette;
-    context->reqcolor = request->reqcolor;
-    context->ncolors = request->ncolors;
     context->scratch = scratch;
     context->lookup_policy = request->lookup_policy;
     context->pixels = request->data;
@@ -1558,16 +1554,22 @@ sixel_dither_policy_lso2_apply(
             && effective.dither->prefer_float32 != 0) {
         status = sixel_dither_apply_lso2_float32(
             effective.dither,
-            &context);
+            &context,
+            effective.reqcolor,
+            effective.ncolors);
         if (status == SIXEL_BAD_ARGUMENT) {
             status = sixel_dither_apply_lso2_8bit(
-                effective.dither,
-                &context);
+            effective.dither,
+            &context,
+            effective.reqcolor,
+            effective.ncolors);
         }
     } else {
         status = sixel_dither_apply_lso2_8bit(
             effective.dither,
-            &context);
+            &context,
+            effective.reqcolor,
+            effective.ncolors);
     }
 
     return status;

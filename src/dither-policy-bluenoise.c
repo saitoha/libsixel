@@ -55,12 +55,10 @@ typedef struct sixel_dither_policy_bluenoise_context {
     int output_start;
     int depth;
     float *palette_float;
-    int reqcolor;
     int method_for_scan;
     struct sixel_lookup_policy_interface *lookup_policy;
     sixel_dither_lookup_map_fn lookup_map;
     unsigned char *scratch;
-    int *ncolors;
     int pixelformat;
     int float_depth;
     int lookup_source_is_float;
@@ -471,7 +469,9 @@ sixel_dither_is_transparent_pixel(sixel_dither_policy_bluenoise_context_t const 
 
 static SIXELSTATUS
 sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
-                                 sixel_dither_policy_bluenoise_context_t *context)
+                                 sixel_dither_policy_bluenoise_context_t *context,
+                                 int reqcolor,
+                                 int *ncolors)
 {
     int serpentine;
     int y;
@@ -519,7 +519,7 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
             || context->scratch == NULL
             || context->lookup_policy == NULL
             || context->lookup_map == NULL
-            || context->ncolors == NULL) {
+            || ncolors == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -597,14 +597,16 @@ sixel_dither_apply_bluenoise_8bit(sixel_dither_t *dither,
         }
     }
 
-        *context->ncolors = context->reqcolor;
+        *ncolors = reqcolor;
 
     return SIXEL_OK;
 }
 
 static SIXELSTATUS
 sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
-                                    sixel_dither_policy_bluenoise_context_t *context)
+                                    sixel_dither_policy_bluenoise_context_t *context,
+                                    int reqcolor,
+                                    int *ncolors)
 {
     int serpentine;
     int y;
@@ -666,7 +668,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
             || context->result == NULL
             || context->lookup_policy == NULL
             || context->lookup_map == NULL
-            || context->ncolors == NULL
+            || ncolors == NULL
             || context->depth <= 0
             || context->depth > SIXEL_MAX_CHANNELS) {
         return SIXEL_BAD_ARGUMENT;
@@ -768,7 +770,7 @@ sixel_dither_apply_bluenoise_float32(sixel_dither_t *dither,
         }
     }
 
-        *context->ncolors = context->reqcolor;
+        *ncolors = reqcolor;
 
     return SIXEL_OK;
 }
@@ -917,8 +919,6 @@ sixel_dither_policy_bluenoise_build_context(
     context->band_origin = request->band_origin;
     context->output_start = request->output_start;
     context->depth = request->depth;
-    context->reqcolor = request->reqcolor;
-    context->ncolors = request->ncolors;
     context->scratch = scratch;
     context->lookup_policy = request->lookup_policy;
     context->pixels = request->data;
@@ -1013,16 +1013,22 @@ sixel_dither_policy_bluenoise_apply(
             && effective.dither->prefer_float32 != 0) {
         status = sixel_dither_apply_bluenoise_float32(
             effective.dither,
-            &context);
+            &context,
+            effective.reqcolor,
+            effective.ncolors);
         if (status == SIXEL_BAD_ARGUMENT) {
             status = sixel_dither_apply_bluenoise_8bit(
             effective.dither,
-            &context);
+            &context,
+            effective.reqcolor,
+            effective.ncolors);
         }
     } else {
         status = sixel_dither_apply_bluenoise_8bit(
             effective.dither,
-            &context);
+            &context,
+            effective.reqcolor,
+            effective.ncolors);
     }
 
     return status;

@@ -56,12 +56,10 @@ typedef struct sixel_dither_policy_fs_context {
     int depth;
     unsigned char *palette;
     float *palette_float;
-    int reqcolor;
     int method_for_scan;
     struct sixel_lookup_policy_interface *lookup_policy;
     sixel_dither_lookup_map_fn lookup_map;
     unsigned char *scratch;
-    int *ncolors;
     int pixelformat;
     int float_depth;
     int lookup_source_is_float;
@@ -509,7 +507,9 @@ diffuse_fs_float(float *data,
 static SIXELSTATUS
 sixel_dither_apply_fs_float32(
     sixel_dither_t *dither,
-    sixel_dither_policy_fs_context_t *context)
+    sixel_dither_policy_fs_context_t *context,
+    int reqcolor,
+    int *ncolors)
 {
     SIXELSTATUS status;
     float *palette_float;
@@ -561,7 +561,7 @@ sixel_dither_apply_fs_float32(
     if (context->result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (context->ncolors == NULL) {
+    if (ncolors == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (context->lookup_policy == NULL || context->lookup_map == NULL) {
@@ -574,7 +574,7 @@ sixel_dither_apply_fs_float32(
     if (context->depth > SIXEL_MAX_CHANNELS || context->depth != 3) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (context->reqcolor < 1) {
+    if (reqcolor < 1) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -603,7 +603,7 @@ sixel_dither_apply_fs_float32(
         have_palette_float = 0;
     }
 
-    *context->ncolors = context->reqcolor;
+    *ncolors = reqcolor;
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
@@ -832,8 +832,6 @@ sixel_dither_policy_fs_build_context(
     context->output_start = request->output_start;
     context->depth = request->depth;
     context->palette = request->palette;
-    context->reqcolor = request->reqcolor;
-    context->ncolors = request->ncolors;
     context->scratch = scratch;
     context->lookup_policy = request->lookup_policy;
     context->pixels = request->data;
@@ -921,7 +919,9 @@ sixel_dither_policy_fs_apply(
             && effective.dither->prefer_float32 != 0) {
         status = sixel_dither_apply_fs_float32(
             effective.dither,
-            &context);
+            &context,
+            effective.reqcolor,
+            effective.ncolors);
         if (status == SIXEL_BAD_ARGUMENT) {
             status = sixel_dither_apply_fs_8bit(
             context.result,
@@ -932,11 +932,11 @@ sixel_dither_policy_fs_apply(
             context.output_start,
             context.depth,
             context.palette,
-            context.reqcolor,
+            effective.reqcolor,
             context.method_for_scan,
             context.lookup_policy,
             context.lookup_map,
-            context.ncolors,
+            effective.ncolors,
             effective.dither);
         }
     } else {
@@ -949,11 +949,11 @@ sixel_dither_policy_fs_apply(
             context.output_start,
             context.depth,
             context.palette,
-            context.reqcolor,
+            effective.reqcolor,
             context.method_for_scan,
             context.lookup_policy,
             context.lookup_map,
-            context.ncolors,
+            effective.ncolors,
             effective.dither);
     }
 
