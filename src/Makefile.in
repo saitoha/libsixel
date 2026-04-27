@@ -2802,8 +2802,7 @@ check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-@BUILDING_ON_WINDOWS_FALSE@all-local:
-all-am: Makefile $(LTLIBRARIES) $(MANS) all-local
+all-am: Makefile $(LTLIBRARIES) $(MANS)
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man5dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -3204,8 +3203,8 @@ uninstall-man: uninstall-man5
 .MAKE: all check check-am install install-am install-exec \
 	install-strip
 
-.PHONY: CTAGS GTAGS TAGS all all-am all-local am--depfiles check \
-	check-am check-local clean clean-generic clean-libLTLIBRARIES \
+.PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am \
+	check-local clean clean-generic clean-libLTLIBRARIES \
 	clean-libtool cscopelist-am ctags ctags-am distclean \
 	distclean-compile distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \

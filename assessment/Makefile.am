@@ -116,7 +116,7 @@ lsqa_LDADD += -lm \
         @THREAD_LIBS@
 if BUILDING_ON_WINDOWS
 if USING_CL
-lsqa_DEPENDENCIES += $(top_builddir)/src/.libs/sixel.dll.lib
+EXTRA_lsqa_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
 endif
 endif
 endif
