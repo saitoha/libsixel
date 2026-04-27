@@ -320,30 +320,53 @@ static sixel_lookup_policy_vtbl_t
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wanalyzer-malloc-leak"
 #endif
-static SIXELSTATUS
-sixel_lookup_policy_none_create_with_vtbl(
-    sixel_lookup_policy_interface_t **policy,
-    sixel_lookup_policy_vtbl_t const *vtbl)
+SIXELSTATUS
+sixel_lookup_policy_create_none_8bit(
+    sixel_lookup_policy_interface_t **policy)
 {
     sixel_lookup_policy_none_object_t *object;
 
     object = NULL;
-    if (policy != NULL) {
-        *policy = NULL;
-    }
-    if (policy == NULL || vtbl == NULL) {
+    if (policy == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    *policy = NULL;
 
     object = (sixel_lookup_policy_none_object_t *)malloc(sizeof(*object));
     if (object == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_lookup_policy_none_create_with_vtbl: allocation failed.");
+            "sixel_lookup_policy_create_none_8bit: allocation failed.");
         return SIXEL_BAD_ALLOCATION;
     }
 
     memset(object, 0, sizeof(*object));
-    object->base.vtbl = vtbl;
+    object->base.vtbl = &g_sixel_lookup_policy_none_8bit_vtbl;
+    object->ref = 1U;
+    *policy = &object->base;
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_lookup_policy_create_none_float32(
+    sixel_lookup_policy_interface_t **policy)
+{
+    sixel_lookup_policy_none_object_t *object;
+
+    object = NULL;
+    if (policy == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *policy = NULL;
+
+    object = (sixel_lookup_policy_none_object_t *)malloc(sizeof(*object));
+    if (object == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_policy_create_none_float32: allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    memset(object, 0, sizeof(*object));
+    object->base.vtbl = &g_sixel_lookup_policy_none_float32_vtbl;
     object->ref = 1U;
     *policy = &object->base;
     return SIXEL_OK;
@@ -351,24 +374,6 @@ sixel_lookup_policy_none_create_with_vtbl(
 #if defined(HAVE_DIAGNOSTIC_WANALYZER_MALLOC_LEAK)
 # pragma GCC diagnostic pop
 #endif
-
-SIXELSTATUS
-sixel_lookup_policy_create_none_8bit(
-    sixel_lookup_policy_interface_t **policy)
-{
-    return sixel_lookup_policy_none_create_with_vtbl(
-        policy,
-        &g_sixel_lookup_policy_none_8bit_vtbl);
-}
-
-SIXELSTATUS
-sixel_lookup_policy_create_none_float32(
-    sixel_lookup_policy_interface_t **policy)
-{
-    return sixel_lookup_policy_none_create_with_vtbl(
-        policy,
-        &g_sixel_lookup_policy_none_float32_vtbl);
-}
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
