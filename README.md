@@ -1204,7 +1204,10 @@ as malformed input. Top-level chunk strictness is enforced for deterministic
 error contracts: duplicate `VP8`/`VP8X`/`VP8L`/`ALPH`/`ANIM`/`ICCP`/`EXIF`/`XMP`
 chunks are rejected, and static `VP8+VP8L` or `VP8L+ALPH` coexistence is
 treated as malformed input. `VP8X` metadata flag mismatches
-(`ICCP`/`EXIF`/`XMP`/`ANIM`) are also treated as malformed input. For static decode,
+(`ICCP`/`EXIF`/`XMP`/`ANIM`) are also treated as malformed input. In static decode,
+`ALPH` chunk usage is validated strictly as malformed input when `VP8X` alpha
+flags or `VP8` payload presence are inconsistent.
+For static decode,
 embedded `ICCP` is applied when builtin CMS is enabled and embedded `EXIF`
 orientation is applied when builtin orientation handling is enabled.
 
