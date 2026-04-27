@@ -376,6 +376,7 @@ AM_LOG_FLAGS =
 	staticcheck-interframe-no-compat-getenv-symbol \
 	staticcheck-quantize-merge-suboption-sync \
 	staticcheck-test-plan-single \
+	staticcheck-test-webp-serial-unique \
 	staticcheck-test-no-grep-awk \
 	staticcheck-artifact-local-dir-mkdir \
 	staticcheck-binding-loader-setopt-sync \
@@ -418,6 +419,7 @@ staticcheck-interframe-c-h-pair-sync \
 staticcheck-interframe-no-compat-getenv-symbol \
 staticcheck-quantize-merge-suboption-sync \
 staticcheck-test-plan-single \
+staticcheck-test-webp-serial-unique \
 staticcheck-test-no-grep-awk \
 staticcheck-artifact-local-dir-mkdir \
 staticcheck-binding-loader-setopt-sync \
@@ -720,6 +722,16 @@ staticcheck-test-plan-single:
 		--enable-hard-errors \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-test-plan-single.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-test-webp-serial-unique:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-test-webp-serial-unique" \
+		--log-file staticcheck-test-webp-serial-unique.log \
+		--trs-file staticcheck-test-webp-serial-unique.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-test-webp-serial-unique.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-test-no-grep-awk:
@@ -1526,6 +1538,7 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-interframe-no-compat-getenv-symbol.sh \
     _static/sh/staticcheck-quantize-merge-suboption-sync.sh \
     _static/sh/staticcheck-test-plan-single.sh \
+    _static/sh/staticcheck-test-webp-serial-unique.sh \
     _static/sh/staticcheck-test-no-grep-awk.sh \
     _static/sh/staticcheck-artifact-local-dir-mkdir.sh \
     _static/sh/staticcheck-build-doc-configure-help.sh \

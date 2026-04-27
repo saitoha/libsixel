@@ -383,6 +383,10 @@ run_case_tap "staticcheck-test-plan-single" \
     "$src_root/tests/_static/sh/staticcheck-test-plan-single.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-test-webp-serial-unique" \
+    "$src_root/tests/_static/sh/staticcheck-test-webp-serial-unique.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-artifact-local-dir-mkdir" \
     "$src_root/tests/_static/sh/staticcheck-artifact-local-dir-mkdir.sh" \
     "$src_root" || fail_and_exit $?
