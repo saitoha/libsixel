@@ -664,6 +664,7 @@ sixel_webp_xmp_span_case_equal(unsigned char const *payload,
         return 0;
     }
 
+    /* Compare one trimmed XMP span against an alias using ASCII fold. */
     text_size = strlen(text);
     if (end - begin != text_size) {
         return 0;
@@ -685,6 +686,10 @@ sixel_webp_xmp_match_profile_name(unsigned char const *payload,
                                   size_t value_end,
                                   sixel_webp_xmp_cms_profile_kind_t *kind)
 {
+    /*
+     * Keep profile aliases explicit so accepted spellings stay stable
+     * across platforms and parser refactors.
+     */
     static sixel_webp_xmp_profile_alias_t const profile_aliases[] = {
         { "sRGB IEC61966-2.1", SIXEL_WEBP_XMP_CMS_PROFILE_SRGB },
         { "sRGB", SIXEL_WEBP_XMP_CMS_PROFILE_SRGB },
