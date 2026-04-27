@@ -11496,11 +11496,18 @@ fi
 	shrext_cmds=.dll
 	# FIXME: Setting linknames here is a bad hack.
 	archive_cmds='$CC -Fe$output_objdir/$soname $libobjs $compiler_flags $deplibs -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~linknames='
+	lt_msvc_export_prefix='-link -EXPORT:'
+	case $cc_basename in
+	  clang | clang.exe)
+	    # GNU clang uses '-Wl,' forwarding instead of cl-style '-link'.
+	    lt_msvc_export_prefix='-Wl,-EXPORT:'
+	    ;;
+	esac
 	archive_expsym_cmds='if   test DEF = "`$SED -n     -e '\''s/^[	 ]*//'\''     -e '\''/^\(;.*\)*$/d'\''     -e '\''s/^\(EXPORTS\|LIBRARY\)\([	 ].*\)*$/DEF/p'\''     -e q     $export_symbols`" ; then
             cp "$export_symbols" "$output_objdir/$soname.def";
             echo "$tool_output_objdir$soname.def" > "$output_objdir/$soname.exp";
           else
-            $SED -e '\''s/^/-link -EXPORT:/'\'' < $export_symbols > $output_objdir/$soname.exp;
+            $SED -e '\''s/^/'"$lt_msvc_export_prefix"'/'\'' < $export_symbols > $output_objdir/$soname.exp;
           fi~
           $CC -Fe$tool_output_objdir$soname $libobjs $compiler_flags $deplibs "@$tool_output_objdir$soname.exp" -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~
           linknames='

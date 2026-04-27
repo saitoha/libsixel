@@ -5733,11 +5733,18 @@ _LT_EOF
 	shrext_cmds=.dll
 	# FIXME: Setting linknames here is a bad hack.
 	_LT_TAGVAR(archive_cmds, $1)='$CC -Fe$output_objdir/$soname $libobjs $compiler_flags $deplibs -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~linknames='
+	lt_msvc_export_prefix='-link -EXPORT:'
+	case $cc_basename in
+	  clang | clang.exe)
+	    # GNU clang uses '-Wl,' forwarding instead of cl-style '-link'.
+	    lt_msvc_export_prefix='-Wl,-EXPORT:'
+	    ;;
+	esac
 	_LT_TAGVAR(archive_expsym_cmds, $1)='if _LT_DLL_DEF_P([$export_symbols]); then
             cp "$export_symbols" "$output_objdir/$soname.def";
             echo "$tool_output_objdir$soname.def" > "$output_objdir/$soname.exp";
           else
-            $SED -e '\''s/^/-link -EXPORT:/'\'' < $export_symbols > $output_objdir/$soname.exp;
+            $SED -e '\''s/^/'"$lt_msvc_export_prefix"'/'\'' < $export_symbols > $output_objdir/$soname.exp;
           fi~
           $CC -Fe$tool_output_objdir$soname $libobjs $compiler_flags $deplibs "@$tool_output_objdir$soname.exp" -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~
           linknames='
@@ -6813,11 +6820,18 @@ if test yes != "$_lt_caught_CXX_error"; then
 	  shrext_cmds=.dll
 	  # FIXME: Setting linknames here is a bad hack.
 	  _LT_TAGVAR(archive_cmds, $1)='$CC -o $output_objdir/$soname $libobjs $compiler_flags $deplibs -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~linknames='
+	  lt_msvc_export_prefix='-link -EXPORT:'
+	  case $cc_basename in
+	    clang | clang.exe)
+	      # GNU clang uses '-Wl,' forwarding instead of cl-style '-link'.
+	      lt_msvc_export_prefix='-Wl,-EXPORT:'
+	      ;;
+	  esac
 	  _LT_TAGVAR(archive_expsym_cmds, $1)='if _LT_DLL_DEF_P([$export_symbols]); then
               cp "$export_symbols" "$output_objdir/$soname.def";
               echo "$tool_output_objdir$soname.def" > "$output_objdir/$soname.exp";
             else
-              $SED -e '\''s/^/-link -EXPORT:/'\'' < $export_symbols > $output_objdir/$soname.exp;
+              $SED -e '\''s/^/'"$lt_msvc_export_prefix"'/'\'' < $export_symbols > $output_objdir/$soname.exp;
             fi~
             $CC -o $tool_output_objdir$soname $libobjs $compiler_flags $deplibs "@$tool_output_objdir$soname.exp" -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~
             linknames='
