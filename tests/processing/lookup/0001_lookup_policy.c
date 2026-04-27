@@ -26,7 +26,7 @@
  * IDL usage in this unit
  *
  * IComponents.getservice("services/factory", &factory)
- * IFactory.create(allocator, "lookup/...", &policy)
+ * IFactory.create("lookup/...", allocator, &policy)
  * ILookupPolicy.prepare(request)
  */
 
@@ -92,8 +92,8 @@ create_lookup_policy(char const *name,
     factory = (sixel_factory_t *)service;
 
     status = factory->vtbl->create(factory,
-                                   request->allocator,
                                    name,
+                                   request->allocator,
                                    (void **)&created);
     factory->vtbl->unref(factory);
     factory = NULL;

@@ -32,6 +32,7 @@
 #endif
 
 #include "loader-factory.h"
+#include "factory.h"
 
 #include "sixel_atomic.h"
 
@@ -242,9 +243,13 @@ loader_factory_create_component(sixel_loader_factory_t const *factory,
                                 sixel_allocator_t *allocator,
                                 sixel_loader_component_t **ppcomponent)
 {
+    SIXELSTATUS status;
     sixel_loader_entry_t const *entry;
+    sixel_factory_t *component_factory;
 
+    status = SIXEL_FALSE;
     entry = NULL;
+    component_factory = NULL;
     if (ppcomponent != NULL) {
         *ppcomponent = NULL;
     }
@@ -275,7 +280,17 @@ loader_factory_create_component(sixel_loader_factory_t const *factory,
         return SIXEL_LOGIC_ERROR;
     }
 
-    return entry->new_component(allocator, ppcomponent);
+    status = sixel_factory_get_default(&component_factory);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = component_factory->vtbl->create(component_factory,
+                                             name,
+                                             allocator,
+                                             (void **)ppcomponent);
+    component_factory->vtbl->unref(component_factory);
+    return status;
 }
 
 /* emacs Local Variables:      */

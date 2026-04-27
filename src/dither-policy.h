@@ -50,7 +50,7 @@ extern "C" {
  *
  * Creation path:
  * - sixel_dither_policy_select_name(select_request)
- * - services/factory -> create(allocator, "dither/...", &policy)
+ * - services/factory -> create("dither/...", allocator, &policy)
  * - policy->prepare(request)
  */
 

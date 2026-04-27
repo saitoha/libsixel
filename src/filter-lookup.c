@@ -41,7 +41,7 @@
  * IDL usage in this unit
  *
  * IComponents.getservice("services/factory", &factory)
- * IFactory.create("lookup/...", &policy)
+ * IFactory.create("lookup/...", allocator, &policy)
  * ILookupPolicy.prepare(request{shared_instance_enabled,...})
  */
 
@@ -151,8 +151,8 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
     }
     factory = (sixel_factory_t *)service;
     status = factory->vtbl->create(factory,
-                                   allocator,
                                    policy_name,
+                                   allocator,
                                    (void **)&policy);
     factory->vtbl->unref(factory);
     factory = NULL;

@@ -67,8 +67,8 @@
  * IDL usage in this unit
  *
  * IComponents.getservice("services/factory", &factory)
- * IFactory.create("lookup/...", &lookup)
- * IFactory.create("dither/...", &dither_policy)
+ * IFactory.create("lookup/...", allocator, &lookup)
+ * IFactory.create("dither/...", allocator, &dither_policy)
  * ILookupPolicy.prepare(request{shared_instance_enabled,...})
  * IDitherPolicy.prepare(request)
  * IDitherPolicy.apply(request)
@@ -622,8 +622,8 @@ sixel_dither_prepare_lookup_policy(
     factory = (sixel_factory_t *)service;
 
     status = factory->vtbl->create(factory,
-                                   allocator,
                                    policy_name,
+                                   allocator,
                                    (void **)&prepared_policy);
     factory->vtbl->unref(factory);
     factory = NULL;
@@ -701,8 +701,8 @@ sixel_dither_prepare_dither_policy(
     factory = (sixel_factory_t *)service;
 
     status = factory->vtbl->create(factory,
-                                   dither->allocator,
                                    policy_name,
+                                   dither->allocator,
                                    (void **)&prepared_policy);
     factory->vtbl->unref(factory);
     factory = NULL;

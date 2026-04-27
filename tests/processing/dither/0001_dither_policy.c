@@ -23,8 +23,8 @@
  * IDL usage in this unit
  *
  * IComponents.getservice("services/factory", &factory)
- * IFactory.create(allocator, "dither/...", &policy)
- * IFactory.create(allocator, "lookup/...", &policy)
+ * IFactory.create("dither/...", allocator, &policy)
+ * IFactory.create("lookup/...", allocator, &policy)
  * IDitherPolicy.prepare(request)
  * IDitherPolicy.apply(request)
  */
@@ -53,7 +53,7 @@ create_policy_object(char const *name,
     }
     factory = (sixel_factory_t *)service;
 
-    status = factory->vtbl->create(factory, allocator, name, object);
+    status = factory->vtbl->create(factory, name, allocator, object);
     factory->vtbl->unref(factory);
     return status;
 }
