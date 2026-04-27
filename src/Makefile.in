@@ -245,8 +245,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-interframe-stbn-source-mask-table.h \
 	$(srcdir)/dither-interframe-stbn-source-pmj.c \
 	$(srcdir)/dither-interframe-stbn-source-pmj.h \
-	$(srcdir)/logger.c \
-	$(srcdir)/logger.h $(srcdir)/colorspace.c \
+	$(srcdir)/logger.c $(srcdir)/logger.h $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/cpu.c $(srcdir)/cpu.h $(srcdir)/pixelformat.c \
 	$(srcdir)/pixelformat.h $(srcdir)/filter-colors.c \
@@ -293,10 +292,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/loader-wic.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
 	$(srcdir)/frompng.c $(srcdir)/frompng.h $(srcdir)/fromhdr.c \
 	$(srcdir)/fromhdr.h $(srcdir)/frompsd.c $(srcdir)/frompsd.h \
-		$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/fromwebp.c \
-		$(srcdir)/fromwebp.h $(srcdir)/fromwebp-container.h \
-		$(srcdir)/fromwebp-internal.h \
-	$(srcdir)/fromwebp-vp8-private.h \
+	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/fromwebp.c \
+	$(srcdir)/fromwebp.h $(srcdir)/fromwebp-container.h \
+	$(srcdir)/fromwebp-internal.h $(srcdir)/fromwebp-vp8-private.h \
 	$(srcdir)/fromwebp-vp8-native-internal.h \
 	$(srcdir)/fromwebp-vp8-tables.h $(srcdir)/fromwebp-container.c \
 	$(srcdir)/fromwebp-vp8.c $(srcdir)/fromwebp-vp8-alpha.c \
