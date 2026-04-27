@@ -22243,6 +22243,7 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
     int traced_coverage_gate_split;
     int use_clip_weight;
     int use_coverage_weight;
+    int traced_alpha_invariant;
     float const *blend_rgb_premul;
     float const *blend_alpha_map;
 
@@ -22257,6 +22258,7 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
     traced_coverage_gate_split = 0;
     use_clip_weight = 0;
     use_coverage_weight = 0;
+    traced_alpha_invariant = 0;
     blend_rgb_premul = canvas_rgb_premul;
     blend_alpha_map = canvas_alpha;
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
@@ -22288,7 +22290,8 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
         row_offset = y * (size_t)canvas_width;
         for (x = 0u; x < (size_t)canvas_width; ++x) {
             size_t idx;
-            float alpha;
+            float dst_alpha;
+            float sample_alpha;
             float base_r;
             float base_g;
             float base_b;
@@ -22311,9 +22314,14 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
             } else {
                 coverage_weight = 1.0f;
             }
-            alpha = sixel_builtin_psd_clamp_alpha_float32(
+            dst_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                canvas_alpha[idx]);
+            if (dst_alpha <= 0.0f) {
+                continue;
+            }
+            sample_alpha = sixel_builtin_psd_clamp_alpha_float32(
                 blend_alpha_map[idx]);
-            if (alpha <= 0.0f) {
+            if (sample_alpha <= 0.0f) {
                 continue;
             }
             if (use_clip_weight != 0) {
@@ -22341,12 +22349,19 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
                     "source and clip gate in layer fallback");
                 traced_coverage_gate_split = 1;
             }
+            if (traced_alpha_invariant == 0) {
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: keeping deferred solid overlay alpha "
+                    "unchanged in layer fallback");
+                traced_alpha_invariant = 1;
+            }
             base_r = sixel_builtin_psd_clamp01(
-                blend_rgb_premul[idx * 3u + 0u] / alpha);
+                blend_rgb_premul[idx * 3u + 0u] / sample_alpha);
             base_g = sixel_builtin_psd_clamp01(
-                blend_rgb_premul[idx * 3u + 1u] / alpha);
+                blend_rgb_premul[idx * 3u + 1u] / sample_alpha);
             base_b = sixel_builtin_psd_clamp01(
-                blend_rgb_premul[idx * 3u + 2u] / alpha);
+                blend_rgb_premul[idx * 3u + 2u] / sample_alpha);
             if (effect_mode == SIXEL_BUILTIN_PSD_BLEND_NORMAL) {
                 blended_r = sixel_builtin_psd_blend_channel_gamma(
                     base_r,
@@ -22382,11 +22397,11 @@ sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
                     blended_b * effective_opacity);
             }
             canvas_rgb_premul[idx * 3u + 0u] =
-                sixel_builtin_psd_clamp01(blended_r * alpha);
+                sixel_builtin_psd_clamp01(blended_r * dst_alpha);
             canvas_rgb_premul[idx * 3u + 1u] =
-                sixel_builtin_psd_clamp01(blended_g * alpha);
+                sixel_builtin_psd_clamp01(blended_g * dst_alpha);
             canvas_rgb_premul[idx * 3u + 2u] =
-                sixel_builtin_psd_clamp01(blended_b * alpha);
+                sixel_builtin_psd_clamp01(blended_b * dst_alpha);
         }
     }
 }
@@ -22409,7 +22424,8 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     float gradient_t;
     float gradient_alpha;
     float gradient_rgb[3];
-    float alpha;
+    float dst_alpha;
+    float sample_alpha;
     float clip_weight;
     float base_r;
     float base_g;
@@ -22425,6 +22441,7 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     int local_y;
     int traced_clip_weighted;
     int traced_coverage_gate_split;
+    int traced_alpha_invariant;
     int use_clip_weight;
     int use_coverage_weight;
     float const *blend_rgb_premul;
@@ -22438,7 +22455,8 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     gradient_rgb[0] = 0.0f;
     gradient_rgb[1] = 0.0f;
     gradient_rgb[2] = 0.0f;
-    alpha = 0.0f;
+    dst_alpha = 0.0f;
+    sample_alpha = 0.0f;
     clip_weight = 0.0f;
     base_r = 0.0f;
     base_g = 0.0f;
@@ -22454,6 +22472,7 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
     local_y = 0;
     traced_clip_weighted = 0;
     traced_coverage_gate_split = 0;
+    traced_alpha_invariant = 0;
     use_clip_weight = 0;
     use_coverage_weight = 0;
     blend_rgb_premul = canvas_rgb_premul;
@@ -22519,9 +22538,14 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
                 local_y >= (int)layer->height) {
                 continue;
             }
-            alpha = sixel_builtin_psd_clamp_alpha_float32(
+            dst_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                canvas_alpha[idx]);
+            if (dst_alpha <= 0.0f) {
+                continue;
+            }
+            sample_alpha = sixel_builtin_psd_clamp_alpha_float32(
                 blend_alpha_map[idx]);
-            if (alpha <= 0.0f) {
+            if (sample_alpha <= 0.0f) {
                 continue;
             }
             gradient_t = sixel_builtin_psd_effect_gradient_t(
@@ -22566,12 +22590,19 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
                     "source and clip gate in layer fallback");
                 traced_coverage_gate_split = 1;
             }
+            if (traced_alpha_invariant == 0) {
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: keeping deferred gradient overlay alpha "
+                    "unchanged in layer fallback");
+                traced_alpha_invariant = 1;
+            }
             base_r = sixel_builtin_psd_clamp01(
-                blend_rgb_premul[idx * 3u + 0u] / alpha);
+                blend_rgb_premul[idx * 3u + 0u] / sample_alpha);
             base_g = sixel_builtin_psd_clamp01(
-                blend_rgb_premul[idx * 3u + 1u] / alpha);
+                blend_rgb_premul[idx * 3u + 1u] / sample_alpha);
             base_b = sixel_builtin_psd_clamp01(
-                blend_rgb_premul[idx * 3u + 2u] / alpha);
+                blend_rgb_premul[idx * 3u + 2u] / sample_alpha);
             if (effect_mode == SIXEL_BUILTIN_PSD_BLEND_NORMAL) {
                 blended_r = sixel_builtin_psd_blend_channel_gamma(
                     base_r,
@@ -22607,11 +22638,11 @@ sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
                     blended_b * effective_gradient_alpha);
             }
             canvas_rgb_premul[idx * 3u + 0u] =
-                sixel_builtin_psd_clamp01(blended_r * alpha);
+                sixel_builtin_psd_clamp01(blended_r * dst_alpha);
             canvas_rgb_premul[idx * 3u + 1u] =
-                sixel_builtin_psd_clamp01(blended_g * alpha);
+                sixel_builtin_psd_clamp01(blended_g * dst_alpha);
             canvas_rgb_premul[idx * 3u + 2u] =
-                sixel_builtin_psd_clamp01(blended_b * alpha);
+                sixel_builtin_psd_clamp01(blended_b * dst_alpha);
         }
     }
 }
