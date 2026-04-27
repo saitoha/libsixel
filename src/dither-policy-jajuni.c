@@ -1002,6 +1002,52 @@ sixel_dither_policy_create_jajuni(
 # pragma GCC diagnostic pop
 #endif
 
+static sixel_dither_policy_vtbl_t const
+    g_sixel_dither_policy_jajuni_8bit_vtbl = {
+    sixel_dither_policy_jajuni_ref,
+    sixel_dither_policy_jajuni_unref,
+    sixel_dither_policy_jajuni_prepare,
+    sixel_dither_policy_jajuni_apply,
+    sixel_dither_policy_jajuni_supports_parallel_bands
+};
+
+static sixel_dither_policy_vtbl_t const
+    g_sixel_dither_policy_jajuni_float32_vtbl = {
+    sixel_dither_policy_jajuni_ref,
+    sixel_dither_policy_jajuni_unref,
+    sixel_dither_policy_jajuni_prepare,
+    sixel_dither_policy_jajuni_apply,
+    sixel_dither_policy_jajuni_supports_parallel_bands
+};
+
+SIXELSTATUS
+sixel_dither_policy_create_jajuni_8bit(
+    sixel_dither_policy_interface_t **policy)
+{
+    SIXELSTATUS status;
+
+    status = sixel_dither_policy_create_jajuni(policy);
+    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
+        (*policy)->vtbl = &g_sixel_dither_policy_jajuni_8bit_vtbl;
+    }
+
+    return status;
+}
+
+SIXELSTATUS
+sixel_dither_policy_create_jajuni_float32(
+    sixel_dither_policy_interface_t **policy)
+{
+    SIXELSTATUS status;
+
+    status = sixel_dither_policy_create_jajuni(policy);
+    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
+        (*policy)->vtbl = &g_sixel_dither_policy_jajuni_float32_vtbl;
+    }
+
+    return status;
+}
+
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */

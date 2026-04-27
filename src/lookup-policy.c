@@ -29,40 +29,101 @@
 #include "lookup-policy.h"
 
 
-static char const g_lookup_policy_name_none[] = "lookup/none";
-static char const g_lookup_policy_name_mono_darkbg[] = "lookup/mono-darkbg";
-static char const g_lookup_policy_name_mono_lightbg[] = "lookup/mono-lightbg";
-static char const g_lookup_policy_name_certlut[] = "lookup/certlut";
-static char const g_lookup_policy_name_5bit[] = "lookup/5bit";
-static char const g_lookup_policy_name_6bit[] = "lookup/6bit";
-static char const g_lookup_policy_name_eytzinger[] = "lookup/eytzinger";
-static char const g_lookup_policy_name_fhedt[] = "lookup/fhedt";
-static char const g_lookup_policy_name_vptree[] = "lookup/vptree";
-static char const g_lookup_policy_name_rbc[] = "lookup/rbc";
-static char const g_lookup_policy_name_mahalanobis[] = "lookup/mahalanobis";
+static char const g_lookup_policy_name_none_8bit[] = "lookup/none.8bit";
+static char const g_lookup_policy_name_none_float32[] = "lookup/none.float32";
+static char const g_lookup_policy_name_mono_darkbg_8bit[] =
+    "lookup/mono-darkbg.8bit";
+static char const g_lookup_policy_name_mono_darkbg_float32[] =
+    "lookup/mono-darkbg.float32";
+static char const g_lookup_policy_name_mono_lightbg_8bit[] =
+    "lookup/mono-lightbg.8bit";
+static char const g_lookup_policy_name_mono_lightbg_float32[] =
+    "lookup/mono-lightbg.float32";
+static char const g_lookup_policy_name_certlut_8bit[] = "lookup/certlut.8bit";
+static char const g_lookup_policy_name_certlut_float32[] =
+    "lookup/certlut.float32";
+static char const g_lookup_policy_name_5bit_8bit[] = "lookup/5bit.8bit";
+static char const g_lookup_policy_name_5bit_float32[] = "lookup/5bit.float32";
+static char const g_lookup_policy_name_6bit_8bit[] = "lookup/6bit.8bit";
+static char const g_lookup_policy_name_6bit_float32[] = "lookup/6bit.float32";
+static char const g_lookup_policy_name_eytzinger_8bit[] =
+    "lookup/eytzinger.8bit";
+static char const g_lookup_policy_name_eytzinger_float32[] =
+    "lookup/eytzinger.float32";
+static char const g_lookup_policy_name_fhedt_8bit[] = "lookup/fhedt.8bit";
+static char const g_lookup_policy_name_fhedt_float32[] =
+    "lookup/fhedt.float32";
+static char const g_lookup_policy_name_vptree_8bit[] = "lookup/vptree.8bit";
+static char const g_lookup_policy_name_vptree_float32[] =
+    "lookup/vptree.float32";
+static char const g_lookup_policy_name_rbc_8bit[] = "lookup/rbc.8bit";
+static char const g_lookup_policy_name_rbc_float32[] = "lookup/rbc.float32";
+static char const g_lookup_policy_name_mahalanobis_8bit[] =
+    "lookup/mahalanobis.8bit";
+static char const g_lookup_policy_name_mahalanobis_float32[] =
+    "lookup/mahalanobis.float32";
+
+static int
+sixel_lookup_policy_select_prefers_float32(
+    sixel_lookup_policy_select_request_t const *request)
+{
+    if (request == NULL) {
+        return 0;
+    }
+
+    return SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
+}
 
 static char const *
-sixel_lookup_policy_name_from_lut_policy(int lut_policy)
+sixel_lookup_policy_name_from_lut_policy(int lut_policy,
+                                         int prefer_float32)
 {
     switch (lut_policy) {
     case SIXEL_LUT_POLICY_CERTLUT:
-        return g_lookup_policy_name_certlut;
+        if (prefer_float32 != 0) {
+            return g_lookup_policy_name_certlut_float32;
+        }
+        return g_lookup_policy_name_certlut_8bit;
     case SIXEL_LUT_POLICY_5BIT:
-        return g_lookup_policy_name_5bit;
+        if (prefer_float32 != 0) {
+            return g_lookup_policy_name_5bit_float32;
+        }
+        return g_lookup_policy_name_5bit_8bit;
     case SIXEL_LUT_POLICY_6BIT:
-        return g_lookup_policy_name_6bit;
+        if (prefer_float32 != 0) {
+            return g_lookup_policy_name_6bit_float32;
+        }
+        return g_lookup_policy_name_6bit_8bit;
     case SIXEL_LUT_POLICY_EYTZINGER:
-        return g_lookup_policy_name_eytzinger;
+        if (prefer_float32 != 0) {
+            return g_lookup_policy_name_eytzinger_float32;
+        }
+        return g_lookup_policy_name_eytzinger_8bit;
     case SIXEL_LUT_POLICY_FHEDT:
-        return g_lookup_policy_name_fhedt;
+        if (prefer_float32 != 0) {
+            return g_lookup_policy_name_fhedt_float32;
+        }
+        return g_lookup_policy_name_fhedt_8bit;
     case SIXEL_LUT_POLICY_VPTREE:
-        return g_lookup_policy_name_vptree;
+        if (prefer_float32 != 0) {
+            return g_lookup_policy_name_vptree_float32;
+        }
+        return g_lookup_policy_name_vptree_8bit;
     case SIXEL_LUT_POLICY_RBC:
-        return g_lookup_policy_name_rbc;
+        if (prefer_float32 != 0) {
+            return g_lookup_policy_name_rbc_float32;
+        }
+        return g_lookup_policy_name_rbc_8bit;
     case SIXEL_LUT_POLICY_MAHALANOBIS:
-        return g_lookup_policy_name_mahalanobis;
+        if (prefer_float32 != 0) {
+            return g_lookup_policy_name_mahalanobis_float32;
+        }
+        return g_lookup_policy_name_mahalanobis_8bit;
     default:
-        return g_lookup_policy_name_6bit;
+        if (prefer_float32 != 0) {
+            return g_lookup_policy_name_6bit_float32;
+        }
+        return g_lookup_policy_name_6bit_8bit;
     }
 }
 
@@ -94,13 +155,15 @@ sixel_lookup_policy_select_name(
     int sum2;
     int n;
     int normalized_lut_policy;
+    int prefer_float32;
 
     sum1 = 0;
     sum2 = 0;
     normalized_lut_policy = SIXEL_LUT_POLICY_6BIT;
+    prefer_float32 = sixel_lookup_policy_select_prefers_float32(request);
 
     if (request == NULL) {
-        return g_lookup_policy_name_none;
+        return g_lookup_policy_name_none_8bit;
     }
 
     if (request->reqcolor == 2 && request->palette != NULL
@@ -114,22 +177,32 @@ sixel_lookup_policy_select_name(
             sum2 += request->palette[n];
         }
         if (sum1 == 0 && sum2 == 255 * 3) {
-            return g_lookup_policy_name_mono_darkbg;
+            if (prefer_float32 != 0) {
+                return g_lookup_policy_name_mono_darkbg_float32;
+            }
+            return g_lookup_policy_name_mono_darkbg_8bit;
         }
         if (sum1 == 255 * 3 && sum2 == 0) {
-            return g_lookup_policy_name_mono_lightbg;
+            if (prefer_float32 != 0) {
+                return g_lookup_policy_name_mono_lightbg_float32;
+            }
+            return g_lookup_policy_name_mono_lightbg_8bit;
         }
     }
 
     if (request->optimize_lookup == 0
             || request->depth != 3
             || request->lut_policy == SIXEL_LUT_POLICY_NONE) {
-        return g_lookup_policy_name_none;
+        if (prefer_float32 != 0) {
+            return g_lookup_policy_name_none_float32;
+        }
+        return g_lookup_policy_name_none_8bit;
     }
 
     normalized_lut_policy = sixel_lookup_policy_normalize_fast_lut_policy(
         request->lut_policy);
-    return sixel_lookup_policy_name_from_lut_policy(normalized_lut_policy);
+    return sixel_lookup_policy_name_from_lut_policy(normalized_lut_policy,
+                                                    prefer_float32);
 }
 
 /* emacs Local Variables:      */

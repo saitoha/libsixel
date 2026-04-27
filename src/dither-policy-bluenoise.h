@@ -31,9 +31,15 @@
 extern "C" {
 #endif
 
-/* @classid dither/bluenoise */
+/* @classid dither/bluenoise.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_dither_policy_create_bluenoise(sixel_dither_policy_interface_t **policy);
+sixel_dither_policy_create_bluenoise_8bit(
+    sixel_dither_policy_interface_t **policy);
+
+/* @classid dither/bluenoise.float32 */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_create_bluenoise_float32(
+    sixel_dither_policy_interface_t **policy);
 
 #ifdef __cplusplus
 }

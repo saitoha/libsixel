@@ -1055,6 +1055,52 @@ sixel_dither_policy_create_bluenoise(
 # pragma GCC diagnostic pop
 #endif
 
+static sixel_dither_policy_vtbl_t const
+    g_sixel_dither_policy_bluenoise_8bit_vtbl = {
+    sixel_dither_policy_bluenoise_ref,
+    sixel_dither_policy_bluenoise_unref,
+    sixel_dither_policy_bluenoise_prepare,
+    sixel_dither_policy_bluenoise_apply,
+    sixel_dither_policy_bluenoise_supports_parallel_bands
+};
+
+static sixel_dither_policy_vtbl_t const
+    g_sixel_dither_policy_bluenoise_float32_vtbl = {
+    sixel_dither_policy_bluenoise_ref,
+    sixel_dither_policy_bluenoise_unref,
+    sixel_dither_policy_bluenoise_prepare,
+    sixel_dither_policy_bluenoise_apply,
+    sixel_dither_policy_bluenoise_supports_parallel_bands
+};
+
+SIXELSTATUS
+sixel_dither_policy_create_bluenoise_8bit(
+    sixel_dither_policy_interface_t **policy)
+{
+    SIXELSTATUS status;
+
+    status = sixel_dither_policy_create_bluenoise(policy);
+    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
+        (*policy)->vtbl = &g_sixel_dither_policy_bluenoise_8bit_vtbl;
+    }
+
+    return status;
+}
+
+SIXELSTATUS
+sixel_dither_policy_create_bluenoise_float32(
+    sixel_dither_policy_interface_t **policy)
+{
+    SIXELSTATUS status;
+
+    status = sixel_dither_policy_create_bluenoise(policy);
+    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
+        (*policy)->vtbl = &g_sixel_dither_policy_bluenoise_float32_vtbl;
+    }
+
+    return status;
+}
+
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */

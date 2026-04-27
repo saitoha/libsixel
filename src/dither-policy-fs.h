@@ -31,9 +31,15 @@
 extern "C" {
 #endif
 
-/* @classid dither/fs */
+/* @classid dither/fs.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_dither_policy_create_fs(sixel_dither_policy_interface_t **policy);
+sixel_dither_policy_create_fs_8bit(
+    sixel_dither_policy_interface_t **policy);
+
+/* @classid dither/fs.float32 */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_create_fs_float32(
+    sixel_dither_policy_interface_t **policy);
 
 #ifdef __cplusplus
 }

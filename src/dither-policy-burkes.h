@@ -31,9 +31,15 @@
 extern "C" {
 #endif
 
-/* @classid dither/burkes */
+/* @classid dither/burkes.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_dither_policy_create_burkes(sixel_dither_policy_interface_t **policy);
+sixel_dither_policy_create_burkes_8bit(
+    sixel_dither_policy_interface_t **policy);
+
+/* @classid dither/burkes.float32 */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_create_burkes_float32(
+    sixel_dither_policy_interface_t **policy);
 
 #ifdef __cplusplus
 }

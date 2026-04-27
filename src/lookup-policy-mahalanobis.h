@@ -32,9 +32,14 @@ extern "C" {
 #endif
 
 
-/* @classid lookup/mahalanobis */
+/* @classid lookup/mahalanobis.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lookup_policy_create_mahalanobis(
+sixel_lookup_policy_create_mahalanobis_8bit(
+    sixel_lookup_policy_interface_t **policy);
+
+/* @classid lookup/mahalanobis.float32 */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_lookup_policy_create_mahalanobis_float32(
     sixel_lookup_policy_interface_t **policy);
 
 #ifdef __cplusplus

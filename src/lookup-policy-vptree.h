@@ -32,9 +32,15 @@ extern "C" {
 #endif
 
 
-/* @classid lookup/vptree */
+/* @classid lookup/vptree.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lookup_policy_create_vptree(sixel_lookup_policy_interface_t **policy);
+sixel_lookup_policy_create_vptree_8bit(
+    sixel_lookup_policy_interface_t **policy);
+
+/* @classid lookup/vptree.float32 */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_lookup_policy_create_vptree_float32(
+    sixel_lookup_policy_interface_t **policy);
 
 #ifdef __cplusplus
 }

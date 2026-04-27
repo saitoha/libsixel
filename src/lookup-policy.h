@@ -69,6 +69,7 @@ typedef struct sixel_lookup_policy_select_request {
     int reqcolor;
     int optimize_lookup;
     int lut_policy;
+    int pixelformat;
 } sixel_lookup_policy_select_request_t;
 
 typedef struct sixel_lookup_policy_prepare_request {

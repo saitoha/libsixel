@@ -31,9 +31,15 @@
 extern "C" {
 #endif
 
-/* @classid dither/sierra3 */
+/* @classid dither/sierra3.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_dither_policy_create_sierra3(sixel_dither_policy_interface_t **policy);
+sixel_dither_policy_create_sierra3_8bit(
+    sixel_dither_policy_interface_t **policy);
+
+/* @classid dither/sierra3.float32 */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_create_sierra3_float32(
+    sixel_dither_policy_interface_t **policy);
 
 #ifdef __cplusplus
 }

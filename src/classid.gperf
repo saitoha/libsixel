@@ -27,15 +27,26 @@ struct sixel_lookup_policy_classid_entry {
     sixel_lookup_policy_create_fn create;
 };
 %%
-lookup/5bit, sixel_lookup_policy_create_5bit
-lookup/6bit, sixel_lookup_policy_create_6bit
-lookup/certlut, sixel_lookup_policy_create_certlut
-lookup/eytzinger, sixel_lookup_policy_create_eytzinger
-lookup/fhedt, sixel_lookup_policy_create_fhedt
-lookup/mahalanobis, sixel_lookup_policy_create_mahalanobis
-lookup/mono-darkbg, sixel_lookup_policy_create_mono_darkbg
-lookup/mono-lightbg, sixel_lookup_policy_create_mono_lightbg
-lookup/none, sixel_lookup_policy_create_none
-lookup/rbc, sixel_lookup_policy_create_rbc
-lookup/vptree, sixel_lookup_policy_create_vptree
+lookup/5bit.8bit, sixel_lookup_policy_create_5bit_8bit
+lookup/5bit.float32, sixel_lookup_policy_create_5bit_float32
+lookup/6bit.8bit, sixel_lookup_policy_create_6bit_8bit
+lookup/6bit.float32, sixel_lookup_policy_create_6bit_float32
+lookup/certlut.8bit, sixel_lookup_policy_create_certlut_8bit
+lookup/certlut.float32, sixel_lookup_policy_create_certlut_float32
+lookup/eytzinger.8bit, sixel_lookup_policy_create_eytzinger_8bit
+lookup/eytzinger.float32, sixel_lookup_policy_create_eytzinger_float32
+lookup/fhedt.8bit, sixel_lookup_policy_create_fhedt_8bit
+lookup/fhedt.float32, sixel_lookup_policy_create_fhedt_float32
+lookup/mahalanobis.8bit, sixel_lookup_policy_create_mahalanobis_8bit
+lookup/mahalanobis.float32, sixel_lookup_policy_create_mahalanobis_float32
+lookup/mono-darkbg.8bit, sixel_lookup_policy_create_mono_darkbg_8bit
+lookup/mono-darkbg.float32, sixel_lookup_policy_create_mono_darkbg_float32
+lookup/mono-lightbg.8bit, sixel_lookup_policy_create_mono_lightbg_8bit
+lookup/mono-lightbg.float32, sixel_lookup_policy_create_mono_lightbg_float32
+lookup/none.8bit, sixel_lookup_policy_create_none_8bit
+lookup/none.float32, sixel_lookup_policy_create_none_float32
+lookup/rbc.8bit, sixel_lookup_policy_create_rbc_8bit
+lookup/rbc.float32, sixel_lookup_policy_create_rbc_float32
+lookup/vptree.8bit, sixel_lookup_policy_create_vptree_8bit
+lookup/vptree.float32, sixel_lookup_policy_create_vptree_float32
 %%

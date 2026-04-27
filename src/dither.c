@@ -608,6 +608,7 @@ sixel_dither_prepare_lookup_policy(
     select_request.reqcolor = reqcolor;
     select_request.optimize_lookup = foptimize;
     select_request.lut_policy = lut_policy;
+    select_request.pixelformat = pixelformat;
 
     policy_name = sixel_lookup_policy_select_name(&select_request);
     if (policy_name == NULL) {
@@ -673,6 +674,7 @@ sixel_dither_prepare_dither_policy(
 
     select_request.method_for_diffuse = dither->method_for_diffuse;
     select_request.ncolors = dither->ncolors;
+    select_request.pixelformat = pixelformat;
     policy_name = sixel_dither_policy_select_name(&select_request);
     if (policy_name == NULL) {
         return SIXEL_BAD_ARGUMENT;

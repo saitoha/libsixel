@@ -1078,6 +1078,51 @@ sixel_lookup_policy_create_mahalanobis(
 #endif
 
 
+
+static sixel_lookup_policy_vtbl_t
+    g_sixel_lookup_policy_mahalanobis_8bit_vtbl = {
+    sixel_lookup_policy_mahalanobis_ref,
+    sixel_lookup_policy_mahalanobis_unref,
+    sixel_lookup_policy_mahalanobis_prepare,
+    sixel_lookup_policy_mahalanobis_map_pixel,
+};
+
+static sixel_lookup_policy_vtbl_t
+    g_sixel_lookup_policy_mahalanobis_float32_vtbl = {
+    sixel_lookup_policy_mahalanobis_ref,
+    sixel_lookup_policy_mahalanobis_unref,
+    sixel_lookup_policy_mahalanobis_prepare,
+    sixel_lookup_policy_mahalanobis_map_pixel,
+};
+
+SIXELSTATUS
+sixel_lookup_policy_create_mahalanobis_8bit(
+    sixel_lookup_policy_interface_t **policy)
+{
+    SIXELSTATUS status;
+
+    status = sixel_lookup_policy_create_mahalanobis(policy);
+    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
+        (*policy)->vtbl = &g_sixel_lookup_policy_mahalanobis_8bit_vtbl;
+    }
+
+    return status;
+}
+
+SIXELSTATUS
+sixel_lookup_policy_create_mahalanobis_float32(
+    sixel_lookup_policy_interface_t **policy)
+{
+    SIXELSTATUS status;
+
+    status = sixel_lookup_policy_create_mahalanobis(policy);
+    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
+        (*policy)->vtbl = &g_sixel_lookup_policy_mahalanobis_float32_vtbl;
+    }
+
+    return status;
+}
+
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */

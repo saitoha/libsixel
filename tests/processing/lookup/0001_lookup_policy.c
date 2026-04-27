@@ -50,6 +50,7 @@ init_lookup_policy_request(sixel_lookup_policy_prepare_request_t *request,
     select_request->reqcolor = reqcolor;
     select_request->optimize_lookup = optimize_lookup;
     select_request->lut_policy = lut_policy;
+    select_request->pixelformat = pixelformat;
 
     request->palette = palette;
     request->palette_float = NULL;
@@ -169,6 +170,7 @@ test_lookup_policy_none_mode_maps_expected_color(void)
     sixel_lookup_policy_select_request_t select_request;
     sixel_lookup_policy_prepare_request_t request;
     unsigned char palette[6];
+    float palette_float[6];
     unsigned char pixel[3];
     int mapped;
     char const *selected_name;
@@ -179,6 +181,7 @@ test_lookup_policy_none_mode_maps_expected_color(void)
     memset(&select_request, 0, sizeof(select_request));
     memset(&request, 0, sizeof(request));
     memset(palette, 0, sizeof(palette));
+    memset(palette_float, 0, sizeof(palette_float));
     memset(pixel, 0, sizeof(pixel));
     mapped = -1;
     selected_name = NULL;
@@ -194,6 +197,12 @@ test_lookup_policy_none_mode_maps_expected_color(void)
     palette[3] = 255;
     palette[4] = 0;
     palette[5] = 0;
+    palette_float[0] = 0.0f;
+    palette_float[1] = 0.0f;
+    palette_float[2] = 0.0f;
+    palette_float[3] = 255.0f;
+    palette_float[4] = 0.0f;
+    palette_float[5] = 0.0f;
     pixel[0] = 250;
     pixel[1] = 10;
     pixel[2] = 10;
@@ -217,7 +226,8 @@ test_lookup_policy_none_mode_maps_expected_color(void)
         goto cleanup;
     }
 
-    if (selected_name == NULL || strcmp(selected_name, "lookup/none") != 0) {
+    if (selected_name == NULL
+            || strcmp(selected_name, "lookup/none.8bit") != 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -293,7 +303,8 @@ test_lookup_policy_none_mode_maps_float_without_palette_float(void)
         goto cleanup;
     }
 
-    if (selected_name == NULL || strcmp(selected_name, "lookup/none") != 0) {
+    if (selected_name == NULL
+            || strcmp(selected_name, "lookup/none.float32") != 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -373,7 +384,8 @@ test_lookup_policy_fast_mode_maps_float_input(void)
         goto cleanup;
     }
 
-    if (selected_name == NULL || strcmp(selected_name, "lookup/6bit") != 0) {
+    if (selected_name == NULL
+            || strcmp(selected_name, "lookup/6bit.float32") != 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -466,7 +478,7 @@ test_lookup_policy_mono_mode_maps_expected_threshold(void)
     }
 
     if (selected_name == NULL
-            || strcmp(selected_name, "lookup/mono-darkbg") != 0) {
+            || strcmp(selected_name, "lookup/mono-darkbg.8bit") != 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -533,7 +545,9 @@ test_lookup_policy_named_factory_creates_fast_lut(void)
                                NULL,
                                allocator);
 
-    status = create_lookup_policy("lookup/eytzinger", &request, &lookup_policy);
+    status = create_lookup_policy("lookup/eytzinger.8bit",
+                                  &request,
+                                  &lookup_policy);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -556,30 +570,43 @@ static int
 test_lookup_policy_all_named_classes_are_polymorphic(void)
 {
     static char const *const class_names[] = {
-        "lookup/none",
-        "lookup/mono-darkbg",
-        "lookup/mono-lightbg",
-        "lookup/certlut",
-        "lookup/5bit",
-        "lookup/6bit",
-        "lookup/eytzinger",
-        "lookup/fhedt",
-        "lookup/vptree",
-        "lookup/rbc",
-        "lookup/mahalanobis"
+        "lookup/none.8bit",
+        "lookup/none.float32",
+        "lookup/mono-darkbg.8bit",
+        "lookup/mono-darkbg.float32",
+        "lookup/mono-lightbg.8bit",
+        "lookup/mono-lightbg.float32",
+        "lookup/certlut.8bit",
+        "lookup/certlut.float32",
+        "lookup/5bit.8bit",
+        "lookup/5bit.float32",
+        "lookup/6bit.8bit",
+        "lookup/6bit.float32",
+        "lookup/eytzinger.8bit",
+        "lookup/eytzinger.float32",
+        "lookup/fhedt.8bit",
+        "lookup/fhedt.float32",
+        "lookup/vptree.8bit",
+        "lookup/vptree.float32",
+        "lookup/rbc.8bit",
+        "lookup/rbc.float32",
+        "lookup/mahalanobis.8bit",
+        "lookup/mahalanobis.float32"
     };
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_lookup_policy_prepare_request_t request;
     sixel_lookup_policy_select_request_t select_request;
     sixel_lookup_policy_interface_t *lookup_policy;
-    sixel_lookup_policy_vtbl_t const *vtbls[11];
+    sixel_lookup_policy_vtbl_t const *vtbls[22];
     unsigned char palette[6];
+    float palette_float[6];
     unsigned char pixel[3];
     size_t class_count;
     size_t i;
     size_t j;
     int mapped;
+    int is_float_class;
 
     status = SIXEL_FALSE;
     allocator = NULL;
@@ -590,11 +617,13 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
         vtbls[i] = NULL;
     }
     memset(palette, 0, sizeof(palette));
+    memset(palette_float, 0, sizeof(palette_float));
     memset(pixel, 0, sizeof(pixel));
     class_count = sizeof(class_names) / sizeof(class_names[0]);
     i = 0U;
     j = 0U;
     mapped = -1;
+    is_float_class = 0;
 
     status = make_allocator(&allocator);
     if (SIXEL_FAILED(status)) {
@@ -607,6 +636,12 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
     palette[3] = 255;
     palette[4] = 0;
     palette[5] = 0;
+    palette_float[0] = 0.0f;
+    palette_float[1] = 0.0f;
+    palette_float[2] = 0.0f;
+    palette_float[3] = 255.0f;
+    palette_float[4] = 0.0f;
+    palette_float[5] = 0.0f;
     pixel[0] = 250;
     pixel[1] = 10;
     pixel[2] = 10;
@@ -623,6 +658,16 @@ test_lookup_policy_all_named_classes_are_polymorphic(void)
                                allocator);
 
     for (i = 0U; i < class_count; ++i) {
+        is_float_class = strstr(class_names[i], ".float32") != NULL;
+        request.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        if (is_float_class != 0) {
+            request.pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+            request.palette_float = palette_float;
+            request.float_depth = 3 * (int)sizeof(float);
+        } else {
+            request.palette_float = NULL;
+            request.float_depth = 0;
+        }
         status = create_lookup_policy(class_names[i], &request, &lookup_policy);
         if (SIXEL_FAILED(status)) {
             goto cleanup;

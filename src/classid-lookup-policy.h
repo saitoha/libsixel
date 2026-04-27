@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_lookup_policy_classid_lookup -H sixel_lookup_policy_classid_hash -W sixel_lookup_policy_classid_wordlist --language=ANSI-C src/classid.gperf  */
+/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_lookup_policy_classid_lookup --language=ANSI-C -H sixel_lookup_policy_classid_hash -W sixel_lookup_policy_classid_wordlist src/classid.gperf  */
 /* Computed positions: -k'8-9' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -54,12 +54,12 @@ struct sixel_lookup_policy_classid_entry {
     sixel_lookup_policy_create_fn create;
 };
 
-#define TOTAL_KEYWORDS 11
-#define MIN_WORD_LENGTH 10
-#define MAX_WORD_LENGTH 19
-#define MIN_HASH_VALUE 10
-#define MAX_HASH_VALUE 26
-/* maximum key range = 17, duplicates = 0 */
+#define TOTAL_KEYWORDS 22
+#define MIN_WORD_LENGTH 15
+#define MAX_WORD_LENGTH 27
+#define MIN_HASH_VALUE 16
+#define MAX_HASH_VALUE 49
+/* maximum key range = 34, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -73,32 +73,32 @@ sixel_lookup_policy_classid_hash (register const char *str, register unsigned in
 {
   static const unsigned char asso_values[] =
     {
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 15, 10, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27,  5,  0,  0,
-      27,  0,  0, 27,  0, 27, 27, 27, 27,  0,
-       0,  0,  0, 27,  0, 27, 27, 27,  0, 27,
-      27,  0, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-      27, 27, 27, 27, 27, 27
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 25, 20, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 10,  5,  5,
+      50,  5,  0, 50,  0, 50, 50, 50, 50,  0,
+       0,  0,  0, 50,  5, 50, 50, 50,  0, 50,
+      50,  5, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50, 50, 50, 50, 50,
+      50, 50, 50, 50, 50, 50
     };
   return len + asso_values[(unsigned char)str[8]] + asso_values[(unsigned char)str[7]];
 }
@@ -106,34 +106,58 @@ sixel_lookup_policy_classid_hash (register const char *str, register unsigned in
 static const struct sixel_lookup_policy_classid_entry sixel_lookup_policy_classid_wordlist[] =
   {
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-    {"", 0},
-#line 39 "src/classid.gperf"
-    {"lookup/rbc", sixel_lookup_policy_create_rbc},
+    {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+#line 46 "src/classid.gperf"
+    {"lookup/none.8bit", sixel_lookup_policy_create_none_8bit},
 #line 38 "src/classid.gperf"
-    {"lookup/none", sixel_lookup_policy_create_none},
-#line 34 "src/classid.gperf"
-    {"lookup/fhedt", sixel_lookup_policy_create_fhedt},
-#line 40 "src/classid.gperf"
-    {"lookup/vptree", sixel_lookup_policy_create_vptree},
-#line 32 "src/classid.gperf"
-    {"lookup/certlut", sixel_lookup_policy_create_certlut},
+    {"lookup/fhedt.8bit", sixel_lookup_policy_create_fhedt_8bit},
+#line 50 "src/classid.gperf"
+    {"lookup/vptree.8bit", sixel_lookup_policy_create_vptree_8bit},
+#line 47 "src/classid.gperf"
+    {"lookup/none.float32", sixel_lookup_policy_create_none_float32},
+#line 39 "src/classid.gperf"
+    {"lookup/fhedt.float32", sixel_lookup_policy_create_fhedt_float32},
+#line 51 "src/classid.gperf"
+    {"lookup/vptree.float32", sixel_lookup_policy_create_vptree_float32},
     {"", 0},
-#line 33 "src/classid.gperf"
-    {"lookup/eytzinger", sixel_lookup_policy_create_eytzinger},
+#line 42 "src/classid.gperf"
+    {"lookup/mono-darkbg.8bit", sixel_lookup_policy_create_mono_darkbg_8bit},
+#line 44 "src/classid.gperf"
+    {"lookup/mono-lightbg.8bit", sixel_lookup_policy_create_mono_lightbg_8bit},
+#line 48 "src/classid.gperf"
+    {"lookup/rbc.8bit", sixel_lookup_policy_create_rbc_8bit},
+#line 43 "src/classid.gperf"
+    {"lookup/mono-darkbg.float32", sixel_lookup_policy_create_mono_darkbg_float32},
+#line 45 "src/classid.gperf"
+    {"lookup/mono-lightbg.float32", sixel_lookup_policy_create_mono_lightbg_float32},
+#line 49 "src/classid.gperf"
+    {"lookup/rbc.float32", sixel_lookup_policy_create_rbc_float32},
+#line 34 "src/classid.gperf"
+    {"lookup/certlut.8bit", sixel_lookup_policy_create_certlut_8bit},
     {"", 0},
 #line 36 "src/classid.gperf"
-    {"lookup/mono-darkbg", sixel_lookup_policy_create_mono_darkbg},
-#line 37 "src/classid.gperf"
-    {"lookup/mono-lightbg", sixel_lookup_policy_create_mono_lightbg},
-    {"", 0},
-#line 31 "src/classid.gperf"
-    {"lookup/6bit", sixel_lookup_policy_create_6bit},
-    {"", 0},
+    {"lookup/eytzinger.8bit", sixel_lookup_policy_create_eytzinger_8bit},
 #line 35 "src/classid.gperf"
-    {"lookup/mahalanobis", sixel_lookup_policy_create_mahalanobis},
+    {"lookup/certlut.float32", sixel_lookup_policy_create_certlut_float32},
+#line 40 "src/classid.gperf"
+    {"lookup/mahalanobis.8bit", sixel_lookup_policy_create_mahalanobis_8bit},
+#line 37 "src/classid.gperf"
+    {"lookup/eytzinger.float32", sixel_lookup_policy_create_eytzinger_float32},
+    {"", 0},
+#line 41 "src/classid.gperf"
+    {"lookup/mahalanobis.float32", sixel_lookup_policy_create_mahalanobis_float32},
+    {"", 0}, {"", 0}, {"", 0}, {"", 0},
+#line 32 "src/classid.gperf"
+    {"lookup/6bit.8bit", sixel_lookup_policy_create_6bit_8bit},
     {"", 0}, {"", 0},
+#line 33 "src/classid.gperf"
+    {"lookup/6bit.float32", sixel_lookup_policy_create_6bit_float32},
+    {"", 0},
 #line 30 "src/classid.gperf"
-    {"lookup/5bit", sixel_lookup_policy_create_5bit}
+    {"lookup/5bit.8bit", sixel_lookup_policy_create_5bit_8bit},
+    {"", 0}, {"", 0},
+#line 31 "src/classid.gperf"
+    {"lookup/5bit.float32", sixel_lookup_policy_create_5bit_float32}
   };
 
 const struct sixel_lookup_policy_classid_entry *
@@ -153,8 +177,7 @@ sixel_lookup_policy_classid_lookup (register const char *str, register unsigned 
     }
   return 0;
 }
-#line 41 "src/classid.gperf"
-
+#line 52 "src/classid.gperf"
 
 #undef TOTAL_KEYWORDS
 #undef MIN_WORD_LENGTH

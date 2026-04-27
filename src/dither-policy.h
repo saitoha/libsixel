@@ -63,6 +63,7 @@ typedef int (*sixel_dither_lookup_map_fn)(
 typedef struct sixel_dither_policy_select_request {
     int method_for_diffuse;
     int ncolors;
+    int pixelformat;
 } sixel_dither_policy_select_request_t;
 
 typedef struct sixel_dither_policy_prepare_request {

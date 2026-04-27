@@ -192,6 +192,50 @@ sixel_lookup_policy_create_mono_darkbg(
 # pragma GCC diagnostic pop
 #endif
 
+static sixel_lookup_policy_vtbl_t
+    g_sixel_lookup_policy_mono_darkbg_8bit_vtbl = {
+    sixel_lookup_policy_mono_darkbg_ref,
+    sixel_lookup_policy_mono_darkbg_unref,
+    sixel_lookup_policy_mono_darkbg_prepare,
+    sixel_lookup_policy_mono_darkbg_map_pixel,
+};
+
+static sixel_lookup_policy_vtbl_t
+    g_sixel_lookup_policy_mono_darkbg_float32_vtbl = {
+    sixel_lookup_policy_mono_darkbg_ref,
+    sixel_lookup_policy_mono_darkbg_unref,
+    sixel_lookup_policy_mono_darkbg_prepare,
+    sixel_lookup_policy_mono_darkbg_map_pixel,
+};
+
+SIXELSTATUS
+sixel_lookup_policy_create_mono_darkbg_8bit(
+    sixel_lookup_policy_interface_t **policy)
+{
+    SIXELSTATUS status;
+
+    status = sixel_lookup_policy_create_mono_darkbg(policy);
+    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
+        (*policy)->vtbl = &g_sixel_lookup_policy_mono_darkbg_8bit_vtbl;
+    }
+
+    return status;
+}
+
+SIXELSTATUS
+sixel_lookup_policy_create_mono_darkbg_float32(
+    sixel_lookup_policy_interface_t **policy)
+{
+    SIXELSTATUS status;
+
+    status = sixel_lookup_policy_create_mono_darkbg(policy);
+    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
+        (*policy)->vtbl = &g_sixel_lookup_policy_mono_darkbg_float32_vtbl;
+    }
+
+    return status;
+}
+
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */

@@ -1995,6 +1995,51 @@ sixel_certlut_free(sixel_certlut_t *lut)
 }
 
 
+
+static sixel_lookup_policy_vtbl_t
+    g_sixel_lookup_policy_certlut_8bit_vtbl = {
+    sixel_lookup_policy_certlut_ref,
+    sixel_lookup_policy_certlut_unref,
+    sixel_lookup_policy_certlut_prepare,
+    sixel_lookup_policy_certlut_map_pixel,
+};
+
+static sixel_lookup_policy_vtbl_t
+    g_sixel_lookup_policy_certlut_float32_vtbl = {
+    sixel_lookup_policy_certlut_ref,
+    sixel_lookup_policy_certlut_unref,
+    sixel_lookup_policy_certlut_prepare,
+    sixel_lookup_policy_certlut_map_pixel,
+};
+
+SIXELSTATUS
+sixel_lookup_policy_create_certlut_8bit(
+    sixel_lookup_policy_interface_t **policy)
+{
+    SIXELSTATUS status;
+
+    status = sixel_lookup_policy_create_certlut(policy);
+    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
+        (*policy)->vtbl = &g_sixel_lookup_policy_certlut_8bit_vtbl;
+    }
+
+    return status;
+}
+
+SIXELSTATUS
+sixel_lookup_policy_create_certlut_float32(
+    sixel_lookup_policy_interface_t **policy)
+{
+    SIXELSTATUS status;
+
+    status = sixel_lookup_policy_create_certlut(policy);
+    if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
+        (*policy)->vtbl = &g_sixel_lookup_policy_certlut_float32_vtbl;
+    }
+
+    return status;
+}
+
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */

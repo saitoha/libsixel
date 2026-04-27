@@ -32,9 +32,15 @@ extern "C" {
 #endif
 
 
-/* @classid lookup/5bit */
+/* @classid lookup/5bit.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lookup_policy_create_5bit(sixel_lookup_policy_interface_t **policy);
+sixel_lookup_policy_create_5bit_8bit(
+    sixel_lookup_policy_interface_t **policy);
+
+/* @classid lookup/5bit.float32 */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_lookup_policy_create_5bit_float32(
+    sixel_lookup_policy_interface_t **policy);
 
 #ifdef __cplusplus
 }

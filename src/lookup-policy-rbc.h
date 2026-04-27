@@ -32,9 +32,15 @@ extern "C" {
 #endif
 
 
-/* @classid lookup/rbc */
+/* @classid lookup/rbc.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lookup_policy_create_rbc(sixel_lookup_policy_interface_t **policy);
+sixel_lookup_policy_create_rbc_8bit(
+    sixel_lookup_policy_interface_t **policy);
+
+/* @classid lookup/rbc.float32 */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_lookup_policy_create_rbc_float32(
+    sixel_lookup_policy_interface_t **policy);
 
 #ifdef __cplusplus
 }

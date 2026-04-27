@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_dither_policy_classid_lookup -H sixel_dither_policy_classid_hash -W sixel_dither_policy_classid_wordlist --language=ANSI-C src/classid-dither.gperf  */
+/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_dither_policy_classid_lookup --language=ANSI-C -H sixel_dither_policy_classid_hash -W sixel_dither_policy_classid_wordlist src/classid-dither.gperf  */
 /* Computed positions: -k'8,14' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -57,12 +57,12 @@ struct sixel_dither_policy_classid_entry {
     sixel_dither_policy_create_fn create;
 };
 
-#define TOTAL_KEYWORDS 14
-#define MIN_WORD_LENGTH 9
-#define MAX_WORD_LENGTH 17
-#define MIN_HASH_VALUE 9
-#define MAX_HASH_VALUE 25
-/* maximum key range = 17, duplicates = 0 */
+#define TOTAL_KEYWORDS 28
+#define MIN_WORD_LENGTH 14
+#define MAX_WORD_LENGTH 25
+#define MIN_HASH_VALUE 19
+#define MAX_HASH_VALUE 52
+/* maximum key range = 34, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -76,86 +76,102 @@ sixel_dither_policy_classid_hash (register const char *str, register unsigned in
 {
   static const unsigned char asso_values[] =
     {
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 10,
-       5,  0, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26,  5,  5, 26,
-      26,  0,  0, 26, 26,  0, 10, 26,  5, 26,
-       0,  5, 26, 26,  0,  0, 26, 26, 26, 26,
-       0, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-      26, 26, 26, 26, 26, 26
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53,  5, 53, 53, 30,
+      15,  5, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 15,  5, 53,
+      53,  5, 10, 53, 53, 10, 15, 53,  0, 53,
+      25, 10, 53, 53,  0,  0,  5, 53, 53, 53,
+       5, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53, 53, 53, 53, 53,
+      53, 53, 53, 53, 53, 53
     };
-  register unsigned int hval = len;
-
-  switch (hval)
-    {
-      default:
-        hval += asso_values[(unsigned char)str[13]];
-      /*FALLTHROUGH*/
-      case 13:
-      case 12:
-      case 11:
-      case 10:
-      case 9:
-      case 8:
-        hval += asso_values[(unsigned char)str[7]];
-        break;
-    }
-  return hval;
+  return len + asso_values[(unsigned char)str[13]] + asso_values[(unsigned char)str[7]];
 }
 
 static const struct sixel_dither_policy_classid_entry sixel_dither_policy_classid_wordlist[] =
   {
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-#line 34 "src/classid-dither.gperf"
-    {"dither/fs", sixel_dither_policy_create_fs},
+    {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
     {"", 0},
-#line 33 "src/classid-dither.gperf"
-    {"dither/none", sixel_dither_policy_create_none},
+#line 52 "src/classid-dither.gperf"
+    {"dither/lso2.float32", sixel_dither_policy_create_lso2_float32},
     {"", 0},
-#line 37 "src/classid-dither.gperf"
-    {"dither/stucki", sixel_dither_policy_create_stucki},
+#line 51 "src/classid-dither.gperf"
+    {"dither/lso2.8bit", sixel_dither_policy_create_lso2_8bit},
+    {"", 0},
 #line 41 "src/classid-dither.gperf"
-    {"dither/sierra3", sixel_dither_policy_create_sierra3},
-#line 44 "src/classid-dither.gperf"
-    {"dither/x_dither", sixel_dither_policy_create_x_dither},
-#line 42 "src/classid-dither.gperf"
-    {"dither/lso2", sixel_dither_policy_create_lso2},
-#line 46 "src/classid-dither.gperf"
-    {"dither/interframe", sixel_dither_policy_create_interframe},
-#line 38 "src/classid-dither.gperf"
-    {"dither/burkes", sixel_dither_policy_create_burkes},
-#line 40 "src/classid-dither.gperf"
-    {"dither/sierra2", sixel_dither_policy_create_sierra2},
-#line 43 "src/classid-dither.gperf"
-    {"dither/a_dither", sixel_dither_policy_create_a_dither},
-#line 45 "src/classid-dither.gperf"
-    {"dither/bluenoise", sixel_dither_policy_create_bluenoise},
+    {"dither/stucki.8bit", sixel_dither_policy_create_stucki_8bit},
+#line 49 "src/classid-dither.gperf"
+    {"dither/sierra3.8bit", sixel_dither_policy_create_sierra3_8bit},
     {"", 0},
-#line 36 "src/classid-dither.gperf"
-    {"dither/jajuni", sixel_dither_policy_create_jajuni},
-#line 39 "src/classid-dither.gperf"
-    {"dither/sierra1", sixel_dither_policy_create_sierra1},
+#line 42 "src/classid-dither.gperf"
+    {"dither/stucki.float32", sixel_dither_policy_create_stucki_float32},
+#line 50 "src/classid-dither.gperf"
+    {"dither/sierra3.float32", sixel_dither_policy_create_sierra3_float32},
+#line 43 "src/classid-dither.gperf"
+    {"dither/burkes.8bit", sixel_dither_policy_create_burkes_8bit},
 #line 35 "src/classid-dither.gperf"
-    {"dither/atkinson", sixel_dither_policy_create_atkinson}
+    {"dither/fs.8bit", sixel_dither_policy_create_fs_8bit},
+#line 55 "src/classid-dither.gperf"
+    {"dither/x_dither.8bit", sixel_dither_policy_create_x_dither_8bit},
+#line 44 "src/classid-dither.gperf"
+    {"dither/burkes.float32", sixel_dither_policy_create_burkes_float32},
+#line 59 "src/classid-dither.gperf"
+    {"dither/interframe.8bit", sixel_dither_policy_create_interframe_8bit},
+#line 56 "src/classid-dither.gperf"
+    {"dither/x_dither.float32", sixel_dither_policy_create_x_dither_float32},
+#line 47 "src/classid-dither.gperf"
+    {"dither/sierra2.8bit", sixel_dither_policy_create_sierra2_8bit},
+#line 60 "src/classid-dither.gperf"
+    {"dither/interframe.float32", sixel_dither_policy_create_interframe_float32},
+#line 57 "src/classid-dither.gperf"
+    {"dither/bluenoise.8bit", sixel_dither_policy_create_bluenoise_8bit},
+#line 48 "src/classid-dither.gperf"
+    {"dither/sierra2.float32", sixel_dither_policy_create_sierra2_float32},
+#line 39 "src/classid-dither.gperf"
+    {"dither/jajuni.8bit", sixel_dither_policy_create_jajuni_8bit},
+#line 58 "src/classid-dither.gperf"
+    {"dither/bluenoise.float32", sixel_dither_policy_create_bluenoise_float32},
+#line 53 "src/classid-dither.gperf"
+    {"dither/a_dither.8bit", sixel_dither_policy_create_a_dither_8bit},
+#line 40 "src/classid-dither.gperf"
+    {"dither/jajuni.float32", sixel_dither_policy_create_jajuni_float32},
+#line 36 "src/classid-dither.gperf"
+    {"dither/fs.float32", sixel_dither_policy_create_fs_float32},
+#line 54 "src/classid-dither.gperf"
+    {"dither/a_dither.float32", sixel_dither_policy_create_a_dither_float32},
+#line 34 "src/classid-dither.gperf"
+    {"dither/none.float32", sixel_dither_policy_create_none_float32},
+#line 37 "src/classid-dither.gperf"
+    {"dither/atkinson.8bit", sixel_dither_policy_create_atkinson_8bit},
+#line 33 "src/classid-dither.gperf"
+    {"dither/none.8bit", sixel_dither_policy_create_none_8bit},
+    {"", 0},
+#line 38 "src/classid-dither.gperf"
+    {"dither/atkinson.float32", sixel_dither_policy_create_atkinson_float32},
+#line 45 "src/classid-dither.gperf"
+    {"dither/sierra1.8bit", sixel_dither_policy_create_sierra1_8bit},
+    {"", 0}, {"", 0},
+#line 46 "src/classid-dither.gperf"
+    {"dither/sierra1.float32", sixel_dither_policy_create_sierra1_float32}
   };
 
 const struct sixel_dither_policy_classid_entry *
@@ -175,7 +191,7 @@ sixel_dither_policy_classid_lookup (register const char *str, register unsigned 
     }
   return 0;
 }
-#line 47 "src/classid-dither.gperf"
+#line 61 "src/classid-dither.gperf"
 
 #undef TOTAL_KEYWORDS
 #undef MIN_WORD_LENGTH

@@ -83,19 +83,27 @@ safe_unref_dither_policy(sixel_dither_policy_interface_t **dither_policy)
 
 static int
 prepare_none_lookup_policy(sixel_dither_t *dither,
+                           int pixelformat,
                            sixel_lookup_policy_interface_t **lookup_policy)
 {
     SIXELSTATUS status;
     sixel_lookup_policy_prepare_request_t request;
+    char const *class_name;
 
     status = SIXEL_FALSE;
     memset(&request, 0, sizeof(request));
+    class_name = NULL;
 
     if (dither == NULL || dither->palette == NULL || lookup_policy == NULL) {
         return 0;
     }
 
-    status = create_policy_object("lookup/none", (void **)lookup_policy);
+    class_name = "lookup/none.8bit";
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        class_name = "lookup/none.float32";
+    }
+
+    status = create_policy_object(class_name, (void **)lookup_policy);
     if (SIXEL_FAILED(status)) {
         return 0;
     }
@@ -105,7 +113,7 @@ prepare_none_lookup_policy(sixel_dither_t *dither,
     request.depth = 3;
     request.float_depth = 0;
     request.reqcolor = 2;
-    request.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    request.pixelformat = pixelformat;
     request.parallel_dither_active = 0;
     request.shared_instance_enabled = 1;
     request.reuse_policy = NULL;
@@ -132,31 +140,53 @@ test_dither_policy_named_classes_contract(void)
     sixel_dither_policy_apply_request_t apply_request;
     unsigned char palette[6];
     unsigned char pixel[3];
+    float pixel_float[3];
     sixel_index_t result[1];
     size_t i;
+    int supports_parallel;
+    int is_float_class;
+    int pixelformat;
     static char const * const class_names[] = {
-        "dither/none",
-        "dither/fs",
-        "dither/atkinson",
-        "dither/jajuni",
-        "dither/stucki",
-        "dither/burkes",
-        "dither/sierra1",
-        "dither/sierra2",
-        "dither/sierra3",
-        "dither/lso2",
-        "dither/a_dither",
-        "dither/x_dither",
-        "dither/bluenoise",
-        "dither/interframe"
+        "dither/none.8bit",
+        "dither/none.float32",
+        "dither/fs.8bit",
+        "dither/fs.float32",
+        "dither/atkinson.8bit",
+        "dither/atkinson.float32",
+        "dither/jajuni.8bit",
+        "dither/jajuni.float32",
+        "dither/stucki.8bit",
+        "dither/stucki.float32",
+        "dither/burkes.8bit",
+        "dither/burkes.float32",
+        "dither/sierra1.8bit",
+        "dither/sierra1.float32",
+        "dither/sierra2.8bit",
+        "dither/sierra2.float32",
+        "dither/sierra3.8bit",
+        "dither/sierra3.float32",
+        "dither/lso2.8bit",
+        "dither/lso2.float32",
+        "dither/a_dither.8bit",
+        "dither/a_dither.float32",
+        "dither/x_dither.8bit",
+        "dither/x_dither.float32",
+        "dither/bluenoise.8bit",
+        "dither/bluenoise.float32",
+        "dither/interframe.8bit",
+        "dither/interframe.float32"
     };
 
     status = SIXEL_FALSE;
     dither = NULL;
     lookup_policy = NULL;
     dither_policy = NULL;
+    supports_parallel = 0;
+    is_float_class = 0;
+    pixelformat = SIXEL_PIXELFORMAT_RGB888;
     memset(&prepare_request, 0, sizeof(prepare_request));
     memset(&apply_request, 0, sizeof(apply_request));
+    memset(pixel_float, 0, sizeof(pixel_float));
 
     palette[0] = 0x00;
     palette[1] = 0x00;
@@ -167,6 +197,9 @@ test_dither_policy_named_classes_contract(void)
     pixel[0] = 0x90;
     pixel[1] = 0x80;
     pixel[2] = 0x70;
+    pixel_float[0] = 144.0f;
+    pixel_float[1] = 128.0f;
+    pixel_float[2] = 112.0f;
     result[0] = 0;
 
     status = sixel_dither_new(&dither, 2, NULL);
@@ -182,13 +215,18 @@ test_dither_policy_named_classes_contract(void)
     dither->method_for_scan = SIXEL_SCAN_RASTER;
     dither->pixelformat = SIXEL_PIXELFORMAT_RGB888;
 
-    if (!prepare_none_lookup_policy(dither, &lookup_policy)) {
-        sixel_dither_unref(dither);
-        return 0;
-    }
-
     for (i = 0; i < sizeof(class_names) / sizeof(class_names[0]); ++i) {
-        int supports_parallel;
+        is_float_class = strstr(class_names[i], ".float32") != NULL;
+        pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        if (is_float_class) {
+            pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+        }
+
+        safe_unref_lookup_policy_dither(&lookup_policy);
+        if (!prepare_none_lookup_policy(dither, pixelformat, &lookup_policy)) {
+            sixel_dither_unref(dither);
+            return 0;
+        }
 
         status = create_policy_object(class_names[i], (void **)&dither_policy);
         if (SIXEL_FAILED(status) || dither_policy == NULL
@@ -203,7 +241,7 @@ test_dither_policy_named_classes_contract(void)
         prepare_request.depth = 3;
         prepare_request.reqcolor = 2;
         prepare_request.method_for_scan = SIXEL_SCAN_RASTER;
-        prepare_request.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        prepare_request.pixelformat = pixelformat;
 
         status = dither_policy->vtbl->prepare(dither_policy, &prepare_request);
         if (SIXEL_FAILED(status)) {
@@ -215,7 +253,7 @@ test_dither_policy_named_classes_contract(void)
 
         supports_parallel = dither_policy->vtbl->supports_parallel_bands(
             dither_policy);
-        if (strcmp(class_names[i], "dither/interframe") == 0) {
+        if (strstr(class_names[i], "dither/interframe.") != NULL) {
             if (supports_parallel != 0) {
                 safe_unref_dither_policy(&dither_policy);
                 safe_unref_lookup_policy_dither(&lookup_policy);
@@ -243,7 +281,10 @@ test_dither_policy_named_classes_contract(void)
         apply_request.method_for_scan = SIXEL_SCAN_RASTER;
         apply_request.lookup_policy = lookup_policy;
         apply_request.dither = dither;
-        apply_request.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        apply_request.pixelformat = pixelformat;
+        if (is_float_class) {
+            apply_request.data = (unsigned char *)(void *)pixel_float;
+        }
 
         status = dither_policy->vtbl->apply(dither_policy, &apply_request);
         safe_unref_dither_policy(&dither_policy);

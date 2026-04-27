@@ -31,9 +31,15 @@
 extern "C" {
 #endif
 
-/* @classid dither/atkinson */
+/* @classid dither/atkinson.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_dither_policy_create_atkinson(sixel_dither_policy_interface_t **policy);
+sixel_dither_policy_create_atkinson_8bit(
+    sixel_dither_policy_interface_t **policy);
+
+/* @classid dither/atkinson.float32 */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_policy_create_atkinson_float32(
+    sixel_dither_policy_interface_t **policy);
 
 #ifdef __cplusplus
 }

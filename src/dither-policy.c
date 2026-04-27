@@ -29,20 +29,60 @@
 #include "dither-policy.h"
 
 
-static char const g_dither_policy_name_none[] = "dither/none";
-static char const g_dither_policy_name_fs[] = "dither/fs";
-static char const g_dither_policy_name_atkinson[] = "dither/atkinson";
-static char const g_dither_policy_name_jajuni[] = "dither/jajuni";
-static char const g_dither_policy_name_stucki[] = "dither/stucki";
-static char const g_dither_policy_name_burkes[] = "dither/burkes";
-static char const g_dither_policy_name_sierra1[] = "dither/sierra1";
-static char const g_dither_policy_name_sierra2[] = "dither/sierra2";
-static char const g_dither_policy_name_sierra3[] = "dither/sierra3";
-static char const g_dither_policy_name_lso2[] = "dither/lso2";
-static char const g_dither_policy_name_a_dither[] = "dither/a_dither";
-static char const g_dither_policy_name_x_dither[] = "dither/x_dither";
-static char const g_dither_policy_name_bluenoise[] = "dither/bluenoise";
-static char const g_dither_policy_name_interframe[] = "dither/interframe";
+static char const g_dither_policy_name_none_8bit[] = "dither/none.8bit";
+static char const g_dither_policy_name_none_float32[] = "dither/none.float32";
+static char const g_dither_policy_name_fs_8bit[] = "dither/fs.8bit";
+static char const g_dither_policy_name_fs_float32[] = "dither/fs.float32";
+static char const g_dither_policy_name_atkinson_8bit[] = "dither/atkinson.8bit";
+static char const g_dither_policy_name_atkinson_float32[] =
+    "dither/atkinson.float32";
+static char const g_dither_policy_name_jajuni_8bit[] = "dither/jajuni.8bit";
+static char const g_dither_policy_name_jajuni_float32[] =
+    "dither/jajuni.float32";
+static char const g_dither_policy_name_stucki_8bit[] = "dither/stucki.8bit";
+static char const g_dither_policy_name_stucki_float32[] =
+    "dither/stucki.float32";
+static char const g_dither_policy_name_burkes_8bit[] = "dither/burkes.8bit";
+static char const g_dither_policy_name_burkes_float32[] =
+    "dither/burkes.float32";
+static char const g_dither_policy_name_sierra1_8bit[] = "dither/sierra1.8bit";
+static char const g_dither_policy_name_sierra1_float32[] =
+    "dither/sierra1.float32";
+static char const g_dither_policy_name_sierra2_8bit[] = "dither/sierra2.8bit";
+static char const g_dither_policy_name_sierra2_float32[] =
+    "dither/sierra2.float32";
+static char const g_dither_policy_name_sierra3_8bit[] = "dither/sierra3.8bit";
+static char const g_dither_policy_name_sierra3_float32[] =
+    "dither/sierra3.float32";
+static char const g_dither_policy_name_lso2_8bit[] = "dither/lso2.8bit";
+static char const g_dither_policy_name_lso2_float32[] = "dither/lso2.float32";
+static char const g_dither_policy_name_a_dither_8bit[] =
+    "dither/a_dither.8bit";
+static char const g_dither_policy_name_a_dither_float32[] =
+    "dither/a_dither.float32";
+static char const g_dither_policy_name_x_dither_8bit[] =
+    "dither/x_dither.8bit";
+static char const g_dither_policy_name_x_dither_float32[] =
+    "dither/x_dither.float32";
+static char const g_dither_policy_name_bluenoise_8bit[] =
+    "dither/bluenoise.8bit";
+static char const g_dither_policy_name_bluenoise_float32[] =
+    "dither/bluenoise.float32";
+static char const g_dither_policy_name_interframe_8bit[] =
+    "dither/interframe.8bit";
+static char const g_dither_policy_name_interframe_float32[] =
+    "dither/interframe.float32";
+
+static int
+sixel_dither_policy_select_prefers_float32(
+    sixel_dither_policy_select_request_t const *request)
+{
+    if (request == NULL) {
+        return 0;
+    }
+
+    return SIXEL_PIXELFORMAT_IS_FLOAT32(request->pixelformat);
+}
 
 char const *
 sixel_dither_policy_select_name(
@@ -51,8 +91,11 @@ sixel_dither_policy_select_name(
     int method_for_diffuse;
     int ncolors;
 
+    int prefer_float32;
+
     method_for_diffuse = SIXEL_DIFFUSE_FS;
     ncolors = 256;
+    prefer_float32 = sixel_dither_policy_select_prefers_float32(request);
 
     if (request != NULL) {
         method_for_diffuse = request->method_for_diffuse;
@@ -69,38 +112,83 @@ sixel_dither_policy_select_name(
 
     switch (method_for_diffuse) {
     case SIXEL_DIFFUSE_NONE:
-        return g_dither_policy_name_none;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_none_float32;
+        }
+        return g_dither_policy_name_none_8bit;
     case SIXEL_DIFFUSE_FS:
-        return g_dither_policy_name_fs;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_fs_float32;
+        }
+        return g_dither_policy_name_fs_8bit;
     case SIXEL_DIFFUSE_ATKINSON:
-        return g_dither_policy_name_atkinson;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_atkinson_float32;
+        }
+        return g_dither_policy_name_atkinson_8bit;
     case SIXEL_DIFFUSE_JAJUNI:
-        return g_dither_policy_name_jajuni;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_jajuni_float32;
+        }
+        return g_dither_policy_name_jajuni_8bit;
     case SIXEL_DIFFUSE_STUCKI:
-        return g_dither_policy_name_stucki;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_stucki_float32;
+        }
+        return g_dither_policy_name_stucki_8bit;
     case SIXEL_DIFFUSE_BURKES:
-        return g_dither_policy_name_burkes;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_burkes_float32;
+        }
+        return g_dither_policy_name_burkes_8bit;
     case SIXEL_DIFFUSE_SIERRA1:
-        return g_dither_policy_name_sierra1;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_sierra1_float32;
+        }
+        return g_dither_policy_name_sierra1_8bit;
     case SIXEL_DIFFUSE_SIERRA2:
-        return g_dither_policy_name_sierra2;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_sierra2_float32;
+        }
+        return g_dither_policy_name_sierra2_8bit;
     case SIXEL_DIFFUSE_SIERRA3:
-        return g_dither_policy_name_sierra3;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_sierra3_float32;
+        }
+        return g_dither_policy_name_sierra3_8bit;
     case SIXEL_DIFFUSE_LSO2:
-        return g_dither_policy_name_lso2;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_lso2_float32;
+        }
+        return g_dither_policy_name_lso2_8bit;
     case SIXEL_DIFFUSE_A_DITHER:
-        return g_dither_policy_name_a_dither;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_a_dither_float32;
+        }
+        return g_dither_policy_name_a_dither_8bit;
     case SIXEL_DIFFUSE_X_DITHER:
-        return g_dither_policy_name_x_dither;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_x_dither_float32;
+        }
+        return g_dither_policy_name_x_dither_8bit;
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
-        return g_dither_policy_name_bluenoise;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_bluenoise_float32;
+        }
+        return g_dither_policy_name_bluenoise_8bit;
     case SIXEL_DIFFUSE_INTERFRAME:
-        return g_dither_policy_name_interframe;
+        if (prefer_float32 != 0) {
+            return g_dither_policy_name_interframe_float32;
+        }
+        return g_dither_policy_name_interframe_8bit;
     default:
         break;
     }
 
-    return g_dither_policy_name_fs;
+    if (prefer_float32 != 0) {
+        return g_dither_policy_name_fs_float32;
+    }
+    return g_dither_policy_name_fs_8bit;
 }
 
 /* emacs Local Variables:      */

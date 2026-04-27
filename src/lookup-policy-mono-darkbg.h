@@ -32,9 +32,14 @@ extern "C" {
 #endif
 
 
-/* @classid lookup/mono-darkbg */
+/* @classid lookup/mono-darkbg.8bit */
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_lookup_policy_create_mono_darkbg(
+sixel_lookup_policy_create_mono_darkbg_8bit(
+    sixel_lookup_policy_interface_t **policy);
+
+/* @classid lookup/mono-darkbg.float32 */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_lookup_policy_create_mono_darkbg_float32(
     sixel_lookup_policy_interface_t **policy);
 
 #ifdef __cplusplus
