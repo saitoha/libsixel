@@ -25762,8 +25762,8 @@ sixel_builtin_psd_apply_pending_deferred_stroke(
     float const *group_clip_gate,
     float const *stroke_coverage_map,
     float const *dual_stroke_source_alpha_map,
-    float const *backdrop_rgb_premul,
-    float const *backdrop_alpha,
+    float const *stroke_backdrop_rgb_premul,
+    float const *stroke_backdrop_alpha,
     unsigned int canvas_width,
     unsigned int canvas_height,
     sixel_builtin_psd_layer_record_t const *pending_layer,
@@ -25807,6 +25807,13 @@ sixel_builtin_psd_apply_pending_deferred_stroke(
         "psd_decode",
         "builtin PSD: applying deferred stroke on clipped "
         "group");
+    if (stroke_backdrop_rgb_premul != NULL &&
+        stroke_backdrop_alpha != NULL) {
+        sixel_builtin_psd_trace_message(
+            "psd_decode",
+            "builtin PSD: using post-effect offscreen group backdrop for "
+            "deferred stroke blend");
+    }
     /*
      * Deferred clipped-group ownership must emit stroke color/alpha updates
      * exactly once for each pending group.
@@ -25817,8 +25824,8 @@ sixel_builtin_psd_apply_pending_deferred_stroke(
         group_clip_gate,
         stroke_coverage_map,
         dual_stroke_source_alpha_map,
-        backdrop_rgb_premul,
-        backdrop_alpha,
+        stroke_backdrop_rgb_premul,
+        stroke_backdrop_alpha,
         canvas_width,
         canvas_height,
         effective_stroke_layer);
@@ -26090,6 +26097,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     float *group_clip_gate;
     float *group_backdrop_rgb_premul;
     float *group_backdrop_alpha;
+    float *group_stroke_backdrop_rgb_premul;
+    float *group_stroke_backdrop_alpha;
     float *clipped_inside_stroke_alpha_map;
     int *clip_base_indices;
     int *clip_base_indices_forward;
@@ -26143,6 +26152,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     group_clip_gate = NULL;
     group_backdrop_rgb_premul = NULL;
     group_backdrop_alpha = NULL;
+    group_stroke_backdrop_rgb_premul = NULL;
+    group_stroke_backdrop_alpha = NULL;
     clipped_inside_stroke_alpha_map = NULL;
     clip_base_indices = NULL;
     clip_base_indices_forward = NULL;
@@ -26281,6 +26292,12 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     group_backdrop_alpha = (float *)sixel_allocator_malloc(
         chunk->allocator,
         pixel_count * sizeof(float));
+    group_stroke_backdrop_rgb_premul = (float *)sixel_allocator_malloc(
+        chunk->allocator,
+        pixel_count * 3u * sizeof(float));
+    group_stroke_backdrop_alpha = (float *)sixel_allocator_malloc(
+        chunk->allocator,
+        pixel_count * sizeof(float));
     clipped_inside_stroke_alpha_map = (float *)sixel_allocator_malloc(
         chunk->allocator,
         pixel_count * sizeof(float));
@@ -26306,6 +26323,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         group_clip_gate == NULL ||
         group_backdrop_rgb_premul == NULL ||
         group_backdrop_alpha == NULL ||
+        group_stroke_backdrop_rgb_premul == NULL ||
+        group_stroke_backdrop_alpha == NULL ||
         clipped_inside_stroke_alpha_map == NULL ||
         clip_base_indices == NULL ||
         clip_base_indices_forward == NULL ||
@@ -26341,6 +26360,12 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
            0,
            pixel_count * 3u * sizeof(float));
     memset(group_backdrop_alpha,
+           0,
+           pixel_count * sizeof(float));
+    memset(group_stroke_backdrop_rgb_premul,
+           0,
+           pixel_count * 3u * sizeof(float));
+    memset(group_stroke_backdrop_alpha,
            0,
            pixel_count * sizeof(float));
     memset(clipped_inside_stroke_alpha_map,
@@ -26523,6 +26548,17 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     info->height,
                     &pending_overlay_layer);
                 if (pending_overlay_defer_stroke != 0) {
+                    /*
+                     * Stroke colors should read the group state after deferred
+                     * overlays/effects are applied, not the pre-effect
+                     * backdrop captured at flush start.
+                     */
+                    memcpy(group_stroke_backdrop_rgb_premul,
+                           group_rgb_premul,
+                           pixel_count * 3u * sizeof(float));
+                    memcpy(group_stroke_backdrop_alpha,
+                           group_canvas_alpha,
+                           pixel_count * sizeof(float));
                     sixel_builtin_psd_apply_pending_deferred_stroke(
                         group_rgb_premul,
                         group_canvas_alpha,
@@ -26533,8 +26569,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         pending_overlay_dual_stroke_source_alpha_valid != 0
                             ? pending_overlay_dual_stroke_source_alpha_map
                             : NULL,
-                        group_backdrop_rgb_premul,
-                        group_backdrop_alpha,
+                        group_stroke_backdrop_rgb_premul,
+                        group_stroke_backdrop_alpha,
                         info->width,
                         info->height,
                         &pending_overlay_layer,
@@ -27377,6 +27413,16 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 info->height,
                 &pending_overlay_layer);
             if (pending_overlay_defer_stroke != 0) {
+                /*
+                 * Final deferred stroke uses the post-effect offscreen group
+                 * snapshot so blend math matches the visible group backdrop.
+                 */
+                memcpy(group_stroke_backdrop_rgb_premul,
+                       group_rgb_premul,
+                       pixel_count * 3u * sizeof(float));
+                memcpy(group_stroke_backdrop_alpha,
+                       group_canvas_alpha,
+                       pixel_count * sizeof(float));
                 sixel_builtin_psd_apply_pending_deferred_stroke(
                     group_rgb_premul,
                     group_canvas_alpha,
@@ -27387,8 +27433,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     pending_overlay_dual_stroke_source_alpha_valid != 0
                         ? pending_overlay_dual_stroke_source_alpha_map
                         : NULL,
-                    group_backdrop_rgb_premul,
-                    group_backdrop_alpha,
+                    group_stroke_backdrop_rgb_premul,
+                    group_stroke_backdrop_alpha,
                     info->width,
                     info->height,
                     &pending_overlay_layer,
@@ -27493,6 +27539,13 @@ cleanup:
     }
     if (group_backdrop_rgb_premul != NULL) {
         sixel_allocator_free(chunk->allocator, group_backdrop_rgb_premul);
+    }
+    if (group_stroke_backdrop_alpha != NULL) {
+        sixel_allocator_free(chunk->allocator, group_stroke_backdrop_alpha);
+    }
+    if (group_stroke_backdrop_rgb_premul != NULL) {
+        sixel_allocator_free(chunk->allocator,
+                             group_stroke_backdrop_rgb_premul);
     }
     if (group_clip_gate != NULL) {
         sixel_allocator_free(chunk->allocator, group_clip_gate);
