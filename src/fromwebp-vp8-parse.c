@@ -118,8 +118,8 @@ sixel_webp_vp8_parse_header(unsigned char const *payload,
     frame_tag = sixel_webp_vp8_parse_read_u24le(payload);
     if ((frame_tag & 1u) != 0u) {
         sixel_helper_set_additional_message(
-            "builtin webp: VP8 interframes are not supported yet.");
-        return SIXEL_NOT_IMPLEMENTED;
+            "builtin webp: VP8 interframe is malformed input.");
+        return SIXEL_BAD_INPUT;
     }
 
     header->version = (int)((frame_tag >> 1) & 0x7u);
@@ -132,8 +132,8 @@ sixel_webp_vp8_parse_header(unsigned char const *payload,
     header->show_frame = (int)((frame_tag >> 4) & 1u);
     if (header->show_frame == 0) {
         sixel_helper_set_additional_message(
-            "builtin webp: hidden VP8 frame is not supported.");
-        return SIXEL_NOT_IMPLEMENTED;
+            "builtin webp: hidden VP8 frame is malformed input.");
+        return SIXEL_BAD_INPUT;
     }
 
     header->first_partition_size = (size_t)(frame_tag >> 5);

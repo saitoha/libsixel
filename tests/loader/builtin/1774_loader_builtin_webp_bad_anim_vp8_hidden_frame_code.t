@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming unsupported VP8 hidden frame inside ANMF stays UNSUP.
+# TAP test confirming hidden VP8 frame inside ANMF maps to stream error.
 # Fixture is derived from animated-lossy-8x8-2frame-min.webp by patching
 # first frame VP8 payload byte at offset 0x4c from 0xd0 to 0xc0.
 
@@ -45,10 +45,10 @@ test "${diag_line#LSXWEBP1\|rc=1\|kind=ERR\|codes=}" != "${diag_line}" || {
     exit 0
 }
 
-test "${diag_line#*W_UNSUP_VP8_FEATURE*}" != "${diag_line}" || {
-    echo "not ok" 1 - "forced builtin loader bad_anim_vp8_hidden_frame.webp missing W_UNSUP_VP8_FEATURE"
+test "${diag_line#*W_ERR_VP8_STREAM*}" != "${diag_line}" || {
+    echo "not ok" 1 - "forced builtin loader bad_anim_vp8_hidden_frame.webp missing W_ERR_VP8_STREAM"
     exit 0
 }
 
-echo "ok" 1 - "forced builtin loader bad_anim_vp8_hidden_frame.webp emits W_UNSUP_VP8_FEATURE"
+echo "ok" 1 - "forced builtin loader bad_anim_vp8_hidden_frame.webp emits W_ERR_VP8_STREAM"
 exit 0
