@@ -277,6 +277,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/fromhdr.h \
                 $(srcdir)/frompsd.c \
                 $(srcdir)/frompsd.h \
+                $(srcdir)/frompsd-internal.h \
+                $(srcdir)/frompsd-trace.c \
                 $(srcdir)/fromgif.c \
                 $(srcdir)/fromgif.h \
                 $(srcdir)/fromwebp.c \

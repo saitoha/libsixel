@@ -291,6 +291,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/loader-wic.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
 	$(srcdir)/frompng.c $(srcdir)/frompng.h $(srcdir)/fromhdr.c \
 	$(srcdir)/fromhdr.h $(srcdir)/frompsd.c $(srcdir)/frompsd.h \
+	$(srcdir)/frompsd-internal.h $(srcdir)/frompsd-trace.c \
 	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/fromwebp.c \
 	$(srcdir)/fromwebp.h $(srcdir)/fromwebp-container.h \
 	$(srcdir)/fromwebp-internal.h $(srcdir)/fromwebp-vp8-private.h \
@@ -436,6 +437,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompng.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromhdr.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompsd.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompsd-trace.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromgif.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromwebp.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromwebp-container.lo \
@@ -565,6 +567,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-fromhdr.Plo \
 	./$(DEPDIR)/libsixel_la-frompng.Plo \
 	./$(DEPDIR)/libsixel_la-frompnm.Plo \
+	./$(DEPDIR)/libsixel_la-frompsd-trace.Plo \
 	./$(DEPDIR)/libsixel_la-frompsd.Plo \
 	./$(DEPDIR)/libsixel_la-fromsixel.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp-container.Plo \
@@ -1183,6 +1186,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromhdr.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd-internal.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompsd-trace.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromgif.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromgif.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromwebp.c \
@@ -1497,6 +1502,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromhdr.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompng.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompnm.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompsd-trace.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompsd.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-container.Plo@am__quote@ # am--include-marker
@@ -2351,6 +2357,13 @@ libsixel_la-frompsd.lo: frompsd.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-frompsd.lo `test -f 'frompsd.c' || echo '$(srcdir)/'`frompsd.c
 
+libsixel_la-frompsd-trace.lo: frompsd-trace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-frompsd-trace.lo -MD -MP -MF $(DEPDIR)/libsixel_la-frompsd-trace.Tpo -c -o libsixel_la-frompsd-trace.lo `test -f 'frompsd-trace.c' || echo '$(srcdir)/'`frompsd-trace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-frompsd-trace.Tpo $(DEPDIR)/libsixel_la-frompsd-trace.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='frompsd-trace.c' object='libsixel_la-frompsd-trace.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-frompsd-trace.lo `test -f 'frompsd-trace.c' || echo '$(srcdir)/'`frompsd-trace.c
+
 libsixel_la-fromgif.lo: fromgif.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-fromgif.lo -MD -MP -MF $(DEPDIR)/libsixel_la-fromgif.Tpo -c -o libsixel_la-fromgif.lo `test -f 'fromgif.c' || echo '$(srcdir)/'`fromgif.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-fromgif.Tpo $(DEPDIR)/libsixel_la-fromgif.Plo
@@ -2883,6 +2896,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromhdr.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompng.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-frompsd-trace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-container.Plo
@@ -3071,6 +3085,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromhdr.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompng.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-frompsd-trace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompsd.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-container.Plo
