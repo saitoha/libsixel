@@ -429,7 +429,7 @@ EXTRA_DIST = $(srcdir)/rgblookup.gperf \
              $(srcdir)/classid.gperf \
              $(srcdir)/classid-dither.gperf
 
-.PHONY: libobjs
+.PHONY: libobjs libsixel-import-lib-alias
 
 # Build only the libtool object set for libsixel.
 #
@@ -450,8 +450,13 @@ $(top_builddir)/src/.libs/sixel.dll.lib: libsixel.la
 	elif test -f .libs/sixel.lib; then \
 		cp .libs/sixel.lib .libs/sixel.dll.lib; \
 	fi
+LIBSIXEL_IMPORT_LIB_ALIAS_DEPS = $(top_builddir)/src/.libs/sixel.dll.lib
 endif
 endif
+
+# Keep this helper target always defined so top-level phase orchestration can
+# call it unconditionally. It becomes a no-op on non-MSVC builds.
+libsixel-import-lib-alias: $(LIBSIXEL_IMPORT_LIB_ALIAS_DEPS)
 
 GPERF_OPT=--ignore-case --language=ANSI-C
 GPERF_CLASSID_OPT=--language=ANSI-C \

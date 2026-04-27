@@ -507,6 +507,7 @@ all-src-libobjs:
 
 all-src-lib: all-src-libobjs
 	$(MAKE) -C src $(AM_MAKEFLAGS) libsixel.la
+	$(MAKE) -C src $(AM_MAKEFLAGS) libsixel-import-lib-alias
 
 all-converters-objs:
 	$(MAKE) -C converters $(AM_MAKEFLAGS) prelink-objs
