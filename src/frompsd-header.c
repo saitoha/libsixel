@@ -45,10 +45,10 @@ sixel_builtin_psd_should_try_multilayer_fallback(
     sixel_builtin_psd_info_t const *info);
 
 static unsigned int
-sixel_builtin_read_u16be(unsigned char const *p);
+sixel_builtin_psd_hdr_read_u16be(unsigned char const *p);
 
 static size_t
-sixel_builtin_read_u32be_size(unsigned char const *p);
+sixel_builtin_psd_hdr_read_u32be_size(unsigned char const *p);
 
 static int
 sixel_builtin_psd_has_supported_signature(unsigned char const *buffer,
@@ -103,7 +103,7 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
     if (!sixel_builtin_psd_has_supported_signature(buffer, &is_psb_alias)) {
         return SIXEL_BUILTIN_ICC_EXTRACT_ABSENT;
     }
-    if (is_psb_alias != 0 && sixel_builtin_read_u16be(buffer + 4u) != 2u) {
+    if (is_psb_alias != 0 && sixel_builtin_psd_hdr_read_u16be(buffer + 4u) != 2u) {
         return SIXEL_BUILTIN_ICC_EXTRACT_MALFORMED;
     }
 
@@ -191,13 +191,13 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
 
 
 static unsigned int
-sixel_builtin_read_u16be(unsigned char const *p)
+sixel_builtin_psd_hdr_read_u16be(unsigned char const *p)
 {
     return ((unsigned int)p[0] << 8) | (unsigned int)p[1];
 }
 
 static size_t
-sixel_builtin_read_u32be_size(unsigned char const *p)
+sixel_builtin_psd_hdr_read_u32be_size(unsigned char const *p)
 {
     return ((size_t)p[0] << 24) |
            ((size_t)p[1] << 16) |
@@ -206,7 +206,7 @@ sixel_builtin_read_u32be_size(unsigned char const *p)
 }
 
 static int
-sixel_builtin_read_u64be_size_checked(unsigned char const *p, size_t *out_value)
+sixel_builtin_psd_hdr_read_u64be_size_checked(unsigned char const *p, size_t *out_value)
 {
     uint64_t value;
     uint64_t max_size_value;
@@ -243,7 +243,7 @@ sixel_builtin_psd_layer_mask_length_field_size(sixel_builtin_psd_info_t const *i
 }
 
 static size_t
-sixel_builtin_psd_layer_info_length_field_size(sixel_builtin_psd_info_t const *info)
+sixel_builtin_psd_hdr_layer_info_length_field_size(sixel_builtin_psd_info_t const *info)
 {
     if (info != NULL && info->version == 2u) {
         return 8u;
@@ -252,7 +252,7 @@ sixel_builtin_psd_layer_info_length_field_size(sixel_builtin_psd_info_t const *i
 }
 
 static int
-sixel_builtin_psd_read_length_field_checked(unsigned char const *p,
+sixel_builtin_psd_hdr_read_length_field_checked(unsigned char const *p,
                                             size_t field_size,
                                             size_t *out_value)
 {
@@ -260,17 +260,17 @@ sixel_builtin_psd_read_length_field_checked(unsigned char const *p,
         return 0;
     }
     if (field_size == 4u) {
-        *out_value = sixel_builtin_read_u32be_size(p);
+        *out_value = sixel_builtin_psd_hdr_read_u32be_size(p);
         return 1;
     }
     if (field_size == 8u) {
-        return sixel_builtin_read_u64be_size_checked(p, out_value);
+        return sixel_builtin_psd_hdr_read_u64be_size_checked(p, out_value);
     }
     return 0;
 }
 
 static size_t
-sixel_builtin_psd_rle_row_length_field_size(sixel_builtin_psd_info_t const *info)
+sixel_builtin_psd_hdr_rle_row_length_field_size(sixel_builtin_psd_info_t const *info)
 {
     if (info != NULL && info->version == 2u) {
         return 4u;
@@ -279,9 +279,9 @@ sixel_builtin_psd_rle_row_length_field_size(sixel_builtin_psd_info_t const *info
 }
 
 static int16_t
-sixel_builtin_read_i16be(unsigned char const *p)
+sixel_builtin_psd_hdr_read_i16be(unsigned char const *p)
 {
-    return (int16_t)sixel_builtin_read_u16be(p);
+    return (int16_t)sixel_builtin_psd_hdr_read_u16be(p);
 }
 
 static void
@@ -300,33 +300,33 @@ sixel_builtin_psd_set_message(char *message,
 }
 
 static int
-sixel_builtin_psd_is_psb(sixel_builtin_psd_info_t const *info)
+sixel_builtin_psd_hdr_is_psb(sixel_builtin_psd_info_t const *info)
 {
     return info != NULL && info->version == 2u;
 }
 
 static char const *
-sixel_builtin_psd_malformed_layer_mask_length_message(
+sixel_builtin_psd_hdr_malformed_layer_mask_length_message(
     sixel_builtin_psd_info_t const *info)
 {
-    if (sixel_builtin_psd_is_psb(info)) {
+    if (sixel_builtin_psd_hdr_is_psb(info)) {
         return "builtin PSD: malformed PSB layer/mask length";
     }
     return "builtin PSD: malformed layer/mask section";
 }
 
 static char const *
-sixel_builtin_psd_malformed_layer_info_length_message(
+sixel_builtin_psd_hdr_malformed_layer_info_length_message(
     sixel_builtin_psd_info_t const *info)
 {
-    if (sixel_builtin_psd_is_psb(info)) {
+    if (sixel_builtin_psd_hdr_is_psb(info)) {
         return "builtin PSD: malformed PSB layer info length";
     }
     return "builtin PSD: malformed layer record table";
 }
 
 static int
-sixel_builtin_psd_get_layer_info_window(
+sixel_builtin_psd_hdr_get_layer_info_window(
     sixel_chunk_t const *chunk,
     sixel_builtin_psd_info_t const *info,
     size_t *player_info_offset,
@@ -352,26 +352,26 @@ sixel_builtin_psd_get_layer_info_window(
     }
 
     layer_info_length_field_size =
-        sixel_builtin_psd_layer_info_length_field_size(info);
+        sixel_builtin_psd_hdr_layer_info_length_field_size(info);
     if (layer_info_length_field_size == 0u ||
         info->layer_mask_length < layer_info_length_field_size + 2u ||
         info->layer_mask_offset > chunk->size ||
         info->layer_mask_length > chunk->size - info->layer_mask_offset) {
         if (emit_message != 0) {
             sixel_helper_set_additional_message(
-                sixel_builtin_psd_malformed_layer_mask_length_message(info));
+                sixel_builtin_psd_hdr_malformed_layer_mask_length_message(info));
         }
         return 0;
     }
     section_offset = info->layer_mask_offset;
     section_end = section_offset + info->layer_mask_length;
-    if (!sixel_builtin_psd_read_length_field_checked(
+    if (!sixel_builtin_psd_hdr_read_length_field_checked(
             chunk->buffer + section_offset,
             layer_info_length_field_size,
             &layer_info_length)) {
         if (emit_message != 0) {
             sixel_helper_set_additional_message(
-                sixel_builtin_psd_malformed_layer_info_length_message(info));
+                sixel_builtin_psd_hdr_malformed_layer_info_length_message(info));
         }
         return 0;
     }
@@ -381,7 +381,7 @@ sixel_builtin_psd_get_layer_info_window(
         layer_info_offset + layer_info_length > chunk->size) {
         if (emit_message != 0) {
             sixel_helper_set_additional_message(
-                sixel_builtin_psd_malformed_layer_info_length_message(info));
+                sixel_builtin_psd_hdr_malformed_layer_info_length_message(info));
         }
         return 0;
     }
@@ -445,7 +445,7 @@ sixel_builtin_psd_has_layer_records(sixel_chunk_t const *chunk,
     if (info->layer_mask_length < layer_info_length_field_size) {
         return 0;
     }
-    if (!sixel_builtin_psd_read_length_field_checked(
+    if (!sixel_builtin_psd_hdr_read_length_field_checked(
             chunk->buffer + info->layer_mask_offset,
             layer_info_length_field_size,
             &layer_info_length)) {
@@ -462,7 +462,7 @@ sixel_builtin_psd_has_layer_records(sixel_chunk_t const *chunk,
 }
 
 static int
-sixel_builtin_psd_compute_row_bytes(sixel_builtin_psd_info_t const *info,
+sixel_builtin_psd_hdr_compute_row_bytes(sixel_builtin_psd_info_t const *info,
                                     size_t *prow_bytes)
 {
     size_t row_bytes;
@@ -649,12 +649,12 @@ sixel_builtin_validate_psd_info(
                 sixel_builtin_psd_set_message(
                     message,
                     message_size,
-                    sixel_builtin_psd_malformed_layer_info_length_message(info));
+                    sixel_builtin_psd_hdr_malformed_layer_info_length_message(info));
             } else {
                 sixel_builtin_psd_set_message(
                     message,
                     message_size,
-                    sixel_builtin_psd_malformed_layer_mask_length_message(info));
+                    sixel_builtin_psd_hdr_malformed_layer_mask_length_message(info));
             }
             return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
         }
@@ -859,7 +859,7 @@ sixel_builtin_validate_psd_info(
         return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
     }
 
-    if (!sixel_builtin_psd_compute_row_bytes(info, &row_bytes) ||
+    if (!sixel_builtin_psd_hdr_compute_row_bytes(info, &row_bytes) ||
         row_bytes > SIZE_MAX / (size_t)info->height) {
         sixel_builtin_psd_set_message(
             message,
@@ -887,12 +887,12 @@ sixel_builtin_validate_psd_info(
                         sixel_builtin_psd_set_message(
                             message,
                             message_size,
-                            sixel_builtin_psd_malformed_layer_info_length_message(info));
+                            sixel_builtin_psd_hdr_malformed_layer_info_length_message(info));
                     } else {
                         sixel_builtin_psd_set_message(
                             message,
                             message_size,
-                            sixel_builtin_psd_malformed_layer_mask_length_message(info));
+                            sixel_builtin_psd_hdr_malformed_layer_mask_length_message(info));
                     }
                     return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
                 }
@@ -917,7 +917,7 @@ sixel_builtin_validate_psd_info(
                 return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
             }
             table_entries = (size_t)info->height * (size_t)info->channels;
-            row_length_field_size = sixel_builtin_psd_rle_row_length_field_size(
+            row_length_field_size = sixel_builtin_psd_hdr_rle_row_length_field_size(
                 info);
             if (row_length_field_size == 0u ||
                 table_entries > SIZE_MAX / row_length_field_size) {
@@ -935,12 +935,12 @@ sixel_builtin_validate_psd_info(
                         sixel_builtin_psd_set_message(
                             message,
                             message_size,
-                            sixel_builtin_psd_malformed_layer_info_length_message(info));
+                            sixel_builtin_psd_hdr_malformed_layer_info_length_message(info));
                     } else {
                         sixel_builtin_psd_set_message(
                             message,
                             message_size,
-                            sixel_builtin_psd_malformed_layer_mask_length_message(info));
+                            sixel_builtin_psd_hdr_malformed_layer_mask_length_message(info));
                     }
                     return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
                 }
@@ -1000,15 +1000,15 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     }
 
     memset(info, 0, sizeof(*info));
-    info->version = sixel_builtin_read_u16be(buffer + 4u);
+    info->version = sixel_builtin_psd_hdr_read_u16be(buffer + 4u);
     if (is_psb_alias != 0 && info->version != 2u) {
         return 0;
     }
-    info->channels = sixel_builtin_read_u16be(buffer + 12u);
-    info->height = (unsigned int)sixel_builtin_read_u32be_size(buffer + 14u);
-    info->width = (unsigned int)sixel_builtin_read_u32be_size(buffer + 18u);
-    info->depth = sixel_builtin_read_u16be(buffer + 22u);
-    info->color_mode = sixel_builtin_read_u16be(buffer + 24u);
+    info->channels = sixel_builtin_psd_hdr_read_u16be(buffer + 12u);
+    info->height = (unsigned int)sixel_builtin_psd_hdr_read_u32be_size(buffer + 14u);
+    info->width = (unsigned int)sixel_builtin_psd_hdr_read_u32be_size(buffer + 18u);
+    info->depth = sixel_builtin_psd_hdr_read_u16be(buffer + 22u);
+    info->color_mode = sixel_builtin_psd_hdr_read_u16be(buffer + 24u);
     layer_mask_length_field_size =
         sixel_builtin_psd_layer_mask_length_field_size(info);
 
@@ -1016,7 +1016,7 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     if (offset + 4u > size) {
         return 0;
     }
-    section_length = sixel_builtin_read_u32be_size(buffer + offset);
+    section_length = sixel_builtin_psd_hdr_read_u32be_size(buffer + offset);
     offset += 4u;
     if (section_length > size - offset) {
         return 0;
@@ -1028,7 +1028,7 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     if (offset + 4u > size) {
         return 0;
     }
-    section_length = sixel_builtin_read_u32be_size(buffer + offset);
+    section_length = sixel_builtin_psd_hdr_read_u32be_size(buffer + offset);
     offset += 4u;
     if (section_length > size - offset) {
         return 0;
@@ -1040,17 +1040,17 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     if (offset + layer_mask_length_field_size > size) {
         if (is_psb_alias != 0 && info->version == 2u) {
             sixel_helper_set_additional_message(
-                sixel_builtin_psd_malformed_layer_mask_length_message(info));
+                sixel_builtin_psd_hdr_malformed_layer_mask_length_message(info));
         }
         return 0;
     }
-    if (!sixel_builtin_psd_read_length_field_checked(
+    if (!sixel_builtin_psd_hdr_read_length_field_checked(
             buffer + offset,
             layer_mask_length_field_size,
             &section_length)) {
         if (is_psb_alias != 0 && info->version == 2u) {
             sixel_helper_set_additional_message(
-                sixel_builtin_psd_malformed_layer_mask_length_message(info));
+                sixel_builtin_psd_hdr_malformed_layer_mask_length_message(info));
         }
         return 0;
     }
@@ -1058,7 +1058,7 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     if (section_length > size - offset) {
         if (is_psb_alias != 0 && info->version == 2u) {
             sixel_helper_set_additional_message(
-                sixel_builtin_psd_malformed_layer_mask_length_message(info));
+                sixel_builtin_psd_hdr_malformed_layer_mask_length_message(info));
         }
         return 0;
     }
@@ -1069,7 +1069,7 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     if (offset + 2u > size) {
         return 0;
     }
-    info->compression = sixel_builtin_read_u16be(buffer + offset);
+    info->compression = sixel_builtin_psd_hdr_read_u16be(buffer + offset);
     info->image_data_offset = offset + 2u;
 
     return 1;
@@ -1100,7 +1100,7 @@ sixel_builtin_psd_should_try_multilayer_fallback(
     if (info->version == 2u) {
         min_layer_count = 1u;
     }
-    if (!sixel_builtin_psd_get_layer_info_window(
+    if (!sixel_builtin_psd_hdr_get_layer_info_window(
             chunk,
             info,
             &layer_info_offset,
@@ -1109,7 +1109,7 @@ sixel_builtin_psd_should_try_multilayer_fallback(
             0)) {
         return 0;
     }
-    layer_count_raw = sixel_builtin_read_i16be(chunk->buffer + layer_info_offset);
+    layer_count_raw = sixel_builtin_psd_hdr_read_i16be(chunk->buffer + layer_info_offset);
     if (layer_count_raw < 0) {
         layer_count = (size_t)(-(int)layer_count_raw);
     } else {

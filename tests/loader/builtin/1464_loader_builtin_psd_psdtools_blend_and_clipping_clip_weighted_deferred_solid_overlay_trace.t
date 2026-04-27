@@ -1,10 +1,12 @@
 #!/bin/sh
-# Verify deferred solid-overlay diagnostic codes remain mapped in frompsd.c.
+# Verify deferred solid-overlay diagnostic codes remain mapped in PSD source.
 
 set -eux
 
-test -f "${TOP_SRCDIR}/src/frompsd.c" || {
-    printf "1..0 # SKIP src/frompsd.c is unavailable\n"
+source_file="${TOP_SRCDIR}/src/frompsd-trace.c"
+test -f "${source_file}" || source_file="${TOP_SRCDIR}/src/frompsd.c"
+test -f "${source_file}" || {
+    printf "1..0 # SKIP PSD source for trace mapping is unavailable\n"
     exit 0
 }
 
@@ -28,17 +30,17 @@ while IFS= read -r source_line || test -n "${source_line}"; do
             ;;
         *) ;;
     esac
-done < "${TOP_SRCDIR}/src/frompsd.c"
+done < "${source_file}"
 
 test "${found_overlay_code}" -eq 1 || {
-    echo "not ok" 1 - "frompsd.c is missing FX_DEFERRED_SOLID_OVERLAY_CLIP mapping"
+    echo "not ok" 1 - "PSD source is missing FX_DEFERRED_SOLID_OVERLAY_CLIP mapping"
     exit 0
 }
 
 test "${found_split_code}" -eq 1 || {
-    echo "not ok" 1 - "frompsd.c is missing FX_DEFERRED_SOLID_CLIP_SPLIT mapping"
+    echo "not ok" 1 - "PSD source is missing FX_DEFERRED_SOLID_CLIP_SPLIT mapping"
     exit 0
 }
 
-echo "ok" 1 - "frompsd.c keeps deferred solid-overlay diagnostic mappings"
+echo "ok" 1 - "PSD source keeps deferred solid-overlay diagnostic mappings"
 exit 0

@@ -20711,10 +20711,10 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
         if (effect_priority_inside != 0) {
             /*
              * FXPRI_INSIDE keeps exclusive vector/effect bands intact while
-             * resolving overlap color with FrFX-priority continuous weighting:
-             * C_overlap = C_stack * (1 - w_fx) + C_fx * w_fx, where
-             * C_stack is base->vector->effect, C_fx is base->effect, and
-             * w_fx = effect_alpha / (effect_alpha + vector_alpha).
+             * resolving overlap color with alpha-aware FrFX priority:
+             * C_overlap = C_stack * (1 - w_fx) + C_fx * w_fx.
+             * C_stack is base->vector(a_v)->effect(a_f), C_fx is
+             * base->effect(a_f), and w_fx = a_f / (a_v + a_f).
              */
             sixel_builtin_psd_blend_effect_rgb(
                 base_rgb[0],
@@ -20722,7 +20722,7 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
                 base_rgb[2],
                 effect_rgb,
                 effect_mode,
-                1.0f,
+                effect_alpha,
                 &overlap_full_rgb[0],
                 &overlap_full_rgb[1],
                 &overlap_full_rgb[2]);
@@ -20732,7 +20732,7 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
                 base_rgb[2],
                 vector_rgb,
                 vector_mode,
-                1.0f,
+                vector_alpha,
                 &overlap_tmp_rgb[0],
                 &overlap_tmp_rgb[1],
                 &overlap_tmp_rgb[2]);
@@ -20742,16 +20742,16 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
                 overlap_tmp_rgb[2],
                 effect_rgb,
                 effect_mode,
-                1.0f,
+                effect_alpha,
                 &overlap_tmp_rgb[0],
                 &overlap_tmp_rgb[1],
                 &overlap_tmp_rgb[2]);
             overlap_effect_weight = effect_alpha + vector_alpha;
-            if (overlap_effect_weight > 0.0f) {
+            if (overlap_effect_weight > 1.0e-6f) {
                 overlap_effect_weight = sixel_builtin_psd_clamp01(
                     effect_alpha / overlap_effect_weight);
             } else {
-                overlap_effect_weight = 1.0f;
+                overlap_effect_weight = 0.5f;
             }
             overlap_vector_weight = 1.0f - overlap_effect_weight;
             overlap_full_rgb[0] = sixel_builtin_psd_clamp01(
