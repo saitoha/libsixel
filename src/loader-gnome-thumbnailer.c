@@ -190,7 +190,7 @@ int thumbnailer_has_fallback_thumbnailer(void);
  * Returns:
  *     Newly allocated duplicate or NULL on failure/NULL input.
  */
-char *
+static char *
 thumbnailer_strdup(char const *src)
 {
     char *copy;
@@ -536,100 +536,6 @@ thumbnailer_collect_directories(void)
     dirs_copy = NULL;
 
     return dirs;
-}
-
-void
-loader_probe_gnome_thumbnailers(char const *mime_type,
-                                int *has_directories,
-                                int *has_match)
-{
-    struct thumbnailer_string_list *directories;
-    struct thumbnailer_entry info;
-    size_t dir_index;
-    DIR *dir;
-    struct dirent *entry;
-    char *thumbnailer_path;
-    int match;
-    int directories_present;
-    size_t name_length;
-
-    directories = NULL;
-    dir_index = 0;
-    dir = NULL;
-    entry = NULL;
-    thumbnailer_path = NULL;
-    match = 0;
-    directories_present = 0;
-    name_length = 0;
-
-    if (has_directories != NULL) {
-        *has_directories = 0;
-    }
-    if (has_match != NULL) {
-        *has_match = 0;
-    }
-
-    directories = thumbnailer_collect_directories();
-    if (directories == NULL) {
-        return;
-    }
-
-    if (directories->length > 0) {
-        directories_present = 1;
-        if (has_directories != NULL) {
-            *has_directories = 1;
-        }
-    }
-
-    thumbnailer_entry_init(&info);
-
-    if (mime_type != NULL && mime_type[0] != '\0') {
-        for (dir_index = 0; dir_index < directories->length && match == 0;
-                ++dir_index) {
-            dir = opendir(directories->items[dir_index]);
-            if (dir == NULL) {
-                continue;
-            }
-            while (match == 0 && (entry = readdir(dir)) != NULL) {
-                thumbnailer_entry_clear(&info);
-                thumbnailer_entry_init(&info);
-                name_length = strlen(entry->d_name);
-                if (name_length < 12 ||
-                        strcmp(entry->d_name + name_length - 12,
-                               ".thumbnailer") != 0) {
-                    continue;
-                }
-                thumbnailer_path = thumbnailer_join_paths(
-                    directories->items[dir_index],
-                    entry->d_name);
-                if (thumbnailer_path == NULL) {
-                    continue;
-                }
-                if (!thumbnailer_parse_file(thumbnailer_path, &info)) {
-                    free(thumbnailer_path);
-                    thumbnailer_path = NULL;
-                    continue;
-                }
-                free(thumbnailer_path);
-                thumbnailer_path = NULL;
-                if (!thumbnailer_has_tryexec(info.tryexec)) {
-                    continue;
-                }
-                if (thumbnailer_supports_mime(&info, mime_type)) {
-                    match = 1;
-                }
-            }
-            closedir(dir);
-            dir = NULL;
-        }
-    }
-
-    thumbnailer_entry_clear(&info);
-    thumbnailer_string_list_free(directories);
-
-    if (directories_present && has_match != NULL) {
-        *has_match = match;
-    }
 }
 
 /*
@@ -1820,7 +1726,7 @@ thumbnailer_extract_mime_token(char *text)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wanalyzer-fd-leak"
 #endif
-char *
+static char *
 thumbnailer_run_file(char const *path, char const *option)
 {
     int pipefd[2];
@@ -1957,7 +1863,7 @@ cleanup:
  *
  * Obtain the MIME identifier for the supplied path using file(1).
  */
-char *
+static char *
 thumbnailer_guess_content_type(char const *path)
 {
     return thumbnailer_run_file(path, "--mime-type");

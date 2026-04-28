@@ -10,21 +10,9 @@
 static int
 thumbnailer_available(void)
 {
-    int has_directories;
-    int has_match;
     int has_fallback;
 
-    has_directories = 0;
-    has_match = 0;
     has_fallback = 0;
-
-    loader_probe_gnome_thumbnailers("image/png",
-                                    &has_directories,
-                                    &has_match);
-
-    if (has_directories == 0 || has_match == 0) {
-        return 0;
-    }
 
     has_fallback = thumbnailer_has_fallback_thumbnailer();
     if (has_fallback == 0) {
