@@ -1,25 +1,26 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
+ * Copyright (c) 2025-2026 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2016 Hayaki Saito
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 #ifndef LIBSIXEL_LOADER_H
@@ -27,9 +28,116 @@
 
 #include <sixel.h>
 
+#include "chunk.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/*
+ * IDL (internal contract)
+ *
+ * interface ILoaderComponent {
+ *   ref();
+ *   unref();
+ *   setopt(option, value);
+ *   predicate(chunk);
+ *   load(chunk);
+ *   name();
+ * }
+ */
+
+struct sixel_loader_component_interface;
+typedef struct sixel_loader_component_interface
+    sixel_loader_component_interface_t;
+
+typedef struct sixel_loader_component_vtbl {
+    void (*ref)(sixel_loader_component_interface_t *loader);
+    void (*unref)(sixel_loader_component_interface_t *loader);
+    SIXELSTATUS (*setopt)(sixel_loader_component_interface_t *loader,
+                          int option,
+                          void const *value);
+    SIXELSTATUS (*load)(sixel_loader_component_interface_t *loader,
+                        sixel_chunk_t const *chunk,
+                        sixel_load_image_function fn_load,
+                        void *context);
+    char const *(*name)(sixel_loader_component_interface_t const *loader);
+    int (*predicate)(sixel_loader_component_interface_t *loader,
+                     sixel_chunk_t const *chunk);
+} sixel_loader_component_vtbl_t;
+
+struct sixel_loader_component_interface {
+    sixel_loader_component_vtbl_t const *vtbl;
+};
+
+typedef sixel_loader_component_interface_t sixel_loader_component_t;
+typedef sixel_loader_component_vtbl_t sixel_loader_vtbl_t;
+
+static inline void
+sixel_loader_component_ref(sixel_loader_component_t *component)
+{
+    if (component == NULL || component->vtbl == NULL ||
+        component->vtbl->ref == NULL) {
+        return;
+    }
+    component->vtbl->ref(component);
+}
+
+static inline void
+sixel_loader_component_unref(sixel_loader_component_t *component)
+{
+    if (component == NULL || component->vtbl == NULL ||
+        component->vtbl->unref == NULL) {
+        return;
+    }
+    component->vtbl->unref(component);
+}
+
+static inline SIXELSTATUS
+sixel_loader_component_setopt(sixel_loader_component_t *component,
+                              int option,
+                              void const *value)
+{
+    if (component == NULL || component->vtbl == NULL ||
+        component->vtbl->setopt == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return component->vtbl->setopt(component, option, value);
+}
+
+static inline int
+sixel_loader_component_predicate(sixel_loader_component_t *component,
+                                 sixel_chunk_t const *chunk)
+{
+    if (component == NULL || component->vtbl == NULL ||
+        component->vtbl->predicate == NULL) {
+        return 1;
+    }
+    return component->vtbl->predicate(component, chunk);
+}
+
+static inline SIXELSTATUS
+sixel_loader_component_load(sixel_loader_component_t *component,
+                            sixel_chunk_t const *chunk,
+                            sixel_load_image_function fn_load,
+                            void *context)
+{
+    if (component == NULL || component->vtbl == NULL ||
+        component->vtbl->load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return component->vtbl->load(component, chunk, fn_load, context);
+}
+
+static inline char const *
+sixel_loader_component_get_name(sixel_loader_component_t const *component)
+{
+    if (component == NULL || component->vtbl == NULL ||
+        component->vtbl->name == NULL) {
+        return NULL;
+    }
+    return component->vtbl->name(component);
+}
 
 void sixel_helper_set_loader_trace(int enable);
 void sixel_helper_set_thumbnail_size_hint(int size);
@@ -68,7 +176,6 @@ SIXEL_INTERNAL_API int
 sixel_loader_wait_for_condition(sixel_loader_wait_predicate_t predicate,
                                 void *context,
                                 int timeout_ms);
-
 
 #ifdef __cplusplus
 }

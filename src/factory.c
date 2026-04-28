@@ -101,7 +101,7 @@ sixel_factory_create_loader_component(char const *loader_name,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = entry->create(allocator, (sixel_loader_component_t **)object);
+    status = entry->create(allocator, object);
     return status;
 }
 
@@ -156,7 +156,7 @@ sixel_factory_create_default(sixel_factory_t *factory,
         }
         status = lookup_entry->create(
             allocator,
-            (sixel_lookup_policy_interface_t **)object);
+            object);
         return status;
     }
 
@@ -172,7 +172,7 @@ sixel_factory_create_default(sixel_factory_t *factory,
         }
         status = dither_entry->create(
             allocator,
-            (sixel_dither_policy_interface_t **)object);
+            object);
         return status;
     }
 

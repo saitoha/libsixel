@@ -4083,17 +4083,26 @@ sixel_loader_libwebp_name(sixel_loader_component_t const *component)
     return "libwebp";
 }
 
+static int
+sixel_loader_libwebp_predicate(sixel_loader_component_t *component,
+                               sixel_chunk_t const *chunk)
+{
+    (void)component;
+    return loader_can_try_libwebp(chunk);
+}
+
 static sixel_loader_component_vtbl_t const g_sixel_loader_libwebp_vtbl = {
     sixel_loader_libwebp_ref,
     sixel_loader_libwebp_unref,
     sixel_loader_libwebp_setopt,
     sixel_loader_libwebp_load,
-    sixel_loader_libwebp_name
+    sixel_loader_libwebp_name,
+    sixel_loader_libwebp_predicate
 };
 
 SIXELSTATUS
 sixel_loader_libwebp_new(sixel_allocator_t *allocator,
-                         sixel_loader_component_t **ppcomponent)
+                         void **ppcomponent)
 {
     sixel_loader_libwebp_component_t *self;
 

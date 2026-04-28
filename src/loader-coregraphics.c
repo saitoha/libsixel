@@ -3099,17 +3099,27 @@ sixel_loader_coregraphics_name(sixel_loader_component_t const *component)
     return "coregraphics";
 }
 
+static int
+sixel_loader_coregraphics_predicate(sixel_loader_component_t *component,
+                                    sixel_chunk_t const *chunk)
+{
+    (void)component;
+    (void)chunk;
+    return 1;
+}
+
 static sixel_loader_component_vtbl_t const g_sixel_loader_coregraphics_vtbl = {
     sixel_loader_coregraphics_ref,
     sixel_loader_coregraphics_unref,
     sixel_loader_coregraphics_setopt,
     sixel_loader_coregraphics_load,
-    sixel_loader_coregraphics_name
+    sixel_loader_coregraphics_name,
+    sixel_loader_coregraphics_predicate
 };
 
 SIXELSTATUS
 sixel_loader_coregraphics_new(sixel_allocator_t *allocator,
-                              sixel_loader_component_t **ppcomponent)
+                              void **ppcomponent)
 {
     sixel_loader_coregraphics_component_t *self;
 

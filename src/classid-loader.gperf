@@ -22,7 +22,7 @@
 
 typedef SIXELSTATUS (*sixel_loader_component_new_fn)(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **object);
 
 #if 1
 # define SIXEL_LOADER_COMPONENT_CLASSID_CREATE_1 sixel_loader_builtin_new

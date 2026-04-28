@@ -1,6 +1,6 @@
 static SIXELSTATUS
 new_builtin_component_for_pixelformat_test(sixel_allocator_t *allocator,
-                                           sixel_loader_component_t **ppcomponent)
+                                           void **ppcomponent)
 {
     return create_loader_component_by_name("builtin", allocator, ppcomponent);
 }
@@ -731,7 +731,7 @@ run_builtin_loader_probe_case(char const *label,
         goto cleanup;
     }
 
-    status = new_builtin_component_for_pixelformat_test(allocator, &component);
+    status = new_builtin_component_for_pixelformat_test(allocator, (void **)&component);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
         goto cleanup;

@@ -54,7 +54,7 @@ typedef struct sixel_builtin_load_with_builtin_args {
 SIXELSTATUS
 sixel_loader_builtin_new(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **ppcomponent);
 
 SIXELSTATUS
 sixel_builtin_load_with_builtin_impl(

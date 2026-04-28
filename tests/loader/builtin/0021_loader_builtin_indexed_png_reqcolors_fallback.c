@@ -498,7 +498,7 @@ run_loader_suboption_parallel_isolation_test(void)
 
 static SIXELSTATUS
 new_builtin_component_for_reqcolors_fallback_test(sixel_allocator_t *allocator,
-                                                  sixel_loader_component_t **ppcomponent)
+                                                  void **ppcomponent)
 {
     return create_loader_component_by_name("builtin", allocator, ppcomponent);
 }

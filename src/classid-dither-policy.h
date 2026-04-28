@@ -51,7 +51,7 @@
 
 typedef SIXELSTATUS (*sixel_dither_policy_create_fn)(
     sixel_allocator_t *allocator,
-    sixel_dither_policy_interface_t **policy);
+    void **policy);
 #line 29 "../../src/classid-dither.gperf"
 struct sixel_dither_policy_classid_entry {
     char const *name;

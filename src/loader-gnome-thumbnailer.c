@@ -2775,6 +2775,15 @@ sixel_loader_gnome_thumbnailer_name(sixel_loader_component_t const *component)
     return "gnome-thumbnailer";
 }
 
+static int
+sixel_loader_gnome_thumbnailer_predicate(sixel_loader_component_t *component,
+                                         sixel_chunk_t const *chunk)
+{
+    (void)component;
+    (void)chunk;
+    return 1;
+}
+
 static sixel_loader_component_vtbl_t const
 g_sixel_loader_gnome_thumbnailer_vtbl = {
     sixel_loader_gnome_thumbnailer_ref,
@@ -2782,11 +2791,12 @@ g_sixel_loader_gnome_thumbnailer_vtbl = {
     sixel_loader_gnome_thumbnailer_setopt,
     sixel_loader_gnome_thumbnailer_load,
     sixel_loader_gnome_thumbnailer_name,
+    sixel_loader_gnome_thumbnailer_predicate
 };
 
 SIXELSTATUS
 sixel_loader_gnome_thumbnailer_new(sixel_allocator_t *allocator,
-                                   sixel_loader_component_t **ppcomponent)
+                                   void **ppcomponent)
 {
     sixel_loader_gnome_thumbnailer_component_t *self;
 

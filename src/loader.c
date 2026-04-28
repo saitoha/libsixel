@@ -104,11 +104,9 @@
 #include "loader-librsvg.h"
 #include "loader-order-schema.h"
 #include "loader-quicklook.h"
-#include "loader-registry.h"
-#include "loader-factory.h"
 #include "loader-manager.h"
-#include "loader-component.h"
 #include "loader-wic.h"
+#include "factory.h"
 #include "compat_stub.h"
 #include "frame.h"
 #include "chunk.h"
@@ -1487,7 +1485,7 @@ loader_publish_diagnostic(sixel_chunk_t const *pchunk,
     quicklook_available = 0;
     quicklook_supported = 0;
 
-    quicklook_available = loader_registry_entry_available("quicklook");
+    quicklook_available = loader_manager_entry_available("quicklook");
     if (quicklook_available) {
         quicklook_supported = loader_quicklook_can_decode(pchunk, filename);
     }
@@ -1502,7 +1500,7 @@ loader_publish_diagnostic(sixel_chunk_t const *pchunk,
 #endif
 
 #if HAVE_FREEDESKTOP_THUMBNAILING
-    gnome_available = loader_registry_entry_available("gnome-thumbnailer");
+    gnome_available = loader_manager_entry_available("gnome-thumbnailer");
     if (gnome_available) {
         loader_probe_gnome_thumbnailers(mime_string,
                                         &gnome_has_dirs,
@@ -1621,7 +1619,8 @@ sixel_loader_new(
     sixel_logger_init(&loader->logger);
     (void)sixel_logger_prepare_env(&loader->logger);
     loader->loader_order = NULL;
-    sixel_option_init_argument_list_resolution(&loader->loader_order_resolution);
+    sixel_option_init_argument_list_resolution(
+        &loader->loader_order_resolution);
     loader->allocator = local_allocator;
     loader->last_loader_name[0] = '\0';
     loader->last_source_path[0] = '\0';
@@ -1802,7 +1801,8 @@ sixel_loader_setopt(
             status = sixel_loader_order_parse_and_validate(order,
                                                            &parsed_order,
                                                            match_detail,
-                                                           sizeof(match_detail));
+                                                           sizeof(
+                                                               match_detail));
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
@@ -1897,8 +1897,9 @@ sixel_loader_get_start_frame_no(sixel_loader_t const *loader,
 }
 
 static SIXELSTATUS
-loader_manager_configure_component(sixel_loader_component_t *component,
-                                   void *context)
+loader_manager_configure_component(
+    sixel_loader_component_interface_t *component,
+    void *context)
 {
     sixel_loader_component_option_context_t *options;
 
@@ -1987,13 +1988,9 @@ sixel_loader_load_file(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_chunk_t *pchunk;
-    sixel_loader_entry_t const **plan;
-    sixel_loader_entry_t const *entries;
-    sixel_loader_factory_t *factory;
+    sixel_factory_t *factory;
     sixel_loader_manager_t *manager;
-    sixel_loader_chain_t *chain;
-    size_t entry_count;
-    size_t plan_length;
+    sixel_loader_component_interface_t *selected_loader;
     int reqcolors;
     char const *order_override;
     char const *env_order;
@@ -2014,13 +2011,9 @@ sixel_loader_load_file(
     int chunk_job_id;
 
     pchunk = NULL;
-    plan = NULL;
-    entries = NULL;
     factory = NULL;
     manager = NULL;
-    chain = NULL;
-    entry_count = 0;
-    plan_length = 0;
+    selected_loader = NULL;
     reqcolors = 0;
     order_override = NULL;
     env_order = NULL;
@@ -2073,15 +2066,21 @@ sixel_loader_load_file(
     callback_state.context = loader->context;
     loader->callback_failed = 0;
 
-    status = loader_factory_get_default(&factory);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    entry_count = loader_factory_get_entries(factory, &entries);
-
     reqcolors = loader->reqcolors;
     if (reqcolors > SIXEL_PALETTE_MAX) {
         reqcolors = SIXEL_PALETTE_MAX;
+    }
+
+    status = sixel_factory_get_default(&factory);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = factory->vtbl->create(factory,
+                                   "loader/manager",
+                                   loader->allocator,
+                                   (void **)&manager);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     osc11_timeout_env = sixel_compat_getenv(
@@ -2191,48 +2190,23 @@ sixel_loader_load_file(
         skip_predicate_gate = 1;
     }
 
-    plan = sixel_allocator_malloc(loader->allocator,
-                                  entry_count * sizeof(*plan));
-    if (plan == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-
-    plan_length = loader_manager_build_plan_from_resolution(
-        active_order_resolution,
-        entries,
-        entry_count,
-        plan,
-        entry_count);
-    if (plan_length == 0u) {
-        if (active_order_resolution != NULL &&
+    status = manager->vtbl->build_chain(manager,
+                                        active_order_resolution,
+                                        loader->allocator);
+    if (SIXEL_FAILED(status)) {
+        if (status == SIXEL_BAD_ARGUMENT &&
+            active_order_resolution != NULL &&
             active_order_resolution->canonical_argument != NULL &&
             active_order_resolution->canonical_argument[0] != '\0') {
             sixel_helper_set_additional_message(
                 "sixel_loader_load_file: no supported loader in loader "
                 "order.");
             status = SIXEL_BAD_ARGUMENT;
-        } else {
+        } else if (status == SIXEL_BAD_ARGUMENT) {
             sixel_helper_set_additional_message(
                 "sixel_loader_load_file: no available loader backend.");
             status = SIXEL_LOADER_FAILED;
         }
-        goto end;
-    }
-
-    status = loader_manager_get_default(&manager);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    status = loader_manager_build_chain_from_plan(manager,
-                                                  plan,
-                                                  plan_length,
-                                                  pchunk,
-                                                  skip_predicate_gate,
-                                                  loader->allocator,
-                                                  &chain);
-    if (SIXEL_FAILED(status)) {
         goto end;
     }
 
@@ -2273,10 +2247,10 @@ sixel_loader_load_file(
                                        "loader/manager",
                                        &loader->timeline_manager_select_job,
                                        &loader->timeline_manager_select_open);
-    status = loader_manager_execute_chain(
+    status = manager->vtbl->load(
         manager,
-        chain,
         pchunk,
+        &selected_loader,
         skip_predicate_gate,
         loader_callback_trampoline,
         &callback_state,
@@ -2286,8 +2260,7 @@ sixel_loader_load_file(
         &option_context,
         loader_manager_trace_try_callback,
         loader_manager_trace_result_callback,
-        &trace_context,
-        &selected_name);
+        &trace_context);
     loader_timeline_select_phase_finish(
         loader,
         "loader/manager",
@@ -2310,6 +2283,11 @@ sixel_loader_load_file(
         goto end;
     }
 
+    if (selected_loader != NULL) {
+        selected_name = sixel_loader_component_get_name(selected_loader);
+    } else {
+        selected_name = NULL;
+    }
     if (selected_name != NULL) {
         (void)sixel_compat_snprintf(loader->last_loader_name,
                                     sizeof(loader->last_loader_name),
@@ -2337,16 +2315,12 @@ end:
         sixel_helper_set_loader_background_colorspace(-1);
     }
     loader_osc11_bg_query_job_join(&osc11_query_job);
-    loader_chain_unref(chain);
-    chain = NULL;
-    loader_manager_unref(manager);
-    manager = NULL;
-    if (plan != NULL) {
-        sixel_allocator_free(loader->allocator, plan);
-        plan = NULL;
+    if (manager != NULL) {
+        manager->vtbl->unref(manager);
     }
-    loader_factory_unref(factory);
+    manager = NULL;
     factory = NULL;
+    selected_loader = NULL;
     sixel_chunk_destroy(pchunk);
     sixel_option_free_argument_list_resolution(&order_resolution);
     sixel_loader_unref(loader);
@@ -2483,24 +2457,15 @@ SIXELAPI size_t
 sixel_helper_get_available_loader_names(char const **names, size_t max_names)
 {
     sixel_loader_entry_t const *entries;
-    sixel_loader_factory_t *factory;
     size_t entry_count;
     size_t limit;
     size_t index;
-    SIXELSTATUS status;
 
     entries = NULL;
-    factory = NULL;
     entry_count = 0u;
     limit = 0u;
     index = 0u;
-    status = SIXEL_FALSE;
-
-    status = loader_factory_get_default(&factory);
-    if (SIXEL_FAILED(status)) {
-        return 0u;
-    }
-    entry_count = loader_factory_get_entries(factory, &entries);
+    entry_count = loader_manager_get_entries(&entries);
 
     if (names != NULL && max_names > 0) {
         limit = entry_count;
@@ -2511,8 +2476,6 @@ sixel_helper_get_available_loader_names(char const **names, size_t max_names)
             names[index] = entries[index].name;
         }
     }
-
-    loader_factory_unref(factory);
 
     return entry_count;
 }

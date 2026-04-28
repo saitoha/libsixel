@@ -85,7 +85,7 @@ END {
     print ""
     print "typedef SIXELSTATUS (*sixel_dither_policy_create_fn)("
     print "    sixel_allocator_t *allocator,"
-    print "    sixel_dither_policy_interface_t **policy);"
+    print "    void **policy);"
     print "%}"
     print "struct sixel_dither_policy_classid_entry {"
     print "    char const *name;"

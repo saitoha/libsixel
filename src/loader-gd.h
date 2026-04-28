@@ -38,7 +38,7 @@
 SIXELSTATUS
 sixel_loader_gd_new(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **ppcomponent);
 
 SIXEL_INTERNAL_API int
 loader_can_try_gd(sixel_chunk_t const *chunk);

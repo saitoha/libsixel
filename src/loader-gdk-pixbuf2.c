@@ -1650,17 +1650,27 @@ sixel_loader_gdkpixbuf2_name(sixel_loader_component_t const *component)
     return "gdk-pixbuf2";
 }
 
+static int
+sixel_loader_gdkpixbuf2_predicate(sixel_loader_component_t *component,
+                                  sixel_chunk_t const *chunk)
+{
+    (void)component;
+    (void)chunk;
+    return 1;
+}
+
 static sixel_loader_component_vtbl_t const g_sixel_loader_gdkpixbuf2_vtbl = {
     sixel_loader_gdkpixbuf2_ref,
     sixel_loader_gdkpixbuf2_unref,
     sixel_loader_gdkpixbuf2_setopt,
     sixel_loader_gdkpixbuf2_load,
-    sixel_loader_gdkpixbuf2_name
+    sixel_loader_gdkpixbuf2_name,
+    sixel_loader_gdkpixbuf2_predicate
 };
 
 SIXELSTATUS
 sixel_loader_gdkpixbuf2_new(sixel_allocator_t *allocator,
-                            sixel_loader_component_t **ppcomponent)
+                            void **ppcomponent)
 {
     sixel_loader_gdkpixbuf_component_t *self;
 

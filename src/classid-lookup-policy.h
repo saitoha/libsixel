@@ -48,7 +48,7 @@
 
 typedef SIXELSTATUS (*sixel_lookup_policy_create_fn)(
     sixel_allocator_t *allocator,
-    sixel_lookup_policy_interface_t **policy);
+    void **policy);
 #line 26 "../../src/classid.gperf"
 struct sixel_lookup_policy_classid_entry {
     char const *name;

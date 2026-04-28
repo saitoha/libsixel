@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_loader_component_classid_lookup --language=ANSI-C -H sixel_loader_component_classid_hash -W sixel_loader_component_classid_wordlist src/classid-loader.gperf  */
+/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_loader_component_classid_lookup --language=ANSI-C -H sixel_loader_component_classid_hash -W sixel_loader_component_classid_wordlist ../../src/classid-loader.gperf  */
 /* Computed positions: -k'11' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -29,7 +29,7 @@
 #error "gperf generated tables don't work with this execution character set. Please report a bug to <bug-gnu-gperf@gnu.org>."
 #endif
 
-#line 6 "src/classid-loader.gperf"
+#line 6 "../../src/classid-loader.gperf"
 
 #if defined(HAVE_STRING_H) && HAVE_STRING_H
 #include <string.h>
@@ -49,7 +49,7 @@
 
 typedef SIXELSTATUS (*sixel_loader_component_new_fn)(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **object);
 
 #if 1
 # define SIXEL_LOADER_COMPONENT_CLASSID_CREATE_1 sixel_loader_builtin_new
@@ -111,7 +111,7 @@ typedef SIXELSTATUS (*sixel_loader_component_new_fn)(
 #else
 # define SIXEL_LOADER_COMPONENT_CLASSID_CREATE_12 0
 #endif
-#line 88 "src/classid-loader.gperf"
+#line 88 "../../src/classid-loader.gperf"
 struct sixel_loader_component_classid_entry {
     char const *name;
     sixel_loader_component_new_fn create;
@@ -180,35 +180,35 @@ sixel_loader_component_classid_hash (register const char *str, register unsigned
 static const struct sixel_loader_component_classid_entry sixel_loader_component_classid_wordlist[] =
   {
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-#line 95 "src/classid-loader.gperf"
+#line 95 "../../src/classid-loader.gperf"
     {"loader/gd", SIXEL_LOADER_COMPONENT_CLASSID_CREATE_3},
-#line 104 "src/classid-loader.gperf"
+#line 104 "../../src/classid-loader.gperf"
     {"loader/wic", SIXEL_LOADER_COMPONENT_CLASSID_CREATE_12},
     {"", 0}, {"", 0},
-#line 99 "src/classid-loader.gperf"
+#line 99 "../../src/classid-loader.gperf"
     {"loader/libpng", SIXEL_LOADER_COMPONENT_CLASSID_CREATE_7},
-#line 102 "src/classid-loader.gperf"
+#line 102 "../../src/classid-loader.gperf"
     {"loader/libwebp", SIXEL_LOADER_COMPONENT_CLASSID_CREATE_10},
     {"", 0},
-#line 103 "src/classid-loader.gperf"
+#line 103 "../../src/classid-loader.gperf"
     {"loader/quicklook", SIXEL_LOADER_COMPONENT_CLASSID_CREATE_11},
     {"", 0},
-#line 93 "src/classid-loader.gperf"
+#line 93 "../../src/classid-loader.gperf"
     {"loader/builtin", SIXEL_LOADER_COMPONENT_CLASSID_CREATE_1},
-#line 101 "src/classid-loader.gperf"
+#line 101 "../../src/classid-loader.gperf"
     {"loader/libtiff", SIXEL_LOADER_COMPONENT_CLASSID_CREATE_9},
     {"", 0}, {"", 0}, {"", 0},
-#line 98 "src/classid-loader.gperf"
+#line 98 "../../src/classid-loader.gperf"
     {"loader/libjpeg", SIXEL_LOADER_COMPONENT_CLASSID_CREATE_6},
-#line 100 "src/classid-loader.gperf"
+#line 100 "../../src/classid-loader.gperf"
     {"loader/librsvg", SIXEL_LOADER_COMPONENT_CLASSID_CREATE_8},
     {"", 0}, {"", 0}, {"", 0},
-#line 96 "src/classid-loader.gperf"
+#line 96 "../../src/classid-loader.gperf"
     {"loader/gdk-pixbuf2", SIXEL_LOADER_COMPONENT_CLASSID_CREATE_4},
-#line 97 "src/classid-loader.gperf"
+#line 97 "../../src/classid-loader.gperf"
     {"loader/gnome-thumbnailer", SIXEL_LOADER_COMPONENT_CLASSID_CREATE_5},
     {"", 0}, {"", 0}, {"", 0}, {"", 0},
-#line 94 "src/classid-loader.gperf"
+#line 94 "../../src/classid-loader.gperf"
     {"loader/coregraphics", SIXEL_LOADER_COMPONENT_CLASSID_CREATE_2}
   };
 
@@ -229,7 +229,7 @@ sixel_loader_component_classid_lookup (register const char *str, register unsign
     }
   return 0;
 }
-#line 105 "src/classid-loader.gperf"
+#line 105 "../../src/classid-loader.gperf"
 
 #undef TOTAL_KEYWORDS
 #undef MIN_WORD_LENGTH

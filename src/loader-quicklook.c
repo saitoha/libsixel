@@ -642,17 +642,26 @@ sixel_loader_quicklook_name(sixel_loader_component_t const *component)
     return "quicklook";
 }
 
+static int
+sixel_loader_quicklook_predicate(sixel_loader_component_t *component,
+                                 sixel_chunk_t const *chunk)
+{
+    (void)component;
+    return loader_quicklook_can_decode_chunk(chunk);
+}
+
 static sixel_loader_component_vtbl_t const g_sixel_loader_quicklook_vtbl = {
     sixel_loader_quicklook_ref,
     sixel_loader_quicklook_unref,
     sixel_loader_quicklook_setopt,
     sixel_loader_quicklook_load,
-    sixel_loader_quicklook_name
+    sixel_loader_quicklook_name,
+    sixel_loader_quicklook_predicate
 };
 
 SIXELSTATUS
 sixel_loader_quicklook_new(sixel_allocator_t *allocator,
-                           sixel_loader_component_t **ppcomponent)
+                           void **ppcomponent)
 {
     sixel_loader_quicklook_component_t *self;
 

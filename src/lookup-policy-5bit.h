@@ -36,13 +36,13 @@ extern "C" {
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_5bit_8bit_new(
     sixel_allocator_t *allocator,
-    sixel_lookup_policy_interface_t **policy);
+    void **policy);
 
 /* @classid lookup/5bit.float32 */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_lookup_policy_5bit_float32_new(
     sixel_allocator_t *allocator,
-    sixel_lookup_policy_interface_t **policy);
+    void **policy);
 
 #ifdef __cplusplus
 }

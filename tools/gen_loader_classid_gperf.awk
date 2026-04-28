@@ -118,7 +118,7 @@ END {
     print ""
     print "typedef SIXELSTATUS (*sixel_loader_component_new_fn)("
     print "    sixel_allocator_t *allocator,"
-    print "    sixel_loader_component_t **ppcomponent);"
+    print "    void **object);"
     print ""
     for (i = 1; i <= entry_count; ++i) {
         macro_name = "SIXEL_LOADER_COMPONENT_CLASSID_CREATE_" i

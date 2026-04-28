@@ -67,7 +67,7 @@ run_libwebp_loader_case_with_options(char const *label,
 
     status = create_loader_component_by_name("libwebp",
                                              allocator,
-                                             &component);
+                                             (void **)&component);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }

@@ -37,7 +37,7 @@
 SIXELSTATUS
 sixel_loader_gnome_thumbnailer_new(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **ppcomponent);
 
 SIXELSTATUS load_with_gnome_thumbnailer(
     sixel_chunk_t const       *pchunk,

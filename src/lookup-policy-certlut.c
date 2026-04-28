@@ -2062,7 +2062,7 @@ sixel_certlut_free(sixel_certlut_t *lut)
 SIXELSTATUS
 sixel_lookup_policy_certlut_8bit_new(
     sixel_allocator_t *allocator,
-    sixel_lookup_policy_interface_t **policy)
+    void **policy)
 {
     sixel_lookup_policy_certlut_object_t *object;
 
@@ -2092,7 +2092,7 @@ sixel_lookup_policy_certlut_8bit_new(
 SIXELSTATUS
 sixel_lookup_policy_certlut_float32_new(
     sixel_allocator_t *allocator,
-    sixel_lookup_policy_interface_t **policy)
+    void **policy)
 {
     sixel_lookup_policy_certlut_object_t *object;
 

@@ -8,7 +8,7 @@
 #if HAVE_LIBPNG
 static SIXELSTATUS
 new_libpng_component_0022(sixel_allocator_t *allocator,
-                          sixel_loader_component_t **ppcomponent)
+                          void **ppcomponent)
 {
     return create_loader_component_by_name("libpng", allocator, ppcomponent);
 }

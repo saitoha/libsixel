@@ -836,17 +836,26 @@ sixel_loader_gd_name(sixel_loader_component_t const *component)
     return "gd";
 }
 
+static int
+sixel_loader_gd_predicate(sixel_loader_component_t *component,
+                          sixel_chunk_t const *chunk)
+{
+    (void)component;
+    return loader_can_try_gd(chunk);
+}
+
 static sixel_loader_component_vtbl_t const g_sixel_loader_gd_vtbl = {
     sixel_loader_gd_ref,
     sixel_loader_gd_unref,
     sixel_loader_gd_setopt,
     sixel_loader_gd_load,
     sixel_loader_gd_name,
+    sixel_loader_gd_predicate
 };
 
 SIXELSTATUS
 sixel_loader_gd_new(sixel_allocator_t *allocator,
-                    sixel_loader_component_t **ppcomponent)
+                    void **ppcomponent)
 {
     sixel_loader_gd_component_t *self;
 

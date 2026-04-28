@@ -4066,7 +4066,7 @@ static sixel_dither_policy_vtbl_t const
 SIXELSTATUS
 sixel_dither_policy_interframe_new(
     sixel_allocator_t *allocator,
-    sixel_dither_policy_interface_t **policy)
+    void **policy)
 {
     sixel_dither_policy_interframe_object_t *object;
 
@@ -4117,13 +4117,13 @@ static sixel_dither_policy_vtbl_t const
 SIXELSTATUS
 sixel_dither_policy_interframe_8bit_new(
     sixel_allocator_t *allocator,
-    sixel_dither_policy_interface_t **policy)
+    void **policy)
 {
     SIXELSTATUS status;
 
     status = sixel_dither_policy_interframe_new(allocator, policy);
     if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
-        (*policy)->vtbl = &g_sixel_dither_policy_interframe_8bit_vtbl;
+        ((sixel_dither_policy_interface_t *)(*policy))->vtbl = &g_sixel_dither_policy_interframe_8bit_vtbl;
     }
 
     return status;
@@ -4132,13 +4132,13 @@ sixel_dither_policy_interframe_8bit_new(
 SIXELSTATUS
 sixel_dither_policy_interframe_float32_new(
     sixel_allocator_t *allocator,
-    sixel_dither_policy_interface_t **policy)
+    void **policy)
 {
     SIXELSTATUS status;
 
     status = sixel_dither_policy_interframe_new(allocator, policy);
     if (SIXEL_SUCCEEDED(status) && policy != NULL && *policy != NULL) {
-        (*policy)->vtbl = &g_sixel_dither_policy_interframe_float32_vtbl;
+        ((sixel_dither_policy_interface_t *)(*policy))->vtbl = &g_sixel_dither_policy_interframe_float32_vtbl;
     }
 
     return status;

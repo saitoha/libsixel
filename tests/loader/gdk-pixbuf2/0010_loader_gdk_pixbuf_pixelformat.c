@@ -9,7 +9,7 @@
 #if defined(HAVE_GDK_PIXBUF2)
 static SIXELSTATUS
 new_gdk_pixbuf_component(sixel_allocator_t *allocator,
-                         sixel_loader_component_t **ppcomponent)
+                         void **ppcomponent)
 {
     return create_loader_component_by_name("gdk-pixbuf2",
                                            allocator,

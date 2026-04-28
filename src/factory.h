@@ -48,6 +48,7 @@ extern "C" {
  * - services/factory -> IFactory
  * - IFactory.create("lookup/...", allocator, &policy)
  * - IFactory.create("dither/...", allocator, &policy)
+ * - IFactory.create("loader/manager", allocator, &manager)
  * - IFactory.create("loader/<name>", allocator, &component)
  */
 

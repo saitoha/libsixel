@@ -19,7 +19,7 @@
 #if HAVE_LIBRSVG
 static SIXELSTATUS
 new_librsvg_component(sixel_allocator_t *allocator,
-                      sixel_loader_component_t **ppcomponent)
+                      void **ppcomponent)
 {
     return create_loader_component_by_name("librsvg", allocator, ppcomponent);
 }
@@ -163,7 +163,7 @@ run_librsvg_setopt_ignored_diag_test(void)
         return 1;
     }
 
-    status = new_librsvg_component(allocator, &component);
+    status = new_librsvg_component(allocator, (void **)&component);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "librsvg component initialization failed\n");
         goto cleanup;

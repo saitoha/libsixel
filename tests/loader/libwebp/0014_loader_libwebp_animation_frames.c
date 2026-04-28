@@ -163,7 +163,7 @@ run_libwebp_animation_test(void)
 
     status = create_loader_component_by_name("libwebp",
                                              allocator,
-                                             &component);
+                                             (void **)&component);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "libwebp animation: component init failed\n");
         goto cleanup;

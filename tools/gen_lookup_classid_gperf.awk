@@ -87,7 +87,7 @@ END {
     print ""
     print "typedef SIXELSTATUS (*sixel_lookup_policy_create_fn)("
     print "    sixel_allocator_t *allocator,"
-    print "    sixel_lookup_policy_interface_t **policy);"
+    print "    void **policy);"
     print "%}"
     print "struct sixel_lookup_policy_classid_entry {"
     print "    char const *name;"

@@ -38,7 +38,7 @@
 SIXELSTATUS
 sixel_loader_gdkpixbuf2_new(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **ppcomponent);
 #endif
 
 #endif /* LIBSIXEL_LOADER_GDK_PIXBUF2_H */

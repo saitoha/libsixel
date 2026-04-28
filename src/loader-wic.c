@@ -938,17 +938,26 @@ sixel_loader_wic_name(sixel_loader_component_t const *component)
     return "wic";
 }
 
+static int
+sixel_loader_wic_predicate(sixel_loader_component_t *component,
+                           sixel_chunk_t const *chunk)
+{
+    (void)component;
+    return loader_can_try_wic(chunk);
+}
+
 static sixel_loader_component_vtbl_t const g_sixel_loader_wic_vtbl = {
     sixel_loader_wic_ref,
     sixel_loader_wic_unref,
     sixel_loader_wic_setopt,
     sixel_loader_wic_load,
-    sixel_loader_wic_name
+    sixel_loader_wic_name,
+    sixel_loader_wic_predicate
 };
 
 SIXELSTATUS
 sixel_loader_wic_new(sixel_allocator_t *allocator,
-                     sixel_loader_component_t **ppcomponent)
+                     void **ppcomponent)
 {
     sixel_loader_wic_component_t *self;
 

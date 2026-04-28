@@ -98,6 +98,42 @@ static SIXEL_STBI_TLS sixel_allocator_t *stbi_allocator;
 
 #undef SIXEL_STBI_TLS
 
+SIXELSTATUS
+load_with_builtin(
+    sixel_chunk_t const *pchunk,
+    int fstatic,
+    int fuse_palette,
+    int reqcolors,
+    unsigned char *bgcolor,
+    int bgcolor_source,
+    int loop_control,
+    int start_frame_no_set,
+    int start_frame_no_override,
+    int enable_cms,
+    int enable_orientation,
+    int bmp_info40_mode,
+    sixel_load_image_function fn_load,
+    void *context)
+{
+    sixel_builtin_load_with_builtin_args_t args;
+
+    args.pchunk = pchunk;
+    args.fstatic = fstatic;
+    args.fuse_palette = fuse_palette;
+    args.reqcolors = reqcolors;
+    args.bgcolor = bgcolor;
+    args.bgcolor_source = bgcolor_source;
+    args.loop_control = loop_control;
+    args.start_frame_no_set = start_frame_no_set;
+    args.start_frame_no_override = start_frame_no_override;
+    args.enable_cms = enable_cms;
+    args.enable_orientation = enable_orientation;
+    args.bmp_info40_mode = bmp_info40_mode;
+    args.fn_load = fn_load;
+    args.context = context;
+    return sixel_builtin_load_with_builtin_impl(&args);
+}
+
 #if SIXEL_ENABLE_THREADS && SIXEL_BUILTIN_NO_TLS_COMPILER && !defined(_WIN32)
 /*
  * PCC/TCC builds currently avoid TLS qualifiers. stb_image integration keeps
@@ -3684,17 +3720,27 @@ sixel_loader_builtin_name(sixel_loader_component_t const *component)
     return "builtin";
 }
 
+static int
+sixel_loader_builtin_predicate(sixel_loader_component_t *component,
+                               sixel_chunk_t const *chunk)
+{
+    (void)component;
+    (void)chunk;
+    return 1;
+}
+
 static sixel_loader_component_vtbl_t const g_sixel_loader_builtin_vtbl = {
     sixel_loader_builtin_ref,
     sixel_loader_builtin_unref,
     sixel_loader_builtin_setopt,
     sixel_loader_builtin_load,
     sixel_loader_builtin_name,
+    sixel_loader_builtin_predicate
 };
 
 SIXELSTATUS
 sixel_loader_builtin_new(sixel_allocator_t *allocator,
-                         sixel_loader_component_t **ppcomponent)
+                         void **ppcomponent)
 {
     sixel_loader_builtin_component_t *self;
 

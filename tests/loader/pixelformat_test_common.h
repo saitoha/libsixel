@@ -17,10 +17,10 @@
 
 #include "src/allocator.h"
 #include "src/chunk.h"
+#include "src/factory.h"
 #include "src/frame.h"
-#include "src/loader-factory.h"
 #include "src/status.h"
-#include "src/loader-component.h"
+#include "src/loader.h"
 
 #if defined(__clang__)
 # if __has_attribute(unused)
@@ -75,7 +75,7 @@ typedef struct loader_probe_callback_state {
 
 typedef SIXELSTATUS (*loader_component_new_fn)(
     sixel_allocator_t *,
-    sixel_loader_component_t **);
+    void **);
 
 typedef struct loader_component_case_expect {
     int pixelformat;
@@ -360,24 +360,24 @@ cleanup:
 static SIXEL_TEST_UNUSED SIXELSTATUS
 create_loader_component_by_name(char const *name,
                                 sixel_allocator_t *allocator,
-                                sixel_loader_component_t **ppcomponent)
+                                void **ppcomponent)
 {
     SIXELSTATUS status;
-    sixel_loader_factory_t *factory;
+    sixel_factory_t *factory;
 
     status = SIXEL_FALSE;
     factory = NULL;
 
-    status = loader_factory_get_default(&factory);
+    status = sixel_factory_get_default(&factory);
     if (SIXEL_FAILED(status)) {
         return status;
     }
 
-    status = loader_factory_create_component(factory,
-                                             name,
-                                             allocator,
-                                             ppcomponent);
-    loader_factory_unref(factory);
+    status = factory->vtbl->create(factory,
+                                   name,
+                                   allocator,
+                                   ppcomponent);
+    factory->vtbl->unref(factory);
 
     return status;
 }
@@ -509,7 +509,7 @@ run_loader_component_case_with_options_full(
         goto cleanup;
     }
 
-    status = new_component(allocator, &component);
+    status = new_component(allocator, (void **)&component);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
         goto cleanup;
