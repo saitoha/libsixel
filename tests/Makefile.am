@@ -361,6 +361,7 @@ AM_LOG_FLAGS =
 	staticcheck-lookup-backend-exports \
 	staticcheck-lookup-policy-no-backend-includes \
 	staticcheck-factory-classid-registry-sync \
+	staticcheck-serviceid-registry-sync \
 	staticcheck-test-runner-amalgamation-defines-sync \
 	staticcheck-makefile-recipes \
 	staticcheck-src-makefile-dist-sources-sync \
@@ -401,6 +402,7 @@ staticcheck-test-runner-dllexport \
 staticcheck-lookup-backend-exports \
 staticcheck-lookup-policy-no-backend-includes \
 staticcheck-factory-classid-registry-sync \
+staticcheck-serviceid-registry-sync \
 staticcheck-dither-policy-no-backend-dispatch \
 staticcheck-test-runner-amalgamation-defines-sync \
 staticcheck-makefile-recipes \
@@ -549,6 +551,16 @@ staticcheck-factory-classid-registry-sync:
 		--trs-file staticcheck-factory-classid-registry-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-factory-classid-registry-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-serviceid-registry-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-serviceid-registry-sync" \
+		--log-file staticcheck-serviceid-registry-sync.log \
+		--trs-file staticcheck-serviceid-registry-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-serviceid-registry-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-dither-policy-no-backend-dispatch:

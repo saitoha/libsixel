@@ -385,7 +385,7 @@ create_loader_component_by_name(char const *name,
     memcpy(classid, "loader/", 7u);
     memcpy(classid + 7u, name, name_len + 1u);
 
-    status = sixel_factory_get_default(&factory);
+    status = sixel_factory_get_default((void **)&factory);
     if (SIXEL_FAILED(status)) {
         return status;
     }

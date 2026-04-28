@@ -26,6 +26,7 @@ EXTRA_DIST = libsixel-config.in \
 	             sixel.xml \
 	             gen_completion_embed.awk \
 	             gen_factory_classid_gperf.awk \
+	             gen_serviceid_gperf.awk \
 	             gen-amalgamation.sh \
 	             timer.c \
              lso-timeout.c \

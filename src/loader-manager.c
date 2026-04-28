@@ -1119,7 +1119,7 @@ sixel_loader_manager_new(sixel_allocator_t *allocator,
     object->chain_capacity = 0u;
     sixel_allocator_ref(allocator);
 
-    status = sixel_factory_get_default(&object->factory);
+    status = sixel_factory_get_default((void **)&object->factory);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_unref(object->allocator);
         sixel_allocator_free(allocator, object);

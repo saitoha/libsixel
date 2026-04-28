@@ -31,7 +31,7 @@
 #endif
 
 #include "components.h"
-#include "factory.h"
+#include "classid-service.h"
 
 /*
  * IDL (internal contract)
@@ -49,9 +49,13 @@ SIXELSTATUS
 sixel_components_getservice(char const *name,
                             void **service)
 {
-    sixel_factory_t *factory;
+    unsigned int name_len;
+    SIXELSTATUS status;
+    struct sixel_components_serviceid_entry const *entry;
 
-    factory = NULL;
+    name_len = 0u;
+    status = SIXEL_FALSE;
+    entry = NULL;
     if (service != NULL) {
         *service = NULL;
     }
@@ -60,17 +64,22 @@ sixel_components_getservice(char const *name,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (strcmp(name, "services/factory") == 0) {
-        if (SIXEL_FAILED(sixel_factory_get_default(&factory))) {
-            return SIXEL_FALSE;
-        }
-        *service = factory;
-        return SIXEL_OK;
+    name_len = (unsigned int)strlen(name);
+    entry = sixel_components_serviceid_lookup(name, name_len);
+    if (entry == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_components_getservice: unknown service name.");
+        return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_helper_set_additional_message(
-        "sixel_components_getservice: unknown service name.");
-    return SIXEL_BAD_ARGUMENT;
+    if (entry->get_default == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_components_getservice: service is not available.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = entry->get_default(service);
+    return status;
 }
 
 /* emacs Local Variables:      */

@@ -87,7 +87,7 @@ test_loader_0056_loader_factory_predicate_gate(int argc, char **argv)
     status = SIXEL_FALSE;
     exit_status = 0;
 
-    status = sixel_factory_get_default(&factory);
+    status = sixel_factory_get_default((void **)&factory);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "sixel_factory_get_default failed: %d\n", status);
         return EXIT_FAILURE;

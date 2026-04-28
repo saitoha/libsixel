@@ -68,7 +68,8 @@ struct sixel_factory_interface {
 };
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_factory_get_default(sixel_factory_t **factory);
+/* @serviceid services/factory */
+sixel_factory_get_default(void **factory);
 
 #ifdef __cplusplus
 }

@@ -60,6 +60,7 @@ srcs = [
   'lookup-policy-mahalanobis.c',
   'factory.c',
   'classid-factory.h',
+  'classid-service.h',
   'components.c',
   'lookup-fhedt-8bit.c',
   'lookup-fhedt-float32.c',

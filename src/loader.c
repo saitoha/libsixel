@@ -2071,7 +2071,7 @@ sixel_loader_load_file(
         reqcolors = SIXEL_PALETTE_MAX;
     }
 
-    status = sixel_factory_get_default(&factory);
+    status = sixel_factory_get_default((void **)&factory);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

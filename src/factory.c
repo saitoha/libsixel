@@ -50,22 +50,22 @@
  */
 
 static void
-sixel_factory_ref_noop(sixel_factory_t *factory)
+sixel_factory_ref(sixel_factory_t *factory)
 {
     (void)factory;
 }
 
 static void
-sixel_factory_unref_noop(sixel_factory_t *factory)
+sixel_factory_unref(sixel_factory_t *factory)
 {
     (void)factory;
 }
 
 static SIXELSTATUS
-sixel_factory_create_default(sixel_factory_t *factory,
-                             char const *class_name,
-                             sixel_allocator_t *allocator,
-                             void **object)
+sixel_factory_create(sixel_factory_t *factory,
+                     char const *class_name,
+                     sixel_allocator_t *allocator,
+                     void **object)
 {
     SIXELSTATUS status;
     unsigned int class_name_len;
@@ -103,9 +103,9 @@ sixel_factory_create_default(sixel_factory_t *factory,
 }
 
 static sixel_factory_vtbl_t const g_sixel_factory_vtbl = {
-    sixel_factory_ref_noop,
-    sixel_factory_unref_noop,
-    sixel_factory_create_default
+    sixel_factory_ref,
+    sixel_factory_unref,
+    sixel_factory_create
 };
 
 static sixel_factory_t g_sixel_factory_singleton = {
@@ -113,16 +113,20 @@ static sixel_factory_t g_sixel_factory_singleton = {
 };
 
 SIXELSTATUS
-sixel_factory_get_default(sixel_factory_t **factory)
+sixel_factory_get_default(void **factory)
 {
+    sixel_factory_t *service;
+
+    service = NULL;
     if (factory == NULL) {
         sixel_helper_set_additional_message(
             "sixel_factory_get_default: factory is null.");
         return SIXEL_BAD_ARGUMENT;
     }
 
-    *factory = &g_sixel_factory_singleton;
-    (*factory)->vtbl->ref(*factory);
+    service = &g_sixel_factory_singleton;
+    service->vtbl->ref(service);
+    *factory = service;
     return SIXEL_OK;
 }
 

@@ -337,6 +337,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/sixel_atomic_fallback.c \
                 $(srcdir)/sixel_atomic.h \
                 $(srcdir)/classid-factory.h \
+                $(srcdir)/classid-service.h \
                 $(srcdir)/rgblookup.h \
                 $(srcdir)/lso2.h
 if SIXEL_ENABLE_THREADS
@@ -405,7 +406,8 @@ libsixel_la_LIBADD = -lm \
 
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf \
-             $(srcdir)/classid-factory.gperf
+             $(srcdir)/classid-factory.gperf \
+             $(srcdir)/classid-service.gperf
 
 .PHONY: libobjs libsixel-import-lib-alias
 
@@ -440,6 +442,10 @@ GPERF_OPT=--ignore-case --language=ANSI-C
 GPERF_FACTORY_CLASSID_OPT=--language=ANSI-C \
                   -H sixel_factory_classid_hash \
                   -W sixel_factory_classid_wordlist
+GPERF_SERVICEID_OPT=--language=ANSI-C \
+                  -k1 \
+                  -H sixel_components_serviceid_hash \
+                  -W sixel_components_serviceid_wordlist
 
 LOOKUP_POLICY_CLASSID_INPUTS = \
     $(srcdir)/lookup-policy-5bit.h \
@@ -490,6 +496,9 @@ FACTORY_CLASSID_INPUTS = \
     $(LOADER_COMPONENT_CLASSID_INPUTS) \
     $(srcdir)/loader-manager.h
 
+SERVICEID_CLASSID_INPUTS = \
+    $(srcdir)/factory.h
+
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb $(GPERF_OPT) $<  |\
@@ -497,7 +506,7 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 	astyle                                  > $(srcdir)/rgblookup.h
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-gen-classid: $(FACTORY_CLASSID_INPUTS)
+gen-classid: $(FACTORY_CLASSID_INPUTS) $(SERVICEID_CLASSID_INPUTS)
 	$(AWK) -f $(top_srcdir)/tools/gen_factory_classid_gperf.awk \
 	        $(FACTORY_CLASSID_INPUTS) > $(srcdir)/classid-factory.gperf
 	gperf -C -N sixel_factory_classid_lookup $(GPERF_FACTORY_CLASSID_OPT) \
@@ -510,6 +519,18 @@ gen-classid: $(FACTORY_CLASSID_INPUTS)
 	              '#undef MIN_HASH_VALUE'                                \
 	              '#undef MAX_HASH_VALUE'                                \
 	        >> $(srcdir)/classid-factory.h
+	$(AWK) -f $(top_srcdir)/tools/gen_serviceid_gperf.awk \
+	        $(SERVICEID_CLASSID_INPUTS) > $(srcdir)/classid-service.gperf
+	gperf -C -N sixel_components_serviceid_lookup $(GPERF_SERVICEID_OPT) \
+	        $(srcdir)/classid-service.gperf                              |\
+	sed 's/{""}/\{"", 0\}/g'                                             \
+	        > $(srcdir)/classid-service.h
+	printf '%s\n' '#undef TOTAL_KEYWORDS'                                \
+	              '#undef MIN_WORD_LENGTH'                               \
+	              '#undef MAX_WORD_LENGTH'                               \
+	              '#undef MIN_HASH_VALUE'                                \
+	              '#undef MAX_HASH_VALUE'                                \
+	        >> $(srcdir)/classid-service.h
 
 
 
