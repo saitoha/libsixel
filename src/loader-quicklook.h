@@ -31,9 +31,10 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "loader-component.h"
+#include "loader.h"
 
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+/* @classid loader/quicklook if HAVE_COREGRAPHICS && HAVE_QUICKLOOK */
 SIXELSTATUS
 sixel_loader_quicklook_new(
     sixel_allocator_t *allocator,

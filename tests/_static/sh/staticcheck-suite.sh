@@ -329,6 +329,10 @@ run_case_tap "staticcheck-dither-classid-registry-sync" \
     "$src_root/tests/_static/sh/staticcheck-dither-classid-registry-sync.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-loader-classid-registry-sync" \
+    "$src_root/tests/_static/sh/staticcheck-loader-classid-registry-sync.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-dither-policy-no-backend-dispatch" \
     "$src_root/tests/_static/sh/staticcheck-dither-policy-no-backend-dispatch.sh" \
     "$src_root" || fail_and_exit $?

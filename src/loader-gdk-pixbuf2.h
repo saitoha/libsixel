@@ -31,9 +31,10 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "loader-component.h"
+#include "loader.h"
 
 #ifdef HAVE_GDK_PIXBUF2
+/* @classid loader/gdk-pixbuf2 if HAVE_GDK_PIXBUF2 */
 SIXELSTATUS
 sixel_loader_gdkpixbuf2_new(
     sixel_allocator_t *allocator,

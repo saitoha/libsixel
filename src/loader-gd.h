@@ -31,9 +31,10 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "loader-component.h"
+#include "loader.h"
 
 #if HAVE_GD
+/* @classid loader/gd if HAVE_GD */
 SIXELSTATUS
 sixel_loader_gd_new(
     sixel_allocator_t *allocator,

@@ -33,7 +33,8 @@
 #include "factory.h"
 #include "classid-lookup-policy.h"
 #include "classid-dither-policy.h"
-#include "loader-registry.h"
+#include "classid-loader-component.h"
+#include "loader-manager.h"
 
 /*
  * IDL (internal contract)
@@ -47,7 +48,8 @@
  * Ownership/lifetime:
  * - This implementation is a process-lifetime singleton.
  * - ref/unref stay no-op to preserve a uniform COM-like service surface.
- * - create() resolves lookup/dither class ids and loader component names.
+ * - create() resolves lookup/dither class ids, loader manager, and loader
+ *   component names.
  */
 
 static SIXELSTATUS
@@ -55,55 +57,51 @@ sixel_factory_create_loader_component(char const *loader_name,
                                       sixel_allocator_t *allocator,
                                       void **object)
 {
+    /*
+     * Resolve loader/<name> through the generated class-id hash table.
+     * Disabled loader backends stay in the table with create == NULL so the
+     * caller receives a deterministic "not available" result.
+     */
+    struct sixel_loader_component_classid_entry const *entry;
+    char classid[128];
+    size_t loader_name_len;
+    size_t classid_len;
     SIXELSTATUS status;
-    sixel_loader_registry_t *registry;
-    sixel_loader_entry_t const *entries;
-    sixel_loader_entry_t const *entry;
-    size_t entry_count;
-    size_t index;
 
     status = SIXEL_FALSE;
-    registry = NULL;
-    entries = NULL;
     entry = NULL;
-    entry_count = 0u;
-    index = 0u;
+    classid[0] = '\0';
+    loader_name_len = 0u;
+    classid_len = 0u;
     if (loader_name == NULL || *loader_name == '\0'
             || allocator == NULL || object == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-
-    status = loader_registry_get_default(&registry);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    loader_name_len = strlen(loader_name);
+    if (loader_name_len + 8u > sizeof(classid)) {
+        sixel_helper_set_additional_message(
+            "sixel_factory_create: loader class id is too long.");
+        return SIXEL_BAD_ARGUMENT;
     }
+    memcpy(classid, "loader/", 7u);
+    memcpy(classid + 7u, loader_name, loader_name_len + 1u);
+    classid_len = loader_name_len + 7u;
 
-    entry_count = loader_registry_get_entries_from(registry, &entries);
-    for (index = 0u; index < entry_count; ++index) {
-        if (entries[index].name != NULL
-                && strcmp(entries[index].name, loader_name) == 0) {
-            entry = &entries[index];
-            break;
-        }
-    }
-
-    loader_registry_unref(registry);
-    registry = NULL;
-
+    entry = sixel_loader_component_classid_lookup(
+        classid,
+        (unsigned int)classid_len);
     if (entry == NULL) {
         sixel_helper_set_additional_message(
             "sixel_factory_create: unknown loader class.");
         return SIXEL_BAD_ARGUMENT;
     }
-    if (entry->new_component == NULL) {
+    if (entry->create == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_factory_create: loader does not provide component"
-            " constructor.");
-        return SIXEL_LOGIC_ERROR;
+            "sixel_factory_create: loader class is not available.");
+        return SIXEL_BAD_ARGUMENT;
     }
 
-    status = entry->new_component(allocator,
-                                  (sixel_loader_component_t **)object);
+    status = entry->create(allocator, (sixel_loader_component_t **)object);
     return status;
 }
 
@@ -175,6 +173,13 @@ sixel_factory_create_default(sixel_factory_t *factory,
         status = dither_entry->create(
             allocator,
             (sixel_dither_policy_interface_t **)object);
+        return status;
+    }
+
+    if (strcmp(class_name, "loader/manager") == 0) {
+        status = sixel_loader_manager_new(
+            allocator,
+            (sixel_loader_manager_t **)object);
         return status;
     }
 

@@ -30,9 +30,10 @@
 
 #include <sixel.h>
 
-#include "loader-component.h"
+#include "loader.h"
 
 #if HAVE_FREEDESKTOP_THUMBNAILING
+/* @classid loader/gnome-thumbnailer if HAVE_FREEDESKTOP_THUMBNAILING */
 SIXELSTATUS
 sixel_loader_gnome_thumbnailer_new(
     sixel_allocator_t *allocator,

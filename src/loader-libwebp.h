@@ -28,12 +28,13 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "loader-component.h"
+#include "loader.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* @classid loader/libwebp if HAVE_WEBP */
 SIXELSTATUS
 sixel_loader_libwebp_new(
     sixel_allocator_t *allocator,

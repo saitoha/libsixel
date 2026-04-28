@@ -31,9 +31,10 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "loader-component.h"
+#include "loader.h"
 
 #if HAVE_WIC
+/* @classid loader/wic if HAVE_WIC */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_loader_wic_new(
     sixel_allocator_t *allocator,
