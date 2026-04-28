@@ -360,9 +360,7 @@ AM_LOG_FLAGS =
 	staticcheck-test-runner-dllexport \
 	staticcheck-lookup-backend-exports \
 	staticcheck-lookup-policy-no-backend-includes \
-	staticcheck-lookup-classid-registry-sync \
-	staticcheck-dither-classid-registry-sync \
-	staticcheck-loader-classid-registry-sync \
+	staticcheck-factory-classid-registry-sync \
 	staticcheck-test-runner-amalgamation-defines-sync \
 	staticcheck-makefile-recipes \
 	staticcheck-src-makefile-dist-sources-sync \
@@ -402,9 +400,7 @@ staticcheck-src-no-direct-getenv \
 staticcheck-test-runner-dllexport \
 staticcheck-lookup-backend-exports \
 staticcheck-lookup-policy-no-backend-includes \
-staticcheck-lookup-classid-registry-sync \
-staticcheck-dither-classid-registry-sync \
-staticcheck-loader-classid-registry-sync \
+staticcheck-factory-classid-registry-sync \
 staticcheck-dither-policy-no-backend-dispatch \
 staticcheck-test-runner-amalgamation-defines-sync \
 staticcheck-makefile-recipes \
@@ -545,34 +541,14 @@ staticcheck-lookup-policy-no-backend-includes:
 		"$(top_srcdir)/tests/_static/sh/staticcheck-lookup-policy-no-backend-includes.sh" \
 		"$(abs_top_srcdir)"
 
-staticcheck-lookup-classid-registry-sync:
+staticcheck-factory-classid-registry-sync:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-lookup-classid-registry-sync" \
-		--log-file staticcheck-lookup-classid-registry-sync.log \
-		--trs-file staticcheck-lookup-classid-registry-sync.trs \
+	$(T_LOG_DRIVER) --test-name "staticcheck-factory-classid-registry-sync" \
+		--log-file staticcheck-factory-classid-registry-sync.log \
+		--trs-file staticcheck-factory-classid-registry-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-lookup-classid-registry-sync.sh" \
-		"$(abs_top_srcdir)"
-
-staticcheck-dither-classid-registry-sync:
-	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
-	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-dither-classid-registry-sync" \
-		--log-file staticcheck-dither-classid-registry-sync.log \
-		--trs-file staticcheck-dither-classid-registry-sync.trs \
-		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-dither-classid-registry-sync.sh" \
-		"$(abs_top_srcdir)"
-
-staticcheck-loader-classid-registry-sync:
-	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
-	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
-	$(T_LOG_DRIVER) --test-name "staticcheck-loader-classid-registry-sync" \
-		--log-file staticcheck-loader-classid-registry-sync.log \
-		--trs-file staticcheck-loader-classid-registry-sync.trs \
-		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
-		"$(top_srcdir)/tests/_static/sh/staticcheck-loader-classid-registry-sync.sh" \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-factory-classid-registry-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-dither-policy-no-backend-dispatch:
@@ -1530,12 +1506,10 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-private-includes.sh \
 	_static/sh/staticcheck-src-no-direct-getenv.sh \
 	_static/sh/staticcheck-test-runner-dllexport.sh \
-	_static/sh/staticcheck-lookup-backend-exports.sh \
-	_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
-	_static/sh/staticcheck-lookup-classid-registry-sync.sh \
-	_static/sh/staticcheck-dither-classid-registry-sync.sh \
-	_static/sh/staticcheck-loader-classid-registry-sync.sh \
-	_static/sh/staticcheck-dither-policy-no-backend-dispatch.sh \
+		_static/sh/staticcheck-lookup-backend-exports.sh \
+		_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
+		_static/sh/staticcheck-factory-classid-registry-sync.sh \
+		_static/sh/staticcheck-dither-policy-no-backend-dispatch.sh \
 	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-src-makefile-dist-sources-sync.sh \
