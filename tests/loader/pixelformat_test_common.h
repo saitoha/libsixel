@@ -12,6 +12,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sixel.h>
 
@@ -364,9 +365,25 @@ create_loader_component_by_name(char const *name,
 {
     SIXELSTATUS status;
     sixel_factory_t *factory;
+    size_t name_len;
+    char classid[128];
 
     status = SIXEL_FALSE;
     factory = NULL;
+    name_len = 0u;
+    classid[0] = '\0';
+
+    if (name == NULL || *name == '\0') {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    name_len = strlen(name);
+    if (name_len + 8u > sizeof(classid)) {
+        sixel_helper_set_additional_message(
+            "create_loader_component_by_name: class id is too long.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    memcpy(classid, "loader/", 7u);
+    memcpy(classid + 7u, name, name_len + 1u);
 
     status = sixel_factory_get_default(&factory);
     if (SIXEL_FAILED(status)) {
@@ -374,7 +391,7 @@ create_loader_component_by_name(char const *name,
     }
 
     status = factory->vtbl->create(factory,
-                                   name,
+                                   classid,
                                    allocator,
                                    ppcomponent);
     factory->vtbl->unref(factory);

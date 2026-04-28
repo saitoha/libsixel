@@ -71,16 +71,12 @@ sixel_factory_create_default(sixel_factory_t *factory,
     SIXELSTATUS status;
     unsigned int class_name_len;
     struct sixel_factory_classid_entry const *entry;
-    size_t loader_name_len;
-    char classid[128];
 
     (void)factory;
 
     status = SIXEL_FALSE;
     class_name_len = 0;
     entry = NULL;
-    loader_name_len = 0u;
-    classid[0] = '\0';
     if (object != NULL) {
         *object = NULL;
     }
@@ -98,18 +94,6 @@ sixel_factory_create_default(sixel_factory_t *factory,
 
     class_name_len = (unsigned int)strlen(class_name);
     entry = sixel_factory_classid_lookup(class_name, class_name_len);
-    if (entry == NULL && strchr(class_name, '/') == NULL) {
-        loader_name_len = strlen(class_name);
-        if (loader_name_len + 8u > sizeof(classid)) {
-            sixel_helper_set_additional_message(
-                "sixel_factory_create: loader class id is too long.");
-            return SIXEL_BAD_ARGUMENT;
-        }
-        memcpy(classid, "loader/", 7u);
-        memcpy(classid + 7u, class_name, loader_name_len + 1u);
-        class_name_len = (unsigned int)(loader_name_len + 7u);
-        entry = sixel_factory_classid_lookup(classid, class_name_len);
-    }
 
     if (entry == NULL) {
         sixel_helper_set_additional_message(
