@@ -147,7 +147,14 @@ sixel_test_webp_build_anim_container(unsigned char *buffer,
         }
     }
 
-    if (cursor < 8u || cursor > (size_t)UINT32_MAX + 8u) {
+    /*
+     * Keep RIFF size computation width-safe on both 32-bit and 64-bit
+     * hosts. The previous "UINT32_MAX + 8" form wrapped on 32-bit size_t.
+     */
+    if (cursor < 8u) {
+        return 0;
+    }
+    if (cursor - 8u > (size_t)UINT32_MAX) {
         return 0;
     }
     riff_size = (uint32_t)(cursor - 8u);
