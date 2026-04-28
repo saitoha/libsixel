@@ -5732,21 +5732,24 @@ _LT_EOF
 	# Tell ltmain to make .dll files, not .so files.
 	shrext_cmds=.dll
 	# FIXME: Setting linknames here is a bad hack.
-	_LT_TAGVAR(archive_cmds, $1)='$CC -Fe$output_objdir/$soname $libobjs $compiler_flags $deplibs -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~linknames='
+	lt_msvc_output_flag='-Fe'
 	lt_msvc_export_prefix='-link -EXPORT:'
 	case $cc_basename in
 	  clang | clang.exe)
+	    # GNU clang expects '-o' for linker output selection.
+	    lt_msvc_output_flag='-o'
 	    # GNU clang uses '-Wl,' forwarding instead of cl-style '-link'.
 	    lt_msvc_export_prefix='-Wl,-EXPORT:'
 	    ;;
 	esac
+	_LT_TAGVAR(archive_cmds, $1)='$CC '"$lt_msvc_output_flag"'$output_objdir/$soname $libobjs $compiler_flags $deplibs -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~linknames='
 	_LT_TAGVAR(archive_expsym_cmds, $1)='if _LT_DLL_DEF_P([$export_symbols]); then
             cp "$export_symbols" "$output_objdir/$soname.def";
             echo "$tool_output_objdir$soname.def" > "$output_objdir/$soname.exp";
           else
             $SED -e '\''s/^/'"$lt_msvc_export_prefix"'/'\'' < $export_symbols > $output_objdir/$soname.exp;
           fi~
-          $CC -Fe$tool_output_objdir$soname $libobjs $compiler_flags $deplibs "@$tool_output_objdir$soname.exp" -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~
+          $CC '"$lt_msvc_output_flag"'$tool_output_objdir$soname $libobjs $compiler_flags $deplibs "@$tool_output_objdir$soname.exp" -Wl,-DLL,-IMPLIB:"$tool_output_objdir$libname.dll.lib"~
           linknames='
 	# The linker will not automatically build a static lib if we build a DLL.
 	# _LT_TAGVAR(old_archive_from_new_cmds, $1)='true'
