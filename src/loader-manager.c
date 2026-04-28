@@ -1092,7 +1092,7 @@ static sixel_loader_manager_vtbl_t const g_sixel_loader_manager_vtbl = {
 
 SIXELSTATUS
 sixel_loader_manager_new(sixel_allocator_t *allocator,
-                         sixel_loader_manager_t **manager)
+                         void **manager)
 {
     struct sixel_loader_manager *object;
     SIXELSTATUS status;

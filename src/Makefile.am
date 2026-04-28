@@ -487,7 +487,8 @@ LOADER_COMPONENT_CLASSID_INPUTS = \
 FACTORY_CLASSID_INPUTS = \
     $(LOOKUP_POLICY_CLASSID_INPUTS) \
     $(DITHER_POLICY_CLASSID_INPUTS) \
-    $(LOADER_COMPONENT_CLASSID_INPUTS)
+    $(LOADER_COMPONENT_CLASSID_INPUTS) \
+    $(srcdir)/loader-manager.h
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 gen-rgblookup: $(srcdir)/rgblookup.gperf

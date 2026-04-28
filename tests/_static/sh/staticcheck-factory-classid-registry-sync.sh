@@ -64,6 +64,7 @@ if ! awk -f "$generator" \
     "$src_root"/src/loader-libwebp.h \
     "$src_root"/src/loader-quicklook.h \
     "$src_root"/src/loader-wic.h \
+    "$src_root"/src/loader-manager.h \
     >"$expected"; then
     echo "not ok 1 - factory classid registry stays in sync"
     echo "# failed to regenerate classid-factory.gperf"

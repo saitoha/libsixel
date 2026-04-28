@@ -32,7 +32,6 @@
 
 #include "factory.h"
 #include "classid-factory.h"
-#include "loader-manager.h"
 
 /*
  * IDL (internal contract)
@@ -83,13 +82,6 @@ sixel_factory_create_default(sixel_factory_t *factory,
 
     if (allocator == NULL || class_name == NULL || object == NULL) {
         return SIXEL_BAD_ARGUMENT;
-    }
-
-    if (strcmp(class_name, "loader/manager") == 0) {
-        status = sixel_loader_manager_new(
-            allocator,
-            (sixel_loader_manager_t **)object);
-        return status;
     }
 
     class_name_len = (unsigned int)strlen(class_name);

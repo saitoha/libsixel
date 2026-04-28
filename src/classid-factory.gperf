@@ -44,6 +44,7 @@
 #include "loader-libwebp.h"
 #include "loader-quicklook.h"
 #include "loader-wic.h"
+#include "loader-manager.h"
 
 typedef SIXELSTATUS (*sixel_factory_class_new_fn)(
     sixel_allocator_t *allocator,
@@ -359,6 +360,11 @@ typedef SIXELSTATUS (*sixel_factory_class_new_fn)(
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_62 0
 #endif
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_63 sixel_loader_manager_new
+#else
+# define SIXEL_FACTORY_CLASSID_CREATE_63 0
+#endif
 %}
 struct sixel_factory_classid_entry {
     char const *name;
@@ -427,4 +433,5 @@ loader/libtiff, SIXEL_FACTORY_CLASSID_CREATE_59
 loader/libwebp, SIXEL_FACTORY_CLASSID_CREATE_60
 loader/quicklook, SIXEL_FACTORY_CLASSID_CREATE_61
 loader/wic, SIXEL_FACTORY_CLASSID_CREATE_62
+loader/manager, SIXEL_FACTORY_CLASSID_CREATE_63
 %%

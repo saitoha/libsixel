@@ -115,9 +115,10 @@ struct sixel_loader_manager_interface {
     sixel_loader_manager_vtbl_t const *vtbl;
 };
 
+/* @classid loader/manager */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_loader_manager_new(sixel_allocator_t *allocator,
-                         sixel_loader_manager_t **manager);
+                         void **manager);
 
 SIXELSTATUS
 loader_manager_parse_loader_order(
