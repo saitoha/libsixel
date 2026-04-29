@@ -48,6 +48,7 @@
 #include "icc-parse.h"
 #include "compat_stub.h"
 #include "frompng.h"
+#include "frame-private.h"
 #include "loader-common.h"
 
 char const *stbi_failure_reason(void);

@@ -19,7 +19,7 @@
 #include "src/allocator.h"
 #include "src/chunk.h"
 #include "src/factory.h"
-#include "src/frame.h"
+#include "src/frame-private.h"
 #include "src/status.h"
 #include "src/loader.h"
 

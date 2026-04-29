@@ -25,45 +25,137 @@
 #ifndef LIBSIXEL_FRAME_H
 #define LIBSIXEL_FRAME_H
 
+#include <stddef.h>
+
 #include <sixel.h>
-
-#include "sixel_atomic.h"
-
-/* frame object */
-struct sixel_frame {
-    sixel_atomic_u32_t ref;         /* reference counter */
-    union {
-        unsigned char *u8ptr;       /* loaded pixel data (byte) */
-        float *f32ptr;              /* loaded pixel data (float32) */
-    } pixels;
-    unsigned char *palette;         /* loaded palette data */
-    int width;                      /* frame width */
-    int height;                     /* frame height */
-    int ncolors;                    /* palette colors */
-    int pixelformat;                /* one of enum pixelFormat */
-    int colorspace;                 /* one of SIXEL_COLORSPACE_* */
-    /*
-     * Timeline metadata can be updated by the loader while worker threads
-     * sample or quantize shared frames. Keep these fields atomic so that
-     * by-ref handoff mode remains race-free under sanitizers.
-     */
-    sixel_atomic_i32_t delay;       /* delay in msec */
-    sixel_atomic_i32_t frame_no;    /* frame number */
-    sixel_atomic_i32_t loop_count;  /* loop count */
-    sixel_atomic_i32_t multiframe;  /* frame belongs to animation sequence */
-    int handoff_shareable;          /* safe to pass by ref in handoff queue */
-    int transparent;                /* -1 none, >=0 transparent palette index */
-    int alpha_zero_is_transparent;  /* alpha=0 pixels are keycolor candidates */
-    unsigned char *transparent_mask; /* per-pixel transparency mask:
-                                      * 1 marks transparent key candidates */
-    size_t transparent_mask_size;   /* entry count for transparent_mask */
-    sixel_allocator_t *allocator;   /* allocator object */
-};
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/*
+ * IDL (internal contract)
+ *
+ * interface IFrame {
+ *   ref();
+ *   unref();
+ *   init_pixels(request);
+ *   get_pixels(view);
+ *   set_pixelformat(pixelformat);
+ *   get_timeline(timeline);
+ *   set_timeline(timeline);
+ *   get_transparency(transparency);
+ *   set_transparency(transparency);
+ *   strip_alpha(bgcolor);
+ *   resize(width, height, method);
+ *   resize_float32(width, height, method);
+ *   clip(x, y, width, height);
+ *   allocator();
+ * }
+ *
+ * Ownership/lifetime:
+ * - Existing public sixel_frame_new() returns refcount=1 frame objects.
+ * - init_pixels() takes ownership of request->pixels and request->palette,
+ *   matching sixel_frame_init().
+ * - set_transparency() takes ownership of request->transparent_mask.
+ *
+ * Encapsulation path:
+ * - src/frame-private.h owns the concrete storage layout.
+ * - src/frame.h exposes only the object contract and request/view DTOs.
+ * - Existing direct-field callers should migrate toward this interface before
+ *   they drop their temporary private-header dependency.
+ */
+
+typedef struct sixel_frame_interface sixel_frame_interface_t;
+
+typedef enum sixel_frame_pixels_kind {
+    SIXEL_FRAME_PIXELS_U8 = 0,
+    SIXEL_FRAME_PIXELS_FLOAT32 = 1
+} sixel_frame_pixels_kind_t;
+
+typedef struct sixel_frame_pixels_request {
+    void *pixels;
+    unsigned char *palette;
+    int width;
+    int height;
+    int pixelformat;
+    int colorspace;                 /* negative means infer from pixelformat */
+    int ncolors;
+    sixel_frame_pixels_kind_t kind;
+} sixel_frame_pixels_request_t;
+
+typedef struct sixel_frame_pixels_view {
+    unsigned char *pixels;
+    float *pixels_float32;
+    unsigned char *palette;
+    int width;
+    int height;
+    int pixelformat;
+    int colorspace;
+    int ncolors;
+} sixel_frame_pixels_view_t;
+
+typedef struct sixel_frame_timeline {
+    int delay;
+    int frame_no;
+    int loop_count;
+    int multiframe;
+    int handoff_shareable;
+} sixel_frame_timeline_t;
+
+typedef struct sixel_frame_transparency {
+    int transparent;
+    int alpha_zero_is_transparent;
+    unsigned char *transparent_mask;
+    size_t transparent_mask_size;
+} sixel_frame_transparency_t;
+
+typedef struct sixel_frame_vtbl {
+    void (*ref)(sixel_frame_interface_t *frame);
+    void (*unref)(sixel_frame_interface_t *frame);
+    SIXELSTATUS (*init_pixels)(
+        sixel_frame_interface_t *frame,
+        sixel_frame_pixels_request_t const *request);
+    SIXELSTATUS (*get_pixels)(
+        sixel_frame_interface_t *frame,
+        sixel_frame_pixels_view_t *view);
+    SIXELSTATUS (*set_pixelformat)(sixel_frame_interface_t *frame,
+                                   int pixelformat);
+    SIXELSTATUS (*get_timeline)(sixel_frame_interface_t *frame,
+                                sixel_frame_timeline_t *timeline);
+    SIXELSTATUS (*set_timeline)(
+        sixel_frame_interface_t *frame,
+        sixel_frame_timeline_t const *timeline);
+    SIXELSTATUS (*get_transparency)(
+        sixel_frame_interface_t *frame,
+        sixel_frame_transparency_t *transparency);
+    SIXELSTATUS (*set_transparency)(
+        sixel_frame_interface_t *frame,
+        sixel_frame_transparency_t const *transparency);
+    SIXELSTATUS (*strip_alpha)(sixel_frame_interface_t *frame,
+                               unsigned char *bgcolor);
+    SIXELSTATUS (*resize)(sixel_frame_interface_t *frame,
+                          int width,
+                          int height,
+                          int method_for_resampling);
+    SIXELSTATUS (*resize_float32)(sixel_frame_interface_t *frame,
+                                  int width,
+                                  int height,
+                                  int method_for_resampling);
+    SIXELSTATUS (*clip)(sixel_frame_interface_t *frame,
+                        int x,
+                        int y,
+                        int width,
+                        int height);
+    sixel_allocator_t *(*allocator)(sixel_frame_interface_t *frame);
+} sixel_frame_vtbl_t;
+
+struct sixel_frame_interface {
+    sixel_frame_vtbl_t const *vtbl;
+};
+
+SIXEL_INTERNAL_API sixel_frame_interface_t *
+sixel_frame_get_interface(sixel_frame_t *frame);
 
 #ifdef __cplusplus
 }

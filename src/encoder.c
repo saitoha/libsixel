@@ -90,7 +90,7 @@
 #include "loader-order-schema.h"
 #include "tty.h"
 #include "encoder.h"
-#include "frame.h"
+#include "frame-private.h"
 #include "output.h"
 #include "logger.h"
 #include "options.h"

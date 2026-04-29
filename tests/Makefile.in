@@ -1229,7 +1229,6 @@ EXTRA_DIST = $(HELPER_FILES) \
 		_static/sh/staticcheck-lookup-backend-exports.sh \
 		_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
 		_static/sh/staticcheck-factory-classid-registry-sync.sh \
-		_static/sh/staticcheck-serviceid-registry-sync.sh \
 		_static/sh/staticcheck-dither-policy-no-backend-dispatch.sh \
 	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
     _static/sh/staticcheck-makefile-recipes.sh \

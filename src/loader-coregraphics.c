@@ -53,7 +53,7 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "frame.h"
+#include "frame-private.h"
 #include "loader-common.h"
 #include "loader-coregraphics.h"
 #include "loader.h"

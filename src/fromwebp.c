@@ -41,6 +41,7 @@
 #include "cms.h"
 #include "compat_stub.h"
 #include "fromwebp.h"
+#include "frame-private.h"
 #include "fromwebp-container.h"
 #include "fromwebp-internal.h"
 #include "loader-common.h"

@@ -87,7 +87,7 @@
 
 #include "allocator.h"
 #include "compat_stub.h"
-#include "frame.h"
+#include "frame-private.h"
 #include "loader-common.h"
 #include "loader-gdk-pixbuf2.h"
 #include "probe.h"

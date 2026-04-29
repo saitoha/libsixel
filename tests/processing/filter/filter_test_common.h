@@ -17,7 +17,7 @@
 
 #include "src/allocator.h"
 #include "src/dither.h"
-#include "src/frame.h"
+#include "src/frame-private.h"
 
 #if defined(__clang__)
 # if __has_attribute(unused)

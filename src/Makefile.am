@@ -182,6 +182,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/colorspace.h \
                 $(srcdir)/frame.c \
                 $(srcdir)/frame.h \
+                $(srcdir)/frame-private.h \
                 $(srcdir)/cpu.c \
                 $(srcdir)/cpu.h \
                 $(srcdir)/pixelformat.c \

@@ -35,6 +35,7 @@
 
 #include "filter-sample.h"
 #include "filter.h"
+#include "frame-private.h"
 #include "pixelformat.h"
 
 typedef struct sixel_filter_sample_state {
