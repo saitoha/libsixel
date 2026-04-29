@@ -194,7 +194,73 @@ loader_osc11_bg_query_job_join(sixel_loader_osc11_bg_query_job_t *job);
 static int
 loader_can_query_osc11_bgcolor(sixel_loader_t const *loader);
 
-int
+SIXEL_INTERNAL_API void
+sixel_loader_component_ref(sixel_loader_component_t *component)
+{
+    if (component == NULL || component->vtbl == NULL ||
+        component->vtbl->ref == NULL) {
+        return;
+    }
+    component->vtbl->ref(component);
+}
+
+SIXEL_INTERNAL_API void
+sixel_loader_component_unref(sixel_loader_component_t *component)
+{
+    if (component == NULL || component->vtbl == NULL ||
+        component->vtbl->unref == NULL) {
+        return;
+    }
+    component->vtbl->unref(component);
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_loader_component_setopt(sixel_loader_component_t *component,
+                              int option,
+                              void const *value)
+{
+    if (component == NULL || component->vtbl == NULL ||
+        component->vtbl->setopt == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return component->vtbl->setopt(component, option, value);
+}
+
+SIXEL_INTERNAL_API int
+sixel_loader_component_predicate(sixel_loader_component_t *component,
+                                 sixel_chunk_t const *chunk)
+{
+    if (component == NULL || component->vtbl == NULL ||
+        component->vtbl->predicate == NULL) {
+        return 1;
+    }
+    return component->vtbl->predicate(component, chunk);
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_loader_component_load(sixel_loader_component_t *component,
+                            sixel_chunk_t const *chunk,
+                            sixel_load_image_function fn_load,
+                            void *context)
+{
+    if (component == NULL || component->vtbl == NULL ||
+        component->vtbl->load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return component->vtbl->load(component, chunk, fn_load, context);
+}
+
+SIXEL_INTERNAL_API char const *
+sixel_loader_component_get_name(sixel_loader_component_t const *component)
+{
+    if (component == NULL || component->vtbl == NULL ||
+        component->vtbl->name == NULL) {
+        return NULL;
+    }
+    return component->vtbl->name(component);
+}
+
+SIXEL_INTERNAL_API int
 sixel_loader_callback_is_canceled(void *data)
 {
     sixel_loader_callback_state_t *state;
@@ -1007,7 +1073,7 @@ end0:
     return status;
 }
 
-int
+SIXEL_INTERNAL_API int
 sixel_loader_get_start_frame_no(sixel_loader_t const *loader,
                                 int *start_frame_no)
 {

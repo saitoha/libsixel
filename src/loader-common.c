@@ -1202,7 +1202,7 @@ loader_thumbnailer_get_default_size_hint(void)
     return default_size_hint;
 }
 
-void
+SIXEL_INTERNAL_API void
 sixel_helper_set_loader_trace(int enable)
 {
     loader_background_lock();
@@ -1210,7 +1210,7 @@ sixel_helper_set_loader_trace(int enable)
     loader_background_unlock();
 }
 
-void
+SIXEL_INTERNAL_API void
 sixel_helper_set_thumbnail_size_hint(int size)
 {
     loader_thumbnailer_initialize_size_hint();

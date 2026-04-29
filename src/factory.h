@@ -67,8 +67,8 @@ struct sixel_factory_interface {
     sixel_factory_vtbl_t const *vtbl;
 };
 
-SIXEL_INTERNAL_API SIXELSTATUS
 /* @serviceid services/factory */
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_factory_get_default(void **factory);
 
 #ifdef __cplusplus

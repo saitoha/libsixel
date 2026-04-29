@@ -83,7 +83,7 @@ typedef struct sixel_loader_timeline_callback_state {
 void loader_thumbnailer_initialize_size_hint(void);
 int loader_thumbnailer_get_size_hint(void);
 int loader_thumbnailer_get_default_size_hint(void);
-void sixel_helper_set_thumbnail_size_hint(int size);
+SIXEL_INTERNAL_API void sixel_helper_set_thumbnail_size_hint(int size);
 int loader_wic_get_ico_minsize(void);
 void sixel_helper_set_wic_ico_minsize(int size);
 int loader_libpng_get_enable_cms(void);
@@ -109,7 +109,7 @@ SIXEL_INTERNAL_API int loader_background_policy(void);
 /* Keep this exported: test runners call it via the shared libsixel DLL. */
 SIXEL_INTERNAL_API int loader_cms_target_pixelformat(void);
 void sixel_helper_set_loader_cms_engine(int engine);
-void sixel_helper_set_loader_trace(int enable);
+SIXEL_INTERNAL_API void sixel_helper_set_loader_trace(int enable);
 void loader_trace_try(char const *name);
 void loader_trace_result(char const *name, SIXELSTATUS status);
 int loader_trace_is_enabled(void);
