@@ -29,7 +29,6 @@
 
 #include "chunk.h"
 #include "loader.h"
-#include "logger.h"
 #include "options.h"
 
 #ifdef __cplusplus
@@ -42,7 +41,7 @@ extern "C" {
  * interface ILoaderManager {
  *   ref();
  *   unref();
- *   build_chain(options);
+ *   build_chain(request);
  *   load(chunk, out selected_loader);
  * }
  */
@@ -75,40 +74,33 @@ typedef struct sixel_loader_suboptions {
 
 typedef struct sixel_loader_manager_interface sixel_loader_manager_t;
 
-typedef SIXELSTATUS (*sixel_loader_manager_configure_loader_fn)(
-    sixel_loader_component_interface_t *loader,
-    void *context);
-
-typedef void (*sixel_loader_manager_trace_try_fn)(
-    char const *name,
-    void *context);
-
-typedef void (*sixel_loader_manager_trace_result_fn)(
-    char const *name,
-    SIXELSTATUS status,
-    void *context);
+typedef struct sixel_loader_manager_build_request {
+    sixel_option_argument_list_resolution_t const *resolution;
+    int skip_predicate_gate;
+    int require_static;
+    int use_palette;
+    int reqcolors;
+    unsigned char const *bgcolor;
+    int has_bgcolor;
+    int bgcolor_source;
+    int loop_control;
+    int has_start_frame_no;
+    int start_frame_no;
+    sixel_loader_suboptions_t const *suboptions;
+} sixel_loader_manager_build_request_t;
 
 typedef struct sixel_loader_manager_vtbl {
     void (*ref)(sixel_loader_manager_t *manager);
     void (*unref)(sixel_loader_manager_t *manager);
     SIXELSTATUS (*build_chain)(
         sixel_loader_manager_t *manager,
-        sixel_option_argument_list_resolution_t const *resolution,
-        sixel_allocator_t *allocator);
+        sixel_loader_manager_build_request_t const *request);
     SIXELSTATUS (*load)(
         sixel_loader_manager_t *manager,
         sixel_chunk_t const *chunk,
         sixel_loader_component_interface_t **selected_loader,
-        int skip_predicate_gate,
         sixel_load_image_function fn_load,
-        void *load_context,
-        sixel_logger_t *timeline_logger,
-        int *timeline_job_seq,
-        sixel_loader_manager_configure_loader_fn fn_configure,
-        void *configure_context,
-        sixel_loader_manager_trace_try_fn fn_try,
-        sixel_loader_manager_trace_result_fn fn_result,
-        void *trace_context);
+        void *load_context);
 } sixel_loader_manager_vtbl_t;
 
 struct sixel_loader_manager_interface {

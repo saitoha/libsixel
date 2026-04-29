@@ -152,16 +152,10 @@ struct sixel_loader {
     char last_source_path[PATH_MAX];
     size_t last_input_bytes;
     int callback_failed;
-    int log_loader_finished;
     char log_path[PATH_MAX];
-    char log_loader_name[64];
-    size_t log_input_bytes;
     int log_timeline_job_seq;
     int timeline_manager_select_job;
     int timeline_manager_select_open;
-    int timeline_candidate_select_job;
-    int timeline_candidate_select_open;
-    char timeline_candidate_worker[96];
 };
 
 typedef struct sixel_loader_callback_state {
@@ -169,19 +163,6 @@ typedef struct sixel_loader_callback_state {
     sixel_load_image_function fn;
     void *context;
 } sixel_loader_callback_state_t;
-
-typedef struct sixel_loader_component_option_context {
-    sixel_loader_t *loader;
-    int reqcolors;
-    sixel_loader_suboptions_t suboptions;
-} sixel_loader_component_option_context_t;
-
-typedef struct sixel_loader_manager_trace_context {
-    sixel_loader_t *loader;
-    size_t input_bytes;
-    int current_select_job;
-    char current_worker[96];
-} sixel_loader_manager_trace_context_t;
 
 typedef struct sixel_loader_osc11_bg_query_job {
     sixel_thread_t thread;
@@ -627,31 +608,15 @@ loader_timeline_select_phase_finish(
 static void
 loader_timeline_select_suspend_for_callback(
     sixel_loader_t *loader,
-    int *resume_manager,
-    int *resume_candidate)
+    int *resume_manager)
 {
     if (resume_manager != NULL) {
         *resume_manager = 0;
-    }
-    if (resume_candidate != NULL) {
-        *resume_candidate = 0;
     }
     if (loader == NULL) {
         return;
     }
 
-    if (loader->timeline_candidate_select_open != 0 &&
-            loader->timeline_candidate_worker[0] != '\0') {
-        loader_timeline_select_phase_finish(
-            loader,
-            loader->timeline_candidate_worker,
-            &loader->timeline_candidate_select_job,
-            &loader->timeline_candidate_select_open,
-            "finish");
-        if (resume_candidate != NULL) {
-            *resume_candidate = 1;
-        }
-    }
     if (loader->timeline_manager_select_open != 0) {
         loader_timeline_select_phase_finish(
             loader,
@@ -694,7 +659,6 @@ static void
 loader_timeline_select_resume_after_callback(
     sixel_loader_t *loader,
     int resume_manager,
-    int resume_candidate,
     SIXELSTATUS callback_status)
 {
     if (loader == NULL) {
@@ -702,12 +666,6 @@ loader_timeline_select_resume_after_callback(
     }
 
     if (SIXEL_FAILED(callback_status)) {
-        if (resume_candidate != 0 &&
-                loader->timeline_candidate_worker[0] != '\0') {
-            loader_timeline_select_emit_immediate_failure(
-                loader,
-                loader->timeline_candidate_worker);
-        }
         if (resume_manager != 0) {
             loader_timeline_select_emit_immediate_failure(
                 loader,
@@ -723,14 +681,6 @@ loader_timeline_select_resume_after_callback(
             &loader->timeline_manager_select_job,
             &loader->timeline_manager_select_open);
     }
-    if (resume_candidate != 0 &&
-            loader->timeline_candidate_worker[0] != '\0') {
-        loader_timeline_select_phase_start(
-            loader,
-            loader->timeline_candidate_worker,
-            &loader->timeline_candidate_select_job,
-            &loader->timeline_candidate_select_open);
-    }
 }
 
 static SIXELSTATUS
@@ -739,11 +689,9 @@ loader_callback_trampoline(sixel_frame_t *frame, void *data)
     sixel_loader_callback_state_t *state;
     SIXELSTATUS status;
     int resume_manager_select;
-    int resume_candidate_select;
 
     state = (sixel_loader_callback_state_t *)data;
     resume_manager_select = 0;
-    resume_candidate_select = 0;
     if (state == NULL || state->fn == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -754,14 +702,12 @@ loader_callback_trampoline(sixel_frame_t *frame, void *data)
          * while control is in the downstream frame callback.
          */
         loader_timeline_select_suspend_for_callback(state->loader,
-                                                    &resume_manager_select,
-                                                    &resume_candidate_select);
+                                                    &resume_manager_select);
     }
     status = state->fn(frame, state->context);
     if (state->loader != NULL) {
         loader_timeline_select_resume_after_callback(state->loader,
                                                      resume_manager_select,
-                                                     resume_candidate_select,
                                                      status);
     }
     if (SIXEL_FAILED(status) && state->loader != NULL) {
@@ -769,303 +715,6 @@ loader_callback_trampoline(sixel_frame_t *frame, void *data)
     }
 
     return status;
-}
-
-
-static SIXELSTATUS
-loader_apply_component_options(sixel_loader_component_t *component,
-                               sixel_loader_t const *loader,
-                               int reqcolors,
-                               sixel_loader_suboptions_t const *suboptions)
-{
-    typedef struct loader_component_option_entry {
-        int option;
-        char const *name;
-    } loader_component_option_entry_t;
-
-    loader_component_option_entry_t const options[] = {
-        { SIXEL_LOADER_OPTION_REQUIRE_STATIC, "require-static" },
-        { SIXEL_LOADER_OPTION_USE_PALETTE, "use-palette" },
-        { SIXEL_LOADER_OPTION_REQCOLORS, "reqcolors" },
-        { SIXEL_LOADER_OPTION_BGCOLOR, "bgcolor" },
-        { SIXEL_LOADER_OPTION_LOOP_CONTROL, "loop-control" },
-        { SIXEL_LOADER_OPTION_START_FRAME_NO, "start-frame-no" }
-    };
-    void const *value;
-    char message[128];
-    size_t index;
-    SIXELSTATUS status;
-    int suboption_value;
-    char const *component_name;
-
-    /*
-     * Distribute common execution parameters to every loader component.
-     *
-     * +---------------------------+-------------------------------+
-     * | option                    | value source                  |
-     * +---------------------------+-------------------------------+
-     * | REQUIRE_STATIC            | loader->fstatic               |
-     * | USE_PALETTE               | loader->fuse_palette          |
-     * | REQCOLORS                 | normalized reqcolors          |
-     * | BGCOLOR                   | loader->bgcolor or NULL       |
-     * | LOOP_CONTROL              | loader->loop_control          |
-     * | START_FRAME_NO            | loader->start_frame_no/NULL   |
-     * +---------------------------+-------------------------------+
-     */
-    status = SIXEL_OK;
-    message[0] = '\0';
-    index = 0;
-    value = NULL;
-    suboption_value = 0;
-    component_name = NULL;
-    if (component == NULL || loader == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    component_name = sixel_loader_component_get_name(component);
-
-    for (index = 0; index < sizeof(options) / sizeof(options[0]); ++index) {
-        switch (options[index].option) {
-        case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
-            value = &loader->fstatic;
-            break;
-        case SIXEL_LOADER_OPTION_USE_PALETTE:
-            value = &loader->fuse_palette;
-            break;
-        case SIXEL_LOADER_OPTION_REQCOLORS:
-            value = &reqcolors;
-            break;
-        case SIXEL_LOADER_OPTION_BGCOLOR:
-            value = loader->has_bgcolor ? loader->bgcolor : NULL;
-            break;
-        case SIXEL_LOADER_OPTION_LOOP_CONTROL:
-            value = &loader->loop_control;
-            break;
-        case SIXEL_LOADER_OPTION_START_FRAME_NO:
-            value = loader->has_start_frame_no
-                ? &loader->start_frame_no : NULL;
-            break;
-        default:
-            value = NULL;
-            break;
-        }
-
-        status = sixel_loader_component_setopt(component,
-                                               options[index].option,
-                                               value);
-        if (SIXEL_FAILED(status)) {
-            (void)sixel_compat_snprintf(message,
-                                        sizeof(message),
-                                        "sixel_loader_load_file: "
-                                        "failed to apply loader option "
-                                        "'%s'.",
-                                        options[index].name);
-            sixel_helper_set_additional_message(
-                message);
-            return status;
-        }
-    }
-
-    if (suboptions == NULL) {
-        status = sixel_loader_component_setopt(
-            component,
-            SIXEL_LOADER_COMPONENT_OPTION_BGCOLOR_SOURCE,
-            &loader->bgcolor_source);
-        if (SIXEL_FAILED(status)) {
-            sixel_helper_set_additional_message(
-                "sixel_loader_load_file: failed to apply loader option "
-                "'bgcolor-source'.");
-            return status;
-        }
-        return SIXEL_OK;
-    }
-
-#if HAVE_WIC
-    suboption_value = suboptions->wic_ico_minsize;
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_WIC_ICO_MINSIZE,
-        &suboption_value);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'wic-ico-minsize'.");
-        return status;
-    }
-#endif
-
-    suboption_value = suboptions->libpng_enable_cms;
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_LIBPNG_ENABLE_CMS,
-        &suboption_value);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'libpng-enable-cms'.");
-        return status;
-    }
-
-    suboption_value = suboptions->libjpeg_enable_cms;
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_LIBJPEG_ENABLE_CMS,
-        &suboption_value);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'libjpeg-enable-cms'.");
-        return status;
-    }
-
-    suboption_value = suboptions->libwebp_enable_cms;
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_CMS,
-        &suboption_value);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'libwebp-enable-cms'.");
-        return status;
-    }
-
-    suboption_value = suboptions->libtiff_enable_cms;
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_LIBTIFF_ENABLE_CMS,
-        &suboption_value);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'libtiff-enable-cms'.");
-        return status;
-    }
-
-    suboption_value = suboptions->builtin_enable_cms;
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_CMS,
-        &suboption_value);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'builtin-enable-cms'.");
-        return status;
-    }
-
-    suboption_value = suboptions->builtin_bmp_info40_mode;
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_BMP_INFO40_MODE,
-        &suboption_value);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'builtin-bmp-info40-mode'.");
-        return status;
-    }
-
-    suboption_value = suboptions->builtin_enable_orientation;
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_ORIENTATION,
-        &suboption_value);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'builtin-enable-orientation'.");
-        return status;
-    }
-
-    suboption_value = suboptions->libjpeg_enable_orientation;
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_LIBJPEG_ENABLE_ORIENTATION,
-        &suboption_value);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'libjpeg-enable-orientation'.");
-        return status;
-    }
-
-    suboption_value = suboptions->libpng_enable_orientation;
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_LIBPNG_ENABLE_ORIENTATION,
-        &suboption_value);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'libpng-enable-orientation'.");
-        return status;
-    }
-
-    suboption_value = suboptions->libwebp_enable_orientation;
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_ORIENTATION,
-        &suboption_value);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'libwebp-enable-orientation'.");
-        return status;
-    }
-
-    suboption_value = suboptions->coregraphics_enable_orientation;
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_COREGRAPHICS_ENABLE_ORIENTATION,
-        &suboption_value);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'coregraphics-enable-orientation'.");
-        return status;
-    }
-
-    if (component_name != NULL && strcmp(component_name, "libpng") == 0) {
-        suboption_value = suboptions->libpng_cms_engine;
-    } else if (component_name != NULL &&
-               strcmp(component_name, "libjpeg") == 0) {
-        suboption_value = suboptions->libjpeg_cms_engine;
-    } else if (component_name != NULL &&
-               strcmp(component_name, "libwebp") == 0) {
-        suboption_value = suboptions->libwebp_cms_engine;
-    } else if (component_name != NULL &&
-               strcmp(component_name, "libtiff") == 0) {
-        suboption_value = suboptions->libtiff_cms_engine;
-    } else if (component_name != NULL &&
-               (strcmp(component_name, "builtin") == 0 ||
-                strcmp(component_name, "gnome-thumbnailer") == 0)) {
-        suboption_value = suboptions->builtin_cms_engine;
-    } else {
-        suboption_value = 0;
-    }
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE,
-        &suboption_value);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'cms-engine'.");
-        return status;
-    }
-
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_COMPONENT_OPTION_BGCOLOR_SOURCE,
-        &loader->bgcolor_source);
-    if (SIXEL_FAILED(status)) {
-        sixel_helper_set_additional_message(
-            "sixel_loader_load_file: failed to apply loader option "
-            "'bgcolor-source'.");
-        return status;
-    }
-
-    return SIXEL_OK;
 }
 
 
@@ -1147,16 +796,10 @@ sixel_loader_new(
     loader->last_source_path[0] = '\0';
     loader->last_input_bytes = 0u;
     loader->callback_failed = 0;
-    loader->log_loader_finished = 0;
     loader->log_path[0] = '\0';
-    loader->log_loader_name[0] = '\0';
-    loader->log_input_bytes = 0u;
     loader->log_timeline_job_seq = 0;
     loader->timeline_manager_select_job = -1;
     loader->timeline_manager_select_open = 0;
-    loader->timeline_candidate_select_job = -1;
-    loader->timeline_candidate_select_open = 0;
-    loader->timeline_candidate_worker[0] = '\0';
 
     *pploader = loader;
     status = SIXEL_OK;
@@ -1417,90 +1060,6 @@ sixel_loader_get_start_frame_no(sixel_loader_t const *loader,
     return 1;
 }
 
-static SIXELSTATUS
-loader_manager_configure_component(
-    sixel_loader_component_interface_t *component,
-    void *context)
-{
-    sixel_loader_component_option_context_t *options;
-
-    options = (sixel_loader_component_option_context_t *)context;
-    if (options == NULL || options->loader == NULL) {
-        sixel_helper_set_additional_message(
-            "loader_manager_configure_component: invalid context.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    return loader_apply_component_options(component,
-                                          options->loader,
-                                          options->reqcolors,
-                                          &options->suboptions);
-}
-
-static void
-loader_manager_trace_try_callback(char const *name, void *context)
-{
-    sixel_loader_manager_trace_context_t *trace;
-    char const *backend_name;
-
-    trace = (sixel_loader_manager_trace_context_t *)context;
-    if (trace == NULL || trace->loader == NULL) {
-        return;
-    }
-    backend_name = name != NULL ? name : "unknown";
-
-    trace->loader->log_input_bytes = trace->input_bytes;
-    if (name != NULL) {
-        (void)sixel_compat_snprintf(trace->loader->log_loader_name,
-                                    sizeof(trace->loader->log_loader_name),
-                                    "%s",
-                                    name);
-    } else {
-        trace->loader->log_loader_name[0] = '\0';
-    }
-    (void)sixel_compat_snprintf(trace->loader->timeline_candidate_worker,
-                                sizeof(
-                                    trace->loader->timeline_candidate_worker),
-                                "loader/%s",
-                                backend_name);
-    loader_timeline_select_phase_start(
-        trace->loader,
-        trace->loader->timeline_candidate_worker,
-        &trace->loader->timeline_candidate_select_job,
-        &trace->loader->timeline_candidate_select_open);
-    trace->current_select_job = trace->loader->timeline_candidate_select_job;
-    (void)sixel_compat_snprintf(trace->current_worker,
-                                sizeof(trace->current_worker),
-                                "%s",
-                                trace->loader->timeline_candidate_worker);
-    loader_trace_try(name);
-}
-
-static void
-loader_manager_trace_result_callback(char const *name,
-                                     SIXELSTATUS status,
-                                     void *context)
-{
-    sixel_loader_manager_trace_context_t *trace;
-    char const *event;
-
-    trace = (sixel_loader_manager_trace_context_t *)context;
-    event = NULL;
-    if (trace != NULL && trace->loader != NULL) {
-        event = SIXEL_SUCCEEDED(status) ? "finish" : "fail";
-        loader_timeline_select_phase_finish(
-            trace->loader,
-            trace->loader->timeline_candidate_worker,
-            &trace->loader->timeline_candidate_select_job,
-            &trace->loader->timeline_candidate_select_open,
-            event);
-        trace->loader->timeline_candidate_worker[0] = '\0';
-        trace->current_select_job = -1;
-        trace->current_worker[0] = '\0';
-    }
-    loader_trace_result(name, status);
-}
-
 SIXELAPI SIXELSTATUS
 sixel_loader_load_file(
     sixel_loader_t         /* in */ *loader,
@@ -1518,15 +1077,13 @@ sixel_loader_load_file(
     sixel_option_argument_list_resolution_t const *active_order_resolution;
     char const *selected_name;
     sixel_loader_callback_state_t callback_state;
-    sixel_loader_component_option_context_t option_context;
-    sixel_loader_manager_trace_context_t trace_context;
     sixel_option_argument_list_resolution_t order_resolution;
     sixel_loader_suboptions_t active_suboptions;
+    sixel_loader_manager_build_request_t build_request;
     sixel_loader_osc11_bg_query_job_t osc11_query_job;
     char const *osc11_timeout_env;
     int osc11_timeout_ms;
     int osc11_bgcolor_applied;
-    int skip_predicate_gate;
     int thread_status;
     int wait_result;
     int chunk_job_id;
@@ -1543,17 +1100,13 @@ sixel_loader_load_file(
     osc11_timeout_env = NULL;
     osc11_timeout_ms = SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
     osc11_bgcolor_applied = 0;
-    skip_predicate_gate = 0;
     thread_status = SIXEL_FALSE;
     wait_result = 0;
     chunk_job_id = -1;
     sixel_option_init_argument_list_resolution(&order_resolution);
     loader_manager_init_loader_suboptions(&active_suboptions);
     loader_osc11_bg_query_job_init(&osc11_query_job);
-    memset(&option_context, 0, sizeof(option_context));
-    memset(&trace_context, 0, sizeof(trace_context));
-    trace_context.current_select_job = -1;
-    trace_context.current_worker[0] = '\0';
+    memset(&build_request, 0, sizeof(build_request));
 
     if (loader == NULL) {
         sixel_helper_set_additional_message(
@@ -1564,15 +1117,9 @@ sixel_loader_load_file(
 
     sixel_loader_ref(loader);
 
-    loader->log_loader_finished = 0;
-    loader->log_loader_name[0] = '\0';
-    loader->log_input_bytes = 0u;
     loader->log_timeline_job_seq = 0;
     loader->timeline_manager_select_job = -1;
     loader->timeline_manager_select_open = 0;
-    loader->timeline_candidate_select_job = -1;
-    loader->timeline_candidate_select_open = 0;
-    loader->timeline_candidate_worker[0] = '\0';
     loader->log_path[0] = '\0';
     if (filename != NULL) {
         (void)sixel_compat_snprintf(loader->log_path,
@@ -1700,39 +1247,9 @@ sixel_loader_load_file(
     }
     loader_manager_resolve_loader_suboptions(active_order_resolution,
                                              &active_suboptions);
-    if (active_order_resolution != NULL &&
-        active_order_resolution->has_trailing_bang &&
-        active_order_resolution->item_count == 1u) {
-        /*
-         * A forced single-loader order ("-L name!") should reach the loader
-         * implementation whenever the coarse magic check matches.
-         */
-        skip_predicate_gate = 1;
-    }
-
-    status = manager->vtbl->build_chain(manager,
-                                        active_order_resolution,
-                                        loader->allocator);
-    if (SIXEL_FAILED(status)) {
-        if (status == SIXEL_BAD_ARGUMENT &&
-            active_order_resolution != NULL &&
-            active_order_resolution->canonical_argument != NULL &&
-            active_order_resolution->canonical_argument[0] != '\0') {
-            sixel_helper_set_additional_message(
-                "sixel_loader_load_file: no supported loader in loader "
-                "order.");
-            status = SIXEL_BAD_ARGUMENT;
-        } else if (status == SIXEL_BAD_ARGUMENT) {
-            sixel_helper_set_additional_message(
-                "sixel_loader_load_file: no available loader backend.");
-            status = SIXEL_LOADER_FAILED;
-        }
-        goto end;
-    }
-
     /*
-     * Before propagating component options, wait at most once for OSC11 query
-     * completion. Timeout keeps the previous behavior (no explicit bgcolor).
+     * Resolve OSC11 before build_chain so component options are finalized
+     * once during chain construction.
      */
     if (osc11_query_job.started != 0 && loader->has_bgcolor == 0) {
         wait_result = loader_osc11_bg_query_job_is_finished(&osc11_query_job);
@@ -1755,14 +1272,44 @@ sixel_loader_load_file(
          * Force gamma interpretation for this load even when the process
          * default requested a different background color space.
          */
-        sixel_helper_set_loader_background_colorspace(SIXEL_COLORSPACE_GAMMA);
+        sixel_helper_set_loader_background_colorspace(
+            SIXEL_COLORSPACE_GAMMA);
     }
 
-    option_context.loader = loader;
-    option_context.reqcolors = reqcolors;
-    option_context.suboptions = active_suboptions;
-    trace_context.loader = loader;
-    trace_context.input_bytes = pchunk->size;
+    build_request.resolution = active_order_resolution;
+    build_request.require_static = loader->fstatic;
+    build_request.use_palette = loader->fuse_palette;
+    build_request.reqcolors = reqcolors;
+    build_request.bgcolor = loader->bgcolor;
+    build_request.has_bgcolor = loader->has_bgcolor;
+    build_request.bgcolor_source = loader->bgcolor_source;
+    build_request.loop_control = loader->loop_control;
+    build_request.has_start_frame_no = loader->has_start_frame_no;
+    build_request.start_frame_no = loader->start_frame_no;
+    build_request.suboptions = &active_suboptions;
+    build_request.skip_predicate_gate =
+        (active_order_resolution != NULL &&
+         active_order_resolution->has_trailing_bang &&
+         active_order_resolution->item_count == 1u) ? 1 : 0;
+
+    status = manager->vtbl->build_chain(manager, &build_request);
+    if (SIXEL_FAILED(status)) {
+        if (status == SIXEL_BAD_ARGUMENT &&
+            active_order_resolution != NULL &&
+            active_order_resolution->canonical_argument != NULL &&
+            active_order_resolution->canonical_argument[0] != '\0') {
+            sixel_helper_set_additional_message(
+                "sixel_loader_load_file: no supported loader in loader "
+                "order.");
+            status = SIXEL_BAD_ARGUMENT;
+        } else if (status == SIXEL_BAD_ARGUMENT) {
+            sixel_helper_set_additional_message(
+                "sixel_loader_load_file: no available loader backend.");
+            status = SIXEL_LOADER_FAILED;
+        }
+        goto end;
+    }
+
     loader_timeline_select_phase_start(loader,
                                        "loader/manager",
                                        &loader->timeline_manager_select_job,
@@ -1771,16 +1318,8 @@ sixel_loader_load_file(
         manager,
         pchunk,
         &selected_loader,
-        skip_predicate_gate,
         loader_callback_trampoline,
-        &callback_state,
-        &loader->logger,
-        &loader->log_timeline_job_seq,
-        loader_manager_configure_component,
-        &option_context,
-        loader_manager_trace_try_callback,
-        loader_manager_trace_result_callback,
-        &trace_context);
+        &callback_state);
     loader_timeline_select_phase_finish(
         loader,
         "loader/manager",
