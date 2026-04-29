@@ -23,12 +23,12 @@
 #include <sixel.h>
 
 #include "chunk.h"
+#include "factory.h"
 #include "loader-common.h"
-#include "loader-component.h"
-#include "loader-factory.h"
+#include "loader.h"
 
 static sixel_allocator_t *g_allocator = NULL;
-static sixel_loader_factory_t *g_factory = NULL;
+static sixel_factory_t *g_factory = NULL;
 static sixel_loader_component_t *g_component = NULL;
 static int g_fuzz_ready = 0;
 static unsigned char g_empty_input[1];
@@ -608,7 +608,7 @@ fuzz_builtin_loader_dispose(void)
         g_component = NULL;
     }
     if (g_factory != NULL) {
-        loader_factory_unref(g_factory);
+        g_factory->vtbl->unref(g_factory);
         g_factory = NULL;
     }
     if (g_allocator != NULL) {
@@ -638,16 +638,16 @@ fuzz_builtin_loader_init(void)
         return 0;
     }
 
-    status = loader_factory_get_default(&g_factory);
+    status = sixel_factory_get_default(&g_factory);
     if (SIXEL_FAILED(status)) {
         fuzz_builtin_loader_dispose();
         return 0;
     }
 
-    status = loader_factory_create_component(g_factory,
-                                             "builtin",
-                                             g_allocator,
-                                             &g_component);
+    status = g_factory->vtbl->create(g_factory,
+                                     "builtin",
+                                     g_allocator,
+                                     (void **)&g_component);
     if (SIXEL_FAILED(status)) {
         fuzz_builtin_loader_dispose();
         return 0;

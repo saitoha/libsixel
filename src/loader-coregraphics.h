@@ -31,13 +31,14 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "loader-component.h"
+#include "loader.h"
 
 #if HAVE_COREGRAPHICS
+/* @classid loader/coregraphics if HAVE_COREGRAPHICS */
 SIXELSTATUS
 sixel_loader_coregraphics_new(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **ppcomponent);
 #endif
 
 #endif /* LIBSIXEL_LOADER_COREGRAPHICS_H */

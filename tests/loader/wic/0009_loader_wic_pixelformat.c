@@ -7,7 +7,7 @@
 #if HAVE_WIC
 static SIXELSTATUS
 new_wic_component(sixel_allocator_t *allocator,
-                  sixel_loader_component_t **ppcomponent)
+                  void **ppcomponent)
 {
     return create_loader_component_by_name("wic", allocator, ppcomponent);
 }

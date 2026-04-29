@@ -1480,17 +1480,26 @@ sixel_loader_libtiff_name(sixel_loader_component_t const *component)
     return "libtiff";
 }
 
+static int
+sixel_loader_libtiff_predicate(sixel_loader_component_t *component,
+                               sixel_chunk_t const *chunk)
+{
+    (void)component;
+    return loader_can_try_libtiff(chunk);
+}
+
 static sixel_loader_component_vtbl_t const g_sixel_loader_libtiff_vtbl = {
     sixel_loader_libtiff_ref,
     sixel_loader_libtiff_unref,
     sixel_loader_libtiff_setopt,
     sixel_loader_libtiff_load,
-    sixel_loader_libtiff_name
+    sixel_loader_libtiff_name,
+    sixel_loader_libtiff_predicate
 };
 
 SIXELSTATUS
 sixel_loader_libtiff_new(sixel_allocator_t *allocator,
-                         sixel_loader_component_t **ppcomponent)
+                         void **ppcomponent)
 {
     sixel_loader_libtiff_component_t *self;
 

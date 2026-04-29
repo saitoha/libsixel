@@ -174,7 +174,7 @@ static sixel_lookup_policy_vtbl_t
 SIXELSTATUS
 sixel_lookup_policy_mono_lightbg_8bit_new(
     sixel_allocator_t *allocator,
-    sixel_lookup_policy_interface_t **policy)
+    void **policy)
 {
     sixel_lookup_policy_mono_lightbg_object_t *object;
 
@@ -204,7 +204,7 @@ sixel_lookup_policy_mono_lightbg_8bit_new(
 SIXELSTATUS
 sixel_lookup_policy_mono_lightbg_float32_new(
     sixel_allocator_t *allocator,
-    sixel_lookup_policy_interface_t **policy)
+    void **policy)
 {
     sixel_lookup_policy_mono_lightbg_object_t *object;
 

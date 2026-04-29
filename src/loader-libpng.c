@@ -5054,17 +5054,26 @@ sixel_loader_libpng_name(sixel_loader_component_t const *component)
     return "libpng";
 }
 
+static int
+sixel_loader_libpng_predicate(sixel_loader_component_t *component,
+                              sixel_chunk_t const *chunk)
+{
+    (void)component;
+    return loader_can_try_libpng(chunk);
+}
+
 static sixel_loader_component_vtbl_t const g_sixel_loader_libpng_vtbl = {
     sixel_loader_libpng_ref,
     sixel_loader_libpng_unref,
     sixel_loader_libpng_setopt,
     sixel_loader_libpng_load,
-    sixel_loader_libpng_name
+    sixel_loader_libpng_name,
+    sixel_loader_libpng_predicate
 };
 
 SIXELSTATUS
 sixel_loader_libpng_new(sixel_allocator_t *allocator,
-                        sixel_loader_component_t **ppcomponent)
+                        void **ppcomponent)
 {
     sixel_loader_libpng_component_t *self;
 

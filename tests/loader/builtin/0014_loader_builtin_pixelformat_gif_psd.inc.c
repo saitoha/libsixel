@@ -341,7 +341,7 @@ run_builtin_loader_hdr_case_with_cms(char const *label,
         goto cleanup;
     }
 
-    status = new_builtin_component_for_pixelformat_test(allocator, &component);
+    status = new_builtin_component_for_pixelformat_test(allocator, (void **)&component);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
         goto cleanup;

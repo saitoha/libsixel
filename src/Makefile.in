@@ -274,23 +274,20 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/loader-libpng.c $(srcdir)/loader-libtiff.c \
 	$(srcdir)/loader-librsvg.c $(srcdir)/loader-libjpeg.c \
 	$(srcdir)/loader-libwebp.c $(srcdir)/loader-builtin.c \
-	$(srcdir)/loader-common.c $(srcdir)/loader-chain.c \
-	$(srcdir)/loader-factory.c $(srcdir)/loader-order-schema.c \
-	$(srcdir)/loader-manager.c $(srcdir)/loader-component.c \
-	$(srcdir)/loader-registry.c $(srcdir)/loader.h \
+	$(srcdir)/loader-common.c $(srcdir)/loader-order-schema.c \
+	$(srcdir)/loader-manager.c $(srcdir)/loader.h \
 	$(srcdir)/loader-builtin.h $(srcdir)/loader-common.h \
-	$(srcdir)/loader-component.h $(srcdir)/loader-chain.h \
-	$(srcdir)/loader-factory.h $(srcdir)/loader-order-schema.h \
-	$(srcdir)/loader-manager.h $(srcdir)/loader-coregraphics.h \
-	$(srcdir)/loader-gd.h $(srcdir)/loader-gdk-pixbuf2.h \
+	$(srcdir)/loader-order-schema.h $(srcdir)/loader-manager.h \
+	$(srcdir)/loader-coregraphics.h $(srcdir)/loader-gd.h \
+	$(srcdir)/loader-gdk-pixbuf2.h \
 	$(srcdir)/loader-gnome-thumbnailer.h \
 	$(srcdir)/loader-libjpeg.h $(srcdir)/loader-libpng.h \
 	$(srcdir)/loader-libtiff.h $(srcdir)/loader-librsvg.h \
 	$(srcdir)/loader-librsvg-test.h $(srcdir)/loader-libwebp.h \
-	$(srcdir)/loader-quicklook.h $(srcdir)/loader-registry.h \
-	$(srcdir)/loader-wic.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
-	$(srcdir)/frompng.c $(srcdir)/frompng.h $(srcdir)/fromhdr.c \
-	$(srcdir)/fromhdr.h $(srcdir)/frompsd.c $(srcdir)/frompsd.h \
+	$(srcdir)/loader-quicklook.h $(srcdir)/loader-wic.h \
+	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/frompng.c \
+	$(srcdir)/frompng.h $(srcdir)/fromhdr.c $(srcdir)/fromhdr.h \
+	$(srcdir)/frompsd.c $(srcdir)/frompsd.h \
 	$(srcdir)/frompsd-internal.h $(srcdir)/frompsd-trace.c \
 	$(srcdir)/frompsd-header.c $(srcdir)/fromgif.c \
 	$(srcdir)/fromgif.h $(srcdir)/fromwebp.c $(srcdir)/fromwebp.h \
@@ -322,8 +319,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/probe.c $(srcdir)/probe.h \
 	$(srcdir)/sixel_decode_rgba.c $(srcdir)/sixel_decode_rgba.h \
 	$(srcdir)/sixel_atomic_fallback.c $(srcdir)/sixel_atomic.h \
-	$(srcdir)/classid-lookup-policy.h \
-	$(srcdir)/classid-dither-policy.h $(srcdir)/rgblookup.h \
+	$(srcdir)/classid-factory.h $(srcdir)/classid-service.h \
+	$(srcdir)/rgblookup.h \
 	$(srcdir)/lso2.h $(srcdir)/threadpool.c $(srcdir)/threadpool.h \
 	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m \
 	$(srcdir)/clipboard_carbon.c
@@ -428,12 +425,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-libwebp.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-builtin.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-common.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-chain.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-factory.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-order-schema.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-manager.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-component.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-registry.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompnm.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompng.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromhdr.lo \
@@ -585,11 +578,8 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-icc-apply.Plo \
 	./$(DEPDIR)/libsixel_la-icc-parse.Plo \
 	./$(DEPDIR)/libsixel_la-loader-builtin.Plo \
-	./$(DEPDIR)/libsixel_la-loader-chain.Plo \
 	./$(DEPDIR)/libsixel_la-loader-common.Plo \
-	./$(DEPDIR)/libsixel_la-loader-component.Plo \
 	./$(DEPDIR)/libsixel_la-loader-coregraphics.Plo \
-	./$(DEPDIR)/libsixel_la-loader-factory.Plo \
 	./$(DEPDIR)/libsixel_la-loader-gd.Plo \
 	./$(DEPDIR)/libsixel_la-loader-gdk-pixbuf2.Plo \
 	./$(DEPDIR)/libsixel_la-loader-gnome-thumbnailer.Plo \
@@ -601,7 +591,6 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-loader-manager.Plo \
 	./$(DEPDIR)/libsixel_la-loader-order-schema.Plo \
 	./$(DEPDIR)/libsixel_la-loader-quicklook.Plo \
-	./$(DEPDIR)/libsixel_la-loader-registry.Plo \
 	./$(DEPDIR)/libsixel_la-loader-wic.Plo \
 	./$(DEPDIR)/libsixel_la-loader.Plo \
 	./$(DEPDIR)/libsixel_la-logger.Plo \
@@ -1154,18 +1143,11 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-libwebp.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-builtin.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-common.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-chain.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-factory.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-order-schema.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-manager.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-component.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-registry.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-builtin.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-common.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-component.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-chain.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-factory.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-order-schema.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-manager.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-coregraphics.h \
@@ -1179,7 +1161,6 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-librsvg-test.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-libwebp.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-quicklook.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-registry.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-wic.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompnm.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompnm.h \
@@ -1253,8 +1234,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_decode_rgba.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_atomic_fallback.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_atomic.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-lookup-policy.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-dither-policy.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-factory.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-service.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/rgblookup.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lso2.h $(am__append_2) \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__append_3) $(am__append_4) \
@@ -1312,18 +1293,18 @@ libsixel_la_LIBADD = -lm \
 
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf \
-             $(srcdir)/classid.gperf \
-             $(srcdir)/classid-dither.gperf
+             $(srcdir)/classid-factory.gperf \
+             $(srcdir)/classid-service.gperf
 
 @BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@LIBSIXEL_IMPORT_LIB_ALIAS_DEPS = $(top_builddir)/src/.libs/sixel.dll.lib
 GPERF_OPT = --ignore-case --language=ANSI-C
-GPERF_CLASSID_OPT = --language=ANSI-C \
-                  -H sixel_lookup_policy_classid_hash \
-                  -W sixel_lookup_policy_classid_wordlist
-
-GPERF_DITHER_CLASSID_OPT = --language=ANSI-C \
-                  -H sixel_dither_policy_classid_hash \
-                  -W sixel_dither_policy_classid_wordlist
+GPERF_FACTORY_CLASSID_OPT = --language=ANSI-C \
+                  -H sixel_factory_classid_hash \
+                  -W sixel_factory_classid_wordlist
+GPERF_SERVICEID_OPT = --language=ANSI-C \
+                  -k1 \
+                  -H sixel_components_serviceid_hash \
+                  -W sixel_components_serviceid_wordlist
 
 LOOKUP_POLICY_CLASSID_INPUTS = \
     $(srcdir)/lookup-policy-5bit.h \
@@ -1353,6 +1334,29 @@ DITHER_POLICY_CLASSID_INPUTS = \
     $(srcdir)/dither-policy-x-dither.h \
     $(srcdir)/dither-policy-bluenoise.h \
     $(srcdir)/dither-policy-interframe.h
+
+LOADER_COMPONENT_CLASSID_INPUTS = \
+    $(srcdir)/loader-builtin.h \
+    $(srcdir)/loader-coregraphics.h \
+    $(srcdir)/loader-gd.h \
+    $(srcdir)/loader-gdk-pixbuf2.h \
+    $(srcdir)/loader-gnome-thumbnailer.h \
+    $(srcdir)/loader-libjpeg.h \
+    $(srcdir)/loader-libpng.h \
+    $(srcdir)/loader-librsvg.h \
+    $(srcdir)/loader-libtiff.h \
+    $(srcdir)/loader-libwebp.h \
+    $(srcdir)/loader-quicklook.h \
+    $(srcdir)/loader-wic.h
+
+FACTORY_CLASSID_INPUTS = \
+    $(LOOKUP_POLICY_CLASSID_INPUTS) \
+    $(DITHER_POLICY_CLASSID_INPUTS) \
+    $(LOADER_COMPONENT_CLASSID_INPUTS) \
+    $(srcdir)/loader-manager.h
+
+SERVICEID_CLASSID_INPUTS = \
+    $(srcdir)/factory.h
 
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = 
@@ -1522,11 +1526,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-apply.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-parse.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-builtin.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-chain.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-common.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-component.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-coregraphics.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-factory.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-gd.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-gdk-pixbuf2.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-gnome-thumbnailer.Plo@am__quote@ # am--include-marker
@@ -1538,7 +1539,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-manager.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-order-schema.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-quicklook.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-registry.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-wic.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-logger.Plo@am__quote@ # am--include-marker
@@ -2292,20 +2292,6 @@ libsixel_la-loader-common.lo: loader-common.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-common.lo `test -f 'loader-common.c' || echo '$(srcdir)/'`loader-common.c
 
-libsixel_la-loader-chain.lo: loader-chain.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-chain.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-chain.Tpo -c -o libsixel_la-loader-chain.lo `test -f 'loader-chain.c' || echo '$(srcdir)/'`loader-chain.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-chain.Tpo $(DEPDIR)/libsixel_la-loader-chain.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-chain.c' object='libsixel_la-loader-chain.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-chain.lo `test -f 'loader-chain.c' || echo '$(srcdir)/'`loader-chain.c
-
-libsixel_la-loader-factory.lo: loader-factory.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-factory.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-factory.Tpo -c -o libsixel_la-loader-factory.lo `test -f 'loader-factory.c' || echo '$(srcdir)/'`loader-factory.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-factory.Tpo $(DEPDIR)/libsixel_la-loader-factory.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-factory.c' object='libsixel_la-loader-factory.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-factory.lo `test -f 'loader-factory.c' || echo '$(srcdir)/'`loader-factory.c
-
 libsixel_la-loader-order-schema.lo: loader-order-schema.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-order-schema.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-order-schema.Tpo -c -o libsixel_la-loader-order-schema.lo `test -f 'loader-order-schema.c' || echo '$(srcdir)/'`loader-order-schema.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-order-schema.Tpo $(DEPDIR)/libsixel_la-loader-order-schema.Plo
@@ -2319,20 +2305,6 @@ libsixel_la-loader-manager.lo: loader-manager.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-manager.c' object='libsixel_la-loader-manager.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-manager.lo `test -f 'loader-manager.c' || echo '$(srcdir)/'`loader-manager.c
-
-libsixel_la-loader-component.lo: loader-component.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-component.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-component.Tpo -c -o libsixel_la-loader-component.lo `test -f 'loader-component.c' || echo '$(srcdir)/'`loader-component.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-component.Tpo $(DEPDIR)/libsixel_la-loader-component.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-component.c' object='libsixel_la-loader-component.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-component.lo `test -f 'loader-component.c' || echo '$(srcdir)/'`loader-component.c
-
-libsixel_la-loader-registry.lo: loader-registry.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-registry.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-registry.Tpo -c -o libsixel_la-loader-registry.lo `test -f 'loader-registry.c' || echo '$(srcdir)/'`loader-registry.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-registry.Tpo $(DEPDIR)/libsixel_la-loader-registry.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-registry.c' object='libsixel_la-loader-registry.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-registry.lo `test -f 'loader-registry.c' || echo '$(srcdir)/'`loader-registry.c
 
 libsixel_la-frompnm.lo: frompnm.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-frompnm.lo -MD -MP -MF $(DEPDIR)/libsixel_la-frompnm.Tpo -c -o libsixel_la-frompnm.lo `test -f 'frompnm.c' || echo '$(srcdir)/'`frompnm.c
@@ -2924,11 +2896,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-loader-chain.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-common.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-loader-component.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-coregraphics.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-loader-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-gd.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-gdk-pixbuf2.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-gnome-thumbnailer.Plo
@@ -2940,7 +2909,6 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-manager.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-order-schema.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-quicklook.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-loader-registry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-wic.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-logger.Plo
@@ -3114,11 +3082,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-loader-chain.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-common.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-loader-component.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-coregraphics.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-loader-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-gd.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-gdk-pixbuf2.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-gnome-thumbnailer.Plo
@@ -3130,7 +3095,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-manager.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-order-schema.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-quicklook.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-loader-registry.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-wic.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-logger.Plo
@@ -3263,32 +3227,31 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 	astyle                                  > $(srcdir)/rgblookup.h
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-gen-classid: $(LOOKUP_POLICY_CLASSID_INPUTS) $(DITHER_POLICY_CLASSID_INPUTS)
-	$(AWK) -f $(top_srcdir)/tools/gen_lookup_classid_gperf.awk \
-	        $(LOOKUP_POLICY_CLASSID_INPUTS) > $(srcdir)/classid.gperf
-	gperf -C -N sixel_lookup_policy_classid_lookup $(GPERF_CLASSID_OPT) \
-	        $(srcdir)/classid.gperf                                    |\
-	sed 's/{""}/\{"", 0\}/g'                                           \
-	        > $(srcdir)/classid-lookup-policy.h
-	printf '%s\n' '#undef TOTAL_KEYWORDS'                              \
-	              '#undef MIN_WORD_LENGTH'                             \
-	              '#undef MAX_WORD_LENGTH'                             \
-	              '#undef MIN_HASH_VALUE'                              \
-	              '#undef MAX_HASH_VALUE'                              \
-	        >> $(srcdir)/classid-lookup-policy.h
-	$(AWK) -f $(top_srcdir)/tools/gen_dither_classid_gperf.awk         \
-	        $(DITHER_POLICY_CLASSID_INPUTS) > $(srcdir)/classid-dither.gperf
-	gperf -C -N sixel_dither_policy_classid_lookup                     \
-	        $(GPERF_DITHER_CLASSID_OPT)                                \
-	        $(srcdir)/classid-dither.gperf                             |\
-	sed 's/{""}/\{"", 0\}/g'                                           \
-	        > $(srcdir)/classid-dither-policy.h
-	printf '%s\n' '#undef TOTAL_KEYWORDS'                              \
-	              '#undef MIN_WORD_LENGTH'                             \
-	              '#undef MAX_WORD_LENGTH'                             \
-	              '#undef MIN_HASH_VALUE'                              \
-	              '#undef MAX_HASH_VALUE'                              \
-	        >> $(srcdir)/classid-dither-policy.h
+gen-classid: $(FACTORY_CLASSID_INPUTS) $(SERVICEID_CLASSID_INPUTS)
+	$(AWK) -f $(top_srcdir)/tools/gen_factory_classid_gperf.awk \
+	        $(FACTORY_CLASSID_INPUTS) > $(srcdir)/classid-factory.gperf
+	gperf -C -N sixel_factory_classid_lookup $(GPERF_FACTORY_CLASSID_OPT) \
+	        $(srcdir)/classid-factory.gperf                              |\
+	sed 's/{""}/\{"", 0\}/g'                                             \
+	        > $(srcdir)/classid-factory.h
+	printf '%s\n' '#undef TOTAL_KEYWORDS'                                \
+	              '#undef MIN_WORD_LENGTH'                               \
+	              '#undef MAX_WORD_LENGTH'                               \
+	              '#undef MIN_HASH_VALUE'                                \
+	              '#undef MAX_HASH_VALUE'                                \
+	        >> $(srcdir)/classid-factory.h
+	$(AWK) -f $(top_srcdir)/tools/gen_serviceid_gperf.awk \
+	        $(SERVICEID_CLASSID_INPUTS) > $(srcdir)/classid-service.gperf
+	gperf -C -N sixel_components_serviceid_lookup $(GPERF_SERVICEID_OPT) \
+	        $(srcdir)/classid-service.gperf                              |\
+	sed 's/{""}/\{"", 0\}/g'                                             \
+	        > $(srcdir)/classid-service.h
+	printf '%s\n' '#undef TOTAL_KEYWORDS'                                \
+	              '#undef MIN_WORD_LENGTH'                               \
+	              '#undef MAX_WORD_LENGTH'                               \
+	              '#undef MIN_HASH_VALUE'                                \
+	              '#undef MAX_HASH_VALUE'                                \
+	        >> $(srcdir)/classid-service.h
 
 @WITH_SHEBANG_FILE_TRUE@check-local: $(SIXEL_SHEBANG_STAMP)
 

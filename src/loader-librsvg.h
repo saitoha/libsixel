@@ -28,7 +28,7 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "loader-component.h"
+#include "loader.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,10 +41,11 @@ typedef enum sixel_librsvg_decode_mode {
     SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED
 } sixel_librsvg_decode_mode_t;
 
+/* @classid loader/librsvg if HAVE_LIBRSVG */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_loader_librsvg_new(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **ppcomponent);
 
 SIXEL_INTERNAL_API int
 loader_can_try_librsvg(sixel_chunk_t const *chunk);

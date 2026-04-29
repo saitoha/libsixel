@@ -58,7 +58,7 @@
 #include "icc-apply.h"
 #include "icc-parse.h"
 #include "loader-common.h"
-#include "loader-component.h"
+#include "loader.h"
 #include "frame.h"
 #include "loader-libjpeg.h"
 #include "logger.h"
@@ -1827,17 +1827,26 @@ sixel_loader_libjpeg_name(sixel_loader_component_t const *component)
     return "libjpeg";
 }
 
+static int
+sixel_loader_libjpeg_predicate(sixel_loader_component_t *component,
+                               sixel_chunk_t const *chunk)
+{
+    (void)component;
+    return loader_can_try_libjpeg(chunk);
+}
+
 static sixel_loader_component_vtbl_t const g_sixel_loader_libjpeg_vtbl = {
     sixel_loader_libjpeg_ref,
     sixel_loader_libjpeg_unref,
     sixel_loader_libjpeg_setopt,
     sixel_loader_libjpeg_load,
-    sixel_loader_libjpeg_name
+    sixel_loader_libjpeg_name,
+    sixel_loader_libjpeg_predicate
 };
 
 SIXELSTATUS
 sixel_loader_libjpeg_new(sixel_allocator_t *allocator,
-                         sixel_loader_component_t **ppcomponent)
+                         void **ppcomponent)
 {
     sixel_loader_libjpeg_component_t *self;
 

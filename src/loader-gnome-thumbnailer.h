@@ -30,13 +30,14 @@
 
 #include <sixel.h>
 
-#include "loader-component.h"
+#include "loader.h"
 
 #if HAVE_FREEDESKTOP_THUMBNAILING
+/* @classid loader/gnome-thumbnailer if HAVE_FREEDESKTOP_THUMBNAILING */
 SIXELSTATUS
 sixel_loader_gnome_thumbnailer_new(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **ppcomponent);
 
 SIXELSTATUS load_with_gnome_thumbnailer(
     sixel_chunk_t const       *pchunk,
@@ -51,12 +52,6 @@ SIXELSTATUS load_with_gnome_thumbnailer(
     sixel_load_image_function  fn_load,
     void                      *context);
 
-char *thumbnailer_guess_content_type(char const *path);
-char *thumbnailer_run_file(char const *path, char const *option);
-void loader_probe_gnome_thumbnailers(char const *mime_type,
-                                     int *has_directories,
-                                     int *has_match);
-char *thumbnailer_strdup(char const *src);
 int thumbnailer_has_fallback_thumbnailer(void);
 #endif
 

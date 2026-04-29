@@ -28,8 +28,10 @@
 
 #include "loader-manager.h"
 
+#include "allocator.h"
 #include "cms.h"
 #include "compat_stub.h"
+#include "factory.h"
 #include "loader-common.h"
 #include "loader-order-schema.h"
 #include "options.h"
@@ -48,88 +50,52 @@
 #endif
 
 struct sixel_loader_manager {
+    sixel_loader_manager_t base;
     sixel_atomic_u32_t ref;
-    sixel_loader_factory_t *factory;
+    sixel_allocator_t *allocator;
+    sixel_factory_t *factory;
+    sixel_loader_component_interface_t **chain;
+    size_t chain_count;
+    size_t chain_capacity;
+    int skip_predicate_gate;
 };
 
-static struct sixel_loader_manager g_loader_manager_singleton = {
-    0u,
-    NULL
+static sixel_loader_entry_t const g_sixel_loader_entries[] = {
+#if HAVE_LIBPNG
+    { "libpng", "loader/libpng", 1 },
+#endif
+#if HAVE_JPEG
+    { "libjpeg", "loader/libjpeg", 1 },
+#endif
+#if HAVE_WEBP
+    { "libwebp", "loader/libwebp", 1 },
+#endif
+#if HAVE_LIBTIFF
+    { "libtiff", "loader/libtiff", 1 },
+#endif
+#if HAVE_LIBRSVG
+    { "librsvg", "loader/librsvg", 1 },
+#endif
+    { "builtin", "loader/builtin", 1 },
+#if HAVE_WIC
+    { "wic", "loader/wic", 1 },
+#endif
+#if HAVE_COREGRAPHICS
+    { "coregraphics", "loader/coregraphics", 1 },
+#endif
+#ifdef HAVE_GDK_PIXBUF2
+    { "gdk-pixbuf2", "loader/gdk-pixbuf2", 1 },
+#endif
+#if HAVE_GD
+    { "gd", "loader/gd", 1 },
+#endif
+#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+    { "quicklook", "loader/quicklook", 1 },
+#endif
+#if HAVE_FREEDESKTOP_THUMBNAILING
+    { "gnome-thumbnailer", "loader/gnome-thumbnailer", 0 },
+#endif
 };
-
-static sixel_loader_entry_t const *
-loader_manager_find_entry_by_name(sixel_loader_manager_t *manager,
-                                  char const *name)
-{
-    sixel_loader_entry_t const *entries;
-    size_t entry_count;
-    size_t index;
-
-    entries = NULL;
-    entry_count = 0u;
-    index = 0u;
-    if (manager == NULL || manager->factory == NULL || name == NULL) {
-        return NULL;
-    }
-
-    entry_count = loader_factory_get_entries(manager->factory, &entries);
-    for (index = 0u; index < entry_count; ++index) {
-        if (entries[index].name == NULL) {
-            continue;
-        }
-        if (strcmp(entries[index].name, name) == 0) {
-            return &entries[index];
-        }
-    }
-
-    return NULL;
-}
-
-static int
-loader_manager_component_matches_chunk(
-    sixel_loader_manager_t *manager,
-    char const *name,
-    sixel_chunk_t const *chunk,
-    int enforce_predicate)
-{
-    sixel_loader_entry_t const *entry;
-
-    entry = NULL;
-    if (manager == NULL || name == NULL || chunk == NULL) {
-        return 0;
-    }
-
-    entry = loader_manager_find_entry_by_name(manager, name);
-    if (entry == NULL) {
-        return 0;
-    }
-
-    return loader_factory_entry_matches_chunk_with_predicate(
-        manager->factory,
-        entry,
-        chunk,
-        enforce_predicate);
-}
-
-static void
-loader_manager_unref_singleton_ref(sixel_atomic_u32_t *ref)
-{
-    unsigned int previous;
-
-    previous = 0u;
-    if (ref == NULL) {
-        return;
-    }
-
-    /*
-     * Manager is a singleton coordinator. Saturate at zero so accidental
-     * extra unref() calls never wrap the reference counter.
-     */
-    previous = sixel_atomic_fetch_sub_u32(ref, 1u);
-    if (previous == 0u) {
-        (void)sixel_atomic_fetch_add_u32(ref, 1u);
-    }
-}
 
 
 #if HAVE_WIC
@@ -621,7 +587,8 @@ loader_manager_resolve_loader_suboptions(
         assignment_index = 0u;
         while (assignment_index < item->assignment_count) {
             key_name = item->assignments[assignment_index].resolved_key_name;
-            value_text = item->assignments[assignment_index].resolved_value_text;
+            value_text = item->assignments[assignment_index]
+                .resolved_value_text;
             value_length = 0u;
             if (value_text != NULL) {
                 value_length = strlen(value_text);
@@ -782,218 +749,640 @@ loader_manager_build_plan_from_resolution(
     return plan_length;
 }
 
-SIXELSTATUS
-loader_manager_get_default(sixel_loader_manager_t **ppmanager)
+static size_t
+loader_manager_find_entry_index(char const *name)
 {
-    SIXELSTATUS status;
+    size_t entry_count;
+    size_t index;
 
-    status = SIXEL_OK;
-    if (ppmanager == NULL) {
-        sixel_helper_set_additional_message(
-            "loader_manager_get_default: ppmanager is null.");
-        return SIXEL_BAD_ARGUMENT;
+    entry_count = sizeof(g_sixel_loader_entries)
+        / sizeof(g_sixel_loader_entries[0]);
+    index = 0u;
+    if (name == NULL) {
+        return entry_count;
+    }
+    for (index = 0u; index < entry_count; ++index) {
+        if (g_sixel_loader_entries[index].name != NULL &&
+            strcmp(g_sixel_loader_entries[index].name, name) == 0) {
+            return index;
+        }
     }
 
-    if (g_loader_manager_singleton.factory == NULL) {
-        status = loader_factory_get_default(
-            &g_loader_manager_singleton.factory);
+    return entry_count;
+}
+
+size_t
+loader_manager_get_entries(sixel_loader_entry_t const **entries)
+{
+    if (entries != NULL) {
+        *entries = g_sixel_loader_entries;
+    }
+    return sizeof(g_sixel_loader_entries) / sizeof(g_sixel_loader_entries[0]);
+}
+
+int
+loader_manager_entry_available(char const *name)
+{
+    size_t index;
+    size_t entry_count;
+
+    index = 0u;
+    entry_count = loader_manager_get_entries(NULL);
+    index = loader_manager_find_entry_index(name);
+    return index < entry_count ? 1 : 0;
+}
+
+static void
+sixel_loader_manager_clear_chain(sixel_loader_manager_t *manager)
+{
+    struct sixel_loader_manager *object;
+    size_t index;
+
+    object = NULL;
+    index = 0u;
+    if (manager == NULL) {
+        return;
+    }
+    object = (struct sixel_loader_manager *)manager;
+    for (index = 0u; index < object->chain_count; ++index) {
+        sixel_loader_component_unref(object->chain[index]);
+    }
+    if (object->chain != NULL) {
+        sixel_allocator_free(object->allocator, object->chain);
+    }
+    object->chain = NULL;
+    object->chain_count = 0u;
+    object->chain_capacity = 0u;
+}
+
+static SIXELSTATUS
+sixel_loader_manager_append_chain(sixel_loader_manager_t *manager,
+                                  sixel_loader_component_interface_t *loader)
+{
+    struct sixel_loader_manager *object;
+    sixel_loader_component_interface_t **new_chain;
+    size_t new_capacity;
+    size_t index;
+
+    object = NULL;
+    new_chain = NULL;
+    new_capacity = 0u;
+    index = 0u;
+    if (manager == NULL || loader == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    object = (struct sixel_loader_manager *)manager;
+    if (object->chain_count == object->chain_capacity) {
+        new_capacity = object->chain_capacity == 0u
+            ? 8u : object->chain_capacity * 2u;
+        new_chain = (sixel_loader_component_interface_t **)
+            sixel_allocator_malloc(
+                object->allocator,
+                new_capacity * sizeof(*new_chain));
+        if (new_chain == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        for (index = 0u; index < object->chain_count; ++index) {
+            new_chain[index] = object->chain[index];
+        }
+        if (object->chain != NULL) {
+            sixel_allocator_free(object->allocator, object->chain);
+        }
+        object->chain = new_chain;
+        object->chain_capacity = new_capacity;
+    }
+    object->chain[object->chain_count] = loader;
+    ++object->chain_count;
+    sixel_loader_component_ref(loader);
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_loader_manager_apply_component_options(
+    sixel_loader_component_interface_t *component,
+    sixel_loader_manager_build_request_t const *request)
+{
+    typedef struct loader_component_option_entry {
+        int option;
+        char const *name;
+    } loader_component_option_entry_t;
+
+    loader_component_option_entry_t const options[] = {
+        { SIXEL_LOADER_OPTION_REQUIRE_STATIC, "require-static" },
+        { SIXEL_LOADER_OPTION_USE_PALETTE, "use-palette" },
+        { SIXEL_LOADER_OPTION_REQCOLORS, "reqcolors" },
+        { SIXEL_LOADER_OPTION_BGCOLOR, "bgcolor" },
+        { SIXEL_LOADER_OPTION_LOOP_CONTROL, "loop-control" },
+        { SIXEL_LOADER_OPTION_START_FRAME_NO, "start-frame-no" }
+    };
+    void const *value;
+    char message[128];
+    size_t index;
+    SIXELSTATUS status;
+    int suboption_value;
+    char const *component_name;
+
+    value = NULL;
+    message[0] = '\0';
+    index = 0u;
+    status = SIXEL_FALSE;
+    suboption_value = 0;
+    component_name = NULL;
+    if (component == NULL || request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    component_name = sixel_loader_component_get_name(component);
+
+    for (index = 0u; index < sizeof(options) / sizeof(options[0]); ++index) {
+        switch (options[index].option) {
+        case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
+            value = &request->require_static;
+            break;
+        case SIXEL_LOADER_OPTION_USE_PALETTE:
+            value = &request->use_palette;
+            break;
+        case SIXEL_LOADER_OPTION_REQCOLORS:
+            value = &request->reqcolors;
+            break;
+        case SIXEL_LOADER_OPTION_BGCOLOR:
+            value = request->has_bgcolor ? request->bgcolor : NULL;
+            break;
+        case SIXEL_LOADER_OPTION_LOOP_CONTROL:
+            value = &request->loop_control;
+            break;
+        case SIXEL_LOADER_OPTION_START_FRAME_NO:
+            value = request->has_start_frame_no
+                ? &request->start_frame_no : NULL;
+            break;
+        default:
+            value = NULL;
+            break;
+        }
+
+        status = sixel_loader_component_setopt(component,
+                                               options[index].option,
+                                               value);
         if (SIXEL_FAILED(status)) {
+            (void)sixel_compat_snprintf(message,
+                                        sizeof(message),
+                                        "sixel_loader_manager_build_chain: "
+                                        "failed to apply loader option "
+                                        "'%s'.",
+                                        options[index].name);
+            sixel_helper_set_additional_message(message);
             return status;
         }
     }
 
-    loader_manager_ref(&g_loader_manager_singleton);
-    *ppmanager = &g_loader_manager_singleton;
-
-    return status;
-}
-
-void
-loader_manager_ref(sixel_loader_manager_t *manager)
-{
-    if (manager == NULL) {
-        return;
-    }
-
-    (void)sixel_atomic_fetch_add_u32(&manager->ref, 1u);
-}
-
-void
-loader_manager_unref(sixel_loader_manager_t *manager)
-{
-    if (manager == NULL) {
-        return;
-    }
-
-    loader_manager_unref_singleton_ref(&manager->ref);
-}
-
-SIXELSTATUS
-loader_manager_build_chain_from_plan(
-    sixel_loader_manager_t *manager,
-    sixel_loader_entry_t const **plan,
-    size_t plan_length,
-    sixel_chunk_t const *chunk,
-    int skip_predicate_gate,
-    sixel_allocator_t *allocator,
-    sixel_loader_chain_t **ppchain)
-{
-    SIXELSTATUS status;
-    sixel_loader_chain_t *chain;
-    sixel_loader_component_t *component;
-    size_t index;
-
-    status = SIXEL_OK;
-    chain = NULL;
-    component = NULL;
-    index = 0u;
-    (void)skip_predicate_gate;
-    if (ppchain == NULL || manager == NULL || plan == NULL) {
-        sixel_helper_set_additional_message(
-            "loader_manager_build_chain_from_plan: invalid argument.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    *ppchain = NULL;
-    status = loader_chain_new(&chain, allocator);
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_BGCOLOR_SOURCE,
+        &request->bgcolor_source);
     if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'bgcolor-source'.");
         return status;
     }
 
-    /*
-     * Chain assembly keeps a strict separation of concerns.
-     *
-     * 1) plan[] already defines candidate order.
-     * 2) factory applies only coarse magic gating while assembling the chain.
-     * 3) factory materializes a backend component.
-     * 4) chain owns component references in execution order.
-     */
-    for (index = 0u; index < plan_length; ++index) {
-        if (plan[index] == NULL) {
-            continue;
-        }
-        /*
-         * Predicate checks can be expensive for some backends.
-         * Evaluate only the fixed magic signature here and defer predicate
-         * checks to execution so backends after an early success are never
-         * probed.
-         */
-        if (!loader_factory_entry_matches_chunk_with_predicate(
-                manager->factory,
-                plan[index],
-                chunk,
-                0)) {
-            continue;
-        }
-
-        status = loader_factory_create_component(manager->factory,
-                                                 plan[index]->name,
-                                                 allocator,
-                                                 &component);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-
-        status = loader_chain_append(chain, component);
-        sixel_loader_component_unref(component);
-        component = NULL;
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
+    if (request->suboptions == NULL) {
+        return SIXEL_OK;
     }
 
-    *ppchain = chain;
-    chain = NULL;
-
-end:
-    if (component != NULL) {
-        sixel_loader_component_unref(component);
+#if HAVE_WIC
+    suboption_value = request->suboptions->wic_ico_minsize;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_WIC_ICO_MINSIZE,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'wic-ico-minsize'.");
+        return status;
     }
-    loader_chain_unref(chain);
-    return status;
+#endif
+
+    suboption_value = request->suboptions->libpng_enable_cms;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_LIBPNG_ENABLE_CMS,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'libpng-enable-cms'.");
+        return status;
+    }
+
+    suboption_value = request->suboptions->libjpeg_enable_cms;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_LIBJPEG_ENABLE_CMS,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'libjpeg-enable-cms'.");
+        return status;
+    }
+
+    suboption_value = request->suboptions->libwebp_enable_cms;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_CMS,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'libwebp-enable-cms'.");
+        return status;
+    }
+
+    suboption_value = request->suboptions->libtiff_enable_cms;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_LIBTIFF_ENABLE_CMS,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'libtiff-enable-cms'.");
+        return status;
+    }
+
+    suboption_value = request->suboptions->builtin_enable_cms;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_CMS,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'builtin-enable-cms'.");
+        return status;
+    }
+
+    suboption_value = request->suboptions->builtin_bmp_info40_mode;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_BMP_INFO40_MODE,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'builtin-bmp-info40-mode'.");
+        return status;
+    }
+
+    suboption_value = request->suboptions->builtin_enable_orientation;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_ORIENTATION,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'builtin-enable-orientation'.");
+        return status;
+    }
+
+    suboption_value = request->suboptions->libjpeg_enable_orientation;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_LIBJPEG_ENABLE_ORIENTATION,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'libjpeg-enable-orientation'.");
+        return status;
+    }
+
+    suboption_value = request->suboptions->libpng_enable_orientation;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_LIBPNG_ENABLE_ORIENTATION,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'libpng-enable-orientation'.");
+        return status;
+    }
+
+    suboption_value = request->suboptions->libwebp_enable_orientation;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_LIBWEBP_ENABLE_ORIENTATION,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'libwebp-enable-orientation'.");
+        return status;
+    }
+
+    suboption_value = request->suboptions->coregraphics_enable_orientation;
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_COREGRAPHICS_ENABLE_ORIENTATION,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'coregraphics-enable-orientation'.");
+        return status;
+    }
+
+    if (component_name != NULL && strcmp(component_name, "libpng") == 0) {
+        suboption_value = request->suboptions->libpng_cms_engine;
+    } else if (component_name != NULL &&
+               strcmp(component_name, "libjpeg") == 0) {
+        suboption_value = request->suboptions->libjpeg_cms_engine;
+    } else if (component_name != NULL &&
+               strcmp(component_name, "libwebp") == 0) {
+        suboption_value = request->suboptions->libwebp_cms_engine;
+    } else if (component_name != NULL &&
+               strcmp(component_name, "libtiff") == 0) {
+        suboption_value = request->suboptions->libtiff_cms_engine;
+    } else if (component_name != NULL &&
+               (strcmp(component_name, "builtin") == 0 ||
+                strcmp(component_name, "gnome-thumbnailer") == 0)) {
+        suboption_value = request->suboptions->builtin_cms_engine;
+    } else {
+        suboption_value = 0;
+    }
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE,
+        &suboption_value);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: failed to apply loader option "
+            "'cms-engine'.");
+        return status;
+    }
+
+    return SIXEL_OK;
 }
 
-SIXELSTATUS
-loader_manager_execute_chain(
-    sixel_loader_manager_t *manager,
-    sixel_loader_chain_t const *chain,
-    sixel_chunk_t const *chunk,
-    int skip_predicate_gate,
-    sixel_load_image_function fn_load,
-    void *load_context,
-    sixel_logger_t *timeline_logger,
-    int *timeline_job_seq,
-    sixel_loader_manager_configure_component_fn fn_configure,
-    void *configure_context,
-    sixel_loader_manager_trace_try_fn fn_try,
-    sixel_loader_manager_trace_result_fn fn_result,
-    void *trace_context)
+static void
+sixel_loader_manager_ref_impl(sixel_loader_manager_t *manager)
 {
-    SIXELSTATUS status;
-    sixel_loader_chain_node_t const *node;
-    char const *name;
-    int enforce_predicate;
-    char worker_name[96];
+    struct sixel_loader_manager *object;
 
+    object = NULL;
+    if (manager == NULL) {
+        return;
+    }
+    object = (struct sixel_loader_manager *)manager;
+    (void)sixel_atomic_fetch_add_u32(&object->ref, 1u);
+}
+
+static void
+sixel_loader_manager_unref_impl(sixel_loader_manager_t *manager)
+{
+    struct sixel_loader_manager *object;
+    unsigned int previous;
+
+    object = NULL;
+    previous = 0u;
+    if (manager == NULL) {
+        return;
+    }
+    object = (struct sixel_loader_manager *)manager;
+    previous = sixel_atomic_fetch_sub_u32(&object->ref, 1u);
+    if (previous != 1u) {
+        if (previous == 0u) {
+            (void)sixel_atomic_fetch_add_u32(&object->ref, 1u);
+        }
+        return;
+    }
+    sixel_loader_manager_clear_chain(manager);
+    if (object->factory != NULL && object->factory->vtbl != NULL &&
+        object->factory->vtbl->unref != NULL) {
+        object->factory->vtbl->unref(object->factory);
+    }
+    sixel_allocator_unref(object->allocator);
+    sixel_allocator_free(object->allocator, object);
+}
+
+static SIXELSTATUS
+sixel_loader_manager_build_chain_impl(
+    sixel_loader_manager_t *manager,
+    sixel_loader_manager_build_request_t const *request)
+{
+    struct sixel_loader_manager *object;
+    sixel_loader_entry_t const *entries;
+    sixel_loader_entry_t const **plan;
+    sixel_loader_entry_t const *entry;
+    sixel_loader_component_interface_t *loader;
+    SIXELSTATUS status;
+    size_t entry_count;
+    size_t plan_length;
+    size_t index;
+
+    object = NULL;
+    entries = NULL;
+    plan = NULL;
+    entry = NULL;
+    loader = NULL;
     status = SIXEL_FALSE;
-    node = NULL;
-    name = NULL;
-    enforce_predicate = 1;
-    worker_name[0] = '\0';
-    if (manager == NULL || chain == NULL || chunk == NULL) {
+    entry_count = 0u;
+    plan_length = 0u;
+    index = 0u;
+    if (manager == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    object = (struct sixel_loader_manager *)manager;
+    object->skip_predicate_gate = 0;
+
+    entry_count = loader_manager_get_entries(&entries);
+    if (entry_count == 0u || entries == NULL) {
         sixel_helper_set_additional_message(
-            "loader_manager_execute_chain: invalid argument.");
+            "sixel_loader_manager_build_chain: no loader entry.");
+        return SIXEL_LOGIC_ERROR;
+    }
+
+    plan = (sixel_loader_entry_t const **)sixel_allocator_malloc(
+        object->allocator,
+        entry_count * sizeof(*plan));
+    if (plan == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    plan_length = loader_manager_build_plan_from_resolution(
+        request != NULL ? request->resolution : NULL,
+        entries,
+        entry_count,
+        plan,
+        entry_count);
+    if (plan_length == 0u) {
+        sixel_allocator_free(object->allocator, plan);
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: no selectable loader.");
         return SIXEL_BAD_ARGUMENT;
     }
 
-    enforce_predicate = skip_predicate_gate ? 0 : 1;
-    node = loader_chain_head(chain);
-    while (node != NULL) {
-        name = sixel_loader_component_get_name(node->component);
-        if (!loader_manager_component_matches_chunk(manager,
-                                                    name,
-                                                    chunk,
-                                                    enforce_predicate)) {
-            node = node->next;
+    sixel_loader_manager_clear_chain(manager);
+    for (index = 0u; index < plan_length; ++index) {
+        entry = plan[index];
+        if (entry == NULL || entry->classid == NULL) {
             continue;
         }
-        if (fn_configure != NULL) {
-            status = fn_configure(node->component, configure_context);
+        status = object->factory->vtbl->create(object->factory,
+                                               entry->classid,
+                                               object->allocator,
+                                               (void **)&loader);
+        if (SIXEL_FAILED(status)) {
+            sixel_loader_manager_clear_chain(manager);
+            sixel_allocator_free(object->allocator, plan);
+            return status;
+        }
+        if (request != NULL) {
+            status = sixel_loader_manager_apply_component_options(loader,
+                                                                  request);
             if (SIXEL_FAILED(status)) {
+                sixel_loader_component_unref(loader);
+                loader = NULL;
+                sixel_loader_manager_clear_chain(manager);
+                sixel_allocator_free(object->allocator, plan);
                 return status;
             }
         }
-
-        if (fn_try != NULL) {
-            fn_try(name, trace_context);
+        status = sixel_loader_manager_append_chain(manager, loader);
+        sixel_loader_component_unref(loader);
+        loader = NULL;
+        if (SIXEL_FAILED(status)) {
+            sixel_loader_manager_clear_chain(manager);
+            sixel_allocator_free(object->allocator, plan);
+            return status;
         }
+    }
+    sixel_allocator_free(object->allocator, plan);
+    if (object->chain_count == 0u) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_build_chain: empty chain.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (request != NULL && request->skip_predicate_gate != 0) {
+        object->skip_predicate_gate = 1;
+    }
+    return SIXEL_OK;
+}
 
-        if (timeline_logger != NULL && timeline_job_seq != NULL) {
-            (void)sixel_compat_snprintf(worker_name,
-                                        sizeof(worker_name),
-                                        "loader/%s",
-                                        name != NULL ? name : "unknown");
-            loader_timeline_scope_begin(timeline_logger,
-                                        worker_name,
-                                        timeline_job_seq);
+static SIXELSTATUS
+sixel_loader_manager_load_impl(
+    sixel_loader_manager_t *manager,
+    sixel_chunk_t const *chunk,
+    sixel_loader_component_interface_t **selected_loader,
+    sixel_load_image_function fn_load,
+    void *load_context)
+{
+    struct sixel_loader_manager *object;
+    SIXELSTATUS status;
+    sixel_loader_component_interface_t *loader;
+    char const *name;
+    size_t index;
+    int enforce_predicate;
+
+    object = NULL;
+    status = SIXEL_FALSE;
+    loader = NULL;
+    name = NULL;
+    index = 0u;
+    enforce_predicate = 0;
+    if (selected_loader != NULL) {
+        *selected_loader = NULL;
+    }
+    if (manager == NULL || chunk == NULL || fn_load == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_load: invalid argument.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    object = (struct sixel_loader_manager *)manager;
+    if (object->chain == NULL || object->chain_count == 0u) {
+        sixel_helper_set_additional_message(
+            "sixel_loader_manager_load: chain is empty.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    enforce_predicate = object->skip_predicate_gate ? 0 : 1;
+    for (index = 0u; index < object->chain_count; ++index) {
+        loader = object->chain[index];
+        if (loader == NULL) {
+            continue;
         }
-        status = sixel_loader_component_load(node->component,
+        if (enforce_predicate &&
+            !sixel_loader_component_predicate(loader, chunk)) {
+            continue;
+        }
+        name = sixel_loader_component_get_name(loader);
+        loader_trace_try(name);
+        status = sixel_loader_component_load(loader,
                                              chunk,
                                              fn_load,
                                              load_context);
-        loader_timeline_scope_end();
-
-        if (fn_result != NULL) {
-            fn_result(name, status, trace_context);
+        loader_trace_result(name, status);
+        if (status == SIXEL_OK) {
+            if (selected_loader != NULL) {
+                *selected_loader = loader;
+            }
+            return SIXEL_OK;
         }
-
-        if (SIXEL_SUCCEEDED(status)) {
+        if (status != SIXEL_FALSE) {
             return status;
         }
-        node = node->next;
     }
 
-    return status;
+    return SIXEL_FALSE;
+}
+
+static sixel_loader_manager_vtbl_t const g_sixel_loader_manager_vtbl = {
+    sixel_loader_manager_ref_impl,
+    sixel_loader_manager_unref_impl,
+    sixel_loader_manager_build_chain_impl,
+    sixel_loader_manager_load_impl
+};
+
+SIXELSTATUS
+sixel_loader_manager_new(sixel_allocator_t *allocator,
+                         void **manager)
+{
+    struct sixel_loader_manager *object;
+    SIXELSTATUS status;
+
+    object = NULL;
+    status = SIXEL_FALSE;
+    if (allocator == NULL || manager == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *manager = NULL;
+
+    object = (struct sixel_loader_manager *)sixel_allocator_malloc(
+        allocator,
+        sizeof(*object));
+    if (object == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    object->base.vtbl = &g_sixel_loader_manager_vtbl;
+    object->ref = 1u;
+    object->allocator = allocator;
+    object->factory = NULL;
+    object->chain = NULL;
+    object->chain_count = 0u;
+    object->chain_capacity = 0u;
+    object->skip_predicate_gate = 0;
+    sixel_allocator_ref(allocator);
+
+    status = sixel_factory_get_default((void **)&object->factory);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_unref(object->allocator);
+        sixel_allocator_free(allocator, object);
+        return status;
+    }
+
+    *manager = &object->base;
+    return SIXEL_OK;
 }
 
 /* emacs Local Variables:      */

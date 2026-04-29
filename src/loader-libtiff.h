@@ -31,13 +31,14 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "loader-component.h"
+#include "loader.h"
 
 #if HAVE_LIBTIFF
+/* @classid loader/libtiff if HAVE_LIBTIFF */
 SIXELSTATUS
 sixel_loader_libtiff_new(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **ppcomponent);
 
 int loader_can_try_libtiff(sixel_chunk_t const *chunk);
 #endif

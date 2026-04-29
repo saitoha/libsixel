@@ -2183,17 +2183,26 @@ sixel_loader_librsvg_name(sixel_loader_component_t const *component)
     return "librsvg";
 }
 
+static int
+sixel_loader_librsvg_predicate(sixel_loader_component_t *component,
+                               sixel_chunk_t const *chunk)
+{
+    (void)component;
+    return loader_can_try_librsvg(chunk);
+}
+
 static sixel_loader_component_vtbl_t const g_sixel_loader_librsvg_vtbl = {
     sixel_loader_librsvg_ref,
     sixel_loader_librsvg_unref,
     sixel_loader_librsvg_setopt,
     sixel_loader_librsvg_load,
-    sixel_loader_librsvg_name
+    sixel_loader_librsvg_name,
+    sixel_loader_librsvg_predicate
 };
 
 SIXELSTATUS
 sixel_loader_librsvg_new(sixel_allocator_t *allocator,
-                         sixel_loader_component_t **ppcomponent)
+                         void **ppcomponent)
 {
     sixel_loader_librsvg_component_t *self;
 

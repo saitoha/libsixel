@@ -48,6 +48,7 @@ extern "C" {
  * - services/factory -> IFactory
  * - IFactory.create("lookup/...", allocator, &policy)
  * - IFactory.create("dither/...", allocator, &policy)
+ * - IFactory.create("loader/manager", allocator, &manager)
  * - IFactory.create("loader/<name>", allocator, &component)
  */
 
@@ -67,7 +68,8 @@ struct sixel_factory_interface {
 };
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_factory_get_default(sixel_factory_t **factory);
+/* @serviceid services/factory */
+sixel_factory_get_default(void **factory);
 
 #ifdef __cplusplus
 }

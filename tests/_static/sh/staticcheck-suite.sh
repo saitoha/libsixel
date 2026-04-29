@@ -321,12 +321,12 @@ run_case_tap "staticcheck-lookup-policy-no-backend-includes" \
     "$src_root/tests/_static/sh/staticcheck-lookup-policy-no-backend-includes.sh" \
     "$src_root" || fail_and_exit $?
 
-run_case_tap "staticcheck-lookup-classid-registry-sync" \
-    "$src_root/tests/_static/sh/staticcheck-lookup-classid-registry-sync.sh" \
+run_case_tap "staticcheck-factory-classid-registry-sync" \
+    "$src_root/tests/_static/sh/staticcheck-factory-classid-registry-sync.sh" \
     "$src_root" || fail_and_exit $?
 
-run_case_tap "staticcheck-dither-classid-registry-sync" \
-    "$src_root/tests/_static/sh/staticcheck-dither-classid-registry-sync.sh" \
+run_case_tap "staticcheck-serviceid-registry-sync" \
+    "$src_root/tests/_static/sh/staticcheck-serviceid-registry-sync.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-dither-policy-no-backend-dispatch" \

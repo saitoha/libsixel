@@ -12,15 +12,16 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sixel.h>
 
 #include "src/allocator.h"
 #include "src/chunk.h"
+#include "src/factory.h"
 #include "src/frame.h"
-#include "src/loader-factory.h"
 #include "src/status.h"
-#include "src/loader-component.h"
+#include "src/loader.h"
 
 #if defined(__clang__)
 # if __has_attribute(unused)
@@ -75,7 +76,7 @@ typedef struct loader_probe_callback_state {
 
 typedef SIXELSTATUS (*loader_component_new_fn)(
     sixel_allocator_t *,
-    sixel_loader_component_t **);
+    void **);
 
 typedef struct loader_component_case_expect {
     int pixelformat;
@@ -360,24 +361,40 @@ cleanup:
 static SIXEL_TEST_UNUSED SIXELSTATUS
 create_loader_component_by_name(char const *name,
                                 sixel_allocator_t *allocator,
-                                sixel_loader_component_t **ppcomponent)
+                                void **ppcomponent)
 {
     SIXELSTATUS status;
-    sixel_loader_factory_t *factory;
+    sixel_factory_t *factory;
+    size_t name_len;
+    char classid[128];
 
     status = SIXEL_FALSE;
     factory = NULL;
+    name_len = 0u;
+    classid[0] = '\0';
 
-    status = loader_factory_get_default(&factory);
+    if (name == NULL || *name == '\0') {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    name_len = strlen(name);
+    if (name_len + 8u > sizeof(classid)) {
+        sixel_helper_set_additional_message(
+            "create_loader_component_by_name: class id is too long.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    memcpy(classid, "loader/", 7u);
+    memcpy(classid + 7u, name, name_len + 1u);
+
+    status = sixel_factory_get_default((void **)&factory);
     if (SIXEL_FAILED(status)) {
         return status;
     }
 
-    status = loader_factory_create_component(factory,
-                                             name,
-                                             allocator,
-                                             ppcomponent);
-    loader_factory_unref(factory);
+    status = factory->vtbl->create(factory,
+                                   classid,
+                                   allocator,
+                                   ppcomponent);
+    factory->vtbl->unref(factory);
 
     return status;
 }
@@ -509,7 +526,7 @@ run_loader_component_case_with_options_full(
         goto cleanup;
     }
 
-    status = new_component(allocator, &component);
+    status = new_component(allocator, (void **)&component);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
         goto cleanup;

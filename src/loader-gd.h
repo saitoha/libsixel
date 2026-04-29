@@ -31,13 +31,14 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "loader-component.h"
+#include "loader.h"
 
 #if HAVE_GD
+/* @classid loader/gd if HAVE_GD */
 SIXELSTATUS
 sixel_loader_gd_new(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **ppcomponent);
 
 SIXEL_INTERNAL_API int
 loader_can_try_gd(sixel_chunk_t const *chunk);

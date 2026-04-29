@@ -7,7 +7,7 @@
 #if HAVE_JPEG
 static SIXELSTATUS
 new_libjpeg_component(sixel_allocator_t *allocator,
-                      sixel_loader_component_t **ppcomponent)
+                      void **ppcomponent)
 {
     return create_loader_component_by_name("libjpeg", allocator, ppcomponent);
 }

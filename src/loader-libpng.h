@@ -31,13 +31,14 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "loader-component.h"
+#include "loader.h"
 
 #if HAVE_LIBPNG
+/* @classid loader/libpng if HAVE_LIBPNG */
 SIXELSTATUS
 sixel_loader_libpng_new(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **ppcomponent);
 
 int loader_can_try_libpng(sixel_chunk_t const *chunk);
 #endif

@@ -207,7 +207,9 @@ run_gd_probe(char const *relative_path,
         goto error;
     }
 
-    status = create_loader_component_by_name("gd", allocator, &component);
+    status = create_loader_component_by_name("gd",
+                                             allocator,
+                                             (void **)&component);
     if (SIXEL_FAILED(status) || component == NULL) {
         fprintf(stderr, "gd component init failed\n");
         goto error;

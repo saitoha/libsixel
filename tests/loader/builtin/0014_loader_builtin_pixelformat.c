@@ -1012,7 +1012,7 @@ run_builtin_loader_probe_buffer_case(char const *label,
         return 1;
     }
 
-    status = new_builtin_component_for_pixelformat_test(allocator, &component);
+    status = new_builtin_component_for_pixelformat_test(allocator, (void **)&component);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
         goto cleanup;

@@ -28,16 +28,17 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "loader-component.h"
+#include "loader.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* @classid loader/libwebp if HAVE_WEBP */
 SIXELSTATUS
 sixel_loader_libwebp_new(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **ppcomponent);
 
 SIXELAPI int
 loader_can_try_libwebp(sixel_chunk_t const *chunk);

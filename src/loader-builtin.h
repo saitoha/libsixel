@@ -31,7 +31,7 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "loader-component.h"
+#include "loader.h"
 
 typedef struct sixel_builtin_load_with_builtin_args {
     sixel_chunk_t const       *pchunk;
@@ -50,10 +50,11 @@ typedef struct sixel_builtin_load_with_builtin_args {
     void                      *context;
 } sixel_builtin_load_with_builtin_args_t;
 
+/* @classid loader/builtin */
 SIXELSTATUS
 sixel_loader_builtin_new(
     sixel_allocator_t *allocator,
-    sixel_loader_component_t **ppcomponent);
+    void **ppcomponent);
 
 SIXELSTATUS
 sixel_builtin_load_with_builtin_impl(

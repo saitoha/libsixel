@@ -10,7 +10,7 @@
 #if HAVE_COREGRAPHICS
 static SIXELSTATUS
 new_coregraphics_component(sixel_allocator_t *allocator,
-                           sixel_loader_component_t **ppcomponent)
+                           void **ppcomponent)
 {
     return create_loader_component_by_name("coregraphics",
                                            allocator,
@@ -394,7 +394,7 @@ run_coregraphics_animation_case_with_callback_ex(
         goto cleanup;
     }
 
-    status = new_coregraphics_component(allocator, &component);
+    status = new_coregraphics_component(allocator, (void **)&component);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
         goto cleanup;
@@ -1490,7 +1490,7 @@ run_coregraphics_indexed_keycolor_policy_case(char const *label,
         goto cleanup;
     }
 
-    status = new_coregraphics_component(allocator, &component);
+    status = new_coregraphics_component(allocator, (void **)&component);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: component init failed (%d)\n", label, (int)status);
         goto cleanup;
@@ -2087,7 +2087,7 @@ run_coregraphics_cfindex_size_overflow_reject_test(void)
         goto cleanup;
     }
 
-    status = new_coregraphics_component(allocator, &component);
+    status = new_coregraphics_component(allocator, (void **)&component);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
                 "coregraphics: component init failed (%d)\n",
@@ -2179,7 +2179,7 @@ run_coregraphics_indexed_provider_copy_oom_reject_test(void)
         return 1;
     }
 
-    status = new_coregraphics_component(allocator, &component);
+    status = new_coregraphics_component(allocator, (void **)&component);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
                 "coregraphics: component init failed (%d)\n",
