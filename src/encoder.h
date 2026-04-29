@@ -26,13 +26,8 @@
 #define LIBSIXEL_ENCODER_H
 
 #include <stddef.h>
-#include <limits.h>
 
 #include "sixel_atomic.h"
-
-#if !defined(PATH_MAX)
-#define PATH_MAX 4096
-#endif
 
 struct sixel_frame;
 struct sixel_logger;
@@ -300,9 +295,6 @@ struct sixel_encoder {
     int capture_colorspace;
     int capture_ncolors;
     int capture_valid;
-    char last_loader_name[64];
-    char last_source_path[PATH_MAX];
-    size_t last_input_bytes;
     int output_is_png;
     int output_png_to_stdout;
     char *png_output_path;

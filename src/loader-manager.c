@@ -927,8 +927,7 @@ loader_manager_execute_chain(
     void *configure_context,
     sixel_loader_manager_trace_try_fn fn_try,
     sixel_loader_manager_trace_result_fn fn_result,
-    void *trace_context,
-    char const **selected_name)
+    void *trace_context)
 {
     SIXELSTATUS status;
     sixel_loader_chain_node_t const *node;
@@ -941,9 +940,6 @@ loader_manager_execute_chain(
     name = NULL;
     enforce_predicate = 1;
     worker_name[0] = '\0';
-    if (selected_name != NULL) {
-        *selected_name = NULL;
-    }
     if (manager == NULL || chain == NULL || chunk == NULL) {
         sixel_helper_set_additional_message(
             "loader_manager_execute_chain: invalid argument.");
@@ -992,9 +988,6 @@ loader_manager_execute_chain(
         }
 
         if (SIXEL_SUCCEEDED(status)) {
-            if (selected_name != NULL) {
-                *selected_name = name;
-            }
             return status;
         }
         node = node->next;

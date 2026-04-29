@@ -8456,9 +8456,6 @@ sixel_encoder_new(
     (*ppencoder)->capture_colorspace    = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->capture_ncolors       = 0;
     (*ppencoder)->capture_valid         = 0;
-    (*ppencoder)->last_loader_name[0]   = '\0';
-    (*ppencoder)->last_source_path[0]   = '\0';
-    (*ppencoder)->last_input_bytes      = 0u;
     (*ppencoder)->output_is_png         = 0;
     (*ppencoder)->output_png_to_stdout  = 0;
     (*ppencoder)->png_output_path       = NULL;
@@ -14757,10 +14754,6 @@ sixel_encoder_encode(
         }
     }
 
-    encoder->last_loader_name[0] = '\0';
-    encoder->last_source_path[0] = '\0';
-    encoder->last_input_bytes = 0u;
-
     /* if required color is not set, set the max value */
     if (encoder->reqcolors == (-1)) {
         encoder->reqcolors = SIXEL_PALETTE_MAX;
@@ -14909,24 +14902,6 @@ reload:
                                     : "(null)");
         goto load_end;
     }
-    encoder->last_input_bytes = sixel_loader_get_last_input_bytes(loader);
-    if (sixel_loader_get_last_success_name(loader) != NULL) {
-        (void)snprintf(encoder->last_loader_name,
-                       sizeof(encoder->last_loader_name),
-                       "%s",
-                       sixel_loader_get_last_success_name(loader));
-    } else {
-        encoder->last_loader_name[0] = '\0';
-    }
-    if (sixel_loader_get_last_source_path(loader) != NULL) {
-        (void)snprintf(encoder->last_source_path,
-                       sizeof(encoder->last_source_path),
-                       "%s",
-                       sixel_loader_get_last_source_path(loader));
-    } else {
-        encoder->last_source_path[0] = '\0';
-    }
-
 load_end:
     sixel_loader_unref(loader);
     loader = NULL;

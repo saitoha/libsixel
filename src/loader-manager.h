@@ -136,8 +136,7 @@ loader_manager_execute_chain(
     void *configure_context,
     sixel_loader_manager_trace_try_fn fn_try,
     sixel_loader_manager_trace_result_fn fn_result,
-    void *trace_context,
-    char const **selected_name);
+    void *trace_context);
 
 #endif /* LIBSIXEL_LOADER_MANAGER_H */
 

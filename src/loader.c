@@ -158,9 +158,6 @@ struct sixel_loader {
     char *loader_order;
     sixel_option_argument_list_resolution_t loader_order_resolution;
     sixel_allocator_t *allocator;
-    char last_loader_name[64];
-    char last_source_path[PATH_MAX];
-    size_t last_input_bytes;
     int callback_failed;
     int log_loader_finished;
     char log_path[PATH_MAX];
@@ -1623,9 +1620,6 @@ sixel_loader_new(
     loader->loader_order = NULL;
     sixel_option_init_argument_list_resolution(&loader->loader_order_resolution);
     loader->allocator = local_allocator;
-    loader->last_loader_name[0] = '\0';
-    loader->last_source_path[0] = '\0';
-    loader->last_input_bytes = 0u;
     loader->callback_failed = 0;
     loader->log_loader_finished = 0;
     loader->log_path[0] = '\0';
@@ -1853,33 +1847,6 @@ end0:
     return status;
 }
 
-SIXELAPI char const *
-sixel_loader_get_last_success_name(sixel_loader_t const *loader)
-{
-    if (loader == NULL || loader->last_loader_name[0] == '\0') {
-        return NULL;
-    }
-    return loader->last_loader_name;
-}
-
-SIXELAPI char const *
-sixel_loader_get_last_source_path(sixel_loader_t const *loader)
-{
-    if (loader == NULL || loader->last_source_path[0] == '\0') {
-        return NULL;
-    }
-    return loader->last_source_path;
-}
-
-SIXELAPI size_t
-sixel_loader_get_last_input_bytes(sixel_loader_t const *loader)
-{
-    if (loader == NULL) {
-        return 0u;
-    }
-    return loader->last_input_bytes;
-}
-
 int
 sixel_loader_get_start_frame_no(sixel_loader_t const *loader,
                                 int *start_frame_no)
@@ -1998,7 +1965,6 @@ sixel_loader_load_file(
     char const *order_override;
     char const *env_order;
     sixel_option_argument_list_resolution_t const *active_order_resolution;
-    char const *selected_name;
     sixel_loader_callback_state_t callback_state;
     sixel_loader_component_option_context_t option_context;
     sixel_loader_manager_trace_context_t trace_context;
@@ -2025,7 +1991,6 @@ sixel_loader_load_file(
     order_override = NULL;
     env_order = NULL;
     active_order_resolution = NULL;
-    selected_name = NULL;
     osc11_timeout_env = NULL;
     osc11_timeout_ms = SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
     osc11_bgcolor_applied = 0;
@@ -2286,8 +2251,7 @@ sixel_loader_load_file(
         &option_context,
         loader_manager_trace_try_callback,
         loader_manager_trace_result_callback,
-        &trace_context,
-        &selected_name);
+        &trace_context);
     loader_timeline_select_phase_finish(
         loader,
         "loader/manager",
@@ -2308,28 +2272,6 @@ sixel_loader_load_file(
             }
         }
         goto end;
-    }
-
-    if (selected_name != NULL) {
-        (void)sixel_compat_snprintf(loader->last_loader_name,
-                                    sizeof(loader->last_loader_name),
-                                    "%s",
-                                    selected_name);
-    } else {
-        loader->last_loader_name[0] = '\0';
-    }
-    loader->last_input_bytes = pchunk->size;
-    if (pchunk->source_path != NULL) {
-        size_t path_len;
-
-        path_len = strlen(pchunk->source_path);
-        if (path_len >= sizeof(loader->last_source_path)) {
-            path_len = sizeof(loader->last_source_path) - 1u;
-        }
-        memcpy(loader->last_source_path, pchunk->source_path, path_len);
-        loader->last_source_path[path_len] = '\0';
-    } else {
-        loader->last_source_path[0] = '\0';
     }
 
 end:
