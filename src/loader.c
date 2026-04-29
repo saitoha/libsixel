@@ -250,10 +250,6 @@ end:
 }
 
 
-#if HAVE_POSIX_SPAWNP
-extern char **environ;
-#endif
-
 static char *
 loader_strdup(char const *text, sixel_allocator_t *allocator)
 {
