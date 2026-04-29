@@ -26,7 +26,7 @@ trace_log=''
 suffix=nonpixel_nopixel_tysh_enginedata_fillcolor_stylesheet_values_named_hsb
     input_psd="${base_dir}/snake16_psb_mode7_cmyk32_missing_composite_multilayer_${suffix}_valid_icc_profile.psd"
     command_status=0
-    trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Lbuiltin:cms=auto! \
+    trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms=auto! \
         "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
     test "${command_status}" -eq 0 || {

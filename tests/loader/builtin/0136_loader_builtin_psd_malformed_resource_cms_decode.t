@@ -14,7 +14,7 @@ set -v
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_bad_resource_signature.psd"
 
-trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -L builtin:cms_engine=auto! \
+trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=auto! \
     "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in

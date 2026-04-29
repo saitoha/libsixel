@@ -85,7 +85,6 @@
 # define SIXEL_LOADER_TLS_AVAILABLE 0
 #endif
 
-static int loader_trace_enabled;
 static int thumbnailer_default_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
 static int thumbnailer_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
 static int thumbnailer_size_hint_initialized;
@@ -1203,14 +1202,6 @@ loader_thumbnailer_get_default_size_hint(void)
 }
 
 SIXEL_INTERNAL_API void
-sixel_helper_set_loader_trace(int enable)
-{
-    loader_background_lock();
-    loader_trace_enabled = enable ? 1 : 0;
-    loader_background_unlock();
-}
-
-SIXEL_INTERNAL_API void
 sixel_helper_set_thumbnail_size_hint(int size)
 {
     loader_thumbnailer_initialize_size_hint();
@@ -1228,13 +1219,8 @@ void
 loader_trace_message(char const *format, ...)
 {
     va_list args;
-    int trace_enabled;
 
-    loader_background_lock();
-    trace_enabled = loader_trace_enabled;
-    loader_background_unlock();
-
-    if (!trace_enabled) {
+    if (!loader_trace_is_enabled()) {
         return;
     }
 
@@ -1344,47 +1330,108 @@ sixel_trace_topic_message(
 void
 loader_trace_try(char const *name)
 {
-    int trace_enabled;
+    char const *loader_name;
 
-    loader_background_lock();
-    trace_enabled = loader_trace_enabled;
-    loader_background_unlock();
-
-    if (trace_enabled) {
-        fprintf(stderr, "libsixel: trying %s loader\n", name);
+    if (loader_trace_is_enabled()) {
+        loader_name = name != NULL && name[0] != '\0' ? name : "unknown";
+        fprintf(stderr, "libsixel: trying %s loader\n", loader_name);
+        fprintf(stderr,
+                "LSXLOAD1|event=try|loader=%s|code=L_TRY\n",
+                loader_name);
     }
+}
+
+static char const *
+loader_trace_status_code(SIXELSTATUS status)
+{
+    switch (status) {
+    case SIXEL_OK:
+        return "L_OK";
+    case SIXEL_INTERRUPTED:
+        return "L_INTERRUPTED";
+    case SIXEL_BAD_ALLOCATION:
+        return "L_ERR_BAD_ALLOCATION";
+    case SIXEL_BAD_ARGUMENT:
+        return "L_ERR_BAD_ARGUMENT";
+    case SIXEL_BAD_INPUT:
+        return "L_ERR_BAD_INPUT";
+    case SIXEL_BAD_INTEGER_OVERFLOW:
+        return "L_ERR_BAD_INTEGER_OVERFLOW";
+    case SIXEL_BAD_FILE_PATH:
+        return "L_ERR_BAD_FILE_PATH";
+    case SIXEL_BAD_CLIPBOARD:
+        return "L_ERR_BAD_CLIPBOARD";
+    case SIXEL_LOADER_FAILED:
+        return "L_ERR_LOADER_FAILED";
+    case SIXEL_NOT_IMPLEMENTED:
+        return "L_ERR_NOT_IMPLEMENTED";
+    case SIXEL_FALSE:
+        return "L_ERR_FALSE";
+    case SIXEL_RUNTIME_ERROR:
+        return "L_ERR_RUNTIME";
+    case SIXEL_LOGIC_ERROR:
+        return "L_ERR_LOGIC";
+    case SIXEL_FEATURE_ERROR:
+        return "L_ERR_FEATURE";
+    case SIXEL_LIBC_ERROR:
+        return "L_ERR_LIBC";
+    case SIXEL_CURL_ERROR:
+        return "L_ERR_CURL";
+    case SIXEL_JPEG_ERROR:
+        return "L_ERR_JPEG";
+    case SIXEL_PNG_ERROR:
+        return "L_ERR_PNG";
+    case SIXEL_WEBP_ERROR:
+        return "L_ERR_WEBP";
+    case SIXEL_TIFF_ERROR:
+        return "L_ERR_TIFF";
+    case SIXEL_GDK_ERROR:
+        return "L_ERR_GDK";
+    case SIXEL_GD_ERROR:
+        return "L_ERR_GD";
+    case SIXEL_STBI_ERROR:
+        return "L_ERR_STBI";
+    case SIXEL_STBIW_ERROR:
+        return "L_ERR_STBIW";
+    case SIXEL_COM_ERROR:
+        return "L_ERR_COM";
+    case SIXEL_WIC_ERROR:
+        return "L_ERR_WIC";
+    default:
+        break;
+    }
+
+    return "L_ERR_UNKNOWN";
 }
 
 void
 loader_trace_result(char const *name, SIXELSTATUS status)
 {
-    int trace_enabled;
+    char const *event;
+    char const *loader_name;
 
-    loader_background_lock();
-    trace_enabled = loader_trace_enabled;
-    loader_background_unlock();
-
-    if (!trace_enabled) {
+    if (!loader_trace_is_enabled()) {
         return;
     }
+    loader_name = name != NULL && name[0] != '\0' ? name : "unknown";
     if (SIXEL_SUCCEEDED(status)) {
-        fprintf(stderr, "libsixel: loader %s succeeded\n", name);
+        fprintf(stderr, "libsixel: loader %s succeeded\n", loader_name);
     } else {
         fprintf(stderr, "libsixel: loader %s failed (%s)\n",
-                name, sixel_helper_format_error(status));
+                loader_name, sixel_helper_format_error(status));
     }
+    event = SIXEL_SUCCEEDED(status) ? "ok" : "fail";
+    fprintf(stderr,
+            "LSXLOAD1|event=%s|loader=%s|code=%s\n",
+            event,
+            loader_name,
+            loader_trace_status_code(status));
 }
 
 int
 loader_trace_is_enabled(void)
 {
-    int trace_enabled;
-
-    loader_background_lock();
-    trace_enabled = loader_trace_enabled;
-    loader_background_unlock();
-
-    return trace_enabled;
+    return sixel_trace_topic_is_enabled("loader");
 }
 
 void

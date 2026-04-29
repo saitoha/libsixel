@@ -20,15 +20,15 @@ bilinear_out=""
 nearest_rgb=0
 bilinear_rgb=0
 
-nearest_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -v -Lbuiltin:cms_engine=none! -d fs:scan=raster \
+nearest_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
+    -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -w7 -h3 -r nearest "${input_png}" 2>&1 >/dev/null) || {
     echo "not ok 1 - nearest scaled render failed"
     exit 0
 }
 
-bilinear_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -v -Lbuiltin:cms_engine=none! -d fs:scan=raster \
+bilinear_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
+    -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -w7 -h3 -r bilinear "${input_png}" 2>&1 >/dev/null) || {
     echo "not ok 1 - bilinear scaled render failed"
     exit 0

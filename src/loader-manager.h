@@ -28,6 +28,7 @@
 #include <sixel.h>
 
 #include "chunk.h"
+#include "logger.h"
 #include "loader.h"
 #include "options.h"
 
@@ -87,6 +88,9 @@ typedef struct sixel_loader_manager_build_request {
     int has_start_frame_no;
     int start_frame_no;
     sixel_loader_suboptions_t const *suboptions;
+    sixel_logger_t *timeline_logger;
+    int *timeline_job_seq;
+    sixel_loader_t *timeline_loader;
 } sixel_loader_manager_build_request_t;
 
 typedef struct sixel_loader_manager_vtbl {

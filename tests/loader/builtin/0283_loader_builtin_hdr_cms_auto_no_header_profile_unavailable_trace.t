@@ -16,7 +16,7 @@ input_hdr="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal.hdr"
 trace_status=0
 trace_log=''
 
-trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Lbuiltin:cms_engine=auto! \
+trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! \
     "${input_hdr}" -o /dev/null 2>&1) || trace_status=$?
 
 test "${trace_status}" -eq 0 || {

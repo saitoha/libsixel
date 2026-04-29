@@ -48,8 +48,8 @@ test "${msg#*GD error*}" = "${msg}" || {
     exit 0
 }
 
-trace_log=$(set +xv; SIXEL_LOADER_TRACE=1 ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" -v -L gd,builtin! -ldisable - <"${input_tga}" \
+trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" -L gd,builtin! -ldisable - <"${input_tga}" \
     2>&1 >/dev/null) || {
     echo "not ok 1 - gd,builtin fallback failed for stdin TGA"
     exit 0

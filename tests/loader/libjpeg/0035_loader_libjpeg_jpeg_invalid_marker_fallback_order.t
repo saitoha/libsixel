@@ -13,14 +13,14 @@ test "${HAVE_JPEG-}" = 1 || {
     exit 0
 }
 
-
 echo "1..1"
 set -v
 
 input_jpeg="${TOP_SRCDIR}/tests/data/corrupted/invalid_marker.jpg"
 
 set +e
-trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -L libjpeg,builtin! \
+trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" -L libjpeg,builtin! \
     "${input_jpeg}" -o /dev/null 2>&1)
 run_status=$?
 set -e
@@ -30,41 +30,23 @@ test "${run_status}" -ne 0 || {
     exit 0
 }
 
-case "${trace_log}" in
-    *"libsixel: trying libjpeg loader"*)
-        ;;
-    *)
-        echo "not ok" 1 - "libjpeg loader was not attempted first"
-        exit 0
-        ;;
-esac
+after_libjpeg=${trace_log#*LSXLOAD1|event=fail|loader=libjpeg|code=L_ERR_BAD_INPUT*}
+test "${after_libjpeg}" != "${trace_log}" || {
+    echo "not ok" 1 - "libjpeg failure code was not reported"
+    exit 0
+}
 
-case "${trace_log}" in
-    *"libsixel: loader libjpeg failed ("*)
-        ;;
-    *)
-        echo "not ok" 1 - "libjpeg decode failure was not reported"
-        exit 0
-        ;;
-esac
+after_builtin=${after_libjpeg#*LSXLOAD1|event=try|loader=builtin|code=L_TRY*}
+test "${after_builtin}" != "${after_libjpeg}" || {
+    echo "not ok" 1 - "builtin loader was not attempted after libjpeg"
+    exit 0
+}
 
-case "${trace_log}" in
-    *"libsixel: trying builtin loader"*)
-        ;;
-    *)
-        echo "not ok" 1 - "fallback to builtin loader did not occur"
-        exit 0
-        ;;
-esac
-
-case "${trace_log}" in
-    *"libsixel: loader builtin failed ("*)
-        ;;
-    *)
-        echo "not ok" 1 - "builtin loader failure was not reported after fallback"
-        exit 0
-        ;;
-esac
+test "${after_builtin#*LSXLOAD1|event=fail|loader=builtin|code=*}" \
+    != "${after_builtin}" || {
+    echo "not ok" 1 - "builtin failure code was not reported after libjpeg"
+    exit 0
+}
 
 echo "ok" 1 - "invalid-marker JPEG follows libjpeg-to-builtin fallback order"
 exit 0

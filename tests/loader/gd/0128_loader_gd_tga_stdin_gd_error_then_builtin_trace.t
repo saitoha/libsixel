@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: stdin TGA GD error still allows fallback chain progress.
+# TAP test: stdin TGA gd failure still allows fallback chain progress.
 
 set -eux
 
@@ -25,19 +25,21 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! -ldisable - \
 }
 
 trace_log=$(set +xv; head -c 32 "${input_tga}" | \
-    SIXEL_LOADER_TRACE=1 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
+    SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L gd,builtin! -ldisable - 2>&1 >/dev/null) && {
     printf "ok 1 # SKIP truncated stdin TGA was accepted in this runtime\n"
     exit 0
 }
 
-test "${trace_log#*libsixel: trying gd loader*}" != "${trace_log}" || {
-    echo "not ok 1 - gd loader was not attempted for truncated stdin TGA"
+after_gd=${trace_log#*LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD*}
+test "${after_gd}" != "${trace_log}" || {
+    echo "not ok 1 - gd failure code was not reported"
     exit 0
 }
 
-test "${trace_log#*libsixel: trying builtin loader*}" != "${trace_log}" || {
-    echo "not ok 1 - builtin loader was not attempted after gd error"
+test "${after_gd#*LSXLOAD1|event=try|loader=builtin|code=L_TRY*}" \
+    != "${after_gd}" || {
+    echo "not ok 1 - builtin loader was not attempted after gd failure"
     exit 0
 }
 

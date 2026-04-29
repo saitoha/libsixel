@@ -16,7 +16,7 @@ input_bmp="${TOP_SRCDIR}/tests/data/inputs/formats/bmp-v5-embedded-icc-rgba-cmyk
 trace_log=''
 command_status=0
 
-trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Lbuiltin:cms=auto! \
+trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms=auto! \
     "${input_bmp}" -o /dev/null 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {

@@ -18,43 +18,26 @@ test "${HAVE_JPEG12_API-}" = 1 && {
     exit 0
 }
 
-
 echo "1..1"
 set -v
 
 input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-12bit.jpg"
-output_sixel="${ARTIFACT_LOCAL_DIR}/snake-jpeg-12bit-fallback.six"
-test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -L libjpeg,builtin! \
-    "${input_jpeg}" -o "${output_sixel}" 2>&1 || true)
+trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" -L libjpeg,builtin! \
+    "${input_jpeg}" -o /dev/null 2>&1 || true)
 
-case "${trace_log}" in
-    *"libsixel: trying libjpeg loader"*)
-        ;;
-    *)
-        echo "not ok" 1 - "libjpeg loader was not attempted first"
-        exit 0
-        ;;
-esac
+after_libjpeg=${trace_log#*LSXLOAD1|event=fail|loader=libjpeg|code=L_ERR_BAD_INPUT*}
+test "${after_libjpeg}" != "${trace_log}" || {
+    echo "not ok" 1 - "libjpeg failure code was not reported"
+    exit 0
+}
 
-case "${trace_log}" in
-    *"libsixel: loader libjpeg failed ("*)
-        ;;
-    *)
-        echo "not ok" 1 - "libjpeg failure was not reported"
-        exit 0
-        ;;
-esac
-
-case "${trace_log}" in
-    *"libsixel: trying builtin loader"*)
-        ;;
-    *)
-        echo "not ok" 1 - "fallback to builtin loader did not occur"
-        exit 0
-        ;;
-esac
+test "${after_libjpeg#*LSXLOAD1|event=try|loader=builtin|code=L_TRY*}" \
+    != "${after_libjpeg}" || {
+    echo "not ok" 1 - "builtin loader was not attempted after libjpeg"
+    exit 0
+}
 
 echo "ok" 1 - "12-bit input falls back after libjpeg failure when API is unavailable"
 exit 0

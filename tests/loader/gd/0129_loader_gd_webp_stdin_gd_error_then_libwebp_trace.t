@@ -30,7 +30,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable - \
 }
 
 trace_log=$(set +xv; head -c 32 "${input_webp}" | \
-    SIXEL_LOADER_TRACE=1 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
+    SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     -L gd,libwebp! -ldisable - 2>&1 >/dev/null) && {
     printf "ok 1 # SKIP truncated stdin WebP was accepted in this runtime\n"
     exit 0

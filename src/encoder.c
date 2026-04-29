@@ -6371,7 +6371,6 @@ palette_cleanup:
         encoder->lut_policy_shared_instance;
     callback_context.prefer_float32 = encoder->prefer_float32;
 
-    sixel_helper_set_loader_trace(encoder->verbose);
     sixel_helper_set_thumbnail_size_hint(
         sixel_encoder_thumbnail_hint(encoder));
     status = sixel_loader_new(&loader, encoder->allocator);
@@ -12731,7 +12730,6 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_VERBOSE:  /* v */
         encoder->verbose = 1;
-        sixel_helper_set_loader_trace(1);
         break;
     case SIXEL_OPTFLAG_LOADERS:  /* L */
         if (encoder->loader_order != NULL) {
@@ -14786,7 +14784,6 @@ sixel_encoder_encode(
 
 reload:
 
-    sixel_helper_set_loader_trace(encoder->verbose);
     sixel_helper_set_thumbnail_size_hint(
         sixel_encoder_thumbnail_hint(encoder));
 

@@ -16,8 +16,8 @@ test "${HAVE_DECL_GDIMAGECREATEFROMPNGPTR-}" = 1 || {
 echo "1..1"
 set -v
 
-trace_log=$(set +xv; SIXEL_LOADER_TRACE=1 ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" -v -L gd,builtin! -ldisable - \
+trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" -L gd,builtin! -ldisable - \
     <"${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     2>&1 >/dev/null) || {
     echo "not ok" 1 - "gd,builtin APNG stdin conversion failed"

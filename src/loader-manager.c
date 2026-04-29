@@ -58,6 +58,9 @@ struct sixel_loader_manager {
     size_t chain_count;
     size_t chain_capacity;
     int skip_predicate_gate;
+    sixel_logger_t *timeline_logger;
+    int *timeline_job_seq;
+    sixel_loader_t *timeline_loader;
 };
 
 static sixel_loader_entry_t const g_sixel_loader_entries[] = {
@@ -1128,6 +1131,49 @@ sixel_loader_manager_apply_component_options(
 }
 
 static void
+sixel_loader_manager_format_worker_name(char *worker,
+                                        size_t worker_size,
+                                        char const *name)
+{
+    char const *backend_name;
+
+    backend_name = NULL;
+    if (worker == NULL || worker_size == 0u) {
+        return;
+    }
+
+    backend_name = name != NULL && name[0] != '\0' ? name : "unknown";
+    (void)sixel_compat_snprintf(worker,
+                                worker_size,
+                                "loader/%s",
+                                backend_name);
+}
+
+static int
+sixel_loader_manager_status_allows_fallback(SIXELSTATUS status)
+{
+    switch (status) {
+    case SIXEL_FALSE:
+    case SIXEL_BAD_INPUT:
+    case SIXEL_JPEG_ERROR:
+    case SIXEL_PNG_ERROR:
+    case SIXEL_WEBP_ERROR:
+    case SIXEL_TIFF_ERROR:
+    case SIXEL_GDK_ERROR:
+    case SIXEL_GD_ERROR:
+    case SIXEL_STBI_ERROR:
+    case SIXEL_STBIW_ERROR:
+    case SIXEL_COM_ERROR:
+    case SIXEL_WIC_ERROR:
+        return 1;
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+static void
 sixel_loader_manager_ref_impl(sixel_loader_manager_t *manager)
 {
     struct sixel_loader_manager *object;
@@ -1197,6 +1243,12 @@ sixel_loader_manager_build_chain_impl(
     }
     object = (struct sixel_loader_manager *)manager;
     object->skip_predicate_gate = 0;
+    object->timeline_logger = request != NULL
+        ? request->timeline_logger : NULL;
+    object->timeline_job_seq = request != NULL
+        ? request->timeline_job_seq : NULL;
+    object->timeline_loader = request != NULL
+        ? request->timeline_loader : NULL;
 
     entry_count = loader_manager_get_entries(&entries);
     if (entry_count == 0u || entries == NULL) {
@@ -1283,6 +1335,7 @@ sixel_loader_manager_load_impl(
     SIXELSTATUS status;
     sixel_loader_component_interface_t *loader;
     char const *name;
+    char worker[96];
     size_t index;
     int enforce_predicate;
 
@@ -1290,6 +1343,7 @@ sixel_loader_manager_load_impl(
     status = SIXEL_FALSE;
     loader = NULL;
     name = NULL;
+    worker[0] = '\0';
     index = 0u;
     enforce_predicate = 0;
     if (selected_loader != NULL) {
@@ -1317,11 +1371,24 @@ sixel_loader_manager_load_impl(
             continue;
         }
         name = sixel_loader_component_get_name(loader);
+        sixel_loader_manager_format_worker_name(worker,
+                                                sizeof(worker),
+                                                name);
         loader_trace_try(name);
+        sixel_loader_timeline_candidate_select_start(
+            object->timeline_loader,
+            worker);
+        loader_timeline_scope_begin(object->timeline_logger,
+                                    worker,
+                                    object->timeline_job_seq);
         status = sixel_loader_component_load(loader,
                                              chunk,
                                              fn_load,
                                              load_context);
+        loader_timeline_scope_end();
+        sixel_loader_timeline_candidate_select_finish(
+            object->timeline_loader,
+            status);
         loader_trace_result(name, status);
         if (status == SIXEL_OK) {
             if (selected_loader != NULL) {
@@ -1329,12 +1396,18 @@ sixel_loader_manager_load_impl(
             }
             return SIXEL_OK;
         }
-        if (status != SIXEL_FALSE) {
+        if (SIXEL_SUCCEEDED(status) ||
+                !sixel_loader_manager_status_allows_fallback(status)) {
             return status;
         }
+        /*
+         * A failed decode rejects only the current candidate.  The next
+         * backend may still be able to parse the same byte stream, especially
+         * when a forced order probes an optional external decoder first.
+         */
     }
 
-    return SIXEL_FALSE;
+    return status;
 }
 
 static sixel_loader_manager_vtbl_t const g_sixel_loader_manager_vtbl = {
@@ -1372,6 +1445,9 @@ sixel_loader_manager_new(sixel_allocator_t *allocator,
     object->chain_count = 0u;
     object->chain_capacity = 0u;
     object->skip_predicate_gate = 0;
+    object->timeline_logger = NULL;
+    object->timeline_job_seq = NULL;
+    object->timeline_loader = NULL;
     sixel_allocator_ref(allocator);
 
     status = sixel_factory_get_default((void **)&object->factory);

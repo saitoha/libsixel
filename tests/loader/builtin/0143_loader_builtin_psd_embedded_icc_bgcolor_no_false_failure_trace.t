@@ -14,7 +14,7 @@ set -v
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-esrgb.psd"
 
-trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -L builtin:cms_engine=auto! \
+trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=auto! \
     -B "#112233" "${input_psd}" -o /dev/null 2>&1 || true)
 
 case "${trace_log}" in

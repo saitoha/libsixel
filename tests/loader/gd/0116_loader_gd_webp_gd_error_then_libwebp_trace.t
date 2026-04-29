@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test for WebP chain: gd reports GD error then libwebp is attempted.
+# TAP test for WebP chain: gd failure reaches libwebp.
 
 set -eux
 
@@ -30,29 +30,30 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -ldisable \
 }
 
 trace_log=$(set +xv; head -c 64 "${input_webp}" | \
-    SIXEL_LOADER_TRACE=1 ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" -v -L gd,libwebp! -ldisable - \
+    SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" -L gd,libwebp! -ldisable - \
     2>&1 >/dev/null) && {
     echo "not ok 1 - gd,libwebp unexpectedly accepted truncated WebP"
     exit 0
 }
 
-test "${trace_log#*libsixel: trying gd loader*}" != "${trace_log}" || {
-    echo "not ok 1 - gd loader was not attempted"
+after_gd=${trace_log#*LSXLOAD1|event=fail|loader=gd|code=L_ERR_GD*}
+test "${after_gd}" != "${trace_log}" || {
+    echo "not ok 1 - gd failure code was not reported"
     exit 0
 }
 
-test "${trace_log#*loader gd failed (GD error)*}" != "${trace_log}" || {
-    echo "not ok 1 - gd failure was not reported as GD error"
-    printf '%s\n' "${trace_log}" >&2
+after_libwebp=${after_gd#*LSXLOAD1|event=try|loader=libwebp|code=L_TRY*}
+test "${after_libwebp}" != "${after_gd}" || {
+    echo "not ok 1 - libwebp loader was not attempted after gd failure"
     exit 0
 }
 
-test "${trace_log#*libsixel: trying libwebp loader*}" != "${trace_log}" || {
-    echo "not ok 1 - libwebp fallback was not attempted"
-    printf '%s\n' "${trace_log}" >&2
+test "${after_libwebp#*LSXLOAD1|event=fail|loader=libwebp|code=*}" \
+    != "${after_libwebp}" || {
+    echo "not ok 1 - libwebp failure code was not reported"
     exit 0
 }
 
-echo "ok 1 - truncated WebP shows gd GD-error then libwebp fallback"
+echo "ok 1 - truncated WebP reaches libwebp after gd failure"
 exit 0

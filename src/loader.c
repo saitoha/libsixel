@@ -153,6 +153,9 @@ struct sixel_loader {
     int log_timeline_job_seq;
     int timeline_manager_select_job;
     int timeline_manager_select_open;
+    int timeline_candidate_select_job;
+    int timeline_candidate_select_open;
+    char timeline_candidate_worker[96];
 };
 
 typedef struct sixel_loader_callback_state {
@@ -667,15 +670,31 @@ loader_timeline_select_phase_finish(
 static void
 loader_timeline_select_suspend_for_callback(
     sixel_loader_t *loader,
-    int *resume_manager)
+    int *resume_manager,
+    int *resume_candidate)
 {
     if (resume_manager != NULL) {
         *resume_manager = 0;
+    }
+    if (resume_candidate != NULL) {
+        *resume_candidate = 0;
     }
     if (loader == NULL) {
         return;
     }
 
+    if (loader->timeline_candidate_select_open != 0 &&
+            loader->timeline_candidate_worker[0] != '\0') {
+        loader_timeline_select_phase_finish(
+            loader,
+            loader->timeline_candidate_worker,
+            &loader->timeline_candidate_select_job,
+            &loader->timeline_candidate_select_open,
+            "finish");
+        if (resume_candidate != NULL) {
+            *resume_candidate = 1;
+        }
+    }
     if (loader->timeline_manager_select_open != 0) {
         loader_timeline_select_phase_finish(
             loader,
@@ -718,6 +737,7 @@ static void
 loader_timeline_select_resume_after_callback(
     sixel_loader_t *loader,
     int resume_manager,
+    int resume_candidate,
     SIXELSTATUS callback_status)
 {
     if (loader == NULL) {
@@ -725,6 +745,12 @@ loader_timeline_select_resume_after_callback(
     }
 
     if (SIXEL_FAILED(callback_status)) {
+        if (resume_candidate != 0 &&
+                loader->timeline_candidate_worker[0] != '\0') {
+            loader_timeline_select_emit_immediate_failure(
+                loader,
+                loader->timeline_candidate_worker);
+        }
         if (resume_manager != 0) {
             loader_timeline_select_emit_immediate_failure(
                 loader,
@@ -740,6 +766,14 @@ loader_timeline_select_resume_after_callback(
             &loader->timeline_manager_select_job,
             &loader->timeline_manager_select_open);
     }
+    if (resume_candidate != 0 &&
+            loader->timeline_candidate_worker[0] != '\0') {
+        loader_timeline_select_phase_start(
+            loader,
+            loader->timeline_candidate_worker,
+            &loader->timeline_candidate_select_job,
+            &loader->timeline_candidate_select_open);
+    }
 }
 
 static SIXELSTATUS
@@ -748,9 +782,11 @@ loader_callback_trampoline(sixel_frame_t *frame, void *data)
     sixel_loader_callback_state_t *state;
     SIXELSTATUS status;
     int resume_manager_select;
+    int resume_candidate_select;
 
     state = (sixel_loader_callback_state_t *)data;
     resume_manager_select = 0;
+    resume_candidate_select = 0;
     if (state == NULL || state->fn == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -761,12 +797,14 @@ loader_callback_trampoline(sixel_frame_t *frame, void *data)
          * while control is in the downstream frame callback.
          */
         loader_timeline_select_suspend_for_callback(state->loader,
-                                                    &resume_manager_select);
+                                                    &resume_manager_select,
+                                                    &resume_candidate_select);
     }
     status = state->fn(frame, state->context);
     if (state->loader != NULL) {
         loader_timeline_select_resume_after_callback(state->loader,
                                                      resume_manager_select,
+                                                     resume_candidate_select,
                                                      status);
     }
     if (SIXEL_FAILED(status) && state->loader != NULL) {
@@ -774,6 +812,46 @@ loader_callback_trampoline(sixel_frame_t *frame, void *data)
     }
 
     return status;
+}
+
+SIXEL_INTERNAL_API void
+sixel_loader_timeline_candidate_select_start(sixel_loader_t *loader,
+                                             char const *worker)
+{
+    if (loader == NULL || worker == NULL || worker[0] == '\0') {
+        return;
+    }
+
+    (void)sixel_compat_snprintf(loader->timeline_candidate_worker,
+                                sizeof(loader->timeline_candidate_worker),
+                                "%s",
+                                worker);
+    loader_timeline_select_phase_start(
+        loader,
+        loader->timeline_candidate_worker,
+        &loader->timeline_candidate_select_job,
+        &loader->timeline_candidate_select_open);
+}
+
+SIXEL_INTERNAL_API void
+sixel_loader_timeline_candidate_select_finish(sixel_loader_t *loader,
+                                              SIXELSTATUS status)
+{
+    char const *event;
+
+    event = NULL;
+    if (loader == NULL || loader->timeline_candidate_worker[0] == '\0') {
+        return;
+    }
+
+    event = SIXEL_SUCCEEDED(status) ? "finish" : "fail";
+    loader_timeline_select_phase_finish(
+        loader,
+        loader->timeline_candidate_worker,
+        &loader->timeline_candidate_select_job,
+        &loader->timeline_candidate_select_open,
+        event);
+    loader->timeline_candidate_worker[0] = '\0';
 }
 
 
@@ -856,6 +934,9 @@ sixel_loader_new(
     loader->log_timeline_job_seq = 0;
     loader->timeline_manager_select_job = -1;
     loader->timeline_manager_select_open = 0;
+    loader->timeline_candidate_select_job = -1;
+    loader->timeline_candidate_select_open = 0;
+    loader->timeline_candidate_worker[0] = '\0';
 
     *pploader = loader;
     status = SIXEL_OK;
@@ -1145,6 +1226,9 @@ sixel_loader_load_file(
     loader->log_timeline_job_seq = 0;
     loader->timeline_manager_select_job = -1;
     loader->timeline_manager_select_open = 0;
+    loader->timeline_candidate_select_job = -1;
+    loader->timeline_candidate_select_open = 0;
+    loader->timeline_candidate_worker[0] = '\0';
     loader->log_path[0] = '\0';
     if (filename != NULL) {
         (void)sixel_compat_snprintf(loader->log_path,
@@ -1312,6 +1396,9 @@ sixel_loader_load_file(
     build_request.has_start_frame_no = loader->has_start_frame_no;
     build_request.start_frame_no = loader->start_frame_no;
     build_request.suboptions = &active_suboptions;
+    build_request.timeline_logger = &loader->logger;
+    build_request.timeline_job_seq = &loader->log_timeline_job_seq;
+    build_request.timeline_loader = loader;
     build_request.skip_predicate_gate =
         (active_order_resolution != NULL &&
          active_order_resolution->has_trailing_bang &&

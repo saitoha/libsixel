@@ -99,7 +99,12 @@ SIXEL_INTERNAL_API char const *
 sixel_loader_component_get_name(sixel_loader_component_t const *component);
 
 SIXEL_INTERNAL_API void
-sixel_helper_set_loader_trace(int enable);
+sixel_loader_timeline_candidate_select_start(sixel_loader_t *loader,
+                                             char const *worker);
+
+SIXEL_INTERNAL_API void
+sixel_loader_timeline_candidate_select_finish(sixel_loader_t *loader,
+                                              SIXELSTATUS status);
 
 SIXEL_INTERNAL_API void
 sixel_helper_set_thumbnail_size_hint(int size);

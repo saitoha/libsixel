@@ -20,15 +20,15 @@ scalefirst_out=""
 clipfirst_edge_ok=0
 scalefirst_edge_ok=0
 
-clipfirst_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -v -Lbuiltin:cms_engine=none! -d fs:scan=raster \
+clipfirst_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
+    -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -c2x1+1+0 -w7 -h3 -r nearest -p 2 "${input_png}" 2>&1 >/dev/null) || {
     echo "not ok 1 - clip then scale render failed"
     exit 0
 }
 
-scalefirst_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -v -Lbuiltin:cms_engine=none! -d fs:scan=raster \
+scalefirst_log=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v \
+    -Lbuiltin:cms_engine=none! -d fs:scan=raster \
     -w7 -h3 -r nearest -c2x1+1+0 -p 2 "${input_png}" 2>&1 >/dev/null) || {
     echo "not ok 1 - scale then clip render failed"
     exit 0

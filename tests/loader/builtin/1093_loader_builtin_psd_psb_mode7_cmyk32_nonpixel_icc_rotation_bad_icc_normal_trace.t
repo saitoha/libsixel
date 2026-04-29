@@ -22,7 +22,7 @@ trace_log=''
 suffix=normal
     input_psd="${base_dir}/snake16_psb_mode7_cmyk32_missing_composite_multilayer_${suffix}_bad_icc_profile.psd"
     command_status=0
-    trace_log=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -v -Lbuiltin:cms=auto! \
+    trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms=auto! \
         "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
     test "${command_status}" -eq 0 || {

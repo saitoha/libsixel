@@ -53,8 +53,8 @@ test "${msg#*GD error*}" = "${msg}" || {
     exit 0
 }
 
-trace_log=$(set +xv; SIXEL_LOADER_TRACE=1 ${SIXEL_RUNTIME-} \
-    "${IMG2SIXEL_PATH}" -v -L gd,libtiff! -ldisable - < "${input_tiff}" \
+trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} \
+    "${IMG2SIXEL_PATH}" -L gd,libtiff! -ldisable - < "${input_tiff}" \
     2>&1 >/dev/null) || {
     echo "not ok 1 - gd,libtiff fallback failed for stdin TIFF"
     exit 0
