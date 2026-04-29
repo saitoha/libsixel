@@ -71,7 +71,7 @@ typedef BYTE *WICInProcPointer;
 
 #include "allocator.h"
 #include "chunk.h"
-#include "frame.h"
+#include "frame-private.h"
 #include "loader-common.h"
 #include "loader-wic.h"
 #include "compat_stub.h"
@@ -91,6 +91,8 @@ typedef struct sixel_loader_wic_component {
     int ico_minsize;
 } sixel_loader_wic_component_t;
 
+static int
+loader_can_try_wic(sixel_chunk_t const *chunk);
 
 #ifndef FACILITY_WINCODEC_ERR
 # define FACILITY_WINCODEC_ERR 0x898
@@ -986,7 +988,7 @@ sixel_loader_wic_new(sixel_allocator_t *allocator,
     return SIXEL_OK;
 }
 
-int
+static int
 loader_can_try_wic(sixel_chunk_t const *chunk)
 {
     if (chunk == NULL) {

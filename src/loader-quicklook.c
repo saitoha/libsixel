@@ -45,7 +45,7 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "frame.h"
+#include "frame-private.h"
 #include "loader-common.h"
 #include "loader-quicklook.h"
 
@@ -158,7 +158,7 @@ CGImageRef
 sixel_quicklook_thumbnail_create(CFURLRef url, CGSize max_size);
 #endif
 
-int
+static int
 loader_quicklook_can_decode(sixel_chunk_t const *pchunk,
                             char const *filename)
 {
@@ -257,7 +257,7 @@ loader_quicklook_can_decode(sixel_chunk_t const *pchunk,
     return result;
 }
 
-int
+static int
 loader_quicklook_can_decode_chunk(sixel_chunk_t const *pchunk)
 {
     /*

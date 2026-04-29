@@ -11,12 +11,18 @@
 #include <string.h>
 
 #include "src/chunk.h"
-#include "src/loader-gd.h"
 #include "tests/loader/pixelformat_test_common.h"
 
 #if HAVE_GD
 static int
-expect_can_try(unsigned char const *buffer,
+new_gd_component(sixel_allocator_t *allocator, void **ppcomponent)
+{
+    return create_loader_component_by_name("gd", allocator, ppcomponent);
+}
+
+static int
+expect_can_try(sixel_loader_component_t *loader,
+               unsigned char const *buffer,
                size_t size,
                int expected,
                char const *label)
@@ -27,10 +33,10 @@ expect_can_try(unsigned char const *buffer,
     memset(&chunk, 0, sizeof(chunk));
     chunk.buffer = (unsigned char *)buffer;
     chunk.size = size;
-    actual = loader_can_try_gd(&chunk);
+    actual = sixel_loader_component_predicate(loader, &chunk);
     if (actual != expected) {
         fprintf(stderr,
-                "loader_can_try_gd mismatch for %s: got=%d expected=%d\n",
+                "gd loader predicate mismatch for %s: got=%d expected=%d\n",
                 label,
                 actual,
                 expected);
@@ -91,28 +97,21 @@ load_chunk_from_relative(sixel_allocator_t *allocator,
 }
 
 static SIXELSTATUS
-run_load_with_gd_status(sixel_chunk_t const *chunk)
+run_gd_component_status(sixel_loader_component_t *loader,
+                        sixel_chunk_t const *chunk)
 {
     loader_probe_context_t context;
-    int lut_ready;
-    double lut[256];
 
     memset(&context, 0, sizeof(context));
-    lut_ready = 0;
-    memset(lut, 0, sizeof(lut));
-
-    return load_with_gd(chunk,
-                        0,
-                        SIXEL_PALETTE_MAX,
-                        NULL,
-                        &lut_ready,
-                        lut,
-                        capture_frame,
-                        &context);
+    return sixel_loader_component_load(loader,
+                                       chunk,
+                                       capture_frame,
+                                       &context);
 }
 
 static int
-expect_optional_can_try_consistency(sixel_allocator_t *allocator,
+expect_optional_can_try_consistency(sixel_loader_component_t *loader,
+                                    sixel_allocator_t *allocator,
                                     char const *label,
                                     char const *relative_path)
 {
@@ -128,8 +127,8 @@ expect_optional_can_try_consistency(sixel_allocator_t *allocator,
         return 1;
     }
 
-    can_try = loader_can_try_gd(chunk);
-    status = run_load_with_gd_status(chunk);
+    can_try = sixel_loader_component_predicate(loader, chunk);
+    status = run_gd_component_status(loader, chunk);
     sixel_chunk_destroy(chunk);
 
     if (can_try == 0 && status != SIXEL_FALSE) {
@@ -201,33 +200,49 @@ run_can_try_policy_mode(char const *mode)
     };
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
+    sixel_loader_component_t *loader;
     int run_all;
     int matched;
     int result;
 
     status = SIXEL_FALSE;
     allocator = NULL;
+    loader = NULL;
     run_all = 0;
     matched = 0;
     result = 0;
     run_all = mode == NULL || strcmp(mode, "all") == 0;
 
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "allocator initialization failed\n");
+        return 1;
+    }
+    status = new_gd_component(allocator, (void **)&loader);
+    if (SIXEL_FAILED(status) || loader == NULL) {
+        sixel_allocator_unref(allocator);
+        fprintf(stderr, "GD loader unavailable\n");
+        return SIXEL_TEST_SKIP;
+    }
+
     if (run_all || strcmp(mode, "null_chunk_rejected") == 0) {
         matched = 1;
-        if (loader_can_try_gd(NULL) != 0) {
-            fprintf(stderr, "loader_can_try_gd should reject null chunk\n");
+        if (sixel_loader_component_predicate(loader, NULL) != 0) {
+            fprintf(stderr, "gd loader predicate should reject null chunk\n");
             result = 1;
         }
     }
     if (run_all || strcmp(mode, "gif_delegate_false") == 0) {
         matched = 1;
-        if (expect_can_try(gif_data, sizeof(gif_data), 0, "gif") != 0) {
+        if (expect_can_try(loader, gif_data, sizeof(gif_data), 0, "gif") !=
+                0) {
             result = 1;
         }
     }
     if (run_all || strcmp(mode, "apng_delegate_false") == 0) {
         matched = 1;
-        if (expect_can_try(png_apng_data,
+        if (expect_can_try(loader,
+                           png_apng_data,
                            sizeof(png_apng_data),
                            0,
                            "png-apng") != 0) {
@@ -236,7 +251,8 @@ run_can_try_policy_mode(char const *mode)
     }
     if (run_all || strcmp(mode, "interlaced_png_delegate_false") == 0) {
         matched = 1;
-        if (expect_can_try(png_interlaced_data,
+        if (expect_can_try(loader,
+                           png_interlaced_data,
                            sizeof(png_interlaced_data),
                            0,
                            "png-interlaced") != 0) {
@@ -245,7 +261,8 @@ run_can_try_policy_mode(char const *mode)
     }
     if (run_all || strcmp(mode, "png_plain_true") == 0) {
         matched = 1;
-        if (expect_can_try(png_plain_data,
+        if (expect_can_try(loader,
+                           png_plain_data,
                            sizeof(png_plain_data),
                            1,
                            "png-plain") != 0) {
@@ -254,7 +271,8 @@ run_can_try_policy_mode(char const *mode)
     }
     if (run_all || strcmp(mode, "png_signature_only_true") == 0) {
         matched = 1;
-        if (expect_can_try(png_signature_only_data,
+        if (expect_can_try(loader,
+                           png_signature_only_data,
                            sizeof(png_signature_only_data),
                            1,
                            "png-signature-only") != 0) {
@@ -263,7 +281,8 @@ run_can_try_policy_mode(char const *mode)
     }
     if (run_all || strcmp(mode, "png_bad_ihdr_len_can_try_true") == 0) {
         matched = 1;
-        if (expect_can_try(png_bad_ihdr_len_data,
+        if (expect_can_try(loader,
+                           png_bad_ihdr_len_data,
                            sizeof(png_bad_ihdr_len_data),
                            1,
                            "png-bad-ihdr-len") != 0) {
@@ -272,7 +291,8 @@ run_can_try_policy_mode(char const *mode)
     }
     if (run_all || strcmp(mode, "png_highdepth_true") == 0) {
         matched = 1;
-        if (expect_can_try(png_highdepth_data,
+        if (expect_can_try(loader,
+                           png_highdepth_data,
                            sizeof(png_highdepth_data),
                            1,
                            "png-highdepth") != 0) {
@@ -281,13 +301,18 @@ run_can_try_policy_mode(char const *mode)
     }
     if (run_all || strcmp(mode, "jpeg_true") == 0) {
         matched = 1;
-        if (expect_can_try(jpeg_data, sizeof(jpeg_data), 1, "jpeg") != 0) {
+        if (expect_can_try(loader,
+                           jpeg_data,
+                           sizeof(jpeg_data),
+                           1,
+                           "jpeg") != 0) {
             result = 1;
         }
     }
     if (run_all || strcmp(mode, "unknown_false") == 0) {
         matched = 1;
-        if (expect_can_try(unknown_data,
+        if (expect_can_try(loader,
+                           unknown_data,
                            sizeof(unknown_data),
                            0,
                            "unknown") != 0) {
@@ -295,22 +320,10 @@ run_can_try_policy_mode(char const *mode)
         }
     }
 
-    if (run_all || strcmp(mode, "optional_tiff_consistency") == 0 ||
-            strcmp(mode, "optional_tga_consistency") == 0 ||
-            strcmp(mode, "optional_wbmp_consistency") == 0 ||
-            strcmp(mode, "optional_gd2_consistency") == 0 ||
-            strcmp(mode, "optional_webp_consistency") == 0 ||
-            strcmp(mode, "optional_matrix_consistency") == 0) {
-        status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
-        if (SIXEL_FAILED(status)) {
-            fprintf(stderr, "allocator initialization failed\n");
-            return 1;
-        }
-    }
-
     if (run_all || strcmp(mode, "optional_tiff_consistency") == 0) {
         matched = 1;
         if (expect_optional_can_try_consistency(
+                loader,
                 allocator,
                 "optional-tiff",
                 "/tests/data/inputs/formats/snake-tiff-zip-rgb.tiff") != 0) {
@@ -320,6 +333,7 @@ run_can_try_policy_mode(char const *mode)
     if (run_all || strcmp(mode, "optional_tga_consistency") == 0) {
         matched = 1;
         if (expect_optional_can_try_consistency(
+                loader,
                 allocator,
                 "optional-tga",
                 "/tests/data/inputs/formats/snake-tga-type2-rgb.tga") != 0) {
@@ -329,6 +343,7 @@ run_can_try_policy_mode(char const *mode)
     if (run_all || strcmp(mode, "optional_wbmp_consistency") == 0) {
         matched = 1;
         if (expect_optional_can_try_consistency(
+                loader,
                 allocator,
                 "optional-wbmp",
                 "/tests/data/inputs/formats/snake-wbmp-bilevel.wbmp") != 0) {
@@ -338,6 +353,7 @@ run_can_try_policy_mode(char const *mode)
     if (run_all || strcmp(mode, "optional_gd2_consistency") == 0) {
         matched = 1;
         if (expect_optional_can_try_consistency(
+                loader,
                 allocator,
                 "optional-gd2",
                 "/tests/data/inputs/formats/sample-gd2-conv_test.gd2") != 0) {
@@ -347,6 +363,7 @@ run_can_try_policy_mode(char const *mode)
     if (run_all || strcmp(mode, "optional_webp_consistency") == 0) {
         matched = 1;
         if (expect_optional_can_try_consistency(
+                loader,
                 allocator,
                 "optional-webp",
                 "/tests/data/inputs/snake_64.webp") != 0) {
@@ -356,30 +373,35 @@ run_can_try_policy_mode(char const *mode)
     if (run_all || strcmp(mode, "optional_matrix_consistency") == 0) {
         matched = 1;
         if (expect_optional_can_try_consistency(
+                loader,
                 allocator,
                 "optional-matrix-tiff",
                 "/tests/data/inputs/formats/snake-tiff-zip-rgb.tiff") != 0) {
             result = 1;
         }
         if (expect_optional_can_try_consistency(
+                loader,
                 allocator,
                 "optional-matrix-tga",
                 "/tests/data/inputs/formats/snake-tga-type2-rgb.tga") != 0) {
             result = 1;
         }
         if (expect_optional_can_try_consistency(
+                loader,
                 allocator,
                 "optional-matrix-wbmp",
                 "/tests/data/inputs/formats/snake-wbmp-bilevel.wbmp") != 0) {
             result = 1;
         }
         if (expect_optional_can_try_consistency(
+                loader,
                 allocator,
                 "optional-matrix-gd2",
                 "/tests/data/inputs/formats/sample-gd2-conv_test.gd2") != 0) {
             result = 1;
         }
         if (expect_optional_can_try_consistency(
+                loader,
                 allocator,
                 "optional-matrix-webp",
                 "/tests/data/inputs/snake_64.webp") != 0) {
@@ -387,6 +409,7 @@ run_can_try_policy_mode(char const *mode)
         }
     }
 
+    sixel_loader_component_unref(loader);
     sixel_allocator_unref(allocator);
     if (matched == 0) {
         fprintf(stderr, "unknown gd can_try mode: %s\n", mode);

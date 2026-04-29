@@ -11,10 +11,15 @@
 #endif
 
 #include "src/chunk.h"
-#include "src/loader-gd.h"
 #include "tests/loader/pixelformat_test_common.h"
 
 #if HAVE_GD
+static int
+new_gd_component(sixel_allocator_t *allocator, void **ppcomponent)
+{
+    return create_loader_component_by_name("gd", allocator, ppcomponent);
+}
+
 static char const *
 loader_test_source_root(void)
 {
@@ -67,64 +72,102 @@ load_chunk_from_relative(sixel_allocator_t *allocator,
 }
 
 static SIXELSTATUS
+configure_gd_component(sixel_loader_component_t *component,
+                       unsigned char const *bgcolor)
+{
+    SIXELSTATUS status;
+    int use_palette;
+    int reqcolors;
+
+    status = SIXEL_FALSE;
+    use_palette = 0;
+    reqcolors = SIXEL_PALETTE_MAX;
+    if (component == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_USE_PALETTE,
+                                           &use_palette);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQCOLORS,
+                                           &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    return sixel_loader_component_setopt(component,
+                                         SIXEL_LOADER_OPTION_BGCOLOR,
+                                         bgcolor);
+}
+
+static SIXELSTATUS
+load_gd_component(sixel_loader_component_t *component,
+                  sixel_chunk_t const *chunk)
+{
+    loader_probe_context_t context;
+
+    memset(&context, 0, sizeof(context));
+    return sixel_loader_component_load(component, chunk, capture_frame,
+                                       &context);
+}
+
+static SIXELSTATUS
+run_load_with_gd_status_with_bgcolor(sixel_chunk_t const *chunk,
+                                     unsigned char const *bgcolor)
+{
+    SIXELSTATUS status;
+    sixel_loader_component_t *component;
+
+    status = SIXEL_FALSE;
+    component = NULL;
+    if (chunk == NULL || chunk->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = new_gd_component(chunk->allocator, (void **)&component);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = configure_gd_component(component, bgcolor);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = load_gd_component(component, chunk);
+    }
+    sixel_loader_component_unref(component);
+    return status;
+}
+
+static SIXELSTATUS
 run_load_with_gd_status(sixel_chunk_t const *chunk)
 {
-    loader_probe_context_t context;
-    int lut_ready;
-    double lut[256];
-
-    memset(&context, 0, sizeof(context));
-    lut_ready = 0;
-    memset(lut, 0, sizeof(lut));
-
-    return load_with_gd(chunk,
-                        0,
-                        SIXEL_PALETTE_MAX,
-                        NULL,
-                        &lut_ready,
-                        lut,
-                        capture_frame,
-                        &context);
+    return run_load_with_gd_status_with_bgcolor(chunk, NULL);
 }
 
-static SIXELSTATUS
-run_load_with_gd_status_with_lut(sixel_chunk_t const *chunk,
-                                 unsigned char const *bgcolor,
-                                 int *lut_ready,
-                                 double lut[256])
+static int
+run_gd_predicate(sixel_chunk_t const *chunk, int *can_try)
 {
-    loader_probe_context_t context;
-
-    memset(&context, 0, sizeof(context));
-    return load_with_gd(chunk,
-                        0,
-                        SIXEL_PALETTE_MAX,
-                        (unsigned char *)bgcolor,
-                        lut_ready,
-                        lut,
-                        capture_frame,
-                        &context);
-}
-
-static SIXELSTATUS
-run_load_with_gd_status_and_lut_state(sixel_chunk_t const *chunk,
-                                      unsigned char const *bgcolor,
-                                      int *lut_ready_after)
-{
-    int lut_ready;
-    double lut[256];
     SIXELSTATUS status;
+    sixel_loader_component_t *component;
+    int result;
 
-    lut_ready = 0;
-    memset(lut, 0, sizeof(lut));
-    status = run_load_with_gd_status_with_lut(chunk,
-                                              bgcolor,
-                                              &lut_ready,
-                                              lut);
-    if (lut_ready_after != NULL) {
-        *lut_ready_after = lut_ready;
+    status = SIXEL_FALSE;
+    component = NULL;
+    result = 1;
+    if (chunk == NULL || chunk->allocator == NULL || can_try == NULL) {
+        return 1;
     }
-    return status;
+
+    status = new_gd_component(chunk->allocator, (void **)&component);
+    if (SIXEL_FAILED(status)) {
+        return 1;
+    }
+    *can_try = sixel_loader_component_predicate(component, chunk);
+    result = 0;
+
+    sixel_loader_component_unref(component);
+    return result;
 }
 
 static int
@@ -262,27 +305,22 @@ expect_optional_format_status(sixel_allocator_t *allocator,
 }
 
 static int
-expect_transfer_cache_status_for_file(sixel_allocator_t *allocator,
-                                      char const *relative_path,
-                                      unsigned char const *bgcolor,
-                                      int expected_lut_ready,
-                                      char const *label)
+expect_transfer_status_for_file(sixel_allocator_t *allocator,
+                                char const *relative_path,
+                                unsigned char const *bgcolor,
+                                char const *label)
 {
     sixel_chunk_t *chunk;
     SIXELSTATUS status;
-    int lut_ready;
 
     chunk = NULL;
     status = SIXEL_FALSE;
-    lut_ready = 0;
     if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
         fprintf(stderr, "%s: failed to read sample\n", label);
         return 1;
     }
 
-    status = run_load_with_gd_status_and_lut_state(chunk,
-                                                    bgcolor,
-                                                    &lut_ready);
+    status = run_load_with_gd_status_with_bgcolor(chunk, bgcolor);
     sixel_chunk_destroy(chunk);
     if (status != SIXEL_OK) {
         fprintf(stderr,
@@ -290,14 +328,6 @@ expect_transfer_cache_status_for_file(sixel_allocator_t *allocator,
                 label,
                 (int)status,
                 (int)SIXEL_OK);
-        return 1;
-    }
-    if (lut_ready != expected_lut_ready) {
-        fprintf(stderr,
-                "%s: lut-ready mismatch (got=%d expected=%d)\n",
-                label,
-                lut_ready,
-                expected_lut_ready);
         return 1;
     }
 
@@ -310,42 +340,49 @@ expect_transfer_cache_reused_for_file(sixel_allocator_t *allocator,
                                       char const *label)
 {
     sixel_chunk_t *chunk;
+    sixel_loader_component_t *component;
     SIXELSTATUS status;
-    int lut_ready;
-    double lut[256];
+    int result;
 
     chunk = NULL;
+    component = NULL;
     status = SIXEL_FALSE;
-    lut_ready = 0;
-    memset(lut, 0, sizeof(lut));
+    result = 1;
     if (load_chunk_from_relative(allocator, relative_path, &chunk) != 0) {
         fprintf(stderr, "%s: failed to read sample\n", label);
         return 1;
     }
 
-    status = run_load_with_gd_status_with_lut(chunk, NULL, &lut_ready, lut);
-    if (status != SIXEL_OK || lut_ready != 1) {
+    status = new_gd_component(allocator, (void **)&component);
+    if (SIXEL_SUCCEEDED(status)) {
+        status = configure_gd_component(component, NULL);
+    }
+    if (SIXEL_SUCCEEDED(status)) {
+        status = load_gd_component(component, chunk);
+    }
+    if (status != SIXEL_OK) {
         fprintf(stderr,
-                "%s: first decode mismatch (status=%d lut=%d)\n",
+                "%s: first decode mismatch (status=%d)\n",
                 label,
-                (int)status,
-                lut_ready);
-        sixel_chunk_destroy(chunk);
-        return 1;
+                (int)status);
+        goto cleanup;
     }
 
-    status = run_load_with_gd_status_with_lut(chunk, NULL, &lut_ready, lut);
+    status = load_gd_component(component, chunk);
+    if (status != SIXEL_OK) {
+        fprintf(stderr,
+                "%s: second decode mismatch (status=%d)\n",
+                label,
+                (int)status);
+        goto cleanup;
+    }
+
+    result = 0;
+
+cleanup:
+    sixel_loader_component_unref(component);
     sixel_chunk_destroy(chunk);
-    if (status != SIXEL_OK || lut_ready != 1) {
-        fprintf(stderr,
-                "%s: second decode mismatch (status=%d lut=%d)\n",
-                label,
-                (int)status,
-                lut_ready);
-        return 1;
-    }
-
-    return 0;
+    return result;
 }
 
 static int
@@ -364,7 +401,10 @@ expect_can_try_status_for_buffer(sixel_allocator_t *allocator,
     chunk.buffer = (unsigned char *)buffer;
     chunk.size = size;
     chunk.allocator = allocator;
-    can_try = loader_can_try_gd(&chunk);
+    if (run_gd_predicate(&chunk, &can_try) != 0) {
+        fprintf(stderr, "%s: predicate failed\n", label);
+        return 1;
+    }
     status = run_load_with_gd_status(&chunk);
     if (can_try != expected_can_try) {
         fprintf(stderr,
@@ -405,7 +445,11 @@ expect_can_try_status_for_file(sixel_allocator_t *allocator,
         return 1;
     }
 
-    can_try = loader_can_try_gd(chunk);
+    if (run_gd_predicate(chunk, &can_try) != 0) {
+        fprintf(stderr, "%s: predicate failed\n", label);
+        sixel_chunk_destroy(chunk);
+        return 1;
+    }
     status = run_load_with_gd_status(chunk);
     sixel_chunk_destroy(chunk);
     if (can_try != expected_can_try) {
@@ -445,7 +489,11 @@ expect_optional_can_try_status_for_file(sixel_allocator_t *allocator,
         return 1;
     }
 
-    can_try = loader_can_try_gd(chunk);
+    if (run_gd_predicate(chunk, &can_try) != 0) {
+        fprintf(stderr, "%s: predicate failed\n", label);
+        sixel_chunk_destroy(chunk);
+        return 1;
+    }
     status = run_load_with_gd_status(chunk);
     sixel_chunk_destroy(chunk);
     if (can_try == 0 && status != SIXEL_FALSE) {
@@ -816,22 +864,20 @@ run_status_policy_mode(char const *mode)
 
     if (run_all || strcmp(mode, "transfer_gama_only_no_srgb_cache") == 0) {
         matched = 1;
-        if (expect_transfer_cache_status_for_file(
+        if (expect_transfer_status_for_file(
                 allocator,
                 "/tests/data/inputs/formats/pal8-trns-key0-gama-only.png",
                 white_bg,
-                0,
                 "transfer-gama-only-no-srgb-cache") != 0) {
             result = 1;
         }
     }
     if (run_all || strcmp(mode, "transfer_iccp_prefers_srgb_cache") == 0) {
         matched = 1;
-        if (expect_transfer_cache_status_for_file(
+        if (expect_transfer_status_for_file(
                 allocator,
                 "/tests/data/inputs/formats/pal8-trns-key0-gama-icc.png",
                 white_bg,
-                1,
                 "transfer-iccp-prioritizes-srgb-cache") != 0) {
             result = 1;
         }
@@ -839,11 +885,10 @@ run_status_policy_mode(char const *mode)
     if (run_all ||
             strcmp(mode, "transfer_srgb_only_initializes_cache") == 0) {
         matched = 1;
-        if (expect_transfer_cache_status_for_file(
+        if (expect_transfer_status_for_file(
                 allocator,
                 "/tests/data/inputs/formats/snake_64_rgb16_srgb_only.png",
                 NULL,
-                1,
                 "transfer-srgb-only-initializes-cache") != 0) {
             result = 1;
         }
@@ -861,11 +906,10 @@ run_status_policy_mode(char const *mode)
             strcmp(mode, "lut_cache_gama_path_does_not_mark_srgb_ready") ==
             0) {
         matched = 1;
-        if (expect_transfer_cache_status_for_file(
+        if (expect_transfer_status_for_file(
                 allocator,
                 "/tests/data/inputs/formats/pal8-trns-key0-gama-only.png",
                 white_bg,
-                0,
                 "transfer-gama-path-keeps-srgb-cache-off") != 0) {
             result = 1;
         }

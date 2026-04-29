@@ -40,18 +40,6 @@ sixel_loader_gd_new(
     sixel_allocator_t *allocator,
     void **ppcomponent);
 
-SIXEL_INTERNAL_API int
-loader_can_try_gd(sixel_chunk_t const *chunk);
-
-SIXELSTATUS load_with_gd(
-    sixel_chunk_t const       *pchunk,
-    int                        fuse_palette,
-    int                        reqcolors,
-    unsigned char             *bgcolor,
-    int                       *srgb_decode_lut_ready,
-    double                     srgb_decode_lut[256],
-    sixel_load_image_function  fn_load,
-    void                      *context);
 #endif
 
 #endif /* LIBSIXEL_LOADER_GD_H */

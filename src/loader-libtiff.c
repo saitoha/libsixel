@@ -59,7 +59,7 @@
 #include "allocator.h"
 #include "cms.h"
 #include "chunk.h"
-#include "frame.h"
+#include "frame-private.h"
 #include "icc-apply.h"
 #include "icc-parse.h"
 #include "loader-common.h"
@@ -80,6 +80,9 @@ typedef struct sixel_loader_libtiff_component {
     int has_start_frame_no;
     int start_frame_no;
 } sixel_loader_libtiff_component_t;
+
+static int
+loader_can_try_libtiff(sixel_chunk_t const *chunk);
 
 typedef struct tiff_memory_chunk {
     unsigned char const *buffer;
@@ -1527,7 +1530,7 @@ sixel_loader_libtiff_new(sixel_allocator_t *allocator,
     return SIXEL_OK;
 }
 
-int
+static int
 loader_can_try_libtiff(sixel_chunk_t const *chunk)
 {
     if (chunk == NULL) {

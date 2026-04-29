@@ -73,7 +73,7 @@ static pthread_once_t g_sixel_loader_gd_support_once = PTHREAD_ONCE_INIT;
 #include <sixel.h>
 
 #include "chunk.h"
-#include "frame.h"
+#include "frame-private.h"
 #include "loader-common.h"
 #include "loader-gd.h"
 #include "sixel_atomic.h"
@@ -118,6 +118,20 @@ typedef struct sixel_loader_gd_component {
     int srgb_decode_lut_ready;
     double srgb_decode_lut[256];
 } sixel_loader_gd_component_t;
+
+static int
+loader_can_try_gd(sixel_chunk_t const *chunk);
+
+static SIXELSTATUS
+load_with_gd(
+    sixel_chunk_t const       *pchunk,
+    int                        fuse_palette,
+    int                        reqcolors,
+    unsigned char             *bgcolor,
+    int                       *srgb_decode_lut_ready,
+    double                     srgb_decode_lut[256],
+    sixel_load_image_function  fn_load,
+    void                      *context);
 
 typedef struct sixel_loader_gd_support_cache {
     int initialized;
@@ -888,7 +902,7 @@ sixel_loader_gd_new(sixel_allocator_t *allocator,
     return SIXEL_OK;
 }
 
-int
+static int
 loader_can_try_gd(sixel_chunk_t const *chunk)
 {
     SIXELSTATUS status;
@@ -917,7 +931,7 @@ loader_can_try_gd(sixel_chunk_t const *chunk)
     return status == SIXEL_OK ? 1 : 0;
 }
 
-SIXELSTATUS
+static SIXELSTATUS
 load_with_gd(
     sixel_chunk_t const       /* in */     *pchunk,     /* image data */
     int                       /* in */     fuse_palette,

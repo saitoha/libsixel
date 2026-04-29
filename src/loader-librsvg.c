@@ -52,7 +52,7 @@
 
 #include "allocator.h"
 #include "compat_stub.h"
-#include "frame.h"
+#include "frame-private.h"
 #include "loader-common.h"
 #include "status.h"
 
@@ -63,6 +63,16 @@ typedef struct sixel_loader_librsvg_component {
     unsigned char bgcolor[3];
     int has_bgcolor;
 } sixel_loader_librsvg_component_t;
+
+typedef enum sixel_librsvg_decode_mode {
+    SIXEL_LIBRSVG_DECODE_MODE_FILE,
+    SIXEL_LIBRSVG_DECODE_MODE_DATA,
+    SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_TEMPFILE,
+    SIXEL_LIBRSVG_DECODE_MODE_STDIN_SVGZ_REJECTED
+} sixel_librsvg_decode_mode_t;
+
+static int
+loader_can_try_librsvg(sixel_chunk_t const *chunk);
 
 #define LIBRSVG_DEFAULT_WIDTH  300
 #define LIBRSVG_DEFAULT_HEIGHT 150
@@ -1404,20 +1414,6 @@ librsvg_decode_policy_init_from_env(sixel_librsvg_decode_policy_t *policy)
         librsvg_env_is_enabled(LIBRSVG_ENV_ALLOW_STDIN_SVGZ));
 }
 
-sixel_librsvg_decode_mode_t
-sixel_loader_librsvg_pick_decode_mode_for_test(
-    sixel_chunk_t const *chunk,
-    int allow_relative_resources,
-    int allow_stdin_svgz)
-{
-    sixel_librsvg_decode_policy_t policy;
-
-    librsvg_decode_policy_init(&policy,
-                               allow_relative_resources,
-                               allow_stdin_svgz);
-    return librsvg_pick_decode_mode(chunk, &policy);
-}
-
 static SIXELSTATUS
 librsvg_validate_canvas_size(int width, int height, size_t *pixel_total_out)
 {
@@ -2226,7 +2222,7 @@ sixel_loader_librsvg_new(sixel_allocator_t *allocator,
     return SIXEL_OK;
 }
 
-int
+static int
 loader_can_try_librsvg(sixel_chunk_t const *chunk)
 {
     return chunk_is_svg_like(chunk);
@@ -2235,18 +2231,6 @@ loader_can_try_librsvg(sixel_chunk_t const *chunk)
 #else  /* !HAVE_LIBRSVG */
 
 typedef int loader_librsvg_disabled;
-
-sixel_librsvg_decode_mode_t
-sixel_loader_librsvg_pick_decode_mode_for_test(
-    sixel_chunk_t const *chunk,
-    int allow_relative_resources,
-    int allow_stdin_svgz)
-{
-    (void)chunk;
-    (void)allow_relative_resources;
-    (void)allow_stdin_svgz;
-    return SIXEL_LIBRSVG_DECODE_MODE_DATA;
-}
 
 #endif  /* HAVE_LIBRSVG */
 

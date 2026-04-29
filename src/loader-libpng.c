@@ -73,7 +73,7 @@
 #include "chunk.h"
 #include "compat_stub.h"
 #include "loader-common.h"
-#include "frame.h"
+#include "frame-private.h"
 #include "loader.h"
 #include "loader-libpng.h"
 #include "logger.h"
@@ -99,6 +99,9 @@ typedef struct sixel_loader_libpng_component {
     int enable_cms;
     int enable_orientation;
 } sixel_loader_libpng_component_t;
+
+static int
+loader_can_try_libpng(sixel_chunk_t const *chunk);
 
 /*
  * Topic-scoped APNG decoder diagnostics.
@@ -5102,7 +5105,7 @@ sixel_loader_libpng_new(sixel_allocator_t *allocator,
     return SIXEL_OK;
 }
 
-int
+static int
 loader_can_try_libpng(sixel_chunk_t const *chunk)
 {
     if (chunk == NULL) {

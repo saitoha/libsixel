@@ -39,8 +39,6 @@ SIXELSTATUS
 sixel_loader_libjpeg_new(
     sixel_allocator_t *allocator,
     void **ppcomponent);
-
-int loader_can_try_libjpeg(sixel_chunk_t const *chunk);
 #endif
 
 #endif /* LIBSIXEL_LOADER_LIBJPEG_H */

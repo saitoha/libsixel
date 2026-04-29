@@ -178,7 +178,18 @@ static int thumbnailer_parse_file(char const *path,
 static int thumbnailer_has_tryexec(char const *tryexec);
 static int thumbnailer_supports_mime(struct thumbnailer_entry *entry,
                                      char const *mime_type);
-int thumbnailer_has_fallback_thumbnailer(void);
+static SIXELSTATUS load_with_gnome_thumbnailer(
+    sixel_chunk_t const       *pchunk,
+    int                        fstatic,
+    int                        fuse_palette,
+    int                        reqcolors,
+    unsigned char             *bgcolor,
+    int                        loop_control,
+    int                        start_frame_no_set,
+    int                        start_frame_no,
+    int                        enable_cms,
+    sixel_load_image_function  fn_load,
+    void                      *context);
 
 /*
  * thumbnailer_strdup
@@ -803,80 +814,6 @@ thumbnailer_has_tryexec(char const *tryexec)
     }
 
     return executable;
-}
-
-/*
- * thumbnailer_has_fallback_thumbnailer
- *
- * Confirm that the built-in gdk-pixbuf fallback is runnable.  Tests use
- * this to skip when the thumbnailer binary is absent from PATH or fails
- * to start because of missing runtime dependencies.
- *
- * Arguments:
- *     None.
- * Returns:
- *     1 when executable, 0 otherwise.
- */
-int
-thumbnailer_has_fallback_thumbnailer(void)
-{
-    pid_t pid;
-    int status;
-    int wait_result;
-    int executable;
-    int devnull;
-    int dup_status;
-
-    pid = (-1);
-    status = 0;
-    wait_result = 0;
-    executable = thumbnailer_has_tryexec("gdk-pixbuf-thumbnailer");
-    devnull = -1;
-    dup_status = 0;
-
-    if (executable == 0) {
-        return 0;
-    }
-
-    pid = fork();
-    if (pid < 0) {
-        return 0;
-    }
-    if (pid == 0) {
-        /* Silence usage text so test harness output remains clean. */
-        devnull = sixel_compat_open("/dev/null", O_WRONLY);
-        if (devnull >= 0) {
-            dup_status = dup2(devnull, STDOUT_FILENO);
-            if (dup_status >= 0) {
-                dup_status = dup2(devnull, STDERR_FILENO);
-            }
-            sixel_compat_close(devnull);
-            devnull = -1;
-        }
-        if (dup_status < 0) {
-            _exit(127);
-        }
-        execlp("gdk-pixbuf-thumbnailer",
-               "gdk-pixbuf-thumbnailer",
-               "--help",
-               NULL);
-        _exit(127);
-    }
-
-    while ((wait_result = waitpid(pid, &status, 0)) < 0 &&
-            errno == EINTR) {
-        continue;
-    }
-
-    if (wait_result < 0) {
-        return 0;
-    }
-
-    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
-        return 0;
-    }
-
-    return 1;
 }
 
 /*
@@ -2738,6 +2675,129 @@ sixel_loader_gnome_thumbnailer_new(sixel_allocator_t *allocator,
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+thumbnailer_decode_png_with_builtin(
+    sixel_chunk_t const       *thumb_chunk,
+    int                        fstatic,
+    int                        fuse_palette,
+    int                        reqcolors,
+    unsigned char             *bgcolor,
+    int                        loop_control,
+    int                        start_frame_no_set,
+    int                        start_frame_no,
+    int                        enable_cms,
+    sixel_load_image_function  fn_load,
+    void                      *context)
+{
+    sixel_loader_component_t *builtin_loader;
+    SIXELSTATUS status;
+    int bgcolor_source;
+    int enable_orientation;
+    int bmp_info40_mode;
+
+    builtin_loader = NULL;
+    status = SIXEL_FALSE;
+    bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
+    enable_orientation = 1;
+    bmp_info40_mode = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO;
+    if (thumb_chunk == NULL || thumb_chunk->allocator == NULL ||
+            fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    /*
+     * Keep the thumbnailer backend on the same ILoader component contract as
+     * other backend composition paths.  The concrete builtin decode helper is
+     * private to loader-builtin.c.
+     */
+    status = sixel_loader_builtin_new(thumb_chunk->allocator,
+                                      (void **)&builtin_loader);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_loader_component_setopt(
+        builtin_loader,
+        SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+        &fstatic);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_loader_component_setopt(
+        builtin_loader,
+        SIXEL_LOADER_OPTION_USE_PALETTE,
+        &fuse_palette);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_loader_component_setopt(
+        builtin_loader,
+        SIXEL_LOADER_OPTION_REQCOLORS,
+        &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_loader_component_setopt(
+        builtin_loader,
+        SIXEL_LOADER_OPTION_BGCOLOR,
+        bgcolor);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_loader_component_setopt(
+        builtin_loader,
+        SIXEL_LOADER_COMPONENT_OPTION_BGCOLOR_SOURCE,
+        &bgcolor_source);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_loader_component_setopt(
+        builtin_loader,
+        SIXEL_LOADER_OPTION_LOOP_CONTROL,
+        &loop_control);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (start_frame_no_set) {
+        status = sixel_loader_component_setopt(
+            builtin_loader,
+            SIXEL_LOADER_OPTION_START_FRAME_NO,
+            &start_frame_no);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+    status = sixel_loader_component_setopt(
+        builtin_loader,
+        SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_CMS,
+        &enable_cms);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_loader_component_setopt(
+        builtin_loader,
+        SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_ORIENTATION,
+        &enable_orientation);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_loader_component_setopt(
+        builtin_loader,
+        SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_BMP_INFO40_MODE,
+        &bmp_info40_mode);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_loader_component_load(builtin_loader,
+                                         thumb_chunk,
+                                         fn_load,
+                                         context);
+
+end:
+    sixel_loader_component_unref(builtin_loader);
+    return status;
+}
+
 /*
  * load_with_gnome_thumbnailer
  *
@@ -2773,7 +2833,7 @@ sixel_loader_gnome_thumbnailer_new(sixel_allocator_t *allocator,
  * Returns:
  *     SIXEL_OK on success or libsixel error code on failure.
  */
-SIXELSTATUS
+static SIXELSTATUS
 load_with_gnome_thumbnailer(
     sixel_chunk_t const       /* in */     *pchunk,
     int                       /* in */     fstatic,
@@ -3081,20 +3141,17 @@ load_with_gnome_thumbnailer(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    status = load_with_builtin(thumb_chunk,
-                               fstatic,
-                               fuse_palette,
-                               reqcolors,
-                               bgcolor,
-                               SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT,
-                               loop_control,
-                               start_frame_no_set,
-                               start_frame_no,
-                               enable_cms,
-                               1,
-                               SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO,
-                               fn_load,
-                               context);
+    status = thumbnailer_decode_png_with_builtin(thumb_chunk,
+                                                 fstatic,
+                                                 fuse_palette,
+                                                 reqcolors,
+                                                 bgcolor,
+                                                 loop_control,
+                                                 start_frame_no_set,
+                                                 start_frame_no,
+                                                 enable_cms,
+                                                 fn_load,
+                                                 context);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

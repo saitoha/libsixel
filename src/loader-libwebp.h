@@ -40,9 +40,6 @@ sixel_loader_libwebp_new(
     sixel_allocator_t *allocator,
     void **ppcomponent);
 
-SIXELAPI int
-loader_can_try_libwebp(sixel_chunk_t const *chunk);
-
 #ifdef __cplusplus
 }
 #endif

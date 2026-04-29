@@ -39,11 +39,6 @@ SIXELSTATUS
 sixel_loader_quicklook_new(
     sixel_allocator_t *allocator,
     void **ppcomponent);
-
-int loader_quicklook_can_decode(sixel_chunk_t const *pchunk,
-                                char const *filename);
-
-int loader_quicklook_can_decode_chunk(sixel_chunk_t const *pchunk);
 #endif
 
 #endif /* LIBSIXEL_LOADER_QUICKLOOK_H */

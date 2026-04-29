@@ -33,48 +33,11 @@
 #include "chunk.h"
 #include "loader.h"
 
-typedef struct sixel_builtin_load_with_builtin_args {
-    sixel_chunk_t const       *pchunk;
-    int                        fstatic;
-    int                        fuse_palette;
-    int                        reqcolors;
-    unsigned char             *bgcolor;
-    int                        bgcolor_source;
-    int                        loop_control;
-    int                        start_frame_no_set;
-    int                        start_frame_no_override;
-    int                        enable_cms;
-    int                        enable_orientation;
-    int                        bmp_info40_mode;
-    sixel_load_image_function  fn_load;
-    void                      *context;
-} sixel_builtin_load_with_builtin_args_t;
-
 /* @classid loader/builtin */
 SIXELSTATUS
 sixel_loader_builtin_new(
     sixel_allocator_t *allocator,
     void **ppcomponent);
-
-SIXELSTATUS
-sixel_builtin_load_with_builtin_impl(
-    sixel_builtin_load_with_builtin_args_t const *args);
-
-SIXELSTATUS load_with_builtin(
-    sixel_chunk_t const       *pchunk,
-    int                        fstatic,
-    int                        fuse_palette,
-    int                        reqcolors,
-    unsigned char             *bgcolor,
-    int                        bgcolor_source,
-    int                        loop_control,
-    int                        start_frame_no_set,
-    int                        start_frame_no,
-    int                        enable_cms,
-    int                        enable_orientation,
-    int                        bmp_info40_mode,
-    sixel_load_image_function  fn_load,
-    void                      *context);
 
 #endif /* LIBSIXEL_LOADER_BUILTIN_H */
 

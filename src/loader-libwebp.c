@@ -55,7 +55,7 @@
 #include "allocator.h"
 #include "cms.h"
 #include "chunk.h"
-#include "frame.h"
+#include "frame-private.h"
 #include "loader-common.h"
 #include "loader-libwebp.h"
 #include "logger.h"
@@ -76,6 +76,9 @@ typedef struct sixel_loader_libwebp_component {
     int start_frame_no;
     int enable_orientation;
 } sixel_loader_libwebp_component_t;
+
+static int
+loader_can_try_libwebp(sixel_chunk_t const *chunk);
 
 typedef struct webp_decode_common {
     sixel_chunk_t const *chunk;
@@ -4130,7 +4133,7 @@ sixel_loader_libwebp_new(sixel_allocator_t *allocator,
     return SIXEL_OK;
 }
 
-int
+static int
 loader_can_try_libwebp(sixel_chunk_t const *chunk)
 {
     if (chunk == NULL) {

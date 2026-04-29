@@ -61,7 +61,7 @@
 #include "cms.h"
 #include "chunk.h"
 #include "compat_stub.h"
-#include "frame.h"
+#include "frame-private.h"
 #include "fromgif.h"
 #include "frombmp.h"
 #include "fromhdr.h"
@@ -75,6 +75,27 @@
 #include "loader.h"
 #include "sixel_atomic.h"
 #include "threading.h"
+
+typedef struct sixel_builtin_load_with_builtin_args {
+    sixel_chunk_t const       *pchunk;
+    int                        fstatic;
+    int                        fuse_palette;
+    int                        reqcolors;
+    unsigned char             *bgcolor;
+    int                        bgcolor_source;
+    int                        loop_control;
+    int                        start_frame_no_set;
+    int                        start_frame_no_override;
+    int                        enable_cms;
+    int                        enable_orientation;
+    int                        bmp_info40_mode;
+    sixel_load_image_function  fn_load;
+    void                      *context;
+} sixel_builtin_load_with_builtin_args_t;
+
+static SIXELSTATUS
+sixel_builtin_load_with_builtin_impl(
+    sixel_builtin_load_with_builtin_args_t const *args);
 
 #if defined(__PCC__) || defined(__TINYC__)
 # define SIXEL_BUILTIN_NO_TLS_COMPILER 1
@@ -98,7 +119,7 @@ static SIXEL_STBI_TLS sixel_allocator_t *stbi_allocator;
 
 #undef SIXEL_STBI_TLS
 
-SIXELSTATUS
+static SIXELSTATUS
 load_with_builtin(
     sixel_chunk_t const *pchunk,
     int fstatic,
@@ -6057,7 +6078,7 @@ sixel_builtin_load_stbi_path(
         route->psd_transparent_mask_size);
 }
 
-SIXELSTATUS
+static SIXELSTATUS
 sixel_builtin_load_with_builtin_impl(
     sixel_builtin_load_with_builtin_args_t const *args)
 {

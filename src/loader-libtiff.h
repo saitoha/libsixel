@@ -39,8 +39,6 @@ SIXELSTATUS
 sixel_loader_libtiff_new(
     sixel_allocator_t *allocator,
     void **ppcomponent);
-
-int loader_can_try_libtiff(sixel_chunk_t const *chunk);
 #endif
 
 #endif /* LIBSIXEL_LOADER_LIBTIFF_H */

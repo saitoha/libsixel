@@ -39,20 +39,6 @@ sixel_loader_gnome_thumbnailer_new(
     sixel_allocator_t *allocator,
     void **ppcomponent);
 
-SIXELSTATUS load_with_gnome_thumbnailer(
-    sixel_chunk_t const       *pchunk,
-    int                        fstatic,
-    int                        fuse_palette,
-    int                        reqcolors,
-    unsigned char             *bgcolor,
-    int                        loop_control,
-    int                        start_frame_no_set,
-    int                        start_frame_no,
-    int                        enable_cms,
-    sixel_load_image_function  fn_load,
-    void                      *context);
-
-int thumbnailer_has_fallback_thumbnailer(void);
 #endif
 
 #endif /* LIBSIXEL_LOADER_GNOME_THUMBNAILER_H */

@@ -39,8 +39,6 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_loader_wic_new(
     sixel_allocator_t *allocator,
     void **ppcomponent);
-
-SIXEL_INTERNAL_API int loader_can_try_wic(sixel_chunk_t const *chunk);
 #endif
 
 #endif /* LIBSIXEL_LOADER_WIC_H */
