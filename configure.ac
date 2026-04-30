@@ -576,50 +576,51 @@ AS_CASE([$host_os],
                    [1],
                    [Define to 1 to enable Darwin extensions])])
 
-# Detect Microsoft Visual C compiler and clang-cl
-case "$CC" in
-  *clang-cl*)
-    using_cl=yes
-    using_clangcl=yes
-    for w in $CFLAGS; do
-        test "$w" = "-g" || new_CFLAGS="$new $w"
-    done
-    CFLAGS="$new_CFLAGS -O2"
-    LDFLAGS="$LDFLAGS -DEBUG"
-    LD=link
-    if test -z "${AR}"; then
-        AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
-    fi
-    if test -z "${NM}"; then
-        NM="dumpbin -symbols"
-    fi
-    STRIP=:
-    RANLIB=:
-    ;;
-  *cl|*cl.exe)
-    using_cl=yes
-    using_clangcl=no
-    for w in $CFLAGS; do
-        test "$w" = "-g" || new_CFLAGS="$new $w"
-    done
-    CFLAGS="$new_CFLAGS -O2"
-    LDFLAGS="$LDFLAGS -DEBUG"
-    LD=link
-    if test -z "${AR}"; then
-        AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
-    fi
-    if test -z "${NM}"; then
-        NM="dumpbin -symbols"
-    fi
-    STRIP=:
-    RANLIB=:
-    ;;
-  *)
-    using_cl=no
-    using_clangcl=no
-    ;;
-esac
+# Detect Microsoft Visual C compiler and clang-cl.  AC_PROG_CC may append
+# a language-mode flag, and Automake may wrap CC with build-aux/compile, so
+# inspect command words instead of matching the complete CC value.
+using_cl=no
+using_clangcl=no
+for sixel_cc_word in $CC; do
+    case "$sixel_cc_word" in
+      --driver-mode=cl)
+        using_cl=yes
+        using_clangcl=yes
+        ;;
+      *clang-cl*|*clang-cl.exe)
+        using_cl=yes
+        using_clangcl=yes
+        ;;
+      cl|cl.exe|*/cl|*/cl.exe|*\\cl|*\\cl.exe)
+        using_cl=yes
+        ;;
+    esac
+done
+AS_IF([test "x$using_cl" = "xyes"], [
+  new_CFLAGS=
+  for w in $CFLAGS; do
+      test "$w" = "-g" || \
+          new_CFLAGS="${new_CFLAGS:+$new_CFLAGS }$w"
+  done
+  CFLAGS="${new_CFLAGS:+$new_CFLAGS }-O2"
+  LDFLAGS="$LDFLAGS -DEBUG"
+  LD=link
+  if test -z "${AR}"; then
+      AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
+  fi
+  if test -z "${NM}"; then
+      NM="dumpbin -symbols"
+  fi
+  STRIP=:
+  RANLIB=:
+])
 AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
+
+AS_IF([test "x$using_cl" = "xyes"], [
+  # Autoconf's undeclared-builtin probe uses GCC-style -Werror, which
+  # cl.exe parses as an invalid /W level before it reaches the test body.
+  ac_cv_c_undeclared_builtin_options='none needed'
+])
 
 AC_CACHE_CHECK(
   [whether the selected compiler is pcc],
@@ -1100,12 +1101,9 @@ sixel_pgo_toolchain="gnu"
 AS_CASE([$host_os],
         [msvc*],
         [sixel_pgo_toolchain="msvc"])
-dnl Keep this compiler-name probe strict: a broad '*cl*' match incorrectly
-dnl classifies GNU/LLVM 'clang' as an MSVC frontend, which injects '/GL'
-dnl and '-LTCG:*' flags and breaks non-MSVC PGO builds.
-AS_CASE(["$CC"],
-        [*clang-cl*|cl|cl.exe|*/cl|*/cl.exe|*\\cl|*\\cl.exe],
-        [sixel_pgo_toolchain="msvc"])
+AS_IF([test "x$using_cl" = "xyes"], [
+  sixel_pgo_toolchain="msvc"
+])
 
 sixel_pgo_cflags=""
 sixel_pgo_ldflags=""

@@ -3225,6 +3225,12 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb $(GPERF_OPT) $<  |\
 	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\
 	astyle                                  > $(srcdir)/rgblookup.h
+	printf '%s\n' '#undef TOTAL_KEYWORDS'    \
+	              '#undef MIN_WORD_LENGTH'   \
+	              '#undef MAX_WORD_LENGTH'   \
+	              '#undef MIN_HASH_VALUE'    \
+	              '#undef MAX_HASH_VALUE'    \
+	        >> $(srcdir)/rgblookup.h
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 gen-classid: $(FACTORY_CLASSID_INPUTS) $(SERVICEID_CLASSID_INPUTS)

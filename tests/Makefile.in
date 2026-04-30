@@ -1231,6 +1231,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 		_static/sh/staticcheck-factory-classid-registry-sync.sh \
 		_static/sh/staticcheck-dither-policy-no-backend-dispatch.sh \
 	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
+	_static/sh/staticcheck-gperf-generated-undefs.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
     _static/sh/staticcheck-src-makefile-dist-sources-sync.sh \
     _static/sh/staticcheck-test-inc-extra-dist-sync.sh \
@@ -3331,6 +3332,7 @@ SIXEL_INSTALLCHECK ?= 0
 	staticcheck-factory-classid-registry-sync \
 	staticcheck-serviceid-registry-sync \
 	staticcheck-test-runner-amalgamation-defines-sync \
+	staticcheck-gperf-generated-undefs \
 	staticcheck-makefile-recipes \
 	staticcheck-src-makefile-dist-sources-sync \
 	staticcheck-test-inc-extra-dist-sync \
@@ -3373,6 +3375,7 @@ staticcheck-factory-classid-registry-sync \
 staticcheck-serviceid-registry-sync \
 staticcheck-dither-policy-no-backend-dispatch \
 staticcheck-test-runner-amalgamation-defines-sync \
+staticcheck-gperf-generated-undefs \
 staticcheck-makefile-recipes \
 staticcheck-src-makefile-dist-sources-sync \
 staticcheck-test-inc-extra-dist-sync \
@@ -3549,6 +3552,16 @@ staticcheck-test-runner-amalgamation-defines-sync:
 		--trs-file staticcheck-test-runner-amalgamation-defines-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-gperf-generated-undefs:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-gperf-generated-undefs" \
+		--log-file staticcheck-gperf-generated-undefs.log \
+		--trs-file staticcheck-gperf-generated-undefs.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-gperf-generated-undefs.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-makefile-recipes:

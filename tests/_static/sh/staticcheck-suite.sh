@@ -349,6 +349,10 @@ run_case_tap "staticcheck-test-runner-amalgamation-defines-sync" \
     "$src_root/tests/_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-gperf-generated-undefs" \
+    "$src_root/tests/_static/sh/staticcheck-gperf-generated-undefs.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-binding-loader-setopt-sync" \
     "$src_root/tests/_static/sh/staticcheck-binding-loader-setopt-sync.sh" \
     "$src_root" || fail_and_exit $?

@@ -2544,6 +2544,12 @@ lookup_rgb (register const char *str, register unsigned int len)
     return 0;
 }
 
+#undef TOTAL_KEYWORDS
+#undef MIN_WORD_LENGTH
+#undef MAX_WORD_LENGTH
+#undef MIN_HASH_VALUE
+#undef MAX_HASH_VALUE
+
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

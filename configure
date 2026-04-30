@@ -16985,49 +16985,47 @@ printf '%s\n' "#define _DARWIN_C_SOURCE 1" >>confdefs.h
      ;;
 esac
 
-# Detect Microsoft Visual C compiler and clang-cl
-case "$CC" in
-  *clang-cl*)
-    using_cl=yes
-    using_clangcl=yes
-    for w in $CFLAGS; do
-        test "$w" = "-g" || new_CFLAGS="$new $w"
-    done
-    CFLAGS="$new_CFLAGS -O2"
-    LDFLAGS="$LDFLAGS -DEBUG"
-    LD=link
-    if test -z "${AR}"; then
-        AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
-    fi
-    if test -z "${NM}"; then
-        NM="dumpbin -symbols"
-    fi
-    STRIP=:
-    RANLIB=:
-    ;;
-  *cl|*cl.exe)
-    using_cl=yes
-    using_clangcl=no
-    for w in $CFLAGS; do
-        test "$w" = "-g" || new_CFLAGS="$new $w"
-    done
-    CFLAGS="$new_CFLAGS -O2"
-    LDFLAGS="$LDFLAGS -DEBUG"
-    LD=link
-    if test -z "${AR}"; then
-        AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
-    fi
-    if test -z "${NM}"; then
-        NM="dumpbin -symbols"
-    fi
-    STRIP=:
-    RANLIB=:
-    ;;
-  *)
-    using_cl=no
-    using_clangcl=no
-    ;;
-esac
+# Detect Microsoft Visual C compiler and clang-cl.  AC_PROG_CC may append
+# a language-mode flag, and Automake may wrap CC with build-aux/compile, so
+# inspect command words instead of matching the complete CC value.
+using_cl=no
+using_clangcl=no
+for sixel_cc_word in $CC; do
+    case "$sixel_cc_word" in
+      --driver-mode=cl)
+        using_cl=yes
+        using_clangcl=yes
+        ;;
+      *clang-cl*|*clang-cl.exe)
+        using_cl=yes
+        using_clangcl=yes
+        ;;
+      cl|cl.exe|*/cl|*/cl.exe|*\\cl|*\\cl.exe)
+        using_cl=yes
+        ;;
+    esac
+done
+if test "x$using_cl" = "xyes"
+then :
+
+  new_CFLAGS=
+  for w in $CFLAGS; do
+      test "$w" = "-g" || \
+          new_CFLAGS="${new_CFLAGS:+$new_CFLAGS }$w"
+  done
+  CFLAGS="${new_CFLAGS:+$new_CFLAGS }-O2"
+  LDFLAGS="$LDFLAGS -DEBUG"
+  LD=link
+  if test -z "${AR}"; then
+      AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
+  fi
+  if test -z "${NM}"; then
+      NM="dumpbin -symbols"
+  fi
+  STRIP=:
+  RANLIB=:
+
+fi
  if test "x$using_cl" = "xyes"; then
   USING_CL_TRUE=
   USING_CL_FALSE='#'
@@ -17036,6 +17034,15 @@ else
   USING_CL_FALSE=
 fi
 
+
+if test "x$using_cl" = "xyes"
+then :
+
+  # Autoconf's undeclared-builtin probe uses GCC-style -Werror, which
+  # cl.exe parses as an invalid /W level before it reaches the test body.
+  ac_cv_c_undeclared_builtin_options='none needed'
+
+fi
 
 { printf '%s\n' "$as_me:${as_lineno-$LINENO}: checking whether the selected compiler is pcc" >&5
 printf %s "checking whether the selected compiler is pcc... " >&6; }
@@ -17913,12 +17920,12 @@ case $host_os in #(
   *) :
      ;;
 esac
-case "$CC" in #(
-  *clang-cl*|cl|cl.exe|*/cl|*/cl.exe|*\\cl|*\\cl.exe) :
-    sixel_pgo_toolchain="msvc" ;; #(
-  *) :
-     ;;
-esac
+if test "x$using_cl" = "xyes"
+then :
+
+  sixel_pgo_toolchain="msvc"
+
+fi
 
 sixel_pgo_cflags=""
 sixel_pgo_ldflags=""
