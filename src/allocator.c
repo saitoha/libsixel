@@ -47,7 +47,7 @@
 #include "sixel_atomic.h"
 
 /* create allocator object */
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_allocator_new(
     sixel_allocator_t   /* out */ **ppallocator,  /* allocator object to be created */
     sixel_malloc_t      /* in */  fn_malloc,      /* custom malloc() function */

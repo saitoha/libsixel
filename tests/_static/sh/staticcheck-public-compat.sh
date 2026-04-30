@@ -14,7 +14,7 @@ if test -z "$src_root"; then
     echo "# src_root argument is required"
     echo "not ok 2 - frame public source contract remains compatible"
     echo "# src_root argument is required"
-    echo "not ok 3 - v1.8.7 public ABI symbols remain exported"
+    echo "not ok 3 - v1.8.7 public ABI symbols keep source exports"
     echo "# src_root argument is required"
     exit 1
 fi
@@ -30,7 +30,9 @@ trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
 expected_symbols=$tmpdir/v1.8.7-public-symbols.txt
 current_symbols=$tmpdir/current-public-symbols.txt
+source_symbols=$tmpdir/source-public-symbols.txt
 missing_symbols=$tmpdir/missing-public-symbols.txt
+missing_exports=$tmpdir/missing-source-exports.txt
 forbidden_interface=$tmpdir/forbidden-interface.txt
 
 cat > "$expected_symbols" <<'EOF'
@@ -264,64 +266,67 @@ EOF
     fi
 fi
 
-if ! command -v nm >/dev/null 2>&1; then
-    echo "ok 3 # SKIP nm not found"
+if test ! -d "$src_root/src"; then
+    echo "not ok 3 - v1.8.7 public ABI symbols keep source exports"
+    echo "# missing source directory: $src_root/src"
+    failed=1
 else
-    artifact_list=$tmpdir/artifacts.txt
-    symbol_list=$tmpdir/exported-symbols.txt
-    missing_exports=$tmpdir/missing-exports.txt
-
-    : > "$artifact_list"
-    : > "$symbol_list"
-    : > "$symbol_list.raw"
-    if test -d "$build_root/src"; then
-        find "$build_root/src" -type f \
-            \( -name 'libsixel*.dylib' \
-            -o -name 'liblibsixel*.dylib' \
-            -o -name 'libsixel*.so' \
-            -o -name 'liblibsixel*.so' \
-            -o -name 'libsixel*.so.*' \
-            -o -name 'liblibsixel*.so.*' \
-            -o -name 'libsixel*.dll' \
-            -o -name 'liblibsixel*.dll' \
-            -o -name 'libsixel*.a' \
-            -o -name 'liblibsixel*.a' \
-            -o -name 'libsixel*.lib' \) \
-            > "$artifact_list" 2>/dev/null || true
-    fi
-
-    if test ! -s "$artifact_list"; then
-        echo "ok 3 # SKIP no built libsixel artifacts under $build_root/src"
-    else
-        while IFS= read -r artifact; do
-            test -n "$artifact" || continue
-            nm -gU "$artifact" >> "$symbol_list.raw" 2>/dev/null && continue
-            nm -g "$artifact" >> "$symbol_list.raw" 2>/dev/null && continue
-            nm "$artifact" >> "$symbol_list.raw" 2>/dev/null || true
-        done < "$artifact_list"
-
-        awk '
-        NF >= 2 {
-            type = $(NF - 1)
-            symbol = $NF
-            sub(/^_/, "", symbol)
-            sub(/@@.*/, "", symbol)
-            sub(/@.*/, "", symbol)
-            if (type != "U" && type ~ /^[A-Za-z]$/ &&
-                    symbol ~ /^sixel_/) {
-                print symbol
-            }
+    find "$src_root/src" -type f -name '*.c' -exec awk '
+    FNR == 1 {
+        pending = 0
+        candidate = ""
+        scan = 0
+    }
+    /^SIXELAPI([[:space:]]|$)/ {
+        pending = 8
+        next
+    }
+    pending > 0 && /^sixel_[A-Za-z0-9_]+[[:space:]]*\(/ {
+        name = $1
+        sub(/\(.*/, "", name)
+        candidate = name
+        scan = 128
+        pending = 0
+        if ($0 ~ /\{/) {
+            print candidate
+            candidate = ""
+            scan = 0
+        } else if ($0 ~ /\);[[:space:]]*$/) {
+            candidate = ""
+            scan = 0
         }
-        ' "$symbol_list.raw" | LC_ALL=C sort -u > "$symbol_list"
+        next
+    }
+    candidate != "" {
+        if ($0 ~ /\{/) {
+            print candidate
+            candidate = ""
+            scan = 0
+            next
+        }
+        if ($0 ~ /\);[[:space:]]*$/) {
+            candidate = ""
+            scan = 0
+            next
+        }
+        scan--
+        if (scan <= 0) {
+            candidate = ""
+        }
+        next
+    }
+    pending > 0 {
+        pending--
+    }
+    ' {} + | LC_ALL=C sort -u > "$source_symbols"
 
-        comm -23 "$expected_symbols" "$symbol_list" > "$missing_exports"
-        if test -s "$missing_exports"; then
-            echo "not ok 3 - v1.8.7 public ABI symbols remain exported"
-            sed 's/^/# missing export: /' "$missing_exports"
-            failed=1
-        else
-            echo "ok 3 - v1.8.7 public ABI symbols remain exported"
-        fi
+    comm -23 "$expected_symbols" "$source_symbols" > "$missing_exports"
+    if test -s "$missing_exports"; then
+        echo "not ok 3 - v1.8.7 public ABI symbols keep source exports"
+        sed 's/^/# missing source export: /' "$missing_exports"
+        failed=1
+    else
+        echo "ok 3 - v1.8.7 public ABI symbols keep source exports"
     fi
 fi
 

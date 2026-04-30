@@ -438,7 +438,6 @@ staticcheck-c-header-modeline: \
 	T_LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS) --enable-hard-errors
 
 staticcheck: staticcheck-clean
-	@$(MAKE) -C '$(top_builddir)/src' $(AM_MAKEFLAGS) libsixel.la
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
 	"$(SHELL)" "$(top_srcdir)/tests/_static/sh/staticcheck-suite.sh" \
@@ -528,7 +527,6 @@ staticcheck-test-runner-dllexport:
 		"$(abs_top_srcdir)"
 
 staticcheck-lookup-backend-exports:
-	@$(MAKE) -C '$(top_builddir)/src' $(AM_MAKEFLAGS) libsixel.la
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
 	$(T_LOG_DRIVER) --test-name "staticcheck-lookup-backend-exports" \
@@ -539,7 +537,6 @@ staticcheck-lookup-backend-exports:
 		"$(abs_top_srcdir)"
 
 staticcheck-public-compat:
-	@$(MAKE) -C '$(top_builddir)/src' $(AM_MAKEFLAGS) libsixel.la
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
 	$(T_LOG_DRIVER) --test-name "staticcheck-public-compat" \
