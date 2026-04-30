@@ -20,6 +20,7 @@ if test -z "$src_root"; then
 fi
 
 header=$src_root/include/sixel.h.in
+frame_header=$src_root/src/frame.h
 private_header=$src_root/src/frame-private.h
 frame_impl=$src_root/src/frame.c
 generated_header=$build_root/include/sixel.h
@@ -167,7 +168,8 @@ else
     fi
 fi
 
-if test ! -f "$header" || test ! -f "$private_header" ||
+if test ! -f "$header" || test ! -f "$frame_header" ||
+        test ! -f "$private_header" ||
         test ! -f "$frame_impl"; then
     echo "not ok 2 - frame public source contract remains compatible"
     echo "# missing frame header input"
@@ -192,14 +194,33 @@ else
         }
         ' "$header" &&
             awk '
+            /^typedef struct sixel_frame_interface sixel_frame_interface_t;$/ {
+                frame_interface_typedef = 1
+            }
+            /^struct sixel_frame_interface[[:space:]]*\{$/ {
+                frame_interface_tag = 1
+            }
+            /sixel_frame_vtbl_t const \*vtbl;/ {
+                frame_interface_vtbl = 1
+            }
+            END {
+                if (frame_interface_typedef == 1 &&
+                    frame_interface_tag == 1 &&
+                    frame_interface_vtbl == 1) {
+                    exit 0
+                }
+                exit 1
+            }
+            ' "$frame_header" &&
+            awk '
             /^struct sixel_frame[[:space:]]*\{$/ {
                 storage_tag = 1
             }
-            /sixel_frame_vtbl_t const \*vtbl;/ {
-                storage_vtbl = 1
+            /sixel_frame_interface_t frame_interface;/ {
+                storage_frame_interface = 1
             }
             END {
-                if (storage_tag == 1 && storage_vtbl == 1) {
+                if (storage_tag == 1 && storage_frame_interface == 1) {
                     exit 0
                 }
                 exit 1
@@ -260,7 +281,7 @@ EOF
             sed 's/^/# macro-sensitive identifier: /' \
                 "$forbidden_interface"
         else
-            echo "# expected public struct sixel_frame handle and private vtbl storage"
+            echo "# expected public frame handle and internal IFrame header"
         fi
         failed=1
     fi

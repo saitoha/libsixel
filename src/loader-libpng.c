@@ -3843,10 +3843,25 @@ apng_replay_cache_store_frame(sixel_apng_replay_cache_t *cache,
                               sixel_frame_t *frame,
                               sixel_allocator_t *allocator)
 {
+    SIXELSTATUS status;
+    sixel_frame_interface_t *frame_if;
+    sixel_frame_timeline_t timeline;
     size_t frame_bytes;
 
+    status = SIXEL_FALSE;
+    frame_if = NULL;
+    memset(&timeline, 0, sizeof(timeline));
     frame_bytes = 0u;
     if (cache == NULL || frame == NULL || cache->enabled == 0) {
+        return 0;
+    }
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if == NULL || frame_if->vtbl == NULL ||
+        frame_if->vtbl->measure_storage == NULL ||
+        frame_if->vtbl->get_timeline == NULL ||
+        frame_if->vtbl->set_timeline == NULL ||
+        frame_if->vtbl->ref == NULL) {
+        apng_replay_cache_reset(cache, allocator);
         return 0;
     }
     if (cache->frames == NULL ||
@@ -3855,7 +3870,8 @@ apng_replay_cache_store_frame(sixel_apng_replay_cache_t *cache,
         apng_replay_cache_reset(cache, allocator);
         return 0;
     }
-    if (SIXEL_FAILED(sixel_frame_measure_storage(frame, &frame_bytes))) {
+    if (SIXEL_FAILED(frame_if->vtbl->measure_storage(frame_if,
+                                                     &frame_bytes))) {
         apng_replay_cache_reset(cache, allocator);
         return 0;
     }
@@ -3866,8 +3882,18 @@ apng_replay_cache_store_frame(sixel_apng_replay_cache_t *cache,
         return 0;
     }
 
-    sixel_frame_set_handoff_shareable(frame, 1);
-    sixel_frame_ref(frame);
+    status = frame_if->vtbl->get_timeline(frame_if, &timeline);
+    if (SIXEL_FAILED(status)) {
+        apng_replay_cache_reset(cache, allocator);
+        return 0;
+    }
+    timeline.handoff_shareable = 1;
+    status = frame_if->vtbl->set_timeline(frame_if, &timeline);
+    if (SIXEL_FAILED(status)) {
+        apng_replay_cache_reset(cache, allocator);
+        return 0;
+    }
+    frame_if->vtbl->ref(frame_if);
     cache->frames[cache->frame_count] = frame;
     cache->frame_count += 1u;
     cache->cached_bytes += frame_bytes;

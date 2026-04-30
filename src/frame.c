@@ -135,6 +135,13 @@ sixel_frame_vtbl_clip(sixel_frame_interface_t *frame,
                       int height);
 static sixel_allocator_t *
 sixel_frame_vtbl_allocator(sixel_frame_interface_t *frame);
+static SIXELSTATUS
+sixel_frame_vtbl_measure_storage(sixel_frame_interface_t *frame,
+                                 size_t *storage_bytes);
+static SIXELSTATUS
+sixel_frame_vtbl_clone(sixel_frame_interface_t *frame,
+                       sixel_allocator_t *allocator,
+                       sixel_frame_interface_t **frame_out);
 
 static sixel_frame_vtbl_t const g_sixel_frame_vtbl = {
     sixel_frame_vtbl_ref,
@@ -149,7 +156,9 @@ static sixel_frame_vtbl_t const g_sixel_frame_vtbl = {
     sixel_frame_vtbl_resize,
     sixel_frame_vtbl_resize_float32,
     sixel_frame_vtbl_clip,
-    sixel_frame_vtbl_allocator
+    sixel_frame_vtbl_allocator,
+    sixel_frame_vtbl_measure_storage,
+    sixel_frame_vtbl_clone
 };
 
 
@@ -234,19 +243,13 @@ end:
 static sixel_frame_t *
 sixel_frame_from_interface(sixel_frame_interface_t *frame)
 {
-    return frame;
+    return (sixel_frame_t *)frame;
 }
 
 static sixel_frame_t const *
 sixel_frame_from_interface_const(sixel_frame_interface_t const *frame)
 {
-    return frame;
-}
-
-SIXEL_INTERNAL_API sixel_frame_interface_t *
-sixel_frame_get_interface(sixel_frame_t *frame)
-{
-    return frame;
+    return (sixel_frame_t const *)frame;
 }
 
 static void
@@ -496,6 +499,48 @@ sixel_frame_vtbl_allocator(sixel_frame_interface_t *frame)
 
     storage = sixel_frame_from_interface(frame);
     return storage->allocator;
+}
+
+static SIXELSTATUS
+sixel_frame_vtbl_measure_storage(sixel_frame_interface_t *frame,
+                                 size_t *storage_bytes)
+{
+    sixel_frame_t const *storage;
+
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    storage = sixel_frame_from_interface_const(frame);
+    return sixel_frame_measure_storage(storage, storage_bytes);
+}
+
+static SIXELSTATUS
+sixel_frame_vtbl_clone(sixel_frame_interface_t *frame,
+                       sixel_allocator_t *allocator,
+                       sixel_frame_interface_t **frame_out)
+{
+    SIXELSTATUS status;
+    sixel_frame_t const *storage;
+    sixel_frame_t *clone;
+
+    status = SIXEL_FALSE;
+    storage = NULL;
+    clone = NULL;
+
+    if (frame == NULL || frame_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *frame_out = NULL;
+    storage = sixel_frame_from_interface_const(frame);
+    status = sixel_frame_clone(storage, allocator, &clone);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    *frame_out = sixel_frame_as_interface(clone);
+    return SIXEL_OK;
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
@@ -920,7 +965,7 @@ sixel_frame_new(
         goto end;
     }
 
-    (*ppframe)->vtbl = &g_sixel_frame_vtbl;
+    (*ppframe)->frame_interface.vtbl = &g_sixel_frame_vtbl;
     (*ppframe)->ref = 1U;
     (*ppframe)->pixels.u8ptr = NULL;
     (*ppframe)->palette = NULL;
@@ -975,7 +1020,7 @@ sixel_frame_factory_new(sixel_allocator_t *allocator, void **object)
         return status;
     }
 
-    *object = frame;
+    *object = sixel_frame_as_interface(frame);
     return SIXEL_OK;
 }
 

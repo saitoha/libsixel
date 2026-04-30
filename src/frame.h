@@ -67,7 +67,7 @@ extern "C" {
  * - src/frame.c owns frame operations that need concrete storage access.
  */
 
-typedef sixel_frame_t sixel_frame_interface_t;
+typedef struct sixel_frame_interface sixel_frame_interface_t;
 
 typedef enum sixel_frame_pixels_kind {
     SIXEL_FRAME_PIXELS_U8 = 0,
@@ -147,10 +147,22 @@ typedef struct sixel_frame_vtbl {
                         int width,
                         int height);
     sixel_allocator_t *(*allocator)(sixel_frame_interface_t *frame);
+    SIXELSTATUS (*measure_storage)(sixel_frame_interface_t *frame,
+                                   size_t *storage_bytes);
+    SIXELSTATUS (*clone)(sixel_frame_interface_t *frame,
+                         sixel_allocator_t *allocator,
+                         sixel_frame_interface_t **frame_out);
 } sixel_frame_vtbl_t;
 
-SIXEL_INTERNAL_API sixel_frame_interface_t *
-sixel_frame_get_interface(sixel_frame_t *frame);
+struct sixel_frame_interface {
+    sixel_frame_vtbl_t const *vtbl;
+};
+
+static inline sixel_frame_interface_t *
+sixel_frame_as_interface(sixel_frame_t *frame)
+{
+    return (sixel_frame_interface_t *)frame;
+}
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frame_get_pixels_view(sixel_frame_t const *frame,

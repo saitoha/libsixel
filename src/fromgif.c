@@ -2134,12 +2134,27 @@ gif_replay_cache_store_frame(gif_replay_cache_t *cache,
 {
     SIXELSTATUS status;
     sixel_frame_t *cached_frame;
+    sixel_frame_interface_t *frame_if;
+    sixel_frame_interface_t *cached_frame_if;
+    sixel_frame_timeline_t timeline;
     size_t frame_bytes;
 
     status = SIXEL_FALSE;
     cached_frame = NULL;
+    frame_if = NULL;
+    cached_frame_if = NULL;
     frame_bytes = 0u;
+    memset(&timeline, 0, sizeof(timeline));
     if (cache == NULL || frame == NULL || cache->enabled == 0) {
+        return 0;
+    }
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if == NULL || frame_if->vtbl == NULL ||
+        frame_if->vtbl->measure_storage == NULL ||
+        frame_if->vtbl->clone == NULL ||
+        frame_if->vtbl->get_timeline == NULL ||
+        frame_if->vtbl->set_timeline == NULL) {
+        gif_replay_cache_reset(cache);
         return 0;
     }
     if (cache->frames == NULL ||
@@ -2152,7 +2167,8 @@ gif_replay_cache_store_frame(gif_replay_cache_t *cache,
         gif_replay_cache_reset(cache);
         return 0;
     }
-    if (SIXEL_FAILED(sixel_frame_measure_storage(frame, &frame_bytes))) {
+    if (SIXEL_FAILED(frame_if->vtbl->measure_storage(frame_if,
+                                                     &frame_bytes))) {
         gif_replay_cache_reset(cache);
         return 0;
     }
@@ -2163,12 +2179,27 @@ gif_replay_cache_store_frame(gif_replay_cache_t *cache,
         return 0;
     }
 
-    status = sixel_frame_clone(frame, cache->allocator, &cached_frame);
+    status = frame_if->vtbl->clone(frame_if,
+                                   cache->allocator,
+                                   &cached_frame_if);
     if (SIXEL_FAILED(status)) {
         gif_replay_cache_reset(cache);
         return 0;
     }
-    sixel_frame_set_handoff_shareable(cached_frame, 1);
+    cached_frame = (sixel_frame_t *)cached_frame_if;
+    status = cached_frame_if->vtbl->get_timeline(cached_frame_if, &timeline);
+    if (SIXEL_FAILED(status)) {
+        cached_frame_if->vtbl->unref(cached_frame_if);
+        gif_replay_cache_reset(cache);
+        return 0;
+    }
+    timeline.handoff_shareable = 1;
+    status = cached_frame_if->vtbl->set_timeline(cached_frame_if, &timeline);
+    if (SIXEL_FAILED(status)) {
+        cached_frame_if->vtbl->unref(cached_frame_if);
+        gif_replay_cache_reset(cache);
+        return 0;
+    }
     cache->frames[cache->frame_count] = cached_frame;
     cache->frame_count += 1u;
     cache->cached_bytes += frame_bytes;

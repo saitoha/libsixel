@@ -29,9 +29,9 @@
 #include "frame.h"
 #include "sixel_atomic.h"
 
-/* Private frame object storage. Keep src/frame.h opaque. */
+/* Private frame object storage. Keep src/frame.h storage-opaque. */
 struct sixel_frame {
-    sixel_frame_vtbl_t const *vtbl; /* interface dispatch table */
+    sixel_frame_interface_t frame_interface; /* IFrame dispatch header */
     sixel_atomic_u32_t ref;         /* reference counter */
     union {
         unsigned char *u8ptr;       /* loaded pixel data (byte) */

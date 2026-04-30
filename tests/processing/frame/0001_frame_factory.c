@@ -23,7 +23,8 @@
  *
  * IComponents.getservice("services/factory", &factory)
  * IFactory.create("image/frame", allocator, &frame)
- * sixel_frame_get_pixels_view(frame, &view)
+ * IFrame.get_pixels(view)
+ * IFrame.unref()
  */
 
 static int
@@ -32,7 +33,7 @@ test_frame_factory_creates_default_frame(void)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_factory_t *factory;
-    sixel_frame_t *frame;
+    sixel_frame_interface_t *frame;
     sixel_frame_pixels_view_t view;
     void *object;
     void *service;
@@ -62,14 +63,16 @@ test_frame_factory_creates_default_frame(void)
         goto end;
     }
 
-    frame = (sixel_frame_t *)object;
+    frame = (sixel_frame_interface_t *)object;
     object = NULL;
-    if (frame == NULL) {
+    if (frame == NULL || frame->vtbl == NULL ||
+        frame->vtbl->get_pixels == NULL ||
+        frame->vtbl->unref == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
 
-    status = sixel_frame_get_pixels_view(frame, &view);
+    status = frame->vtbl->get_pixels(frame, &view);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -86,7 +89,7 @@ end:
         factory->vtbl->unref(factory);
     }
     if (frame != NULL) {
-        sixel_frame_unref(frame);
+        frame->vtbl->unref(frame);
     }
     if (allocator != NULL) {
         sixel_allocator_unref(allocator);
