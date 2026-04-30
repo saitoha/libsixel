@@ -2577,6 +2577,70 @@ webp_should_preserve_alpha_keycolor(sixel_frame_t const *frame,
 }
 
 static SIXELSTATUS
+webp_frame_set_handoff_shareable(sixel_frame_t *frame, int shareable)
+{
+    SIXELSTATUS status;
+    sixel_frame_interface_t *frame_if;
+    sixel_frame_timeline_t timeline;
+
+    status = SIXEL_FALSE;
+    frame_if = NULL;
+    memset(&timeline, 0, sizeof(timeline));
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if->vtbl == NULL ||
+        frame_if->vtbl->get_timeline == NULL ||
+        frame_if->vtbl->set_timeline == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = frame_if->vtbl->get_timeline(frame_if, &timeline);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    timeline.handoff_shareable = shareable != 0 ? 1 : 0;
+    return frame_if->vtbl->set_timeline(frame_if, &timeline);
+}
+
+static SIXELSTATUS
+webp_frame_clone(sixel_frame_t const *frame,
+                 sixel_allocator_t *allocator,
+                 sixel_frame_t **frame_out)
+{
+    SIXELSTATUS status;
+    sixel_frame_interface_t *frame_if;
+    sixel_frame_interface_t *clone_if;
+
+    status = SIXEL_BAD_ARGUMENT;
+    frame_if = NULL;
+    clone_if = NULL;
+    if (frame == NULL || frame_out == NULL) {
+        return status;
+    }
+    *frame_out = NULL;
+
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if->vtbl == NULL || frame_if->vtbl->clone == NULL) {
+        return status;
+    }
+
+    status = frame_if->vtbl->clone(frame_if, allocator, &clone_if);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (clone_if == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    *frame_out = (sixel_frame_t *)clone_if;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 webp_finalize_frame_output(sixel_frame_t *frame,
                            int enable_cms,
                            int cms_converted,
@@ -3320,7 +3384,10 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                  * Replay-cache frames are immutable after decode. Mark them
                  * shareable so pipeline handoff can pass by reference.
                  */
-                sixel_frame_set_handoff_shareable(cached_frame, 1);
+                status = webp_frame_set_handoff_shareable(cached_frame, 1);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
 
                 status = decode->fn_load(cached_frame, decode->context);
                 if (status == SIXEL_INTERRUPTED) {
@@ -3419,11 +3486,16 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                 }
                 if (frame_cache != NULL && loop_count == 0 &&
                     (size_t)frame_no < frame_cache_slots) {
-                    status = sixel_frame_clone(frame,
-                                               chunk->allocator,
-                                               &cached_frame);
+                    status = webp_frame_clone(frame,
+                                              chunk->allocator,
+                                              &cached_frame);
                     if (SIXEL_SUCCEEDED(status)) {
-                        sixel_frame_set_handoff_shareable(cached_frame, 1);
+                        status = webp_frame_set_handoff_shareable(
+                            cached_frame,
+                            1);
+                        if (SIXEL_FAILED(status)) {
+                            goto end;
+                        }
                         frame_cache[(size_t)frame_no] = cached_frame;
                         cached_frame = NULL;
                     } else {
@@ -3445,7 +3517,10 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                      * Decoded frame ownership is transferred per callback.
                      * The queue keeps its own ref when by-ref handoff is used.
                      */
-                    sixel_frame_set_handoff_shareable(frame, 1);
+                    status = webp_frame_set_handoff_shareable(frame, 1);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
                     status = decode->fn_load(frame, decode->context);
                     if (status == SIXEL_INTERRUPTED) {
                         goto end;

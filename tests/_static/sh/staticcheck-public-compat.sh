@@ -35,6 +35,7 @@ source_symbols=$tmpdir/source-public-symbols.txt
 missing_symbols=$tmpdir/missing-public-symbols.txt
 missing_exports=$tmpdir/missing-source-exports.txt
 forbidden_interface=$tmpdir/forbidden-interface.txt
+forbidden_frame_internal=$tmpdir/forbidden-frame-internal.txt
 
 cat > "$expected_symbols" <<'EOF'
 sixel_allocator_calloc
@@ -213,6 +214,41 @@ else
             }
             ' "$frame_header" &&
             awk '
+            /^SIXEL_INTERNAL_API/ {
+                if ($0 ~ /sixel_[A-Za-z0-9_]+[[:space:]]*\(/ &&
+                    $0 !~ /sixel_frame_factory_new[[:space:]]*\(/) {
+                    print FNR ":" $0
+                    found = 1
+                }
+                pending = 1
+                next
+            }
+            pending == 1 &&
+                    /^sixel_frame_factory_new[[:space:]]*\(/ {
+                pending = 0
+                next
+            }
+            pending == 1 &&
+                    /^sixel_[A-Za-z0-9_]+[[:space:]]*\(/ {
+                print FNR ":" $0
+                found = 1
+                pending = 0
+                next
+            }
+            pending == 1 && /^$/ {
+                next
+            }
+            pending == 1 && /^[^[:space:]]/ {
+                pending = 0
+            }
+            END {
+                if (found == 1) {
+                    exit 1
+                }
+                exit 0
+            }
+            ' "$frame_header" > "$forbidden_frame_internal" &&
+            awk '
             /^struct sixel_frame[[:space:]]*\{$/ {
                 storage_tag = 1
             }
@@ -280,6 +316,9 @@ EOF
         if test -s "$forbidden_interface"; then
             sed 's/^/# macro-sensitive identifier: /' \
                 "$forbidden_interface"
+        elif test -s "$forbidden_frame_internal"; then
+            sed 's/^/# unexpected frame INTERNAL_API: /' \
+                "$forbidden_frame_internal"
         else
             echo "# expected public frame handle and internal IFrame header"
         fi

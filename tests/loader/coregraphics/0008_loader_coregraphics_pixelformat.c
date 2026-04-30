@@ -268,11 +268,15 @@ static SIXELSTATUS
 capture_coregraphics_indexed_keycolor_policy_probe(sixel_frame_t *frame,
                                                    void *data)
 {
+    SIXELSTATUS status;
+    sixel_frame_interface_t *frame_if;
     coregraphics_indexed_keycolor_policy_probe_t *probe;
     sixel_frame_transparency_t transparency;
     unsigned char const *pixels;
     size_t pixel_count;
 
+    status = SIXEL_FALSE;
+    frame_if = NULL;
     probe = NULL;
     memset(&transparency, 0, sizeof(transparency));
     pixels = NULL;
@@ -282,12 +286,21 @@ capture_coregraphics_indexed_keycolor_policy_probe(sixel_frame_t *frame,
     }
 
     probe = (coregraphics_indexed_keycolor_policy_probe_t *)data;
+    frame_if = (sixel_frame_interface_t *)frame;
+    if (frame_if->vtbl == NULL ||
+        frame_if->vtbl->get_transparency == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     probe->callback_count += 1;
     probe->pixelformat = sixel_frame_get_pixelformat(frame);
     probe->width = sixel_frame_get_width(frame);
     probe->height = sixel_frame_get_height(frame);
     probe->transparent = sixel_frame_get_transparent(frame);
-    (void)sixel_frame_get_transparency(frame, &transparency);
+    status = frame_if->vtbl->get_transparency(frame_if, &transparency);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     probe->alpha_zero_is_transparent =
         transparency.alpha_zero_is_transparent;
     probe->has_transparent_mask =
@@ -844,10 +857,16 @@ capture_coregraphics_delay_replay_probe(sixel_frame_t *frame, void *data)
 static SIXELSTATUS
 capture_coregraphics_cache_shareable_probe(sixel_frame_t *frame, void *data)
 {
+    SIXELSTATUS status;
+    sixel_frame_interface_t *frame_if;
+    sixel_frame_timeline_t timeline;
     coregraphics_cache_shareable_probe_t *probe;
     int index;
     int capacity;
 
+    status = SIXEL_FALSE;
+    frame_if = NULL;
+    memset(&timeline, 0, sizeof(timeline));
     probe = NULL;
     index = 0;
     capacity = 0;
@@ -856,11 +875,21 @@ capture_coregraphics_cache_shareable_probe(sixel_frame_t *frame, void *data)
     }
 
     probe = (coregraphics_cache_shareable_probe_t *)data;
+    frame_if = (sixel_frame_interface_t *)frame;
+    if (frame_if->vtbl == NULL || frame_if->vtbl->get_timeline == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = frame_if->vtbl->get_timeline(frame_if, &timeline);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
     capacity = (int)(sizeof(probe->shareable) / sizeof(probe->shareable[0]));
     if (probe->callback_count < capacity) {
         index = probe->callback_count;
         probe->shareable[index] =
-            sixel_frame_get_handoff_shareable(frame) != 0 ? 1 : 0;
+            timeline.handoff_shareable != 0 ? 1 : 0;
         probe->loop_nos[index] = sixel_frame_get_loop_no(frame);
         probe->frame_nos[index] = sixel_frame_get_frame_no(frame);
     }

@@ -21,6 +21,25 @@
 #include "src/filter.h"
 #include "tests/processing/filter/filter_test_common.h"
 
+static SIXELSTATUS
+test_frame_get_pixels_view(sixel_frame_t const *frame,
+                           sixel_frame_pixels_view_t *view)
+{
+    sixel_frame_interface_t *frame_if;
+
+    frame_if = NULL;
+    if (frame == NULL || view == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    frame_if = (sixel_frame_interface_t *)frame;
+    if (frame_if->vtbl == NULL || frame_if->vtbl->get_pixels == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return frame_if->vtbl->get_pixels(frame_if, view);
+}
+
 static int
 test_sample_stride_override(void)
 {
@@ -67,7 +86,7 @@ test_sample_stride_override(void)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    status = sixel_frame_get_pixels_view(input_frame, &input_view);
+    status = test_frame_get_pixels_view(input_frame, &input_view);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -123,7 +142,7 @@ test_sample_stride_override(void)
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
-    status = sixel_frame_get_pixels_view(sample_frame, &sample_view);
+    status = test_frame_get_pixels_view(sample_frame, &sample_view);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -191,7 +210,7 @@ test_sample_respects_clip_region(void)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    status = sixel_frame_get_pixels_view(input_frame, &input_view);
+    status = test_frame_get_pixels_view(input_frame, &input_view);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -233,7 +252,7 @@ test_sample_respects_clip_region(void)
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
-    status = sixel_frame_get_pixels_view(sample_frame, &sample_view);
+    status = test_frame_get_pixels_view(sample_frame, &sample_view);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }

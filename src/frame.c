@@ -88,6 +88,13 @@ static sixel_frame_t *
 sixel_frame_from_interface(sixel_frame_interface_t *frame);
 static sixel_frame_t const *
 sixel_frame_from_interface_const(sixel_frame_interface_t const *frame);
+static SIXELSTATUS
+sixel_frame_measure_storage(sixel_frame_t const *frame,
+                            size_t *storage_bytes);
+static SIXELSTATUS
+sixel_frame_clone(sixel_frame_t const *frame,
+                  sixel_allocator_t *allocator,
+                  sixel_frame_t **frame_out);
 static void
 sixel_frame_vtbl_ref(sixel_frame_interface_t *frame);
 static void
@@ -543,7 +550,7 @@ sixel_frame_vtbl_clone(sixel_frame_interface_t *frame,
     return SIXEL_OK;
 }
 
-SIXEL_INTERNAL_API SIXELSTATUS
+static SIXELSTATUS
 sixel_frame_get_pixels_view(sixel_frame_t const *frame,
                             sixel_frame_pixels_view_t *view)
 {
@@ -568,7 +575,7 @@ sixel_frame_get_pixels_view(sixel_frame_t const *frame,
     return SIXEL_OK;
 }
 
-SIXEL_INTERNAL_API SIXELSTATUS
+static SIXELSTATUS
 sixel_frame_get_timeline(sixel_frame_t const *frame,
                          sixel_frame_timeline_t *timeline)
 {
@@ -585,24 +592,7 @@ sixel_frame_get_timeline(sixel_frame_t const *frame,
     return SIXEL_OK;
 }
 
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_frame_set_timeline(sixel_frame_t *frame,
-                         sixel_frame_timeline_t const *timeline)
-{
-    if (frame == NULL || timeline == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    frame->delay = timeline->delay;
-    frame->frame_no = timeline->frame_no;
-    frame->loop_count = timeline->loop_count;
-    frame->multiframe = timeline->multiframe;
-    frame->handoff_shareable = timeline->handoff_shareable;
-
-    return SIXEL_OK;
-}
-
-SIXEL_INTERNAL_API SIXELSTATUS
+static SIXELSTATUS
 sixel_frame_get_transparency(
     sixel_frame_t const *frame,
     sixel_frame_transparency_t *transparency)
@@ -620,53 +610,11 @@ sixel_frame_get_transparency(
     return SIXEL_OK;
 }
 
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_frame_set_transparency(
-    sixel_frame_t *frame,
-    sixel_frame_transparency_t const *transparency)
-{
-    if (frame == NULL || transparency == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    if (frame->transparent_mask != NULL &&
-        frame->transparent_mask != transparency->transparent_mask) {
-        sixel_allocator_free(frame->allocator, frame->transparent_mask);
-    }
-    frame->transparent = transparency->transparent;
-    frame->alpha_zero_is_transparent =
-        transparency->alpha_zero_is_transparent;
-    frame->transparent_mask = transparency->transparent_mask;
-    frame->transparent_mask_size = transparency->transparent_mask_size;
-
-    return SIXEL_OK;
-}
-
-SIXEL_INTERNAL_API int
-sixel_frame_get_handoff_shareable(sixel_frame_t const *frame)
-{
-    if (frame == NULL) {
-        return 0;
-    }
-
-    return frame->handoff_shareable;
-}
-
-SIXEL_INTERNAL_API void
-sixel_frame_set_handoff_shareable(sixel_frame_t *frame, int shareable)
-{
-    if (frame == NULL) {
-        return;
-    }
-
-    frame->handoff_shareable = shareable != 0 ? 1 : 0;
-}
-
 /*
  * Return the byte footprint owned by the frame storage itself.  Replay caches
  * use this to decide whether keeping a decoded frame by reference is bounded.
  */
-SIXEL_INTERNAL_API SIXELSTATUS
+static SIXELSTATUS
 sixel_frame_measure_storage(sixel_frame_t const *frame,
                             size_t *storage_bytes)
 {
@@ -755,7 +703,7 @@ sixel_frame_measure_storage(sixel_frame_t const *frame,
  * deliberately clears handoff_shareable because the clone is private to the
  * caller and can be transformed in place.
  */
-SIXEL_INTERNAL_API SIXELSTATUS
+static SIXELSTATUS
 sixel_frame_clone(sixel_frame_t const *frame,
                   sixel_allocator_t *allocator,
                   sixel_frame_t **frame_out)

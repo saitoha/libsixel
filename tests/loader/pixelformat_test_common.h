@@ -117,11 +117,25 @@ typedef struct loader_component_case_spec {
 static SIXEL_TEST_UNUSED SIXELSTATUS
 capture_frame(sixel_frame_t *frame, void *data)
 {
+    SIXELSTATUS status;
+    sixel_frame_interface_t *frame_if;
     loader_probe_context_t *context;
     sixel_frame_transparency_t transparency;
 
+    status = SIXEL_FALSE;
+    frame_if = NULL;
     context = (loader_probe_context_t *)data;
     memset(&transparency, 0, sizeof(transparency));
+    if (frame == NULL || context == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    frame_if = (sixel_frame_interface_t *)frame;
+    if (frame_if->vtbl == NULL ||
+        frame_if->vtbl->get_transparency == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     context->callback_count += 1;
     context->pixelformat = sixel_frame_get_pixelformat(frame);
     context->colorspace = sixel_frame_get_colorspace(frame);
@@ -129,7 +143,10 @@ capture_frame(sixel_frame_t *frame, void *data)
     context->height = sixel_frame_get_height(frame);
     context->transparent = sixel_frame_get_transparent(frame);
     context->multiframe = sixel_frame_get_multiframe(frame);
-    (void)sixel_frame_get_transparency(frame, &transparency);
+    status = frame_if->vtbl->get_transparency(frame_if, &transparency);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     context->alpha_zero_is_transparent =
         transparency.alpha_zero_is_transparent;
     context->has_transparent_mask =

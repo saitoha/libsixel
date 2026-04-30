@@ -3034,6 +3034,133 @@ sixel_encoder_handoff_needs_preplan_clone(
     return 0;
 }
 
+/*
+ * Keep encoder-side frame access on IFrame.  The legacy public frame APIs
+ * still exist for source compatibility, but storage-only helpers must stay
+ * private to frame.c.
+ */
+static SIXELSTATUS
+sixel_encoder_frame_get_pixels_view(sixel_frame_t const *frame,
+                                    sixel_frame_pixels_view_t *view)
+{
+    sixel_frame_interface_t *frame_if;
+
+    frame_if = NULL;
+    if (frame == NULL || view == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if->vtbl == NULL || frame_if->vtbl->get_pixels == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return frame_if->vtbl->get_pixels(frame_if, view);
+}
+
+static SIXELSTATUS
+sixel_encoder_frame_get_transparency(
+    sixel_frame_t const *frame,
+    sixel_frame_transparency_t *transparency)
+{
+    sixel_frame_interface_t *frame_if;
+
+    frame_if = NULL;
+    if (frame == NULL || transparency == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if->vtbl == NULL ||
+        frame_if->vtbl->get_transparency == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return frame_if->vtbl->get_transparency(frame_if, transparency);
+}
+
+static SIXELSTATUS
+sixel_encoder_frame_set_transparency(
+    sixel_frame_t *frame,
+    sixel_frame_transparency_t const *transparency)
+{
+    sixel_frame_interface_t *frame_if;
+
+    frame_if = NULL;
+    if (frame == NULL || transparency == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if->vtbl == NULL ||
+        frame_if->vtbl->set_transparency == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return frame_if->vtbl->set_transparency(frame_if, transparency);
+}
+
+static SIXELSTATUS
+sixel_encoder_frame_clone(sixel_frame_t const *frame,
+                          sixel_allocator_t *allocator,
+                          sixel_frame_t **frame_out)
+{
+    SIXELSTATUS status;
+    sixel_frame_interface_t *frame_if;
+    sixel_frame_interface_t *clone_if;
+
+    status = SIXEL_BAD_ARGUMENT;
+    frame_if = NULL;
+    clone_if = NULL;
+    if (frame == NULL || frame_out == NULL) {
+        return status;
+    }
+    *frame_out = NULL;
+
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if->vtbl == NULL || frame_if->vtbl->clone == NULL) {
+        return status;
+    }
+
+    status = frame_if->vtbl->clone(frame_if, allocator, &clone_if);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (clone_if == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    *frame_out = (sixel_frame_t *)clone_if;
+    return SIXEL_OK;
+}
+
+static int
+sixel_encoder_frame_get_handoff_shareable(sixel_frame_t const *frame)
+{
+    SIXELSTATUS status;
+    sixel_frame_interface_t *frame_if;
+    sixel_frame_timeline_t timeline;
+
+    status = SIXEL_FALSE;
+    frame_if = NULL;
+    memset(&timeline, 0, sizeof(timeline));
+    if (frame == NULL) {
+        return 0;
+    }
+
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if->vtbl == NULL || frame_if->vtbl->get_timeline == NULL) {
+        return 0;
+    }
+
+    status = frame_if->vtbl->get_timeline(frame_if, &timeline);
+    if (SIXEL_FAILED(status)) {
+        return 0;
+    }
+
+    return timeline.handoff_shareable != 0 ? 1 : 0;
+}
+
 static int
 sixel_encoder_frame_get_transparent_mask_pixels(
     sixel_frame_t const *frame,
@@ -3054,7 +3181,7 @@ sixel_encoder_frame_get_transparent_mask_pixels(
     if (frame == NULL) {
         return 0;
     }
-    status = sixel_frame_get_transparency(frame, &transparency);
+    status = sixel_encoder_frame_get_transparency(frame, &transparency);
     if (SIXEL_FAILED(status)) {
         return 0;
     }
@@ -3062,7 +3189,7 @@ sixel_encoder_frame_get_transparent_mask_pixels(
         transparency.transparent_mask_size == 0u) {
         return 0;
     }
-    status = sixel_frame_get_pixels_view(frame, &view);
+    status = sixel_encoder_frame_get_pixels_view(frame, &view);
     if (SIXEL_FAILED(status)) {
         return 0;
     }
@@ -3103,12 +3230,12 @@ sixel_encoder_frame_preserves_alpha_key(sixel_frame_t const *frame)
     if (frame == NULL) {
         return 0;
     }
-    status = sixel_frame_get_transparency(frame, &transparency);
+    status = sixel_encoder_frame_get_transparency(frame, &transparency);
     if (SIXEL_FAILED(status) ||
         transparency.alpha_zero_is_transparent == 0) {
         return 0;
     }
-    status = sixel_frame_get_pixels_view(frame, &view);
+    status = sixel_encoder_frame_get_pixels_view(frame, &view);
     if (SIXEL_FAILED(status)) {
         return 0;
     }
@@ -3150,7 +3277,7 @@ sixel_encoder_bind_frame_transparent_mask(
                                                          &pixel_count)) {
         return;
     }
-    status = sixel_frame_get_transparency(frame, &transparency);
+    status = sixel_encoder_frame_get_transparency(frame, &transparency);
     if (SIXEL_FAILED(status)) {
         return;
     }
@@ -3289,7 +3416,7 @@ sixel_encoder_promote_pal8_transparent_for_geometry(
     } else {
         transparency.alpha_zero_is_transparent = 0;
     }
-    status = sixel_frame_set_transparency(frame, &transparency);
+    status = sixel_encoder_frame_set_transparency(frame, &transparency);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -6746,9 +6873,9 @@ sixel_encoder_prepare_palette(
         (sixel_frame_get_pixelformat(frame) != palette_target_pixelformat
             || sixel_frame_get_colorspace(frame)
                 != clustering_colorspace)) {
-        status = sixel_frame_clone(frame,
-                                   encoder->allocator,
-                                   &cluster_frame);
+        status = sixel_encoder_frame_clone(frame,
+                                           encoder->allocator,
+                                           &cluster_frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -13011,9 +13138,9 @@ sixel_encoder_frame_pipeline_worker(void *priv)
             SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
         need_clone = 0;
         work_frame = frame;
-        if (sixel_frame_get_handoff_shareable(frame) != 0 &&
+        if (sixel_encoder_frame_get_handoff_shareable(frame) != 0 &&
             metadata.needs_preplan_clone != 0) {
-            status = sixel_frame_clone(
+            status = sixel_encoder_frame_clone(
                 frame,
                 pipeline->encoder->allocator,
                 &work_frame);
@@ -13181,7 +13308,7 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
     metadata.delay = sixel_frame_get_delay(frame);
     metadata.multiframe = sixel_frame_get_multiframe(frame);
 
-    if (sixel_frame_get_handoff_shareable(frame) != 0) {
+    if (sixel_encoder_frame_get_handoff_shareable(frame) != 0) {
         metadata.needs_preplan_clone =
             sixel_encoder_handoff_needs_preplan_clone(pipeline->encoder,
                                                       frame);
@@ -13195,9 +13322,9 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
             SIXEL_OK,
             SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
     } else {
-        status = sixel_frame_clone(frame,
-                                   pipeline->encoder->allocator,
-                                   &queue_frame);
+        status = sixel_encoder_frame_clone(frame,
+                                           pipeline->encoder->allocator,
+                                           &queue_frame);
         if (SIXEL_FAILED(status)) {
             sixel_encoder_handoff_trace_emit(
                 pipeline,

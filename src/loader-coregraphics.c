@@ -2091,6 +2091,57 @@ end:
     return status;
 }
 
+static SIXELSTATUS
+coregraphics_frame_measure_storage(sixel_frame_t const *frame,
+                                   size_t *storage_bytes)
+{
+    sixel_frame_interface_t *frame_if;
+
+    frame_if = NULL;
+    if (frame == NULL || storage_bytes == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if->vtbl == NULL ||
+        frame_if->vtbl->measure_storage == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return frame_if->vtbl->measure_storage(frame_if, storage_bytes);
+}
+
+static SIXELSTATUS
+coregraphics_frame_set_handoff_shareable(sixel_frame_t *frame,
+                                         int shareable)
+{
+    SIXELSTATUS status;
+    sixel_frame_interface_t *frame_if;
+    sixel_frame_timeline_t timeline;
+
+    status = SIXEL_FALSE;
+    frame_if = NULL;
+    memset(&timeline, 0, sizeof(timeline));
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if->vtbl == NULL ||
+        frame_if->vtbl->get_timeline == NULL ||
+        frame_if->vtbl->set_timeline == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = frame_if->vtbl->get_timeline(frame_if, &timeline);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    timeline.handoff_shareable = shareable != 0 ? 1 : 0;
+    return frame_if->vtbl->set_timeline(frame_if, &timeline);
+}
+
 static void
 coregraphics_loader_state_init(
     coregraphics_loader_state_t *state,
@@ -2615,7 +2666,7 @@ coregraphics_process_single_frame(coregraphics_loader_state_t *state)
         if (cache_slot != NULL) {
             if (state->frame_cache_decision_pending != 0) {
                 state->frame_cache_frame_bytes = 0u;
-                if (SIXEL_FAILED(sixel_frame_measure_storage(
+                if (SIXEL_FAILED(coregraphics_frame_measure_storage(
                         state->decode_frame,
                         &state->frame_cache_frame_bytes))) {
                     sixel_helper_set_additional_message(
@@ -2632,21 +2683,31 @@ coregraphics_process_single_frame(coregraphics_loader_state_t *state)
                 }
                 cache_slot->decided = 1u;
                 if (state->frame_cache_keep != 0) {
-                    sixel_frame_set_handoff_shareable(
+                    status = coregraphics_frame_set_handoff_shareable(
                         state->decode_frame, 1);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
                     cache_slot->frame = state->decode_frame;
                     state->frame_cache_used_bytes +=
                         state->frame_cache_frame_bytes;
                     state->emit_frame = state->decode_frame;
                     state->cached_frame_tmp = NULL;
                 } else {
-                    sixel_frame_set_handoff_shareable(
+                    status = coregraphics_frame_set_handoff_shareable(
                         state->decode_frame, 0);
+                    if (SIXEL_FAILED(status)) {
+                        return status;
+                    }
                     state->emit_frame = state->decode_frame;
                     state->release_emit_frame = 1;
                 }
             } else {
-                sixel_frame_set_handoff_shareable(state->decode_frame, 0);
+                status = coregraphics_frame_set_handoff_shareable(
+                    state->decode_frame, 0);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
                 state->emit_frame = state->decode_frame;
             }
         } else {
