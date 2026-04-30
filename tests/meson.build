@@ -720,6 +720,12 @@ staticcheck_cases = [
       meson.project_build_root()],
   ],
   [
+    'staticcheck-deprecated-diagnostic-guard',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-deprecated-diagnostic-guard.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-kmedoids-suboption-env-sync',
     [meson.current_source_dir() / '_static/sh/staticcheck-kmedoids-suboption-env-sync.sh',
       meson.project_source_root()],

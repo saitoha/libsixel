@@ -769,6 +769,16 @@ sixel_frame_clone(sixel_frame_t const *frame,
     if (SIXEL_FAILED(status)) {
         return status;
     }
+    /*
+     * Keep the constructor contract explicit. GCC's analyzer loses the
+     * relation between the returned status and the out pointer across
+     * sixel_frame_new(), and this also protects future constructor changes.
+     */
+    if (clone == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_clone: sixel_frame_new() returned null frame.");
+        return SIXEL_BAD_ALLOCATION;
+    }
 
     clone->width = view.width;
     clone->height = view.height;

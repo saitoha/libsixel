@@ -222,12 +222,12 @@ test_dither_policy_named_classes_contract(void)
      * This is a deprecated ABI-compatibility no-op. Keep one direct call in
      * the core dither test so removing the symbol trips the regular runner.
      */
-#if defined(__GNUC__) || defined(__clang__)
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
     sixel_dither_set_complexion_score(dither, 1);
-#if defined(__GNUC__) || defined(__clang__)
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 # pragma GCC diagnostic pop
 #endif
 

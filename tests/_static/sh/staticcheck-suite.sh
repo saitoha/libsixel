@@ -321,6 +321,10 @@ run_case_tap "staticcheck-public-compat" \
     "$src_root/tests/_static/sh/staticcheck-public-compat.sh" \
     "$src_root" "$build_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-deprecated-diagnostic-guard" \
+    "$src_root/tests/_static/sh/staticcheck-deprecated-diagnostic-guard.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-lookup-policy-no-backend-includes" \
     "$src_root/tests/_static/sh/staticcheck-lookup-policy-no-backend-includes.sh" \
     "$src_root" || fail_and_exit $?
