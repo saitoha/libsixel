@@ -1,0 +1,363 @@
+// SPDX-License-Identifier: MIT
+//
+// Copyright (c) 2026 libsixel developers. See `AUTHORS`.
+//
+// This file is libsixel 6cells IDL.  Its surface is intentionally close to
+// OMG IDL and MIDL, but tools/gen_6cells_h.awk is the only supported compiler.
+
+module sixel {
+
+/*
+ * Component services expose stable interface objects without exposing their
+ * concrete storage.  Callers that need post-v1.8.7 component contracts should
+ * include this header explicitly; sixel.h stays focused on the legacy public
+ * API surface.
+ */
+struct sixel_chunk;
+struct sixel_logger;
+struct sixel_option_argument_list_resolution;
+
+[alias(sixel_factory_t)]
+interface factory {
+    void ref();
+    void unref();
+    SIXELSTATUS create(
+        in char const *class_name,
+        in sixel_allocator_t *allocator,
+        out void **object);
+};
+
+/*
+ * getservice("services/factory", &factory) returns the process-wide factory
+ * service with interface-level ownership.  Release it with factory->vtbl->unref
+ * when the caller is done with the service pointer.
+ */
+SIXELAPI SIXELSTATUS sixel_components_getservice(
+    in char const *name,
+    out void **service);
+
+/*
+ * interface ILookupPolicy {
+ *   ref();
+ *   unref();
+ *   prepare(request);
+ *   map_pixel(pixel);
+ * }
+ *
+ * Ownership/lifetime:
+ * - Factory create returns refcount=1 policy objects.
+ * - Callers release with policy->vtbl->unref(policy).
+ *
+ * Creation path:
+ * - sixel_lookup_policy_select_name(select_request)
+ * - services/factory -> create("lookup/...", allocator, &policy)
+ * - factory resolves class ids via generated classid registry
+ * - policy->prepare(request)
+ *
+ * Reuse path:
+ * - Callers may pass a prepared policy object through
+ *   request.reuse_policy/request.reuse_policy_slot.
+ * - request.parallel_dither_active carries execution context so policies can
+ *   disable non-thread-safe cache paths without relying on global state.
+ * - request.shared_instance_enabled stores the effective shared-instance
+ *   preference resolved by the caller (CLI override or environment default).
+ * - Implementations may choose to ignore reuse hints.
+ */
+interface lookup_policy;
+
+struct lookup_policy_select_request {
+    unsigned char const *palette;
+    int depth;
+    int reqcolor;
+    int optimize_lookup;
+    int lut_policy;
+    int pixelformat;
+};
+
+struct lookup_policy_prepare_request {
+    unsigned char const *palette;
+    float const *palette_float;
+    int depth;
+    int float_depth;
+    int reqcolor;
+    int pixelformat;
+    int parallel_dither_active;
+    int shared_instance_enabled;
+    lookup_policy *reuse_policy;
+    lookup_policy **reuse_policy_slot;
+    sixel_allocator_t *allocator;
+};
+
+typedef int lookup_policy_result;
+
+[receiver(policy)]
+interface lookup_policy {
+    void ref();
+    void unref();
+    SIXELSTATUS prepare(in lookup_policy_prepare_request const *request);
+    [const] lookup_policy_result map_pixel(
+        in unsigned char const *pixel);
+};
+
+/*
+ * interface IDitherPolicy {
+ *   ref();
+ *   unref();
+ *   prepare(request);
+ *   apply(request);
+ *   supports_parallel_bands();
+ * }
+ *
+ * Ownership/lifetime:
+ * - Factory create returns refcount=1 policy objects.
+ * - Callers release with policy->vtbl->unref(policy).
+ *
+ * Creation path:
+ * - sixel_dither_policy_select_name(select_request)
+ * - services/factory -> create("dither/...", allocator, &policy)
+ * - policy->prepare(request)
+ */
+interface dither_policy;
+
+typedef int (*sixel_dither_lookup_map_fn)(
+    in lookup_policy const *policy,
+    in unsigned char const *pixel);
+
+struct dither_policy_select_request {
+    int method_for_diffuse;
+    int ncolors;
+    int pixelformat;
+};
+
+struct dither_policy_prepare_request {
+    sixel_dither_t *dither;
+    int depth;
+    int method_for_scan;
+    int pixelformat;
+};
+
+struct dither_policy_apply_request {
+    sixel_index_t *result;
+    unsigned char *data;
+    int width;
+    int height;
+    int band_origin;
+    int output_start;
+    int depth;
+    unsigned char *palette;
+    int method_for_scan;
+    lookup_policy *lookup_policy;
+    sixel_dither_t *dither;
+    int pixelformat;
+};
+
+typedef int dither_policy_supports_parallel_result;
+
+[receiver(policy)]
+interface dither_policy {
+    void ref();
+    void unref();
+    SIXELSTATUS prepare(in dither_policy_prepare_request const *request);
+    SIXELSTATUS apply(in dither_policy_apply_request const *request);
+    [const] dither_policy_supports_parallel_result supports_parallel_bands();
+};
+
+/*
+ * interface ILoaderComponent {
+ *   ref();
+ *   unref();
+ *   setopt(option, value);
+ *   predicate(chunk);
+ *   load(chunk);
+ *   name();
+ * }
+ */
+interface loader_component;
+
+[receiver(loader)]
+interface loader_component {
+    void ref();
+    void unref();
+    SIXELSTATUS setopt(in int option, in void const *value);
+    SIXELSTATUS load(
+        in struct sixel_chunk const *chunk,
+        in sixel_load_image_function fn_load,
+        in void *context);
+    [const] char const *name();
+    int predicate(in struct sixel_chunk const *chunk);
+};
+
+typedef loader_component sixel_loader_component_t;
+typedef loader_component_vtbl sixel_loader_vtbl_t;
+
+/*
+ * interface ILoaderManager {
+ *   ref();
+ *   unref();
+ *   build_chain(request);
+ *   load(chunk, out selected_loader);
+ * }
+ */
+[alias(sixel_loader_manager_t)]
+interface loader_manager;
+
+struct loader_suboptions {
+    int wic_ico_minsize;
+    int libjpeg_enable_cms;
+    int libjpeg_cms_engine;
+    int libjpeg_enable_orientation;
+    int libpng_enable_cms;
+    int libpng_cms_engine;
+    int libpng_enable_orientation;
+    int libwebp_enable_cms;
+    int libwebp_cms_engine;
+    int libwebp_enable_orientation;
+    int coregraphics_enable_orientation;
+    int libtiff_enable_cms;
+    int libtiff_cms_engine;
+    int builtin_enable_cms;
+    int builtin_cms_engine;
+    int builtin_enable_orientation;
+    int builtin_bmp_info40_mode;
+};
+
+struct loader_manager_build_request {
+    struct sixel_option_argument_list_resolution const *resolution;
+    int skip_predicate_gate;
+    int require_static;
+    int use_palette;
+    int reqcolors;
+    unsigned char const *bgcolor;
+    int has_bgcolor;
+    int bgcolor_source;
+    int loop_control;
+    int has_start_frame_no;
+    int start_frame_no;
+    loader_suboptions const *suboptions;
+    struct sixel_logger *timeline_logger;
+    int *timeline_job_seq;
+    sixel_loader_t *timeline_loader;
+};
+
+[receiver(manager)]
+interface loader_manager {
+    void ref();
+    void unref();
+    SIXELSTATUS build_chain(in loader_manager_build_request const *request);
+    SIXELSTATUS load(
+        in struct sixel_chunk const *chunk,
+        out loader_component **selected_loader,
+        in sixel_load_image_function fn_load,
+        in void *load_context);
+};
+
+/*
+ * interface IFrame {
+ *   ref();
+ *   unref();
+ *   init_pixels(request);
+ *   get_pixels(view);
+ *   set_pixelformat(pixelformat);
+ *   get_timeline(timeline);
+ *   set_timeline(timeline);
+ *   get_transparency(transparency);
+ *   set_transparency(transparency);
+ *   resize(width, height, method);
+ *   resize_float32(width, height, method);
+ *   clip(x, y, width, height);
+ *   allocator();
+ *   measure_storage(bytes);
+ *   clone(allocator);
+ * }
+ *
+ * Ownership/lifetime:
+ * - Existing public sixel_frame_new() returns refcount=1 frame objects.
+ * - init_pixels() takes ownership of request->pixels and request->palette,
+ *   matching sixel_frame_init().
+ * - set_transparency() takes ownership of request->transparent_mask.
+ *
+ * Encapsulation path:
+ * - This header exposes only the object contract and request/view DTOs.
+ * - src/frame-private.h remains a temporary storage owner while loader-side
+ *   direct-field callers migrate toward this interface.
+ * - src/frame.c owns frame operations that need concrete storage access.
+ */
+interface frame;
+
+enum frame_pixels_kind {
+    SIXEL_FRAME_PIXELS_U8 = 0,
+    SIXEL_FRAME_PIXELS_FLOAT32 = 1
+};
+
+struct frame_pixels_request {
+    void *pixels;
+    unsigned char *palette;
+    int width;
+    int height;
+    int pixelformat;
+    int colorspace; /* negative means infer from pixelformat */
+    int ncolors;
+    frame_pixels_kind kind;
+};
+
+struct frame_pixels_view {
+    unsigned char *pixels;
+    float *pixels_float32;
+    unsigned char *palette;
+    int width;
+    int height;
+    int pixelformat;
+    int colorspace;
+    int ncolors;
+};
+
+struct frame_timeline {
+    int delay;
+    int frame_no;
+    int loop_count;
+    int multiframe;
+    int handoff_shareable;
+};
+
+struct frame_transparency {
+    int transparent;
+    int alpha_zero_is_transparent;
+    unsigned char *transparent_mask;
+    size_t transparent_mask_size;
+};
+
+interface frame {
+    void ref();
+    void unref();
+    SIXELSTATUS init_pixels(in frame_pixels_request const *request);
+    SIXELSTATUS get_pixels(out frame_pixels_view *view);
+    SIXELSTATUS set_pixelformat(in int pixelformat);
+    SIXELSTATUS get_timeline(out frame_timeline *timeline);
+    SIXELSTATUS set_timeline(in frame_timeline const *timeline);
+    SIXELSTATUS get_transparency(out frame_transparency *transparency);
+    SIXELSTATUS set_transparency(in frame_transparency const *transparency);
+    SIXELSTATUS resize(
+        in int width,
+        in int height,
+        in int method_for_resampling);
+    SIXELSTATUS resize_float32(
+        in int width,
+        in int height,
+        in int method_for_resampling);
+    SIXELSTATUS clip(in int x, in int y, in int width, in int height);
+    sixel_allocator_t *allocator();
+    SIXELSTATUS measure_storage(out size_t *storage_bytes);
+    SIXELSTATUS clone(
+        in sixel_allocator_t *allocator,
+        out frame **frame_out);
+};
+
+cpp_quote <<
+static inline sixel_frame_interface_t *
+sixel_frame_as_interface(sixel_frame_t const *frame)
+{
+    return (sixel_frame_interface_t *)frame;
+}
+>>
+
+};
