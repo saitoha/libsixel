@@ -862,4 +862,5 @@ run_target('staticcheck',
     shellcheck_prog.found() ? shellcheck_prog.full_path() : '',
     codespell_prog.found() ? codespell_prog.full_path() : '',
     python_for_tests_path,
-  ])
+  ],
+  depends: [libsixel_library])

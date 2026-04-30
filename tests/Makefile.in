@@ -3408,6 +3408,7 @@ staticcheck-c-header-modeline: \
 	T_LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS) --enable-hard-errors
 
 staticcheck: staticcheck-clean
+	@$(MAKE) -C '$(top_builddir)/src' $(AM_MAKEFLAGS) libsixel.la
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
 	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
 	"$(SHELL)" "$(top_srcdir)/tests/_static/sh/staticcheck-suite.sh" \
