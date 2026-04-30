@@ -35,7 +35,7 @@
 
 #include "filter-sample.h"
 #include "filter.h"
-#include "frame-private.h"
+#include "frame.h"
 #include "pixelformat.h"
 
 typedef struct sixel_filter_sample_state {
@@ -133,6 +133,9 @@ sixel_filter_sample_copy_frame(
 {
     SIXELSTATUS status;
     sixel_frame_t *sample;
+    sixel_frame_timeline_t timeline;
+    sixel_frame_transparency_t src_transparency;
+    sixel_frame_transparency_t dst_transparency;
     unsigned char *src_pixels;
     unsigned char *dst_pixels;
     unsigned char const *src_mask;
@@ -163,6 +166,9 @@ sixel_filter_sample_copy_frame(
 
     status = SIXEL_FALSE;
     sample = NULL;
+    memset(&timeline, 0, sizeof(timeline));
+    memset(&src_transparency, 0, sizeof(src_transparency));
+    memset(&dst_transparency, 0, sizeof(dst_transparency));
     src_pixels = NULL;
     dst_pixels = NULL;
     src_mask = NULL;
@@ -202,7 +208,15 @@ sixel_filter_sample_copy_frame(
     src_pixels = sixel_frame_get_pixels(frame);
     src_width = sixel_frame_get_width(frame);
     src_height = sixel_frame_get_height(frame);
-    src_mask = frame->transparent_mask;
+    status = sixel_frame_get_transparency(frame, &src_transparency);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_frame_get_timeline(frame, &timeline);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    src_mask = src_transparency.transparent_mask;
     src_pixel_count = (size_t)src_width * (size_t)src_height;
 
     if (src_pixels == NULL) {
@@ -333,24 +347,39 @@ sixel_filter_sample_copy_frame(
         return SIXEL_BAD_ALLOCATION;
     }
 
-    sample->pixels.u8ptr = dst_pixels;
-    sample->width = sample_width;
-    sample->height = sample_height;
-    sample->pixelformat = src_pixelformat;
-    sample->colorspace = sixel_frame_get_colorspace(frame);
-    sample->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
+    status = sixel_frame_init(sample,
+                              dst_pixels,
+                              sample_width,
+                              sample_height,
+                              src_pixelformat,
+                              NULL,
+                              (-1));
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, dst_pixels);
+        sixel_frame_unref(sample);
+        sixel_allocator_free(allocator, normalized_src_pixels);
+        return status;
+    }
+    sixel_frame_set_colorspace(sample, sixel_frame_get_colorspace(frame));
+
     /*
      * Preserve timeline metadata so downstream palette/quantize stages can
      * apply frame-history logic even when the palette path runs on sampled
      * frames.
      */
-    sample->frame_no = frame->frame_no;
-    sample->loop_count = frame->loop_count;
-    sample->multiframe = frame->multiframe;
-    sample->delay = frame->delay;
-    sample->ncolors = (-1);
-    sample->transparent = frame->transparent;
-    if (src_mask != NULL && frame->transparent_mask_size >= src_pixel_count) {
+    timeline.handoff_shareable = 0;
+    status = sixel_frame_set_timeline(sample, &timeline);
+    if (SIXEL_FAILED(status)) {
+        sixel_frame_unref(sample);
+        sixel_allocator_free(allocator, normalized_src_pixels);
+        return status;
+    }
+
+    dst_transparency.transparent = src_transparency.transparent;
+    dst_transparency.alpha_zero_is_transparent =
+        src_transparency.alpha_zero_is_transparent;
+    if (src_mask != NULL &&
+        src_transparency.transparent_mask_size >= src_pixel_count) {
         mask_size = sample_count;
         dst_mask = (unsigned char *)sixel_allocator_malloc(allocator,
                                                            mask_size);
@@ -359,8 +388,15 @@ sixel_filter_sample_copy_frame(
             sixel_allocator_free(allocator, normalized_src_pixels);
             return SIXEL_BAD_ALLOCATION;
         }
-        sample->transparent_mask = dst_mask;
-        sample->transparent_mask_size = mask_size;
+        dst_transparency.transparent_mask = dst_mask;
+        dst_transparency.transparent_mask_size = mask_size;
+    }
+    status = sixel_frame_set_transparency(sample, &dst_transparency);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, dst_mask);
+        sixel_frame_unref(sample);
+        sixel_allocator_free(allocator, normalized_src_pixels);
+        return status;
     }
 
     dst_index = 0u;

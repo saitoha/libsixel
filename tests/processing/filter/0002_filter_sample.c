@@ -12,6 +12,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sixel.h>
 
@@ -29,6 +30,8 @@ test_sample_stride_override(void)
     sixel_filter_sample_config_t config;
     sixel_frame_t *input_frame;
     sixel_frame_t *sample_frame;
+    sixel_frame_pixels_view_t input_view;
+    sixel_frame_pixels_view_t sample_view;
     test_progress_t progress;
     size_t stride;
     size_t total;
@@ -42,6 +45,8 @@ test_sample_stride_override(void)
     filter = NULL;
     input_frame = NULL;
     sample_frame = NULL;
+    memset(&input_view, 0, sizeof(input_view));
+    memset(&sample_view, 0, sizeof(sample_view));
     progress.began = 0;
     progress.progressed = 0;
     progress.completed = 0;
@@ -59,6 +64,10 @@ test_sample_stride_override(void)
     }
 
     status = make_rgb_frame(allocator, 4, 4, &input_frame);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_frame_get_pixels_view(input_frame, &input_view);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -81,29 +90,28 @@ test_sample_stride_override(void)
 
     sixel_filter_bind_input(filter,
                             &input_frame,
-                            input_frame->pixelformat,
-                            input_frame->colorspace);
+                            input_view.pixelformat,
+                            input_view.colorspace);
     sixel_filter_bind_output(filter,
                              &sample_frame,
-                             input_frame->pixelformat,
-                             input_frame->colorspace);
+                             input_view.pixelformat,
+                             input_view.colorspace);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
-    expected_first = input_frame->pixels.u8ptr[0];
-    expected_last = input_frame->pixels.u8ptr[((size_t)(input_frame->width
-                    * (input_frame->height - 1)
-                    + (input_frame->width - 1)))
-                    * 3u];
+    expected_first = input_view.pixels[0];
+    expected_last = input_view.pixels[((size_t)(input_view.width
+                    * (input_view.height - 1)
+                    + (input_view.width - 1))) * 3u];
 
-    total = (size_t)input_frame->width * (size_t)input_frame->height;
+    total = (size_t)input_view.width * (size_t)input_view.height;
     while (stride < total
            && total / (stride * stride)
                > config.palette_sample_target) {
         ++stride;
     }
 
-    expected_width = (input_frame->width + (int)stride - 1) / (int)stride;
-    expected_height = (input_frame->height + (int)stride - 1)
+    expected_width = (input_view.width + (int)stride - 1) / (int)stride;
+    expected_height = (input_view.height + (int)stride - 1)
             / (int)stride;
 
     status = sixel_filter_run(filter, allocator, NULL);
@@ -111,15 +119,23 @@ test_sample_stride_override(void)
         goto cleanup;
     }
 
-    if (sample_frame == NULL || sample_frame->width != expected_width
-            || sample_frame->height != expected_height) {
+    if (sample_frame == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+    status = sixel_frame_get_pixels_view(sample_frame, &sample_view);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    if (sample_view.width != expected_width
+            || sample_view.height != expected_height) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
 
-    if (sample_frame->pixels.u8ptr[0] != expected_first
-            || sample_frame->pixels.u8ptr[(expected_width * expected_height
-                    - 1) * 3] != expected_last) {
+    if (sample_view.pixels[0] != expected_first
+            || sample_view.pixels[(expected_width * expected_height - 1) * 3]
+                != expected_last) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -148,6 +164,8 @@ test_sample_respects_clip_region(void)
     sixel_filter_sample_config_t config;
     sixel_frame_t *input_frame;
     sixel_frame_t *sample_frame;
+    sixel_frame_pixels_view_t input_view;
+    sixel_frame_pixels_view_t sample_view;
     test_progress_t progress;
     unsigned char expected;
 
@@ -156,6 +174,8 @@ test_sample_respects_clip_region(void)
     filter = NULL;
     input_frame = NULL;
     sample_frame = NULL;
+    memset(&input_view, 0, sizeof(input_view));
+    memset(&sample_view, 0, sizeof(sample_view));
     progress.began = 0;
     progress.progressed = 0;
     progress.completed = 0;
@@ -171,8 +191,12 @@ test_sample_respects_clip_region(void)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
+    status = sixel_frame_get_pixels_view(input_frame, &input_view);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
 
-    expected = input_frame->pixels.u8ptr[3];
+    expected = input_view.pixels[3];
 
     config.clip_x = 1;
     config.clip_y = 0;
@@ -192,12 +216,12 @@ test_sample_respects_clip_region(void)
 
     sixel_filter_bind_input(filter,
                             &input_frame,
-                            input_frame->pixelformat,
-                            input_frame->colorspace);
+                            input_view.pixelformat,
+                            input_view.colorspace);
     sixel_filter_bind_output(filter,
                              &sample_frame,
-                             input_frame->pixelformat,
-                             input_frame->colorspace);
+                             input_view.pixelformat,
+                             input_view.colorspace);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
@@ -205,13 +229,20 @@ test_sample_respects_clip_region(void)
         goto cleanup;
     }
 
-    if (sample_frame == NULL || sample_frame->width != 2
-            || sample_frame->height != 1) {
+    if (sample_frame == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+    status = sixel_frame_get_pixels_view(sample_frame, &sample_view);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    if (sample_view.width != 2 || sample_view.height != 1) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
 
-    if (sample_frame->pixels.u8ptr[0] != expected) {
+    if (sample_view.pixels[0] != expected) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }

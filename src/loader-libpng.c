@@ -3782,72 +3782,6 @@ apng_blend_rect(
     }
 }
 
-static int
-apng_replay_cache_measure_frame_bytes(sixel_frame_t const *frame,
-                                      size_t *frame_bytes)
-{
-    int depth_result;
-    size_t depth;
-    size_t pixel_total;
-    size_t pixel_bytes;
-    size_t palette_bytes;
-    size_t mask_bytes;
-    size_t total;
-
-    depth_result = 0;
-    depth = 0u;
-    pixel_total = 0u;
-    pixel_bytes = 0u;
-    palette_bytes = 0u;
-    mask_bytes = 0u;
-    total = 0u;
-    if (frame == NULL || frame_bytes == NULL) {
-        return 0;
-    }
-
-    *frame_bytes = 0u;
-    if (frame->width <= 0 || frame->height <= 0) {
-        return 0;
-    }
-    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-        return 0;
-    }
-
-    depth_result = sixel_helper_compute_depth(frame->pixelformat);
-    if (depth_result <= 0) {
-        return 0;
-    }
-    depth = (size_t)depth_result;
-    pixel_total = (size_t)frame->width * (size_t)frame->height;
-    if (pixel_total > SIZE_MAX / depth) {
-        return 0;
-    }
-    pixel_bytes = pixel_total * depth;
-
-    if (frame->palette != NULL && frame->ncolors > 0) {
-        if (frame->ncolors > SIXEL_PALETTE_MAX ||
-            (size_t)frame->ncolors > SIZE_MAX / 3u) {
-            return 0;
-        }
-        palette_bytes = (size_t)frame->ncolors * 3u;
-    }
-    if (frame->transparent_mask != NULL && frame->transparent_mask_size > 0u) {
-        mask_bytes = frame->transparent_mask_size;
-    }
-
-    total = pixel_bytes;
-    if (total > SIZE_MAX - palette_bytes) {
-        return 0;
-    }
-    total += palette_bytes;
-    if (total > SIZE_MAX - mask_bytes) {
-        return 0;
-    }
-    total += mask_bytes;
-    *frame_bytes = total;
-    return 1;
-}
-
 static void
 apng_replay_cache_reset(sixel_apng_replay_cache_t *cache,
                         sixel_allocator_t *allocator)
@@ -3921,7 +3855,7 @@ apng_replay_cache_store_frame(sixel_apng_replay_cache_t *cache,
         apng_replay_cache_reset(cache, allocator);
         return 0;
     }
-    if (!apng_replay_cache_measure_frame_bytes(frame, &frame_bytes)) {
+    if (SIXEL_FAILED(sixel_frame_measure_storage(frame, &frame_bytes))) {
         apng_replay_cache_reset(cache, allocator);
         return 0;
     }
@@ -3932,7 +3866,7 @@ apng_replay_cache_store_frame(sixel_apng_replay_cache_t *cache,
         return 0;
     }
 
-    frame->handoff_shareable = 1;
+    sixel_frame_set_handoff_shareable(frame, 1);
     sixel_frame_ref(frame);
     cache->frames[cache->frame_count] = frame;
     cache->frame_count += 1u;

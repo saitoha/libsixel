@@ -269,10 +269,12 @@ capture_coregraphics_indexed_keycolor_policy_probe(sixel_frame_t *frame,
                                                    void *data)
 {
     coregraphics_indexed_keycolor_policy_probe_t *probe;
+    sixel_frame_transparency_t transparency;
     unsigned char const *pixels;
     size_t pixel_count;
 
     probe = NULL;
+    memset(&transparency, 0, sizeof(transparency));
     pixels = NULL;
     pixel_count = 0u;
     if (frame == NULL || data == NULL) {
@@ -285,9 +287,12 @@ capture_coregraphics_indexed_keycolor_policy_probe(sixel_frame_t *frame,
     probe->width = sixel_frame_get_width(frame);
     probe->height = sixel_frame_get_height(frame);
     probe->transparent = sixel_frame_get_transparent(frame);
-    probe->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
-    probe->has_transparent_mask = frame->transparent_mask != NULL ? 1 : 0;
-    probe->transparent_mask_size = frame->transparent_mask_size;
+    (void)sixel_frame_get_transparency(frame, &transparency);
+    probe->alpha_zero_is_transparent =
+        transparency.alpha_zero_is_transparent;
+    probe->has_transparent_mask =
+        transparency.transparent_mask != NULL ? 1 : 0;
+    probe->transparent_mask_size = transparency.transparent_mask_size;
     if (probe->width > 0 &&
         probe->height > 0 &&
         (size_t)probe->width <= SIZE_MAX / (size_t)probe->height) {
@@ -302,9 +307,9 @@ capture_coregraphics_indexed_keycolor_policy_probe(sixel_frame_t *frame,
         }
     }
 
-    if (frame->transparent_mask != NULL &&
-        frame->transparent_mask_size >= 4u) {
-        memcpy(probe->transparent_mask, frame->transparent_mask, 4u);
+    if (transparency.transparent_mask != NULL &&
+        transparency.transparent_mask_size >= 4u) {
+        memcpy(probe->transparent_mask, transparency.transparent_mask, 4u);
     }
 
     return SIXEL_OK;
@@ -854,7 +859,8 @@ capture_coregraphics_cache_shareable_probe(sixel_frame_t *frame, void *data)
     capacity = (int)(sizeof(probe->shareable) / sizeof(probe->shareable[0]));
     if (probe->callback_count < capacity) {
         index = probe->callback_count;
-        probe->shareable[index] = frame->handoff_shareable != 0 ? 1 : 0;
+        probe->shareable[index] =
+            sixel_frame_get_handoff_shareable(frame) != 0 ? 1 : 0;
         probe->loop_nos[index] = sixel_frame_get_loop_no(frame);
         probe->frame_nos[index] = sixel_frame_get_frame_no(frame);
     }

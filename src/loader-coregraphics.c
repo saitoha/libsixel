@@ -2091,65 +2091,6 @@ end:
     return status;
 }
 
-static int
-coregraphics_measure_frame_cache_bytes(sixel_frame_t const *frame,
-                                       size_t *total_bytes)
-{
-    int depth;
-    size_t pixel_count;
-    size_t pixels_bytes;
-    size_t palette_bytes;
-    size_t mask_bytes;
-
-    depth = 0;
-    pixel_count = 0u;
-    pixels_bytes = 0u;
-    palette_bytes = 0u;
-    mask_bytes = 0u;
-    if (frame == NULL || total_bytes == NULL) {
-        return 0;
-    }
-    if (frame->width <= 0 || frame->height <= 0) {
-        return 0;
-    }
-    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-        return 0;
-    }
-    depth = sixel_helper_compute_depth(frame->pixelformat);
-    if (depth <= 0) {
-        return 0;
-    }
-    pixel_count = (size_t)frame->width * (size_t)frame->height;
-    if (pixel_count > SIZE_MAX / (size_t)depth) {
-        return 0;
-    }
-    pixels_bytes = pixel_count * (size_t)depth;
-    *total_bytes = pixels_bytes;
-
-    /*
-     * Include palette and transparency mask storage so cache limiting follows
-     * the decoded frame footprint rather than a fixed bytes-per-pixel guess.
-     */
-    if (frame->palette != NULL && frame->ncolors > 0) {
-        if ((size_t)frame->ncolors > SIZE_MAX / 3u) {
-            return 0;
-        }
-        palette_bytes = (size_t)frame->ncolors * 3u;
-        if (*total_bytes > SIZE_MAX - palette_bytes) {
-            return 0;
-        }
-        *total_bytes += palette_bytes;
-    }
-    if (frame->transparent_mask != NULL && frame->transparent_mask_size > 0u) {
-        mask_bytes = frame->transparent_mask_size;
-        if (*total_bytes > SIZE_MAX - mask_bytes) {
-            return 0;
-        }
-        *total_bytes += mask_bytes;
-    }
-    return 1;
-}
-
 static void
 coregraphics_loader_state_init(
     coregraphics_loader_state_t *state,
@@ -2674,9 +2615,9 @@ coregraphics_process_single_frame(coregraphics_loader_state_t *state)
         if (cache_slot != NULL) {
             if (state->frame_cache_decision_pending != 0) {
                 state->frame_cache_frame_bytes = 0u;
-                if (!coregraphics_measure_frame_cache_bytes(
+                if (SIXEL_FAILED(sixel_frame_measure_storage(
                         state->decode_frame,
-                        &state->frame_cache_frame_bytes)) {
+                        &state->frame_cache_frame_bytes))) {
                     sixel_helper_set_additional_message(
                         "load_with_coregraphics: failed to estimate "
                         "decoded frame size.");
@@ -2691,19 +2632,21 @@ coregraphics_process_single_frame(coregraphics_loader_state_t *state)
                 }
                 cache_slot->decided = 1u;
                 if (state->frame_cache_keep != 0) {
-                    state->decode_frame->handoff_shareable = 1;
+                    sixel_frame_set_handoff_shareable(
+                        state->decode_frame, 1);
                     cache_slot->frame = state->decode_frame;
                     state->frame_cache_used_bytes +=
                         state->frame_cache_frame_bytes;
                     state->emit_frame = state->decode_frame;
                     state->cached_frame_tmp = NULL;
                 } else {
-                    state->decode_frame->handoff_shareable = 0;
+                    sixel_frame_set_handoff_shareable(
+                        state->decode_frame, 0);
                     state->emit_frame = state->decode_frame;
                     state->release_emit_frame = 1;
                 }
             } else {
-                state->decode_frame->handoff_shareable = 0;
+                sixel_frame_set_handoff_shareable(state->decode_frame, 0);
                 state->emit_frame = state->decode_frame;
             }
         } else {
@@ -2743,12 +2686,14 @@ coregraphics_emit_frame(coregraphics_loader_state_t *state)
     }
 
     slot = &state->active_meta_slots[state->frame_meta_slot];
-    state->emit_frame->frame_no = state->frames_in_loop;
-    state->emit_frame->loop_count = state->loop_no;
-    state->emit_frame->delay = slot->delay;
-    state->emit_frame->multiframe = (state->fstatic == 0 &&
-                                     state->frame_count > 1u &&
-                                     state->is_animation_container != 0);
+    sixel_frame_set_frame_no(state->emit_frame, state->frames_in_loop);
+    sixel_frame_set_loop_count(state->emit_frame, state->loop_no);
+    sixel_frame_set_delay(state->emit_frame, slot->delay);
+    sixel_frame_set_multiframe(
+        state->emit_frame,
+        state->fstatic == 0 &&
+        state->frame_count > 1u &&
+        state->is_animation_container != 0);
     status = state->fn_load(state->emit_frame, state->context);
     if (status != SIXEL_OK) {
         return status;
@@ -2848,9 +2793,11 @@ load_with_coregraphics(
         goto end;
     }
 
-    state.frame->multiframe = (state.fstatic == 0 &&
-                               state.frame_count > 1u &&
-                               state.is_animation_container != 0);
+    sixel_frame_set_multiframe(
+        state.frame,
+        state.fstatic == 0 &&
+        state.frame_count > 1u &&
+        state.is_animation_container != 0);
 
     for (;;) {
         status = coregraphics_check_cancel(state.context);

@@ -51,6 +51,8 @@ extern "C" {
  *   resize_float32(width, height, method);
  *   clip(x, y, width, height);
  *   allocator();
+ *   measure_storage(bytes);
+ *   clone(allocator);
  * }
  *
  * Ownership/lifetime:
@@ -60,10 +62,10 @@ extern "C" {
  * - set_transparency() takes ownership of request->transparent_mask.
  *
  * Encapsulation path:
- * - src/frame-private.h owns the concrete storage layout.
  * - src/frame.h exposes only the object contract and request/view DTOs.
- * - Existing direct-field callers should migrate toward this interface before
- *   they drop their temporary private-header dependency.
+ * - src/frame-private.h remains a temporary storage owner while loader-side
+ *   direct-field callers migrate toward this interface.
+ * - src/frame.c owns frame operations that need concrete storage access.
  */
 
 typedef struct sixel_frame_interface sixel_frame_interface_t;
@@ -156,6 +158,43 @@ struct sixel_frame_interface {
 
 SIXEL_INTERNAL_API sixel_frame_interface_t *
 sixel_frame_get_interface(sixel_frame_t *frame);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_get_pixels_view(sixel_frame_t const *frame,
+                            sixel_frame_pixels_view_t *view);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_get_timeline(sixel_frame_t const *frame,
+                         sixel_frame_timeline_t *timeline);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_set_timeline(sixel_frame_t *frame,
+                         sixel_frame_timeline_t const *timeline);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_get_transparency(
+    sixel_frame_t const *frame,
+    sixel_frame_transparency_t *transparency);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_set_transparency(
+    sixel_frame_t *frame,
+    sixel_frame_transparency_t const *transparency);
+
+SIXEL_INTERNAL_API int
+sixel_frame_get_handoff_shareable(sixel_frame_t const *frame);
+
+SIXEL_INTERNAL_API void
+sixel_frame_set_handoff_shareable(sixel_frame_t *frame, int shareable);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_measure_storage(sixel_frame_t const *frame,
+                            size_t *storage_bytes);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_clone(sixel_frame_t const *frame,
+                  sixel_allocator_t *allocator,
+                  sixel_frame_t **frame_out);
 
 #ifdef __cplusplus
 }

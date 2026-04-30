@@ -90,7 +90,7 @@
 #include "loader-order-schema.h"
 #include "tty.h"
 #include "encoder.h"
-#include "frame-private.h"
+#include "frame.h"
 #include "output.h"
 #include "logger.h"
 #include "options.h"
@@ -3006,150 +3006,6 @@ cleanup:
 }
 
 /*
- * Duplicate frame metadata and pixels so palette construction can shift
- * colorspaces without mutating the live frame used for encoding.
- */
-static SIXELSTATUS
-sixel_encoder_clone_frame(sixel_frame_t *frame,
-                          sixel_allocator_t *allocator,
-                          sixel_frame_t **frame_out)
-{
-    SIXELSTATUS status;
-    sixel_frame_t *clone;
-    unsigned char *pixels;
-    unsigned char *palette;
-    unsigned char *mask;
-    int palette_bytes;
-    int depth_result;
-    size_t depth;
-    size_t pixel_total;
-    size_t pixel_bytes;
-    size_t mask_bytes;
-
-    status = SIXEL_BAD_ARGUMENT;
-    clone = NULL;
-    pixels = NULL;
-    palette = NULL;
-    mask = NULL;
-    palette_bytes = 0;
-    depth_result = 0;
-    depth = 0U;
-    pixel_total = 0U;
-    pixel_bytes = 0U;
-    mask_bytes = 0U;
-
-    if (frame == NULL || frame_out == NULL) {
-        return status;
-    }
-
-    status = sixel_frame_new(&clone, allocator);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    clone->width = frame->width;
-    clone->height = frame->height;
-    clone->pixelformat = frame->pixelformat;
-    clone->colorspace = frame->colorspace;
-    clone->ncolors = frame->ncolors;
-    clone->transparent = frame->transparent;
-    clone->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
-    clone->transparent_mask = NULL;
-    clone->transparent_mask_size = 0u;
-    clone->frame_no = frame->frame_no;
-    clone->loop_count = frame->loop_count;
-    clone->multiframe = frame->multiframe;
-    clone->delay = frame->delay;
-    clone->handoff_shareable = 0;
-
-    if (frame->palette != NULL && frame->ncolors > 0) {
-        if (frame->ncolors > SIXEL_PALETTE_MAX) {
-            status = SIXEL_BAD_INPUT;
-            goto error;
-        }
-        palette_bytes = frame->ncolors * 3;
-        palette = (unsigned char *)sixel_allocator_malloc(
-            clone->allocator,
-            (size_t)palette_bytes);
-        if (palette == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            goto error;
-        }
-        memcpy(palette, frame->palette, (size_t)palette_bytes);
-        clone->palette = palette;
-    }
-
-    if (frame->width < 0 || frame->height < 0) {
-        status = SIXEL_BAD_INPUT;
-        goto error;
-    }
-
-    if (frame->width > 0 && frame->height > 0) {
-        depth_result = sixel_helper_compute_depth(frame->pixelformat);
-        if (depth_result <= 0) {
-            status = SIXEL_BAD_INPUT;
-            goto error;
-        }
-        depth = (size_t)depth_result;
-        pixel_total = (size_t)frame->width * (size_t)frame->height;
-        if (pixel_total / (size_t)frame->width
-                != (size_t)frame->height) {
-            status = SIXEL_BAD_INPUT;
-            goto error;
-        }
-        if (pixel_total > SIZE_MAX / depth) {
-            status = SIXEL_BAD_INPUT;
-            goto error;
-        }
-        pixel_bytes = pixel_total * depth;
-        if (pixel_bytes > 0U) {
-            pixels = (unsigned char *)sixel_allocator_malloc(
-                clone->allocator,
-                pixel_bytes);
-            if (pixels == NULL) {
-                status = SIXEL_BAD_ALLOCATION;
-                goto error;
-            }
-            memcpy(pixels, sixel_frame_get_pixels(frame), pixel_bytes);
-            clone->pixels.u8ptr = pixels;
-        }
-    }
-    if (frame->transparent_mask != NULL &&
-            frame->transparent_mask_size > 0u) {
-        mask_bytes = frame->transparent_mask_size;
-        mask = (unsigned char *)sixel_allocator_malloc(clone->allocator,
-                                                       mask_bytes);
-        if (mask == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            goto error;
-        }
-        memcpy(mask, frame->transparent_mask, mask_bytes);
-        clone->transparent_mask = mask;
-        clone->transparent_mask_size = mask_bytes;
-    }
-
-    *frame_out = clone;
-    return SIXEL_OK;
-
-error:
-    if (pixels != NULL) {
-        sixel_allocator_free(clone->allocator, pixels);
-        clone->pixels.u8ptr = NULL;
-    }
-    if (palette != NULL) {
-        sixel_allocator_free(clone->allocator, palette);
-        clone->palette = NULL;
-    }
-    if (mask != NULL) {
-        sixel_allocator_free(clone->allocator, mask);
-        clone->transparent_mask = NULL;
-        clone->transparent_mask_size = 0u;
-    }
-    sixel_frame_unref(clone);
-    return status;
-}
-
-/*
  * Shared handoff frames can be touched by the loader while worker threads run.
  * Build a per-call planner snapshot so the decision stays thread-safe without
  * reading/writing encoder->planner from multiple threads.
@@ -3183,26 +3039,41 @@ sixel_encoder_frame_get_transparent_mask_pixels(
     sixel_frame_t const *frame,
     size_t *pixel_count_out)
 {
+    SIXELSTATUS status;
+    sixel_frame_pixels_view_t view;
+    sixel_frame_transparency_t transparency;
     size_t pixel_count;
 
+    status = SIXEL_FALSE;
+    memset(&view, 0, sizeof(view));
     pixel_count = 0u;
+    memset(&transparency, 0, sizeof(transparency));
     if (pixel_count_out != NULL) {
         *pixel_count_out = 0u;
     }
     if (frame == NULL) {
         return 0;
     }
-    if (frame->transparent_mask == NULL || frame->transparent_mask_size == 0u) {
+    status = sixel_frame_get_transparency(frame, &transparency);
+    if (SIXEL_FAILED(status)) {
         return 0;
     }
-    if (frame->width <= 0 || frame->height <= 0) {
+    if (transparency.transparent_mask == NULL ||
+        transparency.transparent_mask_size == 0u) {
         return 0;
     }
-    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+    status = sixel_frame_get_pixels_view(frame, &view);
+    if (SIXEL_FAILED(status)) {
         return 0;
     }
-    pixel_count = (size_t)frame->width * (size_t)frame->height;
-    if (frame->transparent_mask_size < pixel_count) {
+    if (view.width <= 0 || view.height <= 0) {
+        return 0;
+    }
+    if ((size_t)view.width > SIZE_MAX / (size_t)view.height) {
+        return 0;
+    }
+    pixel_count = (size_t)view.width * (size_t)view.height;
+    if (transparency.transparent_mask_size < pixel_count) {
         return 0;
     }
     if (pixel_count_out != NULL) {
@@ -3221,10 +3092,27 @@ sixel_encoder_frame_has_transparent_mask(sixel_frame_t const *frame)
 static int
 sixel_encoder_frame_preserves_alpha_key(sixel_frame_t const *frame)
 {
-    if (frame == NULL || frame->alpha_zero_is_transparent == 0) {
+    SIXELSTATUS status;
+    sixel_frame_pixels_view_t view;
+    sixel_frame_transparency_t transparency;
+
+    status = SIXEL_FALSE;
+    memset(&view, 0, sizeof(view));
+    memset(&transparency, 0, sizeof(transparency));
+
+    if (frame == NULL) {
         return 0;
     }
-    if (sixel_encoder_pixelformat_has_alpha(frame->pixelformat)
+    status = sixel_frame_get_transparency(frame, &transparency);
+    if (SIXEL_FAILED(status) ||
+        transparency.alpha_zero_is_transparent == 0) {
+        return 0;
+    }
+    status = sixel_frame_get_pixels_view(frame, &view);
+    if (SIXEL_FAILED(status)) {
+        return 0;
+    }
+    if (sixel_encoder_pixelformat_has_alpha(view.pixelformat)
             || sixel_encoder_frame_has_transparent_mask(frame)) {
         return 1;
     }
@@ -3237,8 +3125,12 @@ sixel_encoder_bind_frame_transparent_mask(
     sixel_dither_t *dither,
     sixel_frame_t const *frame)
 {
+    SIXELSTATUS status;
+    sixel_frame_transparency_t transparency;
     size_t pixel_count;
 
+    status = SIXEL_FALSE;
+    memset(&transparency, 0, sizeof(transparency));
     pixel_count = 0u;
     if (dither == NULL) {
         return;
@@ -3258,11 +3150,16 @@ sixel_encoder_bind_frame_transparent_mask(
                                                          &pixel_count)) {
         return;
     }
+    status = sixel_frame_get_transparency(frame, &transparency);
+    if (SIXEL_FAILED(status)) {
+        return;
+    }
 
-    sixel_dither_set_pipeline_transparent_mask_hint(dither,
-                                                    frame->transparent_mask,
-                                                    pixel_count,
-                                                    dither->keycolor);
+    sixel_dither_set_pipeline_transparent_mask_hint(
+        dither,
+        transparency.transparent_mask,
+        pixel_count,
+        dither->keycolor);
 }
 
 /*
@@ -3278,6 +3175,8 @@ sixel_encoder_promote_pal8_transparent_for_geometry(
     SIXELSTATUS status;
     unsigned char *indices;
     unsigned char *mask;
+    sixel_allocator_t *allocator;
+    sixel_frame_transparency_t transparency;
     size_t pixel_count;
     size_t index;
     int clip_active;
@@ -3290,6 +3189,8 @@ sixel_encoder_promote_pal8_transparent_for_geometry(
     status = SIXEL_OK;
     indices = NULL;
     mask = NULL;
+    allocator = NULL;
+    memset(&transparency, 0, sizeof(transparency));
     pixel_count = 0u;
     index = 0u;
     clip_active = 0;
@@ -3302,7 +3203,8 @@ sixel_encoder_promote_pal8_transparent_for_geometry(
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (frame->allocator == NULL) {
+    allocator = sixel_frame_get_allocator(frame);
+    if (allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -3347,8 +3249,7 @@ sixel_encoder_promote_pal8_transparent_for_geometry(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    mask = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                   pixel_count);
+    mask = (unsigned char *)sixel_allocator_malloc(allocator, pixel_count);
     if (mask == NULL) {
         sixel_helper_set_additional_message(
             "sixel_encoder_promote_pal8_transparent_for_geometry: "
@@ -3379,25 +3280,23 @@ sixel_encoder_promote_pal8_transparent_for_geometry(
         goto end;
     }
 
-    if (frame->transparent_mask != NULL) {
-        sixel_allocator_free(frame->allocator, frame->transparent_mask);
-        frame->transparent_mask = NULL;
-        frame->transparent_mask_size = 0u;
-    }
+    transparency.transparent = (-1);
     if (has_transparent != 0) {
-        frame->transparent_mask = mask;
-        frame->transparent_mask_size = pixel_count;
-        frame->alpha_zero_is_transparent = 1;
+        transparency.transparent_mask = mask;
+        transparency.transparent_mask_size = pixel_count;
+        transparency.alpha_zero_is_transparent = 1;
         mask = NULL;
     } else {
-        frame->alpha_zero_is_transparent = 0;
+        transparency.alpha_zero_is_transparent = 0;
     }
-    frame->transparent = (-1);
-    frame->ncolors = (-1);
-    status = SIXEL_OK;
+    status = sixel_frame_set_transparency(frame, &transparency);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    sixel_frame_set_ncolors(frame, (-1));
 
 end:
-    sixel_allocator_free(frame->allocator, mask);
+    sixel_allocator_free(allocator, mask);
     return status;
 }
 
@@ -6847,9 +6746,9 @@ sixel_encoder_prepare_palette(
         (sixel_frame_get_pixelformat(frame) != palette_target_pixelformat
             || sixel_frame_get_colorspace(frame)
                 != clustering_colorspace)) {
-        status = sixel_encoder_clone_frame(frame,
-                                           encoder->allocator,
-                                           &cluster_frame);
+        status = sixel_frame_clone(frame,
+                                   encoder->allocator,
+                                   &cluster_frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -13112,9 +13011,9 @@ sixel_encoder_frame_pipeline_worker(void *priv)
             SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
         need_clone = 0;
         work_frame = frame;
-        if (frame->handoff_shareable != 0 &&
+        if (sixel_frame_get_handoff_shareable(frame) != 0 &&
             metadata.needs_preplan_clone != 0) {
-            status = sixel_encoder_clone_frame(
+            status = sixel_frame_clone(
                 frame,
                 pipeline->encoder->allocator,
                 &work_frame);
@@ -13282,7 +13181,7 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
     metadata.delay = sixel_frame_get_delay(frame);
     metadata.multiframe = sixel_frame_get_multiframe(frame);
 
-    if (frame->handoff_shareable != 0) {
+    if (sixel_frame_get_handoff_shareable(frame) != 0) {
         metadata.needs_preplan_clone =
             sixel_encoder_handoff_needs_preplan_clone(pipeline->encoder,
                                                       frame);
@@ -13296,9 +13195,9 @@ sixel_encoder_frame_pipeline_enqueue(sixel_encoder_frame_pipeline_t *pipeline,
             SIXEL_OK,
             SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
     } else {
-        status = sixel_encoder_clone_frame(frame,
-                                           pipeline->encoder->allocator,
-                                           &queue_frame);
+        status = sixel_frame_clone(frame,
+                                   pipeline->encoder->allocator,
+                                   &queue_frame);
         if (SIXEL_FAILED(status)) {
             sixel_encoder_handoff_trace_emit(
                 pipeline,

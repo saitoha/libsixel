@@ -2074,185 +2074,6 @@ gif_should_stop_after_loop(int loop_control,
     return 0;
 }
 
-static int
-gif_replay_cache_measure_frame_bytes(sixel_frame_t const *frame,
-                                     size_t *frame_bytes)
-{
-    int depth_result;
-    size_t depth;
-    size_t pixel_total;
-    size_t pixel_bytes;
-    size_t palette_bytes;
-    size_t mask_bytes;
-    size_t total;
-
-    depth_result = 0;
-    depth = 0u;
-    pixel_total = 0u;
-    pixel_bytes = 0u;
-    palette_bytes = 0u;
-    mask_bytes = 0u;
-    total = 0u;
-    if (frame == NULL || frame_bytes == NULL) {
-        return 0;
-    }
-
-    *frame_bytes = 0u;
-    if (frame->width <= 0 || frame->height <= 0) {
-        return 0;
-    }
-    if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-        return 0;
-    }
-
-    depth_result = sixel_helper_compute_depth(frame->pixelformat);
-    if (depth_result <= 0) {
-        return 0;
-    }
-    depth = (size_t)depth_result;
-    pixel_total = (size_t)frame->width * (size_t)frame->height;
-    if (pixel_total > SIZE_MAX / depth) {
-        return 0;
-    }
-    pixel_bytes = pixel_total * depth;
-    if (frame->palette != NULL && frame->ncolors > 0) {
-        if (frame->ncolors > SIXEL_PALETTE_MAX ||
-            (size_t)frame->ncolors > SIZE_MAX / 3u) {
-            return 0;
-        }
-        palette_bytes = (size_t)frame->ncolors * 3u;
-    }
-    if (frame->transparent_mask != NULL && frame->transparent_mask_size > 0u) {
-        mask_bytes = frame->transparent_mask_size;
-    }
-
-    total = pixel_bytes;
-    if (total > SIZE_MAX - palette_bytes) {
-        return 0;
-    }
-    total += palette_bytes;
-    if (total > SIZE_MAX - mask_bytes) {
-        return 0;
-    }
-    total += mask_bytes;
-    *frame_bytes = total;
-    return 1;
-}
-
-static SIXELSTATUS
-gif_replay_cache_clone_frame(sixel_frame_t *frame,
-                             sixel_allocator_t *allocator,
-                             sixel_frame_t **frame_out)
-{
-    SIXELSTATUS status;
-    sixel_frame_t *clone;
-    unsigned char *pixels;
-    unsigned char *palette;
-    unsigned char *mask;
-    int palette_bytes;
-    int depth_result;
-    size_t depth;
-    size_t pixel_total;
-    size_t pixel_bytes;
-    size_t mask_bytes;
-
-    status = SIXEL_BAD_ARGUMENT;
-    clone = NULL;
-    pixels = NULL;
-    palette = NULL;
-    mask = NULL;
-    palette_bytes = 0;
-    depth_result = 0;
-    depth = 0u;
-    pixel_total = 0u;
-    pixel_bytes = 0u;
-    mask_bytes = 0u;
-    if (frame == NULL || allocator == NULL || frame_out == NULL) {
-        return status;
-    }
-
-    *frame_out = NULL;
-    status = sixel_frame_new(&clone, allocator);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    clone->width = frame->width;
-    clone->height = frame->height;
-    clone->pixelformat = frame->pixelformat;
-    clone->colorspace = frame->colorspace;
-    clone->ncolors = frame->ncolors;
-    clone->transparent = frame->transparent;
-    clone->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
-    clone->transparent_mask = NULL;
-    clone->transparent_mask_size = 0u;
-    clone->frame_no = frame->frame_no;
-    clone->loop_count = frame->loop_count;
-    clone->multiframe = frame->multiframe;
-    clone->delay = frame->delay;
-    clone->handoff_shareable = 0;
-
-    if (frame->palette != NULL && frame->ncolors > 0) {
-        if (frame->ncolors > SIXEL_PALETTE_MAX) {
-            status = SIXEL_BAD_INPUT;
-            goto error;
-        }
-        palette_bytes = frame->ncolors * 3;
-        palette = (unsigned char *)sixel_allocator_malloc(
-            allocator,
-            (size_t)palette_bytes);
-        if (palette == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            goto error;
-        }
-        memcpy(palette, frame->palette, (size_t)palette_bytes);
-        clone->palette = palette;
-    }
-
-    if (frame->width > 0 && frame->height > 0) {
-        depth_result = sixel_helper_compute_depth(frame->pixelformat);
-        if (depth_result <= 0) {
-            status = SIXEL_BAD_INPUT;
-            goto error;
-        }
-        depth = (size_t)depth_result;
-        pixel_total = (size_t)frame->width * (size_t)frame->height;
-        if (pixel_total > SIZE_MAX / depth) {
-            status = SIXEL_BAD_INPUT;
-            goto error;
-        }
-        pixel_bytes = pixel_total * depth;
-        if (pixel_bytes > 0u) {
-            pixels = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                             pixel_bytes);
-            if (pixels == NULL) {
-                status = SIXEL_BAD_ALLOCATION;
-                goto error;
-            }
-            memcpy(pixels, sixel_frame_get_pixels(frame), pixel_bytes);
-            clone->pixels.u8ptr = pixels;
-        }
-    }
-    if (frame->transparent_mask != NULL && frame->transparent_mask_size > 0u) {
-        mask_bytes = frame->transparent_mask_size;
-        mask = (unsigned char *)sixel_allocator_malloc(allocator, mask_bytes);
-        if (mask == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            goto error;
-        }
-        memcpy(mask, frame->transparent_mask, mask_bytes);
-        clone->transparent_mask = mask;
-        clone->transparent_mask_size = mask_bytes;
-    }
-
-    *frame_out = clone;
-    return SIXEL_OK;
-
-error:
-    sixel_frame_unref(clone);
-    return status;
-}
-
 static void
 gif_replay_cache_reset(gif_replay_cache_t *cache)
 {
@@ -2331,7 +2152,7 @@ gif_replay_cache_store_frame(gif_replay_cache_t *cache,
         gif_replay_cache_reset(cache);
         return 0;
     }
-    if (!gif_replay_cache_measure_frame_bytes(frame, &frame_bytes)) {
+    if (SIXEL_FAILED(sixel_frame_measure_storage(frame, &frame_bytes))) {
         gif_replay_cache_reset(cache);
         return 0;
     }
@@ -2342,14 +2163,12 @@ gif_replay_cache_store_frame(gif_replay_cache_t *cache,
         return 0;
     }
 
-    status = gif_replay_cache_clone_frame(frame,
-                                          cache->allocator,
-                                          &cached_frame);
+    status = sixel_frame_clone(frame, cache->allocator, &cached_frame);
     if (SIXEL_FAILED(status)) {
         gif_replay_cache_reset(cache);
         return 0;
     }
-    cached_frame->handoff_shareable = 1;
+    sixel_frame_set_handoff_shareable(cached_frame, 1);
     cache->frames[cache->frame_count] = cached_frame;
     cache->frame_count += 1u;
     cache->cached_bytes += frame_bytes;

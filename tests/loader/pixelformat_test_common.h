@@ -118,8 +118,10 @@ static SIXEL_TEST_UNUSED SIXELSTATUS
 capture_frame(sixel_frame_t *frame, void *data)
 {
     loader_probe_context_t *context;
+    sixel_frame_transparency_t transparency;
 
     context = (loader_probe_context_t *)data;
+    memset(&transparency, 0, sizeof(transparency));
     context->callback_count += 1;
     context->pixelformat = sixel_frame_get_pixelformat(frame);
     context->colorspace = sixel_frame_get_colorspace(frame);
@@ -127,9 +129,12 @@ capture_frame(sixel_frame_t *frame, void *data)
     context->height = sixel_frame_get_height(frame);
     context->transparent = sixel_frame_get_transparent(frame);
     context->multiframe = sixel_frame_get_multiframe(frame);
-    context->alpha_zero_is_transparent = frame->alpha_zero_is_transparent;
-    context->has_transparent_mask = frame->transparent_mask != NULL ? 1 : 0;
-    context->transparent_mask_size = frame->transparent_mask_size;
+    (void)sixel_frame_get_transparency(frame, &transparency);
+    context->alpha_zero_is_transparent =
+        transparency.alpha_zero_is_transparent;
+    context->has_transparent_mask =
+        transparency.transparent_mask != NULL ? 1 : 0;
+    context->transparent_mask_size = transparency.transparent_mask_size;
 
     return SIXEL_OK;
 }

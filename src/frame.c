@@ -85,59 +85,59 @@ clip(unsigned char *pixels,
      int cw,
      int ch);
 static sixel_frame_t *
-sixel_frame_from_interface(sixel_frame_interface_t *interface);
+sixel_frame_from_interface(sixel_frame_interface_t *frame);
 static sixel_frame_t const *
-sixel_frame_from_interface_const(sixel_frame_interface_t const *interface);
+sixel_frame_from_interface_const(sixel_frame_interface_t const *frame);
 static void
-sixel_frame_vtbl_ref(sixel_frame_interface_t *interface);
+sixel_frame_vtbl_ref(sixel_frame_interface_t *frame);
 static void
-sixel_frame_vtbl_unref(sixel_frame_interface_t *interface);
+sixel_frame_vtbl_unref(sixel_frame_interface_t *frame);
 static SIXELSTATUS
 sixel_frame_vtbl_init_pixels(
-    sixel_frame_interface_t *interface,
+    sixel_frame_interface_t *frame,
     sixel_frame_pixels_request_t const *request);
 static SIXELSTATUS
-sixel_frame_vtbl_get_pixels(sixel_frame_interface_t *interface,
+sixel_frame_vtbl_get_pixels(sixel_frame_interface_t *frame,
                             sixel_frame_pixels_view_t *view);
 static SIXELSTATUS
-sixel_frame_vtbl_set_pixelformat(sixel_frame_interface_t *interface,
+sixel_frame_vtbl_set_pixelformat(sixel_frame_interface_t *frame,
                                  int pixelformat);
 static SIXELSTATUS
-sixel_frame_vtbl_get_timeline(sixel_frame_interface_t *interface,
+sixel_frame_vtbl_get_timeline(sixel_frame_interface_t *frame,
                               sixel_frame_timeline_t *timeline);
 static SIXELSTATUS
 sixel_frame_vtbl_set_timeline(
-    sixel_frame_interface_t *interface,
+    sixel_frame_interface_t *frame,
     sixel_frame_timeline_t const *timeline);
 static SIXELSTATUS
 sixel_frame_vtbl_get_transparency(
-    sixel_frame_interface_t *interface,
+    sixel_frame_interface_t *frame,
     sixel_frame_transparency_t *transparency);
 static SIXELSTATUS
 sixel_frame_vtbl_set_transparency(
-    sixel_frame_interface_t *interface,
+    sixel_frame_interface_t *frame,
     sixel_frame_transparency_t const *transparency);
 static SIXELSTATUS
-sixel_frame_vtbl_strip_alpha(sixel_frame_interface_t *interface,
+sixel_frame_vtbl_strip_alpha(sixel_frame_interface_t *frame,
                              unsigned char *bgcolor);
 static SIXELSTATUS
-sixel_frame_vtbl_resize(sixel_frame_interface_t *interface,
+sixel_frame_vtbl_resize(sixel_frame_interface_t *frame,
                         int width,
                         int height,
                         int method_for_resampling);
 static SIXELSTATUS
-sixel_frame_vtbl_resize_float32(sixel_frame_interface_t *interface,
+sixel_frame_vtbl_resize_float32(sixel_frame_interface_t *frame,
                                 int width,
                                 int height,
                                 int method_for_resampling);
 static SIXELSTATUS
-sixel_frame_vtbl_clip(sixel_frame_interface_t *interface,
+sixel_frame_vtbl_clip(sixel_frame_interface_t *frame,
                       int x,
                       int y,
                       int width,
                       int height);
 static sixel_allocator_t *
-sixel_frame_vtbl_allocator(sixel_frame_interface_t *interface);
+sixel_frame_vtbl_allocator(sixel_frame_interface_t *frame);
 
 static sixel_frame_vtbl_t const g_sixel_frame_vtbl = {
     sixel_frame_vtbl_ref,
@@ -236,15 +236,15 @@ end:
 }
 
 static sixel_frame_t *
-sixel_frame_from_interface(sixel_frame_interface_t *interface)
+sixel_frame_from_interface(sixel_frame_interface_t *frame)
 {
-    return (sixel_frame_t *)(void *)interface;
+    return (sixel_frame_t *)(void *)frame;
 }
 
 static sixel_frame_t const *
-sixel_frame_from_interface_const(sixel_frame_interface_t const *interface)
+sixel_frame_from_interface_const(sixel_frame_interface_t const *frame)
 {
-    return (sixel_frame_t const *)(void const *)interface;
+    return (sixel_frame_t const *)(void const *)frame;
 }
 
 SIXEL_INTERNAL_API sixel_frame_interface_t *
@@ -258,38 +258,38 @@ sixel_frame_get_interface(sixel_frame_t *frame)
 }
 
 static void
-sixel_frame_vtbl_ref(sixel_frame_interface_t *interface)
+sixel_frame_vtbl_ref(sixel_frame_interface_t *frame)
 {
-    sixel_frame_t *frame;
+    sixel_frame_t *storage;
 
-    frame = sixel_frame_from_interface(interface);
-    sixel_frame_ref(frame);
+    storage = sixel_frame_from_interface(frame);
+    sixel_frame_ref(storage);
 }
 
 static void
-sixel_frame_vtbl_unref(sixel_frame_interface_t *interface)
+sixel_frame_vtbl_unref(sixel_frame_interface_t *frame)
 {
-    sixel_frame_t *frame;
+    sixel_frame_t *storage;
 
-    frame = sixel_frame_from_interface(interface);
-    sixel_frame_unref(frame);
+    storage = sixel_frame_from_interface(frame);
+    sixel_frame_unref(storage);
 }
 
 static SIXELSTATUS
 sixel_frame_vtbl_init_pixels(
-    sixel_frame_interface_t *interface,
+    sixel_frame_interface_t *frame,
     sixel_frame_pixels_request_t const *request)
 {
     SIXELSTATUS status;
-    sixel_frame_t *frame;
+    sixel_frame_t *storage;
 
-    if (interface == NULL || request == NULL) {
+    if (frame == NULL || request == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    frame = sixel_frame_from_interface(interface);
+    storage = sixel_frame_from_interface(frame);
     if (request->kind == SIXEL_FRAME_PIXELS_FLOAT32) {
-        status = sixel_frame_init_float32(frame,
+        status = sixel_frame_init_float32(storage,
                                           (float *)request->pixels,
                                           request->width,
                                           request->height,
@@ -297,7 +297,7 @@ sixel_frame_vtbl_init_pixels(
                                           request->palette,
                                           request->ncolors);
     } else {
-        status = sixel_frame_init(frame,
+        status = sixel_frame_init(storage,
                                   (unsigned char *)request->pixels,
                                   request->width,
                                   request->height,
@@ -306,23 +306,228 @@ sixel_frame_vtbl_init_pixels(
                                   request->ncolors);
     }
     if (SIXEL_SUCCEEDED(status) && request->colorspace >= 0) {
-        frame->colorspace = request->colorspace;
+        storage->colorspace = request->colorspace;
     }
 
     return status;
 }
 
 static SIXELSTATUS
-sixel_frame_vtbl_get_pixels(sixel_frame_interface_t *interface,
+sixel_frame_vtbl_get_pixels(sixel_frame_interface_t *frame,
                             sixel_frame_pixels_view_t *view)
 {
-    sixel_frame_t const *frame;
+    sixel_frame_t const *storage;
 
-    if (interface == NULL || view == NULL) {
+    if (frame == NULL || view == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    frame = sixel_frame_from_interface_const(interface);
+    storage = sixel_frame_from_interface_const(frame);
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(storage->pixelformat)) {
+        view->pixels = NULL;
+        view->pixels_float32 = storage->pixels.f32ptr;
+    } else {
+        view->pixels = storage->pixels.u8ptr;
+        view->pixels_float32 = NULL;
+    }
+    view->palette = storage->palette;
+    view->width = storage->width;
+    view->height = storage->height;
+    view->pixelformat = storage->pixelformat;
+    view->colorspace = storage->colorspace;
+    view->ncolors = storage->ncolors;
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_frame_vtbl_set_pixelformat(sixel_frame_interface_t *frame,
+                                 int pixelformat)
+{
+    sixel_frame_t *storage;
+
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    storage = sixel_frame_from_interface(frame);
+    return sixel_frame_set_pixelformat(storage, pixelformat);
+}
+
+static SIXELSTATUS
+sixel_frame_vtbl_get_timeline(sixel_frame_interface_t *frame,
+                              sixel_frame_timeline_t *timeline)
+{
+    sixel_frame_t const *storage;
+
+    if (frame == NULL || timeline == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    storage = sixel_frame_from_interface_const(frame);
+    timeline->delay = storage->delay;
+    timeline->frame_no = storage->frame_no;
+    timeline->loop_count = storage->loop_count;
+    timeline->multiframe = storage->multiframe;
+    timeline->handoff_shareable = storage->handoff_shareable;
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_frame_vtbl_set_timeline(
+    sixel_frame_interface_t *frame,
+    sixel_frame_timeline_t const *timeline)
+{
+    sixel_frame_t *storage;
+
+    if (frame == NULL || timeline == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    storage = sixel_frame_from_interface(frame);
+    storage->delay = timeline->delay;
+    storage->frame_no = timeline->frame_no;
+    storage->loop_count = timeline->loop_count;
+    storage->multiframe = timeline->multiframe;
+    storage->handoff_shareable = timeline->handoff_shareable != 0 ? 1 : 0;
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_frame_vtbl_get_transparency(
+    sixel_frame_interface_t *frame,
+    sixel_frame_transparency_t *transparency)
+{
+    sixel_frame_t const *storage;
+
+    if (frame == NULL || transparency == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    storage = sixel_frame_from_interface_const(frame);
+    transparency->transparent = storage->transparent;
+    transparency->alpha_zero_is_transparent =
+        storage->alpha_zero_is_transparent;
+    transparency->transparent_mask = storage->transparent_mask;
+    transparency->transparent_mask_size = storage->transparent_mask_size;
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_frame_vtbl_set_transparency(
+    sixel_frame_interface_t *frame,
+    sixel_frame_transparency_t const *transparency)
+{
+    sixel_frame_t *storage;
+
+    if (frame == NULL || transparency == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    storage = sixel_frame_from_interface(frame);
+    if (storage->transparent_mask != NULL &&
+        storage->transparent_mask != transparency->transparent_mask) {
+        sixel_allocator_free(storage->allocator, storage->transparent_mask);
+    }
+    storage->transparent = transparency->transparent;
+    storage->alpha_zero_is_transparent =
+        transparency->alpha_zero_is_transparent;
+    storage->transparent_mask = transparency->transparent_mask;
+    storage->transparent_mask_size = transparency->transparent_mask_size;
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_frame_vtbl_strip_alpha(sixel_frame_interface_t *frame,
+                             unsigned char *bgcolor)
+{
+    sixel_frame_t *storage;
+
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    storage = sixel_frame_from_interface(frame);
+    return sixel_frame_strip_alpha(storage, bgcolor);
+}
+
+static SIXELSTATUS
+sixel_frame_vtbl_resize(sixel_frame_interface_t *frame,
+                        int width,
+                        int height,
+                        int method_for_resampling)
+{
+    sixel_frame_t *storage;
+
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    storage = sixel_frame_from_interface(frame);
+    return sixel_frame_resize(storage, width, height, method_for_resampling);
+}
+
+static SIXELSTATUS
+sixel_frame_vtbl_resize_float32(sixel_frame_interface_t *frame,
+                                int width,
+                                int height,
+                                int method_for_resampling)
+{
+    sixel_frame_t *storage;
+
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    storage = sixel_frame_from_interface(frame);
+    return sixel_frame_resize_float32(storage,
+                                      width,
+                                      height,
+                                      method_for_resampling);
+}
+
+static SIXELSTATUS
+sixel_frame_vtbl_clip(sixel_frame_interface_t *frame,
+                      int x,
+                      int y,
+                      int width,
+                      int height)
+{
+    sixel_frame_t *storage;
+
+    if (frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    storage = sixel_frame_from_interface(frame);
+    return sixel_frame_clip(storage, x, y, width, height);
+}
+
+static sixel_allocator_t *
+sixel_frame_vtbl_allocator(sixel_frame_interface_t *frame)
+{
+    sixel_frame_t *storage;
+
+    if (frame == NULL) {
+        return NULL;
+    }
+
+    storage = sixel_frame_from_interface(frame);
+    return storage->allocator;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_get_pixels_view(sixel_frame_t const *frame,
+                            sixel_frame_pixels_view_t *view)
+{
+    if (frame == NULL || view == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
         view->pixels = NULL;
         view->pixels_float32 = frame->pixels.f32ptr;
@@ -340,31 +545,14 @@ sixel_frame_vtbl_get_pixels(sixel_frame_interface_t *interface,
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_frame_vtbl_set_pixelformat(sixel_frame_interface_t *interface,
-                                 int pixelformat)
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_get_timeline(sixel_frame_t const *frame,
+                         sixel_frame_timeline_t *timeline)
 {
-    sixel_frame_t *frame;
-
-    if (interface == NULL) {
+    if (frame == NULL || timeline == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    frame = sixel_frame_from_interface(interface);
-    return sixel_frame_set_pixelformat(frame, pixelformat);
-}
-
-static SIXELSTATUS
-sixel_frame_vtbl_get_timeline(sixel_frame_interface_t *interface,
-                              sixel_frame_timeline_t *timeline)
-{
-    sixel_frame_t const *frame;
-
-    if (interface == NULL || timeline == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    frame = sixel_frame_from_interface_const(interface);
     timeline->delay = frame->delay;
     timeline->frame_no = frame->frame_no;
     timeline->loop_count = frame->loop_count;
@@ -374,18 +562,14 @@ sixel_frame_vtbl_get_timeline(sixel_frame_interface_t *interface,
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_frame_vtbl_set_timeline(
-    sixel_frame_interface_t *interface,
-    sixel_frame_timeline_t const *timeline)
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_set_timeline(sixel_frame_t *frame,
+                         sixel_frame_timeline_t const *timeline)
 {
-    sixel_frame_t *frame;
-
-    if (interface == NULL || timeline == NULL) {
+    if (frame == NULL || timeline == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    frame = sixel_frame_from_interface(interface);
     frame->delay = timeline->delay;
     frame->frame_no = timeline->frame_no;
     frame->loop_count = timeline->loop_count;
@@ -395,18 +579,15 @@ sixel_frame_vtbl_set_timeline(
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_frame_vtbl_get_transparency(
-    sixel_frame_interface_t *interface,
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_get_transparency(
+    sixel_frame_t const *frame,
     sixel_frame_transparency_t *transparency)
 {
-    sixel_frame_t const *frame;
-
-    if (interface == NULL || transparency == NULL) {
+    if (frame == NULL || transparency == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    frame = sixel_frame_from_interface_const(interface);
     transparency->transparent = frame->transparent;
     transparency->alpha_zero_is_transparent =
         frame->alpha_zero_is_transparent;
@@ -416,18 +597,15 @@ sixel_frame_vtbl_get_transparency(
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_frame_vtbl_set_transparency(
-    sixel_frame_interface_t *interface,
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_set_transparency(
+    sixel_frame_t *frame,
     sixel_frame_transparency_t const *transparency)
 {
-    sixel_frame_t *frame;
-
-    if (interface == NULL || transparency == NULL) {
+    if (frame == NULL || transparency == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    frame = sixel_frame_from_interface(interface);
     if (frame->transparent_mask != NULL &&
         frame->transparent_mask != transparency->transparent_mask) {
         sixel_allocator_free(frame->allocator, frame->transparent_mask);
@@ -441,83 +619,286 @@ sixel_frame_vtbl_set_transparency(
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_frame_vtbl_strip_alpha(sixel_frame_interface_t *interface,
-                             unsigned char *bgcolor)
+SIXEL_INTERNAL_API int
+sixel_frame_get_handoff_shareable(sixel_frame_t const *frame)
 {
-    sixel_frame_t *frame;
-
-    if (interface == NULL) {
-        return SIXEL_BAD_ARGUMENT;
+    if (frame == NULL) {
+        return 0;
     }
 
-    frame = sixel_frame_from_interface(interface);
-    return sixel_frame_strip_alpha(frame, bgcolor);
+    return frame->handoff_shareable;
 }
 
-static SIXELSTATUS
-sixel_frame_vtbl_resize(sixel_frame_interface_t *interface,
-                        int width,
-                        int height,
-                        int method_for_resampling)
+SIXEL_INTERNAL_API void
+sixel_frame_set_handoff_shareable(sixel_frame_t *frame, int shareable)
 {
-    sixel_frame_t *frame;
-
-    if (interface == NULL) {
-        return SIXEL_BAD_ARGUMENT;
+    if (frame == NULL) {
+        return;
     }
 
-    frame = sixel_frame_from_interface(interface);
-    return sixel_frame_resize(frame, width, height, method_for_resampling);
+    frame->handoff_shareable = shareable != 0 ? 1 : 0;
 }
 
-static SIXELSTATUS
-sixel_frame_vtbl_resize_float32(sixel_frame_interface_t *interface,
-                                int width,
-                                int height,
-                                int method_for_resampling)
+/*
+ * Return the byte footprint owned by the frame storage itself.  Replay caches
+ * use this to decide whether keeping a decoded frame by reference is bounded.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_measure_storage(sixel_frame_t const *frame,
+                            size_t *storage_bytes)
 {
-    sixel_frame_t *frame;
+    SIXELSTATUS status;
+    sixel_frame_pixels_view_t view;
+    sixel_frame_transparency_t transparency;
+    int depth_result;
+    size_t depth;
+    size_t pixel_total;
+    size_t pixel_bytes;
+    size_t palette_bytes;
+    size_t mask_bytes;
+    size_t total;
 
-    if (interface == NULL) {
-        return SIXEL_BAD_ARGUMENT;
+    status = SIXEL_BAD_ARGUMENT;
+    memset(&view, 0, sizeof(view));
+    memset(&transparency, 0, sizeof(transparency));
+    depth_result = 0;
+    depth = 0u;
+    pixel_total = 0u;
+    pixel_bytes = 0u;
+    palette_bytes = 0u;
+    mask_bytes = 0u;
+    total = 0u;
+
+    if (frame == NULL || storage_bytes == NULL) {
+        return status;
+    }
+    *storage_bytes = 0u;
+
+    status = sixel_frame_get_pixels_view(frame, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_frame_get_transparency(frame, &transparency);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
-    frame = sixel_frame_from_interface(interface);
-    return sixel_frame_resize_float32(frame,
-                                      width,
-                                      height,
-                                      method_for_resampling);
+    if (view.width <= 0 || view.height <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+    if ((size_t)view.width > SIZE_MAX / (size_t)view.height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    depth_result = sixel_helper_compute_depth(view.pixelformat);
+    if (depth_result <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+    depth = (size_t)depth_result;
+    pixel_total = (size_t)view.width * (size_t)view.height;
+    if (pixel_total > SIZE_MAX / depth) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_bytes = pixel_total * depth;
+
+    if (view.palette != NULL && view.ncolors > 0) {
+        if (view.ncolors > SIXEL_PALETTE_MAX ||
+            (size_t)view.ncolors > SIZE_MAX / 3u) {
+            return SIXEL_BAD_INPUT;
+        }
+        palette_bytes = (size_t)view.ncolors * 3u;
+    }
+    if (transparency.transparent_mask != NULL &&
+        transparency.transparent_mask_size > 0u) {
+        mask_bytes = transparency.transparent_mask_size;
+    }
+
+    total = pixel_bytes;
+    if (total > SIZE_MAX - palette_bytes) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    total += palette_bytes;
+    if (total > SIZE_MAX - mask_bytes) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    total += mask_bytes;
+
+    *storage_bytes = total;
+    return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_frame_vtbl_clip(sixel_frame_interface_t *interface,
-                      int x,
-                      int y,
-                      int width,
-                      int height)
+/*
+ * Deep-copy frame storage for worker and palette-side mutations.  The copy
+ * deliberately clears handoff_shareable because the clone is private to the
+ * caller and can be transformed in place.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_clone(sixel_frame_t const *frame,
+                  sixel_allocator_t *allocator,
+                  sixel_frame_t **frame_out)
 {
-    sixel_frame_t *frame;
+    SIXELSTATUS status;
+    sixel_frame_t *clone;
+    sixel_frame_pixels_view_t view;
+    sixel_frame_timeline_t timeline;
+    sixel_frame_transparency_t transparency;
+    unsigned char const *source_pixels;
+    unsigned char *pixels;
+    unsigned char *palette;
+    unsigned char *mask;
+    int depth_result;
+    size_t depth;
+    size_t pixel_total;
+    size_t pixel_bytes;
+    size_t palette_bytes;
+    size_t mask_bytes;
 
-    if (interface == NULL) {
-        return SIXEL_BAD_ARGUMENT;
+    status = SIXEL_BAD_ARGUMENT;
+    clone = NULL;
+    source_pixels = NULL;
+    pixels = NULL;
+    palette = NULL;
+    mask = NULL;
+    depth_result = 0;
+    depth = 0u;
+    pixel_total = 0u;
+    pixel_bytes = 0u;
+    palette_bytes = 0u;
+    mask_bytes = 0u;
+    memset(&view, 0, sizeof(view));
+    memset(&timeline, 0, sizeof(timeline));
+    memset(&transparency, 0, sizeof(transparency));
+
+    if (frame == NULL || frame_out == NULL) {
+        return status;
+    }
+    *frame_out = NULL;
+
+    status = sixel_frame_get_pixels_view(frame, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_frame_get_timeline(frame, &timeline);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_frame_get_transparency(frame, &transparency);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
-    frame = sixel_frame_from_interface(interface);
-    return sixel_frame_clip(frame, x, y, width, height);
-}
-
-static sixel_allocator_t *
-sixel_frame_vtbl_allocator(sixel_frame_interface_t *interface)
-{
-    sixel_frame_t *frame;
-
-    if (interface == NULL) {
-        return NULL;
+    status = sixel_frame_new(&clone, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
-    frame = sixel_frame_from_interface(interface);
-    return frame->allocator;
+    clone->width = view.width;
+    clone->height = view.height;
+    clone->pixelformat = view.pixelformat;
+    clone->colorspace = view.colorspace;
+    clone->ncolors = view.ncolors;
+    clone->transparent = transparency.transparent;
+    clone->alpha_zero_is_transparent =
+        transparency.alpha_zero_is_transparent;
+    clone->transparent_mask = NULL;
+    clone->transparent_mask_size = 0u;
+    clone->delay = timeline.delay;
+    clone->frame_no = timeline.frame_no;
+    clone->loop_count = timeline.loop_count;
+    clone->multiframe = timeline.multiframe;
+    clone->handoff_shareable = 0;
+
+    if (view.palette != NULL && view.ncolors > 0) {
+        if (view.ncolors > SIXEL_PALETTE_MAX ||
+            (size_t)view.ncolors > SIZE_MAX / 3u) {
+            status = SIXEL_BAD_INPUT;
+            goto error;
+        }
+        palette_bytes = (size_t)view.ncolors * 3u;
+        palette = (unsigned char *)sixel_allocator_malloc(clone->allocator,
+                                                          palette_bytes);
+        if (palette == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
+        }
+        memcpy(palette, view.palette, palette_bytes);
+        clone->palette = palette;
+        palette = NULL;
+    }
+
+    if (view.width < 0 || view.height < 0) {
+        status = SIXEL_BAD_INPUT;
+        goto error;
+    }
+
+    if (view.width > 0 && view.height > 0) {
+        depth_result = sixel_helper_compute_depth(view.pixelformat);
+        if (depth_result <= 0) {
+            status = SIXEL_BAD_INPUT;
+            goto error;
+        }
+        depth = (size_t)depth_result;
+        pixel_total = (size_t)view.width * (size_t)view.height;
+        if (pixel_total / (size_t)view.width != (size_t)view.height) {
+            status = SIXEL_BAD_INPUT;
+            goto error;
+        }
+        if (pixel_total > SIZE_MAX / depth) {
+            status = SIXEL_BAD_INPUT;
+            goto error;
+        }
+        pixel_bytes = pixel_total * depth;
+        if (pixel_bytes > 0u) {
+            if (SIXEL_PIXELFORMAT_IS_FLOAT32(view.pixelformat)) {
+                source_pixels =
+                    (unsigned char const *)(void const *)view.pixels_float32;
+            } else {
+                source_pixels = view.pixels;
+            }
+            if (source_pixels == NULL) {
+                status = SIXEL_BAD_INPUT;
+                goto error;
+            }
+            pixels = (unsigned char *)sixel_allocator_malloc(clone->allocator,
+                                                             pixel_bytes);
+            if (pixels == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto error;
+            }
+            memcpy(pixels, source_pixels, pixel_bytes);
+            if (SIXEL_PIXELFORMAT_IS_FLOAT32(view.pixelformat)) {
+                clone->pixels.f32ptr = (float *)(void *)pixels;
+            } else {
+                clone->pixels.u8ptr = pixels;
+            }
+            pixels = NULL;
+        }
+    }
+
+    if (transparency.transparent_mask != NULL &&
+        transparency.transparent_mask_size > 0u) {
+        mask_bytes = transparency.transparent_mask_size;
+        mask = (unsigned char *)sixel_allocator_malloc(clone->allocator,
+                                                       mask_bytes);
+        if (mask == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
+        }
+        memcpy(mask, transparency.transparent_mask, mask_bytes);
+        clone->transparent_mask = mask;
+        clone->transparent_mask_size = mask_bytes;
+        mask = NULL;
+    }
+
+    *frame_out = clone;
+    return SIXEL_OK;
+
+error:
+    sixel_allocator_free(clone->allocator, pixels);
+    sixel_allocator_free(clone->allocator, palette);
+    sixel_allocator_free(clone->allocator, mask);
+    sixel_frame_unref(clone);
+    return status;
 }
 
 /* constructor of frame object */
