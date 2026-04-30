@@ -362,6 +362,7 @@ AM_LOG_FLAGS =
 	staticcheck-test-runner-dllexport \
 	staticcheck-lookup-backend-exports \
 	staticcheck-public-compat \
+	staticcheck-6cells-idl-sync \
 	staticcheck-frame-post187-export-guard \
 	staticcheck-frame-instantiation-boundary \
 	staticcheck-deprecated-diagnostic-guard \
@@ -408,6 +409,7 @@ staticcheck-src-no-direct-getenv \
 staticcheck-test-runner-dllexport \
 staticcheck-lookup-backend-exports \
 staticcheck-public-compat \
+staticcheck-6cells-idl-sync \
 staticcheck-frame-post187-export-guard \
 staticcheck-frame-instantiation-boundary \
 staticcheck-deprecated-diagnostic-guard \
@@ -554,6 +556,16 @@ staticcheck-public-compat:
 		"$(top_srcdir)/tests/_static/sh/staticcheck-public-compat.sh" \
 		"$(abs_top_srcdir)" \
 		"$(abs_top_builddir)"
+
+staticcheck-6cells-idl-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-6cells-idl-sync" \
+		--log-file staticcheck-6cells-idl-sync.log \
+		--trs-file staticcheck-6cells-idl-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-6cells-idl-sync.sh" \
+		"$(abs_top_srcdir)"
 
 staticcheck-frame-post187-export-guard:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -1582,6 +1594,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 	_static/sh/staticcheck-test-runner-dllexport.sh \
 		_static/sh/staticcheck-lookup-backend-exports.sh \
 		_static/sh/staticcheck-public-compat.sh \
+		_static/sh/staticcheck-6cells-idl-sync.sh \
 		_static/sh/staticcheck-frame-post187-export-guard.sh \
 		_static/sh/staticcheck-frame-instantiation-boundary.sh \
 		_static/sh/staticcheck-deprecated-diagnostic-guard.sh \

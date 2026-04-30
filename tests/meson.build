@@ -720,6 +720,11 @@ staticcheck_cases = [
       meson.project_build_root()],
   ],
   [
+    'staticcheck-6cells-idl-sync',
+    [meson.current_source_dir() / '_static/sh/staticcheck-6cells-idl-sync.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-frame-post187-export-guard',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-frame-post187-export-guard.sh',
