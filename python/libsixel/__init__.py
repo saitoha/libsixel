@@ -1173,6 +1173,12 @@ def sixel_dither_set_palette(dither, palette):
     _sixel.sixel_dither_set_palette(dither, cpalette)
 
 
+def sixel_dither_set_complexion_score(dither, score):
+    _sixel.sixel_dither_set_complexion_score.restype = None
+    _sixel.sixel_dither_set_complexion_score.argtypes = [c_void_p, c_int]
+    _sixel.sixel_dither_set_complexion_score(dither, score)
+
+
 def sixel_dither_set_body_only(dither, bodyonly):
     _sixel.sixel_dither_set_body_only.restype = None
     _sixel.sixel_dither_set_body_only.argtypes = [c_void_p, c_int]

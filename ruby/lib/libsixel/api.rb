@@ -206,6 +206,7 @@ module Libsixel
     extern "int sixel_dither_get_num_of_histgram_colors(void *)"
     extern "char * sixel_dither_get_palette(void *)"
     extern "void sixel_dither_set_palette(void *, char *)"
+    extern "void sixel_dither_set_complexion_score(void *, int)"
     extern "void sixel_dither_set_body_only(void *, int)"
     extern "void sixel_dither_set_optimize_palette(void *, int)"
     extern "void sixel_dither_set_pixelformat(void *, int)"

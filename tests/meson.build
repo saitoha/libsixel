@@ -714,6 +714,13 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-public-compat',
+    [meson.current_source_dir() / '_static/sh/staticcheck-public-compat.sh',
+      meson.project_source_root(),
+      meson.project_build_root()],
+    libsixel_library,
+  ],
+  [
     'staticcheck-kmedoids-suboption-env-sync',
     [meson.current_source_dir() / '_static/sh/staticcheck-kmedoids-suboption-env-sync.sh',
       meson.project_source_root()],
@@ -836,7 +843,12 @@ staticcheck_cases = [
 
 foreach static_case : staticcheck_cases
   static_cmd = static_case[1]
-  run_target(static_case[0], command: [sh] + static_cmd)
+  if static_case.length() > 2
+    run_target(static_case[0], command: [sh] + static_cmd,
+      depends: static_case[2])
+  else
+    run_target(static_case[0], command: [sh] + static_cmd)
+  endif
 endforeach
 
 run_target('staticcheck',

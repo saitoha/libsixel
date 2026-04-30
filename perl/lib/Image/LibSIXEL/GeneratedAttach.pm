@@ -56,6 +56,7 @@ sub attach_all {
     $ffi->attach(['sixel_dither_get_palette' => 'Image::LibSIXEL::sixel_dither_get_palette'] => ['opaque'] => 'opaque');
     $ffi->attach(['sixel_dither_get_quantized_palette' => 'Image::LibSIXEL::sixel_dither_get_quantized_palette'] => ['opaque', 'opaque*'] => 'int');
     $ffi->attach(['sixel_dither_set_palette' => 'Image::LibSIXEL::sixel_dither_set_palette'] => ['opaque', 'opaque'] => 'void');
+    $ffi->attach(['sixel_dither_set_complexion_score' => 'Image::LibSIXEL::sixel_dither_set_complexion_score'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_set_body_only' => 'Image::LibSIXEL::sixel_dither_set_body_only'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_set_optimize_palette' => 'Image::LibSIXEL::sixel_dither_set_optimize_palette'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_set_pixelformat' => 'Image::LibSIXEL::sixel_dither_set_pixelformat'] => ['opaque', 'int'] => 'void');

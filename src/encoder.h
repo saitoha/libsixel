@@ -29,7 +29,6 @@
 
 #include "sixel_atomic.h"
 
-struct sixel_frame;
 struct sixel_logger;
 
 #include "planner.h"

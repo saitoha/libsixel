@@ -24,8 +24,9 @@
 #ifndef LIBSIXEL_PLANNER_H
 #define LIBSIXEL_PLANNER_H
 
+#include <sixel.h>
+
 struct sixel_encoder;
-struct sixel_frame;
 
 typedef enum sixel_planner_node_kind {
     SIXEL_PLANNER_NODE_LOAD = 0,
@@ -96,18 +97,18 @@ void sixel_encoding_planner_reset_for_frame(
     sixel_encoding_planner_t *planner);
 void sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
                                  struct sixel_encoder *encoder,
-                                 struct sixel_frame *frame);
+                                 sixel_frame_t *frame);
 void sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
                                  struct sixel_encoder *encoder,
-                                 struct sixel_frame *frame,
+                                 sixel_frame_t *frame,
                                  int palette_ready);
 void sixel_encoding_planner_replan(sixel_encoding_planner_t *planner,
                                    struct sixel_encoder *encoder,
-                                   struct sixel_frame *frame,
+                                   sixel_frame_t *frame,
                                    int palette_ready);
 int sixel_encoding_palette_job_ready(struct sixel_encoder *encoder,
                                      sixel_encoding_planner_t *planner,
-                                     struct sixel_frame *frame);
+                                     sixel_frame_t *frame);
 void sixel_encoding_planner_set_loader_metadata(
     sixel_encoding_planner_t *planner,
     int multiframe_known,
@@ -115,7 +116,7 @@ void sixel_encoding_planner_set_loader_metadata(
 int sixel_encoding_planner_update_loader_handoff(
     sixel_encoding_planner_t *planner,
     struct sixel_encoder *encoder,
-    struct sixel_frame *frame);
+    sixel_frame_t *frame);
 
 #endif /* LIBSIXEL_PLANNER_H */
 

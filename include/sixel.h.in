@@ -1178,6 +1178,15 @@ sixel_dither_set_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     unsigned char  /* in */ *palette);
 
+/*
+ * Keep this API for backward compatibility.
+ * Complexion correction is retired and this setter is a no-op.
+ */
+SIXELAPI @attr_func_deprecated@ void
+sixel_dither_set_complexion_score(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int            /* in */ score);    /* ignored */
+
 /* set whether omitting palette difinition */
 SIXELAPI void
 sixel_dither_set_body_only(
@@ -1386,7 +1395,7 @@ enum loopControl {
 };
 #endif
 
-/* handle type of dither context object */
+/* handle type of frame object */
 struct sixel_frame;
 typedef struct sixel_frame sixel_frame_t;
 

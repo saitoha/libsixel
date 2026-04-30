@@ -46,7 +46,6 @@ extern "C" {
  *   set_timeline(timeline);
  *   get_transparency(transparency);
  *   set_transparency(transparency);
- *   strip_alpha(bgcolor);
  *   resize(width, height, method);
  *   resize_float32(width, height, method);
  *   clip(x, y, width, height);
@@ -68,7 +67,7 @@ extern "C" {
  * - src/frame.c owns frame operations that need concrete storage access.
  */
 
-typedef struct sixel_frame_interface sixel_frame_interface_t;
+typedef sixel_frame_t sixel_frame_interface_t;
 
 typedef enum sixel_frame_pixels_kind {
     SIXEL_FRAME_PIXELS_U8 = 0,
@@ -134,8 +133,6 @@ typedef struct sixel_frame_vtbl {
     SIXELSTATUS (*set_transparency)(
         sixel_frame_interface_t *frame,
         sixel_frame_transparency_t const *transparency);
-    SIXELSTATUS (*strip_alpha)(sixel_frame_interface_t *frame,
-                               unsigned char *bgcolor);
     SIXELSTATUS (*resize)(sixel_frame_interface_t *frame,
                           int width,
                           int height,
@@ -151,10 +148,6 @@ typedef struct sixel_frame_vtbl {
                         int height);
     sixel_allocator_t *(*allocator)(sixel_frame_interface_t *frame);
 } sixel_frame_vtbl_t;
-
-struct sixel_frame_interface {
-    sixel_frame_vtbl_t const *vtbl;
-};
 
 SIXEL_INTERNAL_API sixel_frame_interface_t *
 sixel_frame_get_interface(sixel_frame_t *frame);

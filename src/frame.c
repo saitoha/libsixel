@@ -118,9 +118,6 @@ sixel_frame_vtbl_set_transparency(
     sixel_frame_interface_t *frame,
     sixel_frame_transparency_t const *transparency);
 static SIXELSTATUS
-sixel_frame_vtbl_strip_alpha(sixel_frame_interface_t *frame,
-                             unsigned char *bgcolor);
-static SIXELSTATUS
 sixel_frame_vtbl_resize(sixel_frame_interface_t *frame,
                         int width,
                         int height,
@@ -149,7 +146,6 @@ static sixel_frame_vtbl_t const g_sixel_frame_vtbl = {
     sixel_frame_vtbl_set_timeline,
     sixel_frame_vtbl_get_transparency,
     sixel_frame_vtbl_set_transparency,
-    sixel_frame_vtbl_strip_alpha,
     sixel_frame_vtbl_resize,
     sixel_frame_vtbl_resize_float32,
     sixel_frame_vtbl_clip,
@@ -238,23 +234,19 @@ end:
 static sixel_frame_t *
 sixel_frame_from_interface(sixel_frame_interface_t *frame)
 {
-    return (sixel_frame_t *)(void *)frame;
+    return frame;
 }
 
 static sixel_frame_t const *
 sixel_frame_from_interface_const(sixel_frame_interface_t const *frame)
 {
-    return (sixel_frame_t const *)(void const *)frame;
+    return frame;
 }
 
 SIXEL_INTERNAL_API sixel_frame_interface_t *
 sixel_frame_get_interface(sixel_frame_t *frame)
 {
-    if (frame == NULL) {
-        return NULL;
-    }
-
-    return &frame->base;
+    return frame;
 }
 
 static void
@@ -439,20 +431,6 @@ sixel_frame_vtbl_set_transparency(
     storage->transparent_mask_size = transparency->transparent_mask_size;
 
     return SIXEL_OK;
-}
-
-static SIXELSTATUS
-sixel_frame_vtbl_strip_alpha(sixel_frame_interface_t *frame,
-                             unsigned char *bgcolor)
-{
-    sixel_frame_t *storage;
-
-    if (frame == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    storage = sixel_frame_from_interface(frame);
-    return sixel_frame_strip_alpha(storage, bgcolor);
 }
 
 static SIXELSTATUS
@@ -932,7 +910,7 @@ sixel_frame_new(
         goto end;
     }
 
-    (*ppframe)->base.vtbl = &g_sixel_frame_vtbl;
+    (*ppframe)->vtbl = &g_sixel_frame_vtbl;
     (*ppframe)->ref = 1U;
     (*ppframe)->pixels.u8ptr = NULL;
     (*ppframe)->palette = NULL;

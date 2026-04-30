@@ -2038,6 +2038,20 @@ sixel_dither_set_palette(
 }
 
 
+/*
+ * Keep this API for backward compatibility. Complexion correction was removed
+ * with the legacy quantizer, so this setter now intentionally does nothing.
+ */
+SIXELAPI void
+sixel_dither_set_complexion_score(
+    sixel_dither_t /* in */ *dither,   /* dither context object */
+    int            /* in */ score)     /* ignored */
+{
+    (void)dither;
+    (void)score;
+}
+
+
 /* set whether omitting palette definition */
 SIXELAPI void
 sixel_dither_set_body_only(

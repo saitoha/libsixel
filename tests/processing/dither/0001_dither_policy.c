@@ -218,6 +218,19 @@ test_dither_policy_named_classes_contract(void)
     dither->method_for_scan = SIXEL_SCAN_RASTER;
     dither->pixelformat = SIXEL_PIXELFORMAT_RGB888;
 
+    /*
+     * This is a deprecated ABI-compatibility no-op. Keep one direct call in
+     * the core dither test so removing the symbol trips the regular runner.
+     */
+#if defined(__GNUC__) || defined(__clang__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    sixel_dither_set_complexion_score(dither, 1);
+#if defined(__GNUC__) || defined(__clang__)
+# pragma GCC diagnostic pop
+#endif
+
     for (i = 0; i < sizeof(class_names) / sizeof(class_names[0]); ++i) {
         is_float_class = strstr(class_names[i], ".float32") != NULL;
         pixelformat = SIXEL_PIXELFORMAT_RGB888;

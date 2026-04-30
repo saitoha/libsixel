@@ -1227,6 +1227,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 	_static/sh/staticcheck-src-no-direct-getenv.sh \
 	_static/sh/staticcheck-test-runner-dllexport.sh \
 		_static/sh/staticcheck-lookup-backend-exports.sh \
+		_static/sh/staticcheck-public-compat.sh \
 		_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
 		_static/sh/staticcheck-factory-classid-registry-sync.sh \
 		_static/sh/staticcheck-dither-policy-no-backend-dispatch.sh \
@@ -3328,6 +3329,7 @@ SIXEL_INSTALLCHECK ?= 0
 	staticcheck-src-no-direct-getenv \
 	staticcheck-test-runner-dllexport \
 	staticcheck-lookup-backend-exports \
+	staticcheck-public-compat \
 	staticcheck-lookup-policy-no-backend-includes \
 	staticcheck-factory-classid-registry-sync \
 	staticcheck-serviceid-registry-sync \
@@ -3370,6 +3372,7 @@ staticcheck-private-includes \
 staticcheck-src-no-direct-getenv \
 staticcheck-test-runner-dllexport \
 staticcheck-lookup-backend-exports \
+staticcheck-public-compat \
 staticcheck-lookup-policy-no-backend-includes \
 staticcheck-factory-classid-registry-sync \
 staticcheck-serviceid-registry-sync \
@@ -3503,6 +3506,18 @@ staticcheck-lookup-backend-exports:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-lookup-backend-exports.sh" \
 		"$(abs_top_srcdir)"
+
+staticcheck-public-compat:
+	@$(MAKE) -C '$(top_builddir)/src' $(AM_MAKEFLAGS) libsixel.la
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-public-compat" \
+		--log-file staticcheck-public-compat.log \
+		--trs-file staticcheck-public-compat.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-public-compat.sh" \
+		"$(abs_top_srcdir)" \
+		"$(abs_top_builddir)"
 
 staticcheck-lookup-policy-no-backend-includes:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
