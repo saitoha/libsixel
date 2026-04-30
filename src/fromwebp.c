@@ -1818,10 +1818,6 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
-            frame->width = stream.canvas_width;
-            frame->height = stream.canvas_height;
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
             sixel_frame_set_delay(frame,
                                   stream.frames[source_frame_no].duration_ms
                                       / 10);
@@ -1831,7 +1827,21 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                                        (!fstatic && stream.frame_count > 1)
                                            ? 1
                                            : 0);
-            sixel_frame_set_pixels(frame, emitted_pixels);
+            status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+                sixel_frame_as_interface(frame),
+                &(sixel_frame_pixels_request_t){
+                    emitted_pixels,
+                    NULL,
+                    stream.canvas_width,
+                    stream.canvas_height,
+                    SIXEL_PIXELFORMAT_RGBA8888,
+                    SIXEL_COLORSPACE_GAMMA,
+                    -1,
+                    SIXEL_FRAME_PIXELS_U8
+                });
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
             emitted_pixels = NULL;
 
             if (plan.meta_has_iccp != 0) {
@@ -2094,12 +2104,22 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
         goto cleanup;
     }
 
-    frame->width = width;
-    frame->height = height;
     frame->loop_count = 1;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-    sixel_frame_set_pixels(frame, rgba);
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            rgba,
+            NULL,
+            width,
+            height,
+            SIXEL_PIXELFORMAT_RGBA8888,
+            SIXEL_COLORSPACE_GAMMA,
+            -1,
+            SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
     rgba = NULL;
 
     /*

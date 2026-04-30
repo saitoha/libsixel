@@ -49,6 +49,7 @@
 #endif
 
 #include <sixel.h>
+#include <6cells.h>
 
 #include "cms.h"
 #include "compat_stub.h"
@@ -1758,23 +1759,24 @@ sixel_builtin_hdr_assign_decoded_frame(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_frame_set_width(frame, width);
-    sixel_frame_set_height(frame, height);
     sixel_frame_set_loop_count(frame, 1);
-    status = sixel_frame_set_pixelformat(frame, hdr_pixelformat);
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels,
+            NULL,
+            width,
+            height,
+            hdr_pixelformat,
+            hdr_colorspace,
+            -1,
+            SIXEL_PIXELFORMAT_IS_FLOAT32(hdr_pixelformat)
+            ? SIXEL_FRAME_PIXELS_FLOAT32
+            : SIXEL_FRAME_PIXELS_U8
+        });
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(chunk->allocator, pixels);
         return status;
-    }
-    sixel_frame_set_colorspace(frame, hdr_colorspace);
-    /*
-     * Keep the frame union aligned with the decoded storage type. Explicitly
-     * using the float32 setter avoids toolchain-specific reinterpretation.
-     */
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(hdr_pixelformat)) {
-        sixel_frame_set_pixels_float32(frame, (float *)pixels);
-    } else {
-        sixel_frame_set_pixels(frame, pixels);
     }
 
     return SIXEL_OK;

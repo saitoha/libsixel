@@ -1104,6 +1104,7 @@ frame_to_rgb_float(sixel_frame_t *frame,
     float *converted;
     size_t count;
     size_t index;
+    sixel_frame_pixels_view_t view;
 
     status = SIXEL_FALSE;
     pixels = NULL;
@@ -1114,6 +1115,7 @@ frame_to_rgb_float(sixel_frame_t *frame,
     converted = NULL;
     count = 0;
     index = 0;
+    memset(&view, 0, sizeof(view));
 
     if (frame == NULL || pixels_out == NULL || width_out == NULL ||
             height_out == NULL) {
@@ -1143,7 +1145,11 @@ frame_to_rgb_float(sixel_frame_t *frame,
     count *= (size_t)SIXEL_ASSESSMENT_RGB_CHANNELS;
     converted = (float *)xmalloc(count * sizeof(float));
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        float_pixels = sixel_frame_get_pixels_float32(frame);
+        status = sixel_assessment_frame_get_pixels_view(frame, &view);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        float_pixels = view.pixels_float32;
         if (float_pixels == NULL) {
             status = SIXEL_BAD_INPUT;
             goto cleanup;

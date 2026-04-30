@@ -1433,37 +1433,9 @@ sixel_frame_init(
     int             /* in */ ncolors        /* number of palette colors or (-1) */
 );
 
-/* initialize frame object with a float32 pixel buffer */
-SIXELAPI SIXELSTATUS
-sixel_frame_init_float32(
-    sixel_frame_t   /* in */ *frame,        /* frame object to be initialize */
-    float           /* in */ *pixels,       /* float32 pixel buffer */
-    int             /* in */ width,         /* pixel width of buffer */
-    int             /* in */ height,        /* pixel height of buffer */
-    int             /* in */ pixelformat,   /* float32 pixelformat of buffer */
-    unsigned char   /* in */ *palette,      /* palette for buffer or NULL */
-    int             /* in */ ncolors        /* number of palette colors or (-1) */
-);
-
 /* get pixels */
 SIXELAPI unsigned char *
 sixel_frame_get_pixels(sixel_frame_t /* in */ *frame);  /* frame object */
-
-/* get float32 pixels */
-SIXELAPI float *
-sixel_frame_get_pixels_float32(sixel_frame_t /* in */ *frame);
-
-/* set pixels */
-SIXELAPI void
-sixel_frame_set_pixels(
-    sixel_frame_t /* in */ *frame,
-    unsigned char /* in */ *pixels);
-
-/* set float32 pixels */
-SIXELAPI void
-sixel_frame_set_pixels_float32(
-    sixel_frame_t /* in */ *frame,
-    float         /* in */ *pixels);
 
 /* get palette */
 SIXELAPI unsigned char *

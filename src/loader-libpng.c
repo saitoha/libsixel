@@ -4021,19 +4021,28 @@ emit_apng_frame(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    frame->width = canvas->width;
-    frame->height = canvas->height;
-    frame->palette = NULL;
-    frame->ncolors = 0;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
     frame->transparent = (-1);
-    frame->alpha_zero_is_transparent =
-        alpha_zero_is_transparent != 0 ? 1 : 0;
     sixel_frame_set_delay(frame, (int)control->delay_cs);
     sixel_frame_set_frame_no(frame, frame_no);
     sixel_frame_set_loop_count(frame, loop_no);
     sixel_frame_set_multiframe(frame, multiframe);
-    sixel_frame_set_pixels(frame, emitted);
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            emitted,
+            NULL,
+            canvas->width,
+            canvas->height,
+            SIXEL_PIXELFORMAT_RGBA8888,
+            -1,
+            0,
+            SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    frame->alpha_zero_is_transparent =
+        alpha_zero_is_transparent != 0 ? 1 : 0;
     emitted = NULL;
 
     if (exif_orientation >= 2 && exif_orientation <= 8) {
@@ -4776,11 +4785,26 @@ load_with_libpng(
         goto end;
     }
 
-    sixel_frame_set_colorspace(frame,
-                               png_colorspace_from_pixelformat(
-                                   frame->pixelformat));
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels,
+            frame->palette,
+            frame->width,
+            frame->height,
+            frame->pixelformat,
+            png_colorspace_from_pixelformat(frame->pixelformat),
+            frame->ncolors,
+            SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)
+            ? SIXEL_FRAME_PIXELS_FLOAT32
+            : SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(pchunk->allocator, pixels);
+        goto end;
+    }
     frame->alpha_zero_is_transparent = alpha_zero_is_transparent != 0 ? 1 : 0;
-    sixel_frame_set_pixels(frame, pixels);
+    pixels = NULL;
     if (cms_applied
             && ((frame->pixelformat & SIXEL_FORMATTYPE_PALETTE) == 0)
             && frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {

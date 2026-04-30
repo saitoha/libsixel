@@ -13,8 +13,8 @@
 #include <string.h>
 
 #include <sixel.h>
-
 #include <6cells.h>
+
 #include "src/factory.h"
 #include "src/frame.h"
 

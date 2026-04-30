@@ -29,6 +29,7 @@
 #include <stddef.h>
 
 #include <sixel.h>
+#include <6cells.h>
 
 #include "sixel_atomic.h"
 
@@ -50,6 +51,30 @@ typedef void (*sixel_assessment_json_callback_t)(
     char const *chunk,
     size_t length,
     void *user_data);
+
+/*
+ * Assessment is built as a separate module from src/.  Use the public
+ * component interface when it needs frame views that are not part of the
+ * v1.8.7 legacy sixel.h API.
+ */
+static inline SIXELSTATUS
+sixel_assessment_frame_get_pixels_view(sixel_frame_t const *frame,
+                                       sixel_frame_pixels_view_t *view)
+{
+    sixel_frame_interface_t *frame_if;
+
+    frame_if = NULL;
+    if (frame == NULL || view == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if->vtbl == NULL || frame_if->vtbl->get_pixels == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return frame_if->vtbl->get_pixels(frame_if, view);
+}
 
 #define SIXEL_ASSESSMENT_SECTION_NONE        0x00000000u
 #define SIXEL_ASSESSMENT_SECTION_BASIC       0x00000001u

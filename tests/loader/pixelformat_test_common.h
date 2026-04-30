@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include <sixel.h>
+#include <6cells.h>
 
 #include "src/allocator.h"
 #include "src/chunk.h"
@@ -113,6 +114,26 @@ typedef struct loader_component_case_spec {
 #define FRAME_MASK_ANY INT_MIN
 #define FRAME_ALPHA_ZERO_ANY INT_MIN
 #define SIXEL_TEST_SKIP 77
+
+static SIXEL_TEST_UNUSED SIXELSTATUS
+loader_test_frame_get_pixels_view(sixel_frame_t *frame,
+                                  sixel_frame_pixels_view_t *view)
+{
+    sixel_frame_interface_t *frame_if;
+
+    frame_if = NULL;
+    if (frame == NULL || view == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    memset(view, 0, sizeof(*view));
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if->vtbl == NULL || frame_if->vtbl->get_pixels == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return frame_if->vtbl->get_pixels(frame_if, view);
+}
 
 static SIXEL_TEST_UNUSED SIXELSTATUS
 capture_frame(sixel_frame_t *frame, void *data)

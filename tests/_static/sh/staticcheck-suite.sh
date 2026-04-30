@@ -321,6 +321,10 @@ run_case_tap "staticcheck-public-compat" \
     "$src_root/tests/_static/sh/staticcheck-public-compat.sh" \
     "$src_root" "$build_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-frame-post187-export-guard" \
+    "$src_root/tests/_static/sh/staticcheck-frame-post187-export-guard.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-frame-instantiation-boundary" \
     "$src_root/tests/_static/sh/staticcheck-frame-instantiation-boundary.sh" \
     "$src_root" || fail_and_exit $?

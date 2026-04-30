@@ -1695,18 +1695,20 @@ librsvg_build_surface_convert_plan(
     return SIXEL_OK;
 }
 
-static void
+static SIXELSTATUS
 librsvg_commit_frame_pixels(sixel_frame_t *frame,
                             unsigned char *pixels,
                             size_t pixel_total,
                             int inspect_alpha,
                             int has_non_opaque_alpha)
 {
+    SIXELSTATUS status;
     int preserve_alpha;
 
+    status = SIXEL_FALSE;
     preserve_alpha = 0;
     if (frame == NULL || pixels == NULL) {
-        return;
+        return SIXEL_BAD_ARGUMENT;
     }
 
     preserve_alpha = inspect_alpha && has_non_opaque_alpha;
@@ -1718,13 +1720,23 @@ librsvg_commit_frame_pixels(sixel_frame_t *frame,
         librsvg_collapse_opaque_rgba_to_rgb(pixels, pixel_total);
     }
 
-    frame->pixelformat = preserve_alpha
-        ? SIXEL_PIXELFORMAT_RGBA8888
-        : SIXEL_PIXELFORMAT_RGB888;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-    frame->transparent = -1;
-    frame->alpha_zero_is_transparent = preserve_alpha ? 1 : 0;
-    sixel_frame_set_pixels(frame, pixels);
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels,
+            NULL,
+            frame->width,
+            frame->height,
+            preserve_alpha ? SIXEL_PIXELFORMAT_RGBA8888 : SIXEL_PIXELFORMAT_RGB888,
+            SIXEL_COLORSPACE_GAMMA,
+            -1,
+            SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_SUCCEEDED(status)) {
+        frame->transparent = -1;
+        frame->alpha_zero_is_transparent = preserve_alpha ? 1 : 0;
+    }
+    return status;
 }
 
 /*
@@ -1812,13 +1824,14 @@ librsvg_convert_surface_to_frame_pixels(sixel_frame_t *frame,
     }
 
     if (SIXEL_SUCCEEDED(status)) {
-        librsvg_commit_frame_pixels(frame,
-                                    pixels,
-                                    pixel_total,
-                                    plan.inspect_alpha,
-                                    has_non_opaque_alpha);
-        pixels = NULL;
-        status = SIXEL_OK;
+        status = librsvg_commit_frame_pixels(frame,
+                                             pixels,
+                                             pixel_total,
+                                             plan.inspect_alpha,
+                                             has_non_opaque_alpha);
+        if (SIXEL_SUCCEEDED(status)) {
+            pixels = NULL;
+        }
     }
 
     if (pixels != NULL) {

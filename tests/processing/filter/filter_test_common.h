@@ -183,21 +183,26 @@ make_float_frame(sixel_allocator_t *allocator,
         pixels[i] = (float)(i + 1);
     }
 
-    status = sixel_frame_init_float32(frame,
-                                      pixels,
-                                      width,
-                                      height,
-                                      SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
-                                      NULL,
-                                      (-1));
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels,
+            NULL,
+            width,
+            height,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+            SIXEL_COLORSPACE_LINEAR,
+            (-1),
+            SIXEL_FRAME_PIXELS_FLOAT32
+        });
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-
-    sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_LINEAR);
+    pixels = NULL;
 
 end:
     if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, pixels);
         sixel_frame_unref(frame);
     } else {
         *frame_out = frame;

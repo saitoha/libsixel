@@ -57,6 +57,15 @@ sixel_frame_colorspace_from_pixelformat(int pixelformat);
 static void
 sixel_frame_apply_pixelformat(sixel_frame_t *frame, int pixelformat);
 static SIXELSTATUS
+sixel_frame_init_common(sixel_frame_t *frame,
+                        void *pixels,
+                        int width,
+                        int height,
+                        int pixelformat,
+                        unsigned char *palette,
+                        int ncolors,
+                        int is_float);
+static SIXELSTATUS
 sixel_frame_validate_size(char const *context,
                           int width,
                           int height,
@@ -290,23 +299,15 @@ sixel_frame_vtbl_init_pixels(
     }
 
     storage = sixel_frame_from_interface(frame);
-    if (request->kind == SIXEL_FRAME_PIXELS_FLOAT32) {
-        status = sixel_frame_init_float32(storage,
-                                          (float *)request->pixels,
-                                          request->width,
-                                          request->height,
-                                          request->pixelformat,
-                                          request->palette,
-                                          request->ncolors);
-    } else {
-        status = sixel_frame_init(storage,
-                                  (unsigned char *)request->pixels,
-                                  request->width,
-                                  request->height,
-                                  request->pixelformat,
-                                  request->palette,
-                                  request->ncolors);
-    }
+    status = sixel_frame_init_common(storage,
+                                     request->pixels,
+                                     request->width,
+                                     request->height,
+                                     request->pixelformat,
+                                     request->palette,
+                                     request->ncolors,
+                                     request->kind ==
+                                         SIXEL_FRAME_PIXELS_FLOAT32);
     if (SIXEL_SUCCEEDED(status) && request->colorspace >= 0) {
         storage->colorspace = request->colorspace;
     }
@@ -1150,59 +1151,11 @@ sixel_frame_init(
                                    0);
 }
 
-/* initialize frame object with a float32 pixel buffer */
-SIXELAPI SIXELSTATUS
-sixel_frame_init_float32(
-    sixel_frame_t   /* in */ *frame,
-    float           /* in */ *pixels,
-    int             /* in */ width,
-    int             /* in */ height,
-    int             /* in */ pixelformat,
-    unsigned char   /* in */ *palette,
-    int             /* in */ ncolors)
-{
-    return sixel_frame_init_common(frame,
-                                   pixels,
-                                   width,
-                                   height,
-                                   pixelformat,
-                                   palette,
-                                   ncolors,
-                                   1);
-}
-
-
 /* get pixels */
 SIXELAPI unsigned char *
 sixel_frame_get_pixels(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->pixels.u8ptr;
-}
-
-
-SIXELAPI float *
-sixel_frame_get_pixels_float32(sixel_frame_t /* in */ *frame)
-{
-    return frame->pixels.f32ptr;
-}
-
-
-/* set pixels */
-SIXELAPI void
-sixel_frame_set_pixels(
-    sixel_frame_t  /* in */ *frame,
-    unsigned char  /* in */ *pixels)
-{
-    frame->pixels.u8ptr = pixels;
-}
-
-
-SIXELAPI void
-sixel_frame_set_pixels_float32(
-    sixel_frame_t  /* in */ *frame,
-    float          /* in */ *pixels)
-{
-    frame->pixels.f32ptr = pixels;
 }
 
 
@@ -2188,7 +2141,7 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame)
     }
 
     sixel_allocator_free(frame->allocator, byte_pixels);
-    sixel_frame_set_pixels_float32(frame, float_pixels);
+    frame->pixels.f32ptr = float_pixels;
     sixel_frame_apply_pixelformat(frame, float_pixelformat);
     return SIXEL_OK;
 }

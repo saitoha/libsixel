@@ -493,6 +493,7 @@ AMALGAMATION_LSQA_LIBS = -lm \
 @WANT_AMALGAMATED_TOOLS_TRUE@lsqa_SOURCES = 
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
+@WANT_AMALGAMATED_TOOLS_FALSE@                -I$(top_srcdir)/include \
 @WANT_AMALGAMATED_TOOLS_FALSE@                -I$(top_srcdir)/src \
 @WANT_AMALGAMATED_TOOLS_FALSE@                -I$(top_srcdir)/assessment \
 @WANT_AMALGAMATED_TOOLS_FALSE@                -I$(top_srcdir)/converters \

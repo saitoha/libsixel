@@ -66,9 +66,11 @@ capture_gd_pixel_probe(sixel_frame_t *frame, void *data)
     unsigned char const *pixels_u8;
     float const *pixels_f32;
     unsigned char const *indexed_pixels;
+    sixel_frame_pixels_view_t view;
     size_t copy_pixels;
     size_t copy_pixel_bytes;
     size_t copy_mask_bytes;
+    SIXELSTATUS status;
 
     probe = NULL;
     pixel_count = 0u;
@@ -76,9 +78,11 @@ capture_gd_pixel_probe(sixel_frame_t *frame, void *data)
     pixels_u8 = NULL;
     pixels_f32 = NULL;
     indexed_pixels = NULL;
+    memset(&view, 0, sizeof(view));
     copy_pixels = 0u;
     copy_pixel_bytes = 0u;
     copy_mask_bytes = 0u;
+    status = SIXEL_FALSE;
     if (frame == NULL || data == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -136,7 +140,11 @@ capture_gd_pixel_probe(sixel_frame_t *frame, void *data)
         pixel_bytes = pixel_count * 3u;
         probe->pixel_bytes = pixel_bytes;
         copy_pixel_bytes = copy_pixels * 3u;
-        pixels_f32 = sixel_frame_get_pixels_float32(frame);
+        status = loader_test_frame_get_pixels_view(frame, &view);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        pixels_f32 = view.pixels_float32;
         if (pixels_f32 != NULL && copy_pixel_bytes > 0u) {
             memcpy(probe->pixels_f32,
                    pixels_f32,

@@ -1027,11 +1027,21 @@ gif_export_pal8_frame(
         goto end;
     }
 
-    sixel_frame_set_pixels(frame, indices);
-    sixel_frame_set_palette(frame, palette);
-    sixel_frame_set_ncolors(frame, ncolors);
-    frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            indices,
+            palette,
+            pg->w,
+            pg->h,
+            SIXEL_PIXELFORMAT_PAL8,
+            SIXEL_COLORSPACE_GAMMA,
+            ncolors,
+            SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     frame->alpha_zero_is_transparent = 0;
     sixel_frame_set_transparent(frame, keycolor_index);
 
@@ -1120,14 +1130,29 @@ gif_export_nonpal_frame(
         frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     }
 
-    sixel_frame_set_pixels(frame, pixels);
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-    sixel_frame_set_palette(frame, NULL);
-    sixel_frame_set_ncolors(frame, -1);
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels,
+            NULL,
+            pg->w,
+            pg->h,
+            frame->pixelformat,
+            SIXEL_COLORSPACE_GAMMA,
+            -1,
+            SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     sixel_frame_set_transparent(frame, -1);
     frame->alpha_zero_is_transparent = has_alpha;
 
+    pixels = NULL;
     status = SIXEL_OK;
+
+end:
+    sixel_allocator_free(allocator, pixels);
     return status;
 }
 
@@ -1164,7 +1189,7 @@ gif_init_frame(
     old_palette = sixel_frame_get_palette(frame);
     sixel_allocator_free(allocator, old_pixels);
     sixel_allocator_free(allocator, old_palette);
-    sixel_frame_set_pixels(frame, NULL);
+    frame->pixels.u8ptr = NULL;
     sixel_frame_set_palette(frame, NULL);
     sixel_frame_set_ncolors(frame, -1);
     frame->alpha_zero_is_transparent = 0;

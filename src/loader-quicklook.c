@@ -390,21 +390,37 @@ load_with_quicklook(
                         (CGFloat)CGImageGetHeight(image));
     frame->width = (int)bounds.size.width;
     frame->height = (int)bounds.size.height;
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
     /*
      * QuickLook renders into a premultiplied RGBA buffer. Keep a four-byte
      * stride so the pixel format matches the bitmap context layout.
      */
     stride = (size_t)frame->width * 4;
 
-    sixel_frame_set_pixels(frame,
-                           sixel_allocator_malloc(
-                               pchunk->allocator,
-                               (size_t)(frame->height * stride)));
-    pixels = sixel_frame_get_pixels(frame);
+    pixels = (unsigned char *)sixel_allocator_malloc(
+        pchunk->allocator,
+        (size_t)(frame->height * stride));
     if (pixels == NULL) {
         quicklook_set_error_message(
             "load_with_quicklook: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels,
+            NULL,
+            frame->width,
+            frame->height,
+            frame->pixelformat,
+            frame->colorspace,
+            -1,
+            SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(pchunk->allocator, pixels);
         goto end;
     }
 

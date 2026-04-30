@@ -2647,11 +2647,29 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
             sixel_allocator_free(pchunk->allocator, transparent_mask);
             return status;
         }
-        sixel_frame_set_pixels(frame, pixels_float32);
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                pixels_float32,
+                NULL,
+                frame->width,
+                frame->height,
+                has_transparency
+                ? SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
+                : SIXEL_PIXELFORMAT_RGBFLOAT32,
+                has_transparency
+                ? SIXEL_COLORSPACE_LINEAR
+                : SIXEL_COLORSPACE_GAMMA,
+                -1,
+                SIXEL_FRAME_PIXELS_FLOAT32
+            });
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(pchunk->allocator, pixels_float32);
+            sixel_allocator_free(pchunk->allocator, transparent_mask);
+            return status;
+        }
         frame->loop_count = 1;
         if (has_transparency) {
-            frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-            frame->colorspace = SIXEL_COLORSPACE_LINEAR;
             frame->transparent = -1;
             if (has_zero_alpha != 0) {
                 frame->transparent_mask = transparent_mask;
@@ -2664,8 +2682,6 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
             sixel_allocator_free(pchunk->allocator, transparent_mask);
             return SIXEL_OK;
         }
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
-        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
         if (enable_cms) {
 #if HAVE_LCMS2
             cms_applied = sixel_frompng_apply_colorspace_fallback_internal(
@@ -2778,10 +2794,23 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     }
 
     if (!has_transparency) {
-        sixel_frame_set_pixels(frame, pixels8);
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                pixels8,
+                NULL,
+                frame->width,
+                frame->height,
+                SIXEL_PIXELFORMAT_RGB888,
+                SIXEL_COLORSPACE_GAMMA,
+                -1,
+                SIXEL_FRAME_PIXELS_U8
+            });
+        if (SIXEL_FAILED(status)) {
+            stbi_image_free(pixels8);
+            return status;
+        }
         frame->loop_count = 1;
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
 
         cms_applied = 0;
         if (enable_cms) {
@@ -2925,10 +2954,24 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
         sixel_allocator_free(pchunk->allocator, transparent_mask);
         return status;
     }
-    sixel_frame_set_pixels(frame, pixels_float32);
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels_float32,
+            NULL,
+            frame->width,
+            frame->height,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+            SIXEL_COLORSPACE_LINEAR,
+            -1,
+            SIXEL_FRAME_PIXELS_FLOAT32
+        });
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(pchunk->allocator, pixels_float32);
+        sixel_allocator_free(pchunk->allocator, transparent_mask);
+        return status;
+    }
     frame->loop_count = 1;
-    frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    frame->colorspace = SIXEL_COLORSPACE_LINEAR;
     frame->transparent = -1;
     if (has_zero_alpha != 0) {
         frame->transparent_mask = transparent_mask;

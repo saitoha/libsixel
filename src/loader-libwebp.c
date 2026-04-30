@@ -1131,6 +1131,7 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
     if (enable_cms && cms_converted) {
         status = webp_roundtrip_background_to_linear(bg_linear);
         if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(allocator, dst);
             return status;
         }
     }
@@ -1152,10 +1153,22 @@ webp_blend_rgba_background_linear(sixel_frame_t *frame,
 
     sixel_allocator_free(allocator, frame->pixels.u8ptr);
     frame->pixels.u8ptr = NULL;
-    sixel_frame_set_pixels_float32(frame, dst);
-    frame->pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-    frame->colorspace = SIXEL_COLORSPACE_LINEAR;
-    return SIXEL_OK;
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            dst,
+            NULL,
+            frame->width,
+            frame->height,
+            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32,
+            SIXEL_COLORSPACE_LINEAR,
+            -1,
+            SIXEL_FRAME_PIXELS_FLOAT32
+        });
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, dst);
+    }
+    return status;
 }
 
 static SIXELSTATUS
@@ -2520,11 +2533,23 @@ loader_try_promote_pal8(
     sixel_allocator_free(allocator, frame->pixels.u8ptr);
     frame->pixels.u8ptr = NULL;
 
-    sixel_frame_set_pixels(frame, indices);
-    sixel_frame_set_palette(frame, palette);
-    frame->ncolors = ncolors;
-    frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            indices,
+            palette,
+            frame->width,
+            frame->height,
+            SIXEL_PIXELFORMAT_PAL8,
+            SIXEL_COLORSPACE_GAMMA,
+            ncolors,
+            SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, palette);
+        sixel_allocator_free(allocator, indices);
+        return status;
+    }
 
     return status;
 
@@ -2892,19 +2917,28 @@ webp_resolve_animation_background(unsigned char *bgcolor,
     return resolved_bgcolor;
 }
 
-static void
+static SIXELSTATUS
 webp_assign_loaded_frame_pixels(sixel_frame_t *frame,
                                 unsigned char *pixels)
 {
     if (frame == NULL) {
-        return;
+        return SIXEL_BAD_ARGUMENT;
     }
 
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
-        sixel_frame_set_pixels_float32(frame, (float *)pixels);
-    } else {
-        sixel_frame_set_pixels(frame, pixels);
-    }
+    return sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels,
+            frame->palette,
+            frame->width,
+            frame->height,
+            frame->pixelformat,
+            frame->colorspace,
+            frame->ncolors,
+            SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)
+            ? SIXEL_FRAME_PIXELS_FLOAT32
+            : SIXEL_FRAME_PIXELS_U8
+        });
 }
 
 static SIXELSTATUS
@@ -3076,7 +3110,10 @@ webp_decode_and_emit_single_frame_buffer(webp_decode_common_t const *decode,
         goto end;
     }
 
-    webp_assign_loaded_frame_pixels(frame, pixels);
+    status = webp_assign_loaded_frame_pixels(frame, pixels);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     pixels = NULL;
     frame->frame_no = 0;
 
@@ -3092,6 +3129,7 @@ webp_decode_and_emit_single_frame_buffer(webp_decode_common_t const *decode,
                                           decode->context);
 
 end:
+    sixel_allocator_free(allocator, pixels);
     sixel_frame_unref(frame);
     return status;
 }
@@ -3216,7 +3254,21 @@ webp_decode_and_emit_static_animation_frame(WebPAnimDecoder *decoder,
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    sixel_frame_set_pixels(frame, pixels);
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels,
+            NULL,
+            frame->width,
+            frame->height,
+            SIXEL_PIXELFORMAT_RGBA8888,
+            SIXEL_COLORSPACE_GAMMA,
+            -1,
+            SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     pixels = NULL;
 
     status = webp_finalize_and_emit_frame(frame,
@@ -3231,6 +3283,9 @@ webp_decode_and_emit_static_animation_frame(WebPAnimDecoder *decoder,
                                           decode->context);
 
 end:
+    if (chunk != NULL) {
+        sixel_allocator_free(chunk->allocator, pixels);
+    }
     sixel_frame_unref(frame);
     return status;
 }
@@ -3452,7 +3507,21 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
-                sixel_frame_set_pixels(frame, pixels);
+                status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+                    sixel_frame_as_interface(frame),
+                    &(sixel_frame_pixels_request_t){
+                        pixels,
+                        NULL,
+                        frame->width,
+                        frame->height,
+                        SIXEL_PIXELFORMAT_RGBA8888,
+                        SIXEL_COLORSPACE_GAMMA,
+                        -1,
+                        SIXEL_FRAME_PIXELS_U8
+                    });
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 pixels = NULL;
 
                 next_delay = timestamp - previous_timestamp;

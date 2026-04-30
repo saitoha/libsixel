@@ -3445,6 +3445,7 @@ sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
     size_t pixel_total;
     size_t pixel_bytes;
     unsigned char *pixels;
+    sixel_frame_pixels_view_t view;
 
     status = SIXEL_BAD_ARGUMENT;
     source_colorspace = SIXEL_COLORSPACE_GAMMA;
@@ -3455,6 +3456,7 @@ sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
     pixel_total = 0U;
     pixel_bytes = 0U;
     pixels = NULL;
+    memset(&view, 0, sizeof(view));
 
     if (frame == NULL) {
         return status;
@@ -3486,11 +3488,13 @@ sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
     }
     pixel_bytes = pixel_total * (size_t)depth;
 
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        pixels = (unsigned char *)sixel_frame_get_pixels_float32(frame);
-    } else {
-        pixels = sixel_frame_get_pixels(frame);
+    status = sixel_encoder_frame_get_pixels_view(frame, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
+    pixels = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
+        ? (unsigned char *)view.pixels_float32
+        : view.pixels;
 
     status = sixel_helper_convert_colorspace(pixels,
                                              pixel_bytes,
@@ -3760,6 +3764,7 @@ sixel_encoder_collect_scene_probe(sixel_frame_t *frame,
     int y;
     size_t probe_index;
     size_t pixel_index;
+    sixel_frame_pixels_view_t view;
 
     status = SIXEL_OK;
     allocator = NULL;
@@ -3776,6 +3781,7 @@ sixel_encoder_collect_scene_probe(sixel_frame_t *frame,
     y = 0;
     probe_index = 0U;
     pixel_index = 0U;
+    memset(&view, 0, sizeof(view));
     if (frame == NULL || probe_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -3787,11 +3793,13 @@ sixel_encoder_collect_scene_probe(sixel_frame_t *frame,
     }
 
     pixelformat = sixel_frame_get_pixelformat(frame);
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        source_pixels = (unsigned char *)sixel_frame_get_pixels_float32(frame);
-    } else {
-        source_pixels = sixel_frame_get_pixels(frame);
+    status = sixel_encoder_frame_get_pixels_view(frame, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
+    source_pixels = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
+        ? (unsigned char *)view.pixels_float32
+        : view.pixels;
     if (source_pixels == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }

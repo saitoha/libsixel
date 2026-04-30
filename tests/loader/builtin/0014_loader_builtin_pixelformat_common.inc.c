@@ -127,8 +127,13 @@ capture_hdr_numeric_probe(sixel_frame_t *frame, void *data)
 {
     hdr_numeric_probe_context_t *context;
     float const *pixels;
+    sixel_frame_pixels_view_t view;
+    SIXELSTATUS status;
 
     context = (hdr_numeric_probe_context_t *)data;
+    pixels = NULL;
+    memset(&view, 0, sizeof(view));
+    status = SIXEL_FALSE;
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -148,7 +153,11 @@ capture_hdr_numeric_probe(sixel_frame_t *frame, void *data)
         return SIXEL_OK;
     }
 
-    pixels = sixel_frame_get_pixels_float32(frame);
+    status = loader_test_frame_get_pixels_view(frame, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    pixels = view.pixels_float32;
     if (pixels == NULL) {
         return SIXEL_OK;
     }

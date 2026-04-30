@@ -2714,19 +2714,28 @@ sixel_builtin_apng_emit_frame(
         goto end;
     }
 
-    frame->width = canvas->width;
-    frame->height = canvas->height;
-    frame->palette = NULL;
-    frame->ncolors = 0;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
     frame->transparent = -1;
-    frame->alpha_zero_is_transparent =
-        alpha_zero_is_transparent != 0 ? 1 : 0;
     sixel_frame_set_delay(frame, (int)control->delay_cs);
     sixel_frame_set_frame_no(frame, frame_no);
     sixel_frame_set_loop_count(frame, loop_no);
     sixel_frame_set_multiframe(frame, multiframe);
-    sixel_frame_set_pixels(frame, emitted);
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            emitted,
+            NULL,
+            canvas->width,
+            canvas->height,
+            SIXEL_PIXELFORMAT_RGBA8888,
+            -1,
+            0,
+            SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    frame->alpha_zero_is_transparent =
+        alpha_zero_is_transparent != 0 ? 1 : 0;
     emitted = NULL;
 
     /*
@@ -4396,9 +4405,6 @@ sixel_builtin_try_load_indexed_png(
         return status;
     }
 
-    frame->ncolors = palette_colors;
-    frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
     if (enable_cms) {
         /*
          * Keep indexed PNG colorspace fallback behavior (iCCP > sRGB >
@@ -4411,7 +4417,22 @@ sixel_builtin_try_load_indexed_png(
                                                 chunk->size,
                                                 chunk->allocator);
     }
-    sixel_frame_set_pixels(frame, pixels);
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels,
+            frame->palette,
+            frame->width,
+            frame->height,
+            SIXEL_PIXELFORMAT_PAL8,
+            SIXEL_COLORSPACE_GAMMA,
+            palette_colors,
+            SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(chunk->allocator, pixels);
+        return status;
+    }
     frame->loop_count = 1;
     *loaded = 1;
     return SIXEL_OK;
@@ -4503,9 +4524,6 @@ sixel_builtin_try_load_indexed_tga(
     }
     palette = NULL;
 
-    frame->ncolors = palette_colors;
-    frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
     if (palette_keycolor_index >= 0) {
         sixel_frame_set_transparent(frame, palette_keycolor_index);
     }
@@ -4527,7 +4545,21 @@ sixel_builtin_try_load_indexed_tga(
             }
         }
     }
-    sixel_frame_set_pixels(frame, pixels);
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels,
+            frame->palette,
+            frame->width,
+            frame->height,
+            SIXEL_PIXELFORMAT_PAL8,
+            SIXEL_COLORSPACE_GAMMA,
+            palette_colors,
+            SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
     pixels = NULL;
     frame->loop_count = 1;
     *loaded = 1;
@@ -4633,9 +4665,6 @@ sixel_builtin_load_png_keycolor_or_rgba(
         }
         palette = NULL;
 
-        frame->ncolors = palette_colors;
-        frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
-        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
         if (palette_keycolor_index >= 0) {
             sixel_frame_set_transparent(frame, palette_keycolor_index);
         }
@@ -4657,7 +4686,21 @@ sixel_builtin_load_png_keycolor_or_rgba(
                 }
             }
         }
-        sixel_frame_set_pixels(frame, pixels);
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                pixels,
+                frame->palette,
+                frame->width,
+                frame->height,
+                SIXEL_PIXELFORMAT_PAL8,
+                SIXEL_COLORSPACE_GAMMA,
+                palette_colors,
+                SIXEL_FRAME_PIXELS_U8
+            });
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
         pixels = NULL;
         frame->loop_count = 1;
         status = SIXEL_OK;
@@ -4692,11 +4735,23 @@ sixel_builtin_load_png_keycolor_or_rgba(
         goto cleanup;
     }
 
-    sixel_frame_set_pixels(frame, pixels);
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels,
+            NULL,
+            frame->width,
+            frame->height,
+            SIXEL_PIXELFORMAT_RGBA8888,
+            SIXEL_COLORSPACE_GAMMA,
+            -1,
+            SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
     pixels = NULL;
     frame->loop_count = 1;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
     frame->alpha_zero_is_transparent = 1;
     status = SIXEL_OK;
 
@@ -4797,12 +4852,14 @@ sixel_builtin_load_jpeg_float32(
     unsigned char **icc_profile,
     size_t *icc_profile_length)
 {
+    SIXELSTATUS status;
     float *float_pixels;
     int depth;
     int cms_converted;
     sixel_cms_profile_t *src_profile;
     sixel_cms_color_space_t src_colorspace;
 
+    status = SIXEL_FALSE;
     float_pixels = NULL;
     depth = 0;
     cms_converted = 0;
@@ -4828,8 +4885,6 @@ sixel_builtin_load_jpeg_float32(
         return SIXEL_STBI_ERROR;
     }
 
-    sixel_frame_set_pixels(frame, (unsigned char *)float_pixels);
-    frame->loop_count = 1;
     if (enable_cms) {
         if (sixel_builtin_extract_jpeg_icc(chunk->buffer,
                                            chunk->size,
@@ -4864,8 +4919,23 @@ sixel_builtin_load_jpeg_float32(
             }
         }
     }
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            float_pixels,
+            NULL,
+            frame->width,
+            frame->height,
+            SIXEL_PIXELFORMAT_RGBFLOAT32,
+            SIXEL_COLORSPACE_GAMMA,
+            -1,
+            SIXEL_FRAME_PIXELS_FLOAT32
+        });
+    if (SIXEL_FAILED(status)) {
+        stbi_image_free(float_pixels);
+        return status;
+    }
+    frame->loop_count = 1;
     return SIXEL_OK;
 }
 
@@ -5301,10 +5371,26 @@ sixel_builtin_load_psd_single_frame(
         }
     }
 
-    sixel_frame_set_pixels(frame, pixels);
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels,
+            NULL,
+            frame->width,
+            frame->height,
+            psd_pixelformat,
+            psd_colorspace,
+            -1,
+            SIXEL_PIXELFORMAT_IS_FLOAT32(psd_pixelformat)
+            ? SIXEL_FRAME_PIXELS_FLOAT32
+            : SIXEL_FRAME_PIXELS_U8
+        });
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(chunk->allocator, pixels);
+        return status;
+    }
+    pixels = NULL;
     frame->loop_count = 1;
-    frame->pixelformat = psd_pixelformat;
-    frame->colorspace = psd_colorspace;
     frame->transparent = -1;
     frame->transparent_mask = *mask;
     frame->transparent_mask_size = *mask_size;
@@ -5545,10 +5631,24 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                         stbi_failure_reason());
                     return SIXEL_STBI_ERROR;
                 }
-                sixel_frame_set_pixels(frame, pixels);
+                status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+                    sixel_frame_as_interface(frame),
+                    &(sixel_frame_pixels_request_t){
+                        pixels,
+                        NULL,
+                        frame->width,
+                        frame->height,
+                        SIXEL_PIXELFORMAT_RGBA8888,
+                        SIXEL_COLORSPACE_GAMMA,
+                        -1,
+                        SIXEL_FRAME_PIXELS_U8
+                    });
+                if (SIXEL_FAILED(status)) {
+                    sixel_allocator_free(chunk->allocator, pixels);
+                    return status;
+                }
+                pixels = NULL;
                 frame->loop_count = 1;
-                frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-                frame->colorspace = SIXEL_COLORSPACE_GAMMA;
                 if (enable_cms != 0) {
                     (void)
                         sixel_builtin_apply_bmp_png_colorspace_to_rgba_channels(
@@ -5616,10 +5716,24 @@ sixel_builtin_load_nonpng_rgb8_fallback(
             sixel_allocator_free(chunk->allocator, pixels);
             pixels = rgb_pixels;
             rgb_pixels = NULL;
-            sixel_frame_set_pixels(frame, pixels);
+            status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+                sixel_frame_as_interface(frame),
+                &(sixel_frame_pixels_request_t){
+                    pixels,
+                    NULL,
+                    frame->width,
+                    frame->height,
+                    SIXEL_PIXELFORMAT_RGB888,
+                    SIXEL_COLORSPACE_GAMMA,
+                    -1,
+                    SIXEL_FRAME_PIXELS_U8
+                });
+            if (SIXEL_FAILED(status)) {
+                sixel_allocator_free(chunk->allocator, pixels);
+                return status;
+            }
+            pixels = NULL;
             frame->loop_count = 1;
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
             if (enable_cms != 0 && cmyk_converted) {
                 target_pixelformat = loader_cms_target_pixelformat();
                 status = sixel_frame_set_pixelformat(frame,
@@ -5630,11 +5744,25 @@ sixel_builtin_load_nonpng_rgb8_fallback(
             }
             return SIXEL_OK;
         }
-        sixel_frame_set_pixels(frame, pixels);
-        frame->loop_count = 1;
         if (bmp_comp == 4) {
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+            status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+                sixel_frame_as_interface(frame),
+                &(sixel_frame_pixels_request_t){
+                    pixels,
+                    NULL,
+                    frame->width,
+                    frame->height,
+                    SIXEL_PIXELFORMAT_RGBA8888,
+                    SIXEL_COLORSPACE_GAMMA,
+                    -1,
+                    SIXEL_FRAME_PIXELS_U8
+                });
+            if (SIXEL_FAILED(status)) {
+                sixel_allocator_free(chunk->allocator, pixels);
+                return status;
+            }
+            pixels = NULL;
+            frame->loop_count = 1;
             if (enable_cms != 0) {
                 if (bmp_icc_profile != NULL &&
                     bmp_icc_profile_length != 0u) {
@@ -5651,8 +5779,22 @@ sixel_builtin_load_nonpng_rgb8_fallback(
             return sixel_builtin_apply_bmp_alpha_policy(frame, bgcolor);
         }
         if (bmp_comp == 3) {
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+            status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+                sixel_frame_as_interface(frame),
+                &(sixel_frame_pixels_request_t){
+                    pixels,
+                    NULL,
+                    frame->width,
+                    frame->height,
+                    SIXEL_PIXELFORMAT_RGB888,
+                    SIXEL_COLORSPACE_GAMMA,
+                    -1,
+                    SIXEL_FRAME_PIXELS_U8
+                });
+            if (SIXEL_FAILED(status)) {
+                sixel_allocator_free(chunk->allocator, pixels);
+                return status;
+            }
             if (enable_cms != 0) {
                 bmp_icc_applicability = 0;
                 if (bmp_icc_profile != NULL &&
@@ -5730,8 +5872,6 @@ sixel_builtin_load_nonpng_rgb8_fallback(
         sixel_helper_set_additional_message(stbi_failure_reason());
         return SIXEL_STBI_ERROR;
     }
-    sixel_frame_set_pixels(frame, pixels);
-    frame->loop_count = 1;
 #if HAVE_LCMS2
     if (enable_cms && is_tiff) {
         if (sixel_builtin_extract_tiff_icc(chunk->buffer,
@@ -5761,8 +5901,24 @@ sixel_builtin_load_nonpng_rgb8_fallback(
         case 1:
         case 3:
         case 4:
-            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+            status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+                sixel_frame_as_interface(frame),
+                &(sixel_frame_pixels_request_t){
+                    pixels,
+                    NULL,
+                    frame->width,
+                    frame->height,
+                    SIXEL_PIXELFORMAT_RGBA8888,
+                    SIXEL_COLORSPACE_GAMMA,
+                    -1,
+                    SIXEL_FRAME_PIXELS_U8
+                });
+            if (SIXEL_FAILED(status)) {
+                sixel_allocator_free(chunk->allocator, pixels);
+                return status;
+            }
+            pixels = NULL;
+            frame->loop_count = 1;
             status = sixel_builtin_apply_pic_alpha_policy(frame, bgcolor);
             break;
         default:
@@ -5781,8 +5937,24 @@ sixel_builtin_load_nonpng_rgb8_fallback(
         return status;
     }
     if (tga_truecolor_alpha != 0) {
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                pixels,
+                NULL,
+                frame->width,
+                frame->height,
+                SIXEL_PIXELFORMAT_RGBA8888,
+                SIXEL_COLORSPACE_GAMMA,
+                -1,
+                SIXEL_FRAME_PIXELS_U8
+            });
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(chunk->allocator, pixels);
+            return status;
+        }
+        pixels = NULL;
+        frame->loop_count = 1;
         status = sixel_builtin_apply_tga_truecolor_alpha_policy(frame, bgcolor);
         return status;
     }
@@ -5790,9 +5962,22 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     case 1:
     case 3:
     case 4:
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-        status = SIXEL_OK;
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                pixels,
+                NULL,
+                frame->width,
+                frame->height,
+                SIXEL_PIXELFORMAT_RGB888,
+                SIXEL_COLORSPACE_GAMMA,
+                -1,
+                SIXEL_FRAME_PIXELS_U8
+            });
+        if (SIXEL_SUCCEEDED(status)) {
+            pixels = NULL;
+            frame->loop_count = 1;
+        }
         break;
     default:
         nwrite = snprintf(message,
@@ -5805,6 +5990,9 @@ sixel_builtin_load_nonpng_rgb8_fallback(
         }
         status = SIXEL_STBI_ERROR;
         break;
+    }
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(chunk->allocator, pixels);
     }
     return status;
 }
@@ -6233,7 +6421,26 @@ sixel_builtin_load_with_builtin_impl(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        sixel_frame_set_pixels(frame, pixels);
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                pixels,
+                frame->palette,
+                frame->width,
+                frame->height,
+                frame->pixelformat,
+                -1,
+                frame->ncolors,
+                SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)
+                ? SIXEL_FRAME_PIXELS_FLOAT32
+                : SIXEL_FRAME_PIXELS_U8
+            });
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(frame->allocator, pixels);
+            pixels = NULL;
+            goto end;
+        }
+        pixels = NULL;
         break;
 
     case SIXEL_BUILTIN_DECODE_PATH_PNM:
@@ -6256,22 +6463,26 @@ sixel_builtin_load_with_builtin_impl(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        status = sixel_frame_set_pixelformat(frame, pnm_pixelformat);
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                pixels,
+                frame->palette,
+                frame->width,
+                frame->height,
+                pnm_pixelformat,
+                -1,
+                frame->ncolors,
+                SIXEL_PIXELFORMAT_IS_FLOAT32(pnm_pixelformat)
+                ? SIXEL_FRAME_PIXELS_FLOAT32
+                : SIXEL_FRAME_PIXELS_U8
+            });
         if (SIXEL_FAILED(status)) {
             sixel_allocator_free(frame->allocator, pixels);
             pixels = NULL;
             goto end;
         }
-        /*
-         * Apply pixelformat metadata before attaching decoded storage.
-         * sixel_frame_set_pixelformat() may normalize existing pixels, so
-         * setting the pointer first can reinterpret float data as bytes.
-         */
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(pnm_pixelformat)) {
-            sixel_frame_set_pixels_float32(frame, (float *)pixels);
-        } else {
-            sixel_frame_set_pixels(frame, pixels);
-        }
+        pixels = NULL;
         break;
 
     case SIXEL_BUILTIN_DECODE_PATH_GIF:

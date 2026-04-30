@@ -1612,15 +1612,25 @@ load_with_libjpeg(
         goto end;
     }
 
-    status = sixel_frame_set_pixelformat(frame, pixelformat);
+    status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+        sixel_frame_as_interface(frame),
+        &(sixel_frame_pixels_request_t){
+            pixels,
+            NULL,
+            frame->width,
+            frame->height,
+            pixelformat,
+            -1,
+            -1,
+            SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
+            ? SIXEL_FRAME_PIXELS_FLOAT32
+            : SIXEL_FRAME_PIXELS_U8
+        });
     if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(pchunk->allocator, pixels);
         goto end;
     }
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        sixel_frame_set_pixels_float32(frame, (float *)pixels);
-    } else {
-        sixel_frame_set_pixels(frame, pixels);
-    }
+    pixels = NULL;
 
     status = sixel_frame_strip_alpha(frame, bgcolor);
     if (SIXEL_FAILED(status)) {

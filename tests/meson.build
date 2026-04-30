@@ -720,6 +720,12 @@ staticcheck_cases = [
       meson.project_build_root()],
   ],
   [
+    'staticcheck-frame-post187-export-guard',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-frame-post187-export-guard.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-frame-instantiation-boundary',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-frame-instantiation-boundary.sh',

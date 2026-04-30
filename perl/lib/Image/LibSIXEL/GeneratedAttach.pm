@@ -82,11 +82,7 @@ sub attach_all {
     $ffi->attach(['sixel_frame_ref' => 'Image::LibSIXEL::sixel_frame_ref'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_frame_unref' => 'Image::LibSIXEL::sixel_frame_unref'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_frame_init' => 'Image::LibSIXEL::sixel_frame_init'] => ['opaque', 'opaque', 'int', 'int', 'int', 'opaque', 'int'] => 'int');
-    $ffi->attach(['sixel_frame_init_float32' => 'Image::LibSIXEL::sixel_frame_init_float32'] => ['opaque', 'opaque', 'int', 'int', 'int', 'opaque', 'int'] => 'int');
     $ffi->attach(['sixel_frame_get_pixels' => 'Image::LibSIXEL::sixel_frame_get_pixels'] => ['opaque'] => 'opaque');
-    $ffi->attach(['sixel_frame_get_pixels_float32' => 'Image::LibSIXEL::sixel_frame_get_pixels_float32'] => ['opaque'] => 'opaque');
-    $ffi->attach(['sixel_frame_set_pixels' => 'Image::LibSIXEL::sixel_frame_set_pixels'] => ['opaque', 'opaque'] => 'void');
-    $ffi->attach(['sixel_frame_set_pixels_float32' => 'Image::LibSIXEL::sixel_frame_set_pixels_float32'] => ['opaque', 'opaque'] => 'void');
     $ffi->attach(['sixel_frame_get_palette' => 'Image::LibSIXEL::sixel_frame_get_palette'] => ['opaque'] => 'opaque');
     $ffi->attach(['sixel_frame_set_palette' => 'Image::LibSIXEL::sixel_frame_set_palette'] => ['opaque', 'opaque'] => 'void');
     $ffi->attach(['sixel_frame_get_width' => 'Image::LibSIXEL::sixel_frame_get_width'] => ['opaque'] => 'int');

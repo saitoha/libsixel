@@ -1113,7 +1113,9 @@ lsqa_convert_frame_colorspace(sixel_frame_t *frame,
     int depth;
     size_t size;
     unsigned char *pixels;
+    sixel_frame_pixels_view_t view;
 
+    memset(&view, 0, sizeof(view));
     if (frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1143,10 +1145,13 @@ lsqa_convert_frame_colorspace(sixel_frame_t *frame,
     }
     size *= (size_t)depth;
 
-    pixels = sixel_frame_get_pixels(frame);
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        pixels = (unsigned char *)sixel_frame_get_pixels_float32(frame);
+    status = sixel_assessment_frame_get_pixels_view(frame, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
+    pixels = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)
+        ? (unsigned char *)view.pixels_float32
+        : view.pixels;
     if (pixels == NULL) {
         return SIXEL_BAD_INPUT;
     }
@@ -1171,7 +1176,27 @@ lsqa_apply_grayscale(sixel_frame_t *frame)
     int pixelformat;
     size_t pixels;
     size_t i;
+    sixel_frame_pixels_view_t view;
+    float *float_values;
+    unsigned char *byte_values;
+    size_t base;
+    float float_y;
+    unsigned int r;
+    unsigned int g;
+    unsigned int b;
+    unsigned int byte_y;
+    SIXELSTATUS status;
 
+    memset(&view, 0, sizeof(view));
+    float_values = NULL;
+    byte_values = NULL;
+    base = 0u;
+    float_y = 0.0f;
+    r = 0u;
+    g = 0u;
+    b = 0u;
+    byte_y = 0u;
+    status = SIXEL_FALSE;
     if (frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1188,49 +1213,41 @@ lsqa_apply_grayscale(sixel_frame_t *frame)
     }
 
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        float *values;
-
-        values = sixel_frame_get_pixels_float32(frame);
-        if (values == NULL) {
+        status = sixel_assessment_frame_get_pixels_view(frame, &view);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        float_values = view.pixels_float32;
+        if (float_values == NULL) {
             return SIXEL_BAD_INPUT;
         }
         for (i = 0; i < pixels; ++i) {
-            size_t base;
-            float y;
-
             base = i * 3u;
-            y = 0.2126f * values[base + 0u]
-              + 0.7152f * values[base + 1u]
-              + 0.0722f * values[base + 2u];
-            values[base + 0u] = y;
-            values[base + 1u] = y;
-            values[base + 2u] = y;
+            float_y = 0.2126f * float_values[base + 0u]
+                    + 0.7152f * float_values[base + 1u]
+                    + 0.0722f * float_values[base + 2u];
+            float_values[base + 0u] = float_y;
+            float_values[base + 1u] = float_y;
+            float_values[base + 2u] = float_y;
         }
     } else {
-        unsigned char *values;
-
-        values = sixel_frame_get_pixels(frame);
-        if (values == NULL) {
+        byte_values = sixel_frame_get_pixels(frame);
+        if (byte_values == NULL) {
             return SIXEL_BAD_INPUT;
         }
         for (i = 0; i < pixels; ++i) {
-            size_t base;
-            unsigned int r;
-            unsigned int g;
-            unsigned int b;
-            unsigned int y;
-
             base = i * 3u;
-            r = (unsigned int)values[base + 0u];
-            g = (unsigned int)values[base + 1u];
-            b = (unsigned int)values[base + 2u];
-            y = (2126u * r + 7152u * g + 722u * b + 5000u) / 10000u;
-            if (y > 255u) {
-                y = 255u;
+            r = (unsigned int)byte_values[base + 0u];
+            g = (unsigned int)byte_values[base + 1u];
+            b = (unsigned int)byte_values[base + 2u];
+            byte_y = (2126u * r + 7152u * g + 722u * b + 5000u) /
+                     10000u;
+            if (byte_y > 255u) {
+                byte_y = 255u;
             }
-            values[base + 0u] = (unsigned char)y;
-            values[base + 1u] = (unsigned char)y;
-            values[base + 2u] = (unsigned char)y;
+            byte_values[base + 0u] = (unsigned char)byte_y;
+            byte_values[base + 1u] = (unsigned char)byte_y;
+            byte_values[base + 2u] = (unsigned char)byte_y;
         }
     }
 

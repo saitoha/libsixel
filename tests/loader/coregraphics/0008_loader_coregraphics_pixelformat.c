@@ -160,12 +160,14 @@ coregraphics_capture_first_rgb_sample(sixel_frame_t *frame, int rgb[3])
     int pixelformat;
     unsigned char const *pixels_u8;
     float const *pixels_f32;
+    sixel_frame_pixels_view_t view;
     int channel;
     float channel_value;
 
     pixelformat = 0;
     pixels_u8 = NULL;
     pixels_f32 = NULL;
+    memset(&view, 0, sizeof(view));
     channel = 0;
     channel_value = 0.0f;
     if (frame == NULL || rgb == NULL) {
@@ -185,7 +187,10 @@ coregraphics_capture_first_rgb_sample(sixel_frame_t *frame, int rgb[3])
         return 1;
     case SIXEL_PIXELFORMAT_RGBFLOAT32:
     case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
-        pixels_f32 = sixel_frame_get_pixels_float32(frame);
+        if (SIXEL_FAILED(loader_test_frame_get_pixels_view(frame, &view))) {
+            return 0;
+        }
+        pixels_f32 = view.pixels_float32;
         if (pixels_f32 == NULL) {
             return 0;
         }

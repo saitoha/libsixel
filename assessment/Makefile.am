@@ -76,6 +76,7 @@ lsqa_SOURCES = $(srcdir)/lsqa.c \
                $(srcdir)/assessment.h \
                $(top_srcdir)/converters/cli.c
 lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
+                -I$(top_srcdir)/include \
                 -I$(top_srcdir)/src \
                 -I$(top_srcdir)/assessment \
                 -I$(top_srcdir)/converters \

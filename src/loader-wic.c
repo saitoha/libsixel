@@ -632,16 +632,30 @@ load_with_wic(
             goto end;
         }
 
-        sixel_frame_set_pixels(frame,
-                               sixel_allocator_malloc(
-                                   pchunk->allocator,
-                                   (size_t)(frame->height *
-                                            frame->width * comp)));
-        pixels = sixel_frame_get_pixels(frame);
+        pixels = (unsigned char *)sixel_allocator_malloc(
+            pchunk->allocator,
+            (size_t)(frame->height * frame->width * comp));
         if (pixels == NULL) {
             sixel_helper_set_additional_message(
                 "load_with_wic: sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
+            hr = E_FAIL;
+            goto end;
+        }
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                pixels,
+                NULL,
+                frame->width,
+                frame->height,
+                frame->pixelformat,
+                frame->colorspace,
+                -1,
+                SIXEL_FRAME_PIXELS_U8
+            });
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(pchunk->allocator, pixels);
             hr = E_FAIL;
             goto end;
         }
