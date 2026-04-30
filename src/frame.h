@@ -189,6 +189,16 @@ sixel_frame_clone(sixel_frame_t const *frame,
                   sixel_allocator_t *allocator,
                   sixel_frame_t **frame_out);
 
+/*
+ * Factory adapter for image/frame.
+ *
+ * Public sixel_frame_new() keeps its legacy out-parameter order; the
+ * generated factory registry expects allocator-first constructors.
+ */
+/* @classid image/frame */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_factory_new(sixel_allocator_t *allocator, void **object);
+
 #ifdef __cplusplus
 }
 #endif

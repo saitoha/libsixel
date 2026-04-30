@@ -188,6 +188,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0009_LOADER_WIC_PIXELFORMAT \
     -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
     -DBUILD_TEST_0010_FILTER_ENCODE \
+    -DBUILD_TEST_0001_FRAME_FACTORY \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -256,6 +257,7 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0008_filter_load.c \
     processing/filter/0009_filter_dither.c \
     processing/filter/0010_filter_encode.c \
+    processing/frame/0001_frame_factory.c \
     processing/lookup/0001_lookup_policy.c \
     processing/dither/0001_dither_policy.c \
     processing/filter/filter_test_common.h \

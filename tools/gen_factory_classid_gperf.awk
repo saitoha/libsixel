@@ -6,6 +6,8 @@ BEGIN {
     entry_count = 0
     pending_classid = ""
     pending_condition = ""
+    constructor_pattern = "sixel_(lookup_policy|dither_policy|loader|frame)_"
+    constructor_pattern = constructor_pattern "[A-Za-z0-9_]+_new"
     has_error = 0
 }
 
@@ -69,8 +71,7 @@ FNR == 1 {
         next
     }
 
-    if (pending_classid != "" &&
-            match($0, /sixel_(lookup_policy|dither_policy|loader)_[A-Za-z0-9_]+_new/)) {
+    if (pending_classid != "" && match($0, constructor_pattern)) {
         constructor_name = substr($0, RSTART, RLENGTH)
         if (pending_classid in classid_to_constructor) {
             report_error("duplicate @classid " pending_classid)

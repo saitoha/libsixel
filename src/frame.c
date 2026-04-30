@@ -954,6 +954,31 @@ end:
     return status;
 }
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_frame_factory_new(sixel_allocator_t *allocator, void **object)
+{
+    SIXELSTATUS status;
+    sixel_frame_t *frame;
+
+    status = SIXEL_FALSE;
+    frame = NULL;
+
+    if (object == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_factory_new: object is null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *object = NULL;
+    status = sixel_frame_new(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    *object = frame;
+    return SIXEL_OK;
+}
+
 
 SIXELAPI /* deprecated */ sixel_frame_t *
 sixel_frame_create(void)

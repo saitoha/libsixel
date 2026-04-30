@@ -494,6 +494,7 @@ FACTORY_CLASSID_INPUTS = \
     $(LOOKUP_POLICY_CLASSID_INPUTS) \
     $(DITHER_POLICY_CLASSID_INPUTS) \
     $(LOADER_COMPONENT_CLASSID_INPUTS) \
+    $(srcdir)/frame.h \
     $(srcdir)/loader-manager.h
 
 SERVICEID_CLASSID_INPUTS = \
