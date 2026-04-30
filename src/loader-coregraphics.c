@@ -54,6 +54,7 @@
 
 #include "chunk.h"
 #include "frame-private.h"
+#include "frame-factory.h"
 #include "loader-common.h"
 #include "loader-coregraphics.h"
 #include "loader.h"
@@ -2257,7 +2258,8 @@ coregraphics_prepare_source_and_root_metadata(
         return status;
     }
 
-    status = sixel_frame_new(&state->frame, state->chunk->allocator);
+    status = sixel_frame_create_from_factory(&state->frame,
+                                             state->chunk->allocator);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -2539,8 +2541,9 @@ coregraphics_process_single_frame(coregraphics_loader_state_t *state)
                 cache_slot->decided = 1u;
             }
             if (cache_slot->decided == 0u) {
-                status = sixel_frame_new(&state->cached_frame_tmp,
-                                         state->chunk->allocator);
+                status = sixel_frame_create_from_factory(
+                    &state->cached_frame_tmp,
+                    state->chunk->allocator);
                 if (SIXEL_FAILED(status)) {
                     return status;
                 }

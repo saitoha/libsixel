@@ -33,10 +33,9 @@
 
 #include <sixel.h>
 
-#include "components.h"
-#include "factory.h"
 #include "filter-sample.h"
 #include "filter.h"
+#include "frame-factory.h"
 #include "frame.h"
 #include "pixelformat.h"
 
@@ -128,36 +127,18 @@ sixel_filter_sample_create_frame(sixel_allocator_t *allocator,
                                  sixel_frame_interface_t **frame_out)
 {
     SIXELSTATUS status;
-    sixel_factory_t *factory;
-    void *object;
-    void *service;
 
     status = SIXEL_FALSE;
-    factory = NULL;
-    object = NULL;
-    service = NULL;
 
     if (allocator == NULL || frame_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    *frame_out = NULL;
-    status = sixel_components_getservice("services/factory", &service);
+    status = sixel_frame_create_interface_from_factory(allocator, frame_out);
     if (SIXEL_FAILED(status)) {
         return status;
     }
 
-    factory = (sixel_factory_t *)service;
-    status = factory->vtbl->create(factory,
-                                   "image/frame",
-                                   allocator,
-                                   &object);
-    factory->vtbl->unref(factory);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    *frame_out = (sixel_frame_interface_t *)object;
     if (*frame_out == NULL || (*frame_out)->vtbl == NULL ||
         (*frame_out)->vtbl->init_pixels == NULL ||
         (*frame_out)->vtbl->set_timeline == NULL ||

@@ -362,6 +362,7 @@ AM_LOG_FLAGS =
 	staticcheck-test-runner-dllexport \
 	staticcheck-lookup-backend-exports \
 	staticcheck-public-compat \
+	staticcheck-frame-instantiation-boundary \
 	staticcheck-deprecated-diagnostic-guard \
 	staticcheck-lookup-policy-no-backend-includes \
 	staticcheck-factory-classid-registry-sync \
@@ -406,6 +407,7 @@ staticcheck-src-no-direct-getenv \
 staticcheck-test-runner-dllexport \
 staticcheck-lookup-backend-exports \
 staticcheck-public-compat \
+staticcheck-frame-instantiation-boundary \
 staticcheck-deprecated-diagnostic-guard \
 staticcheck-lookup-policy-no-backend-includes \
 staticcheck-factory-classid-registry-sync \
@@ -550,6 +552,16 @@ staticcheck-public-compat:
 		"$(top_srcdir)/tests/_static/sh/staticcheck-public-compat.sh" \
 		"$(abs_top_srcdir)" \
 		"$(abs_top_builddir)"
+
+staticcheck-frame-instantiation-boundary:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-frame-instantiation-boundary" \
+		--log-file staticcheck-frame-instantiation-boundary.log \
+		--trs-file staticcheck-frame-instantiation-boundary.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-frame-instantiation-boundary.sh" \
+		"$(abs_top_srcdir)"
 
 staticcheck-deprecated-diagnostic-guard:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -1558,6 +1570,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 	_static/sh/staticcheck-test-runner-dllexport.sh \
 		_static/sh/staticcheck-lookup-backend-exports.sh \
 		_static/sh/staticcheck-public-compat.sh \
+		_static/sh/staticcheck-frame-instantiation-boundary.sh \
 		_static/sh/staticcheck-deprecated-diagnostic-guard.sh \
 		_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
 		_static/sh/staticcheck-factory-classid-registry-sync.sh \

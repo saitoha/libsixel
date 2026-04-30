@@ -74,6 +74,7 @@
 #include "compat_stub.h"
 #include "loader-common.h"
 #include "frame-private.h"
+#include "frame-factory.h"
 #include "loader.h"
 #include "loader-libpng.h"
 #include "logger.h"
@@ -4016,7 +4017,7 @@ emit_apng_frame(
     }
     memcpy(emitted, canvas->pixels, canvas_bytes);
 
-    status = sixel_frame_new(&frame, allocator);
+    status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -4751,7 +4752,7 @@ load_with_libpng(
         goto end;
     }
 
-    status = sixel_frame_new(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

@@ -62,6 +62,7 @@
 #include "chunk.h"
 #include "compat_stub.h"
 #include "frame-private.h"
+#include "frame-factory.h"
 #include "fromgif.h"
 #include "frombmp.h"
 #include "fromhdr.h"
@@ -2708,7 +2709,7 @@ sixel_builtin_apng_emit_frame(
     }
     memcpy(emitted, canvas->pixels, canvas_bytes);
 
-    status = sixel_frame_new(&frame, allocator);
+    status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -4321,7 +4322,7 @@ sixel_builtin_prepare_frame_and_chunk_size(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = sixel_frame_new(frame, chunk->allocator);
+    status = sixel_frame_create_from_factory(frame, chunk->allocator);
     if (SIXEL_FAILED(status)) {
         return status;
     }

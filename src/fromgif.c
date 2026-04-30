@@ -55,6 +55,7 @@
 #include "fromgif.h"
 #include "compat_stub.h"
 #include "frame-private.h"
+#include "frame-factory.h"
 #include "loader-common.h"
 #include "loader.h"
 
@@ -2398,7 +2399,7 @@ gif_prepare_decoder_state(unsigned char *buffer,
 
     *pg = NULL;
     *pframe = NULL;
-    status = sixel_frame_new(&frame, allocator);
+    status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         return status;
     }

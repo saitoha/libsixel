@@ -720,6 +720,12 @@ staticcheck_cases = [
       meson.project_build_root()],
   ],
   [
+    'staticcheck-frame-instantiation-boundary',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-frame-instantiation-boundary.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-deprecated-diagnostic-guard',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-deprecated-diagnostic-guard.sh',

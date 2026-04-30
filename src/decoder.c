@@ -56,6 +56,7 @@
 
 #include "decoder.h"
 #include "decoder-parallel.h"
+#include "frame-factory.h"
 #include "clipboard.h"
 #include "compat_stub.h"
 #include "path.h"
@@ -1571,7 +1572,9 @@ sixel_decoder_decode(
                  * central scaling helper. Ownership transfers to the frame,
                  * which keeps the lifetime rules identical on both paths.
                  */
-                status = sixel_frame_new(&frame, decoder->allocator);
+                status = sixel_frame_create_from_factory(
+                    &frame,
+                    decoder->allocator);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }

@@ -42,6 +42,7 @@
 #include "compat_stub.h"
 #include "fromwebp.h"
 #include "frame-private.h"
+#include "frame-factory.h"
 #include "fromwebp-container.h"
 #include "fromwebp-internal.h"
 #include "loader-common.h"
@@ -1805,7 +1806,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                 continue;
             }
 
-            status = sixel_frame_new(&frame, chunk->allocator);
+            status = sixel_frame_create_from_factory(&frame, chunk->allocator);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }

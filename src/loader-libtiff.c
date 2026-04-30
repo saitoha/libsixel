@@ -60,6 +60,7 @@
 #include "cms.h"
 #include "chunk.h"
 #include "frame-private.h"
+#include "frame-factory.h"
 #include "icc-apply.h"
 #include "icc-parse.h"
 #include "loader-common.h"
@@ -1256,7 +1257,7 @@ load_with_libtiff(
     (void)start_frame_no_set;
     (void)start_frame_no;
 
-    status = sixel_frame_new(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

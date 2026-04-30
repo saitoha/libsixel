@@ -91,6 +91,7 @@
 #include "tty.h"
 #include "encoder.h"
 #include "frame.h"
+#include "frame-factory.h"
 #include "output.h"
 #include "logger.h"
 #include "options.h"
@@ -15308,7 +15309,7 @@ sixel_encoder_encode_bytes(
         memcpy(owned_palette, palette, palette_bytes);
     }
 
-    status = sixel_frame_new(&frame, encoder->allocator);
+    status = sixel_frame_create_from_factory(&frame, encoder->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -15406,7 +15407,7 @@ sixel_encoder_copy_quantized_frame_internal(
     pixels = NULL;
     palette = NULL;
 
-    status = sixel_frame_new(&frame, allocator);
+    status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         return status;
     }

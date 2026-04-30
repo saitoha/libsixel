@@ -53,6 +53,7 @@
 #include "allocator.h"
 #include "compat_stub.h"
 #include "frame-private.h"
+#include "frame-factory.h"
 #include "loader-common.h"
 #include "status.h"
 
@@ -1935,7 +1936,7 @@ load_with_librsvg(
     }
     librsvg_decode_policy_init_from_env(&policy);
 
-    status = sixel_frame_new(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
     if (SIXEL_SUCCEEDED(status)) {
         status = librsvg_render_to_frame(frame,
                                          pchunk,

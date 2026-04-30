@@ -60,6 +60,7 @@
 #include "loader-common.h"
 #include "loader.h"
 #include "frame-private.h"
+#include "frame-factory.h"
 #include "loader-libjpeg.h"
 #include "logger.h"
 
@@ -1594,7 +1595,7 @@ load_with_libjpeg(
                                           &exif_orientation);
     }
 
-    status = sixel_frame_new(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

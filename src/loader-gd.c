@@ -74,6 +74,7 @@ static pthread_once_t g_sixel_loader_gd_support_once = PTHREAD_ONCE_INIT;
 
 #include "chunk.h"
 #include "frame-private.h"
+#include "frame-factory.h"
 #include "loader-common.h"
 #include "loader-gd.h"
 #include "sixel_atomic.h"
@@ -1132,7 +1133,7 @@ load_with_gd(
     }
     pixel_count = (size_t)width * (size_t)height;
 
-    status = sixel_frame_new(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }

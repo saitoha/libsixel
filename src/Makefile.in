@@ -246,28 +246,28 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-interframe-stbn-source-pmj.h \
 	$(srcdir)/logger.c $(srcdir)/logger.h $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
-	$(srcdir)/frame-private.h $(srcdir)/cpu.c $(srcdir)/cpu.h \
-	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
-	$(srcdir)/filter-colors.c $(srcdir)/filter-colors.h \
-	$(srcdir)/filter-load.c $(srcdir)/filter-load.h \
-	$(srcdir)/filter-factory.c $(srcdir)/filter-factory.h \
-	$(srcdir)/filter-final-merge.c $(srcdir)/filter-final-merge.h \
-	$(srcdir)/filter-dither.c $(srcdir)/filter-dither.h \
-	$(srcdir)/filter-gradient.c $(srcdir)/filter-gradient.h \
-	$(srcdir)/filter-encode.c $(srcdir)/filter-encode.h \
-	$(srcdir)/filter-lookup.c $(srcdir)/filter-lookup.h \
-	$(srcdir)/filter-palette.c $(srcdir)/filter-palette.h \
-	$(srcdir)/filter-fhedt.c $(srcdir)/filter-fhedt.h \
-	$(srcdir)/filter-vptree.c $(srcdir)/filter-vptree.h \
-	$(srcdir)/filter-eytzinger.c $(srcdir)/filter-eytzinger.h \
-	$(srcdir)/filter-clip.c $(srcdir)/filter-clip.h \
-	$(srcdir)/filter-resize.c $(srcdir)/filter-resize.h \
-	$(srcdir)/filter-sample.c $(srcdir)/filter-sample.h \
-	$(srcdir)/filter.c $(srcdir)/filter.h $(srcdir)/scale.c \
-	$(srcdir)/scale.h $(srcdir)/chunk.c $(srcdir)/chunk.h \
-	$(srcdir)/cms.c $(srcdir)/cms.h $(srcdir)/icc-parse.c \
-	$(srcdir)/icc-parse.h $(srcdir)/icc-apply.c \
-	$(srcdir)/icc-apply.h $(srcdir)/loader.c \
+	$(srcdir)/frame-factory.h $(srcdir)/frame-private.h \
+	$(srcdir)/cpu.c $(srcdir)/cpu.h $(srcdir)/pixelformat.c \
+	$(srcdir)/pixelformat.h $(srcdir)/filter-colors.c \
+	$(srcdir)/filter-colors.h $(srcdir)/filter-load.c \
+	$(srcdir)/filter-load.h $(srcdir)/filter-factory.c \
+	$(srcdir)/filter-factory.h $(srcdir)/filter-final-merge.c \
+	$(srcdir)/filter-final-merge.h $(srcdir)/filter-dither.c \
+	$(srcdir)/filter-dither.h $(srcdir)/filter-gradient.c \
+	$(srcdir)/filter-gradient.h $(srcdir)/filter-encode.c \
+	$(srcdir)/filter-encode.h $(srcdir)/filter-lookup.c \
+	$(srcdir)/filter-lookup.h $(srcdir)/filter-palette.c \
+	$(srcdir)/filter-palette.h $(srcdir)/filter-fhedt.c \
+	$(srcdir)/filter-fhedt.h $(srcdir)/filter-vptree.c \
+	$(srcdir)/filter-vptree.h $(srcdir)/filter-eytzinger.c \
+	$(srcdir)/filter-eytzinger.h $(srcdir)/filter-clip.c \
+	$(srcdir)/filter-clip.h $(srcdir)/filter-resize.c \
+	$(srcdir)/filter-resize.h $(srcdir)/filter-sample.c \
+	$(srcdir)/filter-sample.h $(srcdir)/filter.c \
+	$(srcdir)/filter.h $(srcdir)/scale.c $(srcdir)/scale.h \
+	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/cms.c \
+	$(srcdir)/cms.h $(srcdir)/icc-parse.c $(srcdir)/icc-parse.h \
+	$(srcdir)/icc-apply.c $(srcdir)/icc-apply.h $(srcdir)/loader.c \
 	$(srcdir)/loader-gdk-pixbuf2.c \
 	$(srcdir)/loader-gnome-thumbnailer.c \
 	$(srcdir)/loader-coregraphics.c $(srcdir)/loader-quicklook.c \
@@ -1084,6 +1084,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/colorspace.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frame.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frame.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frame-factory.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frame-private.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/cpu.c $(srcdir)/cpu.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/pixelformat.c \

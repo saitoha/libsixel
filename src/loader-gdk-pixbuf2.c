@@ -88,6 +88,7 @@
 #include "allocator.h"
 #include "compat_stub.h"
 #include "frame-private.h"
+#include "frame-factory.h"
 #include "loader-common.h"
 #include "loader-gdk-pixbuf2.h"
 #include "probe.h"
@@ -1323,7 +1324,7 @@ load_with_gdkpixbuf(
     (void)fuse_palette;
     (void)reqcolors;
 
-    status = sixel_frame_new(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1461,7 +1462,7 @@ load_with_gdkpixbuf(
 
 end:
     if (frame) {
-        /* drop the reference we obtained from sixel_frame_new() */
+        /* drop the reference from sixel_frame_create_from_factory() */
         sixel_frame_unref(frame);
     }
     if (loader) {

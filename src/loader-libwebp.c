@@ -56,6 +56,7 @@
 #include "cms.h"
 #include "chunk.h"
 #include "frame-private.h"
+#include "frame-factory.h"
 #include "loader-common.h"
 #include "loader-libwebp.h"
 #include "logger.h"
@@ -3053,7 +3054,7 @@ webp_decode_and_emit_single_frame_buffer(webp_decode_common_t const *decode,
     }
     allocator = decode->chunk->allocator;
 
-    status = sixel_frame_new(&frame, allocator);
+    status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -3158,7 +3159,7 @@ webp_decode_and_emit_static_animation_frame(WebPAnimDecoder *decoder,
         goto end;
     }
 
-    status = sixel_frame_new(&frame, chunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, chunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -3430,7 +3431,9 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                     continue;
                 }
 
-                status = sixel_frame_new(&frame, chunk->allocator);
+                status = sixel_frame_create_from_factory(
+                    &frame,
+                    chunk->allocator);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }

@@ -46,6 +46,7 @@
 
 #include "chunk.h"
 #include "frame-private.h"
+#include "frame-factory.h"
 #include "loader-common.h"
 #include "loader-quicklook.h"
 
@@ -313,7 +314,7 @@ load_with_quicklook(
 
     loader_thumbnailer_initialize_size_hint();
 
-    status = sixel_frame_new(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
