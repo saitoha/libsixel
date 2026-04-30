@@ -94,7 +94,7 @@ fuzz_loader_component_init(void)
         return 0;
     }
 
-    status = sixel_factory_get_default(&g_factory);
+    status = sixel_factory_get_default((void **)&g_factory);
     if (SIXEL_FAILED(status)) {
         fuzz_loader_component_shutdown();
         return 0;

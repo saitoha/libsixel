@@ -21,6 +21,7 @@ fi
 
 header=$src_root/include/sixel.h.in
 private_header=$src_root/src/frame-private.h
+frame_impl=$src_root/src/frame.c
 generated_header=$build_root/include/sixel.h
 failed=0
 
@@ -30,6 +31,7 @@ trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 expected_symbols=$tmpdir/v1.8.7-public-symbols.txt
 current_symbols=$tmpdir/current-public-symbols.txt
 missing_symbols=$tmpdir/missing-public-symbols.txt
+forbidden_interface=$tmpdir/forbidden-interface.txt
 
 cat > "$expected_symbols" <<'EOF'
 sixel_allocator_calloc
@@ -163,7 +165,8 @@ else
     fi
 fi
 
-if test ! -f "$header" || test ! -f "$private_header"; then
+if test ! -f "$header" || test ! -f "$private_header" ||
+        test ! -f "$frame_impl"; then
     echo "not ok 2 - frame public source contract remains compatible"
     echo "# missing frame header input"
     failed=1
@@ -199,7 +202,22 @@ else
                 }
                 exit 1
             }
-            ' "$private_header"; then
+            ' "$private_header" &&
+            awk '
+            # Windows rpc.h defines interface as a macro. Keep frame.c free
+            # of the standalone token so internal parameter names cannot be
+            # rewritten under MSYS2/MinGW header combinations.
+            /(^|[^A-Za-z0-9_])interface([^A-Za-z0-9_]|$)/ {
+                print FNR ":" $0
+                found = 1
+            }
+            END {
+                if (found == 1) {
+                    exit 1
+                }
+                exit 0
+            }
+            ' "$frame_impl" > "$forbidden_interface"; then
         if command -v "$cc_bin" >/dev/null 2>&1 &&
                 test -f "$generated_header"; then
             compile_input=$tmpdir/source-compat.c
@@ -236,7 +254,12 @@ EOF
         fi
     else
         echo "not ok 2 - frame public source contract remains compatible"
-        echo "# expected public struct sixel_frame handle and private vtbl storage"
+        if test -s "$forbidden_interface"; then
+            sed 's/^/# macro-sensitive identifier: /' \
+                "$forbidden_interface"
+        else
+            echo "# expected public struct sixel_frame handle and private vtbl storage"
+        fi
         failed=1
     fi
 fi

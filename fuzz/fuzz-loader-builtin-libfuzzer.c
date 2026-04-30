@@ -638,7 +638,7 @@ fuzz_builtin_loader_init(void)
         return 0;
     }
 
-    status = sixel_factory_get_default(&g_factory);
+    status = sixel_factory_get_default((void **)&g_factory);
     if (SIXEL_FAILED(status)) {
         fuzz_builtin_loader_dispose();
         return 0;
