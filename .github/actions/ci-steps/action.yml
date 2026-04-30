@@ -46,8 +46,60 @@ runs:
             && fromJSON(inputs.matrix_json).extra_packages != '' }}
       shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends ${{ fromJSON(inputs.matrix_json).extra_packages || '' }}
+        apt_log=$(mktemp)
+        trap 'rm -f "$apt_log"' EXIT
+
+        disable_hosted_runner_microsoft_sources() {
+          local source
+          local -a microsoft_sources
+
+          # GitHub-hosted Ubuntu images include Microsoft package sources that
+          # this project does not use. A transient 403 from those sources makes
+          # apt-get update fail before Ubuntu packages can be installed.
+          mapfile -t microsoft_sources < <(
+            sudo grep -rl 'packages\.microsoft\.com' \
+              /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null \
+              || true
+          )
+          for source in "${microsoft_sources[@]}"; do
+            if [ -f "$source" ]; then
+              echo "Disabling hosted-runner Microsoft apt source: $source"
+              sudo mv "$source" "$source.disabled"
+            fi
+          done
+        }
+
+        retry_apt_update() {
+          local attempt
+
+          for attempt in 1 2 3; do
+            if sudo apt-get -o Acquire::Retries=3 update 2>&1 | tee "$apt_log"; then
+              return 0
+            fi
+            if grep -Eq 'packages\.microsoft\.com.*(403|Forbidden|no longer signed)' "$apt_log"; then
+              disable_hosted_runner_microsoft_sources
+            fi
+            sleep $((attempt * 10))
+          done
+          return 1
+        }
+
+        retry_apt_install() {
+          local attempt
+
+          for attempt in 1 2 3; do
+            if sudo apt-get -o Acquire::Retries=3 install -y \
+                --no-install-recommends ${{ fromJSON(inputs.matrix_json).extra_packages || '' }}; then
+              return 0
+            fi
+            retry_apt_update || true
+            sleep $((attempt * 10))
+          done
+          return 1
+        }
+
+        retry_apt_update
+        retry_apt_install
 
     - name: Install extra packages (macOS)
       if: ${{ runner.os == 'macOS' && fromJSON(inputs.matrix_json).extra_packages != '' }}
