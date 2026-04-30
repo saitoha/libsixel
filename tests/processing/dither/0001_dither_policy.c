@@ -218,16 +218,16 @@ test_dither_policy_named_classes_contract(void)
     dither->method_for_scan = SIXEL_SCAN_RASTER;
     dither->pixelformat = SIXEL_PIXELFORMAT_RGB888;
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
     /*
      * This is a deprecated ABI-compatibility no-op. Keep one direct call in
-     * the core dither test so removing the symbol trips the regular runner.
+     * the core dither test when the compiler can suppress the diagnostic, so
+     * removing the symbol trips the regular runner without breaking strict
+     * warning-as-error compilers.
      */
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
     sixel_dither_set_complexion_score(dither, 1);
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 # pragma GCC diagnostic pop
 #endif
 

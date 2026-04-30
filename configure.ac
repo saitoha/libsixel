@@ -709,13 +709,39 @@ AC_CACHE_CHECK(
    CFLAGS="$CFLAGS -Werror"
    AC_COMPILE_IFELSE(
      [AC_LANG_SOURCE([[
-       #if defined(__clang__) || defined(__GNUC__)
-       #pragma clang diagnostic push
-       #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-       typedef int foo;
-       typedef int foo;
-       #pragma clang diagnostic pop
+       #if defined(__clang__)
+       # pragma clang diagnostic push
+       # pragma clang diagnostic ignored "-Wdeprecated-declarations"
+       #elif defined(__GNUC__) && !defined(__PCC__)
+       # pragma GCC diagnostic push
+       # pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+       #else
+       # error unsupported diagnostic pragma
        #endif
+
+       __attribute__((deprecated)) static int
+       sixel_deprecated_probe(void)
+       {
+         return 0;
+       }
+
+       static int
+       sixel_deprecated_probe_caller(void)
+       {
+         return sixel_deprecated_probe();
+       }
+
+       #if defined(__clang__)
+       # pragma clang diagnostic pop
+       #elif defined(__GNUC__) && !defined(__PCC__)
+       # pragma GCC diagnostic pop
+       #endif
+
+       int
+       main(void)
+       {
+         return sixel_deprecated_probe_caller();
+       }
      ]])],
      [ac_cv_have_diag_deprecated_declarations=yes],
      [ac_cv_have_diag_deprecated_declarations=no])

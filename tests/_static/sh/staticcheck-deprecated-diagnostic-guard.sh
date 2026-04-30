@@ -4,6 +4,7 @@
 set -eu
 
 src_root=${1:-}
+configure_ac=$src_root/configure.ac
 
 echo "1..1"
 
@@ -17,6 +18,7 @@ tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-deprecated-guard-XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
 bad=$tmpdir/bad.txt
+probe_bad=$tmpdir/probe-bad.txt
 
 for scan_dir in "$src_root/src" "$src_root/include" "$src_root/tests"
 do
@@ -69,6 +71,35 @@ do
     }
     ' "$path"
 done > "$bad"
+
+if test -f "$configure_ac"; then
+    awk '
+    /whether the compiler can silence -Wdeprecated-declarations/ {
+        in_probe = 1
+    }
+    in_probe && /!defined\(__PCC__\)/ {
+        saw_pcc_exclusion = 1
+    }
+    in_probe && /__attribute__\(\(deprecated\)\)/ {
+        saw_deprecated_attribute = 1
+    }
+    in_probe && /return sixel_deprecated_probe\(\);/ {
+        saw_deprecated_call = 1
+    }
+    END {
+        if (!saw_pcc_exclusion) {
+            print "configure.ac: deprecated diagnostic probe does not exclude __PCC__"
+        }
+        if (!saw_deprecated_attribute || !saw_deprecated_call) {
+            print "configure.ac: deprecated diagnostic probe does not compile a deprecated call"
+        }
+    }
+    ' "$configure_ac" > "$probe_bad"
+else
+    printf '%s\n' "configure.ac: missing file" > "$probe_bad"
+fi
+
+cat "$probe_bad" >> "$bad"
 
 if test -s "$bad"; then
     echo "not ok 1 - deprecated diagnostic pragmas use configured guards"

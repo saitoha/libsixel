@@ -16980,13 +16980,39 @@ else case e in #(
    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-       #if defined(__clang__) || defined(__GNUC__)
-       #pragma clang diagnostic push
-       #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-       typedef int foo;
-       typedef int foo;
-       #pragma clang diagnostic pop
+       #if defined(__clang__)
+       # pragma clang diagnostic push
+       # pragma clang diagnostic ignored "-Wdeprecated-declarations"
+       #elif defined(__GNUC__) && !defined(__PCC__)
+       # pragma GCC diagnostic push
+       # pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+       #else
+       # error unsupported diagnostic pragma
        #endif
+
+       __attribute__((deprecated)) static int
+       sixel_deprecated_probe(void)
+       {
+         return 0;
+       }
+
+       static int
+       sixel_deprecated_probe_caller(void)
+       {
+         return sixel_deprecated_probe();
+       }
+
+       #if defined(__clang__)
+       # pragma clang diagnostic pop
+       #elif defined(__GNUC__) && !defined(__PCC__)
+       # pragma GCC diagnostic pop
+       #endif
+
+       int
+       main(void)
+       {
+         return sixel_deprecated_probe_caller();
+       }
 
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"
