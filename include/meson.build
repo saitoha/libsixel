@@ -37,6 +37,18 @@ if has_var_attr_deprecated
 endif
 
 sixel_h = configure_file(input: 'sixel.h.in', output: 'sixel.h', configuration: inc_conf)
-install_headers(sixel_h, '6cells.h', subdir: 'sixel')
+awk_prog = find_program('awk')
+sixcells_h = custom_target(
+  '6cells.h',
+  input: '6cells.idl',
+  output: '6cells.h',
+  command: [awk_prog, '-f',
+            join_paths(meson.project_source_root(), 'tools',
+                       'gen_6cells_h.awk'),
+            '@INPUT@'],
+  capture: true,
+  install: true,
+  install_dir: join_paths(get_option('includedir'), 'sixel'))
+install_headers(sixel_h, subdir: 'sixel')
 
 # vim: set et ts=2:

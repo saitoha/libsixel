@@ -286,6 +286,7 @@ else
   libsixel_sources = srcs
   libsixel_c_args = libsixel_posix_defs
 endif
+libsixel_sources += [sixcells_h]
 libsixel_build_deps = deps + msvc_pgo_post_wic_deps
 
 libsixel = library('sixel',
