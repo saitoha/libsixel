@@ -25,7 +25,7 @@
 #ifndef LIBSIXEL_FACTORY_H
 #define LIBSIXEL_FACTORY_H
 
-#include <sixel.h>
+#include <6cells.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,21 +52,6 @@ extern "C" {
  * - IFactory.create("loader/manager", allocator, &manager)
  * - IFactory.create("loader/<name>", allocator, &component)
  */
-
-typedef struct sixel_factory_interface sixel_factory_t;
-
-typedef struct sixel_factory_vtbl {
-    void (*ref)(sixel_factory_t *factory);
-    void (*unref)(sixel_factory_t *factory);
-    SIXELSTATUS (*create)(sixel_factory_t *factory,
-                          char const *class_name,
-                          sixel_allocator_t *allocator,
-                          void **object);
-} sixel_factory_vtbl_t;
-
-struct sixel_factory_interface {
-    sixel_factory_vtbl_t const *vtbl;
-};
 
 /* @serviceid services/factory */
 SIXEL_INTERNAL_API SIXELSTATUS

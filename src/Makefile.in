@@ -190,8 +190,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-policy-fhedt.h \
 	$(srcdir)/lookup-policy-vptree.h $(srcdir)/lookup-policy-rbc.h \
 	$(srcdir)/lookup-policy-mahalanobis.h $(srcdir)/factory.h \
-	$(srcdir)/components.h $(srcdir)/palette-heckbert.c \
-	$(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
+	$(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
+	$(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
 	$(srcdir)/palette-common-snap.c \
 	$(srcdir)/palette-common-snap.h $(srcdir)/palette-kmeans.c \
@@ -1012,7 +1012,6 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-rbc.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-policy-mahalanobis.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/factory.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/components.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-merge.c \
@@ -1244,7 +1243,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither.h $(am__append_2) \
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__append_3) $(am__append_4) \
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__append_5)
-libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir) $(AM_CPPFLAGS) \
+libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir)/include \
+                -I$(top_srcdir) $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)
 
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \

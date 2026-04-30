@@ -110,7 +110,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-policy-rbc.h \
                 $(srcdir)/lookup-policy-mahalanobis.h \
                 $(srcdir)/factory.h \
-                $(srcdir)/components.h \
                 $(srcdir)/palette-heckbert.c \
                 $(srcdir)/palette-heckbert.h \
                 $(srcdir)/palette-common-merge.c \
@@ -359,7 +358,8 @@ libsixel_la_SOURCES += \
 $(srcdir)/clipboard_carbon.c
 endif
 endif
-libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir) $(AM_CPPFLAGS) \
+libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir)/include \
+                -I$(top_srcdir) $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)
 libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(LIBCURL_CFLAGS) \

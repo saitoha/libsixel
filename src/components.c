@@ -30,7 +30,8 @@
 #include <string.h>
 #endif
 
-#include "components.h"
+#include <6cells.h>
+
 #include "classid-service.h"
 
 /*

@@ -37,6 +37,6 @@ if has_var_attr_deprecated
 endif
 
 sixel_h = configure_file(input: 'sixel.h.in', output: 'sixel.h', configuration: inc_conf)
-install_headers(sixel_h, subdir: 'sixel')
+install_headers(sixel_h, '6cells.h', subdir: 'sixel')
 
 # vim: set et ts=2:

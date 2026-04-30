@@ -25,7 +25,8 @@
 #ifndef LIBSIXEL_FRAME_FACTORY_H
 #define LIBSIXEL_FRAME_FACTORY_H
 
-#include "components.h"
+#include <6cells.h>
+
 #include "factory.h"
 #include "frame.h"
 

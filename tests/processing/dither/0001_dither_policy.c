@@ -13,7 +13,7 @@
 
 #include <sixel.h>
 
-#include "src/components.h"
+#include <6cells.h>
 #include "src/factory.h"
 #include "src/dither.h"
 #include "src/dither-policy.h"

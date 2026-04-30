@@ -20,6 +20,7 @@ if test -z "$src_root"; then
 fi
 
 header=$src_root/include/sixel.h.in
+components_header=$src_root/include/6cells.h
 frame_header=$src_root/src/frame.h
 private_header=$src_root/src/frame-private.h
 frame_impl=$src_root/src/frame.c
@@ -169,8 +170,8 @@ else
     fi
 fi
 
-if test ! -f "$header" || test ! -f "$frame_header" ||
-        test ! -f "$private_header" ||
+if test ! -f "$header" || test ! -f "$components_header" ||
+        test ! -f "$frame_header" || test ! -f "$private_header" ||
         test ! -f "$frame_impl"; then
     echo "not ok 2 - frame public source contract remains compatible"
     echo "# missing frame header input"
@@ -191,9 +192,9 @@ else
                     public_interface_tag != 1) {
                 exit 0
             }
-            exit 1
-        }
-        ' "$header" &&
+                exit 1
+            }
+            ' "$header" &&
             awk '
             /^typedef struct sixel_frame_interface sixel_frame_interface_t;$/ {
                 frame_interface_typedef = 1
@@ -212,7 +213,7 @@ else
                 }
                 exit 1
             }
-            ' "$frame_header" &&
+            ' "$components_header" &&
             awk '
             /^SIXEL_INTERNAL_API/ {
                 if ($0 ~ /sixel_[A-Za-z0-9_]+[[:space:]]*\(/ &&

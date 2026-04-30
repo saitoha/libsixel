@@ -25,83 +25,11 @@
 #ifndef LIBSIXEL_LOOKUP_POLICY_H
 #define LIBSIXEL_LOOKUP_POLICY_H
 
-#include <sixel.h>
+#include <6cells.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/*
- * IDL (internal contract)
- *
- * interface ILookupPolicy {
- *   ref();
- *   unref();
- *   prepare(request);
- *   map_pixel(pixel);
- * }
- *
- * Ownership/lifetime:
- * - Factory create returns refcount=1 policy objects.
- * - Callers release with policy->vtbl->unref(policy).
- *
- * Creation path:
- * - sixel_lookup_policy_select_name(select_request)
- * - services/factory -> create("lookup/...", allocator, &policy)
- * - factory resolves class ids via generated classid registry
- * - policy->prepare(request)
- *
- * Reuse path:
- * - Callers may pass a prepared policy object through
- *   request.reuse_policy/request.reuse_policy_slot.
- * - request.parallel_dither_active carries execution context so policies can
- *   disable non-thread-safe cache paths without relying on global state.
- * - request.shared_instance_enabled stores the effective shared-instance
- *   preference resolved by the caller (CLI override or environment default).
- * - Implementations may choose to ignore reuse hints.
- */
-
-typedef struct sixel_lookup_policy_interface sixel_lookup_policy_interface_t;
-
-typedef struct sixel_lookup_policy_select_request {
-    unsigned char const *palette;
-    int depth;
-    int reqcolor;
-    int optimize_lookup;
-    int lut_policy;
-    int pixelformat;
-} sixel_lookup_policy_select_request_t;
-
-typedef struct sixel_lookup_policy_prepare_request {
-    unsigned char const *palette;
-    float const *palette_float;
-    int depth;
-    int float_depth;
-    int reqcolor;
-    int pixelformat;
-    int parallel_dither_active;
-    int shared_instance_enabled;
-    sixel_lookup_policy_interface_t *reuse_policy;
-    sixel_lookup_policy_interface_t **reuse_policy_slot;
-    sixel_allocator_t *allocator;
-} sixel_lookup_policy_prepare_request_t;
-
-typedef int sixel_lookup_policy_result_t;
-
-typedef struct sixel_lookup_policy_vtbl {
-    void (*ref)(sixel_lookup_policy_interface_t *policy);
-    void (*unref)(sixel_lookup_policy_interface_t *policy);
-    SIXELSTATUS (*prepare)(sixel_lookup_policy_interface_t *policy,
-                           sixel_lookup_policy_prepare_request_t const
-                           *request);
-    sixel_lookup_policy_result_t
-    (*map_pixel)(sixel_lookup_policy_interface_t const *policy,
-                 unsigned char const *pixel);
-} sixel_lookup_policy_vtbl_t;
-
-struct sixel_lookup_policy_interface {
-    sixel_lookup_policy_vtbl_t const *vtbl;
-};
 
 SIXEL_INTERNAL_API char const *
 sixel_lookup_policy_select_name(

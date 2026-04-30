@@ -49,7 +49,8 @@
 #include "dither-interframe-method.h"
 #include "palette.h"
 #include "compat_stub.h"
-#include "components.h"
+#include <6cells.h>
+
 #include "factory.h"
 #include "lookup-policy.h"
 #include "dither-policy.h"

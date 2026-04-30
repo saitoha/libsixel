@@ -16,7 +16,7 @@
 
 #include <sixel.h>
 
-#include "src/components.h"
+#include <6cells.h>
 #include "src/factory.h"
 #include "src/lookup-policy.h"
 #include "src/filter.h"

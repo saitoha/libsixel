@@ -26,53 +26,13 @@
 #ifndef LIBSIXEL_LOADER_H
 #define LIBSIXEL_LOADER_H
 
-#include <sixel.h>
+#include <6cells.h>
 
 #include "chunk.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/*
- * IDL (internal contract)
- *
- * interface ILoaderComponent {
- *   ref();
- *   unref();
- *   setopt(option, value);
- *   predicate(chunk);
- *   load(chunk);
- *   name();
- * }
- */
-
-struct sixel_loader_component_interface;
-typedef struct sixel_loader_component_interface
-    sixel_loader_component_interface_t;
-
-typedef struct sixel_loader_component_vtbl {
-    void (*ref)(sixel_loader_component_interface_t *loader);
-    void (*unref)(sixel_loader_component_interface_t *loader);
-    SIXELSTATUS (*setopt)(sixel_loader_component_interface_t *loader,
-                          int option,
-                          void const *value);
-    SIXELSTATUS (*load)(sixel_loader_component_interface_t *loader,
-                        sixel_chunk_t const *chunk,
-                        sixel_load_image_function fn_load,
-                        void *context);
-    char const *(*name)(sixel_loader_component_interface_t const *loader);
-    int
-    (*predicate)(sixel_loader_component_interface_t *loader,
-                 sixel_chunk_t const *chunk);
-} sixel_loader_component_vtbl_t;
-
-struct sixel_loader_component_interface {
-    sixel_loader_component_vtbl_t const *vtbl;
-};
-
-typedef sixel_loader_component_interface_t sixel_loader_component_t;
-typedef sixel_loader_component_vtbl_t sixel_loader_vtbl_t;
 
 SIXEL_INTERNAL_API void
 sixel_loader_component_ref(sixel_loader_component_t *component);

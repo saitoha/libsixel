@@ -65,6 +65,7 @@ wic_uninstall.reg
 libsixel.pc
 package.json.in
 include/*.h
+!include/6cells.h
 converters/img2sixel
 converters/sixel2png
 assessment/lsqa

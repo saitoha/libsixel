@@ -220,7 +220,6 @@ srcs = [
   'lookup-policy-rbc.h',
   'lookup-policy-mahalanobis.h',
   'factory.h',
-  'components.h',
   'lookup-fhedt-8bit.h',
   'lookup-fhedt-float32.h',
   'lookup-vptree-8bit.h',

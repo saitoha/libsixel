@@ -31,7 +31,8 @@
 
 #include <sixel.h>
 
-#include "components.h"
+#include <6cells.h>
+
 #include "factory.h"
 #include "filter-lookup.h"
 #include "filter.h"

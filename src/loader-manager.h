@@ -25,7 +25,7 @@
 #ifndef LIBSIXEL_LOADER_MANAGER_H
 #define LIBSIXEL_LOADER_MANAGER_H
 
-#include <sixel.h>
+#include <6cells.h>
 
 #include "chunk.h"
 #include "logger.h"
@@ -36,80 +36,11 @@
 extern "C" {
 #endif
 
-/*
- * IDL (internal contract)
- *
- * interface ILoaderManager {
- *   ref();
- *   unref();
- *   build_chain(request);
- *   load(chunk, out selected_loader);
- * }
- */
-
 typedef struct sixel_loader_entry {
     char const *name;
     char const *classid;
     int default_enabled;
 } sixel_loader_entry_t;
-
-typedef struct sixel_loader_suboptions {
-    int wic_ico_minsize;
-    int libjpeg_enable_cms;
-    int libjpeg_cms_engine;
-    int libjpeg_enable_orientation;
-    int libpng_enable_cms;
-    int libpng_cms_engine;
-    int libpng_enable_orientation;
-    int libwebp_enable_cms;
-    int libwebp_cms_engine;
-    int libwebp_enable_orientation;
-    int coregraphics_enable_orientation;
-    int libtiff_enable_cms;
-    int libtiff_cms_engine;
-    int builtin_enable_cms;
-    int builtin_cms_engine;
-    int builtin_enable_orientation;
-    int builtin_bmp_info40_mode;
-} sixel_loader_suboptions_t;
-
-typedef struct sixel_loader_manager_interface sixel_loader_manager_t;
-
-typedef struct sixel_loader_manager_build_request {
-    sixel_option_argument_list_resolution_t const *resolution;
-    int skip_predicate_gate;
-    int require_static;
-    int use_palette;
-    int reqcolors;
-    unsigned char const *bgcolor;
-    int has_bgcolor;
-    int bgcolor_source;
-    int loop_control;
-    int has_start_frame_no;
-    int start_frame_no;
-    sixel_loader_suboptions_t const *suboptions;
-    sixel_logger_t *timeline_logger;
-    int *timeline_job_seq;
-    sixel_loader_t *timeline_loader;
-} sixel_loader_manager_build_request_t;
-
-typedef struct sixel_loader_manager_vtbl {
-    void (*ref)(sixel_loader_manager_t *manager);
-    void (*unref)(sixel_loader_manager_t *manager);
-    SIXELSTATUS (*build_chain)(
-        sixel_loader_manager_t *manager,
-        sixel_loader_manager_build_request_t const *request);
-    SIXELSTATUS (*load)(
-        sixel_loader_manager_t *manager,
-        sixel_chunk_t const *chunk,
-        sixel_loader_component_interface_t **selected_loader,
-        sixel_load_image_function fn_load,
-        void *load_context);
-} sixel_loader_manager_vtbl_t;
-
-struct sixel_loader_manager_interface {
-    sixel_loader_manager_vtbl_t const *vtbl;
-};
 
 /* @classid loader/manager */
 SIXEL_INTERNAL_API SIXELSTATUS

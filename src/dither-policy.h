@@ -25,87 +25,11 @@
 #ifndef LIBSIXEL_DITHER_POLICY_H
 #define LIBSIXEL_DITHER_POLICY_H
 
-#include <sixel.h>
-
-#include "lookup-policy.h"
+#include <6cells.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/*
- * IDL (internal contract)
- *
- * interface IDitherPolicy {
- *   ref();
- *   unref();
- *   prepare(request);
- *   apply(request);
- *   supports_parallel_bands();
- * }
- *
- * Ownership/lifetime:
- * - Factory create returns refcount=1 policy objects.
- * - Callers release with policy->vtbl->unref(policy).
- *
- * Creation path:
- * - sixel_dither_policy_select_name(select_request)
- * - services/factory -> create("dither/...", allocator, &policy)
- * - policy->prepare(request)
- */
-
-typedef struct sixel_dither_policy_interface sixel_dither_policy_interface_t;
-
-typedef int (*sixel_dither_lookup_map_fn)(
-    sixel_lookup_policy_interface_t const *policy,
-    unsigned char const *pixel);
-
-typedef struct sixel_dither_policy_select_request {
-    int method_for_diffuse;
-    int ncolors;
-    int pixelformat;
-} sixel_dither_policy_select_request_t;
-
-typedef struct sixel_dither_policy_prepare_request {
-    sixel_dither_t *dither;
-    int depth;
-    int method_for_scan;
-    int pixelformat;
-} sixel_dither_policy_prepare_request_t;
-
-typedef struct sixel_dither_policy_apply_request {
-    sixel_index_t *result;
-    unsigned char *data;
-    int width;
-    int height;
-    int band_origin;
-    int output_start;
-    int depth;
-    unsigned char *palette;
-    int method_for_scan;
-    sixel_lookup_policy_interface_t *lookup_policy;
-    sixel_dither_t *dither;
-    int pixelformat;
-} sixel_dither_policy_apply_request_t;
-
-typedef int sixel_dither_policy_supports_parallel_result_t;
-
-typedef struct sixel_dither_policy_vtbl {
-    void (*ref)(sixel_dither_policy_interface_t *policy);
-    void (*unref)(sixel_dither_policy_interface_t *policy);
-    SIXELSTATUS (*prepare)(
-        sixel_dither_policy_interface_t *policy,
-        sixel_dither_policy_prepare_request_t const *request);
-    SIXELSTATUS (*apply)(
-        sixel_dither_policy_interface_t *policy,
-        sixel_dither_policy_apply_request_t const *request);
-    sixel_dither_policy_supports_parallel_result_t
-    (*supports_parallel_bands)(sixel_dither_policy_interface_t const *policy);
-} sixel_dither_policy_vtbl_t;
-
-struct sixel_dither_policy_interface {
-    sixel_dither_policy_vtbl_t const *vtbl;
-};
 
 SIXEL_INTERNAL_API char const *
 sixel_dither_policy_select_name(
