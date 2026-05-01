@@ -193,12 +193,12 @@ run_librsvg_source_selection_case(
         source_root = source_root_dupe;
     }
 #else
-    source_root = getenv("MESON_SOURCE_ROOT");
+    source_root = sixel_compat_getenv("MESON_SOURCE_ROOT");
     if (source_root == NULL) {
-        source_root = getenv("abs_top_srcdir");
+        source_root = sixel_compat_getenv("abs_top_srcdir");
     }
     if (source_root == NULL) {
-        source_root = getenv("TOP_SRCDIR");
+        source_root = sixel_compat_getenv("TOP_SRCDIR");
     }
 #endif
     if (source_root == NULL) {

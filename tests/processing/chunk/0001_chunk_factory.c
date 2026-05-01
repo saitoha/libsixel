@@ -15,6 +15,7 @@
 #include <sixel.h>
 #include <6cells.h>
 
+#include "src/compat_stub.h"
 #include "src/factory.h"
 
 /*
@@ -40,7 +41,7 @@ build_source_path(char *path, size_t path_size)
     char const *source_root;
     int written;
 
-    source_root = getenv("TOP_SRCDIR");
+    source_root = sixel_compat_getenv("TOP_SRCDIR");
     if (source_root == NULL || source_root[0] == '\0') {
         source_root = ".";
     }

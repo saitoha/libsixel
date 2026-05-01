@@ -587,55 +587,18 @@ hdr_test_expected_first_pixel(float out_rgb[3],
     return 0;
 }
 
-#if defined(_MSC_VER)
-#define TEST_GETENV_CACHE_SLOTS 16
-static char *test_getenv_cache[TEST_GETENV_CACHE_SLOTS];
-static size_t test_getenv_cache_cursor;
-#endif
-
 /*
- * Resolve environment variables without relying on private compat helpers.
- *
- * MSVC marks getenv() as deprecated and this test is compiled with /WX.
- * Keep a small rotating cache for values duplicated via _dupenv_s() so
- * callers can treat the return value like getenv() for the test lifetime.
+ * Resolve environment variables through the project compatibility wrapper.
+ * This keeps the test runner free of MSVC's deprecated getenv() diagnostic.
  */
 static char const *
 loader_test_getenv(char const *name)
 {
-#if defined(_MSC_VER)
-    char *value;
-    size_t value_length;
-    errno_t error_code;
-    size_t slot;
-
-    value = NULL;
-    value_length = 0u;
-    error_code = 0;
-    slot = 0u;
-
     if (name == NULL || name[0] == '\0') {
         return NULL;
     }
 
-    error_code = _dupenv_s(&value, &value_length, name);
-    if (error_code != 0 || value == NULL || value_length == 0u) {
-        free(value);
-        return NULL;
-    }
-
-    slot = test_getenv_cache_cursor % TEST_GETENV_CACHE_SLOTS;
-    free(test_getenv_cache[slot]);
-    test_getenv_cache[slot] = value;
-    test_getenv_cache_cursor += 1u;
-
-    return test_getenv_cache[slot];
-#else
-    if (name == NULL || name[0] == '\0') {
-        return NULL;
-    }
-    return getenv(name);
-#endif
+    return sixel_compat_getenv(name);
 }
 
 static char const *

@@ -1183,6 +1183,7 @@ sixel_loader_load_file(
     int reqcolors;
     char const *order_override;
     char const *env_order;
+    char const *chunk_source_path;
     sixel_option_argument_list_resolution_t const *active_order_resolution;
     sixel_loader_callback_state_t callback_state;
     sixel_option_argument_list_resolution_t order_resolution;
@@ -1202,6 +1203,7 @@ sixel_loader_load_file(
     reqcolors = 0;
     order_override = NULL;
     env_order = NULL;
+    chunk_source_path = NULL;
     active_order_resolution = NULL;
     osc11_timeout_env = NULL;
     osc11_timeout_ms = SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_DEFAULT_MS;
@@ -1322,11 +1324,13 @@ sixel_loader_load_file(
         goto end;
     }
 
-    if (sixel_chunk_get_source_path(pchunk) != NULL && sixel_chunk_get_source_path(pchunk)[0] != '\0') {
+    chunk_source_path = sixel_chunk_get_source_path(pchunk);
+    if (chunk_source_path != NULL &&
+        chunk_source_path[0] != '\0') {
         (void)sixel_compat_snprintf(loader->log_path,
                                     sizeof(loader->log_path),
                                     "%s",
-                                    sixel_chunk_get_source_path(pchunk));
+                                    chunk_source_path);
     }
 
     if (sixel_chunk_get_buffer(pchunk) == NULL) {

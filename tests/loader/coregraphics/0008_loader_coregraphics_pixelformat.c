@@ -212,7 +212,7 @@ coregraphics_runtime_major_version(void)
     version_text = NULL;
     endptr = NULL;
     major = 0;
-    version_text = getenv("SIXEL_TEST_MACOS_PRODUCT_VERSION");
+    version_text = sixel_compat_getenv("SIXEL_TEST_MACOS_PRODUCT_VERSION");
     if (version_text == NULL || version_text[0] == '\0') {
         return 0;
     }
@@ -467,12 +467,12 @@ run_coregraphics_animation_case_with_callback_ex(
         require_static_option = 1;
     }
 
-    source_root = getenv("MESON_SOURCE_ROOT");
+    source_root = sixel_compat_getenv("MESON_SOURCE_ROOT");
     if (source_root == NULL) {
-        source_root = getenv("abs_top_srcdir");
+        source_root = sixel_compat_getenv("abs_top_srcdir");
     }
     if (source_root == NULL) {
-        source_root = getenv("TOP_SRCDIR");
+        source_root = sixel_compat_getenv("TOP_SRCDIR");
     }
     if (source_root == NULL) {
         source_root = ".";
@@ -1534,7 +1534,7 @@ run_coregraphics_env_dispatch(
     }
 
     for (index = 0u; index < entry_count; ++index) {
-        mode = getenv(entries[index].env_name);
+        mode = sixel_compat_getenv(entries[index].env_name);
         if (mode != NULL && mode[0] == '1' && mode[1] == '\0') {
             return entries[index].fn();
         }
@@ -1586,12 +1586,12 @@ run_coregraphics_indexed_keycolor_policy_case(char const *label,
         return 1;
     }
 
-    source_root = getenv("MESON_SOURCE_ROOT");
+    source_root = sixel_compat_getenv("MESON_SOURCE_ROOT");
     if (source_root == NULL) {
-        source_root = getenv("abs_top_srcdir");
+        source_root = sixel_compat_getenv("abs_top_srcdir");
     }
     if (source_root == NULL) {
-        source_root = getenv("TOP_SRCDIR");
+        source_root = sixel_compat_getenv("TOP_SRCDIR");
     }
     if (source_root == NULL) {
         source_root = ".";
@@ -2188,12 +2188,12 @@ run_coregraphics_cfindex_size_overflow_reject_test(void)
     overflow_chunk.bytes.size = 0u;
     overflow_chunk.allocator = NULL;
 
-    source_root = getenv("MESON_SOURCE_ROOT");
+    source_root = sixel_compat_getenv("MESON_SOURCE_ROOT");
     if (source_root == NULL) {
-        source_root = getenv("abs_top_srcdir");
+        source_root = sixel_compat_getenv("abs_top_srcdir");
     }
     if (source_root == NULL) {
-        source_root = getenv("TOP_SRCDIR");
+        source_root = sixel_compat_getenv("TOP_SRCDIR");
     }
     if (source_root == NULL) {
         source_root = ".";

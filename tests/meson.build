@@ -675,6 +675,11 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-test-no-direct-getenv',
+    [meson.current_source_dir() / '_static/sh/staticcheck-test-no-direct-getenv.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-c-size-max-header',
     [meson.current_source_dir() / '_static/sh/staticcheck-c-size-max-header.sh',
       meson.project_source_root()],
@@ -740,6 +745,18 @@ staticcheck_cases = [
     'staticcheck-chunk-component-boundary',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-chunk-component-boundary.sh',
+      meson.project_source_root()],
+  ],
+  [
+    'staticcheck-chunk-factory-vtbl-guard',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-chunk-factory-vtbl-guard.sh',
+      meson.project_source_root()],
+  ],
+  [
+    'staticcheck-chunk-source-path-format-guard',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-chunk-source-path-format-guard.sh',
       meson.project_source_root()],
   ],
   [

@@ -42,12 +42,12 @@ loader_test_source_root(void)
 {
     char const *source_root;
 
-    source_root = getenv("MESON_SOURCE_ROOT");
+    source_root = sixel_compat_getenv("MESON_SOURCE_ROOT");
     if (source_root == NULL) {
-        source_root = getenv("abs_top_srcdir");
+        source_root = sixel_compat_getenv("abs_top_srcdir");
     }
     if (source_root == NULL) {
-        source_root = getenv("TOP_SRCDIR");
+        source_root = sixel_compat_getenv("TOP_SRCDIR");
     }
     if (source_root == NULL) {
         source_root = ".";

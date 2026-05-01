@@ -225,6 +225,10 @@ run_case_tap "staticcheck-src-no-direct-getenv" \
     "$src_root/tests/_static/sh/staticcheck-src-no-direct-getenv.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-test-no-direct-getenv" \
+    "$src_root/tests/_static/sh/staticcheck-test-no-direct-getenv.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-positional-bluenoise-threadsafe-init" \
     sh "$src_root/tests/_static/sh/staticcheck-positional-bluenoise-threadsafe-init.sh" \
     "$src_root" || fail_and_exit $?
@@ -335,6 +339,14 @@ run_case_tap "staticcheck-frame-instantiation-boundary" \
 
 run_case_tap "staticcheck-chunk-component-boundary" \
     "$src_root/tests/_static/sh/staticcheck-chunk-component-boundary.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-chunk-factory-vtbl-guard" \
+    "$src_root/tests/_static/sh/staticcheck-chunk-factory-vtbl-guard.sh" \
+    "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-chunk-source-path-format-guard" \
+    "$src_root/tests/_static/sh/staticcheck-chunk-source-path-format-guard.sh" \
     "$src_root" || fail_and_exit $?
 
 run_case_tap "staticcheck-deprecated-diagnostic-guard" \

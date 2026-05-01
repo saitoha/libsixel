@@ -105,6 +105,15 @@ sixel_chunk_create_from_source(sixel_chunk_t **chunk_out,
     if (SIXEL_FAILED(status)) {
         return status;
     }
+    if (chunk == NULL || chunk->vtbl == NULL ||
+        chunk->vtbl->init_source == NULL ||
+        chunk->vtbl->unref == NULL) {
+        if (chunk != NULL && chunk->vtbl != NULL &&
+            chunk->vtbl->unref != NULL) {
+            chunk->vtbl->unref(chunk);
+        }
+        return SIXEL_LOGIC_ERROR;
+    }
 
     request.filename = filename;
     request.finsecure = finsecure;
@@ -141,6 +150,15 @@ sixel_chunk_create_from_memory(sixel_chunk_t **chunk_out,
     status = sixel_chunk_create_from_factory(&chunk, allocator);
     if (SIXEL_FAILED(status)) {
         return status;
+    }
+    if (chunk == NULL || chunk->vtbl == NULL ||
+        chunk->vtbl->init_memory == NULL ||
+        chunk->vtbl->unref == NULL) {
+        if (chunk != NULL && chunk->vtbl != NULL &&
+            chunk->vtbl->unref != NULL) {
+            chunk->vtbl->unref(chunk);
+        }
+        return SIXEL_LOGIC_ERROR;
     }
 
     request.bytes = bytes;
