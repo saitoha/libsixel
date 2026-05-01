@@ -52,6 +52,7 @@
 #include <6cells.h>
 
 #include "cms.h"
+#include "chunk-view.h"
 #include "compat_stub.h"
 #include "fromhdr.h"
 #include "loader-common.h"
@@ -1775,7 +1776,7 @@ sixel_builtin_hdr_assign_decoded_frame(
             : SIXEL_FRAME_PIXELS_U8
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(chunk->allocator, pixels);
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
         return status;
     }
 
@@ -2173,10 +2174,10 @@ sixel_builtin_hdr_custom_decode_fail(
 {
     if (chunk != NULL) {
         if (scanline_rgbe != NULL) {
-            sixel_allocator_free(chunk->allocator, scanline_rgbe);
+            sixel_allocator_free(sixel_chunk_get_allocator(chunk), scanline_rgbe);
         }
         if (pixels != NULL) {
-            sixel_allocator_free(chunk->allocator, pixels);
+            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
         }
     }
     if (message != NULL) {
@@ -2225,14 +2226,14 @@ sixel_builtin_hdr_decode_scanline_rgbe(
     use_new_rle = 0;
 
     if (chunk == NULL ||
-        chunk->buffer == NULL ||
+        sixel_chunk_get_buffer(chunk) == NULL ||
         cursor == NULL ||
         scanline_rgbe == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (!sixel_builtin_hdr_read_pixel(chunk->buffer,
-                                      chunk->size,
+    if (!sixel_builtin_hdr_read_pixel(sixel_chunk_get_buffer(chunk),
+                                      sixel_chunk_get_size(chunk),
                                       cursor,
                                       first_pixel)) {
         sixel_helper_set_additional_message(
@@ -2243,8 +2244,8 @@ sixel_builtin_hdr_decode_scanline_rgbe(
     use_new_rle = sixel_builtin_hdr_scanline_uses_new_rle(scanline_length,
                                                           first_pixel);
     if (use_new_rle) {
-        if (!sixel_builtin_hdr_decode_new_rle_scanline(chunk->buffer,
-                                                       chunk->size,
+        if (!sixel_builtin_hdr_decode_new_rle_scanline(sixel_chunk_get_buffer(chunk),
+                                                       sixel_chunk_get_size(chunk),
                                                        cursor,
                                                        scanline_length,
                                                        scanline_rgbe)) {
@@ -2255,8 +2256,8 @@ sixel_builtin_hdr_decode_scanline_rgbe(
         return SIXEL_OK;
     }
 
-    if (!sixel_builtin_hdr_decode_old_scanline(chunk->buffer,
-                                               chunk->size,
+    if (!sixel_builtin_hdr_decode_old_scanline(sixel_chunk_get_buffer(chunk),
+                                               sixel_chunk_get_size(chunk),
                                                cursor,
                                                scanline_length,
                                                first_pixel,
@@ -2412,7 +2413,7 @@ sixel_builtin_hdr_decode_legacy_stream(
     have_previous = 0;
     status = SIXEL_FALSE;
     if (chunk == NULL ||
-        chunk->buffer == NULL ||
+        sixel_chunk_get_buffer(chunk) == NULL ||
         cursor == NULL ||
         hint == NULL ||
         scanline_length == 0u ||
@@ -2427,8 +2428,8 @@ sixel_builtin_hdr_decode_legacy_stream(
     total_pixels = scanline_count * scanline_length;
 
     while (pixel_index < total_pixels) {
-        if (!sixel_builtin_hdr_read_pixel(chunk->buffer,
-                                          chunk->size,
+        if (!sixel_builtin_hdr_read_pixel(sixel_chunk_get_buffer(chunk),
+                                          sixel_chunk_get_size(chunk),
                                           cursor,
                                           rgbe)) {
             sixel_helper_set_additional_message(
@@ -2533,7 +2534,7 @@ sixel_builtin_decode_hdr_float32_custom(
     status = SIXEL_FALSE;
 
     if (chunk == NULL ||
-        chunk->buffer == NULL ||
+        sixel_chunk_get_buffer(chunk) == NULL ||
         hint == NULL ||
         ppixels == NULL ||
         pwidth == NULL ||
@@ -2551,7 +2552,7 @@ sixel_builtin_decode_hdr_float32_custom(
             "builtin HDR: unsupported FORMAT line.");
         return SIXEL_STBI_ERROR;
     }
-    if (hint->pixel_data_offset > chunk->size) {
+    if (hint->pixel_data_offset > sixel_chunk_get_size(chunk)) {
         sixel_helper_set_additional_message(
             "builtin HDR: malformed resolution or payload offset.");
         return SIXEL_STBI_ERROR;
@@ -2583,7 +2584,7 @@ sixel_builtin_decode_hdr_float32_custom(
     }
 
     pixel_bytes = sample_count * sizeof(float);
-    pixels = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+    pixels = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(chunk),
                                                      pixel_bytes);
     if (pixels == NULL) {
         sixel_helper_set_additional_message(
@@ -2604,7 +2605,7 @@ sixel_builtin_decode_hdr_float32_custom(
     }
 
     scanline_bytes = scanline_length * 4u;
-    scanline_rgbe = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+    scanline_rgbe = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(chunk),
                                                             scanline_bytes);
     if (scanline_rgbe == NULL) {
         return sixel_builtin_hdr_custom_decode_fail(
@@ -2617,7 +2618,7 @@ sixel_builtin_decode_hdr_float32_custom(
 
     cursor = hint->pixel_data_offset;
     if (scanline_count > 0u) {
-        if (chunk->size - cursor < 4u) {
+        if (sixel_chunk_get_size(chunk) - cursor < 4u) {
             return sixel_builtin_hdr_custom_decode_fail(
                 chunk,
                 pixels,
@@ -2625,10 +2626,10 @@ sixel_builtin_decode_hdr_float32_custom(
                 SIXEL_STBI_ERROR,
                 "builtin HDR: truncated pixel stream.");
         }
-        first_pixel[0] = chunk->buffer[cursor + 0u];
-        first_pixel[1] = chunk->buffer[cursor + 1u];
-        first_pixel[2] = chunk->buffer[cursor + 2u];
-        first_pixel[3] = chunk->buffer[cursor + 3u];
+        first_pixel[0] = sixel_chunk_get_buffer(chunk)[cursor + 0u];
+        first_pixel[1] = sixel_chunk_get_buffer(chunk)[cursor + 1u];
+        first_pixel[2] = sixel_chunk_get_buffer(chunk)[cursor + 2u];
+        first_pixel[3] = sixel_chunk_get_buffer(chunk)[cursor + 3u];
         use_new_rle = sixel_builtin_hdr_scanline_uses_new_rle(scanline_length,
                                                               first_pixel);
     }
@@ -2652,7 +2653,7 @@ sixel_builtin_decode_hdr_float32_custom(
                 status,
                 NULL);
         }
-        sixel_allocator_free(chunk->allocator, scanline_rgbe);
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), scanline_rgbe);
         *ppixels = pixels;
         *pwidth = hint->width;
         *pheight = hint->height;
@@ -2692,7 +2693,7 @@ sixel_builtin_decode_hdr_float32_custom(
         }
     }
 
-    sixel_allocator_free(chunk->allocator, scanline_rgbe);
+    sixel_allocator_free(sixel_chunk_get_allocator(chunk), scanline_rgbe);
     *ppixels = pixels;
     *pwidth = hint->width;
     *pheight = hint->height;
@@ -2738,7 +2739,7 @@ sixel_builtin_decode_hdr_float32_with_hint(
     sixel_builtin_hdr_init_profile_hint(&hint);
 
     if (chunk == NULL ||
-        chunk->buffer == NULL ||
+        sixel_chunk_get_buffer(chunk) == NULL ||
         ppixels == NULL ||
         pwidth == NULL ||
         pheight == NULL ||
@@ -2760,7 +2761,7 @@ sixel_builtin_decode_hdr_float32_with_hint(
     *ppixelformat = SIXEL_PIXELFORMAT_RGB888;
     *pcolorspace = SIXEL_COLORSPACE_GAMMA;
 
-    if (chunk->size == 0u) {
+    if (sixel_chunk_get_size(chunk) == 0u) {
         return SIXEL_FALSE;
     }
 
@@ -2806,12 +2807,12 @@ sixel_builtin_hdr_line_reader_init(
     reader->buffer = NULL;
     reader->size = 0u;
     reader->cursor = 0u;
-    if (chunk == NULL || chunk->buffer == NULL) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL) {
         return;
     }
 
-    reader->buffer = chunk->buffer;
-    reader->size = chunk->size;
+    reader->buffer = sixel_chunk_get_buffer(chunk);
+    reader->size = sixel_chunk_get_size(chunk);
 }
 
 static int
@@ -2902,12 +2903,12 @@ sixel_builtin_parse_hdr_profile_hint(
     header_line_index = 0;
     have_signature = 0;
 
-    if (chunk == NULL || chunk->buffer == NULL || out_hint == NULL) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || out_hint == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     sixel_builtin_hdr_init_profile_hint(out_hint);
-    if (chunk->size == 0u) {
+    if (sixel_chunk_get_size(chunk) == 0u) {
         return SIXEL_FALSE;
     }
 
@@ -2923,7 +2924,7 @@ sixel_builtin_parse_hdr_profile_hint(
             }
             if (!sixel_builtin_hdr_copy_line_to_buffer(line,
                                                        sizeof(line),
-                                                       chunk->buffer,
+                                                       sixel_chunk_get_buffer(chunk),
                                                        line_start,
                                                        line_length)) {
                 continue;
@@ -2948,7 +2949,7 @@ sixel_builtin_parse_hdr_profile_hint(
         }
         if (!sixel_builtin_hdr_copy_line_to_buffer(line,
                                                    sizeof(line),
-                                                   chunk->buffer,
+                                                   sixel_chunk_get_buffer(chunk),
                                                    line_start,
                                                    line_length)) {
             sixel_builtin_hdr_mark_resolution_malformed(out_hint);

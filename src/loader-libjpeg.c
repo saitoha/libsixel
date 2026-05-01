@@ -54,7 +54,7 @@
 
 #include "allocator.h"
 #include "cms.h"
-#include "chunk.h"
+#include "chunk-view.h"
 #include "icc-apply.h"
 #include "icc-parse.h"
 #include "loader-common.h"
@@ -1197,7 +1197,7 @@ jpeg_decode_cmyk16_from_precision(struct jpeg_decompress_struct *cinfo,
  */
 static SIXELSTATUS
 load_jpeg(unsigned char **result,
-          unsigned char *data,
+          unsigned char const *data,
           size_t datasize,
           int *pwidth,
           int *pheight,
@@ -1247,7 +1247,7 @@ load_jpeg(unsigned char **result,
     }
 
     jpeg_create_decompress(&cinfo);
-    jpeg_mem_src(&cinfo, data, datasize);
+    jpeg_mem_src(&cinfo, (unsigned char *)data, datasize);
     if (enable_cms) {
         jpeg_save_markers(&cinfo, JPEG_APP0 + 2, 0xFFFF);
     }
@@ -1590,23 +1590,23 @@ load_with_libjpeg(
     (void)start_frame_no;
 
     if (enable_orientation) {
-        (void)jpeg_parse_exif_orientation(pchunk->buffer,
-                                          pchunk->size,
+        (void)jpeg_parse_exif_orientation(sixel_chunk_get_buffer(pchunk),
+                                          sixel_chunk_get_size(pchunk),
                                           &exif_orientation);
     }
 
-    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
     status = load_jpeg(&pixels,
-                       pchunk->buffer,
-                       pchunk->size,
+                       sixel_chunk_get_buffer(pchunk),
+                       sixel_chunk_get_size(pchunk),
                        &frame->width,
                        &frame->height,
                        &pixelformat,
-                       pchunk->allocator,
+                       sixel_chunk_get_allocator(pchunk),
                        enable_cms);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1627,7 +1627,7 @@ load_with_libjpeg(
             : SIXEL_FRAME_PIXELS_U8
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(pchunk->allocator, pixels);
+        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels);
         goto end;
     }
     pixels = NULL;

@@ -72,7 +72,7 @@ static pthread_once_t g_sixel_loader_gd_support_once = PTHREAD_ONCE_INIT;
 
 #include <sixel.h>
 
-#include "chunk.h"
+#include "chunk-view.h"
 #include "frame-private.h"
 #include "frame-factory.h"
 #include "loader-common.h"
@@ -471,24 +471,24 @@ gd_parse_png_probe_info(sixel_chunk_t const *pchunk,
     probe->has_iccp = 0;
     probe->has_gama = 0;
     probe->file_gamma = 0.0;
-    if (pchunk->buffer == NULL || pchunk->size < sizeof(png_signature)) {
+    if (sixel_chunk_get_buffer(pchunk) == NULL || sixel_chunk_get_size(pchunk) < sizeof(png_signature)) {
         return SIXEL_FALSE;
     }
-    if (memcmp(pchunk->buffer, png_signature, sizeof(png_signature)) != 0) {
+    if (memcmp(sixel_chunk_get_buffer(pchunk), png_signature, sizeof(png_signature)) != 0) {
         return SIXEL_FALSE;
     }
 
     offset = sizeof(png_signature);
-    while (offset + 8u <= pchunk->size) {
-        chunk_length = (size_t)gd_read_u32be(pchunk->buffer + offset);
+    while (offset + 8u <= sixel_chunk_get_size(pchunk)) {
+        chunk_length = (size_t)gd_read_u32be(sixel_chunk_get_buffer(pchunk) + offset);
         offset += 4u;
-        if (offset + 4u + chunk_length + 4u > pchunk->size) {
+        if (offset + 4u + chunk_length + 4u > sixel_chunk_get_size(pchunk)) {
             return SIXEL_FALSE;
         }
 
-        type_ptr = pchunk->buffer + offset;
+        type_ptr = sixel_chunk_get_buffer(pchunk) + offset;
         offset += 4u;
-        data_ptr = pchunk->buffer + offset;
+        data_ptr = sixel_chunk_get_buffer(pchunk) + offset;
 
         if (memcmp(type_ptr, "IHDR", 4u) == 0) {
             if (chunk_length < 13u) {
@@ -522,44 +522,50 @@ gd_decode_with_format(sixel_loader_gd_format_t format,
                       sixel_chunk_t const *pchunk)
 {
     gdImagePtr im;
+    void *data;
+    int size;
 
     im = NULL;
+    data = NULL;
+    size = 0;
     if (pchunk == NULL) {
         return NULL;
     }
 
+    data = (void *)sixel_chunk_get_buffer(pchunk);
+    size = (int)sixel_chunk_get_size(pchunk);
     switch (format) {
     case SIXEL_LOADER_GD_FORMAT_PNG:
-        im = gdImageCreateFromPngPtr((int)pchunk->size, pchunk->buffer);
+        im = gdImageCreateFromPngPtr(size, data);
         break;
     case SIXEL_LOADER_GD_FORMAT_JPEG:
-        im = gdImageCreateFromJpegPtr((int)pchunk->size, pchunk->buffer);
+        im = gdImageCreateFromJpegPtr(size, data);
         break;
     case SIXEL_LOADER_GD_FORMAT_BMP:
-        im = gdImageCreateFromBmpPtr((int)pchunk->size, pchunk->buffer);
+        im = gdImageCreateFromBmpPtr(size, data);
         break;
     case SIXEL_LOADER_GD_FORMAT_TIFF:
-        im = gdImageCreateFromTiffPtr((int)pchunk->size, pchunk->buffer);
+        im = gdImageCreateFromTiffPtr(size, data);
         break;
     case SIXEL_LOADER_GD_FORMAT_WBMP:
-        im = gdImageCreateFromWBMPPtr((int)pchunk->size, pchunk->buffer);
+        im = gdImageCreateFromWBMPPtr(size, data);
         break;
     case SIXEL_LOADER_GD_FORMAT_TGA:
-        im = gdImageCreateFromTgaPtr((int)pchunk->size, pchunk->buffer);
+        im = gdImageCreateFromTgaPtr(size, data);
         break;
     case SIXEL_LOADER_GD_FORMAT_GD:
 #if HAVE_DECL_GDIMAGECREATEFROMGDPTR
-        im = gdImageCreateFromGdPtr((int)pchunk->size, pchunk->buffer);
+        im = gdImageCreateFromGdPtr(size, data);
 #endif
         break;
     case SIXEL_LOADER_GD_FORMAT_GD2:
 #if HAVE_DECL_GDIMAGECREATEFROMGD2PTR
-        im = gdImageCreateFromGd2Ptr((int)pchunk->size, pchunk->buffer);
+        im = gdImageCreateFromGd2Ptr(size, data);
 #endif
         break;
     case SIXEL_LOADER_GD_FORMAT_WEBP:
 #if HAVE_DECL_GDIMAGECREATEFROMWEBPPTR
-        im = gdImageCreateFromWebpPtr((int)pchunk->size, pchunk->buffer);
+        im = gdImageCreateFromWebpPtr(size, data);
 #endif
         break;
     case SIXEL_LOADER_GD_FORMAT_NONE:
@@ -992,7 +998,7 @@ load_with_gd(
     unsigned char b8;
     unsigned char zero_alpha_map[SIXEL_PALETTE_MAX];
 
-    if (pchunk == NULL || pchunk->allocator == NULL || fn_load == NULL) {
+    if (pchunk == NULL || sixel_chunk_get_allocator(pchunk) == NULL || fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -1059,7 +1065,7 @@ load_with_gd(
         goto end;
     }
 
-    if (pchunk->size > (size_t)INT_MAX) {
+    if (sixel_chunk_get_size(pchunk) > (size_t)INT_MAX) {
         status = SIXEL_BAD_INTEGER_OVERFLOW;
         goto end;
     }
@@ -1133,7 +1139,7 @@ load_with_gd(
     }
     pixel_count = (size_t)width * (size_t)height;
 
-    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1222,7 +1228,7 @@ load_with_gd(
                 goto end;
             }
             pixels_u8 = (unsigned char *)sixel_allocator_malloc(
-                pchunk->allocator,
+                sixel_chunk_get_allocator(pchunk),
                 pixel_count);
             if (pixels_u8 == NULL) {
                 sixel_helper_set_additional_message(
@@ -1237,7 +1243,7 @@ load_with_gd(
                 goto end;
             }
             palette = (unsigned char *)sixel_allocator_malloc(
-                pchunk->allocator,
+                sixel_chunk_get_allocator(pchunk),
                 (size_t)ncolors * 3u);
             if (palette == NULL) {
                 sixel_helper_set_additional_message(
@@ -1294,7 +1300,7 @@ load_with_gd(
                 goto end;
             }
             pixels_f32 = (float *)sixel_allocator_malloc(
-                pchunk->allocator,
+                sixel_chunk_get_allocator(pchunk),
                 pixel_count * 3u * sizeof(float));
             if (pixels_f32 == NULL) {
                 sixel_helper_set_additional_message(
@@ -1308,7 +1314,7 @@ load_with_gd(
                     goto end;
                 }
                 mask = (unsigned char *)sixel_allocator_malloc(
-                    pchunk->allocator,
+                    sixel_chunk_get_allocator(pchunk),
                     pixel_count);
                 if (mask == NULL) {
                     sixel_helper_set_additional_message(
@@ -1406,7 +1412,7 @@ load_with_gd(
             goto end;
         }
         pixels_u8 = (unsigned char *)sixel_allocator_malloc(
-            pchunk->allocator,
+            sixel_chunk_get_allocator(pchunk),
             pixel_count * 3u);
         if (pixels_u8 == NULL) {
             sixel_helper_set_additional_message(
@@ -1420,7 +1426,7 @@ load_with_gd(
                 goto end;
             }
             mask = (unsigned char *)sixel_allocator_malloc(
-                pchunk->allocator,
+                sixel_chunk_get_allocator(pchunk),
                 pixel_count);
             if (mask == NULL) {
                 sixel_helper_set_additional_message(
@@ -1520,7 +1526,7 @@ load_with_gd(
             goto end;
         }
         pixels_f32 = (float *)sixel_allocator_malloc(
-            pchunk->allocator,
+            sixel_chunk_get_allocator(pchunk),
             pixel_count * 3u * sizeof(float));
         if (pixels_f32 == NULL) {
             sixel_helper_set_additional_message(
@@ -1534,7 +1540,7 @@ load_with_gd(
                 goto end;
             }
             mask = (unsigned char *)sixel_allocator_malloc(
-                pchunk->allocator,
+                sixel_chunk_get_allocator(pchunk),
                 pixel_count);
             if (mask == NULL) {
                 sixel_helper_set_additional_message(
@@ -1628,7 +1634,7 @@ load_with_gd(
             goto end;
         }
         pixels_u8 = (unsigned char *)sixel_allocator_malloc(
-            pchunk->allocator,
+            sixel_chunk_get_allocator(pchunk),
             pixel_count * 3u);
         if (pixels_u8 == NULL) {
             sixel_helper_set_additional_message(
@@ -1641,7 +1647,7 @@ load_with_gd(
             goto end;
         }
         mask = (unsigned char *)sixel_allocator_malloc(
-            pchunk->allocator,
+            sixel_chunk_get_allocator(pchunk),
             pixel_count);
         if (mask == NULL) {
             sixel_helper_set_additional_message(
@@ -1704,7 +1710,7 @@ load_with_gd(
         goto end;
     }
     pixels_u8 = (unsigned char *)sixel_allocator_malloc(
-        pchunk->allocator,
+        sixel_chunk_get_allocator(pchunk),
         pixel_count * 3u);
     if (pixels_u8 == NULL) {
         sixel_helper_set_additional_message(
@@ -1741,10 +1747,10 @@ end:
     if (frame != NULL) {
         sixel_frame_unref(frame);
     }
-    sixel_allocator_free(pchunk->allocator, pixels_u8);
-    sixel_allocator_free(pchunk->allocator, pixels_f32);
-    sixel_allocator_free(pchunk->allocator, palette);
-    sixel_allocator_free(pchunk->allocator, mask);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels_u8);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels_f32);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), palette);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), mask);
     return status;
 }
 

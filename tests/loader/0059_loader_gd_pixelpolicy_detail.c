@@ -12,7 +12,6 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "src/chunk.h"
 #include "tests/loader/pixelformat_test_common.h"
 
 #if HAVE_GD
@@ -209,7 +208,7 @@ run_gd_probe(char const *relative_path,
         return 1;
     }
 
-    status = sixel_chunk_new(&chunk, path, 0, &cancel_flag, allocator);
+    status = sixel_chunk_create_from_source(&chunk, path, 0, &cancel_flag, allocator);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "failed to read sample: %s\n", relative_path);
         goto error;
@@ -270,13 +269,17 @@ run_gd_probe(char const *relative_path,
     }
 
     sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
     return 0;
 
 error:
     sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
     return 1;
 }

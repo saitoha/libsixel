@@ -86,6 +86,7 @@
 #include <sixel.h>
 
 #include "allocator.h"
+#include "chunk-view.h"
 #include "compat_stub.h"
 #include "frame-private.h"
 #include "frame-factory.h"
@@ -250,8 +251,8 @@ retry:
     }
 
     if (!gdk_pixbuf_loader_write(loader,
-                                 pchunk->buffer,
-                                 pchunk->size,
+                                 sixel_chunk_get_buffer(pchunk),
+                                 sixel_chunk_get_size(pchunk),
                                  &loader_error)) {
         if (use_sixel_loader != 0 || !is_sixel) {
             if (use_sixel_loader != 0) {
@@ -674,27 +675,27 @@ gdkpixbuf_parse_png_decode_hint(sixel_chunk_t const *pchunk,
     }
 
     gdkpixbuf_png_decode_hint_init(hint);
-    if (pchunk->buffer == NULL || pchunk->size < sizeof(png_signature)) {
+    if (sixel_chunk_get_buffer(pchunk) == NULL || sixel_chunk_get_size(pchunk) < sizeof(png_signature)) {
         return SIXEL_FALSE;
     }
-    if (memcmp(pchunk->buffer, png_signature, sizeof(png_signature)) != 0) {
+    if (memcmp(sixel_chunk_get_buffer(pchunk), png_signature, sizeof(png_signature)) != 0) {
         return SIXEL_FALSE;
     }
 
     hint->is_png = 1;
     offset = sizeof(png_signature);
-    while (offset + 8u <= pchunk->size) {
-        chunk_length = (size_t)gdkpixbuf_read_u32be(pchunk->buffer + offset);
+    while (offset + 8u <= sixel_chunk_get_size(pchunk)) {
+        chunk_length = (size_t)gdkpixbuf_read_u32be(sixel_chunk_get_buffer(pchunk) + offset);
         offset += 4u;
-        if (offset + 4u + chunk_length + 4u > pchunk->size) {
+        if (offset + 4u + chunk_length + 4u > sixel_chunk_get_size(pchunk)) {
             status = SIXEL_FALSE;
             hint->parse_status = status;
             return status;
         }
 
-        type_ptr = pchunk->buffer + offset;
+        type_ptr = sixel_chunk_get_buffer(pchunk) + offset;
         offset += 4u;
-        data_ptr = pchunk->buffer + offset;
+        data_ptr = sixel_chunk_get_buffer(pchunk) + offset;
 
         if (memcmp(type_ptr, "IHDR", 4u) == 0) {
             if (chunk_length < 13u) {
@@ -819,7 +820,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
         return SIXEL_BAD_INPUT;
     }
 
-    gdkpixbuf_reset_frame_storage(frame, pchunk->allocator);
+    gdkpixbuf_reset_frame_storage(frame, sixel_chunk_get_allocator(pchunk));
     frame->width = width;
     frame->height = height;
     frame->transparent = -1;
@@ -887,7 +888,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
             goto cleanup;
         }
         pixels_f32 = (float *)sixel_allocator_malloc(
-            pchunk->allocator,
+            sixel_chunk_get_allocator(pchunk),
             pixel_total * 3u * sizeof(float));
         if (pixels_f32 == NULL) {
             sixel_helper_set_additional_message(
@@ -897,7 +898,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
         }
 
         if (has_effective_alpha && bgcolor == NULL) {
-            mask = (unsigned char *)sixel_allocator_malloc(pchunk->allocator,
+            mask = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(pchunk),
                                                            pixel_total);
             if (mask == NULL) {
                 sixel_helper_set_additional_message(
@@ -998,7 +999,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
             goto cleanup;
         }
         pixels_u8 = (unsigned char *)sixel_allocator_malloc(
-            pchunk->allocator,
+            sixel_chunk_get_allocator(pchunk),
             pixel_total * 3u);
         if (pixels_u8 == NULL) {
             sixel_helper_set_additional_message(
@@ -1006,7 +1007,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
             status = SIXEL_BAD_ALLOCATION;
             goto cleanup;
         }
-        mask = (unsigned char *)sixel_allocator_malloc(pchunk->allocator,
+        mask = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(pchunk),
                                                        pixel_total);
         if (mask == NULL) {
             sixel_helper_set_additional_message(
@@ -1061,7 +1062,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
         goto cleanup;
     }
     buffer_size = pixel_total * 3u;
-    pixels_u8 = (unsigned char *)sixel_allocator_malloc(pchunk->allocator,
+    pixels_u8 = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(pchunk),
                                                          buffer_size);
     if (pixels_u8 == NULL) {
         sixel_helper_set_additional_message(
@@ -1089,9 +1090,9 @@ gdkpixbuf_copy_pixbuf_to_frame(
     status = SIXEL_OK;
 
 cleanup:
-    sixel_allocator_free(pchunk->allocator, pixels_u8);
-    sixel_allocator_free(pchunk->allocator, pixels_f32);
-    sixel_allocator_free(pchunk->allocator, mask);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels_u8);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels_f32);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), mask);
     return status;
 }
 
@@ -1213,7 +1214,7 @@ gdkpixbuf_emit_animation_frames(
                 }
             }
 
-            gdkpixbuf_reset_frame_storage(frame, pchunk->allocator);
+            gdkpixbuf_reset_frame_storage(frame, sixel_chunk_get_allocator(pchunk));
             source_frame_no++;
 
             if (finished) {
@@ -1324,7 +1325,7 @@ load_with_gdkpixbuf(
     (void)fuse_palette;
     (void)reqcolors;
 
-    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1343,7 +1344,7 @@ load_with_gdkpixbuf(
      * Try the generic loader first. Fall back to the SIXEL-specific loader
      * only when the data looks like SIXEL and the generic path fails.
      */
-    probe_status = sixel_probe_is_probable(pchunk->buffer, pchunk->size);
+    probe_status = sixel_probe_is_probable(sixel_chunk_get_buffer(pchunk), sixel_chunk_get_size(pchunk));
     if (probe_status == SIXEL_OK) {
         is_sixel = TRUE;
     }
@@ -1468,7 +1469,7 @@ end:
     if (loader) {
         g_object_unref(loader);
     }
-    gdkpixbuf_png_decode_hint_reset(&png_hint, pchunk->allocator);
+    gdkpixbuf_png_decode_hint_reset(&png_hint, sixel_chunk_get_allocator(pchunk));
 
     return status;
 

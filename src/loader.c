@@ -101,7 +101,7 @@
 #include "factory.h"
 #include "compat_stub.h"
 #include "frame.h"
-#include "chunk.h"
+#include "chunk-factory.h"
 #include "allocator.h"
 #include "encoder.h"
 #include "logger.h"
@@ -1266,7 +1266,7 @@ sixel_loader_load_file(
         osc11_timeout_env);
 
     /*
-     * Launch OSC11 probing before sixel_chunk_new() so the terminal roundtrip
+     * Launch OSC11 probing before sixel_chunk_create_from_source() so the terminal roundtrip
      * overlaps with input loading. If thread creation is unavailable, fall
      * back to synchronous probing and keep failures non-fatal.
      */
@@ -1298,7 +1298,7 @@ sixel_loader_load_file(
                               "chunk/create",
                               "start",
                               chunk_job_id);
-    status = sixel_chunk_new(&pchunk,
+    status = sixel_chunk_create_from_source(&pchunk,
                              filename,
                              loader->finsecure,
                              loader->cancel_flag,
@@ -1317,19 +1317,19 @@ sixel_loader_load_file(
                               "finish",
                               chunk_job_id);
 
-    if (pchunk->size == 0 || (pchunk->size == 1 && *pchunk->buffer == '\n')) {
+    if (sixel_chunk_get_size(pchunk) == 0 || (sixel_chunk_get_size(pchunk) == 1 && *sixel_chunk_get_buffer(pchunk) == '\n')) {
         status = SIXEL_OK;
         goto end;
     }
 
-    if (pchunk->source_path != NULL && pchunk->source_path[0] != '\0') {
+    if (sixel_chunk_get_source_path(pchunk) != NULL && sixel_chunk_get_source_path(pchunk)[0] != '\0') {
         (void)sixel_compat_snprintf(loader->log_path,
                                     sizeof(loader->log_path),
                                     "%s",
-                                    pchunk->source_path);
+                                    sixel_chunk_get_source_path(pchunk));
     }
 
-    if (pchunk->buffer == NULL || pchunk->max_size == 0) {
+    if (sixel_chunk_get_buffer(pchunk) == NULL) {
         status = SIXEL_LOGIC_ERROR;
         goto end;
     }
@@ -1465,7 +1465,9 @@ end:
     }
     manager = NULL;
     factory = NULL;
-    sixel_chunk_destroy(pchunk);
+    if (pchunk != NULL) {
+        pchunk->vtbl->unref(pchunk);
+    }
     sixel_option_free_argument_list_resolution(&order_resolution);
     sixel_loader_unref(loader);
 

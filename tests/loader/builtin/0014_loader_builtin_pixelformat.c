@@ -968,7 +968,7 @@ run_builtin_loader_probe_buffer_case(char const *label,
     sixel_allocator_t *allocator;
     sixel_loader_component_t *component;
     loader_probe_callback_state_t callback_state;
-    sixel_chunk_t chunk;
+    sixel_chunk_t *chunk;
     int require_static;
     int use_palette;
     int reqcolors;
@@ -983,7 +983,7 @@ run_builtin_loader_probe_buffer_case(char const *label,
     status = SIXEL_FALSE;
     allocator = NULL;
     component = NULL;
-    memset(&chunk, 0, sizeof(chunk));
+    chunk = NULL;
     require_static = 0;
     use_palette = 0;
     reqcolors = 256;
@@ -1018,10 +1018,14 @@ run_builtin_loader_probe_buffer_case(char const *label,
         goto cleanup;
     }
 
-    chunk.buffer = (unsigned char *)buffer;
-    chunk.size = buffer_size;
-    chunk.max_size = buffer_size;
-    chunk.allocator = allocator;
+    status = sixel_chunk_create_from_memory(&chunk,
+                                            buffer,
+                                            buffer_size,
+                                            NULL,
+                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
 
     require_static = options->require_static;
     use_palette = options->use_palette;
@@ -1103,7 +1107,7 @@ run_builtin_loader_probe_buffer_case(char const *label,
     callback_state.fn = callback;
     callback_state.context = callback_context;
     status = sixel_loader_component_load(component,
-                                         &chunk,
+                                         chunk,
                                          capture_frame_trampoline,
                                          &callback_state);
     if (load_status_out != NULL) {
@@ -1113,6 +1117,9 @@ run_builtin_loader_probe_buffer_case(char const *label,
 
 cleanup:
     sixel_loader_component_unref(component);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
     return result;
 }

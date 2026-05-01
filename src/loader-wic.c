@@ -70,7 +70,7 @@ typedef BYTE *WICInProcPointer;
 #include <sixel.h>
 
 #include "allocator.h"
-#include "chunk.h"
+#include "chunk-view.h"
 #include "frame-private.h"
 #include "frame-factory.h"
 #include "loader-common.h"
@@ -310,8 +310,8 @@ load_with_wic(
     }
 
     hr = stream->lpVtbl->InitializeFromMemory(stream,
-                                              (WICInProcPointer)pchunk->buffer,
-                                              (DWORD)pchunk->size);
+                                              (WICInProcPointer)sixel_chunk_get_buffer(pchunk),
+                                              (DWORD)sixel_chunk_get_size(pchunk));
     if (FAILED(hr)) {
         sixel_helper_set_additional_message(
             "load_with_wic: IWICStream::InitializeFromMemory() failed.");
@@ -482,7 +482,7 @@ load_with_wic(
         }
     }
 
-    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
             "load_with_wic: sixel_frame_create_from_factory() failed.");
@@ -517,7 +517,7 @@ load_with_wic(
                         wicpalette, &ncolors);
                     if (SUCCEEDED(hr) && ncolors > 0) {
                         wiccolors = (WICColor *)sixel_allocator_malloc(
-                            pchunk->allocator,
+                            sixel_chunk_get_allocator(pchunk),
                             (size_t)ncolors * sizeof(WICColor));
                         if (wiccolors == NULL) {
                             sixel_helper_set_additional_message(
@@ -528,7 +528,7 @@ load_with_wic(
                         }
                         frame->palette = (unsigned char *)
                             sixel_allocator_malloc(
-                                pchunk->allocator,
+                                sixel_chunk_get_allocator(pchunk),
                                 (size_t)ncolors * 3);
                         if (frame->palette == NULL) {
                             sixel_helper_set_additional_message(
@@ -561,9 +561,9 @@ load_with_wic(
                     conv->lpVtbl->Release(conv);
                     conv = NULL;
                 }
-                sixel_allocator_free(pchunk->allocator, frame->palette);
+                sixel_allocator_free(sixel_chunk_get_allocator(pchunk), frame->palette);
                 frame->palette = NULL;
-                sixel_allocator_free(pchunk->allocator, wiccolors);
+                sixel_allocator_free(sixel_chunk_get_allocator(pchunk), wiccolors);
                 wiccolors = NULL;
                 src = NULL;
             }
@@ -633,7 +633,7 @@ load_with_wic(
         }
 
         pixels = (unsigned char *)sixel_allocator_malloc(
-            pchunk->allocator,
+            sixel_chunk_get_allocator(pchunk),
             (size_t)(frame->height * frame->width * comp));
         if (pixels == NULL) {
             sixel_helper_set_additional_message(
@@ -655,7 +655,7 @@ load_with_wic(
                 SIXEL_FRAME_PIXELS_U8
             });
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(pchunk->allocator, pixels);
+            sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels);
             hr = E_FAIL;
             goto end;
         }
@@ -694,7 +694,7 @@ load_with_wic(
              wicpalette->lpVtbl->Release(wicpalette);
         }
         if (wiccolors) {
-             sixel_allocator_free(pchunk->allocator, wiccolors);
+             sixel_allocator_free(sixel_chunk_get_allocator(pchunk), wiccolors);
         }
         if (wicframe) {
              wicframe->lpVtbl->Release(wicframe);
@@ -739,7 +739,7 @@ end:
          wicpalette->lpVtbl->Release(wicpalette);
     }
     if (wiccolors) {
-         sixel_allocator_free(pchunk->allocator, wiccolors);
+         sixel_allocator_free(sixel_chunk_get_allocator(pchunk), wiccolors);
     }
     if (candidate_frame) {
          candidate_frame->lpVtbl->Release(candidate_frame);

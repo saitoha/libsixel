@@ -68,7 +68,7 @@ run_thumbnailer_loader_test(void)
         fprintf(stderr, "GNOME thumbnailer: allocator init failed\n");
         return 1;
     }
-    status = sixel_chunk_new(&chunk,
+    status = sixel_chunk_create_from_source(&chunk,
                              image_path,
                              0,
                              &cancel_flag,
@@ -141,7 +141,9 @@ run_thumbnailer_loader_test(void)
 
 cleanup:
     sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
     return result;
 }

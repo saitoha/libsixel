@@ -36,6 +36,7 @@
 #include <sixel.h>
 
 #include "allocator.h"
+#include "chunk-view.h"
 #include "frompsd-internal.h"
 #include "loader-common.h"
 
@@ -345,7 +346,7 @@ sixel_builtin_psd_hdr_get_layer_info_window(
     section_end = 0u;
     layer_info_offset = 0u;
     layer_info_length = 0u;
-    if (chunk == NULL || info == NULL || chunk->buffer == NULL ||
+    if (chunk == NULL || info == NULL || sixel_chunk_get_buffer(chunk) == NULL ||
         player_info_offset == NULL || player_info_length == NULL ||
         player_info_end == NULL) {
         return 0;
@@ -355,8 +356,8 @@ sixel_builtin_psd_hdr_get_layer_info_window(
         sixel_builtin_psd_hdr_layer_info_length_field_size(info);
     if (layer_info_length_field_size == 0u ||
         info->layer_mask_length < layer_info_length_field_size + 2u ||
-        info->layer_mask_offset > chunk->size ||
-        info->layer_mask_length > chunk->size - info->layer_mask_offset) {
+        info->layer_mask_offset > sixel_chunk_get_size(chunk) ||
+        info->layer_mask_length > sixel_chunk_get_size(chunk) - info->layer_mask_offset) {
         if (emit_message != 0) {
             sixel_helper_set_additional_message(
                 sixel_builtin_psd_hdr_malformed_layer_mask_length_message(info));
@@ -366,7 +367,7 @@ sixel_builtin_psd_hdr_get_layer_info_window(
     section_offset = info->layer_mask_offset;
     section_end = section_offset + info->layer_mask_length;
     if (!sixel_builtin_psd_hdr_read_length_field_checked(
-            chunk->buffer + section_offset,
+            sixel_chunk_get_buffer(chunk) + section_offset,
             layer_info_length_field_size,
             &layer_info_length)) {
         if (emit_message != 0) {
@@ -378,7 +379,7 @@ sixel_builtin_psd_hdr_get_layer_info_window(
     layer_info_offset = section_offset + layer_info_length_field_size;
     if (layer_info_length < 2u ||
         layer_info_length > section_end - layer_info_offset ||
-        layer_info_offset + layer_info_length > chunk->size) {
+        layer_info_offset + layer_info_length > sixel_chunk_get_size(chunk)) {
         if (emit_message != 0) {
             sixel_helper_set_additional_message(
                 sixel_builtin_psd_hdr_malformed_layer_info_length_message(info));
@@ -427,7 +428,7 @@ sixel_builtin_psd_has_layer_records(sixel_chunk_t const *chunk,
 
     layer_info_length = 0u;
     layer_info_length_field_size = 0u;
-    if (chunk == NULL || info == NULL || chunk->buffer == NULL) {
+    if (chunk == NULL || info == NULL || sixel_chunk_get_buffer(chunk) == NULL) {
         return SIXEL_BUILTIN_PSD_LAYER_RECORDS_MALFORMED_MASK;
     }
     layer_info_length_field_size =
@@ -438,15 +439,15 @@ sixel_builtin_psd_has_layer_records(sixel_chunk_t const *chunk,
     if (info->layer_mask_length == 0u) {
         return 0;
     }
-    if (info->layer_mask_offset > chunk->size ||
-        info->layer_mask_length > chunk->size - info->layer_mask_offset) {
+    if (info->layer_mask_offset > sixel_chunk_get_size(chunk) ||
+        info->layer_mask_length > sixel_chunk_get_size(chunk) - info->layer_mask_offset) {
         return SIXEL_BUILTIN_PSD_LAYER_RECORDS_MALFORMED_MASK;
     }
     if (info->layer_mask_length < layer_info_length_field_size) {
         return 0;
     }
     if (!sixel_builtin_psd_hdr_read_length_field_checked(
-            chunk->buffer + info->layer_mask_offset,
+            sixel_chunk_get_buffer(chunk) + info->layer_mask_offset,
             layer_info_length_field_size,
             &layer_info_length)) {
         return SIXEL_BUILTIN_PSD_LAYER_RECORDS_MALFORMED_INFO;
@@ -585,7 +586,7 @@ sixel_builtin_validate_psd_info(
     }
     message[0] = '\0';
 
-    if (chunk == NULL || info == NULL || chunk->buffer == NULL) {
+    if (chunk == NULL || info == NULL || sixel_chunk_get_buffer(chunk) == NULL) {
         sixel_builtin_psd_set_message(
             message,
             message_size,
@@ -634,14 +635,14 @@ sixel_builtin_validate_psd_info(
         return SIXEL_BUILTIN_PSD_VALIDATE_UNSUPPORTED;
     }
 
-    if (info->image_data_offset > chunk->size) {
+    if (info->image_data_offset > sixel_chunk_get_size(chunk)) {
         sixel_builtin_psd_set_message(
             message,
             message_size,
             "builtin PSD: malformed image data offset");
         return SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED;
     }
-    image_data_length = chunk->size - info->image_data_offset;
+    image_data_length = sixel_chunk_get_size(chunk) - info->image_data_offset;
     if (image_data_length == 0u) {
         layer_state = sixel_builtin_psd_has_layer_records(chunk, info);
         if (layer_state < 0) {
@@ -989,12 +990,12 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     layer_mask_length_field_size = 0u;
     is_psb_alias = 0;
     sixel_builtin_psd_trace_reset();
-    if (chunk == NULL || chunk->buffer == NULL || info == NULL ||
-        chunk->size < 30u) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || info == NULL ||
+        sixel_chunk_get_size(chunk) < 30u) {
         return 0;
     }
-    buffer = chunk->buffer;
-    size = chunk->size;
+    buffer = sixel_chunk_get_buffer(chunk);
+    size = sixel_chunk_get_size(chunk);
     if (!sixel_builtin_psd_has_supported_signature(buffer, &is_psb_alias)) {
         return 0;
     }
@@ -1094,7 +1095,7 @@ sixel_builtin_psd_should_try_multilayer_fallback(
     layer_count_raw = 0;
     layer_count = 0u;
 
-    if (chunk == NULL || info == NULL || chunk->buffer == NULL) {
+    if (chunk == NULL || info == NULL || sixel_chunk_get_buffer(chunk) == NULL) {
         return 0;
     }
     if (info->version == 2u) {
@@ -1109,7 +1110,7 @@ sixel_builtin_psd_should_try_multilayer_fallback(
             0)) {
         return 0;
     }
-    layer_count_raw = sixel_builtin_psd_hdr_read_i16be(chunk->buffer + layer_info_offset);
+    layer_count_raw = sixel_builtin_psd_hdr_read_i16be(sixel_chunk_get_buffer(chunk) + layer_info_offset);
     if (layer_count_raw < 0) {
         layer_count = (size_t)(-(int)layer_count_raw);
     } else {

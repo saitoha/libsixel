@@ -52,7 +52,7 @@
 
 #include <sixel.h>
 
-#include "chunk.h"
+#include "chunk-view.h"
 #include "frame-private.h"
 #include "frame-factory.h"
 #include "loader-common.h"
@@ -900,8 +900,8 @@ coregraphics_parse_png_transparency_chunk(
     alpha_count = 0;
     use_cache = 0;
     if (chunk == NULL ||
-        chunk->buffer == NULL ||
-        chunk->size < sizeof(png_signature) ||
+        sixel_chunk_get_buffer(chunk) == NULL ||
+        sixel_chunk_get_size(chunk) < sizeof(png_signature) ||
         ncolors <= 0 ||
         zero_alpha_map == NULL ||
         zero_alpha_count == NULL ||
@@ -930,20 +930,20 @@ coregraphics_parse_png_transparency_chunk(
         memset(trns_cache->alpha_entries, 0, sizeof(trns_cache->alpha_entries));
     }
 
-    if (memcmp(chunk->buffer, png_signature, sizeof(png_signature)) != 0) {
+    if (memcmp(sixel_chunk_get_buffer(chunk), png_signature, sizeof(png_signature)) != 0) {
         return;
     }
 
     offset = sizeof(png_signature);
-    while (offset + 8u <= chunk->size) {
-        chunk_length = (size_t)coregraphics_read_u32be(chunk->buffer + offset);
+    while (offset + 8u <= sixel_chunk_get_size(chunk)) {
+        chunk_length = (size_t)coregraphics_read_u32be(sixel_chunk_get_buffer(chunk) + offset);
         offset += 4u;
-        if (offset + 4u > chunk->size) {
+        if (offset + 4u > sixel_chunk_get_size(chunk)) {
             break;
         }
 
-        bytes = chunk->buffer + offset;
-        if (offset + 4u + chunk_length + 4u > chunk->size) {
+        bytes = sixel_chunk_get_buffer(chunk) + offset;
+        if (offset + 4u + chunk_length + 4u > sixel_chunk_get_size(chunk)) {
             break;
         }
 
@@ -957,7 +957,7 @@ coregraphics_parse_png_transparency_chunk(
             if (use_cache != 0) {
                 if (alpha_count > 0) {
                     memcpy(trns_cache->alpha_entries,
-                           chunk->buffer + offset,
+                           sixel_chunk_get_buffer(chunk) + offset,
                            (size_t)alpha_count);
                     trns_cache->alpha_count = alpha_count;
                     trns_cache->available = 1;
@@ -971,7 +971,7 @@ coregraphics_parse_png_transparency_chunk(
                 }
             } else {
                 coregraphics_merge_png_transparency_entries(
-                    chunk->buffer + offset,
+                    sixel_chunk_get_buffer(chunk) + offset,
                     alpha_count,
                     ncolors,
                     zero_alpha_map,
@@ -2259,19 +2259,19 @@ coregraphics_prepare_source_and_root_metadata(
     }
 
     status = sixel_frame_create_from_factory(&state->frame,
-                                             state->chunk->allocator);
+                                             sixel_chunk_get_allocator(state->chunk));
     if (SIXEL_FAILED(status)) {
         return status;
     }
 
-    if (state->chunk->size > (size_t)LONG_MAX) {
+    if (sixel_chunk_get_size(state->chunk) > (size_t)LONG_MAX) {
         sixel_helper_set_additional_message(
             "load_with_coregraphics: input chunk size is too large.");
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    state->cf_data_length = (CFIndex)state->chunk->size;
+    state->cf_data_length = (CFIndex)sixel_chunk_get_size(state->chunk);
     state->data = CFDataCreate(kCFAllocatorDefault,
-                               state->chunk->buffer,
+                               sixel_chunk_get_buffer(state->chunk),
                                state->cf_data_length);
     if (state->data == NULL) {
         sixel_helper_set_additional_message(
@@ -2543,7 +2543,7 @@ coregraphics_process_single_frame(coregraphics_loader_state_t *state)
             if (cache_slot->decided == 0u) {
                 status = sixel_frame_create_from_factory(
                     &state->cached_frame_tmp,
-                    state->chunk->allocator);
+                    sixel_chunk_get_allocator(state->chunk));
                 if (SIXEL_FAILED(status)) {
                     return status;
                 }

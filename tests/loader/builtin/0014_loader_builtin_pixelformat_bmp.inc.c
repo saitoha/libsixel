@@ -1881,7 +1881,7 @@ run_builtin_loader_bmp_probe_fixture_case(char const *label,
         fprintf(stderr, "%s: allocator initialization failed\n", label);
         goto cleanup;
     }
-    status = sixel_chunk_new(&chunk,
+    status = sixel_chunk_create_from_source(&chunk,
                              image_path,
                              0,
                              &cancel_flag,
@@ -1904,7 +1904,9 @@ cleanup:
     if (status_out != NULL) {
         *status_out = status;
     }
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
 #if defined(_MSC_VER)
     if (source_root_dupe != NULL) {

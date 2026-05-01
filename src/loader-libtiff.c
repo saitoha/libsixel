@@ -58,7 +58,7 @@
 
 #include "allocator.h"
 #include "cms.h"
-#include "chunk.h"
+#include "chunk-view.h"
 #include "frame-private.h"
 #include "frame-factory.h"
 #include "icc-apply.h"
@@ -523,24 +523,24 @@ tiff_convert_rgbf32_gamma_to_linear(float *pixels,
 static tsize_t
 tiff_memory_read(thandle_t handle, tdata_t data, tsize_t length)
 {
-    tiff_memory_chunk_t *chunk;
+    tiff_memory_chunk_t *memory;
     tsize_t to_copy;
     toff_t available;
 
-    chunk = (tiff_memory_chunk_t *)handle;
-    if (chunk->offset >= chunk->size) {
+    memory = (tiff_memory_chunk_t *)handle;
+    if (memory->offset >= memory->size) {
         return 0;
     }
 
-    available = chunk->size - chunk->offset;
+    available = memory->size - memory->offset;
     to_copy = length;
     if ((toff_t)to_copy > available) {
         to_copy = (tsize_t)available;
     }
 
     if (to_copy > 0) {
-        memcpy(data, chunk->buffer + chunk->offset, to_copy);
-        chunk->offset += (toff_t)to_copy;
+        memcpy(data, memory->buffer + memory->offset, to_copy);
+        memory->offset += (toff_t)to_copy;
     }
 
     return to_copy;
@@ -559,38 +559,38 @@ tiff_memory_write(thandle_t handle, tdata_t data, tsize_t length)
 static toff_t
 tiff_memory_seek(thandle_t handle, toff_t offset, int whence)
 {
-    tiff_memory_chunk_t *chunk;
+    tiff_memory_chunk_t *memory;
     toff_t new_offset;
 
-    chunk = (tiff_memory_chunk_t *)handle;
+    memory = (tiff_memory_chunk_t *)handle;
     switch (whence) {
     case SEEK_SET:
         new_offset = offset;
         break;
     case SEEK_CUR:
-        if (offset > chunk->size - chunk->offset) {
-            new_offset = chunk->size;
+        if (offset > memory->size - memory->offset) {
+            new_offset = memory->size;
         } else {
-            new_offset = chunk->offset + offset;
+            new_offset = memory->offset + offset;
         }
         break;
     case SEEK_END:
-        if (offset > chunk->size) {
+        if (offset > memory->size) {
             new_offset = 0;
         } else {
-            new_offset = chunk->size - offset;
+            new_offset = memory->size - offset;
         }
         break;
     default:
         return (toff_t)-1;
     }
 
-    if (new_offset > chunk->size) {
-        new_offset = chunk->size;
+    if (new_offset > memory->size) {
+        new_offset = memory->size;
     }
 
-    chunk->offset = new_offset;
-    return chunk->offset;
+    memory->offset = new_offset;
+    return memory->offset;
 }
 
 static int
@@ -603,10 +603,10 @@ tiff_memory_close(thandle_t handle)
 static toff_t
 tiff_memory_size(thandle_t handle)
 {
-    tiff_memory_chunk_t *chunk;
+    tiff_memory_chunk_t *memory;
 
-    chunk = (tiff_memory_chunk_t *)handle;
-    return chunk->size;
+    memory = (tiff_memory_chunk_t *)handle;
+    return memory->size;
 }
 
 static int
@@ -1013,7 +1013,7 @@ cleanup:
  */
 static SIXELSTATUS
 load_tiff(unsigned char      /* out */ **result,
-          unsigned char      /* in */  *buffer,
+          unsigned char const /* in */ *buffer,
           size_t             /* in */  size,
           int                /* out */ *pwidth,
           int                /* out */ *pheight,
@@ -1257,18 +1257,18 @@ load_with_libtiff(
     (void)start_frame_no_set;
     (void)start_frame_no;
 
-    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
     status = load_tiff(&pixels,
-                       pchunk->buffer,
-                       pchunk->size,
+                       sixel_chunk_get_buffer(pchunk),
+                       sixel_chunk_get_size(pchunk),
                        &frame->width,
                        &frame->height,
                        &pixelformat,
-                       pchunk->allocator,
+                       sixel_chunk_get_allocator(pchunk),
                        enable_cms);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1289,7 +1289,7 @@ load_with_libtiff(
             : SIXEL_FRAME_PIXELS_U8
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(pchunk->allocator, pixels);
+        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels);
         goto end;
     }
     pixels = NULL;

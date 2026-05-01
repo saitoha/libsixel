@@ -223,6 +223,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/scale.h \
                 $(srcdir)/chunk.c \
                 $(srcdir)/chunk.h \
+                $(srcdir)/chunk-factory.h \
+                $(srcdir)/chunk-view.h \
                 $(srcdir)/cms.c \
                 $(srcdir)/cms.h \
                 $(srcdir)/icc-parse.c \
@@ -495,6 +497,7 @@ FACTORY_CLASSID_INPUTS = \
     $(LOOKUP_POLICY_CLASSID_INPUTS) \
     $(DITHER_POLICY_CLASSID_INPUTS) \
     $(LOADER_COMPONENT_CLASSID_INPUTS) \
+    $(srcdir)/chunk.h \
     $(srcdir)/frame.h \
     $(srcdir)/loader-manager.h
 

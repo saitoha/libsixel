@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "src/chunk.h"
 #include "tests/loader/pixelformat_test_common.h"
 
 #if HAVE_LIBRSVG
@@ -38,7 +37,8 @@ test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv)
     (void)argv;
 
 #if HAVE_LIBRSVG
-    sixel_chunk_t chunk;
+    sixel_chunk_t *chunk;
+    sixel_chunk_memory_request_t request;
     unsigned char const svg_with_bom[] =
         "\xef\xbb\xbf<svg xmlns='http://www.w3.org/2000/svg'/>";
     unsigned char const svg_with_xml[] =
@@ -53,8 +53,9 @@ test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv)
     status = SIXEL_FALSE;
     allocator = NULL;
     loader = NULL;
+    chunk = NULL;
     result = 0;
-    memset(&chunk, 0, sizeof(chunk));
+    memset(&request, 0, sizeof(request));
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "allocator initialization failed\n");
@@ -69,35 +70,60 @@ test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv)
         return SIXEL_TEST_SKIP;
     }
 
-    chunk.buffer = (unsigned char *)svg_with_bom;
-    chunk.size = sizeof(svg_with_bom) - 1;
+    status = sixel_chunk_create_from_memory(&chunk,
+                                            svg_with_bom,
+                                            sizeof(svg_with_bom) - 1u,
+                                            NULL,
+                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        result = 1;
+        goto cleanup;
+    }
     if (expect_librsvg_predicate(loader,
-                                 &chunk,
+                                 chunk,
                                  1,
                                  "BOM-prefixed SVG") != 0) {
         result = 1;
     }
 
-    chunk.buffer = (unsigned char *)svg_with_xml;
-    chunk.size = sizeof(svg_with_xml) - 1;
+    request.bytes = svg_with_xml;
+    request.size = sizeof(svg_with_xml) - 1u;
+    request.source_path = NULL;
+    status = chunk->vtbl->init_memory(chunk, &request);
+    if (SIXEL_FAILED(status)) {
+        result = 1;
+        goto cleanup;
+    }
     if (expect_librsvg_predicate(loader,
-                                 &chunk,
+                                 chunk,
                                  1,
                                  "XML-prefixed SVG") != 0) {
         result = 1;
     }
 
-    chunk.buffer = (unsigned char *)not_svg;
-    chunk.size = sizeof(not_svg) - 1;
-    if (expect_librsvg_predicate(loader, &chunk, 0, "non-SVG data") != 0) {
+    request.bytes = not_svg;
+    request.size = sizeof(not_svg) - 1u;
+    request.source_path = NULL;
+    status = chunk->vtbl->init_memory(chunk, &request);
+    if (SIXEL_FAILED(status)) {
+        result = 1;
+        goto cleanup;
+    }
+    if (expect_librsvg_predicate(loader, chunk, 0, "non-SVG data") != 0) {
         result = 1;
     }
 
-    chunk.source_path = "sample.SVGZ";
-    if (expect_librsvg_predicate(loader, &chunk, 1, ".svgz path hint") != 0) {
+    request.bytes = not_svg;
+    request.size = sizeof(not_svg) - 1u;
+    request.source_path = "sample.SVGZ";
+    status = chunk->vtbl->init_memory(chunk, &request);
+    if (SIXEL_FAILED(status)) {
+        result = 1;
+        goto cleanup;
+    }
+    if (expect_librsvg_predicate(loader, chunk, 1, ".svgz path hint") != 0) {
         result = 1;
     }
-    chunk.source_path = NULL;
 
     memset(long_prefix, ' ', sizeof(long_prefix));
     long_prefix[4100] = '<';
@@ -106,15 +132,25 @@ test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv)
     long_prefix[4103] = 'g';
     long_prefix[4104] = '>';
     long_prefix[4105] = '\0';
-    chunk.buffer = (unsigned char *)long_prefix;
-    chunk.size = 4105;
+    request.bytes = (unsigned char const *)long_prefix;
+    request.size = 4105u;
+    request.source_path = NULL;
+    status = chunk->vtbl->init_memory(chunk, &request);
+    if (SIXEL_FAILED(status)) {
+        result = 1;
+        goto cleanup;
+    }
     if (expect_librsvg_predicate(loader,
-                                 &chunk,
+                                 chunk,
                                  0,
                                  "SVG marker beyond probe limit") != 0) {
         result = 1;
     }
 
+cleanup:
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_loader_component_unref(loader);
     sixel_allocator_unref(allocator);
     return result;

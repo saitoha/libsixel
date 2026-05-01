@@ -58,6 +58,7 @@
 #include <sixel.h>
 
 #include "cms.h"
+#include "chunk-view.h"
 #include "compat_stub.h"
 #include "frame-private.h"
 #include "loader-common.h"
@@ -1659,7 +1660,7 @@ loader_timeline_emit_frame_callback(sixel_frame_t *frame, void *data)
 int
 chunk_is_png(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || chunk->size < 8) {
+    if (chunk == NULL || sixel_chunk_get_size(chunk) < 8) {
         return 0;
     }
 
@@ -1668,14 +1669,14 @@ chunk_is_png(sixel_chunk_t const *chunk)
      * sequence keeps the detection fast and avoids depending on libpng
      * helpers when only the signature is needed.
      */
-    if (chunk->buffer[0] == (unsigned char)0x89 &&
-        chunk->buffer[1] == 'P' &&
-        chunk->buffer[2] == 'N' &&
-        chunk->buffer[3] == 'G' &&
-        chunk->buffer[4] == (unsigned char)0x0d &&
-        chunk->buffer[5] == (unsigned char)0x0a &&
-        chunk->buffer[6] == (unsigned char)0x1a &&
-        chunk->buffer[7] == (unsigned char)0x0a) {
+    if (sixel_chunk_get_buffer(chunk)[0] == (unsigned char)0x89 &&
+        sixel_chunk_get_buffer(chunk)[1] == 'P' &&
+        sixel_chunk_get_buffer(chunk)[2] == 'N' &&
+        sixel_chunk_get_buffer(chunk)[3] == 'G' &&
+        sixel_chunk_get_buffer(chunk)[4] == (unsigned char)0x0d &&
+        sixel_chunk_get_buffer(chunk)[5] == (unsigned char)0x0a &&
+        sixel_chunk_get_buffer(chunk)[6] == (unsigned char)0x1a &&
+        sixel_chunk_get_buffer(chunk)[7] == (unsigned char)0x0a) {
         return 1;
     }
 
@@ -1685,7 +1686,7 @@ chunk_is_png(sixel_chunk_t const *chunk)
 int
 chunk_is_jpeg(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || chunk->size < 2) {
+    if (chunk == NULL || sixel_chunk_get_size(chunk) < 2) {
         return 0;
     }
 
@@ -1693,8 +1694,8 @@ chunk_is_jpeg(sixel_chunk_t const *chunk)
      * JPEG files start with SOI (Start of Image) marker 0xFF 0xD8.  The GD
      * loader uses this to decide whether libgd should attempt JPEG decoding.
      */
-    if (chunk->buffer[0] == (unsigned char)0xff &&
-        chunk->buffer[1] == (unsigned char)0xd8) {
+    if (sixel_chunk_get_buffer(chunk)[0] == (unsigned char)0xff &&
+        sixel_chunk_get_buffer(chunk)[1] == (unsigned char)0xd8) {
         return 1;
     }
 
@@ -1704,7 +1705,7 @@ chunk_is_jpeg(sixel_chunk_t const *chunk)
 int
 chunk_is_webp(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || chunk->size < 12) {
+    if (chunk == NULL || sixel_chunk_get_size(chunk) < 12) {
         return 0;
     }
 
@@ -1712,14 +1713,14 @@ chunk_is_webp(sixel_chunk_t const *chunk)
      * WebP files use a RIFF container.  The stream starts with \"RIFF\",
      * followed by a 32-bit size field, and then the literal \"WEBP\" tag.
      */
-    if (chunk->buffer[0] == 'R' &&
-        chunk->buffer[1] == 'I' &&
-        chunk->buffer[2] == 'F' &&
-        chunk->buffer[3] == 'F' &&
-        chunk->buffer[8] == 'W' &&
-        chunk->buffer[9] == 'E' &&
-        chunk->buffer[10] == 'B' &&
-        chunk->buffer[11] == 'P') {
+    if (sixel_chunk_get_buffer(chunk)[0] == 'R' &&
+        sixel_chunk_get_buffer(chunk)[1] == 'I' &&
+        sixel_chunk_get_buffer(chunk)[2] == 'F' &&
+        sixel_chunk_get_buffer(chunk)[3] == 'F' &&
+        sixel_chunk_get_buffer(chunk)[8] == 'W' &&
+        sixel_chunk_get_buffer(chunk)[9] == 'E' &&
+        sixel_chunk_get_buffer(chunk)[10] == 'B' &&
+        sixel_chunk_get_buffer(chunk)[11] == 'P') {
         return 1;
     }
 
@@ -1729,12 +1730,12 @@ chunk_is_webp(sixel_chunk_t const *chunk)
 int
 chunk_is_bmp(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || chunk->size < 2) {
+    if (chunk == NULL || sixel_chunk_get_size(chunk) < 2) {
         return 0;
     }
 
     /* BMP headers begin with the literal characters 'B' 'M'. */
-    if (chunk->buffer[0] == 'B' && chunk->buffer[1] == 'M') {
+    if (sixel_chunk_get_buffer(chunk)[0] == 'B' && sixel_chunk_get_buffer(chunk)[1] == 'M') {
         return 1;
     }
 
@@ -1755,17 +1756,17 @@ loader_chunk_read_wbmp_uint(sixel_chunk_t const *chunk,
     parsed = 0u;
     byte = 0u;
     count = 0;
-    if (chunk == NULL || chunk->buffer == NULL ||
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL ||
             offset == NULL || value == NULL) {
         return 0;
     }
 
     current = *offset;
     while (count < 5) {
-        if (current >= chunk->size) {
+        if (current >= sixel_chunk_get_size(chunk)) {
             return 0;
         }
-        byte = chunk->buffer[current++];
+        byte = sixel_chunk_get_buffer(chunk)[current++];
         if (parsed > 0x0fffffffu) {
             return 0;
         }
@@ -1795,7 +1796,7 @@ chunk_is_wbmp(sixel_chunk_t const *chunk)
     fixed_header_field = 0u;
     width = 0u;
     height = 0u;
-    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 4u) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 4u) {
         return 0;
     }
 
@@ -1824,7 +1825,7 @@ chunk_is_wbmp(sixel_chunk_t const *chunk)
     if (width == 0u || height == 0u) {
         return 0;
     }
-    if (offset >= chunk->size) {
+    if (offset >= sixel_chunk_get_size(chunk)) {
         return 0;
     }
 
@@ -1858,15 +1859,15 @@ chunk_is_tga(sixel_chunk_t const *chunk)
     height = 0u;
     bits_per_pixel = 0u;
     image_type_supported = 0;
-    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 18u) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 18u) {
         return 0;
     }
 
-    color_map_type = chunk->buffer[1];
-    image_type = chunk->buffer[2];
-    width = loader_chunk_read_u16le(chunk->buffer + 12u);
-    height = loader_chunk_read_u16le(chunk->buffer + 14u);
-    bits_per_pixel = chunk->buffer[16];
+    color_map_type = sixel_chunk_get_buffer(chunk)[1];
+    image_type = sixel_chunk_get_buffer(chunk)[2];
+    width = loader_chunk_read_u16le(sixel_chunk_get_buffer(chunk) + 12u);
+    height = loader_chunk_read_u16le(sixel_chunk_get_buffer(chunk) + 14u);
+    bits_per_pixel = sixel_chunk_get_buffer(chunk)[16];
     if (color_map_type > 1u) {
         return 0;
     }
@@ -1897,7 +1898,7 @@ chunk_is_tga(sixel_chunk_t const *chunk)
 int
 chunk_is_tiff(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || chunk->size < 4) {
+    if (chunk == NULL || sixel_chunk_get_size(chunk) < 4) {
         return 0;
     }
 
@@ -1906,18 +1907,18 @@ chunk_is_tiff(sixel_chunk_t const *chunk)
      * variants "II+\0"/"MM\0+". Checking the first four bytes is enough to
      * decide whether the stream can be probed by libtiff.
      */
-    if ((chunk->buffer[0] == 'I' && chunk->buffer[1] == 'I' &&
-         chunk->buffer[2] == (unsigned char)0x2a &&
-         chunk->buffer[3] == (unsigned char)0x00) ||
-        (chunk->buffer[0] == 'M' && chunk->buffer[1] == 'M' &&
-         chunk->buffer[2] == (unsigned char)0x00 &&
-         chunk->buffer[3] == (unsigned char)0x2a) ||
-        (chunk->buffer[0] == 'I' && chunk->buffer[1] == 'I' &&
-         chunk->buffer[2] == (unsigned char)0x2b &&
-         chunk->buffer[3] == (unsigned char)0x00) ||
-        (chunk->buffer[0] == 'M' && chunk->buffer[1] == 'M' &&
-         chunk->buffer[2] == (unsigned char)0x00 &&
-         chunk->buffer[3] == (unsigned char)0x2b)) {
+    if ((sixel_chunk_get_buffer(chunk)[0] == 'I' && sixel_chunk_get_buffer(chunk)[1] == 'I' &&
+         sixel_chunk_get_buffer(chunk)[2] == (unsigned char)0x2a &&
+         sixel_chunk_get_buffer(chunk)[3] == (unsigned char)0x00) ||
+        (sixel_chunk_get_buffer(chunk)[0] == 'M' && sixel_chunk_get_buffer(chunk)[1] == 'M' &&
+         sixel_chunk_get_buffer(chunk)[2] == (unsigned char)0x00 &&
+         sixel_chunk_get_buffer(chunk)[3] == (unsigned char)0x2a) ||
+        (sixel_chunk_get_buffer(chunk)[0] == 'I' && sixel_chunk_get_buffer(chunk)[1] == 'I' &&
+         sixel_chunk_get_buffer(chunk)[2] == (unsigned char)0x2b &&
+         sixel_chunk_get_buffer(chunk)[3] == (unsigned char)0x00) ||
+        (sixel_chunk_get_buffer(chunk)[0] == 'M' && sixel_chunk_get_buffer(chunk)[1] == 'M' &&
+         sixel_chunk_get_buffer(chunk)[2] == (unsigned char)0x00 &&
+         sixel_chunk_get_buffer(chunk)[3] == (unsigned char)0x2b)) {
         return 1;
     }
 
@@ -1927,14 +1928,14 @@ chunk_is_tiff(sixel_chunk_t const *chunk)
 int
 chunk_is_gd2(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 4u) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 4u) {
         return 0;
     }
 
     /* GD2 streams start with the literal signature "gd2". */
-    if (chunk->buffer[0] == 'g' &&
-        chunk->buffer[1] == 'd' &&
-        chunk->buffer[2] == '2') {
+    if (sixel_chunk_get_buffer(chunk)[0] == 'g' &&
+        sixel_chunk_get_buffer(chunk)[1] == 'd' &&
+        sixel_chunk_get_buffer(chunk)[2] == '2') {
         return 1;
     }
 
@@ -1951,7 +1952,7 @@ chunk_is_gd(sixel_chunk_t const *chunk)
     width = 0u;
     height = 0u;
     ncolors = 0u;
-    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 6u) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 6u) {
         return 0;
     }
     if (chunk_is_gd2(chunk)) {
@@ -1962,12 +1963,12 @@ chunk_is_gd(sixel_chunk_t const *chunk)
      * Legacy GD files have no fixed magic. Use conservative header sanity
      * checks to avoid probing unrelated formats.
      */
-    width = (unsigned short)((unsigned short)chunk->buffer[0] << 8u |
-                             (unsigned short)chunk->buffer[1]);
-    height = (unsigned short)((unsigned short)chunk->buffer[2] << 8u |
-                              (unsigned short)chunk->buffer[3]);
-    ncolors = (unsigned short)((unsigned short)chunk->buffer[4] << 8u |
-                               (unsigned short)chunk->buffer[5]);
+    width = (unsigned short)((unsigned short)sixel_chunk_get_buffer(chunk)[0] << 8u |
+                             (unsigned short)sixel_chunk_get_buffer(chunk)[1]);
+    height = (unsigned short)((unsigned short)sixel_chunk_get_buffer(chunk)[2] << 8u |
+                              (unsigned short)sixel_chunk_get_buffer(chunk)[3]);
+    ncolors = (unsigned short)((unsigned short)sixel_chunk_get_buffer(chunk)[4] << 8u |
+                               (unsigned short)sixel_chunk_get_buffer(chunk)[5]);
     if (width == 0u || height == 0u) {
         return 0;
     }
@@ -1981,15 +1982,15 @@ chunk_is_gd(sixel_chunk_t const *chunk)
 int
 chunk_is_gif(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 6u) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 6u) {
         return 0;
     }
-    if (chunk->buffer[0] == 'G' &&
-        chunk->buffer[1] == 'I' &&
-        chunk->buffer[2] == 'F' &&
-        chunk->buffer[3] == '8' &&
-        (chunk->buffer[4] == '7' || chunk->buffer[4] == '9') &&
-        chunk->buffer[5] == 'a') {
+    if (sixel_chunk_get_buffer(chunk)[0] == 'G' &&
+        sixel_chunk_get_buffer(chunk)[1] == 'I' &&
+        sixel_chunk_get_buffer(chunk)[2] == 'F' &&
+        sixel_chunk_get_buffer(chunk)[3] == '8' &&
+        (sixel_chunk_get_buffer(chunk)[4] == '7' || sixel_chunk_get_buffer(chunk)[4] == '9') &&
+        sixel_chunk_get_buffer(chunk)[5] == 'a') {
         return 1;
     }
     return 0;

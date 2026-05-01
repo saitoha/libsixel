@@ -189,6 +189,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
     -DBUILD_TEST_0010_FILTER_ENCODE \
     -DBUILD_TEST_0001_FRAME_FACTORY \
+    -DBUILD_TEST_0001_CHUNK_FACTORY \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -258,6 +259,7 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0009_filter_dither.c \
     processing/filter/0010_filter_encode.c \
     processing/frame/0001_frame_factory.c \
+    processing/chunk/0001_chunk_factory.c \
     processing/lookup/0001_lookup_policy.c \
     processing/dither/0001_dither_policy.c \
     processing/filter/filter_test_common.h \
@@ -290,6 +292,7 @@ test_runner_SOURCES = test_runner.c \
     loader/0058_loader_gd_status_policy.c \
     loader/0059_loader_gd_pixelpolicy_detail.c \
     loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
+    loader/chunk_test_common.h \
     loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     quant/palette/0002_kmedoids_constraints.c \
@@ -365,6 +368,7 @@ AM_LOG_FLAGS =
 	staticcheck-6cells-idl-sync \
 	staticcheck-frame-post187-export-guard \
 	staticcheck-frame-instantiation-boundary \
+	staticcheck-chunk-component-boundary \
 	staticcheck-deprecated-diagnostic-guard \
 	staticcheck-lookup-policy-no-backend-includes \
 	staticcheck-factory-classid-registry-sync \
@@ -412,6 +416,7 @@ staticcheck-public-compat \
 staticcheck-6cells-idl-sync \
 staticcheck-frame-post187-export-guard \
 staticcheck-frame-instantiation-boundary \
+staticcheck-chunk-component-boundary \
 staticcheck-deprecated-diagnostic-guard \
 staticcheck-lookup-policy-no-backend-includes \
 staticcheck-factory-classid-registry-sync \
@@ -585,6 +590,16 @@ staticcheck-frame-instantiation-boundary:
 		--trs-file staticcheck-frame-instantiation-boundary.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-frame-instantiation-boundary.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-chunk-component-boundary:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-chunk-component-boundary" \
+		--log-file staticcheck-chunk-component-boundary.log \
+		--trs-file staticcheck-chunk-component-boundary.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-chunk-component-boundary.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-deprecated-diagnostic-guard:
@@ -1597,6 +1612,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 		_static/sh/staticcheck-6cells-idl-sync.sh \
 		_static/sh/staticcheck-frame-post187-export-guard.sh \
 		_static/sh/staticcheck-frame-instantiation-boundary.sh \
+		_static/sh/staticcheck-chunk-component-boundary.sh \
 		_static/sh/staticcheck-deprecated-diagnostic-guard.sh \
 		_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
 		_static/sh/staticcheck-factory-classid-registry-sync.sh \

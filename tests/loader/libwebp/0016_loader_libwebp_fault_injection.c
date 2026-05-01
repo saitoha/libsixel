@@ -427,7 +427,7 @@ run_animation_decode_fail_case(webp_fi_failpoint_t failpoint,
         return 1;
     }
 
-    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
+    status = sixel_chunk_create_from_source(&chunk, image_path, 0, &cancel_flag, allocator);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: failed to read input chunk\n", label);
         goto cleanup;
@@ -471,7 +471,9 @@ run_animation_decode_fail_case(webp_fi_failpoint_t failpoint,
     result = 0;
 
 cleanup:
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
     webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
     return result;
@@ -508,7 +510,7 @@ run_demux_fail_case(char const *label)
         return 1;
     }
 
-    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
+    status = sixel_chunk_create_from_source(&chunk, image_path, 0, &cancel_flag, allocator);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: failed to read input chunk\n", label);
         goto cleanup;
@@ -551,7 +553,9 @@ run_demux_fail_case(char const *label)
     result = 0;
 
 cleanup:
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
     webpfi_set_failpoint(WEBP_FI_FAIL_NONE);
     return result;
@@ -603,7 +607,7 @@ run_load_webp_fail_case(webp_fi_failpoint_t failpoint,
         return 1;
     }
 
-    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
+    status = sixel_chunk_create_from_source(&chunk, image_path, 0, &cancel_flag, allocator);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: failed to read input chunk\n", label);
         goto cleanup;
@@ -621,8 +625,8 @@ run_load_webp_fail_case(webp_fi_failpoint_t failpoint,
     sixel_helper_set_additional_message(NULL);
     webpfi_set_failpoint(failpoint);
     status = load_webp(&pixels,
-                       chunk->buffer,
-                       chunk->size,
+                       sixel_chunk_get_buffer(chunk),
+                       sixel_chunk_get_size(chunk),
                        &width,
                        &height,
                        &pixelformat,
@@ -663,7 +667,9 @@ cleanup:
     if (pixels != NULL) {
         sixel_allocator_free(allocator, pixels);
     }
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
     return result;
 }
@@ -1042,7 +1048,7 @@ run_fast_frame_count_limit_case(void)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     unsigned char *buffer;
-    sixel_chunk_t chunk;
+    sixel_chunk_t *chunk;
     size_t frame_count;
     size_t riff_size;
     size_t total_size;
@@ -1054,7 +1060,7 @@ run_fast_frame_count_limit_case(void)
     status = SIXEL_FALSE;
     allocator = NULL;
     buffer = NULL;
-    memset(&chunk, 0, sizeof(chunk));
+    chunk = NULL;
     frame_count = (size_t)WEBP_FI_MAX_ANIMATION_FRAMES + 1u;
     riff_size = 0u;
     total_size = 0u;
@@ -1124,13 +1130,19 @@ run_fast_frame_count_limit_case(void)
         goto cleanup;
     }
 
-    chunk.buffer = buffer;
-    chunk.size = total_size;
-    chunk.max_size = total_size;
-    chunk.allocator = allocator;
+    status = sixel_chunk_create_from_memory(&chunk,
+                                            buffer,
+                                            total_size,
+                                            NULL,
+                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "libwebp fault injection frame-limit-fast: chunk init failed\n");
+        goto cleanup;
+    }
 
     sixel_helper_set_additional_message(NULL);
-    status = load_with_libwebp(&chunk,
+    status = load_with_libwebp(chunk,
                                0,
                                0,
                                0,
@@ -1163,6 +1175,9 @@ run_fast_frame_count_limit_case(void)
     result = 0;
 
 cleanup:
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_free(allocator, buffer);
     sixel_allocator_unref(allocator);
     return result;

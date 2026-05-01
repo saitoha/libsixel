@@ -45,7 +45,6 @@ extern "C" {
  * include this header explicitly; sixel.h stays focused on the legacy public
  * API surface.
  */
-struct sixel_chunk;
 struct sixel_logger;
 struct sixel_option_argument_list_resolution;
 typedef struct sixel_factory_interface sixel_factory_t;
@@ -232,6 +231,68 @@ struct sixel_dither_policy_interface {
     sixel_dither_policy_vtbl_t const *vtbl;
 };
 
+typedef struct sixel_chunk_interface sixel_chunk_t;
+
+typedef struct sixel_chunk_source_request {
+    char const *filename;
+    int finsecure;
+    int const *cancel_flag;
+} sixel_chunk_source_request_t;
+
+typedef struct sixel_chunk_memory_request {
+    unsigned char const *bytes;
+    size_t size;
+    char const *source_path;
+} sixel_chunk_memory_request_t;
+
+typedef struct sixel_chunk_bytes_view {
+    unsigned char const *bytes;
+    size_t size;
+} sixel_chunk_bytes_view_t;
+
+/*
+ * Ownership/lifetime:
+ * - Factory create returns refcount=1 chunk objects.
+ * - Callers release with chunk->vtbl->unref(chunk).
+ *
+ * Encapsulation path:
+ * - The chunk object owns loaded input bytes and optional source metadata.
+ * - Loaders keep their own decode cursors; chunk bytes are read-only views.
+ */
+/*
+ * IDL contract:
+ * [receiver(chunk)]
+ * interface chunk {
+ *     void ref();
+ *     void unref();
+ *     SIXELSTATUS init_source(in chunk_source_request const *request);
+ *     SIXELSTATUS init_memory(in chunk_memory_request const *request);
+ *     [const] SIXELSTATUS get_bytes(out chunk_bytes_view *view);
+ *     [const] char const *source_path();
+ *     [const] sixel_allocator_t *allocator();
+ * };
+ */
+
+typedef struct sixel_chunk_vtbl {
+    void (*ref)(sixel_chunk_t *chunk);
+    void (*unref)(sixel_chunk_t *chunk);
+    SIXELSTATUS (*init_source)(
+        sixel_chunk_t *chunk,
+        sixel_chunk_source_request_t const *request);
+    SIXELSTATUS (*init_memory)(
+        sixel_chunk_t *chunk,
+        sixel_chunk_memory_request_t const *request);
+    SIXELSTATUS (*get_bytes)(
+        sixel_chunk_t const *chunk,
+        sixel_chunk_bytes_view_t *view);
+    char const *(*source_path)(sixel_chunk_t const *chunk);
+    sixel_allocator_t *(*allocator)(sixel_chunk_t const *chunk);
+} sixel_chunk_vtbl_t;
+
+struct sixel_chunk_interface {
+    sixel_chunk_vtbl_t const *vtbl;
+};
+
 typedef struct sixel_loader_component_interface
     sixel_loader_component_interface_t;
 
@@ -243,11 +304,11 @@ typedef struct sixel_loader_component_interface
  *     void unref();
  *     SIXELSTATUS setopt(in int option, in void const *value);
  *     SIXELSTATUS load(
- *         in struct sixel_chunk const *chunk,
+ *         in chunk const *chunk,
  *         in sixel_load_image_function fn_load,
  *         in void *context);
  *     [const] char const *name();
- *     int predicate(in struct sixel_chunk const *chunk);
+ *     int predicate(in chunk const *chunk);
  * };
  */
 
@@ -260,13 +321,13 @@ typedef struct sixel_loader_component_vtbl {
         void const *value);
     SIXELSTATUS (*load)(
         sixel_loader_component_interface_t *loader,
-        struct sixel_chunk const *chunk,
+        sixel_chunk_t const *chunk,
         sixel_load_image_function fn_load,
         void *context);
     char const *(*name)(sixel_loader_component_interface_t const *loader);
     int (*predicate)(
         sixel_loader_component_interface_t *loader,
-        struct sixel_chunk const *chunk);
+        sixel_chunk_t const *chunk);
 } sixel_loader_component_vtbl_t;
 
 struct sixel_loader_component_interface {
@@ -325,7 +386,7 @@ typedef struct sixel_loader_manager_build_request {
  *     void unref();
  *     SIXELSTATUS build_chain(in loader_manager_build_request const *request);
  *     SIXELSTATUS load(
- *         in struct sixel_chunk const *chunk,
+ *         in chunk const *chunk,
  *         out loader_component **selected_loader,
  *         in sixel_load_image_function fn_load,
  *         in void *load_context);
@@ -340,7 +401,7 @@ typedef struct sixel_loader_manager_vtbl {
         sixel_loader_manager_build_request_t const *request);
     SIXELSTATUS (*load)(
         sixel_loader_manager_t *manager,
-        struct sixel_chunk const *chunk,
+        sixel_chunk_t const *chunk,
         sixel_loader_component_interface_t **selected_loader,
         sixel_load_image_function fn_load,
         void *load_context);

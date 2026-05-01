@@ -17,6 +17,91 @@ new_coregraphics_component(sixel_allocator_t *allocator,
                                            ppcomponent);
 }
 
+typedef struct coregraphics_fake_chunk {
+    sixel_chunk_t chunk_interface;
+    sixel_chunk_bytes_view_t bytes;
+    sixel_allocator_t *allocator;
+} coregraphics_fake_chunk_t;
+
+static void
+coregraphics_fake_chunk_ref(sixel_chunk_t *chunk)
+{
+    (void)chunk;
+}
+
+static void
+coregraphics_fake_chunk_unref(sixel_chunk_t *chunk)
+{
+    (void)chunk;
+}
+
+static SIXELSTATUS
+coregraphics_fake_chunk_init_source(
+    sixel_chunk_t *chunk,
+    sixel_chunk_source_request_t const *request)
+{
+    (void)chunk;
+    (void)request;
+    return SIXEL_BAD_ARGUMENT;
+}
+
+static SIXELSTATUS
+coregraphics_fake_chunk_init_memory(
+    sixel_chunk_t *chunk,
+    sixel_chunk_memory_request_t const *request)
+{
+    (void)chunk;
+    (void)request;
+    return SIXEL_BAD_ARGUMENT;
+}
+
+static SIXELSTATUS
+coregraphics_fake_chunk_get_bytes(sixel_chunk_t const *chunk,
+                                  sixel_chunk_bytes_view_t *view)
+{
+    coregraphics_fake_chunk_t const *fake;
+
+    fake = NULL;
+    if (chunk == NULL || view == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    fake = (coregraphics_fake_chunk_t const *)(void const *)chunk;
+    *view = fake->bytes;
+    return SIXEL_OK;
+}
+
+static char const *
+coregraphics_fake_chunk_source_path(sixel_chunk_t const *chunk)
+{
+    (void)chunk;
+    return NULL;
+}
+
+static sixel_allocator_t *
+coregraphics_fake_chunk_allocator(sixel_chunk_t const *chunk)
+{
+    coregraphics_fake_chunk_t const *fake;
+
+    fake = NULL;
+    if (chunk == NULL) {
+        return NULL;
+    }
+
+    fake = (coregraphics_fake_chunk_t const *)(void const *)chunk;
+    return fake->allocator;
+}
+
+static sixel_chunk_vtbl_t const coregraphics_fake_chunk_vtbl = {
+    coregraphics_fake_chunk_ref,
+    coregraphics_fake_chunk_unref,
+    coregraphics_fake_chunk_init_source,
+    coregraphics_fake_chunk_init_memory,
+    coregraphics_fake_chunk_get_bytes,
+    coregraphics_fake_chunk_source_path,
+    coregraphics_fake_chunk_allocator
+};
+
 typedef struct coregraphics_animation_probe {
     int callback_count;
     int first_delay;
@@ -407,7 +492,7 @@ run_coregraphics_animation_case_with_callback_ex(
         return 1;
     }
 
-    status = sixel_chunk_new(&chunk,
+    status = sixel_chunk_create_from_source(&chunk,
                              image_path,
                              0,
                              &cancel_flag,
@@ -472,7 +557,9 @@ run_coregraphics_animation_case_with_callback_ex(
 
 cleanup:
     sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
 
     return SIXEL_FAILED(status) ? 1 : 0;
@@ -1524,7 +1611,7 @@ run_coregraphics_indexed_keycolor_policy_case(char const *label,
         return 1;
     }
 
-    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
+    status = sixel_chunk_create_from_source(&chunk, image_path, 0, &cancel_flag, allocator);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: failed to read sample\n", label);
         goto cleanup;
@@ -1651,7 +1738,9 @@ run_coregraphics_indexed_keycolor_policy_case(char const *label,
 
 cleanup:
     sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
     return result;
 }
@@ -2079,7 +2168,7 @@ run_coregraphics_cfindex_size_overflow_reject_test(void)
     int reqcolors;
     loader_probe_callback_state_t callback_state;
     coregraphics_callback_count_probe_t probe;
-    size_t original_size;
+    coregraphics_fake_chunk_t overflow_chunk;
 
     status = SIXEL_FALSE;
     allocator = NULL;
@@ -2094,7 +2183,10 @@ run_coregraphics_cfindex_size_overflow_reject_test(void)
     callback_state.fn = NULL;
     callback_state.context = NULL;
     probe.callback_count = 0;
-    original_size = 0u;
+    overflow_chunk.chunk_interface.vtbl = &coregraphics_fake_chunk_vtbl;
+    overflow_chunk.bytes.bytes = NULL;
+    overflow_chunk.bytes.size = 0u;
+    overflow_chunk.allocator = NULL;
 
     source_root = getenv("MESON_SOURCE_ROOT");
     if (source_root == NULL) {
@@ -2121,7 +2213,7 @@ run_coregraphics_cfindex_size_overflow_reject_test(void)
         return 1;
     }
 
-    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
+    status = sixel_chunk_create_from_source(&chunk, image_path, 0, &cancel_flag, allocator);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "coregraphics: failed to read sample\n");
         goto cleanup;
@@ -2154,13 +2246,14 @@ run_coregraphics_cfindex_size_overflow_reject_test(void)
         goto cleanup;
     }
 
-    original_size = chunk->size;
-    chunk->size = (size_t)LONG_MAX + 1u;
+    overflow_chunk.bytes.bytes = sixel_chunk_get_buffer(chunk);
+    overflow_chunk.bytes.size = (size_t)LONG_MAX + 1u;
+    overflow_chunk.allocator = allocator;
 
     callback_state.fn = capture_coregraphics_callback_count;
     callback_state.context = &probe;
     status = sixel_loader_component_load(component,
-                                         chunk,
+                                         &overflow_chunk.chunk_interface,
                                          capture_frame_trampoline,
                                          &callback_state);
     if (status != SIXEL_BAD_INTEGER_OVERFLOW) {
@@ -2179,11 +2272,10 @@ run_coregraphics_cfindex_size_overflow_reject_test(void)
     status = SIXEL_OK;
 
 cleanup:
-    if (chunk != NULL) {
-        chunk->size = original_size;
-    }
     sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
     return SIXEL_FAILED(status) ? 1 : 0;
 }
@@ -2194,7 +2286,7 @@ run_coregraphics_indexed_provider_copy_oom_reject_test(void)
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_loader_component_t *component;
-    sixel_chunk_t chunk;
+    sixel_chunk_t *chunk;
     int require_static;
     int use_palette;
     int reqcolors;
@@ -2204,7 +2296,7 @@ run_coregraphics_indexed_provider_copy_oom_reject_test(void)
     status = SIXEL_FALSE;
     allocator = NULL;
     component = NULL;
-    memset(&chunk, 0, sizeof(chunk));
+    chunk = NULL;
     require_static = 0;
     use_palette = 1;
     reqcolors = 256;
@@ -2246,17 +2338,20 @@ run_coregraphics_indexed_provider_copy_oom_reject_test(void)
         goto cleanup;
     }
 
-    chunk.buffer = (unsigned char *)(uintptr_t)
-        coregraphics_indexed_provider_oom_poc;
-    chunk.size = sizeof(coregraphics_indexed_provider_oom_poc);
-    chunk.max_size = sizeof(coregraphics_indexed_provider_oom_poc);
-    chunk.source_path = NULL;
-    chunk.allocator = allocator;
+    status = sixel_chunk_create_from_memory(
+        &chunk,
+        (unsigned char const *)coregraphics_indexed_provider_oom_poc,
+        sizeof(coregraphics_indexed_provider_oom_poc),
+        NULL,
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
 
     callback_state.fn = capture_coregraphics_callback_count;
     callback_state.context = &probe;
     status = sixel_loader_component_load(component,
-                                         &chunk,
+                                         chunk,
                                          capture_frame_trampoline,
                                          &callback_state);
     if (status != SIXEL_BAD_INPUT) {
@@ -2276,6 +2371,9 @@ run_coregraphics_indexed_provider_copy_oom_reject_test(void)
 
 cleanup:
     sixel_loader_component_unref(component);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
     return SIXEL_FAILED(status) ? 1 : 0;
 }

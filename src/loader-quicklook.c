@@ -44,7 +44,7 @@
 
 #include <sixel.h>
 
-#include "chunk.h"
+#include "chunk-view.h"
 #include "frame-private.h"
 #include "frame-factory.h"
 #include "loader-common.h"
@@ -180,8 +180,8 @@ loader_quicklook_can_decode(sixel_chunk_t const *pchunk,
 
     loader_thumbnailer_initialize_size_hint();
 
-    if (pchunk != NULL && pchunk->source_path != NULL) {
-        path = pchunk->source_path;
+    if (pchunk != NULL && sixel_chunk_get_source_path(pchunk) != NULL) {
+        path = sixel_chunk_get_source_path(pchunk);
     } else if (filename != NULL) {
         path = filename;
     }
@@ -306,7 +306,7 @@ load_with_quicklook(
     (void)start_frame_no_set;
     (void)start_frame_no;
 
-    if (pchunk == NULL || pchunk->source_path == NULL) {
+    if (pchunk == NULL || sixel_chunk_get_source_path(pchunk) == NULL) {
         quicklook_set_error_message(
             "load_with_quicklook: source path is unavailable.");
         goto end;
@@ -314,13 +314,13 @@ load_with_quicklook(
 
     loader_thumbnailer_initialize_size_hint();
 
-    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
     path = CFStringCreateWithCString(kCFAllocatorDefault,
-                                     pchunk->source_path,
+                                     sixel_chunk_get_source_path(pchunk),
                                      kCFStringEncodingUTF8);
     if (path == NULL) {
         quicklook_set_error_message(
@@ -399,7 +399,7 @@ load_with_quicklook(
     stride = (size_t)frame->width * 4;
 
     pixels = (unsigned char *)sixel_allocator_malloc(
-        pchunk->allocator,
+        sixel_chunk_get_allocator(pchunk),
         (size_t)(frame->height * stride));
     if (pixels == NULL) {
         quicklook_set_error_message(
@@ -420,7 +420,7 @@ load_with_quicklook(
             SIXEL_FRAME_PIXELS_U8
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(pchunk->allocator, pixels);
+        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels);
         goto end;
     }
 

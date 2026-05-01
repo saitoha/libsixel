@@ -335,7 +335,7 @@ run_builtin_loader_hdr_case_with_cms(char const *label,
         return 1;
     }
 
-    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
+    status = sixel_chunk_create_from_source(&chunk, image_path, 0, &cancel_flag, allocator);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "%s: failed to read sample\n", label);
         goto cleanup;
@@ -426,7 +426,9 @@ run_builtin_loader_hdr_case_with_cms(char const *label,
 
 cleanup:
     sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
     return result;
 }
@@ -443,8 +445,10 @@ run_builtin_loader_psd_validate_defensive_test(void)
      */
     return 0;
 #else
-    sixel_chunk_t chunk;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
     sixel_builtin_psd_info_t info;
+    SIXELSTATUS chunk_status;
     unsigned char buffer[64];
     int decode_mode;
     int skip_icc_conversion;
@@ -452,15 +456,19 @@ run_builtin_loader_psd_validate_defensive_test(void)
     char message[128];
     int status;
     int use_32bit_overflow_case;
+    int result;
 
-    memset(&chunk, 0, sizeof(chunk));
+    allocator = NULL;
+    chunk = NULL;
     memset(&info, 0, sizeof(info));
     memset(buffer, 0, sizeof(buffer));
     memset(message, 0, sizeof(message));
+    chunk_status = SIXEL_FALSE;
     decode_mode = SIXEL_BUILTIN_PSD_DECODE_MODE_NONE;
     skip_icc_conversion = 0;
     colorspace = SIXEL_COLORSPACE_GAMMA;
     use_32bit_overflow_case = 0;
+    result = 1;
     /*
      * SIZE_MAX can be toolchain-dependent in split include units, so keep the
      * branch selection tied to the actual size_t width of this build target.
@@ -484,8 +492,23 @@ run_builtin_loader_psd_validate_defensive_test(void)
         return 1;
     }
 
-    chunk.buffer = buffer;
-    chunk.size = sizeof(buffer);
+    chunk_status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(chunk_status)) {
+        fprintf(stderr,
+                "builtin psd validate defensive: allocator init failed\n");
+        return 1;
+    }
+    chunk_status = sixel_chunk_create_from_memory(&chunk,
+                                                  buffer,
+                                                  sizeof(buffer),
+                                                  NULL,
+                                                  allocator);
+    if (SIXEL_FAILED(chunk_status)) {
+        fprintf(stderr,
+                "builtin psd validate defensive: chunk init failed\n");
+        goto cleanup;
+    }
+
     info.version = 1u;
     info.channels = 3u;
     info.width = 1u;
@@ -493,9 +516,9 @@ run_builtin_loader_psd_validate_defensive_test(void)
     info.depth = 8u;
     info.color_mode = 3u;
     info.compression = 0u;
-    info.image_data_offset = chunk.size + 1u;
+    info.image_data_offset = sizeof(buffer) + 1u;
     message[0] = '\0';
-    status = sixel_builtin_validate_psd_info(&chunk,
+    status = sixel_builtin_validate_psd_info(chunk,
                                              &info,
                                              &decode_mode,
                                              &skip_icc_conversion,
@@ -505,11 +528,11 @@ run_builtin_loader_psd_validate_defensive_test(void)
     if (status != SIXEL_BUILTIN_PSD_VALIDATE_MALFORMED ||
         strcmp(message, "builtin PSD: malformed image data offset") != 0) {
         fprintf(stderr,
-                "builtin psd validate defensive: image data offset mismatch "
-                "(status=%d message=%s)\n",
-                status,
-                message);
-        return 1;
+                    "builtin psd validate defensive: image data offset mismatch "
+                    "(status=%d message=%s)\n",
+                    status,
+                    message);
+        goto cleanup;
     }
 
     if (use_32bit_overflow_case) {
@@ -522,7 +545,7 @@ run_builtin_loader_psd_validate_defensive_test(void)
         info.compression = 0u;
         info.image_data_offset = 2u;
         message[0] = '\0';
-        status = sixel_builtin_validate_psd_info(&chunk,
+        status = sixel_builtin_validate_psd_info(chunk,
                                                  &info,
                                                  &decode_mode,
                                                  &skip_icc_conversion,
@@ -533,15 +556,24 @@ run_builtin_loader_psd_validate_defensive_test(void)
             strcmp(message, "builtin PSD: malformed dimensions/depth overflow")
                 != 0) {
             fprintf(stderr,
-                    "builtin psd validate defensive: overflow path mismatch "
-                    "(status=%d message=%s)\n",
-                    status,
-                    message);
-            return 1;
+                        "builtin psd validate defensive: overflow path mismatch "
+                        "(status=%d message=%s)\n",
+                        status,
+                        message);
+            goto cleanup;
         }
     }
 
-    return 0;
+    result = 0;
+
+cleanup:
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
+    return result;
 #endif
 }
 

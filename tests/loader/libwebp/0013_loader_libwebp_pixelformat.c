@@ -60,7 +60,7 @@ run_libwebp_loader_case_with_options(char const *label,
         return 1;
     }
 
-    status = sixel_chunk_new(&chunk, image_path, 0, &cancel_flag, allocator);
+    status = sixel_chunk_create_from_source(&chunk, image_path, 0, &cancel_flag, allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -135,7 +135,9 @@ run_libwebp_loader_case_with_options(char const *label,
 
 cleanup:
     sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
     if (result != 0) {
         fprintf(stderr, "%s failed\n", label);

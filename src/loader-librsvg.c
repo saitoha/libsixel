@@ -51,6 +51,7 @@
 #include <cairo.h>
 
 #include "allocator.h"
+#include "chunk-view.h"
 #include "compat_stub.h"
 #include "frame-private.h"
 #include "frame-factory.h"
@@ -413,10 +414,10 @@ librsvg_path_has_suffix_nocase(char const *path, char const *suffix)
 static int
 librsvg_is_svgz_chunk(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 2u) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 2u) {
         return 0;
     }
-    return chunk->buffer[0] == 0x1fu && chunk->buffer[1] == 0x8bu;
+    return sixel_chunk_get_buffer(chunk)[0] == 0x1fu && sixel_chunk_get_buffer(chunk)[1] == 0x8bu;
 }
 
 static int
@@ -746,37 +747,37 @@ chunk_is_svg_like(sixel_chunk_t const *chunk)
     size_t offset;
     size_t limit;
 
-    if (chunk == NULL || chunk->buffer == NULL || chunk->size == 0) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) == 0) {
         return 0;
     }
-    if (chunk->source_path != NULL &&
-            librsvg_path_has_suffix_nocase(chunk->source_path, ".svgz")) {
+    if (sixel_chunk_get_source_path(chunk) != NULL &&
+            librsvg_path_has_suffix_nocase(sixel_chunk_get_source_path(chunk), ".svgz")) {
         return 1;
     }
 
     offset = 0;
-    if (chunk->size >= 3 &&
-            chunk->buffer[0] == 0xef &&
-            chunk->buffer[1] == 0xbb &&
-            chunk->buffer[2] == 0xbf) {
+    if (sixel_chunk_get_size(chunk) >= 3 &&
+            sixel_chunk_get_buffer(chunk)[0] == 0xef &&
+            sixel_chunk_get_buffer(chunk)[1] == 0xbb &&
+            sixel_chunk_get_buffer(chunk)[2] == 0xbf) {
         offset = 3;
     }
 
-    while (offset < chunk->size &&
-           isspace((unsigned char)chunk->buffer[offset]) != 0) {
+    while (offset < sixel_chunk_get_size(chunk) &&
+           isspace((unsigned char)sixel_chunk_get_buffer(chunk)[offset]) != 0) {
         ++offset;
     }
 
-    if (offset >= chunk->size) {
+    if (offset >= sixel_chunk_get_size(chunk)) {
         return 0;
     }
 
-    limit = chunk->size;
+    limit = sixel_chunk_get_size(chunk);
     if (limit > 4096) {
         limit = 4096;
     }
 
-    return librsvg_buffer_has_svg_tag(chunk->buffer, offset, limit);
+    return librsvg_buffer_has_svg_tag(sixel_chunk_get_buffer(chunk), offset, limit);
 }
 
 /*
@@ -959,7 +960,7 @@ librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
         return SIXEL_BAD_ARGUMENT;
     }
     *path_out = NULL;
-    if (chunk->buffer == NULL || chunk->size == 0u) {
+    if (sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) == 0u) {
         sixel_helper_set_additional_message(
             LIBRSVG_MESSAGE_TEMP_SVGZ_EMPTY_INPUT);
         return SIXEL_BAD_ARGUMENT;
@@ -970,7 +971,7 @@ librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
         return status;
     }
 
-    status = librsvg_write_buffer_to_fd(fd, chunk->buffer, chunk->size);
+    status = librsvg_write_buffer_to_fd(fd, sixel_chunk_get_buffer(chunk), sixel_chunk_get_size(chunk));
     if (SIXEL_SUCCEEDED(status)) {
         status = librsvg_close_temp_svgz_fd(&fd);
     }
@@ -1038,14 +1039,14 @@ librsvg_should_decode_from_file(sixel_chunk_t const *chunk,
     if (chunk == NULL) {
         return 0;
     }
-    if (!librsvg_path_is_local_file(chunk->source_path)) {
+    if (!librsvg_path_is_local_file(sixel_chunk_get_source_path(chunk))) {
         return 0;
     }
     if (allow_relative_resources) {
         return 1;
     }
     if (input_is_svgz &&
-            librsvg_path_has_suffix_nocase(chunk->source_path, ".svgz")) {
+            librsvg_path_has_suffix_nocase(sixel_chunk_get_source_path(chunk), ".svgz")) {
         return 1;
     }
     return 0;
@@ -1221,7 +1222,7 @@ librsvg_open_result_from_source_file(
     sixel_chunk_t const *chunk,
     sixel_librsvg_open_result_t *open_result)
 {
-    return librsvg_new_handle_from_file(chunk->source_path,
+    return librsvg_new_handle_from_file(sixel_chunk_get_source_path(chunk),
                                         LIBRSVG_CONTEXT_PARSE_FILE,
                                         &open_result->handle);
 }
@@ -1231,8 +1232,8 @@ librsvg_open_result_from_data_chunk(
     sixel_chunk_t const *chunk,
     sixel_librsvg_open_result_t *open_result)
 {
-    return librsvg_new_handle_from_data(chunk->buffer,
-                                        chunk->size,
+    return librsvg_new_handle_from_data(sixel_chunk_get_buffer(chunk),
+                                        sixel_chunk_get_size(chunk),
                                         LIBRSVG_CONTEXT_PARSE_DATA,
                                         &open_result->handle);
 }
@@ -1895,7 +1896,7 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     librsvg_render_context_init(&render_ctx);
     status = librsvg_render_request_init(&request,
                                          chunk,
-                                         chunk->allocator,
+                                         sixel_chunk_get_allocator(chunk),
                                          bgcolor,
                                          policy);
     if (SIXEL_SUCCEEDED(status)) {
@@ -1949,7 +1950,7 @@ load_with_librsvg(
     }
     librsvg_decode_policy_init_from_env(&policy);
 
-    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
     if (SIXEL_SUCCEEDED(status)) {
         status = librsvg_render_to_frame(frame,
                                          pchunk,

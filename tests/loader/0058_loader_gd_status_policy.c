@@ -10,7 +10,6 @@
 #include "config.h"
 #endif
 
-#include "src/chunk.h"
 #include "tests/loader/pixelformat_test_common.h"
 
 #if HAVE_GD
@@ -62,13 +61,41 @@ load_chunk_from_relative(sixel_allocator_t *allocator,
         return 1;
     }
 
-    status = sixel_chunk_new(out_chunk,
+    status = sixel_chunk_create_from_source(out_chunk,
                              image_path,
                              0,
                              &cancel_flag,
                              allocator);
 
     return SIXEL_FAILED(status) ? 1 : 0;
+}
+
+static SIXELSTATUS
+truncate_chunk_for_decode(sixel_chunk_t *chunk, size_t truncated_size)
+{
+    SIXELSTATUS status;
+    sixel_chunk_bytes_view_t view;
+    sixel_chunk_memory_request_t request;
+
+    status = SIXEL_FALSE;
+    view.bytes = NULL;
+    view.size = 0u;
+    if (chunk == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = chunk->vtbl->get_bytes(chunk, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (view.bytes == NULL || view.size <= truncated_size) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    request.bytes = view.bytes;
+    request.size = truncated_size;
+    request.source_path = sixel_chunk_get_source_path(chunk);
+    return chunk->vtbl->init_memory(chunk, &request);
 }
 
 static SIXELSTATUS
@@ -123,11 +150,11 @@ run_load_with_gd_status_with_bgcolor(sixel_chunk_t const *chunk,
 
     status = SIXEL_FALSE;
     component = NULL;
-    if (chunk == NULL || chunk->allocator == NULL) {
+    if (chunk == NULL || sixel_chunk_get_allocator(chunk) == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = new_gd_component(chunk->allocator, (void **)&component);
+    status = new_gd_component(sixel_chunk_get_allocator(chunk), (void **)&component);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -155,11 +182,11 @@ run_gd_predicate(sixel_chunk_t const *chunk, int *can_try)
     status = SIXEL_FALSE;
     component = NULL;
     result = 1;
-    if (chunk == NULL || chunk->allocator == NULL || can_try == NULL) {
+    if (chunk == NULL || sixel_chunk_get_allocator(chunk) == NULL || can_try == NULL) {
         return 1;
     }
 
-    status = new_gd_component(chunk->allocator, (void **)&component);
+    status = new_gd_component(sixel_chunk_get_allocator(chunk), (void **)&component);
     if (SIXEL_FAILED(status)) {
         return 1;
     }
@@ -177,24 +204,33 @@ expect_status_for_buffer(sixel_allocator_t *allocator,
                          SIXELSTATUS expected,
                          char const *label)
 {
-    sixel_chunk_t chunk;
+    sixel_chunk_t *chunk;
     SIXELSTATUS status;
+    int result;
 
-    memset(&chunk, 0, sizeof(chunk));
-    chunk.buffer = (unsigned char *)buffer;
-    chunk.size = size;
-    chunk.allocator = allocator;
-    status = run_load_with_gd_status(&chunk);
+    chunk = NULL;
+    status = SIXEL_FALSE;
+    result = 0;
+    status = sixel_chunk_create_from_memory(&chunk,
+                                            buffer,
+                                            size,
+                                            NULL,
+                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        return 1;
+    }
+    status = run_load_with_gd_status(chunk);
     if (status != expected) {
         fprintf(stderr,
                 "%s: status mismatch (got=%d expected=%d)\n",
                 label,
                 (int)status,
                 (int)expected);
-        return 1;
+        result = 1;
     }
 
-    return 0;
+    chunk->vtbl->unref(chunk);
+    return result;
 }
 
 static int
@@ -214,7 +250,9 @@ expect_status_for_file(sixel_allocator_t *allocator,
     }
 
     status = run_load_with_gd_status(chunk);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     if (status != expected) {
         fprintf(stderr,
                 "%s: status mismatch (got=%d expected=%d)\n",
@@ -243,15 +281,25 @@ expect_truncated_status_for_file(sixel_allocator_t *allocator,
         fprintf(stderr, "%s: failed to read sample\n", label);
         return 1;
     }
-    if (chunk->size <= truncated_size) {
+    if (sixel_chunk_get_size(chunk) <= truncated_size) {
         fprintf(stderr, "%s: sample is too small for truncation\n", label);
-        sixel_chunk_destroy(chunk);
+        if (chunk != NULL) {
+            chunk->vtbl->unref(chunk);
+        }
         return 1;
     }
 
-    chunk->size = truncated_size;
+    status = truncate_chunk_for_decode(chunk, truncated_size);
+    if (SIXEL_FAILED(status)) {
+        if (chunk != NULL) {
+            chunk->vtbl->unref(chunk);
+        }
+        return 1;
+    }
     status = run_load_with_gd_status(chunk);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     if (status != expected) {
         fprintf(stderr,
                 "%s: status mismatch (got=%d expected=%d)\n",
@@ -282,17 +330,29 @@ expect_optional_format_status(sixel_allocator_t *allocator,
 
     status = run_load_with_gd_status(chunk);
     if (status != SIXEL_OK) {
-        sixel_chunk_destroy(chunk);
+        if (chunk != NULL) {
+            chunk->vtbl->unref(chunk);
+        }
         return 0;
     }
-    if (chunk->size <= truncated_size) {
-        sixel_chunk_destroy(chunk);
+    if (sixel_chunk_get_size(chunk) <= truncated_size) {
+        if (chunk != NULL) {
+            chunk->vtbl->unref(chunk);
+        }
         return 0;
     }
 
-    chunk->size = truncated_size;
+    status = truncate_chunk_for_decode(chunk, truncated_size);
+    if (SIXEL_FAILED(status)) {
+        if (chunk != NULL) {
+            chunk->vtbl->unref(chunk);
+        }
+        return 1;
+    }
     status = run_load_with_gd_status(chunk);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     if (status != SIXEL_GD_ERROR) {
         fprintf(stderr,
                 "%s: expected SIXEL_GD_ERROR for truncated data (got=%d)\n",
@@ -321,7 +381,9 @@ expect_transfer_status_for_file(sixel_allocator_t *allocator,
     }
 
     status = run_load_with_gd_status_with_bgcolor(chunk, bgcolor);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     if (status != SIXEL_OK) {
         fprintf(stderr,
                 "%s: status mismatch (got=%d expected=%d)\n",
@@ -381,7 +443,9 @@ expect_transfer_cache_reused_for_file(sixel_allocator_t *allocator,
 
 cleanup:
     sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     return result;
 }
 
@@ -393,26 +457,37 @@ expect_can_try_status_for_buffer(sixel_allocator_t *allocator,
                                  SIXELSTATUS expected_status,
                                  char const *label)
 {
-    sixel_chunk_t chunk;
+    sixel_chunk_t *chunk;
     SIXELSTATUS status;
     int can_try;
+    int result;
 
-    memset(&chunk, 0, sizeof(chunk));
-    chunk.buffer = (unsigned char *)buffer;
-    chunk.size = size;
-    chunk.allocator = allocator;
-    if (run_gd_predicate(&chunk, &can_try) != 0) {
-        fprintf(stderr, "%s: predicate failed\n", label);
+    chunk = NULL;
+    status = SIXEL_FALSE;
+    can_try = 0;
+    result = 0;
+    status = sixel_chunk_create_from_memory(&chunk,
+                                            buffer,
+                                            size,
+                                            NULL,
+                                            allocator);
+    if (SIXEL_FAILED(status)) {
         return 1;
     }
-    status = run_load_with_gd_status(&chunk);
+    if (run_gd_predicate(chunk, &can_try) != 0) {
+        fprintf(stderr, "%s: predicate failed\n", label);
+        result = 1;
+        goto end;
+    }
+    status = run_load_with_gd_status(chunk);
     if (can_try != expected_can_try) {
         fprintf(stderr,
                 "%s: can_try mismatch (got=%d expected=%d)\n",
                 label,
                 can_try,
                 expected_can_try);
-        return 1;
+        result = 1;
+        goto end;
     }
     if (status != expected_status) {
         fprintf(stderr,
@@ -420,10 +495,12 @@ expect_can_try_status_for_buffer(sixel_allocator_t *allocator,
                 label,
                 (int)status,
                 (int)expected_status);
-        return 1;
+        result = 1;
     }
 
-    return 0;
+end:
+    chunk->vtbl->unref(chunk);
+    return result;
 }
 
 static int
@@ -447,11 +524,15 @@ expect_can_try_status_for_file(sixel_allocator_t *allocator,
 
     if (run_gd_predicate(chunk, &can_try) != 0) {
         fprintf(stderr, "%s: predicate failed\n", label);
-        sixel_chunk_destroy(chunk);
+        if (chunk != NULL) {
+            chunk->vtbl->unref(chunk);
+        }
         return 1;
     }
     status = run_load_with_gd_status(chunk);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     if (can_try != expected_can_try) {
         fprintf(stderr,
                 "%s: can_try mismatch (got=%d expected=%d)\n",
@@ -491,11 +572,15 @@ expect_optional_can_try_status_for_file(sixel_allocator_t *allocator,
 
     if (run_gd_predicate(chunk, &can_try) != 0) {
         fprintf(stderr, "%s: predicate failed\n", label);
-        sixel_chunk_destroy(chunk);
+        if (chunk != NULL) {
+            chunk->vtbl->unref(chunk);
+        }
         return 1;
     }
     status = run_load_with_gd_status(chunk);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     if (can_try == 0 && status != SIXEL_FALSE) {
         fprintf(stderr,
                 "%s: can_try=0 but status=%d\n",

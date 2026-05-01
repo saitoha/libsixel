@@ -124,6 +124,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0009_filter_dither.c \
 	processing/filter/0010_filter_encode.c \
 	processing/frame/0001_frame_factory.c \
+	processing/chunk/0001_chunk_factory.c \
 	processing/lookup/0001_lookup_policy.c \
 	processing/dither/0001_dither_policy.c \
 	processing/filter/filter_test_common.h \
@@ -156,7 +157,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/0058_loader_gd_status_policy.c \
 	loader/0059_loader_gd_pixelpolicy_detail.c \
 	loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
-	loader/pixelformat_test_common.h \
+	loader/chunk_test_common.h loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
 	quant/palette/0002_kmedoids_constraints.c \
 	quant/palette/0003_kcenter_constraints.c \
@@ -195,6 +196,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0009_filter_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0010_filter_encode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0001_frame_factory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/chunk/test_runner-0001_chunk_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
@@ -368,6 +370,7 @@ am__depfiles_remade =  \
 	loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po \
 	loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po \
 	loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po \
+	processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po \
 	processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po \
 	processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po \
 	processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po \
@@ -1052,6 +1055,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FILTER_ENCODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FRAME_FACTORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CHUNK_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LOOKUP_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DITHER_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -1145,6 +1149,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0009_filter_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0010_filter_encode.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0001_frame_factory.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/chunk/0001_chunk_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0001_lookup_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_test_common.h \
@@ -1177,6 +1182,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0058_loader_gd_status_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0059_loader_gd_pixelpolicy_detail.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/chunk_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0002_kmedoids_constraints.c \
@@ -1236,6 +1242,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 		_static/sh/staticcheck-6cells-idl-sync.sh \
 		_static/sh/staticcheck-frame-post187-export-guard.sh \
 		_static/sh/staticcheck-frame-instantiation-boundary.sh \
+		_static/sh/staticcheck-chunk-component-boundary.sh \
 		_static/sh/staticcheck-deprecated-diagnostic-guard.sh \
 		_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
 		_static/sh/staticcheck-factory-classid-registry-sync.sh \
@@ -1380,6 +1387,15 @@ processing/frame/$(DEPDIR)/$(am__dirstamp):
 processing/frame/test_runner-0001_frame_factory.$(OBJEXT):  \
 	processing/frame/$(am__dirstamp) \
 	processing/frame/$(DEPDIR)/$(am__dirstamp)
+processing/chunk/$(am__dirstamp):
+	@$(MKDIR_P) processing/chunk
+	@: >>processing/chunk/$(am__dirstamp)
+processing/chunk/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/chunk/$(DEPDIR)
+	@: >>processing/chunk/$(DEPDIR)/$(am__dirstamp)
+processing/chunk/test_runner-0001_chunk_factory.$(OBJEXT):  \
+	processing/chunk/$(am__dirstamp) \
+	processing/chunk/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/$(am__dirstamp):
 	@$(MKDIR_P) processing/lookup
 	@: >>processing/lookup/$(am__dirstamp)
@@ -1685,6 +1701,7 @@ mostlyclean-compile:
 	-rm -f loader/libwebp/*.$(OBJEXT)
 	-rm -f loader/quicklook/*.$(OBJEXT)
 	-rm -f loader/wic/*.$(OBJEXT)
+	-rm -f processing/chunk/*.$(OBJEXT)
 	-rm -f processing/dither/*.$(OBJEXT)
 	-rm -f processing/filter/*.$(OBJEXT)
 	-rm -f processing/frame/*.$(OBJEXT)
@@ -1746,6 +1763,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po@am__quote@ # am--include-marker
@@ -2016,6 +2034,20 @@ processing/frame/test_runner-0001_frame_factory.obj: processing/frame/0001_frame
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/frame/0001_frame_factory.c' object='processing/frame/test_runner-0001_frame_factory.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/frame/test_runner-0001_frame_factory.obj `if test -f 'processing/frame/0001_frame_factory.c'; then $(CYGPATH_W) 'processing/frame/0001_frame_factory.c'; else $(CYGPATH_W) '$(srcdir)/processing/frame/0001_frame_factory.c'; fi`
+
+processing/chunk/test_runner-0001_chunk_factory.o: processing/chunk/0001_chunk_factory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/chunk/test_runner-0001_chunk_factory.o -MD -MP -MF processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Tpo -c -o processing/chunk/test_runner-0001_chunk_factory.o `test -f 'processing/chunk/0001_chunk_factory.c' || echo '$(srcdir)/'`processing/chunk/0001_chunk_factory.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Tpo processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/chunk/0001_chunk_factory.c' object='processing/chunk/test_runner-0001_chunk_factory.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/chunk/test_runner-0001_chunk_factory.o `test -f 'processing/chunk/0001_chunk_factory.c' || echo '$(srcdir)/'`processing/chunk/0001_chunk_factory.c
+
+processing/chunk/test_runner-0001_chunk_factory.obj: processing/chunk/0001_chunk_factory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/chunk/test_runner-0001_chunk_factory.obj -MD -MP -MF processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Tpo -c -o processing/chunk/test_runner-0001_chunk_factory.obj `if test -f 'processing/chunk/0001_chunk_factory.c'; then $(CYGPATH_W) 'processing/chunk/0001_chunk_factory.c'; else $(CYGPATH_W) '$(srcdir)/processing/chunk/0001_chunk_factory.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Tpo processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/chunk/0001_chunk_factory.c' object='processing/chunk/test_runner-0001_chunk_factory.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/chunk/test_runner-0001_chunk_factory.obj `if test -f 'processing/chunk/0001_chunk_factory.c'; then $(CYGPATH_W) 'processing/chunk/0001_chunk_factory.c'; else $(CYGPATH_W) '$(srcdir)/processing/chunk/0001_chunk_factory.c'; fi`
 
 processing/lookup/test_runner-0001_lookup_policy.o: processing/lookup/0001_lookup_policy.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0001_lookup_policy.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Tpo -c -o processing/lookup/test_runner-0001_lookup_policy.o `test -f 'processing/lookup/0001_lookup_policy.c' || echo '$(srcdir)/'`processing/lookup/0001_lookup_policy.c
@@ -3115,6 +3147,8 @@ distclean-generic:
 	-$(am__rm_f) loader/quicklook/$(am__dirstamp)
 	-$(am__rm_f) loader/wic/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) loader/wic/$(am__dirstamp)
+	-$(am__rm_f) processing/chunk/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/chunk/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/$(am__dirstamp)
 	-$(am__rm_f) processing/filter/$(DEPDIR)/$(am__dirstamp)
@@ -3188,6 +3222,7 @@ distclean: distclean-am
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
+	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
 	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
@@ -3301,6 +3336,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/libwebp/$(DEPDIR)/test_runner-0016_loader_libwebp_fault_injection.Po
 	-rm -f loader/quicklook/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/wic/$(DEPDIR)/test_runner-0009_loader_wic_pixelformat.Po
+	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
 	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
@@ -3371,6 +3407,7 @@ SIXEL_INSTALLCHECK ?= 0
 	staticcheck-6cells-idl-sync \
 	staticcheck-frame-post187-export-guard \
 	staticcheck-frame-instantiation-boundary \
+	staticcheck-chunk-component-boundary \
 	staticcheck-deprecated-diagnostic-guard \
 	staticcheck-lookup-policy-no-backend-includes \
 	staticcheck-factory-classid-registry-sync \
@@ -3418,6 +3455,7 @@ staticcheck-public-compat \
 staticcheck-6cells-idl-sync \
 staticcheck-frame-post187-export-guard \
 staticcheck-frame-instantiation-boundary \
+staticcheck-chunk-component-boundary \
 staticcheck-deprecated-diagnostic-guard \
 staticcheck-lookup-policy-no-backend-includes \
 staticcheck-factory-classid-registry-sync \
@@ -3591,6 +3629,16 @@ staticcheck-frame-instantiation-boundary:
 		--trs-file staticcheck-frame-instantiation-boundary.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-frame-instantiation-boundary.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-chunk-component-boundary:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-chunk-component-boundary" \
+		--log-file staticcheck-chunk-component-boundary.log \
+		--trs-file staticcheck-chunk-component-boundary.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-chunk-component-boundary.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-deprecated-diagnostic-guard:

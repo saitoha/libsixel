@@ -44,7 +44,7 @@
 #include <sixel.h>
 
 #include "allocator.h"
-#include "chunk.h"
+#include "chunk-view.h"
 #include "frombmp.h"
 #include "frombmp-internal.h"
 
@@ -541,7 +541,7 @@ sixel_bmp_parse_palette(sixel_bmp_decode_info_t *info,
     m = 0u;
     y = 0u;
     k = 0u;
-    if (info == NULL || info->chunk == NULL || info->chunk->buffer == NULL) {
+    if (info == NULL || info->chunk == NULL || sixel_chunk_get_buffer(info->chunk) == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (entry_size != 3u && entry_size != 4u) {
@@ -551,8 +551,8 @@ sixel_bmp_parse_palette(sixel_bmp_decode_info_t *info,
         return sixel_bmp_fail("builtin BMP: invalid palette size");
     }
 
-    buffer = info->chunk->buffer;
-    size = info->chunk->size;
+    buffer = sixel_chunk_get_buffer(info->chunk);
+    size = sixel_chunk_get_size(info->chunk);
     if (palette_offset > size ||
         palette_count > (size - palette_offset) / entry_size) {
         return sixel_bmp_fail("builtin BMP: truncated palette");
@@ -892,15 +892,15 @@ sixel_bmp_parse_header(sixel_chunk_t const *chunk,
     required_mask_size = 0u;
     payload_size = 0u;
     status = SIXEL_OK;
-    if (chunk == NULL || info == NULL || chunk->buffer == NULL) {
+    if (chunk == NULL || info == NULL || sixel_chunk_get_buffer(chunk) == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     /* Parse only fields required for pixel reconstruction. */
     memset(info, 0, sizeof(*info));
     info->chunk = chunk;
-    buffer = chunk->buffer;
-    size = chunk->size;
+    buffer = sixel_chunk_get_buffer(chunk);
+    size = sixel_chunk_get_size(chunk);
     if (size < 14u) {
         return sixel_bmp_fail("builtin BMP: file header is truncated");
     }
@@ -1736,12 +1736,12 @@ sixel_bmp_decode_huffman1d_rgb(sixel_bmp_decode_info_t const *info,
     if (info->palette_count < 2) {
         return sixel_bmp_fail("builtin BMP: HUFFMAN1D needs 2-color palette");
     }
-    if (info->chunk->size > SIZE_MAX / 8u) {
+    if (sixel_chunk_get_size(info->chunk) > SIZE_MAX / 8u) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
 
-    buffer = info->chunk->buffer;
-    size = info->chunk->size;
+    buffer = sixel_chunk_get_buffer(info->chunk);
+    size = sixel_chunk_get_size(info->chunk);
     bit_offset = info->pixel_offset * 8u;
     y = info->top_down ? 0 : info->height - 1;
     step = info->top_down ? 1 : -1;
@@ -1822,8 +1822,8 @@ sixel_bmp_decode_rle8_pal(sixel_bmp_decode_info_t const *info,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    buffer = info->chunk->buffer;
-    size = info->chunk->size;
+    buffer = sixel_chunk_get_buffer(info->chunk);
+    size = sixel_chunk_get_size(info->chunk);
     offset = info->pixel_offset;
     x = 0;
     y = info->top_down ? 0 : info->height - 1;
@@ -1986,8 +1986,8 @@ sixel_bmp_decode_rle4_pal(sixel_bmp_decode_info_t const *info,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    buffer = info->chunk->buffer;
-    size = info->chunk->size;
+    buffer = sixel_chunk_get_buffer(info->chunk);
+    size = sixel_chunk_get_size(info->chunk);
     offset = info->pixel_offset;
     x = 0;
     y = info->top_down ? 0 : info->height - 1;
@@ -2164,8 +2164,8 @@ sixel_bmp_decode_rle24_rgb(sixel_bmp_decode_info_t const *info,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    buffer = info->chunk->buffer;
-    size = info->chunk->size;
+    buffer = sixel_chunk_get_buffer(info->chunk);
+    size = sixel_chunk_get_size(info->chunk);
     offset = info->pixel_offset;
     x = 0;
     y = info->top_down ? 0 : info->height - 1;
@@ -2278,7 +2278,7 @@ sixel_bmp_decode_indexed_uncompressed(sixel_bmp_decode_info_t const *info,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    buffer = info->chunk->buffer;
+    buffer = sixel_chunk_get_buffer(info->chunk);
     for (y = 0u; y < (size_t)info->height; ++y) {
         source_row = info->top_down
             ? y
@@ -2374,7 +2374,7 @@ sixel_bmp_decode_cmyk(sixel_bmp_decode_info_t const *info,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    buffer = info->chunk->buffer;
+    buffer = sixel_chunk_get_buffer(info->chunk);
     for (y = 0u; y < (size_t)info->height; ++y) {
         source_row = info->top_down ? y : (size_t)info->height - 1u - y;
         row_offset = info->pixel_offset + source_row * info->row_stride;
@@ -2463,7 +2463,7 @@ sixel_bmp_decode_truecolor(sixel_bmp_decode_info_t const *info,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    buffer = info->chunk->buffer;
+    buffer = sixel_chunk_get_buffer(info->chunk);
     src_row = NULL;
     src_cursor = NULL;
     dst_row = NULL;
@@ -2628,7 +2628,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
         pheight == NULL ||
         pcomp == NULL ||
         pis_cmyk == NULL ||
-        chunk->allocator == NULL) {
+        sixel_chunk_get_allocator(chunk) == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -2663,7 +2663,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             return SIXEL_BAD_INTEGER_OVERFLOW;
         }
         buffer_size = pixel_count * 4u;
-        pixels = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+        pixels = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(chunk),
                                                          buffer_size);
         if (pixels == NULL) {
             return SIXEL_BAD_ALLOCATION;
@@ -2674,7 +2674,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             status = sixel_bmp_decode_indexed_rle_cmyk(&info, pixels);
         }
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(chunk->allocator, pixels);
+            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
             return status;
         }
     } else if (info.bpp < 16) {
@@ -2683,7 +2683,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             return SIXEL_BAD_INTEGER_OVERFLOW;
         }
         buffer_size = pixel_count * 3u;
-        pixels = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+        pixels = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(chunk),
                                                          buffer_size);
         if (pixels == NULL) {
             return SIXEL_BAD_ALLOCATION;
@@ -2694,7 +2694,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             status = sixel_bmp_decode_indexed_rle(&info, pixels);
         }
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(chunk->allocator, pixels);
+            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
             return status;
         }
     } else if (info.bpp == 24) {
@@ -2703,7 +2703,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             return SIXEL_BAD_INTEGER_OVERFLOW;
         }
         buffer_size = pixel_count * 3u;
-        pixels = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+        pixels = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(chunk),
                                                          buffer_size);
         if (pixels == NULL) {
             return SIXEL_BAD_ALLOCATION;
@@ -2714,7 +2714,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             status = sixel_bmp_decode_truecolor(&info, pixels, &comp);
         }
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(chunk->allocator, pixels);
+            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
             return status;
         }
     } else {
@@ -2731,14 +2731,14 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             }
             buffer_size = pixel_count * 3u;
         }
-        pixels = (unsigned char *)sixel_allocator_malloc(chunk->allocator,
+        pixels = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(chunk),
                                                          buffer_size);
         if (pixels == NULL) {
             return SIXEL_BAD_ALLOCATION;
         }
         status = sixel_bmp_decode_truecolor(&info, pixels, &comp);
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(chunk->allocator, pixels);
+            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
             return status;
         }
     }

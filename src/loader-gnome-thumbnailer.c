@@ -90,7 +90,7 @@ extern char **environ;
 
 #include <sixel.h>
 
-#include "chunk.h"
+#include "chunk-factory.h"
 #include "compat_stub.h"
 #include "loader-builtin.h"
 #include "loader-common.h"
@@ -2700,7 +2700,8 @@ thumbnailer_decode_png_with_builtin(
     bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
     enable_orientation = 1;
     bmp_info40_mode = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO;
-    if (thumb_chunk == NULL || thumb_chunk->allocator == NULL ||
+    if (thumb_chunk == NULL ||
+            sixel_chunk_get_allocator(thumb_chunk) == NULL ||
             fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2710,7 +2711,7 @@ thumbnailer_decode_png_with_builtin(
      * other backend composition paths.  The concrete builtin decode helper is
      * private to loader-builtin.c.
      */
-    status = sixel_loader_builtin_new(thumb_chunk->allocator,
+    status = sixel_loader_builtin_new(sixel_chunk_get_allocator(thumb_chunk),
                                       (void **)&builtin_loader);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -2902,7 +2903,7 @@ load_with_gnome_thumbnailer(
 
     thumbnailer_entry_init(&info);
 
-    if (pchunk->source_path == NULL) {
+    if (sixel_chunk_get_source_path(pchunk) == NULL) {
         sixel_helper_set_additional_message(
             "load_with_gnome_thumbnailer: source path is unavailable.");
         status = SIXEL_BAD_ARGUMENT;
@@ -2949,14 +2950,14 @@ load_with_gnome_thumbnailer(
         goto end;
     }
 
-    content_type = thumbnailer_guess_content_type(pchunk->source_path);
-    input_uri = thumbnailer_build_file_uri(pchunk->source_path);
+    content_type = thumbnailer_guess_content_type(sixel_chunk_get_source_path(pchunk));
+    input_uri = thumbnailer_build_file_uri(sixel_chunk_get_source_path(pchunk));
 
     loader_trace_message("%s: detected MIME type %s for %s",
                          log_prefix,
                          (content_type != NULL) ? content_type :
                          "(unknown)",
-                         pchunk->source_path);
+                         sixel_chunk_get_source_path(pchunk));
 
     directories = thumbnailer_collect_directories();
     if (directories == NULL) {
@@ -3035,7 +3036,7 @@ load_with_gnome_thumbnailer(
                                  entry->d_name,
                                  content_type);
             command = thumbnailer_build_command(info.exec_line,
-                                                pchunk->source_path,
+                                                sixel_chunk_get_source_path(pchunk),
                                                 input_uri,
                                                 png_path,
                                                 requested_size,
@@ -3052,7 +3053,7 @@ load_with_gnome_thumbnailer(
                  * Redirect stdout and copy the stream instead.
                  */
                 evince_command = thumbnailer_build_evince_command(
-                    pchunk->source_path,
+                    sixel_chunk_get_source_path(pchunk),
                     requested_size);
                 if (evince_command == NULL) {
                     thumbnailer_command_free(command);
@@ -3101,7 +3102,7 @@ load_with_gnome_thumbnailer(
         sixel_compat_unlink(png_path);
         command = thumbnailer_build_command(
             "gdk-pixbuf-thumbnailer --size=%s %i %o",
-            pchunk->source_path,
+            sixel_chunk_get_source_path(pchunk),
             input_uri,
             png_path,
             requested_size,
@@ -3133,11 +3134,11 @@ load_with_gnome_thumbnailer(
         goto end;
     }
 
-    status = sixel_chunk_new(&thumb_chunk,
+    status = sixel_chunk_create_from_source(&thumb_chunk,
                              png_path,
                              0,
                              NULL,
-                             pchunk->allocator);
+                             sixel_chunk_get_allocator(pchunk));
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -3168,7 +3169,7 @@ end:
         evince_command = NULL;
     }
     if (thumb_chunk != NULL) {
-        sixel_chunk_destroy(thumb_chunk);
+        thumb_chunk->vtbl->unref(thumb_chunk);
         thumb_chunk = NULL;
     }
     if (png_path != NULL) {

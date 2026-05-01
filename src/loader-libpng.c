@@ -70,7 +70,7 @@
 #include "cms.h"
 #include "icc-apply.h"
 #include "icc-parse.h"
-#include "chunk.h"
+#include "chunk-view.h"
 #include "compat_stub.h"
 #include "loader-common.h"
 #include "frame-private.h"
@@ -251,21 +251,34 @@ png_decode_source_unit(double value,
                        int transfer_mode,
                        double file_gamma);
 
+typedef struct sixel_png_read_chunk {
+    unsigned char const *buffer;
+    size_t size;
+    size_t offset;
+} sixel_png_read_chunk_t;
+
 static void
 read_png(png_structp png_ptr,
          png_bytep data,
          png_size_t length)
 {
-    sixel_chunk_t *pchunk;
+    sixel_png_read_chunk_t *reader;
+    size_t available;
 
-    pchunk = (sixel_chunk_t *)png_get_io_ptr(png_ptr);
-    if (length > pchunk->size) {
-        length = pchunk->size;
+    reader = (sixel_png_read_chunk_t *)png_get_io_ptr(png_ptr);
+    available = 0u;
+    if (reader == NULL || reader->buffer == NULL ||
+        reader->offset > reader->size) {
+        return;
+    }
+
+    available = reader->size - reader->offset;
+    if (length > available) {
+        length = available;
     }
     if (length > 0) {
-        memcpy(data, pchunk->buffer, length);
-        pchunk->buffer += length;
-        pchunk->size -= length;
+        memcpy(data, reader->buffer + reader->offset, length);
+        reader->offset += length;
     }
 }
 
@@ -1382,7 +1395,7 @@ png_convert_rgb16_rows_to_rgbfloat32(unsigned char      /* out */ **result,
 
 static SIXELSTATUS
 load_png(unsigned char      /* out */ **result,
-         unsigned char      /* in */  *buffer,
+         unsigned char const /* in */ *buffer,
          size_t             /* in */  size,
          int                /* out */ *psx,
          int                /* out */ *psy,
@@ -1398,7 +1411,7 @@ load_png(unsigned char      /* out */ **result,
          sixel_allocator_t  /* in */  *allocator)
 {
     SIXELSTATUS status;
-    sixel_chunk_t read_chunk;
+    sixel_png_read_chunk_t read_chunk;
     png_uint_32 bitdepth;
     png_uint_32 png_status;
     png_structp png_ptr;
@@ -1634,6 +1647,7 @@ load_png(unsigned char      /* out */ **result,
     }
     read_chunk.buffer = buffer;
     read_chunk.size = size;
+    read_chunk.offset = 0u;
 
     png_set_read_fn(png_ptr,(png_voidp)&read_chunk, read_png);
 #if defined(PNG_SET_OPTION_SUPPORTED) && defined(PNG_SKIP_sRGB_CHECK_PROFILE)
@@ -3575,7 +3589,7 @@ decode_png_rgba(
     sixel_allocator_t  /* in */  *allocator)
 {
     SIXELSTATUS status;
-    sixel_chunk_t read_chunk;
+    sixel_png_read_chunk_t read_chunk;
     png_structp png_ptr;
     png_infop info_ptr;
     png_uint_32 width;
@@ -3616,6 +3630,7 @@ decode_png_rgba(
 
     read_chunk.buffer = buffer;
     read_chunk.size = size;
+    read_chunk.offset = 0u;
     png_set_read_fn(png_ptr, (png_voidp)&read_chunk, read_png);
     png_read_info(png_ptr, info_ptr);
 
@@ -4180,12 +4195,12 @@ load_apng_frames(
      * APNG parsing starts after the PNG signature. Guard against short
      * buffers so size_t subtraction cannot underflow.
      */
-    if (pchunk == NULL || pchunk->buffer == NULL ||
-        pchunk->size < sizeof(png_signature)) {
+    if (pchunk == NULL || sixel_chunk_get_buffer(pchunk) == NULL ||
+        sixel_chunk_get_size(pchunk) < sizeof(png_signature)) {
         status = SIXEL_FALSE;
         goto end;
     }
-    if (memcmp(pchunk->buffer, png_signature, sizeof(png_signature)) != 0) {
+    if (memcmp(sixel_chunk_get_buffer(pchunk), png_signature, sizeof(png_signature)) != 0) {
         status = SIXEL_FALSE;
         goto end;
     }
@@ -4193,7 +4208,7 @@ load_apng_frames(
     apng_decode_trace_message(
         "load_apng_frames: input_size=%lu static=%d loop_control=%d "
         "start_frame_no=%d",
-        (unsigned long)pchunk->size,
+        (unsigned long)sixel_chunk_get_size(pchunk),
         fstatic,
         loop_control,
         trace_start_frame_no);
@@ -4262,8 +4277,8 @@ load_apng_frames(
 
         memset(&state, 0, sizeof(state));
         memset(&control, 0, sizeof(control));
-        p = pchunk->buffer + 8;
-        remain = pchunk->size - 8;
+        p = sixel_chunk_get_buffer(pchunk) + 8;
+        remain = sixel_chunk_get_size(pchunk) - 8;
         seen_actl = 0;
         has_frame = 0;
         source_frame_no = 0;
@@ -4328,10 +4343,10 @@ load_apng_frames(
             if (canvas_bytes == 0) {
                 canvas_bytes = (size_t)canvas.width * (size_t)canvas.height * 4;
                 canvas.pixels = (unsigned char *)sixel_allocator_malloc(
-                    pchunk->allocator,
+                    sixel_chunk_get_allocator(pchunk),
                     canvas_bytes);
                 canvas.backup = (unsigned char *)sixel_allocator_malloc(
-                    pchunk->allocator,
+                    sixel_chunk_get_allocator(pchunk),
                     canvas_bytes);
                 if (canvas.pixels == NULL || canvas.backup == NULL) {
                     status = SIXEL_BAD_ALLOCATION;
@@ -4375,7 +4390,7 @@ load_apng_frames(
                 loop_control != SIXEL_LOOP_DISABLE &&
                 replay_cache.frames == NULL) {
                 (void)apng_replay_cache_prepare(&replay_cache,
-                                                pchunk->allocator,
+                                                sixel_chunk_get_allocator(pchunk),
                                                 num_frames);
             }
             if (loop_no == 0 && !start_frame_no_ready) {
@@ -4437,7 +4452,7 @@ load_apng_frames(
                                          &replay_cache,
                                          fn_load,
                                          context,
-                                         pchunk->allocator);
+                                         sixel_chunk_get_allocator(pchunk));
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
@@ -4503,7 +4518,7 @@ load_apng_frames(
                               "IDAT",
                               p + 12,
                               length - 4,
-                              pchunk->allocator)) {
+                              sixel_chunk_get_allocator(pchunk))) {
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
@@ -4518,7 +4533,7 @@ load_apng_frames(
                               "IDAT",
                               p + 8,
                               length,
-                              pchunk->allocator)) {
+                              sixel_chunk_get_allocator(pchunk))) {
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
@@ -4560,7 +4575,7 @@ load_apng_frames(
             if (!append_shared_chunk(&state,
                                      p,
                                      (size_t)length + 12,
-                                     pchunk->allocator)) {
+                                     sixel_chunk_get_allocator(pchunk))) {
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
@@ -4607,7 +4622,7 @@ load_apng_frames(
                                   &replay_cache,
                                  fn_load,
                                  context,
-                                 pchunk->allocator);
+                                 sixel_chunk_get_allocator(pchunk));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -4648,8 +4663,8 @@ load_apng_frames(
         }
     }
 
-    sixel_allocator_free(pchunk->allocator, state.shared_chunks);
-    sixel_allocator_free(pchunk->allocator, (void *)state.chunk_base);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), state.shared_chunks);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), (void *)state.chunk_base);
     state.shared_chunks = NULL;
     state.chunk_base = NULL;
 
@@ -4675,11 +4690,11 @@ end:
         loop_no,
         saw_animation,
         alpha_zero_is_transparent);
-    sixel_allocator_free(pchunk->allocator, canvas.pixels);
-    sixel_allocator_free(pchunk->allocator, canvas.backup);
-    sixel_allocator_free(pchunk->allocator, state.shared_chunks);
-    sixel_allocator_free(pchunk->allocator, (void *)state.chunk_base);
-    apng_replay_cache_reset(&replay_cache, pchunk->allocator);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), canvas.pixels);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), canvas.backup);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), state.shared_chunks);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), (void *)state.chunk_base);
+    apng_replay_cache_reset(&replay_cache, sixel_chunk_get_allocator(pchunk));
     if (!saw_animation && status == SIXEL_FALSE) {
         return SIXEL_FALSE;
     }
@@ -4735,8 +4750,8 @@ load_with_libpng(
     (void)loop_control;
 
     if (enable_orientation) {
-        (void)libpng_parse_exif_orientation(pchunk->buffer,
-                                            pchunk->size,
+        (void)libpng_parse_exif_orientation(sixel_chunk_get_buffer(pchunk),
+                                            sixel_chunk_get_size(pchunk),
                                             &exif_orientation);
     }
 
@@ -4761,14 +4776,14 @@ load_with_libpng(
         goto end;
     }
 
-    status = sixel_frame_create_from_factory(&frame, pchunk->allocator);
+    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
     status = load_png(&pixels,
-                      pchunk->buffer,
-                      pchunk->size,
+                      sixel_chunk_get_buffer(pchunk),
+                      sixel_chunk_get_size(pchunk),
                       &frame->width,
                       &frame->height,
                       &frame->palette,
@@ -4780,7 +4795,7 @@ load_with_libpng(
                       &alpha_zero_is_transparent,
                       &cms_applied,
                       enable_cms,
-                      pchunk->allocator);
+                      sixel_chunk_get_allocator(pchunk));
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -4800,7 +4815,7 @@ load_with_libpng(
             : SIXEL_FRAME_PIXELS_U8
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(pchunk->allocator, pixels);
+        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels);
         goto end;
     }
     frame->alpha_zero_is_transparent = alpha_zero_is_transparent != 0 ? 1 : 0;

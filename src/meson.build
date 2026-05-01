@@ -125,6 +125,9 @@ srcs = [
   'scale.c',
   'scale.h',
   'chunk.c',
+  'chunk.h',
+  'chunk-factory.h',
+  'chunk-view.h',
   'cms.c',
   'cms.h',
   'icc-parse.c',
@@ -301,6 +304,7 @@ libsixel = library('sixel',
 
 libsixel_dep = declare_dependency(link_with: libsixel,
                                   include_directories: project_inc,
+                                  sources: [sixcells_h],
                                   dependencies: libsixel_build_deps)
 
 # Export the library target for other subdirectories (e.g. wheel builds).

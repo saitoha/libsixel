@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "src/chunk.h"
 #include "src/factory.h"
 #include "src/loader.h"
 #include "tests/loader/pixelformat_test_common.h"
@@ -68,9 +67,9 @@ test_loader_0056_loader_factory_predicate_gate(int argc, char **argv)
     sixel_allocator_t *allocator;
     sixel_loader_component_interface_t *gd_loader;
     sixel_loader_component_interface_t *builtin_loader;
-    sixel_chunk_t gif_chunk;
-    sixel_chunk_t png_interlaced_chunk;
-    sixel_chunk_t png_plain_chunk;
+    sixel_chunk_t *gif_chunk;
+    sixel_chunk_t *png_interlaced_chunk;
+    sixel_chunk_t *png_plain_chunk;
     SIXELSTATUS status;
     int exit_status;
 
@@ -81,9 +80,9 @@ test_loader_0056_loader_factory_predicate_gate(int argc, char **argv)
     allocator = NULL;
     gd_loader = NULL;
     builtin_loader = NULL;
-    memset(&gif_chunk, 0, sizeof(gif_chunk));
-    memset(&png_interlaced_chunk, 0, sizeof(png_interlaced_chunk));
-    memset(&png_plain_chunk, 0, sizeof(png_plain_chunk));
+    gif_chunk = NULL;
+    png_interlaced_chunk = NULL;
+    png_plain_chunk = NULL;
     status = SIXEL_FALSE;
     exit_status = 0;
 
@@ -116,38 +115,69 @@ test_loader_0056_loader_factory_predicate_gate(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    gif_chunk.buffer = (unsigned char *)gif_data;
-    gif_chunk.size = sizeof(gif_data);
-    png_interlaced_chunk.buffer = (unsigned char *)png_interlaced_data;
-    png_interlaced_chunk.size = sizeof(png_interlaced_data);
-    png_plain_chunk.buffer = (unsigned char *)png_plain_data;
-    png_plain_chunk.size = sizeof(png_plain_data);
+    status = sixel_chunk_create_from_memory(&gif_chunk,
+                                            gif_data,
+                                            sizeof(gif_data),
+                                            NULL,
+                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        exit_status = 1;
+        goto cleanup;
+    }
+    status = sixel_chunk_create_from_memory(&png_interlaced_chunk,
+                                            png_interlaced_data,
+                                            sizeof(png_interlaced_data),
+                                            NULL,
+                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        exit_status = 1;
+        goto cleanup;
+    }
+    status = sixel_chunk_create_from_memory(&png_plain_chunk,
+                                            png_plain_data,
+                                            sizeof(png_plain_data),
+                                            NULL,
+                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        exit_status = 1;
+        goto cleanup;
+    }
 
     if (loader_expect_predicate(gd_loader,
-                                &gif_chunk,
+                                gif_chunk,
                                 0,
                                 "gd-gif") != 0) {
         exit_status = 1;
     }
     if (loader_expect_predicate(gd_loader,
-                                &png_interlaced_chunk,
+                                png_interlaced_chunk,
                                 0,
                                 "gd-png-interlaced") != 0) {
         exit_status = 1;
     }
     if (loader_expect_predicate(gd_loader,
-                                &png_plain_chunk,
+                                png_plain_chunk,
                                 1,
                                 "gd-png-plain") != 0) {
         exit_status = 1;
     }
     if (loader_expect_predicate(builtin_loader,
-                                &gif_chunk,
+                                gif_chunk,
                                 1,
                                 "builtin-gif") != 0) {
         exit_status = 1;
     }
 
+cleanup:
+    if (png_plain_chunk != NULL) {
+        png_plain_chunk->vtbl->unref(png_plain_chunk);
+    }
+    if (png_interlaced_chunk != NULL) {
+        png_interlaced_chunk->vtbl->unref(png_interlaced_chunk);
+    }
+    if (gif_chunk != NULL) {
+        gif_chunk->vtbl->unref(gif_chunk);
+    }
     sixel_loader_component_unref(builtin_loader);
     sixel_loader_component_unref(gd_loader);
     sixel_allocator_unref(allocator);

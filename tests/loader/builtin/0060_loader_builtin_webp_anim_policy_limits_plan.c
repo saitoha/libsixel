@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "src/fromwebp-container.h"
+#include "tests/loader/chunk_test_common.h"
 
 #define SIXEL_TEST_WEBP_BUFFER_CAPACITY 65536u
 #define SIXEL_TEST_WEBP_ANMF_PAYLOAD_SIZE 24u
@@ -169,17 +170,21 @@ sixel_test_webp_run_anim_limit_case(
 {
     unsigned char container_data[SIXEL_TEST_WEBP_BUFFER_CAPACITY];
     size_t container_size;
-    sixel_chunk_t chunk;
+    sixel_allocator_t *allocator;
+    sixel_chunk_t *chunk;
     sixel_webp_container_info_t info;
     sixel_webp_decode_plan_t plan;
     SIXELSTATUS status;
+    int result;
 
     container_size = 0u;
+    allocator = NULL;
+    chunk = NULL;
     memset(container_data, 0, sizeof(container_data));
-    memset(&chunk, 0, sizeof(chunk));
     memset(&info, 0, sizeof(info));
     memset(&plan, 0, sizeof(plan));
     status = SIXEL_FALSE;
+    result = 1;
     if (test_case == NULL) {
         fprintf(stderr, "webp anim limit test: missing case definition\n");
         return 1;
@@ -197,19 +202,33 @@ sixel_test_webp_run_anim_limit_case(
         return 1;
     }
 
-    chunk.buffer = container_data;
-    chunk.size = container_size;
-    chunk.max_size = container_size;
-    chunk.source_path = NULL;
-    chunk.allocator = NULL;
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "webp anim limit test: allocator init failed (%s)\n",
+                test_case->label);
+        return 1;
+    }
+    status = sixel_chunk_create_from_memory(&chunk,
+                                            container_data,
+                                            container_size,
+                                            NULL,
+                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "webp anim limit test: chunk init failed (%s, status=%d)\n",
+                test_case->label,
+                (int)status);
+        goto cleanup;
+    }
 
-    status = sixel_webp_parse_container(&chunk, &info);
+    status = sixel_webp_parse_container(chunk, &info);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
                 "webp anim limit test: parse failed (%s, status=%d)\n",
                 test_case->label,
                 (int)status);
-        return 1;
+        goto cleanup;
     }
 
     status = sixel_webp_build_decode_plan(&info, &plan);
@@ -218,7 +237,7 @@ sixel_test_webp_run_anim_limit_case(
                 "webp anim limit test: plan build failed (%s, status=%d)\n",
                 test_case->label,
                 (int)status);
-        return 1;
+        goto cleanup;
     }
 
     if (plan.kind != test_case->expected_kind) {
@@ -228,7 +247,7 @@ sixel_test_webp_run_anim_limit_case(
                 test_case->label,
                 (int)plan.kind,
                 (int)test_case->expected_kind);
-        return 1;
+        goto cleanup;
     }
     if (plan.anim_unsupported_reason != test_case->expected_reason) {
         fprintf(stderr,
@@ -237,9 +256,18 @@ sixel_test_webp_run_anim_limit_case(
                 test_case->label,
                 (int)plan.anim_unsupported_reason,
                 (int)test_case->expected_reason);
-        return 1;
+        goto cleanup;
     }
-    return 0;
+    result = 0;
+
+cleanup:
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
+    return result;
 }
 
 int

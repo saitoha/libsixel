@@ -59,7 +59,7 @@
 
 #include "allocator.h"
 #include "cms.h"
-#include "chunk.h"
+#include "chunk-factory.h"
 #include "compat_stub.h"
 #include "frame-private.h"
 #include "frame-factory.h"
@@ -839,14 +839,14 @@ sixel_builtin_tiff_photometric_supports_icc(uint16_t photometric)
 static int
 chunk_is_psd(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || chunk->buffer == NULL) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL) {
         return 0;
     }
-    if (chunk->size < 4u) {
+    if (sixel_chunk_get_size(chunk) < 4u) {
         return 0;
     }
-    if (memcmp(chunk->buffer, "8BPS", 4u) == 0 ||
-        memcmp(chunk->buffer, "8BPB", 4u) == 0) {
+    if (memcmp(sixel_chunk_get_buffer(chunk), "8BPS", 4u) == 0 ||
+        memcmp(sixel_chunk_get_buffer(chunk), "8BPB", 4u) == 0) {
         return 1;
     }
     return 0;
@@ -855,13 +855,13 @@ chunk_is_psd(sixel_chunk_t const *chunk)
 static int
 chunk_is_pic(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 92u) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 92u) {
         return 0;
     }
-    if (memcmp(chunk->buffer, "\x53\x80\xf6\x34", 4u) != 0) {
+    if (memcmp(sixel_chunk_get_buffer(chunk), "\x53\x80\xf6\x34", 4u) != 0) {
         return 0;
     }
-    if (memcmp(chunk->buffer + 88u, "PICT", 4u) != 0) {
+    if (memcmp(sixel_chunk_get_buffer(chunk) + 88u, "PICT", 4u) != 0) {
         return 0;
     }
     return 1;
@@ -870,15 +870,15 @@ chunk_is_pic(sixel_chunk_t const *chunk)
 static int
 chunk_is_sixel(sixel_chunk_t const *chunk)
 {
-    unsigned char *p;
-    unsigned char *end;
+    unsigned char const *p;
+    unsigned char const *end;
 
-    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 3u) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 3u) {
         return 0;
     }
 
-    p = chunk->buffer;
-    end = p + chunk->size;
+    p = sixel_chunk_get_buffer(chunk);
+    end = p + sixel_chunk_get_size(chunk);
 
     p++;
     if (p >= end) {
@@ -908,13 +908,13 @@ chunk_is_sixel(sixel_chunk_t const *chunk)
 static int
 chunk_is_pnm(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 3u) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 3u) {
         return 0;
     }
-    if (chunk->buffer[0] == 'P' &&
-        chunk->buffer[1] >= '1' &&
-        chunk->buffer[1] <= '7' &&
-        isspace((unsigned char)chunk->buffer[2])) {
+    if (sixel_chunk_get_buffer(chunk)[0] == 'P' &&
+        sixel_chunk_get_buffer(chunk)[1] >= '1' &&
+        sixel_chunk_get_buffer(chunk)[1] <= '7' &&
+        isspace((unsigned char)sixel_chunk_get_buffer(chunk)[2])) {
         return 1;
     }
     return 0;
@@ -1814,8 +1814,8 @@ sixel_builtin_parse_png_transparency_info(
         return 0;
     }
 
-    buffer = pchunk->buffer;
-    size = pchunk->size;
+    buffer = sixel_chunk_get_buffer(pchunk);
+    size = sixel_chunk_get_size(pchunk);
     if (buffer == NULL || size < (8u + 12u + 13u)) {
         return 0;
     }
@@ -2001,12 +2001,12 @@ sixel_builtin_count_gif_frames(sixel_chunk_t const *pchunk, int *frame_count)
     block_size = 0;
     count = 0;
 
-    if (pchunk->size < 13) {
+    if (sixel_chunk_get_size(pchunk) < 13) {
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    p = pchunk->buffer;
-    end = pchunk->buffer + pchunk->size;
+    p = sixel_chunk_get_buffer(pchunk);
+    end = sixel_chunk_get_buffer(pchunk) + sixel_chunk_get_size(pchunk);
     if (memcmp(p, "GIF", 3) != 0) {
         status = SIXEL_BAD_INPUT;
         goto end;
@@ -2935,14 +2935,14 @@ sixel_builtin_apng_begin_loop_iteration(
         canvas == NULL ||
         runtime == NULL ||
         pchunk == NULL ||
-        pchunk->size < 8) {
+        sixel_chunk_get_size(pchunk) < 8) {
         return;
     }
 
     memset(state, 0, sizeof(*state));
     memset(control, 0, sizeof(*control));
-    runtime->p = pchunk->buffer + 8;
-    runtime->remain = pchunk->size - 8;
+    runtime->p = sixel_chunk_get_buffer(pchunk) + 8;
+    runtime->remain = sixel_chunk_get_size(pchunk) - 8;
     runtime->seen_actl = 0;
     runtime->has_frame = 0;
     runtime->source_frame_no = 0;
@@ -2998,10 +2998,10 @@ sixel_builtin_apng_prepare_canvas_from_ihdr(
     canvas->height = (int)runtime->canvas_height;
     runtime->canvas_bytes = (size_t)canvas->width * (size_t)canvas->height * 4u;
     canvas->pixels = (unsigned char *)sixel_allocator_malloc(
-        pchunk->allocator,
+        sixel_chunk_get_allocator(pchunk),
         runtime->canvas_bytes);
     canvas->backup = (unsigned char *)sixel_allocator_malloc(
-        pchunk->allocator,
+        sixel_chunk_get_allocator(pchunk),
         runtime->canvas_bytes);
     if (canvas->pixels == NULL || canvas->backup == NULL) {
         status = SIXEL_BAD_ALLOCATION;
@@ -3178,7 +3178,7 @@ sixel_builtin_apng_process_chunk(
                 fstatic,
                 fn_load,
                 callback_context,
-                pchunk->allocator,
+                sixel_chunk_get_allocator(pchunk),
                 &stop_after_emit);
             if (SIXEL_FAILED(status)) {
                 return status;
@@ -3223,7 +3223,7 @@ sixel_builtin_apng_process_chunk(
                                              "IDAT",
                                              runtime->p + 12,
                                              runtime->length - 4u,
-                                             pchunk->allocator)) {
+                                             sixel_chunk_get_allocator(pchunk))) {
             return SIXEL_BAD_ALLOCATION;
         }
     } else if (memcmp(runtime->p + 4, "IDAT", 4) == 0) {
@@ -3234,7 +3234,7 @@ sixel_builtin_apng_process_chunk(
                                              "IDAT",
                                              runtime->p + 8,
                                              runtime->length,
-                                             pchunk->allocator)) {
+                                             sixel_chunk_get_allocator(pchunk))) {
             return SIXEL_BAD_ALLOCATION;
         }
         if (runtime->seen_actl != 0 &&
@@ -3273,7 +3273,7 @@ sixel_builtin_apng_process_chunk(
                                                     runtime->p,
                                                     (size_t)runtime->length
                                                         + 12u,
-                                                    pchunk->allocator)) {
+                                                    sixel_chunk_get_allocator(pchunk))) {
             return SIXEL_BAD_ALLOCATION;
         }
     }
@@ -3424,7 +3424,7 @@ sixel_builtin_load_apng_frames(
         "apng",
         "decode start size=%zu static=%d cms=%d loop_control=%d "
         "start_frame=%d trns_mode=%d",
-        pchunk != NULL ? pchunk->size : 0u,
+        pchunk != NULL ? sixel_chunk_get_size(pchunk) : 0u,
         fstatic,
         enable_cms,
         loop_control,
@@ -3434,7 +3434,7 @@ sixel_builtin_load_apng_frames(
     if (pchunk == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (pchunk->size < 8) {
+    if (sixel_chunk_get_size(pchunk) < 8) {
         return SIXEL_FALSE;
     }
 
@@ -3480,7 +3480,7 @@ sixel_builtin_load_apng_frames(
             fstatic,
             fn_load,
             callback_context,
-            pchunk->allocator,
+            sixel_chunk_get_allocator(pchunk),
             &stop_decode);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -3495,7 +3495,7 @@ sixel_builtin_load_apng_frames(
             &state,
             &runtime,
             loop_control,
-            pchunk->allocator,
+            sixel_chunk_get_allocator(pchunk),
             &stop_loop);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -3513,9 +3513,9 @@ end:
         sixel_helper_format_error(status),
         runtime.loop_no,
         runtime.saw_animation);
-    sixel_allocator_free(pchunk->allocator, canvas.pixels);
-    sixel_allocator_free(pchunk->allocator, canvas.backup);
-    sixel_builtin_apng_release_loop_buffers(&state, pchunk->allocator);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), canvas.pixels);
+    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), canvas.backup);
+    sixel_builtin_apng_release_loop_buffers(&state, sixel_chunk_get_allocator(pchunk));
     if (!runtime.saw_animation && status == SIXEL_FALSE) {
         return SIXEL_FALSE;
     }
@@ -3852,7 +3852,7 @@ typedef enum sixel_builtin_decode_path {
 static int
 sixel_builtin_chunk_is_webp_candidate(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || chunk->buffer == NULL) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL) {
         return 0;
     }
     if (chunk_is_webp(chunk)) {
@@ -3863,11 +3863,11 @@ sixel_builtin_chunk_is_webp_candidate(sixel_chunk_t const *chunk)
      * Route RIFF-like inputs to fromwebp so malformed WebP headers still
      * produce deterministic LSXWEBP1 error contracts instead of stbi fallback.
      */
-    if (chunk->size >= 4u &&
-        chunk->buffer[0] == 'R' &&
-        chunk->buffer[1] == 'I' &&
-        chunk->buffer[2] == 'F' &&
-        chunk->buffer[3] == 'F') {
+    if (sixel_chunk_get_size(chunk) >= 4u &&
+        sixel_chunk_get_buffer(chunk)[0] == 'R' &&
+        sixel_chunk_get_buffer(chunk)[1] == 'I' &&
+        sixel_chunk_get_buffer(chunk)[2] == 'F' &&
+        sixel_chunk_get_buffer(chunk)[3] == 'F') {
         return 1;
     }
 
@@ -3923,19 +3923,19 @@ sixel_builtin_chunk_has_apng_control(sixel_chunk_t const *chunk)
     p = NULL;
     remain = 0u;
     chunk_length = 0u;
-    if (chunk == NULL || chunk->buffer == NULL || chunk->size < 8u) {
+    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 8u) {
         return 0;
     }
     /*
      * Start-frame parsing must only run for animated input. A lightweight
      * acTL probe keeps static PNG decode tolerant to invalid env values.
      */
-    if (memcmp(chunk->buffer, png_signature, sizeof(png_signature)) != 0) {
+    if (memcmp(sixel_chunk_get_buffer(chunk), png_signature, sizeof(png_signature)) != 0) {
         return 0;
     }
 
-    p = chunk->buffer + 8;
-    remain = chunk->size - 8u;
+    p = sixel_chunk_get_buffer(chunk) + 8;
+    remain = sixel_chunk_get_size(chunk) - 8u;
     while (remain >= 12u) {
         chunk_length = sixel_builtin_read_be32(p);
         if ((size_t)chunk_length > remain - 12u) {
@@ -4101,7 +4101,7 @@ sixel_builtin_resolve_nonwebp_orientation(sixel_chunk_t const *chunk,
 
     parsed_orientation = 1;
     found = 0;
-    if (chunk == NULL || orientation_out == NULL || chunk->buffer == NULL ||
+    if (chunk == NULL || orientation_out == NULL || sixel_chunk_get_buffer(chunk) == NULL ||
         enable_orientation == 0) {
         return 0;
     }
@@ -4110,16 +4110,16 @@ sixel_builtin_resolve_nonwebp_orientation(sixel_chunk_t const *chunk,
     }
 
     if (chunk_is_jpeg(chunk)) {
-        found = sixel_builtin_parse_jpeg_exif_orientation(chunk->buffer,
-                                                          chunk->size,
+        found = sixel_builtin_parse_jpeg_exif_orientation(sixel_chunk_get_buffer(chunk),
+                                                          sixel_chunk_get_size(chunk),
                                                           &parsed_orientation);
     } else if (chunk_is_png(chunk)) {
-        found = sixel_builtin_parse_png_exif_orientation(chunk->buffer,
-                                                         chunk->size,
+        found = sixel_builtin_parse_png_exif_orientation(sixel_chunk_get_buffer(chunk),
+                                                         sixel_chunk_get_size(chunk),
                                                          &parsed_orientation);
     } else if (chunk_is_tiff(chunk)) {
-        found = loader_exif_parse_orientation(chunk->buffer,
-                                              chunk->size,
+        found = loader_exif_parse_orientation(sixel_chunk_get_buffer(chunk),
+                                              sixel_chunk_get_size(chunk),
                                               &parsed_orientation);
     } else {
         found = 0;
@@ -4250,10 +4250,10 @@ sixel_builtin_chunk_size_to_int(sixel_chunk_t const *chunk, int *chunk_size)
     if (chunk == NULL || chunk_size == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (chunk->size > INT_MAX) {
+    if (sixel_chunk_get_size(chunk) > INT_MAX) {
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
-    *chunk_size = (int)chunk->size;
+    *chunk_size = (int)sixel_chunk_get_size(chunk);
     return SIXEL_OK;
 }
 
@@ -4303,7 +4303,7 @@ sixel_builtin_load_gif_frames(
         }
     }
 
-    return load_gif(request->chunk->buffer,
+    return load_gif((unsigned char *)sixel_chunk_get_buffer(request->chunk),
                     chunk_size,
                     request->bgcolor,
                     request->bgcolor_source,
@@ -4315,7 +4315,7 @@ sixel_builtin_load_gif_frames(
                     fnp.p,
                     &callback_context,
                     callback_context.cancel_context,
-                    request->chunk->allocator);
+                    sixel_chunk_get_allocator(request->chunk));
 }
 
 static SIXELSTATUS
@@ -4331,7 +4331,7 @@ sixel_builtin_prepare_frame_and_chunk_size(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = sixel_frame_create_from_factory(frame, chunk->allocator);
+    status = sixel_frame_create_from_factory(frame, sixel_chunk_get_allocator(chunk));
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -4372,7 +4372,7 @@ sixel_builtin_try_load_indexed_png(
     }
     *loaded = 0;
 
-    stbi__start_mem(stb_context, chunk->buffer, chunk_size);
+    stbi__start_mem(stb_context, sixel_chunk_get_buffer(chunk), chunk_size);
     pixels = stbi__png_load_palette(stb_context,
                                     &frame->width,
                                     &frame->height,
@@ -4388,7 +4388,7 @@ sixel_builtin_try_load_indexed_png(
          * Match libpng behavior: when the source palette exceeds reqcolors,
          * drop indexed output and fall back to non-indexed decoding.
          */
-        sixel_allocator_free(chunk->allocator, pixels);
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
         stbi_free(palette);
         return SIXEL_OK;
     }
@@ -4398,10 +4398,10 @@ sixel_builtin_try_load_indexed_png(
                                     palette_colors,
                                     palette_comp,
                                     bgcolor,
-                                    chunk->allocator);
+                                    sixel_chunk_get_allocator(chunk));
     if (SIXEL_FAILED(status)) {
         stbi_free(palette);
-        sixel_allocator_free(chunk->allocator, pixels);
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
         return status;
     }
 
@@ -4413,9 +4413,9 @@ sixel_builtin_try_load_indexed_png(
         sixel_frompng_apply_colorspace_fallback(frame->palette,
                                                 palette_colors,
                                                 1,
-                                                chunk->buffer,
-                                                chunk->size,
-                                                chunk->allocator);
+                                                sixel_chunk_get_buffer(chunk),
+                                                sixel_chunk_get_size(chunk),
+                                                sixel_chunk_get_allocator(chunk));
     }
     status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
         sixel_frame_as_interface(frame),
@@ -4430,7 +4430,7 @@ sixel_builtin_try_load_indexed_png(
             SIXEL_FRAME_PIXELS_U8
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(chunk->allocator, pixels);
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
         return status;
     }
     frame->loop_count = 1;
@@ -4481,7 +4481,7 @@ sixel_builtin_try_load_indexed_tga(
     }
     *loaded = 0;
 
-    stbi__start_mem(stb_context, chunk->buffer, chunk_size);
+    stbi__start_mem(stb_context, sixel_chunk_get_buffer(chunk), chunk_size);
     if (!stbi__tga_test(stb_context)) {
         return SIXEL_OK;
     }
@@ -4518,7 +4518,7 @@ sixel_builtin_try_load_indexed_tga(
                                     palette_colors,
                                     palette_comp,
                                     bgcolor,
-                                    chunk->allocator);
+                                    sixel_chunk_get_allocator(chunk));
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -4579,7 +4579,7 @@ cleanup:
         palette = NULL;
     }
     if (pixels != NULL) {
-        sixel_allocator_free(chunk->allocator, pixels);
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
         pixels = NULL;
     }
     return status;
@@ -4628,7 +4628,7 @@ sixel_builtin_load_png_keycolor_or_rgba(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    stbi__start_mem(stb_context, chunk->buffer, chunk_size);
+    stbi__start_mem(stb_context, sixel_chunk_get_buffer(chunk), chunk_size);
     pixels = stbi__png_load_palette(stb_context,
                                     &frame->width,
                                     &frame->height,
@@ -4659,7 +4659,7 @@ sixel_builtin_load_png_keycolor_or_rgba(
                                         palette_colors,
                                         palette_comp,
                                         bgcolor,
-                                        chunk->allocator);
+                                        sixel_chunk_get_allocator(chunk));
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
@@ -4720,10 +4720,10 @@ sixel_builtin_load_png_keycolor_or_rgba(
         palette = NULL;
     }
     if (pixels != NULL) {
-        sixel_allocator_free(chunk->allocator, pixels);
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
         pixels = NULL;
     }
-    pixels = stbi_load_from_memory(chunk->buffer,
+    pixels = stbi_load_from_memory(sixel_chunk_get_buffer(chunk),
                                    chunk_size,
                                    &frame->width,
                                    &frame->height,
@@ -4761,7 +4761,7 @@ cleanup:
         palette = NULL;
     }
     if (pixels != NULL) {
-        sixel_allocator_free(chunk->allocator, pixels);
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
         pixels = NULL;
     }
     return status;
@@ -4886,11 +4886,11 @@ sixel_builtin_load_jpeg_float32(
     }
 
     if (enable_cms) {
-        if (sixel_builtin_extract_jpeg_icc(chunk->buffer,
-                                           chunk->size,
+        if (sixel_builtin_extract_jpeg_icc(sixel_chunk_get_buffer(chunk),
+                                           sixel_chunk_get_size(chunk),
                                            icc_profile,
                                            icc_profile_length,
-                                           chunk->allocator)) {
+                                           sixel_chunk_get_allocator(chunk))) {
             src_profile = sixel_cms_open_profile_from_mem(*icc_profile,
                                                           *icc_profile_length);
             if (src_profile == NULL) {
@@ -5298,8 +5298,8 @@ sixel_builtin_load_psd_single_frame(
         return SIXEL_STBI_ERROR;
     }
     if (enable_cms) {
-        psd_icc_status = sixel_builtin_extract_psd_icc(chunk->buffer,
-                                                       chunk->size,
+        psd_icc_status = sixel_builtin_extract_psd_icc(sixel_chunk_get_buffer(chunk),
+                                                       sixel_chunk_get_size(chunk),
                                                        &psd_icc_profile,
                                                        &psd_icc_profile_length);
     }
@@ -5386,7 +5386,7 @@ sixel_builtin_load_psd_single_frame(
             : SIXEL_FRAME_PIXELS_U8
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(chunk->allocator, pixels);
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
         return status;
     }
     pixels = NULL;
@@ -5455,21 +5455,21 @@ sixel_builtin_tga_has_truecolor_alpha(
     tga_height = 0;
     tga_comp = 0;
     if (chunk == NULL ||
-        chunk->buffer == NULL ||
+        sixel_chunk_get_buffer(chunk) == NULL ||
         chunk_size < 18) {
         return 0;
     }
-    if (chunk->buffer[1] != 0u) {
+    if (sixel_chunk_get_buffer(chunk)[1] != 0u) {
         return 0;
     }
-    if (chunk->buffer[2] != 2u &&
-        chunk->buffer[2] != 10u) {
+    if (sixel_chunk_get_buffer(chunk)[2] != 2u &&
+        sixel_chunk_get_buffer(chunk)[2] != 10u) {
         return 0;
     }
-    if (chunk->buffer[16] != 32u) {
+    if (sixel_chunk_get_buffer(chunk)[16] != 32u) {
         return 0;
     }
-    stbi__start_mem(&stb_context, chunk->buffer, chunk_size);
+    stbi__start_mem(&stb_context, sixel_chunk_get_buffer(chunk), chunk_size);
     if (!stbi__tga_info(&stb_context, &tga_width, &tga_height, &tga_comp)) {
         return 0;
     }
@@ -5501,7 +5501,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     size_t bmp_payload_size;
     size_t payload_icc_profile_length;
     sixel_frombmp_probe_t bmp_probe;
-    sixel_chunk_t payload_chunk;
+    sixel_chunk_t *payload_chunk;
     stbi__result_info payload_ri;
     int depth;
     int payload_depth;
@@ -5533,7 +5533,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     bmp_payload_size = 0u;
     payload_icc_profile_length = 0u;
     memset(&bmp_probe, 0, sizeof(bmp_probe));
-    memset(&payload_chunk, 0, sizeof(payload_chunk));
+    payload_chunk = NULL;
     payload_ri = (stbi__result_info){ 0 };
     depth = 0;
     payload_depth = 0;
@@ -5586,41 +5586,51 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                 return SIXEL_STBI_ERROR;
             }
 
-            payload_chunk.buffer = (unsigned char *)bmp_payload;
-            payload_chunk.size = bmp_payload_size;
-            payload_chunk.max_size = bmp_payload_size;
-            payload_chunk.allocator = chunk->allocator;
+            status = sixel_chunk_create_from_memory(
+                &payload_chunk,
+                bmp_payload,
+                bmp_payload_size,
+                NULL,
+                sixel_chunk_get_allocator(chunk));
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
 
             if (bmp_probe.compression == SIXEL_FROMBMP_COMPRESSION_JPEG) {
                 stbi__start_mem(stb_context,
-                                payload_chunk.buffer,
-                                (int)payload_chunk.size);
+                                (unsigned char *)sixel_chunk_get_buffer(
+                                    payload_chunk),
+                                (int)sixel_chunk_get_size(payload_chunk));
                 status = sixel_builtin_load_jpeg_float32(
-                    &payload_chunk,
+                    payload_chunk,
                     frame,
                     stb_context,
                     &payload_ri,
                     enable_cms,
                     &payload_icc_profile,
                     &payload_icc_profile_length);
-                sixel_allocator_free(chunk->allocator, payload_icc_profile);
+                sixel_allocator_free(sixel_chunk_get_allocator(chunk), payload_icc_profile);
+                payload_chunk->vtbl->unref(payload_chunk);
                 return status;
             }
             if (bmp_probe.compression == SIXEL_FROMBMP_COMPRESSION_PNG) {
                 bmp_png_payload_is_16bit = stbi_is_16_bit_from_memory(
-                    payload_chunk.buffer,
-                    (int)payload_chunk.size);
+                    sixel_chunk_get_buffer(payload_chunk),
+                    (int)sixel_chunk_get_size(payload_chunk));
                 if (bmp_png_payload_is_16bit != 0) {
-                    return sixel_frompng_load_nonindexed(
-                        &payload_chunk,
+                    status = sixel_frompng_load_nonindexed(
+                        payload_chunk,
                         frame,
                         enable_cms,
                         bgcolor,
                         bgcolor_source);
+                    payload_chunk->vtbl->unref(payload_chunk);
+                    return status;
                 }
                 stbi__start_mem(stb_context,
-                                payload_chunk.buffer,
-                                (int)payload_chunk.size);
+                                (unsigned char *)sixel_chunk_get_buffer(
+                                    payload_chunk),
+                                (int)sixel_chunk_get_size(payload_chunk));
                 pixels = stbi__load_and_postprocess_8bit(stb_context,
                                                          &frame->width,
                                                          &frame->height,
@@ -5629,6 +5639,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                 if (pixels == NULL) {
                     sixel_helper_set_additional_message(
                         stbi_failure_reason());
+                    payload_chunk->vtbl->unref(payload_chunk);
                     return SIXEL_STBI_ERROR;
                 }
                 status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
@@ -5644,7 +5655,8 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                         SIXEL_FRAME_PIXELS_U8
                     });
                 if (SIXEL_FAILED(status)) {
-                    sixel_allocator_free(chunk->allocator, pixels);
+                    sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+                    payload_chunk->vtbl->unref(payload_chunk);
                     return status;
                 }
                 pixels = NULL;
@@ -5656,10 +5668,13 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                             bmp_payload,
                             bmp_payload_size);
                 }
-                return sixel_builtin_apply_bmp_alpha_policy(frame, bgcolor);
+                status = sixel_builtin_apply_bmp_alpha_policy(frame, bgcolor);
+                payload_chunk->vtbl->unref(payload_chunk);
+                return status;
             }
             sixel_helper_set_additional_message(
                 "builtin BMP: unsupported compressed payload mode");
+            payload_chunk->vtbl->unref(payload_chunk);
             return SIXEL_STBI_ERROR;
         }
         status = sixel_frombmp_load(chunk,
@@ -5676,20 +5691,20 @@ sixel_builtin_load_nonpng_rgb8_fallback(
         }
         if (bmp_is_cmyk != 0) {
             if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-                sixel_allocator_free(chunk->allocator, pixels);
+                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
                 return SIXEL_BAD_INTEGER_OVERFLOW;
             }
             pixel_count = (size_t)frame->width * (size_t)frame->height;
             if (pixel_count > SIZE_MAX / 3u) {
-                sixel_allocator_free(chunk->allocator, pixels);
+                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
                 return SIXEL_BAD_INTEGER_OVERFLOW;
             }
             rgb_size = pixel_count * 3u;
             rgb_pixels = (unsigned char *)sixel_allocator_malloc(
-                chunk->allocator,
+                sixel_chunk_get_allocator(chunk),
                 rgb_size);
             if (rgb_pixels == NULL) {
-                sixel_allocator_free(chunk->allocator, pixels);
+                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
                 sixel_helper_set_additional_message(
                     "builtin BMP: sixel_allocator_malloc() failed.");
                 return SIXEL_BAD_ALLOCATION;
@@ -5713,7 +5728,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                     pixel_count);
             }
 
-            sixel_allocator_free(chunk->allocator, pixels);
+            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
             pixels = rgb_pixels;
             rgb_pixels = NULL;
             status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
@@ -5729,7 +5744,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                     SIXEL_FRAME_PIXELS_U8
                 });
             if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(chunk->allocator, pixels);
+                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
                 return status;
             }
             pixels = NULL;
@@ -5758,7 +5773,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                     SIXEL_FRAME_PIXELS_U8
                 });
             if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(chunk->allocator, pixels);
+                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
                 return status;
             }
             pixels = NULL;
@@ -5792,7 +5807,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                     SIXEL_FRAME_PIXELS_U8
                 });
             if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(chunk->allocator, pixels);
+                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
                 return status;
             }
             if (enable_cms != 0) {
@@ -5862,7 +5877,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
         req_comp = 4;
     }
 
-    stbi__start_mem(stb_context, chunk->buffer, chunk_size);
+    stbi__start_mem(stb_context, sixel_chunk_get_buffer(chunk), chunk_size);
     pixels = stbi__load_and_postprocess_8bit(stb_context,
                                              &frame->width,
                                              &frame->height,
@@ -5874,12 +5889,12 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     }
 #if HAVE_LCMS2
     if (enable_cms && is_tiff) {
-        if (sixel_builtin_extract_tiff_icc(chunk->buffer,
-                                           chunk->size,
+        if (sixel_builtin_extract_tiff_icc(sixel_chunk_get_buffer(chunk),
+                                           sixel_chunk_get_size(chunk),
                                            icc_profile,
                                            icc_profile_length,
                                            &tiff_photometric,
-                                           chunk->allocator)) {
+                                           sixel_chunk_get_allocator(chunk))) {
             if (sixel_builtin_tiff_photometric_supports_icc(
                     tiff_photometric)) {
                 if (!sixel_cms_convert_to_srgb_with_profile_bytes(
@@ -5914,7 +5929,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                     SIXEL_FRAME_PIXELS_U8
                 });
             if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(chunk->allocator, pixels);
+                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
                 return status;
             }
             pixels = NULL;
@@ -5950,7 +5965,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                 SIXEL_FRAME_PIXELS_U8
             });
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(chunk->allocator, pixels);
+            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
             return status;
         }
         pixels = NULL;
@@ -5992,7 +6007,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
         break;
     }
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(chunk->allocator, pixels);
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
     }
     return status;
 }
@@ -6061,7 +6076,7 @@ sixel_builtin_load_nonpng_single_frame(
         }
     }
 
-    stbi__start_mem(stb_context, chunk->buffer, chunk_size);
+    stbi__start_mem(stb_context, sixel_chunk_get_buffer(chunk), chunk_size);
     if (is_jpeg) {
         status = sixel_builtin_load_jpeg_float32(chunk,
                                                  frame,
@@ -6227,7 +6242,7 @@ sixel_builtin_load_stbi_path(
         return status;
     }
 
-    stbi_allocator = load_request->chunk->allocator;
+    stbi_allocator = sixel_chunk_get_allocator(load_request->chunk);
     if (route->is_png) {
         png_keycolor_mode = sixel_builtin_png_keycolor_mode_enabled(
             load_request->chunk,
@@ -6409,7 +6424,7 @@ sixel_builtin_load_with_builtin_impl(
             goto end;
         }
         status = load_sixel(&pixels,
-                            pchunk->buffer,
+                            (unsigned char *)sixel_chunk_get_buffer(pchunk),
                             chunk_size,
                             &frame->width,
                             &frame->height,
@@ -6417,7 +6432,7 @@ sixel_builtin_load_with_builtin_impl(
                             &frame->ncolors,
                             reqcolors,
                             &frame->pixelformat,
-                            pchunk->allocator);
+                            sixel_chunk_get_allocator(pchunk));
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -6450,7 +6465,7 @@ sixel_builtin_load_with_builtin_impl(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        status = load_pnm(pchunk->buffer,
+        status = load_pnm((unsigned char *)sixel_chunk_get_buffer(pchunk),
                           chunk_size,
                           frame->allocator,
                           load_request.bgcolor,
@@ -6557,10 +6572,10 @@ sixel_builtin_load_with_builtin_impl(
 
 end:
     if (psd_transparent_mask != NULL && pchunk != NULL) {
-        sixel_allocator_free(pchunk->allocator, psd_transparent_mask);
+        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), psd_transparent_mask);
     }
     if (icc_profile != NULL) {
-        sixel_allocator_free(pchunk->allocator, icc_profile);
+        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), icc_profile);
     }
     sixel_frame_unref(frame);
 

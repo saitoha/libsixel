@@ -41,6 +41,7 @@
 #endif
 
 #include "compat_stub.h"
+#include "chunk-view.h"
 #include "fromwebp-container.h"
 
 static uint32_t
@@ -344,8 +345,8 @@ sixel_webp_parse_container(sixel_chunk_t const *chunk,
 
     memset(info, 0, sizeof(*info));
 
-    data = chunk->buffer;
-    size = chunk->size;
+    data = sixel_chunk_get_buffer(chunk);
+    size = sixel_chunk_get_size(chunk);
     if (data == NULL || size < 12u) {
         return sixel_webp_parse_fail(SIXEL_WEBP_PARSE_ERR_RIFF_HEADER_TRUNC);
     }

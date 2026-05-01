@@ -18,11 +18,11 @@
 #include <6cells.h>
 
 #include "src/allocator.h"
-#include "src/chunk.h"
 #include "src/factory.h"
 #include "src/frame-private.h"
 #include "src/status.h"
 #include "src/loader.h"
+#include "tests/loader/chunk_test_common.h"
 
 #if defined(__clang__)
 # if __has_attribute(unused)
@@ -289,7 +289,7 @@ run_loader_case_with_options(char const *label,
         return 1;
     }
 
-    status = sixel_chunk_new(&chunk,
+    status = sixel_chunk_create_from_source(&chunk,
                              image_path,
                              0,
                              &cancel_flag,
@@ -393,7 +393,9 @@ run_loader_case_with_options(char const *label,
     result = 0;
 
 cleanup:
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
 #if defined(_MSC_VER)
     free(source_root_dupe);
@@ -559,7 +561,7 @@ run_loader_component_case_with_options_full(
         return 1;
     }
 
-    status = sixel_chunk_new(&chunk,
+    status = sixel_chunk_create_from_source(&chunk,
                              image_path,
                              0,
                              &cancel_flag,
@@ -748,7 +750,9 @@ run_loader_component_case_with_options_full(
 
 cleanup:
     sixel_loader_component_unref(component);
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
 #if defined(_MSC_VER)
     free(source_root_dupe);

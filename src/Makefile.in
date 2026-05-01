@@ -265,8 +265,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/filter-resize.h $(srcdir)/filter-sample.c \
 	$(srcdir)/filter-sample.h $(srcdir)/filter.c \
 	$(srcdir)/filter.h $(srcdir)/scale.c $(srcdir)/scale.h \
-	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/cms.c \
-	$(srcdir)/cms.h $(srcdir)/icc-parse.c $(srcdir)/icc-parse.h \
+	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/chunk-factory.h \
+	$(srcdir)/chunk-view.h $(srcdir)/cms.c $(srcdir)/cms.h \
+	$(srcdir)/icc-parse.c $(srcdir)/icc-parse.h \
 	$(srcdir)/icc-apply.c $(srcdir)/icc-apply.h $(srcdir)/loader.c \
 	$(srcdir)/loader-gdk-pixbuf2.c \
 	$(srcdir)/loader-gnome-thumbnailer.c \
@@ -1123,8 +1124,10 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/scale.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/scale.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/chunk.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/chunk.h $(srcdir)/cms.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/cms.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/chunk.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/chunk-factory.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/chunk-view.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/cms.c $(srcdir)/cms.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-parse.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-parse.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/icc-apply.c \
@@ -1354,6 +1357,7 @@ FACTORY_CLASSID_INPUTS = \
     $(LOOKUP_POLICY_CLASSID_INPUTS) \
     $(DITHER_POLICY_CLASSID_INPUTS) \
     $(LOADER_COMPONENT_CLASSID_INPUTS) \
+    $(srcdir)/chunk.h \
     $(srcdir)/frame.h \
     $(srcdir)/loader-manager.h
 

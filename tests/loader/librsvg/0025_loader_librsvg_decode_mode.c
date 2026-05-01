@@ -45,35 +45,26 @@ set_librsvg_test_env(int allow_relative_resources, int allow_stdin_svgz)
 static SIXELSTATUS
 replace_chunk_source_path(sixel_chunk_t *chunk, char const *path)
 {
-    sixel_allocator_t *allocator;
-    char *path_copy;
-    size_t path_len;
+    SIXELSTATUS status;
+    sixel_chunk_bytes_view_t view;
+    sixel_chunk_memory_request_t request;
 
-    allocator = NULL;
-    path_copy = NULL;
-    path_len = 0u;
-    if (chunk == NULL || chunk->allocator == NULL) {
+    status = SIXEL_FALSE;
+    view.bytes = NULL;
+    view.size = 0u;
+    if (chunk == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    allocator = chunk->allocator;
-    if (chunk->source_path != NULL) {
-        sixel_allocator_free(allocator, chunk->source_path);
-        chunk->source_path = NULL;
-    }
-    if (path == NULL) {
-        return SIXEL_OK;
+    status = chunk->vtbl->get_bytes(chunk, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
-    path_len = strlen(path);
-    path_copy = (char *)sixel_allocator_malloc(allocator, path_len + 1u);
-    if (path_copy == NULL) {
-        return SIXEL_BAD_ALLOCATION;
-    }
-
-    memcpy(path_copy, path, path_len + 1u);
-    chunk->source_path = path_copy;
-    return SIXEL_OK;
+    request.bytes = view.bytes;
+    request.size = view.size;
+    request.source_path = path;
+    return chunk->vtbl->init_memory(chunk, &request);
 }
 
 static SIXELSTATUS
@@ -81,16 +72,16 @@ replace_chunk_buffer(sixel_chunk_t *chunk,
                      unsigned char const *buffer,
                      size_t buffer_size)
 {
+    sixel_chunk_memory_request_t request;
+
     if (chunk == NULL || buffer == NULL || buffer_size == 0u) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (chunk->buffer == NULL || chunk->max_size < buffer_size) {
-        return SIXEL_BAD_ARGUMENT;
-    }
 
-    memcpy(chunk->buffer, buffer, buffer_size);
-    chunk->size = buffer_size;
-    return SIXEL_OK;
+    request.bytes = buffer;
+    request.size = buffer_size;
+    request.source_path = sixel_chunk_get_source_path(chunk);
+    return chunk->vtbl->init_memory(chunk, &request);
 }
 
 static int
@@ -230,7 +221,7 @@ run_librsvg_source_selection_case(
         goto cleanup;
     }
 
-    status = sixel_chunk_new(&chunk,
+    status = sixel_chunk_create_from_source(&chunk,
                              image_path,
                              0,
                              &cancel_flag,
@@ -273,7 +264,9 @@ run_librsvg_source_selection_case(
                                 test_case->expect_success);
 
 cleanup:
-    sixel_chunk_destroy(chunk);
+    if (chunk != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
     sixel_allocator_unref(allocator);
 #if defined(_MSC_VER)
     free(source_root_dupe);

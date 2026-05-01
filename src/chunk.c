@@ -138,20 +138,98 @@ sixel_winhttp_set_error_message(char const *context)
 #include "allocator.h"
 #include "compat_stub.h"
 #include "loader-common.h"
+#include "sixel_atomic.h"
+
+typedef struct sixel_chunk_storage {
+    sixel_chunk_t chunk_interface;  /* IChunk dispatch header */
+    sixel_atomic_u32_t ref;         /* reference counter */
+    unsigned char *buffer;          /* loaded input bytes */
+    size_t size;                    /* number of valid bytes in buffer */
+    size_t max_size;                /* allocated byte capacity */
+    char *source_path;              /* local source path, if available */
+    sixel_allocator_t *allocator;   /* allocator object */
+} sixel_chunk_storage_t;
+
+static sixel_chunk_storage_t *
+sixel_chunk_from_interface(sixel_chunk_t *chunk);
+static sixel_chunk_storage_t const *
+sixel_chunk_from_interface_const(sixel_chunk_t const *chunk);
+static void
+sixel_chunk_vtbl_ref(sixel_chunk_t *chunk);
+static void
+sixel_chunk_vtbl_unref(sixel_chunk_t *chunk);
+static SIXELSTATUS
+sixel_chunk_vtbl_init_source(
+    sixel_chunk_t *chunk,
+    sixel_chunk_source_request_t const *request);
+static SIXELSTATUS
+sixel_chunk_vtbl_init_memory(
+    sixel_chunk_t *chunk,
+    sixel_chunk_memory_request_t const *request);
+static SIXELSTATUS
+sixel_chunk_vtbl_get_bytes(sixel_chunk_t const *chunk,
+                           sixel_chunk_bytes_view_t *view);
+static char const *
+sixel_chunk_vtbl_source_path(sixel_chunk_t const *chunk);
+static sixel_allocator_t *
+sixel_chunk_vtbl_allocator(sixel_chunk_t const *chunk);
+
+static sixel_chunk_vtbl_t const g_sixel_chunk_vtbl = {
+    sixel_chunk_vtbl_ref,
+    sixel_chunk_vtbl_unref,
+    sixel_chunk_vtbl_init_source,
+    sixel_chunk_vtbl_init_memory,
+    sixel_chunk_vtbl_get_bytes,
+    sixel_chunk_vtbl_source_path,
+    sixel_chunk_vtbl_allocator
+};
+
+static sixel_chunk_storage_t *
+sixel_chunk_from_interface(sixel_chunk_t *chunk)
+{
+    return (sixel_chunk_storage_t *)(void *)chunk;
+}
+
+static sixel_chunk_storage_t const *
+sixel_chunk_from_interface_const(sixel_chunk_t const *chunk)
+{
+    return (sixel_chunk_storage_t const *)(void const *)chunk;
+}
 
 
-/* initialize chunk object with specified size */
+static void
+sixel_chunk_release_storage(sixel_chunk_storage_t *pchunk)
+{
+    if (pchunk == NULL || pchunk->allocator == NULL) {
+        return;
+    }
+
+    sixel_allocator_free(pchunk->allocator, pchunk->buffer);
+    sixel_allocator_free(pchunk->allocator, pchunk->source_path);
+    pchunk->buffer = NULL;
+    pchunk->size = 0u;
+    pchunk->max_size = 0u;
+    pchunk->source_path = NULL;
+}
+
+/* Initialize chunk byte storage with the specified capacity. */
 static SIXELSTATUS
 sixel_chunk_init(
-    sixel_chunk_t * const /* in */ pchunk,
-    size_t                /* in */ initial_size)
+    sixel_chunk_storage_t * const /* in */ pchunk,
+    size_t                        /* in */ initial_size)
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
+    if (initial_size == 0u) {
+        initial_size = 1u;
+    }
+
+    sixel_chunk_release_storage(pchunk);
     pchunk->max_size = initial_size;
-    pchunk->size = 0;
+    pchunk->size = 0u;
     pchunk->buffer
-        = (unsigned char *)sixel_allocator_malloc(pchunk->allocator, pchunk->max_size);
+        = (unsigned char *)sixel_allocator_malloc(pchunk->allocator,
+                                                  pchunk->max_size);
 
     if (pchunk->buffer == NULL) {
         sixel_helper_set_additional_message(
@@ -169,24 +247,9 @@ end:
 }
 
 
-SIXELAPI void
-sixel_chunk_destroy(
-    sixel_chunk_t * const /* in */ pchunk)
-{
-    sixel_allocator_t *allocator;
-
-    if (pchunk) {
-        allocator = pchunk->allocator;
-        sixel_allocator_free(allocator, pchunk->buffer);
-        sixel_allocator_free(allocator, pchunk->source_path);
-        sixel_allocator_free(allocator, pchunk);
-        sixel_allocator_unref(allocator);
-    }
-}
-
 static SIXELSTATUS
 sixel_chunk_reserve_capacity(
-    sixel_chunk_t *pchunk,
+    sixel_chunk_storage_t *pchunk,
     size_t need_size,
     char const *limit_message,
     char const *realloc_message)
@@ -223,7 +286,9 @@ sixel_chunk_reserve_capacity(
         next_max_size *= 2;
     }
 
-    grown = sixel_allocator_realloc(pchunk->allocator, pchunk->buffer, next_max_size);
+    grown = sixel_allocator_realloc(pchunk->allocator,
+                                    pchunk->buffer,
+                                    next_max_size);
     if (grown == NULL) {
         sixel_helper_set_additional_message(realloc_message);
         return SIXEL_BAD_ALLOCATION;
@@ -244,13 +309,13 @@ memory_write(void   /* in */ *ptr,
              void   /* in */ *memory)
 {
     size_t nbytes = 0;
-    sixel_chunk_t *chunk;
+    sixel_chunk_storage_t *chunk;
 
     if (ptr == NULL || memory == NULL) {
         goto end;
     }
 
-    chunk = (sixel_chunk_t *)memory;
+    chunk = (sixel_chunk_storage_t *)memory;
     if (chunk->buffer == NULL) {
         goto end;
     }
@@ -490,7 +555,7 @@ end:
 static SIXELSTATUS
 sixel_chunk_from_file(
     char const      /* in */ *filename,
-    sixel_chunk_t   /* in */ *pchunk,
+    sixel_chunk_storage_t /* in */ *pchunk,
     int const       /* in */ *cancel_flag
 )
 {
@@ -557,7 +622,7 @@ end:
 static SIXELSTATUS
 sixel_chunk_from_url_with_winhttp(
     char const      /* in */ *url,
-    sixel_chunk_t   /* in */ *pchunk,
+    sixel_chunk_storage_t /* in */ *pchunk,
     int             /* in */ finsecure
 )
 {
@@ -785,7 +850,7 @@ end:
 static SIXELSTATUS
 sixel_chunk_from_url_with_curl(
     char const      /* in */ *url,
-    sixel_chunk_t   /* in */ *pchunk,
+    sixel_chunk_storage_t /* in */ *pchunk,
     int             /* in */ finsecure)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -881,7 +946,7 @@ end:
 static SIXELSTATUS
 sixel_chunk_from_url_with_fetch(
     char const      /* in */ *url,
-    sixel_chunk_t   /* in */ *pchunk,
+    sixel_chunk_storage_t /* in */ *pchunk,
     int             /* in */ finsecure)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -1102,7 +1167,7 @@ end:
 static SIXELSTATUS
 sixel_chunk_from_url(
     char const      /* in */ *url,
-    sixel_chunk_t   /* in */ *pchunk,
+    sixel_chunk_storage_t /* in */ *pchunk,
     int             /* in */ finsecure)
 {
     SIXELSTATUS status = SIXEL_NOT_IMPLEMENTED;
@@ -1142,75 +1207,134 @@ sixel_chunk_from_url(
 }
 
 
-SIXELAPI SIXELSTATUS
-sixel_chunk_new(
-    sixel_chunk_t       /* out */   **ppchunk,
-    char const          /* in */    *filename,
-    int                 /* in */    finsecure,
-    int const           /* in */    *cancel_flag,
-    sixel_allocator_t   /* in */    *allocator)
+static SIXELSTATUS
+sixel_chunk_copy_source_path(sixel_chunk_storage_t *pchunk,
+                             char const *source_path)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    size_t pathlen;
+    char *copy;
 
-    if (ppchunk == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_chunk_new: ppchunk is null.");
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
+    pathlen = 0u;
+    copy = NULL;
+
+    if (pchunk == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (source_path == NULL) {
+        return SIXEL_OK;
     }
 
-    if (allocator == NULL) {
+    pathlen = strlen(source_path);
+    copy = (char *)sixel_allocator_malloc(pchunk->allocator, pathlen + 1u);
+    if (copy == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_chunk_new: allocator is null.");
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
+            "sixel_chunk_copy_source_path: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memcpy(copy, source_path, pathlen + 1u);
+    sixel_allocator_free(pchunk->allocator, pchunk->source_path);
+    pchunk->source_path = copy;
+
+    return SIXEL_OK;
+}
+
+static void
+sixel_chunk_vtbl_ref(sixel_chunk_t *chunk)
+{
+    sixel_chunk_storage_t *storage;
+
+    storage = NULL;
+    if (chunk == NULL) {
+        return;
     }
 
-    *ppchunk = (sixel_chunk_t *)sixel_allocator_malloc(allocator, sizeof(sixel_chunk_t));
-    if (*ppchunk == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_chunk_new: sixel_allocator_malloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
+    storage = sixel_chunk_from_interface(chunk);
+    (void)sixel_atomic_fetch_add_u32(&storage->ref, 1u);
+}
+
+static void
+sixel_chunk_vtbl_unref(sixel_chunk_t *chunk)
+{
+    sixel_chunk_storage_t *storage;
+    sixel_allocator_t *allocator;
+    unsigned int previous;
+
+    storage = NULL;
+    allocator = NULL;
+    previous = 0u;
+    if (chunk == NULL) {
+        return;
     }
 
-    /* set allocator to chunk object */
-    (*ppchunk)->allocator = allocator;
+    storage = sixel_chunk_from_interface(chunk);
+    previous = sixel_atomic_fetch_sub_u32(&storage->ref, 1u);
+    if (previous != 1u) {
+        return;
+    }
 
-    status = sixel_chunk_init(*ppchunk, 1024 * 32);
+    allocator = storage->allocator;
+    sixel_chunk_release_storage(storage);
+    storage->allocator = NULL;
+    if (allocator != NULL) {
+        sixel_allocator_free(allocator, storage);
+        sixel_allocator_unref(allocator);
+    }
+}
+
+static SIXELSTATUS
+sixel_chunk_vtbl_init_source(
+    sixel_chunk_t *chunk,
+    sixel_chunk_source_request_t const *request)
+{
+    SIXELSTATUS status;
+    sixel_chunk_storage_t *storage;
+    int local_cancel_flag;
+    int const *cancel_flag;
+
+    status = SIXEL_FALSE;
+    storage = NULL;
+    local_cancel_flag = 0;
+    cancel_flag = NULL;
+
+    if (chunk == NULL || request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    storage = sixel_chunk_from_interface(chunk);
+    if (storage->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_chunk_init(storage, 1024u * 32u);
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(allocator, *ppchunk);
-        *ppchunk = NULL;
         goto end;
     }
 
-    sixel_allocator_ref(allocator);
-
-    if (filename != NULL &&
-        strcmp(filename, "-") != 0 &&
-        strstr(filename, "://") == NULL) {
-        size_t pathlen = strlen(filename);
-        (*ppchunk)->source_path =
-            (char *)sixel_allocator_malloc(allocator, pathlen + 1);
-        if ((*ppchunk)->source_path == NULL) {
-            sixel_helper_set_additional_message(
-                "sixel_chunk_new: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            sixel_chunk_destroy(*ppchunk);
-            *ppchunk = NULL;
+    if (request->filename != NULL &&
+        strcmp(request->filename, "-") != 0 &&
+        strstr(request->filename, "://") == NULL) {
+        status = sixel_chunk_copy_source_path(storage, request->filename);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
-        memcpy((*ppchunk)->source_path, filename, pathlen + 1);
     }
 
-    if (filename != NULL && strstr(filename, "://")) {
-        status = sixel_chunk_from_url(filename, *ppchunk, finsecure);
+    cancel_flag = request->cancel_flag;
+    if (cancel_flag == NULL) {
+        cancel_flag = &local_cancel_flag;
+    }
+
+    if (request->filename != NULL && strstr(request->filename, "://")) {
+        status = sixel_chunk_from_url(request->filename,
+                                      storage,
+                                      request->finsecure);
     } else {
-        status = sixel_chunk_from_file(filename, *ppchunk, cancel_flag);
+        status = sixel_chunk_from_file(request->filename,
+                                       storage,
+                                       cancel_flag);
     }
     if (SIXEL_FAILED(status)) {
-        sixel_chunk_destroy(*ppchunk);
-        *ppchunk = NULL;
+        sixel_chunk_release_storage(storage);
         goto end;
     }
 
@@ -1218,6 +1342,164 @@ sixel_chunk_new(
 
 end:
     return status;
+}
+
+static SIXELSTATUS
+sixel_chunk_vtbl_init_memory(
+    sixel_chunk_t *chunk,
+    sixel_chunk_memory_request_t const *request)
+{
+    SIXELSTATUS status;
+    sixel_chunk_storage_t *storage;
+    unsigned char *buffer;
+    char *source_path;
+    size_t capacity;
+    size_t pathlen;
+
+    status = SIXEL_FALSE;
+    storage = NULL;
+    buffer = NULL;
+    source_path = NULL;
+    capacity = 0u;
+    pathlen = 0u;
+
+    if (chunk == NULL || request == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (request->bytes == NULL && request->size != 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    storage = sixel_chunk_from_interface(chunk);
+    if (storage->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    capacity = request->size != 0u ? request->size : 1u;
+    if (capacity > SIXEL_ALLOCATE_BYTES_MAX) {
+        sixel_helper_set_additional_message(
+            "sixel_chunk_vtbl_init_memory: input exceeds allocation limit.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    buffer = (unsigned char *)sixel_allocator_malloc(storage->allocator,
+                                                    capacity);
+    if (buffer == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_chunk_vtbl_init_memory: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    if (request->size != 0u) {
+        memcpy(buffer, request->bytes, request->size);
+    }
+
+    if (request->source_path != NULL) {
+        pathlen = strlen(request->source_path);
+        source_path = (char *)sixel_allocator_malloc(storage->allocator,
+                                                     pathlen + 1u);
+        if (source_path == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_chunk_vtbl_init_memory: "
+                "sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memcpy(source_path, request->source_path, pathlen + 1u);
+    }
+
+    sixel_chunk_release_storage(storage);
+    storage->buffer = buffer;
+    storage->size = request->size;
+    storage->max_size = capacity;
+    storage->source_path = source_path;
+    buffer = NULL;
+    source_path = NULL;
+    status = SIXEL_OK;
+
+end:
+    if (storage != NULL) {
+        sixel_allocator_free(storage->allocator, buffer);
+        sixel_allocator_free(storage->allocator, source_path);
+    }
+    return status;
+}
+
+static SIXELSTATUS
+sixel_chunk_vtbl_get_bytes(sixel_chunk_t const *chunk,
+                           sixel_chunk_bytes_view_t *view)
+{
+    sixel_chunk_storage_t const *storage;
+
+    storage = NULL;
+    if (chunk == NULL || view == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    storage = sixel_chunk_from_interface_const(chunk);
+    view->bytes = storage->buffer;
+    view->size = storage->size;
+
+    return SIXEL_OK;
+}
+
+static char const *
+sixel_chunk_vtbl_source_path(sixel_chunk_t const *chunk)
+{
+    sixel_chunk_storage_t const *storage;
+
+    storage = NULL;
+    if (chunk == NULL) {
+        return NULL;
+    }
+
+    storage = sixel_chunk_from_interface_const(chunk);
+    return storage->source_path;
+}
+
+static sixel_allocator_t *
+sixel_chunk_vtbl_allocator(sixel_chunk_t const *chunk)
+{
+    sixel_chunk_storage_t const *storage;
+
+    storage = NULL;
+    if (chunk == NULL) {
+        return NULL;
+    }
+
+    storage = sixel_chunk_from_interface_const(chunk);
+    return storage->allocator;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_chunk_factory_new(sixel_allocator_t *allocator, void **object)
+{
+    sixel_chunk_storage_t *storage;
+
+    storage = NULL;
+    if (allocator == NULL || object == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *object = NULL;
+
+    storage = (sixel_chunk_storage_t *)
+        sixel_allocator_malloc(allocator, sizeof(*storage));
+    if (storage == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    storage->chunk_interface.vtbl = &g_sixel_chunk_vtbl;
+    storage->ref = 1u;
+    storage->buffer = NULL;
+    storage->size = 0u;
+    storage->max_size = 0u;
+    storage->source_path = NULL;
+    storage->allocator = allocator;
+    sixel_allocator_ref(allocator);
+
+    *object = &storage->chunk_interface;
+    return SIXEL_OK;
 }
 
 

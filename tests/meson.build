@@ -737,6 +737,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-chunk-component-boundary',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-chunk-component-boundary.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-deprecated-diagnostic-guard',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-deprecated-diagnostic-guard.sh',

@@ -39,6 +39,7 @@
 #include <sixel.h>
 
 #include "cms.h"
+#include "chunk-view.h"
 #include "compat_stub.h"
 #include "fromwebp.h"
 #include "frame-private.h"
@@ -1159,8 +1160,8 @@ sixel_webp_parse_anim_stream(sixel_chunk_t const *chunk,
     offset = 0u;
     frame_index = 0;
     if (chunk == NULL || plan == NULL || stream == NULL ||
-        chunk->allocator == NULL || chunk->buffer == NULL ||
-        chunk->size < 12u || plan->anim_frame_count <= 0 ||
+        sixel_chunk_get_allocator(chunk) == NULL || sixel_chunk_get_buffer(chunk) == NULL ||
+        sixel_chunk_get_size(chunk) < 12u || plan->anim_frame_count <= 0 ||
         plan->canvas_width <= 0 || plan->canvas_height <= 0) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1171,15 +1172,15 @@ sixel_webp_parse_anim_stream(sixel_chunk_t const *chunk,
     stream->loop_count = plan->anim_loop_count;
     stream->frame_count = plan->anim_frame_count;
     stream->frames = (sixel_webp_anim_frame_t *)sixel_allocator_calloc(
-        chunk->allocator,
+        sixel_chunk_get_allocator(chunk),
         (size_t)stream->frame_count,
         sizeof(*stream->frames));
     if (stream->frames == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
 
-    data = chunk->buffer;
-    size = chunk->size;
+    data = sixel_chunk_get_buffer(chunk);
+    size = sixel_chunk_get_size(chunk);
     if (memcmp(data, "RIFF", 4u) != 0 || memcmp(data + 8u, "WEBP", 4u) != 0) {
         status = SIXEL_BAD_INPUT;
         goto end;
@@ -1235,7 +1236,7 @@ sixel_webp_parse_anim_stream(sixel_chunk_t const *chunk,
 
 end:
     if (SIXEL_FAILED(status)) {
-        sixel_webp_anim_stream_reset(stream, chunk->allocator);
+        sixel_webp_anim_stream_reset(stream, sixel_chunk_get_allocator(chunk));
     }
     return status;
 }
@@ -1671,7 +1672,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
         return SIXEL_BAD_ARGUMENT;
     }
     *handled = 0;
-    if (chunk == NULL || fn_load == NULL || chunk->allocator == NULL) {
+    if (chunk == NULL || fn_load == NULL || sixel_chunk_get_allocator(chunk) == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -1707,7 +1708,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
         goto end;
     }
     canvas_pixels = (unsigned char *)sixel_allocator_malloc(
-        chunk->allocator,
+        sixel_chunk_get_allocator(chunk),
         (size_t)stream.canvas_width * (size_t)stream.canvas_height * 4u);
     if (canvas_pixels == NULL) {
         status = SIXEL_BAD_ALLOCATION;
@@ -1768,7 +1769,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
 
             status = sixel_webp_decode_anim_frame_rgba(
                 &stream.frames[source_frame_no],
-                chunk->allocator,
+                sixel_chunk_get_allocator(chunk),
                 &rgba,
                 &subframe_width,
                 &subframe_height);
@@ -1792,7 +1793,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                                            stream.canvas_width,
                                            &stream.frames[source_frame_no],
                                            rgba);
-            sixel_allocator_free(chunk->allocator, rgba);
+            sixel_allocator_free(sixel_chunk_get_allocator(chunk), rgba);
             rgba = NULL;
 
             if (emit_callback == 0) {
@@ -1806,14 +1807,14 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                 continue;
             }
 
-            status = sixel_frame_create_from_factory(&frame, chunk->allocator);
+            status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(chunk));
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
             status = sixel_webp_anim_copy_canvas(
                 canvas_pixels,
                 (size_t)stream.canvas_width * (size_t)stream.canvas_height * 4u,
-                chunk->allocator,
+                sixel_chunk_get_allocator(chunk),
                 &emitted_pixels);
             if (SIXEL_FAILED(status)) {
                 goto end;
@@ -1855,7 +1856,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                         frame->height,
                         plan.iccp_payload,
                         plan.iccp_payload_size,
-                        chunk->allocator);
+                        sixel_chunk_get_allocator(chunk));
                 }
                 if (iccp_applied != 0) {
                     sixel_webp_trace_contract_add_code(
@@ -1872,7 +1873,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                     &plan,
                     enable_cms,
                     frame,
-                    chunk->allocator,
+                    sixel_chunk_get_allocator(chunk),
                     &xmp_cms_applied);
                 if (SIXEL_FAILED(status)) {
                     sixel_webp_trace_contract_add_code(
@@ -1974,16 +1975,16 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
 
 end:
     sixel_frame_unref(frame);
-    if (rgba != NULL && chunk != NULL && chunk->allocator != NULL) {
-        sixel_allocator_free(chunk->allocator, rgba);
+    if (rgba != NULL && chunk != NULL && sixel_chunk_get_allocator(chunk) != NULL) {
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), rgba);
     }
-    if (emitted_pixels != NULL && chunk != NULL && chunk->allocator != NULL) {
-        sixel_allocator_free(chunk->allocator, emitted_pixels);
+    if (emitted_pixels != NULL && chunk != NULL && sixel_chunk_get_allocator(chunk) != NULL) {
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), emitted_pixels);
     }
-    if (canvas_pixels != NULL && chunk != NULL && chunk->allocator != NULL) {
-        sixel_allocator_free(chunk->allocator, canvas_pixels);
+    if (canvas_pixels != NULL && chunk != NULL && sixel_chunk_get_allocator(chunk) != NULL) {
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), canvas_pixels);
     }
-    sixel_webp_anim_stream_reset(&stream, chunk != NULL ? chunk->allocator
+    sixel_webp_anim_stream_reset(&stream, chunk != NULL ? sixel_chunk_get_allocator(chunk)
                                                         : NULL);
     sixel_webp_trace_unapplied_meta_codes(&plan,
                                           iccp_code_reported,
@@ -2030,7 +2031,7 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     exif_applied = 0;
     xmp_applied = 0;
 
-    if (chunk == NULL || frame == NULL || chunk->allocator == NULL) {
+    if (chunk == NULL || frame == NULL || sixel_chunk_get_allocator(chunk) == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -2059,7 +2060,7 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
                                                &rgba,
                                                &width,
                                                &height,
-                                               chunk->allocator);
+                                               sixel_chunk_get_allocator(chunk));
         if (SIXEL_FAILED(status)) {
             sixel_webp_trace_contract_add_code(
                 SIXEL_WEBP_CODE_ERR_VP8_STREAM);
@@ -2072,7 +2073,7 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
                 height,
                 plan.alpha_payload,
                 plan.alpha_payload_size,
-                chunk->allocator);
+                sixel_chunk_get_allocator(chunk));
             if (SIXEL_FAILED(status)) {
                 sixel_webp_trace_contract_add_code(
                     SIXEL_WEBP_CODE_ERR_VP8_STREAM);
@@ -2092,7 +2093,7 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
                                                 &rgba,
                                                 &width,
                                                 &height,
-                                                chunk->allocator);
+                                                sixel_chunk_get_allocator(chunk));
         if (SIXEL_FAILED(status)) {
             sixel_webp_trace_contract_add_code(
                 SIXEL_WEBP_CODE_ERR_VP8L_STREAM);
@@ -2137,7 +2138,7 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
                 frame->height,
                 plan.iccp_payload,
                 plan.iccp_payload_size,
-                chunk->allocator);
+                sixel_chunk_get_allocator(chunk));
         }
         if (iccp_applied != 0) {
             sixel_webp_trace_contract_add_code(
@@ -2153,7 +2154,7 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
         status = sixel_webp_try_apply_xmp_cms(&plan,
                                               enable_cms,
                                               frame,
-                                              chunk->allocator,
+                                              sixel_chunk_get_allocator(chunk),
                                               &xmp_cms_applied);
         if (SIXEL_FAILED(status)) {
             sixel_webp_trace_contract_add_code(
@@ -2214,8 +2215,8 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     }
 
 cleanup:
-    if (rgba != NULL && chunk != NULL && chunk->allocator != NULL) {
-        sixel_allocator_free(chunk->allocator, rgba);
+    if (rgba != NULL && chunk != NULL && sixel_chunk_get_allocator(chunk) != NULL) {
+        sixel_allocator_free(sixel_chunk_get_allocator(chunk), rgba);
     }
     sixel_webp_trace_unapplied_meta_codes(&plan,
                                           iccp_code_reported,
