@@ -414,10 +414,15 @@ librsvg_path_has_suffix_nocase(char const *path, char const *suffix)
 static int
 librsvg_is_svgz_chunk(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 2u) {
+    sixel_chunk_bytes_view_t view;
+
+    view.bytes = NULL;
+    view.size = 0u;
+    if (sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
+        view.bytes == NULL || view.size < 2u) {
         return 0;
     }
-    return sixel_chunk_get_buffer(chunk)[0] == 0x1fu && sixel_chunk_get_buffer(chunk)[1] == 0x8bu;
+    return view.bytes[0] == 0x1fu && view.bytes[1] == 0x8bu;
 }
 
 static int
@@ -744,40 +749,48 @@ librsvg_pick_size_from_intrinsic_dimensions(RsvgHandle *handle,
 static int
 chunk_is_svg_like(sixel_chunk_t const *chunk)
 {
+    sixel_chunk_bytes_view_t view;
+    char const *source_path;
     size_t offset;
     size_t limit;
 
-    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) == 0) {
+    view.bytes = NULL;
+    view.size = 0u;
+    source_path = NULL;
+
+    if (sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
+        view.bytes == NULL || view.size == 0u) {
         return 0;
     }
-    if (sixel_chunk_get_source_path(chunk) != NULL &&
-            librsvg_path_has_suffix_nocase(sixel_chunk_get_source_path(chunk), ".svgz")) {
+    source_path = sixel_chunk_get_source_path(chunk);
+    if (source_path != NULL &&
+        librsvg_path_has_suffix_nocase(source_path, ".svgz")) {
         return 1;
     }
 
     offset = 0;
-    if (sixel_chunk_get_size(chunk) >= 3 &&
-            sixel_chunk_get_buffer(chunk)[0] == 0xef &&
-            sixel_chunk_get_buffer(chunk)[1] == 0xbb &&
-            sixel_chunk_get_buffer(chunk)[2] == 0xbf) {
+    if (view.size >= 3u &&
+        view.bytes[0] == 0xef &&
+        view.bytes[1] == 0xbb &&
+        view.bytes[2] == 0xbf) {
         offset = 3;
     }
 
-    while (offset < sixel_chunk_get_size(chunk) &&
-           isspace((unsigned char)sixel_chunk_get_buffer(chunk)[offset]) != 0) {
+    while (offset < view.size &&
+           isspace((unsigned char)view.bytes[offset]) != 0) {
         ++offset;
     }
 
-    if (offset >= sixel_chunk_get_size(chunk)) {
+    if (offset >= view.size) {
         return 0;
     }
 
-    limit = sixel_chunk_get_size(chunk);
+    limit = view.size;
     if (limit > 4096) {
         limit = 4096;
     }
 
-    return librsvg_buffer_has_svg_tag(sixel_chunk_get_buffer(chunk), offset, limit);
+    return librsvg_buffer_has_svg_tag(view.bytes, offset, limit);
 }
 
 /*
@@ -951,16 +964,20 @@ static SIXELSTATUS
 librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
 {
     SIXELSTATUS status;
+    sixel_chunk_bytes_view_t view;
     int fd;
     char *path;
 
+    view.bytes = NULL;
+    view.size = 0u;
     fd = (-1);
     path = NULL;
     if (chunk == NULL || path_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *path_out = NULL;
-    if (sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) == 0u) {
+    if (sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
+        view.bytes == NULL || view.size == 0u) {
         sixel_helper_set_additional_message(
             LIBRSVG_MESSAGE_TEMP_SVGZ_EMPTY_INPUT);
         return SIXEL_BAD_ARGUMENT;
@@ -971,7 +988,7 @@ librsvg_write_chunk_to_temp_svgz(sixel_chunk_t const *chunk, char **path_out)
         return status;
     }
 
-    status = librsvg_write_buffer_to_fd(fd, sixel_chunk_get_buffer(chunk), sixel_chunk_get_size(chunk));
+    status = librsvg_write_buffer_to_fd(fd, view.bytes, view.size);
     if (SIXEL_SUCCEEDED(status)) {
         status = librsvg_close_temp_svgz_fd(&fd);
     }

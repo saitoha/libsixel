@@ -839,14 +839,16 @@ sixel_builtin_tiff_photometric_supports_icc(uint16_t photometric)
 static int
 chunk_is_psd(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL) {
+    sixel_chunk_bytes_view_t view;
+
+    view.bytes = NULL;
+    view.size = 0u;
+    if (sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
+        view.bytes == NULL || view.size < 4u) {
         return 0;
     }
-    if (sixel_chunk_get_size(chunk) < 4u) {
-        return 0;
-    }
-    if (memcmp(sixel_chunk_get_buffer(chunk), "8BPS", 4u) == 0 ||
-        memcmp(sixel_chunk_get_buffer(chunk), "8BPB", 4u) == 0) {
+    if (memcmp(view.bytes, "8BPS", 4u) == 0 ||
+        memcmp(view.bytes, "8BPB", 4u) == 0) {
         return 1;
     }
     return 0;
@@ -855,13 +857,18 @@ chunk_is_psd(sixel_chunk_t const *chunk)
 static int
 chunk_is_pic(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 92u) {
+    sixel_chunk_bytes_view_t view;
+
+    view.bytes = NULL;
+    view.size = 0u;
+    if (sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
+        view.bytes == NULL || view.size < 92u) {
         return 0;
     }
-    if (memcmp(sixel_chunk_get_buffer(chunk), "\x53\x80\xf6\x34", 4u) != 0) {
+    if (memcmp(view.bytes, "\x53\x80\xf6\x34", 4u) != 0) {
         return 0;
     }
-    if (memcmp(sixel_chunk_get_buffer(chunk) + 88u, "PICT", 4u) != 0) {
+    if (memcmp(view.bytes + 88u, "PICT", 4u) != 0) {
         return 0;
     }
     return 1;
@@ -870,15 +877,19 @@ chunk_is_pic(sixel_chunk_t const *chunk)
 static int
 chunk_is_sixel(sixel_chunk_t const *chunk)
 {
+    sixel_chunk_bytes_view_t view;
     unsigned char const *p;
     unsigned char const *end;
 
-    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 3u) {
+    view.bytes = NULL;
+    view.size = 0u;
+    if (sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
+        view.bytes == NULL || view.size < 3u) {
         return 0;
     }
 
-    p = sixel_chunk_get_buffer(chunk);
-    end = p + sixel_chunk_get_size(chunk);
+    p = view.bytes;
+    end = p + view.size;
 
     p++;
     if (p >= end) {
@@ -908,13 +919,18 @@ chunk_is_sixel(sixel_chunk_t const *chunk)
 static int
 chunk_is_pnm(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 3u) {
+    sixel_chunk_bytes_view_t view;
+
+    view.bytes = NULL;
+    view.size = 0u;
+    if (sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
+        view.bytes == NULL || view.size < 3u) {
         return 0;
     }
-    if (sixel_chunk_get_buffer(chunk)[0] == 'P' &&
-        sixel_chunk_get_buffer(chunk)[1] >= '1' &&
-        sixel_chunk_get_buffer(chunk)[1] <= '7' &&
-        isspace((unsigned char)sixel_chunk_get_buffer(chunk)[2])) {
+    if (view.bytes[0] == 'P' &&
+        view.bytes[1] >= '1' &&
+        view.bytes[1] <= '7' &&
+        isspace((unsigned char)view.bytes[2])) {
         return 1;
     }
     return 0;
@@ -1982,6 +1998,7 @@ sixel_builtin_count_gif_frames(sixel_chunk_t const *pchunk, int *frame_count)
         6u, 12u, 24u, 48u, 96u, 192u, 384u, 768u
     };
     SIXELSTATUS status;
+    sixel_chunk_bytes_view_t view;
     unsigned char const *p;
     unsigned char const *end;
     size_t gct_size;
@@ -1992,6 +2009,8 @@ sixel_builtin_count_gif_frames(sixel_chunk_t const *pchunk, int *frame_count)
     int count;
 
     status = SIXEL_OK;
+    view.bytes = NULL;
+    view.size = 0u;
     p = NULL;
     end = NULL;
     gct_size = 0;
@@ -2001,12 +2020,13 @@ sixel_builtin_count_gif_frames(sixel_chunk_t const *pchunk, int *frame_count)
     block_size = 0;
     count = 0;
 
-    if (sixel_chunk_get_size(pchunk) < 13) {
+    if (sixel_chunk_get_bytes(pchunk, &view) != SIXEL_OK ||
+        view.bytes == NULL || view.size < 13u) {
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    p = sixel_chunk_get_buffer(pchunk);
-    end = sixel_chunk_get_buffer(pchunk) + sixel_chunk_get_size(pchunk);
+    p = view.bytes;
+    end = view.bytes + view.size;
     if (memcmp(p, "GIF", 3) != 0) {
         status = SIXEL_BAD_INPUT;
         goto end;
@@ -2930,19 +2950,24 @@ sixel_builtin_apng_begin_loop_iteration(
     sixel_builtin_apng_runtime_t *runtime,
     sixel_chunk_t const *pchunk)
 {
+    sixel_chunk_bytes_view_t view;
+
+    view.bytes = NULL;
+    view.size = 0u;
     if (state == NULL ||
         control == NULL ||
         canvas == NULL ||
         runtime == NULL ||
-        pchunk == NULL ||
-        sixel_chunk_get_size(pchunk) < 8) {
+        sixel_chunk_get_bytes(pchunk, &view) != SIXEL_OK ||
+        view.bytes == NULL ||
+        view.size < 8u) {
         return;
     }
 
     memset(state, 0, sizeof(*state));
     memset(control, 0, sizeof(*control));
-    runtime->p = sixel_chunk_get_buffer(pchunk) + 8;
-    runtime->remain = sixel_chunk_get_size(pchunk) - 8;
+    runtime->p = view.bytes + 8;
+    runtime->remain = view.size - 8u;
     runtime->seen_actl = 0;
     runtime->has_frame = 0;
     runtime->source_frame_no = 0;
@@ -3852,7 +3877,12 @@ typedef enum sixel_builtin_decode_path {
 static int
 sixel_builtin_chunk_is_webp_candidate(sixel_chunk_t const *chunk)
 {
-    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL) {
+    sixel_chunk_bytes_view_t view;
+
+    view.bytes = NULL;
+    view.size = 0u;
+    if (sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
+        view.bytes == NULL) {
         return 0;
     }
     if (chunk_is_webp(chunk)) {
@@ -3863,11 +3893,11 @@ sixel_builtin_chunk_is_webp_candidate(sixel_chunk_t const *chunk)
      * Route RIFF-like inputs to fromwebp so malformed WebP headers still
      * produce deterministic LSXWEBP1 error contracts instead of stbi fallback.
      */
-    if (sixel_chunk_get_size(chunk) >= 4u &&
-        sixel_chunk_get_buffer(chunk)[0] == 'R' &&
-        sixel_chunk_get_buffer(chunk)[1] == 'I' &&
-        sixel_chunk_get_buffer(chunk)[2] == 'F' &&
-        sixel_chunk_get_buffer(chunk)[3] == 'F') {
+    if (view.size >= 4u &&
+        view.bytes[0] == 'R' &&
+        view.bytes[1] == 'I' &&
+        view.bytes[2] == 'F' &&
+        view.bytes[3] == 'F') {
         return 1;
     }
 
@@ -3916,26 +3946,30 @@ sixel_builtin_chunk_has_apng_control(sixel_chunk_t const *chunk)
     static unsigned char const png_signature[8] = {
         0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au
     };
+    sixel_chunk_bytes_view_t view;
     unsigned char const *p;
     size_t remain;
     uint32_t chunk_length;
 
+    view.bytes = NULL;
+    view.size = 0u;
     p = NULL;
     remain = 0u;
     chunk_length = 0u;
-    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || sixel_chunk_get_size(chunk) < 8u) {
+    if (sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
+        view.bytes == NULL || view.size < 8u) {
         return 0;
     }
     /*
      * Start-frame parsing must only run for animated input. A lightweight
      * acTL probe keeps static PNG decode tolerant to invalid env values.
      */
-    if (memcmp(sixel_chunk_get_buffer(chunk), png_signature, sizeof(png_signature)) != 0) {
+    if (memcmp(view.bytes, png_signature, sizeof(png_signature)) != 0) {
         return 0;
     }
 
-    p = sixel_chunk_get_buffer(chunk) + 8;
-    remain = sixel_chunk_get_size(chunk) - 8u;
+    p = view.bytes + 8;
+    remain = view.size - 8u;
     while (remain >= 12u) {
         chunk_length = sixel_builtin_read_be32(p);
         if ((size_t)chunk_length > remain - 12u) {
@@ -4096,13 +4130,18 @@ sixel_builtin_resolve_nonwebp_orientation(sixel_chunk_t const *chunk,
                                           int enable_orientation,
                                           int *orientation_out)
 {
+    sixel_chunk_bytes_view_t view;
     int parsed_orientation;
     int found;
 
+    view.bytes = NULL;
+    view.size = 0u;
     parsed_orientation = 1;
     found = 0;
-    if (chunk == NULL || orientation_out == NULL || sixel_chunk_get_buffer(chunk) == NULL ||
-        enable_orientation == 0) {
+    if (orientation_out == NULL ||
+        enable_orientation == 0 ||
+        sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
+        view.bytes == NULL) {
         return 0;
     }
     if (chunk_is_webp(chunk)) {
@@ -4110,16 +4149,16 @@ sixel_builtin_resolve_nonwebp_orientation(sixel_chunk_t const *chunk,
     }
 
     if (chunk_is_jpeg(chunk)) {
-        found = sixel_builtin_parse_jpeg_exif_orientation(sixel_chunk_get_buffer(chunk),
-                                                          sixel_chunk_get_size(chunk),
+        found = sixel_builtin_parse_jpeg_exif_orientation(view.bytes,
+                                                          view.size,
                                                           &parsed_orientation);
     } else if (chunk_is_png(chunk)) {
-        found = sixel_builtin_parse_png_exif_orientation(sixel_chunk_get_buffer(chunk),
-                                                         sixel_chunk_get_size(chunk),
+        found = sixel_builtin_parse_png_exif_orientation(view.bytes,
+                                                         view.size,
                                                          &parsed_orientation);
     } else if (chunk_is_tiff(chunk)) {
-        found = loader_exif_parse_orientation(sixel_chunk_get_buffer(chunk),
-                                              sixel_chunk_get_size(chunk),
+        found = loader_exif_parse_orientation(view.bytes,
+                                              view.size,
                                               &parsed_orientation);
     } else {
         found = 0;
@@ -5229,6 +5268,7 @@ sixel_builtin_load_psd_single_frame(
     size_t *mask_size)
 {
     SIXELSTATUS status;
+    sixel_chunk_bytes_view_t chunk_view;
     unsigned char *pixels;
     int psd_pixelformat;
     int psd_custom_decode_mode;
@@ -5244,6 +5284,8 @@ sixel_builtin_load_psd_single_frame(
     sixel_builtin_psd_decode_basic_fn_t basic_decode_fn;
 
     status = SIXEL_FALSE;
+    chunk_view.bytes = NULL;
+    chunk_view.size = 0u;
     pixels = NULL;
     psd_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     psd_custom_decode_mode = 0;
@@ -5297,9 +5339,11 @@ sixel_builtin_load_psd_single_frame(
         sixel_builtin_psd_trace_contract_flush(1);
         return SIXEL_STBI_ERROR;
     }
-    if (enable_cms) {
-        psd_icc_status = sixel_builtin_extract_psd_icc(sixel_chunk_get_buffer(chunk),
-                                                       sixel_chunk_get_size(chunk),
+    if (enable_cms &&
+        sixel_chunk_get_bytes(chunk, &chunk_view) == SIXEL_OK &&
+        chunk_view.bytes != NULL) {
+        psd_icc_status = sixel_builtin_extract_psd_icc(chunk_view.bytes,
+                                                       chunk_view.size,
                                                        &psd_icc_profile,
                                                        &psd_icc_profile_length);
     }
@@ -5446,30 +5490,34 @@ sixel_builtin_tga_has_truecolor_alpha(
     sixel_chunk_t const *chunk,
     int chunk_size)
 {
+    sixel_chunk_bytes_view_t view;
     stbi__context stb_context;
     int tga_width;
     int tga_height;
     int tga_comp;
 
+    view.bytes = NULL;
+    view.size = 0u;
     tga_width = 0;
     tga_height = 0;
     tga_comp = 0;
-    if (chunk == NULL ||
-        sixel_chunk_get_buffer(chunk) == NULL ||
-        chunk_size < 18) {
+    if (sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
+        view.bytes == NULL ||
+        chunk_size < 18 ||
+        view.size < (size_t)chunk_size) {
         return 0;
     }
-    if (sixel_chunk_get_buffer(chunk)[1] != 0u) {
+    if (view.bytes[1] != 0u) {
         return 0;
     }
-    if (sixel_chunk_get_buffer(chunk)[2] != 2u &&
-        sixel_chunk_get_buffer(chunk)[2] != 10u) {
+    if (view.bytes[2] != 2u &&
+        view.bytes[2] != 10u) {
         return 0;
     }
-    if (sixel_chunk_get_buffer(chunk)[16] != 32u) {
+    if (view.bytes[16] != 32u) {
         return 0;
     }
-    stbi__start_mem(&stb_context, sixel_chunk_get_buffer(chunk), chunk_size);
+    stbi__start_mem(&stb_context, view.bytes, chunk_size);
     if (!stbi__tga_info(&stb_context, &tga_width, &tga_height, &tga_comp)) {
         return 0;
     }

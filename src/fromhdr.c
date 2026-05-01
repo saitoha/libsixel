@@ -2504,6 +2504,7 @@ sixel_builtin_decode_hdr_float32_custom(
 {
     unsigned char *pixels;
     unsigned char *scanline_rgbe;
+    unsigned char const *chunk_buffer;
     size_t pixel_count;
     size_t sample_count;
     size_t pixel_bytes;
@@ -2518,6 +2519,7 @@ sixel_builtin_decode_hdr_float32_custom(
 
     pixels = NULL;
     scanline_rgbe = NULL;
+    chunk_buffer = NULL;
     pixel_count = 0u;
     sample_count = 0u;
     pixel_bytes = 0u;
@@ -2534,13 +2536,16 @@ sixel_builtin_decode_hdr_float32_custom(
     status = SIXEL_FALSE;
 
     if (chunk == NULL ||
-        sixel_chunk_get_buffer(chunk) == NULL ||
         hint == NULL ||
         ppixels == NULL ||
         pwidth == NULL ||
         pheight == NULL ||
         ppixelformat == NULL ||
         pcolorspace == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    chunk_buffer = sixel_chunk_get_buffer(chunk);
+    if (chunk_buffer == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (!hint->has_resolution || !hint->has_format) {
@@ -2626,10 +2631,10 @@ sixel_builtin_decode_hdr_float32_custom(
                 SIXEL_STBI_ERROR,
                 "builtin HDR: truncated pixel stream.");
         }
-        first_pixel[0] = sixel_chunk_get_buffer(chunk)[cursor + 0u];
-        first_pixel[1] = sixel_chunk_get_buffer(chunk)[cursor + 1u];
-        first_pixel[2] = sixel_chunk_get_buffer(chunk)[cursor + 2u];
-        first_pixel[3] = sixel_chunk_get_buffer(chunk)[cursor + 3u];
+        first_pixel[0] = chunk_buffer[cursor + 0u];
+        first_pixel[1] = chunk_buffer[cursor + 1u];
+        first_pixel[2] = chunk_buffer[cursor + 2u];
+        first_pixel[3] = chunk_buffer[cursor + 3u];
         use_new_rle = sixel_builtin_hdr_scanline_uses_new_rle(scanline_length,
                                                               first_pixel);
     }
