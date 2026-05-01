@@ -15,7 +15,7 @@
 
 #include <sixel.h>
 
-#include "chunk.h"
+#include "chunk-factory.h"
 #include "factory.h"
 #include "loader-common.h"
 #include "loader.h"
@@ -181,7 +181,9 @@ fuzz_loader_builtin_runtime_run(uint8_t const *option_data,
 {
     enum { FUZZ_MAX_INPUT_BYTES = 4 * 1024 * 1024 };
 
-    sixel_chunk_t chunk;
+    SIXELSTATUS status;
+    sixel_chunk_t *chunk;
+    unsigned char const *chunk_data;
     int fstatic;
     int fuse_palette;
     int reqcolors;
@@ -190,6 +192,10 @@ fuzz_loader_builtin_runtime_run(uint8_t const *option_data,
     int enable_cms;
     int use_bgcolor;
     unsigned char bgcolor[3];
+
+    status = SIXEL_FALSE;
+    chunk = NULL;
+    chunk_data = NULL;
 
     if (payload_size > (size_t)FUZZ_MAX_INPUT_BYTES) {
         return 0;
@@ -248,19 +254,25 @@ fuzz_loader_builtin_runtime_run(uint8_t const *option_data,
     sixel_helper_set_builtin_enable_cms(enable_cms);
 
     if (payload_size == 0u) {
-        chunk.buffer = g_empty_input;
+        chunk_data = g_empty_input;
     } else {
-        chunk.buffer = (unsigned char *)(uintptr_t)payload;
+        chunk_data = payload;
     }
-    chunk.size = payload_size;
-    chunk.max_size = payload_size;
-    chunk.source_path = NULL;
-    chunk.allocator = g_allocator;
+    status = sixel_chunk_create_from_memory(&chunk,
+                                            chunk_data,
+                                            payload_size,
+                                            NULL,
+                                            g_allocator);
+    if (SIXEL_FAILED(status) || chunk == NULL) {
+        return 0;
+    }
 
     (void)sixel_loader_component_load(g_component,
-                                      &chunk,
+                                      chunk,
                                       fuzz_frame_callback,
                                       NULL);
+
+    chunk->vtbl->unref(chunk);
 
     return 1;
 }

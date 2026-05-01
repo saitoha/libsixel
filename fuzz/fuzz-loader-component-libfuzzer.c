@@ -14,7 +14,7 @@
 
 #include <sixel.h>
 
-#include "chunk.h"
+#include "chunk-factory.h"
 #include "factory.h"
 #include "loader-common.h"
 #include "loader.h"
@@ -139,7 +139,9 @@ int
 LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
 {
     uint64_t h;
-    sixel_chunk_t chunk;
+    SIXELSTATUS status;
+    sixel_chunk_t *chunk;
+    unsigned char const *chunk_data;
     int fstatic;
     int fuse_palette;
     int reqcolors;
@@ -148,6 +150,10 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
     int enable_cms;
     int use_bgcolor;
     unsigned char bgcolor[3];
+
+    status = SIXEL_FALSE;
+    chunk = NULL;
+    chunk_data = NULL;
 
     if (data == NULL || size > FUZZ_MAX_INPUT_BYTES) {
         return 0;
@@ -199,16 +205,22 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
                                         SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_CMS,
                                         &enable_cms);
 
-    chunk.buffer = size == 0u ? g_empty_input : (unsigned char *)(uintptr_t)data;
-    chunk.size = size;
-    chunk.max_size = size;
-    chunk.source_path = NULL;
-    chunk.allocator = g_allocator;
+    chunk_data = size == 0u ? g_empty_input : data;
+    status = sixel_chunk_create_from_memory(&chunk,
+                                            chunk_data,
+                                            size,
+                                            NULL,
+                                            g_allocator);
+    if (SIXEL_FAILED(status) || chunk == NULL) {
+        return 0;
+    }
 
     (void)sixel_loader_component_load(g_component,
-                                      &chunk,
+                                      chunk,
                                       fuzz_frame_callback,
                                       NULL);
+    chunk->vtbl->unref(chunk);
+
     return 0;
 }
 

@@ -52,7 +52,7 @@ else
 fi
 
 find "$src_root/src" "$src_root/include" "$src_root/tests" \
-    "$src_root/converters" "$src_root/assessment" \
+    "$src_root/converters" "$src_root/assessment" "$src_root/fuzz" \
     -type f \( -name '*.c' -o -name '*.h' -o -name '*.idl' \
         -o -name '*.awk' -o -name '*.gperf' \) \
     ! -path "$src_root/tests/_static/sh/staticcheck-chunk-component-boundary.sh" \
@@ -71,7 +71,7 @@ else
 fi
 
 find "$src_root/src" "$src_root/include" "$src_root/tests" \
-    "$src_root/converters" "$src_root/assessment" \
+    "$src_root/converters" "$src_root/assessment" "$src_root/fuzz" \
     -type f \( -name '*.c' -o -name '*.h' -o -name '*.inc.c' \) \
     ! -path "$src_root/src/chunk.c" \
     -exec awk '

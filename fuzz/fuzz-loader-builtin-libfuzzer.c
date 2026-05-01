@@ -22,7 +22,7 @@
 
 #include <sixel.h>
 
-#include "chunk.h"
+#include "chunk-factory.h"
 #include "factory.h"
 #include "loader-common.h"
 #include "loader.h"
@@ -678,7 +678,9 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
 {
     enum { FUZZ_MAX_INPUT_BYTES = 4 * 1024 * 1024 };
 
-    sixel_chunk_t chunk;
+    SIXELSTATUS status;
+    sixel_chunk_t *chunk;
+    unsigned char const *chunk_data;
     unsigned char const *payload_data;
     size_t payload_size;
     int fstatic;
@@ -704,6 +706,9 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
         return 0;
     }
 
+    status = SIXEL_FALSE;
+    chunk = NULL;
+    chunk_data = NULL;
     payload_data = (unsigned char const *)(uintptr_t)data;
     payload_size = size;
     if (!fuzz_prepare_input_forced_format(data,
@@ -750,19 +755,25 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
     sixel_helper_set_builtin_enable_cms(enable_cms);
 
     if (payload_size == 0u) {
-        chunk.buffer = g_empty_input;
+        chunk_data = g_empty_input;
     } else {
-        chunk.buffer = (unsigned char *)(uintptr_t)payload_data;
+        chunk_data = payload_data;
     }
-    chunk.size = payload_size;
-    chunk.max_size = payload_size;
-    chunk.source_path = NULL;
-    chunk.allocator = g_allocator;
+    status = sixel_chunk_create_from_memory(&chunk,
+                                            chunk_data,
+                                            payload_size,
+                                            NULL,
+                                            g_allocator);
+    if (SIXEL_FAILED(status) || chunk == NULL) {
+        return 0;
+    }
 
     (void)sixel_loader_component_load(g_component,
-                                      &chunk,
+                                      chunk,
                                       fuzz_frame_callback,
                                       NULL);
+
+    chunk->vtbl->unref(chunk);
 
     return 0;
 }
