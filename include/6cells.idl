@@ -119,10 +119,6 @@ interface lookup_policy {
  */
 interface dither_policy;
 
-typedef int (*sixel_dither_lookup_map_fn)(
-    in lookup_policy const *policy,
-    in unsigned char const *pixel);
-
 struct dither_policy_select_request {
     int method_for_diffuse;
     int ncolors;

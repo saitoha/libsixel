@@ -58,7 +58,6 @@ typedef struct sixel_dither_policy_none_context {
     float *palette_float;
     int method_for_scan;
     struct sixel_lookup_policy_interface *lookup_policy;
-    sixel_dither_lookup_map_fn lookup_map;
     int pixelformat;
     int float_depth;
     unsigned char const *transparent_mask;
@@ -111,7 +110,6 @@ sixel_dither_apply_none_8bit(
     unsigned char *palette,
     int method_for_scan,
     sixel_lookup_policy_interface_t const *lookup_policy,
-    sixel_dither_lookup_map_fn lookup_map,
     sixel_dither_t *dither)
 {
     SIXELSTATUS status;
@@ -148,7 +146,8 @@ sixel_dither_apply_none_8bit(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
-    if (lookup_policy == NULL || lookup_map == NULL) {
+    if (lookup_policy == NULL || lookup_policy->vtbl == NULL
+            || lookup_policy->vtbl->map_pixel == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -199,7 +198,9 @@ sixel_dither_apply_none_8bit(
             }
 
             source_pixel = data + base;
-            color_index = lookup_map(lookup_policy, source_pixel);
+            color_index = lookup_policy->vtbl->map_pixel(
+                lookup_policy,
+                source_pixel);
             output_index = color_index;
 
             if (absolute_y >= output_start) {
@@ -358,7 +359,8 @@ sixel_dither_apply_none_float32(
     if (context->result == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (context->lookup_policy == NULL || context->lookup_map == NULL) {
+    if (context->lookup_policy == NULL || context->lookup_policy->vtbl == NULL
+            || context->lookup_policy->vtbl->map_pixel == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -423,8 +425,9 @@ sixel_dither_apply_none_float32(
 
             lookup_pixel = (unsigned char const *)(void const *)
                 working_float;
-            color_index = context->lookup_map(context->lookup_policy,
-                                              lookup_pixel);
+            color_index = context->lookup_policy->vtbl->map_pixel(
+                context->lookup_policy,
+                lookup_pixel);
 
                 output_index = color_index;
                 if (absolute_y >= context->output_start) {
@@ -583,10 +586,8 @@ sixel_dither_policy_none_build_context(
     sixel_dither_policy_apply_request_t const *request,
     sixel_dither_policy_none_context_t *context)
 {
-    sixel_dither_lookup_map_fn lookup_map;
     sixel_dither_t *dither;
 
-    lookup_map = NULL;
     dither = NULL;
 
     if (request == NULL || context == NULL || request->lookup_policy == NULL
@@ -607,10 +608,7 @@ sixel_dither_policy_none_build_context(
     context->pixelformat = request->pixelformat;
     context->method_for_scan = request->method_for_scan;
 
-    lookup_map = request->lookup_policy->vtbl->map_pixel;
-    context->lookup_map = lookup_map;
-
-    if (lookup_map == NULL) {
+    if (request->lookup_policy->vtbl->map_pixel == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dither_map_pixels: lookup policy is not prepared.");
         return SIXEL_BAD_ARGUMENT;
@@ -686,7 +684,6 @@ sixel_dither_policy_none_apply_8bit(
         context.palette,
         context.method_for_scan,
         context.lookup_policy,
-        context.lookup_map,
         effective.dither);
 }
 

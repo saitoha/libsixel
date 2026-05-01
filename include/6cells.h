@@ -162,10 +162,6 @@ struct sixel_lookup_policy_interface {
  */
 typedef struct sixel_dither_policy_interface sixel_dither_policy_interface_t;
 
-typedef int (*sixel_dither_lookup_map_fn)(
-    sixel_lookup_policy_interface_t const *policy,
-    unsigned char const *pixel);
-
 typedef struct sixel_dither_policy_select_request {
     int method_for_diffuse;
     int ncolors;
