@@ -5,6 +5,7 @@ set -eu
 
 src_root=${1:-}
 configure_ac=$src_root/configure.ac
+meson_build=$src_root/meson.build
 
 echo "1..1"
 
@@ -19,6 +20,7 @@ trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
 bad=$tmpdir/bad.txt
 probe_bad=$tmpdir/probe-bad.txt
+meson_probe_bad=$tmpdir/meson-probe-bad.txt
 
 for scan_dir in "$src_root/src" "$src_root/include" "$src_root/tests"
 do
@@ -100,6 +102,63 @@ else
 fi
 
 cat "$probe_bad" >> "$bad"
+
+if test -f "$meson_build"; then
+    awk '
+    /Keep this in sync with configure\.ac.*-Wdeprecated-declarations probe/ {
+        in_probe = 1
+    }
+    in_probe && /!defined\(__PCC__\)/ {
+        saw_pcc_exclusion = 1
+    }
+    in_probe && /__attribute__\(\(deprecated\)\)/ {
+        saw_deprecated_attribute = 1
+    }
+    in_probe && /return sixel_deprecated_probe\(\);/ {
+        saw_deprecated_call = 1
+    }
+    in_probe && /args:[[:space:]]*\[[^]]*-Werror/ {
+        saw_werror_probe = 1
+    }
+    in_probe && /conf.set.*HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS/ {
+        saw_conf_set = 1
+    }
+    in_probe && /^endif/ && saw_conf_set {
+        in_probe = 0
+    }
+    /^wflags = cc\.get_supported_arguments/ {
+        in_wflags = 1
+    }
+    /^foreach f: wflags/ {
+        in_wflags_loop = 1
+    }
+    in_wflags_loop && /HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS/ {
+        saw_wflags_define = 1
+    }
+    /^endforeach/ && in_wflags_loop {
+        in_wflags = 0
+        in_wflags_loop = 0
+    }
+    END {
+        if (!saw_pcc_exclusion) {
+            print "meson.build: deprecated diagnostic probe does not exclude __PCC__"
+        }
+        if (!saw_deprecated_attribute || !saw_deprecated_call) {
+            print "meson.build: deprecated diagnostic probe does not compile a deprecated call"
+        }
+        if (!saw_werror_probe) {
+            print "meson.build: deprecated diagnostic probe does not use -Werror"
+        }
+        if (saw_wflags_define) {
+            print "meson.build: warning flag support must not define deprecated diagnostic pragma support"
+        }
+    }
+    ' "$meson_build" > "$meson_probe_bad"
+else
+    printf '%s\n' "meson.build: missing file" > "$meson_probe_bad"
+fi
+
+cat "$meson_probe_bad" >> "$bad"
 
 if test -s "$bad"; then
     echo "not ok 1 - deprecated diagnostic pragmas use configured guards"

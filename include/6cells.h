@@ -50,6 +50,19 @@ struct sixel_logger;
 struct sixel_option_argument_list_resolution;
 typedef struct sixel_factory_interface sixel_factory_t;
 
+/*
+ * IDL contract:
+ * [alias(sixel_factory_t)]
+ * interface factory {
+ *     void ref();
+ *     void unref();
+ *     SIXELSTATUS create(
+ *         in char const *class_name,
+ *         in sixel_allocator_t *allocator,
+ *         out void **object);
+ * };
+ */
+
 typedef struct sixel_factory_vtbl {
     void (*ref)(sixel_factory_t *factory);
     void (*unref)(sixel_factory_t *factory);
@@ -74,13 +87,6 @@ sixel_components_getservice(char const *name,
     void **service);
 
 /*
- * interface ILookupPolicy {
- *   ref();
- *   unref();
- *   prepare(request);
- *   map_pixel(pixel);
- * }
- *
  * Ownership/lifetime:
  * - Factory create returns refcount=1 policy objects.
  * - Callers release with policy->vtbl->unref(policy).
@@ -127,6 +133,18 @@ typedef struct sixel_lookup_policy_prepare_request {
 
 typedef int sixel_lookup_policy_result_t;
 
+/*
+ * IDL contract:
+ * [receiver(policy)]
+ * interface lookup_policy {
+ *     void ref();
+ *     void unref();
+ *     SIXELSTATUS prepare(in lookup_policy_prepare_request const *request);
+ *     [const] lookup_policy_result map_pixel(
+ *         in unsigned char const *pixel);
+ * };
+ */
+
 typedef struct sixel_lookup_policy_vtbl {
     void (*ref)(sixel_lookup_policy_interface_t *policy);
     void (*unref)(sixel_lookup_policy_interface_t *policy);
@@ -143,14 +161,6 @@ struct sixel_lookup_policy_interface {
 };
 
 /*
- * interface IDitherPolicy {
- *   ref();
- *   unref();
- *   prepare(request);
- *   apply(request);
- *   supports_parallel_bands();
- * }
- *
  * Ownership/lifetime:
  * - Factory create returns refcount=1 policy objects.
  * - Callers release with policy->vtbl->unref(policy).
@@ -192,6 +202,18 @@ typedef struct sixel_dither_policy_apply_request {
 
 typedef int sixel_dither_policy_supports_parallel_result_t;
 
+/*
+ * IDL contract:
+ * [receiver(policy)]
+ * interface dither_policy {
+ *     void ref();
+ *     void unref();
+ *     SIXELSTATUS prepare(in dither_policy_prepare_request const *request);
+ *     SIXELSTATUS apply(in dither_policy_apply_request const *request);
+ *     [const] dither_policy_supports_parallel_result supports_parallel_bands();
+ * };
+ */
+
 typedef struct sixel_dither_policy_vtbl {
     void (*ref)(sixel_dither_policy_interface_t *policy);
     void (*unref)(sixel_dither_policy_interface_t *policy);
@@ -210,18 +232,24 @@ struct sixel_dither_policy_interface {
     sixel_dither_policy_vtbl_t const *vtbl;
 };
 
-/*
- * interface ILoaderComponent {
- *   ref();
- *   unref();
- *   setopt(option, value);
- *   predicate(chunk);
- *   load(chunk);
- *   name();
- * }
- */
 typedef struct sixel_loader_component_interface
     sixel_loader_component_interface_t;
+
+/*
+ * IDL contract:
+ * [receiver(loader)]
+ * interface loader_component {
+ *     void ref();
+ *     void unref();
+ *     SIXELSTATUS setopt(in int option, in void const *value);
+ *     SIXELSTATUS load(
+ *         in struct sixel_chunk const *chunk,
+ *         in sixel_load_image_function fn_load,
+ *         in void *context);
+ *     [const] char const *name();
+ *     int predicate(in struct sixel_chunk const *chunk);
+ * };
+ */
 
 typedef struct sixel_loader_component_vtbl {
     void (*ref)(sixel_loader_component_interface_t *loader);
@@ -249,14 +277,6 @@ typedef sixel_loader_component_interface_t sixel_loader_component_t;
 
 typedef sixel_loader_component_vtbl_t sixel_loader_vtbl_t;
 
-/*
- * interface ILoaderManager {
- *   ref();
- *   unref();
- *   build_chain(request);
- *   load(chunk, out selected_loader);
- * }
- */
 typedef struct sixel_loader_manager_interface sixel_loader_manager_t;
 
 typedef struct sixel_loader_suboptions {
@@ -297,6 +317,21 @@ typedef struct sixel_loader_manager_build_request {
     sixel_loader_t *timeline_loader;
 } sixel_loader_manager_build_request_t;
 
+/*
+ * IDL contract:
+ * [receiver(manager)]
+ * interface loader_manager {
+ *     void ref();
+ *     void unref();
+ *     SIXELSTATUS build_chain(in loader_manager_build_request const *request);
+ *     SIXELSTATUS load(
+ *         in struct sixel_chunk const *chunk,
+ *         out loader_component **selected_loader,
+ *         in sixel_load_image_function fn_load,
+ *         in void *load_context);
+ * };
+ */
+
 typedef struct sixel_loader_manager_vtbl {
     void (*ref)(sixel_loader_manager_t *manager);
     void (*unref)(sixel_loader_manager_t *manager);
@@ -316,24 +351,6 @@ struct sixel_loader_manager_interface {
 };
 
 /*
- * interface IFrame {
- *   ref();
- *   unref();
- *   init_pixels(request);
- *   get_pixels(view);
- *   set_pixelformat(pixelformat);
- *   get_timeline(timeline);
- *   set_timeline(timeline);
- *   get_transparency(transparency);
- *   set_transparency(transparency);
- *   resize(width, height, method);
- *   resize_float32(width, height, method);
- *   clip(x, y, width, height);
- *   allocator();
- *   measure_storage(bytes);
- *   clone(allocator);
- * }
- *
  * Ownership/lifetime:
  * - Existing public sixel_frame_new() returns refcount=1 frame objects.
  * - init_pixels() takes ownership of request->pixels and request->palette,
@@ -389,6 +406,35 @@ typedef struct sixel_frame_transparency {
     unsigned char *transparent_mask;
     size_t transparent_mask_size;
 } sixel_frame_transparency_t;
+
+/*
+ * IDL contract:
+ * interface frame {
+ *     void ref();
+ *     void unref();
+ *     SIXELSTATUS init_pixels(in frame_pixels_request const *request);
+ *     SIXELSTATUS get_pixels(out frame_pixels_view *view);
+ *     SIXELSTATUS set_pixelformat(in int pixelformat);
+ *     SIXELSTATUS get_timeline(out frame_timeline *timeline);
+ *     SIXELSTATUS set_timeline(in frame_timeline const *timeline);
+ *     SIXELSTATUS get_transparency(out frame_transparency *transparency);
+ *     SIXELSTATUS set_transparency(in frame_transparency const *transparency);
+ *     SIXELSTATUS resize(
+ *         in int width,
+ *         in int height,
+ *         in int method_for_resampling);
+ *     SIXELSTATUS resize_float32(
+ *         in int width,
+ *         in int height,
+ *         in int method_for_resampling);
+ *     SIXELSTATUS clip(in int x, in int y, in int width, in int height);
+ *     sixel_allocator_t *allocator();
+ *     SIXELSTATUS measure_storage(out size_t *storage_bytes);
+ *     SIXELSTATUS clone(
+ *         in sixel_allocator_t *allocator,
+ *         out frame **frame_out);
+ * };
+ */
 
 typedef struct sixel_frame_vtbl {
     void (*ref)(sixel_frame_interface_t *frame);

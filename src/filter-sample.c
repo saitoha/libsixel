@@ -164,6 +164,7 @@ sixel_filter_sample_copy_frame(
     sixel_frame_t *sample;
     sixel_frame_interface_t *frame_if;
     sixel_frame_interface_t *sample_if;
+    sixel_frame_vtbl_t const *sample_vtbl;
     sixel_frame_pixels_request_t pixels_request;
     sixel_frame_timeline_t timeline;
     sixel_frame_transparency_t src_transparency;
@@ -200,6 +201,7 @@ sixel_filter_sample_copy_frame(
     sample = NULL;
     frame_if = NULL;
     sample_if = NULL;
+    sample_vtbl = NULL;
     memset(&pixels_request, 0, sizeof(pixels_request));
     memset(&timeline, 0, sizeof(timeline));
     memset(&src_transparency, 0, sizeof(src_transparency));
@@ -375,11 +377,23 @@ sixel_filter_sample_copy_frame(
         sixel_allocator_free(allocator, normalized_src_pixels);
         return status;
     }
+    if (sample_if == NULL || sample_if->vtbl == NULL) {
+        sixel_allocator_free(allocator, normalized_src_pixels);
+        return SIXEL_BAD_ARGUMENT;
+    }
+    sample_vtbl = sample_if->vtbl;
+    if (sample_vtbl->init_pixels == NULL ||
+        sample_vtbl->set_timeline == NULL ||
+        sample_vtbl->set_transparency == NULL ||
+        sample_vtbl->unref == NULL) {
+        sixel_allocator_free(allocator, normalized_src_pixels);
+        return SIXEL_BAD_ARGUMENT;
+    }
     sample = (sixel_frame_t *)sample_if;
     dst_pixels = (unsigned char *)sixel_allocator_malloc(allocator,
                                                          payload_size);
     if (dst_pixels == NULL) {
-        sample_if->vtbl->unref(sample_if);
+        sample_vtbl->unref(sample_if);
         sixel_allocator_free(allocator, normalized_src_pixels);
         return SIXEL_BAD_ALLOCATION;
     }
@@ -393,10 +407,10 @@ sixel_filter_sample_copy_frame(
     pixels_request.ncolors = (-1);
     pixels_request.kind = SIXEL_FRAME_PIXELS_U8;
 
-    status = sample_if->vtbl->init_pixels(sample_if, &pixels_request);
+    status = sample_vtbl->init_pixels(sample_if, &pixels_request);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, dst_pixels);
-        sample_if->vtbl->unref(sample_if);
+        sample_vtbl->unref(sample_if);
         sixel_allocator_free(allocator, normalized_src_pixels);
         return status;
     }
@@ -407,9 +421,9 @@ sixel_filter_sample_copy_frame(
      * frames.
      */
     timeline.handoff_shareable = 0;
-    status = sample_if->vtbl->set_timeline(sample_if, &timeline);
+    status = sample_vtbl->set_timeline(sample_if, &timeline);
     if (SIXEL_FAILED(status)) {
-        sample_if->vtbl->unref(sample_if);
+        sample_vtbl->unref(sample_if);
         sixel_allocator_free(allocator, normalized_src_pixels);
         return status;
     }
@@ -423,18 +437,17 @@ sixel_filter_sample_copy_frame(
         dst_mask = (unsigned char *)sixel_allocator_malloc(allocator,
                                                            mask_size);
         if (dst_mask == NULL) {
-            sample_if->vtbl->unref(sample_if);
+            sample_vtbl->unref(sample_if);
             sixel_allocator_free(allocator, normalized_src_pixels);
             return SIXEL_BAD_ALLOCATION;
         }
         dst_transparency.transparent_mask = dst_mask;
         dst_transparency.transparent_mask_size = mask_size;
     }
-    status = sample_if->vtbl->set_transparency(sample_if,
-                                               &dst_transparency);
+    status = sample_vtbl->set_transparency(sample_if, &dst_transparency);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, dst_mask);
-        sample_if->vtbl->unref(sample_if);
+        sample_vtbl->unref(sample_if);
         sixel_allocator_free(allocator, normalized_src_pixels);
         return status;
     }

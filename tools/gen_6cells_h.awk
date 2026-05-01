@@ -101,6 +101,37 @@ function clear_pending_attrs() {
     pending_const = 0
 }
 
+function clear_pending_idl_attrs(    i) {
+    for (i = 1; i <= pending_idl_attr_count; ++i) {
+        delete pending_idl_attrs[i]
+    }
+    pending_idl_attr_count = 0
+}
+
+function clear_idl_contract(    i) {
+    for (i = 1; i <= idl_contract_count; ++i) {
+        delete idl_contract_lines[i]
+    }
+    idl_contract_count = 0
+}
+
+function append_idl_contract(line) {
+    idl_contract_lines[++idl_contract_count] = line
+}
+
+function emit_idl_contract(    i) {
+    if (idl_contract_count == 0) {
+        return
+    }
+    print "/*"
+    print " * IDL contract:"
+    for (i = 1; i <= idl_contract_count; ++i) {
+        print " * " idl_contract_lines[i]
+    }
+    print " */"
+    print ""
+}
+
 function emit_header() {
     print "/*"
     print " * SPDX-License-Identifier: MIT"
@@ -255,6 +286,7 @@ function emit_interface(    i, vtbl_tag) {
     if (forwarded_interface[interface_name] != 1) {
         emit_struct_typedef(interface_tag, interface_alias)
     }
+    emit_idl_contract()
     vtbl_tag = interface_vtbl
     sub(/_t$/, "", vtbl_tag)
     printf("typedef struct %s {\n", vtbl_tag)
@@ -268,6 +300,7 @@ function emit_interface(    i, vtbl_tag) {
     print "};"
     print ""
     clear_methods()
+    clear_idl_contract()
 }
 
 function resolve_known_types(text,    out, i, c, token) {
@@ -333,6 +366,7 @@ function parse_arguments(arguments,    parts, count, i) {
 }
 
 function parse_attrs(attrs,    parts, count, i, item, value) {
+    pending_idl_attrs[++pending_idl_attr_count] = "[" attrs "]"
     count = split(attrs, parts, /,/)
     for (i = 1; i <= count; ++i) {
         item = trim(parts[i])
@@ -397,6 +431,7 @@ function emit_interface_forward(name) {
     setup_interface(name)
     emit_struct_typedef(interface_tag, interface_alias)
     forwarded_interface[name] = 1
+    clear_pending_idl_attrs()
 }
 
 function register_struct_type(name) {
@@ -567,6 +602,7 @@ function finish_decl() {
     decl_const = 0
     decl_after_mode = ""
     clear_pending_attrs()
+    clear_pending_idl_attrs()
 }
 
 mode == "comment" {
@@ -612,6 +648,9 @@ mode == "enum" {
 }
 
 mode == "decl" {
+    if (decl_kind == "method") {
+        append_idl_contract($0)
+    }
     decl_text = decl_text " " trim($0)
     if (decl_text ~ /\)[ \t]*(const[ \t]*)?;$/) {
         finish_decl()
@@ -622,6 +661,7 @@ mode == "decl" {
 mode == "interface" {
     line = trim($0)
     if (line == "};") {
+        append_idl_contract("};")
         emit_interface()
         mode = ""
         next
@@ -637,6 +677,7 @@ mode == "interface" {
         }
         next
     }
+    append_idl_contract($0)
     line = take_attrs(line)
     if (line == "") {
         next
@@ -712,6 +753,12 @@ mode == "interface" {
         sub(/[ \t]*\{$/, "", line)
         setup_interface(line)
         clear_methods()
+        clear_idl_contract()
+        for (i = 1; i <= pending_idl_attr_count; ++i) {
+            append_idl_contract(pending_idl_attrs[i])
+        }
+        append_idl_contract("interface " interface_name " {")
+        clear_pending_idl_attrs()
         mode = "interface"
         next
     }

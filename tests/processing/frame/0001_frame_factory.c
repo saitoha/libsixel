@@ -56,6 +56,12 @@ test_frame_factory_creates_default_frame(void)
         goto end;
     }
     factory = (sixel_factory_t *)service;
+    if (factory == NULL || factory->vtbl == NULL ||
+        factory->vtbl->create == NULL ||
+        factory->vtbl->unref == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
 
     status = factory->vtbl->create(factory, "image/frame",
                                    allocator, &object);
@@ -85,10 +91,11 @@ test_frame_factory_creates_default_frame(void)
     status = SIXEL_OK;
 
 end:
-    if (factory != NULL) {
+    if (factory != NULL && factory->vtbl != NULL &&
+        factory->vtbl->unref != NULL) {
         factory->vtbl->unref(factory);
     }
-    if (frame != NULL) {
+    if (frame != NULL && frame->vtbl != NULL && frame->vtbl->unref != NULL) {
         frame->vtbl->unref(frame);
     }
     if (allocator != NULL) {

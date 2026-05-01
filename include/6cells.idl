@@ -37,13 +37,6 @@ SIXELAPI SIXELSTATUS sixel_components_getservice(
     out void **service);
 
 /*
- * interface ILookupPolicy {
- *   ref();
- *   unref();
- *   prepare(request);
- *   map_pixel(pixel);
- * }
- *
  * Ownership/lifetime:
  * - Factory create returns refcount=1 policy objects.
  * - Callers release with policy->vtbl->unref(policy).
@@ -100,14 +93,6 @@ interface lookup_policy {
 };
 
 /*
- * interface IDitherPolicy {
- *   ref();
- *   unref();
- *   prepare(request);
- *   apply(request);
- *   supports_parallel_bands();
- * }
- *
  * Ownership/lifetime:
  * - Factory create returns refcount=1 policy objects.
  * - Callers release with policy->vtbl->unref(policy).
@@ -158,16 +143,6 @@ interface dither_policy {
     [const] dither_policy_supports_parallel_result supports_parallel_bands();
 };
 
-/*
- * interface ILoaderComponent {
- *   ref();
- *   unref();
- *   setopt(option, value);
- *   predicate(chunk);
- *   load(chunk);
- *   name();
- * }
- */
 interface loader_component;
 
 [receiver(loader)]
@@ -186,14 +161,6 @@ interface loader_component {
 typedef loader_component sixel_loader_component_t;
 typedef loader_component_vtbl sixel_loader_vtbl_t;
 
-/*
- * interface ILoaderManager {
- *   ref();
- *   unref();
- *   build_chain(request);
- *   load(chunk, out selected_loader);
- * }
- */
 [alias(sixel_loader_manager_t)]
 interface loader_manager;
 
@@ -248,24 +215,6 @@ interface loader_manager {
 };
 
 /*
- * interface IFrame {
- *   ref();
- *   unref();
- *   init_pixels(request);
- *   get_pixels(view);
- *   set_pixelformat(pixelformat);
- *   get_timeline(timeline);
- *   set_timeline(timeline);
- *   get_transparency(transparency);
- *   set_transparency(transparency);
- *   resize(width, height, method);
- *   resize_float32(width, height, method);
- *   clip(x, y, width, height);
- *   allocator();
- *   measure_storage(bytes);
- *   clone(allocator);
- * }
- *
  * Ownership/lifetime:
  * - Existing public sixel_frame_new() returns refcount=1 frame objects.
  * - init_pixels() takes ownership of request->pixels and request->palette,

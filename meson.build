@@ -334,12 +334,42 @@ if cc.compiles('''
    conf.set('HAVE_VAR_ATTRIBUTE_DEPRECATED', 1)
 endif
 
+# Keep this in sync with configure.ac's -Wdeprecated-declarations probe.
 if cc.compiles('''
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic pop
-    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-    __attribute__((deprecated)) void test(void) {}
-''')
+    #if defined(__clang__)
+    # pragma clang diagnostic push
+    # pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    #elif defined(__GNUC__) && !defined(__PCC__)
+    # pragma GCC diagnostic push
+    # pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    #else
+    # error unsupported diagnostic pragma
+    #endif
+
+    __attribute__((deprecated)) static int
+    sixel_deprecated_probe(void)
+    {
+      return 0;
+    }
+
+    static int
+    sixel_deprecated_probe_caller(void)
+    {
+      return sixel_deprecated_probe();
+    }
+
+    #if defined(__clang__)
+    # pragma clang diagnostic pop
+    #elif defined(__GNUC__) && !defined(__PCC__)
+    # pragma GCC diagnostic pop
+    #endif
+
+    int
+    main(void)
+    {
+      return sixel_deprecated_probe_caller();
+    }
+  ''', args: ['-Werror'])
   conf.set('HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS', 1)
 endif
 
@@ -417,9 +447,7 @@ wflags = cc.get_supported_arguments([
     '-Wformat-nonliteral'
 ])
 foreach f: wflags
-  if f == '-Wdeprecated-declarations'
-    conf.set('HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS', 1)
-  elif f == '-Wunused-but-set-variable'
+  if f == '-Wunused-but-set-variable'
     conf.set('HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE', 1)
   elif f == '-Wclobbered'
     conf.set('HAVE_DIAGNOSTIC_CLOBBERED', 1)

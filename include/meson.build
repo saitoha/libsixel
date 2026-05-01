@@ -37,7 +37,7 @@ if has_var_attr_deprecated
 endif
 
 sixel_h = configure_file(input: 'sixel.h.in', output: 'sixel.h', configuration: inc_conf)
-awk_prog = find_program('awk')
+awk_prog = find_program('/usr/xpg4/bin/awk', 'nawk', 'awk')
 sixcells_h = custom_target(
   '6cells.h',
   input: '6cells.idl',
