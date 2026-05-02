@@ -1,7 +1,9 @@
 BasedOnStyle: LLVM
 IndentWidth: 4
 UseTab: Never
-ColumnLimit: 80
+# Keep line breaking under human control while clang-format adoption is staged.
+# The project still keeps C code within 80 columns by convention.
+ColumnLimit: 0
 AllowShortIfStatementsOnASingleLine: false
 BreakBeforeBraces: Custom
 BraceWrapping:
