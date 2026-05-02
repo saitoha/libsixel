@@ -2143,6 +2143,40 @@ coregraphics_frame_set_handoff_shareable(sixel_frame_t *frame,
     return frame_if->vtbl->set_timeline(frame_if, &timeline);
 }
 
+static SIXELSTATUS
+coregraphics_frame_clone(sixel_frame_t const *frame,
+                         sixel_allocator_t *allocator,
+                         sixel_frame_t **frame_out)
+{
+    SIXELSTATUS status;
+    sixel_frame_interface_t *frame_if;
+    sixel_frame_interface_t *clone_if;
+
+    status = SIXEL_BAD_ARGUMENT;
+    frame_if = NULL;
+    clone_if = NULL;
+    if (frame == NULL || frame_out == NULL) {
+        return status;
+    }
+    *frame_out = NULL;
+
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if->vtbl == NULL || frame_if->vtbl->clone == NULL) {
+        return status;
+    }
+
+    status = frame_if->vtbl->clone(frame_if, allocator, &clone_if);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (clone_if == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    *frame_out = (sixel_frame_t *)clone_if;
+    return SIXEL_OK;
+}
+
 static void
 coregraphics_loader_state_init(
     coregraphics_loader_state_t *state,
@@ -2736,9 +2770,11 @@ static SIXELSTATUS
 coregraphics_emit_frame(coregraphics_loader_state_t *state)
 {
     SIXELSTATUS status;
+    sixel_frame_t *replay_frame;
     coregraphics_frame_meta_slot_t *slot;
 
     status = SIXEL_OK;
+    replay_frame = NULL;
     slot = NULL;
     if (state == NULL || state->active_meta_slots == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -2750,6 +2786,27 @@ coregraphics_emit_frame(coregraphics_loader_state_t *state)
     }
 
     slot = &state->active_meta_slots[state->frame_meta_slot];
+    if (state->cache_hit != 0) {
+        /*
+         * Replay-cache frames may still be read by the pipeline worker from an
+         * earlier loop.  Keep the cached storage immutable and stamp per-emit
+         * timeline metadata on a private clone before by-ref handoff.
+         */
+        status = coregraphics_frame_clone(
+            state->emit_frame,
+            sixel_chunk_get_allocator(state->chunk),
+            &replay_frame);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        status = coregraphics_frame_set_handoff_shareable(replay_frame, 1);
+        if (SIXEL_FAILED(status)) {
+            sixel_frame_unref(replay_frame);
+            return status;
+        }
+        state->emit_frame = replay_frame;
+        state->release_emit_frame = 1;
+    }
     sixel_frame_set_frame_no(state->emit_frame, state->frames_in_loop);
     sixel_frame_set_loop_count(state->emit_frame, state->loop_no);
     sixel_frame_set_delay(state->emit_frame, slot->delay);
@@ -2771,6 +2828,12 @@ coregraphics_cleanup_state(coregraphics_loader_state_t *state)
 {
     if (state == NULL) {
         return;
+    }
+    if (state->release_emit_frame != 0 &&
+        state->emit_frame != NULL &&
+        state->emit_frame != state->cached_frame_tmp) {
+        sixel_frame_unref(state->emit_frame);
+        state->emit_frame = NULL;
     }
     if (state->cached_frame_tmp != NULL) {
         sixel_frame_unref(state->cached_frame_tmp);
