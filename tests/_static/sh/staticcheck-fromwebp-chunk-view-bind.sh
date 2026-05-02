@@ -12,7 +12,7 @@ if test -z "$src_root"; then
     echo "# src_root argument is required"
     echo "not ok 2 - WebP animation parser avoids legacy chunk byte getters"
     echo "# src_root argument is required"
-    echo "not ok 3 - WebP animation parser binds chunk allocator once"
+    echo "not ok 3 - WebP animation parser receives decode allocator explicitly"
     echo "# src_root argument is required"
     exit 1
 fi
@@ -20,8 +20,8 @@ fi
 source_file=$src_root/src/fromwebp.c
 body=$(mktemp "${TMPDIR:-/tmp}/libsixel-fromwebp-chunk-view-XXXXXX")
 legacy_getters=$(mktemp "${TMPDIR:-/tmp}/libsixel-fromwebp-legacy-getters-XXXXXX")
-allocator_getters=$(mktemp "${TMPDIR:-/tmp}/libsixel-fromwebp-allocator-XXXXXX")
-trap 'rm -f "$body" "$legacy_getters" "$allocator_getters"' EXIT HUP INT TERM
+allocator_contract=$(mktemp "${TMPDIR:-/tmp}/libsixel-fromwebp-allocator-XXXXXX")
+trap 'rm -f "$body" "$legacy_getters" "$allocator_contract"' EXIT HUP INT TERM
 
 failed=0
 
@@ -30,7 +30,7 @@ if test ! -f "$source_file"; then
     echo "# missing source: $source_file"
     echo "not ok 2 - WebP animation parser avoids legacy chunk byte getters"
     echo "# missing source: $source_file"
-    echo "not ok 3 - WebP animation parser binds chunk allocator once"
+    echo "not ok 3 - WebP animation parser receives decode allocator explicitly"
     echo "# missing source: $source_file"
     exit 1
 fi
@@ -140,19 +140,16 @@ fi
 
 awk '
 /sixel_chunk_get_allocator[[:space:]]*\(/ {
-    call_count++
-    if ($0 !~ /allocator[[:space:]]*=[[:space:]]*sixel_chunk_get_allocator[[:space:]]*\([[:space:]]*chunk[[:space:]]*\)/) {
-        print
-    }
+    print "chunk allocator getter is forbidden"
 }
-/sixel_allocator_t[[:space:]]+\*allocator[[:space:]]*;/ {
-    saw_allocator_decl = 1
+/sixel_webp_parse_anim_stream[[:space:]]*\([[:space:]]*sixel_chunk_t[[:space:]]+const[[:space:]]+\*chunk[[:space:]]*,/ {
+    saw_chunk_parameter = 1
 }
-/allocator[[:space:]]*=[[:space:]]*NULL[[:space:]]*;/ {
-    saw_allocator_init = 1
+/sixel_allocator_t[[:space:]]+\*allocator[[:space:]]*,/ {
+    saw_allocator_parameter = 1
 }
-/allocator[[:space:]]*=[[:space:]]*sixel_chunk_get_allocator[[:space:]]*\([[:space:]]*chunk[[:space:]]*\)/ {
-    saw_allocator_bind = 1
+/allocator[[:space:]]*==[[:space:]]*NULL/ {
+    saw_allocator_guard = 1
 }
 /sixel_allocator_calloc[[:space:]]*\(/ {
     in_calloc = 1
@@ -170,24 +167,25 @@ in_calloc != 0 && /\)/ {
     saw_reset_allocator = 1
 }
 END {
-    ok = saw_allocator_decl && saw_allocator_init && saw_allocator_bind &&
-        saw_calloc_allocator && saw_reset_allocator && call_count == 1
+    ok = saw_chunk_parameter && saw_allocator_parameter &&
+        saw_allocator_guard && saw_calloc_allocator && saw_reset_allocator
     if (!ok) {
         exit 1
     }
 }
-' "$body" > "$allocator_getters" || allocator_status=$?
+' "$body" > "$allocator_contract" || allocator_status=$?
 
 allocator_status=${allocator_status:-0}
 if test "$allocator_status" -ne 0; then
-    echo "not ok 3 - WebP animation parser binds chunk allocator once"
-    echo "# parser must bind allocator once and reuse it for alloc/free paths"
-    if test -s "$allocator_getters"; then
-        sed "s|^|# extra allocator getter: $source_file:|" "$allocator_getters"
+    echo "not ok 3 - WebP animation parser receives decode allocator explicitly"
+    echo "# parser must receive allocator from decode context"
+    echo "# and reuse it for alloc/free paths"
+    if test -s "$allocator_contract"; then
+        sed "s|^|# allocator contract: $source_file:|" "$allocator_contract"
     fi
     failed=1
 else
-    echo "ok 3 - WebP animation parser binds chunk allocator once"
+    echo "ok 3 - WebP animation parser receives decode allocator explicitly"
 fi
 
 exit "$failed"

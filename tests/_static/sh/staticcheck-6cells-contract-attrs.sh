@@ -5,7 +5,7 @@ set -eu
 
 src_root=${1:-}
 
-echo "1..7"
+echo "1..8"
 
 if test -z "$src_root"; then
     echo "not ok 1 - 6cells IDL documents contract attributes"
@@ -21,6 +21,8 @@ if test -z "$src_root"; then
     echo "not ok 6 - generated header expands forbidden state names"
     echo "# src_root argument is required"
     echo "not ok 7 - native allocator stays outside component generation"
+    echo "# src_root argument is required"
+    echo "not ok 8 - component allocator accessors stay removed"
     echo "# src_root argument is required"
     exit 1
 fi
@@ -49,6 +51,8 @@ if test ! -f "$idl_file" ||
     echo "not ok 6 - generated header expands forbidden state names"
     echo "# missing IDL or header: $idl_file $header_file $public_header_file"
     echo "not ok 7 - native allocator stays outside component generation"
+    echo "# missing IDL or header: $idl_file $header_file $public_header_file"
+    echo "not ok 8 - component allocator accessors stay removed"
     echo "# missing IDL or header: $idl_file $header_file $public_header_file"
     exit 1
 fi
@@ -303,10 +307,6 @@ function trim(text) {
         attrs ~ /borrows\(source_path\)/) {
         seen["chunk.source_path"] = 1
     }
-    if (current == "chunk" && line ~ /allocator[ \t]*\(/ &&
-        attrs ~ /borrows\(allocator\)/) {
-        seen["chunk.allocator"] = 1
-    }
     if (current == "loader_manager" && line ~ /build_chain[ \t]*\(/ &&
         attrs ~ /invalidates\(loader_chain, selected_loader\)/) {
         seen["loader_manager.build_chain"] = 1
@@ -333,7 +333,6 @@ END {
     required["chunk.SIXELSTATUS init_memory(in chunk_memory_request const *request);"] = 1
     required["chunk.get_bytes"] = 1
     required["chunk.source_path"] = 1
-    required["chunk.allocator"] = 1
     required["loader_manager.build_chain"] = 1
     required["loader_manager.load"] = 1
     required["frame.get_pixels"] = 1
@@ -586,6 +585,57 @@ END {
 else
     echo "not ok 7 - native allocator stays outside component generation"
     sed 's/^/# /' "$tmpdir/native-allocator.txt"
+    failed=1
+fi
+
+if find "$src_root/include" "$src_root/src" "$src_root/tests" \
+    -type f \( -name '*.c' -o -name '*.h' -o -name '*.idl' \
+        -o -name '*.t' \) \
+    ! -path "$src_root/tests/_static/*" \
+    -exec awk -v idl_file="$idl_file" '
+function trim(text) {
+    gsub(/^[ \t]+/, "", text)
+    gsub(/[ \t]+$/, "", text)
+    return text
+}
+{
+    line = trim($0)
+    if (FILENAME == idl_file) {
+        if (line ~ /^interface[ \t]+(output|frame|chunk)[ \t]*\{$/) {
+            current = line
+            sub(/^interface[ \t]+/, "", current)
+            sub(/[ \t]*\{$/, "", current)
+            next
+        }
+        if (line == "};") {
+            current = ""
+            next
+        }
+        if (current != "" && line ~ /allocator[ \t]*\([ \t]*\)/) {
+            print FILENAME ":" FNR ": allocator method on " current
+        }
+    }
+    if ($0 ~ /sixel_(output|frame|chunk)_get_allocator[ \t]*\(/) {
+        print FILENAME ":" FNR ": forbidden allocator getter export"
+    }
+    if ($0 ~ /sixel_(output|frame|chunk)_vtbl_allocator/) {
+        print FILENAME ":" FNR ": forbidden allocator vtbl shim"
+    }
+    if ($0 ~ /->[ \t]*vtbl->[ \t]*allocator/) {
+        print FILENAME ":" FNR ": forbidden allocator vtbl call"
+    }
+}
+' {} + > "$tmpdir/allocator-accessors.txt"; then
+    if test -s "$tmpdir/allocator-accessors.txt"; then
+        echo "not ok 8 - component allocator accessors stay removed"
+        sed 's/^/# /' "$tmpdir/allocator-accessors.txt"
+        failed=1
+    else
+        echo "ok 8 - component allocator accessors stay removed"
+    fi
+else
+    echo "not ok 8 - component allocator accessors stay removed"
+    sed 's/^/# /' "$tmpdir/allocator-accessors.txt"
     failed=1
 fi
 
