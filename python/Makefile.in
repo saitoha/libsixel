@@ -323,7 +323,8 @@ CLEANFILES = libsixel/*.pyc
 @HAVE_PYTHON_TRUE@    libsixel/decoder.py
 
 EXTRA_DIST = \
-    setup.py
+    setup.py \
+    tests/issue222_encode_bytes_packed.py
 
 all: all-am
 
@@ -444,7 +445,9 @@ distdir-am: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
+@HAVE_PYTHON_FALSE@check-local:
 check-am: all-am
+	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: check-am
 all-am: Makefile
 installdirs:
@@ -548,17 +551,17 @@ ps-am:
 
 uninstall-am: uninstall-libsixelPYTHON
 
-.MAKE: install-am install-strip
+.MAKE: check-am install-am install-strip
 
-.PHONY: all all-am check check-am clean clean-generic clean-libtool \
-	clean-local cscopelist-am ctags-am distclean distclean-generic \
-	distclean-libtool distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libsixelPYTHON install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+.PHONY: all all-am check check-am check-local clean clean-generic \
+	clean-libtool clean-local cscopelist-am ctags-am distclean \
+	distclean-generic distclean-libtool distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libsixelPYTHON install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags-am uninstall \
 	uninstall-am uninstall-libsixelPYTHON
@@ -568,6 +571,9 @@ uninstall-am: uninstall-libsixelPYTHON
 
 clean-local:
 	rm -rf libsixel_python.egg-info build dist
+
+@HAVE_PYTHON_TRUE@check-local:
+@HAVE_PYTHON_TRUE@	PYTHONDONTWRITEBYTECODE=1 $(PYTHON) $(srcdir)/tests/issue222_encode_bytes_packed.py
 
 check: check-am
 

@@ -379,8 +379,32 @@ def sixel_helper_format_error(status):
 # compute pixel depth from pixelformat
 def sixel_helper_compute_depth(pixelformat):
     _sixel.sixel_helper_compute_depth.restype = c_int
-    _sixel.sixel_encoder_encode.argtypes = [c_int]
+    _sixel.sixel_helper_compute_depth.argtypes = [c_int]
     return _sixel.sixel_helper_compute_depth(pixelformat)
+
+
+# Packed 1/2/4bpp formats store multiple pixels per byte.  Keep the Python
+# preflight check aligned with the C-side source buffer copy size.
+def _sixel_helper_compute_frame_size(pixelformat, width, height):
+    bpp = 0
+
+    if width <= 0 or height <= 0:
+        return 0
+
+    if (pixelformat == SIXEL_PIXELFORMAT_PAL1 or
+            pixelformat == SIXEL_PIXELFORMAT_G1):
+        bpp = 1
+    elif (pixelformat == SIXEL_PIXELFORMAT_PAL2 or
+            pixelformat == SIXEL_PIXELFORMAT_G2):
+        bpp = 2
+    elif (pixelformat == SIXEL_PIXELFORMAT_PAL4 or
+            pixelformat == SIXEL_PIXELFORMAT_G4):
+        bpp = 4
+
+    if bpp > 0:
+        return ((width * bpp + 7) // 8) * height
+
+    return width * height * sixel_helper_compute_depth(pixelformat)
 
 
 # create new output context object
@@ -652,12 +676,13 @@ def sixel_encoder_encode(encoder, filename):
 def sixel_encoder_encode_bytes(encoder, buf, width, height, pixelformat, palette):
 
     depth = sixel_helper_compute_depth(pixelformat)
+    frame_size = _sixel_helper_compute_frame_size(pixelformat, width, height)
 
     if depth <= 0:
         raise ValueError("invalid pixelformat value : %d" % pixelformat)
 
-    if len(buf) < width * height * depth:
-        raise ValueError("buf.len is too short : %d < %d * %d * %d" % (len(buf), width, height, depth))
+    if len(buf) < frame_size:
+        raise ValueError("buf.len is too short : %d < %d" % (len(buf), frame_size))
 
     if palette:
         cpalettelen = len(palette)
