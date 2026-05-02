@@ -7,7 +7,8 @@ BEGIN {
     pending_classid = ""
     pending_condition = ""
     constructor_pattern = "sixel_(lookup_policy|dither_policy|loader|"
-    constructor_pattern = constructor_pattern "frame|chunk|timeline_logger)_"
+    constructor_pattern = constructor_pattern "output|frame|chunk|"
+    constructor_pattern = constructor_pattern "timeline_logger)_"
     constructor_pattern = constructor_pattern "[A-Za-z0-9_]+_new"
     has_error = 0
 }

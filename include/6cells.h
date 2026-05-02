@@ -252,6 +252,112 @@ struct sixel_timeline_logger_interface {
  * };
  */
 
+typedef struct sixel_output_interface sixel_output_interface_t;
+
+typedef struct sixel_output_writer_request {
+    sixel_write_function fn_write;
+    void *priv;
+} sixel_output_writer_request_t;
+
+typedef struct sixel_output_options {
+    int has_8bit_control;
+    int has_sixel_scrolling;
+    int has_gri_arg_limit;
+    int has_sdm_glitch;
+    int skip_dcs_envelope;
+    int skip_header;
+    int palette_type;
+    int penetrate_multiplexer;
+    int encode_policy;
+    int ormode;
+} sixel_output_options_t;
+
+typedef struct sixel_output_format {
+    int pixelformat;
+    int source_colorspace;
+    int colorspace;
+} sixel_output_format_t;
+
+/*
+ * TODO: Split low-level SIXEL byte emission state out of output so callers
+ * outside src/output.c and the encoder emission path stop touching concrete
+ * buffer, run-length, palette-node, and frame-clock fields directly.
+ */
+/*
+ * IDL responsibility:
+ * - own SIXEL output destination and emission configuration
+ */
+
+/*
+ * IDL forbidden state:
+ * - image_pixels
+ * - dither_policy
+ * - decode_state
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("own SIXEL output destination and emission configuration")]
+ * [forbid_state("image_pixels", "dither_policy", "decode_state")]
+ * interface output {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [mutates]
+ *     SIXELSTATUS init_writer(in output_writer_request const *request);
+ *     [mutates]
+ *     SIXELSTATUS set_options(in output_options const *options);
+ *     SIXELSTATUS get_options(out output_options *options);
+ *     [mutates]
+ *     SIXELSTATUS set_format(in output_format const *format);
+ *     SIXELSTATUS write(in char const *data, in int size);
+ *     [borrows(allocator)]
+ *     allocator *allocator();
+ * };
+ */
+
+typedef struct sixel_output_vtbl {
+    void (*ref)(sixel_output_interface_t *output);
+    void (*unref)(sixel_output_interface_t *output);
+    SIXELSTATUS (*init_writer)(
+        sixel_output_interface_t *output,
+        sixel_output_writer_request_t const *request);
+    SIXELSTATUS (*set_options)(
+        sixel_output_interface_t *output,
+        sixel_output_options_t const *options);
+    SIXELSTATUS (*get_options)(
+        sixel_output_interface_t *output,
+        sixel_output_options_t *options);
+    SIXELSTATUS (*set_format)(
+        sixel_output_interface_t *output,
+        sixel_output_format_t const *format);
+    SIXELSTATUS (*write)(
+        sixel_output_interface_t *output,
+        char const *data,
+        int size);
+    sixel_allocator_t *(*allocator)(sixel_output_interface_t *output);
+} sixel_output_vtbl_t;
+
+struct sixel_output_interface {
+    sixel_output_vtbl_t const *vtbl;
+};
+
+/*
+ * IDL coclass:
+ * [classid("terminal/output")]
+ * coclass output_component {
+ *     [default] interface output;
+ * };
+ */
+
+static inline sixel_output_interface_t *
+sixel_output_as_interface(sixel_output_t const *output)
+{
+    return (sixel_output_interface_t *)output;
+}
+
 typedef struct sixel_factory_interface sixel_factory_t;
 
 /*

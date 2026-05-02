@@ -148,6 +148,70 @@ coclass timeline_logger_component {
     [default] interface timeline_logger;
 };
 
+interface output;
+
+struct output_writer_request {
+    sixel_write_function fn_write;
+    void *priv;
+};
+
+struct output_options {
+    int has_8bit_control;
+    int has_sixel_scrolling;
+    int has_gri_arg_limit;
+    int has_sdm_glitch;
+    int skip_dcs_envelope;
+    int skip_header;
+    int palette_type;
+    int penetrate_multiplexer;
+    int encode_policy;
+    int ormode;
+};
+
+struct output_format {
+    int pixelformat;
+    int source_colorspace;
+    int colorspace;
+};
+
+/*
+ * TODO: Split low-level SIXEL byte emission state out of output so callers
+ * outside src/output.c and the encoder emission path stop touching concrete
+ * buffer, run-length, palette-node, and frame-clock fields directly.
+ */
+[component, refcounted]
+[responsibility("own SIXEL output destination and emission configuration")]
+[forbid_state("image_pixels", "dither_policy", "decode_state")]
+interface output {
+    [lifetime(retained)]
+    void ref();
+    [lifetime(release)]
+    void unref();
+    [mutates]
+    SIXELSTATUS init_writer(in output_writer_request const *request);
+    [mutates]
+    SIXELSTATUS set_options(in output_options const *options);
+    SIXELSTATUS get_options(out output_options *options);
+    [mutates]
+    SIXELSTATUS set_format(in output_format const *format);
+    SIXELSTATUS write(in char const *data, in int size);
+    [borrows(allocator)]
+    allocator *allocator();
+};
+
+[classid("terminal/output")]
+coclass output_component {
+    [default] interface output;
+};
+
+cpp_quote <<
+static inline sixel_output_interface_t *
+sixel_output_as_interface(sixel_output_t const *output)
+{
+    return (sixel_output_interface_t *)output;
+}
+>>
+
 [component, refcounted]
 [responsibility("create components by class id")]
 [alias(sixel_factory_t)]

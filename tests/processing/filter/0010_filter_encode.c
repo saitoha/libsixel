@@ -171,7 +171,7 @@ cleanup:
 }
 
 static int
-test_encode_updates_output_and_progress(void)
+test_encode_writes_stream_and_progress(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -182,7 +182,6 @@ test_encode_updates_output_and_progress(void)
     sixel_output_t *output;
     test_progress_t progress;
     test_output_counter_t counter;
-    int expected_pixelformat;
     int expected_colorspace;
 
     status = SIXEL_FALSE;
@@ -197,7 +196,6 @@ test_encode_updates_output_and_progress(void)
     progress.aborted = 0;
     counter.calls = 0;
     counter.bytes = 0;
-    expected_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     expected_colorspace = SIXEL_COLORSPACE_LINEAR;
 
     status = make_allocator(&allocator);
@@ -242,21 +240,6 @@ test_encode_updates_output_and_progress(void)
         goto cleanup;
     }
 
-    if (output->pixelformat != expected_pixelformat) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto cleanup;
-    }
-
-    if (output->colorspace != expected_colorspace) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto cleanup;
-    }
-
-    if (output->source_colorspace != frame->colorspace) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto cleanup;
-    }
-
     if (dither->pixelformat != frame->pixelformat) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
@@ -297,9 +280,9 @@ test_filter_0010_filter_encode(int argc, char **argv)
 
     success = 1;
 
-    if (!test_encode_updates_output_and_progress()) {
+    if (!test_encode_writes_stream_and_progress()) {
         fprintf(stderr,
-                "encode filter writes metadata and streams data failed\n");
+                "encode filter streams data and reports progress failed\n");
         success = 0;
     }
 

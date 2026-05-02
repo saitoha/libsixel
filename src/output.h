@@ -25,6 +25,8 @@
 #ifndef LIBSIXEL_OUTPUT_H
 #define LIBSIXEL_OUTPUT_H
 
+#include <6cells.h>
+
 #include "sixel_atomic.h"
 
 #if defined(HAVE_CLOCK) || defined(HAVE_NANOSLEEP)
@@ -47,6 +49,7 @@ typedef struct sixel_node {
 } sixel_node_t;
 
 struct sixel_output {
+    sixel_output_interface_t output_interface; /* IOutput dispatch header */
 
     sixel_atomic_u32_t ref;
     sixel_allocator_t *allocator;
@@ -103,6 +106,10 @@ struct sixel_output {
     int pos;
     unsigned char buffer[1];
 };
+
+/* @classid terminal/output */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_output_factory_new(sixel_allocator_t *allocator, void **object);
 
 #endif /* LIBSIXEL_OUTPUT_H */
 

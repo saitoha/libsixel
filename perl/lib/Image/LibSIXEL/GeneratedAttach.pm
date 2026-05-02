@@ -30,7 +30,6 @@ sub attach_all {
     $ffi->attach(['sixel_output_set_palette_type' => 'Image::LibSIXEL::sixel_output_set_palette_type'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_output_set_ormode' => 'Image::LibSIXEL::sixel_output_set_ormode'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_output_set_encode_policy' => 'Image::LibSIXEL::sixel_output_set_encode_policy'] => ['opaque', 'int'] => 'void');
-    $ffi->attach(['sixel_output_convert_colorspace' => 'Image::LibSIXEL::sixel_output_convert_colorspace'] => ['opaque', 'opaque', 'int'] => 'int');
     $ffi->attach(['sixel_palette_new' => 'Image::LibSIXEL::sixel_palette_new'] => ['opaque*', 'opaque'] => 'int');
     $ffi->attach(['sixel_palette_ref' => 'Image::LibSIXEL::sixel_palette_ref'] => ['opaque'] => 'opaque');
     $ffi->attach(['sixel_palette_unref' => 'Image::LibSIXEL::sixel_palette_unref'] => ['opaque'] => 'void');

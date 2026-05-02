@@ -188,6 +188,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0009_LOADER_WIC_PIXELFORMAT \
     -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
     -DBUILD_TEST_0010_FILTER_ENCODE \
+    -DBUILD_TEST_0001_OUTPUT_FACTORY \
     -DBUILD_TEST_0001_FRAME_FACTORY \
     -DBUILD_TEST_0001_CHUNK_FACTORY \
     -DBUILD_TEST_0001_TIMELINE_LOGGER_FACTORY \
@@ -261,6 +262,7 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0008_filter_load.c \
     processing/filter/0009_filter_dither.c \
     processing/filter/0010_filter_encode.c \
+    processing/output/0001_output_factory.c \
     processing/frame/0001_frame_factory.c \
     processing/chunk/0001_chunk_factory.c \
     processing/timeline/0001_timeline_logger_factory.c \

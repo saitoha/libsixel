@@ -75,6 +75,8 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
     int depth;
     int frame_colorspace;
     unsigned char *pixels;
+    sixel_output_interface_t *output_interface;
+    sixel_output_format_t output_format;
 
     status = SIXEL_FALSE;
     output = NULL;
@@ -84,6 +86,10 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
     depth = 0;
     frame_colorspace = SIXEL_COLORSPACE_GAMMA;
     pixels = NULL;
+    output_interface = NULL;
+    output_format.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    output_format.source_colorspace = SIXEL_COLORSPACE_GAMMA;
+    output_format.colorspace = SIXEL_COLORSPACE_GAMMA;
 
     if (config == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -96,9 +102,19 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
     output = config->output;
     pixelformat = sixel_frame_get_pixelformat(frame);
     frame_colorspace = sixel_frame_get_colorspace(frame);
-    output->pixelformat = pixelformat;
-    output->source_colorspace = frame_colorspace;
-    output->colorspace = config->output_colorspace;
+    output_interface = sixel_output_as_interface(output);
+    if (output_interface == NULL || output_interface->vtbl == NULL ||
+        output_interface->vtbl->set_format == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    output_format.pixelformat = pixelformat;
+    output_format.source_colorspace = frame_colorspace;
+    output_format.colorspace = config->output_colorspace;
+    status = output_interface->vtbl->set_format(output_interface,
+                                                &output_format);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     sixel_dither_set_pixelformat(config->dither, pixelformat);
 
     depth = sixel_helper_compute_depth(pixelformat);
@@ -137,7 +153,7 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
                           "fmt=%08x depth=%d dst_cs=%d",
                           pixelformat,
                           depth,
-                          output->colorspace);
+                          output_format.colorspace);
     }
 
     status = sixel_encode(pixels,
@@ -161,7 +177,7 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
                           "fmt=%08x depth=%d dst_cs=%d",
                           pixelformat,
                           depth,
-                          output->colorspace);
+                          output_format.colorspace);
     }
 
     return status;

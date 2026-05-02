@@ -123,6 +123,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0008_filter_load.c \
 	processing/filter/0009_filter_dither.c \
 	processing/filter/0010_filter_encode.c \
+	processing/output/0001_output_factory.c \
 	processing/frame/0001_frame_factory.c \
 	processing/chunk/0001_chunk_factory.c \
 	processing/timeline/0001_timeline_logger_factory.c \
@@ -198,6 +199,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0008_filter_load.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0009_filter_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0010_filter_encode.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/output/test_runner-0001_output_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0001_frame_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/chunk/test_runner-0001_chunk_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0001_timeline_logger_factory.$(OBJEXT) \
@@ -390,6 +392,7 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
+	processing/output/$(DEPDIR)/test_runner-0001_output_factory.Po \
 	processing/timeline/$(DEPDIR)/test_runner-0001_timeline_logger_factory.Po \
 	processing/timeline/$(DEPDIR)/test_runner-0002_timeline_parallel_encode_decode.Po \
 	processing/timeline/$(DEPDIR)/test_runner-0003_timeline_clock_origin.Po \
@@ -1063,6 +1066,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_LOADER_WIC_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FILTER_ENCODE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_OUTPUT_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FRAME_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CHUNK_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_TIMELINE_LOGGER_FACTORY \
@@ -1160,6 +1164,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0008_filter_load.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0009_filter_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0010_filter_encode.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/output/0001_output_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0001_frame_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/chunk/0001_chunk_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0001_timeline_logger_factory.c \
@@ -1401,6 +1406,15 @@ processing/filter/test_runner-0009_filter_dither.$(OBJEXT):  \
 processing/filter/test_runner-0010_filter_encode.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/output/$(am__dirstamp):
+	@$(MKDIR_P) processing/output
+	@: >>processing/output/$(am__dirstamp)
+processing/output/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/output/$(DEPDIR)
+	@: >>processing/output/$(DEPDIR)/$(am__dirstamp)
+processing/output/test_runner-0001_output_factory.$(OBJEXT):  \
+	processing/output/$(am__dirstamp) \
+	processing/output/$(DEPDIR)/$(am__dirstamp)
 processing/frame/$(am__dirstamp):
 	@$(MKDIR_P) processing/frame
 	@: >>processing/frame/$(am__dirstamp)
@@ -1744,6 +1758,7 @@ mostlyclean-compile:
 	-rm -f processing/filter/*.$(OBJEXT)
 	-rm -f processing/frame/*.$(OBJEXT)
 	-rm -f processing/lookup/*.$(OBJEXT)
+	-rm -f processing/output/*.$(OBJEXT)
 	-rm -f processing/timeline/*.$(OBJEXT)
 	-rm -f quant/palette/*.$(OBJEXT)
 
@@ -1816,6 +1831,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/output/$(DEPDIR)/test_runner-0001_output_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0001_timeline_logger_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0002_timeline_parallel_encode_decode.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/timeline/$(DEPDIR)/test_runner-0003_timeline_clock_origin.Po@am__quote@ # am--include-marker
@@ -2062,6 +2078,20 @@ processing/filter/test_runner-0010_filter_encode.obj: processing/filter/0010_fil
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0010_filter_encode.c' object='processing/filter/test_runner-0010_filter_encode.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0010_filter_encode.obj `if test -f 'processing/filter/0010_filter_encode.c'; then $(CYGPATH_W) 'processing/filter/0010_filter_encode.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0010_filter_encode.c'; fi`
+
+processing/output/test_runner-0001_output_factory.o: processing/output/0001_output_factory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/output/test_runner-0001_output_factory.o -MD -MP -MF processing/output/$(DEPDIR)/test_runner-0001_output_factory.Tpo -c -o processing/output/test_runner-0001_output_factory.o `test -f 'processing/output/0001_output_factory.c' || echo '$(srcdir)/'`processing/output/0001_output_factory.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/output/$(DEPDIR)/test_runner-0001_output_factory.Tpo processing/output/$(DEPDIR)/test_runner-0001_output_factory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/output/0001_output_factory.c' object='processing/output/test_runner-0001_output_factory.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/output/test_runner-0001_output_factory.o `test -f 'processing/output/0001_output_factory.c' || echo '$(srcdir)/'`processing/output/0001_output_factory.c
+
+processing/output/test_runner-0001_output_factory.obj: processing/output/0001_output_factory.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/output/test_runner-0001_output_factory.obj -MD -MP -MF processing/output/$(DEPDIR)/test_runner-0001_output_factory.Tpo -c -o processing/output/test_runner-0001_output_factory.obj `if test -f 'processing/output/0001_output_factory.c'; then $(CYGPATH_W) 'processing/output/0001_output_factory.c'; else $(CYGPATH_W) '$(srcdir)/processing/output/0001_output_factory.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/output/$(DEPDIR)/test_runner-0001_output_factory.Tpo processing/output/$(DEPDIR)/test_runner-0001_output_factory.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/output/0001_output_factory.c' object='processing/output/test_runner-0001_output_factory.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/output/test_runner-0001_output_factory.obj `if test -f 'processing/output/0001_output_factory.c'; then $(CYGPATH_W) 'processing/output/0001_output_factory.c'; else $(CYGPATH_W) '$(srcdir)/processing/output/0001_output_factory.c'; fi`
 
 processing/frame/test_runner-0001_frame_factory.o: processing/frame/0001_frame_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/frame/test_runner-0001_frame_factory.o -MD -MP -MF processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Tpo -c -o processing/frame/test_runner-0001_frame_factory.o `test -f 'processing/frame/0001_frame_factory.c' || echo '$(srcdir)/'`processing/frame/0001_frame_factory.c
@@ -3241,6 +3271,8 @@ distclean-generic:
 	-$(am__rm_f) processing/frame/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/lookup/$(am__dirstamp)
+	-$(am__rm_f) processing/output/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/output/$(am__dirstamp)
 	-$(am__rm_f) processing/timeline/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/timeline/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/$(DEPDIR)/$(am__dirstamp)
@@ -3322,6 +3354,7 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
+	-rm -f processing/output/$(DEPDIR)/test_runner-0001_output_factory.Po
 	-rm -f processing/timeline/$(DEPDIR)/test_runner-0001_timeline_logger_factory.Po
 	-rm -f processing/timeline/$(DEPDIR)/test_runner-0002_timeline_parallel_encode_decode.Po
 	-rm -f processing/timeline/$(DEPDIR)/test_runner-0003_timeline_clock_origin.Po
@@ -3439,6 +3472,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
+	-rm -f processing/output/$(DEPDIR)/test_runner-0001_output_factory.Po
 	-rm -f processing/timeline/$(DEPDIR)/test_runner-0001_timeline_logger_factory.Po
 	-rm -f processing/timeline/$(DEPDIR)/test_runner-0002_timeline_parallel_encode_decode.Po
 	-rm -f processing/timeline/$(DEPDIR)/test_runner-0003_timeline_clock_origin.Po
