@@ -1313,10 +1313,11 @@ sixel_encode_highcolor(
     unsigned char palstate[SIXEL_PALETTE_MAX];
     int output_count;
     int const maxcolors = 1 << 15;
-    int whole_size = width * height  /* for paletted_pixels */
-                   + maxcolors       /* for rgbhit */
-                   + maxcolors       /* for rgb2pal */
-                   + width * 6;      /* for marks */
+    size_t image_size;
+    size_t marks_size;
+    size_t normalized_size;
+    size_t whole_size;
+    size_t maxcolors_size;
     int x, y;
     unsigned char *dst;
     unsigned char *mptr;
@@ -1328,10 +1329,55 @@ sixel_encode_highcolor(
     int orig_height;
     unsigned char *pal;
 
+    /*
+     * The high-color encoder keeps one palette index per input pixel
+     * followed by color lookup tables and six scanlines of mark bytes.
+     * Calculate all derived sizes in size_t and reject arithmetic
+     * overflow before a wrapped value can reach the allocator.
+     */
+    maxcolors_size = (size_t)maxcolors;
+    if ((size_t)height > ((size_t)-1) / (size_t)width) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_highcolor: image size overflow.");
+        status = SIXEL_BAD_INPUT;
+        goto error;
+    }
+    image_size = (size_t)width * (size_t)height;
+
+    if (image_size > ((size_t)-1) / 3UL) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_highcolor: normalized size overflow.");
+        status = SIXEL_BAD_INPUT;
+        goto error;
+    }
+    normalized_size = image_size * 3UL;
+
+    if ((size_t)width > ((size_t)-1) / 6UL) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_highcolor: marks size overflow.");
+        status = SIXEL_BAD_INPUT;
+        goto error;
+    }
+    marks_size = (size_t)width * 6UL;
+
+    if (image_size > (size_t)-1 - maxcolors_size ||
+        image_size + maxcolors_size > (size_t)-1 - maxcolors_size ||
+        image_size + maxcolors_size + maxcolors_size
+            > (size_t)-1 - marks_size) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_highcolor: whole size overflow.");
+        status = SIXEL_BAD_INPUT;
+        goto error;
+    }
+    whole_size = image_size      /* for paletted_pixels */
+               + maxcolors_size  /* for rgbhit */
+               + maxcolors_size  /* for rgb2pal */
+               + marks_size;     /* for marks */
+
     if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         /* normalize pixelfromat */
-        normalized_pixels = (unsigned char *)sixel_allocator_malloc(dither->allocator,
-                                                                    (size_t)(width * height * 3));
+        normalized_pixels = (unsigned char *)sixel_allocator_malloc(
+            dither->allocator, normalized_size);
         if (normalized_pixels == NULL) {
             goto error;
         }
@@ -1346,12 +1392,12 @@ sixel_encode_highcolor(
         pixels = normalized_pixels;
     }
     paletted_pixels = (sixel_index_t *)sixel_allocator_malloc(dither->allocator,
-                                                              (size_t)whole_size);
+                                                              whole_size);
     if (paletted_pixels == NULL) {
         goto error;
     }
-    rgbhit = paletted_pixels + width * height;
-    memset(rgbhit, 0, (size_t)(maxcolors * 2 + width * 6));
+    rgbhit = paletted_pixels + image_size;
+    memset(rgbhit, 0, maxcolors_size * 2UL + marks_size);
     rgb2pal = rgbhit + maxcolors;
     marks = rgb2pal + maxcolors;
     output_count = 0;
@@ -1466,7 +1512,7 @@ next:
         }
 
         if (++mod_y == 6) {
-            mptr = (unsigned char *)memset(marks, 0, (size_t)(width * 6));
+            mptr = (unsigned char *)memset(marks, 0, marks_size);
             mod_y = 0;
         }
     }
@@ -1536,6 +1582,22 @@ sixel_encode(
         sixel_helper_set_additional_message(
             "sixel_encode: bad height parameter."
             " (height < 1)");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "sixel_encode: bad width parameter."
+            " (width > SIXEL_WIDTH_LIMIT)");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "sixel_encode: bad height parameter."
+            " (height > SIXEL_HEIGHT_LIMIT)");
         status = SIXEL_BAD_INPUT;
         goto end;
     }

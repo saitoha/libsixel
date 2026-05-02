@@ -415,7 +415,8 @@ DIST_TEST_FIXTURES = \
 	tests/issue/220/poc3_encoder_integer_overflow.gif \
 	tests/issue/220/poc5_encode_integer_overflow.gif \
 	tests/issue/220/poc6_quant_integer_overflow_8x8.png \
-	tests/issue/222/poc_encode_bytes_packed_g1.c
+	tests/issue/222/poc_encode_bytes_packed_g1.c \
+	tests/issue/GHSA-hx93-w8p2-ffh5/poc_encode_highcolor_overflow.c
 
 EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
 	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb \
@@ -425,6 +426,7 @@ EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
 CLEANFILES = $(builddir)/package.json \
+	$(builddir)/poc_encode_highcolor_overflow$(EXEEXT) \
 	$(builddir)/valgrind.log \
 	$(builddir)/test.log \
 	$(builddir)/unittest.log
@@ -1056,6 +1058,13 @@ issue-220:
 	converters/img2sixel -h 1890177820 -e -I -C 637555838 -S -o /dev/null tests/issue/220/poc3_encoder_integer_overflow.gif; test $$? = 255 -o $$? = 127
 	converters/img2sixel -S -o /dev/null tests/issue/220/poc5_encode_integer_overflow.gif
 	converters/img2sixel -p4 -C 2147483647 -o /dev/null tests/issue/220/poc6_quant_integer_overflow_8x8.png; test $$? = 255 -o $$? = 127
+
+issue-ghsa-hx93-w8p2-ffh5: all
+	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(CPPFLAGS) \
+		-I$(builddir)/include -I$(srcdir)/include \
+		$(srcdir)/tests/issue/GHSA-hx93-w8p2-ffh5/poc_encode_highcolor_overflow.c \
+		src/libsixel.la -o $(builddir)/poc_encode_highcolor_overflow$(EXEEXT)
+	$(builddir)/poc_encode_highcolor_overflow$(EXEEXT)
 
 libsixel-libsixel-issue-73:
 	converters/img2sixel tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin
