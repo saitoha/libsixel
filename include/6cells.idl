@@ -35,7 +35,7 @@
  * - Applies to coclass declarations only and records the factory lookup key.
  *
  * [serviceid("...")]
- * - Applies to service interfaces and records the service lookup key.
+ * - Applies to coclass declarations only and records the service lookup key.
  *
  * [lifetime(retained)] / [lifetime(release)]
  * - Marks refcount operations that retain or release the receiver.
@@ -106,7 +106,6 @@ struct timeline_record {
 };
 
 [component, refcounted]
-[serviceid("services/timeline-writer")]
 [responsibility("own shared diagnostic timeline JSONL output and clock origin")]
 [forbid_state("frame_context", "job_context")]
 [alias(sixel_timeline_writer_t)]
@@ -121,6 +120,11 @@ interface timeline_writer {
         out timeline_logger **logger);
     SIXELSTATUS write(in timeline_record const *record);
     void flush();
+};
+
+[serviceid("services/timeline-writer")]
+coclass timeline_writer_component {
+    [default] interface timeline_writer;
 };
 
 /*
@@ -213,6 +217,7 @@ sixel_output_as_interface(sixel_output_t const *output)
 [component, refcounted]
 [responsibility("create components by class id")]
 [alias(sixel_factory_t)]
+[receiver(factory)]
 interface factory {
     [lifetime(retained)]
     void ref();
@@ -222,6 +227,11 @@ interface factory {
         in char const *class_name,
         in allocator *allocator,
         out void **object);
+};
+
+[serviceid("services/factory")]
+coclass factory_component {
+    [default] interface factory;
 };
 
 /*

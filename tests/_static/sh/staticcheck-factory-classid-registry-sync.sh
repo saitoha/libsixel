@@ -112,11 +112,19 @@ FILENAME == idl_file {
         sub(/"\)\]$/, "", pending_classid)
         next
     }
+    if (line ~ /^\[serviceid\("[A-Za-z0-9_.\/-]+"\)\]$/) {
+        pending_serviceid = line
+        sub(/^\[serviceid\("/, "", pending_serviceid)
+        sub(/"\)\]$/, "", pending_serviceid)
+        next
+    }
     if (line ~ /^coclass[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*\{$/) {
         coclass = line
         sub(/^coclass[ \t]+/, "", coclass)
         sub(/[ \t]*\{$/, "", coclass)
-        if (pending_classid == "") {
+        if (pending_serviceid != "") {
+            pending_serviceid = ""
+        } else if (pending_classid == "") {
             print "missing classid before coclass: " coclass
         } else {
             if (pending_classid in coclass_by_classid) {
@@ -127,6 +135,7 @@ FILENAME == idl_file {
             }
         }
         pending_classid = ""
+        pending_serviceid = ""
         next
     }
     if (line != "" &&
@@ -135,6 +144,7 @@ FILENAME == idl_file {
         line !~ /^\*/ &&
         line !~ /^\[[^]]+\]$/) {
         pending_classid = ""
+        pending_serviceid = ""
     }
     next
 }

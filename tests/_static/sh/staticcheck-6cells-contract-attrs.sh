@@ -16,7 +16,7 @@ if test -z "$src_root"; then
     echo "# src_root argument is required"
     echo "not ok 4 - borrowed views are paired with invalidation contracts"
     echo "# src_root argument is required"
-    echo "not ok 5 - concrete components use COM-style coclass classids"
+    echo "not ok 5 - concrete providers use COM-style coclass ids"
     echo "# src_root argument is required"
     echo "not ok 6 - generated header expands forbidden state names"
     echo "# src_root argument is required"
@@ -46,7 +46,7 @@ if test ! -f "$idl_file" ||
     echo "# missing IDL or header: $idl_file $header_file $public_header_file"
     echo "not ok 4 - borrowed views are paired with invalidation contracts"
     echo "# missing IDL or header: $idl_file $header_file $public_header_file"
-    echo "not ok 5 - concrete components use COM-style coclass classids"
+    echo "not ok 5 - concrete providers use COM-style coclass ids"
     echo "# missing IDL or header: $idl_file $header_file $public_header_file"
     echo "not ok 6 - generated header expands forbidden state names"
     echo "# missing IDL or header: $idl_file $header_file $public_header_file"
@@ -66,6 +66,7 @@ BEGIN {
     required["[responsibility(\"...\")]"] = 1
     required["[forbid_state(\"name\", ...)]"] = 1
     required["[classid(\"...\")]"] = 1
+    required["[serviceid(\"...\")]"] = 1
     required["[lifetime(retained)] / [lifetime(release)]"] = 1
     required["[mutates]"] = 1
     required["[invalidates(name, ...)]"] = 1
@@ -390,6 +391,10 @@ fi
 
 if awk '
 BEGIN {
+    serviceid["factory_component"] = "services/factory"
+    iface["factory_component"] = "factory"
+    serviceid["timeline_writer_component"] = "services/timeline-writer"
+    iface["timeline_writer_component"] = "timeline_writer"
     classid["chunk_component"] = "image/chunk"
     iface["chunk_component"] = "chunk"
     classid["timeline_logger_component"] = "diagnostics/timeline-logger"
@@ -421,6 +426,11 @@ function trim(text) {
             if (attrs !~ "classid\\(\"" classid[current] "\"\\)") {
                 print "missing classid: " current
             }
+        } else if (current in serviceid) {
+            seen[current] = 1
+            if (attrs !~ "serviceid\\(\"" serviceid[current] "\"\\)") {
+                print "missing serviceid: " current
+            }
         }
         attrs = ""
         next
@@ -430,7 +440,7 @@ function trim(text) {
         attrs = ""
         next
     }
-    if (current in classid &&
+    if ((current in classid || current in serviceid) &&
         line ~ /^\[default\][ \t]+interface[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*;$/) {
         member = line
         sub(/^\[default\][ \t]+interface[ \t]+/, "", member)
@@ -454,17 +464,25 @@ END {
             print "missing default interface: " name
         }
     }
+    for (name in serviceid) {
+        if (seen[name] == 0) {
+            print "missing service coclass: " name
+        }
+        if (default_seen[name] == 0) {
+            print "missing default service interface: " name
+        }
+    }
 }
 ' "$idl_file" > "$tmpdir/coclass.txt"; then
     if test -s "$tmpdir/coclass.txt"; then
-        echo "not ok 5 - concrete components use COM-style coclass classids"
+        echo "not ok 5 - concrete providers use COM-style coclass ids"
         sed 's/^/# /' "$tmpdir/coclass.txt"
         failed=1
     else
-        echo "ok 5 - concrete components use COM-style coclass classids"
+        echo "ok 5 - concrete providers use COM-style coclass ids"
     fi
 else
-    echo "not ok 5 - concrete components use COM-style coclass classids"
+    echo "not ok 5 - concrete providers use COM-style coclass ids"
     sed 's/^/# /' "$tmpdir/coclass.txt"
     failed=1
 fi

@@ -76,10 +76,43 @@ FILENAME == idl_file {
         sub(/^interface[ \t]+/, "", iface)
         sub(/[ \t]*\{$/, "", iface)
         if (pending_serviceid != "") {
-            service_by_id[pending_serviceid] = iface
-            services[++service_count] = pending_serviceid
+            print "serviceid must annotate coclass, not interface: " \
+                pending_serviceid " (" iface ")"
         }
         pending_serviceid = ""
+        next
+    }
+    if (line ~ /^coclass[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*\{$/) {
+        if (pending_serviceid != "") {
+            in_service_coclass = 1
+            current_serviceid = pending_serviceid
+            current_coclass = line
+            sub(/^coclass[ \t]+/, "", current_coclass)
+            sub(/[ \t]*\{$/, "", current_coclass)
+            pending_serviceid = ""
+            default_seen = 0
+        }
+        next
+    }
+    if (in_service_coclass != 0 &&
+        line ~ /^\[default\][ \t]+interface[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*;$/) {
+        iface = line
+        sub(/^\[default\][ \t]+interface[ \t]+/, "", iface)
+        sub(/[ \t]*;$/, "", iface)
+        service_by_id[current_serviceid] = iface
+        services[++service_count] = current_serviceid
+        default_seen = 1
+        next
+    }
+    if (line == "};" && in_service_coclass != 0) {
+        if (default_seen == 0) {
+            print "missing default service interface: " current_serviceid \
+                " (" current_coclass ")"
+        }
+        in_service_coclass = 0
+        current_serviceid = ""
+        current_coclass = ""
+        default_seen = 0
         next
     }
     if (line != "" &&

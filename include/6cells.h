@@ -69,7 +69,7 @@ extern "C" {
  * - Applies to coclass declarations only and records the factory lookup key.
  *
  * [serviceid("...")]
- * - Applies to service interfaces and records the service lookup key.
+ * - Applies to coclass declarations only and records the service lookup key.
  *
  * [lifetime(retained)] / [lifetime(release)]
  * - Marks refcount operations that retain or release the receiver.
@@ -158,7 +158,6 @@ typedef struct sixel_timeline_writer_interface sixel_timeline_writer_t;
 /*
  * IDL contract:
  * [component, refcounted]
- * [serviceid("services/timeline-writer")]
  * [responsibility("own shared diagnostic timeline JSONL output and clock origin")]
  * [forbid_state("frame_context", "job_context")]
  * [alias(sixel_timeline_writer_t)]
@@ -192,6 +191,14 @@ typedef struct sixel_timeline_writer_vtbl {
 struct sixel_timeline_writer_interface {
     sixel_timeline_writer_vtbl_t const *vtbl;
 };
+
+/*
+ * IDL coclass:
+ * [serviceid("services/timeline-writer")]
+ * coclass timeline_writer_component {
+ *     [default] interface timeline_writer;
+ * };
+ */
 
 /*
  * TODO: Replace ambient frame context with an explicit event/context DTO
@@ -367,6 +374,7 @@ typedef struct sixel_factory_interface sixel_factory_t;
  * [component, refcounted]
  * [responsibility("create components by class id")]
  * [alias(sixel_factory_t)]
+ * [receiver(factory)]
  * interface factory {
  *     [lifetime(retained)]
  *     void ref();
@@ -392,6 +400,14 @@ typedef struct sixel_factory_vtbl {
 struct sixel_factory_interface {
     sixel_factory_vtbl_t const *vtbl;
 };
+
+/*
+ * IDL coclass:
+ * [serviceid("services/factory")]
+ * coclass factory_component {
+ *     [default] interface factory;
+ * };
+ */
 
 /*
  * getservice("services/factory", &factory) returns the process-wide factory

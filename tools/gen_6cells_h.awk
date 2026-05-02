@@ -951,8 +951,11 @@ mode == "coclass" {
         next
     }
     if (line ~ /^coclass[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*\{$/) {
-        if (pending_classid == "") {
-            report_error("coclass is missing classid attribute: " line)
+        if (pending_classid == "" && pending_serviceid == "") {
+            report_error("coclass is missing classid/serviceid: " line)
+        }
+        if (pending_classid != "" && pending_serviceid != "") {
+            report_error("coclass has classid and serviceid: " line)
         }
         clear_idl_contract()
         for (i = 1; i <= pending_idl_attr_count; ++i) {
