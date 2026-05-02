@@ -110,7 +110,7 @@ typedef int timeline_logger_enabled_result;
 
 [component, refcounted]
 [serviceid("services/timeline-writer")]
-[responsibility("own shared diagnostic timeline JSONL output")]
+[responsibility("own shared diagnostic timeline JSONL output and clock origin")]
 [forbid_state("frame_context", "job_context")]
 [alias(sixel_timeline_writer_t)]
 [receiver(writer)]

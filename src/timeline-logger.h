@@ -46,6 +46,7 @@ sixel_timeline_logger_new_with_writer(
     sixel_allocator_t *allocator,
     sixel_timeline_writer_t *writer,
     unsigned int session_id,
+    double clock_origin,
     int enabled,
     sixel_timeline_logger_t **logger);
 

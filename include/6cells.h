@@ -150,7 +150,7 @@ typedef struct sixel_timeline_writer_interface sixel_timeline_writer_t;
 
 /*
  * IDL responsibility:
- * - own shared diagnostic timeline JSONL output
+ * - own shared diagnostic timeline JSONL output and clock origin
  */
 
 /*
@@ -163,7 +163,7 @@ typedef struct sixel_timeline_writer_interface sixel_timeline_writer_t;
  * IDL contract:
  * [component, refcounted]
  * [serviceid("services/timeline-writer")]
- * [responsibility("own shared diagnostic timeline JSONL output")]
+ * [responsibility("own shared diagnostic timeline JSONL output and clock origin")]
  * [forbid_state("frame_context", "job_context")]
  * [alias(sixel_timeline_writer_t)]
  * [receiver(writer)]

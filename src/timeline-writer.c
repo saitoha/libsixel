@@ -48,6 +48,7 @@
 #include "threading.h"
 #include "timeline-logger.h"
 #include "timeline-writer.h"
+#include "timer.h"
 
 typedef struct sixel_timeline_writer_storage {
     sixel_timeline_writer_vtbl_t const *vtbl;
@@ -56,7 +57,9 @@ typedef struct sixel_timeline_writer_storage {
     int mutex_ready;
     int env_checked;
     int active;
+    int clock_origin_ready;
     unsigned int next_session_id;
+    double clock_origin;
 } sixel_timeline_writer_storage_t;
 
 static void
@@ -103,7 +106,9 @@ static sixel_timeline_writer_storage_t g_sixel_timeline_writer = {
     0,
     0,
     0,
-    1u
+    0,
+    1u,
+    0.0
 };
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
@@ -207,6 +212,10 @@ sixel_timeline_writer_open_env_locked(
         return;
     }
     writer->active = 1;
+    if (writer->clock_origin_ready == 0) {
+        writer->clock_origin = sixel_timer_now();
+        writer->clock_origin_ready = 1;
+    }
     (void)setvbuf(writer->file, NULL, _IOFBF, BUFSIZ);
 }
 
@@ -219,6 +228,7 @@ sixel_timeline_writer_create_logger(
     sixel_timeline_writer_storage_t *storage;
     SIXELSTATUS status;
     unsigned int session_id;
+    double clock_origin;
     int enabled;
 
     if (writer == NULL || allocator == NULL || logger == NULL) {
@@ -233,6 +243,7 @@ sixel_timeline_writer_create_logger(
     }
 
     session_id = 0u;
+    clock_origin = 0.0;
     enabled = 0;
     sixel_timeline_writer_lock(storage);
     sixel_timeline_writer_open_env_locked(storage);
@@ -242,11 +253,13 @@ sixel_timeline_writer_create_logger(
         storage->next_session_id = 1u;
     }
     enabled = storage->active;
+    clock_origin = storage->clock_origin;
     sixel_timeline_writer_unlock(storage);
 
     return sixel_timeline_logger_new_with_writer(allocator,
                                                  writer,
                                                  session_id,
+                                                 clock_origin,
                                                  enabled,
                                                  logger);
 }
@@ -269,6 +282,14 @@ sixel_timeline_writer_write(sixel_timeline_writer_t *writer,
     if (SIXEL_FAILED(status)) {
         return status;
     }
+
+    sixel_timeline_writer_lock(storage);
+    sixel_timeline_writer_open_env_locked(storage);
+    if (storage->active == 0 || storage->file == NULL) {
+        sixel_timeline_writer_unlock(storage);
+        return SIXEL_OK;
+    }
+    sixel_timeline_writer_unlock(storage);
 
     written = snprintf(
         line,

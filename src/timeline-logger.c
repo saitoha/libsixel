@@ -62,7 +62,7 @@ typedef struct sixel_timeline_logger_storage {
     int mutex_ready;
     int enabled;
     unsigned int session_id;
-    double started_at;
+    double clock_origin;
     sixel_timeline_logger_frame_context_t
         frame_contexts[SIXEL_TIMELINE_LOGGER_FRAME_CONTEXT_SLOTS];
 } sixel_timeline_logger_storage_t;
@@ -243,12 +243,12 @@ sixel_timeline_logger_log(sixel_timeline_logger_t *logger,
     record.multiframe = 0;
     thread_id = sixel_timeline_logger_thread_id();
     record.thread_id = thread_id;
-
-    sixel_timeline_logger_lock(storage);
-    record.timestamp = sixel_timer_now() - storage->started_at;
+    record.timestamp = sixel_timer_now() - storage->clock_origin;
     if (record.timestamp < 0.0) {
         record.timestamp = 0.0;
     }
+
+    sixel_timeline_logger_lock(storage);
     slot = sixel_timeline_logger_find_frame_context_slot_locked(storage,
                                                                 thread_id,
                                                                 0);
@@ -386,6 +386,7 @@ sixel_timeline_logger_new_with_writer(
     sixel_allocator_t *allocator,
     sixel_timeline_writer_t *writer,
     unsigned int session_id,
+    double clock_origin,
     int enabled,
     sixel_timeline_logger_t **logger)
 {
@@ -413,7 +414,7 @@ sixel_timeline_logger_new_with_writer(
     }
     storage->enabled = enabled != 0 ? 1 : 0;
     storage->session_id = session_id;
-    storage->started_at = sixel_timer_now();
+    storage->clock_origin = clock_origin;
     sixel_timeline_logger_clear_frame_context_slots(storage);
 #if SIXEL_ENABLE_THREADS
     if (sixel_mutex_init(&storage->mutex) != SIXEL_OK) {
