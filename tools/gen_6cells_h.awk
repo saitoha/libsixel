@@ -60,14 +60,6 @@ function c_interface_vtbl(name) {
     return c_symbol(name) "_vtbl_t"
 }
 
-function default_receiver(name,    parts, count) {
-    count = split(name, parts, /_/)
-    if (count > 0) {
-        return parts[count]
-    }
-    return name
-}
-
 function clear_args(    i) {
     for (i = 1; i <= arg_count; ++i) {
         delete args[i]
@@ -97,7 +89,6 @@ function clear_methods(    i, j, count) {
 
 function clear_pending_attrs() {
     pending_alias = ""
-    pending_receiver = ""
     pending_classid = ""
     pending_serviceid = ""
     pending_native = 0
@@ -508,11 +499,6 @@ function parse_attrs(attrs,    count, i, item, value) {
             sub(/^alias\(/, "", value)
             sub(/\)$/, "", value)
             pending_alias = trim(value)
-        } else if (item ~ /^receiver\(/ && item ~ /\)$/) {
-            value = item
-            sub(/^receiver\(/, "", value)
-            sub(/\)$/, "", value)
-            pending_receiver = trim(value)
         } else if (item ~ /^classid\(/ && item ~ /\)$/) {
             value = item
             sub(/^classid\(/, "", value)
@@ -541,7 +527,7 @@ function take_attrs(line,    close_pos, attrs) {
     return line
 }
 
-function setup_interface(name,    alias, receiver) {
+function setup_interface(name,    alias) {
     alias = pending_alias
     if (alias == "" && (name in interface_aliases)) {
         alias = interface_aliases[name]
@@ -549,22 +535,14 @@ function setup_interface(name,    alias, receiver) {
     if (alias == "") {
         alias = c_interface_tag(name) "_t"
     }
-    receiver = pending_receiver
-    if (receiver == "" && (name in interface_receivers)) {
-        receiver = interface_receivers[name]
-    }
-    if (receiver == "") {
-        receiver = default_receiver(name)
-    }
 
     interface_name = name
     interface_tag = c_interface_tag(name)
     interface_alias = alias
     interface_vtbl = c_interface_vtbl(name)
-    interface_receiver = receiver
+    interface_receiver = "self"
 
     interface_aliases[name] = alias
-    interface_receivers[name] = receiver
     known_type[name] = alias
     known_type[name "_vtbl"] = interface_vtbl
     clear_pending_attrs()

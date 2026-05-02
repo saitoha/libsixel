@@ -134,6 +134,9 @@ function trim(text) {
 }
 {
     line = trim($0)
+    if (line ~ /\[receiver\(/) {
+        print "receiver attribute must not be used"
+    }
     if (line ~ /^\[[^]]+\]$/) {
         attrs = attrs line "\n"
         next

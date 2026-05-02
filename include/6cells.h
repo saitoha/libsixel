@@ -88,8 +88,9 @@ extern "C" {
  * [const]
  * - Marks a method whose generated receiver argument is const-qualified.
  *
- * [alias(...)] / [receiver(...)]
- * - Control C projection names only; they are not semantic design contracts.
+ * [alias(...)]
+ * - Controls C projection type names only; it is not a semantic design
+ *   contract.  Generated vtbl receiver arguments are always named self.
  *
  * coclass name { [default] interface iface; };
  * - Records that a factory-created concrete component provides iface.  The
@@ -161,7 +162,6 @@ typedef struct sixel_timeline_writer_interface sixel_timeline_writer_t;
  * [responsibility("own shared diagnostic timeline JSONL output and clock origin")]
  * [forbid_state("frame_context", "job_context")]
  * [alias(sixel_timeline_writer_t)]
- * [receiver(writer)]
  * interface timeline_writer {
  *     [lifetime(retained)]
  *     void ref();
@@ -176,16 +176,16 @@ typedef struct sixel_timeline_writer_interface sixel_timeline_writer_t;
  */
 
 typedef struct sixel_timeline_writer_vtbl {
-    void (*ref)(sixel_timeline_writer_t *writer);
-    void (*unref)(sixel_timeline_writer_t *writer);
+    void (*ref)(sixel_timeline_writer_t *self);
+    void (*unref)(sixel_timeline_writer_t *self);
     SIXELSTATUS (*create_logger)(
-        sixel_timeline_writer_t *writer,
+        sixel_timeline_writer_t *self,
         sixel_allocator_t *allocator,
         sixel_timeline_logger_t **logger);
     SIXELSTATUS (*write)(
-        sixel_timeline_writer_t *writer,
+        sixel_timeline_writer_t *self,
         sixel_timeline_record_t const *record);
-    void (*flush)(sixel_timeline_writer_t *writer);
+    void (*flush)(sixel_timeline_writer_t *self);
 } sixel_timeline_writer_vtbl_t;
 
 struct sixel_timeline_writer_interface {
@@ -220,7 +220,6 @@ struct sixel_timeline_writer_interface {
  * [component, refcounted]
  * [responsibility("record one diagnostic timeline session")]
  * [forbid_state("output_file", "global_writer")]
- * [receiver(logger)]
  * interface timeline_logger {
  *     [lifetime(retained)]
  *     void ref();
@@ -235,16 +234,16 @@ struct sixel_timeline_writer_interface {
  */
 
 typedef struct sixel_timeline_logger_vtbl {
-    void (*ref)(sixel_timeline_logger_t *logger);
-    void (*unref)(sixel_timeline_logger_t *logger);
+    void (*ref)(sixel_timeline_logger_t *self);
+    void (*unref)(sixel_timeline_logger_t *self);
     SIXELSTATUS (*log)(
-        sixel_timeline_logger_t *logger,
+        sixel_timeline_logger_t *self,
         sixel_timeline_event_t const *event);
     SIXELSTATUS (*set_frame_context)(
-        sixel_timeline_logger_t *logger,
+        sixel_timeline_logger_t *self,
         sixel_timeline_frame_context_t const *context);
-    void (*clear_frame_context)(sixel_timeline_logger_t *logger);
-    unsigned int (*session_id)(sixel_timeline_logger_t const *logger);
+    void (*clear_frame_context)(sixel_timeline_logger_t *self);
+    unsigned int (*session_id)(sixel_timeline_logger_t const *self);
 } sixel_timeline_logger_vtbl_t;
 
 struct sixel_timeline_logger_interface {
@@ -324,22 +323,22 @@ typedef struct sixel_output_format {
  */
 
 typedef struct sixel_output_vtbl {
-    void (*ref)(sixel_output_interface_t *output);
-    void (*unref)(sixel_output_interface_t *output);
+    void (*ref)(sixel_output_interface_t *self);
+    void (*unref)(sixel_output_interface_t *self);
     SIXELSTATUS (*init_writer)(
-        sixel_output_interface_t *output,
+        sixel_output_interface_t *self,
         sixel_output_writer_request_t const *request);
     SIXELSTATUS (*set_options)(
-        sixel_output_interface_t *output,
+        sixel_output_interface_t *self,
         sixel_output_options_t const *options);
     SIXELSTATUS (*get_options)(
-        sixel_output_interface_t *output,
+        sixel_output_interface_t *self,
         sixel_output_options_t *options);
     SIXELSTATUS (*set_format)(
-        sixel_output_interface_t *output,
+        sixel_output_interface_t *self,
         sixel_output_format_t const *format);
     SIXELSTATUS (*write)(
-        sixel_output_interface_t *output,
+        sixel_output_interface_t *self,
         char const *data,
         int size);
 } sixel_output_vtbl_t;
@@ -374,7 +373,6 @@ typedef struct sixel_factory_interface sixel_factory_t;
  * [component, refcounted]
  * [responsibility("create components by class id")]
  * [alias(sixel_factory_t)]
- * [receiver(factory)]
  * interface factory {
  *     [lifetime(retained)]
  *     void ref();
@@ -388,10 +386,10 @@ typedef struct sixel_factory_interface sixel_factory_t;
  */
 
 typedef struct sixel_factory_vtbl {
-    void (*ref)(sixel_factory_t *factory);
-    void (*unref)(sixel_factory_t *factory);
+    void (*ref)(sixel_factory_t *self);
+    void (*unref)(sixel_factory_t *self);
     SIXELSTATUS (*create)(
-        sixel_factory_t *factory,
+        sixel_factory_t *self,
         char const *class_name,
         sixel_allocator_t *allocator,
         void **object);
@@ -506,7 +504,6 @@ typedef struct sixel_palette_metadata {
  * [responsibility("own palette entries and quantization metadata only")]
  * [forbid_state("lookup_policy", "dither_policy", "input_pixels", "method_for_largest", "method_for_rep", "quality_mode", "force_palette", "use_reversible", "quantize_model", "final_merge_mode", "lut_policy")]
  * [alias(sixel_palette_t)]
- * [receiver(palette)]
  * interface palette {
  *     [lifetime(retained)]
  *     void ref();
@@ -529,25 +526,25 @@ typedef struct sixel_palette_metadata {
  */
 
 typedef struct sixel_palette_vtbl {
-    void (*ref)(sixel_palette_t *palette);
-    void (*unref)(sixel_palette_t *palette);
+    void (*ref)(sixel_palette_t *self);
+    void (*unref)(sixel_palette_t *self);
     SIXELSTATUS (*init_entries)(
-        sixel_palette_t *palette,
+        sixel_palette_t *self,
         sixel_palette_entries_request_t const *request);
     SIXELSTATUS (*init_entries_float32)(
-        sixel_palette_t *palette,
+        sixel_palette_t *self,
         sixel_palette_float32_entries_request_t const *request);
     SIXELSTATUS (*generate)(
-        sixel_palette_t *palette,
+        sixel_palette_t *self,
         sixel_palette_generate_request_t const *request);
     SIXELSTATUS (*get_entries)(
-        sixel_palette_t const *palette,
+        sixel_palette_t const *self,
         sixel_palette_entries_view_t *view);
     SIXELSTATUS (*get_entries_float32)(
-        sixel_palette_t const *palette,
+        sixel_palette_t const *self,
         sixel_palette_float32_entries_view_t *view);
     SIXELSTATUS (*get_metadata)(
-        sixel_palette_t const *palette,
+        sixel_palette_t const *self,
         sixel_palette_metadata_t *metadata);
 } sixel_palette_vtbl_t;
 
@@ -626,7 +623,6 @@ typedef int sixel_lookup_policy_result_t;
  * [component, refcounted]
  * [responsibility("map pixels to palette indexes")]
  * [forbid_state("image_pixels", "output_pixels")]
- * [receiver(policy)]
  * interface lookup_policy {
  *     [lifetime(retained)]
  *     void ref();
@@ -640,13 +636,13 @@ typedef int sixel_lookup_policy_result_t;
  */
 
 typedef struct sixel_lookup_policy_vtbl {
-    void (*ref)(sixel_lookup_policy_interface_t *policy);
-    void (*unref)(sixel_lookup_policy_interface_t *policy);
+    void (*ref)(sixel_lookup_policy_interface_t *self);
+    void (*unref)(sixel_lookup_policy_interface_t *self);
     SIXELSTATUS (*prepare)(
-        sixel_lookup_policy_interface_t *policy,
+        sixel_lookup_policy_interface_t *self,
         sixel_lookup_policy_prepare_request_t const *request);
     sixel_lookup_policy_result_t (*map_pixel)(
-        sixel_lookup_policy_interface_t const *policy,
+        sixel_lookup_policy_interface_t const *self,
         unsigned char const *pixel);
 } sixel_lookup_policy_vtbl_t;
 
@@ -712,7 +708,6 @@ typedef int sixel_dither_policy_supports_parallel_result_t;
  * [component, refcounted]
  * [responsibility("apply dithering from pixels and lookup policy")]
  * [forbid_state("input_owner", "output_owner")]
- * [receiver(policy)]
  * interface dither_policy {
  *     [lifetime(retained)]
  *     void ref();
@@ -726,17 +721,17 @@ typedef int sixel_dither_policy_supports_parallel_result_t;
  */
 
 typedef struct sixel_dither_policy_vtbl {
-    void (*ref)(sixel_dither_policy_interface_t *policy);
-    void (*unref)(sixel_dither_policy_interface_t *policy);
+    void (*ref)(sixel_dither_policy_interface_t *self);
+    void (*unref)(sixel_dither_policy_interface_t *self);
     SIXELSTATUS (*prepare)(
-        sixel_dither_policy_interface_t *policy,
+        sixel_dither_policy_interface_t *self,
         sixel_dither_policy_prepare_request_t const *request);
     SIXELSTATUS (*apply)(
-        sixel_dither_policy_interface_t *policy,
+        sixel_dither_policy_interface_t *self,
         sixel_dither_policy_apply_request_t const *request);
     sixel_dither_policy_supports_parallel_result_t
     (*supports_parallel_bands)(
-        sixel_dither_policy_interface_t const *policy);
+        sixel_dither_policy_interface_t const *self);
 } sixel_dither_policy_vtbl_t;
 
 struct sixel_dither_policy_interface {
@@ -787,7 +782,6 @@ typedef struct sixel_chunk_bytes_view {
  * [component, refcounted]
  * [responsibility("own input bytes and source metadata only")]
  * [forbid_state("read_cursor", "decode_state")]
- * [receiver(chunk)]
  * interface chunk {
  *     [lifetime(retained)]
  *     void ref();
@@ -805,18 +799,18 @@ typedef struct sixel_chunk_bytes_view {
  */
 
 typedef struct sixel_chunk_vtbl {
-    void (*ref)(sixel_chunk_t *chunk);
-    void (*unref)(sixel_chunk_t *chunk);
+    void (*ref)(sixel_chunk_t *self);
+    void (*unref)(sixel_chunk_t *self);
     SIXELSTATUS (*init_source)(
-        sixel_chunk_t *chunk,
+        sixel_chunk_t *self,
         sixel_chunk_source_request_t const *request);
     SIXELSTATUS (*init_memory)(
-        sixel_chunk_t *chunk,
+        sixel_chunk_t *self,
         sixel_chunk_memory_request_t const *request);
     SIXELSTATUS (*get_bytes)(
-        sixel_chunk_t const *chunk,
+        sixel_chunk_t const *self,
         sixel_chunk_bytes_view_t *view);
-    char const *(*source_path)(sixel_chunk_t const *chunk);
+    char const *(*source_path)(sixel_chunk_t const *self);
 } sixel_chunk_vtbl_t;
 
 struct sixel_chunk_interface {
@@ -850,7 +844,6 @@ typedef struct sixel_loader_component_interface
  * [component, refcounted]
  * [responsibility("decode one chunk through one loader backend")]
  * [forbid_state("loader_chain", "global_decode_cursor")]
- * [receiver(loader)]
  * interface loader_component {
  *     [lifetime(retained)]
  *     void ref();
@@ -868,20 +861,20 @@ typedef struct sixel_loader_component_interface
  */
 
 typedef struct sixel_loader_component_vtbl {
-    void (*ref)(sixel_loader_component_interface_t *loader);
-    void (*unref)(sixel_loader_component_interface_t *loader);
+    void (*ref)(sixel_loader_component_interface_t *self);
+    void (*unref)(sixel_loader_component_interface_t *self);
     SIXELSTATUS (*setopt)(
-        sixel_loader_component_interface_t *loader,
+        sixel_loader_component_interface_t *self,
         int option,
         void const *value);
     SIXELSTATUS (*load)(
-        sixel_loader_component_interface_t *loader,
+        sixel_loader_component_interface_t *self,
         sixel_chunk_t const *chunk,
         sixel_load_image_function fn_load,
         void *context);
-    char const *(*name)(sixel_loader_component_interface_t const *loader);
+    char const *(*name)(sixel_loader_component_interface_t const *self);
     int (*predicate)(
-        sixel_loader_component_interface_t *loader,
+        sixel_loader_component_interface_t *self,
         sixel_chunk_t const *chunk);
 } sixel_loader_component_vtbl_t;
 
@@ -949,7 +942,6 @@ typedef struct sixel_loader_manager_build_request {
  * [component, refcounted]
  * [responsibility("build loader chains and select loaders for chunks")]
  * [forbid_state("chunk_bytes", "pixel_storage")]
- * [receiver(manager)]
  * interface loader_manager {
  *     [lifetime(retained)]
  *     void ref();
@@ -967,13 +959,13 @@ typedef struct sixel_loader_manager_build_request {
  */
 
 typedef struct sixel_loader_manager_vtbl {
-    void (*ref)(sixel_loader_manager_t *manager);
-    void (*unref)(sixel_loader_manager_t *manager);
+    void (*ref)(sixel_loader_manager_t *self);
+    void (*unref)(sixel_loader_manager_t *self);
     SIXELSTATUS (*build_chain)(
-        sixel_loader_manager_t *manager,
+        sixel_loader_manager_t *self,
         sixel_loader_manager_build_request_t const *request);
     SIXELSTATUS (*load)(
-        sixel_loader_manager_t *manager,
+        sixel_loader_manager_t *self,
         sixel_chunk_t const *chunk,
         sixel_loader_component_interface_t **selected_loader,
         sixel_load_image_function fn_load,
@@ -1103,50 +1095,50 @@ typedef struct sixel_frame_transparency {
  */
 
 typedef struct sixel_frame_vtbl {
-    void (*ref)(sixel_frame_interface_t *frame);
-    void (*unref)(sixel_frame_interface_t *frame);
+    void (*ref)(sixel_frame_interface_t *self);
+    void (*unref)(sixel_frame_interface_t *self);
     SIXELSTATUS (*init_pixels)(
-        sixel_frame_interface_t *frame,
+        sixel_frame_interface_t *self,
         sixel_frame_pixels_request_t const *request);
     SIXELSTATUS (*get_pixels)(
-        sixel_frame_interface_t *frame,
+        sixel_frame_interface_t *self,
         sixel_frame_pixels_view_t *view);
     SIXELSTATUS (*set_pixelformat)(
-        sixel_frame_interface_t *frame,
+        sixel_frame_interface_t *self,
         int pixelformat);
     SIXELSTATUS (*get_timeline)(
-        sixel_frame_interface_t *frame,
+        sixel_frame_interface_t *self,
         sixel_frame_timeline_t *timeline);
     SIXELSTATUS (*set_timeline)(
-        sixel_frame_interface_t *frame,
+        sixel_frame_interface_t *self,
         sixel_frame_timeline_t const *timeline);
     SIXELSTATUS (*get_transparency)(
-        sixel_frame_interface_t *frame,
+        sixel_frame_interface_t *self,
         sixel_frame_transparency_t *transparency);
     SIXELSTATUS (*set_transparency)(
-        sixel_frame_interface_t *frame,
+        sixel_frame_interface_t *self,
         sixel_frame_transparency_t const *transparency);
     SIXELSTATUS (*resize)(
-        sixel_frame_interface_t *frame,
+        sixel_frame_interface_t *self,
         int width,
         int height,
         int method_for_resampling);
     SIXELSTATUS (*resize_float32)(
-        sixel_frame_interface_t *frame,
+        sixel_frame_interface_t *self,
         int width,
         int height,
         int method_for_resampling);
     SIXELSTATUS (*clip)(
-        sixel_frame_interface_t *frame,
+        sixel_frame_interface_t *self,
         int x,
         int y,
         int width,
         int height);
     SIXELSTATUS (*measure_storage)(
-        sixel_frame_interface_t *frame,
+        sixel_frame_interface_t *self,
         size_t *storage_bytes);
     SIXELSTATUS (*clone)(
-        sixel_frame_interface_t *frame,
+        sixel_frame_interface_t *self,
         sixel_allocator_t *allocator,
         sixel_frame_interface_t **frame_out);
 } sixel_frame_vtbl_t;

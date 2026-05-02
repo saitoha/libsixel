@@ -54,8 +54,9 @@
  * [const]
  * - Marks a method whose generated receiver argument is const-qualified.
  *
- * [alias(...)] / [receiver(...)]
- * - Control C projection names only; they are not semantic design contracts.
+ * [alias(...)]
+ * - Controls C projection type names only; it is not a semantic design
+ *   contract.  Generated vtbl receiver arguments are always named self.
  *
  * coclass name { [default] interface iface; };
  * - Records that a factory-created concrete component provides iface.  The
@@ -109,7 +110,6 @@ struct timeline_record {
 [responsibility("own shared diagnostic timeline JSONL output and clock origin")]
 [forbid_state("frame_context", "job_context")]
 [alias(sixel_timeline_writer_t)]
-[receiver(writer)]
 interface timeline_writer {
     [lifetime(retained)]
     void ref();
@@ -134,7 +134,6 @@ coclass timeline_writer_component {
 [component, refcounted]
 [responsibility("record one diagnostic timeline session")]
 [forbid_state("output_file", "global_writer")]
-[receiver(logger)]
 interface timeline_logger {
     [lifetime(retained)]
     void ref();
@@ -217,7 +216,6 @@ sixel_output_as_interface(sixel_output_t const *output)
 [component, refcounted]
 [responsibility("create components by class id")]
 [alias(sixel_factory_t)]
-[receiver(factory)]
 interface factory {
     [lifetime(retained)]
     void ref();
@@ -310,7 +308,6 @@ struct palette_metadata {
 [responsibility("own palette entries and quantization metadata only")]
 [forbid_state("lookup_policy", "dither_policy", "input_pixels", "method_for_largest", "method_for_rep", "quality_mode", "force_palette", "use_reversible", "quantize_model", "final_merge_mode", "lut_policy")]
 [alias(sixel_palette_t)]
-[receiver(palette)]
 interface palette {
     [lifetime(retained)]
     void ref();
@@ -386,7 +383,6 @@ typedef int lookup_policy_result;
 [component, refcounted]
 [responsibility("map pixels to palette indexes")]
 [forbid_state("image_pixels", "output_pixels")]
-[receiver(policy)]
 interface lookup_policy {
     [lifetime(retained)]
     void ref();
@@ -443,7 +439,6 @@ typedef int dither_policy_supports_parallel_result;
 [component, refcounted]
 [responsibility("apply dithering from pixels and lookup policy")]
 [forbid_state("input_owner", "output_owner")]
-[receiver(policy)]
 interface dither_policy {
     [lifetime(retained)]
     void ref();
@@ -487,7 +482,6 @@ struct chunk_bytes_view {
 [component, refcounted]
 [responsibility("own input bytes and source metadata only")]
 [forbid_state("read_cursor", "decode_state")]
-[receiver(chunk)]
 interface chunk {
     [lifetime(retained)]
     void ref();
@@ -513,7 +507,6 @@ interface loader_component;
 [component, refcounted]
 [responsibility("decode one chunk through one loader backend")]
 [forbid_state("loader_chain", "global_decode_cursor")]
-[receiver(loader)]
 interface loader_component {
     [lifetime(retained)]
     void ref();
@@ -576,7 +569,6 @@ struct loader_manager_build_request {
 [component, refcounted]
 [responsibility("build loader chains and select loaders for chunks")]
 [forbid_state("chunk_bytes", "pixel_storage")]
-[receiver(manager)]
 interface loader_manager {
     [lifetime(retained)]
     void ref();
