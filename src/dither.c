@@ -1706,6 +1706,7 @@ sixel_dither_initialize(
     int palette_pixelformat;
     int prefer_float32;
     sixel_palette_generate_request_t palette_request;
+    sixel_palette_float32_entries_request_t drop_float_request;
     sixel_palette_metadata_t palette_metadata;
 
     /* ensure dither object is not null */
@@ -1869,6 +1870,21 @@ sixel_dither_initialize(
     palette_request.prefer_float32 = dither->prefer_float32;
     status = dither->palette->vtbl->generate(dither->palette,
                                              &palette_request);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    /*
+     * The legacy make_palette() path returned only byte palette entries to
+     * dither.  Some quantizers keep float32 entries in their internal sample
+     * domain, and 6cells does not yet tag palette float views with that domain.
+     * Drop them here so PaletteApply rebuilds byte-derived float entries in
+     * the active source pixelformat, keeping lookup and emitted palette entries
+     * consistent with the pre-component behavior.
+     */
+    memset(&drop_float_request, 0, sizeof(drop_float_request));
+    status = dither->palette->vtbl->init_entries_float32(
+        dither->palette,
+        &drop_float_request);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
