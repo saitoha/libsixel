@@ -5,7 +5,7 @@ set -eu
 
 src_root=${1:-}
 
-echo "1..6"
+echo "1..7"
 
 if test -z "$src_root"; then
     echo "not ok 1 - 6cells IDL documents contract attributes"
@@ -20,35 +20,44 @@ if test -z "$src_root"; then
     echo "# src_root argument is required"
     echo "not ok 6 - generated header expands forbidden state names"
     echo "# src_root argument is required"
+    echo "not ok 7 - native allocator stays outside component generation"
+    echo "# src_root argument is required"
     exit 1
 fi
 
 idl_file=$src_root/include/6cells.idl
 header_file=$src_root/include/6cells.h
+public_header_file=$src_root/include/sixel.h.in
 tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-6cells-contract-XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
 failed=0
 
-if test ! -f "$idl_file" || test ! -f "$header_file"; then
+if test ! -f "$idl_file" ||
+    test ! -f "$header_file" ||
+    test ! -f "$public_header_file"; then
     echo "not ok 1 - 6cells IDL documents contract attributes"
-    echo "# missing IDL or header: $idl_file $header_file"
+    echo "# missing IDL or header: $idl_file $header_file $public_header_file"
     echo "not ok 2 - component interfaces carry responsibility attributes"
-    echo "# missing IDL or header: $idl_file $header_file"
+    echo "# missing IDL or header: $idl_file $header_file $public_header_file"
     echo "not ok 3 - refcounted components mark ref and unref lifetime"
-    echo "# missing IDL or header: $idl_file $header_file"
+    echo "# missing IDL or header: $idl_file $header_file $public_header_file"
     echo "not ok 4 - borrowed views are paired with invalidation contracts"
-    echo "# missing IDL or header: $idl_file $header_file"
+    echo "# missing IDL or header: $idl_file $header_file $public_header_file"
     echo "not ok 5 - concrete components use COM-style coclass classids"
-    echo "# missing IDL or header: $idl_file $header_file"
+    echo "# missing IDL or header: $idl_file $header_file $public_header_file"
     echo "not ok 6 - generated header expands forbidden state names"
-    echo "# missing IDL or header: $idl_file $header_file"
+    echo "# missing IDL or header: $idl_file $header_file $public_header_file"
+    echo "not ok 7 - native allocator stays outside component generation"
+    echo "# missing IDL or header: $idl_file $header_file $public_header_file"
     exit 1
 fi
 
 if awk '
 BEGIN {
     required["[component]"] = 1
+    required["[native]"] = 1
+    required["[opaque]"] = 1
     required["[refcounted]"] = 1
     required["[responsibility(\"...\")]"] = 1
     required["[forbid_state(\"name\", ...)]"] = 1
@@ -464,6 +473,107 @@ END {
 else
     echo "not ok 6 - generated header expands forbidden state names"
     sed 's/^/# /' "$tmpdir/header-forbid.txt"
+    failed=1
+fi
+
+if awk -v idl_file="$idl_file" \
+    -v header_file="$header_file" \
+    -v public_header_file="$public_header_file" '
+function trim(text) {
+    gsub(/^[ \t]+/, "", text)
+    gsub(/[ \t]+$/, "", text)
+    return text
+}
+FILENAME == idl_file {
+    line = trim($0)
+    if (line ~ /^\[[^]]+\]$/) {
+        attrs = attrs line "\n"
+        next
+    }
+    if (line ~ /^typedef[ \t]+sixel_allocator_t[ \t]+allocator[ \t]*;$/) {
+        seen_typedef = 1
+        if (attrs !~ /\[native, opaque, refcounted\]/) {
+            print "allocator typedef is not native opaque refcounted"
+        }
+        if (attrs !~ /responsibility\("provide allocation services required by factory creation"\)/) {
+            print "allocator typedef is missing responsibility"
+        }
+        attrs = ""
+        next
+    }
+    if (line ~ /^interface[ \t]+allocator([ \t]*\{|[ \t]*;)/) {
+        print "allocator must not be generated as an interface"
+    }
+    if (line ~ /^coclass[ \t]+allocator/) {
+        print "allocator must not be generated as a coclass"
+    }
+    if (line ~ /^interface[ \t]+factory[ \t]*\{$/) {
+        in_factory = 1
+        attrs = ""
+        next
+    }
+    if (in_factory != 0 && line == "};") {
+        in_factory = 0
+        attrs = ""
+        next
+    }
+    if (in_factory != 0 && line ~ /in allocator[ \t]+\*allocator/) {
+        seen_factory_allocator = 1
+    }
+    if (line != "" && line !~ /^\/\// && line !~ /^\/\*/) {
+        attrs = ""
+    }
+    next
+}
+FILENAME == header_file {
+    if ($0 ~ /typedef[ \t]+sixel_allocator_t[ \t]+sixel_allocator_t;/) {
+        print "generated header emitted duplicate allocator typedef"
+    }
+    if ($0 ~ /sixel_allocator_(interface|vtbl)/) {
+        print "generated header emitted allocator interface artifacts"
+    }
+    if ($0 ~ /provide allocation services required by factory creation/) {
+        seen_header_contract = 1
+    }
+    next
+}
+FILENAME == public_header_file {
+    if ($0 ~ /sixel_allocator_ref[ \t]*\(/) {
+        seen_allocator_ref = 1
+    }
+    if ($0 ~ /sixel_allocator_unref[ \t]*\(/) {
+        seen_allocator_unref = 1
+    }
+}
+END {
+    if (seen_typedef == 0) {
+        print "missing native allocator typedef"
+    }
+    if (seen_factory_allocator == 0) {
+        print "factory create must use allocator alias"
+    }
+    if (seen_header_contract == 0) {
+        print "generated header is missing allocator contract comment"
+    }
+    if (seen_allocator_ref == 0) {
+        print "public allocator ref function is missing"
+    }
+    if (seen_allocator_unref == 0) {
+        print "public allocator unref function is missing"
+    }
+}
+' "$idl_file" "$header_file" "$public_header_file" \
+    > "$tmpdir/native-allocator.txt"; then
+    if test -s "$tmpdir/native-allocator.txt"; then
+        echo "not ok 7 - native allocator stays outside component generation"
+        sed 's/^/# /' "$tmpdir/native-allocator.txt"
+        failed=1
+    else
+        echo "ok 7 - native allocator stays outside component generation"
+    fi
+else
+    echo "not ok 7 - native allocator stays outside component generation"
+    sed 's/^/# /' "$tmpdir/native-allocator.txt"
     failed=1
 fi
 

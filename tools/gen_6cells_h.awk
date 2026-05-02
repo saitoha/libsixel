@@ -99,6 +99,7 @@ function clear_pending_attrs() {
     pending_alias = ""
     pending_receiver = ""
     pending_classid = ""
+    pending_native = 0
     pending_const = 0
 }
 
@@ -478,6 +479,8 @@ function split_attrs(attrs,    i, ch, token, depth, in_quote, prev) {
 
 function is_contract_attr(item) {
     return item == "component" ||
+        item == "native" ||
+        item == "opaque" ||
         item == "refcounted" ||
         item == "mutates" ||
         item == "default" ||
@@ -494,7 +497,9 @@ function parse_attrs(attrs,    count, i, item, value) {
     count = attr_item_count
     for (i = 1; i <= count; ++i) {
         item = attr_items[i]
-        if (item == "const") {
+        if (item == "native") {
+            pending_native = 1
+        } else if (item == "const") {
             pending_const = 1
         } else if (item ~ /^alias\(/ && item ~ /\)$/) {
             value = item
@@ -701,7 +706,7 @@ function parse_callback_decl(decl,    open_name, close_name, name,
     clear_args()
 }
 
-function parse_simple_typedef(line,    text, alias, alias_c, source) {
+function parse_simple_typedef(line,    text, alias, alias_c, source, i) {
     text = line
     sub(/^typedef[ \t]+/, "", text)
     sub(/[ \t]*;[ \t]*$/, "", text)
@@ -713,6 +718,19 @@ function parse_simple_typedef(line,    text, alias, alias_c, source) {
     source = trim(substr(text, 1, RSTART - 1))
     alias_c = c_type_alias(alias)
     source = resolve_known_types(source)
+    if (pending_idl_attr_count != 0) {
+        clear_idl_contract()
+        for (i = 1; i <= pending_idl_attr_count; ++i) {
+            append_idl_contract(pending_idl_attrs[i])
+        }
+        append_idl_contract(line)
+        emit_idl_contract()
+        clear_pending_idl_attrs()
+    }
+    if (pending_native != 0) {
+        known_type[alias] = source
+        return
+    }
     print "typedef " source " " alias_c ";"
     print ""
     known_type[alias] = alias_c

@@ -46,8 +46,17 @@ extern "C" {
  * - Marks an interface as a 6cells component boundary.  Concrete storage stays
  *   hidden, and callers operate through the generated vtbl contract.
  *
+ * [native]
+ * - Marks a C-native primitive or handle that participates in the 6cells
+ *   contract without becoming an interface or factory-created component.
+ *
+ * [opaque]
+ * - Marks a native type whose concrete storage stays hidden outside its owning
+ *   implementation.
+ *
  * [refcounted]
- * - Marks a component whose lifetime is controlled by ref()/unref().
+ * - Marks a component or native type whose lifetime is controlled by
+ *   ref()/unref().
  *
  * [responsibility("...")]
  * - Records the component's single responsibility in machine-readable form.
@@ -91,6 +100,18 @@ extern "C" {
  */
 struct sixel_logger;
 struct sixel_option_argument_list_resolution;
+/*
+ * IDL responsibility:
+ * - provide allocation services required by factory creation
+ */
+
+/*
+ * IDL contract:
+ * [native, opaque, refcounted]
+ * [responsibility("provide allocation services required by factory creation")]
+ * typedef sixel_allocator_t allocator;
+ */
+
 typedef struct sixel_factory_interface sixel_factory_t;
 
 /*
@@ -110,7 +131,7 @@ typedef struct sixel_factory_interface sixel_factory_t;
  *     void unref();
  *     SIXELSTATUS create(
  *         in char const *class_name,
- *         in sixel_allocator_t *allocator,
+ *         in allocator *allocator,
  *         out void **object);
  * };
  */
@@ -377,7 +398,7 @@ typedef struct sixel_chunk_bytes_view {
  *     [const, borrows(source_path)]
  *     char const *source_path();
  *     [const, borrows(allocator)]
- *     sixel_allocator_t *allocator();
+ *     allocator *allocator();
  * };
  */
 
@@ -674,10 +695,10 @@ typedef struct sixel_frame_transparency {
  *     [mutates, invalidates(pixels_view)]
  *     SIXELSTATUS clip(in int x, in int y, in int width, in int height);
  *     [borrows(allocator)]
- *     sixel_allocator_t *allocator();
+ *     allocator *allocator();
  *     SIXELSTATUS measure_storage(out size_t *storage_bytes);
  *     SIXELSTATUS clone(
- *         in sixel_allocator_t *allocator,
+ *         in allocator *allocator,
  *         out frame **frame_out);
  * };
  */

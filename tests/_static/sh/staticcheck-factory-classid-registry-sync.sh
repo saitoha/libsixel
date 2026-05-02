@@ -6,17 +6,22 @@ set -eu
 src_root=$1
 generator=$src_root/tools/gen_factory_classid_gperf.awk
 gperf_file=$src_root/src/classid-factory.gperf
+idl_file=$src_root/include/6cells.idl
 
-echo "1..1"
+echo "1..2"
 
 if test ! -f "$generator"; then
     echo "not ok 1 - factory classid registry stays in sync"
+    echo "# missing generator: $generator"
+    echo "not ok 2 - coclass classids resolve to factory constructors"
     echo "# missing generator: $generator"
     exit 1
 fi
 
 if test ! -f "$gperf_file"; then
     echo "not ok 1 - factory classid registry stays in sync"
+    echo "# missing gperf file: $gperf_file"
+    echo "not ok 2 - coclass classids resolve to factory constructors"
     echo "# missing gperf file: $gperf_file"
     exit 1
 fi
@@ -25,6 +30,7 @@ tmpdir=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-factory-classid-sync-XXXXXX")
 trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
 expected=$tmpdir/classid-factory.expected.gperf
+failed=0
 
 if ! awk -f "$generator" \
     "$src_root"/src/lookup-policy-5bit.h \
@@ -70,18 +76,114 @@ if ! awk -f "$generator" \
     >"$expected"; then
     echo "not ok 1 - factory classid registry stays in sync"
     echo "# failed to regenerate classid-factory.gperf"
+    failed=1
+elif cmp -s "$gperf_file" "$expected"; then
+    echo "ok 1 - factory classid registry stays in sync"
+else
+    echo "not ok 1 - factory classid registry stays in sync"
+    if command -v diff >/dev/null 2>&1; then
+        diff -u "$gperf_file" "$expected" | sed 's/^/# /'
+    else
+        echo "# diff not found"
+    fi
+    failed=1
+fi
+
+if test ! -f "$idl_file"; then
+    echo "not ok 2 - coclass classids resolve to factory constructors"
+    echo "# missing IDL file: $idl_file"
     exit 1
 fi
 
-if cmp -s "$gperf_file" "$expected"; then
-    echo "ok 1 - factory classid registry stays in sync"
-    exit 0
+if awk -v idl_file="$idl_file" -v gperf_file="$gperf_file" '
+function trim(text) {
+    gsub(/^[ \t]+/, "", text)
+    gsub(/[ \t]+$/, "", text)
+    return text
+}
+FILENAME == idl_file {
+    line = trim($0)
+    if (line ~ /^\[classid\("[A-Za-z0-9_.\/-]+"\)\]$/) {
+        pending_classid = line
+        sub(/^\[classid\("/, "", pending_classid)
+        sub(/"\)\]$/, "", pending_classid)
+        next
+    }
+    if (line ~ /^coclass[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*\{$/) {
+        coclass = line
+        sub(/^coclass[ \t]+/, "", coclass)
+        sub(/[ \t]*\{$/, "", coclass)
+        if (pending_classid == "") {
+            print "missing classid before coclass: " coclass
+        } else {
+            if (pending_classid in coclass_by_classid) {
+                print "duplicate coclass classid: " pending_classid
+            } else {
+                coclass_by_classid[pending_classid] = coclass
+                classids[++classid_count] = pending_classid
+            }
+        }
+        pending_classid = ""
+        next
+    }
+    if (line != "" &&
+        line !~ /^\/\// &&
+        line !~ /^\/\*/ &&
+        line !~ /^\*/ &&
+        line !~ /^\[[^]]+\]$/) {
+        pending_classid = ""
+    }
+    next
+}
+FILENAME == gperf_file {
+    line = trim($0)
+    if (line ~ /^# define[ \t]+[A-Za-z0-9_]+[ \t]+[A-Za-z_][A-Za-z0-9_]*$/) {
+        macro = line
+        sub(/^# define[ \t]+/, "", macro)
+        sub(/[ \t]+[A-Za-z_][A-Za-z0-9_]*$/, "", macro)
+        constructor = line
+        sub(/^# define[ \t]+[A-Za-z0-9_]+[ \t]+/, "", constructor)
+        constructors[macro] = constructor
+        next
+    }
+    if (line ~ /^[A-Za-z0-9_.\/-]+,[ \t]*[A-Za-z0-9_]+$/) {
+        classid = line
+        sub(/,[ \t]*[A-Za-z0-9_]+$/, "", classid)
+        macro = line
+        sub(/^[A-Za-z0-9_.\/-]+,[ \t]*/, "", macro)
+        registry_macro[classid] = macro
+    }
+}
+END {
+    if (classid_count == 0) {
+        print "missing coclass classid definitions"
+    }
+    for (i = 1; i <= classid_count; ++i) {
+        classid = classids[i]
+        if (!(classid in registry_macro)) {
+            print "missing factory registry entry: " classid \
+                " (" coclass_by_classid[classid] ")"
+            continue
+        }
+        macro = registry_macro[classid]
+        if (!(macro in constructors)) {
+            print "missing nonzero factory constructor: " classid \
+                " -> " macro
+        }
+    }
+}
+' "$idl_file" "$gperf_file" >"$tmpdir/coclass-factory.txt"; then
+    if test -s "$tmpdir/coclass-factory.txt"; then
+        echo "not ok 2 - coclass classids resolve to factory constructors"
+        sed 's/^/# /' "$tmpdir/coclass-factory.txt"
+        failed=1
+    else
+        echo "ok 2 - coclass classids resolve to factory constructors"
+    fi
+else
+    echo "not ok 2 - coclass classids resolve to factory constructors"
+    sed 's/^/# /' "$tmpdir/coclass-factory.txt"
+    failed=1
 fi
 
-echo "not ok 1 - factory classid registry stays in sync"
-if command -v diff >/dev/null 2>&1; then
-    diff -u "$gperf_file" "$expected" | sed 's/^/# /'
-else
-    echo "# diff not found"
-fi
-exit 1
+exit "$failed"
