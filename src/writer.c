@@ -462,7 +462,7 @@ write_png_to_file(
 
     logger = NULL;
     (void)sixel_timeline_logger_prepare_env(allocator, &logger);
-    logger_prepared = sixel_timeline_logger_is_enabled(logger);
+    logger_prepared = logger != NULL;
     if (logger_prepared) {
         sixel_timeline_logger_logf(logger,
                           "io",

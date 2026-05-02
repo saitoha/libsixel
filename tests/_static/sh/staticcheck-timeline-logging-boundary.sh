@@ -50,6 +50,18 @@ FILENAME != last_file {
 /sixel_timeline_logger_t[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*;/ {
     print path ":" FNR ": timeline logger must be held by pointer"
 }
+/sixel_timeline_logger_is_enabled/ {
+    print path ":" FNR ": disabled logging must be represented by NULL logger"
+}
+/sixel_timeline_logger_flush/ {
+    print path ":" FNR ": timeline logger must not own flush responsibility"
+}
+/timeline_logger.*enabled|timeline_logger.*flush/ {
+    print path ":" FNR ": timeline_logger IDL must not expose enabled or flush"
+}
+/timeline_writer.*enabled/ {
+    print path ":" FNR ": timeline_writer IDL must not expose enabled"
+}
 /logger->[ \t]*(active|file|delegate)/ {
     print path ":" FNR ": timeline logger direct field access is forbidden"
 }

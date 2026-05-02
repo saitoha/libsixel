@@ -531,7 +531,7 @@ sixel_lookup_fhedt_timeline_lines_enabled_8bit(
     if (timeline == NULL || !timeline->initialized) {
         return 0;
     }
-    if (!sixel_timeline_logger_is_enabled(timeline->logger) ||
+    if (timeline->logger == NULL ||
             !timeline->log_lines) {
         return 0;
     }
@@ -600,7 +600,7 @@ sixel_lookup_fhedt_timeline_log_8bit(
     int skip_line;
 
     if (timeline == NULL || !timeline->initialized
-            || !sixel_timeline_logger_is_enabled(timeline->logger)) {
+            || timeline->logger == NULL) {
         return;
     }
 
@@ -681,7 +681,7 @@ sixel_lookup_fhedt_prefetch_line_8bit(double *distances,
 #endif
 #if SIXEL_ENABLE_THREADS
     if (timeline != NULL && timeline->initialized
-            && sixel_timeline_logger_is_enabled(timeline->logger)) {
+            && timeline->logger != NULL) {
         skip_line = 0;
         /*
          * Skip logging unless line-level events are explicitly enabled.

@@ -1213,7 +1213,7 @@ sixel_decode_image(
     logger = NULL;
     logger_prepared = 0;
     (void)sixel_timeline_logger_prepare_env(allocator, &logger);
-    logger_prepared = sixel_timeline_logger_is_enabled(logger);
+    logger_prepared = logger != NULL;
     if (logger_prepared) {
         /*
          * File I/O window for timeline visualization. The buffer is already

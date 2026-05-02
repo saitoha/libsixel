@@ -1347,7 +1347,7 @@ sixel_decoder_decode(
     input_fp = NULL;
     logger = NULL;
     (void)sixel_timeline_logger_prepare_env(decoder->allocator, &logger);
-    logger_prepared = sixel_timeline_logger_is_enabled(logger);
+    logger_prepared = logger != NULL;
 
     raw_len = 0;
     max = 0;

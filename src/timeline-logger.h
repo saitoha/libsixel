@@ -47,7 +47,6 @@ sixel_timeline_logger_new_with_writer(
     sixel_timeline_writer_t *writer,
     unsigned int session_id,
     double clock_origin,
-    int enabled,
     sixel_timeline_logger_t **logger);
 
 SIXEL_INTERNAL_API SIXELSTATUS
@@ -57,9 +56,6 @@ sixel_timeline_logger_prepare_env(
 
 SIXEL_INTERNAL_API void
 sixel_timeline_logger_unref(sixel_timeline_logger_t *logger);
-
-SIXEL_INTERNAL_API int
-sixel_timeline_logger_is_enabled(sixel_timeline_logger_t const *logger);
 
 SIXEL_INTERNAL_API unsigned int
 sixel_timeline_logger_session_id(sixel_timeline_logger_t const *logger);
@@ -80,9 +76,6 @@ sixel_timeline_logger_set_frame_context(sixel_timeline_logger_t *logger,
 
 SIXEL_INTERNAL_API void
 sixel_timeline_logger_clear_frame_context(sixel_timeline_logger_t *logger);
-
-SIXEL_INTERNAL_API void
-sixel_timeline_logger_flush(sixel_timeline_logger_t *logger);
 
 #ifdef __cplusplus
 }

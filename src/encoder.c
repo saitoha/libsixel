@@ -4405,7 +4405,7 @@ sixel_encoder_log_stage(sixel_encoder_t *encoder,
     if (encoder != NULL) {
         logger = encoder->logger;
     }
-    if (!sixel_timeline_logger_is_enabled(logger)) {
+    if (logger == NULL) {
         return;
     }
 
@@ -14548,7 +14548,7 @@ sixel_encoder_encode(
     }
     sixel_encoder_ref(encoder);
     (void)sixel_timeline_logger_prepare_env(encoder->allocator, &logger);
-    logger_prepared = sixel_timeline_logger_is_enabled(logger);
+    logger_prepared = logger != NULL;
 
     if (encoder != NULL) {
         encoder->logger = logger;

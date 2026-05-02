@@ -60,7 +60,6 @@ typedef struct sixel_timeline_logger_storage {
     sixel_timeline_writer_t *writer;
     sixel_mutex_t mutex;
     int mutex_ready;
-    int enabled;
     unsigned int session_id;
     double clock_origin;
     sixel_timeline_logger_frame_context_t
@@ -182,7 +181,6 @@ sixel_timeline_logger_destroy(sixel_timeline_logger_storage_t *logger)
         return;
     }
     if (logger->writer != NULL && logger->writer->vtbl != NULL) {
-        logger->writer->vtbl->flush(logger->writer);
         logger->writer->vtbl->unref(logger->writer);
         logger->writer = NULL;
     }
@@ -227,7 +225,7 @@ sixel_timeline_logger_log(sixel_timeline_logger_t *logger,
     }
 
     storage = (sixel_timeline_logger_storage_t *)logger;
-    if (storage->enabled == 0 || storage->writer == NULL ||
+    if (storage->writer == NULL ||
         storage->writer->vtbl == NULL || storage->writer->vtbl->write == NULL) {
         return SIXEL_OK;
     }
@@ -276,10 +274,6 @@ sixel_timeline_logger_set_frame_context_vtbl(
     }
 
     storage = (sixel_timeline_logger_storage_t *)logger;
-    if (storage->enabled == 0) {
-        return SIXEL_OK;
-    }
-
     thread_id = sixel_timeline_logger_thread_id();
     sixel_timeline_logger_lock(storage);
     slot = sixel_timeline_logger_find_frame_context_slot_locked(storage,
@@ -310,10 +304,6 @@ sixel_timeline_logger_clear_frame_context_vtbl(
     }
 
     storage = (sixel_timeline_logger_storage_t *)logger;
-    if (storage->enabled == 0) {
-        return;
-    }
-
     thread_id = sixel_timeline_logger_thread_id();
     sixel_timeline_logger_lock(storage);
     slot = sixel_timeline_logger_find_frame_context_slot_locked(storage,
@@ -327,34 +317,6 @@ sixel_timeline_logger_clear_frame_context_vtbl(
         storage->frame_contexts[slot].active = 0;
     }
     sixel_timeline_logger_unlock(storage);
-}
-
-static void
-sixel_timeline_logger_flush_vtbl(sixel_timeline_logger_t *logger)
-{
-    sixel_timeline_logger_storage_t *storage;
-
-    if (logger == NULL) {
-        return;
-    }
-    storage = (sixel_timeline_logger_storage_t *)logger;
-    if (storage->writer != NULL && storage->writer->vtbl != NULL &&
-        storage->writer->vtbl->flush != NULL) {
-        storage->writer->vtbl->flush(storage->writer);
-    }
-}
-
-static int
-sixel_timeline_logger_enabled_vtbl(
-    sixel_timeline_logger_t const *logger)
-{
-    sixel_timeline_logger_storage_t const *storage;
-
-    if (logger == NULL) {
-        return 0;
-    }
-    storage = (sixel_timeline_logger_storage_t const *)logger;
-    return storage->enabled;
 }
 
 static unsigned int
@@ -376,8 +338,6 @@ static sixel_timeline_logger_vtbl_t const g_sixel_timeline_logger_vtbl = {
     sixel_timeline_logger_log,
     sixel_timeline_logger_set_frame_context_vtbl,
     sixel_timeline_logger_clear_frame_context_vtbl,
-    sixel_timeline_logger_flush_vtbl,
-    sixel_timeline_logger_enabled_vtbl,
     sixel_timeline_logger_session_id_vtbl
 };
 
@@ -387,7 +347,6 @@ sixel_timeline_logger_new_with_writer(
     sixel_timeline_writer_t *writer,
     unsigned int session_id,
     double clock_origin,
-    int enabled,
     sixel_timeline_logger_t **logger)
 {
     sixel_timeline_logger_storage_t *storage;
@@ -412,7 +371,6 @@ sixel_timeline_logger_new_with_writer(
     if (writer->vtbl != NULL && writer->vtbl->ref != NULL) {
         writer->vtbl->ref(writer);
     }
-    storage->enabled = enabled != 0 ? 1 : 0;
     storage->session_id = session_id;
     storage->clock_origin = clock_origin;
     sixel_timeline_logger_clear_frame_context_slots(storage);
@@ -497,13 +455,8 @@ sixel_timeline_logger_prepare_env(
     }
     writer = (sixel_timeline_writer_t *)service;
     if (writer == NULL || writer->vtbl == NULL ||
-        writer->vtbl->enabled == NULL ||
         writer->vtbl->create_logger == NULL) {
         status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-    if (!writer->vtbl->enabled(writer)) {
-        status = SIXEL_OK;
         goto end;
     }
 
@@ -527,16 +480,6 @@ sixel_timeline_logger_unref(sixel_timeline_logger_t *logger)
         logger->vtbl->unref != NULL) {
         logger->vtbl->unref(logger);
     }
-}
-
-int
-sixel_timeline_logger_is_enabled(sixel_timeline_logger_t const *logger)
-{
-    if (logger == NULL || logger->vtbl == NULL ||
-        logger->vtbl->enabled == NULL) {
-        return 0;
-    }
-    return logger->vtbl->enabled(logger);
 }
 
 unsigned int
@@ -603,16 +546,6 @@ sixel_timeline_logger_clear_frame_context(sixel_timeline_logger_t *logger)
         return;
     }
     logger->vtbl->clear_frame_context(logger);
-}
-
-void
-sixel_timeline_logger_flush(sixel_timeline_logger_t *logger)
-{
-    if (logger == NULL || logger->vtbl == NULL ||
-        logger->vtbl->flush == NULL) {
-        return;
-    }
-    logger->vtbl->flush(logger);
 }
 
 /* emacs Local Variables:      */

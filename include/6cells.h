@@ -142,10 +142,6 @@ typedef struct sixel_timeline_record {
     int multiframe;
 } sixel_timeline_record_t;
 
-typedef int sixel_timeline_writer_enabled_result_t;
-
-typedef int sixel_timeline_logger_enabled_result_t;
-
 typedef struct sixel_timeline_writer_interface sixel_timeline_writer_t;
 
 /*
@@ -177,7 +173,6 @@ typedef struct sixel_timeline_writer_interface sixel_timeline_writer_t;
  *         out timeline_logger **logger);
  *     SIXELSTATUS write(in timeline_record const *record);
  *     void flush();
- *     [const] timeline_writer_enabled_result enabled();
  * };
  */
 
@@ -192,15 +187,16 @@ typedef struct sixel_timeline_writer_vtbl {
         sixel_timeline_writer_t *writer,
         sixel_timeline_record_t const *record);
     void (*flush)(sixel_timeline_writer_t *writer);
-    sixel_timeline_writer_enabled_result_t
-    (*enabled)(
-        sixel_timeline_writer_t const *writer);
 } sixel_timeline_writer_vtbl_t;
 
 struct sixel_timeline_writer_interface {
     sixel_timeline_writer_vtbl_t const *vtbl;
 };
 
+/*
+ * TODO: Replace ambient frame context with an explicit event/context DTO
+ * so frame scope is not hidden mutable state on timeline_logger.
+ */
 /*
  * IDL responsibility:
  * - record one diagnostic timeline session
@@ -227,8 +223,6 @@ struct sixel_timeline_writer_interface {
  *     SIXELSTATUS set_frame_context(
  *         in timeline_frame_context const *context);
  *     void clear_frame_context();
- *     void flush();
- *     [const] timeline_logger_enabled_result enabled();
  *     [const] unsigned int session_id();
  * };
  */
@@ -243,10 +237,6 @@ typedef struct sixel_timeline_logger_vtbl {
         sixel_timeline_logger_t *logger,
         sixel_timeline_frame_context_t const *context);
     void (*clear_frame_context)(sixel_timeline_logger_t *logger);
-    void (*flush)(sixel_timeline_logger_t *logger);
-    sixel_timeline_logger_enabled_result_t
-    (*enabled)(
-        sixel_timeline_logger_t const *logger);
     unsigned int (*session_id)(sixel_timeline_logger_t const *logger);
 } sixel_timeline_logger_vtbl_t;
 

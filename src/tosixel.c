@@ -1495,7 +1495,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     sixel_parallel_context_init(&ctx);
     logger = dither->pipeline_logger;
     owns_logger = 0;
-    if (!sixel_timeline_logger_is_enabled(logger)) {
+    if (logger == NULL) {
         logger = NULL;
         sixel_timeline_logger_prepare_default(allocator, &logger);
         owns_logger = logger != NULL ? 1 : 0;
@@ -1542,7 +1542,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     dither->pipeline_image_width = width;
     dither->pipeline_image_height = height;
 
-    if (sixel_timeline_logger_is_enabled(logger)) {
+    if (logger != NULL) {
         /*
          * Record the thread split and band geometry before spawning workers.
          * This clarifies why only a subset of hardware threads might appear
@@ -3137,7 +3137,7 @@ sixel_encode_body(
     }
     output->active_palette = (-1);
 
-    logging_active = sixel_timeline_logger_is_enabled(logger);
+    logging_active = logger != NULL;
     job_index = 0;
 
     status = sixel_encode_emit_palette(bodyonly,
@@ -3613,7 +3613,7 @@ sixel_encode_dither(
     serial_logger = NULL;
     if (!pipeline_active) {
         logger = dither->pipeline_logger;
-        if (!sixel_timeline_logger_is_enabled(logger)) {
+        if (logger == NULL) {
             sixel_timeline_logger_prepare_default(dither->allocator,
                                                   &serial_logger);
             if (serial_logger != NULL) {
@@ -3624,7 +3624,7 @@ sixel_encode_dither(
                 logger = NULL;
             }
         }
-        if (sixel_timeline_logger_is_enabled(logger)) {
+        if (logger != NULL) {
             sixel_timeline_logger_logf(logger,
                               "controller",
                               "pipeline",
@@ -3775,7 +3775,7 @@ sixel_encode_dither(
                                    NULL,
                                    dither->allocator,
                                    dither->pipeline_pin_threads,
-                                   sixel_timeline_logger_is_enabled(logger) ?
+                                   logger != NULL ?
                                        logger :
                                        NULL);
     }

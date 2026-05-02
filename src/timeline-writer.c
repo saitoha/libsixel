@@ -87,16 +87,12 @@ static SIXELSTATUS
 sixel_timeline_writer_write(sixel_timeline_writer_t *writer,
                             sixel_timeline_record_t const *record);
 
-static int
-sixel_timeline_writer_enabled(sixel_timeline_writer_t const *writer);
-
 static sixel_timeline_writer_vtbl_t const g_sixel_timeline_writer_vtbl = {
     sixel_timeline_writer_ref,
     sixel_timeline_writer_unref,
     sixel_timeline_writer_create_logger,
     sixel_timeline_writer_write,
-    sixel_timeline_writer_flush,
-    sixel_timeline_writer_enabled
+    sixel_timeline_writer_flush
 };
 
 static sixel_timeline_writer_storage_t g_sixel_timeline_writer = {
@@ -229,7 +225,6 @@ sixel_timeline_writer_create_logger(
     SIXELSTATUS status;
     unsigned int session_id;
     double clock_origin;
-    int enabled;
 
     if (writer == NULL || allocator == NULL || logger == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -244,15 +239,17 @@ sixel_timeline_writer_create_logger(
 
     session_id = 0u;
     clock_origin = 0.0;
-    enabled = 0;
     sixel_timeline_writer_lock(storage);
     sixel_timeline_writer_open_env_locked(storage);
+    if (storage->active == 0 || storage->file == NULL) {
+        sixel_timeline_writer_unlock(storage);
+        return SIXEL_OK;
+    }
     session_id = storage->next_session_id;
     storage->next_session_id = storage->next_session_id + 1u;
     if (storage->next_session_id == 0u) {
         storage->next_session_id = 1u;
     }
-    enabled = storage->active;
     clock_origin = storage->clock_origin;
     sixel_timeline_writer_unlock(storage);
 
@@ -260,7 +257,6 @@ sixel_timeline_writer_create_logger(
                                                  writer,
                                                  session_id,
                                                  clock_origin,
-                                                 enabled,
                                                  logger);
 }
 
@@ -347,31 +343,6 @@ sixel_timeline_writer_flush(sixel_timeline_writer_t *writer)
         (void)fflush(storage->file);
     }
     sixel_timeline_writer_unlock(storage);
-}
-
-static int
-sixel_timeline_writer_enabled(sixel_timeline_writer_t const *writer)
-{
-    sixel_timeline_writer_storage_t *storage;
-    SIXELSTATUS status;
-    int enabled;
-
-    if (writer == NULL) {
-        return 0;
-    }
-
-    storage = (sixel_timeline_writer_storage_t *)writer;
-    status = sixel_timeline_writer_ensure_mutex();
-    if (SIXEL_FAILED(status)) {
-        return 0;
-    }
-
-    sixel_timeline_writer_lock(storage);
-    sixel_timeline_writer_open_env_locked(storage);
-    enabled = storage->active;
-    sixel_timeline_writer_unlock(storage);
-
-    return enabled;
 }
 
 SIXELSTATUS

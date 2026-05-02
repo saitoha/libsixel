@@ -236,7 +236,7 @@ sixel_lookup_policy_eytzinger_log_event(int ncolors, char const *event)
 
     logger = NULL;
     status = sixel_timeline_logger_prepare_env(NULL, &logger);
-    if (SIXEL_FAILED(status) || !sixel_timeline_logger_is_enabled(logger)) {
+    if (SIXEL_FAILED(status) || logger == NULL) {
         sixel_timeline_logger_unref(logger);
         return;
     }

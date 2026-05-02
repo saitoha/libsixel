@@ -1451,7 +1451,7 @@ loader_timeline_scope_begin(sixel_timeline_logger_t *logger,
 
     if (worker == NULL || worker[0] == '\0' ||
             job_seq == NULL ||
-            !sixel_timeline_logger_is_enabled(logger)) {
+            logger == NULL) {
         loader_background_unlock();
         return;
     }

@@ -105,9 +105,6 @@ struct timeline_record {
     int multiframe;
 };
 
-typedef int timeline_writer_enabled_result;
-typedef int timeline_logger_enabled_result;
-
 [component, refcounted]
 [serviceid("services/timeline-writer")]
 [responsibility("own shared diagnostic timeline JSONL output and clock origin")]
@@ -124,9 +121,12 @@ interface timeline_writer {
         out timeline_logger **logger);
     SIXELSTATUS write(in timeline_record const *record);
     void flush();
-    [const] timeline_writer_enabled_result enabled();
 };
 
+/*
+ * TODO: Replace ambient frame context with an explicit event/context DTO
+ * so frame scope is not hidden mutable state on timeline_logger.
+ */
 [component, refcounted]
 [responsibility("record one diagnostic timeline session")]
 [forbid_state("output_file", "global_writer")]
@@ -140,8 +140,6 @@ interface timeline_logger {
     SIXELSTATUS set_frame_context(
         in timeline_frame_context const *context);
     void clear_frame_context();
-    void flush();
-    [const] timeline_logger_enabled_result enabled();
     [const] unsigned int session_id();
 };
 

@@ -915,7 +915,7 @@ scale_with_resampling_serial(
     int logger_ready;
 
     simd_level = sixel_scale_simd_level();
-    logger_ready = sixel_timeline_logger_is_enabled(logger);
+    logger_ready = logger != NULL;
 #if !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
     !defined(SIXEL_USE_NEON)
     /*
@@ -1024,7 +1024,7 @@ scale_parallel_should_log(scale_parallel_context_t const *ctx, int index)
     int span;
 
     if (ctx == NULL ||
-            !sixel_timeline_logger_is_enabled(ctx->logger)) {
+            ctx->logger == NULL) {
         return 0;
     }
 
@@ -1281,7 +1281,7 @@ scale_with_resampling_parallel(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    logger_ready = sixel_timeline_logger_is_enabled(logger);
+    logger_ready = logger != NULL;
     if (logger_ready) {
         sixel_timeline_logger_logf(logger,
                           "controller",
@@ -1439,7 +1439,7 @@ scale_with_resampling(
     logger = NULL;
     logger_prepared = 0;
     (void)sixel_timeline_logger_prepare_env(allocator, &logger);
-    logger_prepared = sixel_timeline_logger_is_enabled(logger);
+    logger_prepared = logger != NULL;
 
     tmp_size = (size_t)dstw * (size_t)srch * (size_t)depth;
     dst_size = (size_t)dstw * (size_t)dsth * (size_t)depth;

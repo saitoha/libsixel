@@ -582,7 +582,7 @@ loader_log_timeline_event(sixel_loader_t *loader,
     if (loader != NULL) {
         logger = loader->logger;
     }
-    if (!sixel_timeline_logger_is_enabled(logger) ||
+    if (logger == NULL ||
             worker == NULL || role == NULL || event == NULL || job_id < 0) {
         return;
     }

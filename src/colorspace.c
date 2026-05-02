@@ -1977,7 +1977,7 @@ sixel_colorspace_parallel_worker_bytes(tp_job_t job,
 
     end = start + remaining;
     logger = ctx->logger;
-    if (sixel_timeline_logger_is_enabled(logger)) {
+    if (logger != NULL) {
         start_row = sixel_colorspace_log_clamp(start);
         end_row = sixel_colorspace_log_clamp(end);
         sixel_timeline_logger_logf(logger,
@@ -2000,7 +2000,7 @@ sixel_colorspace_parallel_worker_bytes(tp_job_t job,
         ctx->colorspace_src,
         ctx->colorspace_dst);
 
-    if (sixel_timeline_logger_is_enabled(logger)) {
+    if (logger != NULL) {
         sixel_timeline_logger_logf(logger,
                           "worker",
                           "colorspace",
@@ -2070,7 +2070,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
      */
     logger = NULL;
     (void)sixel_timeline_logger_prepare_env(NULL, &logger);
-    if (sixel_timeline_logger_is_enabled(logger)) {
+    if (logger != NULL) {
         logger_ref = logger;
         sixel_timeline_logger_logf(logger_ref,
                           "controller",
@@ -2373,7 +2373,7 @@ sixel_colorspace_parallel_worker(tp_job_t job,
 
     end = start + remaining;
     logger = ctx->logger;
-    if (sixel_timeline_logger_is_enabled(logger)) {
+    if (logger != NULL) {
         start_row = sixel_colorspace_log_clamp(start);
         end_row = sixel_colorspace_log_clamp(end);
         sixel_timeline_logger_logf(logger,
@@ -2396,7 +2396,7 @@ sixel_colorspace_parallel_worker(tp_job_t job,
         ctx->colorspace_dst,
         ctx->simd_level);
 
-    if (sixel_timeline_logger_is_enabled(logger)) {
+    if (logger != NULL) {
         sixel_timeline_logger_logf(logger,
                           "worker",
                           "colorspace",
@@ -2461,7 +2461,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
      */
     logger = NULL;
     (void)sixel_timeline_logger_prepare_env(NULL, &logger);
-    if (sixel_timeline_logger_is_enabled(logger)) {
+    if (logger != NULL) {
         logger_ref = logger;
         sixel_timeline_logger_logf(logger_ref,
                           "controller",

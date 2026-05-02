@@ -46,7 +46,7 @@ test_timeline_writer_creates_loggers(void)
     void *service;
     void *object;
     char const *log_path;
-    int writer_enabled;
+    int logging_requested;
 
     status = SIXEL_FALSE;
     allocator = NULL;
@@ -58,6 +58,7 @@ test_timeline_writer_creates_loggers(void)
     service = NULL;
     object = NULL;
     log_path = sixel_compat_getenv("SIXEL_LOG_PATH");
+    logging_requested = log_path != NULL && log_path[0] != '\0';
 
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
@@ -75,14 +76,7 @@ test_timeline_writer_creates_loggers(void)
         writer->vtbl->create_logger == NULL ||
         writer->vtbl->write == NULL ||
         writer->vtbl->flush == NULL ||
-        writer->vtbl->enabled == NULL ||
         writer->vtbl->unref == NULL) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-
-    writer_enabled = writer->vtbl->enabled(writer);
-    if ((log_path == NULL || log_path[0] == '\0') && writer_enabled != 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -95,13 +89,19 @@ test_timeline_writer_creates_loggers(void)
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    if (!logging_requested) {
+        if (logger1 != NULL || logger2 != NULL) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        goto check_factory;
+    }
+
     if (logger1 == NULL || logger2 == NULL ||
         logger1->vtbl == NULL || logger2->vtbl == NULL ||
         logger1->vtbl->log == NULL ||
         logger1->vtbl->set_frame_context == NULL ||
         logger1->vtbl->clear_frame_context == NULL ||
-        logger1->vtbl->flush == NULL ||
-        logger1->vtbl->enabled == NULL ||
         logger1->vtbl->session_id == NULL ||
         logger1->vtbl->unref == NULL) {
         status = SIXEL_BAD_ARGUMENT;
@@ -135,8 +135,9 @@ test_timeline_writer_creates_loggers(void)
         goto end;
     }
     logger1->vtbl->clear_frame_context(logger1);
-    logger1->vtbl->flush(logger1);
+    writer->vtbl->flush(writer);
 
+check_factory:
     status = sixel_components_getservice("services/factory", &service);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -158,6 +159,14 @@ test_timeline_writer_creates_loggers(void)
     }
     factory_logger = (sixel_timeline_logger_t *)object;
     object = NULL;
+    if (!logging_requested) {
+        if (factory_logger != NULL) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        status = SIXEL_OK;
+        goto end;
+    }
     if (factory_logger == NULL || factory_logger->vtbl == NULL ||
         factory_logger->vtbl->session_id == NULL ||
         factory_logger->vtbl->unref == NULL) {
