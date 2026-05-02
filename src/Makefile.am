@@ -128,7 +128,9 @@ libsixel_la_SOURCES = \
                 $(srcdir)/palette-kcenter.c \
                 $(srcdir)/palette-kcenter.h \
                 $(srcdir)/palette.c \
+                $(srcdir)/palette-factory.h \
                 $(srcdir)/palette.h \
+                $(srcdir)/palette-private.h \
                 $(srcdir)/dither.c \
                 $(srcdir)/dither.h \
                 $(srcdir)/dither-policy.c \
@@ -503,6 +505,7 @@ FACTORY_CLASSID_INPUTS = \
     $(srcdir)/output.h \
     $(srcdir)/chunk.h \
     $(srcdir)/frame.h \
+    $(srcdir)/palette.h \
     $(srcdir)/loader-manager.h \
     $(srcdir)/timeline-logger.h
 

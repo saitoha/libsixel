@@ -30,14 +30,6 @@ sub attach_all {
     $ffi->attach(['sixel_output_set_palette_type' => 'Image::LibSIXEL::sixel_output_set_palette_type'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_output_set_ormode' => 'Image::LibSIXEL::sixel_output_set_ormode'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_output_set_encode_policy' => 'Image::LibSIXEL::sixel_output_set_encode_policy'] => ['opaque', 'int'] => 'void');
-    $ffi->attach(['sixel_palette_new' => 'Image::LibSIXEL::sixel_palette_new'] => ['opaque*', 'opaque'] => 'int');
-    $ffi->attach(['sixel_palette_ref' => 'Image::LibSIXEL::sixel_palette_ref'] => ['opaque'] => 'opaque');
-    $ffi->attach(['sixel_palette_unref' => 'Image::LibSIXEL::sixel_palette_unref'] => ['opaque'] => 'void');
-    $ffi->attach(['sixel_palette_resize' => 'Image::LibSIXEL::sixel_palette_resize'] => ['opaque', 'int', 'int', 'opaque'] => 'int');
-    $ffi->attach(['sixel_palette_set_entries' => 'Image::LibSIXEL::sixel_palette_set_entries'] => ['opaque', 'opaque', 'int', 'int', 'opaque'] => 'int');
-    $ffi->attach(['sixel_palette_set_entries_float32' => 'Image::LibSIXEL::sixel_palette_set_entries_float32'] => ['opaque', 'opaque', 'int', 'int', 'opaque'] => 'int');
-    $ffi->attach(['sixel_palette_copy_entries_8bit' => 'Image::LibSIXEL::sixel_palette_copy_entries_8bit'] => ['opaque', 'opaque*', 'opaque', 'int', 'opaque'] => 'int');
-    $ffi->attach(['sixel_palette_copy_entries_float32' => 'Image::LibSIXEL::sixel_palette_copy_entries_float32'] => ['opaque', 'opaque*', 'opaque', 'int', 'opaque'] => 'int');
     $ffi->attach(['sixel_dither_new' => 'Image::LibSIXEL::_sixel_dither_new'] => ['opaque*', 'int', 'opaque'] => 'int');
     $ffi->attach(['sixel_dither_create' => 'Image::LibSIXEL::sixel_dither_create'] => ['int'] => 'opaque');
     $ffi->attach(['sixel_dither_get' => 'Image::LibSIXEL::sixel_dither_get'] => ['int'] => 'opaque');
@@ -53,7 +45,6 @@ sub attach_all {
     $ffi->attach(['sixel_dither_get_num_of_histogram_colors' => 'Image::LibSIXEL::sixel_dither_get_num_of_histogram_colors'] => ['opaque'] => 'int');
     $ffi->attach(['sixel_dither_get_num_of_histgram_colors' => 'Image::LibSIXEL::sixel_dither_get_num_of_histgram_colors'] => ['opaque'] => 'int');
     $ffi->attach(['sixel_dither_get_palette' => 'Image::LibSIXEL::sixel_dither_get_palette'] => ['opaque'] => 'opaque');
-    $ffi->attach(['sixel_dither_get_quantized_palette' => 'Image::LibSIXEL::sixel_dither_get_quantized_palette'] => ['opaque', 'opaque*'] => 'int');
     $ffi->attach(['sixel_dither_set_palette' => 'Image::LibSIXEL::sixel_dither_set_palette'] => ['opaque', 'opaque'] => 'void');
     $ffi->attach(['sixel_dither_set_complexion_score' => 'Image::LibSIXEL::sixel_dither_set_complexion_score'] => ['opaque', 'int'] => 'void');
     $ffi->attach(['sixel_dither_set_body_only' => 'Image::LibSIXEL::sixel_dither_set_body_only'] => ['opaque', 'int'] => 'void');

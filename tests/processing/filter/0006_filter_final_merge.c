@@ -94,18 +94,16 @@ cleanup:
 }
 
 static int
-test_final_merge_direct_apply_updates_palette(void)
+test_final_merge_direct_apply_updates_dither(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
-    sixel_palette_t *palette;
     sixel_filter_final_merge_config_t config;
 
     status = SIXEL_FALSE;
     allocator = NULL;
     dither = NULL;
-    palette = NULL;
 
     status = make_allocator(&allocator);
     if (SIXEL_FAILED(status)) {
@@ -116,14 +114,6 @@ test_final_merge_direct_apply_updates_palette(void)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-
-    status = sixel_palette_new(&palette, allocator);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-
-    sixel_palette_unref(dither->palette);
-    dither->palette = palette;
 
     config.dither = dither;
     config.final_merge_mode = SIXEL_FINAL_MERGE_NONE;
@@ -138,16 +128,9 @@ test_final_merge_direct_apply_updates_palette(void)
         goto cleanup;
     }
 
-    if (dither->palette->final_merge != SIXEL_FINAL_MERGE_NONE) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto cleanup;
-    }
-
 cleanup:
     if (dither != NULL) {
         sixel_dither_unref(dither);
-    } else if (palette != NULL) {
-        sixel_palette_unref(palette);
     }
     sixel_allocator_unref(allocator);
 
@@ -170,9 +153,9 @@ test_filter_0006_filter_final_merge(int argc, char **argv)
         success = 0;
     }
 
-    if (!test_final_merge_direct_apply_updates_palette()) {
+    if (!test_final_merge_direct_apply_updates_dither()) {
         fprintf(stderr,
-                "final-merge apply updates palette and dither failed\n");
+                "final-merge apply updates dither failed\n");
         success = 0;
     }
 

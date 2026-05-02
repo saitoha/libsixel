@@ -992,84 +992,6 @@ sixel_output_set_encode_policy(
 #endif
 
 
-/* color quantization API */
-
-/* handle type of palette object */
-struct sixel_palette;
-typedef struct sixel_palette sixel_palette_t;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* create palette object */
-SIXELAPI SIXELSTATUS
-sixel_palette_new(
-    sixel_palette_t   /* out */ **pppalette,   /* palette object to be created */
-    sixel_allocator_t /* in */   *allocator);  /* allocator, null if you use
-                                                 default allocator */
-
-/* retain palette object */
-SIXELAPI sixel_palette_t *
-sixel_palette_ref(
-    sixel_palette_t /* in */ *palette);  /* palette object */
-
-/* release palette object */
-SIXELAPI void
-sixel_palette_unref(
-    sixel_palette_t /* in */ *palette);  /* palette object */
-
-/* ensure palette buffer has room for the requested number of colors */
-SIXELAPI SIXELSTATUS
-sixel_palette_resize(
-    sixel_palette_t   /* in */ *palette,    /* palette object */
-    unsigned int      /* in */  colors,     /* palette size */
-    int               /* in */  depth,      /* color depth */
-    sixel_allocator_t /* in */ *allocator); /* allocator, null if you use
-                                               default allocator */
-
-/* copy entries into palette buffer */
-SIXELAPI SIXELSTATUS
-sixel_palette_set_entries(
-    sixel_palette_t         /* in */ *palette,    /* palette object */
-    unsigned char const     /* in */ *entries,    /* RGB/LAB triplets */
-    unsigned int            /* in */  colors,     /* palette size */
-    int                     /* in */  depth,      /* color depth */
-    sixel_allocator_t       /* in */ *allocator); /* allocator, null if you use
-                                                     default allocator */
-
-/* copy float32 entries into palette buffer */
-SIXELAPI SIXELSTATUS
-sixel_palette_set_entries_float32(
-    sixel_palette_t         /* in */ *palette,    /* palette object */
-    float const             /* in */ *entries,    /* RGB/LAB triplets */
-    unsigned int            /* in */  colors,     /* palette size */
-    int                     /* in */  depth,      /* color depth in bytes */
-    sixel_allocator_t       /* in */ *allocator); /* allocator, null if you use
-                                                     default allocator */
-
-/* duplicate palette entries as RGB888 */
-SIXELAPI SIXELSTATUS
-sixel_palette_copy_entries_8bit(
-    sixel_palette_t        /* in */   *palette,     /* palette object */
-    unsigned char          /* out */ **ppentries,   /* destination buffer */
-    size_t                 /* out */  *count,       /* number of entries */
-    int                    /* in */    pixelformat, /* requested format */
-    sixel_allocator_t      /* in */   *allocator);  /* allocator for copy */
-
-/* duplicate palette entries as RGBFLOAT32 */
-SIXELAPI SIXELSTATUS
-sixel_palette_copy_entries_float32(
-    sixel_palette_t        /* in */   *palette,     /* palette object */
-    float                  /* out */ **ppentries,   /* destination buffer */
-    size_t                 /* out */  *count,       /* number of entries */
-    int                    /* in */    pixelformat, /* requested format */
-    sixel_allocator_t      /* in */   *allocator);  /* allocator for copy */
-
-#ifdef __cplusplus
-}
-#endif
-
 /* handle type of dither context object */
 struct sixel_dither;
 typedef struct sixel_dither sixel_dither_t;
@@ -1159,12 +1081,6 @@ sixel_dither_get_num_of_histgram_colors(
 SIXELAPI @attr_func_deprecated@ unsigned char *
 sixel_dither_get_palette(
     sixel_dither_t /* in */ *dither);  /* dither context object */
-
-/* obtain palette object with an incremented refcount */
-SIXELAPI SIXELSTATUS
-sixel_dither_get_quantized_palette(
-    sixel_dither_t  /* in */ *dither,
-    sixel_palette_t /* out */ **pppalette);
 
 /* set palette */
 SIXELAPI void

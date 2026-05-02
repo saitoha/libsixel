@@ -202,10 +202,11 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette-kmeans-build.h $(srcdir)/palette-kmeans.h \
 	$(srcdir)/palette-kmedoids.c $(srcdir)/palette-kmedoids.h \
 	$(srcdir)/palette-kcenter.c $(srcdir)/palette-kcenter.h \
-	$(srcdir)/palette.c $(srcdir)/palette.h $(srcdir)/dither.c \
-	$(srcdir)/dither.h $(srcdir)/dither-policy.c \
-	$(srcdir)/dither-policy.h $(srcdir)/dither-policy-none.c \
-	$(srcdir)/dither-policy-fs.c \
+	$(srcdir)/palette.c $(srcdir)/palette-factory.h \
+	$(srcdir)/palette.h $(srcdir)/palette-private.h \
+	$(srcdir)/dither.c $(srcdir)/dither.h \
+	$(srcdir)/dither-policy.c $(srcdir)/dither-policy.h \
+	$(srcdir)/dither-policy-none.c $(srcdir)/dither-policy-fs.c \
 	$(srcdir)/dither-policy-atkinson.c \
 	$(srcdir)/dither-policy-jajuni.c \
 	$(srcdir)/dither-policy-stucki.c \
@@ -1036,7 +1037,9 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kcenter.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kcenter.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-factory.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-private.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy.c \
@@ -1368,6 +1371,7 @@ FACTORY_CLASSID_INPUTS = \
     $(srcdir)/output.h \
     $(srcdir)/chunk.h \
     $(srcdir)/frame.h \
+    $(srcdir)/palette.h \
     $(srcdir)/loader-manager.h \
     $(srcdir)/timeline-logger.h
 

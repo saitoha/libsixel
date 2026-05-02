@@ -107,6 +107,7 @@ int test_icc_0005_icc_builtin_device_to_device_intent_paths(int argc,
 int test_palette_0001_kmeans_init(int argc, char **argv);
 int test_palette_0002_kmedoids_constraints(int argc, char **argv);
 int test_palette_0003_kcenter_constraints(int argc, char **argv);
+int test_palette_0004_palette_factory(int argc, char **argv);
 
 int test_cli_0029_cli_token_is_known_option(int argc, char **argv);
 int test_cli_0030_cli_option_requires_argument(int argc, char **argv);
@@ -251,6 +252,7 @@ static test_entry_t const test_entries[] = {
       test_palette_0002_kmedoids_constraints },
     { "palette/0003_kcenter_constraints",
       test_palette_0003_kcenter_constraints },
+    { "palette/0004_palette_factory", test_palette_0004_palette_factory },
     { "cli/0029_cli_token_is_known_option",
       test_cli_0029_cli_token_is_known_option },
     { "cli/0030_cli_option_requires_argument",

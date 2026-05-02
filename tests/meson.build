@@ -760,6 +760,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-palette-component-boundary',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-palette-component-boundary.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-chunk-factory-vtbl-guard',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-chunk-factory-vtbl-guard.sh',

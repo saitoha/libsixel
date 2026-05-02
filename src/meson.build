@@ -47,6 +47,8 @@ srcs = [
   'palette-kcenter.c',
   'palette-kcenter.h',
   'palette.c',
+  'palette-factory.h',
+  'palette-private.h',
   'lookup-policy.c',
   'lookup-policy-none.c',
   'lookup-policy-mono-darkbg.c',

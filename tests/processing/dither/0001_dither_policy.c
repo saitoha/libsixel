@@ -89,13 +89,22 @@ prepare_none_lookup_policy(sixel_dither_t *dither,
 {
     SIXELSTATUS status;
     sixel_lookup_policy_prepare_request_t request;
+    sixel_palette_entries_view_t entries_view;
     char const *class_name;
 
     status = SIXEL_FALSE;
     memset(&request, 0, sizeof(request));
+    memset(&entries_view, 0, sizeof(entries_view));
     class_name = NULL;
 
     if (dither == NULL || dither->palette == NULL || lookup_policy == NULL) {
+        return 0;
+    }
+    if (dither->palette->vtbl == NULL ||
+            dither->palette->vtbl->get_entries == NULL ||
+            SIXEL_FAILED(dither->palette->vtbl->get_entries(
+                dither->palette,
+                &entries_view))) {
         return 0;
     }
 
@@ -111,9 +120,9 @@ prepare_none_lookup_policy(sixel_dither_t *dither,
         return 0;
     }
 
-    request.palette = dither->palette->entries;
+    request.palette = entries_view.entries;
     request.palette_float = NULL;
-    request.depth = 3;
+    request.depth = entries_view.depth;
     request.float_depth = 0;
     request.reqcolor = 2;
     request.pixelformat = pixelformat;
@@ -141,6 +150,8 @@ test_dither_policy_named_classes_contract(void)
     sixel_dither_policy_interface_t *dither_policy;
     sixel_dither_policy_prepare_request_t prepare_request;
     sixel_dither_policy_apply_request_t apply_request;
+    sixel_palette_entries_request_t palette_request;
+    sixel_palette_entries_view_t entries_view;
     unsigned char palette[6];
     unsigned char pixel[3];
     float pixel_float[3];
@@ -189,6 +200,8 @@ test_dither_policy_named_classes_contract(void)
     pixelformat = SIXEL_PIXELFORMAT_RGB888;
     memset(&prepare_request, 0, sizeof(prepare_request));
     memset(&apply_request, 0, sizeof(apply_request));
+    memset(&palette_request, 0, sizeof(palette_request));
+    memset(&entries_view, 0, sizeof(entries_view));
     memset(pixel_float, 0, sizeof(pixel_float));
 
     palette[0] = 0x00;
@@ -210,9 +223,27 @@ test_dither_policy_named_classes_contract(void)
         return 0;
     }
 
-    memcpy(dither->palette->entries, palette, sizeof(palette));
-    dither->palette->entry_count = 2U;
-    dither->palette->depth = 3;
+    if (dither->palette->vtbl == NULL ||
+            dither->palette->vtbl->init_entries == NULL ||
+            dither->palette->vtbl->get_entries == NULL) {
+        sixel_dither_unref(dither);
+        return 0;
+    }
+    palette_request.entries = palette;
+    palette_request.colors = 2U;
+    palette_request.depth = 3;
+    status = dither->palette->vtbl->init_entries(dither->palette,
+                                                 &palette_request);
+    if (SIXEL_FAILED(status)) {
+        sixel_dither_unref(dither);
+        return 0;
+    }
+    status = dither->palette->vtbl->get_entries(dither->palette,
+                                                &entries_view);
+    if (SIXEL_FAILED(status) || entries_view.entries == NULL) {
+        sixel_dither_unref(dither);
+        return 0;
+    }
     dither->ncolors = 2;
     dither->reqcolors = 2;
     dither->method_for_scan = SIXEL_SCAN_RASTER;
@@ -294,7 +325,7 @@ test_dither_policy_named_classes_contract(void)
         apply_request.band_origin = 0;
         apply_request.output_start = 0;
         apply_request.depth = 3;
-        apply_request.palette = dither->palette->entries;
+        apply_request.palette = entries_view.entries;
         apply_request.method_for_scan = SIXEL_SCAN_RASTER;
         apply_request.lookup_policy = lookup_policy;
         apply_request.dither = dither;

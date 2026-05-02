@@ -455,14 +455,14 @@ test_build_dither(sixel_kmedoids_algo_t algo,
 {
     SIXELSTATUS status;
     sixel_dither_t *dither;
-    sixel_palette_t *palette_obj;
+    sixel_palette_entries_view_t palette_view;
     float float_pixels[TEST_PIXEL_COUNT * 3u];
     unsigned int index;
     int pixelformat;
 
     status = SIXEL_FALSE;
     dither = NULL;
-    palette_obj = NULL;
+    memset(&palette_view, 0, sizeof(palette_view));
     index = 0u;
     pixelformat = SIXEL_PIXELFORMAT_RGB888;
     if (dither_out == NULL || allocator == NULL) {
@@ -521,12 +521,17 @@ test_build_dither(sixel_kmedoids_algo_t algo,
         return 0;
     }
 
-    status = sixel_dither_get_quantized_palette(dither, &palette_obj);
-    if (SIXEL_FAILED(status) || palette_obj == NULL) {
+    if (dither->palette == NULL || dither->palette->vtbl == NULL ||
+            dither->palette->vtbl->get_entries == NULL) {
         sixel_dither_unref(dither);
         return 0;
     }
-    sixel_palette_unref(palette_obj);
+    status = dither->palette->vtbl->get_entries(dither->palette,
+                                                &palette_view);
+    if (SIXEL_FAILED(status) || palette_view.entries == NULL) {
+        sixel_dither_unref(dither);
+        return 0;
+    }
 
     *dither_out = dither;
     return 1;
@@ -713,14 +718,14 @@ test_copy_palette_from_dither(sixel_dither_t *dither,
                               unsigned int *ncolors_out)
 {
     SIXELSTATUS status;
-    sixel_palette_t *palette_obj;
+    sixel_palette_entries_view_t palette_view;
     unsigned char *palette;
-    size_t ncolors;
+    size_t payload_size;
 
     status = SIXEL_FALSE;
-    palette_obj = NULL;
+    memset(&palette_view, 0, sizeof(palette_view));
     palette = NULL;
-    ncolors = 0u;
+    payload_size = 0u;
     if (dither == NULL
             || allocator == NULL
             || palette_out == NULL
@@ -730,29 +735,31 @@ test_copy_palette_from_dither(sixel_dither_t *dither,
     *palette_out = NULL;
     *ncolors_out = 0u;
 
-    status = sixel_dither_get_quantized_palette(dither, &palette_obj);
-    if (SIXEL_FAILED(status) || palette_obj == NULL) {
+    if (dither->palette == NULL || dither->palette->vtbl == NULL ||
+            dither->palette->vtbl->get_entries == NULL) {
         return 0;
     }
 
-    status = sixel_palette_copy_entries_8bit(
-        palette_obj,
-        &palette,
-        &ncolors,
-        SIXEL_PIXELFORMAT_RGB888,
-        allocator);
-    sixel_palette_unref(palette_obj);
-    if (SIXEL_FAILED(status) || palette == NULL || ncolors == 0u) {
+    status = dither->palette->vtbl->get_entries(dither->palette,
+                                                &palette_view);
+    if (SIXEL_FAILED(status) || palette_view.entries == NULL ||
+            palette_view.depth != 3 || palette_view.entry_count == 0u) {
         return 0;
     }
 
-    if (ncolors > (size_t)UINT_MAX) {
-        sixel_allocator_free(allocator, palette);
+    if (palette_view.entry_count > (size_t)UINT_MAX) {
         return 0;
     }
+    payload_size = palette_view.entry_count * 3u;
+    palette = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                      payload_size);
+    if (palette == NULL) {
+        return 0;
+    }
+    memcpy(palette, palette_view.entries, payload_size);
 
     *palette_out = palette;
-    *ncolors_out = (unsigned int)ncolors;
+    *ncolors_out = (unsigned int)palette_view.entry_count;
     return 1;
 }
 

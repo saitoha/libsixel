@@ -116,13 +116,15 @@ BEGIN {
     required["lookup_policy"] = 1
     required["dither_policy"] = 1
     required["chunk"] = 1
-    required["loader_component"] = 1
-    required["loader_manager"] = 1
-    required["frame"] = 1
-    forbid["chunk"] = "read_cursor decode_state"
-    forbid["frame"] = "lookup_policy dither_policy decode_state"
-    forbid["timeline_writer"] = "frame_context job_context"
-    forbid["timeline_logger"] = "output_file global_writer"
+	    required["loader_component"] = 1
+	    required["loader_manager"] = 1
+	    required["frame"] = 1
+	    required["palette"] = 1
+	    forbid["chunk"] = "read_cursor decode_state"
+	    forbid["frame"] = "lookup_policy dither_policy decode_state"
+	    forbid["palette"] = "lookup_policy dither_policy input_pixels method_for_largest method_for_rep quality_mode force_palette use_reversible quantize_model final_merge_mode lut_policy"
+	    forbid["timeline_writer"] = "frame_context job_context"
+	    forbid["timeline_logger"] = "output_file global_writer"
 }
 function trim(text) {
     gsub(/^[ \t]+/, "", text)
@@ -194,9 +196,10 @@ BEGIN {
     required["lookup_policy"] = 1
     required["dither_policy"] = 1
     required["chunk"] = 1
-    required["loader_component"] = 1
-    required["loader_manager"] = 1
-    required["frame"] = 1
+	    required["loader_component"] = 1
+	    required["loader_manager"] = 1
+	    required["frame"] = 1
+	    required["palette"] = 1
 }
 function trim(text) {
     gsub(/^[ \t]+/, "", text)
@@ -319,11 +322,30 @@ function trim(text) {
         attrs ~ /borrows\(pixels_view\)/) {
         seen["frame.get_pixels"] = 1
     }
-    if (current == "frame" &&
-        line ~ /(init_pixels|set_pixelformat|resize|resize_float32|clip)[ \t]*\(/ &&
-        attrs ~ /invalidates\(pixels_view\)/) {
-        seen["frame." line] = 1
-    }
+	    if (current == "frame" &&
+	        line ~ /(init_pixels|set_pixelformat|resize|resize_float32|clip)[ \t]*\(/ &&
+	        attrs ~ /invalidates\(pixels_view\)/) {
+	        seen["frame." line] = 1
+	    }
+	    if (current == "palette" &&
+	        line ~ /(init_entries|generate)[ \t]*\(/ &&
+	        attrs ~ /invalidates\(entries_view, float32_entries_view\)/) {
+	        seen["palette." line] = 1
+	    }
+	    if (current == "palette" &&
+	        line ~ /init_entries_float32[ \t]*\(/ &&
+	        attrs ~ /invalidates\(float32_entries_view\)/) {
+	        seen["palette." line] = 1
+	    }
+	    if (current == "palette" && line ~ /get_entries[ \t]*\(/ &&
+	        attrs ~ /borrows\(entries_view\)/) {
+	        seen["palette.get_entries"] = 1
+	    }
+	    if (current == "palette" &&
+	        line ~ /get_entries_float32[ \t]*\(/ &&
+	        attrs ~ /borrows\(float32_entries_view\)/) {
+	        seen["palette.get_entries_float32"] = 1
+	    }
     if (line != "" && line !~ /^\/\// && line !~ /^\[[^]]+\]$/) {
         attrs = ""
     }
@@ -338,9 +360,14 @@ END {
     required["frame.get_pixels"] = 1
     required["frame.SIXELSTATUS init_pixels(in frame_pixels_request const *request);"] = 1
     required["frame.SIXELSTATUS set_pixelformat(in int pixelformat);"] = 1
-    required["frame.SIXELSTATUS resize("] = 1
-    required["frame.SIXELSTATUS resize_float32("] = 1
-    required["frame.SIXELSTATUS clip(in int x, in int y, in int width, in int height);"] = 1
+	    required["frame.SIXELSTATUS resize("] = 1
+	    required["frame.SIXELSTATUS resize_float32("] = 1
+	    required["frame.SIXELSTATUS clip(in int x, in int y, in int width, in int height);"] = 1
+	    required["palette.SIXELSTATUS init_entries(in palette_entries_request const *request);"] = 1
+	    required["palette.SIXELSTATUS init_entries_float32("] = 1
+	    required["palette.SIXELSTATUS generate(in palette_generate_request const *request);"] = 1
+	    required["palette.get_entries"] = 1
+	    required["palette.get_entries_float32"] = 1
     for (name in required) {
         if (seen[name] == 0) {
             print "missing borrow/invalidation contract: " name
@@ -369,8 +396,10 @@ BEGIN {
     iface["timeline_logger_component"] = "timeline_logger"
     classid["frame_component"] = "image/frame"
     iface["frame_component"] = "frame"
-    classid["loader_manager_component"] = "loader/manager"
-    iface["loader_manager_component"] = "loader_manager"
+	    classid["loader_manager_component"] = "loader/manager"
+	    iface["loader_manager_component"] = "loader_manager"
+	    classid["palette_component"] = "quant/palette"
+	    iface["palette_component"] = "palette"
 }
 function trim(text) {
     gsub(/^[ \t]+/, "", text)
@@ -449,7 +478,16 @@ BEGIN {
     required["frame_context"] = 1
     required["job_context"] = 1
     required["output_file"] = 1
-    required["global_writer"] = 1
+	    required["global_writer"] = 1
+	    required["input_pixels"] = 1
+	    required["method_for_largest"] = 1
+	    required["method_for_rep"] = 1
+	    required["quality_mode"] = 1
+	    required["force_palette"] = 1
+	    required["use_reversible"] = 1
+	    required["quantize_model"] = 1
+	    required["final_merge_mode"] = 1
+	    required["lut_policy"] = 1
 }
 /IDL forbidden state:/ {
     in_forbid = 1
@@ -601,7 +639,7 @@ function trim(text) {
 {
     line = trim($0)
     if (FILENAME == idl_file) {
-        if (line ~ /^interface[ \t]+(output|frame|chunk)[ \t]*\{$/) {
+	        if (line ~ /^interface[ \t]+(output|frame|chunk|palette)[ \t]*\{$/) {
             current = line
             sub(/^interface[ \t]+/, "", current)
             sub(/[ \t]*\{$/, "", current)
@@ -615,10 +653,10 @@ function trim(text) {
             print FILENAME ":" FNR ": allocator method on " current
         }
     }
-    if ($0 ~ /sixel_(output|frame|chunk)_get_allocator[ \t]*\(/) {
+	    if ($0 ~ /sixel_(output|frame|chunk|palette)_get_allocator[ \t]*\(/) {
         print FILENAME ":" FNR ": forbidden allocator getter export"
     }
-    if ($0 ~ /sixel_(output|frame|chunk)_vtbl_allocator/) {
+	    if ($0 ~ /sixel_(output|frame|chunk|palette)_vtbl_allocator/) {
         print FILENAME ":" FNR ": forbidden allocator vtbl shim"
     }
     if ($0 ~ /->[ \t]*vtbl->[ \t]*allocator/) {

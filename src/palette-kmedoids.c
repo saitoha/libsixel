@@ -59,6 +59,7 @@
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-kmedoids.h"
+#include "palette-private.h"
 #include "pixelformat.h"
 #include "status.h"
 #include "timer.h"
@@ -12724,7 +12725,7 @@ sixel_palette_build_kmedoids_internal(sixel_palette_t *palette,
         return status;
     }
     if (work_allocator == NULL) {
-        work_allocator = palette->allocator;
+        work_allocator = SIXEL_PALETTE_STORAGE(palette)->allocator;
     }
     if (work_allocator == NULL) {
         return status;
@@ -12751,13 +12752,18 @@ sixel_palette_build_kmedoids_internal(sixel_palette_t *palette,
                                     data,
                                     length,
                                     input_depth,
-                                    palette->requested_colors,
+                                    SIXEL_PALETTE_STORAGE(palette)
+                                        ->requested_colors,
                                     &ncolors,
                                     &origcolors,
-                                    palette->quality_mode,
-                                    palette->force_palette,
-                                    palette->use_reversible,
-                                    palette->final_merge_mode,
+                                    SIXEL_PALETTE_CONTEXT(palette)
+                                        ->quality_mode,
+                                    SIXEL_PALETTE_CONTEXT(palette)
+                                        ->force_palette,
+                                    SIXEL_PALETTE_CONTEXT(palette)
+                                        ->use_reversible,
+                                    SIXEL_PALETTE_CONTEXT(palette)
+                                        ->final_merge_mode,
                                     work_allocator,
                                     pixelformat,
                                     treat_input_as_float32,
@@ -12769,7 +12775,7 @@ sixel_palette_build_kmedoids_internal(sixel_palette_t *palette,
         goto end;
     }
 
-    if (palette->use_reversible && entries != NULL) {
+    if (SIXEL_PALETTE_CONTEXT(palette)->use_reversible && entries != NULL) {
         sixel_palette_reversible_palette(entries,
                                          ncolors,
                                          SIXEL_PIXELFORMAT_RGB888);
@@ -12784,17 +12790,20 @@ sixel_palette_build_kmedoids_internal(sixel_palette_t *palette,
         goto end;
     }
     if (payload_size > 0u) {
-        if (palette->entries == NULL || entries == NULL) {
+        if (SIXEL_PALETTE_STORAGE(palette)->entries == NULL
+                || entries == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_palette_build_kmedoids: palette payload is missing.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        memcpy(palette->entries, entries, payload_size);
+        memcpy(SIXEL_PALETTE_STORAGE(palette)->entries,
+               entries,
+               payload_size);
     }
-    palette->entry_count = ncolors;
-    palette->original_colors = origcolors;
-    palette->depth = (int)entry_depth;
+    SIXEL_PALETTE_STORAGE(palette)->entry_count = ncolors;
+    SIXEL_PALETTE_STORAGE(palette)->original_colors = origcolors;
+    SIXEL_PALETTE_STORAGE(palette)->depth = (int)entry_depth;
 
     if (entries_float32 != NULL) {
         status = sixel_palette_set_entries_float32(

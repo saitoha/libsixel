@@ -53,7 +53,7 @@
 #include "palette-kmeans.h"
 #include "palette-kmeans-assign.h"
 #include "palette-kmeans-build.h"
-#include "palette.h"
+#include "palette-private.h"
 #include "pixelformat.h"
 #include "status.h"
 #include "timer.h"
@@ -3746,7 +3746,7 @@ sixel_palette_build_kmeans_internal(
     }
 
     if (work_allocator == NULL) {
-        work_allocator = palette->allocator;
+        work_allocator = SIXEL_PALETTE_STORAGE(palette)->allocator;
     }
     if (work_allocator == NULL) {
         return status;
@@ -3774,19 +3774,20 @@ sixel_palette_build_kmeans_internal(
     }
     entry_depth = (unsigned int)depth_result;
 
-    reversible_for_quantizer = palette->use_reversible;
+    reversible_for_quantizer = SIXEL_PALETTE_CONTEXT(palette)->use_reversible;
     build_request.result = &entries;
     build_request.result_float32 = &entries_float32;
     build_request.data = data;
     build_request.length = length;
     build_request.depth = input_depth;
-    build_request.reqcolors = palette->requested_colors;
+    build_request.reqcolors = SIXEL_PALETTE_STORAGE(palette)->requested_colors;
     build_request.ncolors = &ncolors;
     build_request.origcolors = &origcolors;
-    build_request.quality_mode = palette->quality_mode;
-    build_request.force_palette = palette->force_palette;
+    build_request.quality_mode = SIXEL_PALETTE_CONTEXT(palette)->quality_mode;
+    build_request.force_palette = SIXEL_PALETTE_CONTEXT(palette)->force_palette;
     build_request.use_reversible = reversible_for_quantizer;
-    build_request.final_merge_mode = palette->final_merge_mode;
+    build_request.final_merge_mode = SIXEL_PALETTE_CONTEXT(palette)
+        ->final_merge_mode;
     build_request.allocator = work_allocator;
     build_request.pixelformat = pixelformat;
     build_request.treat_input_as_float32 = treat_input_as_float32;
@@ -3814,12 +3815,12 @@ sixel_palette_build_kmeans_internal(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    if (payload_size > 0U && palette->entries != NULL) {
-        memcpy(palette->entries, entries, payload_size);
+    if (payload_size > 0U && SIXEL_PALETTE_STORAGE(palette)->entries != NULL) {
+        memcpy(SIXEL_PALETTE_STORAGE(palette)->entries, entries, payload_size);
     }
-    palette->entry_count = ncolors;
-    palette->original_colors = origcolors;
-    palette->depth = (int)entry_depth;
+    SIXEL_PALETTE_STORAGE(palette)->entry_count = ncolors;
+    SIXEL_PALETTE_STORAGE(palette)->original_colors = origcolors;
+    SIXEL_PALETTE_STORAGE(palette)->depth = (int)entry_depth;
 
     if (entries_float32 != NULL) {
         status = sixel_palette_set_entries_float32(

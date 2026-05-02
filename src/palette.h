@@ -25,10 +25,7 @@
 #ifndef LIBSIXEL_PALETTE_H
 #define LIBSIXEL_PALETTE_H
 
-#include <sixel.h>
-
-#include "sixel_atomic.h"
-#include "lookup-policy.h"
+#include <6cells.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -64,64 +61,9 @@ typedef struct sixel_palette_telemetry {
     int merge_mode;
 } sixel_palette_telemetry_t;
 
-/*
- * sixel_palette_t centralizes palette state shared between quantization and
- * dithering phases.  The structure now stores both configuration knobs and
- * generated results so callers can keep a single object throughout the image
- * conversion pipeline.
- */
-struct sixel_palette {
-    sixel_atomic_u32_t ref;         /* reference counter */
-    sixel_allocator_t *allocator;   /* allocator associated with palette */
-    unsigned char *entries;         /* palette entries, RGB triplets */
-    size_t entries_size;            /* allocated length for entries */
-    float *entries_float32;         /* float entries in dither colorspace */
-    size_t entries_float32_size;    /* allocated length for float entries */
-    unsigned int entry_count;       /* number of active palette entries */
-    unsigned int requested_colors;  /* requested palette size */
-    unsigned int original_colors;   /* original color count before quant */
-    int depth;                      /* sample depth for generated palette */
-    int float_depth;                /* bytes per float entry, when present */
-    int method_for_largest;         /* histogram split heuristic */
-    int method_for_rep;             /* representative color selector */
-    int quality_mode;               /* histogram sampling quality */
-    int force_palette;              /* keep palette size constant */
-    int use_reversible;             /* reversible tone enforcement */
-    int quantize_model;             /* palette solver selector */
-    int final_merge_mode;           /* palette merge strategy */
-    int lut_policy;                 /* histogram LUT selection */
-    int sixel_reversible;           /* reversible tone flag proxy */
-    int final_merge;                /* final merge flag proxy */
-    sixel_lookup_policy_interface_t *lookup_policy; /* reusable lookup policy */
-};
-
-void
-sixel_palette_set_lut_policy(int lut_policy);
-
-void
-sixel_palette_set_method_for_largest(int method);
-
-SIXELSTATUS
-sixel_palette_make_palette(unsigned char **result,
-                           void const *data,
-                           unsigned int length,
-                           int pixelformat,
-                           unsigned int reqcolors,
-                           unsigned int *ncolors,
-                           unsigned int *origcolors,
-                           int methodForLargest,
-                           int methodForRep,
-                           int qualityMode,
-                           int force_palette,
-                           int use_reversible,
-                           int quantize_model,
-                           int final_merge_mode,
-                           int prefer_float32,
-                           sixel_allocator_t *allocator);
-
-void
-sixel_palette_free_palette(unsigned char *data,
-                           sixel_allocator_t *allocator);
+/* @classid quant/palette */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_palette_factory_new(sixel_allocator_t *allocator, void **object);
 
 
 #ifdef __cplusplus

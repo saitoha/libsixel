@@ -47,7 +47,7 @@
 
 #include "dither.h"
 #include "dither-interframe-method.h"
-#include "palette.h"
+#include "palette-factory.h"
 #include "compat_stub.h"
 #include <6cells.h>
 
@@ -181,6 +181,7 @@ sixel_dither_palette_has_float_entries(
     sixel_palette_t const *palette,
     int channels)
 {
+    sixel_palette_float32_entries_view_t view;
     size_t required_size;
     int required_depth;
 
@@ -192,16 +193,21 @@ sixel_dither_palette_has_float_entries(
     if (channels <= 0) {
         return 0;
     }
-    if (palette->entries_float32 == NULL || palette->entry_count == 0U) {
+    memset(&view, 0, sizeof(view));
+    if (palette->vtbl == NULL ||
+        palette->vtbl->get_entries_float32 == NULL ||
+        SIXEL_FAILED(palette->vtbl->get_entries_float32(palette, &view))) {
+        return 0;
+    }
+    if (view.entries == NULL || view.entry_count == 0U) {
         return 0;
     }
     required_depth = channels * (int)sizeof(float);
-    if (palette->float_depth < required_depth) {
+    if (view.depth < required_depth) {
         return 0;
     }
-    required_size = (size_t)palette->entry_count
-                  * (size_t)palette->float_depth;
-    if (palette->entries_float32_size < required_size) {
+    required_size = (size_t)view.entry_count * (size_t)view.depth;
+    if (view.entries_size < required_size) {
         return 0;
     }
 
@@ -226,6 +232,8 @@ sixel_dither_promote_palette_rgb888_to_float32(
     unsigned int color;
     int channel;
     int channels;
+    sixel_palette_entries_view_t view;
+    sixel_palette_float32_entries_request_t request;
 
     status = SIXEL_FALSE;
     converted = NULL;
@@ -235,11 +243,21 @@ sixel_dither_promote_palette_rgb888_to_float32(
     color = 0U;
     channel = 0;
     channels = 0;
+    memset(&view, 0, sizeof(view));
+    memset(&request, 0, sizeof(request));
 
     if (palette == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (palette->entries == NULL || palette->entry_count == 0U) {
+    if (palette->vtbl == NULL || palette->vtbl->get_entries == NULL ||
+        palette->vtbl->init_entries_float32 == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = palette->vtbl->get_entries(palette, &view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (view.entries == NULL || view.entry_count == 0U) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
@@ -254,15 +272,15 @@ sixel_dither_promote_palette_rgb888_to_float32(
     if (channels <= 0 || channels > SIXEL_MAX_CHANNELS) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (palette->depth < channels) {
+    if (view.depth < channels) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     row_stride = (size_t)channels;
-    if ((size_t)palette->entry_count > SIZE_MAX / row_stride) {
+    if ((size_t)view.entry_count > SIZE_MAX / row_stride) {
         return SIXEL_BAD_INPUT;
     }
-    payload_size = (size_t)palette->entry_count * row_stride;
+    payload_size = (size_t)view.entry_count * row_stride;
     if (payload_size > SIZE_MAX / sizeof(float)) {
         return SIXEL_BAD_INPUT;
     }
@@ -274,24 +292,22 @@ sixel_dither_promote_palette_rgb888_to_float32(
         return SIXEL_BAD_ALLOCATION;
     }
 
-    for (color = 0U; color < palette->entry_count; ++color) {
+    for (color = 0U; color < view.entry_count; ++color) {
         row_offset = (size_t)color * row_stride;
         for (channel = 0; channel < channels; ++channel) {
             converted[row_offset + (size_t)channel]
                 = sixel_pixelformat_byte_to_float(
                     pixelformat,
                     channel,
-                    palette->entries[(size_t)color * (size_t)palette->depth
-                                     + (size_t)channel]);
+                    view.entries[(size_t)color * (size_t)view.depth
+                                 + (size_t)channel]);
         }
     }
 
-    status = sixel_palette_set_entries_float32(
-        palette,
-        converted,
-        palette->entry_count,
-        channels * (int)sizeof(float),
-        allocator);
+    request.entries = converted;
+    request.colors = view.entry_count;
+    request.depth = channels * (int)sizeof(float);
+    status = palette->vtbl->init_entries_float32(palette, &request);
     sixel_allocator_free(allocator, converted);
     return status;
 }
@@ -799,6 +815,8 @@ sixel_dither_parallel_worker(tp_job_t job,
     int restore_context;
     sixel_lookup_policy_interface_t *lookup_policy;
     sixel_dither_policy_apply_request_t apply_request;
+    sixel_palette_entries_view_t entries_view;
+    sixel_palette_float32_entries_view_t float32_view;
 
     plan = (sixel_parallel_dither_plan_t *)userdata;
     if (plan == NULL) {
@@ -876,12 +894,29 @@ sixel_dither_parallel_worker(tp_job_t job,
         reuse_policy = state->lookup_policy;
     }
     lookup_policy = NULL;
+    memset(&entries_view, 0, sizeof(entries_view));
+    memset(&float32_view, 0, sizeof(float32_view));
+    if (plan->palette == NULL || plan->palette->vtbl == NULL ||
+        plan->palette->vtbl->get_entries == NULL ||
+        plan->palette->vtbl->get_entries_float32 == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+    status = plan->palette->vtbl->get_entries(plan->palette, &entries_view);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = plan->palette->vtbl->get_entries_float32(plan->palette,
+                                                      &float32_view);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
     status = sixel_dither_prepare_lookup_policy(
         &lookup_policy,
-        plan->palette->entries,
-        plan->palette->entries_float32,
+        entries_view.entries,
+        float32_view.entries,
         3,
-        plan->palette->float_depth,
+        float32_view.depth,
         plan->reqcolor,
         (plan->dither != NULL) ? plan->dither->optimized : 0,
         plan->lut_policy,
@@ -918,7 +953,7 @@ sixel_dither_parallel_worker(tp_job_t job,
     apply_request.band_origin = in0;
     apply_request.output_start = y0;
     apply_request.depth = 3;
-    apply_request.palette = plan->palette->entries;
+    apply_request.palette = entries_view.entries;
     apply_request.method_for_scan = plan->method_for_scan;
     apply_request.lookup_policy = lookup_policy;
     apply_request.dither = plan->dither;
@@ -1083,10 +1118,9 @@ typedef struct sixel_dither_resolve_indexes_request {
 
 /*
  * Route palette application through the local dithering helper.  The
- * function keeps all state in the palette object so we can share cache
- * buffers between invocations and later stages.  The flow is:
- *   1. Synchronize the quantizer configuration with the dither object so the
- *      LUT builder honors the requested policy.
+ * function keeps lookup-policy cache state on the dither object so palette
+ * storage remains a simple entries/metadata component.  The flow is:
+ *   1. Prepare the lookup policy for the borrowed palette views.
  *   2. Invoke IDitherPolicy.apply() to populate the index buffer.
  *   3. Return the status to the caller so palette application errors can
  *      be reported at a single site.
@@ -1113,10 +1147,17 @@ sixel_dither_resolve_indexes(
     int shared_lut;
     int pixelformat;
     sixel_dither_policy_apply_request_t apply_request;
+    sixel_palette_entries_view_t entries_view;
+    sixel_palette_float32_entries_view_t float32_view;
 
     status = SIXEL_FALSE;
-    if (request == NULL || request->palette == NULL
-            || request->palette->entries == NULL) {
+    memset(&entries_view, 0, sizeof(entries_view));
+    memset(&float32_view, 0, sizeof(float32_view));
+    if (request == NULL || request->dither == NULL ||
+        request->palette == NULL ||
+        request->palette->vtbl == NULL ||
+        request->palette->vtbl->get_entries == NULL ||
+        request->palette->vtbl->get_entries_float32 == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     result = request->result;
@@ -1137,21 +1178,31 @@ sixel_dither_resolve_indexes(
                                                              lut_policy);
     pixelformat = request->pixelformat;
 
-    sixel_palette_set_lut_policy(lut_policy);
+    status = palette->vtbl->get_entries(palette, &entries_view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = palette->vtbl->get_entries_float32(palette, &float32_view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (entries_view.entries == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     status = sixel_dither_prepare_lookup_policy(
-        &palette->lookup_policy,
-        palette->entries,
-        palette->entries_float32,
+        &dither->lookup_policy,
+        entries_view.entries,
+        float32_view.entries,
         depth,
-        palette->float_depth,
+        float32_view.depth,
         reqcolor,
         foptimize,
         lut_policy,
         shared_lut,
         pixelformat,
         0,
-        palette->lookup_policy,
+        dither->lookup_policy,
         NULL,
         allocator);
     if (SIXEL_FAILED(status)) {
@@ -1173,9 +1224,9 @@ sixel_dither_resolve_indexes(
     apply_request.band_origin = 0;
     apply_request.output_start = 0;
     apply_request.depth = depth;
-    apply_request.palette = palette->entries;
+    apply_request.palette = entries_view.entries;
     apply_request.method_for_scan = method_for_scan;
-    apply_request.lookup_policy = palette->lookup_policy;
+    apply_request.lookup_policy = dither->lookup_policy;
     apply_request.dither = dither;
     apply_request.pixelformat = pixelformat;
     status = dither_policy->vtbl->apply(dither_policy, &apply_request);
@@ -1243,6 +1294,8 @@ sixel_dither_new(
     size_t palette_bytes;
     int quality_mode;
     sixel_palette_t *palette;
+    sixel_palette_entries_request_t palette_request;
+    sixel_palette_entries_view_t palette_view;
 
     /* ensure given pointer is not null */
     if (ppdither == NULL) {
@@ -1344,6 +1397,7 @@ sixel_dither_new(
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->lut_policy_shared_instance_override = 0;
     (*ppdither)->lut_policy_shared_instance = 0;
+    (*ppdither)->lookup_policy = NULL;
     (*ppdither)->dither_policy = NULL;
     (*ppdither)->dither_policy_class_name = NULL;
     (*ppdither)->sixel_reversible = 0;
@@ -1369,7 +1423,8 @@ sixel_dither_new(
     (*ppdither)->pipeline_logger = NULL;
     sixel_dither_interframe_state_init(*ppdither);
 
-    status = sixel_palette_new(&(*ppdither)->palette, allocator);
+    status = sixel_palette_create_from_factory(&(*ppdither)->palette,
+                                               allocator);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, *ppdither);
         *ppdither = NULL;
@@ -1377,17 +1432,13 @@ sixel_dither_new(
     }
 
     palette = (*ppdither)->palette;
-    palette->requested_colors = (unsigned int)ncolors;
-    palette->quality_mode = quality_mode;
-    palette->force_palette = 0;
-    palette->lut_policy = SIXEL_LUT_POLICY_AUTO;
-
-    status = sixel_palette_resize(palette,
-                                  (unsigned int)ncolors,
-                                  3,
-                                  allocator);
+    memset(&palette_request, 0, sizeof(palette_request));
+    palette_request.entries = NULL;
+    palette_request.colors = (unsigned int)ncolors;
+    palette_request.depth = 3;
+    status = palette->vtbl->init_entries(palette, &palette_request);
     if (SIXEL_FAILED(status)) {
-        sixel_palette_unref(palette);
+        palette->vtbl->unref(palette);
         (*ppdither)->palette = NULL;
         sixel_allocator_free(allocator, *ppdither);
         *ppdither = NULL;
@@ -1397,9 +1448,18 @@ sixel_dither_new(
      * Ensure palette entries are fully initialized before any lookup
      * path reads them under MSan instrumentation.
      */
-    palette_bytes = palette->entries_size;
-    if (palette->entries != NULL && palette_bytes > 0U) {
-        memset(palette->entries, 0, palette_bytes);
+    memset(&palette_view, 0, sizeof(palette_view));
+    status = palette->vtbl->get_entries(palette, &palette_view);
+    if (SIXEL_FAILED(status)) {
+        palette->vtbl->unref(palette);
+        (*ppdither)->palette = NULL;
+        sixel_allocator_free(allocator, *ppdither);
+        *ppdither = NULL;
+        goto end;
+    }
+    palette_bytes = palette_view.entries_size;
+    if (palette_view.entries != NULL && palette_bytes > 0U) {
+        memset(palette_view.entries, 0, palette_bytes);
     }
 
     status = SIXEL_OK;
@@ -1443,8 +1503,12 @@ sixel_dither_destroy(
             dither->dither_policy = NULL;
             dither->dither_policy_class_name = NULL;
         }
+        if (dither->lookup_policy != NULL) {
+            dither->lookup_policy->vtbl->unref(dither->lookup_policy);
+            dither->lookup_policy = NULL;
+        }
         if (dither->palette != NULL) {
-            sixel_palette_unref(dither->palette);
+            dither->palette->vtbl->unref(dither->palette);
             dither->palette = NULL;
         }
         sixel_dither_clear_bluenoise_gradient_map_hint(dither);
@@ -1493,6 +1557,7 @@ sixel_dither_get(
     int ncolors;
     int keycolor;
     sixel_dither_t *dither = NULL;
+    sixel_palette_entries_request_t palette_request;
 
     switch (builtin_dither) {
     case SIXEL_BUILTIN_MONO_DARK:
@@ -1558,19 +1623,17 @@ sixel_dither_get(
         goto end;
     }
 
-    status = sixel_palette_set_entries(dither->palette,
-                                       palette,
-                                       (unsigned int)ncolors,
-                                       3,
-                                       dither->allocator);
+    memset(&palette_request, 0, sizeof(palette_request));
+    palette_request.entries = palette;
+    palette_request.colors = (unsigned int)ncolors;
+    palette_request.depth = 3;
+    status = dither->palette->vtbl->init_entries(dither->palette,
+                                                 &palette_request);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(dither);
         dither = NULL;
         goto end;
     }
-    dither->palette->requested_colors = (unsigned int)ncolors;
-    dither->palette->entry_count = (unsigned int)ncolors;
-    dither->palette->depth = 3;
     dither->keycolor = keycolor;
     dither->optimized = 1;
 
@@ -1632,7 +1695,6 @@ sixel_dither_initialize(
     int             /* in */ method_for_rep,
     int             /* in */ quality_mode)
 {
-    unsigned char *buf = NULL;
     unsigned char *normalized_pixels = NULL;
     unsigned char *alpha_pixels = NULL;
     float *float_pixels = NULL;
@@ -1643,6 +1705,8 @@ sixel_dither_initialize(
     int method_for_largest_for_palette;
     int palette_pixelformat;
     int prefer_float32;
+    sixel_palette_generate_request_t palette_request;
+    sixel_palette_metadata_t palette_metadata;
 
     /* ensure dither object is not null */
     if (dither == NULL) {
@@ -1656,9 +1720,6 @@ sixel_dither_initialize(
     sixel_dither_ref(dither);
 
     sixel_dither_set_pixelformat(dither, pixelformat);
-
-    /* keep quantizer policy in sync with the dither object */
-    sixel_palette_set_lut_policy(dither->lut_policy);
 
     input_pixels = NULL;
     total_pixels = (size_t)width * (size_t)height;
@@ -1792,44 +1853,39 @@ sixel_dither_initialize(
         method_for_largest_for_palette = dither->method_for_largest;
     }
 
-    status = sixel_palette_make_palette(&buf,
-                                        input_pixels,
-                                        payload_length,
-                                        palette_pixelformat,
-                                        (unsigned int)dither->reqcolors,
-                                        (unsigned int *)&dither->ncolors,
-                                        (unsigned int *)&dither->origcolors,
-                                        method_for_largest_for_palette,
-                                        dither->method_for_rep,
-                                        dither->quality_mode,
-                                        dither->force_palette,
-                                        dither->sixel_reversible,
-                                        dither->quantize_model,
-                                        dither->final_merge_mode,
-                                        dither->prefer_float32,
-                                        dither->allocator);
+    memset(&palette_request, 0, sizeof(palette_request));
+    palette_request.data = input_pixels;
+    palette_request.length = payload_length;
+    palette_request.pixelformat = palette_pixelformat;
+    palette_request.requested_colors = (unsigned int)dither->reqcolors;
+    palette_request.method_for_largest = method_for_largest_for_palette;
+    palette_request.method_for_rep = dither->method_for_rep;
+    palette_request.quality_mode = dither->quality_mode;
+    palette_request.force_palette = dither->force_palette;
+    palette_request.use_reversible = dither->sixel_reversible;
+    palette_request.quantize_model = dither->quantize_model;
+    palette_request.final_merge_mode = dither->final_merge_mode;
+    palette_request.lut_policy = dither->lut_policy;
+    palette_request.prefer_float32 = dither->prefer_float32;
+    status = dither->palette->vtbl->generate(dither->palette,
+                                             &palette_request);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    status = sixel_palette_set_entries(dither->palette,
-                                       buf,
-                                       (unsigned int)dither->ncolors,
-                                       3,
-                                       dither->allocator);
+    memset(&palette_metadata, 0, sizeof(palette_metadata));
+    status = dither->palette->vtbl->get_metadata(dither->palette,
+                                                 &palette_metadata);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    dither->palette->entry_count = (unsigned int)dither->ncolors;
-    dither->palette->requested_colors = (unsigned int)dither->reqcolors;
-    dither->palette->original_colors = (unsigned int)dither->origcolors;
-    dither->palette->depth = 3;
+    dither->ncolors = (int)palette_metadata.entry_count;
+    dither->origcolors = (int)palette_metadata.original_colors;
 
     dither->optimized = 1;
     if (dither->origcolors <= dither->ncolors) {
         dither->method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
 
-    sixel_palette_free_palette(buf, dither->allocator);
     status = SIXEL_OK;
 
 end:
@@ -1885,13 +1941,9 @@ sixel_dither_set_lut_policy(
      * next apply call rebuilds under the new class.
      */
     dither->lut_policy = normalized;
-    if (dither->palette != NULL) {
-        dither->palette->lut_policy = normalized;
-        if (dither->palette->lookup_policy != NULL) {
-            dither->palette->lookup_policy->vtbl->unref(
-                dither->palette->lookup_policy);
-            dither->palette->lookup_policy = NULL;
-        }
+    if (dither->lookup_policy != NULL) {
+        dither->lookup_policy->vtbl->unref(dither->lookup_policy);
+        dither->lookup_policy = NULL;
     }
 }
 
@@ -1994,30 +2046,19 @@ SIXELAPI unsigned char *
 sixel_dither_get_palette(
     sixel_dither_t /* in */ *dither)  /* dither context object */
 {
+    sixel_palette_entries_view_t view;
+
     if (dither == NULL || dither->palette == NULL) {
         return NULL;
     }
 
-    return dither->palette->entries;
-}
-
-SIXELAPI SIXELSTATUS
-sixel_dither_get_quantized_palette(sixel_dither_t *dither,
-                                   sixel_palette_t **pppalette)
-{
-    if (pppalette == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    *pppalette = NULL;
-
-    if (dither == NULL || dither->palette == NULL) {
-        return SIXEL_RUNTIME_ERROR;
+    memset(&view, 0, sizeof(view));
+    if (SIXEL_FAILED(dither->palette->vtbl->get_entries(dither->palette,
+                                                        &view))) {
+        return NULL;
     }
 
-    sixel_palette_ref(dither->palette);
-    *pppalette = dither->palette;
-
-    return SIXEL_OK;
+    return view.entries;
 }
 
 
@@ -2027,15 +2068,17 @@ sixel_dither_set_palette(
     sixel_dither_t /* in */ *dither,   /* dither context object */
     unsigned char  /* in */ *palette)
 {
+    sixel_palette_entries_request_t request;
+
     if (dither == NULL || dither->palette == NULL) {
         return;
     }
 
-    (void)sixel_palette_set_entries(dither->palette,
-                                    palette,
-                                    (unsigned int)dither->ncolors,
-                                    3,
-                                    dither->allocator);
+    memset(&request, 0, sizeof(request));
+    request.entries = palette;
+    request.colors = (unsigned int)dither->ncolors;
+    request.depth = 3;
+    (void)dither->palette->vtbl->init_entries(dither->palette, &request);
 }
 
 
@@ -2113,9 +2156,6 @@ sixel_dither_set_sixel_reversible(
         return;
     }
     dither->sixel_reversible = enable ? 1 : 0;
-    if (dither->palette != NULL) {
-        dither->palette->sixel_reversible = dither->sixel_reversible;
-    }
 }
 
 /* select final merge policy */
@@ -2137,9 +2177,6 @@ sixel_dither_set_final_merge(
         mode = SIXEL_FINAL_MERGE_AUTO;
     }
     dither->final_merge_mode = mode;
-    if (dither->palette != NULL) {
-        dither->palette->final_merge = mode;
-    }
 }
 
 /* set transparent */
@@ -2831,6 +2868,10 @@ sixel_dither_apply_palette_with_mode(
     int pipeline_depth = 0;
     int supports_parallel_bands;
     sixel_dither_policy_interface_t *dither_policy;
+    size_t palette_entry_capacity;
+    sixel_palette_entries_request_t palette_entries_request;
+    sixel_palette_entries_view_t entries_view;
+    sixel_palette_float32_entries_view_t float32_view;
 #if SIXEL_ENABLE_THREADS
     int shared_lut;
 #endif  /* SIXEL_ENABLE_THREADS */
@@ -2872,8 +2913,28 @@ sixel_dither_apply_palette_with_mode(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
+    if (palette->vtbl == NULL || palette->vtbl->get_entries == NULL ||
+        palette->vtbl->get_entries_float32 == NULL ||
+        palette->vtbl->init_entries == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dither_apply_palette: palette interface is incomplete.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    memset(&entries_view, 0, sizeof(entries_view));
+    memset(&float32_view, 0, sizeof(float32_view));
+    memset(&palette_entries_request, 0, sizeof(palette_entries_request));
+    status = palette->vtbl->get_entries(palette, &entries_view);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
     source_pixelformat = dither->pixelformat;
-    palette_entry_limit = (int)palette->entry_count;
+    palette_entry_limit = (int)entries_view.entry_count;
+    palette_entry_capacity = 0U;
+    if (entries_view.depth > 0) {
+        palette_entry_capacity =
+            entries_view.entries_size / (size_t)entries_view.depth;
+    }
     source_depth = 0U;
     index = 0U;
     dither_policy = NULL;
@@ -3164,7 +3225,19 @@ sixel_dither_apply_palette_with_mode(
                           height);
     }
 
-    palette->lut_policy = dither->lut_policy;
+    status = palette->vtbl->get_entries(palette, &entries_view);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = palette->vtbl->get_entries_float32(palette, &float32_view);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    palette_entry_capacity = 0U;
+    if (entries_view.depth > 0) {
+        palette_entry_capacity =
+            entries_view.entries_size / (size_t)entries_view.depth;
+    }
 #if SIXEL_ENABLE_THREADS
     shared_lut = sixel_dither_lookup_shared_instance_enabled(
         dither,
@@ -3176,18 +3249,18 @@ sixel_dither_apply_palette_with_mode(
         int adjusted_height;
 
         status = sixel_dither_prepare_lookup_policy(
-            &palette->lookup_policy,
-            palette->entries,
-            palette->entries_float32,
-            palette->depth,
-            palette->float_depth,
+            &dither->lookup_policy,
+            entries_view.entries,
+            float32_view.entries,
+            entries_view.depth,
+            float32_view.depth,
             dither->ncolors,
             dither->optimized,
             dither->lut_policy,
             shared_lut,
             pipeline_pixelformat,
             parallel_active,
-            palette->lookup_policy,
+            dither->lookup_policy,
             NULL,
             dither->allocator);
         if (SIXEL_FAILED(status)) {
@@ -3229,7 +3302,7 @@ sixel_dither_apply_palette_with_mode(
         plan.pin_threads = dither->pipeline_pin_threads != 0 ? 1 : 0;
         plan.logger = logger;
         if (shared_lut != 0) {
-            plan.lookup_policy = palette->lookup_policy;
+            plan.lookup_policy = dither->lookup_policy;
         } else {
             plan.lookup_policy = NULL;
         }
@@ -3296,7 +3369,19 @@ sixel_dither_apply_palette_with_mode(
     }
 
     dither->ncolors = ncolors;
-    palette->entry_count = (unsigned int)ncolors;
+    if (ncolors >= 0 &&
+            entries_view.entries != NULL &&
+            entries_view.depth > 0 &&
+            (size_t)ncolors <= palette_entry_capacity) {
+        palette_entries_request.entries = entries_view.entries;
+        palette_entries_request.colors = (unsigned int)ncolors;
+        palette_entries_request.depth = entries_view.depth;
+        status = palette->vtbl->init_entries(palette,
+                                             &palette_entries_request);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
     if (resolved_apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) {
         pipeline_depth = sixel_helper_compute_depth(pipeline_pixelformat);
         dither->interframe_state.width = width;

@@ -70,10 +70,11 @@ if ! awk -f "$generator" \
     "$src_root"/src/loader-libwebp.h \
     "$src_root"/src/loader-quicklook.h \
     "$src_root"/src/loader-wic.h \
-    "$src_root"/src/output.h \
-    "$src_root"/src/chunk.h \
-    "$src_root"/src/frame.h \
-    "$src_root"/src/loader-manager.h \
+	    "$src_root"/src/output.h \
+	    "$src_root"/src/chunk.h \
+	    "$src_root"/src/frame.h \
+	    "$src_root"/src/palette.h \
+	    "$src_root"/src/loader-manager.h \
     "$src_root"/src/timeline-logger.h \
     >"$expected"; then
     echo "not ok 1 - factory classid registry stays in sync"

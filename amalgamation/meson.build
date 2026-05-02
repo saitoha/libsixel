@@ -133,6 +133,8 @@ amalgamation_headers = files(
   '../src/palette-kmeans-build.h',
   '../src/palette-kmedoids.h',
   '../src/palette-kcenter.h',
+  '../src/palette-factory.h',
+  '../src/palette-private.h',
   '../src/dither.h',
   '../src/dither-policy.h',
   '../src/dither-policy-none.h',

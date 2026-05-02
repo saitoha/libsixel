@@ -164,6 +164,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_KMEANS_INIT \
     -DBUILD_TEST_0002_KMEDOIDS_CONSTRAINTS \
     -DBUILD_TEST_0003_KCENTER_CONSTRAINTS \
+    -DBUILD_TEST_0004_PALETTE_FACTORY \
     -DBUILD_TEST_0001_PROBE_PARSE \
     -DBUILD_TEST_0001_ICC_BUILTIN_RGB_GRAY_V4_PATHS \
     -DBUILD_TEST_0002_ICC_BUILTIN_MAB_MBA_A2B0_PATHS \
@@ -305,6 +306,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0001_kmeans_init.c \
     quant/palette/0002_kmedoids_constraints.c \
     quant/palette/0003_kcenter_constraints.c \
+    quant/palette/0004_palette_factory.c \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
     diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.c \
@@ -380,6 +382,7 @@ AM_LOG_FLAGS =
 	staticcheck-frame-instantiation-boundary \
 	staticcheck-output-instantiation-boundary \
 	staticcheck-chunk-component-boundary \
+	staticcheck-palette-component-boundary \
 	staticcheck-chunk-factory-vtbl-guard \
 	staticcheck-chunk-source-path-format-guard \
 	staticcheck-fromwebp-chunk-view-bind \
@@ -436,6 +439,7 @@ staticcheck-frame-post187-export-guard \
 staticcheck-frame-instantiation-boundary \
 staticcheck-output-instantiation-boundary \
 staticcheck-chunk-component-boundary \
+staticcheck-palette-component-boundary \
 staticcheck-chunk-factory-vtbl-guard \
 staticcheck-chunk-source-path-format-guard \
 staticcheck-fromwebp-chunk-view-bind \
@@ -654,6 +658,16 @@ staticcheck-chunk-component-boundary:
 		--trs-file staticcheck-chunk-component-boundary.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-chunk-component-boundary.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-palette-component-boundary:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-palette-component-boundary" \
+		--log-file staticcheck-palette-component-boundary.log \
+		--trs-file staticcheck-palette-component-boundary.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-palette-component-boundary.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-chunk-factory-vtbl-guard:
@@ -1718,9 +1732,10 @@ EXTRA_DIST = $(HELPER_FILES) \
 		_static/sh/staticcheck-6cells-contract-attrs.sh \
 		_static/sh/staticcheck-frame-post187-export-guard.sh \
 		_static/sh/staticcheck-frame-instantiation-boundary.sh \
-		_static/sh/staticcheck-output-instantiation-boundary.sh \
-		_static/sh/staticcheck-chunk-component-boundary.sh \
-		_static/sh/staticcheck-chunk-factory-vtbl-guard.sh \
+			_static/sh/staticcheck-output-instantiation-boundary.sh \
+			_static/sh/staticcheck-chunk-component-boundary.sh \
+			_static/sh/staticcheck-palette-component-boundary.sh \
+			_static/sh/staticcheck-chunk-factory-vtbl-guard.sh \
 		_static/sh/staticcheck-chunk-source-path-format-guard.sh \
 		_static/sh/staticcheck-fromwebp-chunk-view-bind.sh \
 		_static/sh/staticcheck-frombmp-chunk-view-bind.sh \

@@ -787,7 +787,9 @@ sixel_encode_highcolor(
     unsigned char *palette_entries = NULL;
     sixel_palette_t *palette_obj = NULL;
     size_t palette_count = 0U;
+    sixel_palette_entries_view_t palette_view;
 
+    memset(&palette_view, 0, sizeof(palette_view));
     if (pixels == NULL || dither == NULL || output == NULL) {
         sixel_helper_set_additional_message(
             "sixel_encode_highcolor: invalid argument "
@@ -827,21 +829,26 @@ sixel_encode_highcolor(
     palette_entries = NULL;
     palette_obj = NULL;
     palette_count = 0U;
-    status = sixel_dither_get_quantized_palette(dither, &palette_obj);
-    if (SIXEL_FAILED(status)) {
+    palette_obj = dither->palette;
+    if (palette_obj == NULL || palette_obj->vtbl == NULL ||
+            palette_obj->vtbl->get_entries == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
         goto error;
     }
-    status = sixel_palette_copy_entries_8bit(
-        palette_obj,
-        &palette_entries,
-        &palette_count,
-        SIXEL_PIXELFORMAT_RGB888,
-        dither->allocator);
-    sixel_palette_unref(palette_obj);
-    palette_obj = NULL;
-    if (SIXEL_FAILED(status) || palette_entries == NULL) {
+    status = palette_obj->vtbl->get_entries(palette_obj, &palette_view);
+    if (SIXEL_FAILED(status) || palette_view.entries == NULL ||
+            palette_view.depth != 3) {
         goto error;
     }
+    palette_count = palette_view.entry_count;
+    palette_entries = (unsigned char *)sixel_allocator_malloc(
+        dither->allocator,
+        palette_count * 3U);
+    if (palette_entries == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto error;
+    }
+    memcpy(palette_entries, palette_view.entries, palette_count * 3U);
 
     paletted_pixels = (sixel_index_t *)sixel_allocator_malloc(
         dither->allocator,

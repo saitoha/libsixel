@@ -3458,19 +3458,22 @@ sixel_encode_dither(
     int palette_source_colorspace;
     int palette_float_pixelformat;
     int output_float_pixelformat;
+    int palette_float_depth;
     int pipeline_active;
     int pipeline_threads = 0;  /* set to a deterministic default before use */
     int pipeline_nbands;
     sixel_parallel_dither_config_t dither_parallel;
     char const *band_env_text;
     int ormode_enabled;
+    sixel_palette_entries_view_t palette_view;
+    sixel_palette_float32_entries_view_t palette_float_view;
 #if SIXEL_ENABLE_THREADS
     sixel_timeline_logger_t *serial_logger;
     int logger_owned = 0;
 #endif  /* SIXEL_ENABLE_THREADS */
     sixel_timeline_logger_t *logger = NULL;
 
-    if (output == NULL) {
+    if (output == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -3478,11 +3481,18 @@ sixel_encode_dither(
     palette_float_pixelformat =
         sixel_palette_float_pixelformat_for_colorspace(
             palette_source_colorspace);
+    palette_float_depth =
+        sixel_helper_compute_depth(palette_float_pixelformat);
     output_float_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
-    status = sixel_dither_get_quantized_palette(dither, &palette_obj);
-    if (SIXEL_FAILED(status)) {
+    memset(&palette_view, 0, sizeof(palette_view));
+    memset(&palette_float_view, 0, sizeof(palette_float_view));
+    palette_obj = dither->palette;
+    if (palette_obj == NULL || palette_obj->vtbl == NULL ||
+            palette_obj->vtbl->get_entries == NULL ||
+            palette_obj->vtbl->get_entries_float32 == NULL) {
         sixel_helper_set_additional_message(
             "sixel_encode_dither: palette acquisition failed.");
+        status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
 
@@ -3646,28 +3656,55 @@ sixel_encode_dither(
         palette_float_pixelformat =
             sixel_palette_float_pixelformat_for_colorspace(
                 palette_source_colorspace);
+        palette_float_depth =
+            sixel_helper_compute_depth(palette_float_pixelformat);
     }
 
-    status = sixel_palette_copy_entries_8bit(
-        palette_obj,
-        &palette_entries,
-        &palette_count,
-        SIXEL_PIXELFORMAT_RGB888,
-        dither->allocator);
-
-    if (SIXEL_SUCCEEDED(status)) {
-        status = sixel_palette_copy_entries_float32(
-            palette_obj,
-            &palette_entries_float32,
-            &palette_float_count,
-            SIXEL_PIXELFORMAT_RGBFLOAT32,
-            dither->allocator);
+    status = palette_obj->vtbl->get_entries(palette_obj, &palette_view);
+    if (SIXEL_FAILED(status) || palette_view.entries == NULL ||
+            palette_view.depth != 3 || palette_view.entry_count == 0U) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_dither: palette view failed.");
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
     }
+    palette_count = palette_view.entry_count;
+    palette_bytes = palette_count * 3U;
+    palette_entries = (unsigned char *)sixel_allocator_malloc(
+        dither->allocator,
+        palette_bytes);
+    if (palette_entries == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_dither: palette copy allocation failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    memcpy(palette_entries, palette_view.entries, palette_bytes);
 
-    (void)palette_float_count;
-
-    sixel_palette_unref(palette_obj);
-    palette_obj = NULL;
+    status = palette_obj->vtbl->get_entries_float32(palette_obj,
+                                                    &palette_float_view);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (palette_float_view.entries != NULL &&
+            palette_float_view.entry_count == palette_count &&
+            palette_float_view.depth == palette_float_depth) {
+        palette_float_count = palette_float_view.entry_count;
+        palette_float_bytes =
+            palette_float_count * (size_t)palette_float_view.depth;
+        palette_entries_float32 = (float *)sixel_allocator_malloc(
+            dither->allocator,
+            palette_float_bytes);
+        if (palette_entries_float32 == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encode_dither: float palette copy allocation failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memcpy(palette_entries_float32,
+               palette_float_view.entries,
+               palette_float_bytes);
+    }
     if (palette_entries != NULL && palette_entries_float32 != NULL
             && palette_count == palette_float_count
             && palette_count > 0U
@@ -3797,9 +3834,6 @@ end:
         sixel_timeline_logger_unref(serial_logger);
     }
 #endif
-    if (palette_obj != NULL) {
-        sixel_palette_unref(palette_obj);
-    }
     if (palette_entries != NULL) {
         sixel_allocator_free(dither->allocator, palette_entries);
     }

@@ -3550,6 +3550,8 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
     int channel;
     int float_pixelformat;
     int source_pixelformat;
+    sixel_palette_entries_view_t entries_view;
+    sixel_palette_float32_entries_view_t float32_view;
 
     if (palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -3559,7 +3561,25 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
         return SIXEL_OK;
     }
 
-    palette_count = palette->entry_count;
+    memset(&entries_view, 0, sizeof(entries_view));
+    memset(&float32_view, 0, sizeof(float32_view));
+    if (palette->vtbl == NULL || palette->vtbl->get_entries == NULL ||
+        palette->vtbl->get_entries_float32 == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = palette->vtbl->get_entries(palette, &entries_view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = palette->vtbl->get_entries_float32(palette, &float32_view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    palette_count = entries_view.entry_count;
+    if (palette_count == 0U) {
+        palette_count = float32_view.entry_count;
+    }
     if (palette_count == 0U) {
         return SIXEL_OK;
     }
@@ -3569,18 +3589,18 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
         return SIXEL_BAD_INPUT;
     }
 
-    if (palette->entries_float32 != NULL && palette->float_depth > 0) {
+    if (float32_view.entries != NULL && float32_view.depth > 0) {
         palette_float_bytes =
-            palette_count * (size_t)palette->float_depth;
-        if ((size_t)palette->float_depth == 0U
-                || palette_float_bytes / (size_t)palette->float_depth
+            palette_count * (size_t)float32_view.depth;
+        if ((size_t)float32_view.depth == 0U
+                || palette_float_bytes / (size_t)float32_view.depth
                     != palette_count) {
             return SIXEL_BAD_INPUT;
         }
         source_pixelformat =
             sixel_encoder_pixelformat_for_colorspace(source_colorspace, 1);
         status = sixel_helper_convert_colorspace(
-            (unsigned char *)palette->entries_float32,
+            (unsigned char *)float32_view.entries,
             palette_float_bytes,
             source_pixelformat,
             source_colorspace,
@@ -3589,7 +3609,7 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
             return status;
         }
 
-        if (palette->entries == NULL) {
+        if (entries_view.entries == NULL || entries_view.depth < 3) {
             return SIXEL_OK;
         }
 
@@ -3597,22 +3617,22 @@ sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
             sixel_encoder_pixelformat_for_colorspace(target_colorspace, 1);
         for (index = 0U; index < palette_channels; ++index) {
             channel = (int)(index % 3U);
-            palette->entries[index] =
+            entries_view.entries[index] =
                 sixel_pixelformat_float_channel_to_byte(
                     float_pixelformat,
                     channel,
-                    palette->entries_float32[index]);
+                    float32_view.entries[index]);
         }
 
         return SIXEL_OK;
     }
 
-    if (palette->entries == NULL) {
+    if (entries_view.entries == NULL || entries_view.depth < 3) {
         return SIXEL_OK;
     }
 
     palette_bytes = palette_channels;
-    status = sixel_helper_convert_colorspace(palette->entries,
+    status = sixel_helper_convert_colorspace(entries_view.entries,
                                              palette_bytes,
                                              SIXEL_PIXELFORMAT_RGB888,
                                              source_colorspace,
@@ -3931,12 +3951,27 @@ sixel_encoder_restore_previous_palette(
     size_t float_bytes;
     int float_stride;
     unsigned int color_count;
+    sixel_palette_entries_request_t entries_request;
+    sixel_palette_entries_view_t entries_view;
+    sixel_palette_float32_entries_request_t float32_request;
+    sixel_palette_float32_entries_view_t float32_view;
 
     entry_bytes = 0u;
     float_bytes = 0u;
     float_stride = 0;
+    memset(&entries_request, 0, sizeof(entries_request));
+    memset(&entries_view, 0, sizeof(entries_view));
+    memset(&float32_request, 0, sizeof(float32_request));
+    memset(&float32_view, 0, sizeof(float32_view));
     if (palette == NULL || prev_palette == NULL || prev_count == 0U
-            || palette->entries == NULL || palette->depth < 3) {
+            || palette->vtbl == NULL || palette->vtbl->get_entries == NULL
+            || palette->vtbl->get_entries_float32 == NULL
+            || palette->vtbl->init_entries == NULL
+            || palette->vtbl->init_entries_float32 == NULL) {
+        return;
+    }
+    if (SIXEL_FAILED(palette->vtbl->get_entries(palette, &entries_view))
+            || entries_view.entries == NULL || entries_view.depth != 3) {
         return;
     }
 
@@ -3945,16 +3980,22 @@ sixel_encoder_restore_previous_palette(
         color_count = (unsigned int)SIXEL_PALETTE_MAX;
     }
     entry_bytes = (size_t)color_count * 3u;
-    if (entry_bytes > palette->entries_size) {
+    if (entry_bytes > entries_view.entries_size) {
         return;
     }
-    memcpy(palette->entries, prev_palette, entry_bytes);
-    palette->entry_count = color_count;
+    entries_request.entries = prev_palette;
+    entries_request.colors = color_count;
+    entries_request.depth = 3;
+    if (SIXEL_FAILED(palette->vtbl->init_entries(palette, &entries_request))) {
+        return;
+    }
 
-    if (palette->entries_float32 == NULL || palette->float_depth <= 0) {
+    if (SIXEL_FAILED(palette->vtbl->get_entries_float32(palette,
+                                                        &float32_view))
+            || float32_view.entries == NULL || float32_view.depth <= 0) {
         return;
     }
-    float_stride = palette->float_depth / (int)sizeof(float);
+    float_stride = float32_view.depth / (int)sizeof(float);
     if (float_stride <= 0 || (unsigned int)float_stride > SIXEL_MAX_CHANNELS) {
         return;
     }
@@ -3963,12 +4004,13 @@ sixel_encoder_restore_previous_palette(
         return;
     }
     float_bytes = (size_t)color_count * (size_t)float_stride * sizeof(float);
-    if (float_bytes > palette->entries_float32_size) {
+    if (float_bytes > float32_view.entries_size) {
         return;
     }
-    memcpy(palette->entries_float32,
-           prev_palette_float,
-           float_bytes);
+    float32_request.entries = prev_palette_float;
+    float32_request.colors = color_count;
+    float32_request.depth = float32_view.depth;
+    (void)palette->vtbl->init_entries_float32(palette, &float32_request);
 }
 
 static SIXELSTATUS
@@ -3992,6 +4034,9 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     int current_float_stride;
     int current_float_valid;
     size_t current_float_bytes;
+    sixel_palette_entries_view_t entries_view;
+    sixel_palette_float32_entries_view_t float32_view;
+    sixel_palette_metadata_t metadata;
 
     status = SIXEL_OK;
     palette = NULL;
@@ -4009,6 +4054,9 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     current_float_stride = 0;
     current_float_valid = 0;
     current_float_bytes = 0u;
+    memset(&entries_view, 0, sizeof(entries_view));
+    memset(&float32_view, 0, sizeof(float32_view));
+    memset(&metadata, 0, sizeof(metadata));
     if (encoder == NULL || frame == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -4030,7 +4078,12 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     }
 
     palette = dither->palette;
-    if (palette == NULL || palette->entries == NULL || palette->depth < 3) {
+    if (palette == NULL || palette->vtbl == NULL ||
+        palette->vtbl->get_entries == NULL ||
+        palette->vtbl->get_entries_float32 == NULL ||
+        palette->vtbl->get_metadata == NULL ||
+        SIXEL_FAILED(palette->vtbl->get_entries(palette, &entries_view)) ||
+        entries_view.entries == NULL || entries_view.depth < 3) {
         sixel_encoder_reset_quantize_animation_state(encoder);
         return SIXEL_OK;
     }
@@ -4071,7 +4124,16 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
             encoder->quantize_animation_prev_palette_float_stride);
     }
 
-    palette_count = palette->entry_count;
+    memset(&entries_view, 0, sizeof(entries_view));
+    memset(&float32_view, 0, sizeof(float32_view));
+    memset(&metadata, 0, sizeof(metadata));
+    if (SIXEL_FAILED(palette->vtbl->get_entries(palette, &entries_view)) ||
+        SIXEL_FAILED(palette->vtbl->get_entries_float32(palette,
+                                                        &float32_view)) ||
+        SIXEL_FAILED(palette->vtbl->get_metadata(palette, &metadata))) {
+        return SIXEL_OK;
+    }
+    palette_count = metadata.entry_count;
     if (palette_count > (unsigned int)SIXEL_PALETTE_MAX) {
         palette_count = (unsigned int)SIXEL_PALETTE_MAX;
     }
@@ -4081,16 +4143,20 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
         encoder->quantize_animation_prev_palette_float_valid = 0;
         encoder->quantize_animation_prev_palette_float_stride = 0;
     } else {
+        if (entries_view.entries == NULL || entries_view.depth < 3 ||
+                entries_view.entries_size < (size_t)palette_count * 3U) {
+            return SIXEL_OK;
+        }
         memcpy(encoder->quantize_animation_prev_palette,
-               palette->entries,
+               entries_view.entries,
                (size_t)palette_count * 3U);
         encoder->quantize_animation_prev_palette_count = palette_count;
         encoder->quantize_animation_prev_palette_valid = 1;
         current_float_valid = 0;
         current_float_stride = 0;
         current_float_bytes = 0u;
-        if (palette->entries_float32 != NULL && palette->float_depth > 0) {
-            current_float_stride = palette->float_depth / (int)sizeof(float);
+        if (float32_view.entries != NULL && float32_view.depth > 0) {
+            current_float_stride = float32_view.depth / (int)sizeof(float);
             if (current_float_stride > 0
                     && (unsigned int)current_float_stride
                         <= SIXEL_MAX_CHANNELS) {
@@ -4099,7 +4165,7 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
                 if (current_float_bytes <= sizeof(
                         encoder->quantize_animation_prev_palette_float)) {
                     memcpy(encoder->quantize_animation_prev_palette_float,
-                           palette->entries_float32,
+                           float32_view.entries,
                            current_float_bytes);
                     current_float_valid = 1;
                 }
@@ -4713,22 +4779,22 @@ sixel_encoder_capture_quantized(sixel_encoder_t *encoder,
     palette_bytes = 0;
     if (dither != NULL) {
         sixel_palette_t *palette_obj = NULL;
-        unsigned char *palette_copy = NULL;
+        sixel_palette_entries_view_t palette_view;
         size_t palette_count = 0U;
 
-        status = sixel_dither_get_quantized_palette(dither, &palette_obj);
-        if (SIXEL_SUCCEEDED(status) && palette_obj != NULL) {
-            status = sixel_palette_copy_entries_8bit(
-                palette_obj,
-                &palette_copy,
-                &palette_count,
-                SIXEL_PIXELFORMAT_RGB888,
-                encoder->allocator);
-            sixel_palette_unref(palette_obj);
-            palette_obj = NULL;
-            if (SIXEL_SUCCEEDED(status)
-                    && palette_copy != NULL
-                    && palette_count > 0U) {
+        memset(&palette_view, 0, sizeof(palette_view));
+        palette_obj = dither->palette;
+        if (palette_obj != NULL && palette_obj->vtbl != NULL &&
+                palette_obj->vtbl->get_entries != NULL) {
+            status = palette_obj->vtbl->get_entries(palette_obj,
+                                                    &palette_view);
+            if (SIXEL_FAILED(status)) {
+                goto cleanup;
+            }
+            if (palette_view.entries != NULL &&
+                    palette_view.entry_count > 0U &&
+                    palette_view.depth == 3) {
+                palette_count = palette_view.entry_count;
                 palette_bytes = palette_count * 3U;
                 ncolors = (int)palette_count;
                 if (encoder->capture_palette == NULL
@@ -4740,8 +4806,6 @@ sixel_encoder_capture_quantized(sixel_encoder_t *encoder,
                             "sixel_encoder_capture_quantized: "
                             "sixel_allocator_malloc() failed.");
                         status = SIXEL_BAD_ALLOCATION;
-                        sixel_allocator_free(encoder->allocator,
-                                             palette_copy);
                         goto cleanup;
                     }
                     sixel_allocator_free(encoder->allocator,
@@ -4750,7 +4814,7 @@ sixel_encoder_capture_quantized(sixel_encoder_t *encoder,
                     encoder->capture_palette_size = palette_bytes;
                 }
                 memcpy(encoder->capture_palette,
-                       palette_copy,
+                       palette_view.entries,
                        palette_bytes);
                 if (source_colorspace != colorspace) {
                     (void)sixel_helper_convert_colorspace(
@@ -4760,9 +4824,6 @@ sixel_encoder_capture_quantized(sixel_encoder_t *encoder,
                         source_colorspace,
                         colorspace);
                 }
-            }
-            if (palette_copy != NULL) {
-                sixel_allocator_free(encoder->allocator, palette_copy);
             }
         }
     }
@@ -4811,7 +4872,7 @@ sixel_encoder_capture_quantized_palette_only(
     size_t quantized_pixels;
     unsigned char *new_pixels;
     sixel_palette_t *palette_obj;
-    unsigned char *palette_copy;
+    sixel_palette_entries_view_t palette_view;
     size_t palette_count;
     size_t palette_bytes;
     unsigned char *new_palette;
@@ -4821,7 +4882,7 @@ sixel_encoder_capture_quantized_palette_only(
     quantized_pixels = 0u;
     new_pixels = NULL;
     palette_obj = NULL;
-    palette_copy = NULL;
+    memset(&palette_view, 0, sizeof(palette_view));
     palette_count = 0u;
     palette_bytes = 0u;
     new_palette = NULL;
@@ -4858,30 +4919,24 @@ sixel_encoder_capture_quantized_palette_only(
     memset(encoder->capture_pixels, 0, quantized_pixels);
     encoder->capture_pixel_bytes = quantized_pixels;
 
-    status = sixel_dither_get_quantized_palette(dither, &palette_obj);
-    if (SIXEL_FAILED(status) || palette_obj == NULL) {
+    palette_obj = dither->palette;
+    if (palette_obj == NULL || palette_obj->vtbl == NULL ||
+            palette_obj->vtbl->get_entries == NULL) {
         sixel_helper_set_additional_message(
             "sixel_encoder_capture_quantized_palette_only: "
             "palette unavailable.");
         return SIXEL_RUNTIME_ERROR;
     }
-    status = sixel_palette_copy_entries_8bit(
-        palette_obj,
-        &palette_copy,
-        &palette_count,
-        SIXEL_PIXELFORMAT_RGB888,
-        encoder->allocator);
-    sixel_palette_unref(palette_obj);
-    palette_obj = NULL;
-    if (SIXEL_FAILED(status) || palette_copy == NULL || palette_count == 0u) {
-        sixel_allocator_free(encoder->allocator, palette_copy);
+    status = palette_obj->vtbl->get_entries(palette_obj, &palette_view);
+    if (SIXEL_FAILED(status) || palette_view.entries == NULL ||
+            palette_view.entry_count == 0u || palette_view.depth != 3) {
         sixel_helper_set_additional_message(
             "sixel_encoder_capture_quantized_palette_only: "
             "failed to copy palette.");
         return SIXEL_RUNTIME_ERROR;
     }
+    palette_count = palette_view.entry_count;
     if (palette_count > (size_t)INT_MAX) {
-        sixel_allocator_free(encoder->allocator, palette_copy);
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     palette_bytes = palette_count * 3u;
@@ -4892,7 +4947,6 @@ sixel_encoder_capture_quantized_palette_only(
             encoder->allocator,
             palette_bytes);
         if (new_palette == NULL) {
-            sixel_allocator_free(encoder->allocator, palette_copy);
             sixel_helper_set_additional_message(
                 "sixel_encoder_capture_quantized_palette_only: "
                 "sixel_allocator_malloc() failed.");
@@ -4902,8 +4956,7 @@ sixel_encoder_capture_quantized_palette_only(
         encoder->capture_palette = new_palette;
         encoder->capture_palette_size = palette_bytes;
     }
-    memcpy(encoder->capture_palette, palette_copy, palette_bytes);
-    sixel_allocator_free(encoder->allocator, palette_copy);
+    memcpy(encoder->capture_palette, palette_view.entries, palette_bytes);
 
     encoder->capture_width = width;
     encoder->capture_height = height;
@@ -6628,15 +6681,30 @@ sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
     unsigned int base_colors;
     unsigned int key_index;
     size_t bytes;
+    sixel_palette_entries_request_t entries_request;
+    sixel_palette_entries_view_t entries_view;
+    sixel_palette_float32_entries_request_t float32_request;
 
     status = SIXEL_FALSE;
     expanded = NULL;
     base_colors = 0U;
     key_index = 0U;
     bytes = 0U;
+    memset(&entries_request, 0, sizeof(entries_request));
+    memset(&entries_view, 0, sizeof(entries_view));
+    memset(&float32_request, 0, sizeof(float32_request));
 
     if (encoder == NULL || dither == NULL || dither->palette == NULL ||
-        dither->palette->entries == NULL) {
+        dither->palette->vtbl == NULL ||
+        dither->palette->vtbl->get_entries == NULL ||
+        dither->palette->vtbl->init_entries == NULL ||
+        dither->palette->vtbl->init_entries_float32 == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = dither->palette->vtbl->get_entries(dither->palette,
+                                                &entries_view);
+    if (SIXEL_FAILED(status) || entries_view.entries == NULL ||
+            entries_view.depth < 3) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -6654,7 +6722,7 @@ sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
         return SIXEL_BAD_ALLOCATION;
     }
 
-    memcpy(expanded, dither->palette->entries, (size_t)base_colors * 3U);
+    memcpy(expanded, entries_view.entries, (size_t)base_colors * 3U);
     if (encoder->bgcolor != NULL) {
         expanded[key_index * 3U + 0U] = encoder->bgcolor[0];
         expanded[key_index * 3U + 1U] = encoder->bgcolor[1];
@@ -6665,23 +6733,21 @@ sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
         expanded[key_index * 3U + 2U] = 0U;
     }
 
-    status = sixel_palette_set_entries(dither->palette,
-                                       expanded,
-                                       base_colors + 1U,
-                                       3,
-                                       dither->allocator);
+    entries_request.entries = expanded;
+    entries_request.colors = base_colors + 1U;
+    entries_request.depth = 3;
+    status = dither->palette->vtbl->init_entries(dither->palette,
+                                                 &entries_request);
     sixel_allocator_free(dither->allocator, expanded);
     if (SIXEL_FAILED(status)) {
         return status;
     }
 
-    (void)sixel_palette_set_entries_float32(dither->palette,
-                                            NULL,
-                                            0U,
-                                            0,
-                                            dither->allocator);
-    dither->palette->entry_count = base_colors + 1U;
-    dither->palette->requested_colors = (unsigned int)encoder->reqcolors;
+    float32_request.entries = NULL;
+    float32_request.colors = 0U;
+    float32_request.depth = 0;
+    (void)dither->palette->vtbl->init_entries_float32(dither->palette,
+                                                      &float32_request);
     dither->ncolors = (int)(base_colors + 1U);
     dither->keycolor = (int)key_index;
 
@@ -7404,11 +7470,15 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     sixel_filter_t *filter;
     sixel_palette_t *palette;
     int policy;
+    sixel_palette_entries_view_t entries_view;
+    sixel_palette_float32_entries_view_t float32_view;
 
     status = SIXEL_FALSE;
     filter = NULL;
     palette = NULL;
     policy = SIXEL_LUT_POLICY_AUTO;
+    memset(&entries_view, 0, sizeof(entries_view));
+    memset(&float32_view, 0, sizeof(float32_view));
     memset(&result, 0, sizeof(result));
     memset(&lookup_config, 0, sizeof(lookup_config));
     memset(&fhedt_config, 0, sizeof(fhedt_config));
@@ -7420,8 +7490,21 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     }
 
     palette = dither->palette;
-    if (palette == NULL || palette->entries == NULL
-            || palette->depth <= 0 || palette->entry_count == 0U) {
+    if (palette == NULL || palette->vtbl == NULL ||
+        palette->vtbl->get_entries == NULL ||
+        palette->vtbl->get_entries_float32 == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    status = palette->vtbl->get_entries(palette, &entries_view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = palette->vtbl->get_entries_float32(palette, &float32_view);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (entries_view.entries == NULL || entries_view.depth <= 0
+            || entries_view.entry_count == 0U) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -7432,14 +7515,14 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
         return SIXEL_OK;
     }
 
-    lookup_config.palette = palette->entries;
-    lookup_config.palette_float = palette->entries_float32;
-    lookup_config.depth = palette->depth;
-    lookup_config.float_depth = palette->float_depth;
-    lookup_config.ncolors = (int)palette->entry_count;
+    lookup_config.palette = entries_view.entries;
+    lookup_config.palette_float = float32_view.entries;
+    lookup_config.depth = entries_view.depth;
+    lookup_config.float_depth = float32_view.depth;
+    lookup_config.ncolors = (int)entries_view.entry_count;
     lookup_config.lut_policy = policy;
     lookup_config.pixelformat = dither->pixelformat;
-    lookup_config.reuse_policy = palette->lookup_policy;
+    lookup_config.reuse_policy = dither->lookup_policy;
 
     if (policy == SIXEL_LUT_POLICY_FHEDT) {
         fhedt_config.lookup_config = lookup_config;
@@ -7472,11 +7555,11 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
                               encoder->allocator,
                               encoder->logger);
     if (SIXEL_SUCCEEDED(status) && result.policy != NULL) {
-        if (palette->lookup_policy != NULL
-                && palette->lookup_policy != result.policy) {
-            palette->lookup_policy->vtbl->unref(palette->lookup_policy);
+        if (dither->lookup_policy != NULL
+                && dither->lookup_policy != result.policy) {
+            dither->lookup_policy->vtbl->unref(dither->lookup_policy);
         }
-        palette->lookup_policy = result.policy;
+        dither->lookup_policy = result.policy;
     }
 
     sixel_filter_free(filter);
@@ -7490,44 +7573,32 @@ sixel_debug_print_palette(
     sixel_dither_t /* in */ *dither /* dithering object */
 )
 {
-    sixel_palette_t *palette_obj;
-    unsigned char *palette_copy;
-    size_t palette_count;
+    sixel_palette_entries_view_t palette_view;
     int i;
 
-    palette_obj = NULL;
-    palette_copy = NULL;
-    palette_count = 0U;
+    memset(&palette_view, 0, sizeof(palette_view));
     if (dither == NULL) {
         return;
     }
 
-    if (SIXEL_FAILED(
-            sixel_dither_get_quantized_palette(dither, &palette_obj))
-            || palette_obj == NULL) {
+    if (dither->palette == NULL || dither->palette->vtbl == NULL ||
+            dither->palette->vtbl->get_entries == NULL) {
         return;
     }
-    if (SIXEL_FAILED(sixel_palette_copy_entries_8bit(
-            palette_obj,
-            &palette_copy,
-            &palette_count,
-            SIXEL_PIXELFORMAT_RGB888,
-            dither->allocator))
-            || palette_copy == NULL) {
-        sixel_palette_unref(palette_obj);
+    if (SIXEL_FAILED(dither->palette->vtbl->get_entries(dither->palette,
+                                                        &palette_view))
+            || palette_view.entries == NULL || palette_view.depth < 3) {
         return;
     }
-    sixel_palette_unref(palette_obj);
 
     fprintf(stderr, "palette:\n");
-    for (i = 0; i < (int)palette_count;
+    for (i = 0; i < (int)palette_view.entry_count;
             ++i) {
         fprintf(stderr, "%d: #%02x%02x%02x\n", i,
-                palette_copy[i * 3 + 0],
-                palette_copy[i * 3 + 1],
-                palette_copy[i * 3 + 2]);
+                palette_view.entries[i * 3 + 0],
+                palette_view.entries[i * 3 + 1],
+                palette_view.entries[i * 3 + 2]);
     }
-    sixel_allocator_free(dither->allocator, palette_copy);
 }
 
 /*

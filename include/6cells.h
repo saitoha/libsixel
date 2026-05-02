@@ -402,6 +402,151 @@ SIXELAPI SIXELSTATUS
 sixel_components_getservice(char const *name,
     void **service);
 
+typedef struct sixel_palette_interface sixel_palette_t;
+
+typedef struct sixel_palette_entries_request {
+    unsigned char const *entries;
+    unsigned int colors;
+    int depth;
+} sixel_palette_entries_request_t;
+
+typedef struct sixel_palette_float32_entries_request {
+    float const *entries;
+    unsigned int colors;
+    int depth;
+} sixel_palette_float32_entries_request_t;
+
+typedef struct sixel_palette_generate_request {
+    void const *data;
+    unsigned int length;
+    int pixelformat;
+    unsigned int requested_colors;
+    int method_for_largest;
+    int method_for_rep;
+    int quality_mode;
+    int force_palette;
+    int use_reversible;
+    int quantize_model;
+    int final_merge_mode;
+    int lut_policy;
+    int prefer_float32;
+} sixel_palette_generate_request_t;
+
+typedef struct sixel_palette_entries_view {
+    unsigned char *entries;
+    size_t entries_size;
+    unsigned int entry_count;
+    int depth;
+} sixel_palette_entries_view_t;
+
+typedef struct sixel_palette_float32_entries_view {
+    float *entries;
+    size_t entries_size;
+    unsigned int entry_count;
+    int depth;
+} sixel_palette_float32_entries_view_t;
+
+typedef struct sixel_palette_metadata {
+    unsigned int entry_count;
+    unsigned int requested_colors;
+    unsigned int original_colors;
+    int depth;
+    int float_depth;
+} sixel_palette_metadata_t;
+
+/*
+ * Ownership/lifetime:
+ * - Factory create returns refcount=1 palette objects.
+ * - Callers release with palette->vtbl->unref(palette).
+ *
+ * Encapsulation path:
+ * - The palette object owns generated palette entries and metadata.
+ * - Quantizer options are request-local generation inputs.
+ * - Lookup policy caches belong to the dither/apply context.
+ */
+/*
+ * IDL responsibility:
+ * - own palette entries and quantization metadata only
+ */
+
+/*
+ * IDL forbidden state:
+ * - lookup_policy
+ * - dither_policy
+ * - input_pixels
+ * - method_for_largest
+ * - method_for_rep
+ * - quality_mode
+ * - force_palette
+ * - use_reversible
+ * - quantize_model
+ * - final_merge_mode
+ * - lut_policy
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("own palette entries and quantization metadata only")]
+ * [forbid_state("lookup_policy", "dither_policy", "input_pixels", "method_for_largest", "method_for_rep", "quality_mode", "force_palette", "use_reversible", "quantize_model", "final_merge_mode", "lut_policy")]
+ * [alias(sixel_palette_t)]
+ * [receiver(palette)]
+ * interface palette {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [mutates, invalidates(entries_view, float32_entries_view)]
+ *     SIXELSTATUS init_entries(in palette_entries_request const *request);
+ *     [mutates, invalidates(float32_entries_view)]
+ *     SIXELSTATUS init_entries_float32(
+ *         in palette_float32_entries_request const *request);
+ *     [mutates, invalidates(entries_view, float32_entries_view)]
+ *     SIXELSTATUS generate(in palette_generate_request const *request);
+ *     [const, borrows(entries_view)]
+ *     SIXELSTATUS get_entries(out palette_entries_view *view);
+ *     [const, borrows(float32_entries_view)]
+ *     SIXELSTATUS get_entries_float32(out palette_float32_entries_view *view);
+ *     [const]
+ *     SIXELSTATUS get_metadata(out palette_metadata *metadata);
+ * };
+ */
+
+typedef struct sixel_palette_vtbl {
+    void (*ref)(sixel_palette_t *palette);
+    void (*unref)(sixel_palette_t *palette);
+    SIXELSTATUS (*init_entries)(
+        sixel_palette_t *palette,
+        sixel_palette_entries_request_t const *request);
+    SIXELSTATUS (*init_entries_float32)(
+        sixel_palette_t *palette,
+        sixel_palette_float32_entries_request_t const *request);
+    SIXELSTATUS (*generate)(
+        sixel_palette_t *palette,
+        sixel_palette_generate_request_t const *request);
+    SIXELSTATUS (*get_entries)(
+        sixel_palette_t const *palette,
+        sixel_palette_entries_view_t *view);
+    SIXELSTATUS (*get_entries_float32)(
+        sixel_palette_t const *palette,
+        sixel_palette_float32_entries_view_t *view);
+    SIXELSTATUS (*get_metadata)(
+        sixel_palette_t const *palette,
+        sixel_palette_metadata_t *metadata);
+} sixel_palette_vtbl_t;
+
+struct sixel_palette_interface {
+    sixel_palette_vtbl_t const *vtbl;
+};
+
+/*
+ * IDL coclass:
+ * [classid("quant/palette")]
+ * coclass palette_component {
+ *     [default] interface palette;
+ * };
+ */
+
 /*
  * Ownership/lifetime:
  * - Factory create returns refcount=1 policy objects.

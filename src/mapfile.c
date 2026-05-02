@@ -62,6 +62,7 @@
 #include <sixel.h>
 
 #include "compat_stub.h"
+#include "dither.h"
 #include "encoder.h"
 #include "mapfile.h"
 
@@ -575,6 +576,26 @@ sixel_palette_read_le32(unsigned char const *ptr)
         | ((unsigned int)ptr[3] << 24);
 }
 
+static SIXELSTATUS
+sixel_palette_import_dither_entries(sixel_dither_t *dither,
+                                    unsigned char const *entries,
+                                    unsigned int colors)
+{
+    sixel_palette_entries_request_t request;
+
+    memset(&request, 0, sizeof(request));
+    if (dither == NULL || dither->palette == NULL ||
+            dither->palette->vtbl == NULL ||
+            dither->palette->vtbl->init_entries == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    request.entries = entries;
+    request.colors = colors;
+    request.depth = 3;
+    return dither->palette->vtbl->init_entries(dither->palette, &request);
+}
+
 
 /*
  * Adobe Color Table (*.act) reader
@@ -596,7 +617,6 @@ sixel_palette_parse_act(unsigned char const *data,
     sixel_dither_t *local;
     unsigned char const *palette_start;
     unsigned char const *trailer;
-    sixel_palette_t *palette_obj;
     int exported_colors;
     int start_index;
 
@@ -604,7 +624,6 @@ sixel_palette_parse_act(unsigned char const *data,
     local = NULL;
     palette_start = data;
     trailer = NULL;
-    palette_obj = NULL;
     exported_colors = 0;
     start_index = 0;
 
@@ -663,18 +682,10 @@ sixel_palette_parse_act(unsigned char const *data,
 
     sixel_dither_set_lut_policy(local, encoder->lut_policy);
 
-    status = sixel_dither_get_quantized_palette(local, &palette_obj);
-    if (SIXEL_FAILED(status) || palette_obj == NULL) {
-        sixel_dither_unref(local);
-        return status;
-    }
-    status = sixel_palette_set_entries(
-        palette_obj,
+    status = sixel_palette_import_dither_entries(
+        local,
         palette_start + (size_t)start_index * 3u,
-        (unsigned int)exported_colors,
-        3,
-        encoder->allocator);
-    sixel_palette_unref(palette_obj);
+        (unsigned int)exported_colors);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(local);
         return status;
@@ -702,7 +713,6 @@ sixel_palette_parse_pal_jasc(unsigned char const *data,
     int exported_colors;
     int parsed_colors;
     sixel_dither_t *local;
-    sixel_palette_t *palette_obj;
     unsigned char *palette_buffer;
     long component;
     char *parse_end;
@@ -721,7 +731,6 @@ sixel_palette_parse_pal_jasc(unsigned char const *data,
     exported_colors = 0;
     parsed_colors = 0;
     local = NULL;
-    palette_obj = NULL;
     palette_buffer = NULL;
     component = 0;
     parse_end = NULL;
@@ -914,17 +923,10 @@ sixel_palette_parse_pal_jasc(unsigned char const *data,
         goto cleanup;
     }
 
-    status = sixel_dither_get_quantized_palette(local, &palette_obj);
-    if (SIXEL_FAILED(status) || palette_obj == NULL) {
-        goto cleanup;
-    }
-    status = sixel_palette_set_entries(palette_obj,
-                                       palette_buffer,
-                                       (unsigned int)exported_colors,
-                                       3,
-                                       encoder->allocator);
-    sixel_palette_unref(palette_obj);
-    palette_obj = NULL;
+    status = sixel_palette_import_dither_entries(
+        local,
+        palette_buffer,
+        (unsigned int)exported_colors);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -933,9 +935,6 @@ sixel_palette_parse_pal_jasc(unsigned char const *data,
     status = SIXEL_OK;
 
 cleanup:
-    if (palette_obj != NULL) {
-        sixel_palette_unref(palette_obj);
-    }
     if (SIXEL_FAILED(status) && local != NULL) {
         sixel_dither_unref(local);
     }
@@ -959,7 +958,6 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
     size_t offset;
     size_t chunk_size;
     sixel_dither_t *local;
-    sixel_palette_t *palette_obj;
     unsigned char const *chunk;
     unsigned char *palette_buffer;
     unsigned int entry_count;
@@ -980,7 +978,6 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
     chunk_size = 0u;
     local = NULL;
     chunk = NULL;
-    palette_obj = NULL;
     palette_buffer = NULL;
     entry_count = 0u;
     version = 0u;
@@ -1126,19 +1123,10 @@ sixel_palette_parse_pal_riff(unsigned char const *data,
             chunk[palette_offset + index * 4u + 2u];
     }
 
-    status = sixel_dither_get_quantized_palette(local, &palette_obj);
-    if (SIXEL_FAILED(status) || palette_obj == NULL) {
-        sixel_allocator_free(encoder->allocator, palette_buffer);
-        sixel_dither_unref(local);
-        return status;
-    }
-    status = sixel_palette_set_entries(palette_obj,
-                                       palette_buffer,
-                                       (unsigned int)entry_count,
-                                       3,
-                                       encoder->allocator);
-    sixel_palette_unref(palette_obj);
-    palette_obj = NULL;
+    status = sixel_palette_import_dither_entries(
+        local,
+        palette_buffer,
+        (unsigned int)entry_count);
     sixel_allocator_free(encoder->allocator, palette_buffer);
     palette_buffer = NULL;
     if (SIXEL_FAILED(status)) {
@@ -1172,7 +1160,6 @@ sixel_palette_parse_gpl(unsigned char const *data,
     int value_index;
     int values[3];
     sixel_dither_t *local;
-    sixel_palette_t *palette_obj;
     char tail;
 
     status = SIXEL_FALSE;
@@ -1191,7 +1178,6 @@ sixel_palette_parse_gpl(unsigned char const *data,
     values[1] = 0;
     values[2] = 0;
     local = NULL;
-    palette_obj = NULL;
 
     if (encoder == NULL || dither == NULL) {
         sixel_helper_set_additional_message(
@@ -1362,17 +1348,10 @@ sixel_palette_parse_gpl(unsigned char const *data,
         goto cleanup;
     }
     sixel_dither_set_lut_policy(local, encoder->lut_policy);
-    status = sixel_dither_get_quantized_palette(local, &palette_obj);
-    if (SIXEL_FAILED(status) || palette_obj == NULL) {
-        goto cleanup;
-    }
-    status = sixel_palette_set_entries(palette_obj,
-                                       palette_bytes,
-                                       (unsigned int)parsed_colors,
-                                       3,
-                                       encoder->allocator);
-    sixel_palette_unref(palette_obj);
-    palette_obj = NULL;
+    status = sixel_palette_import_dither_entries(
+        local,
+        palette_bytes,
+        (unsigned int)parsed_colors);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -1381,9 +1360,6 @@ sixel_palette_parse_gpl(unsigned char const *data,
     status = SIXEL_OK;
 
 cleanup:
-    if (palette_obj != NULL) {
-        sixel_palette_unref(palette_obj);
-    }
     if (SIXEL_FAILED(status) && local != NULL) {
         sixel_dither_unref(local);
     }

@@ -68,7 +68,7 @@
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-heckbert.h"
-#include "palette.h"
+#include "palette-private.h"
 #include "pixelformat.h"
 #include "status.h"
 #include "timer.h"
@@ -3330,9 +3330,11 @@ sixel_palette_heckbert_colormap(
                                        depth,
                                        pixel_stride,
                                        pixelformat,
-                                       palette->quality_mode,
+                                       SIXEL_PALETTE_CONTEXT(palette)
+                                           ->quality_mode,
                                        use_reversible,
-                                       palette->lut_policy,
+                                       SIXEL_PALETTE_CONTEXT(palette)
+                                           ->lut_policy,
                                        &colorfreqtable,
                                        allocator);
     if (SIXEL_FAILED(status)) {
@@ -3342,10 +3344,11 @@ sixel_palette_heckbert_colormap(
         *origcolors = colorfreqtable.size;
     }
 
-    if (colorfreqtable.size <= palette->requested_colors) {
+    if (colorfreqtable.size
+            <= SIXEL_PALETTE_STORAGE(palette)->requested_colors) {
         sixel_debugf("Image already has few enough colors (<=%u). Keeping "
                      "same colors.",
-                     palette->requested_colors);
+                     SIXEL_PALETTE_STORAGE(palette)->requested_colors);
         colormapP->size = colorfreqtable.size;
         status = alloctupletable(&colormapP->table,
                                  depth,
@@ -3368,14 +3371,16 @@ sixel_palette_heckbert_colormap(
             }
         }
     } else {
-        sixel_debugf("choosing %u colors...", palette->requested_colors);
+        sixel_debugf("choosing %u colors...",
+                     SIXEL_PALETTE_STORAGE(palette)->requested_colors);
         status = mediancut(colorfreqtable,
                            depth,
-                           palette->requested_colors,
-                           palette->method_for_largest,
-                           palette->method_for_rep,
+                           SIXEL_PALETTE_STORAGE(palette)
+                               ->requested_colors,
+                           SIXEL_PALETTE_CONTEXT(palette)->method_for_largest,
+                           SIXEL_PALETTE_CONTEXT(palette)->method_for_rep,
                            use_reversible,
-                           palette->final_merge_mode,
+                           SIXEL_PALETTE_CONTEXT(palette)->final_merge_mode,
                            pixelformat,
                            colormapP,
                            allocator,
@@ -3392,10 +3397,11 @@ sixel_palette_heckbert_colormap(
         }
         sixel_debugf("%u colors are chosen.", colorfreqtable.size);
     }
-    if (palette->force_palette) {
+    if (SIXEL_PALETTE_CONTEXT(palette)->force_palette) {
         status = force_palette_completion(colormapP,
                                           depth,
-                                          palette->requested_colors,
+                                          SIXEL_PALETTE_STORAGE(palette)
+                                              ->requested_colors,
                                           colorfreqtable,
                                           allocator);
         if (SIXEL_FAILED(status)) {
@@ -3460,7 +3466,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
 
     work_allocator = allocator;
     if (work_allocator == NULL) {
-        work_allocator = palette->allocator;
+        work_allocator = SIXEL_PALETTE_STORAGE(palette)->allocator;
     }
     if (work_allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -3516,7 +3522,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     input_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
     float_entries = NULL;
     float_stride = 0;
-    reversible_for_quantizer = palette->use_reversible;
+    reversible_for_quantizer = SIXEL_PALETTE_CONTEXT(palette)->use_reversible;
     colormap_request.palette = palette;
     colormap_request.data = data;
     colormap_request.length = length;
@@ -3595,11 +3601,11 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     }
 
     payload_size = (size_t)colormap.size * (size_t)depth;
-    if (payload_size > 0U && palette->entries != NULL
+    if (payload_size > 0U && SIXEL_PALETTE_STORAGE(palette)->entries != NULL
         && colormap.table != NULL) {
         for (index = 0U; index < colormap.size; ++index) {
             for (plane = 0U; plane < depth; ++plane) {
-                palette->entries[index * depth + plane]
+                SIXEL_PALETTE_STORAGE(palette)->entries[index * depth + plane]
                     = (unsigned char)colormap.table[index]->tuple[plane];
                 if (float_entries != NULL) {
                     float_entries[index * depth + plane]
@@ -3610,7 +3616,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
         }
     }
 
-    palette->original_colors = origcolors;
+    SIXEL_PALETTE_STORAGE(palette)->original_colors = origcolors;
     if (float_entries != NULL && float_stride > 0) {
         drop_status = sixel_palette_set_entries_float32(palette,
                                                         float_entries,
@@ -3632,7 +3638,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     (void)snprintf(log_detail,
                    sizeof(log_detail),
                    "colors=%u depth=%u",
-                   palette->entry_count,
+                   SIXEL_PALETTE_STORAGE(palette)->entry_count,
                    depth);
     sixel_palette_heckbert_log_finish(logger,
                                       job_export,

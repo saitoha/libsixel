@@ -805,16 +805,23 @@ sixel_dither_policy_jajuni_build_context(
     dither = request->dither;
     if (dither != NULL && dither->palette != NULL) {
         sixel_palette_t *palette_object;
+        sixel_palette_float32_entries_view_t float32_view;
         int float_components;
 
         palette_object = dither->palette;
-        if (palette_object->entries_float32 != NULL
-                && palette_object->float_depth > 0) {
-            float_components = palette_object->float_depth
-                / (int)sizeof(float);
+        memset(&float32_view, 0, sizeof(float32_view));
+        if (palette_object->vtbl != NULL
+                && palette_object->vtbl->get_entries_float32 != NULL
+                && SIXEL_SUCCEEDED(
+                    palette_object->vtbl->get_entries_float32(
+                        palette_object,
+                        &float32_view))
+                && float32_view.entries != NULL
+                && float32_view.depth > 0) {
+            float_components = float32_view.depth / (int)sizeof(float);
             if (float_components > 0
                     && (size_t)float_components <= SIXEL_MAX_CHANNELS) {
-                context->palette_float = palette_object->entries_float32;
+                context->palette_float = float32_view.entries;
                 context->float_depth = float_components;
             }
         }
