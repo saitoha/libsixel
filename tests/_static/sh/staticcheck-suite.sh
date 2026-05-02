@@ -341,6 +341,10 @@ run_case_tap "staticcheck-frame-instantiation-boundary" \
     "$src_root/tests/_static/sh/staticcheck-frame-instantiation-boundary.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-output-instantiation-boundary" \
+    "$src_root/tests/_static/sh/staticcheck-output-instantiation-boundary.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-chunk-component-boundary" \
     "$src_root/tests/_static/sh/staticcheck-chunk-component-boundary.sh" \
     "$src_root" || fail_and_exit $?

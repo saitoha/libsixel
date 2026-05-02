@@ -163,10 +163,11 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
-	$(srcdir)/timer.c $(srcdir)/timer.h $(srcdir)/sleep.c \
-	$(srcdir)/sleep.h $(srcdir)/fromsixel.c $(srcdir)/tosixel.c \
-	$(srcdir)/tosixel-highcolor.c $(srcdir)/tosixel-highcolor.h \
-	$(srcdir)/lookup-policy.c $(srcdir)/lookup-policy-none.c \
+	$(srcdir)/output-factory.h $(srcdir)/timer.c $(srcdir)/timer.h \
+	$(srcdir)/sleep.c $(srcdir)/sleep.h $(srcdir)/fromsixel.c \
+	$(srcdir)/tosixel.c $(srcdir)/tosixel-highcolor.c \
+	$(srcdir)/tosixel-highcolor.h $(srcdir)/lookup-policy.c \
+	$(srcdir)/lookup-policy-none.c \
 	$(srcdir)/lookup-policy-mono-darkbg.c \
 	$(srcdir)/lookup-policy-mono-lightbg.c \
 	$(srcdir)/lookup-policy-certlut.c \
@@ -974,6 +975,7 @@ CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* $(am__append_6)
 lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@libsixel_la_SOURCES = $(srcdir)/output.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/output.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/output-factory.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sleep.c \

@@ -67,6 +67,7 @@ else
 libsixel_la_SOURCES = \
                 $(srcdir)/output.c \
                 $(srcdir)/output.h \
+                $(srcdir)/output-factory.h \
                 $(srcdir)/timer.c \
                 $(srcdir)/timer.h \
                 $(srcdir)/sleep.c \

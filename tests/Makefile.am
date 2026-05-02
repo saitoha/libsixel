@@ -378,6 +378,7 @@ AM_LOG_FLAGS =
 	staticcheck-6cells-contract-attrs \
 	staticcheck-frame-post187-export-guard \
 	staticcheck-frame-instantiation-boundary \
+	staticcheck-output-instantiation-boundary \
 	staticcheck-chunk-component-boundary \
 	staticcheck-chunk-factory-vtbl-guard \
 	staticcheck-chunk-source-path-format-guard \
@@ -433,6 +434,7 @@ staticcheck-6cells-idl-sync \
 staticcheck-6cells-contract-attrs \
 staticcheck-frame-post187-export-guard \
 staticcheck-frame-instantiation-boundary \
+staticcheck-output-instantiation-boundary \
 staticcheck-chunk-component-boundary \
 staticcheck-chunk-factory-vtbl-guard \
 staticcheck-chunk-source-path-format-guard \
@@ -632,6 +634,16 @@ staticcheck-frame-instantiation-boundary:
 		--trs-file staticcheck-frame-instantiation-boundary.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-frame-instantiation-boundary.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-output-instantiation-boundary:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-output-instantiation-boundary" \
+		--log-file staticcheck-output-instantiation-boundary.log \
+		--trs-file staticcheck-output-instantiation-boundary.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-output-instantiation-boundary.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-chunk-component-boundary:
@@ -1706,6 +1718,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 		_static/sh/staticcheck-6cells-contract-attrs.sh \
 		_static/sh/staticcheck-frame-post187-export-guard.sh \
 		_static/sh/staticcheck-frame-instantiation-boundary.sh \
+		_static/sh/staticcheck-output-instantiation-boundary.sh \
 		_static/sh/staticcheck-chunk-component-boundary.sh \
 		_static/sh/staticcheck-chunk-factory-vtbl-guard.sh \
 		_static/sh/staticcheck-chunk-source-path-format-guard.sh \

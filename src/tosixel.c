@@ -63,6 +63,7 @@
 #include <sixel.h>
 #include "compat_stub.h"
 #include "output.h"
+#include "output-factory.h"
 #include "dither.h"
 #include "pixelformat.h"
 #include "timeline-logger.h"
@@ -627,10 +628,10 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
         return status;
     }
 
-    status = sixel_output_new(&state->output,
-                              sixel_parallel_band_writer,
-                              state,
-                              ctx->allocator);
+    status = sixel_output_create_from_factory(&state->output,
+                                              sixel_parallel_band_writer,
+                                              state,
+                                              ctx->allocator);
     if (SIXEL_FAILED(status)) {
         sixel_encode_work_cleanup(&state->work, ctx->allocator);
         return status;

@@ -93,6 +93,7 @@
 #include "frame.h"
 #include "frame-factory.h"
 #include "output.h"
+#include "output-factory.h"
 #include "timeline-logger.h"
 #include "options.h"
 #include "dither.h"
@@ -4344,7 +4345,7 @@ sixel_encoder_filter_plan_run(sixel_filter_plan_t *plan,
 }
 
 
-/* generic writer function for passing to sixel_output_new() */
+/* generic writer function for output writer initialization */
 static int
 sixel_write_callback(char *data, int size, void *priv)
 {
@@ -4389,7 +4390,7 @@ sixel_output_interface_write_callback(char *data, int size, void *priv)
 }
 
 
-/* the writer function with hex-encoding for passing to sixel_output_new() */
+/* the writer function with hex-encoding for output writer initialization */
 static int
 sixel_hex_write_callback(
     char    /* in */ *data,
@@ -5848,10 +5849,11 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
         }
         context->write_callback = context->fn_write;
         context->write_priv = &context->encoder->outfd;
-        status = sixel_output_new(&context->output,
-                                  context->write_callback,
-                                  context->write_priv,
-                                  context->encoder->allocator);
+        status = sixel_output_create_from_factory(
+            &context->output,
+            context->write_callback,
+            context->write_priv,
+            context->encoder->allocator);
         if (SIXEL_FAILED(status)) {
             return status;
         }

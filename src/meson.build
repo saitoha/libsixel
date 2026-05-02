@@ -21,6 +21,7 @@
 #
 srcs = [
   'output.c',
+  'output-factory.h',
   'fromsixel.c',
   'tosixel.c',
   'tosixel-highcolor.c',
