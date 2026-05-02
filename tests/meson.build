@@ -766,6 +766,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-frombmp-chunk-view-bind',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-frombmp-chunk-view-bind.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-deprecated-diagnostic-guard',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-deprecated-diagnostic-guard.sh',

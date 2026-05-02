@@ -33,7 +33,13 @@
 #define SIXEL_BMP_MAX_PALETTE 256u
 
 typedef struct sixel_bmp_decode_info {
-    sixel_chunk_t const *chunk;
+    /*
+     * Borrowed byte view validated by sixel_bmp_parse_header().
+     * Decode helpers use this stable view instead of re-reading the chunk
+     * vtbl, so analyzer paths match the parser's input validation.
+     */
+    unsigned char const *source_bytes;
+    size_t source_size;
     int width;
     int height;
     int top_down;

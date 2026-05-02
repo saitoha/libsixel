@@ -373,6 +373,7 @@ AM_LOG_FLAGS =
 	staticcheck-chunk-factory-vtbl-guard \
 	staticcheck-chunk-source-path-format-guard \
 	staticcheck-fromwebp-chunk-view-bind \
+	staticcheck-frombmp-chunk-view-bind \
 	staticcheck-deprecated-diagnostic-guard \
 	staticcheck-lookup-policy-no-backend-includes \
 	staticcheck-factory-classid-registry-sync \
@@ -425,6 +426,7 @@ staticcheck-chunk-component-boundary \
 staticcheck-chunk-factory-vtbl-guard \
 staticcheck-chunk-source-path-format-guard \
 staticcheck-fromwebp-chunk-view-bind \
+staticcheck-frombmp-chunk-view-bind \
 staticcheck-deprecated-diagnostic-guard \
 staticcheck-lookup-policy-no-backend-includes \
 staticcheck-factory-classid-registry-sync \
@@ -648,6 +650,16 @@ staticcheck-fromwebp-chunk-view-bind:
 		--trs-file staticcheck-fromwebp-chunk-view-bind.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-fromwebp-chunk-view-bind.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-frombmp-chunk-view-bind:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-frombmp-chunk-view-bind" \
+		--log-file staticcheck-frombmp-chunk-view-bind.log \
+		--trs-file staticcheck-frombmp-chunk-view-bind.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-frombmp-chunk-view-bind.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-deprecated-diagnostic-guard:
@@ -1665,6 +1677,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 		_static/sh/staticcheck-chunk-factory-vtbl-guard.sh \
 		_static/sh/staticcheck-chunk-source-path-format-guard.sh \
 		_static/sh/staticcheck-fromwebp-chunk-view-bind.sh \
+		_static/sh/staticcheck-frombmp-chunk-view-bind.sh \
 		_static/sh/staticcheck-deprecated-diagnostic-guard.sh \
 		_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
 		_static/sh/staticcheck-factory-classid-registry-sync.sh \
