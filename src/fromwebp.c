@@ -1137,6 +1137,8 @@ sixel_webp_parse_anim_stream(sixel_chunk_t const *chunk,
                              sixel_webp_anim_stream_t *stream)
 {
     SIXELSTATUS status;
+    sixel_chunk_bytes_view_t view;
+    sixel_allocator_t *allocator;
     unsigned char const *data;
     size_t size;
     unsigned int riff_size_u32;
@@ -1149,6 +1151,9 @@ sixel_webp_parse_anim_stream(sixel_chunk_t const *chunk,
     int frame_index;
 
     status = SIXEL_OK;
+    view.bytes = NULL;
+    view.size = 0u;
+    allocator = NULL;
     data = NULL;
     size = 0u;
     riff_size_u32 = 0u;
@@ -1160,9 +1165,15 @@ sixel_webp_parse_anim_stream(sixel_chunk_t const *chunk,
     offset = 0u;
     frame_index = 0;
     if (chunk == NULL || plan == NULL || stream == NULL ||
-        sixel_chunk_get_allocator(chunk) == NULL || sixel_chunk_get_buffer(chunk) == NULL ||
-        sixel_chunk_get_size(chunk) < 12u || plan->anim_frame_count <= 0 ||
-        plan->canvas_width <= 0 || plan->canvas_height <= 0) {
+        plan->anim_frame_count <= 0 ||
+        plan->canvas_width <= 0 ||
+        plan->canvas_height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    allocator = sixel_chunk_get_allocator(chunk);
+    if (allocator == NULL ||
+        sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
+        view.bytes == NULL || view.size < 12u) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -1172,15 +1183,15 @@ sixel_webp_parse_anim_stream(sixel_chunk_t const *chunk,
     stream->loop_count = plan->anim_loop_count;
     stream->frame_count = plan->anim_frame_count;
     stream->frames = (sixel_webp_anim_frame_t *)sixel_allocator_calloc(
-        sixel_chunk_get_allocator(chunk),
+        allocator,
         (size_t)stream->frame_count,
         sizeof(*stream->frames));
     if (stream->frames == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
 
-    data = sixel_chunk_get_buffer(chunk);
-    size = sixel_chunk_get_size(chunk);
+    data = view.bytes;
+    size = view.size;
     if (memcmp(data, "RIFF", 4u) != 0 || memcmp(data + 8u, "WEBP", 4u) != 0) {
         status = SIXEL_BAD_INPUT;
         goto end;
@@ -1236,7 +1247,7 @@ sixel_webp_parse_anim_stream(sixel_chunk_t const *chunk,
 
 end:
     if (SIXEL_FAILED(status)) {
-        sixel_webp_anim_stream_reset(stream, sixel_chunk_get_allocator(chunk));
+        sixel_webp_anim_stream_reset(stream, allocator);
     }
     return status;
 }

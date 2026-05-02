@@ -1612,6 +1612,7 @@ runs:
 
     - name: Upload artifacts
       if: ${{ always() }}
+      continue-on-error: true
       uses: actions/upload-artifact@v7
       with:
         name: ${{ fromJSON(inputs.matrix_json).label || '' }}
