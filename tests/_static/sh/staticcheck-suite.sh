@@ -349,6 +349,10 @@ run_case_tap "staticcheck-chunk-source-path-format-guard" \
     "$src_root/tests/_static/sh/staticcheck-chunk-source-path-format-guard.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-fromwebp-chunk-view-bind" \
+    "$src_root/tests/_static/sh/staticcheck-fromwebp-chunk-view-bind.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-deprecated-diagnostic-guard" \
     "$src_root/tests/_static/sh/staticcheck-deprecated-diagnostic-guard.sh" \
     "$src_root" || fail_and_exit $?
