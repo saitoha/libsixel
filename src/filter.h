@@ -28,7 +28,7 @@
 #include <sixel.h>
 
 #include "frame.h"
-#include "logger.h"
+#include "timeline-logger.h"
 
 /*
  * Filter interface shared by resampling, clipping, colorspace conversion,
@@ -90,7 +90,7 @@ typedef struct sixel_filter_vtbl sixel_filter_vtbl_t;
 
 typedef SIXELSTATUS (*sixel_filter_apply_fn)(sixel_filter_t *filter,
                                              sixel_allocator_t *allocator,
-                                             sixel_logger_t *logger);
+                                             sixel_timeline_logger_t *logger);
 
 typedef void (*sixel_filter_dispose_fn)(sixel_filter_t *filter);
 
@@ -98,7 +98,7 @@ typedef SIXELSTATUS (*sixel_filter_validate_fn)(sixel_filter_t *filter);
 
 typedef SIXELSTATUS (*sixel_filter_prepare_fn)(sixel_filter_t *filter,
                                                sixel_allocator_t *allocator,
-                                               sixel_logger_t *logger);
+                                               sixel_timeline_logger_t *logger);
 
 typedef int (*sixel_filter_can_pipeline_fn)(sixel_filter_t const *filter);
 
@@ -193,7 +193,7 @@ sixel_filter_update_progress(sixel_filter_t *filter, int completed_units);
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_filter_run(sixel_filter_t *filter,
                  sixel_allocator_t *allocator,
-                 sixel_logger_t *logger);
+                 sixel_timeline_logger_t *logger);
 
 SIXEL_INTERNAL_API void sixel_filter_teardown(sixel_filter_t *filter);
 

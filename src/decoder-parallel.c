@@ -38,7 +38,7 @@
 
 #include "decoder-parallel.h"
 #if SIXEL_ENABLE_THREADS
-# include "logger.h"
+# include "timeline-logger.h"
 # include "threading.h"
 #endif
 #include "compat_stub.h"
@@ -75,7 +75,7 @@ typedef struct sixel_decoder_worker_context {
     int height;
     int pixel_size;
     int depth;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     unsigned char *local_buffer;
     int local_capacity;
     int local_written;
@@ -402,7 +402,7 @@ sixel_decoder_parallel_worker(void *arg)
     int i;
     int fallback = 0;
     int status = (-1);
-    sixel_logger_t *logger = NULL;
+    sixel_timeline_logger_t *logger = NULL;
     int width = 0;
     int pixel_size = 0;
     int depth = 0;
@@ -469,7 +469,7 @@ sixel_decoder_parallel_worker(void *arg)
          * Decode window for this worker. The key keeps decode spans grouped
          * per-thread in the timeline output.
          */
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "decode",
                           "decoder",
                           "start",
@@ -733,7 +733,7 @@ sixel_decoder_parallel_worker(void *arg)
     }
 
     if (logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "decode",
                           "decoder",
                           fallback ? "abort" : "finish",
@@ -805,7 +805,7 @@ sixel_decoder_parallel_worker(void *arg)
 
     if (logger != NULL) {
         /* Chain memcpy execution so the timeline shows the serialized copy */
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "copy",
                           "decoder",
                           "start",
@@ -851,7 +851,7 @@ sixel_decoder_parallel_worker(void *arg)
     }
 
     if (logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "copy",
                           "decoder",
                           "finish",
@@ -1021,7 +1021,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
                                      unsigned char *anchor,
                                      image_buffer_t *image,
                                      int const *palette,
-                                     sixel_logger_t *logger)
+                                     sixel_timeline_logger_t *logger)
 {
 #if SIXEL_ENABLE_THREADS
     SIXELSTATUS status;
@@ -1137,7 +1137,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
          * timeline can show the gap between parser startup and worker
          * creation.
          */
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "decoder",
                           "controller",
                           "launch",

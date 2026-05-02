@@ -34,7 +34,7 @@
 #include <stdint.h>
 
 #include "palette.h"
-#include "logger.h"
+#include "timeline-logger.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,7 +81,7 @@ sixel_palette_build_kmeans(sixel_palette_t *palette,
                            unsigned int length,
                            int pixelformat,
                            sixel_allocator_t *allocator,
-                           sixel_logger_t *logger,
+                           sixel_timeline_logger_t *logger,
                            int *job_seq,
                            char const *engine_name,
                            sixel_palette_telemetry_t *telemetry);
@@ -92,7 +92,7 @@ sixel_palette_build_kmeans_float32(sixel_palette_t *palette,
                                    unsigned int length,
                                    int pixelformat,
                                    sixel_allocator_t *allocator,
-                                   sixel_logger_t *logger,
+                                   sixel_timeline_logger_t *logger,
                                    int *job_seq,
                                    char const *engine_name,
                                    sixel_palette_telemetry_t *telemetry);

@@ -28,7 +28,7 @@
 #include <sixel.h>
 
 #include "filter.h"
-#include "logger.h"
+#include "timeline-logger.h"
 
 /*
  * Resize filter configuration. The planner populates target dimensions and the
@@ -52,7 +52,7 @@ sixel_filter_resize_init(sixel_filter_t *filter,
 SIXELSTATUS
 sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
                           sixel_frame_t *frame,
-                          sixel_logger_t *logger);
+                          sixel_timeline_logger_t *logger);
 
 #endif /* LIBSIXEL_FILTER_RESIZE_H */
 

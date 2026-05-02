@@ -47,7 +47,7 @@ typedef struct sixel_filter_encode_state {
 static SIXELSTATUS
 sixel_filter_encode_apply(sixel_filter_t *filter,
       sixel_allocator_t *allocator,
-      sixel_logger_t *logger);
+      sixel_timeline_logger_t *logger);
 
 static void
 sixel_filter_encode_dispose(sixel_filter_t *filter);
@@ -65,7 +65,7 @@ static sixel_filter_vtbl_t const sixel_filter_encode_vtbl = {
 SIXELSTATUS
 sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
                           sixel_frame_t *frame,
-                          sixel_logger_t *logger)
+                          sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     sixel_output_t *output;
@@ -124,7 +124,7 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
     }
 
     if (logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "filter",
                           "worker",
                           "encode-start",
@@ -148,7 +148,7 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
                           output);
 
     if (logger != NULL && SIXEL_SUCCEEDED(status)) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "filter",
                           "worker",
                           "encode-finish",
@@ -170,7 +170,7 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
 static SIXELSTATUS
 sixel_filter_encode_apply(sixel_filter_t *filter,
                           sixel_allocator_t *allocator,
-                          sixel_logger_t *logger)
+                          sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     sixel_filter_encode_state_t *state;

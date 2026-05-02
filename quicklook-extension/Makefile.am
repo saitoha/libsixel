@@ -60,7 +60,8 @@ libsixelquicklookcore_a_SOURCES = \
     $(top_srcdir)/src/allocator.c \
     $(top_srcdir)/src/fromsixel.c \
     $(top_srcdir)/src/timer.c \
-    $(top_srcdir)/src/logger.c \
+    $(top_srcdir)/src/timeline-logger.c \
+    $(top_srcdir)/src/timeline-writer.c \
     $(top_srcdir)/src/compat_stub.c \
     $(top_srcdir)/src/path.c
 

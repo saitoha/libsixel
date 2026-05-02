@@ -99,6 +99,7 @@ function clear_pending_attrs() {
     pending_alias = ""
     pending_receiver = ""
     pending_classid = ""
+    pending_serviceid = ""
     pending_native = 0
     pending_const = 0
 }
@@ -488,7 +489,8 @@ function is_contract_attr(item) {
         item ~ /^invalidates\(/ ||
         item ~ /^borrows\(/ ||
         item ~ /^responsibility\(/ ||
-        item ~ /^forbid_state\(/
+        item ~ /^forbid_state\(/ ||
+        item ~ /^serviceid\(/
 }
 
 function parse_attrs(attrs,    count, i, item, value) {
@@ -516,6 +518,11 @@ function parse_attrs(attrs,    count, i, item, value) {
             sub(/^classid\(/, "", value)
             sub(/\)$/, "", value)
             pending_classid = trim(value)
+        } else if (item ~ /^serviceid\(/ && item ~ /\)$/) {
+            value = item
+            sub(/^serviceid\(/, "", value)
+            sub(/\)$/, "", value)
+            pending_serviceid = trim(value)
         } else if (is_contract_attr(item)) {
             continue
         } else {

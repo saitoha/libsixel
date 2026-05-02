@@ -63,7 +63,7 @@ typedef struct sixel_filter_colors_state {
 static SIXELSTATUS
 sixel_filter_colors_apply(sixel_filter_t *filter,
       sixel_allocator_t *allocator,
-      sixel_logger_t *logger);
+      sixel_timeline_logger_t *logger);
 
 static void
 sixel_filter_colors_dispose(sixel_filter_t *filter);
@@ -81,7 +81,7 @@ static sixel_filter_vtbl_t const sixel_filter_colors_vtbl = {
 SIXELSTATUS
 sixel_filter_colors_convert(const sixel_filter_colors_config_t *config,
                             sixel_frame_t *frame,
-                            sixel_logger_t *logger)
+                            sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     int target_pixelformat;
@@ -106,7 +106,7 @@ sixel_filter_colors_convert(const sixel_filter_colors_config_t *config,
         target_pixelformat);
 
     if (logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "filter",
                           "worker",
                           "colorspace-start",
@@ -125,7 +125,7 @@ sixel_filter_colors_convert(const sixel_filter_colors_config_t *config,
 
     status = sixel_frame_set_pixelformat(frame, target_pixelformat);
     if (SIXEL_SUCCEEDED(status) && logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "filter",
                           "worker",
                           "colorspace-finish",
@@ -146,7 +146,7 @@ sixel_filter_colors_convert(const sixel_filter_colors_config_t *config,
 static SIXELSTATUS
 sixel_filter_colors_apply(sixel_filter_t *filter,
                           sixel_allocator_t *allocator,
-                          sixel_logger_t *logger)
+                          sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     sixel_filter_colors_state_t *state;

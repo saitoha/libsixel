@@ -55,7 +55,8 @@ srcs = files(
   '../src/allocator.c',
   '../src/fromsixel.c',
   '../src/timer.c',
-  '../src/logger.c',
+  '../src/timeline-logger.c',
+  '../src/timeline-writer.c',
   '../src/compat_stub.c',
   '../src/path.c',
 )

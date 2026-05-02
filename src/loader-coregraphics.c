@@ -58,7 +58,7 @@
 #include "loader-common.h"
 #include "loader-coregraphics.h"
 #include "loader.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "compat_stub.h"
 
 /*

@@ -34,6 +34,9 @@
  * [classid("...")]
  * - Applies to coclass declarations only and records the factory lookup key.
  *
+ * [serviceid("...")]
+ * - Applies to service interfaces and records the service lookup key.
+ *
  * [lifetime(retained)] / [lifetime(release)]
  * - Marks refcount operations that retain or release the receiver.
  *
@@ -67,12 +70,85 @@ module sixel {
  * include this header explicitly; sixel.h stays focused on the legacy public
  * API surface.
  */
-struct sixel_logger;
 struct sixel_option_argument_list_resolution;
 
 [native, opaque, refcounted]
 [responsibility("provide allocation services required by factory creation")]
 typedef sixel_allocator_t allocator;
+
+[alias(sixel_timeline_logger_t)]
+interface timeline_logger;
+
+struct timeline_event {
+    char const *role;
+    char const *worker;
+    char const *event;
+    int job_id;
+};
+
+struct timeline_frame_context {
+    int frame_no;
+    int loop_no;
+    int multiframe;
+};
+
+struct timeline_record {
+    unsigned int session_id;
+    double timestamp;
+    unsigned long long thread_id;
+    char const *worker;
+    char const *role;
+    char const *event;
+    int job_id;
+    int frame_no;
+    int loop_no;
+    int multiframe;
+};
+
+typedef int timeline_writer_enabled_result;
+typedef int timeline_logger_enabled_result;
+
+[component, refcounted]
+[serviceid("services/timeline-writer")]
+[responsibility("own shared diagnostic timeline JSONL output")]
+[forbid_state("frame_context", "job_context")]
+[alias(sixel_timeline_writer_t)]
+[receiver(writer)]
+interface timeline_writer {
+    [lifetime(retained)]
+    void ref();
+    [lifetime(release)]
+    void unref();
+    SIXELSTATUS create_logger(
+        in allocator *allocator,
+        out timeline_logger **logger);
+    SIXELSTATUS write(in timeline_record const *record);
+    void flush();
+    [const] timeline_writer_enabled_result enabled();
+};
+
+[component, refcounted]
+[responsibility("record one diagnostic timeline session")]
+[forbid_state("output_file", "global_writer")]
+[receiver(logger)]
+interface timeline_logger {
+    [lifetime(retained)]
+    void ref();
+    [lifetime(release)]
+    void unref();
+    SIXELSTATUS log(in timeline_event const *event);
+    SIXELSTATUS set_frame_context(
+        in timeline_frame_context const *context);
+    void clear_frame_context();
+    void flush();
+    [const] timeline_logger_enabled_result enabled();
+    [const] unsigned int session_id();
+};
+
+[classid("diagnostics/timeline-logger")]
+coclass timeline_logger_component {
+    [default] interface timeline_logger;
+};
 
 [component, refcounted]
 [responsibility("create components by class id")]
@@ -331,7 +407,7 @@ struct loader_manager_build_request {
     int has_start_frame_no;
     int start_frame_no;
     loader_suboptions const *suboptions;
-    struct sixel_logger *timeline_logger;
+    timeline_logger *timeline_logger;
     int *timeline_job_seq;
     sixel_loader_t *timeline_loader;
 };

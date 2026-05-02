@@ -1324,7 +1324,7 @@ sixel_decoder_decode(
     unsigned char *clipboard_output_data;
     size_t clipboard_output_size;
     SIXELSTATUS clipboard_output_status;
-    sixel_logger_t logger;
+    sixel_timeline_logger_t *logger;
     int logger_prepared;
 
     sixel_decoder_ref(decoder);
@@ -1345,9 +1345,9 @@ sixel_decoder_decode(
     clipboard_output_size = 0u;
     clipboard_output_status = SIXEL_OK;
     input_fp = NULL;
-    sixel_logger_init(&logger);
-    (void)sixel_logger_prepare_env(&logger);
-    logger_prepared = logger.active;
+    logger = NULL;
+    (void)sixel_timeline_logger_prepare_env(decoder->allocator, &logger);
+    logger_prepared = sixel_timeline_logger_is_enabled(logger);
 
     raw_len = 0;
     max = 0;
@@ -1491,7 +1491,7 @@ sixel_decoder_decode(
 
         if (decoder->dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER) {
             if (logger_prepared) {
-                sixel_logger_logf(&logger,
+                sixel_timeline_logger_logf(logger,
                                   "decoder",
                                   "undither",
                                   "start",
@@ -1509,8 +1509,8 @@ sixel_decoder_decode(
                 &rgb_pixels);
             if (SIXEL_FAILED(status)) {
                 if (logger_prepared) {
-                    sixel_logger_logf(
-                        &logger,
+                    sixel_timeline_logger_logf(
+                        logger,
                         "decoder",
                         "undither",
                         "abort",
@@ -1519,7 +1519,7 @@ sixel_decoder_decode(
                 goto end;
             }
             if (logger_prepared) {
-                sixel_logger_logf(&logger,
+                sixel_timeline_logger_logf(logger,
                                   "decoder",
                                   "undither",
                                   "finish",
@@ -1632,7 +1632,7 @@ sixel_decoder_decode(
     }
 
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "start",
@@ -1651,7 +1651,7 @@ sixel_decoder_decode(
         decoder->allocator);
     if (SIXEL_FAILED(status)) {
         if (logger_prepared) {
-            sixel_logger_logf(&logger,
+            sixel_timeline_logger_logf(logger,
                               "io",
                               "png",
                               "abort",
@@ -1660,7 +1660,7 @@ sixel_decoder_decode(
         goto end;
     }
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "finish",
@@ -1705,7 +1705,7 @@ end:
 
     sixel_decoder_unref(decoder);
     if (logger_prepared) {
-        sixel_logger_close(&logger);
+        sixel_timeline_logger_unref(logger);
     }
 
     return status;

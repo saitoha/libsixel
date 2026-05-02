@@ -68,6 +68,9 @@ extern "C" {
  * [classid("...")]
  * - Applies to coclass declarations only and records the factory lookup key.
  *
+ * [serviceid("...")]
+ * - Applies to service interfaces and records the service lookup key.
+ *
  * [lifetime(retained)] / [lifetime(release)]
  * - Marks refcount operations that retain or release the receiver.
  *
@@ -98,7 +101,6 @@ extern "C" {
  * include this header explicitly; sixel.h stays focused on the legacy public
  * API surface.
  */
-struct sixel_logger;
 struct sixel_option_argument_list_resolution;
 /*
  * IDL responsibility:
@@ -110,6 +112,154 @@ struct sixel_option_argument_list_resolution;
  * [native, opaque, refcounted]
  * [responsibility("provide allocation services required by factory creation")]
  * typedef sixel_allocator_t allocator;
+ */
+
+typedef struct sixel_timeline_logger_interface sixel_timeline_logger_t;
+
+typedef struct sixel_timeline_event {
+    char const *role;
+    char const *worker;
+    char const *event;
+    int job_id;
+} sixel_timeline_event_t;
+
+typedef struct sixel_timeline_frame_context {
+    int frame_no;
+    int loop_no;
+    int multiframe;
+} sixel_timeline_frame_context_t;
+
+typedef struct sixel_timeline_record {
+    unsigned int session_id;
+    double timestamp;
+    unsigned long long thread_id;
+    char const *worker;
+    char const *role;
+    char const *event;
+    int job_id;
+    int frame_no;
+    int loop_no;
+    int multiframe;
+} sixel_timeline_record_t;
+
+typedef int sixel_timeline_writer_enabled_result_t;
+
+typedef int sixel_timeline_logger_enabled_result_t;
+
+typedef struct sixel_timeline_writer_interface sixel_timeline_writer_t;
+
+/*
+ * IDL responsibility:
+ * - own shared diagnostic timeline JSONL output
+ */
+
+/*
+ * IDL forbidden state:
+ * - frame_context
+ * - job_context
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [serviceid("services/timeline-writer")]
+ * [responsibility("own shared diagnostic timeline JSONL output")]
+ * [forbid_state("frame_context", "job_context")]
+ * [alias(sixel_timeline_writer_t)]
+ * [receiver(writer)]
+ * interface timeline_writer {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     SIXELSTATUS create_logger(
+ *         in allocator *allocator,
+ *         out timeline_logger **logger);
+ *     SIXELSTATUS write(in timeline_record const *record);
+ *     void flush();
+ *     [const] timeline_writer_enabled_result enabled();
+ * };
+ */
+
+typedef struct sixel_timeline_writer_vtbl {
+    void (*ref)(sixel_timeline_writer_t *writer);
+    void (*unref)(sixel_timeline_writer_t *writer);
+    SIXELSTATUS (*create_logger)(
+        sixel_timeline_writer_t *writer,
+        sixel_allocator_t *allocator,
+        sixel_timeline_logger_t **logger);
+    SIXELSTATUS (*write)(
+        sixel_timeline_writer_t *writer,
+        sixel_timeline_record_t const *record);
+    void (*flush)(sixel_timeline_writer_t *writer);
+    sixel_timeline_writer_enabled_result_t
+    (*enabled)(
+        sixel_timeline_writer_t const *writer);
+} sixel_timeline_writer_vtbl_t;
+
+struct sixel_timeline_writer_interface {
+    sixel_timeline_writer_vtbl_t const *vtbl;
+};
+
+/*
+ * IDL responsibility:
+ * - record one diagnostic timeline session
+ */
+
+/*
+ * IDL forbidden state:
+ * - output_file
+ * - global_writer
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("record one diagnostic timeline session")]
+ * [forbid_state("output_file", "global_writer")]
+ * [receiver(logger)]
+ * interface timeline_logger {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     SIXELSTATUS log(in timeline_event const *event);
+ *     SIXELSTATUS set_frame_context(
+ *         in timeline_frame_context const *context);
+ *     void clear_frame_context();
+ *     void flush();
+ *     [const] timeline_logger_enabled_result enabled();
+ *     [const] unsigned int session_id();
+ * };
+ */
+
+typedef struct sixel_timeline_logger_vtbl {
+    void (*ref)(sixel_timeline_logger_t *logger);
+    void (*unref)(sixel_timeline_logger_t *logger);
+    SIXELSTATUS (*log)(
+        sixel_timeline_logger_t *logger,
+        sixel_timeline_event_t const *event);
+    SIXELSTATUS (*set_frame_context)(
+        sixel_timeline_logger_t *logger,
+        sixel_timeline_frame_context_t const *context);
+    void (*clear_frame_context)(sixel_timeline_logger_t *logger);
+    void (*flush)(sixel_timeline_logger_t *logger);
+    sixel_timeline_logger_enabled_result_t
+    (*enabled)(
+        sixel_timeline_logger_t const *logger);
+    unsigned int (*session_id)(sixel_timeline_logger_t const *logger);
+} sixel_timeline_logger_vtbl_t;
+
+struct sixel_timeline_logger_interface {
+    sixel_timeline_logger_vtbl_t const *vtbl;
+};
+
+/*
+ * IDL coclass:
+ * [classid("diagnostics/timeline-logger")]
+ * coclass timeline_logger_component {
+ *     [default] interface timeline_logger;
+ * };
  */
 
 typedef struct sixel_factory_interface sixel_factory_t;
@@ -527,7 +677,7 @@ typedef struct sixel_loader_manager_build_request {
     int has_start_frame_no;
     int start_frame_no;
     sixel_loader_suboptions_t const *suboptions;
-    struct sixel_logger *timeline_logger;
+    sixel_timeline_logger_t *timeline_logger;
     int *timeline_job_seq;
     sixel_loader_t *timeline_loader;
 } sixel_loader_manager_build_request_t;

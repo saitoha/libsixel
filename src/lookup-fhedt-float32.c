@@ -57,7 +57,7 @@
 #include "compat_stub.h"
 #include "lookup-fhedt-float32.h"
 #include "pixelformat.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "threading.h"
 #include "threadpool.h"
 #include "sixel_atomic.h"
@@ -424,7 +424,7 @@ typedef struct sixel_lookup_fhedt_timeline_float32 {
     int initialized;
     int log_lines;
     int line_stride;
-    sixel_logger_t logger;
+    sixel_timeline_logger_t *logger;
 } sixel_lookup_fhedt_timeline_float32_t;
 
 /*
@@ -566,7 +566,8 @@ sixel_lookup_fhedt_timeline_lines_enabled_float32(
     if (timeline == NULL || !timeline->initialized) {
         return 0;
     }
-    if (!timeline->logger.active || !timeline->log_lines) {
+    if (!sixel_timeline_logger_is_enabled(timeline->logger) ||
+            !timeline->log_lines) {
         return 0;
     }
     return 1;
@@ -587,8 +588,8 @@ sixel_lookup_fhedt_timeline_open_float32(
     if (timeline == NULL || timeline->initialized) {
         return;
     }
-    sixel_logger_init(&timeline->logger);
-    (void)sixel_logger_prepare_env(&timeline->logger);
+    timeline->logger = NULL;
+    (void)sixel_timeline_logger_prepare_env(NULL, &timeline->logger);
     timeline->log_lines = 0;
     timeline->line_stride = 1;
     line_env = sixel_compat_getenv("SIXEL_LOG_LINES");
@@ -614,7 +615,8 @@ sixel_lookup_fhedt_timeline_close_float32(
     if (timeline == NULL || !timeline->initialized) {
         return;
     }
-    sixel_logger_close(&timeline->logger);
+    sixel_timeline_logger_unref(timeline->logger);
+    timeline->logger = NULL;
 #else
     (void)timeline;
 #endif  /* SIXEL_ENABLE_THREADS */
@@ -633,7 +635,7 @@ sixel_lookup_fhedt_timeline_log_float32(
     int skip_line;
 
     if (timeline == NULL || !timeline->initialized
-            || !timeline->logger.active) {
+            || !sixel_timeline_logger_is_enabled(timeline->logger)) {
         return;
     }
     skip_line = 0;
@@ -649,7 +651,7 @@ sixel_lookup_fhedt_timeline_log_float32(
     if (skip_line) {
         return;
     }
-    sixel_logger_logf(&timeline->logger,
+    sixel_timeline_logger_logf(timeline->logger,
                       "fhedt",
                       worker,
                       event,
@@ -694,7 +696,7 @@ sixel_lookup_fhedt_prefetch_line_float32(double *distances,
 #endif
 #if SIXEL_ENABLE_THREADS
     if (timeline != NULL && timeline->initialized
-            && timeline->logger.active) {
+            && sixel_timeline_logger_is_enabled(timeline->logger)) {
         skip_line = 0;
         /*
          * Skip logging unless line-level events are explicitly enabled.

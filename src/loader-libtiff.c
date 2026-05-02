@@ -65,7 +65,7 @@
 #include "icc-parse.h"
 #include "loader-common.h"
 #include "loader-libtiff.h"
-#include "logger.h"
+#include "timeline-logger.h"
 
 typedef struct sixel_loader_libtiff_component {
     sixel_loader_component_t base;

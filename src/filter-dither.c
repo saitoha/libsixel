@@ -46,7 +46,7 @@ typedef struct sixel_filter_dither_state {
 static SIXELSTATUS
 sixel_filter_dither_apply(sixel_filter_t *filter,
       sixel_allocator_t *allocator,
-      sixel_logger_t *logger);
+      sixel_timeline_logger_t *logger);
 
 static void
 sixel_filter_dither_dispose(sixel_filter_t *filter);
@@ -64,7 +64,7 @@ static sixel_filter_vtbl_t const sixel_filter_dither_vtbl = {
 static SIXELSTATUS
 sixel_filter_dither_apply(sixel_filter_t *filter,
                           sixel_allocator_t *allocator,
-                          sixel_logger_t *logger)
+                          sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     sixel_filter_dither_state_t *state;
@@ -101,7 +101,7 @@ sixel_filter_dither_apply(sixel_filter_t *filter,
     }
 
     if (logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "filter",
                           "worker",
                           "dither-prepare",

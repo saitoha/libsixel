@@ -784,6 +784,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-timeline-logging-boundary',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-timeline-logging-boundary.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-kmedoids-suboption-env-sync',
     [meson.current_source_dir() / '_static/sh/staticcheck-kmedoids-suboption-env-sync.sh',
       meson.project_source_root()],

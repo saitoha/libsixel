@@ -50,7 +50,7 @@ typedef struct sixel_filter_gradient_state {
 static SIXELSTATUS
 sixel_filter_gradient_apply(sixel_filter_t *filter,
                             sixel_allocator_t *allocator,
-                            sixel_logger_t *logger);
+                            sixel_timeline_logger_t *logger);
 
 static void
 sixel_filter_gradient_dispose(sixel_filter_t *filter);
@@ -355,7 +355,7 @@ sixel_filter_gradient_build_sobel_map(
 static SIXELSTATUS
 sixel_filter_gradient_apply(sixel_filter_t *filter,
                             sixel_allocator_t *allocator,
-                            sixel_logger_t *logger)
+                            sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     sixel_filter_gradient_state_t *state;
@@ -461,7 +461,7 @@ sixel_filter_gradient_apply(sixel_filter_t *filter,
     }
 
     if (logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "filter",
                           "worker",
                           "gradient-map",

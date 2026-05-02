@@ -64,7 +64,7 @@
 
 #include "allocator.h"
 #include "compat_stub.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-heckbert.h"
@@ -118,7 +118,7 @@ struct histogram_control {
 };
 
 static int
-sixel_palette_heckbert_log_start(sixel_logger_t *logger,
+sixel_palette_heckbert_log_start(sixel_timeline_logger_t *logger,
                                  int *job_seq,
                                  char const *engine_name,
                                  char const *role,
@@ -134,7 +134,7 @@ sixel_palette_heckbert_log_start(sixel_logger_t *logger,
         job_id = *job_seq;
         *job_seq += 1;
     }
-    sixel_logger_logf(logger,
+    sixel_timeline_logger_logf(logger,
                       (role != NULL && role[0] != '\0') ? role : "palette",
                       "palette/build",
                       "start",
@@ -151,7 +151,7 @@ sixel_palette_heckbert_log_start(sixel_logger_t *logger,
 }
 
 static void
-sixel_palette_heckbert_log_finish(sixel_logger_t *logger,
+sixel_palette_heckbert_log_finish(sixel_timeline_logger_t *logger,
                                   int job_id,
                                   char const *engine_name,
                                   char const *role,
@@ -167,7 +167,7 @@ sixel_palette_heckbert_log_finish(sixel_logger_t *logger,
     if (detail != NULL && detail[0] != '\0') {
         suffix = detail;
     }
-    sixel_logger_logf(logger,
+    sixel_timeline_logger_logf(logger,
                       (role != NULL && role[0] != '\0') ? role : "palette",
                       "palette/build",
                       "finish",
@@ -2925,7 +2925,7 @@ mediancut(tupletable2 const colorfreqtable,
           int pixelformat,
           tupletable2 *colormapP,
           sixel_allocator_t *allocator,
-          sixel_logger_t *logger,
+          sixel_timeline_logger_t *logger,
           int *job_seq,
           char const *engine_name,
           double *iterate_ms,
@@ -3260,7 +3260,7 @@ typedef struct sixel_palette_heckbert_colormap_request {
     unsigned int pixel_stride;
     int pixelformat;
     sixel_allocator_t *allocator;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int *job_seq;
     char const *engine_name;
     double *iterate_ms;
@@ -3285,7 +3285,7 @@ sixel_palette_heckbert_colormap(
     unsigned int pixel_stride;
     int pixelformat;
     sixel_allocator_t *allocator;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int *job_seq;
     char const *engine_name;
     double *iterate_ms;
@@ -3419,7 +3419,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                              unsigned int length,
                              int pixelformat,
                              sixel_allocator_t *allocator,
-                             sixel_logger_t *logger,
+                             sixel_timeline_logger_t *logger,
                              int *job_seq,
                              char const *engine_name,
                              sixel_palette_telemetry_t *telemetry)
@@ -3690,7 +3690,7 @@ sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
                                      unsigned int length,
                                      int pixelformat,
                                      sixel_allocator_t *allocator,
-                                     sixel_logger_t *logger,
+                                     sixel_timeline_logger_t *logger,
                                      int *job_seq,
                                      char const *engine_name,
                                      sixel_palette_telemetry_t *telemetry)

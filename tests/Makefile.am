@@ -190,6 +190,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0010_FILTER_ENCODE \
     -DBUILD_TEST_0001_FRAME_FACTORY \
     -DBUILD_TEST_0001_CHUNK_FACTORY \
+    -DBUILD_TEST_0001_TIMELINE_LOGGER_FACTORY \
+    -DBUILD_TEST_0002_TIMELINE_PARALLEL_ENCODE_DECODE \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -260,6 +262,8 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0010_filter_encode.c \
     processing/frame/0001_frame_factory.c \
     processing/chunk/0001_chunk_factory.c \
+    processing/timeline/0001_timeline_logger_factory.c \
+    processing/timeline/0002_timeline_parallel_encode_decode.c \
     processing/lookup/0001_lookup_policy.c \
     processing/dither/0001_dither_policy.c \
     processing/filter/filter_test_common.h \
@@ -379,6 +383,7 @@ AM_LOG_FLAGS =
 	staticcheck-lookup-policy-no-backend-includes \
 	staticcheck-factory-classid-registry-sync \
 	staticcheck-serviceid-registry-sync \
+	staticcheck-timeline-logging-boundary \
 	staticcheck-test-runner-amalgamation-defines-sync \
 	staticcheck-gperf-generated-undefs \
 	staticcheck-makefile-recipes \
@@ -433,6 +438,7 @@ staticcheck-deprecated-diagnostic-guard \
 staticcheck-lookup-policy-no-backend-includes \
 staticcheck-factory-classid-registry-sync \
 staticcheck-serviceid-registry-sync \
+staticcheck-timeline-logging-boundary \
 staticcheck-dither-policy-no-backend-dispatch \
 staticcheck-test-runner-amalgamation-defines-sync \
 staticcheck-gperf-generated-undefs \
@@ -712,6 +718,16 @@ staticcheck-serviceid-registry-sync:
 		--trs-file staticcheck-serviceid-registry-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-serviceid-registry-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-timeline-logging-boundary:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-timeline-logging-boundary" \
+		--log-file staticcheck-timeline-logging-boundary.log \
+		--trs-file staticcheck-timeline-logging-boundary.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-timeline-logging-boundary.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-dither-policy-no-backend-dispatch:
@@ -1694,6 +1710,8 @@ EXTRA_DIST = $(HELPER_FILES) \
 		_static/sh/staticcheck-deprecated-diagnostic-guard.sh \
 		_static/sh/staticcheck-lookup-policy-no-backend-includes.sh \
 		_static/sh/staticcheck-factory-classid-registry-sync.sh \
+		_static/sh/staticcheck-serviceid-registry-sync.sh \
+		_static/sh/staticcheck-timeline-logging-boundary.sh \
 		_static/sh/staticcheck-dither-policy-no-backend-dispatch.sh \
 	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
 	_static/sh/staticcheck-gperf-generated-undefs.sh \

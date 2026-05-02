@@ -72,7 +72,7 @@
 #include "allocator.h"
 #include "status.h"
 #include "compat_stub.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "sixel_atomic.h"
 
 /*
@@ -97,7 +97,7 @@ typedef SIXELSTATUS (*sixel_palette_quant_dispatch_fn)(
     unsigned int length,
     int pixelformat,
     sixel_allocator_t *allocator,
-    sixel_logger_t *logger,
+    sixel_timeline_logger_t *logger,
     int *job_seq,
     char const *engine_name,
     sixel_palette_telemetry_t *telemetry);
@@ -112,7 +112,7 @@ sixel_palette_build_kmeans_dispatch(sixel_palette_t *palette,
                                     unsigned int length,
                                     int pixelformat,
                                     sixel_allocator_t *allocator,
-                                    sixel_logger_t *logger,
+                                    sixel_timeline_logger_t *logger,
                                     int *job_seq,
                                     char const *engine_name,
                                     sixel_palette_telemetry_t *telemetry)
@@ -138,7 +138,7 @@ sixel_palette_build_kmeans_float32_dispatch(
     unsigned int length,
     int pixelformat,
     sixel_allocator_t *allocator,
-    sixel_logger_t *logger,
+    sixel_timeline_logger_t *logger,
     int *job_seq,
     char const *engine_name,
     sixel_palette_telemetry_t *telemetry)
@@ -163,7 +163,7 @@ sixel_palette_build_kcenter_dispatch(sixel_palette_t *palette,
                                      unsigned int length,
                                      int pixelformat,
                                      sixel_allocator_t *allocator,
-                                     sixel_logger_t *logger,
+                                     sixel_timeline_logger_t *logger,
                                      int *job_seq,
                                      char const *engine_name,
                                      sixel_palette_telemetry_t *telemetry)
@@ -189,7 +189,7 @@ sixel_palette_build_kcenter_float32_dispatch(
     unsigned int length,
     int pixelformat,
     sixel_allocator_t *allocator,
-    sixel_logger_t *logger,
+    sixel_timeline_logger_t *logger,
     int *job_seq,
     char const *engine_name,
     sixel_palette_telemetry_t *telemetry)
@@ -214,7 +214,7 @@ sixel_palette_build_kmedoids_dispatch(sixel_palette_t *palette,
                                       unsigned int length,
                                       int pixelformat,
                                       sixel_allocator_t *allocator,
-                                      sixel_logger_t *logger,
+                                      sixel_timeline_logger_t *logger,
                                       int *job_seq,
                                       char const *engine_name,
                                       sixel_palette_telemetry_t *telemetry)
@@ -240,7 +240,7 @@ sixel_palette_build_kmedoids_float32_dispatch(
     unsigned int length,
     int pixelformat,
     sixel_allocator_t *allocator,
-    sixel_logger_t *logger,
+    sixel_timeline_logger_t *logger,
     int *job_seq,
     char const *engine_name,
     sixel_palette_telemetry_t *telemetry)
@@ -265,7 +265,7 @@ sixel_palette_build_heckbert_dispatch(sixel_palette_t *palette,
                                       unsigned int length,
                                       int pixelformat,
                                       sixel_allocator_t *allocator,
-                                      sixel_logger_t *logger,
+                                      sixel_timeline_logger_t *logger,
                                       int *job_seq,
                                       char const *engine_name,
                                       sixel_palette_telemetry_t *telemetry)
@@ -291,7 +291,7 @@ sixel_palette_build_heckbert_float32_dispatch(
     unsigned int length,
     int pixelformat,
     sixel_allocator_t *allocator,
-    sixel_logger_t *logger,
+    sixel_timeline_logger_t *logger,
     int *job_seq,
     char const *engine_name,
     sixel_palette_telemetry_t *telemetry)
@@ -495,7 +495,7 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
                                sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
-    sixel_logger_t logger;
+    sixel_timeline_logger_t *logger;
     sixel_palette_telemetry_t telemetry;
     /*
      * The job id increments per build attempt so timeline rows can split
@@ -506,18 +506,17 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
     char span_message[192];
 
     status = SIXEL_LOGIC_ERROR;
-    sixel_logger_init(&logger);
-    (void)sixel_logger_prepare_env(&logger);
-    job_id = palette_build_job_seq++;
-    memset(&telemetry, 0, sizeof(telemetry));
-    span_message[0] = '\0';
-
     if (engine == NULL || engine->build_fn == NULL) {
         return status;
     }
 
+    logger = NULL;
+    (void)sixel_timeline_logger_prepare_env(allocator, &logger);
+    job_id = palette_build_job_seq++;
+    memset(&telemetry, 0, sizeof(telemetry));
+    span_message[0] = '\0';
 
-    sixel_logger_logf(&logger,
+    sixel_timeline_logger_logf(logger,
                       "palette",
                       "palette/build",
                       "start",
@@ -528,7 +527,7 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
                               length,
                               pixelformat,
                               allocator,
-                              &logger,
+                              logger,
                               &palette_build_job_seq,
                               engine->name,
                               &telemetry);
@@ -538,11 +537,13 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
                                        engine,
                                        &telemetry);
 
-    sixel_logger_logf(&logger,
+    sixel_timeline_logger_logf(logger,
                       "palette",
                       "palette/build",
                       "finish",
                       job_id);
+
+    sixel_timeline_logger_unref(logger);
 
     return status;
 }

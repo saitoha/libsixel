@@ -59,7 +59,7 @@
 #include "allocator.h"
 #include "compat_stub.h"
 #include "lookup-fhedt-8bit.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "threading.h"
 #include "threadpool.h"
 #include "sixel_atomic.h"
@@ -373,7 +373,7 @@ typedef struct sixel_lookup_fhedt_timeline_8bit {
     int initialized;
     int log_lines;
     int line_stride;
-    sixel_logger_t logger;
+    sixel_timeline_logger_t *logger;
 } sixel_lookup_fhedt_timeline_8bit_t;
 
 typedef void (*sixel_lookup_fhedt_edt1d_fn_8bit)(double *, int *, int, double);
@@ -531,7 +531,8 @@ sixel_lookup_fhedt_timeline_lines_enabled_8bit(
     if (timeline == NULL || !timeline->initialized) {
         return 0;
     }
-    if (!timeline->logger.active || !timeline->log_lines) {
+    if (!sixel_timeline_logger_is_enabled(timeline->logger) ||
+            !timeline->log_lines) {
         return 0;
     }
     return 1;
@@ -552,8 +553,8 @@ sixel_lookup_fhedt_timeline_open_8bit(
     if (timeline == NULL || timeline->initialized) {
         return;
     }
-    sixel_logger_init(&timeline->logger);
-    (void)sixel_logger_prepare_env(&timeline->logger);
+    timeline->logger = NULL;
+    (void)sixel_timeline_logger_prepare_env(NULL, &timeline->logger);
     timeline->log_lines = 0;
     timeline->line_stride = 1;
     line_env = sixel_compat_getenv("SIXEL_LOG_LINES");
@@ -579,7 +580,8 @@ sixel_lookup_fhedt_timeline_close_8bit(
     if (timeline == NULL || !timeline->initialized) {
         return;
     }
-    sixel_logger_close(&timeline->logger);
+    sixel_timeline_logger_unref(timeline->logger);
+    timeline->logger = NULL;
 #else
     (void)timeline;
 #endif  /* SIXEL_ENABLE_THREADS */
@@ -598,7 +600,7 @@ sixel_lookup_fhedt_timeline_log_8bit(
     int skip_line;
 
     if (timeline == NULL || !timeline->initialized
-            || !timeline->logger.active) {
+            || !sixel_timeline_logger_is_enabled(timeline->logger)) {
         return;
     }
 
@@ -619,7 +621,7 @@ sixel_lookup_fhedt_timeline_log_8bit(
      * The FHEDT builder does not use row ranges; we pass zero to keep the
      * JSON layout stable for tools/timeline.py consumers.
      */
-    sixel_logger_logf(&timeline->logger,
+    sixel_timeline_logger_logf(timeline->logger,
                       "fhedt",
                       worker,
                       event,
@@ -679,7 +681,7 @@ sixel_lookup_fhedt_prefetch_line_8bit(double *distances,
 #endif
 #if SIXEL_ENABLE_THREADS
     if (timeline != NULL && timeline->initialized
-            && timeline->logger.active) {
+            && sixel_timeline_logger_is_enabled(timeline->logger)) {
         skip_line = 0;
         /*
          * Skip logging unless line-level events are explicitly enabled.

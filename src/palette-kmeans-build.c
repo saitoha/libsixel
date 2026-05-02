@@ -47,7 +47,7 @@
 
 #include "allocator.h"
 #include "compat_stub.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-kmeans.h"
@@ -1601,7 +1601,7 @@ typedef struct sixel_palette_kmeans_build_request {
     sixel_allocator_t *allocator;
     int pixelformat;
     int treat_input_as_float32;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int *job_seq;
     char const *engine_name;
     sixel_palette_telemetry_t *telemetry;
@@ -1626,7 +1626,7 @@ build_palette_kmeans(sixel_palette_kmeans_build_request_t const *request)
     sixel_allocator_t *allocator;
     int pixelformat;
     int treat_input_as_float32;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int *job_seq;
     char const *engine_name;
     sixel_palette_telemetry_t *telemetry;
@@ -3680,7 +3680,7 @@ typedef struct sixel_palette_kmeans_internal_request {
     unsigned int length;
     int pixelformat;
     sixel_allocator_t *allocator;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int *job_seq;
     char const *engine_name;
     int treat_input_as_float32;
@@ -3698,7 +3698,7 @@ sixel_palette_build_kmeans_internal(
     unsigned int length;
     int pixelformat;
     sixel_allocator_t *allocator;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int *job_seq;
     char const *engine_name;
     int treat_input_as_float32;
@@ -3860,7 +3860,7 @@ sixel_palette_build_kmeans(sixel_palette_t *palette,
                            unsigned int length,
                            int pixelformat,
                            sixel_allocator_t *allocator,
-                           sixel_logger_t *logger,
+                           sixel_timeline_logger_t *logger,
                            int *job_seq,
                            char const *engine_name,
                            sixel_palette_telemetry_t *telemetry)
@@ -3886,7 +3886,7 @@ sixel_palette_build_kmeans_float32(sixel_palette_t *palette,
                                    unsigned int length,
                                    int pixelformat,
                                    sixel_allocator_t *allocator,
-                                   sixel_logger_t *logger,
+                                   sixel_timeline_logger_t *logger,
                                    int *job_seq,
                                    char const *engine_name,
                                    sixel_palette_telemetry_t *telemetry)

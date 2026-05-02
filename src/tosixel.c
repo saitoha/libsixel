@@ -65,7 +65,7 @@
 #include "output.h"
 #include "dither.h"
 #include "pixelformat.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "threading.h"
 #include "tosixel-highcolor.h"
 #if SIXEL_ENABLE_THREADS
@@ -165,7 +165,7 @@ typedef struct sixel_parallel_context {
     int worker_capacity;
     int worker_registered;
     threadpool_t *pool;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     sixel_mutex_t mutex;
     int mutex_ready;
     sixel_cond_t cond_band_ready;
@@ -181,7 +181,7 @@ typedef struct sixel_parallel_context {
 
 typedef struct sixel_parallel_row_notifier {
     sixel_parallel_context_t *context;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int band_height;
     int image_height;
 } sixel_parallel_row_notifier_t;
@@ -248,14 +248,15 @@ static void sixel_advance(sixel_output_t *output, int nwrite);
 
 #if SIXEL_ENABLE_THREADS
 static void
-sixel_logger_prepare(sixel_logger_t *logger)
+sixel_timeline_logger_prepare_default(sixel_allocator_t *allocator,
+                                      sixel_timeline_logger_t **logger)
 {
     if (logger == NULL) {
         return;
     }
 
-    sixel_logger_init(logger);
-    (void)sixel_logger_prepare_env(logger);
+    *logger = NULL;
+    (void)sixel_timeline_logger_prepare_env(allocator, logger);
 }
 #endif
 
@@ -418,7 +419,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                              int worker_capacity,
                              int queue_capacity,
                              int pin_threads,
-                             sixel_logger_t *logger);
+                             sixel_timeline_logger_t *logger);
 static SIXELSTATUS sixel_parallel_context_grow(sixel_parallel_context_t *ctx,
                                               int target_threads);
 static void sixel_parallel_submit_band(sixel_parallel_context_t *ctx,
@@ -703,7 +704,7 @@ sixel_parallel_context_grow(sixel_parallel_context_t *ctx, int target_threads)
     ctx->thread_count += delta;
 
     if (ctx->logger != NULL) {
-        sixel_logger_logf(ctx->logger,
+        sixel_timeline_logger_logf(ctx->logger,
                           "controller",
                           "encode",
                           "grow_workers",
@@ -784,7 +785,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                              int worker_capacity,
                              int queue_capacity,
                              int pin_threads,
-                             sixel_logger_t *logger)
+                             sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     int nbands;
@@ -832,7 +833,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     ctx->worker_capacity = worker_capacity;
 
     if (logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "encode",
                           "context_begin",
@@ -956,7 +957,7 @@ sixel_parallel_submit_band(sixel_parallel_context_t *ctx, int band_index)
 
     sixel_fence_release();
     if (ctx->logger != NULL) {
-        sixel_logger_logf(ctx->logger,
+        sixel_timeline_logger_logf(ctx->logger,
                           "controller",
                           "encode",
                           "dispatch",
@@ -999,7 +1000,7 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
 {
     sixel_parallel_row_notifier_t *notifier;
     sixel_parallel_context_t *ctx;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int band_height;
     int band_index;
 
@@ -1033,7 +1034,7 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
     }
 
     if (logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "encode",
                           "row_gate",
@@ -1052,7 +1053,7 @@ sixel_parallel_flush_band(sixel_parallel_context_t *ctx, int band_index)
 
     band = &ctx->bands[band_index];
     if (ctx->logger != NULL) {
-        sixel_logger_logf(ctx->logger,
+        sixel_timeline_logger_logf(ctx->logger,
                           "worker",
                           "encode",
                           "writer_flush",
@@ -1156,7 +1157,7 @@ sixel_parallel_worker_main(tp_job_t job, void *userdata, void *workspace)
     }
 
     if (ctx->logger != NULL) {
-        sixel_logger_logf(ctx->logger,
+        sixel_timeline_logger_logf(ctx->logger,
                           "worker",
                           "encode",
                           "worker_start",
@@ -1231,7 +1232,7 @@ cleanup:
         sixel_mutex_unlock(&ctx->mutex);
     }
     if (ctx->logger != NULL) {
-        sixel_logger_logf(ctx->logger,
+        sixel_timeline_logger_logf(ctx->logger,
                           "worker",
                           "encode",
                           "worker_done",
@@ -1268,7 +1269,7 @@ sixel_parallel_writer_stop(sixel_parallel_context_t *ctx, int force_abort)
     ctx->writer_started = 0;
     ctx->writer_should_stop = 0;
     if (ctx->logger != NULL) {
-        sixel_logger_logf(ctx->logger,
+        sixel_timeline_logger_logf(ctx->logger,
                           "writer",
                           "encode",
                           "writer_stop",
@@ -1290,7 +1291,7 @@ sixel_parallel_writer_main(void *arg)
     }
 
     if (ctx->logger != NULL) {
-        sixel_logger_logf(ctx->logger,
+        sixel_timeline_logger_logf(ctx->logger,
                                    "writer",
                                    "encode",
                                    "writer_start",
@@ -1332,7 +1333,7 @@ sixel_parallel_writer_main(void *arg)
         sixel_fence_acquire();
         status = band->status;
         if (ctx->logger != NULL) {
-            sixel_logger_logf(ctx->logger,
+            sixel_timeline_logger_logf(ctx->logger,
                               "writer",
                               "encode",
                               "writer_dequeue",
@@ -1368,13 +1369,13 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
     int threads;
     int i;
     int queue_depth;
-    sixel_logger_t logger;
+    sixel_timeline_logger_t *logger;
 
     sixel_parallel_context_init(&ctx);
-    sixel_logger_prepare(&logger);
+    sixel_timeline_logger_prepare_default(allocator, &logger);
     nbands = (height + 5) / 6;
     if (nbands <= 0) {
-        sixel_logger_close(&logger);
+        sixel_timeline_logger_unref(logger);
         return SIXEL_OK;
     }
 
@@ -1407,10 +1408,10 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
                                           threads,
                                           queue_depth,
                                           pin_threads,
-                                          &logger);
+                                          logger);
     if (SIXEL_FAILED(status)) {
         sixel_parallel_context_cleanup(&ctx);
-        sixel_logger_close(&logger);
+        sixel_timeline_logger_unref(logger);
         return status;
     }
 
@@ -1421,12 +1422,12 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
     status = sixel_parallel_context_wait(&ctx, 0);
     if (SIXEL_FAILED(status)) {
         sixel_parallel_context_cleanup(&ctx);
-        sixel_logger_close(&logger);
+        sixel_timeline_logger_unref(logger);
         return status;
     }
 
     sixel_parallel_context_cleanup(&ctx);
-    sixel_logger_close(&logger);
+    sixel_timeline_logger_unref(logger);
     return SIXEL_OK;
 }
 #endif
@@ -1463,8 +1464,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     int dither_threads_budget;
     int worker_capacity;
     int boost_target;
-    sixel_logger_t logger_storage;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int owns_logger;
     sixel_parallel_row_notifier_t notifier;
 
@@ -1495,12 +1495,10 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     sixel_parallel_context_init(&ctx);
     logger = dither->pipeline_logger;
     owns_logger = 0;
-    if (logger == NULL || !logger->active) {
-        sixel_logger_prepare(&logger_storage);
-        if (logger_storage.active) {
-            logger = &logger_storage;
-            owns_logger = 1;
-        }
+    if (!sixel_timeline_logger_is_enabled(logger)) {
+        logger = NULL;
+        sixel_timeline_logger_prepare_default(allocator, &logger);
+        owns_logger = logger != NULL ? 1 : 0;
     }
     notifier.context = &ctx;
     notifier.logger = logger;
@@ -1544,14 +1542,14 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     dither->pipeline_image_width = width;
     dither->pipeline_image_height = height;
 
-    if (logger != NULL && logger->active) {
+    if (sixel_timeline_logger_is_enabled(logger)) {
         /*
          * Record the thread split and band geometry before spawning workers.
          * This clarifies why only a subset of hardware threads might appear
          * in the log when the encoder side is clamped to keep the pipeline
          * draining.
          */
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "pipeline",
                           "configure",
@@ -1621,7 +1619,7 @@ cleanup:
     }
     sixel_parallel_context_cleanup(&ctx);
     if (owns_logger) {
-        sixel_logger_close(&logger_storage);
+        sixel_timeline_logger_unref(logger);
     }
     if (indexes != NULL) {
         sixel_allocator_free(allocator, indexes);
@@ -3109,7 +3107,7 @@ sixel_encode_body(
     unsigned char       /* in */ *palstate,
     sixel_allocator_t   /* in */ *allocator,
     int                 /* in */ pin_threads,
-    sixel_logger_t      /* in */ *logger)
+    sixel_timeline_logger_t      /* in */ *logger)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int band_start;
@@ -3139,7 +3137,7 @@ sixel_encode_body(
     }
     output->active_palette = (-1);
 
-    logging_active = logger != NULL && logger->active;
+    logging_active = sixel_timeline_logger_is_enabled(logger);
     job_index = 0;
 
     status = sixel_encode_emit_palette(bodyonly,
@@ -3179,7 +3177,7 @@ sixel_encode_body(
 #endif
 
     if (logging_active) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "encode",
                           "configure",
@@ -3206,7 +3204,7 @@ sixel_encode_body(
         band.active_color_count = 0;
 
         if (logging_active) {
-            sixel_logger_logf(logger,
+            sixel_timeline_logger_logf(logger,
                               "worker",
                               "encode",
                               "start",
@@ -3256,7 +3254,7 @@ sixel_encode_body(
         sixel_band_clear_map(&work);
 
         if (logging_active) {
-            sixel_logger_logf(logger,
+            sixel_timeline_logger_logf(logger,
                               "worker",
                               "encode",
                               "finish",
@@ -3466,10 +3464,10 @@ sixel_encode_dither(
     char const *band_env_text;
     int ormode_enabled;
 #if SIXEL_ENABLE_THREADS
-    sixel_logger_t serial_logger;
+    sixel_timeline_logger_t *serial_logger;
     int logger_owned = 0;
 #endif  /* SIXEL_ENABLE_THREADS */
-    sixel_logger_t *logger = NULL;
+    sixel_timeline_logger_t *logger = NULL;
 
     if (output == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -3489,8 +3487,7 @@ sixel_encode_dither(
 
     pipeline_active = 0;
 #if SIXEL_ENABLE_THREADS
-    sixel_logger_init(&serial_logger);
-#endif
+    #endif
     dither_parallel.enabled = 0;
     dither_parallel.band_height = 0;
     dither_parallel.overlap = 0;
@@ -3613,18 +3610,22 @@ sixel_encode_dither(
     }
 
 #if SIXEL_ENABLE_THREADS
+    serial_logger = NULL;
     if (!pipeline_active) {
         logger = dither->pipeline_logger;
-        if (logger == NULL || !logger->active) {
-            sixel_logger_prepare(&serial_logger);
-            if (serial_logger.active) {
+        if (!sixel_timeline_logger_is_enabled(logger)) {
+            sixel_timeline_logger_prepare_default(dither->allocator,
+                                                  &serial_logger);
+            if (serial_logger != NULL) {
                 logger_owned = 1;
-                dither->pipeline_logger = &serial_logger;
-                logger = &serial_logger;
+                dither->pipeline_logger = serial_logger;
+                logger = serial_logger;
+            } else {
+                logger = NULL;
             }
         }
-        if (logger != NULL && logger->active) {
-            sixel_logger_logf(logger,
+        if (sixel_timeline_logger_is_enabled(logger)) {
+            sixel_timeline_logger_logf(logger,
                               "controller",
                               "pipeline",
                               "configure",
@@ -3774,7 +3775,7 @@ sixel_encode_dither(
                                    NULL,
                                    dither->allocator,
                                    dither->pipeline_pin_threads,
-                                   logger != NULL && logger->active ?
+                                   sixel_timeline_logger_is_enabled(logger) ?
                                        logger :
                                        NULL);
     }
@@ -3792,7 +3793,7 @@ end:
 #if SIXEL_ENABLE_THREADS
     if (logger_owned) {
         dither->pipeline_logger = NULL;
-        sixel_logger_close(&serial_logger);
+        sixel_timeline_logger_unref(serial_logger);
     }
 #endif
     if (palette_obj != NULL) {

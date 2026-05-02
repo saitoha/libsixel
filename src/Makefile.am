@@ -175,8 +175,10 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-interframe-stbn-source-mask-table.h \
                 $(srcdir)/dither-interframe-stbn-source-pmj.c \
                 $(srcdir)/dither-interframe-stbn-source-pmj.h \
-                $(srcdir)/logger.c \
-                $(srcdir)/logger.h \
+                $(srcdir)/timeline-logger.c \
+                $(srcdir)/timeline-logger.h \
+                $(srcdir)/timeline-writer.c \
+                $(srcdir)/timeline-writer.h \
                 $(srcdir)/colorspace.c \
                 $(srcdir)/colorspace.h \
                 $(srcdir)/frame.c \
@@ -499,10 +501,12 @@ FACTORY_CLASSID_INPUTS = \
     $(LOADER_COMPONENT_CLASSID_INPUTS) \
     $(srcdir)/chunk.h \
     $(srcdir)/frame.h \
-    $(srcdir)/loader-manager.h
+    $(srcdir)/loader-manager.h \
+    $(srcdir)/timeline-logger.h
 
 SERVICEID_CLASSID_INPUTS = \
-    $(srcdir)/factory.h
+    $(srcdir)/factory.h \
+    $(srcdir)/timeline-writer.h
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 gen-rgblookup: $(srcdir)/rgblookup.gperf

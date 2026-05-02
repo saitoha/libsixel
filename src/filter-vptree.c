@@ -53,7 +53,7 @@ typedef struct sixel_filter_vptree_state {
 static SIXELSTATUS
 sixel_filter_vptree_apply(sixel_filter_t *filter,
       sixel_allocator_t *allocator,
-      sixel_logger_t *logger);
+      sixel_timeline_logger_t *logger);
 
 static void
 sixel_filter_vptree_dispose(sixel_filter_t *filter);
@@ -71,7 +71,7 @@ static sixel_filter_vtbl_t const sixel_filter_vptree_vtbl = {
 static SIXELSTATUS
 sixel_filter_vptree_apply(sixel_filter_t *filter,
                           sixel_allocator_t *allocator,
-                          sixel_logger_t *logger)
+                          sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     sixel_filter_vptree_state_t *state;

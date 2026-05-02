@@ -59,7 +59,7 @@
 #include "frame-factory.h"
 #include "loader-common.h"
 #include "loader-libwebp.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "compat_stub.h"
 
 typedef struct sixel_loader_libwebp_component {

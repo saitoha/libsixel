@@ -55,7 +55,7 @@
 
 #include "allocator.h"
 #include "compat_stub.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-kmedoids.h"
@@ -794,7 +794,7 @@ SIXEL_KMD_FN(
     sixel_allocator_t *allocator);
 
 static int
-sixel_palette_kmedoids_log_start(sixel_logger_t *logger,
+sixel_palette_kmedoids_log_start(sixel_timeline_logger_t *logger,
                                  int *job_seq,
                                  char const *engine_name,
                                  char const *role,
@@ -810,7 +810,7 @@ sixel_palette_kmedoids_log_start(sixel_logger_t *logger,
         job_id = *job_seq;
         *job_seq += 1;
     }
-    sixel_logger_logf(logger,
+    sixel_timeline_logger_logf(logger,
                       (role != NULL && role[0] != '\0') ? role : "palette",
                       "palette/build",
                       "start",
@@ -827,7 +827,7 @@ sixel_palette_kmedoids_log_start(sixel_logger_t *logger,
 }
 
 static void
-sixel_palette_kmedoids_log_finish(sixel_logger_t *logger,
+sixel_palette_kmedoids_log_finish(sixel_timeline_logger_t *logger,
                                   int job_id,
                                   char const *engine_name,
                                   char const *role,
@@ -843,7 +843,7 @@ sixel_palette_kmedoids_log_finish(sixel_logger_t *logger,
     if (detail != NULL && detail[0] != '\0') {
         suffix = detail;
     }
-    sixel_logger_logf(logger,
+    sixel_timeline_logger_logf(logger,
                       (role != NULL && role[0] != '\0') ? role : "palette",
                       "palette/build",
                       "finish",
@@ -11483,7 +11483,7 @@ build_palette_kmedoids(unsigned char **result,
                        sixel_allocator_t *allocator,
                        int pixelformat,
                        int treat_input_as_float32,
-                       sixel_logger_t *logger,
+                       sixel_timeline_logger_t *logger,
                        int *job_seq,
                        char const *engine_name,
                        sixel_palette_telemetry_t *telemetry)
@@ -12692,7 +12692,7 @@ sixel_palette_build_kmedoids_internal(sixel_palette_t *palette,
                                       unsigned int length,
                                       int pixelformat,
                                       sixel_allocator_t *allocator,
-                                      sixel_logger_t *logger,
+                                      sixel_timeline_logger_t *logger,
                                       int *job_seq,
                                       char const *engine_name,
                                       int treat_input_as_float32,
@@ -12835,7 +12835,7 @@ sixel_palette_build_kmedoids(sixel_palette_t *palette,
                              unsigned int length,
                              int pixelformat,
                              sixel_allocator_t *allocator,
-                             sixel_logger_t *logger,
+                             sixel_timeline_logger_t *logger,
                              int *job_seq,
                              char const *engine_name,
                              sixel_palette_telemetry_t *telemetry)
@@ -12858,7 +12858,7 @@ sixel_palette_build_kmedoids_float32(sixel_palette_t *palette,
                                      unsigned int length,
                                      int pixelformat,
                                      sixel_allocator_t *allocator,
-                                     sixel_logger_t *logger,
+                                     sixel_timeline_logger_t *logger,
                                      int *job_seq,
                                      char const *engine_name,
                                      sixel_palette_telemetry_t *telemetry)

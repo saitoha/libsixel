@@ -28,7 +28,7 @@
 #include <6cells.h>
 
 #include "chunk.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "loader.h"
 #include "options.h"
 

@@ -47,7 +47,7 @@ sixel_filter_final_merge_init(
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_filter_final_merge_apply(
     const sixel_filter_final_merge_config_t *config,
-    sixel_logger_t *logger);
+    sixel_timeline_logger_t *logger);
 
 #endif /* LIBSIXEL_FILTER_FINAL_MERGE_H */
 

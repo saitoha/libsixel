@@ -41,7 +41,7 @@ typedef struct sixel_filter_colors_config {
 SIXELSTATUS sixel_filter_colors_convert(
     const sixel_filter_colors_config_t *config,
     sixel_frame_t *frame,
-    sixel_logger_t *logger);
+    sixel_timeline_logger_t *logger);
 
 SIXELSTATUS sixel_filter_colors_init(
     sixel_filter_t *filter,

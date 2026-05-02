@@ -28,7 +28,7 @@
 #include <sixel.h>
 
 #include "filter.h"
-#include "logger.h"
+#include "timeline-logger.h"
 
 /*
  * Clip filter configuration. The planner passes the region to preserve and the
@@ -49,7 +49,7 @@ sixel_filter_clip_init(sixel_filter_t *filter,
 SIXELSTATUS
 sixel_filter_clip_frame(const sixel_filter_clip_config_t *config,
                         sixel_frame_t *frame,
-                        sixel_logger_t *logger);
+                        sixel_timeline_logger_t *logger);
 
 #endif /* LIBSIXEL_FILTER_CLIP_H */
 

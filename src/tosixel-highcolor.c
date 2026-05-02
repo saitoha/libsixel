@@ -35,7 +35,7 @@
 #include <sixel.h>
 
 #include "dither.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "output.h"
 #include "pixelformat.h"
 #include "tosixel-highcolor.h"
@@ -67,7 +67,7 @@ SIXELSTATUS sixel_encode_body(
     unsigned char *palstate,
     sixel_allocator_t *allocator,
     int pin_threads,
-    sixel_logger_t *logger);
+    sixel_timeline_logger_t *logger);
 SIXELSTATUS sixel_encode_footer(sixel_output_t *output);
 
 /*

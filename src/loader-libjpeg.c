@@ -62,7 +62,7 @@
 #include "frame-private.h"
 #include "frame-factory.h"
 #include "loader-libjpeg.h"
-#include "logger.h"
+#include "timeline-logger.h"
 
 #if defined(HAVE_JPEG12_API) && HAVE_JPEG12_API
 # define SIXEL_LIBJPEG_HAS_JPEG12 1

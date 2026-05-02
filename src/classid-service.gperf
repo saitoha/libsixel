@@ -8,6 +8,7 @@
 #include <string.h>
 #endif
 #include "factory.h"
+#include "timeline-writer.h"
 
 typedef SIXELSTATUS (*sixel_components_service_get_fn)(
     void **service);
@@ -17,6 +18,11 @@ typedef SIXELSTATUS (*sixel_components_service_get_fn)(
 #else
 # define SIXEL_COMPONENTS_SERVICEID_GET_1 0
 #endif
+#if 1
+# define SIXEL_COMPONENTS_SERVICEID_GET_2 sixel_timeline_writer_get_default
+#else
+# define SIXEL_COMPONENTS_SERVICEID_GET_2 0
+#endif
 %}
 struct sixel_components_serviceid_entry {
     char const *name;
@@ -24,4 +30,5 @@ struct sixel_components_serviceid_entry {
 };
 %%
 services/factory, SIXEL_COMPONENTS_SERVICEID_GET_1
+services/timeline-writer, SIXEL_COMPONENTS_SERVICEID_GET_2
 %%

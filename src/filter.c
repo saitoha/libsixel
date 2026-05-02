@@ -36,12 +36,12 @@ static void sixel_filter_emit_progress(sixel_filter_t *filter,
 static SIXELSTATUS
 sixel_filter_invoke_prepare_and_validate(sixel_filter_t *filter,
                                          sixel_allocator_t *allocator,
-                                         sixel_logger_t *logger);
+                                         sixel_timeline_logger_t *logger);
 
 static SIXELSTATUS
 sixel_filter_invoke_prepare_and_validate(sixel_filter_t *filter,
                                          sixel_allocator_t *allocator,
-                                         sixel_logger_t *logger)
+                                         sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
 
@@ -239,7 +239,7 @@ sixel_filter_update_progress(sixel_filter_t *filter, int completed_units)
 SIXELAPI SIXELSTATUS
 sixel_filter_run(sixel_filter_t *filter,
                  sixel_allocator_t *allocator,
-                 sixel_logger_t *logger)
+                 sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
 

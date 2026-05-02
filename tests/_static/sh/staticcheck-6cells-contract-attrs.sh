@@ -107,6 +107,8 @@ fi
 if awk '
 BEGIN {
     required["factory"] = 1
+    required["timeline_writer"] = 1
+    required["timeline_logger"] = 1
     required["lookup_policy"] = 1
     required["dither_policy"] = 1
     required["chunk"] = 1
@@ -115,6 +117,8 @@ BEGIN {
     required["frame"] = 1
     forbid["chunk"] = "read_cursor decode_state"
     forbid["frame"] = "lookup_policy dither_policy decode_state"
+    forbid["timeline_writer"] = "frame_context job_context"
+    forbid["timeline_logger"] = "output_file global_writer"
 }
 function trim(text) {
     gsub(/^[ \t]+/, "", text)
@@ -181,6 +185,8 @@ fi
 if awk '
 BEGIN {
     required["factory"] = 1
+    required["timeline_writer"] = 1
+    required["timeline_logger"] = 1
     required["lookup_policy"] = 1
     required["dither_policy"] = 1
     required["chunk"] = 1
@@ -360,6 +366,8 @@ if awk '
 BEGIN {
     classid["chunk_component"] = "image/chunk"
     iface["chunk_component"] = "chunk"
+    classid["timeline_logger_component"] = "diagnostics/timeline-logger"
+    iface["timeline_logger_component"] = "timeline_logger"
     classid["frame_component"] = "image/frame"
     iface["frame_component"] = "frame"
     classid["loader_manager_component"] = "loader/manager"
@@ -439,6 +447,10 @@ BEGIN {
     required["decode_state"] = 1
     required["lookup_policy"] = 1
     required["dither_policy"] = 1
+    required["frame_context"] = 1
+    required["job_context"] = 1
+    required["output_file"] = 1
+    required["global_writer"] = 1
 }
 /IDL forbidden state:/ {
     in_forbid = 1

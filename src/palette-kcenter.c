@@ -52,7 +52,7 @@
 
 #include "allocator.h"
 #include "compat_stub.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-kcenter.h"
@@ -463,7 +463,7 @@ typedef struct sixel_kcenter_build_ctx {
     sixel_allocator_t *allocator;
     int pixelformat;
     int treat_input_as_float32;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int *job_seq;
     char const *engine_name;
     sixel_palette_telemetry_t *telemetry;
@@ -475,7 +475,7 @@ typedef struct sixel_kcenter_internal_ctx {
     unsigned int length;
     int pixelformat;
     sixel_allocator_t *allocator;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int *job_seq;
     char const *engine_name;
     int treat_input_as_float32;
@@ -483,7 +483,7 @@ typedef struct sixel_kcenter_internal_ctx {
 } sixel_kcenter_internal_ctx_t;
 
 static int
-sixel_palette_kcenter_log_start(sixel_logger_t *logger,
+sixel_palette_kcenter_log_start(sixel_timeline_logger_t *logger,
                                 int *job_seq,
                                 char const *engine_name,
                                 char const *role,
@@ -499,7 +499,7 @@ sixel_palette_kcenter_log_start(sixel_logger_t *logger,
         job_id = *job_seq;
         *job_seq += 1;
     }
-    sixel_logger_logf(logger,
+    sixel_timeline_logger_logf(logger,
                       (role != NULL && role[0] != '\0') ? role : "palette",
                       "palette/build",
                       "start",
@@ -516,7 +516,7 @@ sixel_palette_kcenter_log_start(sixel_logger_t *logger,
 }
 
 static void
-sixel_palette_kcenter_log_finish(sixel_logger_t *logger,
+sixel_palette_kcenter_log_finish(sixel_timeline_logger_t *logger,
                                  int job_id,
                                  char const *engine_name,
                                  char const *role,
@@ -532,7 +532,7 @@ sixel_palette_kcenter_log_finish(sixel_logger_t *logger,
     if (detail != NULL && detail[0] != '\0') {
         suffix = detail;
     }
-    sixel_logger_logf(logger,
+    sixel_timeline_logger_logf(logger,
                       (role != NULL && role[0] != '\0') ? role : "palette",
                       "palette/build",
                       "finish",
@@ -6068,7 +6068,7 @@ typedef struct sixel_kcenter_build_runtime {
     sixel_allocator_t *allocator;
     int pixelformat;
     int treat_input_as_float32;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int *job_seq;
     char const *engine_name;
     sixel_palette_telemetry_t *telemetry;
@@ -7353,7 +7353,7 @@ sixel_palette_build_kcenter_internal(sixel_kcenter_internal_ctx_t *ctx)
     unsigned int length;
     int pixelformat;
     sixel_allocator_t *allocator;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int *job_seq;
     char const *engine_name;
     int treat_input_as_float32;
@@ -7526,7 +7526,7 @@ sixel_palette_build_kcenter(sixel_palette_t *palette,
                             unsigned int length,
                             int pixelformat,
                             sixel_allocator_t *allocator,
-                            sixel_logger_t *logger,
+                            sixel_timeline_logger_t *logger,
                             int *job_seq,
                             char const *engine_name,
                             sixel_palette_telemetry_t *telemetry)
@@ -7553,7 +7553,7 @@ sixel_palette_build_kcenter_float32(sixel_palette_t *palette,
                                     unsigned int length,
                                     int pixelformat,
                                     sixel_allocator_t *allocator,
-                                    sixel_logger_t *logger,
+                                    sixel_timeline_logger_t *logger,
                                     int *job_seq,
                                     char const *engine_name,
                                     sixel_palette_telemetry_t *telemetry)

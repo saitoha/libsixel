@@ -53,7 +53,7 @@
 #include <sixel.h>
 
 #include "cpu.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "compat_stub.h"
 #include "threading.h"
 
@@ -907,7 +907,7 @@ scale_with_resampling_serial(
     resample_fn_t const f_resample,
     double const n,
     unsigned char *tmp,
-    sixel_logger_t *logger)
+    sixel_timeline_logger_t *logger)
 {
     int y;
     int h;
@@ -915,7 +915,7 @@ scale_with_resampling_serial(
     int logger_ready;
 
     simd_level = sixel_scale_simd_level();
-    logger_ready = logger != NULL && logger->active;
+    logger_ready = sixel_timeline_logger_is_enabled(logger);
 #if !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
     !defined(SIXEL_USE_NEON)
     /*
@@ -927,12 +927,12 @@ scale_with_resampling_serial(
 #endif
 
     if (logger_ready) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "scale",
                           "start",
                           -1);
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "scale",
                           "pass_start",
@@ -952,12 +952,12 @@ scale_with_resampling_serial(
     }
 
     if (logger_ready) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "scale",
                           "pass_finish",
                           -1);
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "scale",
                           "pass_start",
@@ -978,12 +978,12 @@ scale_with_resampling_serial(
     }
 
     if (logger_ready) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "scale",
                           "pass_finish",
                           -1);
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "scale",
                           "finish",
@@ -1011,7 +1011,7 @@ typedef struct scale_parallel_context {
     scale_parallel_pass_t pass;
     int simd_level;
     int band_span;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
 } scale_parallel_context_t;
 
 /*
@@ -1023,7 +1023,8 @@ scale_parallel_should_log(scale_parallel_context_t const *ctx, int index)
 {
     int span;
 
-    if (ctx == NULL || ctx->logger == NULL || !ctx->logger->active) {
+    if (ctx == NULL ||
+            !sixel_timeline_logger_is_enabled(ctx->logger)) {
         return 0;
     }
 
@@ -1173,7 +1174,7 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
 
     if (ctx->pass == SCALE_PASS_HORIZONTAL) {
         if (scale_parallel_should_log(ctx, index)) {
-            sixel_logger_logf(ctx->logger,
+            sixel_timeline_logger_logf(ctx->logger,
                               role,
                               "scale",
                               "start",
@@ -1193,7 +1194,7 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
     } else {
         role = "vertical";
         if (scale_parallel_should_log(ctx, index)) {
-            sixel_logger_logf(ctx->logger,
+            sixel_timeline_logger_logf(ctx->logger,
                               role,
                               "scale",
                               "start",
@@ -1214,7 +1215,7 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
     }
 
     if (scale_parallel_should_log(ctx, index)) {
-        sixel_logger_logf(ctx->logger,
+        sixel_timeline_logger_logf(ctx->logger,
                           role,
                           "scale",
                           "finish",
@@ -1242,7 +1243,7 @@ scale_with_resampling_parallel(
     resample_fn_t const f_resample,
     double const n,
     unsigned char *tmp,
-    sixel_logger_t *logger)
+    sixel_timeline_logger_t *logger)
 {
     scale_parallel_context_t ctx;
     threadpool_t *pool;
@@ -1259,7 +1260,7 @@ scale_with_resampling_parallel(
     image_bytes = (size_t)srcw * (size_t)srch * (size_t)depth;
     if (image_bytes < scale_parallel_min_bytes()) {
         if (logger != NULL) {
-            sixel_logger_logf(logger,
+            sixel_timeline_logger_logf(logger,
                               "controller",
                               "scale",
                               "skip",
@@ -1271,7 +1272,7 @@ scale_with_resampling_parallel(
     threads = sixel_threads_resolve();
     if (threads < 2) {
         if (logger != NULL) {
-            sixel_logger_logf(logger,
+            sixel_timeline_logger_logf(logger,
                               "controller",
                               "scale",
                               "skip",
@@ -1280,9 +1281,9 @@ scale_with_resampling_parallel(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    logger_ready = logger != NULL && logger->active;
+    logger_ready = sixel_timeline_logger_is_enabled(logger);
     if (logger_ready) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "scale",
                           "start",
@@ -1321,7 +1322,7 @@ scale_with_resampling_parallel(
     ctx.pass = SCALE_PASS_HORIZONTAL;
     ctx.band_span = horizontal_span;
     if (logger_ready) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "scale",
                           "pass_start",
@@ -1349,7 +1350,7 @@ scale_with_resampling_parallel(
     }
 
     if (logger_ready) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "scale",
                           "pass_finish",
@@ -1367,7 +1368,7 @@ scale_with_resampling_parallel(
     ctx.pass = SCALE_PASS_VERTICAL;
     ctx.band_span = vertical_span;
     if (logger_ready) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "scale",
                           "pass_start",
@@ -1392,12 +1393,12 @@ scale_with_resampling_parallel(
     threadpool_destroy(pool);
 
     if (logger_ready) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "scale",
                           "pass_finish",
                           -1);
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "scale",
                           "finish",
@@ -1429,23 +1430,23 @@ scale_with_resampling(
     unsigned char *tmp;
     size_t tmp_size;
     size_t dst_size;
-    sixel_logger_t logger;
+    sixel_timeline_logger_t *logger;
     int logger_prepared;
 #if SIXEL_ENABLE_THREADS
     int rc;
 #endif
 
-    sixel_logger_init(&logger);
+    logger = NULL;
     logger_prepared = 0;
-    (void)sixel_logger_prepare_env(&logger);
-    logger_prepared = logger.active;
+    (void)sixel_timeline_logger_prepare_env(allocator, &logger);
+    logger_prepared = sixel_timeline_logger_is_enabled(logger);
 
     tmp_size = (size_t)dstw * (size_t)srch * (size_t)depth;
     dst_size = (size_t)dstw * (size_t)dsth * (size_t)depth;
     tmp = (unsigned char *)sixel_allocator_malloc(allocator, tmp_size);
     if (tmp == NULL) {
         if (logger_prepared) {
-            sixel_logger_close(&logger);
+            sixel_timeline_logger_unref(logger);
         }
         return;
     }
@@ -1468,19 +1469,17 @@ scale_with_resampling(
                                         f_resample,
                                         n,
                                         tmp,
-                                        logger_prepared
-                                            ? &logger
-                                            : NULL);
+                                        logger_prepared ? logger : NULL);
     if (rc == SIXEL_OK) {
         sixel_allocator_free(allocator, tmp);
         if (logger_prepared) {
-            sixel_logger_close(&logger);
+            sixel_timeline_logger_unref(logger);
         }
         return;
     }
 
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "controller",
                           "scale",
                           "fallback",
@@ -1498,11 +1497,11 @@ scale_with_resampling(
                                  f_resample,
                                  n,
                                  tmp,
-                                 logger_prepared ? &logger : NULL);
+                                 logger_prepared ? logger : NULL);
 
     sixel_allocator_free(allocator, tmp);
     if (logger_prepared) {
-        sixel_logger_close(&logger);
+        sixel_timeline_logger_unref(logger);
     }
 }
 

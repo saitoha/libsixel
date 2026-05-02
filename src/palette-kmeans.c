@@ -56,7 +56,7 @@
 
 #include "allocator.h"
 #include "compat_stub.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-kmeans.h"
@@ -248,7 +248,7 @@ typedef struct sixel_kmeans_projection_entry {
 } sixel_kmeans_projection_entry_t;
 
 int
-sixel_palette_kmeans_log_start(sixel_logger_t *logger,
+sixel_palette_kmeans_log_start(sixel_timeline_logger_t *logger,
                                int *job_seq,
                                char const *engine_name,
                                char const *role,
@@ -264,7 +264,7 @@ sixel_palette_kmeans_log_start(sixel_logger_t *logger,
         job_id = *job_seq;
         *job_seq += 1;
     }
-    sixel_logger_logf(logger,
+    sixel_timeline_logger_logf(logger,
                       (role != NULL && role[0] != '\0') ? role : "palette",
                       "palette/build",
                       "start",
@@ -281,7 +281,7 @@ sixel_palette_kmeans_log_start(sixel_logger_t *logger,
 }
 
 void
-sixel_palette_kmeans_log_finish(sixel_logger_t *logger,
+sixel_palette_kmeans_log_finish(sixel_timeline_logger_t *logger,
                                 int job_id,
                                 char const *engine_name,
                                 char const *role,
@@ -297,7 +297,7 @@ sixel_palette_kmeans_log_finish(sixel_logger_t *logger,
     if (detail != NULL && detail[0] != '\0') {
         suffix = detail;
     }
-    sixel_logger_logf(logger,
+    sixel_timeline_logger_logf(logger,
                       (role != NULL && role[0] != '\0') ? role : "palette",
                       "palette/build",
                       "finish",

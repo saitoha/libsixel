@@ -38,7 +38,7 @@
 #include "colorspace.h"
 #include "cpu.h"
 #include "loader-common.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "threading.h"
 #if SIXEL_ENABLE_THREADS
 # include "threadpool.h"
@@ -1821,7 +1821,7 @@ typedef struct sixel_colorspace_parallel_context {
     int colorspace_src;
     int colorspace_dst;
     int simd_level;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
 } sixel_colorspace_parallel_context_t;
 
 typedef struct sixel_colorspace_parallel_byte_context {
@@ -1831,7 +1831,7 @@ typedef struct sixel_colorspace_parallel_byte_context {
     sixel_pixelformat_layout_t layout;
     int colorspace_src;
     int colorspace_dst;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
 } sixel_colorspace_parallel_byte_context_t;
 
 /*
@@ -1942,7 +1942,7 @@ sixel_colorspace_parallel_worker_bytes(tp_job_t job,
     size_t remaining;
     size_t end;
     sixel_colorspace_parallel_byte_context_t *ctx;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int start_row;
     int end_row;
     int status;
@@ -1977,10 +1977,10 @@ sixel_colorspace_parallel_worker_bytes(tp_job_t job,
 
     end = start + remaining;
     logger = ctx->logger;
-    if (logger != NULL && logger->active) {
+    if (sixel_timeline_logger_is_enabled(logger)) {
         start_row = sixel_colorspace_log_clamp(start);
         end_row = sixel_colorspace_log_clamp(end);
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "worker",
                           "colorspace",
                           "start",
@@ -2000,8 +2000,8 @@ sixel_colorspace_parallel_worker_bytes(tp_job_t job,
         ctx->colorspace_src,
         ctx->colorspace_dst);
 
-    if (logger != NULL && logger->active) {
-        sixel_logger_logf(logger,
+    if (sixel_timeline_logger_is_enabled(logger)) {
+        sixel_timeline_logger_logf(logger,
                           "worker",
                           "colorspace",
                           "finish",
@@ -2028,8 +2028,8 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
     size_t pixel_total;
     SIXELSTATUS status;
     sixel_pixelformat_layout_t layout;
-    sixel_logger_t logger;
-    sixel_logger_t *logger_ref;
+    sixel_timeline_logger_t *logger;
+    sixel_timeline_logger_t *logger_ref;
 #if SIXEL_ENABLE_THREADS
     size_t job_count;
     size_t chunk_pixels;
@@ -2068,11 +2068,11 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
      * when SIXEL_LOG_PATH is configured so traces show which path a
      * frame took even when threading is disabled.
      */
-    sixel_logger_init(&logger);
-    (void)sixel_logger_prepare_env(&logger);
-    if (logger.active) {
-        logger_ref = &logger;
-        sixel_logger_logf(logger_ref,
+    logger = NULL;
+    (void)sixel_timeline_logger_prepare_env(NULL, &logger);
+    if (sixel_timeline_logger_is_enabled(logger)) {
+        logger_ref = logger;
+        sixel_timeline_logger_logf(logger_ref,
                           "controller",
                           "colorspace",
                           "configure",
@@ -2113,7 +2113,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
             }
 
             if (logger_ref != NULL) {
-                sixel_logger_logf(logger_ref,
+                sixel_timeline_logger_logf(logger_ref,
                                   "controller",
                                   "colorspace",
                                   "start",
@@ -2147,7 +2147,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
 
                 if (rc == SIXEL_OK) {
                     if (logger_ref != NULL) {
-                        sixel_logger_logf(
+                        sixel_timeline_logger_logf(
                             logger_ref,
                             "controller",
                             "colorspace",
@@ -2166,7 +2166,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
             }
 
             if (logger_ref != NULL) {
-                sixel_logger_logf(logger_ref,
+                sixel_timeline_logger_logf(logger_ref,
                                   "controller",
                                   "colorspace",
                                   "fallback",
@@ -2179,7 +2179,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                                   "threadpool fallback rc=%d", rc);
             }
         } else if (logger_ref != NULL) {
-            sixel_logger_logf(logger_ref,
+            sixel_timeline_logger_logf(logger_ref,
                               "controller",
                               "colorspace",
                               "fallback",
@@ -2192,7 +2192,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                               "threads=%d", threads);
         }
     } else if (logger_ref != NULL) {
-        sixel_logger_logf(logger_ref,
+        sixel_timeline_logger_logf(logger_ref,
                           "controller",
                           "colorspace",
                           "fallback",
@@ -2208,7 +2208,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
 #endif
 
     if (logger_ref != NULL) {
-        sixel_logger_logf(logger_ref,
+        sixel_timeline_logger_logf(logger_ref,
                           "controller",
                           "colorspace",
                           "start",
@@ -2219,7 +2219,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                           0,
                           sixel_colorspace_log_clamp(pixel_total),
                           "serial chunk size=%zu", pixel_total);
-        sixel_logger_logf(logger_ref,
+        sixel_timeline_logger_logf(logger_ref,
                           "worker",
                           "colorspace",
                           "start",
@@ -2239,7 +2239,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                                                    colorspace_dst);
 
     if (logger_ref != NULL) {
-        sixel_logger_logf(logger_ref,
+        sixel_timeline_logger_logf(logger_ref,
                           "worker",
                           "colorspace",
                           "finish",
@@ -2250,7 +2250,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                           0,
                           sixel_colorspace_log_clamp(pixel_total),
                           "serial status=%d", status);
-        sixel_logger_logf(logger_ref,
+        sixel_timeline_logger_logf(logger_ref,
                           "controller",
                           "colorspace",
                           "finish",
@@ -2266,7 +2266,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
 #if SIXEL_ENABLE_THREADS
 end:
 #endif
-    sixel_logger_close(&logger);
+    sixel_timeline_logger_unref(logger);
 
     return status;
 }
@@ -2335,7 +2335,7 @@ sixel_colorspace_parallel_worker(tp_job_t job,
                                  void *workspace)
 {
     sixel_colorspace_parallel_context_t *ctx;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     size_t start;
     size_t remaining;
     size_t end;
@@ -2373,10 +2373,10 @@ sixel_colorspace_parallel_worker(tp_job_t job,
 
     end = start + remaining;
     logger = ctx->logger;
-    if (logger != NULL && logger->active) {
+    if (sixel_timeline_logger_is_enabled(logger)) {
         start_row = sixel_colorspace_log_clamp(start);
         end_row = sixel_colorspace_log_clamp(end);
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "worker",
                           "colorspace",
                           "start",
@@ -2396,8 +2396,8 @@ sixel_colorspace_parallel_worker(tp_job_t job,
         ctx->colorspace_dst,
         ctx->simd_level);
 
-    if (logger != NULL && logger->active) {
-        sixel_logger_logf(logger,
+    if (sixel_timeline_logger_is_enabled(logger)) {
+        sixel_timeline_logger_logf(logger,
                           "worker",
                           "colorspace",
                           "finish",
@@ -2423,8 +2423,8 @@ sixel_convert_pixels_via_linear_float(float *pixels,
     size_t pixel_total;
     int simd_level;
     SIXELSTATUS status;
-    sixel_logger_t logger;
-    sixel_logger_t *logger_ref;
+    sixel_timeline_logger_t *logger;
+    sixel_timeline_logger_t *logger_ref;
 #if SIXEL_ENABLE_THREADS
     size_t job_count;
     size_t chunk_pixels;
@@ -2455,15 +2455,15 @@ sixel_convert_pixels_via_linear_float(float *pixels,
     logger_ref = NULL;
     /*
      * Enable the timeline logger when SIXEL_LOG_PATH points to a
-     * writable sink. The controller emits a configure event even if the
+     * writable output. The controller emits a configure event even if the
      * call later falls back to the serial path so the timeline remains
      * continuous, including non-threaded builds.
      */
-    sixel_logger_init(&logger);
-    (void)sixel_logger_prepare_env(&logger);
-    if (logger.active) {
-        logger_ref = &logger;
-        sixel_logger_logf(logger_ref,
+    logger = NULL;
+    (void)sixel_timeline_logger_prepare_env(NULL, &logger);
+    if (sixel_timeline_logger_is_enabled(logger)) {
+        logger_ref = logger;
+        sixel_timeline_logger_logf(logger_ref,
                           "controller",
                           "colorspace",
                           "configure",
@@ -2506,7 +2506,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
             }
 
             if (logger_ref != NULL) {
-                sixel_logger_logf(logger_ref,
+                sixel_timeline_logger_logf(logger_ref,
                                   "controller",
                                   "colorspace",
                                   "start",
@@ -2540,7 +2540,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
 
                 if (rc == SIXEL_OK) {
                     if (logger_ref != NULL) {
-                        sixel_logger_logf(
+                        sixel_timeline_logger_logf(
                             logger_ref,
                             "controller",
                             "colorspace",
@@ -2559,7 +2559,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
             }
 
             if (logger_ref != NULL) {
-                sixel_logger_logf(logger_ref,
+                sixel_timeline_logger_logf(logger_ref,
                                   "controller",
                                   "colorspace",
                                   "fallback",
@@ -2572,7 +2572,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                                   "threadpool fallback rc=%d", rc);
             }
         } else if (logger_ref != NULL) {
-            sixel_logger_logf(logger_ref,
+            sixel_timeline_logger_logf(logger_ref,
                               "controller",
                               "colorspace",
                               "fallback",
@@ -2585,7 +2585,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                               "threads=%d", threads);
         }
     } else if (logger_ref != NULL) {
-        sixel_logger_logf(logger_ref,
+        sixel_timeline_logger_logf(logger_ref,
                           "controller",
                           "colorspace",
                           "fallback",
@@ -2601,7 +2601,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
 #endif
 
     if (logger_ref != NULL) {
-        sixel_logger_logf(logger_ref,
+        sixel_timeline_logger_logf(logger_ref,
                           "controller",
                           "colorspace",
                           "start",
@@ -2612,7 +2612,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                           0,
                           sixel_colorspace_log_clamp(pixel_total),
                           "serial chunk size=%zu", pixel_total);
-        sixel_logger_logf(logger_ref,
+        sixel_timeline_logger_logf(logger_ref,
                           "worker",
                           "colorspace",
                           "start",
@@ -2632,7 +2632,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                                                          simd_level);
 
     if (logger_ref != NULL) {
-        sixel_logger_logf(logger_ref,
+        sixel_timeline_logger_logf(logger_ref,
                           "worker",
                           "colorspace",
                           "finish",
@@ -2643,7 +2643,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                           0,
                           sixel_colorspace_log_clamp(pixel_total),
                           "serial status=%d", status);
-        sixel_logger_logf(logger_ref,
+        sixel_timeline_logger_logf(logger_ref,
                           "controller",
                           "colorspace",
                           "finish",
@@ -2659,7 +2659,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
 #if SIXEL_ENABLE_THREADS
 end:
 #endif
-    sixel_logger_close(&logger);
+    sixel_timeline_logger_unref(logger);
 
     return status;
 }

@@ -28,7 +28,7 @@
 #include <sixel.h>
 
 #include "filter.h"
-#include "logger.h"
+#include "timeline-logger.h"
 
 /*
  * Load filter configuration. The loader callback is expected to populate the
@@ -38,7 +38,7 @@
 typedef SIXELSTATUS (*sixel_filter_load_fn)(void *userdata,
                                             sixel_frame_t **frame_out,
                                             sixel_allocator_t *allocator,
-                                            sixel_logger_t *logger);
+                                            sixel_timeline_logger_t *logger);
 
 typedef struct sixel_filter_load_config {
     sixel_filter_load_fn loader;

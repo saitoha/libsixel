@@ -22,50 +22,30 @@
  * SOFTWARE.
  */
 
-#ifndef LIBSIXEL_FILTER_SAMPLE_H
-#define LIBSIXEL_FILTER_SAMPLE_H
+#ifndef LIBSIXEL_TIMELINE_WRITER_H
+#define LIBSIXEL_TIMELINE_WRITER_H
 
 #include <sixel.h>
+#include <6cells.h>
 
-#include "filter.h"
-#include "timeline-logger.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
- * Sample filter configuration. The planner fills this before wiring the
- * filter so apply() can copy the requested region with the right density.
+ * Timeline writer is a process service.  It owns the shared JSONL output and
+ * serializes writes from multiple timeline_logger sessions.
  */
-typedef struct sixel_filter_sample_config {
-    /*
-     * Visible region used for palette sampling. When width/height are not
-     * positive, the full frame bounds are used instead.
-     */
-    int clip_x;
-    int clip_y;
-    int clip_width;
-    int clip_height;
 
-    /*
-     * Palette sizing knobs carried from encoder options. The override flag
-     * mirrors $SIXEL_PALETTE_SAMPLE_TARGET support.
-     */
-    int reqcolors;
-    int quality_mode;
-    int palette_sample_override;
-    size_t palette_sample_target;
-} sixel_filter_sample_config_t;
+/* @serviceid services/timeline-writer */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_timeline_writer_get_default(void **writer);
 
-SIXELSTATUS
-sixel_filter_sample_init(sixel_filter_t *filter,
-                         const sixel_filter_sample_config_t *config);
+#ifdef __cplusplus
+}
+#endif
 
-SIXELSTATUS
-sixel_filter_sample_frame(const sixel_filter_sample_config_t *config,
-                          sixel_frame_t *frame,
-                          sixel_allocator_t *allocator,
-                          sixel_frame_t **sample_out,
-                          sixel_timeline_logger_t *logger);
-
-#endif /* LIBSIXEL_FILTER_SAMPLE_H */
+#endif /* LIBSIXEL_TIMELINE_WRITER_H */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

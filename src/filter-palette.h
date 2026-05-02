@@ -34,7 +34,7 @@ typedef SIXELSTATUS (*sixel_filter_palette_builder_fn)(
         void *userdata,
         sixel_frame_t *frame,
         sixel_dither_t **dither_out,
-        sixel_logger_t *logger);
+        sixel_timeline_logger_t *logger);
 
 typedef struct sixel_filter_palette_config {
     sixel_filter_palette_builder_fn builder;

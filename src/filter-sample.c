@@ -46,7 +46,7 @@ typedef struct sixel_filter_sample_state {
 static SIXELSTATUS
 sixel_filter_sample_apply(sixel_filter_t *filter,
       sixel_allocator_t *allocator,
-      sixel_logger_t *logger);
+      sixel_timeline_logger_t *logger);
 
 static void
 sixel_filter_sample_dispose(sixel_filter_t *filter);
@@ -156,7 +156,7 @@ sixel_filter_sample_copy_frame(
         sixel_frame_t *frame,
         sixel_allocator_t *allocator,
         sixel_frame_t **sample_out,
-        sixel_logger_t *logger,
+        sixel_timeline_logger_t *logger,
         int *sample_width_out,
         int *sample_height_out)
 {
@@ -482,7 +482,7 @@ sixel_filter_sample_frame(const sixel_filter_sample_config_t *config,
                           sixel_frame_t *frame,
                           sixel_allocator_t *allocator,
                           sixel_frame_t **sample_out,
-                          sixel_logger_t *logger)
+                          sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
 
@@ -495,7 +495,7 @@ sixel_filter_sample_frame(const sixel_filter_sample_config_t *config,
 static SIXELSTATUS
 sixel_filter_sample_apply(sixel_filter_t *filter,
                           sixel_allocator_t *allocator,
-                          sixel_logger_t *logger)
+                          sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     sixel_filter_sample_state_t *state;

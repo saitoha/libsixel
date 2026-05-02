@@ -93,7 +93,7 @@
 #include "frame.h"
 #include "frame-factory.h"
 #include "output.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "options.h"
 #include "dither.h"
 #include "dither-interframe-method.h"
@@ -387,7 +387,7 @@ typedef struct sixel_palette_async_job {
     sixel_mutex_t mutex;
     sixel_cond_t cond;
     sixel_encoder_t *encoder;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     sixel_frame_t *sample_frame;
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
@@ -1300,7 +1300,7 @@ static SIXELSTATUS sixel_encoder_filter_plan_append(
 static SIXELSTATUS sixel_encoder_filter_plan_run(
     sixel_filter_plan_t *plan,
     sixel_allocator_t *allocator,
-    sixel_logger_t *logger);
+    sixel_timeline_logger_t *logger);
 static void sixel_debug_print_palette(sixel_dither_t *dither);
 static SIXELSTATUS sixel_encoder_output_without_macro(
     sixel_frame_t *frame,
@@ -4298,7 +4298,7 @@ sixel_encoder_filter_plan_append(
 static SIXELSTATUS
 sixel_encoder_filter_plan_run(sixel_filter_plan_t *plan,
                               sixel_allocator_t *allocator,
-                              sixel_logger_t *logger)
+                              sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     int index;
@@ -4395,7 +4395,7 @@ sixel_encoder_log_stage(sixel_encoder_t *encoder,
                         char const *fmt,
                         ...)
 {
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int job_id;
     int height;
     char message[256];
@@ -4405,7 +4405,7 @@ sixel_encoder_log_stage(sixel_encoder_t *encoder,
     if (encoder != NULL) {
         logger = encoder->logger;
     }
-    if (logger == NULL || logger->file == NULL || !logger->active) {
+    if (!sixel_timeline_logger_is_enabled(logger)) {
         return;
     }
 
@@ -4439,7 +4439,7 @@ sixel_encoder_log_stage(sixel_encoder_t *encoder,
 # endif
 #endif
 
-    sixel_logger_logf(logger,
+    sixel_timeline_logger_logf(logger,
                       role,
                       worker,
                       event,
@@ -5975,7 +5975,7 @@ sixel_encoder_palette_job_thread(void *priv)
     SIXELSTATUS status;
     sixel_dither_t *local;
     int preserve_alpha_key;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
 
     job = (sixel_palette_async_job_t *)priv;
     if (job == NULL) {
@@ -5990,7 +5990,7 @@ sixel_encoder_palette_job_thread(void *priv)
         logger = job->logger;
     }
     if (logger != NULL) {
-        sixel_logger_set_frame_context(logger,
+        sixel_timeline_logger_set_frame_context(logger,
                                        job->frame_no,
                                        job->loop_no,
                                        job->multiframe);
@@ -6024,7 +6024,7 @@ sixel_encoder_palette_job_thread(void *priv)
         sixel_dither_unref(local);
     }
     if (logger != NULL) {
-        sixel_logger_clear_frame_context(logger);
+        sixel_timeline_logger_clear_frame_context(logger);
     }
 
     return 0;
@@ -6630,11 +6630,11 @@ sixel_encoder_prepare_palette(
     sixel_frame_t   *frame,    /* input frame object */
     sixel_dither_t  **dither,  /* dither object to be created from the frame */
     int allow_cache,
-    sixel_logger_t *logger)
+    sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_filter_final_merge_config_t merge_config;
-    sixel_logger_t *target_logger;
+    sixel_timeline_logger_t *target_logger;
     int cache_allowed;
     sixel_frame_t *palette_frame;
     sixel_frame_t *cluster_frame;
@@ -7253,7 +7253,7 @@ static SIXELSTATUS
 sixel_encoder_palette_builder(void *userdata,
                               sixel_frame_t *frame,
                               sixel_dither_t **dither_out,
-                              sixel_logger_t *logger)
+                              sixel_timeline_logger_t *logger)
 {
     sixel_palette_builder_context_t *context;
 
@@ -7548,7 +7548,7 @@ sixel_encoder_output_without_macro(
     int                  delay)
 {
     SIXELSTATUS status = SIXEL_OK;
-    static unsigned char *p;
+    unsigned char *p;
     int depth;
     enum { message_buffer_size = 2048 };
     char message[message_buffer_size];
@@ -7567,6 +7567,7 @@ sixel_encoder_output_without_macro(
     int quantize_animation_enabled;
     int capture_palette_only;
 
+    p = NULL;
     if (encoder == NULL) {
         sixel_helper_set_additional_message(
             "sixel_encoder_output_without_macro: encoder object is null.");
@@ -8025,7 +8026,7 @@ sixel_encoder_encode_frame(
         context.multiframe = sixel_frame_get_multiframe(frame);
     }
     if (encoder != NULL && encoder->logger != NULL) {
-        sixel_logger_set_frame_context(encoder->logger,
+        sixel_timeline_logger_set_frame_context(encoder->logger,
                                        context.frame_no,
                                        context.loop_no,
                                        context.multiframe);
@@ -8149,7 +8150,7 @@ sixel_encoder_encode_frame(
 
 end:
     if (encoder != NULL && encoder->logger != NULL) {
-        sixel_logger_clear_frame_context(encoder->logger);
+        sixel_timeline_logger_clear_frame_context(encoder->logger);
     }
     sixel_encoder_filter_plan_teardown(&context.pre_plan);
     sixel_encoder_filter_plan_teardown(&context.post_plan);
@@ -14504,7 +14505,7 @@ sixel_encoder_encode(
     char const *effective_filename;
     unsigned int path_flags;
     int path_check;
-    sixel_logger_t logger;
+    sixel_timeline_logger_t *logger;
     int logger_prepared;
     sixel_encoder_load_context_t load_context;
     SIXELSTATUS pipeline_wait_status;
@@ -14532,9 +14533,7 @@ sixel_encoder_encode(
     force_auto_lut_for_psd = 0;
     psd_trace_only = 0;
     memset(&load_context, 0, sizeof(load_context));
-    sixel_logger_init(&logger);
-    sixel_logger_prepare_env(&logger);
-    logger_prepared = logger.active;
+    logger = NULL;
     if (encoder == NULL) {
         status = sixel_encoder_new(&encoder, NULL);
         if (SIXEL_FAILED(status)) {
@@ -14548,9 +14547,11 @@ sixel_encoder_encode(
         goto end;
     }
     sixel_encoder_ref(encoder);
+    (void)sixel_timeline_logger_prepare_env(encoder->allocator, &logger);
+    logger_prepared = sixel_timeline_logger_is_enabled(logger);
 
     if (encoder != NULL) {
-        encoder->logger = &logger;
+        encoder->logger = logger;
         encoder->parallel_job_id = -1;
         sixel_encoder_update_diagnostic_dither(encoder, NULL);
         load_context.encoder = encoder;
@@ -15144,7 +15145,7 @@ end:
         encoder->parallel_job_id = -1;
     }
     if (logger_prepared) {
-        sixel_logger_close(&logger);
+        sixel_timeline_logger_unref(logger);
     }
 
     if (encoder != NULL) {

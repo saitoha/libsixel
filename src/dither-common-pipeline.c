@@ -27,7 +27,7 @@
 #endif
 
 #include "dither-common-pipeline.h"
-#include "logger.h"
+#include "timeline-logger.h"
 
 static void
 sixel_dither_pipeline_apply_keycolor_row(sixel_dither_t *dither, int row_index)
@@ -95,7 +95,7 @@ sixel_dither_pipeline_row_notify(sixel_dither_t *dither, int row_index)
         if (band_height > 0 && row_index >= 0) {
             band_index = row_index / band_height;
         }
-        sixel_logger_logf(dither->pipeline_logger,
+        sixel_timeline_logger_logf(dither->pipeline_logger,
                           "producer",
                           "dither",
                           "row_ready",

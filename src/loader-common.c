@@ -62,7 +62,7 @@
 #include "compat_stub.h"
 #include "frame-private.h"
 #include "loader-common.h"
-#include "logger.h"
+#include "timeline-logger.h"
 
 #if defined(__PCC__) || defined(__TINYC__)
 # define SIXEL_LOADER_NO_TLS_COMPILER 1
@@ -114,7 +114,7 @@ static int loader_cms_prefer_8bit_flag;
 static int loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
 
 typedef struct sixel_loader_timeline_scope {
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     char worker[96];
     int *job_seq;
     unsigned int optional_mask;
@@ -293,7 +293,7 @@ loader_common_timeline_next_job(void)
 static void
 loader_timeline_log_event(char const *role, char const *event, int job_id)
 {
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     char worker[96];
     size_t worker_length;
 
@@ -315,7 +315,7 @@ loader_timeline_log_event(char const *role, char const *event, int job_id)
     worker[worker_length] = '\0';
     loader_background_unlock();
 
-    sixel_logger_logf(logger,
+    sixel_timeline_logger_logf(logger,
                       role,
                       worker,
                       event,
@@ -1436,7 +1436,7 @@ loader_trace_is_enabled(void)
 }
 
 void
-loader_timeline_scope_begin(sixel_logger_t *logger,
+loader_timeline_scope_begin(sixel_timeline_logger_t *logger,
                             char const *worker,
                             int *job_seq)
 {
@@ -1449,8 +1449,9 @@ loader_timeline_scope_begin(sixel_logger_t *logger,
     loader_timeline_scope.optional_mask = 0u;
     loader_timeline_scope.active = 0;
 
-    if (logger == NULL || worker == NULL || worker[0] == '\0' ||
-            job_seq == NULL || !logger->active) {
+    if (worker == NULL || worker[0] == '\0' ||
+            job_seq == NULL ||
+            !sixel_timeline_logger_is_enabled(logger)) {
         loader_background_unlock();
         return;
     }

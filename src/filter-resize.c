@@ -47,7 +47,7 @@ typedef struct sixel_filter_resize_state {
 static SIXELSTATUS
 sixel_filter_resize_apply(sixel_filter_t *filter,
       sixel_allocator_t *allocator,
-      sixel_logger_t *logger);
+      sixel_timeline_logger_t *logger);
 
 static void
 sixel_filter_resize_dispose(sixel_filter_t *filter);
@@ -178,7 +178,7 @@ sixel_filter_resize_use_float(const sixel_filter_resize_config_t *config)
 SIXELSTATUS
 sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
                           sixel_frame_t *frame,
-                          sixel_logger_t *logger)
+                          sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     int src_width;
@@ -242,7 +242,7 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
          * Emit detailed target information so crafted inputs can be diagnosed
          * in CI logs without reproducing locally.
          */
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "filter",
                           "worker",
                           "scale-target",
@@ -266,7 +266,7 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
     }
 
     if (logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "filter",
                           "worker",
                           "scale-start",
@@ -299,7 +299,7 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
                         || float_bytes > float_limit) {
                         use_float_resize = 0;
                         if (logger != NULL) {
-                            sixel_logger_logf(
+                            sixel_timeline_logger_logf(
                                 logger,
                                 "filter",
                                 "worker",
@@ -340,7 +340,7 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
     }
 
     if (logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "filter",
                           "worker",
                           "scale-finish",
@@ -360,7 +360,7 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
 static SIXELSTATUS
 sixel_filter_resize_apply(sixel_filter_t *filter,
                           sixel_allocator_t *allocator,
-                          sixel_logger_t *logger)
+                          sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     sixel_filter_resize_state_t *state;

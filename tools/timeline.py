@@ -2,7 +2,7 @@
 """Build a timeline chart from SIXEL_LOG_PATH output.
 
 The logger writes JSON lines like:
-{"ts":0.001,"thread":1234,"worker":"dither","event":"start",...}
+{"ts":0.001,"session_id":1,"thread":1234,"worker":"dither","event":"start",...}
 Animated pipelines can also include frame metadata keys:
 {"frame_no":3,"loop_no":0,"multiframe":1}
 
@@ -36,6 +36,7 @@ def _darken(color: Tuple[float, float, float],
 class ParallelEvent:
     def __init__(self, record: Dict[str, object]):
         self.ts = float(record.get("ts", 0.0))
+        self.session_id = int(record.get("session_id", 0))
         self.thread = int(record.get("thread", -1))
         self.role = str(record.get("role", ""))
         self.worker = str(record.get("worker", ""))

@@ -96,7 +96,7 @@ extern char **environ;
 #include "loader-common.h"
 #include "loader-gnome-thumbnailer.h"
 #include "loader.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "sleep.h"
 #include "sixel_atomic.h"
 

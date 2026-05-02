@@ -43,7 +43,7 @@ typedef struct sixel_filter_final_merge_state {
 static SIXELSTATUS
 sixel_filter_final_merge_apply_filter(sixel_filter_t *filter,
       sixel_allocator_t *allocator,
-      sixel_logger_t *logger);
+      sixel_timeline_logger_t *logger);
 
 static void
 sixel_filter_final_merge_dispose(sixel_filter_t *filter);
@@ -61,7 +61,7 @@ static sixel_filter_vtbl_t const sixel_filter_final_merge_vtbl = {
 static SIXELSTATUS
 sixel_filter_final_merge_apply_filter(sixel_filter_t *filter,
                                       sixel_allocator_t *allocator,
-                                      sixel_logger_t *logger)
+                                      sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     sixel_filter_final_merge_state_t *state;
@@ -147,7 +147,7 @@ sixel_filter_final_merge_init(sixel_filter_t *filter,
 
 SIXELAPI SIXELSTATUS
 sixel_filter_final_merge_apply(const sixel_filter_final_merge_config_t *config,
-                               sixel_logger_t *logger)
+                               sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
 
@@ -160,7 +160,7 @@ sixel_filter_final_merge_apply(const sixel_filter_final_merge_config_t *config,
     sixel_dither_set_final_merge(config->dither, config->final_merge_mode);
 
     if (logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "filter",
                           "worker",
                           "final-merge",

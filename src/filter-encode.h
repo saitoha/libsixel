@@ -28,7 +28,7 @@
 #include <sixel.h>
 
 #include "filter.h"
-#include "logger.h"
+#include "timeline-logger.h"
 
 /*
  * Encode filter configuration. The planner supplies the prepared dither and
@@ -54,7 +54,7 @@ sixel_filter_encode_init(sixel_filter_t *filter,
 SIXELSTATUS
 sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
                           sixel_frame_t *frame,
-                          sixel_logger_t *logger);
+                          sixel_timeline_logger_t *logger);
 
 #endif /* LIBSIXEL_FILTER_ENCODE_H */
 

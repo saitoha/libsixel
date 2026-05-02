@@ -73,6 +73,7 @@ if ! awk -f "$generator" \
     "$src_root"/src/chunk.h \
     "$src_root"/src/frame.h \
     "$src_root"/src/loader-manager.h \
+    "$src_root"/src/timeline-logger.h \
     >"$expected"; then
     echo "not ok 1 - factory classid registry stays in sync"
     echo "# failed to regenerate classid-factory.gperf"

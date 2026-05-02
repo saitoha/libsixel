@@ -104,7 +104,7 @@
 #include "chunk-factory.h"
 #include "allocator.h"
 #include "encoder.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "options.h"
 #include "tty.h"
 #include "threading.h"
@@ -144,7 +144,7 @@ struct sixel_loader {
     sixel_cancel_function cancel_function;
     void *cancel_context;
     void *context;
-    sixel_logger_t logger;
+    sixel_timeline_logger_t *logger;
     char *loader_order;
     sixel_option_argument_list_resolution_t loader_order_resolution;
     sixel_allocator_t *allocator;
@@ -576,18 +576,18 @@ loader_log_timeline_event(sixel_loader_t *loader,
                           char const *event,
                           int job_id)
 {
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
 
     logger = NULL;
     if (loader != NULL) {
-        logger = &loader->logger;
+        logger = loader->logger;
     }
-    if (logger == NULL || !logger->active ||
+    if (!sixel_timeline_logger_is_enabled(logger) ||
             worker == NULL || role == NULL || event == NULL || job_id < 0) {
         return;
     }
 
-    sixel_logger_logf(logger,
+    sixel_timeline_logger_logf(logger,
                       role,
                       worker,
                       event,
@@ -919,12 +919,12 @@ sixel_loader_new(
     loader->cancel_context = NULL;
     loader->context = NULL;
     /*
-     * Initialize a private logger. The helper reuses an existing global
-     * logger sink when present so loader markers share the timeline with
+     * Initialize a private logger. The helper reuses the shared writer
+     * when present so loader markers share the timeline with
      * upstream stages without requiring sixel_loader_setopt().
      */
-    sixel_logger_init(&loader->logger);
-    (void)sixel_logger_prepare_env(&loader->logger);
+    loader->logger = NULL;
+    (void)sixel_timeline_logger_prepare_env(local_allocator, &loader->logger);
     loader->loader_order = NULL;
     sixel_option_init_argument_list_resolution(
         &loader->loader_order_resolution);
@@ -970,7 +970,7 @@ sixel_loader_unref(
     previous = sixel_atomic_fetch_sub_u32(&loader->ref, 1U);
     if (previous == 1U) {
         allocator = loader->allocator;
-        sixel_logger_close(&loader->logger);
+        sixel_timeline_logger_unref(loader->logger);
         sixel_allocator_free(allocator, loader->loader_order);
         sixel_option_free_argument_list_resolution(
             &loader->loader_order_resolution);
@@ -1400,7 +1400,7 @@ sixel_loader_load_file(
     build_request.has_start_frame_no = loader->has_start_frame_no;
     build_request.start_frame_no = loader->start_frame_no;
     build_request.suboptions = &active_suboptions;
-    build_request.timeline_logger = &loader->logger;
+    build_request.timeline_logger = loader->logger;
     build_request.timeline_job_seq = &loader->log_timeline_job_seq;
     build_request.timeline_loader = loader;
     build_request.skip_predicate_gate =

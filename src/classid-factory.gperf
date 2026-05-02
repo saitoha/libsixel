@@ -47,6 +47,7 @@
 #include "chunk.h"
 #include "frame.h"
 #include "loader-manager.h"
+#include "timeline-logger.h"
 
 typedef SIXELSTATUS (*sixel_factory_class_new_fn)(
     sixel_allocator_t *allocator,
@@ -377,6 +378,11 @@ typedef SIXELSTATUS (*sixel_factory_class_new_fn)(
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_65 0
 #endif
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_66 sixel_timeline_logger_factory_new
+#else
+# define SIXEL_FACTORY_CLASSID_CREATE_66 0
+#endif
 %}
 struct sixel_factory_classid_entry {
     char const *name;
@@ -448,4 +454,5 @@ loader/wic, SIXEL_FACTORY_CLASSID_CREATE_62
 image/chunk, SIXEL_FACTORY_CLASSID_CREATE_63
 image/frame, SIXEL_FACTORY_CLASSID_CREATE_64
 loader/manager, SIXEL_FACTORY_CLASSID_CREATE_65
+diagnostics/timeline-logger, SIXEL_FACTORY_CLASSID_CREATE_66
 %%

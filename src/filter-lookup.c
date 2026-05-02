@@ -58,7 +58,7 @@ typedef struct sixel_filter_lookup_state {
 static SIXELSTATUS
 sixel_filter_lookup_apply(sixel_filter_t *filter,
       sixel_allocator_t *allocator,
-      sixel_logger_t *logger);
+      sixel_timeline_logger_t *logger);
 
 static void
 sixel_filter_lookup_dispose(sixel_filter_t *filter);
@@ -92,7 +92,7 @@ static sixel_filter_vtbl_t const sixel_filter_lookup_vtbl = {
 SIXELAPI SIXELSTATUS
 sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
                           sixel_allocator_t *allocator,
-                          sixel_logger_t *logger,
+                          sixel_timeline_logger_t *logger,
                           sixel_filter_lookup_result_t *result_out)
 {
     SIXELSTATUS status;
@@ -184,7 +184,7 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
     result.owned = 1;
 
     if (logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "filter",
                           "worker",
                           "lookup-configured",
@@ -209,7 +209,7 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
 static SIXELSTATUS
 sixel_filter_lookup_apply(sixel_filter_t *filter,
                           sixel_allocator_t *allocator,
-                          sixel_logger_t *logger)
+                          sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     sixel_filter_lookup_state_t *state;

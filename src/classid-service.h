@@ -34,6 +34,7 @@
 #include <string.h>
 #endif
 #include "factory.h"
+#include "timeline-writer.h"
 
 typedef SIXELSTATUS (*sixel_components_service_get_fn)(
     void **service);
@@ -43,18 +44,23 @@ typedef SIXELSTATUS (*sixel_components_service_get_fn)(
 #else
 # define SIXEL_COMPONENTS_SERVICEID_GET_1 0
 #endif
-#line 21 "../../src/classid-service.gperf"
+#if 1
+# define SIXEL_COMPONENTS_SERVICEID_GET_2 sixel_timeline_writer_get_default
+#else
+# define SIXEL_COMPONENTS_SERVICEID_GET_2 0
+#endif
+#line 27 "../../src/classid-service.gperf"
 struct sixel_components_serviceid_entry {
     char const *name;
     sixel_components_service_get_fn get_default;
 };
 
-#define TOTAL_KEYWORDS 1
+#define TOTAL_KEYWORDS 2
 #define MIN_WORD_LENGTH 16
-#define MAX_WORD_LENGTH 16
+#define MAX_WORD_LENGTH 24
 #define MIN_HASH_VALUE 16
-#define MAX_HASH_VALUE 16
-/* maximum key range = 1, duplicates = 0 */
+#define MAX_HASH_VALUE 24
+/* maximum key range = 9, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -68,32 +74,32 @@ sixel_components_serviceid_hash (register const char *str, register unsigned int
 {
   static const unsigned char asso_values[] =
     {
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17,  0, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
-      17, 17, 17, 17, 17, 17
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25,  0, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
+      25, 25, 25, 25, 25, 25
     };
   return len + asso_values[(unsigned char)str[0]];
 }
@@ -102,8 +108,11 @@ static const struct sixel_components_serviceid_entry sixel_components_serviceid_
   {
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-#line 26 "../../src/classid-service.gperf"
-    {"services/factory", SIXEL_COMPONENTS_SERVICEID_GET_1}
+#line 32 "../../src/classid-service.gperf"
+    {"services/factory", SIXEL_COMPONENTS_SERVICEID_GET_1},
+    {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
+#line 33 "../../src/classid-service.gperf"
+    {"services/timeline-writer", SIXEL_COMPONENTS_SERVICEID_GET_2}
   };
 
 const struct sixel_components_serviceid_entry *
@@ -123,7 +132,7 @@ sixel_components_serviceid_lookup (register const char *str, register unsigned i
     }
   return 0;
 }
-#line 27 "../../src/classid-service.gperf"
+#line 34 "../../src/classid-service.gperf"
 
 #undef TOTAL_KEYWORDS
 #undef MIN_WORD_LENGTH

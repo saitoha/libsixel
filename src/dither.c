@@ -56,7 +56,7 @@
 #include "dither-policy.h"
 #include "timer.h"
 #include "dither-common-pipeline.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 #if SIXEL_ENABLE_THREADS
@@ -117,7 +117,7 @@ sixel_dither_cleanup_apply_hints(sixel_dither_t *dither);
 
 #if SIXEL_ENABLE_THREADS
 static int
-sixel_dither_logger_set_frame_context(sixel_logger_t *logger,
+sixel_dither_logger_set_frame_context(sixel_timeline_logger_t *logger,
                                       sixel_dither_t const *dither);
 #endif  /* SIXEL_ENABLE_THREADS */
 
@@ -298,7 +298,7 @@ sixel_dither_promote_palette_rgb888_to_float32(
 
 #if SIXEL_ENABLE_THREADS
 static int
-sixel_dither_logger_set_frame_context(sixel_logger_t *logger,
+sixel_dither_logger_set_frame_context(sixel_timeline_logger_t *logger,
                                       sixel_dither_t const *dither)
 {
     if (logger == NULL || dither == NULL) {
@@ -307,7 +307,7 @@ sixel_dither_logger_set_frame_context(sixel_logger_t *logger,
     if (dither->frame_context.valid == 0) {
         return 0;
     }
-    sixel_logger_set_frame_context(logger,
+    sixel_timeline_logger_set_frame_context(logger,
                                    dither->frame_context.frame_no,
                                    dither->frame_context.loop_no,
                                    dither->frame_context.multiframe);
@@ -747,7 +747,7 @@ typedef struct sixel_parallel_dither_plan {
     int reqcolor;
     int pixelformat;
     int pin_threads;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
 } sixel_parallel_dither_plan_t;
 
 /*
@@ -850,7 +850,7 @@ sixel_dither_parallel_worker(tp_job_t job,
         restore_context = sixel_dither_logger_set_frame_context(
             plan->logger,
             plan->dither);
-        sixel_logger_logf(plan->logger,
+        sixel_timeline_logger_logf(plan->logger,
                           "worker",
                           "dither",
                           "start",
@@ -863,7 +863,7 @@ sixel_dither_parallel_worker(tp_job_t job,
                           "prepare rows=%d",
                           rows);
         if (restore_context != 0) {
-            sixel_logger_clear_frame_context(plan->logger);
+            sixel_timeline_logger_clear_frame_context(plan->logger);
         }
     }
 
@@ -933,7 +933,7 @@ sixel_dither_parallel_worker(tp_job_t job,
         restore_context = sixel_dither_logger_set_frame_context(
             plan->logger,
             plan->dither);
-        sixel_logger_logf(plan->logger,
+        sixel_timeline_logger_logf(plan->logger,
                           "worker",
                           "dither",
                           "finish",
@@ -947,7 +947,7 @@ sixel_dither_parallel_worker(tp_job_t job,
                           status,
                           rows);
         if (restore_context != 0) {
-            sixel_logger_clear_frame_context(plan->logger);
+            sixel_timeline_logger_clear_frame_context(plan->logger);
         }
     }
 
@@ -2825,7 +2825,7 @@ sixel_dither_apply_palette_with_mode(
     int parallel_overlap = 0;
     int parallel_threads = 1;
 #endif  /* SIXEL_ENABLE_THREADS */
-    sixel_logger_t *logger = NULL;
+    sixel_timeline_logger_t *logger = NULL;
     int resolved_apply_mode = SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE;
     int needs_size_reset = 0;
     int pipeline_depth = 0;
@@ -3150,7 +3150,7 @@ sixel_dither_apply_palette_with_mode(
         parallel_active = 0;
     }
     if (!parallel_active && logger != NULL) {
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "worker",
                           "dither",
                           "start",
@@ -3309,7 +3309,7 @@ end:
         int last_row;
 
         last_row = height > 0 ? height - 1 : 0;
-        sixel_logger_logf(logger,
+        sixel_timeline_logger_logf(logger,
                           "worker",
                           "dither",
                           "finish",

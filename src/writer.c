@@ -71,7 +71,7 @@
 
 #include <sixel.h>
 #include "stdio_stub.h"
-#include "logger.h"
+#include "timeline-logger.h"
 
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
@@ -116,7 +116,7 @@ sixel_writer_png_warning_callback(png_structp png_ptr,
  */
 typedef struct sixel_writer_png_io_context {
     FILE *output_fp;
-    sixel_logger_t *logger;
+    sixel_timeline_logger_t *logger;
     int logger_prepared;
     size_t write_calls;
     size_t write_bytes;
@@ -138,7 +138,7 @@ sixel_writer_png_write_callback(png_structp png_ptr,
     }
 
     if (ctx->logger_prepared) {
-        sixel_logger_logf(ctx->logger,
+        sixel_timeline_logger_logf(ctx->logger,
                           "io",
                           "png",
                           "libpng_stream_write_begin",
@@ -151,7 +151,7 @@ sixel_writer_png_write_callback(png_structp png_ptr,
     written = fwrite(data, 1, length, ctx->output_fp);
     if (written != (size_t)length) {
         if (ctx->logger_prepared) {
-            sixel_logger_logf(ctx->logger,
+            sixel_timeline_logger_logf(ctx->logger,
                               "io",
                               "png",
                               "libpng_stream_write_failed",
@@ -169,7 +169,7 @@ sixel_writer_png_write_callback(png_structp png_ptr,
     ctx->write_calls += 1u;
     ctx->write_bytes += written;
     if (ctx->logger_prepared) {
-        sixel_logger_logf(ctx->logger,
+        sixel_timeline_logger_logf(ctx->logger,
                           "io",
                           "png",
                           "libpng_stream_write_done",
@@ -193,7 +193,7 @@ sixel_writer_png_flush_callback(png_structp png_ptr)
     }
 
     if (ctx->logger_prepared) {
-        sixel_logger_logf(ctx->logger,
+        sixel_timeline_logger_logf(ctx->logger,
                           "io",
                           "png",
                           "libpng_stream_flush_begin",
@@ -205,7 +205,7 @@ sixel_writer_png_flush_callback(png_structp png_ptr)
 
     if (fflush(ctx->output_fp) != 0) {
         if (ctx->logger_prepared) {
-            sixel_logger_logf(ctx->logger,
+            sixel_timeline_logger_logf(ctx->logger,
                               "io",
                               "png",
                               "libpng_stream_flush_failed",
@@ -218,7 +218,7 @@ sixel_writer_png_flush_callback(png_structp png_ptr)
     }
 
     if (ctx->logger_prepared) {
-        sixel_logger_logf(ctx->logger,
+        sixel_timeline_logger_logf(ctx->logger,
                           "io",
                           "png",
                           "libpng_stream_flush_done",
@@ -438,7 +438,7 @@ write_png_to_file(
     unsigned char *src = NULL;
     unsigned char *dst = NULL;
     int bytes_per_pixel = 3;
-    sixel_logger_t logger;
+    sixel_timeline_logger_t *logger;
     int logger_prepared = 0;
 #if HAVE_LIBPNG
     int y = 0;
@@ -460,11 +460,11 @@ write_png_to_file(
     size_t payload_size = 0;
 #endif  /* HAVE_LIBPNG */
 
-    sixel_logger_init(&logger);
-    (void)sixel_logger_prepare_env(&logger);
-    logger_prepared = logger.active;
+    logger = NULL;
+    (void)sixel_timeline_logger_prepare_env(allocator, &logger);
+    logger_prepared = sixel_timeline_logger_is_enabled(logger);
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "write_begin",
@@ -477,7 +477,7 @@ write_png_to_file(
     }
 #if HAVE_LIBPNG
     png_io_ctx.output_fp = NULL;
-    png_io_ctx.logger = &logger;
+    png_io_ctx.logger = logger;
     png_io_ctx.logger_prepared = logger_prepared;
     png_io_ctx.write_calls = 0u;
     png_io_ctx.write_bytes = 0u;
@@ -635,7 +635,7 @@ write_png_to_file(
     }
 
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "file_open_begin",
@@ -656,7 +656,7 @@ write_png_to_file(
         if (!output_fp) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             if (logger_prepared) {
-                sixel_logger_logf(&logger,
+                sixel_timeline_logger_logf(logger,
                                   "io",
                                   "png",
                                   "file_open_failed",
@@ -669,7 +669,7 @@ write_png_to_file(
         }
     }
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "file_open_done",
@@ -719,7 +719,7 @@ write_png_to_file(
     }
 
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "libpng_create_begin",
@@ -739,7 +739,7 @@ write_png_to_file(
     if (!png_ptr) {
         status = SIXEL_PNG_ERROR;
         if (logger_prepared) {
-            sixel_logger_logf(&logger,
+            sixel_timeline_logger_logf(logger,
                               "io",
                               "png",
                               "libpng_create_failed",
@@ -750,7 +750,7 @@ write_png_to_file(
         goto end;
     }
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "libpng_create_done",
@@ -760,7 +760,7 @@ write_png_to_file(
     if (!info_ptr) {
         status = SIXEL_PNG_ERROR;
         if (logger_prepared) {
-            sixel_logger_logf(&logger,
+            sixel_timeline_logger_logf(logger,
                               "io",
                               "png",
                               "libpng_info_failed",
@@ -771,7 +771,7 @@ write_png_to_file(
         goto end;
     }
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "libpng_info_done",
@@ -781,7 +781,7 @@ write_png_to_file(
     if (setjmp(png_jmpbuf(png_ptr))) {
         status = SIXEL_PNG_ERROR;
         if (logger_prepared) {
-            sixel_logger_logf(&logger,
+            sixel_timeline_logger_logf(logger,
                               "io",
                               "png",
                               "libpng_error_callback",
@@ -840,7 +840,7 @@ write_png_to_file(
                      PNG_FILTER_TYPE_BASE);
     }
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "libpng_write_info_begin",
@@ -848,12 +848,12 @@ write_png_to_file(
     }
     png_write_info(png_ptr, info_ptr);
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "libpng_write_info_done",
                           0);
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "libpng_write_image_begin",
@@ -861,12 +861,12 @@ write_png_to_file(
     }
     png_write_image(png_ptr, rows);
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "libpng_write_image_done",
                           0);
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "libpng_write_end_begin",
@@ -874,7 +874,7 @@ write_png_to_file(
     }
     png_write_end(png_ptr, NULL);
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           "libpng_write_end_done",
@@ -1004,7 +1004,7 @@ write_png_to_file(
 end:
     if (output_fp && output_fp != stdout) {
         if (logger_prepared) {
-            sixel_logger_logf(&logger,
+            sixel_timeline_logger_logf(logger,
                               "io",
                               "png",
                               "file_close_begin",
@@ -1014,7 +1014,7 @@ end:
         }
         fclose(output_fp);
         if (logger_prepared) {
-            sixel_logger_logf(&logger,
+            sixel_timeline_logger_logf(logger,
                               "io",
                               "png",
                               "file_close_done",
@@ -1037,7 +1037,7 @@ end:
 #endif  /* HAVE_LIBPNG */
     sixel_allocator_free(allocator, new_pixels);
     if (logger_prepared) {
-        sixel_logger_logf(&logger,
+        sixel_timeline_logger_logf(logger,
                           "io",
                           "png",
                           SIXEL_FAILED(status)
@@ -1047,7 +1047,7 @@ end:
                           "status=%d",
                           status);
     }
-    sixel_logger_close(&logger);
+    sixel_timeline_logger_unref(logger);
 
     return status;
 }

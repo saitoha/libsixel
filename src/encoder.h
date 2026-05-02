@@ -28,8 +28,7 @@
 #include <stddef.h>
 
 #include "sixel_atomic.h"
-
-struct sixel_logger;
+#include "timeline-logger.h"
 
 #include "planner.h"
 
@@ -301,7 +300,7 @@ struct sixel_encoder {
     int clipboard_output_active;
     char clipboard_output_format[32];
     char *clipboard_output_path;
-    struct sixel_logger *logger;
+    sixel_timeline_logger_t *logger;
     int parallel_job_id;
     int palette_job_enabled;
     sixel_encoding_planner_t planner;

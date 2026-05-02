@@ -58,7 +58,7 @@ struct sixel_loader_manager {
     size_t chain_count;
     size_t chain_capacity;
     int skip_predicate_gate;
-    sixel_logger_t *timeline_logger;
+    sixel_timeline_logger_t *timeline_logger;
     int *timeline_job_seq;
     sixel_loader_t *timeline_loader;
 };

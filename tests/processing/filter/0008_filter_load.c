@@ -24,7 +24,7 @@ static SIXELSTATUS
 stub_loader(void *userdata,
             sixel_frame_t **frame_out,
             sixel_allocator_t *allocator,
-            sixel_logger_t *logger)
+            sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     int *dimensions;

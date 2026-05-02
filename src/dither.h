@@ -29,6 +29,7 @@
 
 #include "sixel_atomic.h"
 #include "palette.h"
+#include "timeline-logger.h"
 
 #if !defined(SIXEL_DIFFUSE_INTERFRAME)
 # define SIXEL_DIFFUSE_INTERFRAME 0xb
@@ -36,7 +37,6 @@
 
 typedef void (*sixel_dither_pipeline_row_fn)(void *priv, int row_index);
 
-struct sixel_logger;
 struct sixel_dither_policy_interface;
 
 /*
@@ -164,7 +164,7 @@ struct sixel_dither {
     size_t bluenoise_gradient_map_size; /* gradient map byte length */
     int bluenoise_gradient_width; /* gradient map width */
     int bluenoise_gradient_height; /* gradient map height */
-    struct sixel_logger *pipeline_logger; /* parallel log sink */
+    sixel_timeline_logger_t *pipeline_logger; /* parallel timeline logger */
     sixel_dither_frame_context_t frame_context; /* encoder frame metadata */
     sixel_dither_interframe_state_t interframe_state; /* reserved interframe */
 };

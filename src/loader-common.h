@@ -33,7 +33,7 @@
 #include <sixel.h>
 
 #include "chunk.h"
-#include "logger.h"
+#include "timeline-logger.h"
 
 #define SIXEL_THUMBNAILER_DEFAULT_SIZE 512
 
@@ -117,7 +117,7 @@ int sixel_trace_topic_is_enabled(char const *topic);
 void sixel_trace_topic_message(char const *topic,
                                char const *format, ...);
 
-void loader_timeline_scope_begin(sixel_logger_t *logger,
+void loader_timeline_scope_begin(sixel_timeline_logger_t *logger,
                                  char const *worker,
                                  int *job_seq);
 void loader_timeline_scope_end(void);

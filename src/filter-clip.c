@@ -46,7 +46,7 @@ typedef struct sixel_filter_clip_state {
 static SIXELSTATUS
 sixel_filter_clip_apply(sixel_filter_t *filter,
       sixel_allocator_t *allocator,
-      sixel_logger_t *logger);
+      sixel_timeline_logger_t *logger);
 
 static void
 sixel_filter_clip_dispose(sixel_filter_t *filter);
@@ -119,7 +119,7 @@ sixel_filter_clip_adjust_bounds(sixel_filter_clip_config_t const *config,
 SIXELSTATUS
 sixel_filter_clip_frame(const sixel_filter_clip_config_t *config,
                         sixel_frame_t *frame,
-                        sixel_logger_t *logger)
+                        sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     int src_width;
@@ -171,7 +171,7 @@ sixel_filter_clip_frame(const sixel_filter_clip_config_t *config,
 static SIXELSTATUS
 sixel_filter_clip_apply(sixel_filter_t *filter,
                         sixel_allocator_t *allocator,
-                        sixel_logger_t *logger)
+                        sixel_timeline_logger_t *logger)
 {
     SIXELSTATUS status;
     sixel_filter_clip_state_t *state;

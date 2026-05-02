@@ -36,7 +36,7 @@
 #endif
 
 #include "lookup-policy-eytzinger.h"
-#include "logger.h"
+#include "timeline-logger.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
 
@@ -231,23 +231,22 @@ typedef struct sixel_lookup_policy_eytzinger_float32_pair {
 static void
 sixel_lookup_policy_eytzinger_log_event(int ncolors, char const *event)
 {
-    sixel_logger_t logger;
+    sixel_timeline_logger_t *logger;
     SIXELSTATUS status;
 
-    status = SIXEL_FALSE;
-    sixel_logger_init(&logger);
-    status = sixel_logger_prepare_env(&logger);
-    if (SIXEL_FAILED(status) || !logger.active) {
-        sixel_logger_close(&logger);
+    logger = NULL;
+    status = sixel_timeline_logger_prepare_env(NULL, &logger);
+    if (SIXEL_FAILED(status) || !sixel_timeline_logger_is_enabled(logger)) {
+        sixel_timeline_logger_unref(logger);
         return;
     }
 
-    sixel_logger_logf(&logger,
+    sixel_timeline_logger_logf(logger,
                       "eytzinger",
                       "eytzinger",
                       event,
                       ncolors);
-    sixel_logger_close(&logger);
+    sixel_timeline_logger_unref(logger);
 }
 
 static void

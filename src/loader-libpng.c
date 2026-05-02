@@ -77,7 +77,7 @@
 #include "frame-factory.h"
 #include "loader.h"
 #include "loader-libpng.h"
-#include "logger.h"
+#include "timeline-logger.h"
 
 #if defined(HAVE_DIAGNOSTIC_CLOBBERED) && \
     defined(__GNUC__) && !defined(__clang__) && !defined(__PCC__)
