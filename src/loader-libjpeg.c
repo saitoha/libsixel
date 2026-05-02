@@ -1558,6 +1558,7 @@ jpeg_parse_exif_orientation(unsigned char const *data,
 static SIXELSTATUS
 load_with_libjpeg(
     sixel_chunk_t const       /* in */     *pchunk,
+    sixel_allocator_t         /* in */     *allocator,
     int                       /* in */     enable_cms,
     int                       /* in */     enable_orientation,
     int                       /* in */     fstatic,
@@ -1589,13 +1590,17 @@ load_with_libjpeg(
     (void)start_frame_no_set;
     (void)start_frame_no;
 
+    if (pchunk == NULL || allocator == NULL || fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     if (enable_orientation) {
         (void)jpeg_parse_exif_orientation(sixel_chunk_get_buffer(pchunk),
                                           sixel_chunk_get_size(pchunk),
                                           &exif_orientation);
     }
 
-    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
+    status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1606,7 +1611,7 @@ load_with_libjpeg(
                        &frame->width,
                        &frame->height,
                        &pixelformat,
-                       sixel_chunk_get_allocator(pchunk),
+                       allocator,
                        enable_cms);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1627,7 +1632,7 @@ load_with_libjpeg(
             : SIXEL_FRAME_PIXELS_U8
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels);
+        sixel_allocator_free(allocator, pixels);
         goto end;
     }
     pixels = NULL;
@@ -1813,6 +1818,7 @@ sixel_loader_libjpeg_load(sixel_loader_component_t *component,
                                         decode_job_id);
 
     status = load_with_libjpeg(chunk,
+                               self->allocator,
                                self->enable_cms,
                                self->enable_orientation,
                                self->fstatic,

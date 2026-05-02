@@ -741,6 +741,7 @@ static SIXELSTATUS
 gdkpixbuf_copy_pixbuf_to_frame(
     sixel_frame_t *frame,
     sixel_chunk_t const *pchunk,
+    sixel_allocator_t *allocator,
     GdkPixbuf *pixbuf,
     unsigned char const *bgcolor,
     gdkpixbuf_png_decode_hint_t const *png_hint,
@@ -808,7 +809,8 @@ gdkpixbuf_copy_pixbuf_to_frame(
     bg_linear[0] = 0.0;
     bg_linear[1] = 0.0;
     bg_linear[2] = 0.0;
-    if (frame == NULL || pchunk == NULL || pixbuf == NULL) {
+    if (frame == NULL || pchunk == NULL ||
+        allocator == NULL || pixbuf == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -820,7 +822,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
         return SIXEL_BAD_INPUT;
     }
 
-    gdkpixbuf_reset_frame_storage(frame, sixel_chunk_get_allocator(pchunk));
+    gdkpixbuf_reset_frame_storage(frame, allocator);
     frame->width = width;
     frame->height = height;
     frame->transparent = -1;
@@ -888,7 +890,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
             goto cleanup;
         }
         pixels_f32 = (float *)sixel_allocator_malloc(
-            sixel_chunk_get_allocator(pchunk),
+            allocator,
             pixel_total * 3u * sizeof(float));
         if (pixels_f32 == NULL) {
             sixel_helper_set_additional_message(
@@ -898,7 +900,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
         }
 
         if (has_effective_alpha && bgcolor == NULL) {
-            mask = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(pchunk),
+            mask = (unsigned char *)sixel_allocator_malloc(allocator,
                                                            pixel_total);
             if (mask == NULL) {
                 sixel_helper_set_additional_message(
@@ -999,7 +1001,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
             goto cleanup;
         }
         pixels_u8 = (unsigned char *)sixel_allocator_malloc(
-            sixel_chunk_get_allocator(pchunk),
+            allocator,
             pixel_total * 3u);
         if (pixels_u8 == NULL) {
             sixel_helper_set_additional_message(
@@ -1007,7 +1009,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
             status = SIXEL_BAD_ALLOCATION;
             goto cleanup;
         }
-        mask = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(pchunk),
+        mask = (unsigned char *)sixel_allocator_malloc(allocator,
                                                        pixel_total);
         if (mask == NULL) {
             sixel_helper_set_additional_message(
@@ -1062,7 +1064,7 @@ gdkpixbuf_copy_pixbuf_to_frame(
         goto cleanup;
     }
     buffer_size = pixel_total * 3u;
-    pixels_u8 = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(pchunk),
+    pixels_u8 = (unsigned char *)sixel_allocator_malloc(allocator,
                                                          buffer_size);
     if (pixels_u8 == NULL) {
         sixel_helper_set_additional_message(
@@ -1090,9 +1092,9 @@ gdkpixbuf_copy_pixbuf_to_frame(
     status = SIXEL_OK;
 
 cleanup:
-    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels_u8);
-    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels_f32);
-    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), mask);
+    sixel_allocator_free(allocator, pixels_u8);
+    sixel_allocator_free(allocator, pixels_f32);
+    sixel_allocator_free(allocator, mask);
     return status;
 }
 
@@ -1100,6 +1102,7 @@ static SIXELSTATUS
 gdkpixbuf_emit_animation_frames(
     sixel_frame_t *frame,
     sixel_chunk_t const *pchunk,
+    sixel_allocator_t *allocator,
     GdkPixbufAnimation *animation,
     gint64 start_time_usec,
     int fstatic,
@@ -1134,6 +1137,7 @@ gdkpixbuf_emit_animation_frames(
     start_frame_emitted = 0;
     if (frame == NULL ||
         pchunk == NULL ||
+        allocator == NULL ||
         animation == NULL ||
         fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1160,6 +1164,7 @@ gdkpixbuf_emit_animation_frames(
             }
             status = gdkpixbuf_copy_pixbuf_to_frame(frame,
                                                     pchunk,
+                                                    allocator,
                                                     pixbuf,
                                                     bgcolor,
                                                     png_hint,
@@ -1214,7 +1219,7 @@ gdkpixbuf_emit_animation_frames(
                 }
             }
 
-            gdkpixbuf_reset_frame_storage(frame, sixel_chunk_get_allocator(pchunk));
+            gdkpixbuf_reset_frame_storage(frame, allocator);
             source_frame_no++;
 
             if (finished) {
@@ -1274,6 +1279,7 @@ end:
 static SIXELSTATUS
 load_with_gdkpixbuf(
     sixel_chunk_t const *pchunk,      /* image data */
+    sixel_allocator_t *allocator,
     int fstatic,                       /* static */
     int fuse_palette,                  /* whether to use palette if possible */
     int reqcolors,                     /* reqcolors */
@@ -1325,7 +1331,11 @@ load_with_gdkpixbuf(
     (void)fuse_palette;
     (void)reqcolors;
 
-    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
+    if (pchunk == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1383,6 +1393,7 @@ load_with_gdkpixbuf(
         }
         status = gdkpixbuf_copy_pixbuf_to_frame(frame,
                                                 pchunk,
+                                                allocator,
                                                 pixbuf,
                                                 bgcolor,
                                                 &png_hint,
@@ -1443,6 +1454,7 @@ load_with_gdkpixbuf(
     status = gdkpixbuf_emit_animation_frames(
         frame,
         pchunk,
+        allocator,
         animation,
         start_time_usec,
         fstatic,
@@ -1469,7 +1481,7 @@ end:
     if (loader) {
         g_object_unref(loader);
     }
-    gdkpixbuf_png_decode_hint_reset(&png_hint, sixel_chunk_get_allocator(pchunk));
+    gdkpixbuf_png_decode_hint_reset(&png_hint, allocator);
 
     return status;
 
@@ -1624,6 +1636,7 @@ sixel_loader_gdkpixbuf2_load(sixel_loader_component_t *component,
                                         decode_job_id);
 
     status = load_with_gdkpixbuf(chunk,
+                                 self->allocator,
                                  self->fstatic,
                                  self->fuse_palette,
                                  self->reqcolors,

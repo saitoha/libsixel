@@ -86,17 +86,6 @@ sixel_chunk_get_source_path(sixel_chunk_t const *chunk)
     return chunk->vtbl->source_path(chunk);
 }
 
-static inline sixel_allocator_t *
-sixel_chunk_get_allocator(sixel_chunk_t const *chunk)
-{
-    if (chunk == NULL || chunk->vtbl == NULL ||
-        chunk->vtbl->allocator == NULL) {
-        return NULL;
-    }
-
-    return chunk->vtbl->allocator(chunk);
-}
-
 #ifdef __cplusplus
 }
 #endif

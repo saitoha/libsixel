@@ -436,6 +436,7 @@ run_animation_decode_fail_case(webp_fi_failpoint_t failpoint,
     sixel_helper_set_additional_message(NULL);
     webpfi_set_failpoint(failpoint);
     status = load_with_libwebp(chunk,
+                               allocator,
                                0,
                                0,
                                fstatic,
@@ -519,6 +520,7 @@ run_demux_fail_case(char const *label)
     sixel_helper_set_additional_message(NULL);
     webpfi_set_failpoint(WEBP_FI_FAIL_DEMUX);
     status = load_with_libwebp(chunk,
+                               allocator,
                                1,
                                0,
                                0,
@@ -1143,6 +1145,7 @@ run_fast_frame_count_limit_case(void)
 
     sixel_helper_set_additional_message(NULL);
     status = load_with_libwebp(chunk,
+                               allocator,
                                0,
                                0,
                                0,

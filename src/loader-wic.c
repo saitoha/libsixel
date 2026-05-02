@@ -196,6 +196,7 @@ end:
 static SIXELSTATUS
 load_with_wic(
     sixel_chunk_t const       /* in */     *pchunk,      /* image data */
+    sixel_allocator_t         /* in */     *allocator,
     int                       /* in */     fstatic,      /* static */
     int                       /* in */     fuse_palette, /* whether to use */
                                                   /* palette if possible */
@@ -277,6 +278,10 @@ load_with_wic(
     (void) reqcolors;
     (void) bgcolor;
     (void) loop_control;
+
+    if (pchunk == NULL || allocator == NULL || fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     PropVariantInit(&prop);
     PropVariantInit(&lp);
@@ -482,7 +487,7 @@ load_with_wic(
         }
     }
 
-    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
+    status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
             "load_with_wic: sixel_frame_create_from_factory() failed.");
@@ -517,7 +522,7 @@ load_with_wic(
                         wicpalette, &ncolors);
                     if (SUCCEEDED(hr) && ncolors > 0) {
                         wiccolors = (WICColor *)sixel_allocator_malloc(
-                            sixel_chunk_get_allocator(pchunk),
+                            allocator,
                             (size_t)ncolors * sizeof(WICColor));
                         if (wiccolors == NULL) {
                             sixel_helper_set_additional_message(
@@ -528,7 +533,7 @@ load_with_wic(
                         }
                         frame->palette = (unsigned char *)
                             sixel_allocator_malloc(
-                                sixel_chunk_get_allocator(pchunk),
+                                allocator,
                                 (size_t)ncolors * 3);
                         if (frame->palette == NULL) {
                             sixel_helper_set_additional_message(
@@ -561,9 +566,9 @@ load_with_wic(
                     conv->lpVtbl->Release(conv);
                     conv = NULL;
                 }
-                sixel_allocator_free(sixel_chunk_get_allocator(pchunk), frame->palette);
+                sixel_allocator_free(allocator, frame->palette);
                 frame->palette = NULL;
-                sixel_allocator_free(sixel_chunk_get_allocator(pchunk), wiccolors);
+                sixel_allocator_free(allocator, wiccolors);
                 wiccolors = NULL;
                 src = NULL;
             }
@@ -633,7 +638,7 @@ load_with_wic(
         }
 
         pixels = (unsigned char *)sixel_allocator_malloc(
-            sixel_chunk_get_allocator(pchunk),
+            allocator,
             (size_t)(frame->height * frame->width * comp));
         if (pixels == NULL) {
             sixel_helper_set_additional_message(
@@ -655,7 +660,7 @@ load_with_wic(
                 SIXEL_FRAME_PIXELS_U8
             });
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels);
+            sixel_allocator_free(allocator, pixels);
             hr = E_FAIL;
             goto end;
         }
@@ -694,7 +699,7 @@ load_with_wic(
              wicpalette->lpVtbl->Release(wicpalette);
         }
         if (wiccolors) {
-             sixel_allocator_free(sixel_chunk_get_allocator(pchunk), wiccolors);
+             sixel_allocator_free(allocator, wiccolors);
         }
         if (wicframe) {
              wicframe->lpVtbl->Release(wicframe);
@@ -739,7 +744,7 @@ end:
          wicpalette->lpVtbl->Release(wicpalette);
     }
     if (wiccolors) {
-         sixel_allocator_free(sixel_chunk_get_allocator(pchunk), wiccolors);
+         sixel_allocator_free(allocator, wiccolors);
     }
     if (candidate_frame) {
          candidate_frame->lpVtbl->Release(candidate_frame);
@@ -928,6 +933,7 @@ sixel_loader_wic_load(sixel_loader_component_t *component,
                                         decode_job_id);
 
     status = load_with_wic(chunk,
+                           self->allocator,
                            self->fstatic,
                            self->fuse_palette,
                            self->reqcolors,

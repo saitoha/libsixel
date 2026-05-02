@@ -180,6 +180,7 @@ static int thumbnailer_supports_mime(struct thumbnailer_entry *entry,
                                      char const *mime_type);
 static SIXELSTATUS load_with_gnome_thumbnailer(
     sixel_chunk_t const       *pchunk,
+    sixel_allocator_t         *allocator,
     int                        fstatic,
     int                        fuse_palette,
     int                        reqcolors,
@@ -2591,6 +2592,7 @@ sixel_loader_gnome_thumbnailer_load(sixel_loader_component_t *component,
                                         decode_job_id);
 
     status = load_with_gnome_thumbnailer(chunk,
+                                         self->allocator,
                                          self->fstatic,
                                          self->fuse_palette,
                                          self->reqcolors,
@@ -2678,6 +2680,7 @@ sixel_loader_gnome_thumbnailer_new(sixel_allocator_t *allocator,
 static SIXELSTATUS
 thumbnailer_decode_png_with_builtin(
     sixel_chunk_t const       *thumb_chunk,
+    sixel_allocator_t         *allocator,
     int                        fstatic,
     int                        fuse_palette,
     int                        reqcolors,
@@ -2700,9 +2703,7 @@ thumbnailer_decode_png_with_builtin(
     bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
     enable_orientation = 1;
     bmp_info40_mode = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO;
-    if (thumb_chunk == NULL ||
-            sixel_chunk_get_allocator(thumb_chunk) == NULL ||
-            fn_load == NULL) {
+    if (thumb_chunk == NULL || allocator == NULL || fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -2711,8 +2712,7 @@ thumbnailer_decode_png_with_builtin(
      * other backend composition paths.  The concrete builtin decode helper is
      * private to loader-builtin.c.
      */
-    status = sixel_loader_builtin_new(sixel_chunk_get_allocator(thumb_chunk),
-                                      (void **)&builtin_loader);
+    status = sixel_loader_builtin_new(allocator, (void **)&builtin_loader);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -2837,6 +2837,7 @@ end:
 static SIXELSTATUS
 load_with_gnome_thumbnailer(
     sixel_chunk_t const       /* in */     *pchunk,
+    sixel_allocator_t         /* in */     *allocator,
     int                       /* in */     fstatic,
     int                       /* in */     fuse_palette,
     int                       /* in */     reqcolors,
@@ -2903,7 +2904,8 @@ load_with_gnome_thumbnailer(
 
     thumbnailer_entry_init(&info);
 
-    if (sixel_chunk_get_source_path(pchunk) == NULL) {
+    if (pchunk == NULL || allocator == NULL ||
+        sixel_chunk_get_source_path(pchunk) == NULL) {
         sixel_helper_set_additional_message(
             "load_with_gnome_thumbnailer: source path is unavailable.");
         status = SIXEL_BAD_ARGUMENT;
@@ -3138,11 +3140,12 @@ load_with_gnome_thumbnailer(
                              png_path,
                              0,
                              NULL,
-                             sixel_chunk_get_allocator(pchunk));
+                             allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
     status = thumbnailer_decode_png_with_builtin(thumb_chunk,
+                                                 allocator,
                                                  fstatic,
                                                  fuse_palette,
                                                  reqcolors,

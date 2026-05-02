@@ -56,6 +56,7 @@ sixel_frompng_apply_colorspace_fallback_pixelformat(
 
 SIXELSTATUS
 sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
+                              sixel_allocator_t *allocator,
                               sixel_frame_t *frame,
                               int enable_cms,
                               unsigned char const *bgcolor,

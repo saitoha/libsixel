@@ -2520,6 +2520,7 @@ sixel_frompng_has_transparency(unsigned char const *buffer, size_t size)
 
 SIXELSTATUS
 sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
+                              sixel_allocator_t *allocator,
                               sixel_frame_t *frame,
                               int enable_cms,
                               unsigned char const *bgcolor,
@@ -2569,7 +2570,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     background16[1] = 0u;
     background16[2] = 0u;
 
-    if (pchunk == NULL || frame == NULL) {
+    if (pchunk == NULL || allocator == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     sixel_frompng_resolve_background(sixel_chunk_get_buffer(pchunk),
@@ -2604,7 +2605,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
             }
             pixel_count = (size_t)frame->width * (size_t)frame->height;
             transparent_mask = (unsigned char *)sixel_allocator_malloc(
-                sixel_chunk_get_allocator(pchunk),
+                allocator,
                 pixel_count);
             if (transparent_mask == NULL) {
                 stbi_image_free(pixels16);
@@ -2633,19 +2634,19 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                 enable_cms,
                 sixel_chunk_get_buffer(pchunk),
                 sixel_chunk_get_size(pchunk),
-                sixel_chunk_get_allocator(pchunk));
+                allocator);
         } else {
             status = sixel_frompng_convert_rgba16_to_rgbfloat32(&pixels_float32,
                                                                  pixels16,
                                                                  frame->width,
                                                                  frame->height,
                                                                  background16,
-                                                                 sixel_chunk_get_allocator(pchunk));
+                                                                 allocator);
         }
         stbi_image_free(pixels16);
         pixels16 = NULL;
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(sixel_chunk_get_allocator(pchunk), transparent_mask);
+            sixel_allocator_free(allocator, transparent_mask);
             return status;
         }
         status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
@@ -2665,8 +2666,8 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                 SIXEL_FRAME_PIXELS_FLOAT32
             });
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels_float32);
-            sixel_allocator_free(sixel_chunk_get_allocator(pchunk), transparent_mask);
+            sixel_allocator_free(allocator, pixels_float32);
+            sixel_allocator_free(allocator, transparent_mask);
             return status;
         }
         frame->loop_count = 1;
@@ -2680,7 +2681,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
             } else {
                 frame->alpha_zero_is_transparent = 0;
             }
-            sixel_allocator_free(sixel_chunk_get_allocator(pchunk), transparent_mask);
+            sixel_allocator_free(allocator, transparent_mask);
             return SIXEL_OK;
         }
         if (enable_cms) {
@@ -2692,7 +2693,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                 SIXEL_PIXELFORMAT_RGBFLOAT32,
                 sixel_chunk_get_buffer(pchunk),
                 sixel_chunk_get_size(pchunk),
-                sixel_chunk_get_allocator(pchunk));
+                allocator);
 #else
             {
                 double fallback_gamma;
@@ -2823,7 +2824,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
                 SIXEL_PIXELFORMAT_RGB888,
                 sixel_chunk_get_buffer(pchunk),
                 sixel_chunk_get_size(pchunk),
-                sixel_chunk_get_allocator(pchunk));
+                allocator);
 #else
             {
                 double fallback_gamma;
@@ -2919,7 +2920,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     }
     pixel_count = (size_t)frame->width * (size_t)frame->height;
     transparent_mask = (unsigned char *)sixel_allocator_malloc(
-        sixel_chunk_get_allocator(pchunk),
+        allocator,
         pixel_count);
     if (transparent_mask == NULL) {
         stbi_image_free(pixels8);
@@ -2948,11 +2949,11 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
         enable_cms,
         sixel_chunk_get_buffer(pchunk),
         sixel_chunk_get_size(pchunk),
-        sixel_chunk_get_allocator(pchunk));
+        allocator);
     stbi_image_free(pixels8);
     pixels8 = NULL;
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), transparent_mask);
+        sixel_allocator_free(allocator, transparent_mask);
         return status;
     }
     status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
@@ -2968,8 +2969,8 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
             SIXEL_FRAME_PIXELS_FLOAT32
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels_float32);
-        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), transparent_mask);
+        sixel_allocator_free(allocator, pixels_float32);
+        sixel_allocator_free(allocator, transparent_mask);
         return status;
     }
     frame->loop_count = 1;
@@ -2982,7 +2983,7 @@ sixel_frompng_load_nonindexed(sixel_chunk_t const *pchunk,
     } else {
         frame->alpha_zero_is_transparent = 0;
     }
-    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), transparent_mask);
+    sixel_allocator_free(allocator, transparent_mask);
 
     return SIXEL_OK;
 }

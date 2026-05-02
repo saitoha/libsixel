@@ -36,12 +36,14 @@ extern "C" {
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_fromwebp_load(sixel_chunk_t const *chunk,
+                    sixel_allocator_t *allocator,
                     int enable_cms,
                     int enable_orientation,
                     sixel_frame_t *frame);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
+                              sixel_allocator_t *allocator,
                               int fstatic,
                               int loop_control,
                               int start_frame_no_set,

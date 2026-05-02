@@ -27,13 +27,40 @@
  * IChunk.init_source(request)
  * IChunk.get_bytes(view)
  * IChunk.source_path()
- * IChunk.allocator()
  * IChunk.ref()
  * IChunk.unref()
  */
 
 static unsigned char const memory_bytes[] = "chunk-memory";
 static char const memory_path[] = "memory://chunk-factory-test";
+static int tracked_allocator_free_count;
+
+static void *
+tracked_malloc(size_t size)
+{
+    return malloc(size);
+}
+
+static void *
+tracked_calloc(size_t count, size_t size)
+{
+    return calloc(count, size);
+}
+
+static void *
+tracked_realloc(void *ptr, size_t size)
+{
+    return realloc(ptr, size);
+}
+
+static void
+tracked_free(void *ptr)
+{
+    if (ptr != NULL) {
+        ++tracked_allocator_free_count;
+    }
+    free(ptr);
+}
 
 static int
 build_source_path(char *path, size_t path_size)
@@ -70,6 +97,7 @@ test_chunk_factory_component(void)
     void *service;
     void *object;
     char source_path[4096];
+    int free_count_before_unref;
     int cancel_flag;
 
     status = SIXEL_FALSE;
@@ -78,13 +106,19 @@ test_chunk_factory_component(void)
     chunk = NULL;
     service = NULL;
     object = NULL;
+    free_count_before_unref = 0;
     cancel_flag = 0;
     memset(&view, 0, sizeof(view));
     memset(&memory_request, 0, sizeof(memory_request));
     memset(&source_request, 0, sizeof(source_request));
     memset(source_path, 0, sizeof(source_path));
 
-    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    tracked_allocator_free_count = 0;
+    status = sixel_allocator_new(&allocator,
+                                 tracked_malloc,
+                                 tracked_calloc,
+                                 tracked_realloc,
+                                 tracked_free);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -115,11 +149,18 @@ test_chunk_factory_component(void)
         chunk->vtbl->init_memory == NULL ||
         chunk->vtbl->init_source == NULL ||
         chunk->vtbl->get_bytes == NULL ||
-        chunk->vtbl->source_path == NULL ||
-        chunk->vtbl->allocator == NULL) {
+        chunk->vtbl->source_path == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
+
+    /*
+     * The chunk retains the allocator internally. Dropping the caller's
+     * reference here keeps the test honest without exposing an allocator()
+     * accessor on the interface.
+     */
+    sixel_allocator_unref(allocator);
+    allocator = NULL;
 
     memory_request.bytes = memory_bytes;
     memory_request.size = sizeof(memory_bytes) - 1u;
@@ -134,8 +175,7 @@ test_chunk_factory_component(void)
     }
     if (view.size != sizeof(memory_bytes) - 1u ||
         memcmp(view.bytes, memory_bytes, view.size) != 0 ||
-        strcmp(chunk->vtbl->source_path(chunk), memory_path) != 0 ||
-        chunk->vtbl->allocator(chunk) != allocator) {
+        strcmp(chunk->vtbl->source_path(chunk), memory_path) != 0) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -159,8 +199,15 @@ test_chunk_factory_component(void)
         goto end;
     }
     if (view.bytes == NULL || view.size == 0u ||
-        strcmp(chunk->vtbl->source_path(chunk), source_path) != 0 ||
-        chunk->vtbl->allocator(chunk) != allocator) {
+        strcmp(chunk->vtbl->source_path(chunk), source_path) != 0) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    free_count_before_unref = tracked_allocator_free_count;
+    chunk->vtbl->unref(chunk);
+    chunk = NULL;
+    if (tracked_allocator_free_count <= free_count_before_unref) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }

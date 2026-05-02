@@ -1229,6 +1229,7 @@ cleanup:
 static SIXELSTATUS
 load_with_libtiff(
     sixel_chunk_t const       /* in */     *pchunk,
+    sixel_allocator_t         /* in */     *allocator,
     int                       /* in */     enable_cms,
     int                       /* in */     fstatic,
     int                       /* in */     fuse_palette,
@@ -1257,7 +1258,11 @@ load_with_libtiff(
     (void)start_frame_no_set;
     (void)start_frame_no;
 
-    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
+    if (pchunk == NULL || allocator == NULL || fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1268,7 +1273,7 @@ load_with_libtiff(
                        &frame->width,
                        &frame->height,
                        &pixelformat,
-                       sixel_chunk_get_allocator(pchunk),
+                       allocator,
                        enable_cms);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1289,7 +1294,7 @@ load_with_libtiff(
             : SIXEL_FRAME_PIXELS_U8
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels);
+        sixel_allocator_free(allocator, pixels);
         goto end;
     }
     pixels = NULL;
@@ -1467,6 +1472,7 @@ sixel_loader_libtiff_load(sixel_loader_component_t *component,
                                         decode_job_id);
 
     status = load_with_libtiff(chunk,
+                               self->allocator,
                                self->enable_cms,
                                self->fstatic,
                                self->fuse_palette,

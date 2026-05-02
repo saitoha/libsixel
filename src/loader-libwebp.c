@@ -83,6 +83,7 @@ loader_can_try_libwebp(sixel_chunk_t const *chunk);
 
 typedef struct webp_decode_common {
     sixel_chunk_t const *chunk;
+    sixel_allocator_t *allocator;
     int enable_cms;
     int allow_palette_promotion;
     int reqcolors;
@@ -2274,6 +2275,7 @@ webp_set_get_features_error_message(VP8StatusCode feature_status)
 static void
 webp_init_decode_common(webp_decode_common_t *decode,
                         sixel_chunk_t const *chunk,
+                        sixel_allocator_t *allocator,
                         int enable_cms,
                         int reqcolors,
                         sixel_load_image_function fn_load,
@@ -2285,6 +2287,7 @@ webp_init_decode_common(webp_decode_common_t *decode,
 
     *decode = (webp_decode_common_t){ 0 };
     decode->chunk = chunk;
+    decode->allocator = allocator;
     decode->enable_cms = enable_cms;
     decode->reqcolors = reqcolors;
     decode->exif_orientation = 1;
@@ -3082,11 +3085,12 @@ webp_decode_and_emit_single_frame_buffer(webp_decode_common_t const *decode,
     pixels = NULL;
     cms_converted = 0;
     if (decode == NULL || decode->chunk == NULL ||
+        decode->allocator == NULL ||
         decode->fn_load == NULL || source_data == NULL ||
         source_size == 0u) {
         return SIXEL_BAD_ARGUMENT;
     }
-    allocator = sixel_chunk_get_allocator(decode->chunk);
+    allocator = decode->allocator;
 
     status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
@@ -3197,7 +3201,7 @@ webp_decode_and_emit_static_animation_frame(WebPAnimDecoder *decoder,
         goto end;
     }
 
-    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(chunk));
+    status = sixel_frame_create_from_factory(&frame, decode->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -3249,7 +3253,7 @@ webp_decode_and_emit_static_animation_frame(WebPAnimDecoder *decoder,
                                               decode->enable_cms,
                                               decode->icc_profile,
                                               decode->icc_profile_length,
-                                              sixel_chunk_get_allocator(chunk),
+                                              decode->allocator,
                                               &cms_converted);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -3278,13 +3282,13 @@ webp_decode_and_emit_static_animation_frame(WebPAnimDecoder *decoder,
                                           decode->reqcolors,
                                           resolved_bgcolor,
                                           decode->exif_orientation,
-                                          sixel_chunk_get_allocator(chunk),
+                                          decode->allocator,
                                           decode->fn_load,
                                           decode->context);
 
 end:
     if (chunk != NULL) {
-        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+        sixel_allocator_free(decode->allocator, pixels);
     }
     sixel_frame_unref(frame);
     return status;
@@ -3384,7 +3388,7 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                                         frame_bytes,
                                         &frame_cache_estimate_bytes)) {
         frame_cache = (sixel_frame_t **)sixel_allocator_calloc(
-            sixel_chunk_get_allocator(chunk),
+            decode->allocator,
             frame_cache_slots,
             sizeof(*frame_cache));
     }
@@ -3488,7 +3492,7 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
 
                 status = sixel_frame_create_from_factory(
                     &frame,
-                    sixel_chunk_get_allocator(chunk));
+                    decode->allocator);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
@@ -3502,7 +3506,7 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                     decode->enable_cms,
                     decode->icc_profile,
                     decode->icc_profile_length,
-                    sixel_chunk_get_allocator(chunk),
+                    decode->allocator,
                     &cms_converted);
                 if (SIXEL_FAILED(status)) {
                     goto end;
@@ -3543,7 +3547,7 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                     decode->allow_palette_promotion,
                     decode->reqcolors,
                     resolved_bgcolor,
-                    sixel_chunk_get_allocator(chunk));
+                    decode->allocator);
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
@@ -3559,7 +3563,7 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                 if (frame_cache != NULL && loop_count == 0 &&
                     (size_t)frame_no < frame_cache_slots) {
                     status = webp_frame_clone(frame,
-                                              sixel_chunk_get_allocator(chunk),
+                                              decode->allocator,
                                               &cached_frame);
                     if (SIXEL_SUCCEEDED(status)) {
                         status = webp_frame_set_handoff_shareable(
@@ -3579,7 +3583,7 @@ webp_decode_and_emit_multiframe_animation(WebPAnimDecoder *decoder,
                                 frame_cache[frame_cache_cleanup_index]);
                             frame_cache[frame_cache_cleanup_index] = NULL;
                         }
-                        sixel_allocator_free(sixel_chunk_get_allocator(chunk), frame_cache);
+                        sixel_allocator_free(decode->allocator, frame_cache);
                         frame_cache = NULL;
                         frame_cache_slots = 0u;
                     }
@@ -3637,10 +3641,10 @@ end:
              ++frame_cache_cleanup_index) {
             sixel_frame_unref(frame_cache[frame_cache_cleanup_index]);
         }
-        sixel_allocator_free(sixel_chunk_get_allocator(chunk), frame_cache);
+        sixel_allocator_free(decode->allocator, frame_cache);
     }
     if (chunk != NULL) {
-        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+        sixel_allocator_free(decode->allocator, pixels);
     }
     sixel_frame_unref(frame);
     return status;
@@ -3656,6 +3660,7 @@ end:
 static SIXELSTATUS
 load_with_libwebp(
     sixel_chunk_t const       /* in */     *pchunk,
+    sixel_allocator_t         /* in */     *allocator,
     int                       /* in */     enable_cms,
     int                       /* in */     enable_orientation,
     int                       /* in */     fstatic,
@@ -3702,9 +3707,13 @@ load_with_libwebp(
     single_frame_size = 0u;
     animation_frame_count_hint = 0u;
     parsed_orientation = 1;
+    if (pchunk == NULL || allocator == NULL || fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     webp_init_decode_common(&decode,
                             pchunk,
+                            allocator,
                             enable_cms,
                             reqcolors,
                             fn_load,
@@ -3778,7 +3787,7 @@ load_with_libwebp(
         webp_extract_icc_profile(demux,
                                  &decode.icc_profile,
                                  &decode.icc_profile_length,
-                                 sixel_chunk_get_allocator(pchunk));
+                                 allocator);
     }
     if (enable_orientation && demux != NULL) {
         if (webp_extract_exif_orientation(demux, &parsed_orientation)) {
@@ -3867,7 +3876,7 @@ load_with_libwebp(
             &single_frame_size,
             sixel_chunk_get_buffer(pchunk),
             sixel_chunk_get_size(pchunk),
-            sixel_chunk_get_allocator(pchunk));
+            allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -3929,8 +3938,8 @@ end:
     if (demux != NULL) {
         WebPDemuxDelete(demux);
     }
-    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), single_frame_data);
-    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), decode.icc_profile);
+    sixel_allocator_free(allocator, single_frame_data);
+    sixel_allocator_free(allocator, decode.icc_profile);
 
     return status;
 }
@@ -4091,6 +4100,7 @@ sixel_loader_libwebp_load(sixel_loader_component_t *component,
                                         decode_job_id);
 
     status = load_with_libwebp(chunk,
+                               self->allocator,
                                self->enable_cms,
                                self->enable_orientation,
                                self->fstatic,

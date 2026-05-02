@@ -79,6 +79,7 @@
 
 typedef struct sixel_builtin_load_with_builtin_args {
     sixel_chunk_t const       *pchunk;
+    sixel_allocator_t         *allocator;
     int                        fstatic;
     int                        fuse_palette;
     int                        reqcolors;
@@ -123,6 +124,7 @@ static SIXEL_STBI_TLS sixel_allocator_t *stbi_allocator;
 static SIXELSTATUS
 load_with_builtin(
     sixel_chunk_t const *pchunk,
+    sixel_allocator_t *allocator,
     int fstatic,
     int fuse_palette,
     int reqcolors,
@@ -140,6 +142,7 @@ load_with_builtin(
     sixel_builtin_load_with_builtin_args_t args;
 
     args.pchunk = pchunk;
+    args.allocator = allocator;
     args.fstatic = fstatic;
     args.fuse_palette = fuse_palette;
     args.reqcolors = reqcolors;
@@ -2997,13 +3000,15 @@ sixel_builtin_apng_begin_loop_iteration(
 static SIXELSTATUS
 sixel_builtin_apng_prepare_canvas_from_ihdr(
     sixel_chunk_t const *pchunk,
+    sixel_allocator_t *allocator,
     sixel_builtin_apng_canvas_t *canvas,
     sixel_builtin_apng_runtime_t *runtime)
 {
     SIXELSTATUS status;
 
     status = SIXEL_OK;
-    if (pchunk == NULL || canvas == NULL || runtime == NULL) {
+    if (pchunk == NULL || allocator == NULL ||
+        canvas == NULL || runtime == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (runtime->canvas_bytes != 0u) {
@@ -3023,10 +3028,10 @@ sixel_builtin_apng_prepare_canvas_from_ihdr(
     canvas->height = (int)runtime->canvas_height;
     runtime->canvas_bytes = (size_t)canvas->width * (size_t)canvas->height * 4u;
     canvas->pixels = (unsigned char *)sixel_allocator_malloc(
-        sixel_chunk_get_allocator(pchunk),
+        allocator,
         runtime->canvas_bytes);
     canvas->backup = (unsigned char *)sixel_allocator_malloc(
-        sixel_chunk_get_allocator(pchunk),
+        allocator,
         runtime->canvas_bytes);
     if (canvas->pixels == NULL || canvas->backup == NULL) {
         status = SIXEL_BAD_ALLOCATION;
@@ -3104,6 +3109,7 @@ sixel_builtin_apng_flush_pending_frame(
 static SIXELSTATUS
 sixel_builtin_apng_process_chunk(
     sixel_chunk_t const *pchunk,
+    sixel_allocator_t *allocator,
     sixel_builtin_apng_state_t *state,
     sixel_builtin_apng_frame_control_t *control,
     sixel_builtin_apng_canvas_t *canvas,
@@ -3129,6 +3135,7 @@ sixel_builtin_apng_process_chunk(
         *stop_scan = 0;
     }
     if (pchunk == NULL ||
+        allocator == NULL ||
         state == NULL ||
         control == NULL ||
         canvas == NULL ||
@@ -3158,6 +3165,7 @@ sixel_builtin_apng_process_chunk(
                 ? 1
                 : 0;
         status = sixel_builtin_apng_prepare_canvas_from_ihdr(pchunk,
+                                                             allocator,
                                                              canvas,
                                                              runtime);
         if (SIXEL_FAILED(status)) {
@@ -3203,7 +3211,7 @@ sixel_builtin_apng_process_chunk(
                 fstatic,
                 fn_load,
                 callback_context,
-                sixel_chunk_get_allocator(pchunk),
+                allocator,
                 &stop_after_emit);
             if (SIXEL_FAILED(status)) {
                 return status;
@@ -3248,7 +3256,7 @@ sixel_builtin_apng_process_chunk(
                                              "IDAT",
                                              runtime->p + 12,
                                              runtime->length - 4u,
-                                             sixel_chunk_get_allocator(pchunk))) {
+                                             allocator)) {
             return SIXEL_BAD_ALLOCATION;
         }
     } else if (memcmp(runtime->p + 4, "IDAT", 4) == 0) {
@@ -3259,7 +3267,7 @@ sixel_builtin_apng_process_chunk(
                                              "IDAT",
                                              runtime->p + 8,
                                              runtime->length,
-                                             sixel_chunk_get_allocator(pchunk))) {
+                                             allocator)) {
             return SIXEL_BAD_ALLOCATION;
         }
         if (runtime->seen_actl != 0 &&
@@ -3298,7 +3306,7 @@ sixel_builtin_apng_process_chunk(
                                                     runtime->p,
                                                     (size_t)runtime->length
                                                         + 12u,
-                                                    sixel_chunk_get_allocator(pchunk))) {
+                                                    allocator)) {
             return SIXEL_BAD_ALLOCATION;
         }
     }
@@ -3309,6 +3317,7 @@ sixel_builtin_apng_process_chunk(
 static SIXELSTATUS
 sixel_builtin_apng_scan_loop_chunks(
     sixel_chunk_t const *pchunk,
+    sixel_allocator_t *allocator,
     sixel_builtin_apng_state_t *state,
     sixel_builtin_apng_frame_control_t *control,
     sixel_builtin_apng_canvas_t *canvas,
@@ -3328,6 +3337,7 @@ sixel_builtin_apng_scan_loop_chunks(
     status = SIXEL_OK;
     stop_scan = 0;
     if (pchunk == NULL ||
+        allocator == NULL ||
         state == NULL ||
         control == NULL ||
         canvas == NULL ||
@@ -3346,6 +3356,7 @@ sixel_builtin_apng_scan_loop_chunks(
         stop_scan = 0;
         status = sixel_builtin_apng_process_chunk(
             pchunk,
+            allocator,
             state,
             control,
             canvas,
@@ -3416,6 +3427,7 @@ sixel_builtin_apng_complete_loop_iteration(
 static SIXELSTATUS
 sixel_builtin_load_apng_frames(
     sixel_chunk_t const *pchunk,
+    sixel_allocator_t *allocator,
     int fstatic,
     unsigned char *bgcolor,
     int enable_cms,
@@ -3456,7 +3468,7 @@ sixel_builtin_load_apng_frames(
         start_frame_no,
         trns_keycolor_mode);
 
-    if (pchunk == NULL) {
+    if (pchunk == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (sixel_chunk_get_size(pchunk) < 8) {
@@ -3477,6 +3489,7 @@ sixel_builtin_load_apng_frames(
         stop_decode = 0;
         status = sixel_builtin_apng_scan_loop_chunks(
             pchunk,
+            allocator,
             &state,
             &control,
             &canvas,
@@ -3505,7 +3518,7 @@ sixel_builtin_load_apng_frames(
             fstatic,
             fn_load,
             callback_context,
-            sixel_chunk_get_allocator(pchunk),
+            allocator,
             &stop_decode);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -3520,7 +3533,7 @@ sixel_builtin_load_apng_frames(
             &state,
             &runtime,
             loop_control,
-            sixel_chunk_get_allocator(pchunk),
+            allocator,
             &stop_loop);
         if (SIXEL_FAILED(status)) {
             goto end;
@@ -3538,9 +3551,9 @@ end:
         sixel_helper_format_error(status),
         runtime.loop_no,
         runtime.saw_animation);
-    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), canvas.pixels);
-    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), canvas.backup);
-    sixel_builtin_apng_release_loop_buffers(&state, sixel_chunk_get_allocator(pchunk));
+    sixel_allocator_free(allocator, canvas.pixels);
+    sixel_allocator_free(allocator, canvas.backup);
+    sixel_builtin_apng_release_loop_buffers(&state, allocator);
     if (!runtime.saw_animation && status == SIXEL_FALSE) {
         return SIXEL_FALSE;
     }
@@ -3743,6 +3756,7 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
                                         decode_job_id);
     sixel_helper_set_loader_cms_engine(self->cms_engine);
     status = load_with_builtin(chunk,
+                               self->allocator,
                                self->fstatic,
                                self->fuse_palette,
                                self->reqcolors,
@@ -3838,6 +3852,7 @@ sixel_loader_builtin_new(sixel_allocator_t *allocator,
 
 typedef struct sixel_builtin_load_request {
     sixel_chunk_t const *chunk;
+    sixel_allocator_t *allocator;
     int fstatic;
     int fuse_palette;
     int reqcolors;
@@ -4183,6 +4198,7 @@ sixel_builtin_prepare_load_context(
     if (request == NULL ||
         load_context == NULL ||
         request->chunk == NULL ||
+        request->allocator == NULL ||
         request->fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -4354,23 +4370,24 @@ sixel_builtin_load_gif_frames(
                     fnp.p,
                     &callback_context,
                     callback_context.cancel_context,
-                    sixel_chunk_get_allocator(request->chunk));
+                    request->allocator);
 }
 
 static SIXELSTATUS
 sixel_builtin_prepare_frame_and_chunk_size(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     sixel_frame_t **frame,
     int *chunk_size)
 {
     SIXELSTATUS status;
 
     status = SIXEL_OK;
-    if (chunk == NULL || frame == NULL) {
+    if (chunk == NULL || allocator == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = sixel_frame_create_from_factory(frame, sixel_chunk_get_allocator(chunk));
+    status = sixel_frame_create_from_factory(frame, allocator);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -4381,6 +4398,7 @@ sixel_builtin_prepare_frame_and_chunk_size(
 static SIXELSTATUS
 sixel_builtin_try_load_indexed_png(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     int chunk_size,
     sixel_frame_t *frame,
     stbi__context *stb_context,
@@ -4406,6 +4424,7 @@ sixel_builtin_try_load_indexed_png(
         frame == NULL ||
         stb_context == NULL ||
         ri == NULL ||
+        allocator == NULL ||
         loaded == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -4427,7 +4446,7 @@ sixel_builtin_try_load_indexed_png(
          * Match libpng behavior: when the source palette exceeds reqcolors,
          * drop indexed output and fall back to non-indexed decoding.
          */
-        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+        sixel_allocator_free(allocator, pixels);
         stbi_free(palette);
         return SIXEL_OK;
     }
@@ -4437,10 +4456,10 @@ sixel_builtin_try_load_indexed_png(
                                     palette_colors,
                                     palette_comp,
                                     bgcolor,
-                                    sixel_chunk_get_allocator(chunk));
+                                    allocator);
     if (SIXEL_FAILED(status)) {
         stbi_free(palette);
-        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+        sixel_allocator_free(allocator, pixels);
         return status;
     }
 
@@ -4454,7 +4473,7 @@ sixel_builtin_try_load_indexed_png(
                                                 1,
                                                 sixel_chunk_get_buffer(chunk),
                                                 sixel_chunk_get_size(chunk),
-                                                sixel_chunk_get_allocator(chunk));
+                                                allocator);
     }
     status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
         sixel_frame_as_interface(frame),
@@ -4469,7 +4488,7 @@ sixel_builtin_try_load_indexed_png(
             SIXEL_FRAME_PIXELS_U8
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+        sixel_allocator_free(allocator, pixels);
         return status;
     }
     frame->loop_count = 1;
@@ -4480,6 +4499,7 @@ sixel_builtin_try_load_indexed_png(
 static SIXELSTATUS
 sixel_builtin_try_load_indexed_tga(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     int chunk_size,
     sixel_frame_t *frame,
     stbi__context *stb_context,
@@ -4515,6 +4535,7 @@ sixel_builtin_try_load_indexed_tga(
         frame == NULL ||
         stb_context == NULL ||
         ri == NULL ||
+        allocator == NULL ||
         loaded == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -4557,7 +4578,7 @@ sixel_builtin_try_load_indexed_tga(
                                     palette_colors,
                                     palette_comp,
                                     bgcolor,
-                                    sixel_chunk_get_allocator(chunk));
+                                    allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -4618,7 +4639,7 @@ cleanup:
         palette = NULL;
     }
     if (pixels != NULL) {
-        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+        sixel_allocator_free(allocator, pixels);
         pixels = NULL;
     }
     return status;
@@ -4627,6 +4648,7 @@ cleanup:
 static SIXELSTATUS
 sixel_builtin_load_png_keycolor_or_rgba(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     int chunk_size,
     sixel_frame_t *frame,
     stbi__context *stb_context,
@@ -4663,6 +4685,7 @@ sixel_builtin_load_png_keycolor_or_rgba(
         chunk_size <= 0 ||
         frame == NULL ||
         stb_context == NULL ||
+        allocator == NULL ||
         ri == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -4698,7 +4721,7 @@ sixel_builtin_load_png_keycolor_or_rgba(
                                         palette_colors,
                                         palette_comp,
                                         bgcolor,
-                                        sixel_chunk_get_allocator(chunk));
+                                        allocator);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
@@ -4759,7 +4782,7 @@ sixel_builtin_load_png_keycolor_or_rgba(
         palette = NULL;
     }
     if (pixels != NULL) {
-        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+        sixel_allocator_free(allocator, pixels);
         pixels = NULL;
     }
     pixels = stbi_load_from_memory(sixel_chunk_get_buffer(chunk),
@@ -4800,7 +4823,7 @@ cleanup:
         palette = NULL;
     }
     if (pixels != NULL) {
-        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+        sixel_allocator_free(allocator, pixels);
         pixels = NULL;
     }
     return status;
@@ -4809,6 +4832,7 @@ cleanup:
 static SIXELSTATUS
 sixel_builtin_load_png_single_frame(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     int chunk_size,
     sixel_frame_t *frame,
     stbi__context *stb_context,
@@ -4829,12 +4853,14 @@ sixel_builtin_load_png_single_frame(
         chunk_size <= 0 ||
         frame == NULL ||
         stb_context == NULL ||
+        allocator == NULL ||
         ri == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     if (fuse_palette && !png_keycolor_mode) {
         status = sixel_builtin_try_load_indexed_png(chunk,
+                                                    allocator,
                                                     chunk_size,
                                                     frame,
                                                     stb_context,
@@ -4852,6 +4878,7 @@ sixel_builtin_load_png_single_frame(
     }
     if (fuse_palette) {
         status = sixel_builtin_try_load_indexed_tga(chunk,
+                                                    allocator,
                                                     chunk_size,
                                                     frame,
                                                     stb_context,
@@ -4867,6 +4894,7 @@ sixel_builtin_load_png_single_frame(
     }
     if (png_keycolor_mode) {
         return sixel_builtin_load_png_keycolor_or_rgba(chunk,
+                                                       allocator,
                                                        chunk_size,
                                                        frame,
                                                        stb_context,
@@ -4875,6 +4903,7 @@ sixel_builtin_load_png_single_frame(
                                                        reqcolors);
     }
     return sixel_frompng_load_nonindexed(chunk,
+                                         allocator,
                                          frame,
                                          enable_cms,
                                          bgcolor,
@@ -4884,6 +4913,7 @@ sixel_builtin_load_png_single_frame(
 static SIXELSTATUS
 sixel_builtin_load_jpeg_float32(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     sixel_frame_t *frame,
     stbi__context *stb_context,
     stbi__result_info *ri,
@@ -4905,6 +4935,7 @@ sixel_builtin_load_jpeg_float32(
     src_profile = NULL;
     src_colorspace = SIXEL_CMS_COLORSPACE_UNKNOWN;
     if (chunk == NULL ||
+        allocator == NULL ||
         frame == NULL ||
         stb_context == NULL ||
         ri == NULL ||
@@ -4929,7 +4960,7 @@ sixel_builtin_load_jpeg_float32(
                                            sixel_chunk_get_size(chunk),
                                            icc_profile,
                                            icc_profile_length,
-                                           sixel_chunk_get_allocator(chunk))) {
+                                           allocator)) {
             src_profile = sixel_cms_open_profile_from_mem(*icc_profile,
                                                           *icc_profile_length);
             if (src_profile == NULL) {
@@ -5261,6 +5292,7 @@ sixel_builtin_psd_apply_embedded_icc(
 static SIXELSTATUS
 sixel_builtin_load_psd_single_frame(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     sixel_frame_t *frame,
     unsigned char *bgcolor,
     int enable_cms,
@@ -5299,6 +5331,7 @@ sixel_builtin_load_psd_single_frame(
     psd_icc_status = SIXEL_BUILTIN_ICC_EXTRACT_ABSENT;
     basic_decode_fn = NULL;
     if (chunk == NULL ||
+        allocator == NULL ||
         frame == NULL ||
         mask == NULL ||
         mask_size == NULL) {
@@ -5308,7 +5341,7 @@ sixel_builtin_load_psd_single_frame(
     *mask = NULL;
     *mask_size = 0u;
     sixel_helper_set_additional_message(NULL);
-    if (!sixel_builtin_parse_psd_info(chunk, &psd_info)) {
+    if (!sixel_builtin_parse_psd_info(chunk, allocator, &psd_info)) {
         char const *additional_message;
 
         additional_message = sixel_helper_get_additional_message();
@@ -5430,7 +5463,7 @@ sixel_builtin_load_psd_single_frame(
             : SIXEL_FRAME_PIXELS_U8
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+        sixel_allocator_free(allocator, pixels);
         return status;
     }
     pixels = NULL;
@@ -5527,6 +5560,7 @@ sixel_builtin_tga_has_truecolor_alpha(
 static SIXELSTATUS
 sixel_builtin_load_nonpng_rgb8_fallback(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     int chunk_size,
     sixel_frame_t *frame,
     stbi__context *stb_context,
@@ -5608,6 +5642,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     (void)icc_profile_length;
 #endif
     if (chunk == NULL ||
+        allocator == NULL ||
         chunk_size <= 0 ||
         frame == NULL ||
         stb_context == NULL) {
@@ -5639,7 +5674,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                 bmp_payload,
                 bmp_payload_size,
                 NULL,
-                sixel_chunk_get_allocator(chunk));
+                allocator);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
@@ -5651,13 +5686,14 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                                 (int)sixel_chunk_get_size(payload_chunk));
                 status = sixel_builtin_load_jpeg_float32(
                     payload_chunk,
+                    allocator,
                     frame,
                     stb_context,
                     &payload_ri,
                     enable_cms,
                     &payload_icc_profile,
                     &payload_icc_profile_length);
-                sixel_allocator_free(sixel_chunk_get_allocator(chunk), payload_icc_profile);
+                sixel_allocator_free(allocator, payload_icc_profile);
                 payload_chunk->vtbl->unref(payload_chunk);
                 return status;
             }
@@ -5668,6 +5704,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                 if (bmp_png_payload_is_16bit != 0) {
                     status = sixel_frompng_load_nonindexed(
                         payload_chunk,
+                        allocator,
                         frame,
                         enable_cms,
                         bgcolor,
@@ -5703,7 +5740,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                         SIXEL_FRAME_PIXELS_U8
                     });
                 if (SIXEL_FAILED(status)) {
-                    sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+                    sixel_allocator_free(allocator, pixels);
                     payload_chunk->vtbl->unref(payload_chunk);
                     return status;
                 }
@@ -5726,6 +5763,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
             return SIXEL_STBI_ERROR;
         }
         status = sixel_frombmp_load(chunk,
+                                    allocator,
                                     &pixels,
                                     &frame->width,
                                     &frame->height,
@@ -5739,20 +5777,20 @@ sixel_builtin_load_nonpng_rgb8_fallback(
         }
         if (bmp_is_cmyk != 0) {
             if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
-                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+                sixel_allocator_free(allocator, pixels);
                 return SIXEL_BAD_INTEGER_OVERFLOW;
             }
             pixel_count = (size_t)frame->width * (size_t)frame->height;
             if (pixel_count > SIZE_MAX / 3u) {
-                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+                sixel_allocator_free(allocator, pixels);
                 return SIXEL_BAD_INTEGER_OVERFLOW;
             }
             rgb_size = pixel_count * 3u;
             rgb_pixels = (unsigned char *)sixel_allocator_malloc(
-                sixel_chunk_get_allocator(chunk),
+                allocator,
                 rgb_size);
             if (rgb_pixels == NULL) {
-                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+                sixel_allocator_free(allocator, pixels);
                 sixel_helper_set_additional_message(
                     "builtin BMP: sixel_allocator_malloc() failed.");
                 return SIXEL_BAD_ALLOCATION;
@@ -5776,7 +5814,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                     pixel_count);
             }
 
-            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+            sixel_allocator_free(allocator, pixels);
             pixels = rgb_pixels;
             rgb_pixels = NULL;
             status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
@@ -5792,7 +5830,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                     SIXEL_FRAME_PIXELS_U8
                 });
             if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+                sixel_allocator_free(allocator, pixels);
                 return status;
             }
             pixels = NULL;
@@ -5821,7 +5859,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                     SIXEL_FRAME_PIXELS_U8
                 });
             if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+                sixel_allocator_free(allocator, pixels);
                 return status;
             }
             pixels = NULL;
@@ -5855,7 +5893,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                     SIXEL_FRAME_PIXELS_U8
                 });
             if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+                sixel_allocator_free(allocator, pixels);
                 return status;
             }
             if (enable_cms != 0) {
@@ -5942,7 +5980,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                                            icc_profile,
                                            icc_profile_length,
                                            &tiff_photometric,
-                                           sixel_chunk_get_allocator(chunk))) {
+                                           allocator)) {
             if (sixel_builtin_tiff_photometric_supports_icc(
                     tiff_photometric)) {
                 if (!sixel_cms_convert_to_srgb_with_profile_bytes(
@@ -5977,7 +6015,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                     SIXEL_FRAME_PIXELS_U8
                 });
             if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+                sixel_allocator_free(allocator, pixels);
                 return status;
             }
             pixels = NULL;
@@ -6013,7 +6051,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                 SIXEL_FRAME_PIXELS_U8
             });
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+            sixel_allocator_free(allocator, pixels);
             return status;
         }
         pixels = NULL;
@@ -6055,7 +6093,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
         break;
     }
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+        sixel_allocator_free(allocator, pixels);
     }
     return status;
 }
@@ -6063,6 +6101,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
 static SIXELSTATUS
 sixel_builtin_load_nonpng_single_frame(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     int chunk_size,
     sixel_frame_t *frame,
     stbi__context *stb_context,
@@ -6092,6 +6131,7 @@ sixel_builtin_load_nonpng_single_frame(
     pal_loaded = 0;
 
     if (chunk == NULL ||
+        allocator == NULL ||
         chunk_size <= 0 ||
         frame == NULL ||
         stb_context == NULL ||
@@ -6109,6 +6149,7 @@ sixel_builtin_load_nonpng_single_frame(
          * input does not regress to RGB expansion before quantization.
          */
         status = sixel_builtin_try_load_indexed_tga(chunk,
+                                                    allocator,
                                                     chunk_size,
                                                     frame,
                                                     stb_context,
@@ -6127,6 +6168,7 @@ sixel_builtin_load_nonpng_single_frame(
     stbi__start_mem(stb_context, sixel_chunk_get_buffer(chunk), chunk_size);
     if (is_jpeg) {
         status = sixel_builtin_load_jpeg_float32(chunk,
+                                                 allocator,
                                                  frame,
                                                  stb_context,
                                                  ri,
@@ -6138,6 +6180,7 @@ sixel_builtin_load_nonpng_single_frame(
 
     if (is_psd) {
         status = sixel_builtin_load_psd_single_frame(chunk,
+                                                     allocator,
                                                      frame,
                                                      bgcolor,
                                                      enable_cms,
@@ -6146,12 +6189,13 @@ sixel_builtin_load_nonpng_single_frame(
         goto end;
     }
 
-    status = sixel_builtin_load_hdr_frame(chunk, frame, enable_cms);
+    status = sixel_builtin_load_hdr_frame(chunk, allocator, frame, enable_cms);
     if (status != SIXEL_FALSE) {
         goto end;
     }
     status = sixel_builtin_load_nonpng_rgb8_fallback(
         chunk,
+        allocator,
         chunk_size,
         frame,
         stb_context,
@@ -6196,6 +6240,7 @@ sixel_builtin_load_stbi_png_path(
     if (load_request == NULL ||
         load_context == NULL ||
         load_request->chunk == NULL ||
+        load_request->allocator == NULL ||
         frame == NULL ||
         stb_context == NULL ||
         ri == NULL ||
@@ -6210,6 +6255,7 @@ sixel_builtin_load_stbi_png_path(
         callback_context.cancel_context = load_request->callback_context;
         status = sixel_builtin_load_apng_frames(
             load_request->chunk,
+            load_request->allocator,
             load_request->fstatic,
             load_request->bgcolor,
             load_request->enable_cms,
@@ -6225,6 +6271,7 @@ sixel_builtin_load_stbi_png_path(
     }
 
     status = sixel_builtin_load_png_single_frame(load_request->chunk,
+                                                 load_request->allocator,
                                                  chunk_size,
                                                  frame,
                                                  stb_context,
@@ -6269,6 +6316,7 @@ sixel_builtin_load_stbi_path(
     png_keycolor_mode = 0;
     if (load_request == NULL ||
         load_request->chunk == NULL ||
+        load_request->allocator == NULL ||
         load_context == NULL ||
         pframe == NULL ||
         stb_context == NULL ||
@@ -6284,13 +6332,14 @@ sixel_builtin_load_stbi_path(
 
     *route->animation_handled = 0;
     status = sixel_builtin_prepare_frame_and_chunk_size(load_request->chunk,
+                                                        load_request->allocator,
                                                         pframe,
                                                         &chunk_size);
     if (SIXEL_FAILED(status)) {
         return status;
     }
 
-    stbi_allocator = sixel_chunk_get_allocator(load_request->chunk);
+    stbi_allocator = load_request->allocator;
     if (route->is_png) {
         png_keycolor_mode = sixel_builtin_png_keycolor_mode_enabled(
             load_request->chunk,
@@ -6311,6 +6360,7 @@ sixel_builtin_load_stbi_path(
      */
     return sixel_builtin_load_nonpng_single_frame(
         load_request->chunk,
+        load_request->allocator,
         chunk_size,
         *pframe,
         stb_context,
@@ -6346,6 +6396,7 @@ sixel_builtin_load_with_builtin_impl(
     int enable_cms;
     int enable_orientation;
     int bmp_info40_mode;
+    sixel_allocator_t *allocator;
     sixel_load_image_function fn_load;
     void *context;
     SIXELSTATUS status;
@@ -6377,6 +6428,10 @@ sixel_builtin_load_with_builtin_impl(
         return SIXEL_BAD_ARGUMENT;
     }
     pchunk = args->pchunk;
+    allocator = args->allocator;
+    if (pchunk == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
     fstatic = args->fstatic;
     fuse_palette = args->fuse_palette;
     reqcolors = args->reqcolors;
@@ -6405,6 +6460,7 @@ sixel_builtin_load_with_builtin_impl(
     psd_transparent_mask = NULL;
     psd_transparent_mask_size = 0u;
     load_request.chunk = pchunk;
+    load_request.allocator = allocator;
     load_request.fstatic = fstatic;
     load_request.fuse_palette = fuse_palette;
     load_request.reqcolors = reqcolors;
@@ -6466,6 +6522,7 @@ sixel_builtin_load_with_builtin_impl(
     switch (decode_path) {
     case SIXEL_BUILTIN_DECODE_PATH_SIXEL:
         status = sixel_builtin_prepare_frame_and_chunk_size(pchunk,
+                                                            allocator,
                                                             &frame,
                                                             &chunk_size);
         if (SIXEL_FAILED(status)) {
@@ -6480,7 +6537,7 @@ sixel_builtin_load_with_builtin_impl(
                             &frame->ncolors,
                             reqcolors,
                             &frame->pixelformat,
-                            sixel_chunk_get_allocator(pchunk));
+                            allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -6508,6 +6565,7 @@ sixel_builtin_load_with_builtin_impl(
 
     case SIXEL_BUILTIN_DECODE_PATH_PNM:
         status = sixel_builtin_prepare_frame_and_chunk_size(pchunk,
+                                                            allocator,
                                                             &frame,
                                                             &chunk_size);
         if (SIXEL_FAILED(status)) {
@@ -6561,6 +6619,7 @@ sixel_builtin_load_with_builtin_impl(
         webp_callback_context.cancel_context = context;
         status = sixel_fromwebp_load_animation(
             pchunk,
+            allocator,
             fstatic,
             load_request.loop_control,
             load_request.start_frame_no_set,
@@ -6579,12 +6638,14 @@ sixel_builtin_load_with_builtin_impl(
             goto end;
         }
         status = sixel_builtin_prepare_frame_and_chunk_size(pchunk,
+                                                            allocator,
                                                             &frame,
                                                             &chunk_size);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
         status = sixel_fromwebp_load(pchunk,
+                                     allocator,
                                      load_request.enable_cms,
                                      load_request.enable_orientation,
                                      frame);
@@ -6620,10 +6681,10 @@ sixel_builtin_load_with_builtin_impl(
 
 end:
     if (psd_transparent_mask != NULL && pchunk != NULL) {
-        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), psd_transparent_mask);
+        sixel_allocator_free(allocator, psd_transparent_mask);
     }
     if (icc_profile != NULL) {
-        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), icc_profile);
+        sixel_allocator_free(allocator, icc_profile);
     }
     sixel_frame_unref(frame);
 

@@ -272,6 +272,7 @@ loader_quicklook_can_decode_chunk(sixel_chunk_t const *pchunk)
 static SIXELSTATUS
 load_with_quicklook(
     sixel_chunk_t const       /* in */     *pchunk,
+    sixel_allocator_t         /* in */     *allocator,
     int                       /* in */     fstatic,
     int                       /* in */     fuse_palette,
     int                       /* in */     reqcolors,
@@ -306,7 +307,8 @@ load_with_quicklook(
     (void)start_frame_no_set;
     (void)start_frame_no;
 
-    if (pchunk == NULL || sixel_chunk_get_source_path(pchunk) == NULL) {
+    if (pchunk == NULL || allocator == NULL || fn_load == NULL ||
+        sixel_chunk_get_source_path(pchunk) == NULL) {
         quicklook_set_error_message(
             "load_with_quicklook: source path is unavailable.");
         goto end;
@@ -314,7 +316,7 @@ load_with_quicklook(
 
     loader_thumbnailer_initialize_size_hint();
 
-    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
+    status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -399,7 +401,7 @@ load_with_quicklook(
     stride = (size_t)frame->width * 4;
 
     pixels = (unsigned char *)sixel_allocator_malloc(
-        sixel_chunk_get_allocator(pchunk),
+        allocator,
         (size_t)(frame->height * stride));
     if (pixels == NULL) {
         quicklook_set_error_message(
@@ -420,7 +422,7 @@ load_with_quicklook(
             SIXEL_FRAME_PIXELS_U8
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels);
+        sixel_allocator_free(allocator, pixels);
         goto end;
     }
 
@@ -633,6 +635,7 @@ sixel_loader_quicklook_load(sixel_loader_component_t *component,
                                         decode_job_id);
 
     status = load_with_quicklook(chunk,
+                                 self->allocator,
                                  self->fstatic,
                                  self->fuse_palette,
                                  self->reqcolors,

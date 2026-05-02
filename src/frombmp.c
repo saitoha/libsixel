@@ -2608,6 +2608,7 @@ sixel_bmp_decode_truecolor(sixel_bmp_decode_info_t const *info,
 
 SIXELSTATUS
 sixel_frombmp_load(sixel_chunk_t const *chunk,
+                   sixel_allocator_t *allocator,
                    unsigned char **ppixels,
                    int *pwidth,
                    int *pheight,
@@ -2636,7 +2637,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
         pheight == NULL ||
         pcomp == NULL ||
         pis_cmyk == NULL ||
-        sixel_chunk_get_allocator(chunk) == NULL) {
+        allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -2671,7 +2672,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             return SIXEL_BAD_INTEGER_OVERFLOW;
         }
         buffer_size = pixel_count * 4u;
-        pixels = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(chunk),
+        pixels = (unsigned char *)sixel_allocator_malloc(allocator,
                                                          buffer_size);
         if (pixels == NULL) {
             return SIXEL_BAD_ALLOCATION;
@@ -2682,7 +2683,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             status = sixel_bmp_decode_indexed_rle_cmyk(&info, pixels);
         }
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+            sixel_allocator_free(allocator, pixels);
             return status;
         }
     } else if (info.bpp < 16) {
@@ -2691,7 +2692,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             return SIXEL_BAD_INTEGER_OVERFLOW;
         }
         buffer_size = pixel_count * 3u;
-        pixels = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(chunk),
+        pixels = (unsigned char *)sixel_allocator_malloc(allocator,
                                                          buffer_size);
         if (pixels == NULL) {
             return SIXEL_BAD_ALLOCATION;
@@ -2702,7 +2703,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             status = sixel_bmp_decode_indexed_rle(&info, pixels);
         }
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+            sixel_allocator_free(allocator, pixels);
             return status;
         }
     } else if (info.bpp == 24) {
@@ -2711,7 +2712,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             return SIXEL_BAD_INTEGER_OVERFLOW;
         }
         buffer_size = pixel_count * 3u;
-        pixels = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(chunk),
+        pixels = (unsigned char *)sixel_allocator_malloc(allocator,
                                                          buffer_size);
         if (pixels == NULL) {
             return SIXEL_BAD_ALLOCATION;
@@ -2722,7 +2723,7 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             status = sixel_bmp_decode_truecolor(&info, pixels, &comp);
         }
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+            sixel_allocator_free(allocator, pixels);
             return status;
         }
     } else {
@@ -2739,14 +2740,14 @@ sixel_frombmp_load(sixel_chunk_t const *chunk,
             }
             buffer_size = pixel_count * 3u;
         }
-        pixels = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(chunk),
+        pixels = (unsigned char *)sixel_allocator_malloc(allocator,
                                                          buffer_size);
         if (pixels == NULL) {
             return SIXEL_BAD_ALLOCATION;
         }
         status = sixel_bmp_decode_truecolor(&info, pixels, &comp);
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+            sixel_allocator_free(allocator, pixels);
             return status;
         }
     }

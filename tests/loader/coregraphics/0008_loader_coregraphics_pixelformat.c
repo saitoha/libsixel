@@ -78,28 +78,13 @@ coregraphics_fake_chunk_source_path(sixel_chunk_t const *chunk)
     return NULL;
 }
 
-static sixel_allocator_t *
-coregraphics_fake_chunk_allocator(sixel_chunk_t const *chunk)
-{
-    coregraphics_fake_chunk_t const *fake;
-
-    fake = NULL;
-    if (chunk == NULL) {
-        return NULL;
-    }
-
-    fake = (coregraphics_fake_chunk_t const *)(void const *)chunk;
-    return fake->allocator;
-}
-
 static sixel_chunk_vtbl_t const coregraphics_fake_chunk_vtbl = {
     coregraphics_fake_chunk_ref,
     coregraphics_fake_chunk_unref,
     coregraphics_fake_chunk_init_source,
     coregraphics_fake_chunk_init_memory,
     coregraphics_fake_chunk_get_bytes,
-    coregraphics_fake_chunk_source_path,
-    coregraphics_fake_chunk_allocator
+    coregraphics_fake_chunk_source_path
 };
 
 typedef struct coregraphics_animation_probe {

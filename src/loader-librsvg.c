@@ -1900,6 +1900,7 @@ librsvg_prepare_frame_surface(sixel_frame_t const *frame,
 static SIXELSTATUS
 librsvg_render_to_frame(sixel_frame_t *frame,
                         sixel_chunk_t const *chunk,
+                        sixel_allocator_t *allocator,
                         unsigned char const *bgcolor,
                         sixel_librsvg_decode_policy_t const *policy)
 {
@@ -1907,13 +1908,14 @@ librsvg_render_to_frame(sixel_frame_t *frame,
     sixel_librsvg_render_context_t render_ctx;
     sixel_librsvg_render_request_t request = { NULL, NULL, NULL, NULL };
 
-    if (frame == NULL || chunk == NULL || policy == NULL) {
+    if (frame == NULL || chunk == NULL ||
+        allocator == NULL || policy == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     librsvg_render_context_init(&render_ctx);
     status = librsvg_render_request_init(&request,
                                          chunk,
-                                         sixel_chunk_get_allocator(chunk),
+                                         allocator,
                                          bgcolor,
                                          policy);
     if (SIXEL_SUCCEEDED(status)) {
@@ -1953,6 +1955,7 @@ librsvg_render_to_frame(sixel_frame_t *frame,
 static SIXELSTATUS
 load_with_librsvg(
     sixel_chunk_t const       /* in */     *pchunk,
+    sixel_allocator_t         /* in */     *allocator,
     unsigned char const       /* in */     *bgcolor,
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context)
@@ -1962,15 +1965,16 @@ load_with_librsvg(
     sixel_librsvg_decode_policy_t policy;
 
     frame = NULL;
-    if (pchunk == NULL || fn_load == NULL) {
+    if (pchunk == NULL || allocator == NULL || fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     librsvg_decode_policy_init_from_env(&policy);
 
-    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
+    status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_SUCCEEDED(status)) {
         status = librsvg_render_to_frame(frame,
                                          pchunk,
+                                         allocator,
                                          bgcolor,
                                          &policy);
     }
@@ -2191,6 +2195,7 @@ sixel_loader_librsvg_load(sixel_loader_component_t *component,
                                         decode_job_id);
 
     status = load_with_librsvg(chunk,
+                               self->allocator,
                                bgcolor,
                                loader_timeline_emit_frame_callback,
                                &timeline_state);

@@ -126,6 +126,7 @@ loader_can_try_gd(sixel_chunk_t const *chunk);
 static SIXELSTATUS
 load_with_gd(
     sixel_chunk_t const       *pchunk,
+    sixel_allocator_t         *allocator,
     int                        fuse_palette,
     int                        reqcolors,
     unsigned char             *bgcolor,
@@ -833,6 +834,7 @@ sixel_loader_gd_load(sixel_loader_component_t *component,
                                         decode_job_id);
 
     status = load_with_gd(chunk,
+                          self->allocator,
                           self->fuse_palette,
                           self->reqcolors,
                           bgcolor,
@@ -941,6 +943,7 @@ loader_can_try_gd(sixel_chunk_t const *chunk)
 static SIXELSTATUS
 load_with_gd(
     sixel_chunk_t const       /* in */     *pchunk,     /* image data */
+    sixel_allocator_t         /* in */     *allocator,
     int                       /* in */     fuse_palette,
     int                       /* in */     reqcolors,
     unsigned char             /* in */     *bgcolor,    /* background */
@@ -998,7 +1001,7 @@ load_with_gd(
     unsigned char b8;
     unsigned char zero_alpha_map[SIXEL_PALETTE_MAX];
 
-    if (pchunk == NULL || sixel_chunk_get_allocator(pchunk) == NULL || fn_load == NULL) {
+    if (pchunk == NULL || allocator == NULL || fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -1139,7 +1142,7 @@ load_with_gd(
     }
     pixel_count = (size_t)width * (size_t)height;
 
-    status = sixel_frame_create_from_factory(&frame, sixel_chunk_get_allocator(pchunk));
+    status = sixel_frame_create_from_factory(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1228,7 +1231,7 @@ load_with_gd(
                 goto end;
             }
             pixels_u8 = (unsigned char *)sixel_allocator_malloc(
-                sixel_chunk_get_allocator(pchunk),
+                allocator,
                 pixel_count);
             if (pixels_u8 == NULL) {
                 sixel_helper_set_additional_message(
@@ -1243,7 +1246,7 @@ load_with_gd(
                 goto end;
             }
             palette = (unsigned char *)sixel_allocator_malloc(
-                sixel_chunk_get_allocator(pchunk),
+                allocator,
                 (size_t)ncolors * 3u);
             if (palette == NULL) {
                 sixel_helper_set_additional_message(
@@ -1300,7 +1303,7 @@ load_with_gd(
                 goto end;
             }
             pixels_f32 = (float *)sixel_allocator_malloc(
-                sixel_chunk_get_allocator(pchunk),
+                allocator,
                 pixel_count * 3u * sizeof(float));
             if (pixels_f32 == NULL) {
                 sixel_helper_set_additional_message(
@@ -1314,7 +1317,7 @@ load_with_gd(
                     goto end;
                 }
                 mask = (unsigned char *)sixel_allocator_malloc(
-                    sixel_chunk_get_allocator(pchunk),
+                    allocator,
                     pixel_count);
                 if (mask == NULL) {
                     sixel_helper_set_additional_message(
@@ -1412,7 +1415,7 @@ load_with_gd(
             goto end;
         }
         pixels_u8 = (unsigned char *)sixel_allocator_malloc(
-            sixel_chunk_get_allocator(pchunk),
+            allocator,
             pixel_count * 3u);
         if (pixels_u8 == NULL) {
             sixel_helper_set_additional_message(
@@ -1426,7 +1429,7 @@ load_with_gd(
                 goto end;
             }
             mask = (unsigned char *)sixel_allocator_malloc(
-                sixel_chunk_get_allocator(pchunk),
+                allocator,
                 pixel_count);
             if (mask == NULL) {
                 sixel_helper_set_additional_message(
@@ -1526,7 +1529,7 @@ load_with_gd(
             goto end;
         }
         pixels_f32 = (float *)sixel_allocator_malloc(
-            sixel_chunk_get_allocator(pchunk),
+            allocator,
             pixel_count * 3u * sizeof(float));
         if (pixels_f32 == NULL) {
             sixel_helper_set_additional_message(
@@ -1540,7 +1543,7 @@ load_with_gd(
                 goto end;
             }
             mask = (unsigned char *)sixel_allocator_malloc(
-                sixel_chunk_get_allocator(pchunk),
+                allocator,
                 pixel_count);
             if (mask == NULL) {
                 sixel_helper_set_additional_message(
@@ -1634,7 +1637,7 @@ load_with_gd(
             goto end;
         }
         pixels_u8 = (unsigned char *)sixel_allocator_malloc(
-            sixel_chunk_get_allocator(pchunk),
+            allocator,
             pixel_count * 3u);
         if (pixels_u8 == NULL) {
             sixel_helper_set_additional_message(
@@ -1647,7 +1650,7 @@ load_with_gd(
             goto end;
         }
         mask = (unsigned char *)sixel_allocator_malloc(
-            sixel_chunk_get_allocator(pchunk),
+            allocator,
             pixel_count);
         if (mask == NULL) {
             sixel_helper_set_additional_message(
@@ -1710,7 +1713,7 @@ load_with_gd(
         goto end;
     }
     pixels_u8 = (unsigned char *)sixel_allocator_malloc(
-        sixel_chunk_get_allocator(pchunk),
+        allocator,
         pixel_count * 3u);
     if (pixels_u8 == NULL) {
         sixel_helper_set_additional_message(
@@ -1747,10 +1750,10 @@ end:
     if (frame != NULL) {
         sixel_frame_unref(frame);
     }
-    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels_u8);
-    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), pixels_f32);
-    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), palette);
-    sixel_allocator_free(sixel_chunk_get_allocator(pchunk), mask);
+    sixel_allocator_free(allocator, pixels_u8);
+    sixel_allocator_free(allocator, pixels_f32);
+    sixel_allocator_free(allocator, palette);
+    sixel_allocator_free(allocator, mask);
     return status;
 }
 

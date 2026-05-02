@@ -974,6 +974,7 @@ sixel_builtin_validate_psd_info(
 
 int
 sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
+                             sixel_allocator_t *allocator,
                              sixel_builtin_psd_info_t *info)
 {
     unsigned char const *buffer;
@@ -990,7 +991,8 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     layer_mask_length_field_size = 0u;
     is_psb_alias = 0;
     sixel_builtin_psd_trace_reset();
-    if (chunk == NULL || sixel_chunk_get_buffer(chunk) == NULL || info == NULL ||
+    if (chunk == NULL || allocator == NULL ||
+        sixel_chunk_get_buffer(chunk) == NULL || info == NULL ||
         sixel_chunk_get_size(chunk) < 30u) {
         return 0;
     }
@@ -1001,6 +1003,7 @@ sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
     }
 
     memset(info, 0, sizeof(*info));
+    info->allocator = allocator;
     info->version = sixel_builtin_psd_hdr_read_u16be(buffer + 4u);
     if (is_psb_alias != 0 && info->version != 2u) {
         return 0;

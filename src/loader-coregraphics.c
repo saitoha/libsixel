@@ -152,6 +152,7 @@ typedef struct coregraphics_cache_slot {
 typedef struct coregraphics_loader_state {
     SIXELSTATUS status;
     sixel_chunk_t const *chunk;
+    sixel_allocator_t *allocator;
     int fstatic;
     int fuse_palette;
     int reqcolors;
@@ -2181,6 +2182,7 @@ static void
 coregraphics_loader_state_init(
     coregraphics_loader_state_t *state,
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     int fstatic,
     int fuse_palette,
     int reqcolors,
@@ -2198,6 +2200,7 @@ coregraphics_loader_state_init(
 
     state->status = SIXEL_FALSE;
     state->chunk = chunk;
+    state->allocator = allocator;
     state->fstatic = fstatic;
     state->fuse_palette = fuse_palette;
     state->reqcolors = reqcolors;
@@ -2281,7 +2284,8 @@ coregraphics_prepare_source_and_root_metadata(
     status = SIXEL_OK;
     anim_dict = NULL;
     anim_loop_key = NULL;
-    if (state == NULL || state->chunk == NULL || state->fn_load == NULL) {
+    if (state == NULL || state->chunk == NULL ||
+        state->allocator == NULL || state->fn_load == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -2293,7 +2297,7 @@ coregraphics_prepare_source_and_root_metadata(
     }
 
     status = sixel_frame_create_from_factory(&state->frame,
-                                             sixel_chunk_get_allocator(state->chunk));
+                                             state->allocator);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -2577,7 +2581,7 @@ coregraphics_process_single_frame(coregraphics_loader_state_t *state)
             if (cache_slot->decided == 0u) {
                 status = sixel_frame_create_from_factory(
                     &state->cached_frame_tmp,
-                    sixel_chunk_get_allocator(state->chunk));
+                    state->allocator);
                 if (SIXEL_FAILED(status)) {
                     return status;
                 }
@@ -2794,7 +2798,7 @@ coregraphics_emit_frame(coregraphics_loader_state_t *state)
          */
         status = coregraphics_frame_clone(
             state->emit_frame,
-            sixel_chunk_get_allocator(state->chunk),
+            state->allocator,
             &replay_frame);
         if (SIXEL_FAILED(status)) {
             return status;
@@ -2883,6 +2887,7 @@ coregraphics_cleanup_state(coregraphics_loader_state_t *state)
 static SIXELSTATUS
 load_with_coregraphics(
     sixel_chunk_t const       /* in */     *pchunk,
+    sixel_allocator_t         /* in */     *allocator,
     int                       /* in */     fstatic,
     int                       /* in */     fuse_palette,
     int                       /* in */     reqcolors,
@@ -2900,6 +2905,7 @@ load_with_coregraphics(
     status = SIXEL_FALSE;
     coregraphics_loader_state_init(&state,
                                    pchunk,
+                                   allocator,
                                    fstatic,
                                    fuse_palette,
                                    reqcolors,
@@ -3146,6 +3152,7 @@ sixel_loader_coregraphics_load(sixel_loader_component_t *component,
                                         decode_job_id);
 
     status = load_with_coregraphics(chunk,
+                                    self->allocator,
                                     self->fstatic,
                                     self->fuse_palette,
                                     self->reqcolors,

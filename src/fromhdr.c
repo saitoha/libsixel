@@ -111,6 +111,7 @@ typedef struct sixel_builtin_hdr_profile_hint {
 static SIXELSTATUS
 sixel_builtin_decode_hdr_float32_with_hint(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     unsigned char **ppixels,
     int *pwidth,
     int *pheight,
@@ -137,6 +138,7 @@ sixel_builtin_hdr_apply_postprocess(
 static SIXELSTATUS
 sixel_builtin_hdr_assign_decoded_frame(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     sixel_frame_t *frame,
     unsigned char *pixels,
     int width,
@@ -1746,6 +1748,7 @@ sixel_builtin_hdr_apply_postprocess(
 static SIXELSTATUS
 sixel_builtin_hdr_assign_decoded_frame(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     sixel_frame_t *frame,
     unsigned char *pixels,
     int width,
@@ -1756,7 +1759,8 @@ sixel_builtin_hdr_assign_decoded_frame(
     SIXELSTATUS status;
 
     status = SIXEL_FALSE;
-    if (chunk == NULL || frame == NULL || pixels == NULL) {
+    if (chunk == NULL || allocator == NULL || frame == NULL ||
+        pixels == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -1776,7 +1780,7 @@ sixel_builtin_hdr_assign_decoded_frame(
             : SIXEL_FRAME_PIXELS_U8
         });
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+        sixel_allocator_free(allocator, pixels);
         return status;
     }
 
@@ -1786,6 +1790,7 @@ sixel_builtin_hdr_assign_decoded_frame(
 SIXELSTATUS
 sixel_builtin_load_hdr_frame(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     sixel_frame_t *frame,
     int enable_cms)
 {
@@ -1813,11 +1818,12 @@ sixel_builtin_load_hdr_frame(
     hdr_colorspace = SIXEL_COLORSPACE_GAMMA;
     target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
 
-    if (chunk == NULL || frame == NULL) {
+    if (chunk == NULL || allocator == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     status = sixel_builtin_decode_hdr_float32_with_hint(chunk,
+                                                        allocator,
                                                         &pixels,
                                                         &width,
                                                         &height,
@@ -1830,6 +1836,7 @@ sixel_builtin_load_hdr_frame(
     }
 
     status = sixel_builtin_hdr_assign_decoded_frame(chunk,
+                                                    allocator,
                                                     frame,
                                                     pixels,
                                                     width,
@@ -2166,18 +2173,18 @@ sixel_builtin_hdr_map_scan_position(
 
 static SIXELSTATUS
 sixel_builtin_hdr_custom_decode_fail(
-    sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     unsigned char *pixels,
     unsigned char *scanline_rgbe,
     SIXELSTATUS status,
     char const *message)
 {
-    if (chunk != NULL) {
+    if (allocator != NULL) {
         if (scanline_rgbe != NULL) {
-            sixel_allocator_free(sixel_chunk_get_allocator(chunk), scanline_rgbe);
+            sixel_allocator_free(allocator, scanline_rgbe);
         }
         if (pixels != NULL) {
-            sixel_allocator_free(sixel_chunk_get_allocator(chunk), pixels);
+            sixel_allocator_free(allocator, pixels);
         }
     }
     if (message != NULL) {
@@ -2495,6 +2502,7 @@ sixel_builtin_hdr_decode_legacy_stream(
 static SIXELSTATUS
 sixel_builtin_decode_hdr_float32_custom(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     sixel_builtin_hdr_profile_hint_t const *hint,
     unsigned char **ppixels,
     int *pwidth,
@@ -2536,6 +2544,7 @@ sixel_builtin_decode_hdr_float32_custom(
     status = SIXEL_FALSE;
 
     if (chunk == NULL ||
+        allocator == NULL ||
         hint == NULL ||
         ppixels == NULL ||
         pwidth == NULL ||
@@ -2589,7 +2598,7 @@ sixel_builtin_decode_hdr_float32_custom(
     }
 
     pixel_bytes = sample_count * sizeof(float);
-    pixels = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(chunk),
+    pixels = (unsigned char *)sixel_allocator_malloc(allocator,
                                                      pixel_bytes);
     if (pixels == NULL) {
         sixel_helper_set_additional_message(
@@ -2602,7 +2611,7 @@ sixel_builtin_decode_hdr_float32_custom(
     scanline_count = (size_t)hint->orientation_axis1_length;
     if (scanline_length > SIZE_MAX / 4u) {
         return sixel_builtin_hdr_custom_decode_fail(
-            chunk,
+            allocator,
             pixels,
             NULL,
             SIXEL_BAD_INTEGER_OVERFLOW,
@@ -2610,11 +2619,11 @@ sixel_builtin_decode_hdr_float32_custom(
     }
 
     scanline_bytes = scanline_length * 4u;
-    scanline_rgbe = (unsigned char *)sixel_allocator_malloc(sixel_chunk_get_allocator(chunk),
+    scanline_rgbe = (unsigned char *)sixel_allocator_malloc(allocator,
                                                             scanline_bytes);
     if (scanline_rgbe == NULL) {
         return sixel_builtin_hdr_custom_decode_fail(
-            chunk,
+            allocator,
             pixels,
             NULL,
             SIXEL_BAD_ALLOCATION,
@@ -2625,7 +2634,7 @@ sixel_builtin_decode_hdr_float32_custom(
     if (scanline_count > 0u) {
         if (sixel_chunk_get_size(chunk) - cursor < 4u) {
             return sixel_builtin_hdr_custom_decode_fail(
-                chunk,
+                allocator,
                 pixels,
                 scanline_rgbe,
                 SIXEL_STBI_ERROR,
@@ -2652,13 +2661,13 @@ sixel_builtin_decode_hdr_float32_custom(
                                                         pixels);
         if (SIXEL_FAILED(status)) {
             return sixel_builtin_hdr_custom_decode_fail(
-                chunk,
+                allocator,
                 pixels,
                 scanline_rgbe,
                 status,
                 NULL);
         }
-        sixel_allocator_free(sixel_chunk_get_allocator(chunk), scanline_rgbe);
+        sixel_allocator_free(allocator, scanline_rgbe);
         *ppixels = pixels;
         *pwidth = hint->width;
         *pheight = hint->height;
@@ -2676,7 +2685,7 @@ sixel_builtin_decode_hdr_float32_custom(
                                                         scanline_rgbe);
         if (SIXEL_FAILED(status)) {
             return sixel_builtin_hdr_custom_decode_fail(
-                chunk,
+                allocator,
                 pixels,
                 scanline_rgbe,
                 status,
@@ -2690,7 +2699,7 @@ sixel_builtin_decode_hdr_float32_custom(
                                                           pixels);
         if (SIXEL_FAILED(status)) {
             return sixel_builtin_hdr_custom_decode_fail(
-                chunk,
+                allocator,
                 pixels,
                 scanline_rgbe,
                 status,
@@ -2698,7 +2707,7 @@ sixel_builtin_decode_hdr_float32_custom(
         }
     }
 
-    sixel_allocator_free(sixel_chunk_get_allocator(chunk), scanline_rgbe);
+    sixel_allocator_free(allocator, scanline_rgbe);
     *ppixels = pixels;
     *pwidth = hint->width;
     *pheight = hint->height;
@@ -2729,6 +2738,7 @@ sixel_builtin_hdr_hint_has_decodable_stream(
 static SIXELSTATUS
 sixel_builtin_decode_hdr_float32_with_hint(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     unsigned char **ppixels,
     int *pwidth,
     int *pheight,
@@ -2744,6 +2754,7 @@ sixel_builtin_decode_hdr_float32_with_hint(
     sixel_builtin_hdr_init_profile_hint(&hint);
 
     if (chunk == NULL ||
+        allocator == NULL ||
         sixel_chunk_get_buffer(chunk) == NULL ||
         ppixels == NULL ||
         pwidth == NULL ||
@@ -2786,6 +2797,7 @@ sixel_builtin_decode_hdr_float32_with_hint(
      * behavior stays identical across toolchains and runtimes.
      */
     return sixel_builtin_decode_hdr_float32_custom(chunk,
+                                                   allocator,
                                                    &hint,
                                                    ppixels,
                                                    pwidth,

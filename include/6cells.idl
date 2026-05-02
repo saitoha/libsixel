@@ -398,8 +398,6 @@ interface chunk {
     SIXELSTATUS get_bytes(out chunk_bytes_view *view);
     [const, borrows(source_path)]
     char const *source_path();
-    [const, borrows(allocator)]
-    allocator *allocator();
 };
 
 [classid("image/chunk")]

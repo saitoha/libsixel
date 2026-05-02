@@ -640,8 +640,6 @@ typedef struct sixel_chunk_bytes_view {
  *     SIXELSTATUS get_bytes(out chunk_bytes_view *view);
  *     [const, borrows(source_path)]
  *     char const *source_path();
- *     [const, borrows(allocator)]
- *     allocator *allocator();
  * };
  */
 
@@ -658,7 +656,6 @@ typedef struct sixel_chunk_vtbl {
         sixel_chunk_t const *chunk,
         sixel_chunk_bytes_view_t *view);
     char const *(*source_path)(sixel_chunk_t const *chunk);
-    sixel_allocator_t *(*allocator)(sixel_chunk_t const *chunk);
 } sixel_chunk_vtbl_t;
 
 struct sixel_chunk_interface {

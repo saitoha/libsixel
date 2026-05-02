@@ -38,6 +38,7 @@ typedef enum sixel_builtin_icc_extract_status {
 } sixel_builtin_icc_extract_status_t;
 
 typedef struct sixel_builtin_psd_info {
+    sixel_allocator_t *allocator;
     unsigned int version;
     unsigned int channels;
     unsigned int width;
@@ -85,6 +86,7 @@ sixel_builtin_extract_psd_icc(unsigned char const *buffer,
 
 int
 sixel_builtin_parse_psd_info(sixel_chunk_t const *chunk,
+                             sixel_allocator_t *allocator,
                              sixel_builtin_psd_info_t *info);
 
 SIXEL_INTERNAL_API int

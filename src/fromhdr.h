@@ -33,6 +33,7 @@
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_builtin_load_hdr_frame(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     sixel_frame_t *frame,
     int enable_cms);
 

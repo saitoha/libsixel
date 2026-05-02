@@ -171,8 +171,6 @@ sixel_chunk_vtbl_get_bytes(sixel_chunk_t const *chunk,
                            sixel_chunk_bytes_view_t *view);
 static char const *
 sixel_chunk_vtbl_source_path(sixel_chunk_t const *chunk);
-static sixel_allocator_t *
-sixel_chunk_vtbl_allocator(sixel_chunk_t const *chunk);
 
 static sixel_chunk_vtbl_t const g_sixel_chunk_vtbl = {
     sixel_chunk_vtbl_ref,
@@ -180,8 +178,7 @@ static sixel_chunk_vtbl_t const g_sixel_chunk_vtbl = {
     sixel_chunk_vtbl_init_source,
     sixel_chunk_vtbl_init_memory,
     sixel_chunk_vtbl_get_bytes,
-    sixel_chunk_vtbl_source_path,
-    sixel_chunk_vtbl_allocator
+    sixel_chunk_vtbl_source_path
 };
 
 static sixel_chunk_storage_t *
@@ -1456,20 +1453,6 @@ sixel_chunk_vtbl_source_path(sixel_chunk_t const *chunk)
 
     storage = sixel_chunk_from_interface_const(chunk);
     return storage->source_path;
-}
-
-static sixel_allocator_t *
-sixel_chunk_vtbl_allocator(sixel_chunk_t const *chunk)
-{
-    sixel_chunk_storage_t const *storage;
-
-    storage = NULL;
-    if (chunk == NULL) {
-        return NULL;
-    }
-
-    storage = sixel_chunk_from_interface_const(chunk);
-    return storage->allocator;
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS

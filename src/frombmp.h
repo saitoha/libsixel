@@ -89,6 +89,7 @@ typedef struct sixel_frombmp_probe {
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_frombmp_load(
     sixel_chunk_t const *chunk,
+    sixel_allocator_t *allocator,
     unsigned char **ppixels,
     int *pwidth,
     int *pheight,
