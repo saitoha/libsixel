@@ -95,7 +95,6 @@ test_output_factory_component(void)
         output->vtbl->set_options == NULL ||
         output->vtbl->set_format == NULL ||
         output->vtbl->write == NULL ||
-        output->vtbl->allocator == NULL ||
         output->vtbl->unref == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
@@ -144,10 +143,6 @@ test_output_factory_component(void)
         goto end;
     }
     if (capture.calls != 1 || capture.bytes != 3) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-    if (output->vtbl->allocator(output) != allocator) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }

@@ -195,8 +195,6 @@ interface output {
     [mutates]
     SIXELSTATUS set_format(in output_format const *format);
     SIXELSTATUS write(in char const *data, in int size);
-    [borrows(allocator)]
-    allocator *allocator();
 };
 
 [classid("terminal/output")]

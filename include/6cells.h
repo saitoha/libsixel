@@ -313,8 +313,6 @@ typedef struct sixel_output_format {
  *     [mutates]
  *     SIXELSTATUS set_format(in output_format const *format);
  *     SIXELSTATUS write(in char const *data, in int size);
- *     [borrows(allocator)]
- *     allocator *allocator();
  * };
  */
 
@@ -337,7 +335,6 @@ typedef struct sixel_output_vtbl {
         sixel_output_interface_t *output,
         char const *data,
         int size);
-    sixel_allocator_t *(*allocator)(sixel_output_interface_t *output);
 } sixel_output_vtbl_t;
 
 struct sixel_output_interface {

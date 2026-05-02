@@ -73,8 +73,6 @@ static SIXELSTATUS
 sixel_output_vtbl_write(sixel_output_interface_t *output,
                         char const *data,
                         int size);
-static sixel_allocator_t *
-sixel_output_vtbl_allocator(sixel_output_interface_t *output);
 
 static sixel_output_vtbl_t const g_sixel_output_vtbl = {
     sixel_output_vtbl_ref,
@@ -83,8 +81,7 @@ static sixel_output_vtbl_t const g_sixel_output_vtbl = {
     sixel_output_vtbl_set_options,
     sixel_output_vtbl_get_options,
     sixel_output_vtbl_set_format,
-    sixel_output_vtbl_write,
-    sixel_output_vtbl_allocator
+    sixel_output_vtbl_write
 };
 
 /*
@@ -288,19 +285,6 @@ sixel_output_vtbl_write(sixel_output_interface_t *output,
 #endif
     }
     return SIXEL_OK;
-}
-
-static sixel_allocator_t *
-sixel_output_vtbl_allocator(sixel_output_interface_t *output)
-{
-    sixel_output_t *storage;
-
-    if (output == NULL) {
-        return NULL;
-    }
-
-    storage = sixel_output_from_interface(output);
-    return storage->allocator;
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
