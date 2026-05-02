@@ -40,6 +40,50 @@ extern "C" {
 #endif
 
 /*
+ * Attribute contract:
+ *
+ * [component]
+ * - Marks an interface as a 6cells component boundary.  Concrete storage stays
+ *   hidden, and callers operate through the generated vtbl contract.
+ *
+ * [refcounted]
+ * - Marks a component whose lifetime is controlled by ref()/unref().
+ *
+ * [responsibility("...")]
+ * - Records the component's single responsibility in machine-readable form.
+ *
+ * [forbid_state("name", ...)]
+ * - Lists state categories that must not be owned by the component.  The
+ *   generator expands each state name into the generated header comment.
+ *
+ * [classid("...")]
+ * - Applies to coclass declarations only and records the factory lookup key.
+ *
+ * [lifetime(retained)] / [lifetime(release)]
+ * - Marks refcount operations that retain or release the receiver.
+ *
+ * [mutates]
+ * - Marks a method that changes receiver-owned state.
+ *
+ * [invalidates(name, ...)]
+ * - Lists borrowed views or pointers invalidated by a mutating method.
+ *
+ * [borrows(name)]
+ * - Marks a returned pointer or out view as borrowed from the receiver.  The
+ *   caller must not free it.  Borrowed values become invalid after unref() or
+ *   after a method whose [invalidates(...)] list contains the same name.
+ *
+ * [const]
+ * - Marks a method whose generated receiver argument is const-qualified.
+ *
+ * [alias(...)] / [receiver(...)]
+ * - Control C projection names only; they are not semantic design contracts.
+ *
+ * coclass name { [default] interface iface; };
+ * - Records that a factory-created concrete component provides iface.  The
+ *   syntax intentionally follows COM/MIDL-style coclass blocks.
+ */
+/*
  * Component services expose stable interface objects without exposing their
  * concrete storage.  Callers that need post-v1.8.7 component contracts should
  * include this header explicitly; sixel.h stays focused on the legacy public
@@ -50,10 +94,19 @@ struct sixel_option_argument_list_resolution;
 typedef struct sixel_factory_interface sixel_factory_t;
 
 /*
+ * IDL responsibility:
+ * - create components by class id
+ */
+
+/*
  * IDL contract:
+ * [component, refcounted]
+ * [responsibility("create components by class id")]
  * [alias(sixel_factory_t)]
  * interface factory {
+ *     [lifetime(retained)]
  *     void ref();
+ *     [lifetime(release)]
  *     void unref();
  *     SIXELSTATUS create(
  *         in char const *class_name,
@@ -133,11 +186,28 @@ typedef struct sixel_lookup_policy_prepare_request {
 typedef int sixel_lookup_policy_result_t;
 
 /*
+ * IDL responsibility:
+ * - map pixels to palette indexes
+ */
+
+/*
+ * IDL forbidden state:
+ * - image_pixels
+ * - output_pixels
+ */
+
+/*
  * IDL contract:
+ * [component, refcounted]
+ * [responsibility("map pixels to palette indexes")]
+ * [forbid_state("image_pixels", "output_pixels")]
  * [receiver(policy)]
  * interface lookup_policy {
+ *     [lifetime(retained)]
  *     void ref();
+ *     [lifetime(release)]
  *     void unref();
+ *     [mutates]
  *     SIXELSTATUS prepare(in lookup_policy_prepare_request const *request);
  *     [const] lookup_policy_result map_pixel(
  *         in unsigned char const *pixel);
@@ -202,11 +272,28 @@ typedef struct sixel_dither_policy_apply_request {
 typedef int sixel_dither_policy_supports_parallel_result_t;
 
 /*
+ * IDL responsibility:
+ * - apply dithering from pixels and lookup policy
+ */
+
+/*
+ * IDL forbidden state:
+ * - input_owner
+ * - output_owner
+ */
+
+/*
  * IDL contract:
+ * [component, refcounted]
+ * [responsibility("apply dithering from pixels and lookup policy")]
+ * [forbid_state("input_owner", "output_owner")]
  * [receiver(policy)]
  * interface dither_policy {
+ *     [lifetime(retained)]
  *     void ref();
+ *     [lifetime(release)]
  *     void unref();
+ *     [mutates]
  *     SIXELSTATUS prepare(in dither_policy_prepare_request const *request);
  *     SIXELSTATUS apply(in dither_policy_apply_request const *request);
  *     [const] dither_policy_supports_parallel_result supports_parallel_bands();
@@ -260,16 +347,37 @@ typedef struct sixel_chunk_bytes_view {
  * - Loaders keep their own decode cursors; chunk bytes are read-only views.
  */
 /*
+ * IDL responsibility:
+ * - own input bytes and source metadata only
+ */
+
+/*
+ * IDL forbidden state:
+ * - read_cursor
+ * - decode_state
+ */
+
+/*
  * IDL contract:
+ * [component, refcounted]
+ * [responsibility("own input bytes and source metadata only")]
+ * [forbid_state("read_cursor", "decode_state")]
  * [receiver(chunk)]
  * interface chunk {
+ *     [lifetime(retained)]
  *     void ref();
+ *     [lifetime(release)]
  *     void unref();
+ *     [mutates, invalidates(bytes_view, source_path)]
  *     SIXELSTATUS init_source(in chunk_source_request const *request);
+ *     [mutates, invalidates(bytes_view, source_path)]
  *     SIXELSTATUS init_memory(in chunk_memory_request const *request);
- *     [const] SIXELSTATUS get_bytes(out chunk_bytes_view *view);
- *     [const] char const *source_path();
- *     [const] sixel_allocator_t *allocator();
+ *     [const, borrows(bytes_view)]
+ *     SIXELSTATUS get_bytes(out chunk_bytes_view *view);
+ *     [const, borrows(source_path)]
+ *     char const *source_path();
+ *     [const, borrows(allocator)]
+ *     sixel_allocator_t *allocator();
  * };
  */
 
@@ -293,15 +401,40 @@ struct sixel_chunk_interface {
     sixel_chunk_vtbl_t const *vtbl;
 };
 
+/*
+ * IDL coclass:
+ * [classid("image/chunk")]
+ * coclass chunk_component {
+ *     [default] interface chunk;
+ * };
+ */
+
 typedef struct sixel_loader_component_interface
     sixel_loader_component_interface_t;
 
 /*
+ * IDL responsibility:
+ * - decode one chunk through one loader backend
+ */
+
+/*
+ * IDL forbidden state:
+ * - loader_chain
+ * - global_decode_cursor
+ */
+
+/*
  * IDL contract:
+ * [component, refcounted]
+ * [responsibility("decode one chunk through one loader backend")]
+ * [forbid_state("loader_chain", "global_decode_cursor")]
  * [receiver(loader)]
  * interface loader_component {
+ *     [lifetime(retained)]
  *     void ref();
+ *     [lifetime(release)]
  *     void unref();
+ *     [mutates]
  *     SIXELSTATUS setopt(in int option, in void const *value);
  *     SIXELSTATUS load(
  *         in chunk const *chunk,
@@ -379,12 +512,30 @@ typedef struct sixel_loader_manager_build_request {
 } sixel_loader_manager_build_request_t;
 
 /*
+ * IDL responsibility:
+ * - build loader chains and select loaders for chunks
+ */
+
+/*
+ * IDL forbidden state:
+ * - chunk_bytes
+ * - pixel_storage
+ */
+
+/*
  * IDL contract:
+ * [component, refcounted]
+ * [responsibility("build loader chains and select loaders for chunks")]
+ * [forbid_state("chunk_bytes", "pixel_storage")]
  * [receiver(manager)]
  * interface loader_manager {
+ *     [lifetime(retained)]
  *     void ref();
+ *     [lifetime(release)]
  *     void unref();
+ *     [mutates, invalidates(loader_chain, selected_loader)]
  *     SIXELSTATUS build_chain(in loader_manager_build_request const *request);
+ *     [borrows(selected_loader)]
  *     SIXELSTATUS load(
  *         in chunk const *chunk,
  *         out loader_component **selected_loader,
@@ -410,6 +561,14 @@ typedef struct sixel_loader_manager_vtbl {
 struct sixel_loader_manager_interface {
     sixel_loader_manager_vtbl_t const *vtbl;
 };
+
+/*
+ * IDL coclass:
+ * [classid("loader/manager")]
+ * coclass loader_manager_component {
+ *     [default] interface loader_manager;
+ * };
+ */
 
 /*
  * Ownership/lifetime:
@@ -469,26 +628,52 @@ typedef struct sixel_frame_transparency {
 } sixel_frame_transparency_t;
 
 /*
+ * IDL responsibility:
+ * - own pixel storage and per-frame metadata
+ */
+
+/*
+ * IDL forbidden state:
+ * - lookup_policy
+ * - dither_policy
+ * - decode_state
+ */
+
+/*
  * IDL contract:
+ * [component, refcounted]
+ * [responsibility("own pixel storage and per-frame metadata")]
+ * [forbid_state("lookup_policy", "dither_policy", "decode_state")]
  * interface frame {
+ *     [lifetime(retained)]
  *     void ref();
+ *     [lifetime(release)]
  *     void unref();
+ *     [mutates, invalidates(pixels_view)]
  *     SIXELSTATUS init_pixels(in frame_pixels_request const *request);
+ *     [borrows(pixels_view)]
  *     SIXELSTATUS get_pixels(out frame_pixels_view *view);
+ *     [mutates, invalidates(pixels_view)]
  *     SIXELSTATUS set_pixelformat(in int pixelformat);
  *     SIXELSTATUS get_timeline(out frame_timeline *timeline);
+ *     [mutates]
  *     SIXELSTATUS set_timeline(in frame_timeline const *timeline);
  *     SIXELSTATUS get_transparency(out frame_transparency *transparency);
+ *     [mutates]
  *     SIXELSTATUS set_transparency(in frame_transparency const *transparency);
+ *     [mutates, invalidates(pixels_view)]
  *     SIXELSTATUS resize(
  *         in int width,
  *         in int height,
  *         in int method_for_resampling);
+ *     [mutates, invalidates(pixels_view)]
  *     SIXELSTATUS resize_float32(
  *         in int width,
  *         in int height,
  *         in int method_for_resampling);
+ *     [mutates, invalidates(pixels_view)]
  *     SIXELSTATUS clip(in int x, in int y, in int width, in int height);
+ *     [borrows(allocator)]
  *     sixel_allocator_t *allocator();
  *     SIXELSTATUS measure_storage(out size_t *storage_bytes);
  *     SIXELSTATUS clone(
@@ -550,6 +735,14 @@ typedef struct sixel_frame_vtbl {
 struct sixel_frame_interface {
     sixel_frame_vtbl_t const *vtbl;
 };
+
+/*
+ * IDL coclass:
+ * [classid("image/frame")]
+ * coclass frame_component {
+ *     [default] interface frame;
+ * };
+ */
 
 static inline sixel_frame_interface_t *
 sixel_frame_as_interface(sixel_frame_t const *frame)

@@ -98,6 +98,7 @@ function clear_methods(    i, j, count) {
 function clear_pending_attrs() {
     pending_alias = ""
     pending_receiver = ""
+    pending_classid = ""
     pending_const = 0
 }
 
@@ -119,10 +120,72 @@ function append_idl_contract(line) {
     idl_contract_lines[++idl_contract_count] = line
 }
 
+function strip_quotes(text) {
+    text = trim(text)
+    if (text ~ /^".*"$/) {
+        text = substr(text, 2, length(text) - 2)
+    }
+    return text
+}
+
+function extract_attr_args(line, attr_name,    start, rest, depth, i, ch) {
+    start = index(line, attr_name "(")
+    if (start == 0) {
+        return ""
+    }
+    rest = substr(line, start + length(attr_name) + 1)
+    depth = 1
+    for (i = 1; i <= length(rest); ++i) {
+        ch = substr(rest, i, 1)
+        if (ch == "(") {
+            ++depth
+        } else if (ch == ")") {
+            --depth
+            if (depth == 0) {
+                return substr(rest, 1, i - 1)
+            }
+        }
+    }
+    return ""
+}
+
+function emit_contract_summary(    i, args, j, printed_forbid) {
+    for (i = 1; i <= idl_contract_count; ++i) {
+        args = extract_attr_args(idl_contract_lines[i], "responsibility")
+        if (args != "") {
+            print "/*"
+            print " * IDL responsibility:"
+            print " * - " strip_quotes(args)
+            print " */"
+            print ""
+        }
+    }
+    printed_forbid = 0
+    for (i = 1; i <= idl_contract_count; ++i) {
+        args = extract_attr_args(idl_contract_lines[i], "forbid_state")
+        if (args != "") {
+            if (printed_forbid == 0) {
+                print "/*"
+                print " * IDL forbidden state:"
+                printed_forbid = 1
+            }
+            split_attrs(args)
+            for (j = 1; j <= attr_item_count; ++j) {
+                print " * - " strip_quotes(attr_items[j])
+            }
+        }
+    }
+    if (printed_forbid != 0) {
+        print " */"
+        print ""
+    }
+}
+
 function emit_idl_contract(    i) {
     if (idl_contract_count == 0) {
         return
     }
+    emit_contract_summary()
     print "/*"
     print " * IDL contract:"
     for (i = 1; i <= idl_contract_count; ++i) {
@@ -130,6 +193,20 @@ function emit_idl_contract(    i) {
     }
     print " */"
     print ""
+}
+
+function emit_coclass_contract(    i) {
+    emit_contract_summary()
+    print "/*"
+    print " * IDL coclass:"
+    for (i = 1; i <= idl_contract_count; ++i) {
+        print " * " idl_contract_lines[i]
+    }
+    print " */"
+    print ""
+    clear_pending_attrs()
+    clear_pending_idl_attrs()
+    clear_idl_contract()
 }
 
 function emit_header() {
@@ -365,11 +442,58 @@ function parse_arguments(arguments,    parts, count, i) {
     }
 }
 
-function parse_attrs(attrs,    parts, count, i, item, value) {
+function split_attrs(attrs,    i, ch, token, depth, in_quote, prev) {
+    for (i = 1; i <= attr_item_count; ++i) {
+        delete attr_items[i]
+    }
+    attr_item_count = 0
+    token = ""
+    depth = 0
+    in_quote = 0
+    prev = ""
+    for (i = 1; i <= length(attrs); ++i) {
+        ch = substr(attrs, i, 1)
+        if (ch == "\"" && prev != "\\") {
+            in_quote = in_quote == 0 ? 1 : 0
+        }
+        if (in_quote == 0) {
+            if (ch == "(") {
+                ++depth
+            } else if (ch == ")" && depth > 0) {
+                --depth
+            } else if (ch == "," && depth == 0) {
+                attr_items[++attr_item_count] = trim(token)
+                token = ""
+                prev = ch
+                continue
+            }
+        }
+        token = token ch
+        prev = ch
+    }
+    if (trim(token) != "") {
+        attr_items[++attr_item_count] = trim(token)
+    }
+}
+
+function is_contract_attr(item) {
+    return item == "component" ||
+        item == "refcounted" ||
+        item == "mutates" ||
+        item == "default" ||
+        item ~ /^lifetime\(/ ||
+        item ~ /^invalidates\(/ ||
+        item ~ /^borrows\(/ ||
+        item ~ /^responsibility\(/ ||
+        item ~ /^forbid_state\(/
+}
+
+function parse_attrs(attrs,    count, i, item, value) {
     pending_idl_attrs[++pending_idl_attr_count] = "[" attrs "]"
-    count = split(attrs, parts, /,/)
+    split_attrs(attrs)
+    count = attr_item_count
     for (i = 1; i <= count; ++i) {
-        item = trim(parts[i])
+        item = attr_items[i]
         if (item == "const") {
             pending_const = 1
         } else if (item ~ /^alias\(/ && item ~ /\)$/) {
@@ -382,6 +506,13 @@ function parse_attrs(attrs,    parts, count, i, item, value) {
             sub(/^receiver\(/, "", value)
             sub(/\)$/, "", value)
             pending_receiver = trim(value)
+        } else if (item ~ /^classid\(/ && item ~ /\)$/) {
+            value = item
+            sub(/^classid\(/, "", value)
+            sub(/\)$/, "", value)
+            pending_classid = trim(value)
+        } else if (is_contract_attr(item)) {
+            continue
         } else {
             report_error("unknown attribute: " item)
         }
@@ -686,6 +817,38 @@ mode == "interface" {
     next
 }
 
+mode == "coclass" {
+    line = trim($0)
+    if (line == "};") {
+        append_idl_contract("};")
+        emit_coclass_contract()
+        mode = ""
+        next
+    }
+    if (line == "" || line ~ /^\/\//) {
+        next
+    }
+    if (line ~ /^\/\*/) {
+        print $0
+        if ($0 !~ /\*\//) {
+            mode = "comment"
+            comment_return_mode = "coclass"
+        }
+        next
+    }
+    append_idl_contract($0)
+    line = take_attrs(line)
+    if (line == "") {
+        next
+    }
+    if (line !~ /^interface[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*;$/) {
+        report_error("invalid coclass member: " line)
+    }
+    clear_pending_attrs()
+    clear_pending_idl_attrs()
+    next
+}
+
 {
     line = trim($0)
     if (line == "" || line ~ /^\/\// || line ~ /^#/) {
@@ -760,6 +923,19 @@ mode == "interface" {
         append_idl_contract("interface " interface_name " {")
         clear_pending_idl_attrs()
         mode = "interface"
+        next
+    }
+    if (line ~ /^coclass[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*\{$/) {
+        if (pending_classid == "") {
+            report_error("coclass is missing classid attribute: " line)
+        }
+        clear_idl_contract()
+        for (i = 1; i <= pending_idl_attr_count; ++i) {
+            append_idl_contract(pending_idl_attrs[i])
+        }
+        append_idl_contract(line)
+        clear_pending_idl_attrs()
+        mode = "coclass"
         next
     }
     if (line ~ /^typedef[ \t]+/ && line ~ /\(\*/) {

@@ -730,6 +730,12 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-6cells-contract-attrs',
+    [meson.current_source_dir()
+      / '_static/sh/staticcheck-6cells-contract-attrs.sh',
+      meson.project_source_root()],
+  ],
+  [
     'staticcheck-frame-post187-export-guard',
     [meson.current_source_dir()
       / '_static/sh/staticcheck-frame-post187-export-guard.sh',

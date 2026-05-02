@@ -367,6 +367,7 @@ AM_LOG_FLAGS =
 	staticcheck-lookup-backend-exports \
 	staticcheck-public-compat \
 	staticcheck-6cells-idl-sync \
+	staticcheck-6cells-contract-attrs \
 	staticcheck-frame-post187-export-guard \
 	staticcheck-frame-instantiation-boundary \
 	staticcheck-chunk-component-boundary \
@@ -420,6 +421,7 @@ staticcheck-test-runner-dllexport \
 staticcheck-lookup-backend-exports \
 staticcheck-public-compat \
 staticcheck-6cells-idl-sync \
+staticcheck-6cells-contract-attrs \
 staticcheck-frame-post187-export-guard \
 staticcheck-frame-instantiation-boundary \
 staticcheck-chunk-component-boundary \
@@ -590,6 +592,16 @@ staticcheck-6cells-idl-sync:
 		--trs-file staticcheck-6cells-idl-sync.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-6cells-idl-sync.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-6cells-contract-attrs:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-6cells-contract-attrs" \
+		--log-file staticcheck-6cells-contract-attrs.log \
+		--trs-file staticcheck-6cells-contract-attrs.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-6cells-contract-attrs.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-frame-post187-export-guard:
@@ -1671,6 +1683,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 		_static/sh/staticcheck-lookup-backend-exports.sh \
 		_static/sh/staticcheck-public-compat.sh \
 		_static/sh/staticcheck-6cells-idl-sync.sh \
+		_static/sh/staticcheck-6cells-contract-attrs.sh \
 		_static/sh/staticcheck-frame-post187-export-guard.sh \
 		_static/sh/staticcheck-frame-instantiation-boundary.sh \
 		_static/sh/staticcheck-chunk-component-boundary.sh \

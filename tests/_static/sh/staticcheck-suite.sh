@@ -329,6 +329,10 @@ run_case_tap "staticcheck-6cells-idl-sync" \
     "$src_root/tests/_static/sh/staticcheck-6cells-idl-sync.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-6cells-contract-attrs" \
+    "$src_root/tests/_static/sh/staticcheck-6cells-contract-attrs.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-frame-post187-export-guard" \
     "$src_root/tests/_static/sh/staticcheck-frame-post187-export-guard.sh" \
     "$src_root" || fail_and_exit $?
