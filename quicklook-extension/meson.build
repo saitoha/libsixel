@@ -60,6 +60,7 @@ srcs = files(
   '../src/compat_stub.c',
   '../src/path.c',
 )
+srcs += [sixcells_h]
 
 if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
   srcs += [
