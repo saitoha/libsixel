@@ -937,8 +937,6 @@ typedef struct sixel_frame_transparency {
  *         in int method_for_resampling);
  *     [mutates, invalidates(pixels_view)]
  *     SIXELSTATUS clip(in int x, in int y, in int width, in int height);
- *     [borrows(allocator)]
- *     allocator *allocator();
  *     SIXELSTATUS measure_storage(out size_t *storage_bytes);
  *     SIXELSTATUS clone(
  *         in allocator *allocator,
@@ -986,7 +984,6 @@ typedef struct sixel_frame_vtbl {
         int y,
         int width,
         int height);
-    sixel_allocator_t *(*allocator)(sixel_frame_interface_t *frame);
     SIXELSTATUS (*measure_storage)(
         sixel_frame_interface_t *frame,
         size_t *storage_bytes);

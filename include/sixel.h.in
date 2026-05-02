@@ -1545,10 +1545,6 @@ sixel_frame_set_loop_count(
 SIXELAPI void
 sixel_frame_increment_loop_count(sixel_frame_t /* in */ *frame);
 
-/* get allocator */
-SIXELAPI sixel_allocator_t *
-sixel_frame_get_allocator(sixel_frame_t /* in */ *frame);
-
 /* strip alpha from RGBA/ARGB formatted pixbuf */
 SIXELAPI int
 sixel_frame_strip_alpha(

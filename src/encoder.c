@@ -3354,7 +3354,7 @@ sixel_encoder_promote_pal8_transparent_for_geometry(
     if (encoder == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    allocator = sixel_frame_get_allocator(frame);
+    allocator = encoder->allocator;
     if (allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -3770,10 +3770,10 @@ sixel_encoder_quantize_animation_enabled_for_frame(
 
 static SIXELSTATUS
 sixel_encoder_collect_scene_probe(sixel_frame_t *frame,
+                                  sixel_allocator_t *allocator,
                                   unsigned char probe_out[])
 {
     SIXELSTATUS status;
-    sixel_allocator_t *allocator;
     unsigned char *normalized;
     unsigned char *source_pixels;
     size_t normalized_bytes;
@@ -3790,7 +3790,6 @@ sixel_encoder_collect_scene_probe(sixel_frame_t *frame,
     sixel_frame_pixels_view_t view;
 
     status = SIXEL_OK;
-    allocator = NULL;
     normalized = NULL;
     source_pixels = NULL;
     normalized_bytes = 0U;
@@ -3805,7 +3804,7 @@ sixel_encoder_collect_scene_probe(sixel_frame_t *frame,
     probe_index = 0U;
     pixel_index = 0U;
     memset(&view, 0, sizeof(view));
-    if (frame == NULL || probe_out == NULL) {
+    if (frame == NULL || allocator == NULL || probe_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -3829,10 +3828,6 @@ sixel_encoder_collect_scene_probe(sixel_frame_t *frame,
 
     normalized_pixelformat = pixelformat;
     if (pixelformat != SIXEL_PIXELFORMAT_RGB888) {
-        allocator = sixel_frame_get_allocator(frame);
-        if (allocator == NULL) {
-            return SIXEL_BAD_ARGUMENT;
-        }
         if ((size_t)width > SIZE_MAX / (size_t)height
                 || (size_t)width * (size_t)height > SIZE_MAX / 3U) {
             return SIXEL_BAD_INPUT;
@@ -4040,7 +4035,9 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
         return SIXEL_OK;
     }
 
-    status = sixel_encoder_collect_scene_probe(frame, current_probe);
+    status = sixel_encoder_collect_scene_probe(frame,
+                                               encoder->allocator,
+                                               current_probe);
     if (SIXEL_FAILED(status)) {
         return status;
     }

@@ -772,10 +772,10 @@ static SIXELSTATUS
 gif_export_pal8_frame(
     sixel_frame_t /* in */ *frame,
     gif_t         /* in */ *pg,
+    sixel_allocator_t /* in */ *allocator,
     int           /* in */ reqcolors)
 {
     SIXELSTATUS status;
-    sixel_allocator_t *allocator;
     size_t pixel_total;
     size_t table_size;
     size_t table_mask;
@@ -802,7 +802,6 @@ gif_export_pal8_frame(
     unsigned char *values;
 
     status = SIXEL_FALSE;
-    allocator = NULL;
     pixel_total = 0u;
     table_size = 0u;
     table_mask = 0u;
@@ -828,11 +827,7 @@ gif_export_pal8_frame(
     keys = NULL;
     values = NULL;
 
-    if (frame == NULL || pg == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    allocator = sixel_frame_get_allocator(frame);
-    if (allocator == NULL) {
+    if (frame == NULL || pg == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (pg->w <= 0 || pg->h <= 0) {
@@ -1061,10 +1056,10 @@ end:
 static SIXELSTATUS
 gif_export_nonpal_frame(
     sixel_frame_t /* in */ *frame,
-    gif_t         /* in */ *pg)
+    gif_t         /* in */ *pg,
+    sixel_allocator_t /* in */ *allocator)
 {
     SIXELSTATUS status;
-    sixel_allocator_t *allocator;
     size_t frame_pixels;
     size_t frame_size;
     size_t pixel_index;
@@ -1075,7 +1070,6 @@ gif_export_nonpal_frame(
     unsigned char *pixels;
 
     status = SIXEL_FALSE;
-    allocator = NULL;
     frame_pixels = 0u;
     frame_size = 0u;
     pixel_index = 0u;
@@ -1085,11 +1079,7 @@ gif_export_nonpal_frame(
     output_stride = GIF_RGB_STRIDE;
     pixels = NULL;
 
-    if (frame == NULL || pg == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    allocator = sixel_frame_get_allocator(frame);
-    if (allocator == NULL) {
+    if (frame == NULL || pg == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (pg->w <= 0 || pg->h <= 0) {
@@ -1161,27 +1151,21 @@ static SIXELSTATUS
 gif_init_frame(
     sixel_frame_t /* in */ *frame,
     gif_t         /* in */ *pg,
+    sixel_allocator_t /* in */ *allocator,
     unsigned char /* in */ *bgcolor,
     int           /* in */ reqcolors,
     int           /* in */ fuse_palette)
 {
     SIXELSTATUS status;
-    sixel_allocator_t *allocator;
     unsigned char *old_pixels;
     unsigned char *old_palette;
 
     (void)bgcolor;
 
     status = SIXEL_FALSE;
-    allocator = NULL;
     old_pixels = NULL;
     old_palette = NULL;
-    if (frame == NULL || pg == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    allocator = sixel_frame_get_allocator(frame);
-    if (allocator == NULL) {
+    if (frame == NULL || pg == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -1197,7 +1181,7 @@ gif_init_frame(
 
     sixel_frame_set_delay(frame, pg->delay);
     if (fuse_palette != 0) {
-        status = gif_export_pal8_frame(frame, pg, reqcolors);
+        status = gif_export_pal8_frame(frame, pg, allocator, reqcolors);
         if (status == SIXEL_OK) {
             goto finalize;
         }
@@ -1206,7 +1190,7 @@ gif_init_frame(
         }
     }
 
-    status = gif_export_nonpal_frame(frame, pg);
+    status = gif_export_nonpal_frame(frame, pg, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1909,6 +1893,7 @@ typedef union sixel_fromgif_fn_pointer {
 
 typedef struct gif_decode_request {
     unsigned char *bgcolor;
+    sixel_allocator_t *allocator;
     int bgcolor_source;
     int reqcolors;
     int fuse_palette;
@@ -2620,6 +2605,7 @@ gif_decode_one_frame(gif_context_t *s,
     sixel_frame_set_height(frame, g->h);
     status = gif_init_frame(frame,
                             g,
+                            request->allocator,
                             request->bgcolor,
                             request->reqcolors,
                             request->fuse_palette);
@@ -2907,6 +2893,7 @@ load_gif(
         goto end;
     }
     decode_request.bgcolor = bgcolor;
+    decode_request.allocator = allocator;
     decode_request.bgcolor_source = bgcolor_source;
     decode_request.reqcolors = reqcolors;
     decode_request.fuse_palette = fuse_palette;

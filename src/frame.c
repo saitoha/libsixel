@@ -149,8 +149,6 @@ sixel_frame_vtbl_clip(sixel_frame_interface_t *frame,
                       int y,
                       int width,
                       int height);
-static sixel_allocator_t *
-sixel_frame_vtbl_allocator(sixel_frame_interface_t *frame);
 static SIXELSTATUS
 sixel_frame_vtbl_measure_storage(sixel_frame_interface_t *frame,
                                  size_t *storage_bytes);
@@ -172,7 +170,6 @@ static sixel_frame_vtbl_t const g_sixel_frame_vtbl = {
     sixel_frame_vtbl_resize,
     sixel_frame_vtbl_resize_float32,
     sixel_frame_vtbl_clip,
-    sixel_frame_vtbl_allocator,
     sixel_frame_vtbl_measure_storage,
     sixel_frame_vtbl_clone
 };
@@ -494,19 +491,6 @@ sixel_frame_vtbl_clip(sixel_frame_interface_t *frame,
 
     storage = sixel_frame_from_interface(frame);
     return sixel_frame_clip(storage, x, y, width, height);
-}
-
-static sixel_allocator_t *
-sixel_frame_vtbl_allocator(sixel_frame_interface_t *frame)
-{
-    sixel_frame_t *storage;
-
-    if (frame == NULL) {
-        return NULL;
-    }
-
-    storage = sixel_frame_from_interface(frame);
-    return storage->allocator;
 }
 
 static SIXELSTATUS
@@ -1512,13 +1496,6 @@ sixel_frame_increment_loop_count(sixel_frame_t /* in */ *frame)
     ++frame->loop_count;
 }
 
-
-/* get allocator */
-SIXELAPI sixel_allocator_t *
-sixel_frame_get_allocator(sixel_frame_t /* in */ *frame)
-{
-    return frame->allocator;
-}
 
 /* strip alpha from RGBA/ARGB/BGRA/ABGR formatted pixbuf */
 SIXELAPI SIXELSTATUS
