@@ -299,7 +299,7 @@ timeline_verify_jsonl(char const *path)
         return 1;
     }
 
-    file = fopen(path, "r");
+    file = sixel_compat_fopen(path, "r");
     if (file == NULL) {
         fprintf(stderr, "timeline log was not written: %s\n", path);
         return 0;

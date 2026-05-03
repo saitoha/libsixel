@@ -95,17 +95,16 @@ static sixel_timeline_writer_vtbl_t const g_sixel_timeline_writer_vtbl = {
     sixel_timeline_writer_flush
 };
 
-static sixel_timeline_writer_storage_t g_sixel_timeline_writer = {
-    &g_sixel_timeline_writer_vtbl,
-    NULL,
-    {{0}},
-    0,
-    0,
-    0,
-    0,
-    1u,
-    0.0
-};
+static sixel_timeline_writer_storage_t g_sixel_timeline_writer;
+
+static void
+sixel_timeline_writer_init_storage(void)
+{
+    g_sixel_timeline_writer.vtbl = &g_sixel_timeline_writer_vtbl;
+    if (g_sixel_timeline_writer.next_session_id == 0u) {
+        g_sixel_timeline_writer.next_session_id = 1u;
+    }
+}
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
     && !defined(WITH_WINPTHREAD) && SIXEL_ENABLE_THREADS
@@ -120,6 +119,7 @@ sixel_timeline_writer_init_once(PINIT_ONCE once,
     (void)parameter;
     (void)context;
 
+    sixel_timeline_writer_init_storage();
     if (sixel_mutex_init(&g_sixel_timeline_writer.mutex) == SIXEL_OK) {
         g_sixel_timeline_writer.mutex_ready = 1;
     }
@@ -131,6 +131,7 @@ static pthread_once_t g_sixel_timeline_writer_once = PTHREAD_ONCE_INIT;
 static void
 sixel_timeline_writer_init_once(void)
 {
+    sixel_timeline_writer_init_storage();
     if (sixel_mutex_init(&g_sixel_timeline_writer.mutex) == SIXEL_OK) {
         g_sixel_timeline_writer.mutex_ready = 1;
     }
@@ -159,6 +160,8 @@ sixel_timeline_writer_ensure_mutex(void)
     if (once_status != 0 || !g_sixel_timeline_writer.mutex_ready) {
         return SIXEL_RUNTIME_ERROR;
     }
+#else
+    sixel_timeline_writer_init_storage();
 #endif
     return SIXEL_OK;
 }

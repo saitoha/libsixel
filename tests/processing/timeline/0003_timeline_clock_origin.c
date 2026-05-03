@@ -18,7 +18,6 @@
 #include <6cells.h>
 
 #include "src/compat_stub.h"
-#include "src/sleep.h"
 #include "src/timer.h"
 
 #define TIMELINE_CLOCK_WAIT_SECONDS 0.020
@@ -33,7 +32,6 @@ timeline_wait_seconds(double seconds)
     started_at = sixel_timer_now();
     now = started_at;
     while (now - started_at < seconds) {
-        sixel_sleep(1000u);
         now = sixel_timer_now();
         if (now <= 0.0 && started_at <= 0.0) {
             break;
@@ -79,7 +77,7 @@ timeline_read_clock_samples(char const *path,
         return 0;
     }
 
-    file = fopen(path, "r");
+    file = sixel_compat_fopen(path, "r");
     if (file == NULL) {
         fprintf(stderr, "timeline clock log was not written: %s\n", path);
         return 0;

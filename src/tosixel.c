@@ -3482,6 +3482,9 @@ sixel_encode_dither(
         return SIXEL_BAD_ARGUMENT;
     }
 
+#if SIXEL_ENABLE_THREADS
+    serial_logger = NULL;
+#endif  /* SIXEL_ENABLE_THREADS */
     palette_source_colorspace = SIXEL_COLORSPACE_GAMMA;
     palette_float_pixelformat =
         sixel_palette_float_pixelformat_for_colorspace(
@@ -3626,7 +3629,6 @@ sixel_encode_dither(
     }
 
 #if SIXEL_ENABLE_THREADS
-    serial_logger = NULL;
     if (!pipeline_active) {
         logger = dither->pipeline_logger;
         if (logger == NULL) {
