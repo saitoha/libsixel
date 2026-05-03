@@ -198,10 +198,7 @@ test_copy_palette_from_kcenter(sixel_dither_t *dither,
             palette_view.depth != 3 || palette_view.entry_count == 0u) {
         return 0;
     }
-    if (palette_view.entry_count > (size_t)UINT_MAX) {
-        return 0;
-    }
-    payload_size = palette_view.entry_count * 3u;
+    payload_size = (size_t)palette_view.entry_count * 3u;
     palette = (unsigned char *)sixel_allocator_malloc(allocator,
                                                       payload_size);
     if (palette == NULL) {

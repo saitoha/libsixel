@@ -146,9 +146,10 @@ libwicsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am__libwicsixel_la_SOURCES_DIST = $(srcdir)/wic.c $(srcdir)/wic_stub.c \
 	$(srcdir)/wic_stub.h $(top_builddir)/src/fromsixel.c \
 	$(top_builddir)/src/allocator.c $(top_builddir)/src/timer.c \
-	$(top_builddir)/src/logger.c $(top_builddir)/src/status.c \
-	$(top_builddir)/src/probe.c $(top_builddir)/src/compat_stub.c \
-	$(top_builddir)/src/path.c \
+	$(top_builddir)/src/timeline-logger.c \
+	$(top_builddir)/src/timeline-writer.c \
+	$(top_builddir)/src/status.c $(top_builddir)/src/probe.c \
+	$(top_builddir)/src/compat_stub.c $(top_builddir)/src/path.c \
 	$(top_srcdir)/src/decoder-parallel.c \
 	$(top_srcdir)/src/threading.c $(top_srcdir)/src/threading.h \
 	$(top_srcdir)/src/threadpool.c $(top_srcdir)/src/threadpool.h
@@ -161,7 +162,8 @@ am_libwicsixel_la_OBJECTS = libwicsixel_la-wic.lo \
 	$(top_builddir)/src/libwicsixel_la-fromsixel.lo \
 	$(top_builddir)/src/libwicsixel_la-allocator.lo \
 	$(top_builddir)/src/libwicsixel_la-timer.lo \
-	$(top_builddir)/src/libwicsixel_la-logger.lo \
+	$(top_builddir)/src/libwicsixel_la-timeline-logger.lo \
+	$(top_builddir)/src/libwicsixel_la-timeline-writer.lo \
 	$(top_builddir)/src/libwicsixel_la-status.lo \
 	$(top_builddir)/src/libwicsixel_la-probe.lo \
 	$(top_builddir)/src/libwicsixel_la-compat_stub.lo \
@@ -195,12 +197,13 @@ am__depfiles_remade =  \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-logger.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-path.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-probe.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threading.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-logger.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-writer.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo \
 	./$(DEPDIR)/libwicsixel_la-wic.Plo \
 	./$(DEPDIR)/libwicsixel_la-wic_stub.Plo
@@ -493,9 +496,11 @@ pkglib_LTLIBRARIES = libwicsixel.la
 libwicsixel_la_SOURCES = $(srcdir)/wic.c $(srcdir)/wic_stub.c \
 	$(srcdir)/wic_stub.h $(top_builddir)/src/fromsixel.c \
 	$(top_builddir)/src/allocator.c $(top_builddir)/src/timer.c \
-	$(top_builddir)/src/logger.c $(top_builddir)/src/status.c \
-	$(top_builddir)/src/probe.c $(top_builddir)/src/compat_stub.c \
-	$(top_builddir)/src/path.c $(am__append_1)
+	$(top_builddir)/src/timeline-logger.c \
+	$(top_builddir)/src/timeline-writer.c \
+	$(top_builddir)/src/status.c $(top_builddir)/src/probe.c \
+	$(top_builddir)/src/compat_stub.c $(top_builddir)/src/path.c \
+	$(am__append_1)
 libwicsixel_la_CPPFLAGS = $(AM_CPPFLAGS) \
                           -I$(top_builddir)/include/ \
                           -DSIXEL_STATUS_HAVE_TTY_HELPERS=0
@@ -588,7 +593,10 @@ $(top_builddir)/src/libwicsixel_la-allocator.lo:  \
 $(top_builddir)/src/libwicsixel_la-timer.lo:  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
-$(top_builddir)/src/libwicsixel_la-logger.lo:  \
+$(top_builddir)/src/libwicsixel_la-timeline-logger.lo:  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/libwicsixel_la-timeline-writer.lo:  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/src/libwicsixel_la-status.lo:  \
@@ -628,12 +636,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-logger.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-path.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-probe.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threading.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-logger.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-writer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwicsixel_la-wic.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwicsixel_la-wic_stub.Plo@am__quote@ # am--include-marker
@@ -703,12 +712,19 @@ $(top_builddir)/src/libwicsixel_la-timer.lo: $(top_builddir)/src/timer.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-timer.lo `test -f '$(top_builddir)/src/timer.c' || echo '$(srcdir)/'`$(top_builddir)/src/timer.c
 
-$(top_builddir)/src/libwicsixel_la-logger.lo: $(top_builddir)/src/logger.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-logger.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-logger.Tpo -c -o $(top_builddir)/src/libwicsixel_la-logger.lo `test -f '$(top_builddir)/src/logger.c' || echo '$(srcdir)/'`$(top_builddir)/src/logger.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-logger.Tpo $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-logger.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/logger.c' object='$(top_builddir)/src/libwicsixel_la-logger.lo' libtool=yes @AMDEPBACKSLASH@
+$(top_builddir)/src/libwicsixel_la-timeline-logger.lo: $(top_builddir)/src/timeline-logger.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-timeline-logger.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-logger.Tpo -c -o $(top_builddir)/src/libwicsixel_la-timeline-logger.lo `test -f '$(top_builddir)/src/timeline-logger.c' || echo '$(srcdir)/'`$(top_builddir)/src/timeline-logger.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-logger.Tpo $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-logger.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/timeline-logger.c' object='$(top_builddir)/src/libwicsixel_la-timeline-logger.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-logger.lo `test -f '$(top_builddir)/src/logger.c' || echo '$(srcdir)/'`$(top_builddir)/src/logger.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-timeline-logger.lo `test -f '$(top_builddir)/src/timeline-logger.c' || echo '$(srcdir)/'`$(top_builddir)/src/timeline-logger.c
+
+$(top_builddir)/src/libwicsixel_la-timeline-writer.lo: $(top_builddir)/src/timeline-writer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-timeline-writer.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-writer.Tpo -c -o $(top_builddir)/src/libwicsixel_la-timeline-writer.lo `test -f '$(top_builddir)/src/timeline-writer.c' || echo '$(srcdir)/'`$(top_builddir)/src/timeline-writer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-writer.Tpo $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-writer.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/timeline-writer.c' object='$(top_builddir)/src/libwicsixel_la-timeline-writer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-timeline-writer.lo `test -f '$(top_builddir)/src/timeline-writer.c' || echo '$(srcdir)/'`$(top_builddir)/src/timeline-writer.c
 
 $(top_builddir)/src/libwicsixel_la-status.lo: $(top_builddir)/src/status.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-status.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Tpo -c -o $(top_builddir)/src/libwicsixel_la-status.lo `test -f '$(top_builddir)/src/status.c' || echo '$(srcdir)/'`$(top_builddir)/src/status.c
@@ -901,12 +917,13 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
-	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-logger.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-path.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-probe.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threading.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-logger.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-writer.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic_stub.Plo
@@ -960,12 +977,13 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
-	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-logger.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-path.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-probe.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threading.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-logger.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timeline-writer.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic_stub.Plo

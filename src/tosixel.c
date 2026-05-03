@@ -3341,12 +3341,17 @@ sixel_encode_body_ormode(
     SIXELSTATUS status;
     int n;
     int nplanes;
-    uint8_t *buf = pixels;
+    uint8_t *buf;
     uint8_t *buf_p;
     int x;
     int cur_h;
     int nwrite;
     int plane;
+
+    if (pixels == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    buf = pixels;
 
     for (n = 0; n < ncolors; n++) {
         status = output_rgb_palette_definition(output, palette, NULL, n, keycolor);

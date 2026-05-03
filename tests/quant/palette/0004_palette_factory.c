@@ -31,31 +31,31 @@
  * IPalette.unref()
  */
 
-static int tracked_allocator_free_count;
+static int palette_tracked_allocator_free_count;
 
 static void *
-tracked_malloc(size_t size)
+palette_tracked_malloc(size_t size)
 {
     return malloc(size);
 }
 
 static void *
-tracked_calloc(size_t count, size_t size)
+palette_tracked_calloc(size_t count, size_t size)
 {
     return calloc(count, size);
 }
 
 static void *
-tracked_realloc(void *ptr, size_t size)
+palette_tracked_realloc(void *ptr, size_t size)
 {
     return realloc(ptr, size);
 }
 
 static void
-tracked_free(void *ptr)
+palette_tracked_free(void *ptr)
 {
     if (ptr != NULL) {
-        ++tracked_allocator_free_count;
+        ++palette_tracked_allocator_free_count;
     }
     free(ptr);
 }
@@ -103,12 +103,12 @@ test_palette_factory_component(void)
     entries_float32[4] = 0.9f;
     entries_float32[5] = 1.0f;
 
-    tracked_allocator_free_count = 0;
+    palette_tracked_allocator_free_count = 0;
     status = sixel_allocator_new(&allocator,
-                                 tracked_malloc,
-                                 tracked_calloc,
-                                 tracked_realloc,
-                                 tracked_free);
+                                 palette_tracked_malloc,
+                                 palette_tracked_calloc,
+                                 palette_tracked_realloc,
+                                 palette_tracked_free);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -209,10 +209,10 @@ test_palette_factory_component(void)
     palette->vtbl->ref(palette);
     palette->vtbl->unref(palette);
 
-    free_count_before_unref = tracked_allocator_free_count;
+    free_count_before_unref = palette_tracked_allocator_free_count;
     palette->vtbl->unref(palette);
     palette = NULL;
-    if (tracked_allocator_free_count <= free_count_before_unref) {
+    if (palette_tracked_allocator_free_count <= free_count_before_unref) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }

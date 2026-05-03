@@ -98,7 +98,7 @@ static sixel_timeline_writer_vtbl_t const g_sixel_timeline_writer_vtbl = {
 static sixel_timeline_writer_storage_t g_sixel_timeline_writer = {
     &g_sixel_timeline_writer_vtbl,
     NULL,
-    {0},
+    {{0}},
     0,
     0,
     0,

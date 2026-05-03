@@ -70,6 +70,23 @@ FILENAME ~ /\/timeline-logger\.c$/ && /fflush[ \t]*\(/ {
 }
 ' >>"$report"
 
+find "$src_root/amalgamation" "$src_root/wic" "$src_root/src" \
+    -type f \( -name 'Makefile.am' -o -name 'Makefile.in' \
+        -o -name 'meson.build' \) -print |
+awk -v src_root="$src_root" '
+function rel(path) {
+    sub("^" src_root "/", "", path)
+    return path
+}
+FILENAME != last_file {
+    last_file = FILENAME
+    path = rel(FILENAME)
+}
+/(^|[^A-Za-z0-9_-])logger\.(c|h)([^A-Za-z0-9_-]|$)/ {
+    print path ":" FNR ": old logger build input is forbidden"
+}
+' >>"$report"
+
 if test -s "$report"; then
     echo "not ok 1 - timeline logging stays componentized"
     sed 's/^/# /' "$report"
