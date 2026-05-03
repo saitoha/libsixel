@@ -157,11 +157,12 @@ issue-ghsa-hx93-w8p2-ffh5: all
 issue-ghsa-9jm7-77gr-qghv:
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 		-I$(top_builddir) -I$(top_builddir)/include \
-		-I$(top_srcdir)/src $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
+		-I$(top_srcdir)/src $(CPPFLAGS) $(LIBCURL_CFLAGS) \
+		$(CFLAGS) $(LDFLAGS) \
 		-o $(builddir)/issue-ghsa-9jm7-77gr-qghv$(EXEEXT) \
 		$(top_srcdir)/tests/issue/GHSA-9jm7-77gr-qghv/parser-overflow.c \
 		$(top_srcdir)/src/allocator.c $(top_srcdir)/src/status.c \
-		$(LIBS) -lm
+		$(LIBCURL_LIBS) $(LIBS) -lm
 	$(builddir)/issue-ghsa-9jm7-77gr-qghv$(EXEEXT)
 
 issue-ghsa-9jm7-77gr-qghv-oob: all
@@ -179,21 +180,23 @@ issue-ghsa-9jm7-77gr-qghv-oob: all
 issue-ghsa-wpx3-h5g8-qr3w-decode-raw:
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 		-I$(top_builddir) -I$(top_builddir)/include \
-		-I$(top_srcdir)/src $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
+		-I$(top_srcdir)/src $(CPPFLAGS) $(LIBCURL_CFLAGS) \
+		$(CFLAGS) $(LDFLAGS) \
 		-o $(builddir)/issue-ghsa-wpx3-h5g8-qr3w-decode-raw$(EXEEXT) \
 		$(top_srcdir)/tests/issue/GHSA-wpx3-h5g8-qr3w/decode-raw-null-palette.c \
 		$(top_srcdir)/src/fromsixel.c $(top_srcdir)/src/allocator.c \
-		$(top_srcdir)/src/status.c $(LIBS) -lm
+		$(top_srcdir)/src/status.c $(LIBCURL_LIBS) $(LIBS) -lm
 	$(builddir)/issue-ghsa-wpx3-h5g8-qr3w-decode-raw$(EXEEXT)
 
 issue-ghsa-wpx3-h5g8-qr3w-decode:
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) \
 		-I$(top_builddir) -I$(top_builddir)/include \
-		-I$(top_srcdir)/src $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
+		-I$(top_srcdir)/src $(CPPFLAGS) $(LIBCURL_CFLAGS) \
+		$(CFLAGS) $(LDFLAGS) \
 		-o $(builddir)/issue-ghsa-wpx3-h5g8-qr3w-decode$(EXEEXT) \
 		$(top_srcdir)/tests/issue/GHSA-wpx3-h5g8-qr3w/decode-null-palette.c \
 		$(top_srcdir)/src/fromsixel.c $(top_srcdir)/src/allocator.c \
-		$(top_srcdir)/src/status.c $(LIBS) -lm
+		$(top_srcdir)/src/status.c $(LIBCURL_LIBS) $(LIBS) -lm
 	$(builddir)/issue-ghsa-wpx3-h5g8-qr3w-decode$(EXEEXT)
 
 issue-ghsa-wpx3-h5g8-qr3w:
