@@ -421,6 +421,61 @@ end:
 }
 
 
+static SIXELSTATUS
+reject_invalid_position(parser_context_t const *context)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+
+    /*
+     * Keep the parser cursor below the existing image limits before any int
+     * arithmetic combines it with repeat_count or a sixel band height.
+     * repeat_count is limited to 0xffff, so these bounds keep the later
+     * additions comfortably inside int range.
+     */
+    if (context->pos_x < 0
+            || context->pos_x >= SIXEL_WIDTH_LIMIT
+            || context->pos_y < 0
+            || context->pos_y >= SIXEL_HEIGHT_LIMIT) {
+        status = SIXEL_BAD_INPUT;
+        sixel_helper_set_additional_message(
+            "reject_invalid_position: cursor position limit exceeded.");
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+
+static SIXELSTATUS
+sixel_parser_advance_line(parser_context_t *context)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+
+    /*
+     * DECGNL advances the vertical cursor without drawing, so it must be
+     * guarded here as well as at the next sixel byte. Otherwise a stream made
+     * only of '-' commands can overflow pos_y before the draw-time guard runs.
+     */
+    if (context->pos_y < 0
+            || context->pos_y > SIXEL_HEIGHT_LIMIT - 6) {
+        status = SIXEL_BAD_INPUT;
+        sixel_helper_set_additional_message(
+            "sixel_parser_advance_line: vertical position limit exceeded.");
+        goto end;
+    }
+
+    context->pos_x = 0;
+    context->pos_y += 6;
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXELAPI SIXELSTATUS
 sixel_decode_raw_impl(
@@ -625,12 +680,19 @@ sixel_decode_raw_impl(
                 break;
             case '-':
                 /* DECGNL Graphics Next Line */
-                context->pos_x = 0;
-                context->pos_y += 6;
+                status = sixel_parser_advance_line(context);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
                 p++;
                 break;
             default:
                 if (*p >= '?' && *p <= '~') {  /* sixel characters */
+
+                    status = reject_invalid_position(context);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
 
                     sx = image->width;
                     while (sx < context->pos_x + context->repeat_count) {
@@ -653,10 +715,6 @@ sixel_decode_raw_impl(
                         image->ncolors = context->color_index;
                     }
 
-                    if (context->pos_x < 0 || context->pos_y < 0) {
-                        status = SIXEL_BAD_INPUT;
-                        goto end;
-                    }
                     bits = *p - '?';
 
                     if (bits == 0) {

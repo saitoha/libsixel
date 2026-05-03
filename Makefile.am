@@ -17,7 +17,9 @@ DIST_TEST_FIXTURES = \
 	tests/issue/220/poc5_encode_integer_overflow.gif \
 	tests/issue/220/poc6_quant_integer_overflow_8x8.png \
 	tests/issue/222/poc_encode_bytes_packed_g1.c \
-	tests/issue/GHSA-hx93-w8p2-ffh5/poc_encode_highcolor_overflow.c
+	tests/issue/GHSA-hx93-w8p2-ffh5/poc_encode_highcolor_overflow.c \
+	tests/issue/GHSA-9jm7-77gr-qghv/parser-overflow.c \
+	tests/issue/GHSA-9jm7-77gr-qghv/oob-write-input.c
 
 EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
 	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb \
@@ -35,6 +37,8 @@ pkgconfig_DATA = $(builddir)/libsixel.pc
 
 CLEANFILES = $(builddir)/package.json \
 	$(builddir)/poc_encode_highcolor_overflow$(EXEEXT) \
+	$(builddir)/issue-ghsa-9jm7-77gr-qghv$(EXEEXT) \
+	$(builddir)/issue-ghsa-9jm7-77gr-qghv-oob-input$(EXEEXT) \
 	$(builddir)/valgrind.log \
 	$(builddir)/test.log \
 	$(builddir)/unittest.log
@@ -145,6 +149,28 @@ issue-ghsa-hx93-w8p2-ffh5: all
 		$(srcdir)/tests/issue/GHSA-hx93-w8p2-ffh5/poc_encode_highcolor_overflow.c \
 		src/libsixel.la -o $(builddir)/poc_encode_highcolor_overflow$(EXEEXT)
 	$(builddir)/poc_encode_highcolor_overflow$(EXEEXT)
+
+issue-ghsa-9jm7-77gr-qghv:
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) \
+		-I$(top_builddir) -I$(top_builddir)/include \
+		-I$(top_srcdir)/src $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
+		-o $(builddir)/issue-ghsa-9jm7-77gr-qghv$(EXEEXT) \
+		$(top_srcdir)/tests/issue/GHSA-9jm7-77gr-qghv/parser-overflow.c \
+		$(top_srcdir)/src/allocator.c $(top_srcdir)/src/status.c \
+		$(LIBS) -lm
+	$(builddir)/issue-ghsa-9jm7-77gr-qghv$(EXEEXT)
+
+issue-ghsa-9jm7-77gr-qghv-oob: all
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(CPPFLAGS) $(CFLAGS) \
+		$(LDFLAGS) \
+		-o $(builddir)/issue-ghsa-9jm7-77gr-qghv-oob-input$(EXEEXT) \
+		$(top_srcdir)/tests/issue/GHSA-9jm7-77gr-qghv/oob-write-input.c \
+		$(LIBS)
+	ASAN_OPTIONS=abort_on_error=1:detect_leaks=0; \
+	export ASAN_OPTIONS; \
+	$(builddir)/issue-ghsa-9jm7-77gr-qghv-oob-input$(EXEEXT) \
+		| converters/sixel2png -o /dev/null; \
+	test $$? = 255 -o $$? = 127
 
 libsixel-libsixel-issue-73:
 	converters/img2sixel tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin
