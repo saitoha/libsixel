@@ -515,24 +515,20 @@ test_timeline_0002_timeline_parallel_encode_decode_verify(int argc,
                                                           char **argv)
 {
     char log_path[4096];
-    char const *log_path_env;
-
-    (void)argc;
-    (void)argv;
 
 #if SIXEL_ENABLE_THREADS
-    log_path_env = NULL;
     memset(log_path, 0, sizeof(log_path));
-    log_path_env = sixel_compat_getenv("SIXEL_LOG_PATH");
-    if (log_path_env == NULL || log_path_env[0] == '\0' ||
-        sixel_compat_strcpy(log_path, sizeof(log_path), log_path_env) < 0 ||
+    if (argc < 2 || argv == NULL || argv[1] == NULL ||
+        argv[1][0] == '\0' ||
+        sixel_compat_strcpy(log_path, sizeof(log_path), argv[1]) < 0 ||
         !timeline_verify_jsonl(log_path)) {
         fprintf(stderr, "timeline parallel JSONL verification failed\n");
         return EXIT_FAILURE;
     }
 #else
     (void)log_path;
-    (void)log_path_env;
+    (void)argc;
+    (void)argv;
 #endif
 
     return EXIT_SUCCESS;
