@@ -19,7 +19,9 @@ DIST_TEST_FIXTURES = \
 	tests/issue/222/poc_encode_bytes_packed_g1.c \
 	tests/issue/GHSA-hx93-w8p2-ffh5/poc_encode_highcolor_overflow.c \
 	tests/issue/GHSA-9jm7-77gr-qghv/parser-overflow.c \
-	tests/issue/GHSA-9jm7-77gr-qghv/oob-write-input.c
+	tests/issue/GHSA-9jm7-77gr-qghv/oob-write-input.c \
+	tests/issue/GHSA-wpx3-h5g8-qr3w/decode-raw-null-palette.c \
+	tests/issue/GHSA-wpx3-h5g8-qr3w/decode-null-palette.c
 
 EXTRA_DIST = LICENSE LICENSE.images LICENSE.mesa LICENSE.pngsuite \
 	LICENSE.pnmcolormap LICENSE.sdump LICENSE.sixel LICENSE.stb \
@@ -39,6 +41,8 @@ CLEANFILES = $(builddir)/package.json \
 	$(builddir)/poc_encode_highcolor_overflow$(EXEEXT) \
 	$(builddir)/issue-ghsa-9jm7-77gr-qghv$(EXEEXT) \
 	$(builddir)/issue-ghsa-9jm7-77gr-qghv-oob-input$(EXEEXT) \
+	$(builddir)/issue-ghsa-wpx3-h5g8-qr3w-decode-raw$(EXEEXT) \
+	$(builddir)/issue-ghsa-wpx3-h5g8-qr3w-decode$(EXEEXT) \
 	$(builddir)/valgrind.log \
 	$(builddir)/test.log \
 	$(builddir)/unittest.log
@@ -171,6 +175,30 @@ issue-ghsa-9jm7-77gr-qghv-oob: all
 	$(builddir)/issue-ghsa-9jm7-77gr-qghv-oob-input$(EXEEXT) \
 		| converters/sixel2png -o /dev/null; \
 	test $$? = 255 -o $$? = 127
+
+issue-ghsa-wpx3-h5g8-qr3w-decode-raw:
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) \
+		-I$(top_builddir) -I$(top_builddir)/include \
+		-I$(top_srcdir)/src $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
+		-o $(builddir)/issue-ghsa-wpx3-h5g8-qr3w-decode-raw$(EXEEXT) \
+		$(top_srcdir)/tests/issue/GHSA-wpx3-h5g8-qr3w/decode-raw-null-palette.c \
+		$(top_srcdir)/src/fromsixel.c $(top_srcdir)/src/allocator.c \
+		$(top_srcdir)/src/status.c $(LIBS) -lm
+	$(builddir)/issue-ghsa-wpx3-h5g8-qr3w-decode-raw$(EXEEXT)
+
+issue-ghsa-wpx3-h5g8-qr3w-decode:
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) \
+		-I$(top_builddir) -I$(top_builddir)/include \
+		-I$(top_srcdir)/src $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
+		-o $(builddir)/issue-ghsa-wpx3-h5g8-qr3w-decode$(EXEEXT) \
+		$(top_srcdir)/tests/issue/GHSA-wpx3-h5g8-qr3w/decode-null-palette.c \
+		$(top_srcdir)/src/fromsixel.c $(top_srcdir)/src/allocator.c \
+		$(top_srcdir)/src/status.c $(LIBS) -lm
+	$(builddir)/issue-ghsa-wpx3-h5g8-qr3w-decode$(EXEEXT)
+
+issue-ghsa-wpx3-h5g8-qr3w:
+	$(MAKE) $(AM_MAKEFLAGS) issue-ghsa-wpx3-h5g8-qr3w-decode-raw
+	$(MAKE) $(AM_MAKEFLAGS) issue-ghsa-wpx3-h5g8-qr3w-decode
 
 libsixel-libsixel-issue-73:
 	converters/img2sixel tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin

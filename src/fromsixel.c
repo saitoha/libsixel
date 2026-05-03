@@ -1013,6 +1013,7 @@ sixel_decode_raw(
     parser_context_t context;
     image_buffer_t image;
     int n;
+    int alloc_size;
 
     image.data = NULL;
 
@@ -1044,16 +1045,20 @@ sixel_decode_raw(
     }
 
     *ncolors = image.ncolors + 1;
-    int alloc_size = *ncolors;
+    alloc_size = *ncolors;
     if (alloc_size < SIXEL_PALETTE_MAX) {
         /* memory access range should be 0 <= 255 */
         alloc_size = SIXEL_PALETTE_MAX;
     }
-    *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(alloc_size * 3));
-    if (palette == NULL) {
+    *palette = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        (size_t)(alloc_size * 3));
+    /* palette is an output parameter; check the allocated value. */
+    if (*palette == NULL) {
         sixel_allocator_free(allocator, image.data);
+        image.data = NULL;
         sixel_helper_set_additional_message(
-            "sixel_deocde_raw: sixel_allocator_malloc() failed.");
+            "sixel_decode_raw: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto error;
     }
@@ -1121,11 +1126,14 @@ sixel_decode(unsigned char              /* in */  *p,         /* sixel bytes */
     }
 
     *ncolors = image.ncolors + 1;
-    *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(*ncolors * 3));
-    if (palette == NULL) {
+    *palette = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        (size_t)(*ncolors * 3));
+    /* palette is an output parameter; check the allocated value. */
+    if (*palette == NULL) {
         sixel_allocator_free(allocator, image.data);
         sixel_helper_set_additional_message(
-            "sixel_deocde_raw: sixel_allocator_malloc() failed.");
+            "sixel_decode: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
