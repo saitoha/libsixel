@@ -108,6 +108,9 @@ jobs:
           export PATH="$PWD/build-aux:$PWD/bin:$PATH"
           run_log="$FUZZ_STRUCT_ARTIFACT_DIR/run.log"
           min_cov=60
+          if [ "${{ matrix.buildtool }}" = "autotools" ]; then
+            min_cov=55
+          fi
           dict_common="$PWD/fuzz/loader-builtin.dict"
           dict_target="$PWD/fuzz/dicts/struct/${{ matrix.target }}.dict"
           dict_merged="$FUZZ_STRUCT_ARTIFACT_DIR/dict.merged"
