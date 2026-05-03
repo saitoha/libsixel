@@ -15,12 +15,5 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    "timeline/0002_timeline_parallel_encode_decode_verify" \
-    "${log_path}" || {
-    echo "not ok 1 - 0002_timeline_parallel_encode_decode"
-    exit 0
-}
-
 echo "ok 1 - 0002_timeline_parallel_encode_decode"
 exit 0

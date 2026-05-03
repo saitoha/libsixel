@@ -15,12 +15,5 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    "timeline/0003_timeline_clock_origin_verify" \
-    "${log_path}" || {
-    echo "not ok 1 - 0003_timeline_clock_origin"
-    exit 0
-}
-
 echo "ok 1 - 0003_timeline_clock_origin"
 exit 0

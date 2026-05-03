@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: MIT
  *
  * Concurrent timeline logging test.  Multiple encoder/decoder objects share the
- * process timeline_writer service.  The TAP wrapper validates the completed
- * JSONL after this process exits so Windows CRT file sharing does not affect
- * the diagnostic contract.
+ * process timeline_writer service.  The test validates the completed JSONL
+ * after an explicit writer flush so the diagnostic contract is checked before
+ * process teardown can hide a failure.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -487,6 +487,9 @@ end:
         return 0;
     }
     if (!timeline_flush_writer(log_path)) {
+        return 0;
+    }
+    if (!timeline_verify_jsonl(log_path)) {
         return 0;
     }
 
