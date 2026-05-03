@@ -81,6 +81,10 @@ FILENAME ~ /\/tests\/processing\/timeline\/.*\.c$/ &&
     /sixel_sleep[ \t]*\(/ {
     print path ":" FNR ": timeline tests must not link internal sleep helper"
 }
+FILENAME ~ /\/tests\/processing\/timeline\/.*\.c$/ &&
+    /char[ \t]+const[ \t]+\*[ \t]*log_path[ \t]*;/ {
+    print path ":" FNR ": timeline tests must copy SIXEL_LOG_PATH"
+}
 '
 
 find "$src_root/amalgamation" "$src_root/wic" "$src_root/src" \
@@ -131,20 +135,58 @@ in_func && /palette_source_colorspace[ \t]*=[ \t]*SIXEL_COLORSPACE_GAMMA[ \t]*;/
 awk '
 /^timeline_parallel_encode_decode\(void\)/ {
     in_func = 1
-    saw_log_path_init = 0
+    saw_log_path_zero = 0
+    saw_log_path_copy = 0
 }
-in_func && /log_path[ \t]*=[ \t]*NULL[ \t]*;/ {
-    saw_log_path_init = 1
+in_func && /memset[ \t]*\([ \t]*log_path[ \t]*,/ {
+    saw_log_path_zero = 1
+}
+in_func && /sixel_compat_strcpy[ \t]*\([ \t]*log_path[ \t]*,/ {
+    saw_log_path_copy = 1
 }
 in_func && /timeline_build_source_path\(/ {
-    if (!saw_log_path_init) {
+    if (!saw_log_path_zero) {
         print "tests/processing/timeline/" \
             "0002_timeline_parallel_encode_decode.c:" FNR \
-            ": log_path must be initialized before early cleanup paths"
+            ": log_path must be zeroed before early cleanup paths"
+    }
+}
+in_func && /sixel_mutex_init[ \t]*\(/ {
+    if (!saw_log_path_copy) {
+        print "tests/processing/timeline/" \
+            "0002_timeline_parallel_encode_decode.c:" FNR \
+            ": SIXEL_LOG_PATH must be copied before writer use"
     }
     in_func = 0
 }
 ' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.c"
+
+awk '
+/^timeline_clock_origin_is_shared\(void\)/ {
+    in_func = 1
+    saw_log_path_zero = 0
+    saw_log_path_copy = 0
+}
+in_func && /memset[ \t]*\([ \t]*log_path[ \t]*,/ {
+    saw_log_path_zero = 1
+}
+in_func && /sixel_compat_strcpy[ \t]*\([ \t]*log_path[ \t]*,/ {
+    saw_log_path_copy = 1
+}
+in_func && /sixel_allocator_new[ \t]*\(/ {
+    if (!saw_log_path_zero) {
+        print "tests/processing/timeline/" \
+            "0003_timeline_clock_origin.c:" FNR \
+            ": log_path must be zeroed before early cleanup paths"
+    }
+    if (!saw_log_path_copy) {
+        print "tests/processing/timeline/" \
+            "0003_timeline_clock_origin.c:" FNR \
+            ": SIXEL_LOG_PATH must be copied before writer use"
+    }
+    in_func = 0
+}
+' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.c"
 } >>"$report"
 
 if test -s "$report"; then

@@ -350,8 +350,9 @@ timeline_parallel_encode_decode(void)
     timeline_parallel_sync_t sync;
     char encode_input_path[4096];
     char decode_input_path[4096];
+    char log_path[4096];
+    char const *log_path_env;
     char const *output_path;
-    char const *log_path;
     int created;
     int index;
     int success;
@@ -360,12 +361,13 @@ timeline_parallel_encode_decode(void)
     created = 0;
     success = 0;
     sync_ready = 0;
-    log_path = NULL;
+    log_path_env = NULL;
     memset(threads, 0, sizeof(threads));
     memset(jobs, 0, sizeof(jobs));
     memset(&sync, 0, sizeof(sync));
     memset(encode_input_path, 0, sizeof(encode_input_path));
     memset(decode_input_path, 0, sizeof(decode_input_path));
+    memset(log_path, 0, sizeof(log_path));
 
     if (!timeline_build_source_path(encode_input_path,
                                     sizeof(encode_input_path),
@@ -381,7 +383,16 @@ timeline_parallel_encode_decode(void)
     }
 
     output_path = timeline_null_output_path();
-    log_path = sixel_compat_getenv("SIXEL_LOG_PATH");
+    /*
+     * MSVC compat getenv keeps an internal per-name cache.  The shared
+     * timeline writer also reads SIXEL_LOG_PATH, so keep a private copy for
+     * the verification path instead of retaining the returned pointer.
+     */
+    log_path_env = sixel_compat_getenv("SIXEL_LOG_PATH");
+    if (log_path_env != NULL && log_path_env[0] != '\0' &&
+        sixel_compat_strcpy(log_path, sizeof(log_path), log_path_env) < 0) {
+        goto end;
+    }
 
     if (SIXEL_FAILED(sixel_mutex_init(&sync.mutex))) {
         goto end;

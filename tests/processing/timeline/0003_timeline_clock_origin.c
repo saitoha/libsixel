@@ -116,7 +116,8 @@ timeline_clock_origin_is_shared(void)
     sixel_timeline_logger_t *logger2;
     sixel_timeline_event_t event;
     void *service;
-    char const *log_path;
+    char log_path[4096];
+    char const *log_path_env;
     double first_timestamp;
     double second_timestamp;
     int success;
@@ -126,10 +127,21 @@ timeline_clock_origin_is_shared(void)
     logger1 = NULL;
     logger2 = NULL;
     service = NULL;
-    log_path = sixel_compat_getenv("SIXEL_LOG_PATH");
+    log_path_env = NULL;
+    memset(log_path, 0, sizeof(log_path));
     first_timestamp = 0.0;
     second_timestamp = 0.0;
     success = 0;
+
+    /*
+     * MSVC compat getenv refreshes the cached pointer when the writer reads
+     * the same variable.  Copy the test-owned path before creating loggers.
+     */
+    log_path_env = sixel_compat_getenv("SIXEL_LOG_PATH");
+    if (log_path_env != NULL && log_path_env[0] != '\0' &&
+        sixel_compat_strcpy(log_path, sizeof(log_path), log_path_env) < 0) {
+        goto end;
+    }
 
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
