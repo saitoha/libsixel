@@ -92,7 +92,7 @@
 #include "encoder.h"
 #include "frame.h"
 #include "frame-factory.h"
-#include "output.h"
+#include "sixel-emitter.h"
 #include "output-factory.h"
 #include "timeline-logger.h"
 #include "options.h"
@@ -1441,25 +1441,24 @@ sixel_encoder_compute_remaining_delay_usec(
 }
 
 static SIXELSTATUS
-sixel_encoder_set_output_format(sixel_output_t *output,
-                                int pixelformat,
-                                int source_colorspace,
-                                int colorspace)
+sixel_encoder_set_emitter_format(sixel_output_t *output,
+                                 int pixelformat,
+                                 int source_colorspace,
+                                 int colorspace)
 {
-    sixel_output_interface_t *output_interface;
-    sixel_output_format_t output_format;
+    sixel_emitter_t *emitter;
+    sixel_emitter_format_t emitter_format;
 
-    output_interface = sixel_output_as_interface(output);
-    if (output_interface == NULL || output_interface->vtbl == NULL ||
-        output_interface->vtbl->set_format == NULL) {
+    emitter = sixel_output_as_emitter(output);
+    if (emitter == NULL || emitter->vtbl == NULL ||
+        emitter->vtbl->set_format == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    output_format.pixelformat = pixelformat;
-    output_format.source_colorspace = source_colorspace;
-    output_format.colorspace = colorspace;
-    return output_interface->vtbl->set_format(output_interface,
-                                              &output_format);
+    emitter_format.pixelformat = pixelformat;
+    emitter_format.source_colorspace = source_colorspace;
+    emitter_format.colorspace = colorspace;
+    return emitter->vtbl->set_format(emitter, &emitter_format);
 }
 
 static int
@@ -4422,12 +4421,12 @@ sixel_write_callback(char *data, int size, void *priv)
 }
 
 static int
-sixel_output_interface_write_callback(char *data, int size, void *priv)
+sixel_emitter_write_callback(char *data, int size, void *priv)
 {
-    sixel_output_interface_t *output;
+    sixel_emitter_t *output;
     SIXELSTATUS status;
 
-    output = (sixel_output_interface_t *)priv;
+    output = (sixel_emitter_t *)priv;
     if (output == NULL || output->vtbl == NULL ||
         output->vtbl->write == NULL) {
 #if HAVE_ERRNO_H
@@ -5867,7 +5866,7 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
     int outfd_is_tty;
     int should_hide_cursor;
     char const *hide_cursor_env;
-    sixel_output_interface_t *output_interface;
+    sixel_emitter_t *emitter;
 
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -5878,18 +5877,18 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
     outfd_is_tty = 0;
     should_hide_cursor = 0;
     hide_cursor_env = NULL;
-    output_interface = NULL;
+    emitter = NULL;
 
     if (context->output) {
         sixel_output_ref(context->output);
-        output_interface = sixel_output_as_interface(context->output);
-        if (output_interface == NULL || output_interface->vtbl == NULL ||
-            output_interface->vtbl->write == NULL) {
+        emitter = sixel_output_as_emitter(context->output);
+        if (emitter == NULL || emitter->vtbl == NULL ||
+            emitter->vtbl->write == NULL) {
             return SIXEL_BAD_ARGUMENT;
         }
-        context->fn_write = sixel_output_interface_write_callback;
-        context->write_callback = sixel_output_interface_write_callback;
-        context->write_priv = output_interface;
+        context->fn_write = sixel_emitter_write_callback;
+        context->write_callback = sixel_emitter_write_callback;
+        context->write_priv = emitter;
     } else {
         if (context->encoder->fuse_macro
             || context->encoder->macro_number >= 0) {
@@ -5899,7 +5898,7 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
         }
         context->write_callback = context->fn_write;
         context->write_priv = &context->encoder->outfd;
-        status = sixel_output_create_from_factory(
+        status = sixel_emitter_create_output_from_factory(
             &context->output,
             context->write_callback,
             context->write_priv,
@@ -5907,13 +5906,13 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
         if (SIXEL_FAILED(status)) {
             return status;
         }
-        output_interface = sixel_output_as_interface(context->output);
-        if (output_interface == NULL || output_interface->vtbl == NULL ||
-            output_interface->vtbl->write == NULL) {
+        emitter = sixel_output_as_emitter(context->output);
+        if (emitter == NULL || emitter->vtbl == NULL ||
+            emitter->vtbl->write == NULL) {
             return SIXEL_BAD_ARGUMENT;
         }
-        context->write_callback = sixel_output_interface_write_callback;
-        context->write_priv = output_interface;
+        context->write_callback = sixel_emitter_write_callback;
+        context->write_priv = emitter;
     }
 
     if (context->encoder->fdrcs) {
@@ -7734,7 +7733,7 @@ sixel_encoder_output_without_macro(
 
     pixelformat = sixel_frame_get_pixelformat(frame);
     frame_colorspace = sixel_frame_get_colorspace(frame);
-    status = sixel_encoder_set_output_format(output,
+    status = sixel_encoder_set_emitter_format(output,
                                              pixelformat,
                                              frame_colorspace,
                                              output_colorspace);
@@ -7892,7 +7891,7 @@ end:
                                 height);
     }
     if (output != NULL) {
-        (void)sixel_encoder_set_output_format(output,
+        (void)sixel_encoder_set_emitter_format(output,
                                               pixelformat,
                                               frame_colorspace,
                                               output_colorspace);
@@ -7974,7 +7973,7 @@ sixel_encoder_output_with_macro(
     }
 
     memcpy(converted, sixel_frame_get_pixels(frame), size);
-    status = sixel_encoder_set_output_format(output,
+    status = sixel_encoder_set_emitter_format(output,
                                              pixelformat,
                                              frame_colorspace,
                                              output_colorspace);
@@ -8101,7 +8100,7 @@ sixel_encoder_output_with_macro(
     }
 
 end:
-    (void)sixel_encoder_set_output_format(output,
+    (void)sixel_encoder_set_emitter_format(output,
                                           pixelformat,
                                           frame_colorspace,
                                           output_colorspace);

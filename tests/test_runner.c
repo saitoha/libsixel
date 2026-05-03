@@ -87,7 +87,7 @@ int test_filter_0007_filter_fhedt(int argc, char **argv);
 int test_filter_0008_filter_load(int argc, char **argv);
 int test_filter_0009_filter_dither(int argc, char **argv);
 int test_filter_0010_filter_encode(int argc, char **argv);
-int test_output_0001_output_factory(int argc, char **argv);
+int test_emitter_0001_emitter_factory(int argc, char **argv);
 int test_frame_0001_frame_factory(int argc, char **argv);
 int test_chunk_0001_chunk_factory(int argc, char **argv);
 int test_timeline_0001_timeline_logger_factory(int argc, char **argv);
@@ -224,7 +224,7 @@ static test_entry_t const test_entries[] = {
     { "filter/0010_filter_encode", test_filter_0010_filter_encode },
     { "security/0001_issue222_encoder_encode_bytes_packed_g1",
       test_security_0001_issue222_encoder_encode_bytes_packed_g1 },
-    { "output/0001_output_factory", test_output_0001_output_factory },
+    { "emitter/0001_emitter_factory", test_emitter_0001_emitter_factory },
     { "frame/0001_frame_factory", test_frame_0001_frame_factory },
     { "chunk/0001_chunk_factory", test_chunk_0001_chunk_factory },
     { "timeline/0001_timeline_logger_factory",

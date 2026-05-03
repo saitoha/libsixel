@@ -163,7 +163,8 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
-	$(srcdir)/output-factory.h $(srcdir)/timer.c $(srcdir)/timer.h \
+	$(srcdir)/output-factory.h $(srcdir)/sixel-emitter.c \
+	$(srcdir)/sixel-emitter.h $(srcdir)/timer.c $(srcdir)/timer.h \
 	$(srcdir)/sleep.c $(srcdir)/sleep.h $(srcdir)/fromsixel.c \
 	$(srcdir)/tosixel.c $(srcdir)/tosixel-highcolor.c \
 	$(srcdir)/tosixel-highcolor.h $(srcdir)/lookup-policy.c \
@@ -334,6 +335,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_4 = libsixel_la-clipboard_carbon.lo
 @WANT_AMALGAMATED_LIB_FALSE@am_libsixel_la_OBJECTS =  \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-output.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel-emitter.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-timer.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sleep.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromsixel.lo \
@@ -633,6 +635,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-probe.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
 	./$(DEPDIR)/libsixel_la-scale.Plo \
+	./$(DEPDIR)/libsixel_la-sixel-emitter.Plo \
 	./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo \
 	./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo \
 	./$(DEPDIR)/libsixel_la-sleep.Plo \
@@ -977,6 +980,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@libsixel_la_SOURCES = $(srcdir)/output.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/output-factory.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel-emitter.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel-emitter.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sleep.c \
@@ -1368,7 +1373,7 @@ FACTORY_CLASSID_INPUTS = \
     $(LOOKUP_POLICY_CLASSID_INPUTS) \
     $(DITHER_POLICY_CLASSID_INPUTS) \
     $(LOADER_COMPONENT_CLASSID_INPUTS) \
-    $(srcdir)/output.h \
+    $(srcdir)/sixel-emitter.h \
     $(srcdir)/chunk.h \
     $(srcdir)/frame.h \
     $(srcdir)/palette.h \
@@ -1597,6 +1602,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-probe.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-scale.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sixel-emitter.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sleep.Plo@am__quote@ # am--include-marker
@@ -1648,6 +1654,13 @@ libsixel_la-output.lo: output.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='output.c' object='libsixel_la-output.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-output.lo `test -f 'output.c' || echo '$(srcdir)/'`output.c
+
+libsixel_la-sixel-emitter.lo: sixel-emitter.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-sixel-emitter.lo -MD -MP -MF $(DEPDIR)/libsixel_la-sixel-emitter.Tpo -c -o libsixel_la-sixel-emitter.lo `test -f 'sixel-emitter.c' || echo '$(srcdir)/'`sixel-emitter.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-sixel-emitter.Tpo $(DEPDIR)/libsixel_la-sixel-emitter.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sixel-emitter.c' object='libsixel_la-sixel-emitter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-sixel-emitter.lo `test -f 'sixel-emitter.c' || echo '$(srcdir)/'`sixel-emitter.c
 
 libsixel_la-timer.lo: timer.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-timer.lo -MD -MP -MF $(DEPDIR)/libsixel_la-timer.Tpo -c -o libsixel_la-timer.lo `test -f 'timer.c' || echo '$(srcdir)/'`timer.c
@@ -2975,6 +2988,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-sixel-emitter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sleep.Plo
@@ -3162,6 +3176,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-sixel-emitter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sleep.Plo

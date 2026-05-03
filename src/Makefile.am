@@ -68,6 +68,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/output.c \
                 $(srcdir)/output.h \
                 $(srcdir)/output-factory.h \
+                $(srcdir)/sixel-emitter.c \
+                $(srcdir)/sixel-emitter.h \
                 $(srcdir)/timer.c \
                 $(srcdir)/timer.h \
                 $(srcdir)/sleep.c \
@@ -502,7 +504,7 @@ FACTORY_CLASSID_INPUTS = \
     $(LOOKUP_POLICY_CLASSID_INPUTS) \
     $(DITHER_POLICY_CLASSID_INPUTS) \
     $(LOADER_COMPONENT_CLASSID_INPUTS) \
-    $(srcdir)/output.h \
+    $(srcdir)/sixel-emitter.h \
     $(srcdir)/chunk.h \
     $(srcdir)/frame.h \
     $(srcdir)/palette.h \

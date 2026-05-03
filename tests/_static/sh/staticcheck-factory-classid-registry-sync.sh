@@ -70,7 +70,7 @@ if ! awk -f "$generator" \
     "$src_root"/src/loader-libwebp.h \
     "$src_root"/src/loader-quicklook.h \
     "$src_root"/src/loader-wic.h \
-	    "$src_root"/src/output.h \
+    "$src_root"/src/sixel-emitter.h \
 	    "$src_root"/src/chunk.h \
 	    "$src_root"/src/frame.h \
 	    "$src_root"/src/palette.h \

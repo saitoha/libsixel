@@ -116,16 +116,18 @@ BEGIN {
     required["timeline_logger"] = 1
     required["lookup_policy"] = 1
     required["dither_policy"] = 1
+    required["sixel_emitter"] = 1
     required["chunk"] = 1
-	    required["loader_component"] = 1
-	    required["loader_manager"] = 1
-	    required["frame"] = 1
-	    required["palette"] = 1
-	    forbid["chunk"] = "read_cursor decode_state"
-	    forbid["frame"] = "lookup_policy dither_policy decode_state"
-	    forbid["palette"] = "lookup_policy dither_policy input_pixels method_for_largest method_for_rep quality_mode force_palette use_reversible quantize_model final_merge_mode lut_policy"
-	    forbid["timeline_writer"] = "frame_context job_context"
-	    forbid["timeline_logger"] = "output_file global_writer"
+    required["loader_component"] = 1
+    required["loader_manager"] = 1
+    required["frame"] = 1
+    required["palette"] = 1
+    forbid["chunk"] = "read_cursor decode_state"
+    forbid["frame"] = "lookup_policy dither_policy decode_state"
+    forbid["palette"] = "lookup_policy dither_policy input_pixels method_for_largest method_for_rep quality_mode force_palette use_reversible quantize_model final_merge_mode lut_policy"
+    forbid["timeline_writer"] = "frame_context job_context"
+    forbid["timeline_logger"] = "output_file global_writer"
+    forbid["sixel_emitter"] = "image_pixels dither_policy decode_state image_file_output clipboard_output"
 }
 function trim(text) {
     gsub(/^[ \t]+/, "", text)
@@ -199,11 +201,12 @@ BEGIN {
     required["timeline_logger"] = 1
     required["lookup_policy"] = 1
     required["dither_policy"] = 1
+    required["sixel_emitter"] = 1
     required["chunk"] = 1
-	    required["loader_component"] = 1
-	    required["loader_manager"] = 1
-	    required["frame"] = 1
-	    required["palette"] = 1
+    required["loader_component"] = 1
+    required["loader_manager"] = 1
+    required["frame"] = 1
+    required["palette"] = 1
 }
 function trim(text) {
     gsub(/^[ \t]+/, "", text)
@@ -398,6 +401,8 @@ BEGIN {
     iface["factory_component"] = "factory"
     serviceid["timeline_writer_component"] = "services/timeline-writer"
     iface["timeline_writer_component"] = "timeline_writer"
+    classid["sixel_emitter_component"] = "terminal/sixel-emitter"
+    iface["sixel_emitter_component"] = "sixel_emitter"
     classid["chunk_component"] = "image/chunk"
     iface["chunk_component"] = "chunk"
     classid["timeline_logger_component"] = "diagnostics/timeline-logger"
@@ -660,7 +665,7 @@ function trim(text) {
 {
     line = trim($0)
     if (FILENAME == idl_file) {
-	        if (line ~ /^interface[ \t]+(output|frame|chunk|palette)[ \t]*\{$/) {
+	        if (line ~ /^interface[ \t]+(sixel_emitter|frame|chunk|palette)[ \t]*\{$/) {
             current = line
             sub(/^interface[ \t]+/, "", current)
             sub(/[ \t]*\{$/, "", current)
@@ -674,10 +679,10 @@ function trim(text) {
             print FILENAME ":" FNR ": allocator method on " current
         }
     }
-	    if ($0 ~ /sixel_(output|frame|chunk|palette)_get_allocator[ \t]*\(/) {
+    if ($0 ~ /sixel_(output|frame|chunk|palette)_get_allocator[ \t]*\(/) {
         print FILENAME ":" FNR ": forbidden allocator getter export"
     }
-	    if ($0 ~ /sixel_(output|frame|chunk|palette)_vtbl_allocator/) {
+    if ($0 ~ /sixel_(output|frame|chunk|palette)_vtbl_allocator/) {
         print FILENAME ":" FNR ": forbidden allocator vtbl shim"
     }
     if ($0 ~ /->[ \t]*vtbl->[ \t]*allocator/) {

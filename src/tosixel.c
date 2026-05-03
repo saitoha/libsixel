@@ -62,7 +62,7 @@
 
 #include <sixel.h>
 #include "compat_stub.h"
-#include "output.h"
+#include "sixel-emitter.h"
 #include "output-factory.h"
 #include "dither.h"
 #include "pixelformat.h"
@@ -628,7 +628,7 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
         return status;
     }
 
-    status = sixel_output_create_from_factory(&state->output,
+    status = sixel_emitter_create_output_from_factory(&state->output,
                                               sixel_parallel_band_writer,
                                               state,
                                               ctx->allocator);

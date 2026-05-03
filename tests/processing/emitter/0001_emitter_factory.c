@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Unit test for output creation through the component factory.
+ * Unit test for emitter creation through the component factory.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -18,17 +18,17 @@
 #include "src/factory.h"
 #include "src/output.h"
 
-typedef struct output_capture {
+typedef struct emitter_capture {
     int calls;
     int bytes;
-} output_capture_t;
+} emitter_capture_t;
 
 static int
 capture_write(char *data, int size, void *priv)
 {
-    output_capture_t *capture;
+    emitter_capture_t *capture;
 
-    capture = (output_capture_t *)priv;
+    capture = (emitter_capture_t *)priv;
     if (data == NULL || size < 0 || capture == NULL) {
         return -1;
     }
@@ -39,23 +39,23 @@ capture_write(char *data, int size, void *priv)
 }
 
 static int
-test_output_factory_component(void)
+test_emitter_factory_component(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_factory_t *factory;
-    sixel_output_interface_t *output;
-    sixel_output_writer_request_t writer_request;
-    sixel_output_options_t options;
-    sixel_output_format_t format;
-    output_capture_t capture;
+    sixel_emitter_t *emitter;
+    sixel_emitter_writer_request_t writer_request;
+    sixel_emitter_options_t options;
+    sixel_emitter_format_t format;
+    emitter_capture_t capture;
     void *object;
     void *service;
 
     status = SIXEL_FALSE;
     allocator = NULL;
     factory = NULL;
-    output = NULL;
+    emitter = NULL;
     object = NULL;
     service = NULL;
     memset(&writer_request, 0, sizeof(writer_request));
@@ -81,45 +81,45 @@ test_output_factory_component(void)
         goto end;
     }
 
-    status = factory->vtbl->create(factory, "terminal/output",
+    status = factory->vtbl->create(factory, "terminal/sixel-emitter",
                                    allocator, &object);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    output = (sixel_output_interface_t *)object;
+    emitter = (sixel_emitter_t *)object;
     object = NULL;
-    if (output == NULL || output->vtbl == NULL ||
-        output->vtbl->init_writer == NULL ||
-        output->vtbl->get_options == NULL ||
-        output->vtbl->set_options == NULL ||
-        output->vtbl->set_format == NULL ||
-        output->vtbl->write == NULL ||
-        output->vtbl->unref == NULL) {
+    if (emitter == NULL || emitter->vtbl == NULL ||
+        emitter->vtbl->init_writer == NULL ||
+        emitter->vtbl->get_options == NULL ||
+        emitter->vtbl->set_options == NULL ||
+        emitter->vtbl->set_format == NULL ||
+        emitter->vtbl->write == NULL ||
+        emitter->vtbl->unref == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
 
     writer_request.fn_write = capture_write;
     writer_request.priv = &capture;
-    status = output->vtbl->init_writer(output, &writer_request);
+    status = emitter->vtbl->init_writer(emitter, &writer_request);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    status = output->vtbl->get_options(output, &options);
+    status = emitter->vtbl->get_options(emitter, &options);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
     options.has_8bit_control = 1;
     options.skip_header = 1;
     options.encode_policy = SIXEL_ENCODEPOLICY_SIZE;
-    status = output->vtbl->set_options(output, &options);
+    status = emitter->vtbl->set_options(emitter, &options);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
     memset(&options, 0, sizeof(options));
-    status = output->vtbl->get_options(output, &options);
+    status = emitter->vtbl->get_options(emitter, &options);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -133,12 +133,12 @@ test_output_factory_component(void)
     format.pixelformat = SIXEL_PIXELFORMAT_RGB888;
     format.source_colorspace = SIXEL_COLORSPACE_GAMMA;
     format.colorspace = SIXEL_COLORSPACE_LINEAR;
-    status = output->vtbl->set_format(output, &format);
+    status = emitter->vtbl->set_format(emitter, &format);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    status = output->vtbl->write(output, "abc", 3);
+    status = emitter->vtbl->write(emitter, "abc", 3);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -147,16 +147,24 @@ test_output_factory_component(void)
         goto end;
     }
 
+    status = factory->vtbl->create(factory, "terminal/output",
+                                   allocator, &object);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    ((sixel_emitter_t *)object)->vtbl->unref((sixel_emitter_t *)object);
+    object = NULL;
+
     status = SIXEL_OK;
 
 end:
     if (object != NULL) {
-        ((sixel_output_interface_t *)object)->vtbl->unref(
-            (sixel_output_interface_t *)object);
+        ((sixel_emitter_t *)object)->vtbl->unref(
+            (sixel_emitter_t *)object);
     }
-    if (output != NULL && output->vtbl != NULL &&
-        output->vtbl->unref != NULL) {
-        output->vtbl->unref(output);
+    if (emitter != NULL && emitter->vtbl != NULL &&
+        emitter->vtbl->unref != NULL) {
+        emitter->vtbl->unref(emitter);
     }
     if (factory != NULL && factory->vtbl != NULL &&
         factory->vtbl->unref != NULL) {
@@ -169,13 +177,13 @@ end:
 }
 
 int
-test_output_0001_output_factory(int argc, char **argv)
+test_emitter_0001_emitter_factory(int argc, char **argv)
 {
     (void)argc;
     (void)argv;
 
-    if (!test_output_factory_component()) {
-        fprintf(stderr, "output factory component contract failed\n");
+    if (!test_emitter_factory_component()) {
+        fprintf(stderr, "emitter factory component contract failed\n");
         return EXIT_FAILURE;
     }
 

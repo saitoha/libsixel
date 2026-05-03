@@ -1,25 +1,25 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
  */
 
 #ifndef LIBSIXEL_OUTPUT_H
@@ -27,89 +27,11 @@
 
 #include <6cells.h>
 
-#include "sixel_atomic.h"
-
-#if defined(HAVE_CLOCK) || defined(HAVE_NANOSLEEP)
-# if HAVE_TIME_H
-#  include <time.h>
-# elif HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# endif  /* HHAVE_TIME_H HAVE_SYS_TIME_H */
-typedef clock_t sixel_clock_t;
-#else
-typedef long sixel_clock_t;
-#endif  /* defined(HAVE_CLOCK) || defined(HAVE_NANOSLEEP) */
-
-typedef struct sixel_node {
-    struct sixel_node *next;
-    int pal;
-    int sx;
-    int mx;
-    char *map;
-} sixel_node_t;
-
-struct sixel_output {
-    sixel_output_interface_t output_interface; /* IOutput dispatch header */
-
-    sixel_atomic_u32_t ref;
-    sixel_allocator_t *allocator;
-
-    /* compatibility flags */
-
-    /* 0: 7bit terminal,
-     * 1: 8bit terminal */
-    unsigned char has_8bit_control;
-
-    /* 0: the terminal has sixel scrolling
-     * 1: the terminal does not have sixel scrolling */
-    unsigned char has_sixel_scrolling;
-
-    /* 1: the argument of repeat introducer(DECGRI) is not limited
-       0: the argument of repeat introducer(DECGRI) is limited 255 */
-    unsigned char has_gri_arg_limit;
-
-    /* 0: DECSDM set (CSI ? 80 h) enables sixel scrolling
-       1: DECSDM set (CSI ? 80 h) disables sixel scrolling */
-    unsigned char has_sdm_glitch;
-
-    /* 0: do not skip DCS envelope
-     * 1: skip DCS envelope */
-    unsigned char skip_dcs_envelope;
-
-    /* 0: emit sixel header, 1: skip header */
-    unsigned char skip_header;
-
-    /* PALETTETYPE_AUTO: select palette type automatically
-     * PALETTETYPE_HLS : HLS color space
-     * PALETTETYPE_RGB : RGB color space */
-    unsigned char palette_type;
-
-    int colorspace;
-    int source_colorspace;
-    int pixelformat;
-
-    sixel_write_function fn_write;
-
-    int save_pixel;
-    int save_count;
-    int active_palette;
-
-    sixel_node_t *node_top;
-    sixel_node_t *node_free;
-
-    int penetrate_multiplexer;
-    int encode_policy;
-    int ormode;
-    long long last_frame_time_usec;
-
-    void *priv;
-    int pos;
-    unsigned char buffer[1];
-};
-
-/* @classid terminal/output */
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_output_factory_new(sixel_allocator_t *allocator, void **object);
+/*
+ * This header is the legacy sixel_output_t boundary.  The concrete SIXEL
+ * byte-stream emitter storage lives in sixel-emitter.h and should only be
+ * included by the encoder emission path or the public compatibility wrappers.
+ */
 
 #endif /* LIBSIXEL_OUTPUT_H */
 

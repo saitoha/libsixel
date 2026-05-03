@@ -36,7 +36,7 @@
 
 #include "dither.h"
 #include "timeline-logger.h"
-#include "output.h"
+#include "sixel-emitter.h"
 #include "pixelformat.h"
 #include "tosixel-highcolor.h"
 

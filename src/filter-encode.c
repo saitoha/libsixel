@@ -75,8 +75,8 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
     int depth;
     int frame_colorspace;
     unsigned char *pixels;
-    sixel_output_interface_t *output_interface;
-    sixel_output_format_t output_format;
+    sixel_emitter_t *emitter;
+    sixel_emitter_format_t emitter_format;
 
     status = SIXEL_FALSE;
     output = NULL;
@@ -86,10 +86,10 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
     depth = 0;
     frame_colorspace = SIXEL_COLORSPACE_GAMMA;
     pixels = NULL;
-    output_interface = NULL;
-    output_format.pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    output_format.source_colorspace = SIXEL_COLORSPACE_GAMMA;
-    output_format.colorspace = SIXEL_COLORSPACE_GAMMA;
+    emitter = NULL;
+    emitter_format.pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    emitter_format.source_colorspace = SIXEL_COLORSPACE_GAMMA;
+    emitter_format.colorspace = SIXEL_COLORSPACE_GAMMA;
 
     if (config == NULL || frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -102,16 +102,15 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
     output = config->output;
     pixelformat = sixel_frame_get_pixelformat(frame);
     frame_colorspace = sixel_frame_get_colorspace(frame);
-    output_interface = sixel_output_as_interface(output);
-    if (output_interface == NULL || output_interface->vtbl == NULL ||
-        output_interface->vtbl->set_format == NULL) {
+    emitter = sixel_output_as_emitter(output);
+    if (emitter == NULL || emitter->vtbl == NULL ||
+        emitter->vtbl->set_format == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    output_format.pixelformat = pixelformat;
-    output_format.source_colorspace = frame_colorspace;
-    output_format.colorspace = config->output_colorspace;
-    status = output_interface->vtbl->set_format(output_interface,
-                                                &output_format);
+    emitter_format.pixelformat = pixelformat;
+    emitter_format.source_colorspace = frame_colorspace;
+    emitter_format.colorspace = config->output_colorspace;
+    status = emitter->vtbl->set_format(emitter, &emitter_format);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -153,7 +152,7 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
                           "fmt=%08x depth=%d dst_cs=%d",
                           pixelformat,
                           depth,
-                          output_format.colorspace);
+                          emitter_format.colorspace);
     }
 
     status = sixel_encode(pixels,
@@ -177,7 +176,7 @@ sixel_filter_encode_frame(const sixel_filter_encode_config_t *config,
                           "fmt=%08x depth=%d dst_cs=%d",
                           pixelformat,
                           depth,
-                          output_format.colorspace);
+                          emitter_format.colorspace);
     }
 
     return status;
