@@ -373,6 +373,7 @@ AM_LOG_FLAGS =
 	staticcheck-private-includes \
 	staticcheck-src-no-direct-getenv \
 	staticcheck-test-no-direct-getenv \
+	staticcheck-c-ast \
 	staticcheck-test-runner-dllexport \
 	staticcheck-lookup-backend-exports \
 	staticcheck-public-compat \
@@ -430,6 +431,7 @@ staticcheck-python-compileall \
 staticcheck-private-includes \
 staticcheck-src-no-direct-getenv \
 staticcheck-test-no-direct-getenv \
+staticcheck-c-ast \
 staticcheck-test-runner-dllexport \
 staticcheck-lookup-backend-exports \
 staticcheck-public-compat \
@@ -490,7 +492,8 @@ staticcheck: staticcheck-clean
 		"$(top_srcdir)/tests/_static/sh/shellcheck.sh" \
 		"$(SHELLCHECK)" \
 		"$(CODESPELL)" \
-		"$(PYTHON)"
+		"$(PYTHON_STATICCHECK)" \
+		"$(HAVE_TREE_SITTER_C)"
 
 .PHONY: staticcheck-clean
 
@@ -568,6 +571,18 @@ staticcheck-test-no-direct-getenv:
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-test-no-direct-getenv.sh" \
 		"$(abs_top_srcdir)"
+
+staticcheck-c-ast:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-c-ast" \
+		--log-file staticcheck-c-ast.log \
+		--trs-file staticcheck-c-ast.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-c-ast.sh" \
+		"$(abs_top_srcdir)" \
+		"$(PYTHON_STATICCHECK)" \
+		"$(HAVE_TREE_SITTER_C)"
 
 staticcheck-test-runner-dllexport:
 	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
@@ -1722,6 +1737,8 @@ EXTRA_DIST = $(HELPER_FILES) \
     _static/sh/staticcheck-shellcheck.sh \
     _static/sh/staticcheck-codespell.sh \
     _static/sh/staticcheck-python-compileall.sh \
+    _static/sh/staticcheck-c-ast.sh \
+    _static/python/staticcheck_c_ast.py \
 	_static/sh/staticcheck-private-includes.sh \
 	_static/sh/staticcheck-src-no-direct-getenv.sh \
 	_static/sh/staticcheck-test-no-direct-getenv.sh \

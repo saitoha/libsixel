@@ -34,6 +34,18 @@ elif python_for_tests.found()
   python_for_tests_path = python_for_tests.full_path()
 endif
 
+tree_sitter_c_staticcheck = '0'
+if python_for_tests_path != ''
+  tree_sitter_c_probe = run_command(
+    python_for_tests_path,
+    meson.project_source_root() / 'tests/_static/python/staticcheck_c_ast.py',
+    '--probe',
+    check: false)
+  if tree_sitter_c_probe.returncode() == 0
+    tree_sitter_c_staticcheck = '1'
+  endif
+endif
+
 artifact_root = meson.current_build_dir() / '_artifacts'
 cross_compiling = 'no'
 if meson.is_cross_build()
@@ -680,6 +692,13 @@ staticcheck_cases = [
       meson.project_source_root()],
   ],
   [
+    'staticcheck-c-ast',
+    [meson.current_source_dir() / '_static/sh/staticcheck-c-ast.sh',
+      meson.project_source_root(),
+      python_for_tests_path,
+      tree_sitter_c_staticcheck],
+  ],
+  [
     'staticcheck-c-size-max-header',
     [meson.current_source_dir() / '_static/sh/staticcheck-c-size-max-header.sh',
       meson.project_source_root()],
@@ -937,4 +956,5 @@ run_target('staticcheck',
     shellcheck_prog.found() ? shellcheck_prog.full_path() : '',
     codespell_prog.found() ? codespell_prog.full_path() : '',
     python_for_tests_path,
+    tree_sitter_c_staticcheck,
   ])

@@ -4702,9 +4702,18 @@ dnl provide consistent skip messages when tools are unavailable.
 AC_PATH_PROG([ACTIONLINT], [actionlint], [])
 AC_PATH_PROG([SHELLCHECK], [shellcheck], [])
 AC_PATH_PROG([CODESPELL], [codespell], [])
+AC_PATH_PROGS([PYTHON_STATICCHECK], [python3 python], [])
+HAVE_TREE_SITTER_C=0
+AS_IF([test "x$PYTHON_STATICCHECK" != x], [
+  AS_IF(["$PYTHON_STATICCHECK" "$srcdir/tests/_static/python/staticcheck_c_ast.py" --probe >/dev/null 2>&1],
+        [HAVE_TREE_SITTER_C=1],
+        [HAVE_TREE_SITTER_C=0])
+])
 AC_SUBST([ACTIONLINT])
 AC_SUBST([SHELLCHECK])
 AC_SUBST([CODESPELL])
+AC_SUBST([PYTHON_STATICCHECK])
+AC_SUBST([HAVE_TREE_SITTER_C])
 
 dnl Choose a fast POSIX shell for TAP tests and keep /bin/sh as fallback.
 AC_ARG_VAR([SIXEL_TEST_SHELL],

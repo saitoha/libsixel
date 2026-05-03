@@ -10,9 +10,10 @@ shellcheck_driver=${4:-}
 shellcheck_bin=${5:-}
 codespell_bin=${6:-}
 python_bin=${7:-}
+have_tree_sitter_c=${8:-auto}
 
 test -n "$src_root" || {
-    echo "Usage: $0 <src_root> <build_root> <actionlint> <shellcheck_driver> <shellcheck> <codespell> <python>" >&2
+    echo "Usage: $0 <src_root> <build_root> <actionlint> <shellcheck_driver> <shellcheck> <codespell> <python> [have_tree_sitter_c]" >&2
     exit 2
 }
 
@@ -228,6 +229,10 @@ run_case_tap "staticcheck-src-no-direct-getenv" \
 run_case_tap "staticcheck-test-no-direct-getenv" \
     "$src_root/tests/_static/sh/staticcheck-test-no-direct-getenv.sh" \
     "$src_root" || fail_and_exit $?
+
+run_case_tap "staticcheck-c-ast" \
+    "$src_root/tests/_static/sh/staticcheck-c-ast.sh" \
+    "$src_root" "$python_bin" "$have_tree_sitter_c" || fail_and_exit $?
 
 run_case_tap "staticcheck-positional-bluenoise-threadsafe-init" \
     sh "$src_root/tests/_static/sh/staticcheck-positional-bluenoise-threadsafe-init.sh" \
