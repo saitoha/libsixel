@@ -5,7 +5,7 @@ set -eu
 
 src_root=${1:-}
 
-echo "1..5"
+echo "1..6"
 
 if test -z "$src_root"; then
     echo "not ok 1 - palette header is opaque and factory-only"
@@ -16,7 +16,9 @@ if test -z "$src_root"; then
     echo "# src_root argument is required"
     echo "not ok 4 - palette storage rejects foreign responsibilities"
     echo "# src_root argument is required"
-    echo "not ok 5 - quant/palette classid is registered"
+    echo "not ok 5 - palette view size contracts avoid type-limit traps"
+    echo "# src_root argument is required"
+    echo "not ok 6 - quant/palette classid is registered"
     echo "# src_root argument is required"
     exit 1
 fi
@@ -32,6 +34,7 @@ header_violations=$tmpdir/palette-header-violations.txt
 retired_uses=$tmpdir/palette-retired-uses.txt
 field_uses=$tmpdir/palette-field-uses.txt
 storage_violations=$tmpdir/palette-storage-violations.txt
+view_size_violations=$tmpdir/palette-view-size-violations.txt
 
 if test ! -f "$header"; then
     echo "not ok 1 - palette header is opaque and factory-only"
@@ -125,8 +128,30 @@ else
     fi
 fi
 
+if test ! -d "$src_root/tests/quant/palette"; then
+    echo "ok 5 # SKIP missing tests/quant/palette"
+else
+    find "$src_root/tests/quant/palette" -type f -name '*.c' \
+        -exec awk '
+        /palette_view\.entry_count[[:space:]]*>[[:space:]]*\(size_t\)[[:space:]]*UINT_MAX/ {
+            print FILENAME ":" FNR ": always-false entry_count upper bound: " $0
+        }
+        /palette_view\.entry_count[[:space:]]*\*/ &&
+        $0 !~ /\(size_t\)[[:space:]]*palette_view\.entry_count[[:space:]]*\*/ {
+            print FILENAME ":" FNR ": entry_count size math must widen first: " $0
+        }
+        ' {} + > "$view_size_violations"
+    if test -s "$view_size_violations"; then
+        echo "not ok 5 - palette view size contracts avoid type-limit traps"
+        sed 's/^/# palette view size contract: /' "$view_size_violations"
+        failed=1
+    else
+        echo "ok 5 - palette view size contracts avoid type-limit traps"
+    fi
+fi
+
 if test ! -f "$classid_gperf"; then
-    echo "not ok 5 - quant/palette classid is registered"
+    echo "not ok 6 - quant/palette classid is registered"
     echo "# missing registry: $classid_gperf"
     failed=1
 elif awk -F '[,[:space:]]+' '
@@ -140,9 +165,9 @@ END {
     exit found ? 0 : 1
 }
 ' "$classid_gperf"; then
-    echo "ok 5 - quant/palette classid is registered"
+    echo "ok 6 - quant/palette classid is registered"
 else
-    echo "not ok 5 - quant/palette classid is registered"
+    echo "not ok 6 - quant/palette classid is registered"
     echo "# quant/palette -> sixel_palette_factory_new is missing"
     failed=1
 fi

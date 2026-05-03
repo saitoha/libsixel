@@ -8,6 +8,7 @@ echo "1..1"
 src_root=$1
 src_makefile=$src_root/src/Makefile.am
 converters_makefile=$src_root/converters/Makefile.am
+tests_makefile=$src_root/tests/Makefile.am
 
 if test ! -f "$src_makefile"; then
     echo "ok 1 # SKIP missing src/Makefile.am"
@@ -15,6 +16,10 @@ if test ! -f "$src_makefile"; then
 fi
 if test ! -f "$converters_makefile"; then
     echo "ok 1 # SKIP missing converters/Makefile.am"
+    exit 0
+fi
+if test ! -f "$tests_makefile"; then
+    echo "ok 1 # SKIP missing tests/Makefile.am"
     exit 0
 fi
 
@@ -53,6 +58,46 @@ awk -v src_base="$src_root/converters" '
 }
 ' "$converters_makefile" >> "$unit_entries"
 
+awk -v tests_base="$src_root/tests" -v top_base="$src_root" '
+function remember(token) {
+    if (token ~ /^\$\(top_srcdir\)\//) {
+        sub(/^\$\(top_srcdir\)\//, "", token)
+        print top_base "/" token
+        return
+    }
+    if (token ~ /^\$\(srcdir\)\//) {
+        sub(/^\$\(srcdir\)\//, "", token)
+        print tests_base "/" token
+        return
+    }
+    if (token !~ /^\$\(/) {
+        print tests_base "/" token
+    }
+}
+function scan_sources(line, token) {
+    sub(/#.*/, "", line)
+    while (match(line,
+                 /(\$\(top_srcdir\)\/|\$\(srcdir\)\/)?[A-Za-z0-9_.\/-]+\.c/)) {
+        token = substr(line, RSTART, RLENGTH)
+        remember(token)
+        line = substr(line, RSTART + RLENGTH)
+    }
+}
+$0 ~ /^[[:space:]]*test_runner_SOURCES[[:space:]]*=/ {
+    in_sources = 1
+}
+in_sources {
+    scan_sources($0)
+}
+in_sources && $0 !~ /\\[[:space:]]*$/ {
+    in_sources = 0
+}
+' "$tests_makefile" >> "$unit_entries"
+
+# The test runner amalgamation enables many test files in one translation unit.
+# Existing test helper names are being cleaned up incrementally, so enforce the
+# broad duplicate rule for production units and the recent allocator-helper
+# collision class for tests.
 LC_ALL=C sort -u "$unit_entries" -o "$unit_entries"
 
 if awk '
@@ -137,6 +182,12 @@ function count_close(s, t) {
     t = s
     return gsub(/\)/, "", t)
 }
+function emit_guarded_variable(line,   name) {
+    if (line ~ /(^|[^A-Za-z0-9_])tracked_allocator_free_count([^A-Za-z0-9_]|$)/) {
+        name = "tracked_allocator_free_count"
+        printf "%s\t%s\n", name, file
+    }
+}
 function reset_state() {
     state = 0
     name = ""
@@ -178,6 +229,7 @@ BEGIN {
     if (state == 0) {
         if (line ~ /^static([[:space:]]|$)/) {
             if (line ~ /;[[:space:]]*$/ && line !~ /\(/) {
+                emit_guarded_variable(line)
                 next
             }
             if (sub(/^static([[:space:]]+inline)?[[:space:]]+/, "", line)) {
@@ -251,7 +303,18 @@ fi
 
 LC_ALL=C sort -u "$raw_symbols" > "$symbols"
 
-if awk -F '\t' '
+if awk -F '\t' -v src_root="$src_root" '
+function is_test_file(file) {
+    return index(file, src_root "/tests/") == 1
+}
+function is_guarded_test_helper(symbol) {
+    if (symbol == "tracked_malloc" || symbol == "tracked_calloc" ||
+        symbol == "tracked_realloc" || symbol == "tracked_free" ||
+        symbol == "tracked_allocator_free_count") {
+        return 1
+    }
+    return 0
+}
 {
     symbol = $1
     file = $2
@@ -262,6 +325,11 @@ if awk -F '\t' '
         files[symbol] = file
         seen[symbol SUBSEP file] = 1
         symbol_count[symbol] = 1
+        if (is_test_file(file)) {
+            test_count[symbol] = 1
+        } else {
+            non_test_count[symbol] = 1
+        }
         next
     }
     if ((symbol SUBSEP file) in seen) {
@@ -269,13 +337,19 @@ if awk -F '\t' '
     }
     seen[symbol SUBSEP file] = 1
     symbol_count[symbol] += 1
+    if (is_test_file(file)) {
+        test_count[symbol] += 1
+    } else {
+        non_test_count[symbol] += 1
+    }
     files[symbol] = files[symbol] ", " file
 }
 END {
     status = 0
     for (i = 1; i <= count; ++i) {
         symbol = names[i]
-        if (symbol_count[symbol] > 1) {
+        if (non_test_count[symbol] > 1 ||
+            (test_count[symbol] > 1 && is_guarded_test_helper(symbol))) {
             status = 1
             printf "%s\t%d\t%s\n", symbol, symbol_count[symbol], files[symbol]
         }
