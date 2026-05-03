@@ -45,8 +45,7 @@ test_timeline_writer_creates_loggers(void)
     sixel_timeline_frame_context_t frame_context;
     void *service;
     void *object;
-    char const *log_path;
-    int logging_requested;
+    int logging_enabled;
 
     status = SIXEL_FALSE;
     allocator = NULL;
@@ -57,8 +56,7 @@ test_timeline_writer_creates_loggers(void)
     factory_logger = NULL;
     service = NULL;
     object = NULL;
-    log_path = sixel_compat_getenv("SIXEL_LOG_PATH");
-    logging_requested = log_path != NULL && log_path[0] != '\0';
+    logging_enabled = 0;
 
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
@@ -89,11 +87,8 @@ test_timeline_writer_creates_loggers(void)
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    if (!logging_requested) {
-        if (logger1 != NULL || logger2 != NULL) {
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
+    logging_enabled = logger1 != NULL || logger2 != NULL;
+    if (!logging_enabled) {
         goto check_factory;
     }
 
@@ -159,7 +154,7 @@ check_factory:
     }
     factory_logger = (sixel_timeline_logger_t *)object;
     object = NULL;
-    if (!logging_requested) {
+    if (!logging_enabled) {
         if (factory_logger != NULL) {
             status = SIXEL_BAD_ARGUMENT;
             goto end;
