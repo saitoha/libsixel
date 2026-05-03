@@ -127,6 +127,24 @@ in_func && /palette_source_colorspace[ \t]*=[ \t]*SIXEL_COLORSPACE_GAMMA[ \t]*;/
     in_func = 0
 }
 ' "$src_root/src/tosixel.c"
+
+awk '
+/^timeline_parallel_encode_decode\(void\)/ {
+    in_func = 1
+    saw_log_path_init = 0
+}
+in_func && /log_path[ \t]*=[ \t]*NULL[ \t]*;/ {
+    saw_log_path_init = 1
+}
+in_func && /timeline_build_source_path\(/ {
+    if (!saw_log_path_init) {
+        print "tests/processing/timeline/" \
+            "0002_timeline_parallel_encode_decode.c:" FNR \
+            ": log_path must be initialized before early cleanup paths"
+    }
+    in_func = 0
+}
+' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.c"
 } >>"$report"
 
 if test -s "$report"; then

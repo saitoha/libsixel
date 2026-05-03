@@ -360,6 +360,7 @@ timeline_parallel_encode_decode(void)
     created = 0;
     success = 0;
     sync_ready = 0;
+    log_path = NULL;
     memset(threads, 0, sizeof(threads));
     memset(jobs, 0, sizeof(jobs));
     memset(&sync, 0, sizeof(sync));
