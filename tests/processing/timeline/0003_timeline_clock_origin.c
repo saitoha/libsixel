@@ -3,7 +3,9 @@
  *
  * Regression test for timeline clock ownership.  A logger created after the
  * writer clock starts must still report timestamps on the shared writer
- * timeline, not relative to its own construction time.
+ * timeline, not relative to its own construction time.  The TAP wrapper reads
+ * the JSONL after this process exits so Windows file visibility cannot distort
+ * the clock contract.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -118,8 +120,6 @@ timeline_clock_origin_is_shared(void)
     void *service;
     char log_path[4096];
     char const *log_path_env;
-    double first_timestamp;
-    double second_timestamp;
     int success;
 
     allocator = NULL;
@@ -129,8 +129,6 @@ timeline_clock_origin_is_shared(void)
     service = NULL;
     log_path_env = NULL;
     memset(log_path, 0, sizeof(log_path));
-    first_timestamp = 0.0;
-    second_timestamp = 0.0;
     success = 0;
 
     /*
@@ -140,6 +138,9 @@ timeline_clock_origin_is_shared(void)
     log_path_env = sixel_compat_getenv("SIXEL_LOG_PATH");
     if (log_path_env != NULL && log_path_env[0] != '\0' &&
         sixel_compat_strcpy(log_path, sizeof(log_path), log_path_env) < 0) {
+        goto end;
+    }
+    if (log_path[0] == '\0') {
         goto end;
     }
 
@@ -194,20 +195,6 @@ timeline_clock_origin_is_shared(void)
     }
     writer->vtbl->flush(writer);
 
-    if (!timeline_read_clock_samples(log_path,
-                                     &first_timestamp,
-                                     &second_timestamp)) {
-        goto end;
-    }
-    if (second_timestamp - first_timestamp <
-        TIMELINE_CLOCK_MIN_DELTA_SECONDS) {
-        fprintf(stderr,
-                "timeline clock origin regressed: first=%f second=%f\n",
-                first_timestamp,
-                second_timestamp);
-        goto end;
-    }
-
     success = 1;
 
 end:
@@ -237,6 +224,42 @@ test_timeline_0003_timeline_clock_origin(int argc, char **argv)
 
     if (!timeline_clock_origin_is_shared()) {
         fprintf(stderr, "timeline clock origin contract failed\n");
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+int
+test_timeline_0003_timeline_clock_origin_verify(int argc, char **argv)
+{
+    char log_path[4096];
+    char const *log_path_env;
+    double first_timestamp;
+    double second_timestamp;
+
+    (void)argc;
+    (void)argv;
+
+    log_path_env = NULL;
+    first_timestamp = 0.0;
+    second_timestamp = 0.0;
+    memset(log_path, 0, sizeof(log_path));
+    log_path_env = sixel_compat_getenv("SIXEL_LOG_PATH");
+    if (log_path_env == NULL || log_path_env[0] == '\0' ||
+        sixel_compat_strcpy(log_path, sizeof(log_path), log_path_env) < 0 ||
+        !timeline_read_clock_samples(log_path,
+                                     &first_timestamp,
+                                     &second_timestamp)) {
+        fprintf(stderr, "timeline clock JSONL verification failed\n");
+        return EXIT_FAILURE;
+    }
+    if (second_timestamp - first_timestamp <
+        TIMELINE_CLOCK_MIN_DELTA_SECONDS) {
+        fprintf(stderr,
+                "timeline clock origin regressed: first=%f second=%f\n",
+                first_timestamp,
+                second_timestamp);
         return EXIT_FAILURE;
     }
 

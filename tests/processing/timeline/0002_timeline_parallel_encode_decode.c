@@ -2,8 +2,9 @@
  * SPDX-License-Identifier: MIT
  *
  * Concurrent timeline logging test.  Multiple encoder/decoder objects share the
- * process timeline_writer service and must produce intact JSONL records with
- * distinct session ids.
+ * process timeline_writer service.  The TAP wrapper validates the completed
+ * JSONL after this process exits so Windows CRT file sharing does not affect
+ * the diagnostic contract.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -22,7 +23,6 @@
 
 #define TIMELINE_PARALLEL_WORKERS 4
 #define TIMELINE_MAX_SESSIONS 16
-
 #if SIXEL_ENABLE_THREADS
 
 typedef struct timeline_parallel_sync {
@@ -297,7 +297,7 @@ timeline_verify_jsonl(char const *path)
     size_t line_len;
 
     if (path == NULL || path[0] == '\0') {
-        return 1;
+        return 0;
     }
 
     file = sixel_compat_fopen(path, "r");
@@ -490,7 +490,7 @@ end:
         return 0;
     }
 
-    return timeline_verify_jsonl(log_path);
+    return 1;
 }
 #endif
 
@@ -505,6 +505,34 @@ test_timeline_0002_timeline_parallel_encode_decode(int argc, char **argv)
         fprintf(stderr, "timeline parallel encode/decode contract failed\n");
         return EXIT_FAILURE;
     }
+#endif
+
+    return EXIT_SUCCESS;
+}
+
+int
+test_timeline_0002_timeline_parallel_encode_decode_verify(int argc,
+                                                          char **argv)
+{
+    char log_path[4096];
+    char const *log_path_env;
+
+    (void)argc;
+    (void)argv;
+
+#if SIXEL_ENABLE_THREADS
+    log_path_env = NULL;
+    memset(log_path, 0, sizeof(log_path));
+    log_path_env = sixel_compat_getenv("SIXEL_LOG_PATH");
+    if (log_path_env == NULL || log_path_env[0] == '\0' ||
+        sixel_compat_strcpy(log_path, sizeof(log_path), log_path_env) < 0 ||
+        !timeline_verify_jsonl(log_path)) {
+        fprintf(stderr, "timeline parallel JSONL verification failed\n");
+        return EXIT_FAILURE;
+    }
+#else
+    (void)log_path;
+    (void)log_path_env;
 #endif
 
     return EXIT_SUCCESS;

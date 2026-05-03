@@ -6,9 +6,18 @@ set -eux
 echo "1..1"
 set -v
 
-SIXEL_LOG_PATH="${ARTIFACT_ROOT:-.}/timeline_clock_origin.jsonl" \
+log_path="${ARTIFACT_ROOT:-.}/timeline_clock_origin.jsonl"
+
+SIXEL_LOG_PATH="${log_path}" \
     ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "timeline/0003_timeline_clock_origin" || {
+    echo "not ok 1 - 0003_timeline_clock_origin"
+    exit 0
+}
+
+SIXEL_LOG_PATH="${log_path}" \
+    ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    "timeline/0003_timeline_clock_origin_verify" || {
     echo "not ok 1 - 0003_timeline_clock_origin"
     exit 0
 }

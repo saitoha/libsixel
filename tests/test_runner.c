@@ -92,7 +92,10 @@ int test_frame_0001_frame_factory(int argc, char **argv);
 int test_chunk_0001_chunk_factory(int argc, char **argv);
 int test_timeline_0001_timeline_logger_factory(int argc, char **argv);
 int test_timeline_0002_timeline_parallel_encode_decode(int argc, char **argv);
+int test_timeline_0002_timeline_parallel_encode_decode_verify(int argc,
+                                                              char **argv);
 int test_timeline_0003_timeline_clock_origin(int argc, char **argv);
+int test_timeline_0003_timeline_clock_origin_verify(int argc, char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
 int test_lookup_0001_lookup_policy(int argc, char **argv);
 
@@ -231,8 +234,12 @@ static test_entry_t const test_entries[] = {
       test_timeline_0001_timeline_logger_factory },
     { "timeline/0002_timeline_parallel_encode_decode",
       test_timeline_0002_timeline_parallel_encode_decode },
+    { "timeline/0002_timeline_parallel_encode_decode_verify",
+      test_timeline_0002_timeline_parallel_encode_decode_verify },
     { "timeline/0003_timeline_clock_origin",
       test_timeline_0003_timeline_clock_origin },
+    { "timeline/0003_timeline_clock_origin_verify",
+      test_timeline_0003_timeline_clock_origin_verify },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },
