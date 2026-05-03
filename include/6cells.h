@@ -357,24 +357,6 @@ struct sixel_emitter_interface {
  * };
  */
 
-typedef sixel_emitter_t sixel_output_interface_t;
-typedef sixel_emitter_vtbl_t sixel_output_vtbl_t;
-typedef sixel_emitter_writer_request_t sixel_output_writer_request_t;
-typedef sixel_emitter_options_t sixel_output_options_t;
-typedef sixel_emitter_format_t sixel_output_format_t;
-
-static inline sixel_emitter_t *
-sixel_output_as_emitter(sixel_output_t const *output)
-{
-    return (sixel_emitter_t *)output;
-}
-
-static inline sixel_output_interface_t *
-sixel_output_as_interface(sixel_output_t const *output)
-{
-    return sixel_output_as_emitter(output);
-}
-
 typedef struct sixel_factory_interface sixel_factory_t;
 
 /*

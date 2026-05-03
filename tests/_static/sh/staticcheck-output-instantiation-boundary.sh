@@ -5,7 +5,7 @@ set -eu
 
 src_root=${1:-}
 
-echo "1..5"
+echo "1..6"
 
 if test -z "$src_root"; then
     echo "not ok 1 - src emitter construction uses factory"
@@ -17,6 +17,8 @@ if test -z "$src_root"; then
     echo "not ok 4 - emitter classid and legacy alias are registered"
     echo "# src_root argument is required"
     echo "not ok 5 - src vtbl callers use sixel_emitter names"
+    echo "# src_root argument is required"
+    echo "not ok 6 - generated 6cells headers do not expose output aliases"
     echo "# src_root argument is required"
     exit 1
 fi
@@ -32,6 +34,8 @@ if test ! -d "$src_root/src"; then
     echo "# missing source directory: $src_root/src"
     echo "not ok 5 - src vtbl callers use sixel_emitter names"
     echo "# missing source directory: $src_root/src"
+    echo "not ok 6 - generated 6cells headers do not expose output aliases"
+    echo "# missing source directory: $src_root/src"
     exit 1
 fi
 
@@ -40,9 +44,11 @@ trap 'rm -rf "$tmpdir"' EXIT HUP INT TERM
 
 idl_file=$src_root/include/6cells.idl
 public_header=$src_root/include/sixel.h.in
+generated_header=$src_root/include/6cells.h
 classid_gperf=$src_root/src/classid-factory.gperf
 violations=$tmpdir/direct-output-new.txt
 legacy_vtbl=$tmpdir/legacy-vtbl.txt
+legacy_projection=$tmpdir/legacy-projection.txt
 failed=0
 
 find "$src_root/src" -type f -name '*.c' ! -name 'output.c' -exec awk '
@@ -159,6 +165,26 @@ if test -s "$legacy_vtbl"; then
     failed=1
 else
     echo "ok 5 - src vtbl callers use sixel_emitter names"
+fi
+
+awk '
+/sixel_output_interface_t|sixel_output_vtbl_t|sixel_output_as_interface/ {
+    print FILENAME ":" FNR ":" $0
+}
+/sixel_output_(writer_request|options|format)_t/ {
+    print FILENAME ":" FNR ":" $0
+}
+/sixel_output_as_emitter/ {
+    print FILENAME ":" FNR ":" $0
+}
+' "$idl_file" "$generated_header" > "$legacy_projection"
+
+if test -s "$legacy_projection"; then
+    echo "not ok 6 - generated 6cells headers do not expose output aliases"
+    sed 's/^/# legacy output projection: /' "$legacy_projection"
+    failed=1
+else
+    echo "ok 6 - generated 6cells headers do not expose output aliases"
 fi
 
 exit "$failed"

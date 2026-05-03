@@ -34,6 +34,7 @@
 #include "filter.h"
 #include "output.h"
 #include "pixelformat.h"
+#include "sixel-emitter.h"
 #include "status.h"
 
 /*

@@ -107,6 +107,16 @@ struct sixel_output {
     unsigned char buffer[1];
 };
 
+/*
+ * The legacy public handle and the component interface share the same address
+ * because the vtbl dispatch header is the first field of struct sixel_output.
+ */
+static inline sixel_emitter_t *
+sixel_output_as_emitter(sixel_output_t const *output)
+{
+    return (sixel_emitter_t *)output;
+}
+
 /* @classid terminal/sixel-emitter */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_emitter_factory_new(sixel_allocator_t *allocator, void **object);
