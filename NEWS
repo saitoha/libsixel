@@ -2,9 +2,6 @@
                    What's new in libsixel-1.8.7
                   ------------------------------
 
-  for a comprehensive view of security-fix progress, see the page below
-  https://github.com/saitoha/libsixel/discussions/203
-
 * Additional fix for #222, packed byte-size validation in
   sixel_encoder_encode_bytes() and Python bindings.
   Thanks to @xyzzy42
@@ -23,12 +20,6 @@
 * Security fix for GHSA-wpx3-h5g8-qr3w, NULL pointer dereference when
   palette allocation fails during SIXEL decode.
   Based on a patch provided by @curious-rabbit.
-
-* tests: add regression coverage for GHSA-hx93-w8p2-ffh5,
-  GHSA-9jm7-77gr-qghv, and GHSA-wpx3-h5g8-qr3w.
-
-* tests: link standalone GHSA regression targets with libcurl flags when
-  libcurl support is enabled.
 
 * Security fix for CVE-2026-33023 (GHSA-hr25-g2j6-qjw6),
   use-after-free in load_with_gdkpixbuf().
