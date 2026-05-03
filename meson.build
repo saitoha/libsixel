@@ -631,6 +631,7 @@ func_prefixes = {
   'setmode': '#include <io.h>',
   '_setmode': '#include <io.h>',
   '_sopen_s': '#include <io.h>\n#include <share.h>',
+  '_commit': '#include <io.h>',
   'open': '#include <fcntl.h>',
   'clock_gettime': '#include <time.h>'
 }

@@ -2460,7 +2460,6 @@ AC_CHECK_FUNCS_PARALLEL([assert \
                          mktemp \
                          fopen_s \
                          fsync \
-                         _commit \
                          _mkdir \
                          mkdir \
                          _chmod \
@@ -2515,6 +2514,17 @@ LIBS=$LS_SAVED_LIBS
 AC_SUBST([CLOCK_GETTIME_LIBS])
 AC_CHECK_FUNCS([_sopen_s], [], [], [[#include <io.h>
 #include <share.h>]])
+AC_CACHE_CHECK([for _commit declared by io.h],
+               [ac_cv_func__commit],
+               [AC_LINK_IFELSE(
+                  [AC_LANG_PROGRAM([[#include <io.h>]],
+                                   [[int (*probe)(int) = _commit;
+                                     return probe(0);]])],
+                  [ac_cv_func__commit=yes],
+                  [ac_cv_func__commit=no])])
+AS_IF([test "x$ac_cv_func__commit" = xyes],
+      [AC_DEFINE([HAVE__COMMIT], [1],
+                 [Define to 1 if you have the '_commit' function.])])
 AC_CHECK_FUNCS([open], [], [], [[#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>]])

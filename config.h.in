@@ -605,7 +605,7 @@
 /* Define to 1 if you have the `_close' function. */
 #undef HAVE__CLOSE
 
-/* Define to 1 if you have the `_commit' function. */
+/* Define to 1 if you have the '_commit' function. */
 #undef HAVE__COMMIT
 
 /* Define to 1 if you have the `_dupenv_s' function. */

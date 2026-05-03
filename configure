@@ -21541,8 +21541,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-
-
   ac_check_funcs_parallel_includes=""
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for -fno-builtin" >&5
 printf %s "checking for -fno-builtin... " >&6; }
@@ -21597,7 +21595,6 @@ printf "%s\n" "$ac_cv_c_no_builtin" >&6; }
                          mktemp \
                          fopen_s \
                          fsync \
-                         _commit \
                          _mkdir \
                          mkdir \
                          _chmod \
@@ -21810,6 +21807,43 @@ then :
 
 fi
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for _commit declared by io.h" >&5
+printf %s "checking for _commit declared by io.h... " >&6; }
+if test ${ac_cv_func__commit+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <io.h>
+int
+main (void)
+{
+int (*probe)(int) = _commit;
+                                     return probe(0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_func__commit=yes
+else case e in #(
+  e) ac_cv_func__commit=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func__commit" >&5
+printf "%s\n" "$ac_cv_func__commit" >&6; }
+if test "x$ac_cv_func__commit" = xyes
+then :
+
+printf "%s\n" "#define HAVE__COMMIT 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "open" "ac_cv_func_open"
 if test "x$ac_cv_func_open" = xyes
 then :
