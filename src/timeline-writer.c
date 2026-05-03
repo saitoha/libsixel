@@ -28,6 +28,10 @@
 
 #include <stdio.h>
 
+#if defined(_WIN32)
+# include <io.h>
+#endif
+
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
     && !defined(WITH_WINPTHREAD)
 # if !defined(UNICODE)
@@ -45,6 +49,7 @@
 #endif
 
 #include "compat_stub.h"
+#include "stdio_stub.h"
 #include "threading.h"
 #include "timeline-logger.h"
 #include "timeline-writer.h"
@@ -334,6 +339,9 @@ static void
 sixel_timeline_writer_flush(sixel_timeline_writer_t *writer)
 {
     sixel_timeline_writer_storage_t *storage;
+#if defined(HAVE__COMMIT) && HAVE__COMMIT
+    int fd;
+#endif
 
     if (writer == NULL ||
         SIXEL_FAILED(sixel_timeline_writer_ensure_mutex())) {
@@ -344,6 +352,17 @@ sixel_timeline_writer_flush(sixel_timeline_writer_t *writer)
     sixel_timeline_writer_lock(storage);
     if (storage->active != 0 && storage->file != NULL) {
         (void)fflush(storage->file);
+#if defined(HAVE__COMMIT) && HAVE__COMMIT
+        /*
+         * MSVC CI reads the JSONL file from the same process immediately
+         * after flush().  Push the CRT buffer through to the OS handle so the
+         * diagnostic contract does not depend on process teardown.
+         */
+        fd = sixel_fileno(storage->file);
+        if (fd >= 0) {
+            (void)_commit(fd);
+        }
+#endif
     }
     sixel_timeline_writer_unlock(storage);
 }

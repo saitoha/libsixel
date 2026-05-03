@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include <sixel.h>
+#include <6cells.h>
 
 #include "src/compat_stub.h"
 #include "src/threading.h"
@@ -343,6 +344,45 @@ timeline_verify_jsonl(char const *path)
 }
 
 static int
+timeline_flush_writer(char const *path)
+{
+    SIXELSTATUS status;
+    sixel_timeline_writer_t *writer;
+    void *service;
+    int success;
+
+    writer = NULL;
+    service = NULL;
+    success = 0;
+
+    if (path == NULL || path[0] == '\0') {
+        return 1;
+    }
+
+    status = sixel_components_getservice("services/timeline-writer",
+                                         &service);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    writer = (sixel_timeline_writer_t *)service;
+    service = NULL;
+    if (writer == NULL || writer->vtbl == NULL ||
+        writer->vtbl->flush == NULL || writer->vtbl->unref == NULL) {
+        goto end;
+    }
+
+    writer->vtbl->flush(writer);
+    success = 1;
+
+end:
+    if (writer != NULL && writer->vtbl != NULL &&
+        writer->vtbl->unref != NULL) {
+        writer->vtbl->unref(writer);
+    }
+    return success;
+}
+
+static int
 timeline_parallel_encode_decode(void)
 {
     sixel_thread_t threads[TIMELINE_PARALLEL_WORKERS];
@@ -444,6 +484,9 @@ end:
         sixel_mutex_destroy(&sync.mutex);
     }
     if (success == 0) {
+        return 0;
+    }
+    if (!timeline_flush_writer(log_path)) {
         return 0;
     }
 
