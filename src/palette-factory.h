@@ -32,11 +32,25 @@
 extern "C" {
 #endif
 
+#if defined(__has_attribute)
+# if __has_attribute(unused)
+#  define SIXEL_PALETTE_FACTORY_UNUSED __attribute__((unused))
+# endif
+#endif
+
+#ifndef SIXEL_PALETTE_FACTORY_UNUSED
+# if defined(__GNUC__) && !defined(__PCC__)
+#  define SIXEL_PALETTE_FACTORY_UNUSED __attribute__((unused))
+# else
+#  define SIXEL_PALETTE_FACTORY_UNUSED
+# endif
+#endif
+
 /*
  * Internal palette construction goes through the class factory so callers
  * depend on the quant/palette contract rather than concrete storage.
  */
-static inline SIXELSTATUS
+static inline SIXELSTATUS SIXEL_PALETTE_FACTORY_UNUSED
 sixel_palette_create_from_factory(sixel_palette_t **palette_out,
                                   sixel_allocator_t *allocator)
 {
@@ -81,6 +95,8 @@ sixel_palette_create_from_factory(sixel_palette_t **palette_out,
     *palette_out = (sixel_palette_t *)object;
     return SIXEL_OK;
 }
+
+#undef SIXEL_PALETTE_FACTORY_UNUSED
 
 #ifdef __cplusplus
 }
