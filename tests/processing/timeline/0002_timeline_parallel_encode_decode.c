@@ -489,6 +489,9 @@ end:
     if (!timeline_flush_writer(log_path)) {
         return 0;
     }
+    if (log_path[0] != '\0' && !timeline_verify_jsonl(log_path)) {
+        return 0;
+    }
 
     return 1;
 }
@@ -525,8 +528,9 @@ test_timeline_0002_timeline_parallel_encode_decode_verify(int argc,
         log_path_source = argv[1];
     } else {
         /*
-         * Keep the fallback for direct developer runs.  The TAP wrapper passes
-         * an explicit path so this verifier does not touch the writer service.
+         * Keep the fallback for direct developer runs and artifact triage.
+         * The TAP test verifies in the producer process so MSVC shell/native
+         * process handoff does not decide CI success.
          */
         log_path_source = sixel_compat_getenv("SIXEL_LOG_PATH");
     }
