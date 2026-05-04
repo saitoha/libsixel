@@ -2071,6 +2071,8 @@ static SIXELSTATUS
 sixel_webp_vp8_convert_yuv420_to_rgba(
     sixel_webp_vp8_planes_t const *planes,
     sixel_webp_vp8_frame_header_t const *header,
+    unsigned char *out_rgba,
+    size_t out_rgba_size,
     unsigned char **prgba,
     sixel_allocator_t *allocator)
 {
@@ -2122,11 +2124,20 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     rgba_size = pixel_count * 4u;
-    rgba = (unsigned char *)sixel_allocator_malloc(allocator, rgba_size);
-    if (rgba == NULL) {
-        sixel_helper_set_additional_message(
-            "builtin webp: sixel_allocator_malloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
+    if (out_rgba != NULL) {
+        if (out_rgba_size < rgba_size) {
+            sixel_helper_set_additional_message(
+                "builtin webp: VP8 scratch RGBA buffer is too small.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+        rgba = out_rgba;
+    } else {
+        rgba = (unsigned char *)sixel_allocator_malloc(allocator, rgba_size);
+        if (rgba == NULL) {
+            sixel_helper_set_additional_message(
+                "builtin webp: sixel_allocator_malloc() failed.");
+            return SIXEL_BAD_ALLOCATION;
+        }
     }
 
     for (y = 0u; y < height; ++y) {
@@ -2153,7 +2164,9 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
     *prgba = rgba;
     rgba = NULL;
 
-    sixel_allocator_free(allocator, rgba);
+    if (out_rgba == NULL) {
+        sixel_allocator_free(allocator, rgba);
+    }
     return status;
 }
 
@@ -2756,6 +2769,8 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
                                      size_t payload_size,
                                      sixel_webp_vp8_frame_header_t const
                                          *header,
+                                     unsigned char *out_rgba,
+                                     size_t out_rgba_size,
                                      unsigned char **prgba,
                                      int *pwidth,
                                      int *pheight,
@@ -2789,7 +2804,6 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
     *prgba = NULL;
     *pwidth = 0;
     *pheight = 0;
-    (void)allocator;
 
     status = sixel_webp_vp8_parse_partition_layout(payload,
                                                    payload_size,
@@ -2830,6 +2844,8 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
 
     status = sixel_webp_vp8_convert_yuv420_to_rgba(&planes,
                                                    header,
+                                                   out_rgba,
+                                                   out_rgba_size,
                                                    prgba,
                                                    allocator);
     if (SIXEL_FAILED(status)) {

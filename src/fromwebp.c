@@ -2143,8 +2143,69 @@ sixel_webp_validate_anim_alpha_flag(sixel_webp_anim_stream_t const *stream,
 }
 
 static SIXELSTATUS
+sixel_webp_anim_rgba_scratch_reset(sixel_webp_rgba_scratch_t *scratch,
+                                    sixel_allocator_t *allocator)
+{
+    if (scratch == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (scratch->pixels != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, scratch->pixels);
+    }
+    memset(scratch, 0, sizeof(*scratch));
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_webp_anim_rgba_scratch_ensure(sixel_webp_rgba_scratch_t *scratch,
+                                     int width,
+                                     int height,
+                                     sixel_allocator_t *allocator)
+{
+    size_t pixel_count;
+    size_t required_bytes;
+    unsigned char *pixels;
+
+    pixel_count = 0u;
+    required_bytes = 0u;
+    pixels = NULL;
+    if (scratch == NULL || allocator == NULL || width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / 4u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    required_bytes = pixel_count * 4u;
+    if (scratch->pixels != NULL && scratch->bytes >= required_bytes) {
+        scratch->width = width;
+        scratch->height = height;
+        return SIXEL_OK;
+    }
+
+    pixels = (unsigned char *)sixel_allocator_malloc(allocator, required_bytes);
+    if (pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin webp: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (scratch->pixels != NULL) {
+        sixel_allocator_free(allocator, scratch->pixels);
+    }
+    scratch->pixels = pixels;
+    scratch->bytes = required_bytes;
+    scratch->width = width;
+    scratch->height = height;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
                                   sixel_allocator_t *allocator,
+                                  sixel_webp_rgba_scratch_t *scratch,
                                   unsigned char **prgba,
                                   int *pwidth,
                                   int *pheight)
@@ -2152,7 +2213,8 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
     SIXELSTATUS status;
 
     status = SIXEL_OK;
-    if (anim_frame == NULL || allocator == NULL || prgba == NULL ||
+    if (anim_frame == NULL || allocator == NULL || scratch == NULL ||
+        prgba == NULL ||
         pwidth == NULL || pheight == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2160,14 +2222,25 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
     *pwidth = 0;
     *pheight = 0;
 
+    status = sixel_webp_anim_rgba_scratch_ensure(scratch,
+                                                 anim_frame->width,
+                                                 anim_frame->height,
+                                                 allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
     if (anim_frame->kind == SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC ||
         anim_frame->kind == SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC) {
-        status = sixel_webp_decode_vp8_payload(anim_frame->vp8_payload,
-                                               anim_frame->vp8_payload_size,
-                                               prgba,
-                                               pwidth,
-                                               pheight,
-                                               allocator);
+        status = sixel_webp_decode_vp8_payload_into(
+            anim_frame->vp8_payload,
+            anim_frame->vp8_payload_size,
+            scratch->pixels,
+            scratch->bytes,
+            prgba,
+            pwidth,
+            pheight,
+            allocator);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -2180,13 +2253,10 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
                 anim_frame->alpha_payload_size,
                 allocator);
             if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(allocator, *prgba);
-                *prgba = NULL;
                 return status;
             }
         }
         if (*pwidth != anim_frame->width || *pheight != anim_frame->height) {
-            sixel_allocator_free(allocator, *prgba);
             *prgba = NULL;
             *pwidth = 0;
             *pheight = 0;
@@ -2196,15 +2266,17 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
     }
 
     if (anim_frame->kind == SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC) {
-        status = sixel_webp_decode_vp8l_payload(anim_frame->vp8l_payload,
-                                                anim_frame->vp8l_payload_size,
-                                                prgba,
-                                                pwidth,
-                                                pheight,
-                                                allocator);
+        status = sixel_webp_decode_vp8l_payload_into(
+            anim_frame->vp8l_payload,
+            anim_frame->vp8l_payload_size,
+            scratch->pixels,
+            scratch->bytes,
+            prgba,
+            pwidth,
+            pheight,
+            allocator);
         if (SIXEL_SUCCEEDED(status) &&
             (*pwidth != anim_frame->width || *pheight != anim_frame->height)) {
-            sixel_allocator_free(allocator, *prgba);
             *prgba = NULL;
             *pwidth = 0;
             *pheight = 0;
@@ -2511,12 +2583,14 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     int xmp_applied;
     int can_transfer_canvas;
     sixel_webp_anim_meta_cache_t meta_cache;
+    sixel_webp_rgba_scratch_t scratch;
 
     status = SIXEL_OK;
     memset(&container, 0, sizeof(container));
     memset(&plan, 0, sizeof(plan));
     memset(&stream, 0, sizeof(stream));
     memset(&meta_cache, 0, sizeof(meta_cache));
+    memset(&scratch, 0, sizeof(scratch));
     frame = NULL;
     rgba = NULL;
     canvas_pixels = NULL;
@@ -2659,6 +2733,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             status = sixel_webp_decode_anim_frame_rgba(
                 &stream.frames[source_frame_no],
                 allocator,
+                &scratch,
                 &rgba,
                 &subframe_width,
                 &subframe_height);
@@ -2682,8 +2757,6 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                                            stream.canvas_width,
                                            &stream.frames[source_frame_no],
                                            rgba);
-            sixel_allocator_free(allocator, rgba);
-            rgba = NULL;
 
             if (emit_callback == 0) {
                 if (stream.frames[source_frame_no].dispose_to_background != 0) {
@@ -2882,15 +2955,15 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
 
 end:
     sixel_frame_unref(frame);
-    if (rgba != NULL && chunk != NULL && allocator != NULL) {
-        sixel_allocator_free(allocator, rgba);
-    }
     if (emitted_pixels != NULL && chunk != NULL && allocator != NULL) {
         sixel_allocator_free(allocator, emitted_pixels);
     }
     if (canvas_pixels != NULL && chunk != NULL && allocator != NULL) {
         sixel_allocator_free(allocator, canvas_pixels);
     }
+    sixel_webp_anim_rgba_scratch_reset(&scratch,
+                                       chunk != NULL ? allocator
+                                                     : NULL);
     sixel_webp_anim_meta_cache_reset(&meta_cache);
     sixel_webp_anim_stream_reset(&stream, chunk != NULL ? allocator
                                                         : NULL);

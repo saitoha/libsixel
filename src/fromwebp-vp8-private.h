@@ -53,6 +53,8 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
                                      size_t payload_size,
                                      sixel_webp_vp8_frame_header_t const
                                          *header,
+                                     unsigned char *out_rgba,
+                                     size_t out_rgba_size,
                                      unsigned char **prgba,
                                      int *pwidth,
                                      int *pheight,

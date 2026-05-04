@@ -204,6 +204,13 @@ typedef struct sixel_webp_decode_plan {
     sixel_webp_anim_unsupported_reason_t anim_unsupported_reason;
 } sixel_webp_decode_plan_t;
 
+typedef struct sixel_webp_rgba_scratch {
+    unsigned char *pixels;
+    int width;
+    int height;
+    size_t bytes;
+} sixel_webp_rgba_scratch_t;
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_webp_decode_vp8l_payload(unsigned char const *payload,
                                size_t payload_size,
@@ -213,12 +220,32 @@ sixel_webp_decode_vp8l_payload(unsigned char const *payload,
                                sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_webp_decode_vp8l_payload_into(unsigned char const *payload,
+                                    size_t payload_size,
+                                    unsigned char *rgba,
+                                    size_t rgba_size,
+                                    unsigned char **prgba,
+                                    int *pwidth,
+                                    int *pheight,
+                                    sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_webp_decode_vp8_payload(unsigned char const *payload,
                               size_t payload_size,
                               unsigned char **prgba,
                               int *pwidth,
                               int *pheight,
                               sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_webp_decode_vp8_payload_into(unsigned char const *payload,
+                                   size_t payload_size,
+                                   unsigned char *rgba,
+                                   size_t rgba_size,
+                                   unsigned char **prgba,
+                                   int *pwidth,
+                                   int *pheight,
+                                   sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
