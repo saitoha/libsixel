@@ -1744,7 +1744,6 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
         sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_ERR_VP8_STREAM);
         goto end;
     }
-    sixel_webp_trace_anim_timing_contract(&stream);
     status = sixel_webp_validate_anim_alpha_flag(&stream,
                                                  container.vp8x_flags);
     if (SIXEL_FAILED(status)) {
@@ -1789,6 +1788,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             goto end;
         }
     }
+    sixel_webp_trace_anim_timing_contract(&stream);
 
     for (loop_no = 0;; ++loop_no) {
         if (sixel_loader_callback_is_canceled(cancel_context)) {
