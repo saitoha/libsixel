@@ -192,6 +192,26 @@ run_staticcheck_webp_strict_compile() {
 }
 
 # shellcheck disable=SC2329
+run_staticcheck_threading_no_threads_compile() {
+    cc_bin=${1:-${CC:-cc}}
+    config_dir=$tmpdir/threading-no-threads-config
+    object_path=$tmpdir/threading.${cc_bin##*/}.no-threads.o
+
+    mkdir -p "$config_dir"
+    cp "$build_root/config.h" "$config_dir/config.h"
+    cat >> "$config_dir/config.h" <<'EOF'
+#undef SIXEL_ENABLE_THREADS
+#define SIXEL_ENABLE_THREADS 0
+EOF
+
+    "$cc_bin" -DHAVE_CONFIG_H \
+        -I"$config_dir" -I"$build_root/include" \
+        -I"$src_root" -I"$src_root/src" -I"$src_root/include" \
+        -std=c99 -Wall -Wextra -Wpedantic -Werror \
+        -c "$src_root/src/threading.c" -o "$object_path"
+}
+
+# shellcheck disable=SC2329
 run_staticcheck_webp_tables_self_include() {
     cc_bin=${1:-${CC:-cc}}
     source_path=$tmpdir/staticcheck-webp-vp8-tables-self-include.c
@@ -518,6 +538,8 @@ else
 fi
 
 if test -f "$build_root/config.h"; then
+    run_case_plain "staticcheck-threading-no-threads-compile" \
+        run_staticcheck_threading_no_threads_compile || fail_and_exit $?
     run_case_plain "staticcheck-fromwebp-vp8-tables-self-include" \
         run_staticcheck_webp_tables_self_include || fail_and_exit $?
     run_case_plain "staticcheck-fromwebp-strict-compile" \
@@ -572,6 +594,8 @@ if test -f "$build_root/config.h"; then
             "clang not found"
     fi
 else
+    run_case_skip "staticcheck-threading-no-threads-compile" \
+        "missing config.h in build root"
     run_case_skip "staticcheck-fromwebp-vp8-tables-self-include" \
         "missing config.h in build root"
     run_case_skip "staticcheck-fromwebp-strict-compile" \

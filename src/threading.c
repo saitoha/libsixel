@@ -795,6 +795,7 @@ sixel_thread_config_unlock(void)
 }
 #endif
 
+#if SIXEL_ENABLE_THREADS
 static int
 sixel_threads_token_is_auto(char const *text)
 {
@@ -812,6 +813,7 @@ sixel_threads_token_is_auto(char const *text)
 
     return 0;
 }
+#endif
 
 SIXELAPI int
 sixel_threads_normalize(int requested)
@@ -842,6 +844,7 @@ sixel_threads_normalize(int requested)
     return normalized;
 }
 
+#if SIXEL_ENABLE_THREADS
 static int
 sixel_threads_parse_env_value(char const *text, int *value)
 {
@@ -894,6 +897,7 @@ sixel_threads_resolve_env(void)
 
     return sixel_threads_normalize(0);
 }
+#endif
 
 SIXELAPI int
 sixel_threads_resolve(void)
