@@ -94,6 +94,7 @@ typedef struct sixel_webp_anim_meta_cache {
     sixel_cms_profile_t *iccp_profile;
     sixel_cms_profile_t *xmp_cms_profile;
     int exif_orientation;
+    int exif_size_limited;
     int xmp_orientation;
     int iccp_size_limited;
     int xmp_orientation_size_limited;
@@ -503,11 +504,15 @@ sixel_webp_apply_iccp_to_srgb_rgba(unsigned char *pixels,
     return converted;
 }
 
+static int
+sixel_webp_exif_payload_exceeds_parse_limit(size_t payload_size);
+
 static SIXELSTATUS
 sixel_webp_try_apply_exif_orientation(sixel_webp_decode_plan_t const *plan,
                                       int enable_orientation,
                                       sixel_frame_t *frame,
-                                      int *applied)
+                                      int *applied,
+                                      int *size_limited)
 {
     SIXELSTATUS status;
     int parsed_orientation;
@@ -517,14 +522,21 @@ sixel_webp_try_apply_exif_orientation(sixel_webp_decode_plan_t const *plan,
     parsed_orientation = 1;
     found_orientation = 0;
 
-    if (plan == NULL || frame == NULL || applied == NULL) {
+    if (plan == NULL || frame == NULL || applied == NULL ||
+        size_limited == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *applied = 0;
+    *size_limited = 0;
     if (plan->meta_has_exif == 0 ||
         enable_orientation == 0 ||
         plan->exif_payload == NULL ||
         plan->exif_payload_size == 0u) {
+        return SIXEL_OK;
+    }
+    if (sixel_webp_exif_payload_exceeds_parse_limit(
+            plan->exif_payload_size) != 0) {
+        *size_limited = 1;
         return SIXEL_OK;
     }
 
@@ -549,6 +561,12 @@ static int
 sixel_webp_iccp_payload_exceeds_parse_limit(size_t payload_size)
 {
     return payload_size > SIXEL_WEBP_MAX_ICCP_PARSE_BYTES ? 1 : 0;
+}
+
+static int
+sixel_webp_exif_payload_exceeds_parse_limit(size_t payload_size)
+{
+    return payload_size > SIXEL_WEBP_MAX_EXIF_PARSE_BYTES ? 1 : 0;
 }
 
 static int
@@ -1644,14 +1662,19 @@ sixel_webp_build_anim_meta_cache(sixel_webp_decode_plan_t const *plan,
         enable_orientation != 0 &&
         plan->exif_payload != NULL &&
         plan->exif_payload_size != 0u) {
-        found_orientation = loader_exif_parse_orientation(
-            plan->exif_payload,
-            plan->exif_payload_size,
-            &parsed_orientation);
-        if (found_orientation != 0 &&
-            parsed_orientation >= 2 &&
-            parsed_orientation <= 8) {
-            cache->exif_orientation = parsed_orientation;
+        if (sixel_webp_exif_payload_exceeds_parse_limit(
+                plan->exif_payload_size) != 0) {
+            cache->exif_size_limited = 1;
+        } else {
+            found_orientation = loader_exif_parse_orientation(
+                plan->exif_payload,
+                plan->exif_payload_size,
+                &parsed_orientation);
+            if (found_orientation != 0 &&
+                parsed_orientation >= 2 &&
+                parsed_orientation <= 8) {
+                cache->exif_orientation = parsed_orientation;
+            }
         }
     }
 
@@ -2425,6 +2448,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     int xmp_cms_applied;
     int xmp_cms_bare_fallback_used;
     int exif_applied;
+    int exif_size_limited;
     int xmp_applied;
     sixel_webp_anim_meta_cache_t meta_cache;
 
@@ -2460,6 +2484,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     xmp_cms_applied = 0;
     xmp_cms_bare_fallback_used = 0;
     exif_applied = 0;
+    exif_size_limited = 0;
     xmp_applied = 0;
     if (handled == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -2714,6 +2739,11 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                 } else {
                     sixel_webp_trace_contract_add_code(
                         SIXEL_WEBP_CODE_META_EXIF_IGNORED);
+                    exif_size_limited = meta_cache.exif_size_limited;
+                    if (exif_size_limited != 0) {
+                        sixel_webp_trace_contract_add_code(
+                            SIXEL_WEBP_CODE_META_EXIF_SIZE_LIMIT_IGNORED);
+                    }
                 }
                 exif_code_reported = 1;
             }
@@ -2825,6 +2855,7 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     int xmp_cms_applied;
     int xmp_cms_bare_fallback_used;
     int exif_applied;
+    int exif_size_limited;
     int xmp_applied;
     int iccp_size_limited;
     int xmp_orientation_size_limited;
@@ -2844,6 +2875,7 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     xmp_cms_applied = 0;
     xmp_cms_bare_fallback_used = 0;
     exif_applied = 0;
+    exif_size_limited = 0;
     xmp_applied = 0;
     iccp_size_limited = 0;
     xmp_orientation_size_limited = 0;
@@ -3015,7 +3047,8 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
         status = sixel_webp_try_apply_exif_orientation(&plan,
                                                        enable_orientation,
                                                        frame,
-                                                       &exif_applied);
+                                                       &exif_applied,
+                                                       &exif_size_limited);
         if (SIXEL_FAILED(status)) {
             sixel_webp_trace_contract_add_code(
                 SIXEL_WEBP_CODE_META_EXIF_IGNORED);
@@ -3028,6 +3061,10 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
         } else {
             sixel_webp_trace_contract_add_code(
                 SIXEL_WEBP_CODE_META_EXIF_IGNORED);
+            if (exif_size_limited != 0) {
+                sixel_webp_trace_contract_add_code(
+                    SIXEL_WEBP_CODE_META_EXIF_SIZE_LIMIT_IGNORED);
+            }
         }
         exif_code_reported = 1;
     }
