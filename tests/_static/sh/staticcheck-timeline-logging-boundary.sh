@@ -191,10 +191,15 @@ in_func && /sixel_allocator_new[ \t]*\(/ {
 awk '
 /timeline\/0002_timeline_parallel_encode_decode_verify/ {
     saw_verify = 1
-    if (previous !~ /--env[ \t]+SIXEL_LOG_PATH=/) {
+    if (previous2 !~ /SIXEL_LOG_PATH="\$\{log_path\}"/) {
         print "tests/processing/timeline/" \
             "0002_timeline_parallel_encode_decode.t:" FNR \
-            ": verifier must receive SIXEL_LOG_PATH through env"
+            ": verifier must receive SIXEL_LOG_PATH as child env"
+    }
+    if (previous ~ /--env[ \t]+SIXEL_LOG_PATH=/ || previous2 ~ /--env[ \t]+SIXEL_LOG_PATH=/) {
+        print "tests/processing/timeline/" \
+            "0002_timeline_parallel_encode_decode.t:" FNR \
+            ": verifier must not rely on test_runner --env"
     }
     watching_verify = 1
     next
@@ -209,6 +214,7 @@ watching_verify && /\|\|[ \t]*\{/ {
     watching_verify = 0
 }
 {
+    previous2 = previous
     previous = $0
 }
 END {
@@ -223,10 +229,15 @@ END {
 awk '
 /timeline\/0003_timeline_clock_origin_verify/ {
     saw_verify = 1
-    if (previous !~ /--env[ \t]+SIXEL_LOG_PATH=/) {
+    if (previous2 !~ /SIXEL_LOG_PATH="\$\{log_path\}"/) {
         print "tests/processing/timeline/" \
             "0003_timeline_clock_origin.t:" FNR \
-            ": verifier must receive SIXEL_LOG_PATH through env"
+            ": verifier must receive SIXEL_LOG_PATH as child env"
+    }
+    if (previous ~ /--env[ \t]+SIXEL_LOG_PATH=/ || previous2 ~ /--env[ \t]+SIXEL_LOG_PATH=/) {
+        print "tests/processing/timeline/" \
+            "0003_timeline_clock_origin.t:" FNR \
+            ": verifier must not rely on test_runner --env"
     }
     watching_verify = 1
     next
@@ -241,6 +252,7 @@ watching_verify && /\|\|[ \t]*\{/ {
     watching_verify = 0
 }
 {
+    previous2 = previous
     previous = $0
 }
 END {
