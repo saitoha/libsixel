@@ -90,6 +90,13 @@ typedef struct sixel_webp_xmp_profile_alias {
     sixel_webp_xmp_cms_profile_kind_t kind;
 } sixel_webp_xmp_profile_alias_t;
 
+typedef struct sixel_webp_anim_meta_cache {
+    sixel_cms_profile_t *iccp_profile;
+    sixel_cms_profile_t *xmp_cms_profile;
+    int exif_orientation;
+    int xmp_orientation;
+} sixel_webp_anim_meta_cache_t;
+
 static unsigned int
 sixel_webp_anim_read_u24le(unsigned char const *p)
 {
@@ -1009,6 +1016,163 @@ sixel_webp_try_apply_xmp_orientation(sixel_webp_decode_plan_t const *plan,
 }
 
 static void
+sixel_webp_anim_meta_cache_reset(sixel_webp_anim_meta_cache_t *cache)
+{
+    if (cache == NULL) {
+        return;
+    }
+    if (cache->iccp_profile != NULL) {
+        sixel_cms_close_profile(cache->iccp_profile);
+    }
+    if (cache->xmp_cms_profile != NULL) {
+        sixel_cms_close_profile(cache->xmp_cms_profile);
+    }
+    memset(cache, 0, sizeof(*cache));
+}
+
+static SIXELSTATUS
+sixel_webp_build_anim_meta_cache(sixel_webp_decode_plan_t const *plan,
+                                 int enable_cms,
+                                 int enable_orientation,
+                                 sixel_webp_anim_meta_cache_t *cache)
+{
+    sixel_webp_xmp_cms_profile_kind_t kind;
+    int found_profile;
+    int parsed_orientation;
+    int found_orientation;
+
+    kind = SIXEL_WEBP_XMP_CMS_PROFILE_UNKNOWN;
+    found_profile = 0;
+    parsed_orientation = 0;
+    found_orientation = 0;
+    if (plan == NULL || cache == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    memset(cache, 0, sizeof(*cache));
+
+    if (plan->meta_has_iccp != 0 &&
+        enable_cms != 0 &&
+        plan->iccp_payload != NULL &&
+        plan->iccp_payload_size != 0u) {
+        cache->iccp_profile = sixel_cms_open_profile_from_mem(
+            plan->iccp_payload,
+            plan->iccp_payload_size);
+    }
+
+    if (plan->meta_has_xmp != 0 &&
+        enable_cms != 0 &&
+        plan->meta_has_iccp == 0 &&
+        plan->xmp_payload != NULL &&
+        plan->xmp_payload_size != 0u) {
+        found_profile = sixel_webp_xmp_parse_icc_profile_kind(
+            plan->xmp_payload,
+            plan->xmp_payload_size,
+            &kind);
+        if (found_profile != 0 &&
+            kind != SIXEL_WEBP_XMP_CMS_PROFILE_UNKNOWN) {
+            cache->xmp_cms_profile = sixel_webp_create_xmp_profile(kind);
+        }
+    }
+
+    if (plan->meta_has_exif != 0 &&
+        enable_orientation != 0 &&
+        plan->exif_payload != NULL &&
+        plan->exif_payload_size != 0u) {
+        found_orientation = loader_exif_parse_orientation(
+            plan->exif_payload,
+            plan->exif_payload_size,
+            &parsed_orientation);
+        if (found_orientation != 0 &&
+            parsed_orientation >= 2 &&
+            parsed_orientation <= 8) {
+            cache->exif_orientation = parsed_orientation;
+        }
+    }
+
+    if (plan->meta_has_xmp != 0 &&
+        enable_orientation != 0 &&
+        plan->meta_has_exif == 0 &&
+        plan->xmp_payload != NULL &&
+        plan->xmp_payload_size != 0u) {
+        found_orientation = sixel_webp_xmp_parse_orientation(
+            plan->xmp_payload,
+            plan->xmp_payload_size,
+            &parsed_orientation);
+        if (found_orientation != 0 &&
+            parsed_orientation >= 2 &&
+            parsed_orientation <= 8) {
+            cache->xmp_orientation = parsed_orientation;
+        }
+    }
+
+    return SIXEL_OK;
+}
+
+static int
+sixel_webp_apply_anim_cached_iccp(sixel_webp_anim_meta_cache_t const *cache,
+                                  sixel_frame_t *frame,
+                                  sixel_allocator_t *allocator)
+{
+    int converted;
+
+    converted = 0;
+    if (cache == NULL || frame == NULL || allocator == NULL ||
+        cache->iccp_profile == NULL) {
+        return 0;
+    }
+    converted = sixel_webp_apply_profile_to_srgb_rgba(frame->pixels.u8ptr,
+                                                      frame->width,
+                                                      frame->height,
+                                                      cache->iccp_profile,
+                                                      allocator);
+    return converted != 0 ? 1 : 0;
+}
+
+static int
+sixel_webp_apply_anim_cached_xmp_cms(
+    sixel_webp_anim_meta_cache_t const *cache,
+    sixel_frame_t *frame,
+    sixel_allocator_t *allocator)
+{
+    int converted;
+
+    converted = 0;
+    if (cache == NULL || frame == NULL || allocator == NULL ||
+        cache->xmp_cms_profile == NULL) {
+        return 0;
+    }
+    converted = sixel_webp_apply_profile_to_srgb_rgba(frame->pixels.u8ptr,
+                                                      frame->width,
+                                                      frame->height,
+                                                      cache->xmp_cms_profile,
+                                                      allocator);
+    return converted != 0 ? 1 : 0;
+}
+
+static SIXELSTATUS
+sixel_webp_apply_anim_cached_orientation(sixel_frame_t *frame,
+                                         int orientation,
+                                         int *applied)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (frame == NULL || applied == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *applied = 0;
+    if (orientation < 2 || orientation > 8) {
+        return SIXEL_OK;
+    }
+    status = loader_frame_apply_orientation(frame, orientation);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    *applied = 1;
+    return SIXEL_OK;
+}
+
+static void
 sixel_webp_anim_stream_reset(sixel_webp_anim_stream_t *stream,
                              sixel_allocator_t *allocator)
 {
@@ -1688,11 +1852,13 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     int xmp_cms_applied;
     int exif_applied;
     int xmp_applied;
+    sixel_webp_anim_meta_cache_t meta_cache;
 
     status = SIXEL_OK;
     memset(&container, 0, sizeof(container));
     memset(&plan, 0, sizeof(plan));
     memset(&stream, 0, sizeof(stream));
+    memset(&meta_cache, 0, sizeof(meta_cache));
     frame = NULL;
     rgba = NULL;
     canvas_pixels = NULL;
@@ -1787,6 +1953,13 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+    }
+    status = sixel_webp_build_anim_meta_cache(&plan,
+                                              enable_cms,
+                                              enable_orientation,
+                                              &meta_cache);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
     sixel_webp_trace_anim_timing_contract(&stream);
 
@@ -1897,18 +2070,10 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             emitted_pixels = NULL;
 
             if (plan.meta_has_iccp != 0) {
-                iccp_applied = 0;
-                if (enable_cms != 0 &&
-                    plan.iccp_payload != NULL &&
-                    plan.iccp_payload_size != 0u) {
-                    iccp_applied = sixel_webp_apply_iccp_to_srgb_rgba(
-                        frame->pixels.u8ptr,
-                        frame->width,
-                        frame->height,
-                        plan.iccp_payload,
-                        plan.iccp_payload_size,
-                        allocator);
-                }
+                iccp_applied = sixel_webp_apply_anim_cached_iccp(
+                    &meta_cache,
+                    frame,
+                    allocator);
                 if (iccp_applied != 0) {
                     sixel_webp_trace_contract_add_code(
                         SIXEL_WEBP_CODE_META_ICCP_APPLIED);
@@ -1920,18 +2085,10 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             }
 
             if (plan.meta_has_xmp != 0) {
-                status = sixel_webp_try_apply_xmp_cms(
-                    &plan,
-                    enable_cms,
+                xmp_cms_applied = sixel_webp_apply_anim_cached_xmp_cms(
+                    &meta_cache,
                     frame,
-                    allocator,
-                    &xmp_cms_applied);
-                if (SIXEL_FAILED(status)) {
-                    sixel_webp_trace_contract_add_code(
-                        SIXEL_WEBP_CODE_META_XMP_CMS_IGNORED);
-                    xmp_cms_code_reported = 1;
-                    goto end;
-                }
+                    allocator);
                 if (xmp_cms_applied != 0) {
                     sixel_webp_trace_contract_add_code(
                         SIXEL_WEBP_CODE_META_XMP_CMS_APPLIED);
@@ -1943,10 +2100,9 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             }
 
             if (plan.meta_has_exif != 0) {
-                status = sixel_webp_try_apply_exif_orientation(
-                    &plan,
-                    enable_orientation,
+                status = sixel_webp_apply_anim_cached_orientation(
                     frame,
+                    meta_cache.exif_orientation,
                     &exif_applied);
                 if (SIXEL_FAILED(status)) {
                     sixel_webp_trace_contract_add_code(
@@ -1965,10 +2121,9 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             }
 
             if (plan.meta_has_xmp != 0) {
-                status = sixel_webp_try_apply_xmp_orientation(
-                    &plan,
-                    enable_orientation,
+                status = sixel_webp_apply_anim_cached_orientation(
                     frame,
+                    meta_cache.xmp_orientation,
                     &xmp_applied);
                 if (SIXEL_FAILED(status)) {
                     sixel_webp_trace_contract_add_code(
@@ -2035,6 +2190,7 @@ end:
     if (canvas_pixels != NULL && chunk != NULL && allocator != NULL) {
         sixel_allocator_free(allocator, canvas_pixels);
     }
+    sixel_webp_anim_meta_cache_reset(&meta_cache);
     sixel_webp_anim_stream_reset(&stream, chunk != NULL ? allocator
                                                         : NULL);
     sixel_webp_trace_unapplied_meta_codes(&plan,
