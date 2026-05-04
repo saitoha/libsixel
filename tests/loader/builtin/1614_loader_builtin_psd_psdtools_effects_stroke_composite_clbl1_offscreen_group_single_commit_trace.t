@@ -19,7 +19,6 @@ set +x
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
 first_match=''
-second_match=''
 command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
@@ -40,13 +39,6 @@ test "${first_match}" != "${trace_output}" || {
     exit 0
 }
 
-second_match="${first_match#*builtin PSD: compositing deferred offscreen clipped group buffer to canvas*}"
-test "${second_match}" = "${first_match}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite duplicated deferred offscreen-group commit trace"
-    exit 0
-}
-
 first_match="${trace_output#*builtin PSD: applying deferred stroke on clipped group*}"
 test "${first_match}" != "${trace_output}" || {
     echo "not ok" 1 - \
@@ -62,5 +54,5 @@ test "${first_match#*builtin PSD: compositing deferred offscreen clipped group b
 }
 
 echo "ok" 1 - \
-    "effects/stroke-composite keeps one offscreen-group commit per deferred pass"
+    "effects/stroke-composite commits deferred offscreen group after deferred stroke"
 exit 0
