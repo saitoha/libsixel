@@ -250,6 +250,10 @@ run_case_tap "staticcheck-makefile-recipes" \
     "$src_root/tests/_static/sh/staticcheck-makefile-recipes.sh" \
     "$src_root" || fail_and_exit $?
 
+run_case_tap "staticcheck-psb-large-fixture-clean-sync" \
+    "$src_root/tests/_static/sh/staticcheck-psb-large-fixture-clean-sync.sh" \
+    "$src_root" || fail_and_exit $?
+
 run_case_tap "staticcheck-src-makefile-dist-sources-sync" \
     "$src_root/tests/_static/sh/staticcheck-src-makefile-dist-sources-sync.sh" \
     "$src_root" || fail_and_exit $?

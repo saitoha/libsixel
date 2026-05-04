@@ -396,6 +396,7 @@ AM_LOG_FLAGS =
 	staticcheck-test-runner-amalgamation-defines-sync \
 	staticcheck-gperf-generated-undefs \
 	staticcheck-makefile-recipes \
+	staticcheck-psb-large-fixture-clean-sync \
 	staticcheck-src-makefile-dist-sources-sync \
 	staticcheck-test-inc-extra-dist-sync \
 	staticcheck-meson-palette-sources \
@@ -455,6 +456,7 @@ staticcheck-dither-policy-no-backend-dispatch \
 staticcheck-test-runner-amalgamation-defines-sync \
 staticcheck-gperf-generated-undefs \
 staticcheck-makefile-recipes \
+staticcheck-psb-large-fixture-clean-sync \
 staticcheck-src-makefile-dist-sources-sync \
 staticcheck-test-inc-extra-dist-sync \
 staticcheck-meson-palette-sources \
@@ -813,6 +815,16 @@ staticcheck-makefile-recipes:
 		--trs-file staticcheck-makefile-recipes.trs \
 		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
 		"$(top_srcdir)/tests/_static/sh/staticcheck-makefile-recipes.sh" \
+		"$(abs_top_srcdir)"
+
+staticcheck-psb-large-fixture-clean-sync:
+	@TOP_SRCDIR='$(abs_top_srcdir)' TOP_BUILDDIR='$(abs_top_builddir)' \
+	ARTIFACT_ROOT='$(ARTIFACT_ROOT)' \
+	$(T_LOG_DRIVER) --test-name "staticcheck-psb-large-fixture-clean-sync" \
+		--log-file staticcheck-psb-large-fixture-clean-sync.log \
+		--trs-file staticcheck-psb-large-fixture-clean-sync.trs \
+		$(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- \
+		"$(top_srcdir)/tests/_static/sh/staticcheck-psb-large-fixture-clean-sync.sh" \
 		"$(abs_top_srcdir)"
 
 staticcheck-src-makefile-dist-sources-sync:
@@ -1765,6 +1777,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 	_static/sh/staticcheck-test-runner-amalgamation-defines-sync.sh \
 	_static/sh/staticcheck-gperf-generated-undefs.sh \
     _static/sh/staticcheck-makefile-recipes.sh \
+    _static/sh/staticcheck-psb-large-fixture-clean-sync.sh \
     _static/sh/staticcheck-src-makefile-dist-sources-sync.sh \
     _static/sh/staticcheck-test-inc-extra-dist-sync.sh \
     _static/sh/staticcheck-meson-palette-sources.sh \
@@ -1832,6 +1845,10 @@ clean-local:
 	rm -rf $(abs_top_builddir)/tests/.perl-test-venv
 	rm -rf $(abs_top_builddir)/tests/.php-test-venv
 	rm -f $(abs_top_builddir)/tests/data/inputs/formats/webp-static-icc-overlimit-padded.webp
+	rm -f $(abs_top_builddir)/tests/data/inputs/formats/webp-static-icc-limit-padded.webp
+	rm -f $(abs_top_builddir)/tests/data/inputs/formats/snake_64_embedded_a98_icc_xmp_iccprofile_iccp_overlimit.webp
+	rm -f $(abs_top_builddir)/tests/data/inputs/formats/animated-lossy-8x8-2frame-min-embedded-srgb-icc-overlimit.webp
+	rm -f $(abs_top_builddir)/tests/data/inputs/formats/animated-lossy-8x8-2frame-min-embedded-srgb-icc-xmp-icc-displayp3-overlimit.webp
 	rm -f $(abs_top_builddir)/tests/data/inputs/formats/snake16_psb_*_high_offset_xxlarge*.psd
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
