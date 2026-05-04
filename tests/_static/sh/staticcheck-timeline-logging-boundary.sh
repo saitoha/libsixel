@@ -196,13 +196,25 @@ awk '
 }
 ' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
 
-awk '
-/timeline\/0002_timeline_parallel_encode_decode_verify/ {
-    print "tests/processing/timeline/" \
-        "0002_timeline_parallel_encode_decode.t:" FNR \
-        ": timeline TAP must verify JSONL in the producer process"
-}
-' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
+	awk '
+	/timeline\/0002_timeline_parallel_encode_decode_verify/ {
+	    saw_verify = 1
+	}
+	/timeline\/0002_timeline_parallel_encode_decode_verify/ {
+	    saw_verify_call = 1
+	}
+	saw_verify_call && /\$\{log_path\}/ {
+	    saw_verify_path = 1
+	    saw_verify_call = 0
+	}
+	END {
+	    if (!saw_verify || !saw_verify_path) {
+	        print "tests/processing/timeline/" \
+	            "0002_timeline_parallel_encode_decode.t:" \
+	            ": timeline TAP must pass JSONL path to verifier process"
+	    }
+	}
+	' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
 
 awk '
 /--env[ \t]+SIXEL_LOG_PATH=/ {
@@ -224,55 +236,79 @@ END {
 }
 ' "$src_root/tests/test_runner.c"
 
-awk '
-/timeline\/0003_timeline_clock_origin_verify/ {
-    print "tests/processing/timeline/" \
-        "0003_timeline_clock_origin.t:" FNR \
-        ": timeline TAP must verify JSONL in the producer process"
-}
-' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"
+	awk '
+	/timeline\/0003_timeline_clock_origin_verify/ {
+	    saw_verify = 1
+	}
+	/timeline\/0003_timeline_clock_origin_verify/ {
+	    saw_verify_call = 1
+	}
+	saw_verify_call && /\$\{log_path\}/ {
+	    saw_verify_path = 1
+	    saw_verify_call = 0
+	}
+	END {
+	    if (!saw_verify || !saw_verify_path) {
+	        print "tests/processing/timeline/" \
+	            "0003_timeline_clock_origin.t:" \
+	            ": timeline TAP must pass JSONL path to verifier process"
+	    }
+	}
+	' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"
 
 awk '
-/timeline_flush_writer[ \t]*\([ \t]*log_path[ \t]*\)/ {
-    saw_flush = 1
-}
-/timeline_verify_jsonl[ \t]*\([ \t]*log_path[ \t]*\)/ {
-    saw_verify = 1
-}
-END {
-    if (!saw_flush) {
-        print "tests/processing/timeline/" \
-            "0002_timeline_parallel_encode_decode.c:" \
-            ": producer must flush JSONL before in-process verification"
-    }
-    if (!saw_verify) {
-        print "tests/processing/timeline/" \
-            "0002_timeline_parallel_encode_decode.c:" \
-            ": producer must verify JSONL before returning success"
-    }
-}
-' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.c"
+	/^timeline_parallel_encode_decode\(void\)/ {
+	    in_func = 1
+	}
+	in_func && /timeline_flush_writer[ \t]*\([ \t]*log_path[ \t]*\)/ {
+	    saw_flush = 1
+	}
+	in_func && /timeline_verify_jsonl[ \t]*\([ \t]*log_path[ \t]*\)/ {
+	    saw_inline_verify = 1
+	}
+	in_func && /^#endif/ {
+	    in_func = 0
+	}
+	END {
+	    if (!saw_flush) {
+	        print "tests/processing/timeline/" \
+	            "0002_timeline_parallel_encode_decode.c:" \
+	            ": producer must flush JSONL before returning success"
+	    }
+	    if (saw_inline_verify) {
+	        print "tests/processing/timeline/" \
+	            "0002_timeline_parallel_encode_decode.c:" \
+	            ": producer must leave JSONL verification to TAP verifier"
+	    }
+	}
+	' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.c"
 
-awk '
-/writer->[ \t]*vtbl->[ \t]*flush[ \t]*\([ \t]*writer[ \t]*\)/ {
-    saw_flush = 1
-}
-/timeline_read_clock_samples[ \t]*\([ \t]*log_path[ \t]*,/ {
-    saw_verify = 1
-}
-END {
-    if (!saw_flush) {
-        print "tests/processing/timeline/" \
-            "0003_timeline_clock_origin.c:" \
-            ": producer must flush JSONL before in-process verification"
-    }
-    if (!saw_verify) {
-        print "tests/processing/timeline/" \
-            "0003_timeline_clock_origin.c:" \
-            ": producer must verify clock JSONL before returning success"
-    }
-}
-' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.c"
+	awk '
+	/^timeline_clock_origin_is_shared\(void\)/ {
+	    in_func = 1
+	}
+	in_func && /writer->[ \t]*vtbl->[ \t]*flush[ \t]*\([ \t]*writer[ \t]*\)/ {
+	    saw_flush = 1
+	}
+	in_func && /timeline_read_clock_samples[ \t]*\([ \t]*log_path[ \t]*,/ {
+	    saw_inline_verify = 1
+	}
+	in_func && /return[ \t]+success[ \t]*;/ {
+	    in_func = 0
+	}
+	END {
+	    if (!saw_flush) {
+	        print "tests/processing/timeline/" \
+	            "0003_timeline_clock_origin.c:" \
+	            ": producer must flush JSONL before returning success"
+	    }
+	    if (saw_inline_verify) {
+	        print "tests/processing/timeline/" \
+	            "0003_timeline_clock_origin.c:" \
+	            ": producer must leave clock JSONL verification to TAP verifier"
+	    }
+	}
+	' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.c"
 } >>"$report"
 
 if test -s "$report"; then

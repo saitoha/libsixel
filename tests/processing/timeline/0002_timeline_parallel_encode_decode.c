@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: MIT
  *
  * Concurrent timeline logging test.  Multiple encoder/decoder objects share the
- * process timeline_writer service.  The test validates the completed JSONL
- * after an explicit writer flush so the diagnostic contract is checked before
- * process teardown can hide a failure.
+ * process timeline_writer service.  The producer only writes and flushes; the
+ * TAP file invokes the JSONL verifier in a fresh test_runner process.  MSVC's
+ * CRT can make immediate same-process readback brittle even after fclose().
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -489,10 +489,6 @@ end:
     if (!timeline_flush_writer(log_path)) {
         return 0;
     }
-    if (log_path[0] != '\0' && !timeline_verify_jsonl(log_path)) {
-        return 0;
-    }
-
     return 1;
 }
 #endif
