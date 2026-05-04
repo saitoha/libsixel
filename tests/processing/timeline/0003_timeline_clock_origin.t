@@ -17,12 +17,13 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     exit 0
 }
 
+# Pass the JSONL path through the environment so Git for Windows does not
+# reinterpret a native D:/... argv path before MSVC test_runner sees it.
 MSYS_NO_PATHCONV=1 \
 MSYS2_ARG_CONV_EXCL='*' \
 SIXEL_TEST_TIMELINE_JSONL="${log_path}" \
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    "timeline/0003_timeline_clock_origin_verify" \
-    "${log_path}" || {
+    "timeline/0003_timeline_clock_origin_verify" || {
     status=$?
     echo "# verifier exit status: ${status}"
     echo "# verifier JSONL path: ${log_path}"

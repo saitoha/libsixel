@@ -211,6 +211,8 @@ awk '
 	}
 	saw_verify_call && /\$\{log_path\}/ {
 	    saw_verify_path_arg = 1
+	}
+	saw_verify_call && /\|\|[ \t]*\{/ {
 	    saw_verify_call = 0
 	}
 	/MSYS_NO_PATHCONV=1/ {
@@ -226,10 +228,15 @@ awk '
 	    saw_failure_line_diag = 1
 	}
 	END {
-	    if (!saw_verify || !saw_verify_path_env || !saw_verify_path_arg) {
+	    if (!saw_verify || !saw_verify_path_env) {
 	        print "tests/processing/timeline/" \
 	            "0002_timeline_parallel_encode_decode.t:" \
-	            ": timeline TAP must pass JSONL path to verifier"
+	            ": timeline TAP must pass JSONL path via verifier env"
+	    }
+	    if (saw_verify_path_arg) {
+	        print "tests/processing/timeline/" \
+	            "0002_timeline_parallel_encode_decode.t:" \
+	            ": timeline TAP must not pass JSONL path as verifier argv"
 	    }
 	    if (saw_no_pathconv < 2 || saw_arg_conv_excl < 2) {
 	        print "tests/processing/timeline/" \
@@ -274,6 +281,8 @@ END {
 	}
 	saw_verify_call && /\$\{log_path\}/ {
 	    saw_verify_path_arg = 1
+	}
+	saw_verify_call && /\|\|[ \t]*\{/ {
 	    saw_verify_call = 0
 	}
 	/MSYS_NO_PATHCONV=1/ {
@@ -289,10 +298,15 @@ END {
 	    saw_failure_line_diag = 1
 	}
 	END {
-	    if (!saw_verify || !saw_verify_path_env || !saw_verify_path_arg) {
+	    if (!saw_verify || !saw_verify_path_env) {
 	        print "tests/processing/timeline/" \
 	            "0003_timeline_clock_origin.t:" \
-	            ": timeline TAP must pass JSONL path to verifier"
+	            ": timeline TAP must pass JSONL path via verifier env"
+	    }
+	    if (saw_verify_path_arg) {
+	        print "tests/processing/timeline/" \
+	            "0003_timeline_clock_origin.t:" \
+	            ": timeline TAP must not pass JSONL path as verifier argv"
 	    }
 	    if (saw_no_pathconv < 2 || saw_arg_conv_excl < 2) {
 	        print "tests/processing/timeline/" \
