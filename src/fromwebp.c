@@ -228,6 +228,27 @@ sixel_webp_should_stop_after_loop(int loop_control,
     return 0;
 }
 
+static int
+sixel_webp_anim_can_transfer_canvas_ownership(int fstatic,
+                                              int source_frame_no,
+                                              int frame_count,
+                                              int loop_control,
+                                              int frames_in_loop,
+                                              int loop_no,
+                                              int stream_loop_count)
+{
+    if (fstatic != 0) {
+        return 1;
+    }
+    if (source_frame_no + 1 != frame_count) {
+        return 0;
+    }
+    return sixel_webp_should_stop_after_loop(loop_control,
+                                             frames_in_loop + 1,
+                                             loop_no + 1,
+                                             stream_loop_count);
+}
+
 static void
 sixel_webp_trace_anim_timing_contract(sixel_webp_anim_stream_t const *stream)
 {
@@ -2252,23 +2273,31 @@ sixel_webp_anim_fill_canvas(unsigned char *canvas_pixels,
 {
     int x;
     int y;
-    size_t dst_offset;
+    size_t row_bytes;
+    size_t row_offset;
+    unsigned char *row_ptr;
 
     x = 0;
     y = 0;
-    dst_offset = 0u;
+    row_bytes = 0u;
+    row_offset = 0u;
+    row_ptr = NULL;
     if (canvas_pixels == NULL || rgba == NULL ||
         canvas_width <= 0 || canvas_height <= 0) {
         return;
     }
-    for (y = 0; y < canvas_height; ++y) {
-        for (x = 0; x < canvas_width; ++x) {
-            dst_offset = ((size_t)y * (size_t)canvas_width + (size_t)x) * 4u;
-            canvas_pixels[dst_offset + 0u] = rgba[0u];
-            canvas_pixels[dst_offset + 1u] = rgba[1u];
-            canvas_pixels[dst_offset + 2u] = rgba[2u];
-            canvas_pixels[dst_offset + 3u] = rgba[3u];
-        }
+    row_bytes = (size_t)canvas_width * 4u;
+    row_ptr = canvas_pixels;
+    for (x = 0; x < canvas_width; ++x) {
+        row_ptr[0u] = rgba[0u];
+        row_ptr[1u] = rgba[1u];
+        row_ptr[2u] = rgba[2u];
+        row_ptr[3u] = rgba[3u];
+        row_ptr += 4;
+    }
+    for (y = 1; y < canvas_height; ++y) {
+        row_offset = (size_t)y * row_bytes;
+        memcpy(canvas_pixels + row_offset, canvas_pixels, row_bytes);
     }
 }
 
@@ -2280,30 +2309,39 @@ sixel_webp_anim_clear_rect(unsigned char *canvas_pixels,
 {
     int x;
     int y;
-    int px;
-    int py;
-    size_t dst_offset;
+    size_t row_bytes;
+    size_t row_offset;
+    size_t first_row_offset;
+    unsigned char *row_ptr;
 
     x = 0;
     y = 0;
-    px = 0;
-    py = 0;
-    dst_offset = 0u;
+    row_bytes = 0u;
+    row_offset = 0u;
+    first_row_offset = 0u;
+    row_ptr = NULL;
     if (canvas_pixels == NULL || canvas_width <= 0 || anim_frame == NULL ||
         rgba == NULL) {
         return;
     }
-    for (y = 0; y < anim_frame->height; ++y) {
-        py = anim_frame->y_offset + y;
-        for (x = 0; x < anim_frame->width; ++x) {
-            px = anim_frame->x_offset + x;
-            dst_offset = ((size_t)py * (size_t)canvas_width
-                          + (size_t)px) * 4u;
-            canvas_pixels[dst_offset + 0u] = rgba[0u];
-            canvas_pixels[dst_offset + 1u] = rgba[1u];
-            canvas_pixels[dst_offset + 2u] = rgba[2u];
-            canvas_pixels[dst_offset + 3u] = rgba[3u];
-        }
+    row_bytes = (size_t)anim_frame->width * 4u;
+    first_row_offset = ((size_t)anim_frame->y_offset * (size_t)canvas_width
+                        + (size_t)anim_frame->x_offset) * 4u;
+    row_ptr = canvas_pixels + first_row_offset;
+    for (x = 0; x < anim_frame->width; ++x) {
+        row_ptr[0u] = rgba[0u];
+        row_ptr[1u] = rgba[1u];
+        row_ptr[2u] = rgba[2u];
+        row_ptr[3u] = rgba[3u];
+        row_ptr += 4;
+    }
+    for (y = 1; y < anim_frame->height; ++y) {
+        row_offset = ((size_t)(anim_frame->y_offset + y)
+                      * (size_t)canvas_width
+                      + (size_t)anim_frame->x_offset) * 4u;
+        memcpy(canvas_pixels + row_offset,
+               canvas_pixels + first_row_offset,
+               row_bytes);
     }
 }
 
@@ -2315,49 +2353,66 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
 {
     int x;
     int y;
-    int px;
-    int py;
-    size_t src_offset;
-    size_t dst_offset;
+    size_t src_row_offset;
+    size_t dst_row_offset;
+    size_t row_bytes;
+    unsigned char const *sp;
+    unsigned char *dp;
     unsigned int sa;
     unsigned int da;
     unsigned int oa;
-    unsigned char const *sp;
-    unsigned char *dp;
 
     x = 0;
     y = 0;
-    px = 0;
-    py = 0;
-    src_offset = 0u;
-    dst_offset = 0u;
+    src_row_offset = 0u;
+    dst_row_offset = 0u;
+    row_bytes = 0u;
+    sp = NULL;
+    dp = NULL;
     sa = 0u;
     da = 0u;
     oa = 0u;
-    sp = NULL;
-    dp = NULL;
     if (canvas_pixels == NULL || canvas_width <= 0 || anim_frame == NULL ||
         subframe_pixels == NULL) {
         return;
     }
+    row_bytes = (size_t)anim_frame->width * 4u;
+    if (anim_frame->blend_over == 0) {
+        for (y = 0; y < anim_frame->height; ++y) {
+            src_row_offset = (size_t)y * row_bytes;
+            dst_row_offset = ((size_t)(anim_frame->y_offset + y)
+                              * (size_t)canvas_width
+                              + (size_t)anim_frame->x_offset) * 4u;
+            memcpy(canvas_pixels + dst_row_offset,
+                   subframe_pixels + src_row_offset,
+                   row_bytes);
+        }
+        return;
+    }
+
     for (y = 0; y < anim_frame->height; ++y) {
-        py = anim_frame->y_offset + y;
+        src_row_offset = (size_t)y * row_bytes;
+        dst_row_offset = ((size_t)(anim_frame->y_offset + y)
+                          * (size_t)canvas_width
+                          + (size_t)anim_frame->x_offset) * 4u;
+        sp = subframe_pixels + src_row_offset;
+        dp = canvas_pixels + dst_row_offset;
         for (x = 0; x < anim_frame->width; ++x) {
-            px = anim_frame->x_offset + x;
-            src_offset = ((size_t)y * (size_t)anim_frame->width
-                          + (size_t)x) * 4u;
-            dst_offset = ((size_t)py * (size_t)canvas_width
-                          + (size_t)px) * 4u;
-            sp = subframe_pixels + src_offset;
-            dp = canvas_pixels + dst_offset;
-            if (anim_frame->blend_over == 0) {
+            sa = (unsigned int)sp[3u];
+            if (sa == 0u) {
+                sp += 4;
+                dp += 4;
+                continue;
+            }
+            if (sa == 255u) {
                 dp[0u] = sp[0u];
                 dp[1u] = sp[1u];
                 dp[2u] = sp[2u];
-                dp[3u] = sp[3u];
+                dp[3u] = 255u;
+                sp += 4;
+                dp += 4;
                 continue;
             }
-            sa = (unsigned int)sp[3u];
             da = (unsigned int)dp[3u];
             oa = sa + ((da * (255u - sa)) / 255u);
             if (oa == 0u) {
@@ -2365,6 +2420,8 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
                 dp[1u] = 0u;
                 dp[2u] = 0u;
                 dp[3u] = 0u;
+                sp += 4;
+                dp += 4;
                 continue;
             }
             dp[0u] = (unsigned char)((sp[0u] * sa + dp[0u] * da
@@ -2374,6 +2431,8 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
             dp[2u] = (unsigned char)((sp[2u] * sa + dp[2u] * da
                                       * (255u - sa) / 255u) / oa);
             dp[3u] = (unsigned char)oa;
+            sp += 4;
+            dp += 4;
         }
     }
 }
@@ -2450,6 +2509,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     int exif_applied;
     int exif_size_limited;
     int xmp_applied;
+    int can_transfer_canvas;
     sixel_webp_anim_meta_cache_t meta_cache;
 
     status = SIXEL_OK;
@@ -2486,6 +2546,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     exif_applied = 0;
     exif_size_limited = 0;
     xmp_applied = 0;
+    can_transfer_canvas = 0;
     if (handled == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2639,7 +2700,15 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
-            if (fstatic != 0) {
+            can_transfer_canvas = sixel_webp_anim_can_transfer_canvas_ownership(
+                fstatic,
+                source_frame_no,
+                stream.frame_count,
+                loop_control,
+                frames_in_loop,
+                loop_no,
+                stream.loop_count);
+            if (can_transfer_canvas != 0) {
                 emitted_pixels = canvas_pixels;
                 canvas_pixels = NULL;
             } else {
@@ -2780,6 +2849,11 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             sixel_frame_unref(frame);
             frame = NULL;
             ++emitted_frames;
+            if (can_transfer_canvas != 0) {
+                sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_OK_ANIM);
+                status = SIXEL_OK;
+                goto end;
+            }
 
             if (stream.frames[source_frame_no].dispose_to_background != 0) {
                 sixel_webp_anim_clear_rect(canvas_pixels,
@@ -2788,11 +2862,6 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                                            background_rgba);
             }
             ++frames_in_loop;
-            if (fstatic) {
-                sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_OK_ANIM);
-                status = SIXEL_OK;
-                goto end;
-            }
         }
 
         if (emitted_frames <= 0) {
