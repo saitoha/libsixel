@@ -216,6 +216,46 @@ sixel_webp_should_stop_after_loop(int loop_control,
     return 0;
 }
 
+static void
+sixel_webp_trace_anim_timing_contract(sixel_webp_anim_stream_t const *stream)
+{
+    int frame_no;
+    int saw_zero_duration;
+    int saw_nonzero_duration;
+
+    frame_no = 0;
+    saw_zero_duration = 0;
+    saw_nonzero_duration = 0;
+    if (stream == NULL || stream->frames == NULL || stream->frame_count <= 0) {
+        return;
+    }
+
+    if (stream->loop_count > 0) {
+        sixel_webp_trace_contract_add_code(
+            SIXEL_WEBP_CODE_ANIM_LOOPCOUNT_FINITE_SEEN);
+    } else {
+        sixel_webp_trace_contract_add_code(
+            SIXEL_WEBP_CODE_ANIM_LOOPCOUNT_INFINITE_SEEN);
+    }
+
+    for (frame_no = 0; frame_no < stream->frame_count; ++frame_no) {
+        if (stream->frames[frame_no].duration_ms == 0) {
+            saw_zero_duration = 1;
+        } else {
+            saw_nonzero_duration = 1;
+        }
+    }
+
+    if (saw_zero_duration != 0) {
+        sixel_webp_trace_contract_add_code(
+            SIXEL_WEBP_CODE_ANIM_DURATION_ZERO_SEEN);
+    }
+    if (saw_nonzero_duration != 0) {
+        sixel_webp_trace_contract_add_code(
+            SIXEL_WEBP_CODE_ANIM_DURATION_NONZERO_SEEN);
+    }
+}
+
 static SIXELSTATUS
 sixel_webp_apply_decode_plan(sixel_webp_decode_plan_t const *plan)
 {
@@ -1704,6 +1744,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
         sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_ERR_VP8_STREAM);
         goto end;
     }
+    sixel_webp_trace_anim_timing_contract(&stream);
     status = sixel_webp_validate_anim_alpha_flag(&stream,
                                                  container.vp8x_flags);
     if (SIXEL_FAILED(status)) {

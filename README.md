@@ -1219,6 +1219,10 @@ Limit reasons are exposed as `W_UNSUP_ANIM_FRAME_LIMIT`,
 Thresholds are inclusive: `frame_count==1024`, canvas dimensions up to
 `32767`, and pixel count up to `268435456` stay supported. Only values above
 those limits map to `W_UNSUP_ANIM_*` limit reasons.
+For animation timing diagnostics, builtin WebP also emits timing-observation
+codes without changing decode behavior:
+`W_ANIM_DURATION_ZERO_SEEN`, `W_ANIM_DURATION_NONZERO_SEEN`,
+`W_ANIM_LOOPCOUNT_FINITE_SEEN`, and `W_ANIM_LOOPCOUNT_INFINITE_SEEN`.
 For static decode,
 embedded `ICCP` is applied when builtin CMS is enabled and embedded `EXIF`
 orientation is applied when builtin orientation handling is enabled.

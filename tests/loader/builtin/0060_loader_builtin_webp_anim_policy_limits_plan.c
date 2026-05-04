@@ -18,8 +18,10 @@ typedef struct sixel_test_webp_anim_limit_case {
     unsigned int canvas_width;
     unsigned int canvas_height;
     unsigned int frame_count;
+    unsigned int loop_count;
     sixel_webp_container_kind_t expected_kind;
     sixel_webp_anim_unsupported_reason_t expected_reason;
+    int expected_loop_count;
 } sixel_test_webp_anim_limit_case_t;
 
 static void
@@ -85,6 +87,7 @@ sixel_test_webp_build_anim_container(unsigned char *buffer,
                                      unsigned int canvas_width,
                                      unsigned int canvas_height,
                                      unsigned int frame_count,
+                                     unsigned int loop_count,
                                      size_t *out_size)
 {
     unsigned char vp8x_payload[10];
@@ -129,6 +132,8 @@ sixel_test_webp_build_anim_container(unsigned char *buffer,
                                      sizeof(vp8x_payload)) == 0) {
         return 0;
     }
+    anim_payload[4] = (unsigned char)(loop_count & 0xffu);
+    anim_payload[5] = (unsigned char)((loop_count >> 8) & 0xffu);
     if (sixel_test_webp_append_chunk(buffer,
                                      capacity,
                                      &cursor,
@@ -195,6 +200,7 @@ sixel_test_webp_run_anim_limit_case(
                                              test_case->canvas_width,
                                              test_case->canvas_height,
                                              test_case->frame_count,
+                                             test_case->loop_count,
                                              &container_size) == 0) {
         fprintf(stderr,
                 "webp anim limit test: build failed (%s)\n",
@@ -258,6 +264,15 @@ sixel_test_webp_run_anim_limit_case(
                 (int)test_case->expected_reason);
         goto cleanup;
     }
+    if (plan.anim_loop_count != test_case->expected_loop_count) {
+        fprintf(stderr,
+                "webp anim limit test: unexpected loop count (%s, "
+                "got=%d expected=%d)\n",
+                test_case->label,
+                plan.anim_loop_count,
+                test_case->expected_loop_count);
+        goto cleanup;
+    }
     result = 0;
 
 cleanup:
@@ -276,37 +291,55 @@ test_loader_0060_loader_builtin_webp_anim_policy_limits_plan(int argc,
 {
     static sixel_test_webp_anim_limit_case_t const cases[] = {
         { "frame_count_1024_ok",
-          16u, 16u, 1024u,
+          16u, 16u, 1024u, 0u,
           SIXEL_WEBP_CONTAINER_KIND_ANIM_MVP,
-          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE },
+          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE,
+          0 },
         { "frame_count_1025_unsup",
-          16u, 16u, 1025u,
+          16u, 16u, 1025u, 0u,
           SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM,
-          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_FRAME_LIMIT },
+          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_FRAME_LIMIT,
+          0 },
+        { "loop_count_one_ok",
+          16u, 16u, 2u, 1u,
+          SIXEL_WEBP_CONTAINER_KIND_ANIM_MVP,
+          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE,
+          1 },
+        { "loop_count_max_ok",
+          16u, 16u, 2u, 65535u,
+          SIXEL_WEBP_CONTAINER_KIND_ANIM_MVP,
+          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE,
+          65535 },
         { "frame_and_dimension_unsup_frame_priority",
-          32768u, 1u, 1025u,
+          32768u, 1u, 1025u, 0u,
           SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM,
-          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_FRAME_LIMIT },
+          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_FRAME_LIMIT,
+          0 },
         { "dimension_32767_ok",
-          32767u, 1u, 1u,
+          32767u, 1u, 1u, 0u,
           SIXEL_WEBP_CONTAINER_KIND_ANIM_MVP,
-          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE },
+          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE,
+          0 },
         { "dimension_32768_unsup",
-          32768u, 1u, 1u,
+          32768u, 1u, 1u, 0u,
           SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM,
-          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_DIMENSION_LIMIT },
+          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_DIMENSION_LIMIT,
+          0 },
         { "dimension_and_pixel_unsup_dimension_priority",
-          32768u, 32768u, 1u,
+          32768u, 32768u, 1u, 0u,
           SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM,
-          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_DIMENSION_LIMIT },
+          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_DIMENSION_LIMIT,
+          0 },
         { "pixel_268435456_ok",
-          16384u, 16384u, 1u,
+          16384u, 16384u, 1u, 0u,
           SIXEL_WEBP_CONTAINER_KIND_ANIM_MVP,
-          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE },
+          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_NONE,
+          0 },
         { "pixel_268460031_unsup",
-          32767u, 8193u, 1u,
+          32767u, 8193u, 1u, 0u,
           SIXEL_WEBP_CONTAINER_KIND_UNSUPPORTED_ANIM,
-          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_PIXEL_LIMIT }
+          SIXEL_WEBP_ANIM_UNSUPPORTED_REASON_PIXEL_LIMIT,
+          0 }
     };
     size_t index;
 
