@@ -556,6 +556,54 @@ sixel_webp_xmp_is_space(unsigned char ch)
 }
 
 static int
+sixel_webp_xmp_is_name_char(unsigned char ch)
+{
+    if ((ch >= 'a' && ch <= 'z') ||
+        (ch >= 'A' && ch <= 'Z') ||
+        (ch >= '0' && ch <= '9') ||
+        ch == '_' || ch == '-' || ch == '.' || ch == ':') {
+        return 1;
+    }
+    return 0;
+}
+
+static int
+sixel_webp_xmp_find_prefixed_local_name(unsigned char const *payload,
+                                        size_t payload_size,
+                                        size_t local_begin,
+                                        size_t local_size,
+                                        size_t *name_begin)
+{
+    size_t begin;
+
+    begin = 0u;
+    if (payload == NULL || local_size == 0u || local_begin >= payload_size ||
+        local_begin + local_size > payload_size) {
+        return 0;
+    }
+
+    begin = local_begin;
+    while (begin > 0u &&
+           sixel_webp_xmp_is_name_char(payload[begin - 1u]) != 0) {
+        --begin;
+    }
+    if (local_begin == 0u || payload[local_begin - 1u] != ':') {
+        return 0;
+    }
+    if (begin == local_begin - 1u) {
+        return 0;
+    }
+    if (local_begin + local_size < payload_size &&
+        sixel_webp_xmp_is_name_char(payload[local_begin + local_size]) != 0) {
+        return 0;
+    }
+    if (name_begin != NULL) {
+        *name_begin = begin;
+    }
+    return 1;
+}
+
+static int
 sixel_webp_xmp_find_token(unsigned char const *payload,
                           size_t payload_size,
                           char const *token,
@@ -575,6 +623,41 @@ sixel_webp_xmp_find_token(unsigned char const *payload,
             *found_offset = offset;
             return 1;
         }
+    }
+    return 0;
+}
+
+static int
+sixel_webp_xmp_find_tag_end(unsigned char const *payload,
+                            size_t payload_size,
+                            size_t start,
+                            size_t *tag_end)
+{
+    size_t cursor;
+    unsigned char quote;
+    unsigned char ch;
+
+    cursor = 0u;
+    quote = '\0';
+    ch = '\0';
+    if (payload == NULL || tag_end == NULL || start >= payload_size) {
+        return 0;
+    }
+
+    cursor = start;
+    while (cursor < payload_size) {
+        ch = payload[cursor];
+        if (quote == '\0') {
+            if (ch == '"' || ch == '\'') {
+                quote = ch;
+            } else if (ch == '>') {
+                *tag_end = cursor;
+                return 1;
+            }
+        } else if (ch == quote) {
+            quote = '\0';
+        }
+        ++cursor;
     }
     return 0;
 }
@@ -800,20 +883,30 @@ sixel_webp_xmp_parse_icc_profile_kind(unsigned char const *payload,
                                       size_t payload_size,
                                       sixel_webp_xmp_cms_profile_kind_t *kind)
 {
-    static char const attr_token[] = "photoshop:ICCProfile";
-    static char const elem_begin[] = "<photoshop:ICCProfile>";
-    static char const elem_end[] = "</photoshop:ICCProfile>";
+    static char const local_name[] = "ICCProfile";
     size_t offset;
     size_t cursor;
+    size_t name_begin;
+    size_t close_name_begin;
+    size_t tag_end;
+    size_t close_cursor;
     size_t value_begin;
     size_t value_end;
+    size_t local_size;
     unsigned char quote;
+    int close_found;
 
     offset = 0u;
     cursor = 0u;
+    name_begin = 0u;
+    close_name_begin = 0u;
+    tag_end = 0u;
+    close_cursor = 0u;
     value_begin = 0u;
     value_end = 0u;
+    local_size = sizeof(local_name) - 1u;
     quote = '\0';
+    close_found = 0;
     if (payload == NULL || kind == NULL) {
         return 0;
     }
@@ -821,11 +914,19 @@ sixel_webp_xmp_parse_icc_profile_kind(unsigned char const *payload,
 
     while (sixel_webp_xmp_find_token(payload,
                                      payload_size,
-                                     attr_token,
-                                     sizeof(attr_token) - 1u,
+                                     local_name,
+                                     local_size,
                                      offset,
                                      &cursor) != 0) {
-        cursor += sizeof(attr_token) - 1u;
+        if (sixel_webp_xmp_find_prefixed_local_name(payload,
+                                                    payload_size,
+                                                    cursor,
+                                                    local_size,
+                                                    NULL) == 0) {
+            offset = cursor + 1u;
+            continue;
+        }
+        cursor += local_size;
         while (cursor < payload_size &&
                sixel_webp_xmp_is_space(payload[cursor]) != 0) {
             ++cursor;
@@ -866,20 +967,62 @@ sixel_webp_xmp_parse_icc_profile_kind(unsigned char const *payload,
     }
 
     offset = 0u;
-    while (sixel_webp_xmp_find_token(payload,
-                                     payload_size,
-                                     elem_begin,
-                                     sizeof(elem_begin) - 1u,
-                                     offset,
-                                     &cursor) != 0) {
-        cursor += sizeof(elem_begin) - 1u;
-        value_begin = cursor;
-        if (sixel_webp_xmp_find_token(payload,
-                                      payload_size,
-                                      elem_end,
-                                      sizeof(elem_end) - 1u,
-                                      cursor,
-                                      &value_end) == 0) {
+    while (sixel_webp_xmp_find_token(payload, payload_size, local_name,
+                                     local_size, offset, &cursor) != 0) {
+        if (sixel_webp_xmp_find_prefixed_local_name(payload,
+                                                    payload_size,
+                                                    cursor,
+                                                    local_size,
+                                                    &name_begin) == 0) {
+            offset = cursor + 1u;
+            continue;
+        }
+        if (name_begin < 1u || payload[name_begin - 1u] != '<') {
+            offset = cursor + 1u;
+            continue;
+        }
+        cursor += local_size;
+        if (sixel_webp_xmp_find_tag_end(payload,
+                                        payload_size,
+                                        cursor,
+                                        &tag_end) == 0) {
+            offset = cursor;
+            continue;
+        }
+        value_begin = tag_end + 1u;
+        close_cursor = value_begin;
+        close_found = 0;
+        while (sixel_webp_xmp_find_token(payload, payload_size, local_name,
+                                         local_size, close_cursor,
+                                         &close_cursor) != 0) {
+            if (sixel_webp_xmp_find_prefixed_local_name(payload,
+                                                        payload_size,
+                                                        close_cursor,
+                                                        local_size,
+                                                        &close_name_begin) == 0) {
+                close_cursor += 1u;
+                continue;
+            }
+            if (close_name_begin < 2u ||
+                payload[close_name_begin - 2u] != '<' ||
+                payload[close_name_begin - 1u] != '/') {
+                close_cursor += 1u;
+                continue;
+            }
+            tag_end = close_cursor + local_size;
+            while (tag_end < payload_size &&
+                   sixel_webp_xmp_is_space(payload[tag_end]) != 0) {
+                ++tag_end;
+            }
+            if (tag_end >= payload_size || payload[tag_end] != '>') {
+                close_cursor += 1u;
+                continue;
+            }
+            value_end = close_name_begin - 2u;
+            close_found = 1;
+            break;
+        }
+        if (close_found == 0 || value_end < value_begin) {
             break;
         }
         if (sixel_webp_xmp_match_profile_name(payload,
@@ -888,7 +1031,8 @@ sixel_webp_xmp_parse_icc_profile_kind(unsigned char const *payload,
                                               kind) != 0) {
             return 1;
         }
-        offset = value_end + sizeof(elem_end) - 1u;
+        offset = tag_end + 1u;
+        value_end = 0u;
     }
     return 0;
 }

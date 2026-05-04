@@ -1231,7 +1231,8 @@ When `EXIF` metadata is absent, builtin WebP also tries a minimal
 `EXIF` always takes precedence over `XMP` when both are present.
 For color management, builtin WebP applies embedded `ICCP` first.
 When `ICCP` is absent and builtin CMS is enabled, builtin WebP also accepts a
-minimal `XMP` color profile name fallback (`photoshop:ICCProfile`) for
+minimal `XMP` color profile name fallback from prefixed `ICCProfile`
+properties (for example, `photoshop:ICCProfile`) for
 `sRGB IEC61966-2.1`, `Display P3`, and `Adobe RGB (1998)`.
 The profile-name resolver also accepts compact aliases such as `sRGB`,
 `IEC61966-2.1`, `DisplayP3`, `AdobeRGB1998`, and `AdobeRGB`.
