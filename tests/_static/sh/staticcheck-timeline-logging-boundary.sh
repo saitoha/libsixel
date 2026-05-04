@@ -235,6 +235,9 @@ awk '
 /timeline JSONL has fewer than two sessions/ {
     saw_shell_session_verify = 1
 }
+/SIXEL_ENABLE_THREADS/ {
+    saw_thread_skip = 1
+}
 END {
     if (!saw_failure_status_diag || !saw_failure_line_diag) {
         print "tests/processing/timeline/" \
@@ -245,6 +248,11 @@ END {
         print "tests/processing/timeline/" \
             "0002_timeline_parallel_encode_decode.t:" \
             ": timeline TAP must verify multiple sessions"
+    }
+    if (!saw_thread_skip) {
+        print "tests/processing/timeline/" \
+            "0002_timeline_parallel_encode_decode.t:" \
+            ": timeline TAP must skip no-threads builds"
     }
 }
 ' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
