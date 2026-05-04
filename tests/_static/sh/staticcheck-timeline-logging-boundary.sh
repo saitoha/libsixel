@@ -143,6 +143,23 @@ in_func && /palette_source_colorspace[ \t]*=[ \t]*SIXEL_COLORSPACE_GAMMA[ \t]*;/
 ' "$src_root/src/tosixel.c"
 
 awk '
+/^sixel_timeline_logger_prepare_env\(/ {
+    in_func = 1
+    saw_env_gate = 0
+}
+in_func && /sixel_timeline_logger_env_can_log[ \t]*\(/ {
+    saw_env_gate = 1
+}
+in_func && /sixel_allocator_new[ \t]*\(/ {
+    if (!saw_env_gate) {
+        print "src/timeline-logger.c:" FNR \
+            ": prepare_env must skip allocator creation when logging is off"
+    }
+    in_func = 0
+}
+' "$src_root/src/timeline-logger.c"
+
+awk '
 /^timeline_parallel_encode_decode\(void\)/ {
     in_func = 1
     saw_log_path_zero = 0

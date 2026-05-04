@@ -38,6 +38,7 @@
 #endif
 
 #include "sixel_atomic.h"
+#include "compat_stub.h"
 #include "threading.h"
 #include "timeline-logger.h"
 #include "timeline-writer.h"
@@ -65,6 +66,71 @@ typedef struct sixel_timeline_logger_storage {
     sixel_timeline_logger_frame_context_t
         frame_contexts[SIXEL_TIMELINE_LOGGER_FRAME_CONTEXT_SLOTS];
 } sixel_timeline_logger_storage_t;
+
+static int g_sixel_timeline_logger_env_can_log;
+
+static void
+sixel_timeline_logger_probe_env(void)
+{
+    char const *path;
+
+    /*
+     * The writer already treats SIXEL_LOG_PATH as a process-start diagnostic
+     * switch.  Mirror that contract here so disabled logging returns before
+     * allocating a temporary allocator or taking the writer service mutex.
+     */
+    path = sixel_compat_getenv("SIXEL_LOG_PATH");
+    if (path != NULL && path[0] != '\0') {
+        g_sixel_timeline_logger_env_can_log = 1;
+    }
+}
+
+#if defined(_WIN32) && SIXEL_ENABLE_THREADS
+static INIT_ONCE g_sixel_timeline_logger_env_once = INIT_ONCE_STATIC_INIT;
+
+static BOOL CALLBACK
+sixel_timeline_logger_probe_env_once(PINIT_ONCE once,
+                                     PVOID parameter,
+                                     PVOID *context)
+{
+    (void)once;
+    (void)parameter;
+    (void)context;
+
+    sixel_timeline_logger_probe_env();
+    return TRUE;
+}
+#elif SIXEL_ENABLE_THREADS
+static pthread_once_t g_sixel_timeline_logger_env_once = PTHREAD_ONCE_INIT;
+
+static void
+sixel_timeline_logger_probe_env_once(void)
+{
+    sixel_timeline_logger_probe_env();
+}
+#else
+static int g_sixel_timeline_logger_env_checked;
+#endif
+
+static int
+sixel_timeline_logger_env_can_log(void)
+{
+#if defined(_WIN32) && SIXEL_ENABLE_THREADS
+    (void)InitOnceExecuteOnce(&g_sixel_timeline_logger_env_once,
+                              sixel_timeline_logger_probe_env_once,
+                              NULL,
+                              NULL);
+#elif SIXEL_ENABLE_THREADS
+    (void)pthread_once(&g_sixel_timeline_logger_env_once,
+                       sixel_timeline_logger_probe_env_once);
+#else
+    if (g_sixel_timeline_logger_env_checked == 0) {
+        sixel_timeline_logger_probe_env();
+        g_sixel_timeline_logger_env_checked = 1;
+    }
+#endif
+    return g_sixel_timeline_logger_env_can_log;
+}
 
 static unsigned long long
 sixel_timeline_logger_thread_id(void)
@@ -398,6 +464,10 @@ sixel_timeline_logger_factory_new(sixel_allocator_t *allocator, void **object)
     }
 
     *object = NULL;
+    if (!sixel_timeline_logger_env_can_log()) {
+        return SIXEL_OK;
+    }
+
     writer = NULL;
     service = NULL;
     status = sixel_timeline_writer_get_default(&service);
@@ -437,6 +507,10 @@ sixel_timeline_logger_prepare_env(
     }
 
     *logger = NULL;
+    if (!sixel_timeline_logger_env_can_log()) {
+        return SIXEL_OK;
+    }
+
     local_allocator = allocator;
     writer = NULL;
     service = NULL;
