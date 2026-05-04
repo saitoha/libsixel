@@ -104,7 +104,7 @@ FILENAME != last_file {
 }
 '
 
-awk '
+awk -v src_root="$src_root" '
 /sixel_timeline_writer_init_storage[ \t]*\(/ {
     count += 1
 }
@@ -189,11 +189,6 @@ in_func && /sixel_allocator_new[ \t]*\(/ {
 ' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.c"
 
 awk '
-/_verify/ {
-    print "tests/processing/timeline/" \
-        "0002_timeline_parallel_encode_decode.t:" FNR \
-        ": timeline tests must verify JSONL in the producer process"
-}
 /--env[ \t]+SIXEL_LOG_PATH=/ {
     print "tests/processing/timeline/" \
         "0002_timeline_parallel_encode_decode.t:" FNR \
@@ -202,11 +197,22 @@ awk '
 ' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
 
 awk '
-/_verify/ {
-    print "tests/processing/timeline/" \
-        "0003_timeline_clock_origin.t:" FNR \
-        ": timeline tests must verify JSONL in the producer process"
+/timeline\/0002_timeline_parallel_encode_decode_verify/ {
+    saw_verify = 1
 }
+saw_verify && /\$\{log_path\}/ {
+    saw_path_arg = 1
+}
+END {
+    if (!saw_verify || !saw_path_arg) {
+        print "tests/processing/timeline/" \
+            "0002_timeline_parallel_encode_decode.t:" \
+            ": timeline verifier must receive an explicit JSONL path"
+    }
+}
+' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
+
+awk '
 /--env[ \t]+SIXEL_LOG_PATH=/ {
     print "tests/processing/timeline/" \
         "0003_timeline_clock_origin.t:" FNR \
@@ -215,24 +221,65 @@ awk '
 ' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"
 
 awk '
-/timeline\/000[23].*_verify/ {
-    print "tests/test_runner.c:" FNR \
-        ": timeline verifier entry points must stay out of test_runner"
+ /timeline\/000[23].*_verify/ {
+    found += 1
+}
+END {
+    if (found < 2) {
+        print "tests/test_runner.c:" \
+            ": timeline verifier entry points must stay in test_runner"
+    }
 }
 ' "$src_root/tests/test_runner.c"
+
+awk '
+/timeline\/0003_timeline_clock_origin_verify/ {
+    saw_verify = 1
+}
+saw_verify && /\$\{log_path\}/ {
+    saw_path_arg = 1
+}
+END {
+    if (!saw_verify || !saw_path_arg) {
+        print "tests/processing/timeline/" \
+            "0003_timeline_clock_origin.t:" \
+            ": timeline verifier must receive an explicit JSONL path"
+    }
+}
+' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"
+
+awk -v src_root="$src_root" '
+FILENAME != last_file {
+    last_file = FILENAME
+    path = FILENAME
+    pending_env = 0
+}
+/SIXEL_LOG_PATH=/ {
+    pending_env = 1
+    next
+}
+/timeline\/000[23].*_verify/ {
+    if (pending_env) {
+        sub("^" src_root "/", "", path)
+        print path ":" FNR \
+            ": timeline verifier must not be run with SIXEL_LOG_PATH"
+    }
+}
+{
+    pending_env = 0
+}
+' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t" \
+  "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"
 
 awk '
 /timeline_flush_writer[ \t]*\([ \t]*log_path[ \t]*\)/ {
     saw_flush = 1
 }
-saw_flush && /timeline_verify_jsonl[ \t]*\([ \t]*log_path[ \t]*\)/ {
-    saw_verify = 1
-}
 END {
-    if (!saw_flush || !saw_verify) {
+    if (!saw_flush) {
         print "tests/processing/timeline/" \
             "0002_timeline_parallel_encode_decode.c:" \
-            ": producer must verify JSONL after flush"
+            ": producer must flush JSONL before verifier process"
     }
 }
 ' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.c"
@@ -241,14 +288,11 @@ awk '
 /writer->[ \t]*vtbl->[ \t]*flush[ \t]*\([ \t]*writer[ \t]*\)/ {
     saw_flush = 1
 }
-saw_flush && /timeline_read_clock_samples[ \t]*\([ \t]*log_path/ {
-    saw_verify = 1
-}
 END {
-    if (!saw_flush || !saw_verify) {
+    if (!saw_flush) {
         print "tests/processing/timeline/" \
             "0003_timeline_clock_origin.c:" \
-            ": producer must verify JSONL after flush"
+            ": producer must flush JSONL before verifier process"
     }
 }
 ' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.c"

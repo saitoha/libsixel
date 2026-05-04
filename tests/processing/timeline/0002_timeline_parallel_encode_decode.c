@@ -489,9 +489,6 @@ end:
     if (!timeline_flush_writer(log_path)) {
         return 0;
     }
-    if (!timeline_verify_jsonl(log_path)) {
-        return 0;
-    }
 
     return 1;
 }
@@ -508,6 +505,44 @@ test_timeline_0002_timeline_parallel_encode_decode(int argc, char **argv)
         fprintf(stderr, "timeline parallel encode/decode contract failed\n");
         return EXIT_FAILURE;
     }
+#endif
+
+    return EXIT_SUCCESS;
+}
+
+int
+test_timeline_0002_timeline_parallel_encode_decode_verify(int argc,
+                                                          char **argv)
+{
+    char log_path[4096];
+    char const *log_path_source;
+
+    log_path_source = NULL;
+#if SIXEL_ENABLE_THREADS
+    memset(log_path, 0, sizeof(log_path));
+    if (argc >= 2 && argv != NULL && argv[1] != NULL &&
+        argv[1][0] != '\0') {
+        log_path_source = argv[1];
+    } else {
+        /*
+         * Keep the fallback for direct developer runs.  The TAP wrapper passes
+         * an explicit path so this verifier does not touch the writer service.
+         */
+        log_path_source = sixel_compat_getenv("SIXEL_LOG_PATH");
+    }
+    if (log_path_source == NULL || log_path_source[0] == '\0' ||
+        sixel_compat_strcpy(log_path,
+                            sizeof(log_path),
+                            log_path_source) < 0 ||
+        !timeline_verify_jsonl(log_path)) {
+        fprintf(stderr, "timeline parallel JSONL verification failed\n");
+        return EXIT_FAILURE;
+    }
+#else
+    (void)log_path;
+    (void)log_path_source;
+    (void)argc;
+    (void)argv;
 #endif
 
     return EXIT_SUCCESS;
