@@ -68,6 +68,7 @@ typedef struct sixel_webp_anim_frame {
     int duration_ms;
     int dispose_to_background;
     int blend_over;
+    int opaque_pixels_only;
 } sixel_webp_anim_frame_t;
 
 typedef struct sixel_webp_anim_stream {
@@ -124,6 +125,11 @@ sixel_webp_anim_read_u32le(unsigned char const *p)
         | ((unsigned int)p[2] << 16)
         | ((unsigned int)p[3] << 24);
 }
+
+static int
+sixel_webp_vp8l_payload_header_has_alpha(unsigned char const *payload,
+                                         size_t payload_size,
+                                         int *has_alpha);
 
 static SIXELSTATUS
 sixel_webp_parse_animation_start_frame_no(int *start_frame_no_set,
@@ -1824,6 +1830,7 @@ sixel_webp_parse_anmf_frame(unsigned char const *payload,
     size_t offset;
     size_t chunk_size;
     size_t chunk_total_size;
+    int vp8l_has_alpha;
 
     x = 0u;
     y = 0u;
@@ -1842,6 +1849,7 @@ sixel_webp_parse_anmf_frame(unsigned char const *payload,
     offset = 0u;
     chunk_size = 0u;
     chunk_total_size = 0u;
+    vp8l_has_alpha = 0;
     if (payload == NULL || payload_size < 24u ||
         frame == NULL || canvas_width <= 0 || canvas_height <= 0) {
         return SIXEL_BAD_INPUT;
@@ -1934,14 +1942,25 @@ sixel_webp_parse_anmf_frame(unsigned char const *payload,
 
     if (frame->vp8_payload != NULL && frame->alpha_payload != NULL) {
         frame->kind = SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC;
+        frame->opaque_pixels_only = 0;
         return SIXEL_OK;
     }
     if (frame->vp8_payload != NULL) {
         frame->kind = SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC;
+        frame->opaque_pixels_only = 1;
         return SIXEL_OK;
     }
     if (frame->vp8l_payload != NULL) {
         frame->kind = SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC;
+        vp8l_has_alpha = 0;
+        if (sixel_webp_vp8l_payload_header_has_alpha(frame->vp8l_payload,
+                                                     frame->vp8l_payload_size,
+                                                     &vp8l_has_alpha) != 0 &&
+            vp8l_has_alpha == 0) {
+            frame->opaque_pixels_only = 1;
+        } else {
+            frame->opaque_pixels_only = 0;
+        }
         return SIXEL_OK;
     }
 
@@ -2468,7 +2487,11 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
         return;
     }
     row_bytes = (size_t)anim_frame->width * 4u;
-    if (anim_frame->blend_over == 0) {
+    /*
+     * Replace-mode and known-opaque blend-over both resolve to direct copy.
+     * This avoids per-pixel alpha math for codecs that cannot output alpha.
+     */
+    if (anim_frame->blend_over == 0 || anim_frame->opaque_pixels_only != 0) {
         for (y = 0; y < anim_frame->height; ++y) {
             src_row_offset = (size_t)y * row_bytes;
             dst_row_offset = ((size_t)(anim_frame->y_offset + y)
@@ -2505,6 +2528,27 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
                 continue;
             }
             da = (unsigned int)dp[3u];
+            if (da == 0u) {
+                dp[0u] = sp[0u];
+                dp[1u] = sp[1u];
+                dp[2u] = sp[2u];
+                dp[3u] = (unsigned char)sa;
+                sp += 4;
+                dp += 4;
+                continue;
+            }
+            if (da == 255u) {
+                dp[0u] = (unsigned char)((sp[0u] * sa
+                                          + dp[0u] * (255u - sa)) / 255u);
+                dp[1u] = (unsigned char)((sp[1u] * sa
+                                          + dp[1u] * (255u - sa)) / 255u);
+                dp[2u] = (unsigned char)((sp[2u] * sa
+                                          + dp[2u] * (255u - sa)) / 255u);
+                dp[3u] = 255u;
+                sp += 4;
+                dp += 4;
+                continue;
+            }
             oa = sa + ((da * (255u - sa)) / 255u);
             if (oa == 0u) {
                 dp[0u] = 0u;
