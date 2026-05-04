@@ -123,7 +123,7 @@ typedef struct sixel_loader_timeline_scope {
 
 static SIXEL_LOADER_TLS sixel_loader_timeline_scope_t loader_timeline_scope;
 
-#if SIXEL_ENABLE_THREADS && !SIXEL_LOADER_TLS_AVAILABLE
+#if SIXEL_ENABLE_THREADS
 # if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
     && !defined(WITH_WINPTHREAD)
 #  if !defined(UNICODE)
@@ -174,8 +174,8 @@ loader_background_lock_init_once(void)
 # endif
 
 /*
- * Without TLS the override flag and default colorspace state become process
- * globals. Serialize access so concurrent loads do not race on these values.
+ * Loader defaults are process-wide even when temporary overrides use TLS.
+ * Serialize access so concurrent loads do not race while initializing them.
  */
 static void
 loader_background_lock(void)

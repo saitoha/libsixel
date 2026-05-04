@@ -27,6 +27,8 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #if defined(_WIN32)
 # include <io.h>
@@ -65,6 +67,9 @@ typedef struct sixel_timeline_writer_storage {
     int clock_origin_ready;
     unsigned int next_session_id;
     double clock_origin;
+#if defined(_WIN32)
+    char *path;
+#endif
 } sixel_timeline_writer_storage_t;
 
 static void
@@ -195,24 +200,96 @@ sixel_timeline_writer_unlock(sixel_timeline_writer_storage_t *writer)
 #endif
 }
 
+#if defined(_WIN32)
+static int
+sixel_timeline_writer_save_path_locked(
+    sixel_timeline_writer_storage_t *writer,
+    char const *path)
+{
+    char *path_copy;
+    size_t path_length;
+
+    path_copy = NULL;
+    path_length = 0u;
+    if (writer == NULL || path == NULL || path[0] == '\0') {
+        return 0;
+    }
+
+    path_length = strlen(path) + 1u;
+    path_copy = (char *)malloc(path_length);
+    if (path_copy == NULL) {
+        return 0;
+    }
+    if (sixel_compat_strcpy(path_copy, path_length, path) < 0) {
+        free(path_copy);
+        return 0;
+    }
+
+    if (writer->path != NULL) {
+        free(writer->path);
+    }
+    writer->path = path_copy;
+    return 1;
+}
+
+static void
+sixel_timeline_writer_reopen_locked(
+    sixel_timeline_writer_storage_t *writer)
+{
+    if (writer == NULL || writer->file != NULL ||
+        writer->active == 0 || writer->path == NULL) {
+        return;
+    }
+
+    writer->file = sixel_compat_fopen(writer->path, "a");
+    if (writer->file == NULL) {
+        writer->active = 0;
+        return;
+    }
+    (void)setvbuf(writer->file, NULL, _IOFBF, BUFSIZ);
+}
+#endif
+
 static void
 sixel_timeline_writer_open_env_locked(
     sixel_timeline_writer_storage_t *writer)
 {
     char const *path;
 
-    if (writer == NULL || writer->env_checked != 0) {
+    if (writer == NULL) {
         return;
     }
+#if defined(_WIN32)
+    if (writer->env_checked != 0) {
+        sixel_timeline_writer_reopen_locked(writer);
+        return;
+    }
+#else
+    if (writer->env_checked != 0) {
+        return;
+    }
+#endif
     writer->env_checked = 1;
     path = sixel_compat_getenv("SIXEL_LOG_PATH");
     if (path == NULL || path[0] == '\0') {
         return;
     }
 
+#if defined(_WIN32)
+    if (!sixel_timeline_writer_save_path_locked(writer, path)) {
+        writer->active = 0;
+        return;
+    }
+#endif
     writer->file = sixel_compat_fopen(path, "w");
     if (writer->file == NULL) {
         writer->active = 0;
+#if defined(_WIN32)
+        if (writer->path != NULL) {
+            free(writer->path);
+            writer->path = NULL;
+        }
+#endif
         return;
     }
     writer->active = 1;
@@ -362,6 +439,15 @@ sixel_timeline_writer_flush(sixel_timeline_writer_t *writer)
         if (fd >= 0) {
             (void)_commit(fd);
         }
+#endif
+#if defined(_WIN32)
+        /*
+         * GitHub's MSVC jobs read the JSONL immediately after flush().  Closing
+         * the writer handle gives readers a normal completed file; the next
+         * write reopens it in append mode under the same mutex.
+         */
+        (void)fclose(storage->file);
+        storage->file = NULL;
 #endif
     }
     sixel_timeline_writer_unlock(storage);

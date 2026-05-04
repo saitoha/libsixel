@@ -259,13 +259,7 @@ sixel_lookup_policy_certlut_parse_shared_default_off(void)
 int
 sixel_lookup_policy_certlut_shared_instance_enabled(void)
 {
-    static int cached = -1;
-
-    if (cached < 0) {
-        cached = sixel_lookup_policy_certlut_parse_shared_default_off();
-    }
-
-    return cached;
+    return sixel_lookup_policy_certlut_parse_shared_default_off();
 }
 
 static SIXELSTATUS

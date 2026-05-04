@@ -141,13 +141,7 @@ sixel_lookup_policy_bit6_env_shared_default_on(void)
 int
 sixel_lookup_policy_6bit_shared_instance_enabled(void)
 {
-    static int cached = -1;
-
-    if (cached < 0) {
-        cached = sixel_lookup_policy_bit6_env_shared_default_on();
-    }
-
-    return cached;
+    return sixel_lookup_policy_bit6_env_shared_default_on();
 }
 
 static int

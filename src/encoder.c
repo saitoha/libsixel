@@ -1010,19 +1010,18 @@ sixel_encoder_handoff_trace_event_name(
 static int
 sixel_encoder_handoff_trace_minimal_enabled(void)
 {
-    static int cached = -1;
     char const *value;
+    int enabled;
 
     value = NULL;
-    if (cached >= 0) {
-        return cached;
-    }
-    cached = 0;
+    enabled = 0;
+
     value = sixel_compat_getenv("SIXEL_ENCODE_HANDOFF_TRACE_MINIMAL");
     if (value != NULL && strcmp(value, "1") == 0) {
-        cached = 1;
+        enabled = 1;
     }
-    return cached;
+
+    return enabled;
 }
 
 #if !defined(_WIN32) && !defined(__EMSCRIPTEN__) && HAVE_SIGNAL_H
@@ -1054,24 +1053,31 @@ sixel_encoder_test_sigint_sync_notify_dispatch_start(void)
     fd_write_result = (ssize_t)-1;
     notify_token = '1';
 
+    sync_event = sixel_compat_getenv(
+        SIXEL_ENCODER_SIGINT_SYNC_EVENT_ENVVAR);
+    sync_fd_text = sixel_compat_getenv(
+        SIXEL_ENCODER_SIGINT_SYNC_FD_ENVVAR);
+    sync_pid_text = sixel_compat_getenv(
+        SIXEL_ENCODER_SIGINT_SYNC_PID_ENVVAR);
+
+    if ((sync_event == NULL || sync_event[0] == '\0') &&
+            (sync_fd_text == NULL || sync_fd_text[0] == '\0') &&
+            (sync_pid_text == NULL || sync_pid_text[0] == '\0')) {
+        return;
+    }
+    if (sync_event != NULL
+            && sync_event[0] != '\0'
+            && strcmp(sync_event,
+                      SIXEL_ENCODER_SIGINT_SYNC_EVENT_DISPATCH_START)
+               != 0) {
+        return;
+    }
     if (sync_state == 0 || sync_state == 2) {
         return;
     }
 
     if (sync_state < 0) {
         sync_state = 0;
-        sync_event = sixel_compat_getenv(
-            SIXEL_ENCODER_SIGINT_SYNC_EVENT_ENVVAR);
-        if (sync_event != NULL
-                && sync_event[0] != '\0'
-                && strcmp(sync_event,
-                          SIXEL_ENCODER_SIGINT_SYNC_EVENT_DISPATCH_START)
-                   != 0) {
-            return;
-        }
-
-        sync_fd_text = sixel_compat_getenv(
-            SIXEL_ENCODER_SIGINT_SYNC_FD_ENVVAR);
         if (sync_fd_text != NULL && sync_fd_text[0] != '\0') {
             errno = 0;
             parsed_fd = strtoul(sync_fd_text, &sync_fd_end, 10);
@@ -1084,8 +1090,6 @@ sixel_encoder_test_sigint_sync_notify_dispatch_start(void)
             }
         }
 
-        sync_pid_text = sixel_compat_getenv(
-            SIXEL_ENCODER_SIGINT_SYNC_PID_ENVVAR);
         if (sync_pid_text != NULL && sync_pid_text[0] != '\0') {
             errno = 0;
             parsed_pid = strtoul(sync_pid_text, &sync_end, 10);

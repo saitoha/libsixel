@@ -51,9 +51,6 @@
  */
 
 typedef struct sixel_decoder_thread_config {
-    int env_checked;
-    int env_valid;
-    int env_threads;
     int override_active;
     int override_threads;
 } sixel_decoder_thread_config_t;
@@ -112,11 +109,99 @@ typedef struct sixel_decoder_worker_chain {
 
 static sixel_decoder_thread_config_t g_decoder_threads = {
     0,
-    0,
-    1,
-    0,
     1
 };
+
+#if SIXEL_ENABLE_THREADS
+static sixel_mutex_t g_decoder_threads_mutex;
+static int g_decoder_threads_mutex_ready;
+
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+#  if !defined(UNICODE)
+#   define UNICODE
+#  endif
+#  if !defined(_UNICODE)
+#   define _UNICODE
+#  endif
+#  if !defined(WIN32_LEAN_AND_MEAN)
+#   define WIN32_LEAN_AND_MEAN
+#  endif
+#  include <windows.h>
+static INIT_ONCE g_decoder_threads_once = INIT_ONCE_STATIC_INIT;
+
+static BOOL CALLBACK
+sixel_decoder_threads_lock_init_once(PINIT_ONCE once,
+                                      PVOID parameter,
+                                      PVOID *context)
+{
+    (void)once;
+    (void)parameter;
+    (void)context;
+
+    if (sixel_mutex_init(&g_decoder_threads_mutex) == SIXEL_OK) {
+        g_decoder_threads_mutex_ready = 1;
+    }
+    return TRUE;
+}
+# else
+#  include <pthread.h>
+static pthread_once_t g_decoder_threads_once = PTHREAD_ONCE_INIT;
+
+static void
+sixel_decoder_threads_lock_init_once(void)
+{
+    if (sixel_mutex_init(&g_decoder_threads_mutex) == SIXEL_OK) {
+        g_decoder_threads_mutex_ready = 1;
+    }
+}
+# endif
+
+static void
+sixel_decoder_threads_lock(void)
+{
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+    BOOL initialized;
+
+    initialized = InitOnceExecuteOnce(&g_decoder_threads_once,
+                                      sixel_decoder_threads_lock_init_once,
+                                      NULL,
+                                      NULL);
+    if (!initialized || !g_decoder_threads_mutex_ready) {
+        abort();
+    }
+# else
+    int once_status;
+
+    once_status = pthread_once(&g_decoder_threads_once,
+                               sixel_decoder_threads_lock_init_once);
+    if (once_status != 0 || !g_decoder_threads_mutex_ready) {
+        abort();
+    }
+# endif
+    sixel_mutex_lock(&g_decoder_threads_mutex);
+}
+
+static void
+sixel_decoder_threads_unlock(void)
+{
+    if (!g_decoder_threads_mutex_ready) {
+        abort();
+    }
+    sixel_mutex_unlock(&g_decoder_threads_mutex);
+}
+#else
+static void
+sixel_decoder_threads_lock(void)
+{
+}
+
+static void
+sixel_decoder_threads_unlock(void)
+{
+}
+#endif
 
 #if SIXEL_ENABLE_THREADS
 static void
@@ -949,25 +1034,21 @@ sixel_decoder_threads_parse_value(char const *text, int *value)
     return 1;
 }
 
-static void
-sixel_decoder_threads_load_env(void)
+static int
+sixel_decoder_threads_resolve_env(void)
 {
     char const *text;
     int parsed;
 
-    if (g_decoder_threads.env_checked) {
-        return;
-    }
-    g_decoder_threads.env_checked = 1;
-    g_decoder_threads.env_valid = 0;
     text = sixel_compat_getenv("SIXEL_THREADS");
     if (text == NULL || text[0] == '\0') {
-        return;
+        return 1;
     }
     if (sixel_decoder_threads_parse_value(text, &parsed)) {
-        g_decoder_threads.env_threads = parsed;
-        g_decoder_threads.env_valid = 1;
+        return sixel_decoder_threads_normalize(parsed);
     }
+
+    return 1;
 }
 
 SIXELSTATUS
@@ -987,8 +1068,10 @@ sixel_decoder_parallel_override_threads(char const *text)
             "decoder: threads must be a positive integer or 'auto'.");
         goto end;
     }
+    sixel_decoder_threads_lock();
     g_decoder_threads.override_active = 1;
     g_decoder_threads.override_threads = parsed;
+    sixel_decoder_threads_unlock();
     status = SIXEL_OK;
 end:
     return status;
@@ -1000,14 +1083,14 @@ sixel_decoder_parallel_resolve_threads(void)
     int threads;
 
     threads = 1;
-    sixel_decoder_threads_load_env();
+    sixel_decoder_threads_lock();
     if (g_decoder_threads.override_active) {
         threads = sixel_decoder_threads_normalize(
             g_decoder_threads.override_threads);
-    } else if (g_decoder_threads.env_valid) {
-        threads = sixel_decoder_threads_normalize(
-            g_decoder_threads.env_threads);
+    } else {
+        threads = sixel_decoder_threads_resolve_env();
     }
+    sixel_decoder_threads_unlock();
     if (threads < 1) {
         threads = 1;
     }

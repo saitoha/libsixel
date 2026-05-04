@@ -709,18 +709,91 @@ sixel_get_hw_threads(void)
 typedef struct sixel_thread_config_state {
     int requested_threads;
     int override_active;
-    int env_threads;
-    int env_valid;
-    int env_checked;
 } sixel_thread_config_state_t;
 
 static sixel_thread_config_state_t g_thread_config = {
     1,
-    0,
-    1,
-    0,
     0
 };
+
+#if SIXEL_ENABLE_THREADS
+static sixel_mutex_t g_thread_config_mutex;
+static int g_thread_config_mutex_ready;
+
+# if SIXEL_USE_WIN32_THREADS
+static INIT_ONCE g_thread_config_once = INIT_ONCE_STATIC_INIT;
+
+static BOOL CALLBACK
+sixel_thread_config_lock_init_once(PINIT_ONCE once,
+                                   PVOID parameter,
+                                   PVOID *context)
+{
+    (void)once;
+    (void)parameter;
+    (void)context;
+
+    if (sixel_mutex_init(&g_thread_config_mutex) == SIXEL_OK) {
+        g_thread_config_mutex_ready = 1;
+    }
+    return TRUE;
+}
+# elif SIXEL_USE_PTHREADS
+static pthread_once_t g_thread_config_once = PTHREAD_ONCE_INIT;
+
+static void
+sixel_thread_config_lock_init_once(void)
+{
+    if (sixel_mutex_init(&g_thread_config_mutex) == SIXEL_OK) {
+        g_thread_config_mutex_ready = 1;
+    }
+}
+# endif
+
+static void
+sixel_thread_config_lock(void)
+{
+# if SIXEL_USE_WIN32_THREADS
+    BOOL initialized;
+
+    initialized = InitOnceExecuteOnce(&g_thread_config_once,
+                                      sixel_thread_config_lock_init_once,
+                                      NULL,
+                                      NULL);
+    if (!initialized || !g_thread_config_mutex_ready) {
+        abort();
+    }
+    sixel_mutex_lock(&g_thread_config_mutex);
+# elif SIXEL_USE_PTHREADS
+    int once_status;
+
+    once_status = pthread_once(&g_thread_config_once,
+                               sixel_thread_config_lock_init_once);
+    if (once_status != 0 || !g_thread_config_mutex_ready) {
+        abort();
+    }
+    sixel_mutex_lock(&g_thread_config_mutex);
+# endif
+}
+
+static void
+sixel_thread_config_unlock(void)
+{
+    if (!g_thread_config_mutex_ready) {
+        abort();
+    }
+    sixel_mutex_unlock(&g_thread_config_mutex);
+}
+#else
+static void
+sixel_thread_config_lock(void)
+{
+}
+
+static void
+sixel_thread_config_unlock(void)
+{
+}
+#endif
 
 static int
 sixel_threads_token_is_auto(char const *text)
@@ -804,28 +877,22 @@ sixel_threads_parse_env_value(char const *text, int *value)
     return 1;
 }
 
-static void
-sixel_threads_load_env(void)
+static int
+sixel_threads_resolve_env(void)
 {
     char const *text;
     int parsed;
 
-    if (g_thread_config.env_checked) {
-        return;
-    }
-
-    g_thread_config.env_checked = 1;
-    g_thread_config.env_valid = 0;
-
     text = sixel_compat_getenv("SIXEL_THREADS");
     if (text == NULL || text[0] == '\0') {
-        return;
+        return sixel_threads_normalize(0);
     }
 
     if (sixel_threads_parse_env_value(text, &parsed)) {
-        g_thread_config.env_threads = parsed;
-        g_thread_config.env_valid = 1;
+        return parsed;
     }
+
+    return sixel_threads_normalize(0);
 }
 
 SIXELAPI int
@@ -833,23 +900,18 @@ sixel_threads_resolve(void)
 {
     int resolved;
 
+    resolved = 1;
+    sixel_thread_config_lock();
 #if SIXEL_ENABLE_THREADS
     if (g_thread_config.override_active) {
-        return g_thread_config.requested_threads;
-    }
-#endif
-
-    sixel_threads_load_env();
-
-#if SIXEL_ENABLE_THREADS
-    if (g_thread_config.env_valid) {
-        resolved = g_thread_config.env_threads;
+        resolved = g_thread_config.requested_threads;
     } else {
-        resolved = sixel_threads_normalize(0);
+        resolved = sixel_threads_resolve_env();
     }
 #else
     resolved = 1;
 #endif
+    sixel_thread_config_unlock();
 
     return resolved;
 }
@@ -860,6 +922,7 @@ sixel_threads_resolve(void)
 SIXELAPI void
 sixel_set_threads(int threads)
 {
+    sixel_thread_config_lock();
 #if SIXEL_ENABLE_THREADS
     g_thread_config.requested_threads = sixel_threads_normalize(threads);
 #else
@@ -867,6 +930,7 @@ sixel_set_threads(int threads)
     g_thread_config.requested_threads = 1;
 #endif
     g_thread_config.override_active = 1;
+    sixel_thread_config_unlock();
 }
 
 /* emacs Local Variables:      */

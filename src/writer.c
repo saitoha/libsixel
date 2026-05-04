@@ -258,33 +258,21 @@ static unsigned int
 png_crc32_update(unsigned int crc, unsigned char const *data,
                  size_t length)
 {
-    static unsigned int table[256];
-    static int initialized;
-    unsigned int rem;
     unsigned char octet;
     size_t index;
-    int table_index;
-
-    if (!initialized) {
-        for (table_index = 0; table_index < 256; ++table_index) {
-            rem = (unsigned int)table_index;
-            rem <<= 24;
-            for (index = 0; index < 8; ++index) {
-                if (rem & 0x80000000U) {
-                    rem = (rem << 1) ^ 0x04c11db7U;
-                } else {
-                    rem <<= 1;
-                }
-            }
-            table[table_index] = rem;
-        }
-        initialized = 1;
-    }
+    int bit;
 
     crc = ~crc;
     for (index = 0; index < length; ++index) {
         octet = data[index];
-        crc = table[((crc >> 24) ^ octet) & 0xffU] ^ (crc << 8);
+        crc ^= (unsigned int)octet << 24;
+        for (bit = 0; bit < 8; ++bit) {
+            if (crc & 0x80000000U) {
+                crc = (crc << 1) ^ 0x04c11db7U;
+            } else {
+                crc <<= 1;
+            }
+        }
     }
 
     return ~crc;

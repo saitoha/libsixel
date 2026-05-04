@@ -189,6 +189,53 @@ _CRTIMP errno_t __cdecl _dupenv_s(char **buffer,
                                   const char *name);
 #endif
 
+#if defined(_MSC_VER)
+struct sixel_env_cache {
+    char *name;
+    char *value;
+    struct sixel_env_cache *next;
+};
+
+static struct sixel_env_cache *sixel_compat_env_cache_head;
+static CRITICAL_SECTION sixel_compat_env_cache_mutex;
+static INIT_ONCE sixel_compat_env_cache_once = INIT_ONCE_STATIC_INIT;
+
+static BOOL CALLBACK
+sixel_compat_env_cache_init_once(PINIT_ONCE once,
+                                 PVOID parameter,
+                                 PVOID *context)
+{
+    (void)once;
+    (void)parameter;
+    (void)context;
+
+    InitializeCriticalSection(&sixel_compat_env_cache_mutex);
+    return TRUE;
+}
+
+static int
+sixel_compat_env_cache_lock(void)
+{
+    BOOL initialized;
+
+    initialized = InitOnceExecuteOnce(&sixel_compat_env_cache_once,
+                                      sixel_compat_env_cache_init_once,
+                                      NULL,
+                                      NULL);
+    if (!initialized) {
+        return 0;
+    }
+    EnterCriticalSection(&sixel_compat_env_cache_mutex);
+    return 1;
+}
+
+static void
+sixel_compat_env_cache_unlock(void)
+{
+    LeaveCriticalSection(&sixel_compat_env_cache_mutex);
+}
+#endif
+
 #if HAVE__SETMODE && !defined(_MSC_VER) && \
     (defined(_WIN32) || defined(__CYGWIN__) || \
      defined(__MINGW32__) || defined(__MSYS__))
@@ -667,14 +714,9 @@ SIXEL_COMPAT_API const char *
 sixel_compat_getenv(const char *name)
 {
 #if defined(_MSC_VER)
-    struct sixel_env_cache {
-        char *name;
-        char *value;
-        struct sixel_env_cache *next;
-    };
-    static struct sixel_env_cache *cache_head = NULL;
     struct sixel_env_cache *entry;
     struct sixel_env_cache *new_entry;
+    const char *result;
     size_t name_length;
     DWORD required_size;
     DWORD actual_size;
@@ -688,7 +730,12 @@ sixel_compat_getenv(const char *name)
         return NULL;
     }
 
-    entry = cache_head;
+    if (!sixel_compat_env_cache_lock()) {
+        return NULL;
+    }
+
+    result = NULL;
+    entry = sixel_compat_env_cache_head;
     while (entry != NULL) {
         if (strcmp(entry->name, name) == 0) {
             break;
@@ -700,15 +747,15 @@ sixel_compat_getenv(const char *name)
     if (required_size == 0) {
         last_error = GetLastError();
         if (last_error == ERROR_ENVVAR_NOT_FOUND) {
-            return NULL;
+            goto end;
         }
-        return NULL;
+        goto end;
     }
 
     required_length = (size_t)required_size;
     value_copy = (char *)malloc(required_length);
     if (value_copy == NULL) {
-        return NULL;
+        goto end;
     }
 
     for (;;) {
@@ -719,9 +766,9 @@ sixel_compat_getenv(const char *name)
             last_error = GetLastError();
             free(value_copy);
             if (last_error == ERROR_ENVVAR_NOT_FOUND) {
-                return NULL;
+                goto end;
             }
-            return NULL;
+            goto end;
         }
         if (actual_size < required_size) {
             break;
@@ -733,36 +780,41 @@ sixel_compat_getenv(const char *name)
             realloced = (char *)realloc(value_copy, required_length);
             if (realloced == NULL) {
                 free(value_copy);
-                return NULL;
+                goto end;
             }
             value_copy = realloced;
         }
     }
 
     if (entry != NULL) {
-        free(entry->value);
+        /*
+         * Do not free the previous value.  Callers receive pointers into this
+         * cache, and another thread may still be consuming the old snapshot
+         * after a later SIXEL_LOG_PATH/SIXEL_THREADS refresh.
+         */
         entry->value = value_copy;
-        return entry->value;
+        result = entry->value;
+        goto end;
     }
 
     new_entry = (struct sixel_env_cache *)malloc(sizeof(*new_entry));
     if (new_entry == NULL) {
         free(value_copy);
-        return NULL;
+        goto end;
     }
 
     name_length = strlen(name) + 1;
     if (name_length <= 1) {
         free(value_copy);
         free(new_entry);
-        return NULL;
+        goto end;
     }
 
     name_copy = (char *)malloc(name_length);
     if (name_copy == NULL) {
         free(value_copy);
         free(new_entry);
-        return NULL;
+        goto end;
     }
     copy_result = sixel_compat_strcpy(name_copy,
                                       name_length,
@@ -771,14 +823,17 @@ sixel_compat_getenv(const char *name)
         free(value_copy);
         free(new_entry);
         free(name_copy);
-        return NULL;
+        goto end;
     }
     new_entry->name = name_copy;
     new_entry->value = value_copy;
-    new_entry->next = cache_head;
-    cache_head = new_entry;
+    new_entry->next = sixel_compat_env_cache_head;
+    sixel_compat_env_cache_head = new_entry;
 
-    return new_entry->value;
+    result = new_entry->value;
+end:
+    sixel_compat_env_cache_unlock();
+    return result;
 #else
     return getenv(name);
 #endif
