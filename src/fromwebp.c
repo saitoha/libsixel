@@ -792,33 +792,75 @@ sixel_webp_xmp_span_case_equal(unsigned char const *payload,
                                size_t end,
                                char const *text)
 {
-    size_t index;
+    size_t payload_cursor;
+    size_t text_cursor;
     size_t text_size;
     unsigned char left;
     unsigned char right;
+    int payload_space;
+    int text_space;
 
-    index = 0u;
+    payload_cursor = 0u;
+    text_cursor = 0u;
     text_size = 0u;
     left = '\0';
     right = '\0';
+    payload_space = 0;
+    text_space = 0;
     if (payload == NULL || text == NULL || begin > end) {
         return 0;
     }
 
-    /* Compare one trimmed XMP span against an alias using ASCII fold. */
+    /*
+     * Compare one trimmed XMP span against an alias using ASCII fold.
+     * Treat contiguous ASCII whitespace as one separator so attributes
+     * such as "Display\tP3" and "Display P3" map to the same profile.
+     */
     text_size = strlen(text);
-    if (end - begin != text_size) {
-        return 0;
-    }
+    payload_cursor = begin;
+    text_cursor = 0u;
 
-    for (index = 0u; index < text_size; ++index) {
-        left = sixel_webp_xmp_ascii_tolower(payload[begin + index]);
-        right = sixel_webp_xmp_ascii_tolower((unsigned char)text[index]);
+    while (payload_cursor < end && text_cursor < text_size) {
+        payload_space =
+            sixel_webp_xmp_is_space(payload[payload_cursor]);
+        text_space = sixel_webp_xmp_is_space(
+            (unsigned char)text[text_cursor]);
+        if (payload_space != 0 || text_space != 0) {
+            if (payload_space == 0 || text_space == 0) {
+                return 0;
+            }
+            while (payload_cursor < end &&
+                   sixel_webp_xmp_is_space(payload[payload_cursor]) != 0) {
+                ++payload_cursor;
+            }
+            while (text_cursor < text_size &&
+                   sixel_webp_xmp_is_space(
+                       (unsigned char)text[text_cursor]) != 0) {
+                ++text_cursor;
+            }
+            continue;
+        }
+
+        left = sixel_webp_xmp_ascii_tolower(payload[payload_cursor]);
+        right = sixel_webp_xmp_ascii_tolower(
+            (unsigned char)text[text_cursor]);
         if (left != right) {
             return 0;
         }
+        ++payload_cursor;
+        ++text_cursor;
     }
-    return 1;
+
+    while (payload_cursor < end &&
+           sixel_webp_xmp_is_space(payload[payload_cursor]) != 0) {
+        ++payload_cursor;
+    }
+    while (text_cursor < text_size &&
+           sixel_webp_xmp_is_space((unsigned char)text[text_cursor]) != 0) {
+        ++text_cursor;
+    }
+
+    return (payload_cursor == end && text_cursor == text_size) ? 1 : 0;
 }
 
 static int
