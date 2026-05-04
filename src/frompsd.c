@@ -14892,7 +14892,12 @@ sixel_builtin_psd_prepare_deferred_overlay_owner_map(
             if (clip_base_indices_forward[layer_index] == (int)base_index ||
                 clip_base_indices_reverse[layer_index] == (int)base_index) {
                 has_clipping_child = 1;
-                break;
+                if (candidate_layer->has_blend_clipped_elements != 0 &&
+                    candidate_layer->blend_clipped_elements_enabled != 0 &&
+                    (candidate_layer->has_effect_solid_overlay != 0 ||
+                     candidate_layer->has_effect_gradient_overlay != 0)) {
+                    owner_map[layer_index] = 1;
+                }
             }
         }
         if (has_clipping_child != 0) {
@@ -25908,12 +25913,15 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 apply_effects_without_overlay = 0;
             } else {
                 layer_for_composite = *effective_composite_layer;
-                sixel_builtin_psd_trace_message(
-                    "psd_decode",
-                    "builtin PSD: suppressing clbl=1 deferred base "
-                    "solid/gradient overlays");
-                layer_for_composite.has_effect_solid_overlay = 0;
-                layer_for_composite.has_effect_gradient_overlay = 0;
+                if (layer_for_composite.has_effect_solid_overlay != 0 ||
+                    layer_for_composite.has_effect_gradient_overlay != 0) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: suppressing clbl=1 deferred base "
+                        "solid/gradient overlays");
+                    layer_for_composite.has_effect_solid_overlay = 0;
+                    layer_for_composite.has_effect_gradient_overlay = 0;
+                }
                 if (pending_overlay_defer_stroke != 0) {
                     layer_for_composite.has_effect_stroke = 0;
                     layer_for_composite.has_vector_stroke_style = 0;
