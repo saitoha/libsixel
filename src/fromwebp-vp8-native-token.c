@@ -135,7 +135,6 @@ sixel_webp_vp8_bool_read(sixel_webp_vp8_bool_decoder_t *decoder,
     unsigned int split;
     unsigned int value;
     unsigned int range;
-    unsigned int tmp;
     unsigned int shift;
     int bit;
 
@@ -172,13 +171,29 @@ sixel_webp_vp8_bool_read(sixel_webp_vp8_bool_decoder_t *decoder,
         bit = 0;
     }
 
-    tmp = range;
-    shift = 0u;
-    while (tmp > 1u) {
-        tmp >>= 1u;
-        shift++;
+    /*
+     * Decoder range before normalization is in [1, 255].
+     * This is equivalent to:
+     *   shift = 7 - floor(log2(range));
+     * but avoids the per-bit loop in this hot path.
+     */
+    if (range >= 128u) {
+        shift = 0u;
+    } else if (range >= 64u) {
+        shift = 1u;
+    } else if (range >= 32u) {
+        shift = 2u;
+    } else if (range >= 16u) {
+        shift = 3u;
+    } else if (range >= 8u) {
+        shift = 4u;
+    } else if (range >= 4u) {
+        shift = 5u;
+    } else if (range >= 2u) {
+        shift = 6u;
+    } else {
+        shift = 7u;
     }
-    shift = 7u - shift;
     range <<= shift;
     decoder->bits -= (int)shift;
     decoder->range = range - 1u;
