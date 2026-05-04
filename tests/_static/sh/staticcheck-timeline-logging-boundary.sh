@@ -191,6 +191,25 @@ in_func && /sixel_allocator_new[ \t]*\(/ {
 awk '
 /timeline\/0002_timeline_parallel_encode_decode_verify/ {
     saw_verify = 1
+    if (previous !~ /--env[ \t]+SIXEL_LOG_PATH=/) {
+        print "tests/processing/timeline/" \
+            "0002_timeline_parallel_encode_decode.t:" FNR \
+            ": verifier must receive SIXEL_LOG_PATH through env"
+    }
+    watching_verify = 1
+    next
+}
+watching_verify && /\$\{log_path\}/ {
+    print "tests/processing/timeline/" \
+        "0002_timeline_parallel_encode_decode.t:" FNR \
+        ": verifier must not receive log path as argv"
+    watching_verify = 0
+}
+watching_verify && /\|\|[ \t]*\{/ {
+    watching_verify = 0
+}
+{
+    previous = $0
 }
 END {
     if (!saw_verify) {
@@ -204,6 +223,25 @@ END {
 awk '
 /timeline\/0003_timeline_clock_origin_verify/ {
     saw_verify = 1
+    if (previous !~ /--env[ \t]+SIXEL_LOG_PATH=/) {
+        print "tests/processing/timeline/" \
+            "0003_timeline_clock_origin.t:" FNR \
+            ": verifier must receive SIXEL_LOG_PATH through env"
+    }
+    watching_verify = 1
+    next
+}
+watching_verify && /\$\{log_path\}/ {
+    print "tests/processing/timeline/" \
+        "0003_timeline_clock_origin.t:" FNR \
+        ": verifier must not receive log path as argv"
+    watching_verify = 0
+}
+watching_verify && /\|\|[ \t]*\{/ {
+    watching_verify = 0
+}
+{
+    previous = $0
 }
 END {
     if (!saw_verify) {

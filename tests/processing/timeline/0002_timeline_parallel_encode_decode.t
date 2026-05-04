@@ -16,8 +16,8 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
 }
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    "timeline/0002_timeline_parallel_encode_decode_verify" \
-    "${log_path}" || {
+    --env SIXEL_LOG_PATH="${log_path}" \
+    "timeline/0002_timeline_parallel_encode_decode_verify" || {
     echo "not ok 1 - 0002_timeline_parallel_encode_decode"
     exit 0
 }

@@ -16,8 +16,8 @@ ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
 }
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
-    "timeline/0003_timeline_clock_origin_verify" \
-    "${log_path}" || {
+    --env SIXEL_LOG_PATH="${log_path}" \
+    "timeline/0003_timeline_clock_origin_verify" || {
     echo "not ok 1 - 0003_timeline_clock_origin"
     exit 0
 }
