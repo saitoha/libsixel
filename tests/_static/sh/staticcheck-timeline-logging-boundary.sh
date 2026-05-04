@@ -199,57 +199,25 @@ awk '
         "0002_timeline_parallel_encode_decode.t:" FNR \
         ": timeline tests must not rely on test_runner --env"
 }
+/timeline\/0002_timeline_parallel_encode_decode_verify/ {
+    print "tests/processing/timeline/" \
+        "0002_timeline_parallel_encode_decode.t:" FNR \
+        ": timeline TAP must not launch a second MSVC verifier process"
+}
+/test_runner exit status/ {
+    saw_failure_status_diag = 1
+}
+/timeline JSONL first line/ {
+    saw_failure_line_diag = 1
+}
+END {
+    if (!saw_failure_status_diag || !saw_failure_line_diag) {
+        print "tests/processing/timeline/" \
+            "0002_timeline_parallel_encode_decode.t:" \
+            ": timeline failure must print JSONL diagnostics"
+    }
+}
 ' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
-
-	awk '
-	/timeline\/0002_timeline_parallel_encode_decode_verify/ {
-	    saw_verify = 1
-	    saw_verify_call = 1
-	}
-	/SIXEL_TEST_TIMELINE_JSONL="\$\{log_path\}"/ {
-	    saw_verify_path_env = 1
-	}
-	saw_verify_call && /\$\{log_path\}/ {
-	    saw_verify_path_arg = 1
-	}
-	saw_verify_call && /\|\|[ \t]*\{/ {
-	    saw_verify_call = 0
-	}
-	/MSYS_NO_PATHCONV=1/ {
-	    saw_no_pathconv += 1
-	}
-	/MSYS2_ARG_CONV_EXCL='\''\*'\''/ {
-	    saw_arg_conv_excl += 1
-	}
-	/verifier exit status/ {
-	    saw_failure_status_diag = 1
-	}
-	/verifier JSONL first line/ {
-	    saw_failure_line_diag = 1
-	}
-	END {
-	    if (!saw_verify || !saw_verify_path_env) {
-	        print "tests/processing/timeline/" \
-	            "0002_timeline_parallel_encode_decode.t:" \
-	            ": timeline TAP must pass JSONL path via verifier env"
-	    }
-	    if (saw_verify_path_arg) {
-	        print "tests/processing/timeline/" \
-	            "0002_timeline_parallel_encode_decode.t:" \
-	            ": timeline TAP must not pass JSONL path as verifier argv"
-	    }
-	    if (saw_no_pathconv < 2 || saw_arg_conv_excl < 2) {
-	        print "tests/processing/timeline/" \
-	            "0002_timeline_parallel_encode_decode.t:" \
-	            ": timeline TAP must disable MSYS path conversion"
-	    }
-	    if (!saw_failure_status_diag || !saw_failure_line_diag) {
-	        print "tests/processing/timeline/" \
-	            "0002_timeline_parallel_encode_decode.t:" \
-	            ": verifier failure must print path diagnostics"
-	    }
-	}
-	' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
 
 awk '
 /--env[ \t]+SIXEL_LOG_PATH=/ {
@@ -257,69 +225,32 @@ awk '
         "0003_timeline_clock_origin.t:" FNR \
         ": timeline tests must not rely on test_runner --env"
 }
+/timeline\/0003_timeline_clock_origin_verify/ {
+    print "tests/processing/timeline/" \
+        "0003_timeline_clock_origin.t:" FNR \
+        ": timeline TAP must not launch a second MSVC verifier process"
+}
+/test_runner exit status/ {
+    saw_failure_status_diag = 1
+}
+/timeline JSONL first line/ {
+    saw_failure_line_diag = 1
+}
+END {
+    if (!saw_failure_status_diag || !saw_failure_line_diag) {
+        print "tests/processing/timeline/" \
+            "0003_timeline_clock_origin.t:" \
+            ": timeline failure must print JSONL diagnostics"
+    }
+}
 ' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"
 
 awk '
  /timeline\/000[23].*_verify/ {
-    found += 1
-}
-END {
-    if (found < 2) {
-        print "tests/test_runner.c:" \
-            ": timeline verifier entry points must stay in test_runner"
-    }
+    print "tests/test_runner.c:" FNR \
+        ": timeline verifier entry points must not be restored"
 }
 ' "$src_root/tests/test_runner.c"
-
-	awk '
-	/timeline\/0003_timeline_clock_origin_verify/ {
-	    saw_verify = 1
-	    saw_verify_call = 1
-	}
-	/SIXEL_TEST_TIMELINE_JSONL="\$\{log_path\}"/ {
-	    saw_verify_path_env = 1
-	}
-	saw_verify_call && /\$\{log_path\}/ {
-	    saw_verify_path_arg = 1
-	}
-	saw_verify_call && /\|\|[ \t]*\{/ {
-	    saw_verify_call = 0
-	}
-	/MSYS_NO_PATHCONV=1/ {
-	    saw_no_pathconv += 1
-	}
-	/MSYS2_ARG_CONV_EXCL='\''\*'\''/ {
-	    saw_arg_conv_excl += 1
-	}
-	/verifier exit status/ {
-	    saw_failure_status_diag = 1
-	}
-	/verifier JSONL first line/ {
-	    saw_failure_line_diag = 1
-	}
-	END {
-	    if (!saw_verify || !saw_verify_path_env) {
-	        print "tests/processing/timeline/" \
-	            "0003_timeline_clock_origin.t:" \
-	            ": timeline TAP must pass JSONL path via verifier env"
-	    }
-	    if (saw_verify_path_arg) {
-	        print "tests/processing/timeline/" \
-	            "0003_timeline_clock_origin.t:" \
-	            ": timeline TAP must not pass JSONL path as verifier argv"
-	    }
-	    if (saw_no_pathconv < 2 || saw_arg_conv_excl < 2) {
-	        print "tests/processing/timeline/" \
-	            "0003_timeline_clock_origin.t:" \
-	            ": timeline TAP must disable MSYS path conversion"
-	    }
-	    if (!saw_failure_status_diag || !saw_failure_line_diag) {
-	        print "tests/processing/timeline/" \
-	            "0003_timeline_clock_origin.t:" \
-	            ": verifier failure must print path diagnostics"
-	    }
-	}
-	' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"
 
 awk '
 	/^timeline_parallel_encode_decode\(void\)/ {
@@ -340,10 +271,10 @@ awk '
 	            "0002_timeline_parallel_encode_decode.c:" \
 	            ": producer must flush JSONL before returning success"
 	    }
-	    if (saw_inline_verify) {
+	    if (!saw_inline_verify) {
 	        print "tests/processing/timeline/" \
 	            "0002_timeline_parallel_encode_decode.c:" \
-	            ": producer must leave JSONL verification to TAP verifier"
+	            ": producer must verify JSONL after flushing"
 	    }
 	}
 	' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.c"
@@ -367,10 +298,10 @@ awk '
 	            "0003_timeline_clock_origin.c:" \
 	            ": producer must flush JSONL before returning success"
 	    }
-	    if (saw_inline_verify) {
+	    if (!saw_inline_verify) {
 	        print "tests/processing/timeline/" \
 	            "0003_timeline_clock_origin.c:" \
-	            ": producer must leave clock JSONL verification to TAP verifier"
+	            ": producer must verify clock JSONL after flushing"
 	    }
 	}
 	' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.c"

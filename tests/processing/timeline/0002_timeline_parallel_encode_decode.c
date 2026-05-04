@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: MIT
  *
  * Concurrent timeline logging test.  Multiple encoder/decoder objects share the
- * process timeline_writer service.  The producer only writes and flushes; the
- * TAP file invokes the JSONL verifier in a fresh test_runner process.  MSVC's
- * CRT can make immediate same-process readback brittle even after fclose().
+ * process timeline_writer service.  The test writes, flushes, and verifies the
+ * JSONL in one native process so Git for Windows does not need to launch a
+ * second MSVC test_runner instance for the verifier phase.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -26,7 +26,6 @@
 
 #define TIMELINE_PARALLEL_WORKERS 4
 #define TIMELINE_MAX_SESSIONS 16
-#define TIMELINE_TEST_JSONL_ENV "SIXEL_TEST_TIMELINE_JSONL"
 #if SIXEL_ENABLE_THREADS
 
 typedef struct timeline_parallel_sync {
@@ -354,27 +353,6 @@ timeline_verify_jsonl(char const *path)
     return 1;
 }
 
-static char const *
-timeline_parallel_verify_path_source(void)
-{
-    char const *path;
-
-    path = NULL;
-
-    /*
-     * Git for Windows treats argv and variables whose names end in PATH as
-     * path-conversion candidates before native executables are launched.  TAP
-     * passes the verifier path through this test-only key so the C verifier
-     * receives the same JSONL path that the shell used for producer setup.
-     */
-    path = sixel_compat_getenv(TIMELINE_TEST_JSONL_ENV);
-    if (path != NULL && path[0] != '\0') {
-        return path;
-    }
-
-    return NULL;
-}
-
 static int
 timeline_flush_writer(char const *path)
 {
@@ -521,6 +499,9 @@ end:
     if (!timeline_flush_writer(log_path)) {
         return 0;
     }
+    if (!timeline_verify_jsonl(log_path)) {
+        return 0;
+    }
     return 1;
 }
 #endif
@@ -536,50 +517,6 @@ test_timeline_0002_timeline_parallel_encode_decode(int argc, char **argv)
         fprintf(stderr, "timeline parallel encode/decode contract failed\n");
         return EXIT_FAILURE;
     }
-#endif
-
-    return EXIT_SUCCESS;
-}
-
-int
-test_timeline_0002_timeline_parallel_encode_decode_verify(int argc,
-                                                          char **argv)
-{
-    char log_path[4096];
-    char const *log_path_source;
-
-    log_path_source = NULL;
-#if SIXEL_ENABLE_THREADS
-    memset(log_path, 0, sizeof(log_path));
-    if (argc >= 2 && argv != NULL && argv[1] != NULL &&
-        argv[1][0] != '\0') {
-        log_path_source = argv[1];
-    } else {
-        log_path_source = timeline_parallel_verify_path_source();
-    }
-    if (log_path_source == NULL || log_path_source[0] == '\0') {
-        fprintf(stderr,
-                "timeline parallel verifier path is missing: argc=%d\n",
-                argc);
-        return EXIT_FAILURE;
-    }
-    if (sixel_compat_strcpy(log_path,
-                            sizeof(log_path),
-                            log_path_source) < 0) {
-        fprintf(stderr,
-                "timeline parallel verifier path is too long: %s\n",
-                log_path_source);
-        return EXIT_FAILURE;
-    }
-    if (!timeline_verify_jsonl(log_path)) {
-        fprintf(stderr, "timeline parallel JSONL verification failed\n");
-        return EXIT_FAILURE;
-    }
-#else
-    (void)log_path;
-    (void)log_path_source;
-    (void)argc;
-    (void)argv;
 #endif
 
     return EXIT_SUCCESS;
