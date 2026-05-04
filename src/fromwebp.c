@@ -95,8 +95,10 @@ typedef struct sixel_webp_anim_meta_cache {
     sixel_cms_profile_t *xmp_cms_profile;
     int exif_orientation;
     int xmp_orientation;
+    int iccp_size_limited;
     int xmp_orientation_size_limited;
     int xmp_cms_size_limited;
+    int xmp_cms_bare_fallback_used;
 } sixel_webp_anim_meta_cache_t;
 
 static unsigned int
@@ -541,6 +543,12 @@ sixel_webp_try_apply_exif_orientation(sixel_webp_decode_plan_t const *plan,
     }
     *applied = 1;
     return SIXEL_OK;
+}
+
+static int
+sixel_webp_iccp_payload_exceeds_parse_limit(size_t payload_size)
+{
+    return payload_size > SIXEL_WEBP_MAX_ICCP_PARSE_BYTES ? 1 : 0;
 }
 
 static int
@@ -1235,7 +1243,8 @@ sixel_webp_xmp_match_profile_name(unsigned char const *payload,
 static int
 sixel_webp_xmp_parse_icc_profile_kind(unsigned char const *payload,
                                       size_t payload_size,
-                                      sixel_webp_xmp_cms_profile_kind_t *kind)
+                                      sixel_webp_xmp_cms_profile_kind_t *kind,
+                                      int *used_bare_fallback)
 {
     static char const local_name[] = "ICCProfile";
     sixel_webp_xmp_tag_t tag;
@@ -1267,6 +1276,9 @@ sixel_webp_xmp_parse_icc_profile_kind(unsigned char const *payload,
         return 0;
     }
     *kind = SIXEL_WEBP_XMP_CMS_PROFILE_UNKNOWN;
+    if (used_bare_fallback != NULL) {
+        *used_bare_fallback = 0;
+    }
 
     while (sixel_webp_xmp_find_next_tag(payload,
                                         payload_size,
@@ -1395,6 +1407,9 @@ sixel_webp_xmp_parse_icc_profile_kind(unsigned char const *payload,
                                                 payload_size,
                                                 local_name,
                                                 kind) != 0) {
+        if (used_bare_fallback != NULL) {
+            *used_bare_fallback = 1;
+        }
         return 1;
     }
     return 0;
@@ -1437,10 +1452,12 @@ sixel_webp_create_xmp_profile(sixel_webp_xmp_cms_profile_kind_t kind)
 static SIXELSTATUS
 sixel_webp_try_apply_xmp_cms(sixel_webp_decode_plan_t const *plan,
                              int enable_cms,
+                             int allow_with_iccp,
                              sixel_frame_t *frame,
                              sixel_allocator_t *allocator,
                              int *applied,
-                             int *size_limited)
+                             int *size_limited,
+                             int *used_bare_fallback)
 {
     sixel_webp_xmp_cms_profile_kind_t kind;
     sixel_cms_profile_t *src_profile;
@@ -1452,15 +1469,16 @@ sixel_webp_try_apply_xmp_cms(sixel_webp_decode_plan_t const *plan,
     found_profile = 0;
     converted = 0;
     if (plan == NULL || frame == NULL || applied == NULL ||
-        size_limited == NULL) {
+        size_limited == NULL || used_bare_fallback == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
     *applied = 0;
     *size_limited = 0;
+    *used_bare_fallback = 0;
     if (plan->meta_has_xmp == 0 ||
         enable_cms == 0 ||
-        plan->meta_has_iccp != 0 ||
+        (plan->meta_has_iccp != 0 && allow_with_iccp == 0) ||
         plan->xmp_payload == NULL ||
         plan->xmp_payload_size == 0u) {
         return SIXEL_OK;
@@ -1474,7 +1492,8 @@ sixel_webp_try_apply_xmp_cms(sixel_webp_decode_plan_t const *plan,
     found_profile = sixel_webp_xmp_parse_icc_profile_kind(
         plan->xmp_payload,
         plan->xmp_payload_size,
-        &kind);
+        &kind,
+        used_bare_fallback);
     if (found_profile == 0 || kind == SIXEL_WEBP_XMP_CMS_PROFILE_UNKNOWN) {
         return SIXEL_OK;
     }
@@ -1571,11 +1590,13 @@ sixel_webp_build_anim_meta_cache(sixel_webp_decode_plan_t const *plan,
     int found_profile;
     int parsed_orientation;
     int found_orientation;
+    int used_bare_fallback;
 
     kind = SIXEL_WEBP_XMP_CMS_PROFILE_UNKNOWN;
     found_profile = 0;
     parsed_orientation = 0;
     found_orientation = 0;
+    used_bare_fallback = 0;
     if (plan == NULL || cache == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1585,14 +1606,19 @@ sixel_webp_build_anim_meta_cache(sixel_webp_decode_plan_t const *plan,
         enable_cms != 0 &&
         plan->iccp_payload != NULL &&
         plan->iccp_payload_size != 0u) {
-        cache->iccp_profile = sixel_cms_open_profile_from_mem(
-            plan->iccp_payload,
-            plan->iccp_payload_size);
+        if (sixel_webp_iccp_payload_exceeds_parse_limit(
+                plan->iccp_payload_size) != 0) {
+            cache->iccp_size_limited = 1;
+        } else {
+            cache->iccp_profile = sixel_cms_open_profile_from_mem(
+                plan->iccp_payload,
+                plan->iccp_payload_size);
+        }
     }
 
     if (plan->meta_has_xmp != 0 &&
         enable_cms != 0 &&
-        plan->meta_has_iccp == 0 &&
+        (plan->meta_has_iccp == 0 || cache->iccp_size_limited != 0) &&
         plan->xmp_payload != NULL &&
         plan->xmp_payload_size != 0u) {
         if (sixel_webp_xmp_payload_exceeds_parse_limit(
@@ -1602,10 +1628,14 @@ sixel_webp_build_anim_meta_cache(sixel_webp_decode_plan_t const *plan,
             found_profile = sixel_webp_xmp_parse_icc_profile_kind(
                 plan->xmp_payload,
                 plan->xmp_payload_size,
-                &kind);
+                &kind,
+                &used_bare_fallback);
             if (found_profile != 0 &&
                 kind != SIXEL_WEBP_XMP_CMS_PROFILE_UNKNOWN) {
                 cache->xmp_cms_profile = sixel_webp_create_xmp_profile(kind);
+                if (used_bare_fallback != 0) {
+                    cache->xmp_cms_bare_fallback_used = 1;
+                }
             }
         }
     }
@@ -2372,6 +2402,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     unsigned char *rgba;
     unsigned char *canvas_pixels;
     unsigned char *emitted_pixels;
+    size_t canvas_bytes;
     unsigned char background_rgba[4];
     int subframe_width;
     int subframe_height;
@@ -2390,7 +2421,9 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     int xmp_code_reported;
     int xmp_cms_code_reported;
     int iccp_applied;
+    int iccp_size_limited;
     int xmp_cms_applied;
+    int xmp_cms_bare_fallback_used;
     int exif_applied;
     int xmp_applied;
     sixel_webp_anim_meta_cache_t meta_cache;
@@ -2404,6 +2437,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     rgba = NULL;
     canvas_pixels = NULL;
     emitted_pixels = NULL;
+    canvas_bytes = 0u;
     memset(background_rgba, 0, sizeof(background_rgba));
     subframe_width = 0;
     subframe_height = 0;
@@ -2422,7 +2456,9 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     xmp_code_reported = 0;
     xmp_cms_code_reported = 0;
     iccp_applied = 0;
+    iccp_size_limited = 0;
     xmp_cms_applied = 0;
+    xmp_cms_bare_fallback_used = 0;
     exif_applied = 0;
     xmp_applied = 0;
     if (handled == NULL) {
@@ -2464,9 +2500,11 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
         status = SIXEL_BAD_INTEGER_OVERFLOW;
         goto end;
     }
+    canvas_bytes = (size_t)stream.canvas_width * (size_t)stream.canvas_height
+                 * 4u;
     canvas_pixels = (unsigned char *)sixel_allocator_malloc(
         allocator,
-        (size_t)stream.canvas_width * (size_t)stream.canvas_height * 4u);
+        canvas_bytes);
     if (canvas_pixels == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         goto end;
@@ -2576,13 +2614,17 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
-            status = sixel_webp_anim_copy_canvas(
-                canvas_pixels,
-                (size_t)stream.canvas_width * (size_t)stream.canvas_height * 4u,
-                allocator,
-                &emitted_pixels);
-            if (SIXEL_FAILED(status)) {
-                goto end;
+            if (fstatic != 0) {
+                emitted_pixels = canvas_pixels;
+                canvas_pixels = NULL;
+            } else {
+                status = sixel_webp_anim_copy_canvas(canvas_pixels,
+                                                     canvas_bytes,
+                                                     allocator,
+                                                     &emitted_pixels);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
             }
             sixel_frame_set_delay(frame,
                                   stream.frames[source_frame_no].duration_ms
@@ -2615,12 +2657,17 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                     &meta_cache,
                     frame,
                     allocator);
+                iccp_size_limited = meta_cache.iccp_size_limited;
                 if (iccp_applied != 0) {
                     sixel_webp_trace_contract_add_code(
                         SIXEL_WEBP_CODE_META_ICCP_APPLIED);
                 } else {
                     sixel_webp_trace_contract_add_code(
                         SIXEL_WEBP_CODE_META_ICCP_IGNORED);
+                    if (iccp_size_limited != 0) {
+                        sixel_webp_trace_contract_add_code(
+                            SIXEL_WEBP_CODE_META_ICCP_SIZE_LIMIT_IGNORED);
+                    }
                 }
                 iccp_code_reported = 1;
             }
@@ -2640,6 +2687,12 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                         sixel_webp_trace_contract_add_code(
                             SIXEL_WEBP_CODE_META_XMP_CMS_SIZE_LIMIT_IGNORED);
                     }
+                }
+                xmp_cms_bare_fallback_used =
+                    meta_cache.xmp_cms_bare_fallback_used;
+                if (xmp_cms_bare_fallback_used != 0) {
+                    sixel_webp_trace_contract_add_code(
+                        SIXEL_WEBP_CODE_META_XMP_CMS_BARE_FALLBACK_USED);
                 }
                 xmp_cms_code_reported = 1;
             }
@@ -2770,8 +2823,10 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     int xmp_cms_code_reported;
     int iccp_applied;
     int xmp_cms_applied;
+    int xmp_cms_bare_fallback_used;
     int exif_applied;
     int xmp_applied;
+    int iccp_size_limited;
     int xmp_orientation_size_limited;
     int xmp_cms_size_limited;
 
@@ -2787,8 +2842,10 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     xmp_cms_code_reported = 0;
     iccp_applied = 0;
     xmp_cms_applied = 0;
+    xmp_cms_bare_fallback_used = 0;
     exif_applied = 0;
     xmp_applied = 0;
+    iccp_size_limited = 0;
     xmp_orientation_size_limited = 0;
     xmp_cms_size_limited = 0;
 
@@ -2890,16 +2947,22 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
      */
     if (plan.meta_has_iccp != 0) {
         iccp_applied = 0;
+        iccp_size_limited = 0;
         if (enable_cms != 0 &&
             plan.iccp_payload != NULL &&
             plan.iccp_payload_size != 0u) {
-            iccp_applied = sixel_webp_apply_iccp_to_srgb_rgba(
-                frame->pixels.u8ptr,
-                frame->width,
-                frame->height,
-                plan.iccp_payload,
-                plan.iccp_payload_size,
-                allocator);
+            if (sixel_webp_iccp_payload_exceeds_parse_limit(
+                    plan.iccp_payload_size) != 0) {
+                iccp_size_limited = 1;
+            } else {
+                iccp_applied = sixel_webp_apply_iccp_to_srgb_rgba(
+                    frame->pixels.u8ptr,
+                    frame->width,
+                    frame->height,
+                    plan.iccp_payload,
+                    plan.iccp_payload_size,
+                    allocator);
+            }
         }
         if (iccp_applied != 0) {
             sixel_webp_trace_contract_add_code(
@@ -2907,6 +2970,10 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
         } else {
             sixel_webp_trace_contract_add_code(
                 SIXEL_WEBP_CODE_META_ICCP_IGNORED);
+            if (iccp_size_limited != 0) {
+                sixel_webp_trace_contract_add_code(
+                    SIXEL_WEBP_CODE_META_ICCP_SIZE_LIMIT_IGNORED);
+            }
         }
         iccp_code_reported = 1;
     }
@@ -2914,10 +2981,12 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     if (plan.meta_has_xmp != 0) {
         status = sixel_webp_try_apply_xmp_cms(&plan,
                                               enable_cms,
+                                              iccp_size_limited,
                                               frame,
                                               allocator,
                                               &xmp_cms_applied,
-                                              &xmp_cms_size_limited);
+                                              &xmp_cms_size_limited,
+                                              &xmp_cms_bare_fallback_used);
         if (SIXEL_FAILED(status)) {
             sixel_webp_trace_contract_add_code(
                 SIXEL_WEBP_CODE_META_XMP_CMS_IGNORED);
@@ -2934,6 +3003,10 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
                 sixel_webp_trace_contract_add_code(
                     SIXEL_WEBP_CODE_META_XMP_CMS_SIZE_LIMIT_IGNORED);
             }
+        }
+        if (xmp_cms_bare_fallback_used != 0) {
+            sixel_webp_trace_contract_add_code(
+                SIXEL_WEBP_CODE_META_XMP_CMS_BARE_FALLBACK_USED);
         }
         xmp_cms_code_reported = 1;
     }

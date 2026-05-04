@@ -1234,6 +1234,9 @@ When `ICCP` is absent and builtin CMS is enabled, builtin WebP also accepts a
 minimal `XMP` color profile name fallback from `ICCProfile` properties
 (prefixed or unprefixed, attribute or element form) for
 `sRGB IEC61966-2.1`, `Display P3`, and `Adobe RGB (1998)`.
+When builtin CMS is enabled and embedded `ICCP` exceeds `1 MiB`, builtin WebP
+ignores that profile non-fatally (`W_META_ICCP_SIZE_LIMIT_IGNORED`) and may
+fall back to XMP CMS resolution.
 The profile-name resolver also accepts compact aliases such as `sRGB`,
 `IEC61966-2.1`, `DisplayP3`, `AdobeRGB1998`, and `AdobeRGB`.
 Alias matching is ASCII case-insensitive and treats contiguous ASCII
@@ -1243,7 +1246,8 @@ whitespace, `-`, `_`, `(`, or `)` stay compatible.
 For robustness, XMP CMS detection inspects tag/attribute contexts and ignores
 `ICCProfile` string hits in comments, CDATA sections, processing instructions,
 and plain text nodes. Legacy payloads that contain only one bare prefixed
-`ICCProfile="..."` assignment are still accepted for compatibility.
+`ICCProfile="..."` assignment are still accepted for compatibility and emit
+`W_META_XMP_CMS_BARE_FALLBACK_USED` when that fallback path is used.
 Unknown XMP color profile names are ignored.
 XMP payload parsing is capped at `256 KiB` for orientation and CMS fallback.
 When this cap is exceeded, builtin WebP treats XMP metadata as non-fatal

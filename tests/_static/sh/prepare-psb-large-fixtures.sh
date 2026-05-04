@@ -11,8 +11,12 @@ top_srcdir=$1
 top_builddir=${2:-$1}
 src_formats_dir="${top_srcdir}/tests/data/inputs/formats"
 dst_formats_dir="${top_builddir}/tests/data/inputs/formats"
-webp_padded="${dst_formats_dir}/webp-static-icc-overlimit-padded.webp"
-webp_padded_gz="${src_formats_dir}/webp-static-icc-overlimit-padded.webp.gz"
+webp_large_fixtures="\
+webp-static-icc-overlimit-padded.webp \
+webp-static-icc-limit-padded.webp \
+snake_64_embedded_a98_icc_xmp_iccprofile_iccp_overlimit.webp \
+animated-lossy-8x8-2frame-min-embedded-srgb-icc-overlimit.webp \
+animated-lossy-8x8-2frame-min-embedded-srgb-icc-xmp-icc-displayp3-overlimit.webp"
 
 mkdir -p "${dst_formats_dir}"
 
@@ -34,8 +38,14 @@ for mode_prefix in cmyk mode7_cmyk; do
     done
 done
 
-if [ "${fixtures_ready}" -eq 1 ] && [ -f "${webp_padded}" ]; then
-    exit 0
+if [ "${fixtures_ready}" -eq 1 ]; then
+    for fixture in ${webp_large_fixtures}; do
+        test -f "${dst_formats_dir}/${fixture}" || {
+            fixtures_ready=0
+            break
+        }
+    done
+    test "${fixtures_ready}" -eq 1 && exit 0
 fi
 
 printf '%s\n' "prepare-psd-large-fixtures: extracting packaged large fixtures"
@@ -62,10 +72,13 @@ for mode_prefix in cmyk mode7_cmyk; do
     done
 done
 
-test -f "${webp_padded}" || {
-    test -f "${webp_padded_gz}" || {
-        printf '%s\n' "error: missing packaged fixture: ${webp_padded_gz}" >&2
+for fixture in ${webp_large_fixtures}; do
+    dst_file="${dst_formats_dir}/${fixture}"
+    src_file_gz="${src_formats_dir}/${fixture}.gz"
+    test -f "${dst_file}" && continue
+    test -f "${src_file_gz}" || {
+        printf '%s\n' "error: missing packaged fixture: ${src_file_gz}" >&2
         exit 1
     }
-    gzip -dc "${webp_padded_gz}" > "${webp_padded}"
-}
+    gzip -dc "${src_file_gz}" > "${dst_file}"
+done
