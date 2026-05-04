@@ -199,9 +199,14 @@ awk '
 	awk '
 	/timeline\/0002_timeline_parallel_encode_decode_verify/ {
 	    saw_verify = 1
+	    saw_verify_call = 1
 	}
 	/SIXEL_TEST_TIMELINE_JSONL="\$\{log_path\}"/ {
 	    saw_verify_path_env = 1
+	}
+	saw_verify_call && /\$\{log_path\}/ {
+	    saw_verify_path_arg = 1
+	    saw_verify_call = 0
 	}
 	/MSYS_NO_PATHCONV=1/ {
 	    saw_no_pathconv += 1
@@ -209,16 +214,27 @@ awk '
 	/MSYS2_ARG_CONV_EXCL='\''\*'\''/ {
 	    saw_arg_conv_excl += 1
 	}
+	/verifier exit status/ {
+	    saw_failure_status_diag = 1
+	}
+	/verifier JSONL first line/ {
+	    saw_failure_line_diag = 1
+	}
 	END {
-	    if (!saw_verify || !saw_verify_path_env) {
+	    if (!saw_verify || !saw_verify_path_env || !saw_verify_path_arg) {
 	        print "tests/processing/timeline/" \
 	            "0002_timeline_parallel_encode_decode.t:" \
-	            ": timeline TAP must pass JSONL path through test env"
+	            ": timeline TAP must pass JSONL path to verifier"
 	    }
 	    if (saw_no_pathconv < 2 || saw_arg_conv_excl < 2) {
 	        print "tests/processing/timeline/" \
 	            "0002_timeline_parallel_encode_decode.t:" \
 	            ": timeline TAP must disable MSYS path conversion"
+	    }
+	    if (!saw_failure_status_diag || !saw_failure_line_diag) {
+	        print "tests/processing/timeline/" \
+	            "0002_timeline_parallel_encode_decode.t:" \
+	            ": verifier failure must print path diagnostics"
 	    }
 	}
 	' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
@@ -246,9 +262,14 @@ END {
 	awk '
 	/timeline\/0003_timeline_clock_origin_verify/ {
 	    saw_verify = 1
+	    saw_verify_call = 1
 	}
 	/SIXEL_TEST_TIMELINE_JSONL="\$\{log_path\}"/ {
 	    saw_verify_path_env = 1
+	}
+	saw_verify_call && /\$\{log_path\}/ {
+	    saw_verify_path_arg = 1
+	    saw_verify_call = 0
 	}
 	/MSYS_NO_PATHCONV=1/ {
 	    saw_no_pathconv += 1
@@ -256,16 +277,27 @@ END {
 	/MSYS2_ARG_CONV_EXCL='\''\*'\''/ {
 	    saw_arg_conv_excl += 1
 	}
+	/verifier exit status/ {
+	    saw_failure_status_diag = 1
+	}
+	/verifier JSONL first line/ {
+	    saw_failure_line_diag = 1
+	}
 	END {
-	    if (!saw_verify || !saw_verify_path_env) {
+	    if (!saw_verify || !saw_verify_path_env || !saw_verify_path_arg) {
 	        print "tests/processing/timeline/" \
 	            "0003_timeline_clock_origin.t:" \
-	            ": timeline TAP must pass JSONL path through test env"
+	            ": timeline TAP must pass JSONL path to verifier"
 	    }
 	    if (saw_no_pathconv < 2 || saw_arg_conv_excl < 2) {
 	        print "tests/processing/timeline/" \
 	            "0003_timeline_clock_origin.t:" \
 	            ": timeline TAP must disable MSYS path conversion"
+	    }
+	    if (!saw_failure_status_diag || !saw_failure_line_diag) {
+	        print "tests/processing/timeline/" \
+	            "0003_timeline_clock_origin.t:" \
+	            ": verifier failure must print path diagnostics"
 	    }
 	}
 	' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"

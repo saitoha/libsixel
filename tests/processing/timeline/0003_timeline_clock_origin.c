@@ -12,6 +12,9 @@
 #include "config.h"
 #endif
 
+#if HAVE_ERRNO_H
+#include <errno.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -82,7 +85,16 @@ timeline_read_clock_samples(char const *path,
 
     file = sixel_compat_fopen(path, "r");
     if (file == NULL) {
-        fprintf(stderr, "timeline clock log was not written: %s\n", path);
+#if HAVE_ERRNO_H
+        fprintf(stderr,
+                "timeline clock log was not written: path=%s errno=%d\n",
+                path,
+                errno);
+#else
+        fprintf(stderr,
+                "timeline clock log was not written: %s\n",
+                path);
+#endif
         return 0;
     }
 
@@ -269,11 +281,21 @@ test_timeline_0003_timeline_clock_origin_verify(int argc, char **argv)
     } else {
         log_path_source = timeline_verify_path_source();
     }
-    if (log_path_source == NULL || log_path_source[0] == '\0' ||
-        sixel_compat_strcpy(log_path,
+    if (log_path_source == NULL || log_path_source[0] == '\0') {
+        fprintf(stderr,
+                "timeline clock verifier path is missing: argc=%d\n",
+                argc);
+        return EXIT_FAILURE;
+    }
+    if (sixel_compat_strcpy(log_path,
                             sizeof(log_path),
-                            log_path_source) < 0 ||
-        !timeline_read_clock_samples(log_path,
+                            log_path_source) < 0) {
+        fprintf(stderr,
+                "timeline clock verifier path is too long: %s\n",
+                log_path_source);
+        return EXIT_FAILURE;
+    }
+    if (!timeline_read_clock_samples(log_path,
                                      &first_timestamp,
                                      &second_timestamp)) {
         fprintf(stderr, "timeline clock JSONL verification failed\n");
