@@ -200,18 +200,25 @@ awk '
 	/timeline\/0002_timeline_parallel_encode_decode_verify/ {
 	    saw_verify = 1
 	}
-	/timeline\/0002_timeline_parallel_encode_decode_verify/ {
-	    saw_verify_call = 1
+	/SIXEL_TEST_TIMELINE_JSONL="\$\{log_path\}"/ {
+	    saw_verify_path_env = 1
 	}
-	saw_verify_call && /\$\{log_path\}/ {
-	    saw_verify_path = 1
-	    saw_verify_call = 0
+	/MSYS_NO_PATHCONV=1/ {
+	    saw_no_pathconv += 1
+	}
+	/MSYS2_ARG_CONV_EXCL='\''\*'\''/ {
+	    saw_arg_conv_excl += 1
 	}
 	END {
-	    if (!saw_verify || !saw_verify_path) {
+	    if (!saw_verify || !saw_verify_path_env) {
 	        print "tests/processing/timeline/" \
 	            "0002_timeline_parallel_encode_decode.t:" \
-	            ": timeline TAP must pass JSONL path to verifier process"
+	            ": timeline TAP must pass JSONL path through test env"
+	    }
+	    if (saw_no_pathconv < 2 || saw_arg_conv_excl < 2) {
+	        print "tests/processing/timeline/" \
+	            "0002_timeline_parallel_encode_decode.t:" \
+	            ": timeline TAP must disable MSYS path conversion"
 	    }
 	}
 	' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
@@ -240,18 +247,25 @@ END {
 	/timeline\/0003_timeline_clock_origin_verify/ {
 	    saw_verify = 1
 	}
-	/timeline\/0003_timeline_clock_origin_verify/ {
-	    saw_verify_call = 1
+	/SIXEL_TEST_TIMELINE_JSONL="\$\{log_path\}"/ {
+	    saw_verify_path_env = 1
 	}
-	saw_verify_call && /\$\{log_path\}/ {
-	    saw_verify_path = 1
-	    saw_verify_call = 0
+	/MSYS_NO_PATHCONV=1/ {
+	    saw_no_pathconv += 1
+	}
+	/MSYS2_ARG_CONV_EXCL='\''\*'\''/ {
+	    saw_arg_conv_excl += 1
 	}
 	END {
-	    if (!saw_verify || !saw_verify_path) {
+	    if (!saw_verify || !saw_verify_path_env) {
 	        print "tests/processing/timeline/" \
 	            "0003_timeline_clock_origin.t:" \
-	            ": timeline TAP must pass JSONL path to verifier process"
+	            ": timeline TAP must pass JSONL path through test env"
+	    }
+	    if (saw_no_pathconv < 2 || saw_arg_conv_excl < 2) {
+	        print "tests/processing/timeline/" \
+	            "0003_timeline_clock_origin.t:" \
+	            ": timeline TAP must disable MSYS path conversion"
 	    }
 	}
 	' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"

@@ -23,6 +23,7 @@
 
 #define TIMELINE_PARALLEL_WORKERS 4
 #define TIMELINE_MAX_SESSIONS 16
+#define TIMELINE_TEST_JSONL_ENV "SIXEL_TEST_TIMELINE_JSONL"
 #if SIXEL_ENABLE_THREADS
 
 typedef struct timeline_parallel_sync {
@@ -343,6 +344,27 @@ timeline_verify_jsonl(char const *path)
     return 1;
 }
 
+static char const *
+timeline_verify_path_source(void)
+{
+    char const *path;
+
+    path = NULL;
+
+    /*
+     * Git for Windows treats argv and variables whose names end in PATH as
+     * path-conversion candidates before native executables are launched.  TAP
+     * passes the verifier path through this test-only key so the C verifier
+     * receives the same JSONL path that the shell used for producer setup.
+     */
+    path = sixel_compat_getenv(TIMELINE_TEST_JSONL_ENV);
+    if (path != NULL && path[0] != '\0') {
+        return path;
+    }
+
+    return NULL;
+}
+
 static int
 timeline_flush_writer(char const *path)
 {
@@ -523,12 +545,7 @@ test_timeline_0002_timeline_parallel_encode_decode_verify(int argc,
         argv[1][0] != '\0') {
         log_path_source = argv[1];
     } else {
-        /*
-         * Keep the fallback for direct developer runs and artifact triage.
-         * The TAP test verifies in the producer process so MSVC shell/native
-         * process handoff does not decide CI success.
-         */
-        log_path_source = sixel_compat_getenv("SIXEL_LOG_PATH");
+        log_path_source = timeline_verify_path_source();
     }
     if (log_path_source == NULL || log_path_source[0] == '\0' ||
         sixel_compat_strcpy(log_path,

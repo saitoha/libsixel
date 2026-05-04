@@ -24,6 +24,7 @@
 
 #define TIMELINE_CLOCK_WAIT_SECONDS 0.020
 #define TIMELINE_CLOCK_MIN_DELTA_SECONDS 0.010
+#define TIMELINE_TEST_JSONL_ENV "SIXEL_TEST_TIMELINE_JSONL"
 
 static void
 timeline_wait_seconds(double seconds)
@@ -106,6 +107,26 @@ timeline_read_clock_samples(char const *path,
     fclose(file);
 
     return found_first && found_second;
+}
+
+static char const *
+timeline_verify_path_source(void)
+{
+    char const *path;
+
+    path = NULL;
+
+    /*
+     * Git for Windows path-converts argv and PATH-like environment names for
+     * native executables.  Use a test-only key that does not end in PATH so the
+     * verifier opens the JSONL file the TAP script just created.
+     */
+    path = sixel_compat_getenv(TIMELINE_TEST_JSONL_ENV);
+    if (path != NULL && path[0] != '\0') {
+        return path;
+    }
+
+    return NULL;
 }
 
 static int
@@ -246,12 +267,7 @@ test_timeline_0003_timeline_clock_origin_verify(int argc, char **argv)
         argv[1][0] != '\0') {
         log_path_source = argv[1];
     } else {
-        /*
-         * Keep the fallback for direct developer runs and artifact triage.
-         * The TAP test verifies in the producer process so MSVC shell/native
-         * process handoff does not decide CI success.
-         */
-        log_path_source = sixel_compat_getenv("SIXEL_LOG_PATH");
+        log_path_source = timeline_verify_path_source();
     }
     if (log_path_source == NULL || log_path_source[0] == '\0' ||
         sixel_compat_strcpy(log_path,
