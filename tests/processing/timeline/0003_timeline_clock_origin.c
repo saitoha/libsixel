@@ -120,8 +120,6 @@ timeline_clock_origin_is_shared(void)
     void *service;
     char log_path[4096];
     char const *log_path_env;
-    double first_timestamp;
-    double second_timestamp;
     int success;
 
     allocator = NULL;
@@ -130,8 +128,6 @@ timeline_clock_origin_is_shared(void)
     logger2 = NULL;
     service = NULL;
     log_path_env = NULL;
-    first_timestamp = 0.0;
-    second_timestamp = 0.0;
     memset(log_path, 0, sizeof(log_path));
     success = 0;
 
@@ -198,19 +194,6 @@ timeline_clock_origin_is_shared(void)
         goto end;
     }
     writer->vtbl->flush(writer);
-    if (!timeline_read_clock_samples(log_path,
-                                     &first_timestamp,
-                                     &second_timestamp)) {
-        goto end;
-    }
-    if (second_timestamp - first_timestamp <
-        TIMELINE_CLOCK_MIN_DELTA_SECONDS) {
-        fprintf(stderr,
-                "timeline clock origin regressed: first=%f second=%f\n",
-                first_timestamp,
-                second_timestamp);
-        goto end;
-    }
 
     success = 1;
 

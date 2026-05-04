@@ -489,9 +489,6 @@ end:
     if (!timeline_flush_writer(log_path)) {
         return 0;
     }
-    if (!timeline_verify_jsonl(log_path)) {
-        return 0;
-    }
 
     return 1;
 }

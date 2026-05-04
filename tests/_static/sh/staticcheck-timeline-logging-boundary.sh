@@ -187,6 +187,32 @@ in_func && /sixel_allocator_new[ \t]*\(/ {
     in_func = 0
 }
 ' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.c"
+
+awk '
+/timeline\/0002_timeline_parallel_encode_decode_verify/ {
+    saw_verify = 1
+}
+END {
+    if (!saw_verify) {
+        print "tests/processing/timeline/" \
+            "0002_timeline_parallel_encode_decode.t:" \
+            ": timeline JSONL must be verified after producer exit"
+    }
+}
+' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
+
+awk '
+/timeline\/0003_timeline_clock_origin_verify/ {
+    saw_verify = 1
+}
+END {
+    if (!saw_verify) {
+        print "tests/processing/timeline/" \
+            "0003_timeline_clock_origin.t:" \
+            ": timeline JSONL must be verified after producer exit"
+    }
+}
+' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"
 } >>"$report"
 
 if test -s "$report"; then
