@@ -122,7 +122,7 @@ timeline_read_clock_samples(char const *path,
 }
 
 static char const *
-timeline_verify_path_source(void)
+timeline_clock_verify_path_source(void)
 {
     char const *path;
 
@@ -279,7 +279,7 @@ test_timeline_0003_timeline_clock_origin_verify(int argc, char **argv)
         argv[1][0] != '\0') {
         log_path_source = argv[1];
     } else {
-        log_path_source = timeline_verify_path_source();
+        log_path_source = timeline_clock_verify_path_source();
     }
     if (log_path_source == NULL || log_path_source[0] == '\0') {
         fprintf(stderr,

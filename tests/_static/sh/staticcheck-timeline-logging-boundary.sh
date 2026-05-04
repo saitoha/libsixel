@@ -85,6 +85,11 @@ FILENAME ~ /\/tests\/processing\/timeline\/.*\.c$/ &&
     /char[ \t]+const[ \t]+\*[ \t]*log_path[ \t]*;/ {
     print path ":" FNR ": timeline tests must copy SIXEL_LOG_PATH"
 }
+FILENAME ~ /\/tests\/processing\/timeline\/.*\.c$/ &&
+    /^timeline_verify_path_source\(void\)/ {
+    print path ":" FNR \
+        ": timeline helper names must be unique for amalgamation"
+}
 '
 
 find "$src_root/amalgamation" "$src_root/wic" "$src_root/src" \

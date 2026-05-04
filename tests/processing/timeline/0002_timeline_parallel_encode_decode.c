@@ -355,7 +355,7 @@ timeline_verify_jsonl(char const *path)
 }
 
 static char const *
-timeline_verify_path_source(void)
+timeline_parallel_verify_path_source(void)
 {
     char const *path;
 
@@ -555,7 +555,7 @@ test_timeline_0002_timeline_parallel_encode_decode_verify(int argc,
         argv[1][0] != '\0') {
         log_path_source = argv[1];
     } else {
-        log_path_source = timeline_verify_path_source();
+        log_path_source = timeline_parallel_verify_path_source();
     }
     if (log_path_source == NULL || log_path_source[0] == '\0') {
         fprintf(stderr,
