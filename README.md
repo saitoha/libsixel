@@ -1238,6 +1238,10 @@ The profile-name resolver also accepts compact aliases such as `sRGB`,
 `IEC61966-2.1`, `DisplayP3`, `AdobeRGB1998`, and `AdobeRGB`.
 Alias matching is ASCII case-insensitive and treats contiguous ASCII
 whitespace equivalently (for example, `Display P3` and `Display\tP3`).
+For robustness, XMP CMS detection inspects tag/attribute contexts and ignores
+`ICCProfile` string hits in comments, CDATA sections, processing instructions,
+and plain text nodes. Legacy payloads that contain only one bare prefixed
+`ICCProfile="..."` assignment are still accepted for compatibility.
 Unknown XMP color profile names are ignored.
 XMP payload parsing is capped at `256 KiB` for orientation and CMS fallback.
 When this cap is exceeded, builtin WebP treats XMP metadata as non-fatal

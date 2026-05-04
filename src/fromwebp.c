@@ -568,42 +568,6 @@ sixel_webp_xmp_is_name_char(unsigned char ch)
 }
 
 static int
-sixel_webp_xmp_find_prefixed_local_name(unsigned char const *payload,
-                                        size_t payload_size,
-                                        size_t local_begin,
-                                        size_t local_size,
-                                        size_t *name_begin)
-{
-    size_t begin;
-
-    begin = 0u;
-    if (payload == NULL || local_size == 0u || local_begin >= payload_size ||
-        local_begin + local_size > payload_size) {
-        return 0;
-    }
-
-    begin = local_begin;
-    while (begin > 0u &&
-           sixel_webp_xmp_is_name_char(payload[begin - 1u]) != 0) {
-        --begin;
-    }
-    if (local_begin == 0u || payload[local_begin - 1u] != ':') {
-        return 0;
-    }
-    if (begin == local_begin - 1u) {
-        return 0;
-    }
-    if (local_begin + local_size < payload_size &&
-        sixel_webp_xmp_is_name_char(payload[local_begin + local_size]) != 0) {
-        return 0;
-    }
-    if (name_begin != NULL) {
-        *name_begin = begin;
-    }
-    return 1;
-}
-
-static int
 sixel_webp_xmp_find_token(unsigned char const *payload,
                           size_t payload_size,
                           char const *token,
@@ -660,6 +624,337 @@ sixel_webp_xmp_find_tag_end(unsigned char const *payload,
         ++cursor;
     }
     return 0;
+}
+
+typedef struct sixel_webp_xmp_tag {
+    size_t tag_begin;
+    size_t name_begin;
+    size_t name_end;
+    size_t attrs_begin;
+    size_t tag_end;
+    int is_closing;
+    int is_self_closing;
+} sixel_webp_xmp_tag_t;
+
+static int
+sixel_webp_xmp_tag_name_equals(unsigned char const *payload,
+                               size_t left_begin,
+                               size_t left_end,
+                               size_t right_begin,
+                               size_t right_end)
+{
+    size_t index;
+
+    index = 0u;
+    if (payload == NULL || left_begin > left_end || right_begin > right_end) {
+        return 0;
+    }
+    if (left_end - left_begin != right_end - right_begin) {
+        return 0;
+    }
+    for (index = 0u; left_begin + index < left_end; ++index) {
+        if (payload[left_begin + index] != payload[right_begin + index]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int
+sixel_webp_xmp_qname_has_prefixed_local_name(unsigned char const *payload,
+                                              size_t name_begin,
+                                              size_t name_end,
+                                              char const *local_name)
+{
+    size_t cursor;
+    size_t local_name_size;
+    size_t local_begin;
+    size_t index;
+
+    cursor = 0u;
+    local_name_size = 0u;
+    local_begin = 0u;
+    index = 0u;
+    if (payload == NULL || local_name == NULL || name_begin >= name_end) {
+        return 0;
+    }
+
+    local_name_size = strlen(local_name);
+    if (local_name_size == 0u || name_end - name_begin <= local_name_size) {
+        return 0;
+    }
+
+    for (cursor = name_begin; cursor < name_end; ++cursor) {
+        if (payload[cursor] == ':') {
+            local_begin = cursor + 1u;
+            break;
+        }
+    }
+    if (local_begin == 0u || local_begin >= name_end) {
+        return 0;
+    }
+    if (name_end - local_begin != local_name_size) {
+        return 0;
+    }
+    for (index = 0u; index < local_name_size; ++index) {
+        if (payload[local_begin + index] != (unsigned char)local_name[index]) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int
+sixel_webp_xmp_find_token_from(unsigned char const *payload,
+                               size_t payload_size,
+                               size_t start,
+                               char const *token,
+                               size_t token_size,
+                               size_t *found_offset)
+{
+    return sixel_webp_xmp_find_token(payload,
+                                     payload_size,
+                                     token,
+                                     token_size,
+                                     start,
+                                     found_offset);
+}
+
+static int
+sixel_webp_xmp_find_next_tag(unsigned char const *payload,
+                             size_t payload_size,
+                             size_t *offset,
+                             sixel_webp_xmp_tag_t *tag)
+{
+    static char const comment_begin[] = "<!--";
+    static char const comment_end[] = "-->";
+    static char const cdata_begin[] = "<![CDATA[";
+    static char const cdata_end[] = "]]>";
+    static char const pi_begin[] = "<?";
+    static char const pi_end[] = "?>";
+    size_t cursor;
+    size_t skip_begin;
+    size_t skip_end;
+    size_t name_cursor;
+    size_t trim_cursor;
+
+    cursor = 0u;
+    skip_begin = 0u;
+    skip_end = 0u;
+    name_cursor = 0u;
+    trim_cursor = 0u;
+    if (payload == NULL || offset == NULL || tag == NULL || *offset >=
+        payload_size) {
+        return 0;
+    }
+
+    cursor = *offset;
+    while (cursor < payload_size) {
+        if (payload[cursor] != '<') {
+            ++cursor;
+            continue;
+        }
+
+        if (sixel_webp_xmp_find_token_from(payload,
+                                           payload_size,
+                                           cursor,
+                                           comment_begin,
+                                           sizeof(comment_begin) - 1u,
+                                           &skip_begin) != 0 &&
+            skip_begin == cursor) {
+            if (sixel_webp_xmp_find_token_from(payload,
+                                               payload_size,
+                                               cursor + sizeof(comment_begin) - 1u,
+                                               comment_end,
+                                               sizeof(comment_end) - 1u,
+                                               &skip_end) == 0) {
+                return 0;
+            }
+            cursor = skip_end + sizeof(comment_end) - 1u;
+            continue;
+        }
+
+        if (sixel_webp_xmp_find_token_from(payload,
+                                           payload_size,
+                                           cursor,
+                                           cdata_begin,
+                                           sizeof(cdata_begin) - 1u,
+                                           &skip_begin) != 0 &&
+            skip_begin == cursor) {
+            if (sixel_webp_xmp_find_token_from(payload,
+                                               payload_size,
+                                               cursor + sizeof(cdata_begin) - 1u,
+                                               cdata_end,
+                                               sizeof(cdata_end) - 1u,
+                                               &skip_end) == 0) {
+                return 0;
+            }
+            cursor = skip_end + sizeof(cdata_end) - 1u;
+            continue;
+        }
+
+        if (sixel_webp_xmp_find_token_from(payload,
+                                           payload_size,
+                                           cursor,
+                                           pi_begin,
+                                           sizeof(pi_begin) - 1u,
+                                           &skip_begin) != 0 &&
+            skip_begin == cursor) {
+            if (sixel_webp_xmp_find_token_from(payload,
+                                               payload_size,
+                                               cursor + sizeof(pi_begin) - 1u,
+                                               pi_end,
+                                               sizeof(pi_end) - 1u,
+                                               &skip_end) == 0) {
+                return 0;
+            }
+            cursor = skip_end + sizeof(pi_end) - 1u;
+            continue;
+        }
+
+        name_cursor = cursor + 1u;
+        tag->is_closing = 0;
+        if (name_cursor < payload_size && payload[name_cursor] == '/') {
+            tag->is_closing = 1;
+            ++name_cursor;
+        }
+        while (name_cursor < payload_size &&
+               sixel_webp_xmp_is_space(payload[name_cursor]) != 0) {
+            ++name_cursor;
+        }
+        if (name_cursor >= payload_size ||
+            sixel_webp_xmp_is_name_char(payload[name_cursor]) == 0) {
+            ++cursor;
+            continue;
+        }
+
+        tag->name_begin = name_cursor;
+        while (name_cursor < payload_size &&
+               sixel_webp_xmp_is_name_char(payload[name_cursor]) != 0) {
+            ++name_cursor;
+        }
+        tag->name_end = name_cursor;
+        if (sixel_webp_xmp_find_tag_end(payload,
+                                        payload_size,
+                                        name_cursor,
+                                        &tag->tag_end) == 0) {
+            return 0;
+        }
+
+        tag->tag_begin = cursor;
+        tag->attrs_begin = name_cursor;
+        tag->is_self_closing = 0;
+        trim_cursor = tag->tag_end;
+        while (trim_cursor > tag->attrs_begin &&
+               sixel_webp_xmp_is_space(payload[trim_cursor - 1u]) != 0) {
+            --trim_cursor;
+        }
+        if (trim_cursor > tag->attrs_begin &&
+            payload[trim_cursor - 1u] == '/') {
+            tag->is_self_closing = 1;
+        }
+        *offset = tag->tag_end + 1u;
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+sixel_webp_xmp_match_profile_name(unsigned char const *payload,
+                                  size_t value_begin,
+                                  size_t value_end,
+                                  sixel_webp_xmp_cms_profile_kind_t *kind);
+
+static int
+sixel_webp_xmp_parse_attribute_fragment(unsigned char const *payload,
+                                        size_t payload_size,
+                                        char const *local_name,
+                                        sixel_webp_xmp_cms_profile_kind_t *kind)
+{
+    size_t cursor;
+    size_t name_begin;
+    size_t name_end;
+    size_t value_begin;
+    size_t value_end;
+    unsigned char quote;
+    sixel_webp_xmp_cms_profile_kind_t parsed_kind;
+    int found_profile;
+
+    cursor = 0u;
+    name_begin = 0u;
+    name_end = 0u;
+    value_begin = 0u;
+    value_end = 0u;
+    quote = '\0';
+    parsed_kind = SIXEL_WEBP_XMP_CMS_PROFILE_UNKNOWN;
+    found_profile = 0;
+    if (payload == NULL || local_name == NULL || kind == NULL) {
+        return 0;
+    }
+
+    while (cursor < payload_size) {
+        while (cursor < payload_size &&
+               sixel_webp_xmp_is_space(payload[cursor]) != 0) {
+            ++cursor;
+        }
+        if (cursor >= payload_size) {
+            break;
+        }
+        if (sixel_webp_xmp_is_name_char(payload[cursor]) == 0) {
+            return 0;
+        }
+
+        name_begin = cursor;
+        while (cursor < payload_size &&
+               sixel_webp_xmp_is_name_char(payload[cursor]) != 0) {
+            ++cursor;
+        }
+        name_end = cursor;
+        while (cursor < payload_size &&
+               sixel_webp_xmp_is_space(payload[cursor]) != 0) {
+            ++cursor;
+        }
+        if (cursor >= payload_size || payload[cursor] != '=') {
+            return 0;
+        }
+        ++cursor;
+        while (cursor < payload_size &&
+               sixel_webp_xmp_is_space(payload[cursor]) != 0) {
+            ++cursor;
+        }
+        if (cursor >= payload_size) {
+            return 0;
+        }
+        quote = payload[cursor];
+        if (quote != '"' && quote != '\'') {
+            return 0;
+        }
+        ++cursor;
+        value_begin = cursor;
+        while (cursor < payload_size && payload[cursor] != quote) {
+            ++cursor;
+        }
+        if (cursor >= payload_size) {
+            return 0;
+        }
+        value_end = cursor;
+        ++cursor;
+
+        if (sixel_webp_xmp_qname_has_prefixed_local_name(payload,
+                                                          name_begin,
+                                                          name_end,
+                                                          local_name) != 0 &&
+            sixel_webp_xmp_match_profile_name(payload,
+                                              value_begin,
+                                              value_end,
+                                              &parsed_kind) != 0) {
+            *kind = parsed_kind;
+            found_profile = 1;
+        }
+    }
+
+    return found_profile;
 }
 
 static int
@@ -926,146 +1221,144 @@ sixel_webp_xmp_parse_icc_profile_kind(unsigned char const *payload,
                                       sixel_webp_xmp_cms_profile_kind_t *kind)
 {
     static char const local_name[] = "ICCProfile";
+    sixel_webp_xmp_tag_t tag;
+    sixel_webp_xmp_tag_t close_tag;
     size_t offset;
+    size_t close_offset;
     size_t cursor;
-    size_t name_begin;
-    size_t close_name_begin;
-    size_t tag_end;
-    size_t close_cursor;
+    size_t attr_name_begin;
+    size_t attr_name_end;
     size_t value_begin;
     size_t value_end;
-    size_t local_size;
     unsigned char quote;
     int close_found;
+    int saw_tag;
 
+    memset(&tag, 0, sizeof(tag));
+    memset(&close_tag, 0, sizeof(close_tag));
     offset = 0u;
+    close_offset = 0u;
     cursor = 0u;
-    name_begin = 0u;
-    close_name_begin = 0u;
-    tag_end = 0u;
-    close_cursor = 0u;
+    attr_name_begin = 0u;
+    attr_name_end = 0u;
     value_begin = 0u;
     value_end = 0u;
-    local_size = sizeof(local_name) - 1u;
     quote = '\0';
     close_found = 0;
+    saw_tag = 0;
     if (payload == NULL || kind == NULL) {
         return 0;
     }
     *kind = SIXEL_WEBP_XMP_CMS_PROFILE_UNKNOWN;
 
-    while (sixel_webp_xmp_find_token(payload,
-                                     payload_size,
-                                     local_name,
-                                     local_size,
-                                     offset,
-                                     &cursor) != 0) {
-        if (sixel_webp_xmp_find_prefixed_local_name(payload,
-                                                    payload_size,
-                                                    cursor,
-                                                    local_size,
-                                                    NULL) == 0) {
-            offset = cursor + 1u;
-            continue;
-        }
-        cursor += local_size;
-        while (cursor < payload_size &&
-               sixel_webp_xmp_is_space(payload[cursor]) != 0) {
-            ++cursor;
-        }
-        if (cursor >= payload_size || payload[cursor] != '=') {
-            offset = cursor;
-            continue;
-        }
-        ++cursor;
-        while (cursor < payload_size &&
-               sixel_webp_xmp_is_space(payload[cursor]) != 0) {
-            ++cursor;
-        }
-        if (cursor >= payload_size) {
-            break;
-        }
-        quote = payload[cursor];
-        if (quote != '"' && quote != '\'') {
-            offset = cursor;
-            continue;
-        }
-        ++cursor;
-        value_begin = cursor;
-        while (cursor < payload_size && payload[cursor] != quote) {
-            ++cursor;
-        }
-        if (cursor >= payload_size) {
-            break;
-        }
-        value_end = cursor;
-        if (sixel_webp_xmp_match_profile_name(payload,
-                                              value_begin,
-                                              value_end,
-                                              kind) != 0) {
-            return 1;
-        }
-        offset = cursor + 1u;
-    }
-
-    offset = 0u;
-    while (sixel_webp_xmp_find_token(payload, payload_size, local_name,
-                                     local_size, offset, &cursor) != 0) {
-        if (sixel_webp_xmp_find_prefixed_local_name(payload,
-                                                    payload_size,
-                                                    cursor,
-                                                    local_size,
-                                                    &name_begin) == 0) {
-            offset = cursor + 1u;
-            continue;
-        }
-        if (name_begin < 1u || payload[name_begin - 1u] != '<') {
-            offset = cursor + 1u;
-            continue;
-        }
-        cursor += local_size;
-        if (sixel_webp_xmp_find_tag_end(payload,
+    while (sixel_webp_xmp_find_next_tag(payload,
                                         payload_size,
-                                        cursor,
-                                        &tag_end) == 0) {
-            offset = cursor;
+                                        &offset,
+                                        &tag) != 0) {
+        saw_tag = 1;
+        if (tag.is_closing != 0) {
             continue;
         }
-        value_begin = tag_end + 1u;
-        close_cursor = value_begin;
+
+        cursor = tag.attrs_begin;
+        while (cursor < tag.tag_end) {
+            while (cursor < tag.tag_end &&
+                   sixel_webp_xmp_is_space(payload[cursor]) != 0) {
+                ++cursor;
+            }
+            if (cursor >= tag.tag_end) {
+                break;
+            }
+            if (payload[cursor] == '/') {
+                ++cursor;
+                continue;
+            }
+            if (sixel_webp_xmp_is_name_char(payload[cursor]) == 0) {
+                ++cursor;
+                continue;
+            }
+
+            attr_name_begin = cursor;
+            while (cursor < tag.tag_end &&
+                   sixel_webp_xmp_is_name_char(payload[cursor]) != 0) {
+                ++cursor;
+            }
+            attr_name_end = cursor;
+            while (cursor < tag.tag_end &&
+                   sixel_webp_xmp_is_space(payload[cursor]) != 0) {
+                ++cursor;
+            }
+            if (cursor >= tag.tag_end || payload[cursor] != '=') {
+                continue;
+            }
+            ++cursor;
+            while (cursor < tag.tag_end &&
+                   sixel_webp_xmp_is_space(payload[cursor]) != 0) {
+                ++cursor;
+            }
+            if (cursor >= tag.tag_end) {
+                break;
+            }
+            quote = payload[cursor];
+            if (quote != '"' && quote != '\'') {
+                continue;
+            }
+            ++cursor;
+            value_begin = cursor;
+            while (cursor < tag.tag_end && payload[cursor] != quote) {
+                ++cursor;
+            }
+            if (cursor >= tag.tag_end) {
+                break;
+            }
+            value_end = cursor;
+            ++cursor;
+
+            if (sixel_webp_xmp_qname_has_prefixed_local_name(payload,
+                                                              attr_name_begin,
+                                                              attr_name_end,
+                                                              local_name) == 0) {
+                continue;
+            }
+            if (sixel_webp_xmp_match_profile_name(payload,
+                                                  value_begin,
+                                                  value_end,
+                                                  kind) != 0) {
+                return 1;
+            }
+        }
+
+        if (tag.is_self_closing != 0 ||
+            sixel_webp_xmp_qname_has_prefixed_local_name(payload,
+                                                         tag.name_begin,
+                                                         tag.name_end,
+                                                         local_name) == 0) {
+            continue;
+        }
+
+        value_begin = tag.tag_end + 1u;
+        close_offset = offset;
         close_found = 0;
-        while (sixel_webp_xmp_find_token(payload, payload_size, local_name,
-                                         local_size, close_cursor,
-                                         &close_cursor) != 0) {
-            if (sixel_webp_xmp_find_prefixed_local_name(payload,
-                                                        payload_size,
-                                                        close_cursor,
-                                                        local_size,
-                                                        &close_name_begin) == 0) {
-                close_cursor += 1u;
+        while (sixel_webp_xmp_find_next_tag(payload,
+                                            payload_size,
+                                            &close_offset,
+                                            &close_tag) != 0) {
+            if (close_tag.is_closing == 0) {
                 continue;
             }
-            if (close_name_begin < 2u ||
-                payload[close_name_begin - 2u] != '<' ||
-                payload[close_name_begin - 1u] != '/') {
-                close_cursor += 1u;
+            if (sixel_webp_xmp_tag_name_equals(payload,
+                                               tag.name_begin,
+                                               tag.name_end,
+                                               close_tag.name_begin,
+                                               close_tag.name_end) == 0) {
                 continue;
             }
-            tag_end = close_cursor + local_size;
-            while (tag_end < payload_size &&
-                   sixel_webp_xmp_is_space(payload[tag_end]) != 0) {
-                ++tag_end;
-            }
-            if (tag_end >= payload_size || payload[tag_end] != '>') {
-                close_cursor += 1u;
-                continue;
-            }
-            value_end = close_name_begin - 2u;
             close_found = 1;
+            value_end = close_tag.tag_begin;
             break;
         }
         if (close_found == 0 || value_end < value_begin) {
-            break;
+            return 0;
         }
         if (sixel_webp_xmp_match_profile_name(payload,
                                               value_begin,
@@ -1073,8 +1366,19 @@ sixel_webp_xmp_parse_icc_profile_kind(unsigned char const *payload,
                                               kind) != 0) {
             return 1;
         }
-        offset = tag_end + 1u;
-        value_end = 0u;
+        offset = close_offset;
+    }
+
+    /*
+     * Keep compatibility with historical WebP fixtures that store a bare
+     * prefixed attribute assignment in the XMP payload.
+     */
+    if (saw_tag == 0 &&
+        sixel_webp_xmp_parse_attribute_fragment(payload,
+                                                payload_size,
+                                                local_name,
+                                                kind) != 0) {
+        return 1;
     }
     return 0;
 }
