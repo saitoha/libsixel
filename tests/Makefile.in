@@ -5022,6 +5022,11 @@ clean-local:
 	rm -f $(abs_top_builddir)/tests/data/inputs/formats/snake_64_embedded_a98_icc_xmp_iccprofile_iccp_overlimit.webp
 	rm -f $(abs_top_builddir)/tests/data/inputs/formats/animated-lossy-8x8-2frame-min-embedded-srgb-icc-overlimit.webp
 	rm -f $(abs_top_builddir)/tests/data/inputs/formats/animated-lossy-8x8-2frame-min-embedded-srgb-icc-xmp-icc-displayp3-overlimit.webp
+	rm -f $(abs_top_builddir)/tests/data/inputs/formats/orientation_exif_o6_vp8_static_12x8_exif_limit.webp
+	rm -f $(abs_top_builddir)/tests/data/inputs/formats/orientation_exif_o6_vp8_static_12x8_exif_overlimit.webp
+	rm -f $(abs_top_builddir)/tests/data/inputs/formats/orientation_exif_o6_vp8_static_12x8_xmp_o3_exif_overlimit.webp
+	rm -f $(abs_top_builddir)/tests/data/inputs/formats/animated-lossy-8x8-2frame-min-exif-o6-limit.webp
+	rm -f $(abs_top_builddir)/tests/data/inputs/formats/animated-lossy-8x8-2frame-min-exif-o6-overlimit.webp
 	rm -f $(abs_top_builddir)/tests/data/inputs/formats/snake16_psb_*_high_offset_xxlarge*.psd
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
