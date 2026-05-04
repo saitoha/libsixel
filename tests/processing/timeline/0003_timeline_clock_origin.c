@@ -3,18 +3,16 @@
  *
  * Regression test for timeline clock ownership.  A logger created after the
  * writer clock starts must still report timestamps on the shared writer
- * timeline, not relative to its own construction time.  The test writes,
- * flushes, and verifies the JSONL in one native process so Git for Windows does
- * not need to launch a second MSVC test_runner instance for the verifier phase.
+ * timeline, not relative to its own construction time.  The C side only writes
+ * and flushes the JSONL; the TAP script verifies the completed file using shell
+ * builtins so MSVC does not reopen the just-flushed file inside the native
+ * process.
  */
 
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,8 +24,6 @@
 #include "src/timer.h"
 
 #define TIMELINE_CLOCK_WAIT_SECONDS 0.020
-#define TIMELINE_CLOCK_MIN_DELTA_SECONDS 0.010
-
 static void
 timeline_wait_seconds(double seconds)
 {
@@ -45,82 +41,6 @@ timeline_wait_seconds(double seconds)
 }
 
 static int
-timeline_parse_timestamp(char const *line, double *timestamp)
-{
-    char const *field;
-    char *endptr;
-    double value;
-
-    if (line == NULL || timestamp == NULL) {
-        return 0;
-    }
-    field = strstr(line, "\"ts\":");
-    if (field == NULL) {
-        return 0;
-    }
-    field += strlen("\"ts\":");
-    value = strtod(field, &endptr);
-    if (endptr == (char *)field || value < 0.0) {
-        return 0;
-    }
-    *timestamp = value;
-    return 1;
-}
-
-static int
-timeline_read_clock_samples(char const *path,
-                            double *first_timestamp,
-                            double *second_timestamp)
-{
-    FILE *file;
-    char line[1024];
-    int found_first;
-    int found_second;
-
-    if (path == NULL || path[0] == '\0' ||
-        first_timestamp == NULL || second_timestamp == NULL) {
-        return 0;
-    }
-
-    file = sixel_compat_fopen(path, "r");
-    if (file == NULL) {
-#if HAVE_ERRNO_H
-        fprintf(stderr,
-                "timeline clock log was not written: path=%s errno=%d\n",
-                path,
-                errno);
-#else
-        fprintf(stderr,
-                "timeline clock log was not written: %s\n",
-                path);
-#endif
-        return 0;
-    }
-
-    found_first = 0;
-    found_second = 0;
-    while (fgets(line, sizeof(line), file) != NULL) {
-        if (strstr(line, "\"event\":\"first\"") != NULL) {
-            if (!timeline_parse_timestamp(line, first_timestamp)) {
-                fclose(file);
-                return 0;
-            }
-            found_first = 1;
-        }
-        if (strstr(line, "\"event\":\"second\"") != NULL) {
-            if (!timeline_parse_timestamp(line, second_timestamp)) {
-                fclose(file);
-                return 0;
-            }
-            found_second = 1;
-        }
-    }
-    fclose(file);
-
-    return found_first && found_second;
-}
-
-static int
 timeline_clock_origin_is_shared(void)
 {
     SIXELSTATUS status;
@@ -132,8 +52,6 @@ timeline_clock_origin_is_shared(void)
     void *service;
     char log_path[4096];
     char const *log_path_env;
-    double first_timestamp;
-    double second_timestamp;
     int success;
 
     allocator = NULL;
@@ -142,8 +60,6 @@ timeline_clock_origin_is_shared(void)
     logger2 = NULL;
     service = NULL;
     log_path_env = NULL;
-    first_timestamp = 0.0;
-    second_timestamp = 0.0;
     memset(log_path, 0, sizeof(log_path));
     success = 0;
 
@@ -210,21 +126,6 @@ timeline_clock_origin_is_shared(void)
         goto end;
     }
     writer->vtbl->flush(writer);
-
-    if (!timeline_read_clock_samples(log_path,
-                                     &first_timestamp,
-                                     &second_timestamp)) {
-        fprintf(stderr, "timeline clock JSONL verification failed\n");
-        goto end;
-    }
-    if (second_timestamp - first_timestamp <
-        TIMELINE_CLOCK_MIN_DELTA_SECONDS) {
-        fprintf(stderr,
-                "timeline clock origin regressed: first=%f second=%f\n",
-                first_timestamp,
-                second_timestamp);
-        goto end;
-    }
 
     success = 1;
 

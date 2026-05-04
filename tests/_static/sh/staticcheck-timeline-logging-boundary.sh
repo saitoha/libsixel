@@ -90,6 +90,11 @@ FILENAME ~ /\/tests\/processing\/timeline\/.*\.c$/ &&
     print path ":" FNR \
         ": timeline helper names must be unique for amalgamation"
 }
+FILENAME ~ /\/tests\/processing\/timeline\/000[23]_.*\.c$/ &&
+    /sixel_compat_fopen[ \t]*\(|fopen[ \t]*\(|fgets[ \t]*\(/ {
+    print path ":" FNR \
+        ": timeline producer must not read back JSONL in native process"
+}
 '
 
 find "$src_root/amalgamation" "$src_root/wic" "$src_root/src" \
@@ -210,11 +215,19 @@ awk '
 /timeline JSONL first line/ {
     saw_failure_line_diag = 1
 }
+/timeline JSONL has fewer than two sessions/ {
+    saw_shell_session_verify = 1
+}
 END {
     if (!saw_failure_status_diag || !saw_failure_line_diag) {
         print "tests/processing/timeline/" \
             "0002_timeline_parallel_encode_decode.t:" \
             ": timeline failure must print JSONL diagnostics"
+    }
+    if (!saw_shell_session_verify) {
+        print "tests/processing/timeline/" \
+            "0002_timeline_parallel_encode_decode.t:" \
+            ": timeline TAP must verify multiple sessions"
     }
 }
 ' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
@@ -236,11 +249,19 @@ awk '
 /timeline JSONL first line/ {
     saw_failure_line_diag = 1
 }
+/timeline clock origin regressed/ {
+    saw_shell_clock_verify = 1
+}
 END {
     if (!saw_failure_status_diag || !saw_failure_line_diag) {
         print "tests/processing/timeline/" \
             "0003_timeline_clock_origin.t:" \
             ": timeline failure must print JSONL diagnostics"
+    }
+    if (!saw_shell_clock_verify) {
+        print "tests/processing/timeline/" \
+            "0003_timeline_clock_origin.t:" \
+            ": timeline TAP must verify the shared clock origin"
     }
 }
 ' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"
@@ -271,10 +292,10 @@ awk '
 	            "0002_timeline_parallel_encode_decode.c:" \
 	            ": producer must flush JSONL before returning success"
 	    }
-	    if (!saw_inline_verify) {
+	    if (saw_inline_verify) {
 	        print "tests/processing/timeline/" \
 	            "0002_timeline_parallel_encode_decode.c:" \
-	            ": producer must verify JSONL after flushing"
+	            ": producer must leave JSONL verification to TAP shell"
 	    }
 	}
 	' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.c"
@@ -298,10 +319,10 @@ awk '
 	            "0003_timeline_clock_origin.c:" \
 	            ": producer must flush JSONL before returning success"
 	    }
-	    if (!saw_inline_verify) {
+	    if (saw_inline_verify) {
 	        print "tests/processing/timeline/" \
 	            "0003_timeline_clock_origin.c:" \
-	            ": producer must verify clock JSONL after flushing"
+	            ": producer must leave clock JSONL verification to TAP shell"
 	    }
 	}
 	' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.c"

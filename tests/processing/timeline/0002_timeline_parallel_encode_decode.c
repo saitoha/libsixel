@@ -2,18 +2,15 @@
  * SPDX-License-Identifier: MIT
  *
  * Concurrent timeline logging test.  Multiple encoder/decoder objects share the
- * process timeline_writer service.  The test writes, flushes, and verifies the
- * JSONL in one native process so Git for Windows does not need to launch a
- * second MSVC test_runner instance for the verifier phase.
+ * process timeline_writer service.  The C side only writes and flushes the
+ * JSONL; the TAP script verifies the completed file using shell builtins so
+ * MSVC does not reopen the just-flushed file inside the native process.
  */
 
 #if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 
-#if HAVE_ERRNO_H
-#include <errno.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,7 +22,6 @@
 #include "src/threading.h"
 
 #define TIMELINE_PARALLEL_WORKERS 4
-#define TIMELINE_MAX_SESSIONS 16
 #if SIXEL_ENABLE_THREADS
 
 typedef struct timeline_parallel_sync {
@@ -224,136 +220,6 @@ timeline_parallel_worker(void *arg)
 }
 
 static int
-timeline_log_has_required_fields(char const *line)
-{
-    if (strstr(line, "\"session_id\":") == NULL) {
-        return 0;
-    }
-    if (strstr(line, "\"thread\":") == NULL) {
-        return 0;
-    }
-    if (strstr(line, "\"worker\":") == NULL) {
-        return 0;
-    }
-    if (strstr(line, "\"role\":") == NULL) {
-        return 0;
-    }
-    if (strstr(line, "\"event\":") == NULL) {
-        return 0;
-    }
-    if (strstr(line, "\"job\":") == NULL) {
-        return 0;
-    }
-    return 1;
-}
-
-static int
-timeline_parse_session_id(char const *line, unsigned int *session_id)
-{
-    char const *field;
-    char *endptr;
-    unsigned long value;
-
-    if (line == NULL || session_id == NULL) {
-        return 0;
-    }
-    field = strstr(line, "\"session_id\":");
-    if (field == NULL) {
-        return 0;
-    }
-    field += strlen("\"session_id\":");
-    value = strtoul(field, &endptr, 10);
-    if (endptr == (char *)field || value == 0UL) {
-        return 0;
-    }
-    *session_id = (unsigned int)value;
-    return 1;
-}
-
-static void
-timeline_record_session(unsigned int *session_ids,
-                        int *session_count,
-                        unsigned int session_id)
-{
-    int index;
-
-    for (index = 0; index < *session_count; ++index) {
-        if (session_ids[index] == session_id) {
-            return;
-        }
-    }
-    if (*session_count < TIMELINE_MAX_SESSIONS) {
-        session_ids[*session_count] = session_id;
-        *session_count = *session_count + 1;
-    }
-}
-
-static int
-timeline_verify_jsonl(char const *path)
-{
-    FILE *file;
-    unsigned int session_ids[TIMELINE_MAX_SESSIONS];
-    unsigned int session_id;
-    char line[1024];
-    int line_count;
-    int session_count;
-    size_t line_len;
-
-    if (path == NULL || path[0] == '\0') {
-        return 0;
-    }
-
-    file = sixel_compat_fopen(path, "r");
-    if (file == NULL) {
-#if HAVE_ERRNO_H
-        fprintf(stderr,
-                "timeline log was not written: path=%s errno=%d\n",
-                path,
-                errno);
-#else
-        fprintf(stderr, "timeline log was not written: %s\n", path);
-#endif
-        return 0;
-    }
-
-    line_count = 0;
-    session_count = 0;
-    memset(session_ids, 0, sizeof(session_ids));
-    while (fgets(line, sizeof(line), file) != NULL) {
-        line_len = strlen(line);
-        if (line_len == 0u || line[line_len - 1u] != '\n') {
-            fprintf(stderr, "timeline log contains a broken JSONL line\n");
-            fclose(file);
-            return 0;
-        }
-        if (!timeline_log_has_required_fields(line)) {
-            fprintf(stderr, "timeline log line is missing required fields\n");
-            fclose(file);
-            return 0;
-        }
-        if (!timeline_parse_session_id(line, &session_id)) {
-            fprintf(stderr, "timeline log line has invalid session_id\n");
-            fclose(file);
-            return 0;
-        }
-        timeline_record_session(session_ids, &session_count, session_id);
-        line_count = line_count + 1;
-    }
-    fclose(file);
-
-    if (line_count == 0) {
-        fprintf(stderr, "timeline log did not receive any records\n");
-        return 0;
-    }
-    if (session_count < 2) {
-        fprintf(stderr, "timeline log has fewer than two sessions\n");
-        return 0;
-    }
-
-    return 1;
-}
-
-static int
 timeline_flush_writer(char const *path)
 {
     SIXELSTATUS status;
@@ -497,9 +363,6 @@ end:
         return 0;
     }
     if (!timeline_flush_writer(log_path)) {
-        return 0;
-    }
-    if (!timeline_verify_jsonl(log_path)) {
         return 0;
     }
     return 1;
