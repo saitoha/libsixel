@@ -2203,9 +2203,26 @@ sixel_webp_anim_rgba_scratch_ensure(sixel_webp_rgba_scratch_t *scratch,
 }
 
 static SIXELSTATUS
+sixel_webp_anim_decode_workspace_reset(
+    sixel_webp_anim_decode_workspace_t *workspace,
+    sixel_allocator_t *allocator)
+{
+    if (workspace == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (allocator != NULL) {
+        sixel_webp_vp8_workspace_reset(&workspace->vp8, allocator);
+        sixel_webp_vp8l_workspace_reset(&workspace->vp8l, allocator);
+    }
+    memset(workspace, 0, sizeof(*workspace));
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
                                   sixel_allocator_t *allocator,
                                   sixel_webp_rgba_scratch_t *scratch,
+                                  sixel_webp_anim_decode_workspace_t *workspace,
                                   unsigned char **prgba,
                                   int *pwidth,
                                   int *pheight)
@@ -2214,7 +2231,7 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
 
     status = SIXEL_OK;
     if (anim_frame == NULL || allocator == NULL || scratch == NULL ||
-        prgba == NULL ||
+        workspace == NULL || prgba == NULL ||
         pwidth == NULL || pheight == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2232,7 +2249,7 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
 
     if (anim_frame->kind == SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC ||
         anim_frame->kind == SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC) {
-        status = sixel_webp_decode_vp8_payload_into(
+        status = sixel_webp_decode_vp8_payload_into_with_workspace(
             anim_frame->vp8_payload,
             anim_frame->vp8_payload_size,
             scratch->pixels,
@@ -2240,6 +2257,7 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
             prgba,
             pwidth,
             pheight,
+            &workspace->vp8,
             allocator);
         if (SIXEL_FAILED(status)) {
             return status;
@@ -2266,7 +2284,7 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
     }
 
     if (anim_frame->kind == SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC) {
-        status = sixel_webp_decode_vp8l_payload_into(
+        status = sixel_webp_decode_vp8l_payload_into_with_workspace(
             anim_frame->vp8l_payload,
             anim_frame->vp8l_payload_size,
             scratch->pixels,
@@ -2274,6 +2292,7 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
             prgba,
             pwidth,
             pheight,
+            &workspace->vp8l,
             allocator);
         if (SIXEL_SUCCEEDED(status) &&
             (*pwidth != anim_frame->width || *pheight != anim_frame->height)) {
@@ -2584,6 +2603,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     int can_transfer_canvas;
     sixel_webp_anim_meta_cache_t meta_cache;
     sixel_webp_rgba_scratch_t scratch;
+    sixel_webp_anim_decode_workspace_t decode_workspace;
 
     status = SIXEL_OK;
     memset(&container, 0, sizeof(container));
@@ -2591,6 +2611,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     memset(&stream, 0, sizeof(stream));
     memset(&meta_cache, 0, sizeof(meta_cache));
     memset(&scratch, 0, sizeof(scratch));
+    memset(&decode_workspace, 0, sizeof(decode_workspace));
     frame = NULL;
     rgba = NULL;
     canvas_pixels = NULL;
@@ -2734,6 +2755,7 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                 &stream.frames[source_frame_no],
                 allocator,
                 &scratch,
+                &decode_workspace,
                 &rgba,
                 &subframe_width,
                 &subframe_height);
@@ -2964,6 +2986,9 @@ end:
     sixel_webp_anim_rgba_scratch_reset(&scratch,
                                        chunk != NULL ? allocator
                                                      : NULL);
+    sixel_webp_anim_decode_workspace_reset(&decode_workspace,
+                                           chunk != NULL ? allocator
+                                                         : NULL);
     sixel_webp_anim_meta_cache_reset(&meta_cache);
     sixel_webp_anim_stream_reset(&stream, chunk != NULL ? allocator
                                                         : NULL);

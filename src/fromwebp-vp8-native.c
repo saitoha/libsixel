@@ -251,12 +251,45 @@ sixel_webp_vp8_avg3(int a,
     return (unsigned char)((a + (b << 1) + c + 2) >> 2);
 }
 
+static SIXELSTATUS
+sixel_webp_vp8_workspace_ensure(unsigned char **pptr,
+                                size_t *pcapacity,
+                                size_t required_size,
+                                sixel_allocator_t *allocator)
+{
+    unsigned char *allocated;
+
+    allocated = NULL;
+    if (pptr == NULL || pcapacity == NULL || allocator == NULL ||
+        required_size == 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (*pptr != NULL && *pcapacity >= required_size) {
+        return SIXEL_OK;
+    }
+    allocated = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                        required_size);
+    if (allocated == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin webp: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (*pptr != NULL) {
+        sixel_allocator_free(allocator, *pptr);
+    }
+    *pptr = allocated;
+    *pcapacity = required_size;
+    return SIXEL_OK;
+}
+
 static int
 sixel_webp_vp8_alloc_planes(
     sixel_webp_vp8_planes_t *planes,
     sixel_webp_vp8_frame_header_t const *header,
+    sixel_webp_vp8_workspace_t *workspace,
     sixel_allocator_t *allocator)
 {
+    SIXELSTATUS status;
     size_t y_size;
     size_t uv_size;
     size_t y_pixel_count;
@@ -266,6 +299,7 @@ sixel_webp_vp8_alloc_planes(
     unsigned int uv_width;
     unsigned int uv_height;
 
+    status = SIXEL_OK;
     y_size = 0u;
     uv_size = 0u;
     y_pixel_count = 0u;
@@ -305,17 +339,46 @@ sixel_webp_vp8_alloc_planes(
     }
     uv_size = uv_pixel_count;
 
-    planes->y = (unsigned char *)sixel_allocator_malloc(allocator, y_size);
-    planes->u = (unsigned char *)sixel_allocator_malloc(allocator, uv_size);
-    planes->v = (unsigned char *)sixel_allocator_malloc(allocator, uv_size);
-    if (planes->y == NULL || planes->u == NULL || planes->v == NULL) {
-        sixel_helper_set_additional_message(
-            "builtin webp: sixel_allocator_malloc() failed.");
-        sixel_allocator_free(allocator, planes->y);
-        sixel_allocator_free(allocator, planes->u);
-        sixel_allocator_free(allocator, planes->v);
-        memset(planes, 0, sizeof(*planes));
-        return SIXEL_BAD_ALLOCATION;
+    if (workspace == NULL) {
+        planes->y = (unsigned char *)sixel_allocator_malloc(allocator, y_size);
+        planes->u = (unsigned char *)sixel_allocator_malloc(allocator, uv_size);
+        planes->v = (unsigned char *)sixel_allocator_malloc(allocator, uv_size);
+        if (planes->y == NULL || planes->u == NULL || planes->v == NULL) {
+            sixel_helper_set_additional_message(
+                "builtin webp: sixel_allocator_malloc() failed.");
+            sixel_allocator_free(allocator, planes->y);
+            sixel_allocator_free(allocator, planes->u);
+            sixel_allocator_free(allocator, planes->v);
+            memset(planes, 0, sizeof(*planes));
+            return SIXEL_BAD_ALLOCATION;
+        }
+    } else {
+        status = sixel_webp_vp8_workspace_ensure(&workspace->plane_y,
+                                                 &workspace->plane_y_bytes,
+                                                 y_size,
+                                                 allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        status = sixel_webp_vp8_workspace_ensure(&workspace->plane_u,
+                                                 &workspace->plane_u_bytes,
+                                                 uv_size,
+                                                 allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        status = sixel_webp_vp8_workspace_ensure(&workspace->plane_v,
+                                                 &workspace->plane_v_bytes,
+                                                 uv_size,
+                                                 allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        workspace->uv_width = uv_width;
+        workspace->uv_height = uv_height;
+        planes->y = workspace->plane_y;
+        planes->u = workspace->plane_u;
+        planes->v = workspace->plane_v;
     }
 
     planes->y_stride = width;
@@ -330,15 +393,37 @@ sixel_webp_vp8_alloc_planes(
 
 static void
 sixel_webp_vp8_free_planes(sixel_webp_vp8_planes_t *planes,
+                           sixel_webp_vp8_workspace_t *workspace,
                            sixel_allocator_t *allocator)
 {
     if (planes == NULL || allocator == NULL) {
         return;
     }
-    sixel_allocator_free(allocator, planes->y);
-    sixel_allocator_free(allocator, planes->u);
-    sixel_allocator_free(allocator, planes->v);
+    if (workspace == NULL) {
+        sixel_allocator_free(allocator, planes->y);
+        sixel_allocator_free(allocator, planes->u);
+        sixel_allocator_free(allocator, planes->v);
+    }
     memset(planes, 0, sizeof(*planes));
+}
+
+void
+sixel_webp_vp8_workspace_reset(sixel_webp_vp8_workspace_t *workspace,
+                               sixel_allocator_t *allocator)
+{
+    if (workspace == NULL || allocator == NULL) {
+        return;
+    }
+    sixel_allocator_free(allocator, workspace->plane_y);
+    sixel_allocator_free(allocator, workspace->plane_u);
+    sixel_allocator_free(allocator, workspace->plane_v);
+    sixel_allocator_free(allocator, workspace->above_y);
+    sixel_allocator_free(allocator, workspace->above_u);
+    sixel_allocator_free(allocator, workspace->above_v);
+    sixel_allocator_free(allocator, workspace->above_y2);
+    sixel_allocator_free(allocator, workspace->above_mb_mode);
+    sixel_allocator_free(allocator, workspace->above_bottom_bmode);
+    memset(workspace, 0, sizeof(*workspace));
 }
 
 static int
@@ -1361,6 +1446,7 @@ sixel_webp_vp8_decode_native_intra(
     sixel_webp_vp8_frame_header_t const *header,
     sixel_webp_vp8_frame_context_t *context,
     sixel_webp_vp8_planes_t *planes,
+    sixel_webp_vp8_workspace_t *workspace,
     sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -1528,22 +1614,78 @@ sixel_webp_vp8_decode_native_intra(
     above_mb_mode_size = (size_t)context->mb_cols;
     above_bottom_bmode_size = (size_t)context->mb_cols * 4u;
 
-    above_y = (unsigned char *)sixel_allocator_malloc(allocator, above_y_size);
-    above_u = (unsigned char *)sixel_allocator_malloc(allocator, above_u_size);
-    above_v = (unsigned char *)sixel_allocator_malloc(allocator, above_v_size);
-    above_y2 =
-        (unsigned char *)sixel_allocator_malloc(allocator, above_y2_size);
-    above_mb_mode = (unsigned char *)sixel_allocator_malloc(
-        allocator, above_mb_mode_size);
-    above_bottom_bmode = (unsigned char *)sixel_allocator_malloc(
-        allocator, above_bottom_bmode_size);
-    if (above_y == NULL || above_u == NULL || above_v == NULL ||
-        above_y2 == NULL || above_mb_mode == NULL ||
-        above_bottom_bmode == NULL) {
-        sixel_helper_set_additional_message(
-            "builtin webp: sixel_allocator_malloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto cleanup;
+    if (workspace == NULL) {
+        above_y = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                          above_y_size);
+        above_u = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                          above_u_size);
+        above_v = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                          above_v_size);
+        above_y2 =
+            (unsigned char *)sixel_allocator_malloc(allocator, above_y2_size);
+        above_mb_mode = (unsigned char *)sixel_allocator_malloc(
+            allocator, above_mb_mode_size);
+        above_bottom_bmode = (unsigned char *)sixel_allocator_malloc(
+            allocator, above_bottom_bmode_size);
+        if (above_y == NULL || above_u == NULL || above_v == NULL ||
+            above_y2 == NULL || above_mb_mode == NULL ||
+            above_bottom_bmode == NULL) {
+            sixel_helper_set_additional_message(
+                "builtin webp: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+    } else {
+        status = sixel_webp_vp8_workspace_ensure(&workspace->above_y,
+                                                 &workspace->above_y_bytes,
+                                                 above_y_size,
+                                                 allocator);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        status = sixel_webp_vp8_workspace_ensure(&workspace->above_u,
+                                                 &workspace->above_u_bytes,
+                                                 above_u_size,
+                                                 allocator);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        status = sixel_webp_vp8_workspace_ensure(&workspace->above_v,
+                                                 &workspace->above_v_bytes,
+                                                 above_v_size,
+                                                 allocator);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        status = sixel_webp_vp8_workspace_ensure(&workspace->above_y2,
+                                                 &workspace->above_y2_bytes,
+                                                 above_y2_size,
+                                                 allocator);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        status = sixel_webp_vp8_workspace_ensure(
+            &workspace->above_mb_mode,
+            &workspace->above_mb_mode_bytes,
+            above_mb_mode_size,
+            allocator);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        status = sixel_webp_vp8_workspace_ensure(
+            &workspace->above_bottom_bmode,
+            &workspace->above_bottom_bmode_bytes,
+            above_bottom_bmode_size,
+            allocator);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        above_y = workspace->above_y;
+        above_u = workspace->above_u;
+        above_v = workspace->above_v;
+        above_y2 = workspace->above_y2;
+        above_mb_mode = workspace->above_mb_mode;
+        above_bottom_bmode = workspace->above_bottom_bmode;
     }
     memset(above_y, 0, above_y_size);
     memset(above_u, 0, above_u_size);
@@ -2058,12 +2200,14 @@ sixel_webp_vp8_decode_native_intra(
     }
 
 cleanup:
-    sixel_allocator_free(allocator, above_y);
-    sixel_allocator_free(allocator, above_u);
-    sixel_allocator_free(allocator, above_v);
-    sixel_allocator_free(allocator, above_y2);
-    sixel_allocator_free(allocator, above_mb_mode);
-    sixel_allocator_free(allocator, above_bottom_bmode);
+    if (workspace == NULL) {
+        sixel_allocator_free(allocator, above_y);
+        sixel_allocator_free(allocator, above_u);
+        sixel_allocator_free(allocator, above_v);
+        sixel_allocator_free(allocator, above_y2);
+        sixel_allocator_free(allocator, above_mb_mode);
+        sixel_allocator_free(allocator, above_bottom_bmode);
+    }
     return status;
 }
 
@@ -2774,6 +2918,7 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
                                      unsigned char **prgba,
                                      int *pwidth,
                                      int *pheight,
+                                     sixel_webp_vp8_workspace_t *workspace,
                                      sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -2819,7 +2964,7 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
         return status;
     }
 
-    status = sixel_webp_vp8_alloc_planes(&planes, header, allocator);
+    status = sixel_webp_vp8_alloc_planes(&planes, header, workspace, allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -2837,6 +2982,7 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
                                                 header,
                                                 &context,
                                                 &planes,
+                                                workspace,
                                                 allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
@@ -2856,7 +3002,7 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
     *pheight = header->height;
 
 cleanup:
-    sixel_webp_vp8_free_planes(&planes, allocator);
+    sixel_webp_vp8_free_planes(&planes, workspace, allocator);
     return status;
 }
 

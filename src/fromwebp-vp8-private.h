@@ -58,6 +58,7 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
                                      unsigned char **prgba,
                                      int *pwidth,
                                      int *pheight,
+                                     sixel_webp_vp8_workspace_t *workspace,
                                      sixel_allocator_t *allocator);
 
 #endif  /* LIBSIXEL_FROMWEBP_VP8_PRIVATE_H */
