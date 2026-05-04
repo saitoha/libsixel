@@ -146,14 +146,48 @@ enum {
     SIXEL_STATUS_MESSAGE_INITIAL_CAPACITY = 4096
 };
 
-static char status_markup_storage[SIXEL_STATUS_MESSAGE_INITIAL_CAPACITY] =
-    { 0x0 };
-static char status_render_storage[SIXEL_STATUS_MESSAGE_INITIAL_CAPACITY] =
-    { 0x0 };
-static char *status_markup_buffer = status_markup_storage;
-static char *status_render_buffer = status_render_storage;
-static size_t status_markup_capacity = sizeof(status_markup_storage);
-static size_t status_render_capacity = sizeof(status_render_storage);
+#if defined(__PCC__) || defined(__TINYC__)
+# define SIXEL_STATUS_NO_TLS_COMPILER 1
+#else
+# define SIXEL_STATUS_NO_TLS_COMPILER 0
+#endif
+
+#if defined(_MSC_VER)
+# if defined(_MT)
+#  define SIXEL_STATUS_TLS __declspec(thread)
+# else
+#  define SIXEL_STATUS_TLS
+# endif
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
+    && !SIXEL_STATUS_NO_TLS_COMPILER
+# define SIXEL_STATUS_TLS _Thread_local
+#elif (defined(__GNUC__) || defined(__clang__)) \
+    && !SIXEL_STATUS_NO_TLS_COMPILER
+# define SIXEL_STATUS_TLS __thread
+#else
+# define SIXEL_STATUS_TLS
+#endif
+
+typedef struct sixel_status_message_store {
+    char markup_storage[SIXEL_STATUS_MESSAGE_INITIAL_CAPACITY];
+    char render_storage[SIXEL_STATUS_MESSAGE_INITIAL_CAPACITY];
+    char *markup_buffer;
+    char *render_buffer;
+    size_t markup_capacity;
+    size_t render_capacity;
+    int initialized;
+} sixel_status_message_store_t;
+
+/*
+ * The public getter returns a borrowed pointer.  Keeping both the raw markup
+ * and rendered text in thread-local storage prevents parallel workers from
+ * racing on a process-wide buffer or invalidating another thread's return
+ * value.
+ */
+static SIXEL_STATUS_TLS sixel_status_message_store_t status_message_store;
+
+#undef SIXEL_STATUS_TLS
+#undef SIXEL_STATUS_NO_TLS_COMPILER
 
 enum sixel_status_markup_attr {
     SIXEL_STATUS_ATTR_NONE = 0,
@@ -195,8 +229,11 @@ sixel_status_reserve_buffer(char **buffer,
 static int
 sixel_status_force_colors_enabled(void);
 
+static sixel_status_message_store_t *
+sixel_status_get_message_store(void);
+
 /*
- * Markup overview
+ * Markup overview.
  * +---------+------------------------------+-----------------------------+
  * | Token   | Meaning                      | Notes                       |
  * +---------+------------------------------+-----------------------------+
@@ -209,25 +246,27 @@ sixel_status_force_colors_enabled(void);
  * +---------+------------------------------+-----------------------------+
  */
 
-/* set detailed error message (thread-unsafe) */
+/* set detailed error message */
 SIXELAPI void
 sixel_helper_set_additional_message(
     const char      /* in */  *message         /* error message */
 )
 {
+    sixel_status_message_store_t *store;
     size_t length;
     size_t required_size;
     int reserve_status;
 
+    store = sixel_status_get_message_store();
     length = 0u;
     required_size = 0u;
     reserve_status = -1;
     if (message == NULL) {
-        if (status_markup_buffer != NULL && status_markup_capacity > 0u) {
-            status_markup_buffer[0] = '\0';
+        if (store->markup_buffer != NULL && store->markup_capacity > 0u) {
+            store->markup_buffer[0] = '\0';
         }
-        if (status_render_buffer != NULL && status_render_capacity > 0u) {
-            status_render_buffer[0] = '\0';
+        if (store->render_buffer != NULL && store->render_capacity > 0u) {
+            store->render_buffer[0] = '\0';
         }
         return;
     }
@@ -235,64 +274,85 @@ sixel_helper_set_additional_message(
     length = strlen(message);
     required_size = length + 1u;
     reserve_status = sixel_status_reserve_buffer(
-        &status_markup_buffer,
-        &status_markup_capacity,
-        status_markup_storage,
-        sizeof(status_markup_storage),
+        &store->markup_buffer,
+        &store->markup_capacity,
+        store->markup_storage,
+        sizeof(store->markup_storage),
         required_size);
     if (reserve_status != 0) {
-        if (status_markup_capacity == 0u) {
+        if (store->markup_capacity == 0u) {
             return;
         }
-        length = status_markup_capacity - 1u;
+        length = store->markup_capacity - 1u;
         length = sixel_status_utf8_trim_length(message,
                                                length);
     }
 
-    if (status_markup_buffer == NULL) {
+    if (store->markup_buffer == NULL) {
         return;
     }
 
-    memcpy(status_markup_buffer, message, length);
-    status_markup_buffer[length] = '\0';
-    if (status_render_buffer != NULL && status_render_capacity > 0u) {
-        status_render_buffer[0] = '\0';
+    memcpy(store->markup_buffer, message, length);
+    store->markup_buffer[length] = '\0';
+    if (store->render_buffer != NULL && store->render_capacity > 0u) {
+        store->render_buffer[0] = '\0';
     }
 }
 
 
-/* get detailed error message (thread-unsafe) */
+/* get detailed error message */
 SIXELAPI char const *
 sixel_helper_get_additional_message(void)
 {
+    sixel_status_message_store_t *store;
     size_t markup_length;
     size_t required_size;
 
+    store = sixel_status_get_message_store();
     markup_length = 0u;
     required_size = 0u;
-    if (status_markup_buffer == NULL) {
+    if (store->markup_buffer == NULL) {
         return "";
     }
 
-    markup_length = strlen(status_markup_buffer);
+    markup_length = strlen(store->markup_buffer);
     required_size = markup_length + 1u;
     if (markup_length <= (SIZE_MAX - 64u) / 4u) {
         required_size = markup_length * 4u + 64u;
     }
     (void)sixel_status_reserve_buffer(
-        &status_render_buffer,
-        &status_render_capacity,
-        status_render_storage,
-        sizeof(status_render_storage),
+        &store->render_buffer,
+        &store->render_capacity,
+        store->render_storage,
+        sizeof(store->render_storage),
         required_size);
-    if (status_render_buffer == NULL || status_render_capacity == 0u) {
+    if (store->render_buffer == NULL || store->render_capacity == 0u) {
         return "";
     }
 
-    (void)sixel_status_render_markup(status_markup_buffer,
-                                     status_render_buffer,
-                                     status_render_capacity);
-    return status_render_buffer;
+    (void)sixel_status_render_markup(store->markup_buffer,
+                                     store->render_buffer,
+                                     store->render_capacity);
+    return store->render_buffer;
+}
+
+static sixel_status_message_store_t *
+sixel_status_get_message_store(void)
+{
+    sixel_status_message_store_t *store;
+
+    store = &status_message_store;
+    if (store->initialized == 0) {
+        store->markup_buffer = store->markup_storage;
+        store->render_buffer = store->render_storage;
+        store->markup_capacity = sizeof(store->markup_storage);
+        store->render_capacity = sizeof(store->render_storage);
+        store->markup_storage[0] = '\0';
+        store->render_storage[0] = '\0';
+        store->initialized = 1;
+    }
+
+    return store;
 }
 
 static int

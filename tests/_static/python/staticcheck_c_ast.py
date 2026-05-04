@@ -140,6 +140,46 @@ class TimelineLogPathRule(Rule):
         return findings
 
 
+class StatusAdditionalMessageStorageRule(Rule):
+    name = "status-additional-message-storage"
+    path_prefixes = ("src/status.c",)
+
+    def check(self, unit: SourceUnit) -> Iterable[Finding]:
+        findings: List[Finding] = []
+        text = unit.source.decode("utf-8", errors="replace")
+        tls_pattern = (
+            r"static\s+SIXEL_STATUS_TLS\s+"
+            r"sixel_status_message_store_t\s+status_message_store\s*;"
+        )
+
+        if not re.search(tls_pattern, text):
+            findings.append(Finding(
+                unit.path,
+                1,
+                "additional message store must be thread-local",
+            ))
+
+        for node in walk(unit.tree.root_node):
+            if node.type != "declaration":
+                continue
+            declaration = unit.text(node)
+            if re.search(r"\bstatic\s+char\s+status_markup_storage\b",
+                         declaration):
+                findings.append(Finding(
+                    unit.path,
+                    unit.line(node),
+                    "status markup storage must not be process-global",
+                ))
+            if re.search(r"\bstatic\s+char\s+status_render_storage\b",
+                         declaration):
+                findings.append(Finding(
+                    unit.path,
+                    unit.line(node),
+                    "status render storage must not be process-global",
+                ))
+        return findings
+
+
 def make_parser():
     from tree_sitter import Language, Parser
     import tree_sitter_c
@@ -191,7 +231,10 @@ def main(argv: Sequence[str]) -> int:
 
     src_root = Path(argv[1]).resolve()
     parser = make_parser()
-    rules: Sequence[Rule] = (TimelineLogPathRule(),)
+    rules: Sequence[Rule] = (
+        TimelineLogPathRule(),
+        StatusAdditionalMessageStorageRule(),
+    )
     findings: List[Finding] = []
 
     for path in collect_files(src_root, rules):
