@@ -14772,47 +14772,11 @@ sixel_builtin_psd_layer_is_deferred_overlay_base(
         layer->blend_clipped_elements_enabled == 0) {
         return 0;
     }
+    if (layer->has_effect_solid_overlay == 0 &&
+        layer->has_effect_gradient_overlay == 0) {
+        return 0;
+    }
     return 1;
-}
-
-static int
-sixel_builtin_psd_layer_has_active_overlay_payload(
-    sixel_builtin_psd_layer_record_t const *layer)
-{
-    if (layer == NULL || layer->visible == 0) {
-        return 0;
-    }
-    if (layer->has_effect_solid_overlay != 0 &&
-        layer->eff_sofi_explicit_inactive == 0 &&
-        layer->effect_solid_overlay_opacity > 0.0f) {
-        return 1;
-    }
-    if (layer->has_effect_gradient_overlay != 0 &&
-        layer->eff_grfl_explicit_inactive == 0 &&
-        layer->effect_gradient_overlay_opacity > 0.0f) {
-        return 1;
-    }
-    return 0;
-}
-
-static int
-sixel_builtin_psd_layer_has_active_deferred_overlay_payload(
-    sixel_builtin_psd_layer_record_t const *layer)
-{
-    if (layer == NULL || layer->visible == 0) {
-        return 0;
-    }
-    /*
-     * clbl=1 deferred overlay ownership is reserved for GrFl-driven groups.
-     * Solid-only overlays stay in base subset to avoid over-applying on
-     * deferred buckets that have no actionable gradient replay.
-     */
-    if (layer->has_effect_gradient_overlay != 0 &&
-        layer->eff_grfl_explicit_inactive == 0 &&
-        layer->effect_gradient_overlay_opacity > 0.0f) {
-        return 1;
-    }
-    return 0;
 }
 
 static int
@@ -14863,7 +14827,8 @@ sixel_builtin_psd_prepare_deferred_dual_stroke_owner_map(
                 candidate_layer->clipping == 0u) {
                 continue;
             }
-            if (clip_base_indices_forward[layer_index] == (int)base_index) {
+            if (clip_base_indices_forward[layer_index] == (int)base_index ||
+                clip_base_indices_reverse[layer_index] == (int)base_index) {
                 owner_map[layer_index] = 1;
                 has_clipping_child = 1;
             }
@@ -14877,7 +14842,6 @@ sixel_builtin_psd_prepare_deferred_dual_stroke_owner_map(
 
 static int
 sixel_builtin_psd_prepare_deferred_overlay_owner_map(
-    sixel_builtin_psd_info_t const *info,
     sixel_builtin_psd_layer_model_t const *model,
     int step,
     int const *clip_base_indices_forward,
@@ -14888,11 +14852,10 @@ sixel_builtin_psd_prepare_deferred_overlay_owner_map(
     size_t base_index;
     size_t layer_index;
     int has_clipping_child;
-    int has_group_overlay_payload;
     sixel_builtin_psd_layer_record_t const *base_layer;
     sixel_builtin_psd_layer_record_t const *candidate_layer;
 
-    if (info == NULL || model == NULL || model->layers == NULL ||
+    if (model == NULL || model->layers == NULL ||
         model->layer_count == 0u || clip_base_indices_forward == NULL ||
         clip_base_indices_reverse == NULL || owner_map == NULL) {
         return 0;
@@ -14914,13 +14877,10 @@ sixel_builtin_psd_prepare_deferred_overlay_owner_map(
             continue;
         }
         has_clipping_child = 0;
-        has_group_overlay_payload =
-            sixel_builtin_psd_layer_has_active_deferred_overlay_payload(
-                base_layer);
-        /*
-         * Resolve clipping siblings from clip-base indices so metadata layers
-         * interleaved between siblings do not hide deferred ownership.
-         */
+        if (dual_stroke_owner_map != NULL &&
+            dual_stroke_owner_map[base_index] != 0) {
+            has_clipping_child = 1;
+        }
         for (layer_index = 0u;
              layer_index < model->layer_count;
              ++layer_index) {
@@ -14929,90 +14889,22 @@ sixel_builtin_psd_prepare_deferred_overlay_owner_map(
                 candidate_layer->clipping == 0u) {
                 continue;
             }
-            if (clip_base_indices_forward[layer_index] == (int)base_index) {
-                if (!sixel_builtin_psd_layer_is_fallback_drawable(
-                        info,
-                        candidate_layer)) {
-                    continue;
-                }
+            if (clip_base_indices_forward[layer_index] == (int)base_index ||
+                clip_base_indices_reverse[layer_index] == (int)base_index) {
                 has_clipping_child = 1;
-                if (sixel_builtin_psd_layer_has_active_deferred_overlay_payload(
-                        candidate_layer) != 0) {
-                    has_group_overlay_payload = 1;
+                if (candidate_layer->has_blend_clipped_elements != 0 &&
+                    candidate_layer->blend_clipped_elements_enabled != 0 &&
+                    (candidate_layer->has_effect_solid_overlay != 0 ||
+                     candidate_layer->has_effect_gradient_overlay != 0)) {
                     owner_map[layer_index] = 1;
                 }
             }
         }
-        /*
-         * Deferred overlay ownership is valid only when the clbl=1 base has at
-         * least one clipping sibling and the group has active overlay payload.
-         * Base-only records must stay on the base subset path.
-         */
-        if (has_clipping_child != 0 && has_group_overlay_payload != 0) {
+        if (has_clipping_child != 0) {
             owner_map[base_index] = 1;
         }
     }
-    (void)dual_stroke_owner_map;
     return 1;
-}
-
-static int
-sixel_builtin_psd_enqueue_deferred_overlay_effects(
-    sixel_builtin_psd_layer_record_t *pending_layers,
-    size_t pending_layer_capacity,
-    size_t *ppending_layer_count,
-    sixel_builtin_psd_layer_record_t const *source_layer,
-    int *ppending_overlay_solid_suppressed)
-{
-    if (pending_layers == NULL || ppending_layer_count == NULL ||
-        source_layer == NULL ||
-        ppending_overlay_solid_suppressed == NULL) {
-        return 0;
-    }
-    if (*ppending_layer_count >= pending_layer_capacity) {
-        return 0;
-    }
-    pending_layers[*ppending_layer_count] = *source_layer;
-    (*ppending_layer_count)++;
-    if (source_layer->has_effect_solid_overlay != 0) {
-        *ppending_overlay_solid_suppressed = 1;
-    }
-    return 1;
-}
-
-static int
-sixel_builtin_psd_has_fallback_clipping_sibling(
-    sixel_builtin_psd_info_t const *info,
-    sixel_builtin_psd_layer_model_t const *model,
-    int const *clip_base_indices_forward,
-    int base_index)
-{
-    size_t layer_index;
-    sixel_builtin_psd_layer_record_t const *candidate_layer;
-
-    layer_index = 0u;
-    candidate_layer = NULL;
-    if (info == NULL || model == NULL || model->layers == NULL ||
-        clip_base_indices_forward == NULL || base_index < 0) {
-        return 0;
-    }
-    for (layer_index = 0u; layer_index < model->layer_count; ++layer_index) {
-        if ((int)layer_index == base_index) {
-            continue;
-        }
-        candidate_layer = &model->layers[layer_index];
-        if (candidate_layer->visible == 0 ||
-            candidate_layer->clipping == 0u ||
-            clip_base_indices_forward[layer_index] != base_index) {
-            continue;
-        }
-        if (sixel_builtin_psd_layer_is_fallback_drawable(
-                info,
-                candidate_layer)) {
-            return 1;
-        }
-    }
-    return 0;
 }
 
 static size_t
@@ -24526,316 +24418,6 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
 }
 
 static void
-sixel_builtin_psd_deferred_clip_group_state_reset(
-    sixel_builtin_psd_layer_record_t *pending_overlay_layers,
-    size_t pending_overlay_layer_capacity,
-    float **pending_overlay_solid_coverage_maps,
-    size_t *ppending_overlay_layer_count,
-    sixel_builtin_psd_layer_record_t *pending_overlay_layer,
-    int *ppending_clip_group_overlay,
-    int *ppending_overlay_base_index,
-    int *ppending_overlay_defer_stroke,
-    int *ppending_overlay_stroke_mode,
-    int *ppending_overlay_stroke_consumed,
-    int *ppending_overlay_dual_stroke,
-    int *ppending_overlay_fill_coverage_valid,
-    int *ppending_overlay_stroke_coverage_valid,
-    int *ppending_overlay_dual_stroke_source_alpha_valid,
-    int *ppending_overlay_solid_suppressed,
-    int *pgroup_active)
-{
-    size_t pending_index;
-
-    pending_index = 0u;
-    if (pending_overlay_layer == NULL ||
-        pending_overlay_layers == NULL ||
-        ppending_overlay_layer_count == NULL ||
-        ppending_clip_group_overlay == NULL ||
-        ppending_overlay_base_index == NULL ||
-        ppending_overlay_defer_stroke == NULL ||
-        ppending_overlay_stroke_mode == NULL ||
-        ppending_overlay_stroke_consumed == NULL ||
-        ppending_overlay_dual_stroke == NULL ||
-        ppending_overlay_fill_coverage_valid == NULL ||
-        ppending_overlay_stroke_coverage_valid == NULL ||
-        ppending_overlay_dual_stroke_source_alpha_valid == NULL ||
-        ppending_overlay_solid_suppressed == NULL ||
-        pgroup_active == NULL) {
-        return;
-    }
-    for (pending_index = 0u;
-         pending_index < pending_overlay_layer_capacity;
-         ++pending_index) {
-        if (pending_overlay_solid_coverage_maps != NULL &&
-            pending_overlay_solid_coverage_maps[pending_index] != NULL) {
-            free(pending_overlay_solid_coverage_maps[pending_index]);
-            pending_overlay_solid_coverage_maps[pending_index] = NULL;
-        }
-        memset(&pending_overlay_layers[pending_index],
-               0,
-               sizeof(*pending_overlay_layers));
-    }
-    *ppending_overlay_layer_count = 0u;
-    *ppending_clip_group_overlay = 0;
-    *ppending_overlay_base_index = -1;
-    *ppending_overlay_defer_stroke = 0;
-    *ppending_overlay_stroke_mode = SIXEL_BUILTIN_PSD_STROKE_APPLY_NONE;
-    *ppending_overlay_stroke_consumed = 0;
-    *ppending_overlay_dual_stroke = 0;
-    *ppending_overlay_fill_coverage_valid = 0;
-    *ppending_overlay_stroke_coverage_valid = 0;
-    *ppending_overlay_dual_stroke_source_alpha_valid = 0;
-    *ppending_overlay_solid_suppressed = 0;
-    *pgroup_active = 0;
-    memset(pending_overlay_layer, 0, sizeof(*pending_overlay_layer));
-}
-
-static int
-sixel_builtin_psd_begin_deferred_clip_group_state(
-    sixel_builtin_psd_layer_model_t const *model,
-    int const *deferred_dual_stroke_owner_map,
-    int base_index,
-    size_t pixel_count,
-    float const *canvas_rgb_premul,
-    float const *canvas_alpha,
-    float *group_rgb_premul,
-    float *group_canvas_alpha,
-    float *group_clip_gate,
-    float *pending_overlay_fill_coverage_map,
-    float *pending_overlay_dual_stroke_source_alpha_map,
-    sixel_builtin_psd_layer_record_t *pending_overlay_layers,
-    size_t pending_overlay_layer_capacity,
-    float **pending_overlay_solid_coverage_maps,
-    size_t *ppending_overlay_layer_count,
-    sixel_builtin_psd_layer_record_t *pending_overlay_layer,
-    int *ppending_clip_group_overlay,
-    int *ppending_overlay_base_index,
-    int *ppending_overlay_defer_stroke,
-    int *ppending_overlay_stroke_mode,
-    int *ppending_overlay_stroke_consumed,
-    int *ppending_overlay_dual_stroke,
-    int *ppending_overlay_fill_coverage_valid,
-    int *ppending_overlay_stroke_coverage_valid,
-    int *ppending_overlay_dual_stroke_source_alpha_valid,
-    int *ppending_overlay_solid_suppressed,
-    int *pgroup_active,
-    int *ppending_overlay_group_announced)
-{
-    size_t base_offset;
-    int base_has_dual_owner;
-
-    base_offset = 0u;
-    base_has_dual_owner = 0;
-    if (model == NULL || model->layers == NULL ||
-        canvas_rgb_premul == NULL || canvas_alpha == NULL ||
-        group_rgb_premul == NULL || group_canvas_alpha == NULL ||
-        group_clip_gate == NULL || pending_overlay_fill_coverage_map == NULL ||
-        pending_overlay_dual_stroke_source_alpha_map == NULL ||
-        pending_overlay_layers == NULL ||
-        ppending_overlay_layer_count == NULL ||
-        pending_overlay_layer == NULL ||
-        ppending_clip_group_overlay == NULL ||
-        ppending_overlay_base_index == NULL ||
-        ppending_overlay_defer_stroke == NULL ||
-        ppending_overlay_stroke_mode == NULL ||
-        ppending_overlay_stroke_consumed == NULL ||
-        ppending_overlay_dual_stroke == NULL ||
-        ppending_overlay_fill_coverage_valid == NULL ||
-        ppending_overlay_stroke_coverage_valid == NULL ||
-        ppending_overlay_dual_stroke_source_alpha_valid == NULL ||
-        ppending_overlay_solid_suppressed == NULL ||
-        pgroup_active == NULL ||
-        ppending_overlay_group_announced == NULL) {
-        return 0;
-    }
-    if (base_index < 0 || (size_t)base_index >= model->layer_count) {
-        return 0;
-    }
-    if (*ppending_clip_group_overlay != 0) {
-        if (*ppending_overlay_base_index == base_index) {
-            return 1;
-        }
-        return 0;
-    }
-    sixel_builtin_psd_deferred_clip_group_state_reset(
-        pending_overlay_layers,
-        pending_overlay_layer_capacity,
-        pending_overlay_solid_coverage_maps,
-        ppending_overlay_layer_count,
-        pending_overlay_layer,
-        ppending_clip_group_overlay,
-        ppending_overlay_base_index,
-        ppending_overlay_defer_stroke,
-        ppending_overlay_stroke_mode,
-        ppending_overlay_stroke_consumed,
-        ppending_overlay_dual_stroke,
-        ppending_overlay_fill_coverage_valid,
-        ppending_overlay_stroke_coverage_valid,
-        ppending_overlay_dual_stroke_source_alpha_valid,
-        ppending_overlay_solid_suppressed,
-        pgroup_active);
-    base_offset = (size_t)base_index;
-    *ppending_clip_group_overlay = 1;
-    *ppending_overlay_base_index = base_index;
-    *pending_overlay_layer = model->layers[base_offset];
-    memcpy(group_rgb_premul,
-           canvas_rgb_premul,
-           pixel_count * 3u * sizeof(float));
-    memcpy(group_canvas_alpha,
-           canvas_alpha,
-           pixel_count * sizeof(float));
-    memset(pending_overlay_fill_coverage_map,
-           0,
-           pixel_count * sizeof(float));
-    memset(pending_overlay_dual_stroke_source_alpha_map,
-           0,
-           pixel_count * sizeof(float));
-    memset(group_clip_gate,
-           0,
-           pixel_count * sizeof(float));
-    *pgroup_active = 1;
-    *ppending_overlay_fill_coverage_valid = 0;
-    *ppending_overlay_stroke_coverage_valid = 0;
-    *ppending_overlay_dual_stroke_source_alpha_valid = 0;
-    *ppending_overlay_stroke_consumed = 0;
-    *ppending_overlay_stroke_mode = SIXEL_BUILTIN_PSD_STROKE_APPLY_NONE;
-    *ppending_overlay_group_announced = 0;
-    base_has_dual_owner =
-        deferred_dual_stroke_owner_map != NULL &&
-        deferred_dual_stroke_owner_map[base_offset] != 0 ? 1 : 0;
-    *ppending_overlay_defer_stroke = 0;
-    if (base_has_dual_owner != 0 ||
-        ((*pending_overlay_layer).has_blend_clipped_elements != 0 &&
-         (*pending_overlay_layer).blend_clipped_elements_enabled != 0 &&
-         sixel_builtin_psd_layer_has_dual_stroke_pair(
-             pending_overlay_layer) != 0 &&
-         (*pending_overlay_layer).has_vector_mask != 0)) {
-        *ppending_overlay_defer_stroke = 1;
-    }
-    if (*ppending_overlay_defer_stroke != 0) {
-        *ppending_overlay_stroke_mode =
-            sixel_builtin_psd_layer_stroke_apply_mode(
-                pending_overlay_layer);
-        if (*ppending_overlay_stroke_mode ==
-            SIXEL_BUILTIN_PSD_STROKE_APPLY_NONE) {
-            *ppending_overlay_defer_stroke = 0;
-        }
-    }
-    return 1;
-}
-
-static int
-sixel_builtin_psd_pending_overlay_queue_has_active_payload(
-    sixel_builtin_psd_layer_record_t const *pending_overlay_layers,
-    size_t pending_overlay_layer_count)
-{
-    size_t pending_index;
-
-    pending_index = 0u;
-    if (pending_overlay_layers == NULL || pending_overlay_layer_count == 0u) {
-        return 0;
-    }
-    for (pending_index = 0u;
-         pending_index < pending_overlay_layer_count;
-         ++pending_index) {
-        if (sixel_builtin_psd_layer_has_active_overlay_payload(
-                &pending_overlay_layers[pending_index]) != 0) {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-static int
-sixel_builtin_psd_has_actionable_deferred_clip_group(
-    sixel_builtin_psd_layer_record_t const *pending_overlay_layers,
-    size_t pending_overlay_layer_count,
-    int pending_overlay_defer_stroke,
-    int pending_overlay_stroke_mode,
-    int pending_overlay_stroke_coverage_valid)
-{
-    if (sixel_builtin_psd_pending_overlay_queue_has_active_payload(
-            pending_overlay_layers,
-            pending_overlay_layer_count) != 0) {
-        return 1;
-    }
-    if (pending_overlay_defer_stroke != 0 &&
-        pending_overlay_stroke_mode != SIXEL_BUILTIN_PSD_STROKE_APPLY_NONE &&
-        pending_overlay_stroke_coverage_valid != 0) {
-        return 1;
-    }
-    return 0;
-}
-
-static void
-sixel_builtin_psd_trace_deferred_clip_group_boundary(
-    char const *phase_message,
-    int base_index)
-{
-    char message[160];
-
-    if (phase_message == NULL) {
-        return;
-    }
-    if (base_index >= 0) {
-        snprintf(message,
-                 sizeof(message),
-                 "builtin PSD: %s deferred clipped-group state bucket "
-                 "(base=%d)",
-                 phase_message,
-                 base_index);
-    } else {
-        snprintf(message,
-                 sizeof(message),
-                 "builtin PSD: %s deferred clipped-group state bucket",
-                 phase_message);
-    }
-    sixel_builtin_psd_trace_message("psd_decode", message);
-}
-
-static void
-sixel_builtin_psd_trace_deferred_clip_group_commit(
-    int base_index)
-{
-    char message[176];
-
-    if (base_index >= 0) {
-        snprintf(message,
-                 sizeof(message),
-                 "builtin PSD: compositing deferred offscreen clipped "
-                 "group buffer to canvas (base=%d)",
-                 base_index);
-    } else {
-        snprintf(message,
-                 sizeof(message),
-                 "builtin PSD: compositing deferred offscreen clipped "
-                 "group buffer to canvas");
-    }
-    sixel_builtin_psd_trace_message("psd_decode", message);
-}
-
-static void
-sixel_builtin_psd_trace_deferred_clip_group_empty_skip(
-    int base_index)
-{
-    char message[196];
-
-    if (base_index >= 0) {
-        snprintf(message,
-                 sizeof(message),
-                 "builtin PSD: skipping empty deferred clipped-group state "
-                 "bucket (base=%d)",
-                 base_index);
-    } else {
-        snprintf(message,
-                 sizeof(message),
-                 "builtin PSD: skipping empty deferred clipped-group state "
-                 "bucket");
-    }
-    sixel_builtin_psd_trace_message("psd_decode", message);
-}
-
-static void
 sixel_builtin_psd_apply_pending_deferred_stroke(
     float *group_rgb_premul,
     float *group_canvas_alpha,
@@ -24910,305 +24492,6 @@ sixel_builtin_psd_apply_pending_deferred_stroke(
         canvas_height,
         effective_stroke_layer);
     *stroke_consumed = 1;
-}
-
-static void
-sixel_builtin_psd_flush_pending_clip_group_overlay(
-    float *canvas_rgb_premul,
-    float *canvas_alpha,
-    float *group_rgb_premul,
-    float *group_canvas_alpha,
-    float *group_clip_gate,
-    float *group_backdrop_rgb_premul,
-    float *group_backdrop_alpha,
-    float *group_stroke_backdrop_rgb_premul,
-    float *group_stroke_backdrop_alpha,
-    float *pending_overlay_fill_coverage_map,
-    float *pending_overlay_stroke_coverage_map,
-    float *pending_overlay_dual_stroke_source_alpha_map,
-    unsigned int width,
-    unsigned int height,
-    size_t pixel_count,
-    sixel_builtin_psd_layer_record_t *pending_overlay_layers,
-    float **pending_overlay_solid_coverage_maps,
-    size_t pending_overlay_layer_capacity,
-    size_t *ppending_overlay_layer_count,
-    sixel_builtin_psd_layer_record_t *pending_overlay_layer,
-    int *ppending_clip_group_overlay,
-    int *ppending_overlay_base_index,
-    int *ppending_overlay_defer_stroke,
-    int *ppending_overlay_stroke_mode,
-    int *ppending_overlay_stroke_consumed,
-    int *ppending_overlay_dual_stroke,
-    int *ppending_overlay_fill_coverage_valid,
-    int *ppending_overlay_stroke_coverage_valid,
-    int *ppending_overlay_dual_stroke_source_alpha_valid,
-    int *ppending_overlay_solid_suppressed,
-    int *pgroup_active)
-{
-    int pending_overlay_interior_enabled;
-    int pending_base_index;
-    int allow_solid_zero_coverage_fallback;
-    int solid_coverage_has_nonzero;
-    int traced_solid_zero_coverage_skip;
-    size_t pending_overlay_index;
-    size_t consumed_overlay_count;
-    float const *pending_solid_coverage_map;
-    float const *entry_solid_coverage_map;
-
-    pending_overlay_interior_enabled = 0;
-    pending_base_index = -1;
-    allow_solid_zero_coverage_fallback = 0;
-    solid_coverage_has_nonzero = 0;
-    traced_solid_zero_coverage_skip = 0;
-    pending_overlay_index = 0u;
-    consumed_overlay_count = 0u;
-    pending_solid_coverage_map = NULL;
-    entry_solid_coverage_map = NULL;
-    if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
-        group_rgb_premul == NULL || group_canvas_alpha == NULL ||
-        group_clip_gate == NULL || group_backdrop_rgb_premul == NULL ||
-        group_backdrop_alpha == NULL ||
-        group_stroke_backdrop_rgb_premul == NULL ||
-        group_stroke_backdrop_alpha == NULL ||
-        pending_overlay_fill_coverage_map == NULL ||
-        pending_overlay_stroke_coverage_map == NULL ||
-        pending_overlay_dual_stroke_source_alpha_map == NULL ||
-        pending_overlay_layers == NULL ||
-        pending_overlay_solid_coverage_maps == NULL ||
-        ppending_overlay_layer_count == NULL ||
-        pending_overlay_layer == NULL ||
-        ppending_clip_group_overlay == NULL ||
-        ppending_overlay_base_index == NULL ||
-        ppending_overlay_defer_stroke == NULL ||
-        ppending_overlay_stroke_mode == NULL ||
-        ppending_overlay_stroke_consumed == NULL ||
-        ppending_overlay_dual_stroke == NULL ||
-        ppending_overlay_fill_coverage_valid == NULL ||
-        ppending_overlay_stroke_coverage_valid == NULL ||
-        ppending_overlay_dual_stroke_source_alpha_valid == NULL ||
-        ppending_overlay_solid_suppressed == NULL ||
-        pgroup_active == NULL) {
-        return;
-    }
-    if (*ppending_clip_group_overlay == 0) {
-        return;
-    }
-    pending_base_index = *ppending_overlay_base_index;
-
-    *ppending_overlay_fill_coverage_valid = *pgroup_active != 0 ? 1 : 0;
-    if (*pgroup_active != 0) {
-        /*
-         * Deferred clipped-group effects must read one stable backdrop and
-         * commit to canvas once after all pending effects are applied.
-         */
-        memcpy(pending_overlay_fill_coverage_map,
-               group_canvas_alpha,
-               pixel_count * sizeof(float));
-        memcpy(group_backdrop_rgb_premul,
-               group_rgb_premul,
-               pixel_count * 3u * sizeof(float));
-        memcpy(group_backdrop_alpha,
-               group_canvas_alpha,
-               pixel_count * sizeof(float));
-    } else {
-        memset(pending_overlay_fill_coverage_map,
-               0,
-               pixel_count * sizeof(float));
-        memset(group_backdrop_rgb_premul,
-               0,
-               pixel_count * 3u * sizeof(float));
-        memset(group_backdrop_alpha,
-               0,
-               pixel_count * sizeof(float));
-    }
-    if (*ppending_overlay_fill_coverage_valid != 0) {
-        pending_solid_coverage_map = pending_overlay_fill_coverage_map;
-    }
-    if (pending_overlay_layer->has_blend_clipped_elements != 0 &&
-        pending_overlay_layer->blend_clipped_elements_enabled == 0) {
-        allow_solid_zero_coverage_fallback = 1;
-    }
-    if (pending_solid_coverage_map != NULL) {
-        solid_coverage_has_nonzero =
-            sixel_builtin_psd_alpha_map_has_nonzero(
-                pending_solid_coverage_map,
-                pixel_count);
-    }
-    if (*ppending_overlay_solid_suppressed != 0 &&
-        *ppending_overlay_layer_count > 0u &&
-        pending_solid_coverage_map != NULL &&
-        solid_coverage_has_nonzero == 0 &&
-        allow_solid_zero_coverage_fallback != 0) {
-        pending_solid_coverage_map = group_clip_gate;
-        solid_coverage_has_nonzero = 1;
-    } else if (*ppending_overlay_solid_suppressed != 0 &&
-               *ppending_overlay_layer_count > 0u &&
-               pending_solid_coverage_map != NULL &&
-               solid_coverage_has_nonzero == 0 &&
-               allow_solid_zero_coverage_fallback == 0) {
-        pending_solid_coverage_map = NULL;
-    }
-
-    pending_overlay_interior_enabled =
-        sixel_builtin_psd_layer_interior_effects_enabled(
-            pending_overlay_layer);
-    *ppending_overlay_dual_stroke =
-        *ppending_overlay_defer_stroke != 0 &&
-        *ppending_overlay_stroke_mode ==
-            SIXEL_BUILTIN_PSD_STROKE_APPLY_DUAL ? 1 : 0;
-
-    if (*pgroup_active != 0) {
-        if (*ppending_overlay_dual_stroke != 0) {
-            sixel_builtin_psd_trace_message(
-                "psd_decode",
-                "builtin PSD: applying deferred vector stroke and "
-                "layer effect stroke on clipped group");
-        }
-        for (pending_overlay_index = 0u;
-             pending_overlay_index < *ppending_overlay_layer_count;
-             ++pending_overlay_index) {
-            if (pending_overlay_layers[pending_overlay_index]
-                    .has_effect_solid_overlay == 0) {
-                continue;
-            }
-            entry_solid_coverage_map = pending_solid_coverage_map;
-            if (pending_overlay_index < pending_overlay_layer_capacity &&
-                pending_overlay_solid_coverage_maps[pending_overlay_index] !=
-                    NULL) {
-                entry_solid_coverage_map =
-                    pending_overlay_solid_coverage_maps[pending_overlay_index];
-            }
-            if (entry_solid_coverage_map == NULL) {
-                if (traced_solid_zero_coverage_skip == 0) {
-                    sixel_builtin_psd_trace_message(
-                        "psd_decode",
-                        "builtin PSD: skipping deferred solid overlay "
-                        "replay for zero coverage map in layer fallback");
-                    traced_solid_zero_coverage_skip = 1;
-                }
-                continue;
-            }
-            sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
-                group_rgb_premul,
-                group_canvas_alpha,
-                group_clip_gate,
-                entry_solid_coverage_map,
-                group_backdrop_rgb_premul,
-                group_backdrop_alpha,
-                width,
-                height,
-                &pending_overlay_layers[pending_overlay_index]);
-        }
-        for (pending_overlay_index = 0u;
-             pending_overlay_index < *ppending_overlay_layer_count;
-             ++pending_overlay_index) {
-            if (pending_overlay_layers[pending_overlay_index]
-                    .has_effect_gradient_overlay == 0) {
-                continue;
-            }
-            sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
-                group_rgb_premul,
-                group_canvas_alpha,
-                group_clip_gate,
-                *ppending_overlay_fill_coverage_valid != 0
-                    ? pending_overlay_fill_coverage_map
-                    : NULL,
-                group_backdrop_rgb_premul,
-                group_backdrop_alpha,
-                width,
-                height,
-                &pending_overlay_layers[pending_overlay_index]);
-        }
-        if (pending_overlay_interior_enabled != 0) {
-            sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
-                group_rgb_premul,
-                group_canvas_alpha,
-                group_clip_gate,
-                *ppending_overlay_stroke_coverage_valid != 0
-                    ? pending_overlay_stroke_coverage_map
-                    : NULL,
-                width,
-                height,
-                pending_overlay_layer);
-            sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
-                group_rgb_premul,
-                group_canvas_alpha,
-                group_clip_gate,
-                *ppending_overlay_stroke_coverage_valid != 0
-                    ? pending_overlay_stroke_coverage_map
-                    : NULL,
-                width,
-                height,
-                pending_overlay_layer);
-        } else {
-            sixel_builtin_psd_layer_effects_trace_interior_skip();
-        }
-        if (*ppending_overlay_defer_stroke != 0) {
-            memcpy(group_stroke_backdrop_rgb_premul,
-                   group_rgb_premul,
-                   pixel_count * 3u * sizeof(float));
-            memcpy(group_stroke_backdrop_alpha,
-                   group_canvas_alpha,
-                   pixel_count * sizeof(float));
-            sixel_builtin_psd_apply_pending_deferred_stroke(
-                group_rgb_premul,
-                group_canvas_alpha,
-                group_clip_gate,
-                *ppending_overlay_stroke_coverage_valid != 0
-                    ? pending_overlay_stroke_coverage_map
-                    : NULL,
-                *ppending_overlay_dual_stroke_source_alpha_valid != 0
-                    ? pending_overlay_dual_stroke_source_alpha_map
-                    : NULL,
-                group_stroke_backdrop_rgb_premul,
-                group_stroke_backdrop_alpha,
-                width,
-                height,
-                pending_overlay_layer,
-                *ppending_overlay_stroke_mode,
-                ppending_overlay_stroke_consumed);
-        }
-        sixel_builtin_psd_trace_deferred_clip_group_commit(
-            pending_base_index);
-        memcpy(canvas_rgb_premul,
-               group_rgb_premul,
-               pixel_count * 3u * sizeof(float));
-        memcpy(canvas_alpha,
-               group_canvas_alpha,
-               pixel_count * sizeof(float));
-    }
-    sixel_builtin_psd_trace_deferred_clip_group_boundary(
-        "consuming",
-        pending_base_index);
-    consumed_overlay_count = *ppending_overlay_layer_count;
-
-    *ppending_clip_group_overlay = 0;
-    *ppending_overlay_defer_stroke = 0;
-    *ppending_overlay_stroke_mode = SIXEL_BUILTIN_PSD_STROKE_APPLY_NONE;
-    *ppending_overlay_stroke_consumed = 0;
-    *ppending_overlay_dual_stroke = 0;
-    *ppending_overlay_fill_coverage_valid = 0;
-    *ppending_overlay_stroke_coverage_valid = 0;
-    *ppending_overlay_dual_stroke_source_alpha_valid = 0;
-    *ppending_overlay_solid_suppressed = 0;
-    *ppending_overlay_layer_count = 0u;
-    *pgroup_active = 0;
-    *ppending_overlay_base_index = -1;
-    for (pending_overlay_index = 0u;
-         pending_overlay_index < consumed_overlay_count;
-         ++pending_overlay_index) {
-        if (pending_overlay_index < pending_overlay_layer_capacity &&
-            pending_overlay_solid_coverage_maps[pending_overlay_index] !=
-                NULL) {
-            free(pending_overlay_solid_coverage_maps[pending_overlay_index]);
-            pending_overlay_solid_coverage_maps[pending_overlay_index] = NULL;
-        }
-        memset(&pending_overlay_layers[pending_overlay_index],
-               0,
-               sizeof(*pending_overlay_layers));
-    }
-    memset(pending_overlay_layer, 0, sizeof(*pending_overlay_layer));
 }
 
 static SIXELSTATUS
@@ -25491,7 +24774,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     int cms_applied;
     int has_transparency;
     int pending_clip_group_overlay;
-    int pending_overlay_base_index;
     size_t orphan_forward;
     size_t orphan_reverse;
     size_t nonoverlap_forward;
@@ -25499,11 +24781,13 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     int step;
     int limit;
     int i;
+    size_t next_index;
     int defer_clip_group_overlay;
     int allow_pixel_layer_decode_skip;
     size_t composed_layer_count;
     size_t skipped_pixel_layer_decode_count;
     size_t clip_alpha_index;
+    int pending_overlay_interior_enabled;
     int pending_overlay_defer_stroke;
     int pending_overlay_stroke_mode;
     int pending_overlay_stroke_consumed;
@@ -25512,17 +24796,12 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     int pending_overlay_stroke_coverage_valid;
     int pending_overlay_dual_stroke_source_alpha_valid;
     int pending_overlay_solid_suppressed;
-    int pending_overlay_group_announced;
+    float const *pending_solid_coverage_map;
     int group_active;
     int clipped_inside_stroke_alpha_valid;
     int traced_clip_sibling_harden;
     int traced_dual_stroke_deferred_ownership;
-    int traced_overlay_suppression_before_subset;
     int apply_effects_subset;
-    size_t pending_overlay_layer_capacity;
-    size_t pending_overlay_layer_count;
-    sixel_builtin_psd_layer_record_t *pending_overlay_layers;
-    float **pending_overlay_solid_coverage_maps;
     sixel_builtin_psd_layer_record_t pending_overlay_layer;
     SIXELSTATUS status;
 
@@ -25553,7 +24832,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     cms_applied = 0;
     has_transparency = 0;
     pending_clip_group_overlay = 0;
-    pending_overlay_base_index = -1;
     orphan_forward = 0u;
     orphan_reverse = 0u;
     nonoverlap_forward = 0u;
@@ -25561,11 +24839,13 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     step = -1;
     limit = -1;
     i = 0;
+    next_index = 0u;
     defer_clip_group_overlay = 0;
     allow_pixel_layer_decode_skip = 0;
     composed_layer_count = 0u;
     skipped_pixel_layer_decode_count = 0u;
     clip_alpha_index = 0u;
+    pending_overlay_interior_enabled = 1;
     pending_overlay_defer_stroke = 0;
     pending_overlay_stroke_mode = SIXEL_BUILTIN_PSD_STROKE_APPLY_NONE;
     pending_overlay_stroke_consumed = 0;
@@ -25574,17 +24854,12 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     pending_overlay_stroke_coverage_valid = 0;
     pending_overlay_dual_stroke_source_alpha_valid = 0;
     pending_overlay_solid_suppressed = 0;
-    pending_overlay_group_announced = 0;
+    pending_solid_coverage_map = NULL;
     group_active = 0;
     clipped_inside_stroke_alpha_valid = 0;
     traced_clip_sibling_harden = 0;
     traced_dual_stroke_deferred_ownership = 0;
-    traced_overlay_suppression_before_subset = 0;
     apply_effects_subset = 0;
-    pending_overlay_layer_capacity = 0u;
-    pending_overlay_layer_count = 0u;
-    pending_overlay_layers = NULL;
-    pending_overlay_solid_coverage_maps = NULL;
     memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
     status = SIXEL_FALSE;
 
@@ -25710,15 +24985,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     deferred_overlay_owner_map = (int *)sixel_allocator_malloc(
         info->allocator,
         model.layer_count * sizeof(int));
-    pending_overlay_layer_capacity = model.layer_count;
-    pending_overlay_layers =
-        (sixel_builtin_psd_layer_record_t *)sixel_allocator_malloc(
-            info->allocator,
-            pending_overlay_layer_capacity *
-                sizeof(sixel_builtin_psd_layer_record_t));
-    pending_overlay_solid_coverage_maps = (float **)sixel_allocator_malloc(
-        info->allocator,
-        pending_overlay_layer_capacity * sizeof(float *));
     if (canvas_rgb_premul == NULL || canvas_alpha == NULL ||
         clip_alpha_map == NULL ||
         pending_overlay_fill_coverage_map == NULL ||
@@ -25736,21 +25002,12 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         clip_base_indices_forward == NULL ||
         clip_base_indices_reverse == NULL ||
         deferred_dual_stroke_owner_map == NULL ||
-        deferred_overlay_owner_map == NULL ||
-        pending_overlay_layers == NULL ||
-        pending_overlay_solid_coverage_maps == NULL) {
+        deferred_overlay_owner_map == NULL) {
         status = SIXEL_BAD_ALLOCATION;
         sixel_helper_set_additional_message(
             "builtin PSD: sixel_allocator_malloc() failed.");
         goto cleanup;
     }
-    memset(pending_overlay_layers,
-           0,
-           pending_overlay_layer_capacity *
-               sizeof(sixel_builtin_psd_layer_record_t));
-    memset(pending_overlay_solid_coverage_maps,
-           0,
-           pending_overlay_layer_capacity * sizeof(float *));
     memset(canvas_rgb_premul, 0, pixel_count * 3u * sizeof(float));
     memset(canvas_alpha, 0, pixel_count * sizeof(float));
     memset(clip_alpha_map, 0, pixel_count * sizeof(float));
@@ -25822,7 +25079,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         goto cleanup;
     }
     if (!sixel_builtin_psd_prepare_deferred_overlay_owner_map(
-            info,
             &model,
             step,
             clip_base_indices_forward,
@@ -25855,19 +25111,10 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         int defer_effect_stroke_ownership;
         int dual_stroke_owner_match;
         int layer_stroke_mode;
-        int has_group_clipping_sibling;
+        int has_adjacent_clipping_child;
         int has_deferred_dual_owner;
         int has_deferred_overlay_owner;
-        int overlay_owned_by_deferred_candidate;
-        int overlay_enqueue_succeeded;
-        int begin_deferred_clip_group_now;
-        int stroke_capture_candidate;
-        int overlay_coverage_capture_pending;
-        float *entry_solid_coverage_map;
-        float entry_clip_weight;
-        float entry_source_alpha;
-        size_t overlay_enqueued_index;
-        int layer_deferred_group_base_index;
+        int overlay_owned_by_deferred;
         layer = &model.layers[(size_t)i];
         memset(&synthetic_layer, 0, sizeof(synthetic_layer));
         memset(&layer_for_composite, 0, sizeof(layer_for_composite));
@@ -25887,19 +25134,11 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         defer_effect_stroke_ownership = 0;
         dual_stroke_owner_match = 0;
         layer_stroke_mode = SIXEL_BUILTIN_PSD_STROKE_APPLY_NONE;
-        has_group_clipping_sibling = 0;
+        has_adjacent_clipping_child = 0;
         has_deferred_dual_owner = 0;
         has_deferred_overlay_owner = 0;
-        overlay_owned_by_deferred_candidate = 0;
-        overlay_enqueue_succeeded = 0;
-        begin_deferred_clip_group_now = 0;
-        stroke_capture_candidate = 0;
-        overlay_coverage_capture_pending = 0;
-        entry_solid_coverage_map = NULL;
-        entry_clip_weight = 0.0f;
-        entry_source_alpha = 0.0f;
-        overlay_enqueued_index = 0u;
-        layer_deferred_group_base_index = -1;
+        overlay_owned_by_deferred = 0;
+        pending_overlay_interior_enabled = 1;
         apply_effects_subset = 0;
         has_pixel_channels = sixel_builtin_psd_layer_has_decodable_pixel_channels(
             info,
@@ -25923,82 +25162,156 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         apply_clipping = layer->clipping != 0u ? 1 : 0;
         if (apply_clipping != 0) {
             clipping_base_index = clip_base_indices[(size_t)i];
-            layer_deferred_group_base_index = clipping_base_index;
-        } else {
-            layer_deferred_group_base_index = i;
         }
         ignore_placeholder_vector_bbox = 0;
         if (pending_clip_group_overlay != 0 &&
-            layer_deferred_group_base_index != pending_overlay_base_index) {
-            if (sixel_builtin_psd_has_actionable_deferred_clip_group(
-                    pending_overlay_layers,
-                    pending_overlay_layer_count,
-                    pending_overlay_defer_stroke,
-                    pending_overlay_stroke_mode,
-                    pending_overlay_stroke_coverage_valid) == 0) {
-                sixel_builtin_psd_trace_deferred_clip_group_empty_skip(
-                    pending_overlay_base_index);
-                sixel_builtin_psd_deferred_clip_group_state_reset(
-                    pending_overlay_layers,
-                    pending_overlay_layer_capacity,
-                    pending_overlay_solid_coverage_maps,
-                    &pending_overlay_layer_count,
-                    &pending_overlay_layer,
-                    &pending_clip_group_overlay,
-                    &pending_overlay_base_index,
-                    &pending_overlay_defer_stroke,
-                    &pending_overlay_stroke_mode,
-                    &pending_overlay_stroke_consumed,
-                    &pending_overlay_dual_stroke,
-                    &pending_overlay_fill_coverage_valid,
-                    &pending_overlay_stroke_coverage_valid,
-                    &pending_overlay_dual_stroke_source_alpha_valid,
-                    &pending_overlay_solid_suppressed,
-                    &group_active);
+            layer->clipping == 0u) {
+            pending_solid_coverage_map = NULL;
+            pending_overlay_fill_coverage_valid = group_active != 0 ? 1 : 0;
+            if (group_active != 0) {
+                /*
+                 * Snapshot the group backdrop before deferred overlays/strokes
+                 * so every deferred effect in this flush reads the same input.
+                 */
+                memcpy(pending_overlay_fill_coverage_map,
+                       group_canvas_alpha,
+                       pixel_count * sizeof(float));
+                memcpy(group_backdrop_rgb_premul,
+                       group_rgb_premul,
+                       pixel_count * 3u * sizeof(float));
+                memcpy(group_backdrop_alpha,
+                       group_canvas_alpha,
+                       pixel_count * sizeof(float));
             } else {
-                if (pending_overlay_group_announced == 0) {
-                    sixel_builtin_psd_trace_deferred_clip_group_boundary(
-                        "beginning",
-                        pending_overlay_base_index);
-                    pending_overlay_group_announced = 1;
-                }
-                sixel_builtin_psd_trace_deferred_clip_group_boundary(
-                    "flushing",
-                    pending_overlay_base_index);
-                sixel_builtin_psd_flush_pending_clip_group_overlay(
-                    canvas_rgb_premul,
-                    canvas_alpha,
+                memset(pending_overlay_fill_coverage_map,
+                       0,
+                       pixel_count * sizeof(float));
+                memset(group_backdrop_rgb_premul,
+                       0,
+                       pixel_count * 3u * sizeof(float));
+                memset(group_backdrop_alpha,
+                       0,
+                    pixel_count * sizeof(float));
+            }
+            if (pending_overlay_fill_coverage_valid != 0) {
+                pending_solid_coverage_map =
+                    pending_overlay_fill_coverage_map;
+            }
+            if (pending_overlay_solid_suppressed != 0 &&
+                pending_overlay_layer.has_effect_solid_overlay != 0 &&
+                pending_solid_coverage_map != NULL &&
+                !sixel_builtin_psd_alpha_map_has_nonzero(
+                    pending_solid_coverage_map,
+                    pixel_count)) {
+                /*
+                 * Keep deferred SoFi alive when base suppression has already
+                 * claimed ownership but group-alpha coverage collapses to zero.
+                 */
+                pending_solid_coverage_map = group_clip_gate;
+            }
+            pending_overlay_interior_enabled =
+                sixel_builtin_psd_layer_interior_effects_enabled(
+                    &pending_overlay_layer);
+            if (pending_overlay_interior_enabled != 0) {
+                sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
                     group_rgb_premul,
                     group_canvas_alpha,
                     group_clip_gate,
+                    pending_solid_coverage_map,
                     group_backdrop_rgb_premul,
                     group_backdrop_alpha,
-                    group_stroke_backdrop_rgb_premul,
-                    group_stroke_backdrop_alpha,
-                    pending_overlay_fill_coverage_map,
-                    pending_overlay_stroke_coverage_map,
-                    pending_overlay_dual_stroke_source_alpha_map,
                     info->width,
                     info->height,
-                    pixel_count,
-                    pending_overlay_layers,
-                    pending_overlay_solid_coverage_maps,
-                    pending_overlay_layer_capacity,
-                    &pending_overlay_layer_count,
-                    &pending_overlay_layer,
-                    &pending_clip_group_overlay,
-                    &pending_overlay_base_index,
-                    &pending_overlay_defer_stroke,
-                    &pending_overlay_stroke_mode,
-                    &pending_overlay_stroke_consumed,
-                    &pending_overlay_dual_stroke,
-                    &pending_overlay_fill_coverage_valid,
-                    &pending_overlay_stroke_coverage_valid,
-                    &pending_overlay_dual_stroke_source_alpha_valid,
-                    &pending_overlay_solid_suppressed,
-                    &group_active);
+                    &pending_overlay_layer);
+                sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
+                    group_rgb_premul,
+                    group_canvas_alpha,
+                    group_clip_gate,
+                    pending_overlay_fill_coverage_valid != 0
+                        ? pending_overlay_fill_coverage_map
+                        : NULL,
+                    group_backdrop_rgb_premul,
+                    group_backdrop_alpha,
+                    info->width,
+                    info->height,
+                    &pending_overlay_layer);
+                sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
+                    group_rgb_premul,
+                    group_canvas_alpha,
+                    group_clip_gate,
+                    pending_overlay_stroke_coverage_valid != 0
+                        ? pending_overlay_stroke_coverage_map
+                        : NULL,
+                    info->width,
+                    info->height,
+                    &pending_overlay_layer);
+                sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
+                    group_rgb_premul,
+                    group_canvas_alpha,
+                    group_clip_gate,
+                    pending_overlay_stroke_coverage_valid != 0
+                        ? pending_overlay_stroke_coverage_map
+                        : NULL,
+                    info->width,
+                    info->height,
+                    &pending_overlay_layer);
+                if (pending_overlay_defer_stroke != 0) {
+                    /*
+                     * Stroke colors should read the group state after deferred
+                     * overlays/effects are applied, not the pre-effect
+                     * backdrop captured at flush start.
+                     */
+                    memcpy(group_stroke_backdrop_rgb_premul,
+                           group_rgb_premul,
+                           pixel_count * 3u * sizeof(float));
+                    memcpy(group_stroke_backdrop_alpha,
+                           group_canvas_alpha,
+                           pixel_count * sizeof(float));
+                    sixel_builtin_psd_apply_pending_deferred_stroke(
+                        group_rgb_premul,
+                        group_canvas_alpha,
+                        group_clip_gate,
+                        pending_overlay_stroke_coverage_valid != 0
+                            ? pending_overlay_stroke_coverage_map
+                            : NULL,
+                        pending_overlay_dual_stroke_source_alpha_valid != 0
+                            ? pending_overlay_dual_stroke_source_alpha_map
+                            : NULL,
+                        group_stroke_backdrop_rgb_premul,
+                        group_stroke_backdrop_alpha,
+                        info->width,
+                        info->height,
+                        &pending_overlay_layer,
+                        pending_overlay_stroke_mode,
+                        &pending_overlay_stroke_consumed);
+                }
+            } else {
+                sixel_builtin_psd_layer_effects_trace_interior_skip();
             }
-            pending_overlay_group_announced = 0;
+            if (group_active != 0) {
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: compositing deferred offscreen clipped group "
+                    "buffer to canvas");
+                memcpy(canvas_rgb_premul,
+                       group_rgb_premul,
+                       pixel_count * 3u * sizeof(float));
+                memcpy(canvas_alpha,
+                       group_canvas_alpha,
+                       pixel_count * sizeof(float));
+            }
+            pending_clip_group_overlay = 0;
+            pending_overlay_defer_stroke = 0;
+            pending_overlay_stroke_mode =
+                SIXEL_BUILTIN_PSD_STROKE_APPLY_NONE;
+            pending_overlay_stroke_consumed = 0;
+            pending_overlay_dual_stroke = 0;
+            pending_overlay_fill_coverage_valid = 0;
+            pending_overlay_stroke_coverage_valid = 0;
+            pending_overlay_dual_stroke_source_alpha_valid = 0;
+            pending_overlay_solid_suppressed = 0;
+            group_active = 0;
+            memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
         }
         if (layer->has_non_pixel_payload != 0) {
             sixel_builtin_psd_trace_message(
@@ -26346,18 +25659,16 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             }
         }
         defer_clip_group_overlay = 0;
+        has_adjacent_clipping_child = 0;
         has_deferred_dual_owner =
             deferred_dual_stroke_owner_map[(size_t)i] != 0 ? 1 : 0;
         has_deferred_overlay_owner =
             deferred_overlay_owner_map[(size_t)i] != 0 ? 1 : 0;
         if (step == 1 && apply_clipping == 0) {
-            has_group_clipping_sibling =
-                sixel_builtin_psd_has_fallback_clipping_sibling(
-                    info,
-                    &model,
-                    clip_base_indices_forward,
-                    i);
-            if (has_group_clipping_sibling != 0) {
+            next_index = (size_t)(i + 1);
+            if (next_index < model.layer_count &&
+                model.layers[next_index].clipping != 0u) {
+                has_adjacent_clipping_child = 1;
                 base_has_clipping_children = 1;
             }
             if (has_deferred_dual_owner != 0) {
@@ -26367,119 +25678,79 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 base_has_clipping_children = 1;
             }
         }
-        if (pending_clip_group_overlay != 0 &&
-            pending_overlay_base_index == layer_deferred_group_base_index &&
-            has_deferred_overlay_owner != 0) {
-            defer_clip_group_overlay = 1;
-        }
-        overlay_owned_by_deferred_candidate =
-            has_deferred_overlay_owner != 0 &&
-            layer_deferred_group_base_index >= 0 &&
+        if (step == 1 &&
+            apply_clipping == 0 &&
             (effective_composite_layer->has_effect_solid_overlay != 0 ||
-             effective_composite_layer->has_effect_gradient_overlay != 0) ? 1
-                                                                            : 0;
-        if (overlay_owned_by_deferred_candidate != 0) {
-            begin_deferred_clip_group_now =
-                pending_clip_group_overlay == 0 ? 1 : 0;
-            if (sixel_builtin_psd_begin_deferred_clip_group_state(
-                    &model,
-                    deferred_dual_stroke_owner_map,
-                    layer_deferred_group_base_index,
-                    pixel_count,
-                    canvas_rgb_premul,
-                    canvas_alpha,
-                    group_rgb_premul,
-                    group_canvas_alpha,
-                    group_clip_gate,
-                    pending_overlay_fill_coverage_map,
-                    pending_overlay_dual_stroke_source_alpha_map,
-                    pending_overlay_layers,
-                    pending_overlay_layer_capacity,
-                    pending_overlay_solid_coverage_maps,
-                    &pending_overlay_layer_count,
-                    &pending_overlay_layer,
-                    &pending_clip_group_overlay,
-                    &pending_overlay_base_index,
-                    &pending_overlay_defer_stroke,
-                    &pending_overlay_stroke_mode,
-                    &pending_overlay_stroke_consumed,
-                    &pending_overlay_dual_stroke,
-                    &pending_overlay_fill_coverage_valid,
-                    &pending_overlay_stroke_coverage_valid,
-                    &pending_overlay_dual_stroke_source_alpha_valid,
-                    &pending_overlay_solid_suppressed,
-                    &group_active,
-                    &pending_overlay_group_announced) != 0) {
-                if (begin_deferred_clip_group_now != 0) {
-                    if (pending_overlay_layer.has_blend_clipped_elements != 0 &&
-                        pending_overlay_layer
-                            .blend_clipped_elements_enabled == 0) {
-                        sixel_builtin_psd_trace_message(
-                            "psd_decode",
-                            "builtin PSD: clbl=0; deferring interior "
-                            "effects to clipped group composite");
-                    } else {
-                        sixel_builtin_psd_trace_message(
-                            "psd_decode",
-                            "builtin PSD: clbl=1; deferring interior "
-                            "overlays to clipped group composite");
-                    }
+             effective_composite_layer->has_effect_gradient_overlay != 0)) {
+            if (has_deferred_overlay_owner != 0 ||
+                has_adjacent_clipping_child != 0 ||
+                has_deferred_dual_owner != 0) {
+                defer_clip_group_overlay = 1;
+                pending_overlay_layer = *effective_composite_layer;
+                pending_clip_group_overlay = 1;
+                memcpy(group_rgb_premul,
+                       canvas_rgb_premul,
+                       pixel_count * 3u * sizeof(float));
+                memcpy(group_canvas_alpha,
+                       canvas_alpha,
+                       pixel_count * sizeof(float));
+                memset(pending_overlay_fill_coverage_map,
+                       0,
+                       pixel_count * sizeof(float));
+                memset(pending_overlay_dual_stroke_source_alpha_map,
+                       0,
+                       pixel_count * sizeof(float));
+                memset(group_clip_gate,
+                       0,
+                       pixel_count * sizeof(float));
+                group_active = 1;
+                pending_overlay_fill_coverage_valid = 0;
+                pending_overlay_stroke_coverage_valid = 0;
+                pending_overlay_dual_stroke_source_alpha_valid = 0;
+                pending_overlay_stroke_consumed = 0;
+                pending_overlay_stroke_mode =
+                    SIXEL_BUILTIN_PSD_STROKE_APPLY_NONE;
+                /*
+                 * clbl=1 shape/effect stacks can require stroke application
+                 * after clipped siblings are composited. Defer explicit FrFX
+                 * stroke in that narrow subset and keep synthesized vstk
+                 * stroke on the base-layer pass.
+                 */
+                pending_overlay_defer_stroke = 0;
+                if (has_deferred_dual_owner != 0 ||
+                    (effective_composite_layer->has_blend_clipped_elements != 0 &&
+                     effective_composite_layer->blend_clipped_elements_enabled !=
+                     0 &&
+                     sixel_builtin_psd_layer_has_dual_stroke_pair(
+                         effective_composite_layer) &&
+                     effective_composite_layer->has_vector_mask != 0)) {
+                    pending_overlay_defer_stroke = 1;
                 }
-                overlay_enqueue_succeeded =
-                    sixel_builtin_psd_enqueue_deferred_overlay_effects(
-                        pending_overlay_layers,
-                        pending_overlay_layer_capacity,
-                        &pending_overlay_layer_count,
-                        effective_composite_layer,
-                        &pending_overlay_solid_suppressed);
-                if (overlay_enqueue_succeeded != 0) {
-                    overlay_coverage_capture_pending = 1;
-                    overlay_enqueued_index =
-                        pending_overlay_layer_count - 1u;
-                    if (traced_overlay_suppression_before_subset == 0) {
-                        sixel_builtin_psd_trace_message(
-                            "psd_decode",
-                            "builtin PSD: applying clbl=1 deferred overlay "
-                            "suppression before base effect subset");
-                        traced_overlay_suppression_before_subset = 1;
-                    }
+                if (effective_composite_layer->has_blend_clipped_elements != 0 &&
+                    effective_composite_layer->blend_clipped_elements_enabled ==
+                    0) {
                     sixel_builtin_psd_trace_message(
                         "psd_decode",
-                        "builtin PSD: suppressing clbl=1 deferred base "
-                        "solid/gradient overlays");
-                    layer_for_composite = *effective_composite_layer;
-                    layer_for_composite.has_effect_solid_overlay = 0;
-                    layer_for_composite.has_effect_gradient_overlay = 0;
-                    effective_composite_layer = &layer_for_composite;
-                    defer_clip_group_overlay = 1;
-                } else if (begin_deferred_clip_group_now != 0 &&
-                           sixel_builtin_psd_has_actionable_deferred_clip_group(
-                               pending_overlay_layers,
-                               pending_overlay_layer_count,
-                               pending_overlay_defer_stroke,
-                               pending_overlay_stroke_mode,
-                               pending_overlay_stroke_coverage_valid) == 0) {
-                    sixel_builtin_psd_trace_deferred_clip_group_empty_skip(
-                        pending_overlay_base_index);
-                    sixel_builtin_psd_deferred_clip_group_state_reset(
-                        pending_overlay_layers,
-                        pending_overlay_layer_capacity,
-                        pending_overlay_solid_coverage_maps,
-                        &pending_overlay_layer_count,
-                        &pending_overlay_layer,
-                        &pending_clip_group_overlay,
-                        &pending_overlay_base_index,
-                        &pending_overlay_defer_stroke,
-                        &pending_overlay_stroke_mode,
-                        &pending_overlay_stroke_consumed,
-                        &pending_overlay_dual_stroke,
-                        &pending_overlay_fill_coverage_valid,
-                        &pending_overlay_stroke_coverage_valid,
-                        &pending_overlay_dual_stroke_source_alpha_valid,
-                        &pending_overlay_solid_suppressed,
-                        &group_active);
+                        "builtin PSD: clbl=0; deferring interior effects "
+                        "to clipped group composite");
+                } else {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: clbl=1; deferring interior overlays "
+                        "to clipped group composite");
+                }
+                if (pending_overlay_defer_stroke != 0) {
+                    pending_overlay_stroke_mode =
+                        sixel_builtin_psd_layer_stroke_apply_mode(
+                            &pending_overlay_layer);
                 }
             }
+        }
+        if (apply_clipping == 0 &&
+            has_deferred_overlay_owner != 0 &&
+            (effective_composite_layer->has_effect_solid_overlay != 0 ||
+             effective_composite_layer->has_effect_gradient_overlay != 0)) {
+            overlay_owned_by_deferred = 1;
         }
         if (effective_composite_layer->width == info->width &&
             effective_composite_layer->height == info->height &&
@@ -26519,101 +25790,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 effective_composite_layer,
                 &src_layer);
             pre_softened_alpha_edges = 1;
-        }
-        if (overlay_coverage_capture_pending != 0 &&
-            overlay_enqueued_index < pending_overlay_layer_capacity &&
-            pending_overlay_solid_coverage_maps != NULL) {
-            entry_solid_coverage_map =
-                pending_overlay_solid_coverage_maps[overlay_enqueued_index];
-            if (entry_solid_coverage_map == NULL) {
-                entry_solid_coverage_map =
-                    (float *)malloc(pixel_count * sizeof(float));
-                if (entry_solid_coverage_map != NULL) {
-                    pending_overlay_solid_coverage_maps[
-                        overlay_enqueued_index] = entry_solid_coverage_map;
-                }
-            }
-            if (entry_solid_coverage_map != NULL) {
-                for (clip_alpha_index = 0u;
-                     clip_alpha_index < pixel_count;
-                     ++clip_alpha_index) {
-                    entry_source_alpha =
-                        sixel_builtin_psd_clamp_alpha_float32(
-                            src_layer.alpha[clip_alpha_index]);
-                    if (clip_alpha_valid != 0) {
-                        entry_clip_weight =
-                            sixel_builtin_psd_clamp_alpha_float32(
-                                clip_alpha_map[clip_alpha_index]);
-                    } else {
-                        entry_clip_weight = 1.0f;
-                    }
-                    entry_solid_coverage_map[clip_alpha_index] =
-                        sixel_builtin_psd_clamp_alpha_float32(
-                            entry_source_alpha * entry_clip_weight);
-                }
-            }
-        }
-        stroke_capture_candidate =
-            apply_clipping == 0 &&
-            pending_clip_group_overlay == 0 &&
-            has_deferred_overlay_owner != 0 &&
-            layer_deferred_group_base_index >= 0 &&
-            (has_deferred_dual_owner != 0 ||
-             (effective_composite_layer->has_blend_clipped_elements != 0 &&
-              effective_composite_layer->blend_clipped_elements_enabled != 0 &&
-              (sixel_builtin_psd_layer_has_dual_stroke_pair(
-                   effective_composite_layer) != 0 ||
-               sixel_builtin_psd_layer_interior_effects_enabled(
-                   effective_composite_layer) != 0))) ? 1
-                                                      : 0;
-        if (stroke_capture_candidate != 0 &&
-            sixel_builtin_psd_begin_deferred_clip_group_state(
-                &model,
-                deferred_dual_stroke_owner_map,
-                layer_deferred_group_base_index,
-                pixel_count,
-                canvas_rgb_premul,
-                canvas_alpha,
-                group_rgb_premul,
-                group_canvas_alpha,
-                group_clip_gate,
-                pending_overlay_fill_coverage_map,
-                pending_overlay_dual_stroke_source_alpha_map,
-                pending_overlay_layers,
-                pending_overlay_layer_capacity,
-                pending_overlay_solid_coverage_maps,
-                &pending_overlay_layer_count,
-                &pending_overlay_layer,
-                &pending_clip_group_overlay,
-                &pending_overlay_base_index,
-                &pending_overlay_defer_stroke,
-                &pending_overlay_stroke_mode,
-                &pending_overlay_stroke_consumed,
-                &pending_overlay_dual_stroke,
-                &pending_overlay_fill_coverage_valid,
-                &pending_overlay_stroke_coverage_valid,
-                &pending_overlay_dual_stroke_source_alpha_valid,
-                &pending_overlay_solid_suppressed,
-                &group_active,
-                &pending_overlay_group_announced) != 0) {
-            if (pending_overlay_layer.has_blend_clipped_elements != 0 &&
-                pending_overlay_layer.blend_clipped_elements_enabled == 0) {
-                sixel_builtin_psd_trace_message(
-                    "psd_decode",
-                    "builtin PSD: clbl=0; deferring interior effects "
-                    "to clipped group composite");
-            } else {
-                sixel_builtin_psd_trace_message(
-                    "psd_decode",
-                    "builtin PSD: clbl=1; deferring interior overlays "
-                    "to clipped group composite");
-            }
-            defer_clip_group_overlay = 1;
-        }
-        if (pending_clip_group_overlay != 0 &&
-            pending_overlay_base_index == layer_deferred_group_base_index &&
-            has_deferred_overlay_owner != 0) {
-            defer_clip_group_overlay = 1;
         }
         if (apply_clipping == 0 &&
             defer_clip_group_overlay != 0) {
@@ -26687,17 +25863,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             pending_overlay_dual_stroke_source_alpha_valid = 1;
         }
         if (defer_effect_stroke_ownership != 0) {
-            if (pending_clip_group_overlay != 0 &&
-                pending_overlay_base_index == layer_deferred_group_base_index) {
-                /*
-                 * A clipping sibling can become the first stroke owner after
-                 * the base starts deferred group collection. Promote deferred
-                 * stroke ownership here so flush sees one effective source.
-                 */
-                pending_overlay_defer_stroke = 1;
-                pending_overlay_stroke_mode = layer_stroke_mode;
-                pending_overlay_layer = *effective_composite_layer;
-            }
             /*
              * Resolve clbl=1 dual-stroke ownership before effect application.
              * Base pass keeps only coverage preparation for deferred stroke.
@@ -26748,6 +25913,40 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 effective_composite_layer->has_effect_outer_glow != 0 ||
                 effective_composite_layer->has_effect_inner_glow != 0;
         }
+        if (overlay_owned_by_deferred != 0 &&
+            (effective_composite_layer->has_effect_solid_overlay != 0 ||
+             effective_composite_layer->has_effect_gradient_overlay != 0)) {
+            sixel_builtin_psd_trace_message(
+                "psd_decode",
+                "builtin PSD: suppressing clbl=1 deferred base "
+                "solid/gradient overlays");
+            layer_for_composite = *effective_composite_layer;
+            if (layer_for_composite.has_effect_solid_overlay != 0) {
+                pending_overlay_solid_suppressed = 1;
+                if (pending_overlay_layer.has_effect_solid_overlay == 0) {
+                    pending_overlay_layer.has_effect_solid_overlay = 1;
+                    pending_overlay_layer.effect_solid_overlay_rgb[0] =
+                        layer_for_composite.effect_solid_overlay_rgb[0];
+                    pending_overlay_layer.effect_solid_overlay_rgb[1] =
+                        layer_for_composite.effect_solid_overlay_rgb[1];
+                    pending_overlay_layer.effect_solid_overlay_rgb[2] =
+                        layer_for_composite.effect_solid_overlay_rgb[2];
+                    pending_overlay_layer.effect_solid_overlay_opacity =
+                        layer_for_composite.effect_solid_overlay_opacity;
+                    pending_overlay_layer.effect_solid_overlay_mode =
+                        layer_for_composite.effect_solid_overlay_mode;
+                }
+            }
+            layer_for_composite.has_effect_solid_overlay = 0;
+            layer_for_composite.has_effect_gradient_overlay = 0;
+            effective_composite_layer = &layer_for_composite;
+            apply_effects_subset =
+                effective_composite_layer->has_effect_solid_overlay != 0 ||
+                effective_composite_layer->has_effect_gradient_overlay != 0 ||
+                effective_composite_layer->has_effect_stroke != 0 ||
+                effective_composite_layer->has_effect_outer_glow != 0 ||
+                effective_composite_layer->has_effect_inner_glow != 0;
+        }
         if (defer_clip_group_overlay == 0 &&
             apply_effects_subset != 0) {
             sixel_builtin_psd_apply_layer_effects_subset(
@@ -26769,6 +25968,35 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 apply_effects_without_overlay = 0;
             } else {
                 layer_for_composite = *effective_composite_layer;
+                if (layer_for_composite.has_effect_solid_overlay != 0 ||
+                    layer_for_composite.has_effect_gradient_overlay != 0) {
+                    if (layer_for_composite.has_effect_solid_overlay != 0) {
+                        pending_overlay_solid_suppressed = 1;
+                        if (pending_overlay_layer.has_effect_solid_overlay ==
+                            0) {
+                            pending_overlay_layer.has_effect_solid_overlay = 1;
+                            pending_overlay_layer.effect_solid_overlay_rgb[0] =
+                                layer_for_composite.effect_solid_overlay_rgb[
+                                    0];
+                            pending_overlay_layer.effect_solid_overlay_rgb[1] =
+                                layer_for_composite.effect_solid_overlay_rgb[
+                                    1];
+                            pending_overlay_layer.effect_solid_overlay_rgb[2] =
+                                layer_for_composite.effect_solid_overlay_rgb[
+                                    2];
+                            pending_overlay_layer.effect_solid_overlay_opacity =
+                                layer_for_composite.effect_solid_overlay_opacity;
+                            pending_overlay_layer.effect_solid_overlay_mode =
+                                layer_for_composite.effect_solid_overlay_mode;
+                        }
+                    }
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: suppressing clbl=1 deferred base "
+                        "solid/gradient overlays");
+                    layer_for_composite.has_effect_solid_overlay = 0;
+                    layer_for_composite.has_effect_gradient_overlay = 0;
+                }
                 if (pending_overlay_defer_stroke != 0) {
                     layer_for_composite.has_effect_stroke = 0;
                     layer_for_composite.has_vector_stroke_style = 0;
@@ -26874,75 +26102,161 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         sixel_builtin_psd_layer_buffers_destroy(info->allocator, &src_layer);
     }
     if (pending_clip_group_overlay != 0) {
-        if (sixel_builtin_psd_has_actionable_deferred_clip_group(
-                pending_overlay_layers,
-                pending_overlay_layer_count,
-                pending_overlay_defer_stroke,
-                pending_overlay_stroke_mode,
-                pending_overlay_stroke_coverage_valid) == 0) {
-            sixel_builtin_psd_trace_deferred_clip_group_empty_skip(
-                pending_overlay_base_index);
-            sixel_builtin_psd_deferred_clip_group_state_reset(
-                pending_overlay_layers,
-                pending_overlay_layer_capacity,
-                pending_overlay_solid_coverage_maps,
-                &pending_overlay_layer_count,
-                &pending_overlay_layer,
-                &pending_clip_group_overlay,
-                &pending_overlay_base_index,
-                &pending_overlay_defer_stroke,
-                &pending_overlay_stroke_mode,
-                &pending_overlay_stroke_consumed,
-                &pending_overlay_dual_stroke,
-                &pending_overlay_fill_coverage_valid,
-                &pending_overlay_stroke_coverage_valid,
-                &pending_overlay_dual_stroke_source_alpha_valid,
-                &pending_overlay_solid_suppressed,
-                &group_active);
-        } else {
-            if (pending_overlay_group_announced == 0) {
-                sixel_builtin_psd_trace_deferred_clip_group_boundary(
-                    "beginning",
-                    pending_overlay_base_index);
-                pending_overlay_group_announced = 1;
+            pending_solid_coverage_map = NULL;
+            pending_overlay_fill_coverage_valid = group_active != 0 ? 1 : 0;
+            if (group_active != 0) {
+                /*
+                 * Final deferred flush must reuse the same pre-effect group
+                 * backdrop for all deferred effect passes.
+                 */
+                memcpy(pending_overlay_fill_coverage_map,
+                       group_canvas_alpha,
+                       pixel_count * sizeof(float));
+                memcpy(group_backdrop_rgb_premul,
+                       group_rgb_premul,
+                       pixel_count * 3u * sizeof(float));
+                memcpy(group_backdrop_alpha,
+                       group_canvas_alpha,
+                       pixel_count * sizeof(float));
+            } else {
+                memset(pending_overlay_fill_coverage_map,
+                       0,
+                       pixel_count * sizeof(float));
+                memset(group_backdrop_rgb_premul,
+                       0,
+                       pixel_count * 3u * sizeof(float));
+            memset(group_backdrop_alpha,
+                   0,
+                   pixel_count * sizeof(float));
             }
-            sixel_builtin_psd_trace_deferred_clip_group_boundary(
-                "flushing",
-                pending_overlay_base_index);
-            sixel_builtin_psd_flush_pending_clip_group_overlay(
-                canvas_rgb_premul,
-                canvas_alpha,
+            if (pending_overlay_fill_coverage_valid != 0) {
+                pending_solid_coverage_map =
+                    pending_overlay_fill_coverage_map;
+            }
+            if (pending_overlay_solid_suppressed != 0 &&
+                pending_overlay_layer.has_effect_solid_overlay != 0 &&
+                pending_solid_coverage_map != NULL &&
+                !sixel_builtin_psd_alpha_map_has_nonzero(
+                    pending_solid_coverage_map,
+                    pixel_count)) {
+                /*
+                 * Mirror mid-loop flush behavior so end-of-stream deferred
+                 * SoFi keeps the same suppression fallback contract.
+                 */
+                pending_solid_coverage_map = group_clip_gate;
+            }
+        pending_overlay_interior_enabled =
+            sixel_builtin_psd_layer_interior_effects_enabled(
+                &pending_overlay_layer);
+        pending_overlay_dual_stroke =
+            pending_overlay_defer_stroke != 0 &&
+            pending_overlay_stroke_mode ==
+                SIXEL_BUILTIN_PSD_STROKE_APPLY_DUAL ? 1 : 0;
+        if (pending_overlay_interior_enabled != 0) {
+            if (pending_overlay_dual_stroke != 0) {
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: applying deferred vector stroke and "
+                    "layer effect stroke on clipped group");
+            }
+            sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
                 group_rgb_premul,
                 group_canvas_alpha,
                 group_clip_gate,
+                pending_solid_coverage_map,
                 group_backdrop_rgb_premul,
                 group_backdrop_alpha,
-                group_stroke_backdrop_rgb_premul,
-                group_stroke_backdrop_alpha,
-                pending_overlay_fill_coverage_map,
-                pending_overlay_stroke_coverage_map,
-                pending_overlay_dual_stroke_source_alpha_map,
                 info->width,
                 info->height,
-                pixel_count,
-                pending_overlay_layers,
-                pending_overlay_solid_coverage_maps,
-                pending_overlay_layer_capacity,
-                &pending_overlay_layer_count,
-                &pending_overlay_layer,
-                &pending_clip_group_overlay,
-                &pending_overlay_base_index,
-                &pending_overlay_defer_stroke,
-                &pending_overlay_stroke_mode,
-                &pending_overlay_stroke_consumed,
-                &pending_overlay_dual_stroke,
-                &pending_overlay_fill_coverage_valid,
-                &pending_overlay_stroke_coverage_valid,
-                &pending_overlay_dual_stroke_source_alpha_valid,
-                &pending_overlay_solid_suppressed,
-                &group_active);
+                &pending_overlay_layer);
+            sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
+                group_rgb_premul,
+                group_canvas_alpha,
+                group_clip_gate,
+                pending_overlay_fill_coverage_valid != 0
+                    ? pending_overlay_fill_coverage_map
+                    : NULL,
+                group_backdrop_rgb_premul,
+                group_backdrop_alpha,
+                info->width,
+                info->height,
+                &pending_overlay_layer);
+            sixel_builtin_psd_apply_deferred_outer_fx_with_clip(
+                group_rgb_premul,
+                group_canvas_alpha,
+                group_clip_gate,
+                pending_overlay_stroke_coverage_valid != 0
+                    ? pending_overlay_stroke_coverage_map
+                    : NULL,
+                info->width,
+                info->height,
+                &pending_overlay_layer);
+            sixel_builtin_psd_apply_deferred_interior_effects_with_clip(
+                group_rgb_premul,
+                group_canvas_alpha,
+                group_clip_gate,
+                pending_overlay_stroke_coverage_valid != 0
+                    ? pending_overlay_stroke_coverage_map
+                    : NULL,
+                info->width,
+                info->height,
+                &pending_overlay_layer);
+            if (pending_overlay_defer_stroke != 0) {
+                /*
+                 * Final deferred stroke uses the post-effect offscreen group
+                 * snapshot so blend math matches the visible group backdrop.
+                 */
+                memcpy(group_stroke_backdrop_rgb_premul,
+                       group_rgb_premul,
+                       pixel_count * 3u * sizeof(float));
+                memcpy(group_stroke_backdrop_alpha,
+                       group_canvas_alpha,
+                       pixel_count * sizeof(float));
+                sixel_builtin_psd_apply_pending_deferred_stroke(
+                    group_rgb_premul,
+                    group_canvas_alpha,
+                    group_clip_gate,
+                    pending_overlay_stroke_coverage_valid != 0
+                        ? pending_overlay_stroke_coverage_map
+                        : NULL,
+                    pending_overlay_dual_stroke_source_alpha_valid != 0
+                        ? pending_overlay_dual_stroke_source_alpha_map
+                        : NULL,
+                    group_stroke_backdrop_rgb_premul,
+                    group_stroke_backdrop_alpha,
+                    info->width,
+                    info->height,
+                    &pending_overlay_layer,
+                    pending_overlay_stroke_mode,
+                    &pending_overlay_stroke_consumed);
+            }
+        } else {
+            sixel_builtin_psd_layer_effects_trace_interior_skip();
         }
-        pending_overlay_group_announced = 0;
+        if (group_active != 0) {
+            sixel_builtin_psd_trace_message(
+                "psd_decode",
+                "builtin PSD: compositing deferred offscreen clipped group "
+                "buffer to canvas");
+            memcpy(canvas_rgb_premul,
+                   group_rgb_premul,
+                   pixel_count * 3u * sizeof(float));
+            memcpy(canvas_alpha,
+                   group_canvas_alpha,
+                   pixel_count * sizeof(float));
+        }
+        pending_clip_group_overlay = 0;
+        pending_overlay_defer_stroke = 0;
+        pending_overlay_stroke_mode =
+            SIXEL_BUILTIN_PSD_STROKE_APPLY_NONE;
+        pending_overlay_stroke_consumed = 0;
+        pending_overlay_dual_stroke = 0;
+        pending_overlay_fill_coverage_valid = 0;
+        pending_overlay_stroke_coverage_valid = 0;
+        pending_overlay_dual_stroke_source_alpha_valid = 0;
+        pending_overlay_solid_suppressed = 0;
+        group_active = 0;
+        memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
     }
     if (allow_pixel_layer_decode_skip != 0 &&
         skipped_pixel_layer_decode_count > 0u &&
@@ -26982,20 +26296,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         ppixelformat);
 
 cleanup:
-    if (pending_overlay_solid_coverage_maps != NULL) {
-        for (clip_alpha_index = 0u;
-             clip_alpha_index < pending_overlay_layer_capacity;
-             ++clip_alpha_index) {
-            if (pending_overlay_solid_coverage_maps[clip_alpha_index] != NULL) {
-                free(pending_overlay_solid_coverage_maps[clip_alpha_index]);
-                pending_overlay_solid_coverage_maps[clip_alpha_index] = NULL;
-            }
-        }
-        sixel_allocator_free(info->allocator, pending_overlay_solid_coverage_maps);
-    }
-    if (pending_overlay_layers != NULL) {
-        sixel_allocator_free(info->allocator, pending_overlay_layers);
-    }
     if (deferred_dual_stroke_owner_map != NULL) {
         sixel_allocator_free(info->allocator,
                              deferred_dual_stroke_owner_map);

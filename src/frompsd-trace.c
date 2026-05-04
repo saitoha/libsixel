@@ -209,22 +209,6 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
         return "FX_DEFERRED_SOLID_CLIP_SPLIT";
     }
     if (strstr(message,
-               "beginning deferred clipped-group state bucket") != NULL) {
-        return "FX_DEFERRED_GROUP_BEGIN";
-    }
-    if (strstr(message,
-               "flushing deferred clipped-group state bucket") != NULL) {
-        return "FX_DEFERRED_GROUP_FLUSH";
-    }
-    if (strstr(message,
-               "consuming deferred clipped-group state bucket") != NULL) {
-        return "FX_DEFERRED_GROUP_CONSUME";
-    }
-    if (strstr(message,
-               "skipping empty deferred clipped-group state bucket") != NULL) {
-        return "FX_DEFERRED_GROUP_EMPTY_SKIP";
-    }
-    if (strstr(message,
                "applying vector stroke and layer effect stroke in layer "
                "fallback") != NULL) {
         return "FX_DUAL_SOURCE_BASE";
@@ -308,11 +292,6 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
                "fallback") != NULL) {
         return "FX_DEFERRED_SOLID_OVERLAY_CLIP";
     }
-    if (strstr(message,
-               "skipping deferred solid overlay replay for zero "
-               "coverage map in layer fallback") != NULL) {
-        return "FX_DEFERRED_SOLID_SKIP_ZERO_COVERAGE";
-    }
     if (strstr(message, "parsed clbl=0") != NULL) {
         return "FX_CLBL0_PARSE";
     }
@@ -339,11 +318,6 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
                "suppressing clbl=1 deferred base solid/gradient overlays") !=
             NULL) {
         return "FX_CLBL1_BASE_OVERLAY_SUPPRESS";
-    }
-    if (strstr(message,
-               "applying clbl=1 deferred overlay suppression before base "
-               "effect subset") != NULL) {
-        return "FX_CLBL1_PRESET_OVERLAY_SUPPRESS";
     }
     if (strstr(message,
                "suppressing clbl=1 deferred base interior glow/choke/"
