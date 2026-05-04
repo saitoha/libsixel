@@ -1236,6 +1236,10 @@ minimal `XMP` color profile name fallback (`photoshop:ICCProfile`) for
 The profile-name resolver also accepts compact aliases such as `sRGB`,
 `IEC61966-2.1`, `DisplayP3`, `AdobeRGB1998`, and `AdobeRGB`.
 Unknown XMP color profile names are ignored.
+XMP payload parsing is capped at `256 KiB` for orientation and CMS fallback.
+When this cap is exceeded, builtin WebP treats XMP metadata as non-fatal
+ignored input and emits `W_META_XMP_SIZE_LIMIT_IGNORED` and/or
+`W_META_XMP_CMS_SIZE_LIMIT_IGNORED` diagnostics.
 
 `librsvg` always returns raster frames as `RGB888` or `RGBA8888`.
 Without `-B` and with any non-opaque pixel, alpha is preserved
