@@ -20804,8 +20804,10 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
              * FXPRI_INSIDE keeps exclusive vector/effect bands intact while
              * resolving overlap color with alpha-aware FrFX priority:
              * C_overlap = C_stack * (1 - w_fx) + C_fx * w_fx.
-             * C_stack is base->vector(a_v)->effect(a_f), C_fx is
-             * base->effect(a_f), and w_fx = a_f / (a_v + a_f).
+             * C_stack is base->vector->effect, C_fx is base->effect, and
+             * w_fx = a_f / (a_v + a_f). Candidate overlap colors stay
+             * full-strength here; overlap_alpha is applied exactly once in
+             * the final region-weighted mix.
              */
             sixel_builtin_psd_blend_effect_rgb(
                 base_rgb[0],
@@ -20813,7 +20815,7 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
                 base_rgb[2],
                 effect_rgb,
                 effect_mode,
-                effect_alpha,
+                1.0f,
                 &overlap_full_rgb[0],
                 &overlap_full_rgb[1],
                 &overlap_full_rgb[2]);
@@ -20823,10 +20825,10 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
                 base_rgb[2],
                 effect_rgb,
                 effect_mode,
-                effect_alpha,
+                1.0f,
                 vector_rgb,
                 vector_mode,
-                vector_alpha,
+                1.0f,
                 &overlap_tmp_rgb[0],
                 &overlap_tmp_rgb[1],
                 &overlap_tmp_rgb[2]);
