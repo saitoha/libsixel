@@ -120,6 +120,8 @@ timeline_clock_origin_is_shared(void)
     void *service;
     char log_path[4096];
     char const *log_path_env;
+    double first_timestamp;
+    double second_timestamp;
     int success;
 
     allocator = NULL;
@@ -128,6 +130,8 @@ timeline_clock_origin_is_shared(void)
     logger2 = NULL;
     service = NULL;
     log_path_env = NULL;
+    first_timestamp = 0.0;
+    second_timestamp = 0.0;
     memset(log_path, 0, sizeof(log_path));
     success = 0;
 
@@ -194,6 +198,20 @@ timeline_clock_origin_is_shared(void)
         goto end;
     }
     writer->vtbl->flush(writer);
+    if (!timeline_read_clock_samples(log_path,
+                                     &first_timestamp,
+                                     &second_timestamp)) {
+        fprintf(stderr, "timeline clock JSONL verification failed\n");
+        goto end;
+    }
+    if (second_timestamp - first_timestamp <
+        TIMELINE_CLOCK_MIN_DELTA_SECONDS) {
+        fprintf(stderr,
+                "timeline clock origin regressed: first=%f second=%f\n",
+                first_timestamp,
+                second_timestamp);
+        goto end;
+    }
 
     success = 1;
 
@@ -224,52 +242,6 @@ test_timeline_0003_timeline_clock_origin(int argc, char **argv)
 
     if (!timeline_clock_origin_is_shared()) {
         fprintf(stderr, "timeline clock origin contract failed\n");
-        return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
-}
-
-int
-test_timeline_0003_timeline_clock_origin_verify(int argc, char **argv)
-{
-    char log_path[4096];
-    char const *log_path_source;
-    double first_timestamp;
-    double second_timestamp;
-
-    log_path_source = NULL;
-    first_timestamp = 0.0;
-    second_timestamp = 0.0;
-    memset(log_path, 0, sizeof(log_path));
-    if (argc >= 2 && argv != NULL && argv[1] != NULL &&
-        argv[1][0] != '\0') {
-        log_path_source = argv[1];
-    } else {
-        /*
-         * MSVC TAP tests run native test_runner.exe from Git Bash.  Passing a
-         * drive-letter path as a plain argv can still hit shell runtime path
-         * conversion, so prefer the same environment channel used by the
-         * producer when no explicit verifier path is provided.
-         */
-        log_path_source = sixel_compat_getenv("SIXEL_LOG_PATH");
-    }
-    if (log_path_source == NULL || log_path_source[0] == '\0' ||
-        sixel_compat_strcpy(log_path,
-                            sizeof(log_path),
-                            log_path_source) < 0 ||
-        !timeline_read_clock_samples(log_path,
-                                     &first_timestamp,
-                                     &second_timestamp)) {
-        fprintf(stderr, "timeline clock JSONL verification failed\n");
-        return EXIT_FAILURE;
-    }
-    if (second_timestamp - first_timestamp <
-        TIMELINE_CLOCK_MIN_DELTA_SECONDS) {
-        fprintf(stderr,
-                "timeline clock origin regressed: first=%f second=%f\n",
-                first_timestamp,
-                second_timestamp);
         return EXIT_FAILURE;
     }
 

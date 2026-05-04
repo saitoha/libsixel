@@ -189,80 +189,69 @@ in_func && /sixel_allocator_new[ \t]*\(/ {
 ' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.c"
 
 awk '
-/timeline\/0002_timeline_parallel_encode_decode_verify/ {
-    saw_verify = 1
-    if (previous2 !~ /SIXEL_LOG_PATH="\$\{log_path\}"/) {
-        print "tests/processing/timeline/" \
-            "0002_timeline_parallel_encode_decode.t:" FNR \
-            ": verifier must receive SIXEL_LOG_PATH as child env"
-    }
-    if (previous ~ /--env[ \t]+SIXEL_LOG_PATH=/ || previous2 ~ /--env[ \t]+SIXEL_LOG_PATH=/) {
-        print "tests/processing/timeline/" \
-            "0002_timeline_parallel_encode_decode.t:" FNR \
-            ": verifier must not rely on test_runner --env"
-    }
-    watching_verify = 1
-    next
-}
-watching_verify && /\$\{log_path\}/ {
+/_verify/ {
     print "tests/processing/timeline/" \
         "0002_timeline_parallel_encode_decode.t:" FNR \
-        ": verifier must not receive log path as argv"
-    watching_verify = 0
+        ": timeline tests must verify JSONL in the producer process"
 }
-watching_verify && /\|\|[ \t]*\{/ {
-    watching_verify = 0
-}
-{
-    previous2 = previous
-    previous = $0
-}
-END {
-    if (!saw_verify) {
-        print "tests/processing/timeline/" \
-            "0002_timeline_parallel_encode_decode.t:" \
-            ": timeline JSONL must be verified after producer exit"
-    }
+/--env[ \t]+SIXEL_LOG_PATH=/ {
+    print "tests/processing/timeline/" \
+        "0002_timeline_parallel_encode_decode.t:" FNR \
+        ": timeline tests must not rely on test_runner --env"
 }
 ' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
 
 awk '
-/timeline\/0003_timeline_clock_origin_verify/ {
-    saw_verify = 1
-    if (previous2 !~ /SIXEL_LOG_PATH="\$\{log_path\}"/) {
-        print "tests/processing/timeline/" \
-            "0003_timeline_clock_origin.t:" FNR \
-            ": verifier must receive SIXEL_LOG_PATH as child env"
-    }
-    if (previous ~ /--env[ \t]+SIXEL_LOG_PATH=/ || previous2 ~ /--env[ \t]+SIXEL_LOG_PATH=/) {
-        print "tests/processing/timeline/" \
-            "0003_timeline_clock_origin.t:" FNR \
-            ": verifier must not rely on test_runner --env"
-    }
-    watching_verify = 1
-    next
-}
-watching_verify && /\$\{log_path\}/ {
+/_verify/ {
     print "tests/processing/timeline/" \
         "0003_timeline_clock_origin.t:" FNR \
-        ": verifier must not receive log path as argv"
-    watching_verify = 0
+        ": timeline tests must verify JSONL in the producer process"
 }
-watching_verify && /\|\|[ \t]*\{/ {
-    watching_verify = 0
-}
-{
-    previous2 = previous
-    previous = $0
-}
-END {
-    if (!saw_verify) {
-        print "tests/processing/timeline/" \
-            "0003_timeline_clock_origin.t:" \
-            ": timeline JSONL must be verified after producer exit"
-    }
+/--env[ \t]+SIXEL_LOG_PATH=/ {
+    print "tests/processing/timeline/" \
+        "0003_timeline_clock_origin.t:" FNR \
+        ": timeline tests must not rely on test_runner --env"
 }
 ' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"
+
+awk '
+/timeline\/000[23].*_verify/ {
+    print "tests/test_runner.c:" FNR \
+        ": timeline verifier entry points must stay out of test_runner"
+}
+' "$src_root/tests/test_runner.c"
+
+awk '
+/timeline_flush_writer[ \t]*\([ \t]*log_path[ \t]*\)/ {
+    saw_flush = 1
+}
+saw_flush && /timeline_verify_jsonl[ \t]*\([ \t]*log_path[ \t]*\)/ {
+    saw_verify = 1
+}
+END {
+    if (!saw_flush || !saw_verify) {
+        print "tests/processing/timeline/" \
+            "0002_timeline_parallel_encode_decode.c:" \
+            ": producer must verify JSONL after flush"
+    }
+}
+' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.c"
+
+awk '
+/writer->[ \t]*vtbl->[ \t]*flush[ \t]*\([ \t]*writer[ \t]*\)/ {
+    saw_flush = 1
+}
+saw_flush && /timeline_read_clock_samples[ \t]*\([ \t]*log_path/ {
+    saw_verify = 1
+}
+END {
+    if (!saw_flush || !saw_verify) {
+        print "tests/processing/timeline/" \
+            "0003_timeline_clock_origin.c:" \
+            ": producer must verify JSONL after flush"
+    }
+}
+' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.c"
 } >>"$report"
 
 if test -s "$report"; then
