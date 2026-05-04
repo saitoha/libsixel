@@ -20817,23 +20817,16 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
                 &overlap_full_rgb[0],
                 &overlap_full_rgb[1],
                 &overlap_full_rgb[2]);
-            sixel_builtin_psd_blend_effect_rgb(
+            sixel_builtin_psd_blend_dual_stroke_pseudolayer_rgb(
                 base_rgb[0],
                 base_rgb[1],
                 base_rgb[2],
-                vector_rgb,
-                vector_mode,
-                vector_alpha,
-                &overlap_tmp_rgb[0],
-                &overlap_tmp_rgb[1],
-                &overlap_tmp_rgb[2]);
-            sixel_builtin_psd_blend_effect_rgb(
-                overlap_tmp_rgb[0],
-                overlap_tmp_rgb[1],
-                overlap_tmp_rgb[2],
                 effect_rgb,
                 effect_mode,
                 effect_alpha,
+                vector_rgb,
+                vector_mode,
+                vector_alpha,
                 &overlap_tmp_rgb[0],
                 &overlap_tmp_rgb[1],
                 &overlap_tmp_rgb[2]);
@@ -23204,7 +23197,6 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     int traced_dual_mode_base_compat;
     int dual_ovl_policy;
     int use_fxpri_inside_dual;
-    int use_pseudolayer_dual;
     int traced_fxpri_dual;
     int traced_pseudolayer_dual;
     int vector_cap_enabled;
@@ -23306,7 +23298,6 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
     traced_dual_mode_base_compat = 0;
     dual_ovl_policy = SIXEL_BUILTIN_PSD_DUAL_OVL_DEFAULT;
     use_fxpri_inside_dual = 0;
-    use_pseudolayer_dual = 0;
     traced_fxpri_dual = 0;
     traced_pseudolayer_dual = 0;
     vector_cap_enabled = 1;
@@ -23435,7 +23426,6 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
             stroke_position == SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE &&
             vector_stroke_position == SIXEL_BUILTIN_PSD_EFFECT_STROKE_INSIDE) {
             use_fxpri_inside_dual = 1;
-            use_pseudolayer_dual = 1;
             dual_ovl_policy = SIXEL_BUILTIN_PSD_DUAL_OVL_FXPRI_INSIDE;
         }
     }
@@ -24334,43 +24324,28 @@ sixel_builtin_psd_apply_stroke_to_canvas_with_clip(
                         "dual-stroke overlap on clipped group");
                     traced_fxpri_dual = 1;
                 }
-                if (use_pseudolayer_dual != 0) {
-                    if (traced_pseudolayer_dual == 0) {
-                        sixel_builtin_psd_trace_message(
-                            "psd_decode",
-                            "builtin PSD: applying deferred dual-stroke "
-                            "pseudo-layer blend on clipped group");
-                        traced_pseudolayer_dual = 1;
-                    }
-                    sixel_builtin_psd_blend_dual_stroke_pseudolayer_rgb(
-                        base_r,
-                        base_g,
-                        base_b,
-                        stroke_rgb,
-                        effect_mode,
-                        effective_stroke_alpha,
-                        vector_stroke_rgb,
-                        layer->vector_stroke_mode,
-                        dual_blend_vector_alpha,
-                        &blended_r,
-                        &blended_g,
-                        &blended_b);
-                } else {
-                    sixel_builtin_psd_blend_dual_stroke_rgb(
-                        base_r,
-                        base_g,
-                        base_b,
-                        stroke_rgb,
-                        effect_mode,
-                        effective_stroke_alpha,
-                        vector_stroke_rgb,
-                        layer->vector_stroke_mode,
-                        dual_blend_vector_alpha,
-                        dual_ovl_policy,
-                        &blended_r,
-                        &blended_g,
-                        &blended_b);
+                if (use_fxpri_inside_dual != 0 &&
+                    traced_pseudolayer_dual == 0) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: applying deferred dual-stroke "
+                        "pseudo-layer blend on clipped group");
+                    traced_pseudolayer_dual = 1;
                 }
+                sixel_builtin_psd_blend_dual_stroke_rgb(
+                    base_r,
+                    base_g,
+                    base_b,
+                    stroke_rgb,
+                    effect_mode,
+                    effective_stroke_alpha,
+                    vector_stroke_rgb,
+                    layer->vector_stroke_mode,
+                    dual_blend_vector_alpha,
+                    dual_ovl_policy,
+                    &blended_r,
+                    &blended_g,
+                    &blended_b);
             } else if (apply_dual_stroke != 0 &&
                        vector_stroke_alpha > 0.0f) {
                 sixel_builtin_psd_blend_effect_rgb(
