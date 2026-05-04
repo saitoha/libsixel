@@ -197,17 +197,34 @@ awk '
 ' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
 
 awk '
+/SIXEL_LOG_PATH="\$\{log_path\}"/ {
+    saw_env = 1
+    next
+}
 /timeline\/0002_timeline_parallel_encode_decode_verify/ {
     saw_verify = 1
+    if (!saw_env) {
+        print "tests/processing/timeline/" \
+            "0002_timeline_parallel_encode_decode.t:" FNR \
+            ": timeline verifier must receive SIXEL_LOG_PATH"
+    }
+    pending_verify = 1
+    saw_env = 0
+    next
 }
-saw_verify && /\$\{log_path\}/ {
-    saw_path_arg = 1
+pending_verify && /\$\{log_path\}/ {
+    print "tests/processing/timeline/" \
+        "0002_timeline_parallel_encode_decode.t:" FNR \
+        ": timeline verifier must not receive a JSONL argv path"
+}
+pending_verify && /\|\|/ {
+    pending_verify = 0
 }
 END {
-    if (!saw_verify || !saw_path_arg) {
+    if (!saw_verify) {
         print "tests/processing/timeline/" \
             "0002_timeline_parallel_encode_decode.t:" \
-            ": timeline verifier must receive an explicit JSONL path"
+            ": timeline verifier entry point must stay in TAP"
     }
 }
 ' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t"
@@ -233,43 +250,37 @@ END {
 ' "$src_root/tests/test_runner.c"
 
 awk '
+/SIXEL_LOG_PATH="\$\{log_path\}"/ {
+    saw_env = 1
+    next
+}
 /timeline\/0003_timeline_clock_origin_verify/ {
     saw_verify = 1
+    if (!saw_env) {
+        print "tests/processing/timeline/" \
+            "0003_timeline_clock_origin.t:" FNR \
+            ": timeline verifier must receive SIXEL_LOG_PATH"
+    }
+    pending_verify = 1
+    saw_env = 0
+    next
 }
-saw_verify && /\$\{log_path\}/ {
-    saw_path_arg = 1
+pending_verify && /\$\{log_path\}/ {
+    print "tests/processing/timeline/" \
+        "0003_timeline_clock_origin.t:" FNR \
+        ": timeline verifier must not receive a JSONL argv path"
+}
+pending_verify && /\|\|/ {
+    pending_verify = 0
 }
 END {
-    if (!saw_verify || !saw_path_arg) {
+    if (!saw_verify) {
         print "tests/processing/timeline/" \
             "0003_timeline_clock_origin.t:" \
-            ": timeline verifier must receive an explicit JSONL path"
+            ": timeline verifier entry point must stay in TAP"
     }
 }
 ' "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"
-
-awk -v src_root="$src_root" '
-FILENAME != last_file {
-    last_file = FILENAME
-    path = FILENAME
-    pending_env = 0
-}
-/SIXEL_LOG_PATH=/ {
-    pending_env = 1
-    next
-}
-/timeline\/000[23].*_verify/ {
-    if (pending_env) {
-        sub("^" src_root "/", "", path)
-        print path ":" FNR \
-            ": timeline verifier must not be run with SIXEL_LOG_PATH"
-    }
-}
-{
-    pending_env = 0
-}
-' "$src_root/tests/processing/timeline/0002_timeline_parallel_encode_decode.t" \
-  "$src_root/tests/processing/timeline/0003_timeline_clock_origin.t"
 
 awk '
 /timeline_flush_writer[ \t]*\([ \t]*log_path[ \t]*\)/ {
