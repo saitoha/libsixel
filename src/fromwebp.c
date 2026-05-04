@@ -661,10 +661,10 @@ sixel_webp_xmp_tag_name_equals(unsigned char const *payload,
 }
 
 static int
-sixel_webp_xmp_qname_has_prefixed_local_name(unsigned char const *payload,
-                                              size_t name_begin,
-                                              size_t name_end,
-                                              char const *local_name)
+sixel_webp_xmp_qname_has_local_name(unsigned char const *payload,
+                                    size_t name_begin,
+                                    size_t name_end,
+                                    char const *local_name)
 {
     size_t cursor;
     size_t local_name_size;
@@ -680,17 +680,18 @@ sixel_webp_xmp_qname_has_prefixed_local_name(unsigned char const *payload,
     }
 
     local_name_size = strlen(local_name);
-    if (local_name_size == 0u || name_end - name_begin <= local_name_size) {
+    if (local_name_size == 0u || name_end - name_begin < local_name_size) {
         return 0;
     }
 
+    local_begin = name_begin;
     for (cursor = name_begin; cursor < name_end; ++cursor) {
         if (payload[cursor] == ':') {
             local_begin = cursor + 1u;
             break;
         }
     }
-    if (local_begin == 0u || local_begin >= name_end) {
+    if (local_begin >= name_end) {
         return 0;
     }
     if (name_end - local_begin != local_name_size) {
@@ -718,6 +719,18 @@ sixel_webp_xmp_find_token_from(unsigned char const *payload,
                                      token_size,
                                      start,
                                      found_offset);
+}
+
+static int
+sixel_webp_xmp_is_profile_name_separator(unsigned char ch)
+{
+    if (sixel_webp_xmp_is_space(ch) != 0) {
+        return 1;
+    }
+    if (ch == '-' || ch == '_' || ch == '(' || ch == ')') {
+        return 1;
+    }
+    return 0;
 }
 
 static int
@@ -941,10 +954,10 @@ sixel_webp_xmp_parse_attribute_fragment(unsigned char const *payload,
         value_end = cursor;
         ++cursor;
 
-        if (sixel_webp_xmp_qname_has_prefixed_local_name(payload,
-                                                          name_begin,
-                                                          name_end,
-                                                          local_name) != 0 &&
+        if (sixel_webp_xmp_qname_has_local_name(payload,
+                                                name_begin,
+                                                name_end,
+                                                local_name) != 0 &&
             sixel_webp_xmp_match_profile_name(payload,
                                               value_begin,
                                               value_end,
@@ -1108,30 +1121,32 @@ sixel_webp_xmp_span_case_equal(unsigned char const *payload,
 
     /*
      * Compare one trimmed XMP span against an alias using ASCII fold.
-     * Treat contiguous ASCII whitespace as one separator so attributes
-     * such as "Display\tP3" and "Display P3" map to the same profile.
+     * Treat contiguous separators as equivalent so aliases with spaces,
+     * dashes, underscores, or parenthesis variants keep mapping stable.
      */
     text_size = strlen(text);
     payload_cursor = begin;
     text_cursor = 0u;
 
     while (payload_cursor < end && text_cursor < text_size) {
-        payload_space =
-            sixel_webp_xmp_is_space(payload[payload_cursor]);
-        text_space = sixel_webp_xmp_is_space(
+        payload_space = sixel_webp_xmp_is_profile_name_separator(
+            payload[payload_cursor]);
+        text_space = sixel_webp_xmp_is_profile_name_separator(
             (unsigned char)text[text_cursor]);
         if (payload_space != 0 || text_space != 0) {
-            if (payload_space == 0 || text_space == 0) {
-                return 0;
+            if (payload_space != 0) {
+                while (payload_cursor < end &&
+                       sixel_webp_xmp_is_profile_name_separator(
+                           payload[payload_cursor]) != 0) {
+                    ++payload_cursor;
+                }
             }
-            while (payload_cursor < end &&
-                   sixel_webp_xmp_is_space(payload[payload_cursor]) != 0) {
-                ++payload_cursor;
-            }
-            while (text_cursor < text_size &&
-                   sixel_webp_xmp_is_space(
-                       (unsigned char)text[text_cursor]) != 0) {
-                ++text_cursor;
+            if (text_space != 0) {
+                while (text_cursor < text_size &&
+                       sixel_webp_xmp_is_profile_name_separator(
+                           (unsigned char)text[text_cursor]) != 0) {
+                    ++text_cursor;
+                }
             }
             continue;
         }
@@ -1147,11 +1162,13 @@ sixel_webp_xmp_span_case_equal(unsigned char const *payload,
     }
 
     while (payload_cursor < end &&
-           sixel_webp_xmp_is_space(payload[payload_cursor]) != 0) {
+           sixel_webp_xmp_is_profile_name_separator(
+               payload[payload_cursor]) != 0) {
         ++payload_cursor;
     }
     while (text_cursor < text_size &&
-           sixel_webp_xmp_is_space((unsigned char)text[text_cursor]) != 0) {
+           sixel_webp_xmp_is_profile_name_separator(
+               (unsigned char)text[text_cursor]) != 0) {
         ++text_cursor;
     }
 
@@ -1314,10 +1331,10 @@ sixel_webp_xmp_parse_icc_profile_kind(unsigned char const *payload,
             value_end = cursor;
             ++cursor;
 
-            if (sixel_webp_xmp_qname_has_prefixed_local_name(payload,
-                                                              attr_name_begin,
-                                                              attr_name_end,
-                                                              local_name) == 0) {
+            if (sixel_webp_xmp_qname_has_local_name(payload,
+                                                    attr_name_begin,
+                                                    attr_name_end,
+                                                    local_name) == 0) {
                 continue;
             }
             if (sixel_webp_xmp_match_profile_name(payload,
@@ -1329,10 +1346,10 @@ sixel_webp_xmp_parse_icc_profile_kind(unsigned char const *payload,
         }
 
         if (tag.is_self_closing != 0 ||
-            sixel_webp_xmp_qname_has_prefixed_local_name(payload,
-                                                         tag.name_begin,
-                                                         tag.name_end,
-                                                         local_name) == 0) {
+            sixel_webp_xmp_qname_has_local_name(payload,
+                                                tag.name_begin,
+                                                tag.name_end,
+                                                local_name) == 0) {
             continue;
         }
 

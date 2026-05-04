@@ -1231,13 +1231,15 @@ When `EXIF` metadata is absent, builtin WebP also tries a minimal
 `EXIF` always takes precedence over `XMP` when both are present.
 For color management, builtin WebP applies embedded `ICCP` first.
 When `ICCP` is absent and builtin CMS is enabled, builtin WebP also accepts a
-minimal `XMP` color profile name fallback from prefixed `ICCProfile`
-properties (for example, `photoshop:ICCProfile`) for
+minimal `XMP` color profile name fallback from `ICCProfile` properties
+(prefixed or unprefixed, attribute or element form) for
 `sRGB IEC61966-2.1`, `Display P3`, and `Adobe RGB (1998)`.
 The profile-name resolver also accepts compact aliases such as `sRGB`,
 `IEC61966-2.1`, `DisplayP3`, `AdobeRGB1998`, and `AdobeRGB`.
 Alias matching is ASCII case-insensitive and treats contiguous ASCII
 whitespace equivalently (for example, `Display P3` and `Display\tP3`).
+It also normalizes profile-name separators so variants that use
+whitespace, `-`, `_`, `(`, or `)` stay compatible.
 For robustness, XMP CMS detection inspects tag/attribute contexts and ignores
 `ICCProfile` string hits in comments, CDATA sections, processing instructions,
 and plain text nodes. Legacy payloads that contain only one bare prefixed
