@@ -2222,14 +2222,19 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
 {
     SIXELSTATUS status;
     unsigned char *rgba;
+    unsigned char *rgba_row;
+    unsigned char *rgba_px;
+    unsigned char const *y_row;
+    unsigned char const *u_row;
+    unsigned char const *v_row;
     unsigned int x;
     unsigned int y;
-    unsigned int uv_x;
     unsigned int uv_y;
     unsigned int width;
     unsigned int height;
     size_t pixel_count;
     size_t rgba_size;
+    size_t rgba_stride;
     int yv;
     int u;
     int v;
@@ -2239,14 +2244,19 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
 
     status = SIXEL_OK;
     rgba = NULL;
+    rgba_row = NULL;
+    rgba_px = NULL;
+    y_row = NULL;
+    u_row = NULL;
+    v_row = NULL;
     x = 0u;
     y = 0u;
-    uv_x = 0u;
     uv_y = 0u;
     width = 0u;
     height = 0u;
     pixel_count = 0u;
     rgba_size = 0u;
+    rgba_stride = 0u;
     yv = 0;
     u = 0;
     v = 0;
@@ -2268,6 +2278,7 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
     rgba_size = pixel_count * 4u;
+    rgba_stride = (size_t)width * 4u;
     if (out_rgba != NULL) {
         if (out_rgba_size < rgba_size) {
             sixel_helper_set_additional_message(
@@ -2286,22 +2297,24 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
 
     for (y = 0u; y < height; ++y) {
         uv_y = y >> 1;
+        y_row = planes->y + (size_t)y * planes->y_stride;
+        u_row = planes->u + (size_t)uv_y * planes->uv_stride;
+        v_row = planes->v + (size_t)uv_y * planes->uv_stride;
+        rgba_row = rgba + (size_t)y * rgba_stride;
+        rgba_px = rgba_row;
         for (x = 0u; x < width; ++x) {
-            uv_x = x >> 1;
-            yv = (int)planes->y[y * planes->y_stride + x];
-            u = (int)planes->u[uv_y * planes->uv_stride + uv_x];
-            v = (int)planes->v[uv_y * planes->uv_stride + uv_x];
+            yv = (int)y_row[x];
+            u = (int)u_row[x >> 1];
+            v = (int)v_row[x >> 1];
             r = ((yv * 19077) >> 8) + ((v * 26149) >> 8) - 14234;
             g = ((yv * 19077) >> 8) - ((u * 6419) >> 8) -
                 ((v * 13320) >> 8) + 8708;
             b = ((yv * 19077) >> 8) + ((u * 33050) >> 8) - 17685;
-            rgba[((size_t)y * width + x) * 4u + 0u] =
-                sixel_webp_vp8_clip_yuv2(r);
-            rgba[((size_t)y * width + x) * 4u + 1u] =
-                sixel_webp_vp8_clip_yuv2(g);
-            rgba[((size_t)y * width + x) * 4u + 2u] =
-                sixel_webp_vp8_clip_yuv2(b);
-            rgba[((size_t)y * width + x) * 4u + 3u] = 255u;
+            rgba_px[0] = sixel_webp_vp8_clip_yuv2(r);
+            rgba_px[1] = sixel_webp_vp8_clip_yuv2(g);
+            rgba_px[2] = sixel_webp_vp8_clip_yuv2(b);
+            rgba_px[3] = 255u;
+            rgba_px += 4;
         }
     }
 
