@@ -2375,6 +2375,24 @@ sixel_webp_anim_background_to_rgba(unsigned int anim_background,
     rgba[3] = (unsigned char)((anim_background >> 24u) & 0xffu);
 }
 
+static unsigned int
+sixel_webp_anim_div255_floor(unsigned int value)
+{
+    unsigned int q;
+
+    /*
+     * Use an exact reciprocal path for floor(value / 255) so ANIM blend-over
+     * avoids hot integer divisions while preserving bit-identical results.
+     */
+    q = (value + 1u + (value >> 8u)) >> 8u;
+    if (q * 255u > value) {
+        --q;
+    } else if ((q + 1u) * 255u <= value) {
+        ++q;
+    }
+    return q;
+}
+
 static void
 sixel_webp_anim_fill_canvas(unsigned char *canvas_pixels,
                             int canvas_width,
@@ -2471,6 +2489,9 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
     unsigned int sa;
     unsigned int da;
     unsigned int oa;
+    unsigned int inv_sa;
+    unsigned int da_scaled;
+    unsigned int num;
 
     x = 0;
     y = 0;
@@ -2482,6 +2503,9 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
     sa = 0u;
     da = 0u;
     oa = 0u;
+    inv_sa = 0u;
+    da_scaled = 0u;
+    num = 0u;
     if (canvas_pixels == NULL || canvas_width <= 0 || anim_frame == NULL ||
         subframe_pixels == NULL) {
         return;
@@ -2527,6 +2551,7 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
                 dp += 4;
                 continue;
             }
+            inv_sa = 255u - sa;
             da = (unsigned int)dp[3u];
             if (da == 0u) {
                 dp[0u] = sp[0u];
@@ -2538,18 +2563,22 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
                 continue;
             }
             if (da == 255u) {
-                dp[0u] = (unsigned char)((sp[0u] * sa
-                                          + dp[0u] * (255u - sa)) / 255u);
-                dp[1u] = (unsigned char)((sp[1u] * sa
-                                          + dp[1u] * (255u - sa)) / 255u);
-                dp[2u] = (unsigned char)((sp[2u] * sa
-                                          + dp[2u] * (255u - sa)) / 255u);
+                num = (unsigned int)sp[0u] * sa
+                    + (unsigned int)dp[0u] * inv_sa;
+                dp[0u] = (unsigned char)sixel_webp_anim_div255_floor(num);
+                num = (unsigned int)sp[1u] * sa
+                    + (unsigned int)dp[1u] * inv_sa;
+                dp[1u] = (unsigned char)sixel_webp_anim_div255_floor(num);
+                num = (unsigned int)sp[2u] * sa
+                    + (unsigned int)dp[2u] * inv_sa;
+                dp[2u] = (unsigned char)sixel_webp_anim_div255_floor(num);
                 dp[3u] = 255u;
                 sp += 4;
                 dp += 4;
                 continue;
             }
-            oa = sa + ((da * (255u - sa)) / 255u);
+            da_scaled = sixel_webp_anim_div255_floor(da * inv_sa);
+            oa = sa + da_scaled;
             if (oa == 0u) {
                 dp[0u] = 0u;
                 dp[1u] = 0u;
@@ -2559,12 +2588,15 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
                 dp += 4;
                 continue;
             }
-            dp[0u] = (unsigned char)((sp[0u] * sa + dp[0u] * da
-                                      * (255u - sa) / 255u) / oa);
-            dp[1u] = (unsigned char)((sp[1u] * sa + dp[1u] * da
-                                      * (255u - sa) / 255u) / oa);
-            dp[2u] = (unsigned char)((sp[2u] * sa + dp[2u] * da
-                                      * (255u - sa) / 255u) / oa);
+            num = (unsigned int)sp[0u] * sa
+                + (unsigned int)dp[0u] * da_scaled;
+            dp[0u] = (unsigned char)(num / oa);
+            num = (unsigned int)sp[1u] * sa
+                + (unsigned int)dp[1u] * da_scaled;
+            dp[1u] = (unsigned char)(num / oa);
+            num = (unsigned int)sp[2u] * sa
+                + (unsigned int)dp[2u] * da_scaled;
+            dp[2u] = (unsigned char)(num / oa);
             dp[3u] = (unsigned char)oa;
             sp += 4;
             dp += 4;
