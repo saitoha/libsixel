@@ -294,6 +294,11 @@ run_staticcheck_threadpool_vtbl_boundary() {
         /sixel_threadpool_create_pool[ \t]*\(/ {
             print FILENAME ":" FNR ": threadpool helper bypasses service vtbl"
         }
+        /^[ \t]*static[ \t]+.*_vtbl_t[ \t]+const[ \t]+/ &&
+                /[A-Za-z_][A-Za-z0-9_]*[ \t]*;/ {
+            print FILENAME ":" FNR ": const vtbl declaration " \
+                  "triggers MSVC C4132"
+        }
         /(^|[^A-Za-z0-9_])(fhedt8_create_pool|fhedtf32_create_pool|scale_create_pool|scale_parallel_worker)[ \t]*\(/ {
             print FILENAME ":" FNR ": threadpool helper lacks sixel prefix"
         }

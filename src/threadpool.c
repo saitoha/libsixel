@@ -40,7 +40,7 @@
 typedef struct sixel_thread_pool_worker sixel_thread_pool_worker_t;
 typedef struct sixel_thread_pool_storage sixel_thread_pool_storage_t;
 
-static sixel_thread_pool_vtbl_t const sixel_thread_pool_vtbl;
+static sixel_thread_pool_vtbl_t const *sixel_thread_pool_get_vtbl(void);
 
 struct sixel_thread_pool_worker {
     sixel_thread_pool_storage_t *pool;
@@ -213,7 +213,7 @@ sixel_thread_pool_storage_create(int nthreads,
     if (pool == NULL) {
         return NULL;
     }
-    pool->vtbl = &sixel_thread_pool_vtbl;
+    pool->vtbl = sixel_thread_pool_get_vtbl();
     pool->ref = 1U;
     pool->nthreads = nthreads;
     pool->qsize = qsize;
@@ -639,6 +639,12 @@ static sixel_thread_pool_vtbl_t const sixel_thread_pool_vtbl = {
     sixel_thread_pool_get_error,
     sixel_thread_pool_grow
 };
+
+static sixel_thread_pool_vtbl_t const *
+sixel_thread_pool_get_vtbl(void)
+{
+    return &sixel_thread_pool_vtbl;
+}
 
 #endif  /* SIXEL_ENABLE_THREADS */
 
