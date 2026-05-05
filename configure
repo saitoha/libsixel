@@ -1751,7 +1751,7 @@ Optional Features:
                           speeds up one-time build
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-analyzer       enable compiler static analyzer mode (default: no)
-  --enable-sanitizer=[no|address|undefined|address,undefined|memory|thread|function|implicit-integer-truncation|implicit-integer-sign-change|cfi-icall|object-size|integer|float-divide-by-zero]
+  --enable-sanitizer=[no|address|undefined|address,undefined|memory|thread|function|implicit-integer-truncation|implicit-integer-sign-change|unsigned-integer-overflow|cfi-icall|object-size|integer|float-divide-by-zero]
                           enable sanitizer instrumentation and add recommended
                           compile/link flags (default: no)
   --enable-lto=[no|full|thin]
@@ -17365,6 +17365,9 @@ case $enable_sanitizer in #(
   implicit-integer-sign-change) :
     sixel_sanitizer_cflags="-fsanitize=undefined,implicit-integer-sign-change,bounds $sixel_sanitizer_ignorelist_cflag -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=undefined,implicit-integer-sign-change,bounds" ;; #(
+  unsigned-integer-overflow) :
+    sixel_sanitizer_cflags="-fsanitize=undefined,unsigned-integer-overflow,bounds $sixel_sanitizer_ignorelist_cflag -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=undefined,unsigned-integer-overflow,bounds" ;; #(
   cfi-icall) :
     sixel_sanitizer_cflags="-fsanitize=cfi-icall -fno-sanitize-trap=cfi-icall -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=cfi-icall -fno-sanitize-trap=cfi-icall"
