@@ -20855,6 +20855,13 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
             if (overlap_effect_weight > 1.0e-6f) {
                 overlap_effect_weight = sixel_builtin_psd_clamp01(
                     effect_only_alpha / overlap_effect_weight);
+            } else if (effect_alpha + vector_alpha > 1.0e-6f) {
+                /*
+                 * When exclusive bands collapse, derive overlap priority from
+                 * effective dual-stroke alphas instead of forcing 0.5.
+                 */
+                overlap_effect_weight = sixel_builtin_psd_clamp01(
+                    effect_alpha / (effect_alpha + vector_alpha));
             } else {
                 overlap_effect_weight = 0.5f;
             }
