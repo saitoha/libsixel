@@ -57,6 +57,7 @@ sixel_thread_pool_test_workspace_cleanup(void *workspace)
     }
 }
 
+#if SIXEL_ENABLE_THREADS
 static int
 sixel_thread_pool_test_sum(sixel_thread_pool_test_context_t const *context,
                            int expected)
@@ -70,6 +71,7 @@ sixel_thread_pool_test_sum(sixel_thread_pool_test_context_t const *context,
     }
     return 1;
 }
+#endif  /* SIXEL_ENABLE_THREADS */
 
 static int
 sixel_thread_pool_test_service_component(void)
@@ -83,7 +85,9 @@ sixel_thread_pool_test_service_component(void)
     sixel_thread_pool_test_context_t context2;
     sixel_thread_pool_job_t job;
     void *service_object;
+#if SIXEL_ENABLE_THREADS
     int index;
+#endif
     int resolved;
 
     status = SIXEL_FALSE;

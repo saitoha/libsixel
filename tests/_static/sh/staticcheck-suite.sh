@@ -276,6 +276,28 @@ EOF
 }
 
 # shellcheck disable=SC2329
+run_staticcheck_threadpool_test_no_threads_compile() {
+    cc_bin=${1:-${CC:-cc}}
+    config_dir=$tmpdir/threadpool-test-no-threads-config
+    object_path=$tmpdir/threadpool-test.${cc_bin##*/}.no-threads.o
+
+    mkdir -p "$config_dir"
+    cp "$build_root/config.h" "$config_dir/config.h"
+    cat >> "$config_dir/config.h" <<'EOF'
+#undef SIXEL_ENABLE_THREADS
+#define SIXEL_ENABLE_THREADS 0
+EOF
+
+    "$cc_bin" -DHAVE_CONFIG_H -D_POSIX_C_SOURCE=200809L \
+        -I"$config_dir" -I"$build_root/include" \
+        -I"$src_root" -I"$src_root/tests" \
+        -I"$src_root/src" -I"$src_root/include" \
+        -std=c99 -Wall -Wextra -Wpedantic -Werror \
+        -c "$src_root/tests/processing/threadpool/0001_threadpool_service.c" \
+        -o "$object_path"
+}
+
+# shellcheck disable=SC2329
 run_staticcheck_threadpool_vtbl_boundary() {
     violations=$tmpdir/threadpool-vtbl-boundary.txt
 
@@ -653,6 +675,8 @@ if test -f "$build_root/config.h"; then
         run_staticcheck_timeline_logger_no_threads_symbols || fail_and_exit $?
     run_case_plain "staticcheck-threadpool-no-threads-symbols" \
         run_staticcheck_threadpool_no_threads_symbols || fail_and_exit $?
+    run_case_plain "staticcheck-threadpool-test-no-threads-compile" \
+        run_staticcheck_threadpool_test_no_threads_compile || fail_and_exit $?
     run_case_plain "staticcheck-fromwebp-vp8-tables-self-include" \
         run_staticcheck_webp_tables_self_include || fail_and_exit $?
     run_case_plain "staticcheck-fromwebp-strict-compile" \
@@ -712,6 +736,8 @@ else
     run_case_skip "staticcheck-timeline-logger-no-threads-symbols" \
         "missing config.h in build root"
     run_case_skip "staticcheck-threadpool-no-threads-symbols" \
+        "missing config.h in build root"
+    run_case_skip "staticcheck-threadpool-test-no-threads-compile" \
         "missing config.h in build root"
     run_case_skip "staticcheck-fromwebp-vp8-tables-self-include" \
         "missing config.h in build root"
