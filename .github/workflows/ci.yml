@@ -3374,10 +3374,12 @@ jobs:
   asan-ubsan-lsan-ubuntu:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1:report_error_type=1
     strategy:
       matrix:
         include:
-          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan
+          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-use-after-scope
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -3391,7 +3393,7 @@ jobs:
               clang
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan
+          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-use-after-scope
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -3409,7 +3411,7 @@ jobs:
               clang
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-lcms2
+          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-use-after-scope-lcms2
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -3428,7 +3430,7 @@ jobs:
               liblcms2-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-lcms2
+          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-use-after-scope-lcms2
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -3450,7 +3452,7 @@ jobs:
               liblcms2-dev
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-webp-svg
+          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-use-after-scope-png-jpeg-tiff-webp-svg
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -3473,7 +3475,7 @@ jobs:
               librsvg2-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-webp-svg
+          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-use-after-scope-png-jpeg-tiff-webp-svg
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -3499,7 +3501,7 @@ jobs:
               librsvg2-dev
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-webp-svg-lcms2
+          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-use-after-scope-png-jpeg-tiff-webp-svg-lcms2
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -3523,7 +3525,7 @@ jobs:
               liblcms2-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff-webp-svg-lcms2
+          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-use-after-scope-png-jpeg-tiff-webp-svg-lcms2
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -3550,7 +3552,7 @@ jobs:
               liblcms2-dev
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-ASan-UBSan-gdk-pixbuf2
+          - label: Autotools-ubuntu-x86_64-ASan-UBSan-use-after-scope-gdk-pixbuf2
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -3566,7 +3568,7 @@ jobs:
               libgdk-pixbuf2.0-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-ASan-UBSan-gdk-pixbuf2
+          - label: Meson-ubuntu-x86_64-ASan-UBSan-use-after-scope-gdk-pixbuf2
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -3586,7 +3588,7 @@ jobs:
               libgdk-pixbuf2.0-dev
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-ASan-UBSan-GD-no-aborttrace
+          - label: Autotools-ubuntu-x86_64-ASan-UBSan-use-after-scope-GD-no-aborttrace
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -3603,7 +3605,7 @@ jobs:
               libgd-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-ASan-UBSan-GD-no-aborttrace
+          - label: Meson-ubuntu-x86_64-ASan-UBSan-use-after-scope-GD-no-aborttrace
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -3668,10 +3670,12 @@ jobs:
   asan-ubsan-lsan-macos:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1:report_error_type=1
     strategy:
       matrix:
         include:
-          - label: Autotools-macos-aarch64-ASan-UBSan-gdk-pixbuf2
+          - label: Autotools-macos-aarch64-ASan-UBSan-use-after-scope-gdk-pixbuf2
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -3686,7 +3690,7 @@ jobs:
               gdk-pixbuf
             exec_type: bash
 
-          - label: Meson-macos-aarch64-ASan-UBSan-gdk-pixbuf2
+          - label: Meson-macos-aarch64-ASan-UBSan-use-after-scope-gdk-pixbuf2
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -3705,7 +3709,7 @@ jobs:
               gdk-pixbuf
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-ASan-UBSan-GD
+          - label: Autotools-macos-aarch64-ASan-UBSan-use-after-scope-GD
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -3720,7 +3724,7 @@ jobs:
               gd
             exec_type: bash
 
-          - label: Meson-macos-aarch64-ASan-UBSan-GD
+          - label: Meson-macos-aarch64-ASan-UBSan-use-after-scope-GD
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -3783,10 +3787,12 @@ jobs:
   asan-ubsan-lsan-msys2-clang64:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
+    env:
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1:report_error_type=1
     strategy:
       matrix:
         include:
-          - label: Autotools-msys2-clang64-ASan-UBSan
+          - label: Autotools-msys2-clang64-ASan-UBSan-use-after-scope
             buildtool: autotools
             runner: windows-latest
             msystem: CLANG64
@@ -3799,7 +3805,7 @@ jobs:
               mingw-w64-clang-x86_64-toolchain
             exec_type: msys2
 
-          - label: Meson-msys2-clang64-ASan-UBSan
+          - label: Meson-msys2-clang64-ASan-UBSan-use-after-scope
             buildtool: meson
             runner: windows-latest
             msystem: CLANG64

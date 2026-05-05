@@ -17342,13 +17342,13 @@ case $enable_sanitizer in #(
     sixel_sanitizer_cflags=""
          sixel_sanitizer_ldflags="" ;; #(
   address) :
-    sixel_sanitizer_cflags="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+    sixel_sanitizer_cflags="-fsanitize=address -fsanitize-address-use-after-scope -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=address" ;; #(
   undefined) :
     sixel_sanitizer_cflags="-fsanitize=undefined -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=undefined" ;; #(
   address,undefined) :
-    sixel_sanitizer_cflags="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
+    sixel_sanitizer_cflags="-fsanitize=address,undefined -fsanitize-address-use-after-scope -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=address,undefined" ;; #(
   memory) :
     sixel_sanitizer_cflags="-fsanitize=memory -O1 -g -fno-omit-frame-pointer -fno-optimize-sibling-calls"

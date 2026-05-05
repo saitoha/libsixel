@@ -95,6 +95,20 @@ if get_option('gcov')
   add_project_link_arguments('--coverage', language: 'c')
 endif
 
+if get_option('b_sanitize').contains('address')
+  asan_use_after_scope_arg = '-fsanitize-address-use-after-scope'
+  asan_use_after_scope_probe_args = [
+    '-fsanitize=address',
+    asan_use_after_scope_arg,
+  ]
+  if cc.has_multi_arguments(asan_use_after_scope_probe_args)
+    add_project_arguments(asan_use_after_scope_arg, language: 'c')
+  else
+    warning('AddressSanitizer use-after-scope detection is unsupported by ' +
+            cc.get_id())
+  endif
+endif
+
 if is_pcc_backend
   # pcc-provided crt objects can miss .note.GNU-stack. Ask the linker to mark
   # the output stack as non-executable when the flag is supported.
