@@ -36,6 +36,38 @@ typedef struct loader_parallel_start_sync {
     int started;
 } loader_parallel_start_sync_t;
 
+/* Keep intentional FNV modulo arithmetic out of unsigned-overflow reports. */
+static uint64_t
+mul_low64(uint64_t left, uint64_t right)
+{
+#if defined(__SIZEOF_INT128__)
+    return (uint64_t)((unsigned __int128)left * right);
+#else
+    uint64_t left_lo;
+    uint64_t left_hi;
+    uint64_t right_lo;
+    uint64_t right_hi;
+    uint64_t low;
+    uint64_t cross;
+    uint64_t high;
+
+    left_lo = left & 0xffffffffULL;
+    left_hi = left >> 32;
+    right_lo = right & 0xffffffffULL;
+    right_hi = right >> 32;
+    low = left_lo * right_lo;
+    cross = (uint64_t)(uint32_t)(left_lo * right_hi)
+        + (uint64_t)(uint32_t)(left_hi * right_lo);
+    high = cross << 32;
+
+    if (low <= UINT64_MAX - high) {
+        return low + high;
+    }
+
+    return high - (UINT64_MAX - low) - 1u;
+#endif
+}
+
 static uint64_t
 hash_bytes(uint64_t hash, void const *data, size_t length)
 {
@@ -46,7 +78,7 @@ hash_bytes(uint64_t hash, void const *data, size_t length)
     bytes = (unsigned char const *)data;
     while (index < length) {
         hash ^= (uint64_t)bytes[index];
-        hash *= 1099511628211ULL;
+        hash = mul_low64(hash, 1099511628211ULL);
         ++index;
     }
 

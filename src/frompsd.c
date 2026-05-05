@@ -27031,7 +27031,7 @@ sixel_builtin_psd_decode_prediction_32bit(unsigned char *data,
             for (x = 1u; x < row_dwords; ++x) {
                 prev = sixel_builtin_read_u32be(row_data + (x - 1u) * 4u);
                 curr = sixel_builtin_read_u32be(row_data + x * 4u);
-                curr += prev;
+                curr = (uint32_t)((uint64_t)curr + prev);
                 sixel_builtin_write_u32be(row_data + x * 4u, curr);
             }
         }

@@ -622,7 +622,8 @@ sixel_palette_count_unique_within_limit(unsigned char const *data,
         color = ((uint32_t)data[base] << 16)
               | ((uint32_t)data[base + 1U] << 8)
               | (uint32_t)data[base + 2U];
-        slot = (unsigned int)(((uint32_t)0x9e3779b9U * color) & mask);
+        slot = (unsigned int)(
+            (uint32_t)((uint64_t)0x9e3779b9U * color) & mask);
         while (table[slot] != 0xffffffffU && table[slot] != color) {
             slot = (slot + 1U) & mask;
         }

@@ -11160,7 +11160,9 @@ sixel_kmedoids_run_banditpam(double const *points,
             }
 
             pair_key = ((uint64_t)slot << 32u) | (uint64_t)candidate;
-            pair_state = pair_key * 11400714819323198485ULL;
+            pair_state = sixel_kmedoids_mul_low64(
+                pair_key,
+                11400714819323198485ULL);
             pair_slot = (unsigned int)(pair_state & (uint64_t)pair_mask);
             pair_seen = 0;
             probe_count = 0u;

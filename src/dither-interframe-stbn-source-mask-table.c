@@ -32,13 +32,25 @@
 #include "dither-interframe-stbn-source.h"
 #include "dither-interframe-stbn-source-mask-table.h"
 
+/* Keep intentional modulo hash arithmetic out of unsigned-overflow reports. */
+static uint32_t
+sixel_interframe_stbn_mask_table_mul_u32_low_common(uint32_t left,
+                                                   uint32_t right)
+{
+    return (uint32_t)((uint64_t)left * right);
+}
+
 static uint32_t
 sixel_interframe_stbn_mask_table_mix_u32_common(uint32_t value)
 {
     value ^= value >> 16;
-    value *= 0x7feb352dU;
+    value = sixel_interframe_stbn_mask_table_mul_u32_low_common(
+        value,
+        0x7feb352dU);
     value ^= value >> 15;
-    value *= 0x846ca68bU;
+    value = sixel_interframe_stbn_mask_table_mul_u32_low_common(
+        value,
+        0x846ca68bU);
     value ^= value >> 16;
 
     return value;
@@ -108,9 +120,15 @@ sixel_interframe_stbn_mask_table_try_sample_u16_common(uint32_t sequence_index,
         depth_u32 = (uint32_t)depth;
     }
 
-    phase = sequence_index * 0x9e3779b9U;
-    phase ^= (channel_u32 + 1U) * 0x85ebca6bU;
-    phase ^= (depth_u32 + 1U) * 0xc2b2ae35U;
+    phase = sixel_interframe_stbn_mask_table_mul_u32_low_common(
+        sequence_index,
+        0x9e3779b9U);
+    phase ^= sixel_interframe_stbn_mask_table_mul_u32_low_common(
+        channel_u32 + 1U,
+        0x85ebca6bU);
+    phase ^= sixel_interframe_stbn_mask_table_mul_u32_low_common(
+        depth_u32 + 1U,
+        0xc2b2ae35U);
     phase = sixel_interframe_stbn_mask_table_mix_u32_common(phase);
 
     offset_x = phase & (uint32_t)(SIXEL_BN_W - 1);
