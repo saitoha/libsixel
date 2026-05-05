@@ -62,7 +62,7 @@ option('gcov', type: 'boolean', value: false, description: 'Enable gcov coverage
 option('analyzer', type: 'boolean', value: false,
        description: 'Enable static analyzer mode (clang: require scan-build, gcc: -fanalyzer, msvc/clang-cl: /analyze)')
 option('experimental_sanitizer', type: 'combo',
-       choices: ['none', 'function', 'implicit-integer-truncation', 'cfi-icall'],
+       choices: ['none', 'function', 'implicit-integer-truncation', 'cfi-icall', 'object-size'],
        value: 'none',
        description: 'Enable a Clang-only experimental sanitizer profile')
 option('msvc_pgo', type: 'combo', choices: ['off', 'generate', 'use'], value: 'off',

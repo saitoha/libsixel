@@ -901,7 +901,7 @@ AC_SUBST([SIXEL_ANALYZER_MODE], [$sixel_analyzer_mode])
 AC_SUBST([SIXEL_SCAN_BUILD], [$sixel_analyzer_scan_build])
 
 AC_ARG_ENABLE([sanitizer],
-              [AS_HELP_STRING([--enable-sanitizer=@<:@no|address|undefined|address,undefined|memory|thread|function|implicit-integer-truncation|cfi-icall@:>@],
+              [AS_HELP_STRING([--enable-sanitizer=@<:@no|address|undefined|address,undefined|memory|thread|function|implicit-integer-truncation|cfi-icall|object-size@:>@],
                               [enable sanitizer instrumentation and add
                                recommended compile/link flags
                                (default: no)])],
@@ -938,6 +938,9 @@ AS_CASE([$enable_sanitizer],
         [sixel_sanitizer_cflags="-fsanitize=cfi-icall -fno-sanitize-trap=cfi-icall -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=cfi-icall -fno-sanitize-trap=cfi-icall"
          sixel_sanitizer_requires_lto=yes],
+        [object-size],
+        [sixel_sanitizer_cflags="-fsanitize=undefined,object-size -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=undefined,object-size"],
         [AC_MSG_ERROR([invalid value for --enable-sanitizer: $enable_sanitizer])])
 AC_MSG_CHECKING([which sanitizer profile is enabled])
 AC_MSG_RESULT([$enable_sanitizer])

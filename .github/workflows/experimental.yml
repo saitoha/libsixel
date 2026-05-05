@@ -238,3 +238,69 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  ObjectSizeSan:
+    name: ObjectSizeSan-${{ matrix.buildtool_label }}
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-24.04-aarch64-clang-ObjectSizeSan
+            buildtool: autotools
+            buildtool_label: Autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=object-size
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+          - label: Meson-ubuntu-24.04-aarch64-clang-ObjectSizeSan
+            buildtool: meson
+            buildtool_label: Meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=object-size
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}

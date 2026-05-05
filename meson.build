@@ -220,6 +220,14 @@ if experimental_sanitizer != 'none'
       '-fsanitize=cfi-icall',
       '-fno-sanitize-trap=cfi-icall',
     ]
+  elif experimental_sanitizer == 'object-size'
+    experimental_sanitizer_c_args = [
+      '-fsanitize=undefined,object-size',
+      '-O1',
+      '-g',
+      '-fno-omit-frame-pointer',
+    ]
+    experimental_sanitizer_link_args = ['-fsanitize=undefined,object-size']
   endif
 
   if experimental_sanitizer == 'cfi-icall'
