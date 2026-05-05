@@ -1869,7 +1869,9 @@ sixel_webp_vp8_decode_native_intra(
     memset(y_block_w, 0, sizeof(y_block_w));
     memset(y_block_h, 0, sizeof(y_block_h));
     memset(y_block_dst, 0, sizeof(y_block_dst));
-    memset(y_block_pred, 0, sizeof(y_block_pred));
+    for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_Y; ++block) {
+        y_block_pred[block] = NULL;
+    }
     above_y_size = 0u;
     above_u_size = 0u;
     above_v_size = 0u;

@@ -28,6 +28,7 @@
 
 /* STDC_HEADERS */
 #include <stddef.h>
+#include <stdint.h>
 
 #if HAVE_STRING_H
 # include <string.h>
