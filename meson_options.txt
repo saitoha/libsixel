@@ -61,6 +61,10 @@ option('amalgamated_tools', type: 'boolean', value: false,
 option('gcov', type: 'boolean', value: false, description: 'Enable gcov coverage flags')
 option('analyzer', type: 'boolean', value: false,
        description: 'Enable static analyzer mode (clang: require scan-build, gcc: -fanalyzer, msvc/clang-cl: /analyze)')
+option('experimental_sanitizer', type: 'combo',
+       choices: ['none', 'function', 'implicit-integer-truncation', 'cfi-icall'],
+       value: 'none',
+       description: 'Enable a Clang-only experimental sanitizer profile')
 option('msvc_pgo', type: 'combo', choices: ['off', 'generate', 'use'], value: 'off',
        description: 'MSVC-only PGO mode for /LTCG:PGINSTRUMENT or /LTCG:PGOPTIMIZE')
 option('msvc_pgo_data', type: 'string', value: '',

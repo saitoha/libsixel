@@ -1751,7 +1751,7 @@ Optional Features:
                           speeds up one-time build
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-analyzer       enable compiler static analyzer mode (default: no)
-  --enable-sanitizer=[no|address|undefined|address,undefined|memory|thread]
+  --enable-sanitizer=[no|address|undefined|address,undefined|memory|thread|function|implicit-integer-truncation|cfi-icall]
                           enable sanitizer instrumentation and add recommended
                           compile/link flags (default: no)
   --enable-lto=[no|full|thin]
@@ -17335,6 +17335,7 @@ else case e in #(
 esac
 fi
 
+sixel_sanitizer_requires_lto=no
 case $enable_sanitizer in #(
   no) :
     sixel_sanitizer_cflags=""
@@ -17354,6 +17355,16 @@ case $enable_sanitizer in #(
   thread) :
     sixel_sanitizer_cflags="-fsanitize=thread -O1 -g -fno-omit-frame-pointer -fno-optimize-sibling-calls"
          sixel_sanitizer_ldflags="-fsanitize=thread" ;; #(
+  function) :
+    sixel_sanitizer_cflags="-fsanitize=function -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=function" ;; #(
+  implicit-integer-truncation) :
+    sixel_sanitizer_cflags="-fsanitize=undefined,implicit-integer-truncation,bounds -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=undefined,implicit-integer-truncation,bounds" ;; #(
+  cfi-icall) :
+    sixel_sanitizer_cflags="-fsanitize=cfi-icall -fno-sanitize-trap=cfi-icall -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=cfi-icall -fno-sanitize-trap=cfi-icall"
+         sixel_sanitizer_requires_lto=yes ;; #(
   *) :
     as_fn_error $? "invalid value for --enable-sanitizer: $enable_sanitizer" "$LINENO" 5 ;;
 esac
@@ -17361,34 +17372,6 @@ esac
 printf %s "checking which sanitizer profile is enabled... " >&6; }
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $enable_sanitizer" >&5
 printf "%s\n" "$enable_sanitizer" >&6; }
-
-if test "x$enable_sanitizer" != "xno"
-then :
-
-        if test "x$ac_env_CFLAGS_set" = "xset"
-then :
-
-    CFLAGS="$CFLAGS $sixel_sanitizer_cflags"
-
-else case e in #(
-  e)
-    CFLAGS="$sixel_sanitizer_cflags"
-   ;;
-esac
-fi
-  if test "x$ac_env_LDFLAGS_set" = "xset"
-then :
-
-    LDFLAGS="$LDFLAGS $sixel_sanitizer_ldflags"
-
-else case e in #(
-  e)
-    LDFLAGS="$sixel_sanitizer_ldflags"
-   ;;
-esac
-fi
-
-fi
 
 # Check whether --enable-lto was given.
 if test ${enable_lto+y}
@@ -17406,6 +17389,14 @@ case $enable_lto in #(
   *) :
     as_fn_error $? "invalid value for --enable-lto: $enable_lto" "$LINENO" 5 ;;
 esac
+
+if test "x$sixel_sanitizer_requires_lto" = "xyes" &&
+       test "x$enable_lto" = "xno"
+then :
+
+  as_fn_error $? "--enable-sanitizer=$enable_sanitizer requires --enable-lto=full or --enable-lto=thin" "$LINENO" 5
+
+fi
 
 # Check whether --enable-thinlto-cache was given.
 if test ${enable_thinlto_cache+y}
@@ -20586,6 +20577,15 @@ fi
 if test -n "$EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT" -a -n "$CI"
 then :
   AM_CFLAGS="$AM_CFLAGS $EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"
+fi
+
+if test "x$enable_sanitizer" != "xno"
+then :
+
+  # Target-specific Automake CFLAGS in this tree are based on AM_CFLAGS, so
+  # apply sanitizer compile flags there without contaminating configure probes.
+  AM_CFLAGS="$AM_CFLAGS $sixel_sanitizer_cflags"
+
 fi
 
 
@@ -29682,6 +29682,13 @@ then :
 
       CFLAGS="$CFLAGS $sixel_lto_cflags"
   LDFLAGS="$LDFLAGS $sixel_lto_ldflags"
+
+fi
+
+if test "x$enable_sanitizer" != "xno"
+then :
+
+    LDFLAGS="$LDFLAGS $sixel_sanitizer_ldflags"
 
 fi
 

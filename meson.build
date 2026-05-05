@@ -170,6 +170,81 @@ else
   endif
 endif
 
+experimental_sanitizer = get_option('experimental_sanitizer')
+experimental_sanitizer_summary = experimental_sanitizer
+experimental_sanitizer_c_args = []
+experimental_sanitizer_link_args = []
+if experimental_sanitizer != 'none'
+  if cc.get_id() != 'clang'
+    error('experimental_sanitizer=' + experimental_sanitizer +
+          ' is supported only with clang')
+  endif
+
+  if experimental_sanitizer == 'function'
+    experimental_sanitizer_c_args = [
+      '-fsanitize=function',
+      '-O1',
+      '-g',
+      '-fno-omit-frame-pointer',
+    ]
+    experimental_sanitizer_link_args = ['-fsanitize=function']
+  elif experimental_sanitizer == 'implicit-integer-truncation'
+    experimental_sanitizer_c_args = [
+      '-fsanitize=undefined,implicit-integer-truncation,bounds',
+      '-O1',
+      '-g',
+      '-fno-omit-frame-pointer',
+    ]
+    experimental_sanitizer_link_args = [
+      '-fsanitize=undefined,implicit-integer-truncation,bounds',
+    ]
+  elif experimental_sanitizer == 'cfi-icall'
+    if not get_option('b_lto')
+      error('experimental_sanitizer=cfi-icall requires -Db_lto=true')
+    endif
+    experimental_sanitizer_c_args = [
+      '-fsanitize=cfi-icall',
+      '-fno-sanitize-trap=cfi-icall',
+      '-O1',
+      '-g',
+      '-fno-omit-frame-pointer',
+    ]
+    experimental_sanitizer_link_args = [
+      '-fsanitize=cfi-icall',
+      '-fno-sanitize-trap=cfi-icall',
+    ]
+  endif
+
+  if experimental_sanitizer == 'cfi-icall'
+    cfi_lto_probe_arg = '-flto'
+    if get_option('b_lto_mode') == 'thin'
+      cfi_lto_probe_arg = '-flto=thin'
+    endif
+    if not cc.links('int main(void) { return 0; }',
+                    args: [cfi_lto_probe_arg] +
+                          experimental_sanitizer_link_args)
+      error('experimental_sanitizer=cfi-icall requires compiler and linker ' +
+            'support for cfi-icall with LTO')
+    endif
+  else
+    foreach arg : experimental_sanitizer_c_args
+      if not cc.has_argument(arg)
+        error('experimental_sanitizer=' + experimental_sanitizer +
+              ' requires compiler support for ' + arg)
+      endif
+    endforeach
+    foreach arg : experimental_sanitizer_link_args
+      if not cc.has_link_argument(arg)
+        error('experimental_sanitizer=' + experimental_sanitizer +
+              ' requires linker support for ' + arg)
+      endif
+    endforeach
+  endif
+
+  add_project_arguments(experimental_sanitizer_c_args, language: 'c')
+  add_project_link_arguments(experimental_sanitizer_link_args, language: 'c')
+endif
+
 if get_option('debug')
   conf.set('HAVE_DEBUG', 1)
 endif
@@ -2482,6 +2557,7 @@ message('       Shebang template        : ' + shebang_message)
 message('       SIMD                    : ' + simd_message)
 message('       XGETBV probe            : ' + xsave_probe_message)
 message('       analyzer                : ' + analyzer_summary)
+message('       experimental sanitizer  : ' + experimental_sanitizer_summary)
 message('       msvc pgo                : ' + msvc_pgo_summary)
 message('       gcov                    : ' + (get_option('gcov') ? 'yes' : 'no'))
 message('       debugging               : ' + (get_option('debug') ? 'yes' : 'no'))

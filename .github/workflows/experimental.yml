@@ -1,0 +1,196 @@
+name: libsixel experimental sanitizer CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: experimental-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+
+jobs:
+  high-priority-sanitizers:
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-x86_64-clang-FunctionSan
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=function
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-clang-FunctionSan
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=function
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-clang-ImplicitIntegerTruncationSan
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=implicit-integer-truncation
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-clang-ImplicitIntegerTruncationSan
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=implicit-integer-truncation
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-clang-CFIICall
+            buildtool: autotools
+            setup_prefix: >-
+              CC=clang
+              AR=llvm-ar
+              RANLIB=llvm-ranlib
+              LDFLAGS='-fuse-ld=lld'
+            setup_options: >-
+              --disable-shared
+              --enable-static
+              --enable-lto=thin
+              --enable-sanitizer=cfi-icall
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              lld
+              llvm
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-clang-CFIICall
+            buildtool: meson
+            setup_prefix: >-
+              CC=clang
+              AR=llvm-ar
+              RANLIB=llvm-ranlib
+              LDFLAGS='-fuse-ld=lld'
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Ddefault_library=static
+              -Db_lto=true
+              -Db_lto_mode=thin
+              -Dexperimental_sanitizer=cfi-icall
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              lld
+              llvm
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
