@@ -390,47 +390,144 @@ struct sixel_threadpool_service_interface {
  * };
  */
 
-typedef struct sixel_emitter_interface sixel_emitter_t;
+typedef struct sixel_encoder_core_interface sixel_encoder_core_t;
 
-typedef struct sixel_emitter_writer_request {
+typedef struct sixel_writer_interface sixel_writer_t;
+
+typedef struct sixel_writer_init_request {
     sixel_write_function fn_write;
     void *priv;
-} sixel_emitter_writer_request_t;
+} sixel_writer_init_request_t;
 
-typedef struct sixel_emitter_options {
+typedef struct sixel_writer_controls {
     int has_8bit_control;
     int has_sixel_scrolling;
-    int has_gri_arg_limit;
     int has_sdm_glitch;
     int skip_dcs_envelope;
     int skip_header;
-    int palette_type;
     int penetrate_multiplexer;
-    int encode_policy;
-    int ormode;
-} sixel_emitter_options_t;
+} sixel_writer_controls_t;
 
-typedef struct sixel_emitter_format {
-    int pixelformat;
-    int source_colorspace;
-    int colorspace;
-} sixel_emitter_format_t;
+typedef struct sixel_writer_image_header {
+    int parameter0;
+    int parameter1;
+    int parameter2;
+    int parameter_count;
+    int width;
+    int height;
+    int use_raster_attributes;
+} sixel_writer_image_header_t;
 
 /*
- * TODO: Move direct concrete access into a small emitter implementation
- * family so callers outside the encoder emission path stop touching concrete
- * buffer, run-length, palette-node, and frame-clock fields directly.
+ * sixel_writer serializes terminal-framing bytes to the callback supplied by
+ * the legacy public sixel_output_t wrapper.  The callback is invoked while the
+ * writer lock is held, so a callback must not re-enter the same writer.
  */
 /*
  * IDL responsibility:
- * - emit terminal SIXEL byte streams
+ * - write framed terminal SIXEL bytes to callback-backed output
  */
 
 /*
  * IDL forbidden state:
  * - image_pixels
+ * - palette
  * - dither_policy
- * - decode_state
+ * - encode_policy
+ * - ormode
+ * - gri_arg_limit
+ * - body_run_state
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("write framed terminal SIXEL bytes to callback-backed output")]
+ * [forbid_state("image_pixels", "palette", "dither_policy", "encode_policy", "ormode", "gri_arg_limit", "body_run_state")]
+ * interface sixel_writer {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [mutates]
+ *     SIXELSTATUS init(in writer_init_request const *request);
+ *     [mutates]
+ *     SIXELSTATUS set_controls(in writer_controls const *controls);
+ *     SIXELSTATUS get_controls(out writer_controls *controls);
+ *     SIXELSTATUS begin_image(in writer_image_header const *header);
+ *     SIXELSTATUS write(in char const *data, in int size);
+ *     SIXELSTATUS end_image();
+ * };
+ */
+
+typedef struct sixel_writer_vtbl {
+    void (*ref)(sixel_writer_t *self);
+    void (*unref)(sixel_writer_t *self);
+    SIXELSTATUS (*init)(
+        sixel_writer_t *self,
+        sixel_writer_init_request_t const *request);
+    SIXELSTATUS (*set_controls)(
+        sixel_writer_t *self,
+        sixel_writer_controls_t const *controls);
+    SIXELSTATUS (*get_controls)(
+        sixel_writer_t *self,
+        sixel_writer_controls_t *controls);
+    SIXELSTATUS (*begin_image)(
+        sixel_writer_t *self,
+        sixel_writer_image_header_t const *header);
+    SIXELSTATUS (*write)(
+        sixel_writer_t *self,
+        char const *data,
+        int size);
+    SIXELSTATUS (*end_image)(sixel_writer_t *self);
+} sixel_writer_vtbl_t;
+
+struct sixel_writer_interface {
+    sixel_writer_vtbl_t const *vtbl;
+};
+
+/*
+ * IDL coclass:
+ * [classid("io/sixel-writer")]
+ * coclass sixel_writer_component {
+ *     [default] interface sixel_writer;
+ * };
+ */
+
+typedef struct sixel_encoder_core_options {
+    int has_gri_arg_limit;
+    int palette_type;
+    int encode_policy;
+    int ormode;
+    int pixelformat;
+    int source_colorspace;
+    int colorspace;
+} sixel_encoder_core_options_t;
+
+typedef struct sixel_encoder_core_encode_request {
+    unsigned char *pixels;
+    int width;
+    int height;
+    int depth;
+    sixel_dither_t *dither;
+    sixel_output_t *output;
+} sixel_encoder_core_encode_request_t;
+
+/*
+ * encoder_core owns SIXEL body generation.  It receives image/quantization
+ * state from the request and emits ordered body bytes through sixel_writer via
+ * the legacy sixel_output_t wrapper.
+ */
+/*
+ * IDL responsibility:
+ * - encode image data into the SIXEL body stream
+ */
+
+/*
+ * IDL forbidden state:
+ * - callback_output
+ * - dcs_envelope
+ * - terminal_multiplexer
  * - image_file_output
  * - clipboard_output
  */
@@ -438,54 +535,67 @@ typedef struct sixel_emitter_format {
 /*
  * IDL contract:
  * [component, refcounted]
- * [responsibility("emit terminal SIXEL byte streams")]
- * [forbid_state("image_pixels", "dither_policy", "decode_state", "image_file_output", "clipboard_output")]
- * interface sixel_emitter {
+ * [responsibility("encode image data into the SIXEL body stream")]
+ * [forbid_state("callback_output", "dcs_envelope", "terminal_multiplexer", "image_file_output", "clipboard_output")]
+ * interface encoder_core {
  *     [lifetime(retained)]
  *     void ref();
  *     [lifetime(release)]
  *     void unref();
  *     [mutates]
- *     SIXELSTATUS init_writer(in sixel_emitter_writer_request const *request);
- *     [mutates]
- *     SIXELSTATUS set_options(in sixel_emitter_options const *options);
- *     SIXELSTATUS get_options(out sixel_emitter_options *options);
- *     [mutates]
- *     SIXELSTATUS set_format(in sixel_emitter_format const *format);
- *     SIXELSTATUS write(in char const *data, in int size);
+ *     SIXELSTATUS set_options(in encoder_core_options const *options);
+ *     SIXELSTATUS get_options(out encoder_core_options *options);
+ *     SIXELSTATUS encode(in encoder_core_encode_request const *request);
  * };
  */
 
-typedef struct sixel_emitter_vtbl {
-    void (*ref)(sixel_emitter_t *self);
-    void (*unref)(sixel_emitter_t *self);
-    SIXELSTATUS (*init_writer)(
-        sixel_emitter_t *self,
-        sixel_emitter_writer_request_t const *request);
+typedef struct sixel_encoder_core_vtbl {
+    void (*ref)(sixel_encoder_core_t *self);
+    void (*unref)(sixel_encoder_core_t *self);
     SIXELSTATUS (*set_options)(
-        sixel_emitter_t *self,
-        sixel_emitter_options_t const *options);
+        sixel_encoder_core_t *self,
+        sixel_encoder_core_options_t const *options);
     SIXELSTATUS (*get_options)(
-        sixel_emitter_t *self,
-        sixel_emitter_options_t *options);
-    SIXELSTATUS (*set_format)(
-        sixel_emitter_t *self,
-        sixel_emitter_format_t const *format);
-    SIXELSTATUS (*write)(
-        sixel_emitter_t *self,
-        char const *data,
-        int size);
-} sixel_emitter_vtbl_t;
+        sixel_encoder_core_t *self,
+        sixel_encoder_core_options_t *options);
+    SIXELSTATUS (*encode)(
+        sixel_encoder_core_t *self,
+        sixel_encoder_core_encode_request_t const *request);
+} sixel_encoder_core_vtbl_t;
 
-struct sixel_emitter_interface {
-    sixel_emitter_vtbl_t const *vtbl;
+struct sixel_encoder_core_interface {
+    sixel_encoder_core_vtbl_t const *vtbl;
 };
 
 /*
  * IDL coclass:
- * [classid("terminal/sixel-emitter")]
- * coclass sixel_emitter_component {
- *     [default] interface sixel_emitter;
+ * [classid("codec/encoder-core")]
+ * coclass encoder_core_component {
+ *     [default] interface encoder_core;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("codec/encoder-core.normal")]
+ * coclass encoder_core_normal_component {
+ *     [default] interface encoder_core;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("codec/encoder-core.highcolor")]
+ * coclass encoder_core_highcolor_component {
+ *     [default] interface encoder_core;
+ * };
+ */
+
+/*
+ * IDL coclass:
+ * [classid("codec/encoder-core.ormode")]
+ * coclass encoder_core_ormode_component {
+ *     [default] interface encoder_core;
  * };
  */
 

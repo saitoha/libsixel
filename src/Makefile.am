@@ -68,16 +68,19 @@ libsixel_la_SOURCES = \
                 $(srcdir)/output.c \
                 $(srcdir)/output.h \
                 $(srcdir)/output-factory.h \
-                $(srcdir)/sixel-emitter.c \
-                $(srcdir)/sixel-emitter.h \
+                $(srcdir)/sixel-writer.c \
+                $(srcdir)/sixel-writer.h \
+                $(srcdir)/encoder-core.c \
+                $(srcdir)/encoder-core.h \
+                $(srcdir)/encoder-core-private.h \
                 $(srcdir)/timer.c \
                 $(srcdir)/timer.h \
                 $(srcdir)/sleep.c \
                 $(srcdir)/sleep.h \
                 $(srcdir)/fromsixel.c \
-                $(srcdir)/tosixel.c \
-                $(srcdir)/tosixel-highcolor.c \
-                $(srcdir)/tosixel-highcolor.h \
+                $(srcdir)/encoder-core-encode.c \
+                $(srcdir)/encoder-core-highcolor.c \
+                $(srcdir)/encoder-core-highcolor.h \
                 $(srcdir)/lookup-policy.c \
                 $(srcdir)/lookup-policy-none.c \
                 $(srcdir)/lookup-policy-mono-darkbg.c \
@@ -501,7 +504,8 @@ FACTORY_CLASSID_INPUTS = \
     $(LOOKUP_POLICY_CLASSID_INPUTS) \
     $(DITHER_POLICY_CLASSID_INPUTS) \
     $(LOADER_COMPONENT_CLASSID_INPUTS) \
-    $(srcdir)/sixel-emitter.h \
+    $(srcdir)/sixel-writer.h \
+    $(srcdir)/encoder-core.h \
     $(srcdir)/chunk.h \
     $(srcdir)/frame.h \
     $(srcdir)/palette.h \

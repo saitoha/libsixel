@@ -62,13 +62,13 @@
 
 #include <sixel.h>
 #include "compat_stub.h"
-#include "sixel-emitter.h"
+#include "encoder-core-private.h"
 #include "output-factory.h"
 #include "dither.h"
 #include "pixelformat.h"
 #include "timeline-logger.h"
 #include "threading.h"
-#include "tosixel-highcolor.h"
+#include "encoder-core-highcolor.h"
 #if SIXEL_ENABLE_THREADS
 # include "sixel_atomic.h"
 # include <6cells.h>
@@ -628,7 +628,7 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
         return status;
     }
 
-    status = sixel_emitter_create_output_from_factory(&state->output,
+    status = sixel_encoder_core_create_output_from_factory(&state->output,
                                               sixel_parallel_band_writer,
                                               state,
                                               ctx->allocator);
@@ -1273,9 +1273,10 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
     }
 
     if (state->output->pos > 0) {
-        state->output->fn_write((char *)state->output->buffer,
-                                state->output->pos,
-                                state);
+        state->writer_error = sixel_output_write_bytes(
+            state->output,
+            (char *)state->output->buffer,
+            state->output->pos);
         state->output->pos = 0;
     }
     if (state->writer_error != SIXEL_OK) {
@@ -1716,45 +1717,13 @@ sixel_encode_body_pipeline(unsigned char *pixels,
 
 /* implementation */
 
-/* GNU Screen penetration */
-static void
-sixel_penetrate(
-    sixel_output_t  /* in */    *output,        /* output context */
-    int             /* in */    nwrite,         /* output size */
-    char const      /* in */    *dcs_start,     /* DCS introducer */
-    char const      /* in */    *dcs_end,       /* DCS terminator */
-    int const       /* in */    dcs_start_size, /* size of DCS introducer */
-    int const       /* in */    dcs_end_size)   /* size of DCS terminator */
-{
-    int pos;
-    int const splitsize = SCREEN_PACKET_SIZE
-                        - dcs_start_size - dcs_end_size;
-
-    for (pos = 0; pos < nwrite; pos += splitsize) {
-        output->fn_write((char *)dcs_start, dcs_start_size, output->priv);
-        output->fn_write(((char *)output->buffer) + pos,
-                          nwrite - pos < splitsize ? nwrite - pos: splitsize,
-                          output->priv);
-        output->fn_write((char *)dcs_end, dcs_end_size, output->priv);
-    }
-}
-
-
 static void
 sixel_advance(sixel_output_t *output, int nwrite)
 {
     if ((output->pos += nwrite) >= SIXEL_OUTPUT_PACKET_SIZE) {
-        if (output->penetrate_multiplexer) {
-            sixel_penetrate(output,
-                            SIXEL_OUTPUT_PACKET_SIZE,
-                            DCS_START_7BIT,
-                            DCS_END_7BIT,
-                            DCS_START_7BIT_SIZE,
-                            DCS_END_7BIT_SIZE);
-        } else {
-            output->fn_write((char *)output->buffer,
-                             SIXEL_OUTPUT_PACKET_SIZE, output->priv);
-        }
+        (void)sixel_output_write_bytes(output,
+                                       (char *)output->buffer,
+                                       SIXEL_OUTPUT_PACKET_SIZE);
         memcpy(output->buffer,
                output->buffer + SIXEL_OUTPUT_PACKET_SIZE,
                (size_t)(output->pos -= SIXEL_OUTPUT_PACKET_SIZE));
@@ -2002,7 +1971,7 @@ sixel_emit_run(sixel_output_t *output, int symbol, int count)
 
 /*
  * Walk a composed node and coalesce identical columns into runs so the
- * emitter touches the repeat accumulator only once per symbol.
+ * encoder core touches the repeat accumulator only once per symbol.
  */
 static SIXELSTATUS
 sixel_emit_span_from_map(sixel_output_t *output,
@@ -2199,7 +2168,6 @@ SIXELSTATUS
 sixel_encode_header(int width, int height, int keycolor, sixel_output_t *output)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int nwrite;
     int p[3] = {0, 0, 0};
     int pcount = 3;
     int use_raster_attributes = 1;
@@ -2217,24 +2185,6 @@ sixel_encode_header(int width, int height, int keycolor, sixel_output_t *output)
 
     output->pos = 0;
 
-    if (! output->skip_dcs_envelope) {
-        if (output->has_8bit_control) {
-            sixel_puts(output->buffer + output->pos,
-                       DCS_START_8BIT,
-                       DCS_START_8BIT_SIZE);
-            sixel_advance(output, DCS_START_8BIT_SIZE);
-        } else {
-            sixel_puts(output->buffer + output->pos,
-                       DCS_START_7BIT,
-                       DCS_START_7BIT_SIZE);
-            sixel_advance(output, DCS_START_7BIT_SIZE);
-        }
-    }
-
-    if (output->skip_header) {
-        goto laster_attr;
-    }
-
     if (p[2] == 0) {
         pcount--;
         if (p[1] == 0) {
@@ -2245,39 +2195,14 @@ sixel_encode_header(int width, int height, int keycolor, sixel_output_t *output)
         }
     }
 
-    if (pcount > 0) {
-        nwrite = sixel_putnum((char *)output->buffer + output->pos, p[0]);
-        sixel_advance(output, nwrite);
-        if (pcount > 1) {
-            sixel_putc(output->buffer + output->pos, ';');
-            sixel_advance(output, 1);
-            nwrite = sixel_putnum((char *)output->buffer + output->pos, p[1]);
-            sixel_advance(output, nwrite);
-            if (pcount > 2) {
-                sixel_putc(output->buffer + output->pos, ';');
-                sixel_advance(output, 1);
-                nwrite = sixel_putnum((char *)output->buffer + output->pos, p[2]);
-                sixel_advance(output, nwrite);
-            }
-        }
-    }
-
-    sixel_putc(output->buffer + output->pos, 'q');
-    sixel_advance(output, 1);
-
-laster_attr:
-    if (use_raster_attributes) {
-        sixel_puts(output->buffer + output->pos, "\"1;1;", 5);
-        sixel_advance(output, 5);
-        nwrite = sixel_putnum((char *)output->buffer + output->pos, width);
-        sixel_advance(output, nwrite);
-        sixel_putc(output->buffer + output->pos, ';');
-        sixel_advance(output, 1);
-        nwrite = sixel_putnum((char *)output->buffer + output->pos, height);
-        sixel_advance(output, nwrite);
-    }
-
-    status = SIXEL_OK;
+    status = sixel_output_begin_image(output,
+                                      width,
+                                      height,
+                                      p[0],
+                                      p[1],
+                                      p[2],
+                                      pcount,
+                                      use_raster_attributes);
 
     return status;
 }
@@ -3356,38 +3281,17 @@ sixel_encode_footer(sixel_output_t *output)
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
-    if (!output->skip_dcs_envelope && !output->penetrate_multiplexer) {
-        if (output->has_8bit_control) {
-            sixel_puts(output->buffer + output->pos,
-                       DCS_END_8BIT, DCS_END_8BIT_SIZE);
-            sixel_advance(output, DCS_END_8BIT_SIZE);
-        } else {
-            sixel_puts(output->buffer + output->pos,
-                       DCS_END_7BIT, DCS_END_7BIT_SIZE);
-            sixel_advance(output, DCS_END_7BIT_SIZE);
-        }
-    }
-
     if (output->pos > 0) {
-        if (output->penetrate_multiplexer) {
-            sixel_penetrate(output,
-                            output->pos,
-                            DCS_START_7BIT,
-                            DCS_END_7BIT,
-                            DCS_START_7BIT_SIZE,
-                            DCS_END_7BIT_SIZE);
-            output->fn_write((char *)DCS_7BIT("\033") DCS_7BIT("\\"),
-                             (DCS_START_7BIT_SIZE + 1 +
-                              DCS_END_7BIT_SIZE) * 2,
-                             output->priv);
-        } else {
-            output->fn_write((char *)output->buffer,
-                             output->pos,
-                             output->priv);
+        status = sixel_output_write_bytes(output,
+                                          (char *)output->buffer,
+                                          output->pos);
+        if (SIXEL_FAILED(status)) {
+            return status;
         }
+        output->pos = 0;
     }
 
-    status = SIXEL_OK;
+    status = sixel_output_end_image(output);
 
     return status;
 }

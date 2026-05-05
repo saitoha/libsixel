@@ -12,9 +12,11 @@ endif
 
 amalgamation_units = files(
   '../src/output.c',
+  '../src/sixel-writer.c',
+  '../src/encoder-core.c',
   '../src/fromsixel.c',
-  '../src/tosixel.c',
-  '../src/tosixel-highcolor.c',
+  '../src/encoder-core-encode.c',
+  '../src/encoder-core-highcolor.c',
   '../src/timer.c',
   '../assessment/assessment.c',
   '../src/sleep.c',

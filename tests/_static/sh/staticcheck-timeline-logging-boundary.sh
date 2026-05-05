@@ -135,12 +135,12 @@ in_func && /serial_logger[ \t]*=[ \t]*NULL[ \t]*;/ {
 }
 in_func && /palette_source_colorspace[ \t]*=[ \t]*SIXEL_COLORSPACE_GAMMA[ \t]*;/ {
     if (!saw_serial_init) {
-        print "src/tosixel.c:" FNR \
+        print "src/encoder-core-encode.c:" FNR \
             ": serial_logger must be initialized before early cleanup paths"
     }
     in_func = 0
 }
-' "$src_root/src/tosixel.c"
+' "$src_root/src/encoder-core-encode.c"
 
 awk '
 /^sixel_timeline_logger_prepare_env\(/ {
