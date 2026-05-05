@@ -279,11 +279,31 @@ EOF
 run_staticcheck_threadpool_vtbl_boundary() {
     violations=$tmpdir/threadpool-vtbl-boundary.txt
 
-    find "$src_root/src" -type f \( -name '*.c' -o -name '*.h' \) \
-        ! -name 'threadpool.c' ! -name 'threadpool.h' \
+    find "$src_root/src" "$src_root/tests/processing/threadpool" \
+        -type f \( -name '*.c' -o -name '*.h' \) \
         -exec awk '
-        /(^|[^A-Za-z0-9_])threadpool_(create|set_affinity|destroy|push|finish|get_error|grow)[ \t]*\(/ {
-            print FILENAME ":" FNR ": direct threadpool free-function call"
+        function allowed_registry_hook_file(file) {
+            return file ~ /\/src\/threadpool\.c$/ ||
+                   file ~ /\/src\/threadpool\.h$/ ||
+                   file ~ /\/src\/classid-service\.gperf$/ ||
+                   file ~ /\/src\/classid-service\.h$/
+        }
+        /(^|[^A-Za-z0-9_])threadpool_[A-Za-z0-9_]+[ \t]*\(/ {
+            print FILENAME ":" FNR ": bare threadpool function name"
+        }
+        /sixel_threadpool_create_pool[ \t]*\(/ {
+            print FILENAME ":" FNR ": threadpool helper bypasses service vtbl"
+        }
+        /(^|[^A-Za-z0-9_])(fhedt8_create_pool|fhedtf32_create_pool|scale_create_pool|scale_parallel_worker)[ \t]*\(/ {
+            print FILENAME ":" FNR ": threadpool helper lacks sixel prefix"
+        }
+        /sixel_threadpool_service_get_default[ \t]*\(/ &&
+                !allowed_registry_hook_file(FILENAME) {
+            print FILENAME ":" FNR ": service getter is registry-only"
+        }
+        /^[ \t]*#[ \t]*include[ \t]+"threadpool\.h"/ &&
+                !allowed_registry_hook_file(FILENAME) {
+            print FILENAME ":" FNR ": threadpool.h is registry-only"
         }
         ' {} + > "$violations"
     test ! -s "$violations" || {

@@ -37,12 +37,12 @@
 
 #include "sixel_atomic.h"
 
-typedef struct threadpool_worker threadpool_worker_t;
+typedef struct sixel_thread_pool_worker sixel_thread_pool_worker_t;
 typedef struct sixel_thread_pool_storage sixel_thread_pool_storage_t;
 
 static sixel_thread_pool_vtbl_t const sixel_thread_pool_vtbl;
 
-struct threadpool_worker {
+struct sixel_thread_pool_worker {
     sixel_thread_pool_storage_t *pool;
     sixel_thread_t thread;
     void *workspace;
@@ -57,10 +57,10 @@ struct sixel_thread_pool_storage {
     int nthreads;
     int qsize;
     size_t workspace_size;
-    tp_workspace_cleanup_fn workspace_cleanup;
-    tp_worker_fn worker;
+    sixel_thread_pool_workspace_cleanup_function_t workspace_cleanup;
+    sixel_thread_pool_worker_function_t worker;
     void *userdata;
-    tp_job_t *jobs;
+    sixel_thread_pool_job_t *jobs;
     int head;
     int tail;
     int count;
@@ -80,14 +80,14 @@ struct sixel_thread_pool_storage {
     int cond_not_empty_ready;
     int cond_not_full_ready;
     int cond_drained_ready;
-    threadpool_worker_t **workers; /* owned worker slots (stable addresses) */
+    sixel_thread_pool_worker_t **workers; /* owned stable worker slots */
 };
 
-static void threadpool_free(sixel_thread_pool_storage_t *pool);
-static int threadpool_worker_main(void *arg);
-static int threadpool_spawn_worker(sixel_thread_pool_storage_t *pool,
-                                   threadpool_worker_t *worker);
-static void threadpool_finish(sixel_thread_pool_storage_t *pool);
+static void sixel_thread_pool_storage_free(sixel_thread_pool_storage_t *pool);
+static int sixel_thread_pool_worker_main(void *arg);
+static int sixel_thread_pool_spawn_worker(sixel_thread_pool_storage_t *pool,
+                                          sixel_thread_pool_worker_t *worker);
+static void sixel_thread_pool_storage_finish(sixel_thread_pool_storage_t *pool);
 
 /*
  * Release every dynamically allocated component of the pool. Callers must
@@ -95,7 +95,7 @@ static void threadpool_finish(sixel_thread_pool_storage_t *pool);
  * helper; otherwise joining would operate on freed memory.
  */
 static void
-threadpool_free(sixel_thread_pool_storage_t *pool)
+sixel_thread_pool_storage_free(sixel_thread_pool_storage_t *pool)
 {
     int i;
 
@@ -104,7 +104,7 @@ threadpool_free(sixel_thread_pool_storage_t *pool)
     }
     if (pool->workers != NULL) {
         for (i = 0; i < pool->worker_capacity; ++i) {
-            threadpool_worker_t *worker;
+            sixel_thread_pool_worker_t *worker;
             worker = pool->workers[i];
             if (worker == NULL) {
                 continue;
@@ -144,14 +144,14 @@ threadpool_free(sixel_thread_pool_storage_t *pool)
  * threading abstraction.
  */
 static int
-threadpool_worker_main(void *arg)
+sixel_thread_pool_worker_main(void *arg)
 {
-    threadpool_worker_t *worker;
+    sixel_thread_pool_worker_t *worker;
     sixel_thread_pool_storage_t *pool;
-    tp_job_t job;
+    sixel_thread_pool_job_t job;
     int rc;
 
-    worker = (threadpool_worker_t *)arg;
+    worker = (sixel_thread_pool_worker_t *)arg;
     pool = worker->pool;
     for (;;) {
         sixel_mutex_lock(&pool->mutex);
@@ -193,12 +193,13 @@ threadpool_worker_main(void *arg)
 }
 
 static sixel_thread_pool_storage_t *
-threadpool_create(int nthreads,
-                  int qsize,
-                  size_t workspace_size,
-                  tp_worker_fn worker,
-                  void *userdata,
-                  tp_workspace_cleanup_fn workspace_cleanup)
+sixel_thread_pool_storage_create(int nthreads,
+                                 int qsize,
+                                 size_t workspace_size,
+                                 sixel_thread_pool_worker_function_t worker,
+                                 void *userdata,
+                                 sixel_thread_pool_workspace_cleanup_function_t
+                                    workspace_cleanup)
 {
     sixel_thread_pool_storage_t *pool;
     int i;
@@ -240,7 +241,7 @@ threadpool_create(int nthreads,
     rc = sixel_mutex_init(&pool->mutex);
     if (rc != SIXEL_OK) {
         errno = EINVAL;
-        threadpool_free(pool);
+        sixel_thread_pool_storage_free(pool);
         return NULL;
     }
     pool->mutex_ready = 1;
@@ -248,7 +249,7 @@ threadpool_create(int nthreads,
     rc = sixel_cond_init(&pool->cond_not_empty);
     if (rc != SIXEL_OK) {
         errno = EINVAL;
-        threadpool_free(pool);
+        sixel_thread_pool_storage_free(pool);
         return NULL;
     }
     pool->cond_not_empty_ready = 1;
@@ -256,7 +257,7 @@ threadpool_create(int nthreads,
     rc = sixel_cond_init(&pool->cond_not_full);
     if (rc != SIXEL_OK) {
         errno = EINVAL;
-        threadpool_free(pool);
+        sixel_thread_pool_storage_free(pool);
         return NULL;
     }
     pool->cond_not_full_ready = 1;
@@ -264,28 +265,29 @@ threadpool_create(int nthreads,
     rc = sixel_cond_init(&pool->cond_drained);
     if (rc != SIXEL_OK) {
         errno = EINVAL;
-        threadpool_free(pool);
+        sixel_thread_pool_storage_free(pool);
         return NULL;
     }
     pool->cond_drained_ready = 1;
 
-    pool->jobs = (tp_job_t *)malloc(sizeof(tp_job_t) * (size_t)qsize);
+    pool->jobs = (sixel_thread_pool_job_t *)
+        malloc(sizeof(sixel_thread_pool_job_t) * (size_t)qsize);
     if (pool->jobs == NULL) {
-        threadpool_free(pool);
+        sixel_thread_pool_storage_free(pool);
         return NULL;
     }
 
     pool->worker_capacity = nthreads;
-    pool->workers = (threadpool_worker_t **)calloc((size_t)nthreads,
-            sizeof(threadpool_worker_t *));
+    pool->workers = (sixel_thread_pool_worker_t **)calloc((size_t)nthreads,
+            sizeof(sixel_thread_pool_worker_t *));
     if (pool->workers == NULL) {
-        threadpool_free(pool);
+        sixel_thread_pool_storage_free(pool);
         return NULL;
     }
 
     for (i = 0; i < nthreads; ++i) {
-        pool->workers[i] = (threadpool_worker_t *)
-            calloc(1, sizeof(threadpool_worker_t));
+        pool->workers[i] = (sixel_thread_pool_worker_t *)
+            calloc(1, sizeof(sixel_thread_pool_worker_t));
         if (pool->workers[i] == NULL) {
             pool->shutting_down = 1;
             sixel_cond_broadcast(&pool->cond_not_empty);
@@ -310,7 +312,7 @@ threadpool_create(int nthreads,
                 break;
             }
         }
-        rc = threadpool_spawn_worker(pool, pool->workers[i]);
+        rc = sixel_thread_pool_spawn_worker(pool, pool->workers[i]);
         if (rc != SIXEL_OK) {
             break;
         }
@@ -324,7 +326,7 @@ threadpool_create(int nthreads,
             sixel_cond_broadcast(&pool->cond_not_empty);
             sixel_thread_join(&pool->workers[i]->thread);
         }
-        threadpool_free(pool);
+        sixel_thread_pool_storage_free(pool);
         return NULL;
     }
 
@@ -332,7 +334,8 @@ threadpool_create(int nthreads,
 }
 
 static void
-threadpool_set_affinity(sixel_thread_pool_storage_t *pool, int pin_threads)
+sixel_thread_pool_storage_set_affinity(sixel_thread_pool_storage_t *pool,
+                                       int pin_threads)
 {
     if (pool == NULL) {
         return;
@@ -352,8 +355,8 @@ threadpool_set_affinity(sixel_thread_pool_storage_t *pool, int pin_threads)
 }
 
 static int
-threadpool_spawn_worker(sixel_thread_pool_storage_t *pool,
-                        threadpool_worker_t *worker)
+sixel_thread_pool_spawn_worker(sixel_thread_pool_storage_t *pool,
+                               sixel_thread_pool_worker_t *worker)
 {
     int rc;
 
@@ -361,7 +364,7 @@ threadpool_spawn_worker(sixel_thread_pool_storage_t *pool,
         return SIXEL_BAD_ARGUMENT;
     }
     rc = sixel_thread_create(&worker->thread,
-                             threadpool_worker_main,
+                             sixel_thread_pool_worker_main,
                              worker);
     if (rc != SIXEL_OK) {
         sixel_mutex_lock(&pool->mutex);
@@ -376,17 +379,18 @@ threadpool_spawn_worker(sixel_thread_pool_storage_t *pool,
 }
 
 static void
-threadpool_destroy(sixel_thread_pool_storage_t *pool)
+sixel_thread_pool_storage_destroy(sixel_thread_pool_storage_t *pool)
 {
     if (pool == NULL) {
         return;
     }
-    threadpool_finish(pool);
-    threadpool_free(pool);
+    sixel_thread_pool_storage_finish(pool);
+    sixel_thread_pool_storage_free(pool);
 }
 
 static void
-threadpool_push(sixel_thread_pool_storage_t *pool, tp_job_t job)
+sixel_thread_pool_storage_push(sixel_thread_pool_storage_t *pool,
+                               sixel_thread_pool_job_t job)
 {
     if (pool == NULL) {
         return;
@@ -411,7 +415,7 @@ threadpool_push(sixel_thread_pool_storage_t *pool, tp_job_t job)
 }
 
 static void
-threadpool_finish(sixel_thread_pool_storage_t *pool)
+sixel_thread_pool_storage_finish(sixel_thread_pool_storage_t *pool)
 {
     int i;
 
@@ -444,9 +448,10 @@ threadpool_finish(sixel_thread_pool_storage_t *pool)
 }
 
 static int
-threadpool_grow(sixel_thread_pool_storage_t *pool, int additional_threads)
+sixel_thread_pool_storage_grow(sixel_thread_pool_storage_t *pool,
+                               int additional_threads)
 {
-    threadpool_worker_t **expanded;
+    sixel_thread_pool_worker_t **expanded;
     int new_target;
     int started_new;
     int i;
@@ -467,9 +472,9 @@ threadpool_grow(sixel_thread_pool_storage_t *pool, int additional_threads)
      * never invalidates addresses already held by running threads.
      */
     if (new_target > pool->worker_capacity) {
-        expanded = (threadpool_worker_t **)realloc(
+        expanded = (sixel_thread_pool_worker_t **)realloc(
             pool->workers,
-            (size_t)new_target * sizeof(threadpool_worker_t *));
+            (size_t)new_target * sizeof(sixel_thread_pool_worker_t *));
         if (expanded == NULL) {
             sixel_mutex_unlock(&pool->mutex);
             return SIXEL_BAD_ALLOCATION;
@@ -477,7 +482,7 @@ threadpool_grow(sixel_thread_pool_storage_t *pool, int additional_threads)
         memset(expanded + pool->worker_capacity,
                0,
                (size_t)(new_target - pool->worker_capacity)
-                   * sizeof(threadpool_worker_t *));
+                   * sizeof(sixel_thread_pool_worker_t *));
         pool->workers = expanded;
         pool->worker_capacity = new_target;
     }
@@ -486,8 +491,8 @@ threadpool_grow(sixel_thread_pool_storage_t *pool, int additional_threads)
     started_new = 0;
     rc = SIXEL_OK;
     for (i = pool->nthreads; i < new_target; ++i) {
-        pool->workers[i] = (threadpool_worker_t *)
-            calloc(1, sizeof(threadpool_worker_t));
+        pool->workers[i] = (sixel_thread_pool_worker_t *)
+            calloc(1, sizeof(sixel_thread_pool_worker_t));
         if (pool->workers[i] == NULL) {
             rc = SIXEL_BAD_ALLOCATION;
             break;
@@ -506,7 +511,7 @@ threadpool_grow(sixel_thread_pool_storage_t *pool, int additional_threads)
             }
         }
 
-        rc = threadpool_spawn_worker(pool, pool->workers[i]);
+        rc = sixel_thread_pool_spawn_worker(pool, pool->workers[i]);
         if (rc != SIXEL_OK) {
             break;
         }
@@ -535,7 +540,7 @@ threadpool_grow(sixel_thread_pool_storage_t *pool, int additional_threads)
 }
 
 static int
-threadpool_get_error(sixel_thread_pool_storage_t *pool)
+sixel_thread_pool_storage_get_error(sixel_thread_pool_storage_t *pool)
 {
     int error;
 
@@ -578,15 +583,16 @@ sixel_thread_pool_unref(sixel_thread_pool_t *self)
     }
     previous = sixel_atomic_fetch_sub_u32(&pool->ref, 1U);
     if (previous == 1U) {
-        threadpool_destroy(pool);
+        sixel_thread_pool_storage_destroy(pool);
     }
 }
 
 static void
 sixel_thread_pool_set_affinity(sixel_thread_pool_t *self, int pin_threads)
 {
-    threadpool_set_affinity(sixel_thread_pool_from_interface(self),
-                            pin_threads);
+    sixel_thread_pool_storage_set_affinity(
+        sixel_thread_pool_from_interface(self),
+        pin_threads);
 }
 
 static SIXELSTATUS
@@ -599,27 +605,29 @@ sixel_thread_pool_push(sixel_thread_pool_t *self,
     if (pool == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    threadpool_push(pool, job);
+    sixel_thread_pool_storage_push(pool, job);
     return SIXEL_OK;
 }
 
 static void
 sixel_thread_pool_finish(sixel_thread_pool_t *self)
 {
-    threadpool_finish(sixel_thread_pool_from_interface(self));
+    sixel_thread_pool_storage_finish(sixel_thread_pool_from_interface(self));
 }
 
 static int
 sixel_thread_pool_get_error(sixel_thread_pool_t *self)
 {
-    return threadpool_get_error(sixel_thread_pool_from_interface(self));
+    return sixel_thread_pool_storage_get_error(
+        sixel_thread_pool_from_interface(self));
 }
 
 static SIXELSTATUS
 sixel_thread_pool_grow(sixel_thread_pool_t *self, int additional_threads)
 {
-    return threadpool_grow(sixel_thread_pool_from_interface(self),
-                           additional_threads);
+    return sixel_thread_pool_storage_grow(
+        sixel_thread_pool_from_interface(self),
+        additional_threads);
 }
 
 static sixel_thread_pool_vtbl_t const sixel_thread_pool_vtbl = {
@@ -677,7 +685,7 @@ sixel_threadpool_service_create_pool(
         request->worker == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    *pool = (sixel_thread_pool_t *)threadpool_create(
+    *pool = (sixel_thread_pool_t *)sixel_thread_pool_storage_create(
         request->threads,
         request->queue_size,
         request->workspace_size,
@@ -718,53 +726,6 @@ sixel_threadpool_service_get_default(void **service)
     threadpool_service->vtbl->ref(threadpool_service);
     *service = threadpool_service;
     return SIXEL_OK;
-}
-
-SIXELSTATUS
-sixel_threadpool_create_pool(threadpool_t **pool,
-                             int nthreads,
-                             int qsize,
-                             size_t workspace_size,
-                             tp_worker_fn worker,
-                             void *userdata,
-                             tp_workspace_cleanup_fn workspace_cleanup)
-{
-    SIXELSTATUS status;
-    sixel_threadpool_service_t *service;
-    sixel_thread_pool_create_request_t request;
-    void *service_object;
-
-    if (pool != NULL) {
-        *pool = NULL;
-    }
-    if (pool == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    service = NULL;
-    service_object = NULL;
-    status = sixel_components_getservice("services/threadpool",
-                                         &service_object);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    service = (sixel_threadpool_service_t *)service_object;
-    if (service == NULL || service->vtbl == NULL ||
-        service->vtbl->create_pool == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    request.threads = nthreads;
-    request.queue_size = qsize;
-    request.workspace_size = workspace_size;
-    request.worker = worker;
-    request.userdata = userdata;
-    request.workspace_cleanup = workspace_cleanup;
-    status = service->vtbl->create_pool(service, &request, pool);
-    if (service->vtbl->unref != NULL) {
-        service->vtbl->unref(service);
-    }
-    return status;
 }
 
 /* emacs Local Variables:      */

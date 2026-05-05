@@ -58,7 +58,7 @@
 #include "threading.h"
 
 #if SIXEL_ENABLE_THREADS
-# include "threadpool.h"
+# include <6cells.h>
 #endif
 
 #if defined(__GNUC__) && defined(__i386__)
@@ -1135,7 +1135,9 @@ scale_parallel_band_span(int rows, int threads)
 }
 
 static int
-scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
+sixel_scale_parallel_worker(sixel_thread_pool_job_t job,
+                            void *userdata,
+                            void *workspace)
 {
     scale_parallel_context_t *ctx;
     int index;
@@ -1225,6 +1227,56 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+sixel_scale_create_pool(sixel_thread_pool_t **pool,
+                        int threads,
+                        int queue_depth,
+                        sixel_thread_pool_worker_function_t worker,
+                        void *userdata)
+{
+    sixel_threadpool_service_t *service;
+    sixel_thread_pool_create_request_t request;
+    void *service_object;
+    SIXELSTATUS status;
+
+    if (pool != NULL) {
+        *pool = NULL;
+    }
+    if (pool == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    service = NULL;
+    service_object = NULL;
+    status = sixel_components_getservice("services/threadpool",
+                                         &service_object);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    service = (sixel_threadpool_service_t *)service_object;
+    if (service == NULL || service->vtbl == NULL ||
+        service->vtbl->create_pool == NULL) {
+        if (service != NULL && service->vtbl != NULL &&
+            service->vtbl->unref != NULL) {
+            service->vtbl->unref(service);
+        }
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    request.threads = threads;
+    request.queue_size = queue_depth;
+    request.workspace_size = 0U;
+    request.worker = worker;
+    request.userdata = userdata;
+    request.workspace_cleanup = NULL;
+    status = service->vtbl->create_pool(service, &request, pool);
+    if (service->vtbl->unref != NULL) {
+        service->vtbl->unref(service);
+    }
+
+    return status;
+}
+
 /*
  * Parallel path mirrors the encoder and dither thread selection through
  * sixel_threads_resolve(). Rows are batched into jobs for both passes so the
@@ -1246,8 +1298,8 @@ scale_with_resampling_parallel(
     sixel_timeline_logger_t *logger)
 {
     scale_parallel_context_t ctx;
-    threadpool_t *pool;
-    tp_job_t job;
+    sixel_thread_pool_t *pool;
+    sixel_thread_pool_job_t job;
     size_t image_bytes;
     int threads;
     int queue_depth;
@@ -1328,13 +1380,11 @@ scale_with_resampling_parallel(
                           "pass_start",
                           -1);
     }
-    rc = sixel_threadpool_create_pool(&pool,
-                                      threads,
-                                      queue_depth,
-                                      0,
-                                      scale_parallel_worker,
-                                      &ctx,
-                                      NULL);
+    rc = sixel_scale_create_pool(&pool,
+                                 threads,
+                                 queue_depth,
+                                 sixel_scale_parallel_worker,
+                                 &ctx);
     if (rc != SIXEL_OK) {
         return rc;
     }
@@ -1380,13 +1430,11 @@ scale_with_resampling_parallel(
                           "pass_start",
                           -1);
     }
-    rc = sixel_threadpool_create_pool(&pool,
-                                      threads,
-                                      queue_depth,
-                                      0,
-                                      scale_parallel_worker,
-                                      &ctx,
-                                      NULL);
+    rc = sixel_scale_create_pool(&pool,
+                                 threads,
+                                 queue_depth,
+                                 sixel_scale_parallel_worker,
+                                 &ctx);
     if (rc != SIXEL_OK) {
         return rc;
     }

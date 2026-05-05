@@ -71,7 +71,7 @@
 #include "tosixel-highcolor.h"
 #if SIXEL_ENABLE_THREADS
 # include "sixel_atomic.h"
-# include "threadpool.h"
+# include <6cells.h>
 #endif
 
 #define DCS_START_7BIT       "\033P"
@@ -165,7 +165,7 @@ typedef struct sixel_parallel_context {
     sixel_parallel_worker_state_t **workers;
     int worker_capacity;
     int worker_registered;
-    threadpool_t *pool;
+    sixel_thread_pool_t *pool;
     sixel_timeline_logger_t *logger;
     sixel_mutex_t mutex;
     int mutex_ready;
@@ -403,7 +403,7 @@ sixel_parallel_dither_configure(int height,
 
 #if SIXEL_ENABLE_THREADS
 static int sixel_parallel_band_writer(char *data, int size, void *priv);
-static int sixel_parallel_worker_main(tp_job_t job,
+static int sixel_parallel_worker_main(sixel_thread_pool_job_t job,
                                       void *userdata,
                                       void *workspace);
 static SIXELSTATUS
@@ -773,6 +773,57 @@ sixel_parallel_band_writer(char *data, int size, void *priv)
 }
 
 static SIXELSTATUS
+sixel_parallel_create_pool(sixel_thread_pool_t **pool,
+                           int threads,
+                           int queue_depth,
+                           size_t workspace_size,
+                           sixel_thread_pool_worker_function_t worker,
+                           void *userdata)
+{
+    sixel_threadpool_service_t *service;
+    sixel_thread_pool_create_request_t request;
+    void *service_object;
+    SIXELSTATUS status;
+
+    if (pool != NULL) {
+        *pool = NULL;
+    }
+    if (pool == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    service = NULL;
+    service_object = NULL;
+    status = sixel_components_getservice("services/threadpool",
+                                         &service_object);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    service = (sixel_threadpool_service_t *)service_object;
+    if (service == NULL || service->vtbl == NULL ||
+        service->vtbl->create_pool == NULL) {
+        if (service != NULL && service->vtbl != NULL &&
+            service->vtbl->unref != NULL) {
+            service->vtbl->unref(service);
+        }
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    request.threads = threads;
+    request.queue_size = queue_depth;
+    request.workspace_size = workspace_size;
+    request.worker = worker;
+    request.userdata = userdata;
+    request.workspace_cleanup = NULL;
+    status = service->vtbl->create_pool(service, &request, pool);
+    if (service->vtbl->unref != NULL) {
+        service->vtbl->unref(service);
+    }
+
+    return status;
+}
+
+static SIXELSTATUS
 sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                              sixel_index_t *pixels,
                              int width,
@@ -882,14 +933,13 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
         ctx->queue_capacity = nbands;
     }
 
-    status = sixel_threadpool_create_pool(
+    status = sixel_parallel_create_pool(
         &ctx->pool,
         threads,
         ctx->queue_capacity,
         sizeof(sixel_parallel_worker_state_t),
         sixel_parallel_worker_main,
-        ctx,
-        NULL);
+        ctx);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -921,7 +971,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
 static void
 sixel_parallel_submit_band(sixel_parallel_context_t *ctx, int band_index)
 {
-    tp_job_t job;
+    sixel_thread_pool_job_t job;
     SIXELSTATUS status;
     int dispatch;
 
@@ -1088,7 +1138,9 @@ sixel_parallel_flush_band(sixel_parallel_context_t *ctx, int band_index)
 }
 
 static int
-sixel_parallel_worker_main(tp_job_t job, void *userdata, void *workspace)
+sixel_parallel_worker_main(sixel_thread_pool_job_t job,
+                           void *userdata,
+                           void *workspace)
 {
     sixel_parallel_context_t *ctx;
     sixel_parallel_worker_state_t *state;

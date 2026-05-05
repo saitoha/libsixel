@@ -59,7 +59,7 @@
 #include "pixelformat.h"
 #include "timeline-logger.h"
 #include "threading.h"
-#include "threadpool.h"
+#include <6cells.h>
 #include "sixel_atomic.h"
 #include "status.h"
 
@@ -480,7 +480,8 @@ sixel_lookup_fhedt_first_touch_enabled_float32(void)
 static void sixel_lookup_fhedt_dispatch_tiles_float32(int total_tiles,
                                              int threads,
                                              int pin_threads,
-                                             tp_worker_fn worker,
+                                             sixel_thread_pool_worker_function_t
+                                                worker,
                                              void *plan);
 
 typedef struct sixel_lookup_fhedt_first_touch_plan_float32 {
@@ -984,7 +985,7 @@ sixel_lookup_fhedt_quantize_palette_float32(float const *palette,
 }
 
 static int
-sixel_lookup_fhedt_first_touch_worker_float32(tp_job_t job,
+sixel_lookup_fhedt_first_touch_worker_float32(sixel_thread_pool_job_t job,
                                      void *userdata,
                                      void *workspace)
 {
@@ -1250,7 +1251,7 @@ typedef struct sixel_lookup_fhedt_pass_z_plan_float32 {
 } sixel_lookup_fhedt_pass_z_plan_float32_t;
 
 static int
-sixel_lookup_fhedt_pass_x_worker_float32(tp_job_t job,
+sixel_lookup_fhedt_pass_x_worker_float32(sixel_thread_pool_job_t job,
                                 void *userdata,
                                 void *workspace)
 {
@@ -1338,7 +1339,7 @@ sixel_lookup_fhedt_pass_x_worker_float32(tp_job_t job,
 }
 
 static int
-sixel_lookup_fhedt_pass_y_worker_float32(tp_job_t job,
+sixel_lookup_fhedt_pass_y_worker_float32(sixel_thread_pool_job_t job,
                                 void *userdata,
                                 void *workspace)
 {
@@ -1430,7 +1431,7 @@ sixel_lookup_fhedt_pass_y_worker_float32(tp_job_t job,
 }
 
 static int
-sixel_lookup_fhedt_pass_z_worker_float32(tp_job_t job,
+sixel_lookup_fhedt_pass_z_worker_float32(sixel_thread_pool_job_t job,
                                 void *userdata,
                                 void *workspace)
 {
@@ -1521,18 +1522,71 @@ sixel_lookup_fhedt_pass_z_worker_float32(tp_job_t job,
     return SIXEL_OK;
 }
 
+#if SIXEL_ENABLE_THREADS
+static SIXELSTATUS
+sixel_lookup_fhedt_create_pool_float32(
+    sixel_thread_pool_t **pool,
+    int threads,
+    int queue_depth,
+    sixel_thread_pool_worker_function_t worker,
+    void *userdata)
+{
+    sixel_threadpool_service_t *service;
+    sixel_thread_pool_create_request_t request;
+    void *service_object;
+    SIXELSTATUS status;
+
+    if (pool != NULL) {
+        *pool = NULL;
+    }
+    if (pool == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    service = NULL;
+    service_object = NULL;
+    status = sixel_components_getservice("services/threadpool",
+                                         &service_object);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    service = (sixel_threadpool_service_t *)service_object;
+    if (service == NULL || service->vtbl == NULL ||
+        service->vtbl->create_pool == NULL) {
+        if (service != NULL && service->vtbl != NULL &&
+            service->vtbl->unref != NULL) {
+            service->vtbl->unref(service);
+        }
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    request.threads = threads;
+    request.queue_size = queue_depth;
+    request.workspace_size = 0U;
+    request.worker = worker;
+    request.userdata = userdata;
+    request.workspace_cleanup = NULL;
+    status = service->vtbl->create_pool(service, &request, pool);
+    if (service->vtbl->unref != NULL) {
+        service->vtbl->unref(service);
+    }
+
+    return status;
+}
+#endif  /* SIXEL_ENABLE_THREADS */
+
 static void
 sixel_lookup_fhedt_dispatch_tiles_float32(int total_tiles,
                                  int threads,
                                  int pin_threads,
-                                 tp_worker_fn worker,
+                                 sixel_thread_pool_worker_function_t worker,
                                  void *plan)
 {
 #if SIXEL_ENABLE_THREADS
-    threadpool_t *pool;
+    sixel_thread_pool_t *pool;
     int queue_depth;
     int job_index;
-    tp_job_t job;
+    sixel_thread_pool_job_t job;
     int status;
 
     if (threads < 2 || total_tiles < 2) {
@@ -1551,13 +1605,11 @@ sixel_lookup_fhedt_dispatch_tiles_float32(int total_tiles,
     if (queue_depth > total_tiles) {
         queue_depth = total_tiles;
     }
-    status = sixel_threadpool_create_pool(&pool,
-                                          threads,
-                                          queue_depth,
-                                          0,
-                                          worker,
-                                          plan,
-                                          NULL);
+    status = sixel_lookup_fhedt_create_pool_float32(&pool,
+                                                    threads,
+                                                    queue_depth,
+                                                    worker,
+                                                    plan);
     if (SIXEL_FAILED(status)) {
         for (job_index = 0; job_index < total_tiles; ++job_index) {
             job.band_index = job_index;
@@ -1578,7 +1630,7 @@ sixel_lookup_fhedt_dispatch_tiles_float32(int total_tiles,
     (void)pool->vtbl->get_error(pool);
     pool->vtbl->unref(pool);
 #else
-    tp_job_t job;
+    sixel_thread_pool_job_t job;
     int job_index;
 
     (void)threads;

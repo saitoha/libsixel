@@ -41,7 +41,7 @@
 #include "timeline-logger.h"
 #include "threading.h"
 #if SIXEL_ENABLE_THREADS
-# include "threadpool.h"
+# include <6cells.h>
 #endif
 #include "compat_stub.h"
 
@@ -1934,7 +1934,7 @@ sixel_colorspace_parallel_min_pixels_cached(void)
 #endif
 
 static int
-sixel_colorspace_parallel_worker_bytes(tp_job_t job,
+sixel_colorspace_parallel_worker_bytes(sixel_thread_pool_job_t job,
                                        void *userdata,
                                        void *workspace)
 {
@@ -2016,6 +2016,56 @@ sixel_colorspace_parallel_worker_bytes(tp_job_t job,
 
     return status;
 }
+
+static SIXELSTATUS
+sixel_colorspace_create_pool(sixel_thread_pool_t **pool,
+                             int threads,
+                             int queue_depth,
+                             sixel_thread_pool_worker_function_t worker,
+                             void *userdata)
+{
+    sixel_threadpool_service_t *service;
+    sixel_thread_pool_create_request_t request;
+    void *service_object;
+    SIXELSTATUS status;
+
+    if (pool != NULL) {
+        *pool = NULL;
+    }
+    if (pool == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    service = NULL;
+    service_object = NULL;
+    status = sixel_components_getservice("services/threadpool",
+                                         &service_object);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    service = (sixel_threadpool_service_t *)service_object;
+    if (service == NULL || service->vtbl == NULL ||
+        service->vtbl->create_pool == NULL) {
+        if (service != NULL && service->vtbl != NULL &&
+            service->vtbl->unref != NULL) {
+            service->vtbl->unref(service);
+        }
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    request.threads = threads;
+    request.queue_size = queue_depth;
+    request.workspace_size = 0U;
+    request.worker = worker;
+    request.userdata = userdata;
+    request.workspace_cleanup = NULL;
+    status = service->vtbl->create_pool(service, &request, pool);
+    if (service->vtbl->unref != NULL) {
+        service->vtbl->unref(service);
+    }
+
+    return status;
+}
 #endif
 
 static SIXELSTATUS
@@ -2034,8 +2084,8 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
     size_t job_count;
     size_t chunk_pixels;
     sixel_colorspace_parallel_byte_context_t ctx;
-    threadpool_t *pool;
-    tp_job_t job;
+    sixel_thread_pool_t *pool;
+    sixel_thread_pool_job_t job;
     int threads;
     int queue_depth;
     size_t job_index;
@@ -2129,14 +2179,12 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                                   job_count);
             }
 
-            rc = sixel_threadpool_create_pool(
+            rc = sixel_colorspace_create_pool(
                 &pool,
                 threads,
                 queue_depth,
-                0,
                 sixel_colorspace_parallel_worker_bytes,
-                &ctx,
-                NULL);
+                &ctx);
             if (rc == SIXEL_OK && pool != NULL) {
                 for (job_index = 0U; job_index < job_count; ++job_index) {
                     job.band_index = (int)job_index;
@@ -2337,7 +2385,7 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
  * CPU feature detection.
  */
 static int
-sixel_colorspace_parallel_worker(tp_job_t job,
+sixel_colorspace_parallel_worker(sixel_thread_pool_job_t job,
                                  void *userdata,
                                  void *workspace)
 {
@@ -2436,8 +2484,8 @@ sixel_convert_pixels_via_linear_float(float *pixels,
     size_t job_count;
     size_t chunk_pixels;
     sixel_colorspace_parallel_context_t ctx;
-    threadpool_t *pool;
-    tp_job_t job;
+    sixel_thread_pool_t *pool;
+    sixel_thread_pool_job_t job;
     int threads;
     int queue_depth;
     size_t job_index;
@@ -2529,14 +2577,12 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                                   job_count);
             }
 
-            rc = sixel_threadpool_create_pool(
+            rc = sixel_colorspace_create_pool(
                 &pool,
                 threads,
                 queue_depth,
-                0,
                 sixel_colorspace_parallel_worker,
-                &ctx,
-                NULL);
+                &ctx);
             if (rc == SIXEL_OK && pool != NULL) {
                 for (job_index = 0U; job_index < job_count; ++job_index) {
                     job.band_index = (int)job_index;

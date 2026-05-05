@@ -59,9 +59,6 @@
 #include "timeline-logger.h"
 #include "pixelformat.h"
 #include "sixel_atomic.h"
-#if SIXEL_ENABLE_THREADS
-# include "threadpool.h"
-#endif
 #include <sixel.h>
 
 /*
@@ -794,7 +791,7 @@ sixel_parallel_dither_cleanup(void *workspace)
 }
 
 static int
-sixel_dither_parallel_worker(tp_job_t job,
+sixel_dither_parallel_worker(sixel_thread_pool_job_t job,
                              void *userdata,
                              void *workspace)
 {
@@ -998,11 +995,64 @@ cleanup:
 }
 
 static SIXELSTATUS
+sixel_dither_create_pool(sixel_thread_pool_t **pool,
+                         int threads,
+                         int queue_depth,
+                         size_t workspace_size,
+                         sixel_thread_pool_worker_function_t worker,
+                         void *userdata,
+                         sixel_thread_pool_workspace_cleanup_function_t
+                            workspace_cleanup)
+{
+    sixel_threadpool_service_t *service;
+    sixel_thread_pool_create_request_t request;
+    void *service_object;
+    SIXELSTATUS status;
+
+    if (pool != NULL) {
+        *pool = NULL;
+    }
+    if (pool == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    service = NULL;
+    service_object = NULL;
+    status = sixel_components_getservice("services/threadpool",
+                                         &service_object);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    service = (sixel_threadpool_service_t *)service_object;
+    if (service == NULL || service->vtbl == NULL ||
+        service->vtbl->create_pool == NULL) {
+        if (service != NULL && service->vtbl != NULL &&
+            service->vtbl->unref != NULL) {
+            service->vtbl->unref(service);
+        }
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    request.threads = threads;
+    request.queue_size = queue_depth;
+    request.workspace_size = workspace_size;
+    request.worker = worker;
+    request.userdata = userdata;
+    request.workspace_cleanup = workspace_cleanup;
+    status = service->vtbl->create_pool(service, &request, pool);
+    if (service->vtbl->unref != NULL) {
+        service->vtbl->unref(service);
+    }
+
+    return status;
+}
+
+static SIXELSTATUS
 sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
                                     int threads)
 {
     SIXELSTATUS status;
-    threadpool_t *pool;
+    sixel_thread_pool_t *pool;
     size_t depth_bytes;
     size_t workspace_size;
     int nbands;
@@ -1010,7 +1060,7 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
     int band_index;
     int stride;
     int offset;
-    tp_workspace_cleanup_fn cleanup;
+    sixel_thread_pool_workspace_cleanup_function_t cleanup;
 
     if (plan == NULL || plan->palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1054,13 +1104,13 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
          * every time the worker callback is invoked.
          */
     }
-    status = sixel_threadpool_create_pool(&pool,
-                                          threads,
-                                          queue_depth,
-                                          workspace_size,
-                                          sixel_dither_parallel_worker,
-                                          plan,
-                                          cleanup);
+    status = sixel_dither_create_pool(&pool,
+                                      threads,
+                                      queue_depth,
+                                      workspace_size,
+                                      sixel_dither_parallel_worker,
+                                      plan,
+                                      cleanup);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -1077,7 +1127,7 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
     stride = (nbands + threads - 1) / threads;
     for (offset = 0; offset < stride; ++offset) {
         for (band_index = 0; band_index < threads; ++band_index) {
-            tp_job_t job;
+            sixel_thread_pool_job_t job;
             int seeded;
 
             seeded = band_index * stride + offset;

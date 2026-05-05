@@ -15,27 +15,27 @@
 #include <sixel.h>
 #include <6cells.h>
 
-typedef struct threadpool_test_context {
+typedef struct sixel_thread_pool_test_context {
     int seen[8];
     int pool_id;
-} threadpool_test_context_t;
+} sixel_thread_pool_test_context_t;
 
-typedef struct threadpool_test_workspace {
+typedef struct sixel_thread_pool_test_workspace {
     int touched;
-} threadpool_test_workspace_t;
+} sixel_thread_pool_test_workspace_t;
 
-static int g_threadpool_cleanup_count;
+static int g_sixel_thread_pool_cleanup_count;
 
 static int
-threadpool_test_worker(sixel_thread_pool_job_t job,
-                       void *userdata,
-                       void *workspace)
+sixel_thread_pool_test_worker(sixel_thread_pool_job_t job,
+                              void *userdata,
+                              void *workspace)
 {
-    threadpool_test_context_t *context;
-    threadpool_test_workspace_t *local;
+    sixel_thread_pool_test_context_t *context;
+    sixel_thread_pool_test_workspace_t *local;
 
-    context = (threadpool_test_context_t *)userdata;
-    local = (threadpool_test_workspace_t *)workspace;
+    context = (sixel_thread_pool_test_context_t *)userdata;
+    local = (sixel_thread_pool_test_workspace_t *)workspace;
     if (context == NULL || local == NULL ||
         job.band_index < 0 || job.band_index >= 8) {
         return SIXEL_BAD_ARGUMENT;
@@ -47,18 +47,19 @@ threadpool_test_worker(sixel_thread_pool_job_t job,
 }
 
 static void
-threadpool_test_workspace_cleanup(void *workspace)
+sixel_thread_pool_test_workspace_cleanup(void *workspace)
 {
-    threadpool_test_workspace_t *local;
+    sixel_thread_pool_test_workspace_t *local;
 
-    local = (threadpool_test_workspace_t *)workspace;
+    local = (sixel_thread_pool_test_workspace_t *)workspace;
     if (local != NULL) {
-        g_threadpool_cleanup_count += 1;
+        g_sixel_thread_pool_cleanup_count += 1;
     }
 }
 
 static int
-threadpool_test_sum(threadpool_test_context_t const *context, int expected)
+sixel_thread_pool_test_sum(sixel_thread_pool_test_context_t const *context,
+                           int expected)
 {
     int index;
 
@@ -71,15 +72,15 @@ threadpool_test_sum(threadpool_test_context_t const *context, int expected)
 }
 
 static int
-test_threadpool_service_component(void)
+sixel_thread_pool_test_service_component(void)
 {
     SIXELSTATUS status;
     sixel_threadpool_service_t *service;
     sixel_thread_pool_t *pool1;
     sixel_thread_pool_t *pool2;
     sixel_thread_pool_create_request_t request;
-    threadpool_test_context_t context1;
-    threadpool_test_context_t context2;
+    sixel_thread_pool_test_context_t context1;
+    sixel_thread_pool_test_context_t context2;
     sixel_thread_pool_job_t job;
     void *service_object;
     int index;
@@ -94,7 +95,7 @@ test_threadpool_service_component(void)
     memset(&context1, 0, sizeof(context1));
     memset(&context2, 0, sizeof(context2));
     memset(&job, 0, sizeof(job));
-    g_threadpool_cleanup_count = 0;
+    g_sixel_thread_pool_cleanup_count = 0;
 
     status = sixel_components_getservice("services/threadpool",
                                          &service_object);
@@ -119,10 +120,10 @@ test_threadpool_service_component(void)
 
     request.threads = 2;
     request.queue_size = 4;
-    request.workspace_size = sizeof(threadpool_test_workspace_t);
-    request.worker = threadpool_test_worker;
+    request.workspace_size = sizeof(sixel_thread_pool_test_workspace_t);
+    request.worker = sixel_thread_pool_test_worker;
     request.userdata = &context1;
-    request.workspace_cleanup = threadpool_test_workspace_cleanup;
+    request.workspace_cleanup = sixel_thread_pool_test_workspace_cleanup;
 
 #if SIXEL_ENABLE_THREADS
     status = service->vtbl->create_pool(service, &request, &pool1);
@@ -156,8 +157,8 @@ test_threadpool_service_component(void)
         status = SIXEL_RUNTIME_ERROR;
         goto end;
     }
-    if (!threadpool_test_sum(&context1, 1) ||
-        !threadpool_test_sum(&context2, 2)) {
+    if (!sixel_thread_pool_test_sum(&context1, 1) ||
+        !sixel_thread_pool_test_sum(&context2, 2)) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -165,7 +166,7 @@ test_threadpool_service_component(void)
     pool1 = NULL;
     pool2->vtbl->unref(pool2);
     pool2 = NULL;
-    if (g_threadpool_cleanup_count != 4) {
+    if (g_sixel_thread_pool_cleanup_count != 4) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -201,7 +202,7 @@ test_threadpool_0001_threadpool_service(int argc, char **argv)
     (void)argc;
     (void)argv;
 
-    if (!test_threadpool_service_component()) {
+    if (!sixel_thread_pool_test_service_component()) {
         fprintf(stderr, "threadpool service component contract failed\n");
         return EXIT_FAILURE;
     }

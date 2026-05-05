@@ -41,24 +41,15 @@
 # endif
 #endif
 
-typedef sixel_thread_pool_job_t tp_job_t;
-typedef sixel_thread_pool_worker_function_t tp_worker_fn;
-typedef sixel_thread_pool_workspace_cleanup_function_t
-    tp_workspace_cleanup_fn;
-typedef sixel_thread_pool_t threadpool_t;
-
+/*
+ * Service registry hook for services/threadpool.  Ordinary callers should use
+ * sixel_components_getservice("services/threadpool") and then call the
+ * threadpool_service vtbl, rather than depending on threadpool-specific
+ * helper functions.
+ */
 /* @serviceid services/threadpool */
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_threadpool_service_get_default(void **service);
-
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_threadpool_create_pool(threadpool_t **pool,
-                             int nthreads,
-                             int qsize,
-                             size_t workspace_size,
-                             tp_worker_fn worker,
-                             void *userdata,
-                             tp_workspace_cleanup_fn workspace_cleanup);
 
 #endif /* LIBSIXEL_THREADPOOL_H */
 
