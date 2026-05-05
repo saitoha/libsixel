@@ -24476,6 +24476,56 @@ typedef struct sixel_builtin_psd_deferred_overlay_replay_entry {
 } sixel_builtin_psd_deferred_overlay_replay_entry_t;
 
 static int
+sixel_builtin_psd_overlay_replay_payload_rank(
+    sixel_builtin_psd_deferred_overlay_replay_entry_t const *entry)
+{
+    int has_solid;
+    int has_gradient;
+
+    has_solid = 0;
+    has_gradient = 0;
+    if (entry == NULL) {
+        return 0;
+    }
+    has_solid = entry->layer.has_effect_solid_overlay != 0 ? 1 : 0;
+    has_gradient = entry->layer.has_effect_gradient_overlay != 0 ? 1 : 0;
+    if (has_solid != 0 && has_gradient != 0) {
+        return 2;
+    }
+    if (has_solid != 0 || has_gradient != 0) {
+        return 1;
+    }
+    return 0;
+}
+
+static int
+sixel_builtin_psd_should_replace_deferred_overlay_replay_entry(
+    sixel_builtin_psd_deferred_overlay_replay_entry_t const *existing_entry,
+    sixel_builtin_psd_deferred_overlay_replay_entry_t const *candidate_entry)
+{
+    int existing_payload_rank;
+    int candidate_payload_rank;
+
+    existing_payload_rank = 0;
+    candidate_payload_rank = 0;
+    if (existing_entry == NULL || candidate_entry == NULL) {
+        return 0;
+    }
+    if (existing_entry->layer.clipping != 0u ||
+        candidate_entry->layer.clipping == 0u) {
+        return 0;
+    }
+    existing_payload_rank =
+        sixel_builtin_psd_overlay_replay_payload_rank(existing_entry);
+    candidate_payload_rank =
+        sixel_builtin_psd_overlay_replay_payload_rank(candidate_entry);
+    if (candidate_payload_rank <= existing_payload_rank) {
+        return 0;
+    }
+    return 1;
+}
+
+static int
 sixel_builtin_psd_enqueue_deferred_overlay_replay(
     sixel_builtin_psd_deferred_overlay_replay_entry_t *queue,
     size_t queue_capacity,
@@ -24484,8 +24534,10 @@ sixel_builtin_psd_enqueue_deferred_overlay_replay(
     size_t layer_index)
 {
     sixel_builtin_psd_deferred_overlay_replay_entry_t *entry;
+    sixel_builtin_psd_deferred_overlay_replay_entry_t candidate_entry;
 
     entry = NULL;
+    memset(&candidate_entry, 0, sizeof(candidate_entry));
     if (queue == NULL || queue_count == NULL || layer == NULL) {
         return 0;
     }
@@ -24493,13 +24545,22 @@ sixel_builtin_psd_enqueue_deferred_overlay_replay(
         layer->has_effect_gradient_overlay == 0) {
         return 0;
     }
+    candidate_entry.layer = *layer;
+    candidate_entry.source_layer_index = layer_index;
     if (*queue_count >= queue_capacity) {
+        if (queue_capacity == 1u && *queue_count == 1u) {
+            if (sixel_builtin_psd_should_replace_deferred_overlay_replay_entry(
+                    &queue[0],
+                    &candidate_entry)) {
+                queue[0] = candidate_entry;
+                return 2;
+            }
+        }
         return 0;
     }
     entry = &queue[*queue_count];
     memset(entry, 0, sizeof(*entry));
-    entry->layer = *layer;
-    entry->source_layer_index = layer_index;
+    *entry = candidate_entry;
     *queue_count += 1u;
     return 1;
 }
@@ -24810,6 +24871,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     int pending_overlay_dual_stroke_source_alpha_valid;
     size_t pending_overlay_replay_count;
     size_t pending_overlay_replay_capacity;
+    int pending_overlay_replay_locked;
     float const *pending_solid_coverage_map;
     float const *replay_solid_coverage_map;
     int group_active;
@@ -24872,6 +24934,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     pending_overlay_dual_stroke_source_alpha_valid = 0;
     pending_overlay_replay_count = 0u;
     pending_overlay_replay_capacity = 0u;
+    pending_overlay_replay_locked = 0;
     pending_solid_coverage_map = NULL;
     replay_solid_coverage_map = NULL;
     group_active = 0;
@@ -25119,7 +25182,6 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         sixel_builtin_psd_layer_record_t const *layer;
         sixel_builtin_psd_layer_record_t synthetic_layer;
         sixel_builtin_psd_layer_record_t layer_for_composite;
-        sixel_builtin_psd_layer_record_t overlay_replay_layer;
         sixel_builtin_psd_layer_record_t const *composite_layer;
         sixel_builtin_psd_layer_record_t const *effective_composite_layer;
         sixel_builtin_psd_layer_buffers_t src_layer;
@@ -25142,10 +25204,10 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         int has_deferred_dual_owner;
         int has_deferred_overlay_owner;
         int overlay_owned_by_deferred;
+        int overlay_replay_action;
         layer = &model.layers[(size_t)i];
         memset(&synthetic_layer, 0, sizeof(synthetic_layer));
         memset(&layer_for_composite, 0, sizeof(layer_for_composite));
-        memset(&overlay_replay_layer, 0, sizeof(overlay_replay_layer));
         composite_layer = layer;
         effective_composite_layer = layer;
         src_layer.rgb_linear = NULL;
@@ -25166,6 +25228,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         has_deferred_dual_owner = 0;
         has_deferred_overlay_owner = 0;
         overlay_owned_by_deferred = 0;
+        overlay_replay_action = 0;
         pending_overlay_interior_enabled = 1;
         apply_effects_subset = 0;
         has_pixel_channels = sixel_builtin_psd_layer_has_decodable_pixel_channels(
@@ -25205,6 +25268,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             pending_overlay_stroke_coverage_valid = 0;
             pending_overlay_dual_stroke_source_alpha_valid = 0;
             pending_overlay_replay_count = 0u;
+            pending_overlay_replay_locked = 0;
             memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
         }
         if (pending_clip_group_overlay != 0 &&
@@ -25244,6 +25308,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             pending_overlay_interior_enabled =
                 sixel_builtin_psd_layer_interior_effects_enabled(
                     &pending_overlay_layer);
+            pending_overlay_replay_locked = 1;
             if (pending_overlay_interior_enabled != 0) {
                 for (replay_index = 0u;
                      replay_index < pending_overlay_replay_count;
@@ -25359,6 +25424,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             pending_overlay_stroke_coverage_valid = 0;
             pending_overlay_dual_stroke_source_alpha_valid = 0;
             pending_overlay_replay_count = 0u;
+            pending_overlay_replay_locked = 0;
             group_active = 0;
             memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
         }
@@ -25760,6 +25826,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 pending_overlay_stroke_mode =
                     SIXEL_BUILTIN_PSD_STROKE_APPLY_NONE;
                 pending_overlay_replay_count = 0u;
+                pending_overlay_replay_locked = 0;
                 /*
                  * clbl=1 shape/effect stacks can require stroke application
                  * after clipped siblings are composited. Defer explicit FrFX
@@ -25968,20 +26035,33 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
             (effective_composite_layer->has_effect_solid_overlay != 0 ||
              effective_composite_layer->has_effect_gradient_overlay != 0)) {
             layer_for_composite = *effective_composite_layer;
-            overlay_replay_layer = layer_for_composite;
-            if (pending_overlay_replay_count == 0u) {
-                overlay_replay_layer = pending_overlay_layer;
-            }
-            if (sixel_builtin_psd_enqueue_deferred_overlay_replay(
-                    pending_overlay_replay_queue,
-                    pending_overlay_replay_capacity,
-                    &pending_overlay_replay_count,
-                    &overlay_replay_layer,
-                    (size_t)i)) {
+            if (pending_overlay_replay_locked != 0) {
                 sixel_builtin_psd_trace_message(
                     "psd_decode",
-                    "builtin PSD: suppressing clbl=1 deferred base "
-                    "solid/gradient overlays");
+                    "builtin PSD: skipping deferred overlay replay enqueue "
+                    "while group replay is locked");
+                overlay_replay_action = 0;
+            } else {
+                overlay_replay_action =
+                    sixel_builtin_psd_enqueue_deferred_overlay_replay(
+                        pending_overlay_replay_queue,
+                        pending_overlay_replay_capacity,
+                        &pending_overlay_replay_count,
+                        &layer_for_composite,
+                        (size_t)i);
+            }
+            if (overlay_replay_action != 0) {
+                if (overlay_replay_action == 1) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: suppressing clbl=1 deferred base "
+                        "solid/gradient overlays");
+                } else if (overlay_replay_action == 2) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: replacing deferred clbl=1 overlay "
+                        "replay entry in layer fallback");
+                }
                 layer_for_composite.has_effect_solid_overlay = 0;
                 layer_for_composite.has_effect_gradient_overlay = 0;
                 effective_composite_layer = &layer_for_composite;
@@ -26131,6 +26211,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         pending_overlay_stroke_coverage_valid = 0;
         pending_overlay_dual_stroke_source_alpha_valid = 0;
         pending_overlay_replay_count = 0u;
+        pending_overlay_replay_locked = 0;
         memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
     }
     if (pending_clip_group_overlay != 0 &&
@@ -26169,6 +26250,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         pending_overlay_interior_enabled =
             sixel_builtin_psd_layer_interior_effects_enabled(
                 &pending_overlay_layer);
+        pending_overlay_replay_locked = 1;
         pending_overlay_dual_stroke =
             pending_overlay_defer_stroke != 0 &&
             pending_overlay_stroke_mode ==
@@ -26293,6 +26375,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         pending_overlay_stroke_coverage_valid = 0;
         pending_overlay_dual_stroke_source_alpha_valid = 0;
         pending_overlay_replay_count = 0u;
+        pending_overlay_replay_locked = 0;
         group_active = 0;
         memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
     }
