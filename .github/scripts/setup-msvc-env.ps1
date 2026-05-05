@@ -68,33 +68,65 @@ function Write-GitHubEnvironment {
   "$Name=$Value" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 }
 
-$programFilesX86 = ${env:ProgramFiles(x86)}
-if ([string]::IsNullOrWhiteSpace($programFilesX86)) {
-  throw 'ProgramFiles(x86) is not set.'
+function Find-VcvarsAll {
+  $programFilesX86 = ${env:ProgramFiles(x86)}
+  $programFiles = $env:ProgramFiles
+
+  if (-not [string]::IsNullOrWhiteSpace($programFilesX86)) {
+    $vswhere = Join-Path $programFilesX86 'Microsoft Visual Studio\Installer\vswhere.exe'
+    if (Test-Path $vswhere) {
+      $installationPathRaw = & $vswhere -latest -products '*' -property installationPath 2>&1 |
+        Select-Object -First 1
+      $vswhereExitCode = $LASTEXITCODE
+
+      if ($vswhereExitCode -eq 0) {
+        $installationPath = ''
+        if ($installationPathRaw) {
+          $installationPath = $installationPathRaw.ToString().Trim()
+        }
+        if (-not [string]::IsNullOrWhiteSpace($installationPath)) {
+          $candidate = Join-Path $installationPath 'VC\Auxiliary\Build\vcvarsall.bat'
+          if (Test-Path $candidate) {
+            Write-Host "Found vcvarsall.bat with vswhere: $candidate"
+            return $candidate
+          }
+          Write-Warning "vswhere found Visual Studio, but vcvarsall.bat is missing: $candidate"
+        } else {
+          Write-Warning 'vswhere.exe returned no Visual Studio installation path.'
+        }
+      } else {
+        Write-Warning "vswhere.exe failed with exit code $vswhereExitCode; trying standard Visual Studio locations."
+      }
+    } else {
+      Write-Warning "vswhere.exe was not found; trying standard Visual Studio locations."
+    }
+  } else {
+    Write-Warning 'ProgramFiles(x86) is not set; trying standard Visual Studio locations.'
+  }
+
+  $roots = New-Object 'System.Collections.Generic.List[string]'
+  foreach ($root in @($programFiles, $programFilesX86)) {
+    if (-not [string]::IsNullOrWhiteSpace($root) -and -not $roots.Contains($root)) {
+      [void]$roots.Add($root)
+    }
+  }
+
+  foreach ($root in $roots) {
+    foreach ($year in @('2022', '2019', '2017')) {
+      foreach ($edition in @('Enterprise', 'Professional', 'Community', 'BuildTools')) {
+        $candidate = Join-Path $root "Microsoft Visual Studio\$year\$edition\VC\Auxiliary\Build\vcvarsall.bat"
+        if (Test-Path $candidate) {
+          Write-Host "Found vcvarsall.bat in standard location: $candidate"
+          return $candidate
+        }
+      }
+    }
+  }
+
+  throw 'vcvarsall.bat was not found in Visual Studio installation paths.'
 }
 
-$vswhere = Join-Path $programFilesX86 'Microsoft Visual Studio\Installer\vswhere.exe'
-if (-not (Test-Path $vswhere)) {
-  throw "vswhere.exe was not found: $vswhere"
-}
-
-$installationPathRaw = & $vswhere -latest -products '*' -property installationPath | Select-Object -First 1
-if ($LASTEXITCODE -ne 0) {
-  throw 'vswhere.exe failed while locating Visual Studio.'
-}
-$installationPath = ''
-if ($installationPathRaw) {
-  $installationPath = $installationPathRaw.ToString().Trim()
-}
-if ([string]::IsNullOrWhiteSpace($installationPath)) {
-  throw 'vswhere.exe did not return a Visual Studio installation path.'
-}
-
-$vcvarsall = Join-Path $installationPath 'VC\Auxiliary\Build\vcvarsall.bat'
-if (-not (Test-Path $vcvarsall)) {
-  throw "vcvarsall.bat was not found: $vcvarsall"
-}
-
+$vcvarsall = Find-VcvarsAll
 $beforeMarker = '__LIBSIXEL_VCVARS_BEFORE__'
 $afterMarker = '__LIBSIXEL_VCVARS_AFTER__'
 
