@@ -320,6 +320,11 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
         return "FX_CLBL1_BASE_OVERLAY_SUPPRESS";
     }
     if (strstr(message,
+               "replaying deferred clbl=1 overlay entry in layer fallback") !=
+            NULL) {
+        return "FX_CLBL1_DEFERRED_OVERLAY_REPLAY_ENTRY";
+    }
+    if (strstr(message,
                "suppressing clbl=1 deferred base interior glow/choke/"
                "bevel-shadow") != NULL) {
         return "FX_CLBL1_BASE_INTERIOR_SUPPRESS";
