@@ -9,3 +9,9 @@ src:*stb_image.h
 src:*stb_image_write.h
 src:*/src/stb_image.h
 src:*/src/stb_image_write.h
+
+[integer]
+src:*stb_image.h
+src:*stb_image_write.h
+src:*/src/stb_image.h
+src:*/src/stb_image_write.h

@@ -228,6 +228,15 @@ if experimental_sanitizer != 'none'
       '-fno-omit-frame-pointer',
     ]
     experimental_sanitizer_link_args = ['-fsanitize=undefined,object-size']
+  elif experimental_sanitizer == 'integer'
+    experimental_sanitizer_c_args = [
+      '-fsanitize=integer',
+      '-fsanitize-ignorelist=' + experimental_sanitizer_ignorelist,
+      '-O1',
+      '-g',
+      '-fno-omit-frame-pointer',
+    ]
+    experimental_sanitizer_link_args = ['-fsanitize=integer']
   endif
 
   if experimental_sanitizer == 'cfi-icall'
