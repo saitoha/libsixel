@@ -311,13 +311,13 @@ sixel_webp_vp8_decode_coeff_block(
     SIXELSTATUS status;
     unsigned int n;
     unsigned int value;
+    unsigned int band;
     unsigned int j;
     unsigned int cat;
     unsigned int bit0;
     unsigned int bit1;
     unsigned int band_next;
     unsigned int k;
-    unsigned int cat_len;
     int bit;
     int signed_value;
     unsigned char const *p;
@@ -326,13 +326,13 @@ sixel_webp_vp8_decode_coeff_block(
     status = SIXEL_OK;
     n = 0u;
     value = 0u;
+    band = 0u;
     j = 0u;
     cat = 0u;
     bit0 = 0u;
     bit1 = 0u;
     band_next = 0u;
     k = 0u;
-    cat_len = 0u;
     bit = 0;
     signed_value = 0;
     p = NULL;
@@ -372,7 +372,8 @@ sixel_webp_vp8_decode_coeff_block(
                 *peob = n;
                 return SIXEL_OK;
             }
-            p = probs[sixel_webp_vp8_coeff_band[n]][0];
+            band = sixel_webp_vp8_coeff_band[n];
+            p = probs[band][0];
             SIXEL_VP8_READ_OR_FAIL(p[1]);
         }
 
@@ -411,14 +412,53 @@ sixel_webp_vp8_decode_coeff_block(
                     bit0 = (unsigned int)bit;
                     cat = (bit1 << 1) + bit0;
                     value = 0u;
-                    if (cat > 3u) {
-                        cat = 3u;
-                    }
-                    cat_prob = sixel_webp_vp8_cat_prob_table[cat];
-                    cat_len = sixel_webp_vp8_cat_len_table[cat];
-                    for (k = 0u; k < cat_len; ++k) {
-                        SIXEL_VP8_READ_OR_FAIL(cat_prob[k]);
+                    if (cat == 0u) {
+                        SIXEL_VP8_READ_OR_FAIL(
+                            sixel_webp_vp8_cat3_prob[0]);
+                        value = (unsigned int)bit;
+                        SIXEL_VP8_READ_OR_FAIL(
+                            sixel_webp_vp8_cat3_prob[1]);
                         value = (value << 1) + (unsigned int)bit;
+                        SIXEL_VP8_READ_OR_FAIL(
+                            sixel_webp_vp8_cat3_prob[2]);
+                        value = (value << 1) + (unsigned int)bit;
+                    } else if (cat == 1u) {
+                        SIXEL_VP8_READ_OR_FAIL(
+                            sixel_webp_vp8_cat4_prob[0]);
+                        value = (unsigned int)bit;
+                        SIXEL_VP8_READ_OR_FAIL(
+                            sixel_webp_vp8_cat4_prob[1]);
+                        value = (value << 1) + (unsigned int)bit;
+                        SIXEL_VP8_READ_OR_FAIL(
+                            sixel_webp_vp8_cat4_prob[2]);
+                        value = (value << 1) + (unsigned int)bit;
+                        SIXEL_VP8_READ_OR_FAIL(
+                            sixel_webp_vp8_cat4_prob[3]);
+                        value = (value << 1) + (unsigned int)bit;
+                    } else if (cat == 2u) {
+                        SIXEL_VP8_READ_OR_FAIL(
+                            sixel_webp_vp8_cat5_prob[0]);
+                        value = (unsigned int)bit;
+                        SIXEL_VP8_READ_OR_FAIL(
+                            sixel_webp_vp8_cat5_prob[1]);
+                        value = (value << 1) + (unsigned int)bit;
+                        SIXEL_VP8_READ_OR_FAIL(
+                            sixel_webp_vp8_cat5_prob[2]);
+                        value = (value << 1) + (unsigned int)bit;
+                        SIXEL_VP8_READ_OR_FAIL(
+                            sixel_webp_vp8_cat5_prob[3]);
+                        value = (value << 1) + (unsigned int)bit;
+                        SIXEL_VP8_READ_OR_FAIL(
+                            sixel_webp_vp8_cat5_prob[4]);
+                        value = (value << 1) + (unsigned int)bit;
+                    } else {
+                        cat = 3u;
+                        cat_prob = sixel_webp_vp8_cat_prob_table[cat];
+                        for (k = 0u; k < sixel_webp_vp8_cat_len_table[cat];
+                             ++k) {
+                            SIXEL_VP8_READ_OR_FAIL(cat_prob[k]);
+                            value = (value << 1) + (unsigned int)bit;
+                        }
                     }
                     value += 3u + (8u << cat);
                 }
@@ -428,14 +468,15 @@ sixel_webp_vp8_decode_coeff_block(
 
         j = sixel_webp_vp8_zigzag[n];
         if (j >= SIXEL_WEBP_VP8_BLOCK_COEFFS) {
-            return SIXEL_BAD_INPUT;
+            status = SIXEL_BAD_INPUT;
+            goto fail;
         }
         status = sixel_webp_vp8_bool_read_signed_value_fast(
             decoder,
             value,
             &signed_value);
         if (SIXEL_FAILED(status)) {
-            return status;
+            goto fail;
         }
         coeffs[j] = (int16_t)signed_value;
 
