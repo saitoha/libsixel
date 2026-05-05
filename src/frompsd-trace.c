@@ -70,6 +70,41 @@ sixel_builtin_psd_trace_codes[SIXEL_PSD_TRACE_CODE_MAX];
 static SIXEL_PSD_TRACE_TLS unsigned int
 sixel_builtin_psd_trace_code_count;
 
+static uint64_t
+sixel_builtin_psd_trace_mul_low64(uint64_t left, uint64_t right)
+{
+#if defined(__SIZEOF_INT128__)
+    return (uint64_t)((unsigned __int128)left * right);
+#else
+    uint64_t left_lo;
+    uint64_t left_hi;
+    uint64_t right_lo;
+    uint64_t right_hi;
+    uint64_t low;
+    uint64_t cross;
+    uint64_t high;
+
+    left_lo = left & 0xffffffffULL;
+    left_hi = left >> 32;
+    right_lo = right & 0xffffffffULL;
+    right_hi = right >> 32;
+    low = left_lo * right_lo;
+    cross = (uint64_t)(uint32_t)(left_lo * right_hi)
+        + (uint64_t)(uint32_t)(left_hi * right_lo);
+    high = cross << 32;
+
+    /*
+     * The FNV hash intentionally keeps only the low 64 bits. Express that
+     * reduction without relying on sanitizer-suppressed unsigned overflow.
+     */
+    if (low <= UINT64_MAX - high) {
+        return low + high;
+    }
+
+    return high - (UINT64_MAX - low) - 1u;
+#endif
+}
+
 static int
 sixel_builtin_psd_trace_header_only_enabled(void)
 {
@@ -108,7 +143,7 @@ sixel_builtin_psd_trace_seen(char const *message)
     hash = 1469598103934665603ull;
     for (; message[i] != '\0'; ++i) {
         hash ^= (uint64_t)(unsigned char)message[i];
-        hash *= 1099511628211ull;
+        hash = sixel_builtin_psd_trace_mul_low64(hash, 1099511628211ull);
     }
     i = 0u;
     for (i = 0u; i < sixel_builtin_psd_trace_seen_count; ++i) {

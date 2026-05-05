@@ -711,9 +711,10 @@ static uint32_t
 sixel_kmeans_hash_u32(uint32_t key)
 {
     key ^= key >> 16;
-    key *= 0x7feb352dU;
+    /* Keep the low 32 bits without unsigned-overflow reports. */
+    key = (uint32_t)((uint64_t)key * 0x7feb352dU);
     key ^= key >> 15;
-    key *= 0x846ca68bU;
+    key = (uint32_t)((uint64_t)key * 0x846ca68bU);
     key ^= key >> 16;
 
     return key;

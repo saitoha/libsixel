@@ -926,7 +926,11 @@ gif_export_pal8_frame(
             | (unsigned int)b;
         mixed = key;
         mixed ^= mixed >> 13;
-        mixed *= 0x9e3779b1u;
+        /*
+         * Keep the low 32 bits of the multiplicative hash without
+         * depending on sanitizer-suppressed unsigned wrap.
+         */
+        mixed = (unsigned int)((uint64_t)mixed * 0x9e3779b1u);
         mixed ^= mixed >> 16;
         step = 0u;
         found = 0;

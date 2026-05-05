@@ -21,8 +21,3 @@ src:*stb_image.h
 src:*stb_image_write.h
 src:*/src/stb_image.h
 src:*/src/stb_image_write.h
-fun:sixel_builtin_psd_trace_seen
-fun:gif_export_pal8_frame
-fun:sixel_kmeans_hash_u32
-fun:sixel_kmedoids_hash_keys
-fun:sixel_kcenter_solver_run_trial_once
