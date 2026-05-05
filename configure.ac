@@ -907,6 +907,7 @@ AC_ARG_ENABLE([sanitizer],
                                (default: no)])],
               [enable_sanitizer="$enableval"],
               [enable_sanitizer=no])
+sixel_sanitizer_ignorelist_cflag="-fsanitize-ignorelist=\$(abs_top_srcdir)/build-aux/sanitizer-ignorelist.txt"
 sixel_sanitizer_requires_lto=no
 AS_CASE([$enable_sanitizer],
         [no],
@@ -931,7 +932,7 @@ AS_CASE([$enable_sanitizer],
         [sixel_sanitizer_cflags="-fsanitize=function -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=function"],
         [implicit-integer-truncation],
-        [sixel_sanitizer_cflags="-fsanitize=undefined,implicit-integer-truncation,bounds -O1 -g -fno-omit-frame-pointer"
+        [sixel_sanitizer_cflags="-fsanitize=undefined,implicit-integer-truncation,bounds $sixel_sanitizer_ignorelist_cflag -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=undefined,implicit-integer-truncation,bounds"],
         [cfi-icall],
         [sixel_sanitizer_cflags="-fsanitize=cfi-icall -fno-sanitize-trap=cfi-icall -O1 -g -fno-omit-frame-pointer"

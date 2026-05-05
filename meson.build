@@ -180,6 +180,12 @@ if experimental_sanitizer != 'none'
           ' is supported only with clang')
   endif
 
+  experimental_sanitizer_ignorelist = join_paths(
+    meson.current_source_dir(),
+    'build-aux',
+    'sanitizer-ignorelist.txt',
+  )
+
   if experimental_sanitizer == 'function'
     experimental_sanitizer_c_args = [
       '-fsanitize=function',
@@ -191,6 +197,7 @@ if experimental_sanitizer != 'none'
   elif experimental_sanitizer == 'implicit-integer-truncation'
     experimental_sanitizer_c_args = [
       '-fsanitize=undefined,implicit-integer-truncation,bounds',
+      '-fsanitize-ignorelist=' + experimental_sanitizer_ignorelist,
       '-O1',
       '-g',
       '-fno-omit-frame-pointer',

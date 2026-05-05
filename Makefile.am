@@ -51,6 +51,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/read-check-test-list.sh \
 	build-aux/resolve-binding-test-common.sh \
 	build-aux/resolve-config-h-exports.sh \
+	build-aux/sanitizer-ignorelist.txt \
 	build-aux/resolve-python-test-venv.sh \
 	build-aux/resolve-ruby-test-venv.sh \
 	build-aux/resolve-perl-test-venv.sh \
