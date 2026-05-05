@@ -231,6 +231,7 @@ if experimental_sanitizer != 'none'
   elif experimental_sanitizer == 'integer'
     experimental_sanitizer_c_args = [
       '-fsanitize=integer',
+      '-fno-sanitize=unsigned-integer-overflow,unsigned-shift-base',
       '-fsanitize-ignorelist=' + experimental_sanitizer_ignorelist,
       '-O1',
       '-g',

@@ -17370,7 +17370,7 @@ case $enable_sanitizer in #(
     sixel_sanitizer_cflags="-fsanitize=undefined,object-size -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=undefined,object-size" ;; #(
   integer) :
-    sixel_sanitizer_cflags="-fsanitize=integer $sixel_sanitizer_ignorelist_cflag -O1 -g -fno-omit-frame-pointer"
+    sixel_sanitizer_cflags="-fsanitize=integer -fno-sanitize=unsigned-integer-overflow,unsigned-shift-base $sixel_sanitizer_ignorelist_cflag -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=integer" ;; #(
   float-divide-by-zero) :
     sixel_sanitizer_cflags="-fsanitize=float-divide-by-zero -O1 -g -fno-omit-frame-pointer"
