@@ -614,19 +614,40 @@ Minimum fixture naming convention:
 
 ## Immediate Next Tasks (Start Here)
 
-1. Extend non-pixel semantics beyond current fill/TySh color extraction support while
-   preserving deterministic degrade traces for unsupported semantics
-   (for example richer `TySh` text-style payload interpretation beyond
-   `FillColor`/`Color` value extraction).
-   - Priority hardcase targets: `1313` (fill-opacity parity) and
-     `1317/1318` (effects parity for shape-fx2/stroke-composite).
-2. Extend PSB (`8BPB+version=2`) from parser-compatible partial support toward
-   large-document parity:
-   - after mode4/mode7 CMYK16/CMYK32 `high_offset` + `high_offset_xxlarge`
-     valid/malformed parity, expand to larger-than-4MiB section-window layouts
-     and higher-offset cases (requires allocator ceiling policy decision), and
-   - design/implement large-size section boundary handling beyond the current
-     parser/fallback surface.
-3. Increase cross-mode visual quality regression density for non-pixel payload
-   rendering (LSQA), including Lab/Gray style payload baselines, while keeping
-   current ICC/trace contracts fixed.
+The next implementation window is intentionally staged to keep XFAIL tracking
+stable while reducing semantic gaps in priority order:
+
+1. Slice A: Effect parity recovery for `1317/1318` (highest priority).
+   - Scope:
+     - `clbl=1` deferred effect compositing around
+       `same-mode + Normal + inside` overlap/exclusive responsibilities.
+     - Keep ownership invariants fixed:
+       base-no-apply, deferred single-apply, replay queue/replay lock,
+       no post-commit deferred reapply.
+   - Keep unchanged:
+     - shared clipped source, inside clipped-silhouette,
+       post-effect backdrop, `lfx2`/`lrFX` merge contracts.
+   - Deliverables:
+     - trace + LSQA PASS representatives for each identified
+       `1317/1318` residual-diff factor.
+
+2. Slice B: Knockout semantics (`none/shallow/deep`) from degrade to spec.
+   - Replace current ignore/degrade behavior with explicit knockout semantics.
+   - Preserve existing knockout trace baselines while adding semantic tests.
+
+3. Slice C: Vector mask and layer-effects full semantics.
+   - Expand vector-mask fallback from bbox/edge approximation toward
+     path-semantic behavior and contract the cross-condition behavior with
+     layer effects.
+   - Include `1313` (fill-opacity parity) in this slice target.
+
+4. Slice D: PSB large-document parity.
+   - Extend beyond current high-offset compatibility window to larger
+     section windows and allocator-boundary-safe parsing.
+   - Keep malformed/unsupported diagnostic-code contracts stable.
+
+Common acceptance policy for all slices:
+
+- no PASS-to-FAIL increase on existing PSD suites,
+- `1313/1317/1318` remain XFAIL until explicit removal slices,
+- no threshold relaxation and no expected-image replacement.
