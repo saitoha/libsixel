@@ -516,7 +516,7 @@ sixel_parallel_context_cleanup(sixel_parallel_context_t *ctx)
     }
     ctx->band_count = 0;
     if (ctx->pool != NULL) {
-        threadpool_destroy(ctx->pool);
+        ctx->pool->vtbl->unref(ctx->pool);
         ctx->pool = NULL;
     }
     if (ctx->cond_ready) {
@@ -698,7 +698,7 @@ sixel_parallel_context_grow(sixel_parallel_context_t *ctx, int target_threads)
     }
 
     delta = capped_target - ctx->thread_count;
-    status = threadpool_grow(ctx->pool, delta);
+    status = ctx->pool->vtbl->grow(ctx->pool, delta);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -882,17 +882,19 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
         ctx->queue_capacity = nbands;
     }
 
-    ctx->pool = threadpool_create(threads,
-                                  ctx->queue_capacity,
-                                  sizeof(sixel_parallel_worker_state_t),
-                                  sixel_parallel_worker_main,
-                                  ctx,
-                                  NULL);
-    if (ctx->pool == NULL) {
-        return SIXEL_RUNTIME_ERROR;
+    status = sixel_threadpool_create_pool(
+        &ctx->pool,
+        threads,
+        ctx->queue_capacity,
+        sizeof(sixel_parallel_worker_state_t),
+        sixel_parallel_worker_main,
+        ctx,
+        NULL);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
-    threadpool_set_affinity(ctx->pool, ctx->pin_threads);
+    ctx->pool->vtbl->set_affinity(ctx->pool, ctx->pin_threads);
 
     /* Initialize writer-visible fields before the writer thread starts.
      * Serialize initialization of writer-visible state so the writer thread
@@ -920,6 +922,7 @@ static void
 sixel_parallel_submit_band(sixel_parallel_context_t *ctx, int band_index)
 {
     tp_job_t job;
+    SIXELSTATUS status;
     int dispatch;
 
     if (ctx == NULL || ctx->pool == NULL) {
@@ -965,7 +968,16 @@ sixel_parallel_submit_band(sixel_parallel_context_t *ctx, int band_index)
                           band_index);
     }
     job.band_index = band_index;
-    threadpool_push(ctx->pool, job);
+    status = ctx->pool->vtbl->push(ctx->pool, job);
+    if (SIXEL_FAILED(status)) {
+        if (ctx->mutex_ready) {
+            sixel_mutex_lock(&ctx->mutex);
+            sixel_parallel_context_abort_locked(ctx, status);
+            sixel_mutex_unlock(&ctx->mutex);
+        } else {
+            ctx->writer_error = status;
+        }
+    }
 }
 
 static SIXELSTATUS
@@ -977,8 +989,8 @@ sixel_parallel_context_wait(sixel_parallel_context_t *ctx, int force_abort)
         return SIXEL_BAD_ARGUMENT;
     }
 
-    threadpool_finish(ctx->pool);
-    pool_error = threadpool_get_error(ctx->pool);
+    ctx->pool->vtbl->finish(ctx->pool);
+    pool_error = ctx->pool->vtbl->get_error(ctx->pool);
     sixel_parallel_writer_stop(ctx, force_abort || pool_error != SIXEL_OK);
 
     if (pool_error != SIXEL_OK) {

@@ -151,6 +151,69 @@ coclass timeline_logger_component {
     [default] interface timeline_logger;
 };
 
+struct thread_pool_job {
+    int band_index;
+};
+
+typedef int (*sixel_thread_pool_worker_function_t)(
+    thread_pool_job job,
+    void *userdata,
+    void *workspace);
+
+typedef void (*sixel_thread_pool_workspace_cleanup_function_t)(
+    void *workspace);
+
+[alias(sixel_thread_pool_t)]
+interface thread_pool;
+
+struct thread_pool_create_request {
+    int threads;
+    int queue_size;
+    size_t workspace_size;
+    sixel_thread_pool_worker_function_t worker;
+    void *userdata;
+    sixel_thread_pool_workspace_cleanup_function_t workspace_cleanup;
+};
+
+[component, refcounted]
+[responsibility("own one short-lived worker queue and its worker threads")]
+[forbid_state("global_queue", "process_thread_budget")]
+interface thread_pool {
+    [lifetime(retained)]
+    void ref();
+    [lifetime(release)]
+    void unref();
+    [mutates]
+    void set_affinity(in int pin_threads);
+    [mutates]
+    SIXELSTATUS push(in thread_pool_job job);
+    [mutates]
+    void finish();
+    int get_error();
+    [mutates]
+    SIXELSTATUS grow(in int additional_threads);
+};
+
+[component, refcounted]
+[responsibility("create independent thread pools and resolve thread counts")]
+[forbid_state("worker_threads", "job_queue", "encoder_state")]
+[alias(sixel_threadpool_service_t)]
+interface threadpool_service {
+    [lifetime(retained)]
+    void ref();
+    [lifetime(release)]
+    void unref();
+    int resolve_threads(in int requested);
+    SIXELSTATUS create_pool(
+        in thread_pool_create_request const *request,
+        out thread_pool **pool);
+};
+
+[serviceid("services/threadpool")]
+coclass threadpool_service_component {
+    [default] interface threadpool_service;
+};
+
 [alias(sixel_emitter_t)]
 interface sixel_emitter;
 

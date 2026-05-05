@@ -258,6 +258,138 @@ struct sixel_timeline_logger_interface {
  * };
  */
 
+typedef struct sixel_thread_pool_job {
+    int band_index;
+} sixel_thread_pool_job_t;
+
+typedef int (*sixel_thread_pool_worker_function_t)(
+    sixel_thread_pool_job_t job,
+    void *userdata,
+    void *workspace);
+
+typedef void (*sixel_thread_pool_workspace_cleanup_function_t)(
+    void *workspace);
+
+typedef struct sixel_thread_pool_interface sixel_thread_pool_t;
+
+typedef struct sixel_thread_pool_create_request {
+    int threads;
+    int queue_size;
+    size_t workspace_size;
+    sixel_thread_pool_worker_function_t worker;
+    void *userdata;
+    sixel_thread_pool_workspace_cleanup_function_t workspace_cleanup;
+} sixel_thread_pool_create_request_t;
+
+/*
+ * IDL responsibility:
+ * - own one short-lived worker queue and its worker threads
+ */
+
+/*
+ * IDL forbidden state:
+ * - global_queue
+ * - process_thread_budget
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("own one short-lived worker queue and its worker threads")]
+ * [forbid_state("global_queue", "process_thread_budget")]
+ * interface thread_pool {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     [mutates]
+ *     void set_affinity(in int pin_threads);
+ *     [mutates]
+ *     SIXELSTATUS push(in thread_pool_job job);
+ *     [mutates]
+ *     void finish();
+ *     int get_error();
+ *     [mutates]
+ *     SIXELSTATUS grow(in int additional_threads);
+ * };
+ */
+
+typedef struct sixel_thread_pool_vtbl {
+    void (*ref)(sixel_thread_pool_t *self);
+    void (*unref)(sixel_thread_pool_t *self);
+    void (*set_affinity)(
+        sixel_thread_pool_t *self,
+        int pin_threads);
+    SIXELSTATUS (*push)(
+        sixel_thread_pool_t *self,
+        sixel_thread_pool_job_t job);
+    void (*finish)(sixel_thread_pool_t *self);
+    int (*get_error)(sixel_thread_pool_t *self);
+    SIXELSTATUS (*grow)(
+        sixel_thread_pool_t *self,
+        int additional_threads);
+} sixel_thread_pool_vtbl_t;
+
+struct sixel_thread_pool_interface {
+    sixel_thread_pool_vtbl_t const *vtbl;
+};
+
+typedef struct sixel_threadpool_service_interface sixel_threadpool_service_t;
+
+/*
+ * IDL responsibility:
+ * - create independent thread pools and resolve thread counts
+ */
+
+/*
+ * IDL forbidden state:
+ * - worker_threads
+ * - job_queue
+ * - encoder_state
+ */
+
+/*
+ * IDL contract:
+ * [component, refcounted]
+ * [responsibility("create independent thread pools and resolve thread counts")]
+ * [forbid_state("worker_threads", "job_queue", "encoder_state")]
+ * [alias(sixel_threadpool_service_t)]
+ * interface threadpool_service {
+ *     [lifetime(retained)]
+ *     void ref();
+ *     [lifetime(release)]
+ *     void unref();
+ *     int resolve_threads(in int requested);
+ *     SIXELSTATUS create_pool(
+ *         in thread_pool_create_request const *request,
+ *         out thread_pool **pool);
+ * };
+ */
+
+typedef struct sixel_threadpool_service_vtbl {
+    void (*ref)(sixel_threadpool_service_t *self);
+    void (*unref)(sixel_threadpool_service_t *self);
+    int (*resolve_threads)(
+        sixel_threadpool_service_t *self,
+        int requested);
+    SIXELSTATUS (*create_pool)(
+        sixel_threadpool_service_t *self,
+        sixel_thread_pool_create_request_t const *request,
+        sixel_thread_pool_t **pool);
+} sixel_threadpool_service_vtbl_t;
+
+struct sixel_threadpool_service_interface {
+    sixel_threadpool_service_vtbl_t const *vtbl;
+};
+
+/*
+ * IDL coclass:
+ * [serviceid("services/threadpool")]
+ * coclass threadpool_service_component {
+ *     [default] interface threadpool_service;
+ * };
+ */
+
 typedef struct sixel_emitter_interface sixel_emitter_t;
 
 typedef struct sixel_emitter_writer_request {

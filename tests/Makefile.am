@@ -195,6 +195,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0001_TIMELINE_LOGGER_FACTORY \
     -DBUILD_TEST_0002_TIMELINE_PARALLEL_ENCODE_DECODE \
     -DBUILD_TEST_0003_TIMELINE_CLOCK_ORIGIN \
+    -DBUILD_TEST_0001_THREADPOOL_SERVICE \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -269,6 +270,7 @@ test_runner_SOURCES = test_runner.c \
     processing/timeline/0001_timeline_logger_factory.c \
     processing/timeline/0002_timeline_parallel_encode_decode.c \
     processing/timeline/0003_timeline_clock_origin.c \
+    processing/threadpool/0001_threadpool_service.c \
     processing/lookup/0001_lookup_policy.c \
     processing/dither/0001_dither_policy.c \
     processing/filter/filter_test_common.h \

@@ -2129,21 +2129,28 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                                   job_count);
             }
 
-            pool = threadpool_create(threads,
-                                     queue_depth,
-                                     0,
-                                     sixel_colorspace_parallel_worker_bytes,
-                                     &ctx,
-                                     NULL);
-            if (pool != NULL) {
+            rc = sixel_threadpool_create_pool(
+                &pool,
+                threads,
+                queue_depth,
+                0,
+                sixel_colorspace_parallel_worker_bytes,
+                &ctx,
+                NULL);
+            if (rc == SIXEL_OK && pool != NULL) {
                 for (job_index = 0U; job_index < job_count; ++job_index) {
                     job.band_index = (int)job_index;
-                    threadpool_push(pool, job);
+                    rc = pool->vtbl->push(pool, job);
+                    if (rc != SIXEL_OK) {
+                        break;
+                    }
                 }
 
-                threadpool_finish(pool);
-                rc = threadpool_get_error(pool);
-                threadpool_destroy(pool);
+                pool->vtbl->finish(pool);
+                if (rc == SIXEL_OK) {
+                    rc = pool->vtbl->get_error(pool);
+                }
+                pool->vtbl->unref(pool);
 
                 if (rc == SIXEL_OK) {
                     if (logger_ref != NULL) {
@@ -2522,21 +2529,28 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                                   job_count);
             }
 
-            pool = threadpool_create(threads,
-                                     queue_depth,
-                                     0,
-                                     sixel_colorspace_parallel_worker,
-                                     &ctx,
-                                     NULL);
-            if (pool != NULL) {
+            rc = sixel_threadpool_create_pool(
+                &pool,
+                threads,
+                queue_depth,
+                0,
+                sixel_colorspace_parallel_worker,
+                &ctx,
+                NULL);
+            if (rc == SIXEL_OK && pool != NULL) {
                 for (job_index = 0U; job_index < job_count; ++job_index) {
                     job.band_index = (int)job_index;
-                    threadpool_push(pool, job);
+                    rc = pool->vtbl->push(pool, job);
+                    if (rc != SIXEL_OK) {
+                        break;
+                    }
                 }
 
-                threadpool_finish(pool);
-                rc = threadpool_get_error(pool);
-                threadpool_destroy(pool);
+                pool->vtbl->finish(pool);
+                if (rc == SIXEL_OK) {
+                    rc = pool->vtbl->get_error(pool);
+                }
+                pool->vtbl->unref(pool);
 
                 if (rc == SIXEL_OK) {
                     if (logger_ref != NULL) {

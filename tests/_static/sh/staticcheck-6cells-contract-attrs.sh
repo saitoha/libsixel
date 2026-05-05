@@ -114,6 +114,8 @@ BEGIN {
     required["factory"] = 1
     required["timeline_writer"] = 1
     required["timeline_logger"] = 1
+    required["thread_pool"] = 1
+    required["threadpool_service"] = 1
     required["lookup_policy"] = 1
     required["dither_policy"] = 1
     required["sixel_emitter"] = 1
@@ -127,6 +129,8 @@ BEGIN {
     forbid["palette"] = "lookup_policy dither_policy input_pixels method_for_largest method_for_rep quality_mode force_palette use_reversible quantize_model final_merge_mode lut_policy"
     forbid["timeline_writer"] = "frame_context job_context"
     forbid["timeline_logger"] = "output_file global_writer"
+    forbid["thread_pool"] = "global_queue process_thread_budget"
+    forbid["threadpool_service"] = "worker_threads job_queue encoder_state"
     forbid["sixel_emitter"] = "image_pixels dither_policy decode_state image_file_output clipboard_output"
 }
 function trim(text) {
@@ -199,6 +203,8 @@ BEGIN {
     required["factory"] = 1
     required["timeline_writer"] = 1
     required["timeline_logger"] = 1
+    required["thread_pool"] = 1
+    required["threadpool_service"] = 1
     required["lookup_policy"] = 1
     required["dither_policy"] = 1
     required["sixel_emitter"] = 1
@@ -401,6 +407,8 @@ BEGIN {
     iface["factory_component"] = "factory"
     serviceid["timeline_writer_component"] = "services/timeline-writer"
     iface["timeline_writer_component"] = "timeline_writer"
+    serviceid["threadpool_service_component"] = "services/threadpool"
+    iface["threadpool_service_component"] = "threadpool_service"
     classid["sixel_emitter_component"] = "terminal/sixel-emitter"
     iface["sixel_emitter_component"] = "sixel_emitter"
     classid["chunk_component"] = "image/chunk"

@@ -28,33 +28,37 @@
 #include <stddef.h>
 #include <sixel.h>
 
-#include "threading.h"
+#if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wunused-function"
+# endif
+#endif
+#include <6cells.h>
+#if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
+#endif
 
-typedef struct {
-    int band_index;
-} tp_job_t;
+typedef sixel_thread_pool_job_t tp_job_t;
+typedef sixel_thread_pool_worker_function_t tp_worker_fn;
+typedef sixel_thread_pool_workspace_cleanup_function_t
+    tp_workspace_cleanup_fn;
+typedef sixel_thread_pool_t threadpool_t;
 
-typedef int (*tp_worker_fn)(tp_job_t job, void *userdata, void *workspace);
-typedef void (*tp_workspace_cleanup_fn)(void *workspace);
+/* @serviceid services/threadpool */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_threadpool_service_get_default(void **service);
 
-struct threadpool;
-typedef struct threadpool threadpool_t;
-
-SIXEL_INTERNAL_API threadpool_t *threadpool_create(int nthreads,
-                                         int qsize,
-                                         size_t workspace_size,
-                                         tp_worker_fn worker,
-                                         void *userdata,
-                                         tp_workspace_cleanup_fn
-                                            workspace_cleanup);
-SIXEL_INTERNAL_API void threadpool_set_affinity(threadpool_t *pool,
-                                                int pin_threads);
-SIXEL_INTERNAL_API void threadpool_destroy(threadpool_t *pool);
-SIXEL_INTERNAL_API void threadpool_push(threadpool_t *pool, tp_job_t job);
-SIXEL_INTERNAL_API void threadpool_finish(threadpool_t *pool);
-SIXEL_INTERNAL_API int threadpool_get_error(threadpool_t *pool);
-SIXEL_INTERNAL_API int threadpool_grow(threadpool_t *pool,
-                                       int additional_threads);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_threadpool_create_pool(threadpool_t **pool,
+                             int nthreads,
+                             int qsize,
+                             size_t workspace_size,
+                             tp_worker_fn worker,
+                             void *userdata,
+                             tp_workspace_cleanup_fn workspace_cleanup);
 
 #endif /* LIBSIXEL_THREADPOOL_H */
 

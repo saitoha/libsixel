@@ -1470,6 +1470,7 @@ sixel_lookup_fhedt_dispatch_tiles_8bit(int total_tiles,
     int queue_depth;
     int job_index;
     tp_job_t job;
+    int status;
 
     if (threads < 2 || total_tiles < 2) {
         for (job_index = 0; job_index < total_tiles; ++job_index) {
@@ -1487,13 +1488,14 @@ sixel_lookup_fhedt_dispatch_tiles_8bit(int total_tiles,
     if (queue_depth > total_tiles) {
         queue_depth = total_tiles;
     }
-    pool = threadpool_create(threads,
-                             queue_depth,
-                             0,
-                             worker,
-                             plan,
-                             NULL);
-    if (pool == NULL) {
+    status = sixel_threadpool_create_pool(&pool,
+                                          threads,
+                                          queue_depth,
+                                          0,
+                                          worker,
+                                          plan,
+                                          NULL);
+    if (SIXEL_FAILED(status)) {
         for (job_index = 0; job_index < total_tiles; ++job_index) {
             job.band_index = job_index;
             (void)worker(job, plan, NULL);
@@ -1501,14 +1503,17 @@ sixel_lookup_fhedt_dispatch_tiles_8bit(int total_tiles,
 
         return;
     }
-    threadpool_set_affinity(pool, pin_threads);
+    pool->vtbl->set_affinity(pool, pin_threads);
     for (job_index = 0; job_index < total_tiles; ++job_index) {
         job.band_index = job_index;
-        threadpool_push(pool, job);
+        status = pool->vtbl->push(pool, job);
+        if (SIXEL_FAILED(status)) {
+            break;
+        }
     }
-    threadpool_finish(pool);
-    (void)threadpool_get_error(pool);
-    threadpool_destroy(pool);
+    pool->vtbl->finish(pool);
+    (void)pool->vtbl->get_error(pool);
+    pool->vtbl->unref(pool);
 #else
     tp_job_t job;
     int job_index;

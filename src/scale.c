@@ -1328,23 +1328,29 @@ scale_with_resampling_parallel(
                           "pass_start",
                           -1);
     }
-    pool = threadpool_create(threads,
-                             queue_depth,
-                             0,
-                             scale_parallel_worker,
-                             &ctx,
-                             NULL);
-    if (pool == NULL) {
-        return SIXEL_BAD_ALLOCATION;
+    rc = sixel_threadpool_create_pool(&pool,
+                                      threads,
+                                      queue_depth,
+                                      0,
+                                      scale_parallel_worker,
+                                      &ctx,
+                                      NULL);
+    if (rc != SIXEL_OK) {
+        return rc;
     }
 
     for (y = 0; y < srch; y += horizontal_span) {
         job.band_index = y;
-        threadpool_push(pool, job);
+        rc = pool->vtbl->push(pool, job);
+        if (rc != SIXEL_OK) {
+            break;
+        }
     }
-    threadpool_finish(pool);
-    rc = threadpool_get_error(pool);
-    threadpool_destroy(pool);
+    pool->vtbl->finish(pool);
+    if (rc == SIXEL_OK) {
+        rc = pool->vtbl->get_error(pool);
+    }
+    pool->vtbl->unref(pool);
     if (rc != SIXEL_OK) {
         return rc;
     }
@@ -1374,23 +1380,29 @@ scale_with_resampling_parallel(
                           "pass_start",
                           -1);
     }
-    pool = threadpool_create(threads,
-                             queue_depth,
-                             0,
-                             scale_parallel_worker,
-                             &ctx,
-                             NULL);
-    if (pool == NULL) {
-        return SIXEL_BAD_ALLOCATION;
+    rc = sixel_threadpool_create_pool(&pool,
+                                      threads,
+                                      queue_depth,
+                                      0,
+                                      scale_parallel_worker,
+                                      &ctx,
+                                      NULL);
+    if (rc != SIXEL_OK) {
+        return rc;
     }
 
     for (y = 0; y < dsth; y += vertical_span) {
         job.band_index = y;
-        threadpool_push(pool, job);
+        rc = pool->vtbl->push(pool, job);
+        if (rc != SIXEL_OK) {
+            break;
+        }
     }
-    threadpool_finish(pool);
-    rc = threadpool_get_error(pool);
-    threadpool_destroy(pool);
+    pool->vtbl->finish(pool);
+    if (rc == SIXEL_OK) {
+        rc = pool->vtbl->get_error(pool);
+    }
+    pool->vtbl->unref(pool);
 
     if (logger_ready) {
         sixel_timeline_logger_logf(logger,

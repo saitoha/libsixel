@@ -35,6 +35,7 @@
 #endif
 #include "factory.h"
 #include "timeline-writer.h"
+#include "threadpool.h"
 
 typedef SIXELSTATUS (*sixel_components_service_get_fn)(
     void **service);
@@ -49,13 +50,18 @@ typedef SIXELSTATUS (*sixel_components_service_get_fn)(
 #else
 # define SIXEL_COMPONENTS_SERVICEID_GET_2 0
 #endif
-#line 27 "../../src/classid-service.gperf"
+#if 1
+# define SIXEL_COMPONENTS_SERVICEID_GET_3 sixel_threadpool_service_get_default
+#else
+# define SIXEL_COMPONENTS_SERVICEID_GET_3 0
+#endif
+#line 33 "../../src/classid-service.gperf"
 struct sixel_components_serviceid_entry {
     char const *name;
     sixel_components_service_get_fn get_default;
 };
 
-#define TOTAL_KEYWORDS 2
+#define TOTAL_KEYWORDS 3
 #define MIN_WORD_LENGTH 16
 #define MAX_WORD_LENGTH 24
 #define MIN_HASH_VALUE 16
@@ -108,10 +114,13 @@ static const struct sixel_components_serviceid_entry sixel_components_serviceid_
   {
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-#line 32 "../../src/classid-service.gperf"
+#line 38 "../../src/classid-service.gperf"
     {"services/factory", SIXEL_COMPONENTS_SERVICEID_GET_1},
-    {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
-#line 33 "../../src/classid-service.gperf"
+    {"", 0}, {"", 0},
+#line 40 "../../src/classid-service.gperf"
+    {"services/threadpool", SIXEL_COMPONENTS_SERVICEID_GET_3},
+    {"", 0}, {"", 0}, {"", 0}, {"", 0},
+#line 39 "../../src/classid-service.gperf"
     {"services/timeline-writer", SIXEL_COMPONENTS_SERVICEID_GET_2}
   };
 
@@ -132,7 +141,7 @@ sixel_components_serviceid_lookup (register const char *str, register unsigned i
     }
   return 0;
 }
-#line 34 "../../src/classid-service.gperf"
+#line 41 "../../src/classid-service.gperf"
 
 #undef TOTAL_KEYWORDS
 #undef MIN_WORD_LENGTH

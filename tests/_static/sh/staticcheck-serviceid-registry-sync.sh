@@ -35,6 +35,7 @@ failed=0
 if ! awk -f "$generator" \
     "$src_root"/src/factory.h \
     "$src_root"/src/timeline-writer.h \
+    "$src_root"/src/threadpool.h \
     >"$expected"; then
     echo "not ok 1 - components serviceid registry stays in sync"
     echo "# failed to regenerate classid-service.gperf"

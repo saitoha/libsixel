@@ -1867,6 +1867,7 @@ loader_helper_sources = files(
   'src/status.c',
   'src/tty.c',
   'src/threading.c',
+  'src/threadpool.c',
 )
 
 if jpeg_dep.found()
@@ -1879,7 +1880,6 @@ endif
 
 if have_threads
   loader_helper_sources += [
-    'src/threadpool.c',
     'src/decoder-parallel.c',
   ]
 endif

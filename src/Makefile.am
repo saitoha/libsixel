@@ -339,6 +339,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/tty.h \
                 $(srcdir)/threading.c \
                 $(srcdir)/threading.h \
+                $(srcdir)/threadpool.c \
+                $(srcdir)/threadpool.h \
                 $(srcdir)/probe.c \
                 $(srcdir)/probe.h \
                 $(srcdir)/sixel_decode_rgba.c \
@@ -349,11 +351,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/classid-service.h \
                 $(srcdir)/rgblookup.h \
                 $(srcdir)/lso2.h
-if SIXEL_ENABLE_THREADS
-libsixel_la_SOURCES += \
-$(srcdir)/threadpool.c \
-$(srcdir)/threadpool.h
-endif
 if HAVE_QUICKLOOK_THUMBNAILING
 libsixel_la_SOURCES += \
 $(srcdir)/quicklook_thumbnailing.m
@@ -513,7 +510,8 @@ FACTORY_CLASSID_INPUTS = \
 
 SERVICEID_CLASSID_INPUTS = \
     $(srcdir)/factory.h \
-    $(srcdir)/timeline-writer.h
+    $(srcdir)/timeline-writer.h \
+    $(srcdir)/threadpool.h
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 gen-rgblookup: $(srcdir)/rgblookup.gperf

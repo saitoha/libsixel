@@ -212,6 +212,8 @@ srcs = [
   'tty.c',
   'threading.c',
   'threading.h',
+  'threadpool.c',
+  'threadpool.h',
   'probe.c',
   'probe.h',
   'sixel_decode_rgba.c',
@@ -265,12 +267,6 @@ srcs = [
   'path.h',
   'sixel_atomic.h',
 ]
-
-if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
-  srcs += [
-    'threadpool.c',
-  ]
-endif
 
 if have_quicklook_thumbnailing
   srcs += ['quicklook_thumbnailing.m']

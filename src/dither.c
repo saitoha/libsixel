@@ -1054,17 +1054,18 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
          * every time the worker callback is invoked.
          */
     }
-    pool = threadpool_create(threads,
-                             queue_depth,
-                             workspace_size,
-                             sixel_dither_parallel_worker,
-                             plan,
-                             cleanup);
-    if (pool == NULL) {
-        return SIXEL_BAD_ALLOCATION;
+    status = sixel_threadpool_create_pool(&pool,
+                                          threads,
+                                          queue_depth,
+                                          workspace_size,
+                                          sixel_dither_parallel_worker,
+                                          plan,
+                                          cleanup);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
-    threadpool_set_affinity(pool, plan->pin_threads);
+    pool->vtbl->set_affinity(pool, plan->pin_threads);
 
     /*
      * Distribute the initial jobs so each worker starts far apart, then feed
@@ -1084,13 +1085,18 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
                 continue;
             }
             job.band_index = seeded;
-            threadpool_push(pool, job);
+            status = pool->vtbl->push(pool, job);
+            if (SIXEL_FAILED(status)) {
+                pool->vtbl->finish(pool);
+                pool->vtbl->unref(pool);
+                return status;
+            }
         }
     }
 
-    threadpool_finish(pool);
-    status = threadpool_get_error(pool);
-    threadpool_destroy(pool);
+    pool->vtbl->finish(pool);
+    status = pool->vtbl->get_error(pool);
+    pool->vtbl->unref(pool);
 
     return status;
 }
