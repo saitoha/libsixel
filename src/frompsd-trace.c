@@ -73,7 +73,7 @@ sixel_builtin_psd_trace_code_count;
 static uint64_t
 sixel_builtin_psd_trace_mul_low64(uint64_t left, uint64_t right)
 {
-#if defined(__SIZEOF_INT128__)
+#if defined(__SIZEOF_INT128__) && !defined(__STRICT_ANSI__)
     return (uint64_t)((unsigned __int128)left * right);
 #else
     uint64_t left_lo;
