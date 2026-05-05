@@ -1,5 +1,5 @@
 /* ANSI-C code produced by gperf version 3.0.3 */
-/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_factory_classid_lookup -m5 -t src/classid-factory.gperf  */
+/* Command-line: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/gperf -C -N sixel_factory_classid_lookup --language=ANSI-C -m5 -t -H sixel_factory_classid_hash -W sixel_factory_classid_wordlist src/classid-factory.gperf  */
 /* Computed positions: -k'1,8,11,14,20' */
 
 #if !((' ' == 32) && ('!' == 33) && ('"' == 34) && ('#' == 35) \
@@ -464,7 +464,7 @@ inline
 #endif
 #endif
 static unsigned int
-hash (register const char *str, register unsigned int len)
+sixel_factory_classid_hash (register const char *str, register unsigned int len)
 {
   static const unsigned char asso_values[] =
     {
@@ -533,7 +533,7 @@ hash (register const char *str, register unsigned int len)
   return hval;
 }
 
-static const struct sixel_factory_classid_entry wordlist[] =
+static const struct sixel_factory_classid_entry sixel_factory_classid_wordlist[] =
   {
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
     {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0}, {"", 0},
@@ -696,14 +696,14 @@ sixel_factory_classid_lookup (register const char *str, register unsigned int le
 {
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
     {
-      unsigned int key = hash (str, len);
+      unsigned int key = sixel_factory_classid_hash (str, len);
 
       if (key <= MAX_HASH_VALUE)
         {
-          register const char *s = wordlist[key].name;
+          register const char *s = sixel_factory_classid_wordlist[key].name;
 
           if (*str == *s && !strcmp (str + 1, s + 1))
-            return &wordlist[key];
+            return &sixel_factory_classid_wordlist[key];
         }
     }
   return 0;

@@ -1325,6 +1325,8 @@ EXTRA_DIST = $(srcdir)/rgblookup.gperf \
 @BUILDING_ON_WINDOWS_TRUE@@USING_CL_TRUE@LIBSIXEL_IMPORT_LIB_ALIAS_DEPS = $(top_builddir)/src/.libs/sixel.dll.lib
 GPERF_OPT = --ignore-case --language=ANSI-C
 GPERF_FACTORY_CLASSID_OPT = --language=ANSI-C \
+                  -m5 \
+                  -t \
                   -H sixel_factory_classid_hash \
                   -W sixel_factory_classid_wordlist
 

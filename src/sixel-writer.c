@@ -50,7 +50,7 @@
 #define SCREEN_PACKET_SIZE   256
 
 typedef struct sixel_writer_storage {
-    sixel_writer_t interface;
+    sixel_writer_t writer;
     sixel_atomic_u32_t ref;
     sixel_allocator_t *allocator;
     sixel_write_function fn_write;
@@ -492,7 +492,7 @@ sixel_writer_factory_new(sixel_allocator_t *allocator, void **object)
     }
 
     memset(storage, 0, sizeof(*storage));
-    storage->interface.vtbl = &g_sixel_writer_vtbl;
+    storage->writer.vtbl = &g_sixel_writer_vtbl;
     storage->ref = 1U;
     storage->allocator = allocator;
     status = (SIXELSTATUS)sixel_mutex_init(&storage->mutex);
@@ -500,7 +500,7 @@ sixel_writer_factory_new(sixel_allocator_t *allocator, void **object)
         storage->mutex_ready = 1;
     }
     sixel_allocator_ref(allocator);
-    *object = &storage->interface;
+    *object = &storage->writer;
 
     return SIXEL_OK;
 }

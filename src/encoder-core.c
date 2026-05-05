@@ -324,12 +324,15 @@ sixel_output_set_writer_controls(
     output->writer_controls.penetrate_multiplexer =
         sixel_encoder_core_flag_to_byte(controls->penetrate_multiplexer);
 
-    output->has_8bit_control = output->writer_controls.has_8bit_control;
+    output->has_8bit_control =
+        (unsigned char)output->writer_controls.has_8bit_control;
     output->has_sixel_scrolling =
-        output->writer_controls.has_sixel_scrolling;
-    output->has_sdm_glitch = output->writer_controls.has_sdm_glitch;
-    output->skip_dcs_envelope = output->writer_controls.skip_dcs_envelope;
-    output->skip_header = output->writer_controls.skip_header;
+        (unsigned char)output->writer_controls.has_sixel_scrolling;
+    output->has_sdm_glitch =
+        (unsigned char)output->writer_controls.has_sdm_glitch;
+    output->skip_dcs_envelope =
+        (unsigned char)output->writer_controls.skip_dcs_envelope;
+    output->skip_header = (unsigned char)output->writer_controls.skip_header;
     output->penetrate_multiplexer =
         output->writer_controls.penetrate_multiplexer;
 

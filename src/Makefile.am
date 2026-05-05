@@ -450,6 +450,8 @@ libsixel-import-lib-alias: $(LIBSIXEL_IMPORT_LIB_ALIAS_DEPS)
 
 GPERF_OPT=--ignore-case --language=ANSI-C
 GPERF_FACTORY_CLASSID_OPT=--language=ANSI-C \
+                  -m5 \
+                  -t \
                   -H sixel_factory_classid_hash \
                   -W sixel_factory_classid_wordlist
 GPERF_SERVICEID_OPT=--language=ANSI-C \
