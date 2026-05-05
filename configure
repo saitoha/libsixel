@@ -1751,7 +1751,7 @@ Optional Features:
                           speeds up one-time build
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-analyzer       enable compiler static analyzer mode (default: no)
-  --enable-sanitizer=[no|address|undefined|address,undefined|memory|thread|function|implicit-integer-truncation|cfi-icall|object-size|integer]
+  --enable-sanitizer=[no|address|undefined|address,undefined|memory|thread|function|implicit-integer-truncation|cfi-icall|object-size|integer|float-divide-by-zero]
                           enable sanitizer instrumentation and add recommended
                           compile/link flags (default: no)
   --enable-lto=[no|full|thin]
@@ -17372,6 +17372,9 @@ case $enable_sanitizer in #(
   integer) :
     sixel_sanitizer_cflags="-fsanitize=integer $sixel_sanitizer_ignorelist_cflag -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=integer" ;; #(
+  float-divide-by-zero) :
+    sixel_sanitizer_cflags="-fsanitize=float-divide-by-zero -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=float-divide-by-zero" ;; #(
   *) :
     as_fn_error $? "invalid value for --enable-sanitizer: $enable_sanitizer" "$LINENO" 5 ;;
 esac

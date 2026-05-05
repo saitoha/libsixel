@@ -237,6 +237,14 @@ if experimental_sanitizer != 'none'
       '-fno-omit-frame-pointer',
     ]
     experimental_sanitizer_link_args = ['-fsanitize=integer']
+  elif experimental_sanitizer == 'float-divide-by-zero'
+    experimental_sanitizer_c_args = [
+      '-fsanitize=float-divide-by-zero',
+      '-O1',
+      '-g',
+      '-fno-omit-frame-pointer',
+    ]
+    experimental_sanitizer_link_args = ['-fsanitize=float-divide-by-zero']
   endif
 
   if experimental_sanitizer == 'cfi-icall'
