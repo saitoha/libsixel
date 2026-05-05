@@ -26,6 +26,14 @@
 #include "config.h"
 #endif
 
+#if !HAVE_MALLOC && defined(malloc)
+# undef malloc
+#endif  /* !HAVE_MALLOC && defined(malloc) */
+
+#if !HAVE_REALLOC && defined(realloc)
+# undef realloc
+#endif  /* !HAVE_REALLOC && defined(realloc) */
+
 /* STDC_HEADERS */
 #include <stdlib.h>
 
@@ -43,7 +51,7 @@
 void *
 rpl_malloc(size_t n)
 {
-    if(n == 0) {
+    if (n == 0) {
         n = 1;
     }
     return (void *)malloc(n);

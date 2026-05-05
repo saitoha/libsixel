@@ -1345,6 +1345,7 @@ sixel_compat_open(const char *path, int flags, ...)
         fd = open(libc_path, flags);
     }
 #else
+    (void)mode;
     errno = ENOSYS;
     fd = (-1);
 #endif

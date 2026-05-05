@@ -14205,7 +14205,7 @@ clipboard_create_spool(sixel_allocator_t *allocator,
     char *template_path;
     size_t template_capacity;
     int open_flags;
-#if defined(O_EXCL) && !defined(_MSC_VER)
+#if defined(O_EXCL) && !defined(_WIN32)
     int retry_flags;
 #endif
     int open_attempt;
@@ -14217,7 +14217,7 @@ clipboard_create_spool(sixel_allocator_t *allocator,
     template_path = NULL;
     template_capacity = 0u;
     open_flags = 0;
-#if defined(O_EXCL) && !defined(_MSC_VER)
+#if defined(O_EXCL) && !defined(_WIN32)
     retry_flags = 0;
 #endif
     fd = (-1);
@@ -14252,14 +14252,15 @@ clipboard_create_spool(sixel_allocator_t *allocator,
 #if defined(O_BINARY)
     open_flags |= O_BINARY;
 #endif
-#if defined(O_EXCL) && !defined(_MSC_VER)
+#if defined(O_EXCL) && !defined(_WIN32)
     retry_flags = open_flags;
 #endif
     /*
-     * MSVC reports spurious failures with O_EXCL on temp paths produced by
-     * _mktemp_s(), so keep temp spool creation on O_CREAT|O_TRUNC there.
+     * Windows CRTs can report spurious failures with O_EXCL on temp paths
+     * produced by mktemp-style APIs, so keep temp spool creation on
+     * O_CREAT|O_TRUNC there.
      */
-#if defined(O_EXCL) && !defined(_MSC_VER)
+#if defined(O_EXCL) && !defined(_WIN32)
     open_flags |= O_EXCL;
     retry_flags &= ~O_EXCL;
 #endif
@@ -14267,7 +14268,7 @@ clipboard_create_spool(sixel_allocator_t *allocator,
     open_errno = 0;
     for (open_attempt = 0; open_attempt < 4; ++open_attempt) {
         fd = sixel_compat_open(template_path, open_flags, S_IRUSR | S_IWUSR);
-#if defined(O_EXCL) && !defined(_MSC_VER)
+#if defined(O_EXCL) && !defined(_WIN32)
         if (fd < 0
                 && (errno == EBADF
                     || errno == EINVAL
@@ -14569,7 +14570,7 @@ sixel_encoder_encode(
     size_t png_temp_capacity = 0u;
     char *png_tmpnam_result = NULL;
     int png_open_flags = 0;
-#if defined(O_EXCL) && !defined(_MSC_VER) && !defined(__EMSCRIPTEN__)
+#if defined(O_EXCL) && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
     int png_retry_flags = 0;
 #endif
     int png_open_attempt;
@@ -14777,15 +14778,16 @@ sixel_encoder_encode(
         png_open_flags |= O_BINARY;
 #endif
         /*
-         * Keep the staging open sequence aligned with clipboard spool creation
-         * and avoid MSVC O_EXCL false negatives on generated temp paths.
+         * Keep the staging open sequence aligned with clipboard spool
+         * creation and avoid Windows O_EXCL false negatives on generated temp
+         * paths.
          */
         /*
          * Emscripten + NODERAWFS can report false EEXIST for O_EXCL on
          * freshly generated temp names. Keep O_EXCL on native runtimes
          * and use O_CREAT|O_TRUNC for Emscripten staging files.
          */
-#if defined(O_EXCL) && !defined(_MSC_VER) && !defined(__EMSCRIPTEN__)
+#if defined(O_EXCL) && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
         png_open_flags |= O_EXCL;
         png_retry_flags = png_open_flags;
         png_retry_flags &= ~O_EXCL;
@@ -14795,7 +14797,7 @@ sixel_encoder_encode(
             encoder->outfd = sixel_compat_open(png_temp_path,
                                                png_open_flags,
                                                S_IRUSR | S_IWUSR);
-#if defined(O_EXCL) && !defined(_MSC_VER) && !defined(__EMSCRIPTEN__)
+#if defined(O_EXCL) && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
             if (encoder->outfd < 0
                     && (errno == EBADF
                         || errno == EINVAL
