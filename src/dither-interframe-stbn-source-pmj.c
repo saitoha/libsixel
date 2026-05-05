@@ -35,13 +35,28 @@
  * over tile coordinates so spatial structure stays balanced while sequence
  * changes reduce frame-to-frame correlation.
  */
+/* Keep intentional modulo hash arithmetic out of unsigned-overflow reports. */
+static uint32_t
+sixel_interframe_stbn_pmj_mul_u32_low_common(uint32_t left, uint32_t right)
+{
+    return (uint32_t)((uint64_t)left * right);
+}
+
+static uint32_t
+sixel_interframe_stbn_pmj_add_u32_low_common(uint32_t left, uint32_t right)
+{
+    return (uint32_t)((uint64_t)left + right);
+}
+
 static uint32_t
 sixel_interframe_stbn_pmj_mix_u32_common(uint32_t value)
 {
     value ^= value >> 16;
-    value *= 0x7feb352dU;
+    value = sixel_interframe_stbn_pmj_mul_u32_low_common(value,
+                                                         0x7feb352dU);
     value ^= value >> 15;
-    value *= 0x846ca68bU;
+    value = sixel_interframe_stbn_pmj_mul_u32_low_common(value,
+                                                         0x846ca68bU);
     value ^= value >> 16;
 
     return value;
@@ -52,12 +67,14 @@ sixel_interframe_stbn_pmj_permute6_common(uint32_t value, uint32_t key)
 {
     value &= 63U;
     value ^= key & 63U;
-    value *= 0xe95e1dd5U;
+    value = sixel_interframe_stbn_pmj_mul_u32_low_common(value,
+                                                         0xe95e1dd5U);
     value &= 63U;
     value ^= value >> 3;
     value ^= value >> 5;
     value ^= (key >> 9) & 63U;
-    value *= 0x7feb352dU;
+    value = sixel_interframe_stbn_pmj_mul_u32_low_common(value,
+                                                         0x7feb352dU);
     value &= 63U;
 
     return value;
@@ -68,12 +85,14 @@ sixel_interframe_stbn_pmj_permute12_common(uint32_t value, uint32_t key)
 {
     value &= 4095U;
     value ^= key & 4095U;
-    value *= 0xe95e1dd5U;
+    value = sixel_interframe_stbn_pmj_mul_u32_low_common(value,
+                                                         0xe95e1dd5U);
     value &= 4095U;
     value ^= value >> 3;
     value ^= value >> 5;
     value ^= (key >> 9) & 4095U;
-    value *= 0x7feb352dU;
+    value = sixel_interframe_stbn_pmj_mul_u32_low_common(value,
+                                                         0x7feb352dU);
     value &= 4095U;
 
     return value;
@@ -144,9 +163,12 @@ sixel_interframe_stbn_source_pmj_build_channel_cache_common(
         return;
     }
 
-    seed = sequence_index * 0x9e3779b9U;
-    seed ^= (channel_u32 + 1U) * 0x85ebca6bU;
-    seed ^= (depth_u32 + 1U) * 0xc2b2ae35U;
+    seed = sixel_interframe_stbn_pmj_mul_u32_low_common(sequence_index,
+                                                        0x9e3779b9U);
+    seed ^= sixel_interframe_stbn_pmj_mul_u32_low_common(channel_u32 + 1U,
+                                                         0x85ebca6bU);
+    seed ^= sixel_interframe_stbn_pmj_mul_u32_low_common(depth_u32 + 1U,
+                                                         0xc2b2ae35U);
     seed = sixel_interframe_stbn_pmj_mix_u32_common(seed);
 
     phase_key = seed ^ 0x9e3779b9U;
@@ -157,7 +179,8 @@ sixel_interframe_stbn_source_pmj_build_channel_cache_common(
     channel_cache->coord_key_y = coord_key ^ 0x63d83595U;
     channel_cache->rank_key = seed ^ 0xb7e15162U;
     channel_cache->offset_x = sixel_interframe_stbn_pmj_permute6_common(
-        sequence_index + 0x68bc21ebU,
+        sixel_interframe_stbn_pmj_add_u32_low_common(sequence_index,
+                                                     0x68bc21ebU),
         phase_key);
     channel_cache->offset_y = sixel_interframe_stbn_pmj_permute6_common(
         sequence_index ^ 0x02e5be93U,
@@ -211,8 +234,12 @@ sixel_interframe_stbn_pmj_sample_u16_cached_internal(
                                                     channel_cache->rank_key);
 
     jitter_seed = channel_cache->seed;
-    jitter_seed ^= (uint32_t)sample_x * 0x6a09e667U;
-    jitter_seed ^= (uint32_t)sample_y * 0xbb67ae85U;
+    jitter_seed ^= sixel_interframe_stbn_pmj_mul_u32_low_common(
+        (uint32_t)sample_x,
+        0x6a09e667U);
+    jitter_seed ^= sixel_interframe_stbn_pmj_mul_u32_low_common(
+        (uint32_t)sample_y,
+        0xbb67ae85U);
     jitter_u6 = sixel_interframe_stbn_pmj_mix_u32_common(jitter_seed) & 63U;
     rank = (rank + jitter_u6) & 4095U;
 

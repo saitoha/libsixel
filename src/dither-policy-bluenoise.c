@@ -178,9 +178,9 @@ static unsigned int
 sixel_bluenoise_hash32(unsigned int value)
 {
     value ^= value >> 16;
-    value *= 0x7feb352dU;
+    value = (unsigned int)((unsigned long long)value * 0x7feb352dU);
     value ^= value >> 15;
-    value *= 0x846ca68bU;
+    value = (unsigned int)((unsigned long long)value * 0x846ca68bU);
     value ^= value >> 16;
     return value;
 }

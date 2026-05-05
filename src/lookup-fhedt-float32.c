@@ -400,10 +400,23 @@ sixel_lookup_fhedt_resolve_tiles_float32(float const *palette,
     *tile_depth = resolved_depth;
 }
 
+/* Keep intentional modulo hash arithmetic out of unsigned-overflow reports. */
+static uint32_t
+sixel_lookup_fhedt_add_u32_low_float32(uint32_t left, uint32_t right)
+{
+    return (uint32_t)((uint64_t)left + right);
+}
+
 static uint32_t
 sixel_lookup_fhedt_mix_u32_float32(uint32_t state, uint32_t value)
 {
-    state ^= value + 0x9e3779b9U + (state << 6) + (state >> 2);
+    uint32_t mixed;
+
+    mixed = 0U;
+    mixed = sixel_lookup_fhedt_add_u32_low_float32(value, 0x9e3779b9U);
+    mixed = sixel_lookup_fhedt_add_u32_low_float32(mixed, state << 6);
+    mixed = sixel_lookup_fhedt_add_u32_low_float32(mixed, state >> 2);
+    state ^= mixed;
 
     return state;
 }
@@ -1818,6 +1831,7 @@ sixel_lookup_fhedt_mark_boundaries_float32(
     int current;
     size_t bit_index;
     size_t byte_index;
+    size_t neighbor_offset;
 
     res = shared->resolution;
     plane = (size_t)res * (size_t)res;
@@ -1838,7 +1852,9 @@ sixel_lookup_fhedt_mark_boundaries_float32(
                     if (z + dz < 0 || z + dz >= res) {
                         continue;
                     }
-                    neighbor = sources[offset + (size_t)dz * plane];
+                    neighbor_offset = dz < 0 ? offset - plane
+                                             : offset + plane;
+                    neighbor = sources[neighbor_offset];
                     if (neighbor != current) {
                         bit_index = offset;
                         byte_index = bit_index / 8U;
@@ -1852,7 +1868,9 @@ sixel_lookup_fhedt_mark_boundaries_float32(
                     if (y + dy < 0 || y + dy >= res) {
                         continue;
                     }
-                    neighbor = sources[offset + (size_t)dy * (size_t)res];
+                    neighbor_offset = dy < 0 ? offset - (size_t)res
+                                             : offset + (size_t)res;
+                    neighbor = sources[neighbor_offset];
                     if (neighbor != current) {
                         bit_index = offset;
                         byte_index = bit_index / 8U;
@@ -1866,7 +1884,9 @@ sixel_lookup_fhedt_mark_boundaries_float32(
                     if (x + dx < 0 || x + dx >= res) {
                         continue;
                     }
-                    neighbor = sources[offset + (size_t)dx];
+                    neighbor_offset = dx < 0 ? offset - 1U
+                                             : offset + 1U;
+                    neighbor = sources[neighbor_offset];
                     if (neighbor != current) {
                         bit_index = offset;
                         byte_index = bit_index / 8U;

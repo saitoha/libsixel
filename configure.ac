@@ -901,24 +901,26 @@ AC_SUBST([SIXEL_ANALYZER_MODE], [$sixel_analyzer_mode])
 AC_SUBST([SIXEL_SCAN_BUILD], [$sixel_analyzer_scan_build])
 
 AC_ARG_ENABLE([sanitizer],
-              [AS_HELP_STRING([--enable-sanitizer=@<:@no|address|undefined|address,undefined|memory|thread@:>@],
+              [AS_HELP_STRING([--enable-sanitizer=@<:@no|address|undefined|address,undefined|memory|thread|function|implicit-integer-truncation|implicit-integer-sign-change|unsigned-integer-overflow|local-bounds|pointer-overflow|float-cast-overflow|cfi-icall|object-size|integer|float-divide-by-zero@:>@],
                               [enable sanitizer instrumentation and add
                                recommended compile/link flags
                                (default: no)])],
               [enable_sanitizer="$enableval"],
               [enable_sanitizer=no])
+sixel_sanitizer_ignorelist_cflag="-fsanitize-ignorelist=\$(abs_top_srcdir)/build-aux/sanitizer-ignorelist.txt"
+sixel_sanitizer_requires_lto=no
 AS_CASE([$enable_sanitizer],
         [no],
         [sixel_sanitizer_cflags=""
          sixel_sanitizer_ldflags=""],
         [address],
-        [sixel_sanitizer_cflags="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+        [sixel_sanitizer_cflags="-fsanitize=address -fsanitize-address-use-after-scope -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=address"],
         [undefined],
         [sixel_sanitizer_cflags="-fsanitize=undefined -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=undefined"],
         [address,undefined],
-        [sixel_sanitizer_cflags="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
+        [sixel_sanitizer_cflags="-fsanitize=address,undefined -fsanitize-address-use-after-scope -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=address,undefined"],
         [memory],
         [sixel_sanitizer_cflags="-fsanitize=memory -O1 -g -fno-omit-frame-pointer -fno-optimize-sibling-calls"
@@ -926,25 +928,43 @@ AS_CASE([$enable_sanitizer],
         [thread],
         [sixel_sanitizer_cflags="-fsanitize=thread -O1 -g -fno-omit-frame-pointer -fno-optimize-sibling-calls"
          sixel_sanitizer_ldflags="-fsanitize=thread"],
+        [function],
+        [sixel_sanitizer_cflags="-fsanitize=function -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=function"],
+        [implicit-integer-truncation],
+        [sixel_sanitizer_cflags="-fsanitize=undefined,implicit-integer-truncation,bounds $sixel_sanitizer_ignorelist_cflag -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=undefined,implicit-integer-truncation,bounds"],
+        [implicit-integer-sign-change],
+        [sixel_sanitizer_cflags="-fsanitize=undefined,implicit-integer-sign-change,bounds $sixel_sanitizer_ignorelist_cflag -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=undefined,implicit-integer-sign-change,bounds"],
+        [unsigned-integer-overflow],
+        [sixel_sanitizer_cflags="-fsanitize=undefined,unsigned-integer-overflow,bounds $sixel_sanitizer_ignorelist_cflag -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=undefined,unsigned-integer-overflow,bounds"],
+        [local-bounds],
+        [sixel_sanitizer_cflags="-fsanitize=local-bounds -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=local-bounds"],
+        [pointer-overflow],
+        [sixel_sanitizer_cflags="-fsanitize=pointer-overflow -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=pointer-overflow"],
+        [float-cast-overflow],
+        [sixel_sanitizer_cflags="-fsanitize=float-cast-overflow -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=float-cast-overflow"],
+        [cfi-icall],
+        [sixel_sanitizer_cflags="-fsanitize=cfi-icall -fno-sanitize-trap=cfi-icall -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=cfi-icall -fno-sanitize-trap=cfi-icall"
+         sixel_sanitizer_requires_lto=yes],
+        [object-size],
+        [sixel_sanitizer_cflags="-fsanitize=undefined,object-size -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=undefined,object-size"],
+        [integer],
+        [sixel_sanitizer_cflags="-fsanitize=integer -fno-sanitize=unsigned-integer-overflow,unsigned-shift-base $sixel_sanitizer_ignorelist_cflag -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=integer"],
+        [float-divide-by-zero],
+        [sixel_sanitizer_cflags="-fsanitize=float-divide-by-zero -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=float-divide-by-zero"],
         [AC_MSG_ERROR([invalid value for --enable-sanitizer: $enable_sanitizer])])
 AC_MSG_CHECKING([which sanitizer profile is enabled])
 AC_MSG_RESULT([$enable_sanitizer])
-
-AS_IF([test "x$enable_sanitizer" != "xno"], [
-  dnl Apply sanitizer flags immediately so the effective scope matches
-  dnl the legacy CI path that passed CFLAGS/LDFLAGS via the environment.
-  dnl If users already set flags explicitly, append sanitizer options.
-  AS_IF([test "x$ac_env_CFLAGS_set" = "xset"], [
-    CFLAGS="$CFLAGS $sixel_sanitizer_cflags"
-  ], [
-    CFLAGS="$sixel_sanitizer_cflags"
-  ])
-  AS_IF([test "x$ac_env_LDFLAGS_set" = "xset"], [
-    LDFLAGS="$LDFLAGS $sixel_sanitizer_ldflags"
-  ], [
-    LDFLAGS="$sixel_sanitizer_ldflags"
-  ])
-])
 
 AC_ARG_ENABLE([lto],
               [AS_HELP_STRING([--enable-lto=@<:@no|full|thin@:>@],
@@ -957,6 +977,11 @@ AS_CASE([$enable_lto],
         [no|full|thin],
         [],
         [AC_MSG_ERROR([invalid value for --enable-lto: $enable_lto])])
+
+AS_IF([test "x$sixel_sanitizer_requires_lto" = "xyes" &&
+       test "x$enable_lto" = "xno"], [
+  AC_MSG_ERROR([--enable-sanitizer=$enable_sanitizer requires --enable-lto=full or --enable-lto=thin])
+])
 
 AC_ARG_ENABLE([thinlto-cache],
               [AS_HELP_STRING([--enable-thinlto-cache],
@@ -2296,6 +2321,12 @@ fi
 # non-fatal in normal build compilation as well as feature checks.
 AS_IF([test -n "$EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT" -a -n "$CI"],
       [AM_CFLAGS="$AM_CFLAGS $EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"])
+
+AS_IF([test "x$enable_sanitizer" != "xno"], [
+  # Target-specific Automake CFLAGS in this tree are based on AM_CFLAGS, so
+  # apply sanitizer compile flags there without contaminating configure probes.
+  AM_CFLAGS="$AM_CFLAGS $sixel_sanitizer_cflags"
+])
 
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([LIBSIXEL_LDFLAGS])
@@ -4761,6 +4792,11 @@ AS_IF([test "x$enable_lto" != "xno"], [
   dnl remain independent from toolchain-specific LTO requirements.
   CFLAGS="$CFLAGS $sixel_lto_cflags"
   LDFLAGS="$LDFLAGS $sixel_lto_ldflags"
+])
+
+AS_IF([test "x$enable_sanitizer" != "xno"], [
+  dnl Link sanitizer runtime only after configure probes complete.
+  LDFLAGS="$LDFLAGS $sixel_sanitizer_ldflags"
 ])
 
 AS_IF([test "x$enable_pgo" != "xno"], [

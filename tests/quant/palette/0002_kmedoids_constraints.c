@@ -4454,7 +4454,7 @@ test_run_clarans_candidate_epoch_reset_equivalence_case(void)
                 exhausted_ref[index] = 0u;
             }
             remaining_ref = point_count;
-            epoch += 1u;
+            epoch = (unsigned int)((uint64_t)epoch + 1u);
             if (epoch == 0u) {
                 for (index = 0u; index < point_count; ++index) {
                     seen_epoch_count[index] = 0u;

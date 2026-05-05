@@ -29,13 +29,20 @@
 #include <stdint.h>
 #include "dither-interframe-stbn-source-hash.h"
 
+/* Keep intentional modulo hash arithmetic out of unsigned-overflow reports. */
+static uint32_t
+sixel_interframe_stbn_hash_mul_u32_common(uint32_t left, uint32_t right)
+{
+    return (uint32_t)((uint64_t)left * right);
+}
+
 static uint32_t
 sixel_interframe_stbn_hash_u32_common(uint32_t value)
 {
     value ^= value >> 16;
-    value *= 0x7feb352dU;
+    value = sixel_interframe_stbn_hash_mul_u32_common(value, 0x7feb352dU);
     value ^= value >> 15;
-    value *= 0x846ca68bU;
+    value = sixel_interframe_stbn_hash_mul_u32_common(value, 0x846ca68bU);
     value ^= value >> 16;
     return value;
 }
@@ -57,10 +64,13 @@ sixel_interframe_stbn_source_hash_sample_u16_common(uint32_t sequence_index,
         ch = (uint32_t)(channel % depth);
     }
 
-    key = sequence_index * 0x9e3779b9U;
-    key ^= (uint32_t)x * 0x6a09e667U;
-    key ^= (uint32_t)y * 0xbb67ae85U;
-    key ^= ch * 0x3c6ef372U;
+    key = sixel_interframe_stbn_hash_mul_u32_common(sequence_index,
+                                                    0x9e3779b9U);
+    key ^= sixel_interframe_stbn_hash_mul_u32_common((uint32_t)x,
+                                                     0x6a09e667U);
+    key ^= sixel_interframe_stbn_hash_mul_u32_common((uint32_t)y,
+                                                     0xbb67ae85U);
+    key ^= sixel_interframe_stbn_hash_mul_u32_common(ch, 0x3c6ef372U);
     key = sixel_interframe_stbn_hash_u32_common(key);
 
     return (uint16_t)(key >> 16);

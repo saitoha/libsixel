@@ -1,0 +1,23 @@
+# Keep experimental integer conversion checks focused on libsixel code.
+#
+# The bundled STB headers intentionally narrow intermediate integer values
+# while decoding or writing compact image formats. Those conversions are
+# useful upstream compatibility behavior, but they make the experimental
+# integer sanitizer profiles stop before they reach project code.
+[implicit-integer-truncation]
+src:*stb_image.h
+src:*stb_image_write.h
+src:*/src/stb_image.h
+src:*/src/stb_image_write.h
+
+[integer]
+src:*stb_image.h
+src:*stb_image_write.h
+src:*/src/stb_image.h
+src:*/src/stb_image_write.h
+
+[unsigned-integer-overflow]
+src:*stb_image.h
+src:*stb_image_write.h
+src:*/src/stb_image.h
+src:*/src/stb_image_write.h

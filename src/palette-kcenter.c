@@ -5778,8 +5778,9 @@ sixel_kcenter_solver_run_trial_once(
         return;
     }
 
-    state->trial_state
-        = state->base_state + 0x9e3779b9u * (state->init_trial + 1u);
+    state->trial_state = (uint32_t)(
+        (uint64_t)state->base_state
+        + (uint64_t)0x9e3779b9u * ((uint64_t)state->init_trial + 1u));
     if (state->trial_state == 0u) {
         state->trial_state = 1u;
     }
@@ -6638,8 +6639,9 @@ sixel_kcenter_build_solve_run_restarts(sixel_kcenter_build_runtime_t *rt,
     rt->best_sse = 0.0;
     rt->best_iterations = 0u;
     for (state->slot = 0u; state->slot < rt->restarts; ++state->slot) {
-        rt->rng_state = (uint32_t)(rt->seed
-            + 0x9e3779b9u * (state->slot + 1u));
+        rt->rng_state = (uint32_t)(
+            (uint64_t)rt->seed
+            + (uint64_t)0x9e3779b9u * ((uint64_t)state->slot + 1u));
         status = sixel_kcenter_run_solver(&rt->solver_ctx);
         if (SIXEL_FAILED(status)) {
             return status;

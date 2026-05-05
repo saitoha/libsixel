@@ -434,6 +434,9 @@ sixel_kmedoids_clarans_remove_active_candidate(
     unsigned int *active_pos,
     unsigned int *active_count_io);
 
+static uint64_t
+sixel_kmedoids_mul_low64(uint64_t left, uint64_t right);
+
 static SIXELSTATUS
 sixel_kmedoids_pick_unique_sorted_sample_indices(
     unsigned int point_count,
@@ -1813,7 +1816,8 @@ sixel_kmedoids_pair_seen_or_insert(uint64_t pair_key,
             || pair_capacity == 0u) {
         return 0;
     }
-    pair_state = pair_key * 11400714819323198485ULL;
+    pair_state = sixel_kmedoids_mul_low64(pair_key,
+                                          11400714819323198485ULL);
     pair_slot = (unsigned int)(pair_state & (uint64_t)pair_mask);
     for (;;) {
         if (seen_generation[pair_slot] != seen_generation_id) {
@@ -2087,7 +2091,8 @@ sixel_kmedoids_insert_unique_hash_value(unsigned int value,
         return -1;
     }
 
-    hash_state = (uint64_t)value * 11400714819323198485ULL;
+    hash_state = sixel_kmedoids_mul_low64((uint64_t)value,
+                                          11400714819323198485ULL);
     hash_slot = (unsigned int)(hash_state & (uint64_t)mask);
     for (;;) {
         if (hash_table[hash_slot] == UINT_MAX) {
@@ -4259,6 +4264,41 @@ sixel_kmedoids_double_bits(double value)
 }
 
 static uint64_t
+sixel_kmedoids_mul_low64(uint64_t left, uint64_t right)
+{
+#if defined(__SIZEOF_INT128__)
+    return (uint64_t)((unsigned __int128)left * right);
+#else
+    uint64_t left_lo;
+    uint64_t left_hi;
+    uint64_t right_lo;
+    uint64_t right_hi;
+    uint64_t low;
+    uint64_t cross;
+    uint64_t high;
+
+    left_lo = left & 0xffffffffULL;
+    left_hi = left >> 32;
+    right_lo = right & 0xffffffffULL;
+    right_hi = right >> 32;
+    low = left_lo * right_lo;
+    cross = (uint64_t)(uint32_t)(left_lo * right_hi)
+        + (uint64_t)(uint32_t)(left_hi * right_lo);
+    high = cross << 32;
+
+    /*
+     * K-medoids hash probes intentionally use modulo-2^64 mixing. Keep the
+     * low bits explicitly so unsigned-overflow sanitizer can stay enabled.
+     */
+    if (low <= UINT64_MAX - high) {
+        return low + high;
+    }
+
+    return high - (UINT64_MAX - low) - 1u;
+#endif
+}
+
+static uint64_t
 sixel_kmedoids_hash_keys(uint64_t key0,
                          uint64_t key1,
                          uint64_t key2)
@@ -4267,11 +4307,11 @@ sixel_kmedoids_hash_keys(uint64_t key0,
 
     h = 1469598103934665603ULL;
     h ^= key0;
-    h *= 1099511628211ULL;
+    h = sixel_kmedoids_mul_low64(h, 1099511628211ULL);
     h ^= key1;
-    h *= 1099511628211ULL;
+    h = sixel_kmedoids_mul_low64(h, 1099511628211ULL);
     h ^= key2;
-    h *= 1099511628211ULL;
+    h = sixel_kmedoids_mul_low64(h, 1099511628211ULL);
     return h;
 }
 
@@ -8432,7 +8472,8 @@ sixel_kmedoids_pick_sample_indices(unsigned int point_count,
         index = base + slot;
         pick = sixel_kmedoids_rng_bounded(rng_state, index + 1u);
         exists = 0;
-        hash_state = (uint64_t)pick * 11400714819323198485ULL;
+        hash_state = sixel_kmedoids_mul_low64((uint64_t)pick,
+                                              11400714819323198485ULL);
         hash_slot = (unsigned int)(hash_state & (uint64_t)mask);
         for (;;) {
             if (table[hash_slot] == UINT_MAX) {
@@ -8452,7 +8493,8 @@ sixel_kmedoids_pick_sample_indices(unsigned int point_count,
         }
         indices[slot] = value;
 
-        hash_state = (uint64_t)value * 11400714819323198485ULL;
+        hash_state = sixel_kmedoids_mul_low64((uint64_t)value,
+                                              11400714819323198485ULL);
         hash_slot = (unsigned int)(hash_state & (uint64_t)mask);
         for (;;) {
             if (table[hash_slot] == UINT_MAX || table[hash_slot] == value) {
@@ -11118,7 +11160,9 @@ sixel_kmedoids_run_banditpam(double const *points,
             }
 
             pair_key = ((uint64_t)slot << 32u) | (uint64_t)candidate;
-            pair_state = pair_key * 11400714819323198485ULL;
+            pair_state = sixel_kmedoids_mul_low64(
+                pair_key,
+                11400714819323198485ULL);
             pair_slot = (unsigned int)(pair_state & (uint64_t)pair_mask);
             pair_seen = 0;
             probe_count = 0u;

@@ -54,6 +54,13 @@ static unsigned int const sixel_webp_vp8_cat5_prob[5] =
 static unsigned int const sixel_webp_vp8_cat6_prob[11] =
     {254u, 254u, 243u, 230u, 196u, 177u, 153u, 140u, 133u, 130u, 129u};
 
+/* Preserve VP8 modulo arithmetic without unsigned-overflow reports. */
+static uint32_t
+sixel_webp_vp8_sub_u32_low(uint32_t left, uint32_t right)
+{
+    return (uint32_t)((uint64_t)left + (uint64_t)(UINT32_MAX - right) + 1u);
+}
+
 static void
 sixel_webp_vp8_bool_load_final_byte(sixel_webp_vp8_bool_decoder_t *decoder)
 {
@@ -156,8 +163,9 @@ sixel_webp_vp8_bool_read(sixel_webp_vp8_bool_decoder_t *decoder,
     value = (unsigned int)(decoder->value >> (unsigned int)decoder->bits);
     if (value > split) {
         range -= split;
-        decoder->value -=
-            (uint32_t)(split + 1u) << (unsigned int)decoder->bits;
+        decoder->value = sixel_webp_vp8_sub_u32_low(
+            decoder->value,
+            (uint32_t)(split + 1u) << (unsigned int)decoder->bits);
         bit = 1;
     } else {
         range = split + 1u;
@@ -241,12 +249,16 @@ sixel_webp_vp8_bool_read_signed_value(sixel_webp_vp8_bool_decoder_t *decoder,
 
     split = decoder->range >> 1u;
     dec_value = (unsigned int)(decoder->value >> (unsigned int)decoder->bits);
-    mask = (int32_t)(split - dec_value) >> 31;
+    mask = -(int)(dec_value > split);
     decoder->bits--;
-    decoder->range = decoder->range + (unsigned int)mask;
+    if (mask != 0) {
+        decoder->range -= 1u;
+    }
     decoder->range |= 1u;
-    decoder->value -= (uint32_t)((split + 1u) & (unsigned int)mask)
-        << (unsigned int)(decoder->bits + 1);
+    decoder->value = sixel_webp_vp8_sub_u32_low(
+        decoder->value,
+        (uint32_t)((split + 1u) & (unsigned int)mask)
+            << (unsigned int)(decoder->bits + 1));
 
     if (mask != 0) {
         signed_value = -(int)value;

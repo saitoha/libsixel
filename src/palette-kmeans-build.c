@@ -622,7 +622,8 @@ sixel_palette_count_unique_within_limit(unsigned char const *data,
         color = ((uint32_t)data[base] << 16)
               | ((uint32_t)data[base + 1U] << 8)
               | (uint32_t)data[base + 2U];
-        slot = (unsigned int)(((uint32_t)0x9e3779b9U * color) & mask);
+        slot = (unsigned int)(
+            (uint32_t)((uint64_t)0x9e3779b9U * color) & mask);
         while (table[slot] != 0xffffffffU && table[slot] != color) {
             slot = (slot + 1U) & mask;
         }
@@ -711,9 +712,10 @@ static uint32_t
 sixel_kmeans_hash_u32(uint32_t key)
 {
     key ^= key >> 16;
-    key *= 0x7feb352dU;
+    /* Keep the low 32 bits without unsigned-overflow reports. */
+    key = (uint32_t)((uint64_t)key * 0x7feb352dU);
     key ^= key >> 15;
-    key *= 0x846ca68bU;
+    key = (uint32_t)((uint64_t)key * 0x846ca68bU);
     key ^= key >> 16;
 
     return key;
