@@ -1537,6 +1537,8 @@ sixel_webp_vp8_decode_native_intra(
     unsigned int nz_u;
     unsigned int nz_v;
     unsigned int nz_y2;
+    /* Bit mask of Y blocks with zero residuals in the current macroblock. */
+    unsigned int y_zero_mask;
     unsigned int all_y_nonzero;
     unsigned int all_u_nonzero;
     unsigned int all_v_nonzero;
@@ -1623,6 +1625,7 @@ sixel_webp_vp8_decode_native_intra(
     nz_u = 0u;
     nz_v = 0u;
     nz_y2 = 0u;
+    y_zero_mask = 0u;
     all_y_nonzero = 0u;
     all_u_nonzero = 0u;
     all_v_nonzero = 0u;
@@ -1790,6 +1793,7 @@ sixel_webp_vp8_decode_native_intra(
             nz_u = 0u;
             nz_v = 0u;
             nz_y2 = 0u;
+            y_zero_mask = 0u;
             memset(y_nz, 0, sizeof(y_nz));
             memset(u_nz, 0, sizeof(u_nz));
             memset(v_nz, 0, sizeof(v_nz));
@@ -1928,6 +1932,8 @@ sixel_webp_vp8_decode_native_intra(
                     left_y[block >> 2u] = y_nz[block];
                     if (y_nz[block] != 0u) {
                         ++nz_y;
+                    } else {
+                        y_zero_mask |= 1u << block;
                     }
                 }
 
@@ -2001,6 +2007,8 @@ sixel_webp_vp8_decode_native_intra(
                 memset(u_nz, 0, sizeof(u_nz));
                 memset(v_nz, 0, sizeof(v_nz));
                 y2_nz = 0u;
+                /* skip_coeff clears all Y residual blocks for this MB. */
+                y_zero_mask = 0xffffu;
             }
             if (mb_x < 2u && mb_y < 2u &&
                 sixel_trace_topic_is_enabled("webp_decode") != 0) {
@@ -2097,18 +2105,70 @@ sixel_webp_vp8_decode_native_intra(
                         sixel_webp_vp8_iwht4x4(dequant, y2_output);
                     }
                     if (all_y_nonzero != 0u) {
+                        if (y2_nz != 0u) {
+                            for (block = 0u;
+                                 block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                                 ++block) {
+                                if (y_block_w[block] == 0u) {
+                                    continue;
+                                }
+                                sixel_webp_vp8_dequant_block(
+                                    coeffs[block],
+                                    quant_values.y1_dc,
+                                    quant_values.y1_ac,
+                                    dequant);
+                                dequant[0] += y2_output[block];
+                                sixel_webp_vp8_add_residual(
+                                    y_block_pred[block],
+                                    16u,
+                                    y_block_dst[block],
+                                    planes->y_stride,
+                                    y_block_w[block],
+                                    y_block_h[block],
+                                    dequant);
+                            }
+                        } else {
+                            for (block = 0u;
+                                 block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                                 ++block) {
+                                if (y_block_w[block] == 0u) {
+                                    continue;
+                                }
+                                sixel_webp_vp8_dequant_block(
+                                    coeffs[block],
+                                    quant_values.y1_dc,
+                                    quant_values.y1_ac,
+                                    dequant);
+                                sixel_webp_vp8_add_residual(
+                                    y_block_pred[block],
+                                    16u,
+                                    y_block_dst[block],
+                                    planes->y_stride,
+                                    y_block_w[block],
+                                    y_block_h[block],
+                                    dequant);
+                            }
+                        }
+                    } else if (y2_nz == 0u) {
                         for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_Y;
                              ++block) {
                             if (y_block_w[block] == 0u) {
+                                continue;
+                            }
+                            if ((y_zero_mask & (1u << block)) != 0u) {
+                                sixel_webp_vp8_copy_block(
+                                    y_block_pred[block],
+                                    16u,
+                                    y_block_dst[block],
+                                    planes->y_stride,
+                                    y_block_w[block],
+                                    y_block_h[block]);
                                 continue;
                             }
                             sixel_webp_vp8_dequant_block(coeffs[block],
                                                          quant_values.y1_dc,
                                                          quant_values.y1_ac,
                                                          dequant);
-                            if (y2_nz != 0u) {
-                                dequant[0] += y2_output[block];
-                            }
                             sixel_webp_vp8_add_residual(
                                 y_block_pred[block],
                                 16u,
@@ -2124,23 +2184,11 @@ sixel_webp_vp8_decode_native_intra(
                             if (y_block_w[block] == 0u) {
                                 continue;
                             }
-                            if (y_nz[block] == 0u && y2_nz == 0u) {
-                                sixel_webp_vp8_copy_block(
-                                    y_block_pred[block],
-                                    16u,
-                                    y_block_dst[block],
-                                    planes->y_stride,
-                                    y_block_w[block],
-                                    y_block_h[block]);
-                                continue;
-                            }
                             sixel_webp_vp8_dequant_block(coeffs[block],
                                                          quant_values.y1_dc,
                                                          quant_values.y1_ac,
                                                          dequant);
-                            if (y2_nz != 0u) {
-                                dequant[0] += y2_output[block];
-                            }
+                            dequant[0] += y2_output[block];
                             sixel_webp_vp8_add_residual(
                                 y_block_pred[block],
                                 16u,
