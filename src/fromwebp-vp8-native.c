@@ -801,6 +801,40 @@ sixel_webp_vp8_predict_bmode_from_refs(unsigned int bmode,
     t = 0;
     memset(pred, 0, 16u);
 
+    for (i = 0u; i < 8u; ++i) {
+        ref_x = x + i;
+        if (y != 0u) {
+            ref_y = y - 1u;
+            if ((y & 15u) != 0u && ref_x > mb_right) {
+                if (mb_top_y == 0u) {
+                    above[i] = SIXEL_WEBP_VP8_BORDER_TOP;
+                    continue;
+                }
+                ref_x = (x & ~15u) + 16u + (ref_x - mb_right - 1u);
+                ref_y = mb_top_y - 1u;
+            }
+            if (ref_x >= width) {
+                ref_x = width - 1u;
+            }
+            above[i] = plane[ref_y * stride + ref_x];
+        }
+    }
+    for (i = 0u; i < 4u; ++i) {
+        ref_y = y + i;
+        if (ref_y >= height) {
+            ref_y = height - 1u;
+        }
+        if (x != 0u) {
+            left[i] = plane[ref_y * stride + (x - 1u)];
+        }
+    }
+    if (x != 0u && y != 0u) {
+        top_left = plane[(y - 1u) * stride + (x - 1u)];
+    } else if (x == 0u && y != 0u) {
+        top_left = SIXEL_WEBP_VP8_BORDER_LEFT;
+    } else {
+        top_left = SIXEL_WEBP_VP8_BORDER_TOP;
+    }
     a = above[0];
     b = above[1];
     c = above[2];
