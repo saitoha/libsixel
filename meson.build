@@ -227,6 +227,30 @@ if experimental_sanitizer != 'none'
     experimental_sanitizer_link_args = [
       '-fsanitize=undefined,unsigned-integer-overflow,bounds',
     ]
+  elif experimental_sanitizer == 'local-bounds'
+    experimental_sanitizer_c_args = [
+      '-fsanitize=local-bounds',
+      '-O1',
+      '-g',
+      '-fno-omit-frame-pointer',
+    ]
+    experimental_sanitizer_link_args = ['-fsanitize=local-bounds']
+  elif experimental_sanitizer == 'pointer-overflow'
+    experimental_sanitizer_c_args = [
+      '-fsanitize=pointer-overflow',
+      '-O1',
+      '-g',
+      '-fno-omit-frame-pointer',
+    ]
+    experimental_sanitizer_link_args = ['-fsanitize=pointer-overflow']
+  elif experimental_sanitizer == 'float-cast-overflow'
+    experimental_sanitizer_c_args = [
+      '-fsanitize=float-cast-overflow',
+      '-O1',
+      '-g',
+      '-fno-omit-frame-pointer',
+    ]
+    experimental_sanitizer_link_args = ['-fsanitize=float-cast-overflow']
   elif experimental_sanitizer == 'cfi-icall'
     if not get_option('b_lto')
       error('experimental_sanitizer=cfi-icall requires -Db_lto=true')

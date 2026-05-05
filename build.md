@@ -88,7 +88,7 @@ or provide the desired directory path explicitly.
 | `--enable-coverage` | `no` | Compile with compiler coverage instrumentation. |
 | `--enable-gcov` | `no` | Deprecated alias for `--enable-coverage`. |
 | `--enable-analyzer` | `no` | Enable static analyzer mode. Compiler-specific behavior: clang requires `scan-build`, gcc adds `-O2 -fanalyzer`, MSVC/clang-cl adds `/W4 /analyze /wd28253`. |
-| `--enable-sanitizer=<profile>` | `no` | Enable sanitizer instrumentation (`address`, `undefined`, `address,undefined`, `memory`, `thread`, `function`, `implicit-integer-truncation`, `implicit-integer-sign-change`, `unsigned-integer-overflow`, `cfi-icall`, `object-size`, `integer`, or `float-divide-by-zero`). The `integer` profile keeps intentional unsigned wrap and unsigned shift-base arithmetic unreported. |
+| `--enable-sanitizer=<profile>` | `no` | Enable sanitizer instrumentation (`address`, `undefined`, `address,undefined`, `memory`, `thread`, `function`, `implicit-integer-truncation`, `implicit-integer-sign-change`, `unsigned-integer-overflow`, `local-bounds`, `pointer-overflow`, `float-cast-overflow`, `cfi-icall`, `object-size`, `integer`, or `float-divide-by-zero`). The `integer` profile keeps intentional unsigned wrap and unsigned shift-base arithmetic unreported. |
 | `--enable-lto=<mode>` | `no` | Enable link-time optimization (`full` or `thin`). |
 | `--enable-thinlto-cache` | `no` | Enable linker ThinLTO cache (requires `--enable-lto=thin`). |
 | `--with-thinlto-cache-dir=PATH` | auto | ThinLTO cache directory (default: `${TMPDIR-/tmp}/libsixel-thinlto-cache` when cache is enabled). |
@@ -288,7 +288,7 @@ meson setup builddir
 | `-Dshebang_file=` | string, empty | Prepend the file contents to generated executables (skips files that already start with a shebang) and mark them executable. |
 | `-Dgcov=` | boolean, `false` | Enable gcov coverage instrumentation. |
 | `-Danalyzer=` | boolean, `false` | Enable static analyzer mode. Compiler-specific behavior: clang requires `scan-build` at setup time, gcc adds `-O2 -fanalyzer`, MSVC/clang-cl adds `/W4 /analyze /wd28253`. |
-| `-Dexperimental_sanitizer=` | combo, `none` | Enable a Clang-only experimental sanitizer profile (`function`, `implicit-integer-truncation`, `implicit-integer-sign-change`, `unsigned-integer-overflow`, `cfi-icall`, `object-size`, `integer`, or `float-divide-by-zero`). The `integer` profile keeps intentional unsigned wrap and unsigned shift-base arithmetic unreported. |
+| `-Dexperimental_sanitizer=` | combo, `none` | Enable a Clang-only experimental sanitizer profile (`function`, `implicit-integer-truncation`, `implicit-integer-sign-change`, `unsigned-integer-overflow`, `local-bounds`, `pointer-overflow`, `float-cast-overflow`, `cfi-icall`, `object-size`, `integer`, or `float-divide-by-zero`). The `integer` profile keeps intentional unsigned wrap and unsigned shift-base arithmetic unreported. |
 | `-Dmsvc_pgo=` | combo, `off` | MSVC/clang-cl specific PGO mode (`off`, `generate`, `use`). |
 | `-Dmsvc_pgo_data=` | string, empty | Optional `/PGD:` path used when `-Dmsvc_pgo=generate/use`. |
 | `-Dimg2sixel=` | feature, `enabled` | Build the `img2sixel` CLI tool. |

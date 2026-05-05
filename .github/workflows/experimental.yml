@@ -291,6 +291,210 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
+  LocalBoundsSan:
+    name: LocalBoundsSan-${{ matrix.buildtool_label }}
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-24.04-aarch64-clang-LocalBoundsSan
+            buildtool: autotools
+            buildtool_label: Autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=local-bounds
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-24.04-aarch64-clang-LocalBoundsSan
+            buildtool: meson
+            buildtool_label: Meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=local-bounds
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  PointerOverflowSan:
+    name: PointerOverflowSan-${{ matrix.buildtool_label }}
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-24.04-aarch64-clang-PointerOverflowSan
+            buildtool: autotools
+            buildtool_label: Autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=pointer-overflow
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-24.04-aarch64-clang-PointerOverflowSan
+            buildtool: meson
+            buildtool_label: Meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=pointer-overflow
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  FloatCastOverflowSan:
+    name: FloatCastOverflowSan-${{ matrix.buildtool_label }}
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-24.04-aarch64-clang-FloatCastOverflowSan
+            buildtool: autotools
+            buildtool_label: Autotools
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-sanitizer=float-cast-overflow
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-lcms2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: >-
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-24.04-aarch64-clang-FloatCastOverflowSan
+            buildtool: meson
+            buildtool_label: Meson
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Dexperimental_sanitizer=float-cast-overflow
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dwebp=disabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dlcms2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              meson
+              ninja-build
+              clang
+              libclang-rt-dev
+            exec_type: bash
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
   CFIICallSan:
     name: CFIICallSan-${{ matrix.buildtool_label }}
     runs-on: ubuntu-24.04-arm
