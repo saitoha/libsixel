@@ -330,7 +330,9 @@ jobs:
 
       - name: Setup MSVC developer env
         if: ${{ matrix.analyzer == 'msvc' }}
-        uses: ilammy/msvc-dev-cmd@v1
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}\.github\scripts\setup-msvc-env.ps1" -Arch x64
 
       - name: Build with MSVC /W4 /analyze
         if: ${{ matrix.analyzer == 'msvc' }}
