@@ -3820,6 +3820,38 @@ end:
     return status;
 }
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encoder_core_encode_dispatch(
+    sixel_encoder_core_encode_request_t const *request)
+{
+    SIXELSTATUS status;
+
+    if (request == NULL || request->pixels == NULL ||
+        request->dither == NULL || request->output == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (request->width < 1 || request->height < 1) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    (void)request->depth;
+    if (request->dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
+        status = sixel_encode_highcolor(request->pixels,
+                                        request->width,
+                                        request->height,
+                                        request->dither,
+                                        request->output);
+    } else {
+        status = sixel_encode_dither(request->pixels,
+                                     request->width,
+                                     request->height,
+                                     request->dither,
+                                     request->output);
+    }
+
+    return status;
+}
+
 SIXELAPI SIXELSTATUS
 sixel_encode(
     unsigned char  /* in */ *pixels,   /* pixel bytes */
@@ -3830,8 +3862,8 @@ sixel_encode(
     sixel_output_t /* in */ *output)   /* output context */
 {
     SIXELSTATUS status = SIXEL_FALSE;
-
-    (void) depth;
+    sixel_encoder_core_t *core;
+    sixel_encoder_core_encode_request_t request;
 
     if (pixels == NULL) {
         sixel_helper_set_additional_message(
@@ -3874,13 +3906,19 @@ sixel_encode(
         goto end;
     }
 
-    if (dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
-        status = sixel_encode_highcolor(pixels, width, height,
-                                        dither, output);
-    } else {
-        status = sixel_encode_dither(pixels, width, height,
-                                     dither, output);
+    core = sixel_output_as_encoder_core(output);
+    if (core == NULL || core->vtbl == NULL ||
+        core->vtbl->encode == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
     }
+    request.pixels = pixels;
+    request.width = width;
+    request.height = height;
+    request.depth = depth;
+    request.dither = dither;
+    request.output = output;
+    status = core->vtbl->encode(core, &request);
 
 end:
     sixel_output_unref(output);

@@ -119,6 +119,12 @@ sixel_encoder_core_flag_to_byte(int value)
     return flag;
 }
 
+SIXEL_INTERNAL_API sixel_encoder_core_t *
+sixel_output_as_encoder_core(sixel_output_t const *output)
+{
+    return (sixel_encoder_core_t *)output;
+}
+
 static void
 sixel_encoder_core_init_defaults(sixel_output_t *output,
                                  sixel_allocator_t *allocator)
@@ -239,12 +245,7 @@ sixel_encoder_core_vtbl_encode(
         return SIXEL_BAD_ARGUMENT;
     }
 
-    /*
-     * The historical body encoder still lives in encoder-core-encode.c as
-     * free functions.  The vtbl method is introduced now so class variants can
-     * be created and wired without conflating byte output with body encoding.
-     */
-    return SIXEL_NOT_IMPLEMENTED;
+    return sixel_encoder_core_encode_dispatch(request);
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS

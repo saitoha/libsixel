@@ -36,11 +36,8 @@ extern "C" {
  * because the vtbl dispatch header is the first field of the private
  * sixel_output storage.
  */
-static inline sixel_encoder_core_t *
-sixel_output_as_encoder_core(sixel_output_t const *output)
-{
-    return (sixel_encoder_core_t *)output;
-}
+SIXEL_INTERNAL_API sixel_encoder_core_t *
+sixel_output_as_encoder_core(sixel_output_t const *output);
 
 /* @classid codec/encoder-core */
 SIXEL_INTERNAL_API SIXELSTATUS

@@ -5,7 +5,7 @@ set -eu
 
 src_root=${1:-}
 
-echo "1..8"
+echo "1..10"
 
 if test -z "$src_root"; then
     echo "not ok 1 - src output construction uses encoder-core factory"
@@ -23,6 +23,10 @@ if test -z "$src_root"; then
     echo "not ok 7 - sixel_writer storage keeps encode state out"
     echo "# src_root argument is required"
     echo "not ok 8 - encoder_core write method stays removed"
+    echo "# src_root argument is required"
+    echo "not ok 9 - encoder_core encode is implemented"
+    echo "# src_root argument is required"
+    echo "not ok 10 - public sixel_encode uses encoder_core vtbl"
     echo "# src_root argument is required"
     exit 1
 fi
@@ -44,6 +48,10 @@ if test ! -d "$src_root/src"; then
     echo "# missing source directory: $src_root/src"
     echo "not ok 8 - encoder_core write method stays removed"
     echo "# missing source directory: $src_root/src"
+    echo "not ok 9 - encoder_core encode is implemented"
+    echo "# missing source directory: $src_root/src"
+    echo "not ok 10 - public sixel_encode uses encoder_core vtbl"
+    echo "# missing source directory: $src_root/src"
     exit 1
 fi
 
@@ -59,6 +67,8 @@ legacy_projection=$tmpdir/legacy-projection.txt
 direct_storage=$tmpdir/direct-output-storage.txt
 writer_storage=$tmpdir/writer-storage.txt
 encoder_write=$tmpdir/encoder-core-write.txt
+encoder_notimpl=$tmpdir/encoder-core-not-implemented.txt
+public_encode=$tmpdir/public-sixel-encode.txt
 failed=0
 
 find "$src_root/src" -type f -name '*.c' ! -name 'output.c' -exec awk '
@@ -279,6 +289,101 @@ if test -s "$encoder_write"; then
     failed=1
 else
     echo "ok 8 - encoder_core write method stays removed"
+fi
+
+awk '
+{
+    if ($0 ~ /^sixel_encoder_core_vtbl_encode[ \t]*\(/) {
+        seen_name = 1
+    }
+    if (seen_name && $0 ~ /\{/) {
+        seen_function = 1
+        in_function = 1
+        depth = 1
+        seen_name = 0
+        next
+    }
+    if (in_function) {
+        if ($0 ~ /SIXEL_NOT_IMPLEMENTED/) {
+            print FILENAME ":" FNR ":" $0
+        }
+        line = $0
+        open_count = gsub(/\{/, "{", line)
+        line = $0
+        close_count = gsub(/\}/, "}", line)
+        depth += open_count - close_count
+        if (depth <= 0) {
+            in_function = 0
+        }
+    }
+}
+END {
+    if (!seen_function) {
+        print "sixel_encoder_core_vtbl_encode not found"
+    }
+}
+' "$src_root/src/encoder-core.c" > "$encoder_notimpl"
+
+if test -s "$encoder_notimpl"; then
+    echo "not ok 9 - encoder_core encode is implemented"
+    sed 's/^/# encoder_core encode: /' "$encoder_notimpl"
+    failed=1
+else
+    echo "ok 9 - encoder_core encode is implemented"
+fi
+
+awk '
+{
+    if ($0 ~ /^sixel_encode[ \t]*\(/) {
+        seen_name = 1
+    }
+    if (seen_name && $0 ~ /\{/) {
+        seen_function = 1
+        in_function = 1
+        depth = 1
+        seen_name = 0
+        next
+    }
+    if (in_function) {
+        if ($0 ~ /sixel_output_as_encoder_core/) {
+            seen_as_encoder_core = 1
+        }
+        if ($0 ~ /->[ \t]*vtbl->[ \t]*encode/) {
+            seen_vtbl_encode = 1
+        }
+        if ($0 ~ /sixel_encode_(dither|highcolor)[ \t]*\(/) {
+            print FILENAME ":" FNR ":direct helper dispatch: " $0
+        }
+        line = $0
+        open_count = gsub(/\{/, "{", line)
+        line = $0
+        close_count = gsub(/\}/, "}", line)
+        depth += open_count - close_count
+        if (depth <= 0) {
+            in_function = 0
+        }
+    }
+}
+END {
+    if (!seen_function) {
+        print "public sixel_encode not found"
+    } else {
+        if (!seen_as_encoder_core) {
+            print "public sixel_encode does not bind encoder_core"
+        }
+        if (!seen_vtbl_encode) {
+            print "public sixel_encode does not call vtbl encode"
+        }
+    }
+}
+' "$src_root/src/encoder-core-encode.c" > "$public_encode"
+
+if test -s "$public_encode"; then
+    echo "not ok 10 - public sixel_encode uses encoder_core vtbl"
+    sed 's/^/# public encode: /' "$public_encode"
+    failed=1
+else
+    echo "ok 10 - public sixel_encode uses encoder_core vtbl"
 fi
 
 exit "$failed"

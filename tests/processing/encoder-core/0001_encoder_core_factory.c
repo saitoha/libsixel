@@ -16,6 +16,35 @@
 #include <6cells.h>
 
 #include "src/factory.h"
+#include "src/encoder-core.h"
+
+typedef struct encoder_core_payload {
+    char bytes[8192];
+    int size;
+    int calls;
+} encoder_core_payload_t;
+
+static int
+test_encoder_core_write(char *data, int size, void *priv)
+{
+    encoder_core_payload_t *payload;
+    int room;
+
+    if (data == NULL || priv == NULL || size < 0) {
+        return 1;
+    }
+
+    payload = (encoder_core_payload_t *)priv;
+    room = (int)sizeof(payload->bytes) - payload->size;
+    if (size > room) {
+        return 1;
+    }
+    memcpy(payload->bytes + payload->size, data, (size_t)size);
+    payload->size += size;
+    payload->calls += 1;
+
+    return 0;
+}
 
 static int
 test_encoder_core_create_one(sixel_factory_t *factory,
@@ -81,8 +110,12 @@ test_encoder_core_create_one(sixel_factory_t *factory,
         goto end;
     }
 
+    status = core->vtbl->encode(core, NULL);
+    if (status != SIXEL_BAD_ARGUMENT) {
+        goto end;
+    }
     status = core->vtbl->encode(core, &request);
-    if (status != SIXEL_NOT_IMPLEMENTED) {
+    if (status != SIXEL_BAD_ARGUMENT) {
         goto end;
     }
     status = SIXEL_OK;
@@ -95,6 +128,89 @@ end:
     if (core != NULL && core->vtbl != NULL &&
         core->vtbl->unref != NULL) {
         core->vtbl->unref(core);
+    }
+    return SIXEL_SUCCEEDED(status);
+}
+
+static int
+test_encoder_core_encode_via_output(sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    sixel_output_t *output;
+    sixel_dither_t *dither;
+    sixel_encoder_core_t *core;
+    sixel_encoder_core_encode_request_t request;
+    encoder_core_payload_t payload;
+    unsigned char pixels[12];
+
+    status = SIXEL_FALSE;
+    output = NULL;
+    dither = NULL;
+    core = NULL;
+    memset(&request, 0, sizeof(request));
+    memset(&payload, 0, sizeof(payload));
+
+    pixels[0] = 255;
+    pixels[1] = 0;
+    pixels[2] = 0;
+    pixels[3] = 0;
+    pixels[4] = 255;
+    pixels[5] = 0;
+    pixels[6] = 0;
+    pixels[7] = 0;
+    pixels[8] = 255;
+    pixels[9] = 255;
+    pixels[10] = 255;
+    pixels[11] = 255;
+
+    status = sixel_output_new(&output,
+                              test_encoder_core_write,
+                              &payload,
+                              allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    dither = sixel_dither_get(SIXEL_BUILTIN_MONO_DARK);
+    if (dither == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    core = sixel_output_as_encoder_core(output);
+    if (core == NULL || core->vtbl == NULL ||
+        core->vtbl->encode == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    if (core->vtbl->encode(core, NULL) != SIXEL_BAD_ARGUMENT) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    request.pixels = pixels;
+    request.width = 2;
+    request.height = 2;
+    request.depth = sixel_helper_compute_depth(SIXEL_PIXELFORMAT_RGB888);
+    request.dither = dither;
+    request.output = output;
+    status = core->vtbl->encode(core, &request);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (payload.calls < 1 || payload.size < 3 ||
+        payload.bytes[0] != '\033' || payload.bytes[1] != 'P') {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    if (output != NULL) {
+        sixel_output_unref(output);
+    }
+    if (dither != NULL) {
+        sixel_dither_unref(dither);
     }
     return SIXEL_SUCCEEDED(status);
 }
@@ -141,6 +257,10 @@ test_encoder_core_factory_component(void)
         !test_encoder_core_create_one(factory,
                                       allocator,
                                       "codec/encoder-core.ormode")) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    if (!test_encoder_core_encode_via_output(allocator)) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }

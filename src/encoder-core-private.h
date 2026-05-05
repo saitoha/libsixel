@@ -83,6 +83,10 @@ struct sixel_output {
     unsigned char buffer[1];
 };
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encoder_core_encode_dispatch(
+    sixel_encoder_core_encode_request_t const *request);
+
 #endif /* LIBSIXEL_ENCODER_CORE_PRIVATE_H */
 
 /* emacs Local Variables:      */
