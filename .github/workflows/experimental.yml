@@ -19,15 +19,16 @@ env:
   UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
 
 jobs:
-  high-priority-sanitizers:
-    name: ${{ matrix.label }}
-    runs-on: ubuntu-latest
+  FunctionSan:
+    name: FunctionSan-${{ matrix.buildtool_label }}
+    runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-x86_64-clang-FunctionSan
+          - label: Autotools-ubuntu-24.04-aarch64-clang-FunctionSan
             buildtool: autotools
+            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -47,8 +48,9 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-FunctionSan
+          - label: Meson-ubuntu-24.04-aarch64-clang-FunctionSan
             buildtool: meson
+            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -73,8 +75,28 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-clang-ImplicitIntegerTruncationSan
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  ImplicitIntegerTruncationSan:
+    name: ImplicitIntegerTruncationSan-${{ matrix.buildtool_label }}
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-24.04-aarch64-clang-ImplicitIntegerTruncationSan
             buildtool: autotools
+            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -94,8 +116,9 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-ImplicitIntegerTruncationSan
+          - label: Meson-ubuntu-24.04-aarch64-clang-ImplicitIntegerTruncationSan
             buildtool: meson
+            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -120,8 +143,28 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-clang-CFIICall
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  CFIICallSan:
+    name: CFIICallSan-${{ matrix.buildtool_label }}
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Autotools-ubuntu-24.04-aarch64-clang-CFIICallSan
             buildtool: autotools
+            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
               AR=llvm-ar
@@ -149,8 +192,9 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-CFIICall
+          - label: Meson-ubuntu-24.04-aarch64-clang-CFIICallSan
             buildtool: meson
+            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
               AR=llvm-ar
