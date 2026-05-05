@@ -20,15 +20,14 @@ env:
 
 jobs:
   FunctionSan:
-    name: FunctionSan-${{ matrix.buildtool_label }}
+    name: ${{ matrix.label }}
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-24.04-aarch64-clang-FunctionSan
+          - label: Autotools-ubuntu-aarch64-clang-FunctionSan
             buildtool: autotools
-            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -48,9 +47,8 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-24.04-aarch64-clang-FunctionSan
+          - label: Meson-ubuntu-aarch64-clang-FunctionSan
             buildtool: meson
-            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -88,15 +86,14 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   ImplicitIntegerTruncationSan:
-    name: ImplicitIntegerTruncationSan-${{ matrix.buildtool_label }}
+    name: ${{ matrix.label }}
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-24.04-aarch64-clang-ImplicitIntegerTruncationSan
+          - label: Autotools-ubuntu-aarch64-clang-ImplicitIntegerTruncationSan
             buildtool: autotools
-            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -116,9 +113,8 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-24.04-aarch64-clang-ImplicitIntegerTruncationSan
+          - label: Meson-ubuntu-aarch64-clang-ImplicitIntegerTruncationSan
             buildtool: meson
-            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -156,15 +152,14 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   ImplicitIntegerSignChangeSan:
-    name: ImplicitIntegerSignChangeSan-${{ matrix.buildtool_label }}
+    name: ${{ matrix.label }}
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-24.04-aarch64-clang-ImplicitIntegerSignChangeSan
+          - label: Autotools-ubuntu-aarch64-clang-ImplicitIntegerSignChangeSan
             buildtool: autotools
-            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -184,9 +179,8 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-24.04-aarch64-clang-ImplicitIntegerSignChangeSan
+          - label: Meson-ubuntu-aarch64-clang-ImplicitIntegerSignChangeSan
             buildtool: meson
-            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -224,15 +218,14 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   UnsignedIntegerOverflowSan:
-    name: UnsignedIntegerOverflowSan-${{ matrix.buildtool_label }}
+    name: ${{ matrix.label }}
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-24.04-aarch64-clang-UnsignedIntegerOverflowSan
+          - label: Autotools-ubuntu-aarch64-clang-UnsignedIntegerOverflowSan
             buildtool: autotools
-            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -252,9 +245,8 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-24.04-aarch64-clang-UnsignedIntegerOverflowSan
+          - label: Meson-ubuntu-aarch64-clang-UnsignedIntegerOverflowSan
             buildtool: meson
-            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -292,15 +284,14 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   LocalBoundsSan:
-    name: LocalBoundsSan-${{ matrix.buildtool_label }}
+    name: ${{ matrix.label }}
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-24.04-aarch64-clang-LocalBoundsSan
+          - label: Autotools-ubuntu-aarch64-clang-LocalBoundsSan
             buildtool: autotools
-            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -320,9 +311,8 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-24.04-aarch64-clang-LocalBoundsSan
+          - label: Meson-ubuntu-aarch64-clang-LocalBoundsSan
             buildtool: meson
-            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -360,15 +350,14 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   PointerOverflowSan:
-    name: PointerOverflowSan-${{ matrix.buildtool_label }}
+    name: ${{ matrix.label }}
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-24.04-aarch64-clang-PointerOverflowSan
+          - label: Autotools-ubuntu-aarch64-clang-PointerOverflowSan
             buildtool: autotools
-            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -388,9 +377,8 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-24.04-aarch64-clang-PointerOverflowSan
+          - label: Meson-ubuntu-aarch64-clang-PointerOverflowSan
             buildtool: meson
-            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -428,15 +416,14 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   FloatCastOverflowSan:
-    name: FloatCastOverflowSan-${{ matrix.buildtool_label }}
+    name: ${{ matrix.label }}
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-24.04-aarch64-clang-FloatCastOverflowSan
+          - label: Autotools-ubuntu-aarch64-clang-FloatCastOverflowSan
             buildtool: autotools
-            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -456,9 +443,8 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-24.04-aarch64-clang-FloatCastOverflowSan
+          - label: Meson-ubuntu-aarch64-clang-FloatCastOverflowSan
             buildtool: meson
-            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -496,15 +482,14 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   CFIICallSan:
-    name: CFIICallSan-${{ matrix.buildtool_label }}
+    name: ${{ matrix.label }}
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-24.04-aarch64-clang-CFIICallSan
+          - label: Autotools-ubuntu-aarch64-clang-CFIICallSan-lto-thin
             buildtool: autotools
-            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
               AR=llvm-ar
@@ -532,9 +517,8 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-24.04-aarch64-clang-CFIICallSan
+          - label: Meson-ubuntu-aarch64-clang-CFIICallSan-lto-thin
             buildtool: meson
-            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
               AR=llvm-ar
@@ -580,15 +564,14 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   ObjectSizeSan:
-    name: ObjectSizeSan-${{ matrix.buildtool_label }}
+    name: ${{ matrix.label }}
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-24.04-aarch64-clang-ObjectSizeSan
+          - label: Autotools-ubuntu-aarch64-clang-ObjectSizeSan
             buildtool: autotools
-            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -608,9 +591,8 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-24.04-aarch64-clang-ObjectSizeSan
+          - label: Meson-ubuntu-aarch64-clang-ObjectSizeSan
             buildtool: meson
-            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -648,15 +630,14 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   IntegerSan:
-    name: IntegerSan-${{ matrix.buildtool_label }}
+    name: ${{ matrix.label }}
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-24.04-aarch64-clang-IntegerSan
+          - label: Autotools-ubuntu-aarch64-clang-IntegerSan
             buildtool: autotools
-            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -676,9 +657,8 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-24.04-aarch64-clang-IntegerSan
+          - label: Meson-ubuntu-aarch64-clang-IntegerSan
             buildtool: meson
-            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -716,15 +696,14 @@ jobs:
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
 
   FloatDivideByZeroSan:
-    name: FloatDivideByZeroSan-${{ matrix.buildtool_label }}
+    name: ${{ matrix.label }}
     runs-on: ubuntu-24.04-arm
     strategy:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-24.04-aarch64-clang-FloatDivideByZeroSan
+          - label: Autotools-ubuntu-aarch64-clang-FloatDivideByZeroSan
             buildtool: autotools
-            buildtool_label: Autotools
             setup_prefix: >-
               CC=clang
             setup_options: >-
@@ -744,9 +723,8 @@ jobs:
               libclang-rt-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-24.04-aarch64-clang-FloatDivideByZeroSan
+          - label: Meson-ubuntu-aarch64-clang-FloatDivideByZeroSan
             buildtool: meson
-            buildtool_label: Meson
             setup_prefix: >-
               CC=clang
             setup_options: >-
