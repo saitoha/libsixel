@@ -250,10 +250,12 @@ sixel_timeline_logger_destroy(sixel_timeline_logger_storage_t *logger)
         logger->writer->vtbl->unref(logger->writer);
         logger->writer = NULL;
     }
+#if SIXEL_ENABLE_THREADS
     if (logger->mutex_ready) {
         sixel_mutex_destroy(&logger->mutex);
         logger->mutex_ready = 0;
     }
+#endif
     allocator = logger->allocator;
     if (allocator != NULL) {
         sixel_allocator_free(allocator, logger);
