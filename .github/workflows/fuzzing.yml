@@ -960,9 +960,9 @@ jobs:
           fetch-depth: 1
 
       - name: Setup MSVC developer env (vcvars, x86_64 target)
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}\.github\scripts\setup-msvc-env.ps1" -Arch x64
 
       - name: Build and run wic loader fuzz harness (detect)
         id: detect
@@ -1209,9 +1209,9 @@ jobs:
           fetch-depth: 1
 
       - name: Setup MSVC developer env (vcvars, x86_64 target)
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}\.github\scripts\setup-msvc-env.ps1" -Arch x64
 
       - name: Download wic detect artifacts
         uses: actions/download-artifact@v4

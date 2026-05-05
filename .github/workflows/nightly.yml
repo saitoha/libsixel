@@ -258,9 +258,9 @@ jobs:
 
     - name: Setup MSVC developer env (vcvars)
       if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
+      shell: pwsh
+      run: |
+        & "${{ github.workspace }}\.github\scripts\setup-msvc-env.ps1" -Arch x64
 
     - name: Configure and build (non-Windows)
       if: runner.os != 'Windows'

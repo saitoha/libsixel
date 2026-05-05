@@ -185,15 +185,15 @@ runs:
 
     - name: Setup MSVC developer env (vcvars, x86_64 target)
       if: ${{ fromJSON(inputs.matrix_json).runner == 'windows-latest' }}
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
+      shell: pwsh
+      run: |
+        & "${{ github.workspace }}\.github\scripts\setup-msvc-env.ps1" -Arch x64
 
     - name: Setup MSVC developer env (vcvars, arm64 target)
       if: ${{ fromJSON(inputs.matrix_json).runner == 'windows-11-arm' }}
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: amd64_arm64
+      shell: pwsh
+      run: |
+        & "${{ github.workspace }}\.github\scripts\setup-msvc-env.ps1" -Arch amd64_arm64
 
     - name: Save MSVC env:Path
       if: ${{ runner.os == 'Windows' }}
