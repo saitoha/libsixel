@@ -20664,6 +20664,8 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
     float overlap_tmp_rgb[3];
     float overlap_effect_weight;
     float overlap_vector_weight;
+    float overlap_vector_alpha_eff;
+    float overlap_effect_alpha_eff;
     float mixed_r;
     float mixed_g;
     float mixed_b;
@@ -20691,6 +20693,8 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
     overlap_tmp_rgb[2] = 0.0f;
     overlap_effect_weight = 0.0f;
     overlap_vector_weight = 0.0f;
+    overlap_vector_alpha_eff = 0.0f;
+    overlap_effect_alpha_eff = 0.0f;
     mixed_r = 0.0f;
     mixed_g = 0.0f;
     mixed_b = 0.0f;
@@ -20805,17 +20809,31 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
              * resolving overlap color with FrFX-priority weighting:
              * C_overlap = C_stack * (1 - w_fx) + C_fx * w_fx.
              * C_stack is base->vector->effect and C_fx is base->effect.
-             * Build both candidates with unit alpha and apply overlap alpha
-             * exactly once at the final regional mix to keep alpha
-             * responsibility single-pass.
+             * Build overlap candidates with effective overlap alphas:
+             *   alpha_v_eff = overlap_alpha / vector_alpha
+             *   alpha_f_eff = overlap_alpha / effect_alpha
+             * and apply overlap_alpha exactly once at the final regional mix
+             * to keep alpha responsibility single-pass.
              */
+            if (vector_alpha > 1.0e-6f) {
+                overlap_vector_alpha_eff = sixel_builtin_psd_clamp01(
+                    overlap_alpha / vector_alpha);
+            } else {
+                overlap_vector_alpha_eff = 0.0f;
+            }
+            if (effect_alpha > 1.0e-6f) {
+                overlap_effect_alpha_eff = sixel_builtin_psd_clamp01(
+                    overlap_alpha / effect_alpha);
+            } else {
+                overlap_effect_alpha_eff = 0.0f;
+            }
             sixel_builtin_psd_blend_effect_rgb(
                 base_rgb[0],
                 base_rgb[1],
                 base_rgb[2],
                 effect_rgb,
                 effect_mode,
-                1.0f,
+                overlap_effect_alpha_eff,
                 &overlap_full_rgb[0],
                 &overlap_full_rgb[1],
                 &overlap_full_rgb[2]);
@@ -20825,10 +20843,10 @@ sixel_builtin_psd_blend_dual_stroke_rgb(
                 base_rgb[2],
                 effect_rgb,
                 effect_mode,
-                1.0f,
+                overlap_effect_alpha_eff,
                 vector_rgb,
                 vector_mode,
-                1.0f,
+                overlap_vector_alpha_eff,
                 &overlap_tmp_rgb[0],
                 &overlap_tmp_rgb[1],
                 &overlap_tmp_rgb[2]);
