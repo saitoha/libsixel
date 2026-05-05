@@ -1402,6 +1402,79 @@ sixel_webp_vp8_build_luma_pred(unsigned int ymode,
 }
 
 static void
+sixel_webp_vp8_build_luma_pred_inner(unsigned int ymode,
+                                     unsigned int x0,
+                                     unsigned int y0,
+                                     unsigned char const *plane,
+                                     unsigned int stride,
+                                     unsigned char pred[16 * 16])
+{
+    unsigned char const *top_row;
+    unsigned char const *left_col;
+    unsigned char top_left;
+    unsigned int sum_top;
+    unsigned int sum_left;
+    unsigned int dc;
+    unsigned int x;
+    unsigned int y;
+    int value;
+    int left_value;
+
+    top_row = NULL;
+    left_col = NULL;
+    top_left = 0u;
+    sum_top = 0u;
+    sum_left = 0u;
+    dc = 128u;
+    x = 0u;
+    y = 0u;
+    value = 0;
+    left_value = 0;
+    if (plane == NULL) {
+        memset(pred, 128, 16u * 16u);
+        return;
+    }
+
+    top_row = plane + (size_t)(y0 - 1u) * stride + x0;
+    left_col = plane + (size_t)y0 * stride + (x0 - 1u);
+    top_left = plane[(size_t)(y0 - 1u) * stride + (x0 - 1u)];
+
+    switch (ymode) {
+    case SIXEL_WEBP_VP8_MODE_DC:
+        for (x = 0u; x < 16u; ++x) {
+            sum_top += top_row[x];
+        }
+        for (y = 0u; y < 16u; ++y) {
+            sum_left += left_col[(size_t)y * stride];
+        }
+        dc = (sum_top + sum_left + 16u) >> 5;
+        memset(pred, (int)dc, 16u * 16u);
+        break;
+    case SIXEL_WEBP_VP8_MODE_V:
+        for (y = 0u; y < 16u; ++y) {
+            memcpy(pred + (size_t)y * 16u, top_row, 16u);
+        }
+        break;
+    case SIXEL_WEBP_VP8_MODE_H:
+        for (y = 0u; y < 16u; ++y) {
+            memset(pred + (size_t)y * 16u,
+                   left_col[(size_t)y * stride],
+                   16u);
+        }
+        break;
+    default:
+        for (y = 0u; y < 16u; ++y) {
+            left_value = (int)left_col[(size_t)y * stride];
+            for (x = 0u; x < 16u; ++x) {
+                value = (int)top_row[x] + left_value - (int)top_left;
+                pred[(size_t)y * 16u + x] = sixel_webp_vp8_clamp_u8(value);
+            }
+        }
+        break;
+    }
+}
+
+static void
 sixel_webp_vp8_build_chroma_pred(unsigned int uv_mode,
                                  unsigned int mb_x,
                                  unsigned int mb_y,
@@ -1496,6 +1569,79 @@ sixel_webp_vp8_build_chroma_pred(unsigned int uv_mode,
             for (x = 0u; x < 8u; ++x) {
                 value = (int)top[x] + (int)left[y] - (int)top_left;
                 pred[y * 8u + x] = sixel_webp_vp8_clamp_u8(value);
+            }
+        }
+        break;
+    }
+}
+
+static void
+sixel_webp_vp8_build_chroma_pred_inner(unsigned int uv_mode,
+                                       unsigned int x0,
+                                       unsigned int y0,
+                                       unsigned char const *plane,
+                                       unsigned int stride,
+                                       unsigned char pred[8 * 8])
+{
+    unsigned char const *top_row;
+    unsigned char const *left_col;
+    unsigned char top_left;
+    unsigned int sum_top;
+    unsigned int sum_left;
+    unsigned int dc;
+    unsigned int x;
+    unsigned int y;
+    int value;
+    int left_value;
+
+    top_row = NULL;
+    left_col = NULL;
+    top_left = 0u;
+    sum_top = 0u;
+    sum_left = 0u;
+    dc = 128u;
+    x = 0u;
+    y = 0u;
+    value = 0;
+    left_value = 0;
+    if (plane == NULL) {
+        memset(pred, 128, 8u * 8u);
+        return;
+    }
+
+    top_row = plane + (size_t)(y0 - 1u) * stride + x0;
+    left_col = plane + (size_t)y0 * stride + (x0 - 1u);
+    top_left = plane[(size_t)(y0 - 1u) * stride + (x0 - 1u)];
+
+    switch (uv_mode) {
+    case SIXEL_WEBP_VP8_MODE_DC:
+        for (x = 0u; x < 8u; ++x) {
+            sum_top += top_row[x];
+        }
+        for (y = 0u; y < 8u; ++y) {
+            sum_left += left_col[(size_t)y * stride];
+        }
+        dc = (sum_top + sum_left + 8u) >> 4;
+        memset(pred, (int)dc, 8u * 8u);
+        break;
+    case SIXEL_WEBP_VP8_MODE_V:
+        for (y = 0u; y < 8u; ++y) {
+            memcpy(pred + (size_t)y * 8u, top_row, 8u);
+        }
+        break;
+    case SIXEL_WEBP_VP8_MODE_H:
+        for (y = 0u; y < 8u; ++y) {
+            memset(pred + (size_t)y * 8u,
+                   left_col[(size_t)y * stride],
+                   8u);
+        }
+        break;
+    default:
+        for (y = 0u; y < 8u; ++y) {
+            left_value = (int)left_col[(size_t)y * stride];
+            for (x = 0u; x < 8u; ++x) {
+                value = (int)top_row[x] + left_value - (int)top_left;
+                pred[(size_t)y * 8u + x] = sixel_webp_vp8_clamp_u8(value);
             }
         }
         break;
@@ -1604,8 +1750,10 @@ sixel_webp_vp8_decode_native_intra(
     unsigned int all_u_nonzero;
     unsigned int all_v_nonzero;
     unsigned int y_inner_mb;
+    unsigned int ypred_fast_inner_mb;
     unsigned int bpred_fast_inner_mb;
     unsigned int uv_inner_mb;
+    unsigned int uvpred_fast_inner_mb;
     int bit;
     int skip_coeff;
     int y2_output[16];
@@ -1696,8 +1844,10 @@ sixel_webp_vp8_decode_native_intra(
     all_u_nonzero = 0u;
     all_v_nonzero = 0u;
     y_inner_mb = 0u;
+    ypred_fast_inner_mb = 0u;
     bpred_fast_inner_mb = 0u;
     uv_inner_mb = 0u;
+    uvpred_fast_inner_mb = 0u;
     bit = 0;
     skip_coeff = 0;
     memset(y2_output, 0, sizeof(y2_output));
@@ -2112,6 +2262,10 @@ sixel_webp_vp8_decode_native_intra(
             y0 = mb_y * 16u;
             y_inner_mb = ((x0 + 16u) <= width && (y0 + 16u) <= height) ?
                 1u : 0u;
+            ypred_fast_inner_mb = 0u;
+            if (y_inner_mb != 0u && x0 != 0u && y0 != 0u) {
+                ypred_fast_inner_mb = 1u;
+            }
             bpred_fast_inner_mb = 0u;
             if (y_inner_mb != 0u && x0 != 0u && y0 != 0u &&
                 (x0 + 20u) <= width) {
@@ -2156,8 +2310,21 @@ sixel_webp_vp8_decode_native_intra(
                     + (size_t)dst_x;
             }
             if (ymode != SIXEL_WEBP_VP8_MODE_B) {
-                sixel_webp_vp8_build_luma_pred(
-                    ymode, mb_x, mb_y, planes, header, y_pred);
+                if (ypred_fast_inner_mb != 0u) {
+                    sixel_webp_vp8_build_luma_pred_inner(ymode,
+                                                         x0,
+                                                         y0,
+                                                         planes->y,
+                                                         planes->y_stride,
+                                                         y_pred);
+                } else {
+                    sixel_webp_vp8_build_luma_pred(ymode,
+                                                   mb_x,
+                                                   mb_y,
+                                                   planes,
+                                                   header,
+                                                   y_pred);
+                }
                 if (skip_coeff != 0) {
                     for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_Y;
                          ++block) {
@@ -2505,26 +2672,45 @@ sixel_webp_vp8_decode_native_intra(
                 }
             }
 
-            sixel_webp_vp8_build_chroma_pred(uv_mode,
-                                             mb_x,
-                                             mb_y,
-                                             planes->u,
-                                             planes->uv_stride,
-                                             uv_width,
-                                             uv_height,
-                                             u_pred);
-            sixel_webp_vp8_build_chroma_pred(uv_mode,
-                                             mb_x,
-                                             mb_y,
-                                             planes->v,
-                                             planes->uv_stride,
-                                             uv_width,
-                                             uv_height,
-                                             v_pred);
             x0 = mb_x * 8u;
             y0 = mb_y * 8u;
             uv_inner_mb = ((x0 + 8u) <= uv_width && (y0 + 8u) <= uv_height) ?
                 1u : 0u;
+            uvpred_fast_inner_mb = 0u;
+            if (uv_inner_mb != 0u && x0 != 0u && y0 != 0u) {
+                uvpred_fast_inner_mb = 1u;
+            }
+            if (uvpred_fast_inner_mb != 0u) {
+                sixel_webp_vp8_build_chroma_pred_inner(uv_mode,
+                                                       x0,
+                                                       y0,
+                                                       planes->u,
+                                                       planes->uv_stride,
+                                                       u_pred);
+                sixel_webp_vp8_build_chroma_pred_inner(uv_mode,
+                                                       x0,
+                                                       y0,
+                                                       planes->v,
+                                                       planes->uv_stride,
+                                                       v_pred);
+            } else {
+                sixel_webp_vp8_build_chroma_pred(uv_mode,
+                                                 mb_x,
+                                                 mb_y,
+                                                 planes->u,
+                                                 planes->uv_stride,
+                                                 uv_width,
+                                                 uv_height,
+                                                 u_pred);
+                sixel_webp_vp8_build_chroma_pred(uv_mode,
+                                                 mb_x,
+                                                 mb_y,
+                                                 planes->v,
+                                                 planes->uv_stride,
+                                                 uv_width,
+                                                 uv_height,
+                                                 v_pred);
+            }
             if (uv_inner_mb != 0u) {
                 if (skip_coeff != 0) {
                     for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_UV;
