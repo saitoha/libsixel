@@ -901,7 +901,7 @@ AC_SUBST([SIXEL_ANALYZER_MODE], [$sixel_analyzer_mode])
 AC_SUBST([SIXEL_SCAN_BUILD], [$sixel_analyzer_scan_build])
 
 AC_ARG_ENABLE([sanitizer],
-              [AS_HELP_STRING([--enable-sanitizer=@<:@no|address|undefined|address,undefined|memory|thread|function|implicit-integer-truncation|cfi-icall|object-size|integer|float-divide-by-zero@:>@],
+              [AS_HELP_STRING([--enable-sanitizer=@<:@no|address|undefined|address,undefined|memory|thread|function|implicit-integer-truncation|implicit-integer-sign-change|cfi-icall|object-size|integer|float-divide-by-zero@:>@],
                               [enable sanitizer instrumentation and add
                                recommended compile/link flags
                                (default: no)])],
@@ -934,6 +934,9 @@ AS_CASE([$enable_sanitizer],
         [implicit-integer-truncation],
         [sixel_sanitizer_cflags="-fsanitize=undefined,implicit-integer-truncation,bounds $sixel_sanitizer_ignorelist_cflag -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=undefined,implicit-integer-truncation,bounds"],
+        [implicit-integer-sign-change],
+        [sixel_sanitizer_cflags="-fsanitize=undefined,implicit-integer-sign-change,bounds $sixel_sanitizer_ignorelist_cflag -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=undefined,implicit-integer-sign-change,bounds"],
         [cfi-icall],
         [sixel_sanitizer_cflags="-fsanitize=cfi-icall -fno-sanitize-trap=cfi-icall -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=cfi-icall -fno-sanitize-trap=cfi-icall"
