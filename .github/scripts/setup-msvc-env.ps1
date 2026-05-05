@@ -75,11 +75,11 @@ function Find-VcvarsAll {
   if (-not [string]::IsNullOrWhiteSpace($programFilesX86)) {
     $vswhere = Join-Path $programFilesX86 'Microsoft Visual Studio\Installer\vswhere.exe'
     if (Test-Path $vswhere) {
-      $installationPathRaw = & $vswhere -latest -products '*' -property installationPath 2>&1 |
-        Select-Object -First 1
+      $vswhereOutput = @(& $vswhere -latest -products '*' -property installationPath 2>&1)
       $vswhereExitCode = $LASTEXITCODE
 
       if ($vswhereExitCode -eq 0) {
+        $installationPathRaw = $vswhereOutput | Select-Object -First 1
         $installationPath = ''
         if ($installationPathRaw) {
           $installationPath = $installationPathRaw.ToString().Trim()
@@ -104,7 +104,7 @@ function Find-VcvarsAll {
     Write-Warning 'ProgramFiles(x86) is not set; trying standard Visual Studio locations.'
   }
 
-  $roots = New-Object 'System.Collections.Generic.List[string]'
+  $roots = [System.Collections.Generic.List[string]]::new()
   foreach ($root in @($programFiles, $programFilesX86)) {
     if (-not [string]::IsNullOrWhiteSpace($root) -and -not $roots.Contains($root)) {
       [void]$roots.Add($root)
@@ -127,12 +127,10 @@ function Find-VcvarsAll {
 }
 
 $vcvarsall = Find-VcvarsAll
-$beforeMarker = '__LIBSIXEL_VCVARS_BEFORE__'
-$afterMarker = '__LIBSIXEL_VCVARS_AFTER__'
 
-# Capture the plain command prompt environment before and after vcvarsall.bat.
-# The markers let us ignore the Visual Studio banner while keeping errors visible.
-$cmdLine = "set && echo $beforeMarker && call `"$vcvarsall`" $Arch && echo $afterMarker && set"
+# Capture the MSVC developer environment after vcvarsall.bat.  The banner is
+# suppressed so every remaining line should be a plain NAME=VALUE assignment.
+$cmdLine = "call `"$vcvarsall`" $Arch >nul && set"
 $output = @(& $env:COMSPEC /d /s /c $cmdLine 2>&1 | ForEach-Object { $_.ToString() })
 $exitCode = $LASTEXITCODE
 
@@ -145,32 +143,64 @@ if ($exitCode -ne 0) {
   throw "vcvarsall.bat failed with exit code $exitCode."
 }
 
-$beforeIndex = [array]::IndexOf($output, $beforeMarker)
-$afterIndex = [array]::IndexOf($output, $afterMarker)
-if ($beforeIndex -lt 0 -or $afterIndex -lt 0 -or $afterIndex -le $beforeIndex) {
-  throw 'Could not parse vcvarsall.bat environment output.'
-}
-
-$beforeLines = @($output[0..($beforeIndex - 1)])
-$afterLines = @($output[($afterIndex + 1)..($output.Length - 1)])
-$before = Convert-SetOutputToMap -Lines $beforeLines
-$after = Convert-SetOutputToMap -Lines $afterLines
+$after = Convert-SetOutputToMap -Lines $output
 $pathLike = @('Path', 'PATH', 'INCLUDE', 'LIB', 'LIBPATH')
+$exportNames = @(
+  'CommandPromptType',
+  'DevEnvDir',
+  'ExtensionSdkDir',
+  'EXTERNAL_INCLUDE',
+  'Framework40Version',
+  'FrameworkDir',
+  'FrameworkDir32',
+  'FrameworkVersion',
+  'FrameworkVersion32',
+  'INCLUDE',
+  'LIB',
+  'LIBPATH',
+  'Path',
+  'Platform',
+  'UCRTVersion',
+  'UniversalCRTSdkDir',
+  'VCIDEInstallDir',
+  'VCINSTALLDIR',
+  'VCPKG_VISUAL_STUDIO_PATH',
+  'VCToolsInstallDir',
+  'VCToolsRedistDir',
+  'VCToolsVersion',
+  'VisualStudioVersion',
+  'VS170COMNTOOLS',
+  'VSCMD_ARG_app_plat',
+  'VSCMD_ARG_HOST_ARCH',
+  'VSCMD_ARG_TGT_ARCH',
+  'VSCMD_VER',
+  'VSINSTALLDIR',
+  'WindowsLibPath',
+  'WindowsSdkBinPath',
+  'WindowsSdkDir',
+  'WindowsSDKLibVersion',
+  'WindowsSDKVersion',
+  '__DOTNET_ADD_64BIT',
+  '__DOTNET_PREFERRED_BITNESS',
+  '__VSCMD_PREINIT_PATH'
+)
 
-# Export only the environment changes produced by vcvarsall.bat.  This mirrors
-# the action it replaces without depending on third-party JavaScript.
-foreach ($entry in $after.GetEnumerator() | Sort-Object Name) {
-  $name = $entry.Key
-  $value = $entry.Value
+# Export only the MSVC developer environment variables that later build steps
+# need.  Avoid exporting the whole runner environment, which may contain
+# unrelated GitHub Actions state or secrets.
+foreach ($name in $exportNames) {
+  if (-not $after.ContainsKey($name)) {
+    continue
+  }
+
+  $value = $after[$name]
 
   if ($pathLike -contains $name) {
     $value = Convert-PathListToUnique -Value $value
   }
 
-  if ((-not $before.ContainsKey($name)) -or $before[$name] -ne $value) {
-    Write-Host "Setting $name"
-    Write-GitHubEnvironment -Name $name -Value $value
-  }
+  Write-Host "Setting $name"
+  Write-GitHubEnvironment -Name $name -Value $value
 }
 
 Write-Host "Configured MSVC developer environment for $Arch."
