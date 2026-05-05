@@ -36,9 +36,9 @@
 
 #include "dither.h"
 #include "timeline-logger.h"
-#include "sixel-emitter.h"
+#include "encoder-core-private.h"
 #include "pixelformat.h"
-#include "tosixel-highcolor.h"
+#include "encoder-core-highcolor.h"
 
 enum {
     PALETTE_HIT    = 1,
@@ -46,7 +46,7 @@ enum {
 };
 
 /*
- * Internal encoder helpers implemented in tosixel.c.
+ * Internal encoder helpers implemented in encoder-core-encode.c.
  * Keep prototypes here to avoid implicit declarations in this module.
  */
 SIXELSTATUS sixel_encode_header(

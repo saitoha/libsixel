@@ -29,21 +29,21 @@
 
 #include "factory.h"
 #include "output.h"
-#include "sixel-emitter.h"
+#include "encoder-core.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*
- * Internal emitter construction goes through the class factory so src/ callers
- * depend on the terminal/sixel-emitter contract rather than the public
+ * Internal encoder-core construction goes through the class factory so src/
+ * callers depend on the codec/encoder-core contract rather than the public
  * constructor. Public boundary code should keep using sixel_output_new().
  */
 static inline SIXELSTATUS
-sixel_emitter_create_interface_from_factory(
+sixel_encoder_core_create_interface_from_factory(
     sixel_allocator_t *allocator,
-    sixel_emitter_t **emitter_out)
+    sixel_encoder_core_t **core_out)
 {
     SIXELSTATUS status;
     sixel_factory_t *factory;
@@ -55,11 +55,11 @@ sixel_emitter_create_interface_from_factory(
     object = NULL;
     service = NULL;
 
-    if (emitter_out == NULL) {
+    if (core_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    *emitter_out = NULL;
+    *core_out = NULL;
     status = sixel_components_getservice("services/factory", &service);
     if (SIXEL_FAILED(status)) {
         return status;
@@ -72,7 +72,7 @@ sixel_emitter_create_interface_from_factory(
     }
 
     status = factory->vtbl->create(factory,
-                                   "terminal/sixel-emitter",
+                                   "codec/encoder-core",
                                    allocator,
                                    &object);
     factory->vtbl->unref(factory);
@@ -83,52 +83,50 @@ sixel_emitter_create_interface_from_factory(
         return SIXEL_BAD_ALLOCATION;
     }
 
-    *emitter_out = (sixel_emitter_t *)object;
+    *core_out = (sixel_encoder_core_t *)object;
     return SIXEL_OK;
 }
 
 static inline SIXELSTATUS
-sixel_emitter_create_output_from_factory(sixel_output_t **output_out,
-                                         sixel_write_function fn_write,
-                                         void *priv,
-                                         sixel_allocator_t *allocator)
+sixel_encoder_core_create_output_from_factory(sixel_output_t **output_out,
+                                              sixel_write_function fn_write,
+                                              void *priv,
+                                              sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
-    sixel_emitter_t *emitter;
-    sixel_emitter_writer_request_t request;
+    sixel_encoder_core_t *core;
 
     status = SIXEL_FALSE;
-    emitter = NULL;
+    core = NULL;
 
     if (output_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *output_out = NULL;
 
-    status = sixel_emitter_create_interface_from_factory(allocator,
-                                                         &emitter);
+    status = sixel_encoder_core_create_interface_from_factory(allocator,
+                                                              &core);
     if (SIXEL_FAILED(status)) {
         return status;
     }
-    if (emitter == NULL || emitter->vtbl == NULL ||
-        emitter->vtbl->init_writer == NULL ||
-        emitter->vtbl->unref == NULL) {
-        if (emitter != NULL && emitter->vtbl != NULL &&
-            emitter->vtbl->unref != NULL) {
-            emitter->vtbl->unref(emitter);
+    if (core == NULL || core->vtbl == NULL ||
+        core->vtbl->unref == NULL) {
+        if (core != NULL && core->vtbl != NULL &&
+            core->vtbl->unref != NULL) {
+            core->vtbl->unref(core);
         }
         return SIXEL_LOGIC_ERROR;
     }
 
-    request.fn_write = fn_write;
-    request.priv = priv;
-    status = emitter->vtbl->init_writer(emitter, &request);
+    status = sixel_output_init_writer((sixel_output_t *)core,
+                                      fn_write,
+                                      priv);
     if (SIXEL_FAILED(status)) {
-        emitter->vtbl->unref(emitter);
+        core->vtbl->unref(core);
         return status;
     }
 
-    *output_out = (sixel_output_t *)emitter;
+    *output_out = (sixel_output_t *)core;
     return SIXEL_OK;
 }
 

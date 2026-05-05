@@ -118,7 +118,8 @@ BEGIN {
     required["threadpool_service"] = 1
     required["lookup_policy"] = 1
     required["dither_policy"] = 1
-    required["sixel_emitter"] = 1
+    required["sixel_writer"] = 1
+    required["encoder_core"] = 1
     required["chunk"] = 1
     required["loader_component"] = 1
     required["loader_manager"] = 1
@@ -131,7 +132,8 @@ BEGIN {
     forbid["timeline_logger"] = "output_file global_writer"
     forbid["thread_pool"] = "global_queue process_thread_budget"
     forbid["threadpool_service"] = "worker_threads job_queue encoder_state"
-    forbid["sixel_emitter"] = "image_pixels dither_policy decode_state image_file_output clipboard_output"
+    forbid["sixel_writer"] = "image_pixels palette dither_policy encode_policy ormode gri_arg_limit body_run_state"
+    forbid["encoder_core"] = "callback_output dcs_envelope terminal_multiplexer image_file_output clipboard_output"
 }
 function trim(text) {
     gsub(/^[ \t]+/, "", text)
@@ -207,7 +209,7 @@ BEGIN {
     required["threadpool_service"] = 1
     required["lookup_policy"] = 1
     required["dither_policy"] = 1
-    required["sixel_emitter"] = 1
+    required["encoder_core"] = 1
     required["chunk"] = 1
     required["loader_component"] = 1
     required["loader_manager"] = 1
@@ -409,8 +411,16 @@ BEGIN {
     iface["timeline_writer_component"] = "timeline_writer"
     serviceid["threadpool_service_component"] = "services/threadpool"
     iface["threadpool_service_component"] = "threadpool_service"
-    classid["sixel_emitter_component"] = "terminal/sixel-emitter"
-    iface["sixel_emitter_component"] = "sixel_emitter"
+    classid["encoder_core_component"] = "codec/encoder-core"
+    iface["encoder_core_component"] = "encoder_core"
+    classid["encoder_core_normal_component"] = "codec/encoder-core.normal"
+    iface["encoder_core_normal_component"] = "encoder_core"
+    classid["encoder_core_highcolor_component"] = "codec/encoder-core.highcolor"
+    iface["encoder_core_highcolor_component"] = "encoder_core"
+    classid["encoder_core_ormode_component"] = "codec/encoder-core.ormode"
+    iface["encoder_core_ormode_component"] = "encoder_core"
+    classid["sixel_writer_component"] = "io/sixel-writer"
+    iface["sixel_writer_component"] = "sixel_writer"
     classid["chunk_component"] = "image/chunk"
     iface["chunk_component"] = "chunk"
     classid["timeline_logger_component"] = "diagnostics/timeline-logger"
@@ -673,7 +683,7 @@ function trim(text) {
 {
     line = trim($0)
     if (FILENAME == idl_file) {
-	        if (line ~ /^interface[ \t]+(sixel_emitter|frame|chunk|palette)[ \t]*\{$/) {
+	        if (line ~ /^interface[ \t]+(encoder_core|frame|chunk|palette)[ \t]*\{$/) {
             current = line
             sub(/^interface[ \t]+/, "", current)
             sub(/[ \t]*\{$/, "", current)

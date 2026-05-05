@@ -27,7 +27,7 @@ CDEF, $libPath);
 $out = $ffi->new('sixel_output_t *[1]');
 $status = (int)$ffi->sixel_output_new($out, null, null, null);
 if ($status !== 0) {
-    exit(0);
+    exit(1);
 }
 $output = $out[0];
 $dither = $ffi->sixel_dither_get(0x3);
@@ -36,7 +36,10 @@ $pixels = $ffi->new('unsigned char[3]');
 $pixels[0] = 255;
 $pixels[1] = 0;
 $pixels[2] = 0;
-$ffi->sixel_encode($pixels, 1, 1, $depth, $dither, $output);
+$status = (int)$ffi->sixel_encode($pixels, 1, 1, $depth, $dither, $output);
+$ffi->sixel_dither_unref($dither);
+$ffi->sixel_output_unref($output);
+exit($status === 0 ? 0 : 1);
 CHILD;
 
 try {
@@ -59,7 +62,7 @@ try {
     $rc = proc_close($process);
 
     if ($rc !== 0) {
-        echo "ok 1 - output_new null write_proc path is rejected by encode-time failure\n";
+        echo "ok 1 - output_new null write_proc path is rejected\n";
     } else {
         echo "not ok 1 - output_new null write_proc path unexpectedly succeeded\n";
     }

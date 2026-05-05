@@ -44,7 +44,8 @@
 #include "loader-libwebp.h"
 #include "loader-quicklook.h"
 #include "loader-wic.h"
-#include "sixel-emitter.h"
+#include "sixel-writer.h"
+#include "encoder-core.h"
 #include "chunk.h"
 #include "frame.h"
 #include "palette.h"
@@ -366,39 +367,54 @@ typedef SIXELSTATUS (*sixel_factory_class_new_fn)(
 # define SIXEL_FACTORY_CLASSID_CREATE_62 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_63 sixel_emitter_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_63 sixel_writer_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_63 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_64 sixel_emitter_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_64 sixel_encoder_core_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_64 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_65 sixel_chunk_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_65 sixel_encoder_core_normal_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_65 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_66 sixel_frame_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_66 sixel_encoder_core_highcolor_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_66 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_67 sixel_palette_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_67 sixel_encoder_core_ormode_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_67 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_68 sixel_loader_manager_new
+# define SIXEL_FACTORY_CLASSID_CREATE_68 sixel_chunk_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_68 0
 #endif
 #if 1
-# define SIXEL_FACTORY_CLASSID_CREATE_69 sixel_timeline_logger_factory_new
+# define SIXEL_FACTORY_CLASSID_CREATE_69 sixel_frame_factory_new
 #else
 # define SIXEL_FACTORY_CLASSID_CREATE_69 0
+#endif
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_70 sixel_palette_factory_new
+#else
+# define SIXEL_FACTORY_CLASSID_CREATE_70 0
+#endif
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_71 sixel_loader_manager_new
+#else
+# define SIXEL_FACTORY_CLASSID_CREATE_71 0
+#endif
+#if 1
+# define SIXEL_FACTORY_CLASSID_CREATE_72 sixel_timeline_logger_factory_new
+#else
+# define SIXEL_FACTORY_CLASSID_CREATE_72 0
 #endif
 %}
 struct sixel_factory_classid_entry {
@@ -468,11 +484,14 @@ loader/libtiff, SIXEL_FACTORY_CLASSID_CREATE_59
 loader/libwebp, SIXEL_FACTORY_CLASSID_CREATE_60
 loader/quicklook, SIXEL_FACTORY_CLASSID_CREATE_61
 loader/wic, SIXEL_FACTORY_CLASSID_CREATE_62
-terminal/sixel-emitter, SIXEL_FACTORY_CLASSID_CREATE_63
-terminal/output, SIXEL_FACTORY_CLASSID_CREATE_64
-image/chunk, SIXEL_FACTORY_CLASSID_CREATE_65
-image/frame, SIXEL_FACTORY_CLASSID_CREATE_66
-quant/palette, SIXEL_FACTORY_CLASSID_CREATE_67
-loader/manager, SIXEL_FACTORY_CLASSID_CREATE_68
-diagnostics/timeline-logger, SIXEL_FACTORY_CLASSID_CREATE_69
+io/sixel-writer, SIXEL_FACTORY_CLASSID_CREATE_63
+codec/encoder-core, SIXEL_FACTORY_CLASSID_CREATE_64
+codec/encoder-core.normal, SIXEL_FACTORY_CLASSID_CREATE_65
+codec/encoder-core.highcolor, SIXEL_FACTORY_CLASSID_CREATE_66
+codec/encoder-core.ormode, SIXEL_FACTORY_CLASSID_CREATE_67
+image/chunk, SIXEL_FACTORY_CLASSID_CREATE_68
+image/frame, SIXEL_FACTORY_CLASSID_CREATE_69
+quant/palette, SIXEL_FACTORY_CLASSID_CREATE_70
+loader/manager, SIXEL_FACTORY_CLASSID_CREATE_71
+diagnostics/timeline-logger, SIXEL_FACTORY_CLASSID_CREATE_72
 %%

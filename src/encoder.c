@@ -92,7 +92,7 @@
 #include "encoder.h"
 #include "frame.h"
 #include "frame-factory.h"
-#include "sixel-emitter.h"
+#include "encoder-core.h"
 #include "output-factory.h"
 #include "timeline-logger.h"
 #include "options.h"
@@ -122,7 +122,6 @@
 #include "filter-resize.h"
 #include "filter-sample.h"
 #include "sleep.h"
-#include "timer.h"
 #include "threading.h"
 #include "planner.h"
 #include "sixel_atomic.h"
@@ -1349,31 +1348,7 @@ static SIXELSTATUS sixel_encoder_compute_frame_buffer_bytes(
 
 #endif /* _WIN32 */
 
-#define SIXEL_ENCODER_USEC_PER_SECOND 1000000ULL
-#define SIXEL_ENCODER_USEC_PER_CENTISECOND 10000ULL
 #define SIXEL_ENCODER_DELAY_POLL_SLICE_USEC 10000U
-
-static long long
-sixel_encoder_monotonic_now_usec(void)
-{
-    double seconds;
-    double usec;
-
-    seconds = sixel_timer_now();
-    if (seconds <= 0.0) {
-        return (-1);
-    }
-    if (seconds >=
-            ((double)LLONG_MAX / (double)SIXEL_ENCODER_USEC_PER_SECOND)) {
-        return (-1);
-    }
-
-    usec = seconds * (double)SIXEL_ENCODER_USEC_PER_SECOND;
-    if (usec >= (double)LLONG_MAX) {
-        return (-1);
-    }
-    return (long long)usec;
-}
 
 static unsigned int
 sixel_encoder_compute_remaining_delay_usec(
@@ -1382,10 +1357,8 @@ sixel_encoder_compute_remaining_delay_usec(
     int *elapsed_usec_out,
     unsigned int *target_usec_out)
 {
-    unsigned long long target_usec64;
-    unsigned long long remaining_usec64;
-    long long now_usec;
-    long long elapsed_usec64;
+    sixel_output_frame_delay_t delay;
+    SIXELSTATUS status;
 
     if (elapsed_usec_out != NULL) {
         *elapsed_usec_out = 0;
@@ -1397,72 +1370,31 @@ sixel_encoder_compute_remaining_delay_usec(
         return 0U;
     }
 
-    target_usec64 =
-        (unsigned long long)delay_cs * SIXEL_ENCODER_USEC_PER_CENTISECOND;
-    if (target_usec64 > (unsigned long long)UINT_MAX) {
-        target_usec64 = (unsigned long long)UINT_MAX;
-    }
-    if (target_usec_out != NULL) {
-        *target_usec_out = (unsigned int)target_usec64;
-    }
-
-    now_usec = sixel_encoder_monotonic_now_usec();
-    if (now_usec < 0) {
-        output->last_frame_time_usec = 0;
-        return (unsigned int)target_usec64;
-    }
-
-    if (output->last_frame_time_usec <= 0) {
-        elapsed_usec64 = 0;
-    } else {
-        elapsed_usec64 = now_usec - output->last_frame_time_usec;
-        if (elapsed_usec64 < 0) {
-            elapsed_usec64 = 0;
-        }
-    }
-    output->last_frame_time_usec = now_usec;
-
-    if (elapsed_usec_out != NULL) {
-        if (elapsed_usec64 > INT_MAX) {
-            *elapsed_usec_out = INT_MAX;
-        } else {
-            *elapsed_usec_out = (int)elapsed_usec64;
-        }
-    }
-
-    if ((unsigned long long)elapsed_usec64 >= target_usec64) {
+    status = sixel_output_compute_frame_delay(output, delay_cs, &delay);
+    if (SIXEL_FAILED(status)) {
         return 0U;
     }
 
-    remaining_usec64 = target_usec64 - (unsigned long long)elapsed_usec64;
-    if (remaining_usec64 > target_usec64) {
-        remaining_usec64 = target_usec64;
+    if (target_usec_out != NULL) {
+        *target_usec_out = delay.target_usec;
     }
-    if (remaining_usec64 > (unsigned long long)UINT_MAX) {
-        remaining_usec64 = (unsigned long long)UINT_MAX;
+    if (elapsed_usec_out != NULL) {
+        *elapsed_usec_out = delay.elapsed_usec;
     }
-    return (unsigned int)remaining_usec64;
+
+    return delay.remaining_usec;
 }
 
 static SIXELSTATUS
-sixel_encoder_set_emitter_format(sixel_output_t *output,
+sixel_encoder_set_encoder_core_format(sixel_output_t *output,
                                  int pixelformat,
                                  int source_colorspace,
                                  int colorspace)
 {
-    sixel_emitter_t *emitter;
-    sixel_emitter_format_t emitter_format;
-
-    emitter = sixel_output_as_emitter(output);
-    if (emitter == NULL || emitter->vtbl == NULL ||
-        emitter->vtbl->set_format == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    emitter_format.pixelformat = pixelformat;
-    emitter_format.source_colorspace = source_colorspace;
-    emitter_format.colorspace = colorspace;
-    return emitter->vtbl->set_format(emitter, &emitter_format);
+    return sixel_output_set_encoder_format(output,
+                                           pixelformat,
+                                           source_colorspace,
+                                           colorspace);
 }
 
 static int
@@ -4425,21 +4357,20 @@ sixel_write_callback(char *data, int size, void *priv)
 }
 
 static int
-sixel_emitter_write_callback(char *data, int size, void *priv)
+sixel_encoder_core_write_callback(char *data, int size, void *priv)
 {
-    sixel_emitter_t *output;
+    sixel_output_t *output;
     SIXELSTATUS status;
 
-    output = (sixel_emitter_t *)priv;
-    if (output == NULL || output->vtbl == NULL ||
-        output->vtbl->write == NULL) {
+    output = (sixel_output_t *)priv;
+    if (output == NULL) {
 #if HAVE_ERRNO_H
         errno = EINVAL;
 #endif
         return (-1);
     }
 
-    status = output->vtbl->write(output, data, size);
+    status = sixel_output_write_bytes(output, data, size);
     if (SIXEL_FAILED(status)) {
 #if HAVE_ERRNO_H
         if ((status & SIXEL_LIBC_ERROR) == SIXEL_LIBC_ERROR &&
@@ -5870,7 +5801,6 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
     int outfd_is_tty;
     int should_hide_cursor;
     char const *hide_cursor_env;
-    sixel_emitter_t *emitter;
 
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -5881,18 +5811,12 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
     outfd_is_tty = 0;
     should_hide_cursor = 0;
     hide_cursor_env = NULL;
-    emitter = NULL;
 
     if (context->output) {
         sixel_output_ref(context->output);
-        emitter = sixel_output_as_emitter(context->output);
-        if (emitter == NULL || emitter->vtbl == NULL ||
-            emitter->vtbl->write == NULL) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-        context->fn_write = sixel_emitter_write_callback;
-        context->write_callback = sixel_emitter_write_callback;
-        context->write_priv = emitter;
+        context->fn_write = sixel_encoder_core_write_callback;
+        context->write_callback = sixel_encoder_core_write_callback;
+        context->write_priv = context->output;
     } else {
         if (context->encoder->fuse_macro
             || context->encoder->macro_number >= 0) {
@@ -5902,7 +5826,7 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
         }
         context->write_callback = context->fn_write;
         context->write_priv = &context->encoder->outfd;
-        status = sixel_emitter_create_output_from_factory(
+        status = sixel_encoder_core_create_output_from_factory(
             &context->output,
             context->write_callback,
             context->write_priv,
@@ -5910,13 +5834,8 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
         if (SIXEL_FAILED(status)) {
             return status;
         }
-        emitter = sixel_output_as_emitter(context->output);
-        if (emitter == NULL || emitter->vtbl == NULL ||
-            emitter->vtbl->write == NULL) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-        context->write_callback = sixel_emitter_write_callback;
-        context->write_priv = emitter;
+        context->write_callback = sixel_encoder_core_write_callback;
+        context->write_priv = context->output;
     }
 
     if (context->encoder->fdrcs) {
@@ -7737,7 +7656,7 @@ sixel_encoder_output_without_macro(
 
     pixelformat = sixel_frame_get_pixelformat(frame);
     frame_colorspace = sixel_frame_get_colorspace(frame);
-    status = sixel_encoder_set_emitter_format(output,
+    status = sixel_encoder_set_encoder_core_format(output,
                                              pixelformat,
                                              frame_colorspace,
                                              output_colorspace);
@@ -7895,7 +7814,7 @@ end:
                                 height);
     }
     if (output != NULL) {
-        (void)sixel_encoder_set_emitter_format(output,
+        (void)sixel_encoder_set_encoder_core_format(output,
                                               pixelformat,
                                               frame_colorspace,
                                               output_colorspace);
@@ -7977,7 +7896,7 @@ sixel_encoder_output_with_macro(
     }
 
     memcpy(converted, sixel_frame_get_pixels(frame), size);
-    status = sixel_encoder_set_emitter_format(output,
+    status = sixel_encoder_set_encoder_core_format(output,
                                              pixelformat,
                                              frame_colorspace,
                                              output_colorspace);
@@ -8104,7 +8023,7 @@ sixel_encoder_output_with_macro(
     }
 
 end:
-    (void)sixel_encoder_set_emitter_format(output,
+    (void)sixel_encoder_set_encoder_core_format(output,
                                           pixelformat,
                                           frame_colorspace,
                                           output_colorspace);

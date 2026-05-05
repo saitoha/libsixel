@@ -1,14 +1,13 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
- * Copyright (c) 2014-2016 Hayaki Saito
+ * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
@@ -23,24 +22,24 @@
  * SOFTWARE.
  */
 
-#ifndef LIBSIXEL_TOSIXEL_HIGHCOLOR_H
-#define LIBSIXEL_TOSIXEL_HIGHCOLOR_H
+#ifndef LIBSIXEL_SIXEL_WRITER_H
+#define LIBSIXEL_SIXEL_WRITER_H
 
-#include <sixel.h>
+#include <6cells.h>
 
-/*
- * High-color encoder entry point. The implementation owns the 15bpp dithering
- * helpers so tosixel.c can focus on the shared encoding pipeline.
- */
-SIXELSTATUS sixel_encode_highcolor(
-    unsigned char *pixels,
-    int width,
-    int height,
-    sixel_dither_t *dither,
-    sixel_output_t *output);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* LIBSIXEL_TOSIXEL_HIGHCOLOR_H */
+/* @classid io/sixel-writer */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_writer_factory_new(sixel_allocator_t *allocator, void **object);
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* LIBSIXEL_SIXEL_WRITER_H */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

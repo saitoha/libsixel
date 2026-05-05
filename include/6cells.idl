@@ -214,59 +214,120 @@ coclass threadpool_service_component {
     [default] interface threadpool_service;
 };
 
-[alias(sixel_emitter_t)]
-interface sixel_emitter;
+[alias(sixel_encoder_core_t)]
+interface encoder_core;
 
-struct sixel_emitter_writer_request {
+[alias(sixel_writer_t)]
+interface sixel_writer;
+
+struct writer_init_request {
     sixel_write_function fn_write;
     void *priv;
 };
 
-struct sixel_emitter_options {
+struct writer_controls {
     int has_8bit_control;
     int has_sixel_scrolling;
-    int has_gri_arg_limit;
     int has_sdm_glitch;
     int skip_dcs_envelope;
     int skip_header;
-    int palette_type;
     int penetrate_multiplexer;
-    int encode_policy;
-    int ormode;
 };
 
-struct sixel_emitter_format {
-    int pixelformat;
-    int source_colorspace;
-    int colorspace;
+struct writer_image_header {
+    int parameter0;
+    int parameter1;
+    int parameter2;
+    int parameter_count;
+    int width;
+    int height;
+    int use_raster_attributes;
 };
 
 /*
- * TODO: Move direct concrete access into a small emitter implementation
- * family so callers outside the encoder emission path stop touching concrete
- * buffer, run-length, palette-node, and frame-clock fields directly.
+ * sixel_writer serializes terminal-framing bytes to the callback supplied by
+ * the legacy public sixel_output_t wrapper.  The callback is invoked while the
+ * writer lock is held, so a callback must not re-enter the same writer.
  */
 [component, refcounted]
-[responsibility("emit terminal SIXEL byte streams")]
-[forbid_state("image_pixels", "dither_policy", "decode_state", "image_file_output", "clipboard_output")]
-interface sixel_emitter {
+[responsibility("write framed terminal SIXEL bytes to callback-backed output")]
+[forbid_state("image_pixels", "palette", "dither_policy", "encode_policy", "ormode", "gri_arg_limit", "body_run_state")]
+interface sixel_writer {
     [lifetime(retained)]
     void ref();
     [lifetime(release)]
     void unref();
     [mutates]
-    SIXELSTATUS init_writer(in sixel_emitter_writer_request const *request);
+    SIXELSTATUS init(in writer_init_request const *request);
     [mutates]
-    SIXELSTATUS set_options(in sixel_emitter_options const *options);
-    SIXELSTATUS get_options(out sixel_emitter_options *options);
-    [mutates]
-    SIXELSTATUS set_format(in sixel_emitter_format const *format);
+    SIXELSTATUS set_controls(in writer_controls const *controls);
+    SIXELSTATUS get_controls(out writer_controls *controls);
+    SIXELSTATUS begin_image(in writer_image_header const *header);
     SIXELSTATUS write(in char const *data, in int size);
+    SIXELSTATUS end_image();
 };
 
-[classid("terminal/sixel-emitter")]
-coclass sixel_emitter_component {
-    [default] interface sixel_emitter;
+[classid("io/sixel-writer")]
+coclass sixel_writer_component {
+    [default] interface sixel_writer;
+};
+
+struct encoder_core_options {
+    int has_gri_arg_limit;
+    int palette_type;
+    int encode_policy;
+    int ormode;
+    int pixelformat;
+    int source_colorspace;
+    int colorspace;
+};
+
+struct encoder_core_encode_request {
+    unsigned char *pixels;
+    int width;
+    int height;
+    int depth;
+    sixel_dither_t *dither;
+    sixel_output_t *output;
+};
+
+/*
+ * encoder_core owns SIXEL body generation.  It receives image/quantization
+ * state from the request and emits ordered body bytes through sixel_writer via
+ * the legacy sixel_output_t wrapper.
+ */
+[component, refcounted]
+[responsibility("encode image data into the SIXEL body stream")]
+[forbid_state("callback_output", "dcs_envelope", "terminal_multiplexer", "image_file_output", "clipboard_output")]
+interface encoder_core {
+    [lifetime(retained)]
+    void ref();
+    [lifetime(release)]
+    void unref();
+    [mutates]
+    SIXELSTATUS set_options(in encoder_core_options const *options);
+    SIXELSTATUS get_options(out encoder_core_options *options);
+    SIXELSTATUS encode(in encoder_core_encode_request const *request);
+};
+
+[classid("codec/encoder-core")]
+coclass encoder_core_component {
+    [default] interface encoder_core;
+};
+
+[classid("codec/encoder-core.normal")]
+coclass encoder_core_normal_component {
+    [default] interface encoder_core;
+};
+
+[classid("codec/encoder-core.highcolor")]
+coclass encoder_core_highcolor_component {
+    [default] interface encoder_core;
+};
+
+[classid("codec/encoder-core.ormode")]
+coclass encoder_core_ormode_component {
+    [default] interface encoder_core;
 };
 
 [component, refcounted]

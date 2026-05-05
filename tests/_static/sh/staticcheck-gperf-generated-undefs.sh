@@ -62,6 +62,59 @@ missing=$(
                     "$macro" "$base"
         done
     done
+
+    for spec in \
+        classid-factory:sixel_factory_classid_hash:sixel_factory_classid_wordlist \
+        classid-service:sixel_components_serviceid_hash:sixel_components_serviceid_wordlist
+    do
+        base=${spec%%:*}
+        rest=${spec#*:}
+        hash_name=${rest%%:*}
+        wordlist_name=${rest#*:}
+        header=$src_dir/$base.h
+
+        test -f "$header" || continue
+        awk -v label="src/$base.h" \
+            -v hash_name="$hash_name" \
+            -v wordlist_name="$wordlist_name" '
+        $0 ~ "^[[:space:]]*" hash_name "[[:space:]]*\\(" {
+            saw_hash = 1
+        }
+        $0 ~ "^[[:space:]]*hash[[:space:]]*\\(" {
+            saw_generic_hash = 1
+        }
+        $0 ~ "^[[:space:]]*static const .* " wordlist_name "\\[\\]" {
+            saw_wordlist = 1
+        }
+        $0 ~ "^[[:space:]]*static const .* wordlist\\[\\]" {
+            saw_generic_wordlist = 1
+        }
+        END {
+            failed = 0
+            if (!saw_hash) {
+                printf("%s missing generated hash function %s\n",
+                       label, hash_name)
+                failed = 1
+            }
+            if (saw_generic_hash) {
+                printf("%s uses generic generated hash function name\n",
+                       label)
+                failed = 1
+            }
+            if (!saw_wordlist) {
+                printf("%s missing generated wordlist %s\n",
+                       label, wordlist_name)
+                failed = 1
+            }
+            if (saw_generic_wordlist) {
+                printf("%s uses generic generated wordlist name\n",
+                       label)
+                failed = 1
+            }
+            exit failed ? 1 : 0
+        }
+        ' "$header" || :
+    done
 )
 
 if test -n "$missing"; then
