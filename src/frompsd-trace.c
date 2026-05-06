@@ -327,6 +327,11 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
                "fallback") != NULL) {
         return "FX_DEFERRED_SOLID_OVERLAY_CLIP";
     }
+    if (strstr(message,
+               "skipping clip-weighted deferred solid overlay in layer "
+               "fallback due to zero coverage") != NULL) {
+        return "FX_DEFERRED_SOLID_SKIP_ZERO_COVERAGE";
+    }
     if (strstr(message, "parsed clbl=0") != NULL) {
         return "FX_CLBL0_PARSE";
     }

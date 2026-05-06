@@ -24655,6 +24655,36 @@ sixel_builtin_psd_enqueue_deferred_overlay_replay_slots(
     return action_flags;
 }
 
+static int
+sixel_builtin_psd_overlay_has_actionable_coverage(
+    float const *coverage_map,
+    float const *clip_alpha_map,
+    size_t pixel_count)
+{
+    size_t i;
+    float coverage_value;
+
+    i = 0u;
+    coverage_value = 0.0f;
+    if (coverage_map == NULL) {
+        return 0;
+    }
+    for (i = 0u; i < pixel_count; ++i) {
+        coverage_value = coverage_map[i];
+        if (coverage_value <= 0.0f) {
+            continue;
+        }
+        if (clip_alpha_map != NULL &&
+            clip_alpha_map[i] <= 0.0f) {
+            continue;
+        }
+        if (coverage_value > 0.0f) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 static SIXELSTATUS
 sixel_builtin_psd_finalize_multilayer_output(
     sixel_chunk_t const *chunk,
@@ -24963,7 +24993,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     int pending_overlay_replay_locked;
     float const *pending_solid_coverage_map;
     float const *replay_solid_coverage_map;
-    int solid_replay_blocked;
+    int solid_replay_actionable;
     int group_active;
     int clipped_inside_stroke_alpha_valid;
     int traced_clip_sibling_harden;
@@ -25028,7 +25058,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     pending_overlay_replay_locked = 0;
     pending_solid_coverage_map = NULL;
     replay_solid_coverage_map = NULL;
-    solid_replay_blocked = 0;
+    solid_replay_actionable = 0;
     group_active = 0;
     clipped_inside_stroke_alpha_valid = 0;
     traced_clip_sibling_harden = 0;
@@ -25407,14 +25437,20 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         "entry in layer fallback");
                 }
                 /*
-                 * Keep deferred overlay compatibility for stroke-composite:
-                 * when GrFl is captured for replay, suppress SoFi replay in
-                 * the same flush and preserve gradient-led interior contract.
+                 * Replay SoFi only when the deferred solid coverage carries at
+                 * least one actionable sample in this flush.
                  */
-                solid_replay_blocked =
-                    pending_overlay_replay_slots.gradient_valid != 0 ? 1 : 0;
+                solid_replay_actionable = 0;
                 if (pending_overlay_replay_slots.solid_valid != 0 &&
-                    solid_replay_blocked == 0) {
+                    pending_solid_coverage_map != NULL) {
+                    solid_replay_actionable =
+                        sixel_builtin_psd_overlay_has_actionable_coverage(
+                            pending_solid_coverage_map,
+                            NULL,
+                            pixel_count);
+                }
+                if (pending_overlay_replay_slots.solid_valid != 0 &&
+                    solid_replay_actionable != 0) {
                     replay_solid_coverage_map = pending_solid_coverage_map;
                     sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
                         group_rgb_premul,
@@ -25426,6 +25462,11 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         info->width,
                         info->height,
                         &pending_overlay_replay_slots.solid_entry.layer);
+                } else if (pending_overlay_replay_slots.solid_valid != 0) {
+                    sixel_builtin_psd_trace_message(
+                        "psd_decode",
+                        "builtin PSD: skipping clip-weighted deferred solid "
+                        "overlay in layer fallback due to zero coverage");
                 }
                 if (pending_overlay_replay_slots.gradient_valid != 0) {
                     sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
@@ -26159,10 +26200,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 }
                 if (overlay_replay_action &
                     SIXEL_BUILTIN_PSD_OVERLAY_REPLAY_CAPTURE_SOLID) {
-                    if (pending_overlay_replay_slots.gradient_valid == 0) {
-                        layer_for_composite.has_effect_solid_overlay = 0;
-                        suppressed_any_overlay = 1;
-                    }
+                    layer_for_composite.has_effect_solid_overlay = 0;
+                    suppressed_any_overlay = 1;
                 }
                 if (overlay_replay_action &
                     SIXEL_BUILTIN_PSD_OVERLAY_REPLAY_CAPTURE_GRADIENT) {
@@ -26386,12 +26425,20 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     "entry in layer fallback");
             }
             /*
-             * Final flush follows the same gradient-led replay contract.
+             * Final flush uses the same actionable-coverage gate as loop
+             * flushes for deferred SoFi replay.
              */
-            solid_replay_blocked =
-                pending_overlay_replay_slots.gradient_valid != 0 ? 1 : 0;
+            solid_replay_actionable = 0;
             if (pending_overlay_replay_slots.solid_valid != 0 &&
-                solid_replay_blocked == 0) {
+                pending_solid_coverage_map != NULL) {
+                solid_replay_actionable =
+                    sixel_builtin_psd_overlay_has_actionable_coverage(
+                        pending_solid_coverage_map,
+                        NULL,
+                        pixel_count);
+            }
+            if (pending_overlay_replay_slots.solid_valid != 0 &&
+                solid_replay_actionable != 0) {
                 replay_solid_coverage_map = pending_solid_coverage_map;
                 sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
                     group_rgb_premul,
@@ -26403,6 +26450,11 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     info->width,
                     info->height,
                     &pending_overlay_replay_slots.solid_entry.layer);
+            } else if (pending_overlay_replay_slots.solid_valid != 0) {
+                sixel_builtin_psd_trace_message(
+                    "psd_decode",
+                    "builtin PSD: skipping clip-weighted deferred solid "
+                    "overlay in layer fallback due to zero coverage");
             }
             if (pending_overlay_replay_slots.gradient_valid != 0) {
                 sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
