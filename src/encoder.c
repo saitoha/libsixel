@@ -12960,8 +12960,12 @@ sixel_encoder_setopt(
             }
             encoder->clustering_colorspace = match_value;
             encoder->clustering_colorspace_set = 1;
-            encoder->force_float32_colorspace = 1;
-            encoder->prefer_float32 = 1;
+            /*
+             * Clustering space only controls palette construction.  Do not
+             * promote the main image path here; fixed palettes such as -b,
+             * -m, and -e have no clustering step, so -X must not change their
+             * emitted pixels or palette interpretation.
+             */
         }
         break;
     case SIXEL_OPTFLAG_WORKING_COLORSPACE:  /* W */

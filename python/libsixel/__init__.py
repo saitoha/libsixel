@@ -635,6 +635,7 @@ SIXEL_OPTFLAG_LUT_POLICY        = '~'  # -~ LOOKUPPOLICY,
                                       #                     refinement
 SIXEL_OPTFLAG_CLUSTERING_COLORSPACE = 'X'  # -X COLORSPACE, --clustering-colorspace=COLORSPACE:
                                           #        select palette clustering space.
+                                          #        ignored with fixed palette options (-b, -m, -e).
                                           #          gamma  -> keep gamma encoded pixels
                                           #          linear -> convert to linear RGB
                                           #          oklab  -> operate in OKLab

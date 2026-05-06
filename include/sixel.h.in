@@ -642,6 +642,7 @@ typedef int SIXELSTATUS;
     /* -X COLORSPACE */
     /* --clustering-colorspace=COLORSPACE */
     /* select palette clustering space */
+    /* ignored with fixed palette options (-b, -m, -e) */
     /*   gamma  -> keep gamma encoded pixels */
     /*   linear -> convert to linear RGB */
     /*   oklab  -> OKLab color space */
