@@ -1229,6 +1229,10 @@ orientation is applied when builtin orientation handling is enabled.
 When `EXIF` metadata is absent, builtin WebP also tries a minimal
 `XMP` orientation fallback (`tiff:Orientation`) for values `2..8`.
 `EXIF` always takes precedence over `XMP` when both are present.
+EXIF payload parsing is capped at `1 MiB`; oversized EXIF metadata is
+ignored non-fatally and emits `W_META_EXIF_SIZE_LIMIT_IGNORED`.
+When EXIF metadata exists, builtin WebP keeps `EXIF > XMP` precedence even
+if EXIF is oversized, so XMP orientation fallback is not evaluated.
 For color management, builtin WebP applies embedded `ICCP` first.
 When `ICCP` is absent and builtin CMS is enabled, builtin WebP also accepts a
 minimal `XMP` color profile name fallback from `ICCProfile` properties

@@ -187,6 +187,53 @@ sixel_webp_mul_shift5(int t, int c)
     return -(((-product) + 31) >> 5);
 }
 
+static SIXELSTATUS
+sixel_webp_vp8l_workspace_ensure_u32(uint32_t **pptr,
+                                     size_t *pcapacity,
+                                     size_t required_count,
+                                     sixel_allocator_t *allocator)
+{
+    uint32_t *allocated;
+
+    allocated = NULL;
+    if (pptr == NULL || pcapacity == NULL || allocator == NULL ||
+        required_count == 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (*pptr != NULL && *pcapacity >= required_count) {
+        return SIXEL_OK;
+    }
+    if (required_count > SIZE_MAX / sizeof(**pptr)) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    allocated = (uint32_t *)sixel_allocator_malloc(
+        allocator,
+        required_count * sizeof(*allocated));
+    if (allocated == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin webp: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (*pptr != NULL) {
+        sixel_allocator_free(allocator, *pptr);
+    }
+    *pptr = allocated;
+    *pcapacity = required_count;
+    return SIXEL_OK;
+}
+
+void
+sixel_webp_vp8l_workspace_reset(sixel_webp_vp8l_workspace_t *workspace,
+                                sixel_allocator_t *allocator)
+{
+    if (workspace == NULL || allocator == NULL) {
+        return;
+    }
+    sixel_allocator_free(allocator, workspace->main_pixels);
+    sixel_allocator_free(allocator, workspace->color_index_pixels);
+    memset(workspace, 0, sizeof(*workspace));
+}
+
 static int
 sixel_webp_average2(int a, int b)
 {
@@ -909,6 +956,8 @@ sixel_webp_decode_stream(sixel_webp_bit_reader_t *br,
                          int height,
                          int allow_meta_prefix,
                          uint32_t **ppixels,
+                         uint32_t *output_pixels,
+                         size_t output_pixels_capacity,
                          sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -942,6 +991,7 @@ sixel_webp_decode_stream(sixel_webp_bit_reader_t *br,
     int length;
     int distance;
     size_t copy_index;
+    int using_external_pixels;
 
     status = SIXEL_OK;
     bit_value = 0u;
@@ -974,6 +1024,7 @@ sixel_webp_decode_stream(sixel_webp_bit_reader_t *br,
     length = 0;
     distance = 0;
     copy_index = 0u;
+    using_external_pixels = 0;
 
     if (br == NULL || ppixels == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1058,6 +1109,8 @@ sixel_webp_decode_stream(sixel_webp_bit_reader_t *br,
                                               prefix_image_height,
                                               0,
                                               &entropy_image,
+                                              NULL,
+                                              0u,
                                               allocator);
             if (SIXEL_FAILED(status)) {
                 goto cleanup;
@@ -1116,14 +1169,25 @@ sixel_webp_decode_stream(sixel_webp_bit_reader_t *br,
     }
 
     pixel_count = (size_t)width * (size_t)height;
-    pixels = (uint32_t *)sixel_allocator_malloc(allocator,
-                                                pixel_count
-                                                    * sizeof(*pixels));
-    if (pixels == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
-        sixel_helper_set_additional_message(
-            "builtin webp: sixel_allocator_malloc() failed.");
-        goto cleanup;
+    if (output_pixels != NULL) {
+        if (output_pixels_capacity < pixel_count) {
+            status = SIXEL_BAD_ARGUMENT;
+            sixel_helper_set_additional_message(
+                "builtin webp: VP8L workspace pixel buffer is too small.");
+            goto cleanup;
+        }
+        pixels = output_pixels;
+        using_external_pixels = 1;
+    } else {
+        pixels = (uint32_t *)sixel_allocator_malloc(allocator,
+                                                    pixel_count
+                                                        * sizeof(*pixels));
+        if (pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "builtin webp: sixel_allocator_malloc() failed.");
+            goto cleanup;
+        }
     }
 
     pixel_pos = 0u;
@@ -1313,7 +1377,9 @@ cleanup:
     }
     sixel_allocator_free(allocator, entropy_image);
     sixel_allocator_free(allocator, cache);
-    sixel_allocator_free(allocator, pixels);
+    if (using_external_pixels == 0) {
+        sixel_allocator_free(allocator, pixels);
+    }
 
     return status;
 }
@@ -1691,6 +1757,9 @@ sixel_webp_apply_color_indexing(uint32_t **ppixels,
                                 uint32_t const *color_table,
                                 int color_table_size,
                                 int width_bits,
+                                uint32_t *output_pixels,
+                                size_t output_pixels_capacity,
+                                int free_source_pixels,
                                 sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -1769,12 +1838,22 @@ sixel_webp_apply_color_indexing(uint32_t **ppixels,
     }
 
     dst_count = (size_t)dst_width * (size_t)height;
-    dst = (uint32_t *)sixel_allocator_malloc(allocator,
-                                             dst_count * sizeof(*dst));
-    if (dst == NULL) {
-        sixel_helper_set_additional_message(
-            "builtin webp: sixel_allocator_malloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
+    if (output_pixels != NULL) {
+        if (output_pixels_capacity < dst_count) {
+            sixel_helper_set_additional_message(
+                "builtin webp: VP8L workspace color-index buffer is too "
+                "small.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+        dst = output_pixels;
+    } else {
+        dst = (uint32_t *)sixel_allocator_malloc(allocator,
+                                                 dst_count * sizeof(*dst));
+        if (dst == NULL) {
+            sixel_helper_set_additional_message(
+                "builtin webp: sixel_allocator_malloc() failed.");
+            return SIXEL_BAD_ALLOCATION;
+        }
     }
 
     bits_per_index = 8u >> width_bits;
@@ -1797,7 +1876,9 @@ sixel_webp_apply_color_indexing(uint32_t **ppixels,
         }
     }
 
-    sixel_allocator_free(allocator, src);
+    if (free_source_pixels != 0) {
+        sixel_allocator_free(allocator, src);
+    }
     *ppixels = dst;
     *pwidth = dst_width;
     return SIXEL_OK;
@@ -1859,12 +1940,16 @@ sixel_webp_color_index_width_bits(int color_table_size)
 }
 
 SIXELSTATUS
-sixel_webp_decode_vp8l_payload(unsigned char const *payload,
-                               size_t payload_size,
-                               unsigned char **prgba,
-                               int *pwidth,
-                               int *pheight,
-                               sixel_allocator_t *allocator)
+sixel_webp_decode_vp8l_payload_into_with_workspace(
+    unsigned char const *payload,
+    size_t payload_size,
+    unsigned char *out_rgba,
+    size_t out_rgba_size,
+    unsigned char **prgba,
+    int *pwidth,
+    int *pheight,
+    sixel_webp_vp8l_workspace_t *workspace,
+    sixel_allocator_t *allocator)
 {
     /*
      * This entry point intentionally decodes from bare VP8L payload bytes so
@@ -1888,6 +1973,8 @@ sixel_webp_decode_vp8l_payload(unsigned char const *payload,
     unsigned char *rgba;
     size_t pixel_count;
     size_t i;
+    size_t expected_pixels;
+    int free_main_pixels;
 
     status = SIXEL_OK;
     memset(&br, 0, sizeof(br));
@@ -1907,9 +1994,12 @@ sixel_webp_decode_vp8l_payload(unsigned char const *payload,
     rgba = NULL;
     pixel_count = 0u;
     i = 0u;
+    expected_pixels = 0u;
+    free_main_pixels = 1;
 
     if (payload == NULL || prgba == NULL || pwidth == NULL ||
-        pheight == NULL || allocator == NULL) {
+        pheight == NULL || allocator == NULL ||
+        out_rgba == NULL || out_rgba_size == 0u) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -1968,6 +2058,26 @@ sixel_webp_decode_vp8l_payload(unsigned char const *payload,
     status = sixel_webp_validate_dimensions(width, height);
     if (SIXEL_FAILED(status)) {
         return status;
+    }
+    expected_pixels = (size_t)width * (size_t)height;
+    if (workspace != NULL) {
+        status = sixel_webp_vp8l_workspace_ensure_u32(
+            &workspace->main_pixels,
+            &workspace->main_pixels_capacity,
+            expected_pixels,
+            allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        status = sixel_webp_vp8l_workspace_ensure_u32(
+            &workspace->color_index_pixels,
+            &workspace->color_index_pixels_capacity,
+            expected_pixels,
+            allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        free_main_pixels = 0;
     }
 
     current_width = width;
@@ -2041,6 +2151,8 @@ sixel_webp_decode_vp8l_payload(unsigned char const *payload,
                                               transform->data_height,
                                               0,
                                               &transform->data,
+                                              NULL,
+                                              0u,
                                               allocator);
             if (SIXEL_FAILED(status)) {
                 goto cleanup;
@@ -2068,6 +2180,8 @@ sixel_webp_decode_vp8l_payload(unsigned char const *payload,
                                               transform->data_height,
                                               0,
                                               &transform->data,
+                                              NULL,
+                                              0u,
                                               allocator);
             if (SIXEL_FAILED(status)) {
                 goto cleanup;
@@ -2095,6 +2209,10 @@ sixel_webp_decode_vp8l_payload(unsigned char const *payload,
                                       height,
                                       1,
                                       &main_pixels,
+                                      workspace != NULL ?
+                                          workspace->main_pixels : NULL,
+                                      workspace != NULL ?
+                                          workspace->main_pixels_capacity : 0u,
                                       allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
@@ -2148,6 +2266,15 @@ sixel_webp_decode_vp8l_payload(unsigned char const *payload,
                                                      transform->
                                                      color_table_size,
                                                      transform->width_bits,
+                                                     workspace != NULL ?
+                                                         workspace
+                                                             ->color_index_pixels
+                                                         : NULL,
+                                                     workspace != NULL ?
+                                                         workspace
+                                                             ->color_index_pixels_capacity
+                                                         : 0u,
+                                                     free_main_pixels,
                                                      allocator);
             if (SIXEL_FAILED(status)) {
                 goto cleanup;
@@ -2168,13 +2295,13 @@ sixel_webp_decode_vp8l_payload(unsigned char const *payload,
         goto cleanup;
     }
     rgba_size = pixel_count * 4u;
-    rgba = (unsigned char *)sixel_allocator_malloc(allocator, rgba_size);
-    if (rgba == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
+    if (out_rgba_size < rgba_size) {
+        status = SIXEL_BAD_ARGUMENT;
         sixel_helper_set_additional_message(
-            "builtin webp: sixel_allocator_malloc() failed.");
+            "builtin webp: VP8L scratch RGBA buffer is too small.");
         goto cleanup;
     }
+    rgba = out_rgba;
 
     for (i = 0u; i < pixel_count; ++i) {
         rgba[i * 4u + 0u] = (unsigned char)sixel_webp_argb_r(main_pixels[i]);
@@ -2199,10 +2326,126 @@ cleanup:
          ++transform_index) {
         sixel_allocator_free(allocator, transforms[transform_index].data);
     }
-    sixel_allocator_free(allocator, main_pixels);
-    sixel_allocator_free(allocator, rgba);
+    if (free_main_pixels != 0) {
+        sixel_allocator_free(allocator, main_pixels);
+    }
+    if (out_rgba == NULL) {
+        sixel_allocator_free(allocator, rgba);
+    }
 
     return status;
+}
+
+SIXELSTATUS
+sixel_webp_decode_vp8l_payload_into(unsigned char const *payload,
+                                    size_t payload_size,
+                                    unsigned char *out_rgba,
+                                    size_t out_rgba_size,
+                                    unsigned char **prgba,
+                                    int *pwidth,
+                                    int *pheight,
+                                    sixel_allocator_t *allocator)
+{
+    return sixel_webp_decode_vp8l_payload_into_with_workspace(payload,
+                                                              payload_size,
+                                                              out_rgba,
+                                                              out_rgba_size,
+                                                              prgba,
+                                                              pwidth,
+                                                              pheight,
+                                                              NULL,
+                                                              allocator);
+}
+
+SIXELSTATUS
+sixel_webp_decode_vp8l_payload(unsigned char const *payload,
+                               size_t payload_size,
+                               unsigned char **prgba,
+                               int *pwidth,
+                               int *pheight,
+                               sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    sixel_webp_bit_reader_t br;
+    uint32_t bit_value;
+    int width;
+    int height;
+    size_t pixel_count;
+    size_t rgba_size;
+    unsigned char *rgba;
+
+    status = SIXEL_OK;
+    memset(&br, 0, sizeof(br));
+    bit_value = 0u;
+    width = 0;
+    height = 0;
+    pixel_count = 0u;
+    rgba_size = 0u;
+    rgba = NULL;
+    if (payload == NULL || prgba == NULL || pwidth == NULL ||
+        pheight == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *prgba = NULL;
+    *pwidth = 0;
+    *pheight = 0;
+    if (payload_size < 5u) {
+        sixel_helper_set_additional_message(
+            "builtin webp: VP8L payload is truncated.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    sixel_webp_bit_reader_init(&br, payload, payload_size);
+    if (!sixel_webp_bit_reader_read_bits(&br, 8, &bit_value) ||
+        bit_value != 0x2fu) {
+        sixel_helper_set_additional_message(
+            "builtin webp: VP8L signature is invalid.");
+        return SIXEL_BAD_INPUT;
+    }
+    if (!sixel_webp_bit_reader_read_bits(&br, 14, &bit_value)) {
+        sixel_helper_set_additional_message(
+            "builtin webp: VP8L width is truncated.");
+        return SIXEL_BAD_INPUT;
+    }
+    width = (int)bit_value + 1;
+    if (!sixel_webp_bit_reader_read_bits(&br, 14, &bit_value)) {
+        sixel_helper_set_additional_message(
+            "builtin webp: VP8L height is truncated.");
+        return SIXEL_BAD_INPUT;
+    }
+    height = (int)bit_value + 1;
+    status = sixel_webp_validate_dimensions(width, height);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / 4u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    rgba_size = pixel_count * 4u;
+    rgba = (unsigned char *)sixel_allocator_malloc(allocator, rgba_size);
+    if (rgba == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin webp: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    status = sixel_webp_decode_vp8l_payload_into(payload,
+                                                 payload_size,
+                                                 rgba,
+                                                 rgba_size,
+                                                 prgba,
+                                                 pwidth,
+                                                 pheight,
+                                                 allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, rgba);
+        return status;
+    }
+    return SIXEL_OK;
 }
 
 

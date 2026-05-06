@@ -28,13 +28,10 @@
 
 /* STDC_HEADERS */
 #include <stddef.h>
+#include <stdint.h>
 
 #if HAVE_STRING_H
 # include <string.h>
-#endif
-
-#ifndef SIZE_MAX
-# define SIZE_MAX ((size_t)-1)
 #endif
 
 #include "compat_stub.h"

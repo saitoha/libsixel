@@ -26,10 +26,124 @@
 # include "config.h"
 #endif
 
+#include <limits.h>
 #include <stddef.h>
 
 #include "compat_stub.h"
 #include "fromwebp-vp8-private.h"
+
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t)-1)
+#endif
+
+SIXELSTATUS
+sixel_webp_decode_vp8_payload_into(unsigned char const *payload,
+                                   size_t payload_size,
+                                   unsigned char *rgba,
+                                   size_t rgba_size,
+                                   unsigned char **prgba,
+                                   int *pwidth,
+                                   int *pheight,
+                                   sixel_allocator_t *allocator)
+{
+    return sixel_webp_decode_vp8_payload_into_with_workspace(payload,
+                                                             payload_size,
+                                                             rgba,
+                                                             rgba_size,
+                                                             prgba,
+                                                             pwidth,
+                                                             pheight,
+                                                             NULL,
+                                                             allocator);
+}
+
+SIXELSTATUS
+sixel_webp_decode_vp8_payload_into_with_workspace(
+    unsigned char const *payload,
+    size_t payload_size,
+    unsigned char *rgba,
+    size_t rgba_size,
+    unsigned char **prgba,
+    int *pwidth,
+    int *pheight,
+    sixel_webp_vp8_workspace_t *workspace,
+    sixel_allocator_t *allocator)
+{
+    return sixel_webp_decode_vp8_payload_into_strided_with_workspace(
+        payload,
+        payload_size,
+        rgba,
+        rgba_size,
+        0u,
+        0,
+        0,
+        prgba,
+        pwidth,
+        pheight,
+        workspace,
+        allocator);
+}
+
+SIXELSTATUS
+sixel_webp_decode_vp8_payload_into_strided_with_workspace(
+    unsigned char const *payload,
+    size_t payload_size,
+    unsigned char *rgba,
+    size_t rgba_size,
+    size_t rgba_stride,
+    int rgba_width,
+    int rgba_height,
+    unsigned char **prgba,
+    int *pwidth,
+    int *pheight,
+    sixel_webp_vp8_workspace_t *workspace,
+    sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    sixel_webp_vp8_frame_header_t header;
+    unsigned char *decoded_rgba;
+
+    status = SIXEL_OK;
+    header.width = 0;
+    header.height = 0;
+    header.version = 0;
+    header.show_frame = 0;
+    header.first_partition_size = 0u;
+    decoded_rgba = NULL;
+    if (payload == NULL || payload_size == 0u || prgba == NULL ||
+        pwidth == NULL || pheight == NULL || allocator == NULL ||
+        rgba == NULL || rgba_size == 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *prgba = NULL;
+    *pwidth = 0;
+    *pheight = 0;
+
+    status = sixel_webp_vp8_parse_header(payload, payload_size, &header);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = sixel_webp_vp8_decode_native_payload_strided(payload,
+                                                          payload_size,
+                                                          &header,
+                                                          rgba,
+                                                          rgba_size,
+                                                          rgba_stride,
+                                                          rgba_width,
+                                                          rgba_height,
+                                                          prgba,
+                                                          pwidth,
+                                                          pheight,
+                                                          workspace,
+                                                          allocator);
+    decoded_rgba = *prgba;
+    if (SIXEL_SUCCEEDED(status) && decoded_rgba != rgba) {
+        return SIXEL_LOGIC_ERROR;
+    }
+    return status;
+}
 
 SIXELSTATUS
 sixel_webp_decode_vp8_payload(unsigned char const *payload,
@@ -41,6 +155,9 @@ sixel_webp_decode_vp8_payload(unsigned char const *payload,
 {
     SIXELSTATUS status;
     sixel_webp_vp8_frame_header_t header;
+    unsigned char *rgba;
+    size_t pixel_count;
+    size_t rgba_size;
 
     status = SIXEL_OK;
     header.width = 0;
@@ -48,6 +165,9 @@ sixel_webp_decode_vp8_payload(unsigned char const *payload,
     header.version = 0;
     header.show_frame = 0;
     header.first_partition_size = 0u;
+    rgba = NULL;
+    pixel_count = 0u;
+    rgba_size = 0u;
     if (payload == NULL || payload_size == 0u || prgba == NULL ||
         pwidth == NULL || pheight == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -61,15 +181,43 @@ sixel_webp_decode_vp8_payload(unsigned char const *payload,
     if (SIXEL_FAILED(status)) {
         return status;
     }
+    status = sixel_webp_vp8_validate_dimensions(header.width, header.height);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if ((size_t)header.width > SIZE_MAX / (size_t)header.height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)header.width * (size_t)header.height;
+    if (pixel_count > SIZE_MAX / 4u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    rgba_size = pixel_count * 4u;
+    rgba = (unsigned char *)sixel_allocator_malloc(allocator, rgba_size);
+    if (rgba == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin webp: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
 
-    status = sixel_webp_vp8_decode_native_payload(payload,
-                                                  payload_size,
-                                                  &header,
-                                                  prgba,
-                                                  pwidth,
-                                                  pheight,
-                                                  allocator);
-    return status;
+    status = sixel_webp_vp8_decode_native_payload_strided(payload,
+                                                          payload_size,
+                                                          &header,
+                                                          rgba,
+                                                          rgba_size,
+                                                          0u,
+                                                          0,
+                                                          0,
+                                                          prgba,
+                                                          pwidth,
+                                                          pheight,
+                                                          NULL,
+                                                          allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, rgba);
+        return status;
+    }
+    return SIXEL_OK;
 }
 
 

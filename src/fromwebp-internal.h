@@ -26,6 +26,7 @@
 #define LIBSIXEL_FROMWEBP_INTERNAL_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #include <sixel.h>
 
@@ -36,6 +37,7 @@
 #define SIXEL_WEBP_MAX_IMAGE_PIXELS ((size_t)268435456u)
 #define SIXEL_WEBP_MAX_ANIMATION_FRAMES 1024u
 #define SIXEL_WEBP_MAX_ICCP_PARSE_BYTES ((size_t)1048576u)
+#define SIXEL_WEBP_MAX_EXIF_PARSE_BYTES ((size_t)1048576u)
 #define SIXEL_WEBP_MAX_XMP_PARSE_BYTES ((size_t)262144u)
 
 #define SIXEL_WEBP_CHUNK_VP8  0x20385056u /* "VP8 " little-endian */
@@ -67,6 +69,8 @@
 #define SIXEL_WEBP_CODE_META_ICCP_SIZE_LIMIT_IGNORED \
     "W_META_ICCP_SIZE_LIMIT_IGNORED"
 #define SIXEL_WEBP_CODE_META_EXIF_IGNORED "W_META_EXIF_IGNORED"
+#define SIXEL_WEBP_CODE_META_EXIF_SIZE_LIMIT_IGNORED \
+    "W_META_EXIF_SIZE_LIMIT_IGNORED"
 #define SIXEL_WEBP_CODE_META_XMP_IGNORED "W_META_XMP_IGNORED"
 #define SIXEL_WEBP_CODE_META_XMP_CMS_IGNORED "W_META_XMP_CMS_IGNORED"
 #define SIXEL_WEBP_CODE_META_XMP_CMS_BARE_FALLBACK_USED \
@@ -201,6 +205,48 @@ typedef struct sixel_webp_decode_plan {
     sixel_webp_anim_unsupported_reason_t anim_unsupported_reason;
 } sixel_webp_decode_plan_t;
 
+typedef struct sixel_webp_rgba_scratch {
+    unsigned char *pixels;
+    int width;
+    int height;
+    size_t bytes;
+} sixel_webp_rgba_scratch_t;
+
+typedef struct sixel_webp_vp8_workspace {
+    unsigned char *plane_y;
+    unsigned char *plane_u;
+    unsigned char *plane_v;
+    size_t plane_y_bytes;
+    size_t plane_u_bytes;
+    size_t plane_v_bytes;
+    unsigned int uv_width;
+    unsigned int uv_height;
+    unsigned char *above_y;
+    unsigned char *above_u;
+    unsigned char *above_v;
+    unsigned char *above_y2;
+    unsigned char *above_mb_mode;
+    unsigned char *above_bottom_bmode;
+    size_t above_y_bytes;
+    size_t above_u_bytes;
+    size_t above_v_bytes;
+    size_t above_y2_bytes;
+    size_t above_mb_mode_bytes;
+    size_t above_bottom_bmode_bytes;
+} sixel_webp_vp8_workspace_t;
+
+typedef struct sixel_webp_vp8l_workspace {
+    uint32_t *main_pixels;
+    size_t main_pixels_capacity;
+    uint32_t *color_index_pixels;
+    size_t color_index_pixels_capacity;
+} sixel_webp_vp8l_workspace_t;
+
+typedef struct sixel_webp_anim_decode_workspace {
+    sixel_webp_vp8_workspace_t vp8;
+    sixel_webp_vp8l_workspace_t vp8l;
+} sixel_webp_anim_decode_workspace_t;
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_webp_decode_vp8l_payload(unsigned char const *payload,
                                size_t payload_size,
@@ -210,12 +256,79 @@ sixel_webp_decode_vp8l_payload(unsigned char const *payload,
                                sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_webp_decode_vp8l_payload_into(unsigned char const *payload,
+                                    size_t payload_size,
+                                    unsigned char *rgba,
+                                    size_t rgba_size,
+                                    unsigned char **prgba,
+                                    int *pwidth,
+                                    int *pheight,
+                                    sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_webp_decode_vp8l_payload_into_with_workspace(
+    unsigned char const *payload,
+    size_t payload_size,
+    unsigned char *rgba,
+    size_t rgba_size,
+    unsigned char **prgba,
+    int *pwidth,
+    int *pheight,
+    sixel_webp_vp8l_workspace_t *workspace,
+    sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_webp_decode_vp8_payload(unsigned char const *payload,
                               size_t payload_size,
                               unsigned char **prgba,
                               int *pwidth,
                               int *pheight,
                               sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_webp_decode_vp8_payload_into(unsigned char const *payload,
+                                   size_t payload_size,
+                                   unsigned char *rgba,
+                                   size_t rgba_size,
+                                   unsigned char **prgba,
+                                   int *pwidth,
+                                   int *pheight,
+                                   sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_webp_decode_vp8_payload_into_with_workspace(
+    unsigned char const *payload,
+    size_t payload_size,
+    unsigned char *rgba,
+    size_t rgba_size,
+    unsigned char **prgba,
+    int *pwidth,
+    int *pheight,
+    sixel_webp_vp8_workspace_t *workspace,
+    sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_webp_decode_vp8_payload_into_strided_with_workspace(
+    unsigned char const *payload,
+    size_t payload_size,
+    unsigned char *rgba,
+    size_t rgba_size,
+    size_t rgba_stride,
+    int rgba_width,
+    int rgba_height,
+    unsigned char **prgba,
+    int *pwidth,
+    int *pheight,
+    sixel_webp_vp8_workspace_t *workspace,
+    sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API void
+sixel_webp_vp8_workspace_reset(sixel_webp_vp8_workspace_t *workspace,
+                               sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API void
+sixel_webp_vp8l_workspace_reset(sixel_webp_vp8l_workspace_t *workspace,
+                                sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,

@@ -68,6 +68,7 @@ typedef struct sixel_webp_anim_frame {
     int duration_ms;
     int dispose_to_background;
     int blend_over;
+    int opaque_pixels_only;
 } sixel_webp_anim_frame_t;
 
 typedef struct sixel_webp_anim_stream {
@@ -94,6 +95,7 @@ typedef struct sixel_webp_anim_meta_cache {
     sixel_cms_profile_t *iccp_profile;
     sixel_cms_profile_t *xmp_cms_profile;
     int exif_orientation;
+    int exif_size_limited;
     int xmp_orientation;
     int iccp_size_limited;
     int xmp_orientation_size_limited;
@@ -123,6 +125,11 @@ sixel_webp_anim_read_u32le(unsigned char const *p)
         | ((unsigned int)p[2] << 16)
         | ((unsigned int)p[3] << 24);
 }
+
+static int
+sixel_webp_vp8l_payload_header_has_alpha(unsigned char const *payload,
+                                         size_t payload_size,
+                                         int *has_alpha);
 
 static SIXELSTATUS
 sixel_webp_parse_animation_start_frame_no(int *start_frame_no_set,
@@ -225,6 +232,27 @@ sixel_webp_should_stop_after_loop(int loop_control,
         return 1;
     }
     return 0;
+}
+
+static int
+sixel_webp_anim_can_transfer_canvas_ownership(int fstatic,
+                                              int source_frame_no,
+                                              int frame_count,
+                                              int loop_control,
+                                              int frames_in_loop,
+                                              int loop_no,
+                                              int stream_loop_count)
+{
+    if (fstatic != 0) {
+        return 1;
+    }
+    if (source_frame_no + 1 != frame_count) {
+        return 0;
+    }
+    return sixel_webp_should_stop_after_loop(loop_control,
+                                             frames_in_loop + 1,
+                                             loop_no + 1,
+                                             stream_loop_count);
 }
 
 static void
@@ -503,11 +531,15 @@ sixel_webp_apply_iccp_to_srgb_rgba(unsigned char *pixels,
     return converted;
 }
 
+static int
+sixel_webp_exif_payload_exceeds_parse_limit(size_t payload_size);
+
 static SIXELSTATUS
 sixel_webp_try_apply_exif_orientation(sixel_webp_decode_plan_t const *plan,
                                       int enable_orientation,
                                       sixel_frame_t *frame,
-                                      int *applied)
+                                      int *applied,
+                                      int *size_limited)
 {
     SIXELSTATUS status;
     int parsed_orientation;
@@ -517,14 +549,21 @@ sixel_webp_try_apply_exif_orientation(sixel_webp_decode_plan_t const *plan,
     parsed_orientation = 1;
     found_orientation = 0;
 
-    if (plan == NULL || frame == NULL || applied == NULL) {
+    if (plan == NULL || frame == NULL || applied == NULL ||
+        size_limited == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     *applied = 0;
+    *size_limited = 0;
     if (plan->meta_has_exif == 0 ||
         enable_orientation == 0 ||
         plan->exif_payload == NULL ||
         plan->exif_payload_size == 0u) {
+        return SIXEL_OK;
+    }
+    if (sixel_webp_exif_payload_exceeds_parse_limit(
+            plan->exif_payload_size) != 0) {
+        *size_limited = 1;
         return SIXEL_OK;
     }
 
@@ -549,6 +588,12 @@ static int
 sixel_webp_iccp_payload_exceeds_parse_limit(size_t payload_size)
 {
     return payload_size > SIXEL_WEBP_MAX_ICCP_PARSE_BYTES ? 1 : 0;
+}
+
+static int
+sixel_webp_exif_payload_exceeds_parse_limit(size_t payload_size)
+{
+    return payload_size > SIXEL_WEBP_MAX_EXIF_PARSE_BYTES ? 1 : 0;
 }
 
 static int
@@ -1644,14 +1689,19 @@ sixel_webp_build_anim_meta_cache(sixel_webp_decode_plan_t const *plan,
         enable_orientation != 0 &&
         plan->exif_payload != NULL &&
         plan->exif_payload_size != 0u) {
-        found_orientation = loader_exif_parse_orientation(
-            plan->exif_payload,
-            plan->exif_payload_size,
-            &parsed_orientation);
-        if (found_orientation != 0 &&
-            parsed_orientation >= 2 &&
-            parsed_orientation <= 8) {
-            cache->exif_orientation = parsed_orientation;
+        if (sixel_webp_exif_payload_exceeds_parse_limit(
+                plan->exif_payload_size) != 0) {
+            cache->exif_size_limited = 1;
+        } else {
+            found_orientation = loader_exif_parse_orientation(
+                plan->exif_payload,
+                plan->exif_payload_size,
+                &parsed_orientation);
+            if (found_orientation != 0 &&
+                parsed_orientation >= 2 &&
+                parsed_orientation <= 8) {
+                cache->exif_orientation = parsed_orientation;
+            }
         }
     }
 
@@ -1780,6 +1830,7 @@ sixel_webp_parse_anmf_frame(unsigned char const *payload,
     size_t offset;
     size_t chunk_size;
     size_t chunk_total_size;
+    int vp8l_has_alpha;
 
     x = 0u;
     y = 0u;
@@ -1798,6 +1849,7 @@ sixel_webp_parse_anmf_frame(unsigned char const *payload,
     offset = 0u;
     chunk_size = 0u;
     chunk_total_size = 0u;
+    vp8l_has_alpha = 0;
     if (payload == NULL || payload_size < 24u ||
         frame == NULL || canvas_width <= 0 || canvas_height <= 0) {
         return SIXEL_BAD_INPUT;
@@ -1890,14 +1942,25 @@ sixel_webp_parse_anmf_frame(unsigned char const *payload,
 
     if (frame->vp8_payload != NULL && frame->alpha_payload != NULL) {
         frame->kind = SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC;
+        frame->opaque_pixels_only = 0;
         return SIXEL_OK;
     }
     if (frame->vp8_payload != NULL) {
         frame->kind = SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC;
+        frame->opaque_pixels_only = 1;
         return SIXEL_OK;
     }
     if (frame->vp8l_payload != NULL) {
         frame->kind = SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC;
+        vp8l_has_alpha = 0;
+        if (sixel_webp_vp8l_payload_header_has_alpha(frame->vp8l_payload,
+                                                     frame->vp8l_payload_size,
+                                                     &vp8l_has_alpha) != 0 &&
+            vp8l_has_alpha == 0) {
+            frame->opaque_pixels_only = 1;
+        } else {
+            frame->opaque_pixels_only = 0;
+        }
         return SIXEL_OK;
     }
 
@@ -2099,16 +2162,116 @@ sixel_webp_validate_anim_alpha_flag(sixel_webp_anim_stream_t const *stream,
 }
 
 static SIXELSTATUS
+sixel_webp_anim_rgba_scratch_reset(sixel_webp_rgba_scratch_t *scratch,
+                                    sixel_allocator_t *allocator)
+{
+    if (scratch == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (scratch->pixels != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, scratch->pixels);
+    }
+    memset(scratch, 0, sizeof(*scratch));
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_webp_anim_rgba_scratch_ensure(sixel_webp_rgba_scratch_t *scratch,
+                                     int width,
+                                     int height,
+                                     sixel_allocator_t *allocator)
+{
+    size_t pixel_count;
+    size_t required_bytes;
+    unsigned char *pixels;
+
+    pixel_count = 0u;
+    required_bytes = 0u;
+    pixels = NULL;
+    if (scratch == NULL || allocator == NULL || width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+    if (pixel_count > SIZE_MAX / 4u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    required_bytes = pixel_count * 4u;
+    if (scratch->pixels != NULL && scratch->bytes >= required_bytes) {
+        scratch->width = width;
+        scratch->height = height;
+        return SIXEL_OK;
+    }
+
+    pixels = (unsigned char *)sixel_allocator_malloc(allocator, required_bytes);
+    if (pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "builtin webp: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (scratch->pixels != NULL) {
+        sixel_allocator_free(allocator, scratch->pixels);
+    }
+    scratch->pixels = pixels;
+    scratch->bytes = required_bytes;
+    scratch->width = width;
+    scratch->height = height;
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_webp_anim_decode_workspace_reset(
+    sixel_webp_anim_decode_workspace_t *workspace,
+    sixel_allocator_t *allocator)
+{
+    if (workspace == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (allocator != NULL) {
+        sixel_webp_vp8_workspace_reset(&workspace->vp8, allocator);
+        sixel_webp_vp8l_workspace_reset(&workspace->vp8l, allocator);
+    }
+    memset(workspace, 0, sizeof(*workspace));
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
 sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
                                   sixel_allocator_t *allocator,
+                                  sixel_webp_rgba_scratch_t *scratch,
+                                  sixel_webp_anim_decode_workspace_t *workspace,
+                                  unsigned char *out_pixels,
+                                  size_t out_pixels_bytes,
+                                  size_t out_pixels_stride,
+                                  int out_pixels_width,
+                                  int out_pixels_height,
                                   unsigned char **prgba,
                                   int *pwidth,
                                   int *pheight)
 {
     SIXELSTATUS status;
+    size_t pixel_count;
+    size_t required_bytes;
+    unsigned char *decode_pixels;
+    size_t decode_pixels_bytes;
+    size_t decode_pixels_stride;
+    int decode_pixels_width;
+    int decode_pixels_height;
+    int direct_subrect_decode;
 
     status = SIXEL_OK;
-    if (anim_frame == NULL || allocator == NULL || prgba == NULL ||
+    pixel_count = 0u;
+    required_bytes = 0u;
+    decode_pixels = NULL;
+    decode_pixels_bytes = 0u;
+    decode_pixels_stride = 0u;
+    decode_pixels_width = 0;
+    decode_pixels_height = 0;
+    direct_subrect_decode = 0;
+    if (anim_frame == NULL || allocator == NULL || scratch == NULL ||
+        workspace == NULL || prgba == NULL ||
         pwidth == NULL || pheight == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2116,14 +2279,69 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
     *pwidth = 0;
     *pheight = 0;
 
+    if ((size_t)anim_frame->width > SIZE_MAX / (size_t)anim_frame->height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    pixel_count = (size_t)anim_frame->width * (size_t)anim_frame->height;
+    if (pixel_count > SIZE_MAX / 4u) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    required_bytes = pixel_count * 4u;
+    if (out_pixels != NULL) {
+        if (out_pixels_stride != 0u) {
+            direct_subrect_decode = 1;
+            decode_pixels_stride = out_pixels_stride;
+            decode_pixels_width = out_pixels_width;
+            decode_pixels_height = out_pixels_height;
+        } else {
+            if (out_pixels_bytes < required_bytes) {
+                sixel_helper_set_additional_message(
+                    "builtin webp: direct ANIM output buffer is too small.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+        }
+        decode_pixels = out_pixels;
+        decode_pixels_bytes = out_pixels_bytes;
+    } else {
+        status = sixel_webp_anim_rgba_scratch_ensure(scratch,
+                                                     anim_frame->width,
+                                                     anim_frame->height,
+                                                     allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        decode_pixels = scratch->pixels;
+        decode_pixels_bytes = scratch->bytes;
+    }
+
     if (anim_frame->kind == SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC ||
         anim_frame->kind == SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC) {
-        status = sixel_webp_decode_vp8_payload(anim_frame->vp8_payload,
-                                               anim_frame->vp8_payload_size,
-                                               prgba,
-                                               pwidth,
-                                               pheight,
-                                               allocator);
+        if (direct_subrect_decode != 0) {
+            status = sixel_webp_decode_vp8_payload_into_strided_with_workspace(
+                anim_frame->vp8_payload,
+                anim_frame->vp8_payload_size,
+                decode_pixels,
+                decode_pixels_bytes,
+                decode_pixels_stride,
+                decode_pixels_width,
+                decode_pixels_height,
+                prgba,
+                pwidth,
+                pheight,
+                &workspace->vp8,
+                allocator);
+        } else {
+            status = sixel_webp_decode_vp8_payload_into_with_workspace(
+                anim_frame->vp8_payload,
+                anim_frame->vp8_payload_size,
+                decode_pixels,
+                decode_pixels_bytes,
+                prgba,
+                pwidth,
+                pheight,
+                &workspace->vp8,
+                allocator);
+        }
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -2136,13 +2354,10 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
                 anim_frame->alpha_payload_size,
                 allocator);
             if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(allocator, *prgba);
-                *prgba = NULL;
                 return status;
             }
         }
         if (*pwidth != anim_frame->width || *pheight != anim_frame->height) {
-            sixel_allocator_free(allocator, *prgba);
             *prgba = NULL;
             *pwidth = 0;
             *pheight = 0;
@@ -2152,15 +2367,21 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
     }
 
     if (anim_frame->kind == SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC) {
-        status = sixel_webp_decode_vp8l_payload(anim_frame->vp8l_payload,
-                                                anim_frame->vp8l_payload_size,
-                                                prgba,
-                                                pwidth,
-                                                pheight,
-                                                allocator);
+        if (direct_subrect_decode != 0) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+        status = sixel_webp_decode_vp8l_payload_into_with_workspace(
+            anim_frame->vp8l_payload,
+            anim_frame->vp8l_payload_size,
+            decode_pixels,
+            decode_pixels_bytes,
+            prgba,
+            pwidth,
+            pheight,
+            &workspace->vp8l,
+            allocator);
         if (SIXEL_SUCCEEDED(status) &&
             (*pwidth != anim_frame->width || *pheight != anim_frame->height)) {
-            sixel_allocator_free(allocator, *prgba);
             *prgba = NULL;
             *pwidth = 0;
             *pheight = 0;
@@ -2221,6 +2442,24 @@ sixel_webp_anim_background_to_rgba(unsigned int anim_background,
     rgba[3] = (unsigned char)((anim_background >> 24u) & 0xffu);
 }
 
+static unsigned int
+sixel_webp_anim_div255_floor(unsigned int value)
+{
+    unsigned int q;
+
+    /*
+     * Use an exact reciprocal path for floor(value / 255) so ANIM blend-over
+     * avoids hot integer divisions while preserving bit-identical results.
+     */
+    q = (value + 1u + (value >> 8u)) >> 8u;
+    if (q * 255u > value) {
+        --q;
+    } else if ((q + 1u) * 255u <= value) {
+        ++q;
+    }
+    return q;
+}
+
 static void
 sixel_webp_anim_fill_canvas(unsigned char *canvas_pixels,
                             int canvas_width,
@@ -2229,23 +2468,31 @@ sixel_webp_anim_fill_canvas(unsigned char *canvas_pixels,
 {
     int x;
     int y;
-    size_t dst_offset;
+    size_t row_bytes;
+    size_t row_offset;
+    unsigned char *row_ptr;
 
     x = 0;
     y = 0;
-    dst_offset = 0u;
+    row_bytes = 0u;
+    row_offset = 0u;
+    row_ptr = NULL;
     if (canvas_pixels == NULL || rgba == NULL ||
         canvas_width <= 0 || canvas_height <= 0) {
         return;
     }
-    for (y = 0; y < canvas_height; ++y) {
-        for (x = 0; x < canvas_width; ++x) {
-            dst_offset = ((size_t)y * (size_t)canvas_width + (size_t)x) * 4u;
-            canvas_pixels[dst_offset + 0u] = rgba[0u];
-            canvas_pixels[dst_offset + 1u] = rgba[1u];
-            canvas_pixels[dst_offset + 2u] = rgba[2u];
-            canvas_pixels[dst_offset + 3u] = rgba[3u];
-        }
+    row_bytes = (size_t)canvas_width * 4u;
+    row_ptr = canvas_pixels;
+    for (x = 0; x < canvas_width; ++x) {
+        row_ptr[0u] = rgba[0u];
+        row_ptr[1u] = rgba[1u];
+        row_ptr[2u] = rgba[2u];
+        row_ptr[3u] = rgba[3u];
+        row_ptr += 4;
+    }
+    for (y = 1; y < canvas_height; ++y) {
+        row_offset = (size_t)y * row_bytes;
+        memcpy(canvas_pixels + row_offset, canvas_pixels, row_bytes);
     }
 }
 
@@ -2257,30 +2504,39 @@ sixel_webp_anim_clear_rect(unsigned char *canvas_pixels,
 {
     int x;
     int y;
-    int px;
-    int py;
-    size_t dst_offset;
+    size_t row_bytes;
+    size_t row_offset;
+    size_t first_row_offset;
+    unsigned char *row_ptr;
 
     x = 0;
     y = 0;
-    px = 0;
-    py = 0;
-    dst_offset = 0u;
+    row_bytes = 0u;
+    row_offset = 0u;
+    first_row_offset = 0u;
+    row_ptr = NULL;
     if (canvas_pixels == NULL || canvas_width <= 0 || anim_frame == NULL ||
         rgba == NULL) {
         return;
     }
-    for (y = 0; y < anim_frame->height; ++y) {
-        py = anim_frame->y_offset + y;
-        for (x = 0; x < anim_frame->width; ++x) {
-            px = anim_frame->x_offset + x;
-            dst_offset = ((size_t)py * (size_t)canvas_width
-                          + (size_t)px) * 4u;
-            canvas_pixels[dst_offset + 0u] = rgba[0u];
-            canvas_pixels[dst_offset + 1u] = rgba[1u];
-            canvas_pixels[dst_offset + 2u] = rgba[2u];
-            canvas_pixels[dst_offset + 3u] = rgba[3u];
-        }
+    row_bytes = (size_t)anim_frame->width * 4u;
+    first_row_offset = ((size_t)anim_frame->y_offset * (size_t)canvas_width
+                        + (size_t)anim_frame->x_offset) * 4u;
+    row_ptr = canvas_pixels + first_row_offset;
+    for (x = 0; x < anim_frame->width; ++x) {
+        row_ptr[0u] = rgba[0u];
+        row_ptr[1u] = rgba[1u];
+        row_ptr[2u] = rgba[2u];
+        row_ptr[3u] = rgba[3u];
+        row_ptr += 4;
+    }
+    for (y = 1; y < anim_frame->height; ++y) {
+        row_offset = ((size_t)(anim_frame->y_offset + y)
+                      * (size_t)canvas_width
+                      + (size_t)anim_frame->x_offset) * 4u;
+        memcpy(canvas_pixels + row_offset,
+               canvas_pixels + first_row_offset,
+               row_bytes);
     }
 }
 
@@ -2292,65 +2548,145 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
 {
     int x;
     int y;
-    int px;
-    int py;
-    size_t src_offset;
-    size_t dst_offset;
+    size_t src_row_offset;
+    size_t dst_row_offset;
+    size_t row_bytes;
+    unsigned char const *sp;
+    unsigned char *dp;
     unsigned int sa;
     unsigned int da;
     unsigned int oa;
-    unsigned char const *sp;
-    unsigned char *dp;
+    unsigned int inv_sa;
+    unsigned int da_scaled;
+    unsigned int num;
+    int span;
+    size_t span_bytes;
 
     x = 0;
     y = 0;
-    px = 0;
-    py = 0;
-    src_offset = 0u;
-    dst_offset = 0u;
+    src_row_offset = 0u;
+    dst_row_offset = 0u;
+    row_bytes = 0u;
+    sp = NULL;
+    dp = NULL;
     sa = 0u;
     da = 0u;
     oa = 0u;
-    sp = NULL;
-    dp = NULL;
+    inv_sa = 0u;
+    da_scaled = 0u;
+    num = 0u;
+    span = 0;
+    span_bytes = 0u;
     if (canvas_pixels == NULL || canvas_width <= 0 || anim_frame == NULL ||
         subframe_pixels == NULL) {
         return;
     }
+    row_bytes = (size_t)anim_frame->width * 4u;
+    /*
+     * Replace-mode and known-opaque blend-over both resolve to direct copy.
+     * This avoids per-pixel alpha math for codecs that cannot output alpha.
+     */
+    if (anim_frame->blend_over == 0 || anim_frame->opaque_pixels_only != 0) {
+        for (y = 0; y < anim_frame->height; ++y) {
+            src_row_offset = (size_t)y * row_bytes;
+            dst_row_offset = ((size_t)(anim_frame->y_offset + y)
+                              * (size_t)canvas_width
+                              + (size_t)anim_frame->x_offset) * 4u;
+            memcpy(canvas_pixels + dst_row_offset,
+                   subframe_pixels + src_row_offset,
+                   row_bytes);
+        }
+        return;
+    }
+
     for (y = 0; y < anim_frame->height; ++y) {
-        py = anim_frame->y_offset + y;
-        for (x = 0; x < anim_frame->width; ++x) {
-            px = anim_frame->x_offset + x;
-            src_offset = ((size_t)y * (size_t)anim_frame->width
-                          + (size_t)x) * 4u;
-            dst_offset = ((size_t)py * (size_t)canvas_width
-                          + (size_t)px) * 4u;
-            sp = subframe_pixels + src_offset;
-            dp = canvas_pixels + dst_offset;
-            if (anim_frame->blend_over == 0) {
+        src_row_offset = (size_t)y * row_bytes;
+        dst_row_offset = ((size_t)(anim_frame->y_offset + y)
+                          * (size_t)canvas_width
+                          + (size_t)anim_frame->x_offset) * 4u;
+        sp = subframe_pixels + src_row_offset;
+        dp = canvas_pixels + dst_row_offset;
+        x = 0;
+        while (x < anim_frame->width) {
+            sa = (unsigned int)sp[3u];
+            if (sa == 0u) {
+                span = 1;
+                while (x + span < anim_frame->width &&
+                       sp[(size_t)span * 4u + 3u] == 0u) {
+                    ++span;
+                }
+                span_bytes = (size_t)span * 4u;
+                sp += span_bytes;
+                dp += span_bytes;
+                x += span;
+                continue;
+            }
+            if (sa == 255u) {
+                span = 1;
+                while (x + span < anim_frame->width &&
+                       sp[(size_t)span * 4u + 3u] == 255u) {
+                    ++span;
+                }
+                span_bytes = (size_t)span * 4u;
+                memcpy(dp, sp, span_bytes);
+                sp += span_bytes;
+                dp += span_bytes;
+                x += span;
+                continue;
+            }
+            inv_sa = 255u - sa;
+            da = (unsigned int)dp[3u];
+            if (da == 0u) {
                 dp[0u] = sp[0u];
                 dp[1u] = sp[1u];
                 dp[2u] = sp[2u];
-                dp[3u] = sp[3u];
+                dp[3u] = (unsigned char)sa;
+                sp += 4;
+                dp += 4;
+                ++x;
                 continue;
             }
-            sa = (unsigned int)sp[3u];
-            da = (unsigned int)dp[3u];
-            oa = sa + ((da * (255u - sa)) / 255u);
+            if (da == 255u) {
+                num = (unsigned int)sp[0u] * sa
+                    + (unsigned int)dp[0u] * inv_sa;
+                dp[0u] = (unsigned char)sixel_webp_anim_div255_floor(num);
+                num = (unsigned int)sp[1u] * sa
+                    + (unsigned int)dp[1u] * inv_sa;
+                dp[1u] = (unsigned char)sixel_webp_anim_div255_floor(num);
+                num = (unsigned int)sp[2u] * sa
+                    + (unsigned int)dp[2u] * inv_sa;
+                dp[2u] = (unsigned char)sixel_webp_anim_div255_floor(num);
+                dp[3u] = 255u;
+                sp += 4;
+                dp += 4;
+                ++x;
+                continue;
+            }
+            da_scaled = sixel_webp_anim_div255_floor(da * inv_sa);
+            oa = sa + da_scaled;
             if (oa == 0u) {
                 dp[0u] = 0u;
                 dp[1u] = 0u;
                 dp[2u] = 0u;
                 dp[3u] = 0u;
+                sp += 4;
+                dp += 4;
+                ++x;
                 continue;
             }
-            dp[0u] = (unsigned char)((sp[0u] * sa + dp[0u] * da
-                                      * (255u - sa) / 255u) / oa);
-            dp[1u] = (unsigned char)((sp[1u] * sa + dp[1u] * da
-                                      * (255u - sa) / 255u) / oa);
-            dp[2u] = (unsigned char)((sp[2u] * sa + dp[2u] * da
-                                      * (255u - sa) / 255u) / oa);
+            num = (unsigned int)sp[0u] * sa
+                + (unsigned int)dp[0u] * da_scaled;
+            dp[0u] = (unsigned char)(num / oa);
+            num = (unsigned int)sp[1u] * sa
+                + (unsigned int)dp[1u] * da_scaled;
+            dp[1u] = (unsigned char)(num / oa);
+            num = (unsigned int)sp[2u] * sa
+                + (unsigned int)dp[2u] * da_scaled;
+            dp[2u] = (unsigned char)(num / oa);
             dp[3u] = (unsigned char)oa;
+            sp += 4;
+            dp += 4;
+            ++x;
         }
     }
 }
@@ -2378,6 +2714,42 @@ sixel_webp_anim_copy_canvas(unsigned char const *canvas_pixels,
     memcpy(copied, canvas_pixels, canvas_bytes);
     *output = copied;
     return SIXEL_OK;
+}
+
+static int
+sixel_webp_anim_frame_is_full_canvas(
+    sixel_webp_anim_frame_t const *anim_frame,
+    int canvas_width,
+    int canvas_height)
+{
+    if (anim_frame == NULL) {
+        return 0;
+    }
+    if (anim_frame->x_offset != 0 || anim_frame->y_offset != 0) {
+        return 0;
+    }
+    if (anim_frame->width != canvas_width ||
+        anim_frame->height != canvas_height) {
+        return 0;
+    }
+    return 1;
+}
+
+static int
+sixel_webp_anim_frame_is_full_replace(
+    sixel_webp_anim_frame_t const *anim_frame,
+    int canvas_width,
+    int canvas_height)
+{
+    if (!sixel_webp_anim_frame_is_full_canvas(anim_frame,
+                                              canvas_width,
+                                              canvas_height)) {
+        return 0;
+    }
+    if (anim_frame->blend_over != 0) {
+        return 0;
+    }
+    return 1;
 }
 
 SIXELSTATUS
@@ -2425,14 +2797,28 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     int xmp_cms_applied;
     int xmp_cms_bare_fallback_used;
     int exif_applied;
+    int exif_size_limited;
     int xmp_applied;
+    int can_transfer_canvas;
+    int direct_canvas_decode;
+    int preroll_decode_start;
+    int decode_output_width;
+    int decode_output_height;
     sixel_webp_anim_meta_cache_t meta_cache;
+    sixel_webp_rgba_scratch_t scratch;
+    sixel_webp_anim_decode_workspace_t decode_workspace;
+    unsigned char *decode_output_pixels;
+    size_t decode_output_bytes;
+    size_t decode_output_stride;
+    size_t decode_output_offset;
 
     status = SIXEL_OK;
     memset(&container, 0, sizeof(container));
     memset(&plan, 0, sizeof(plan));
     memset(&stream, 0, sizeof(stream));
     memset(&meta_cache, 0, sizeof(meta_cache));
+    memset(&scratch, 0, sizeof(scratch));
+    memset(&decode_workspace, 0, sizeof(decode_workspace));
     frame = NULL;
     rgba = NULL;
     canvas_pixels = NULL;
@@ -2460,7 +2846,17 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     xmp_cms_applied = 0;
     xmp_cms_bare_fallback_used = 0;
     exif_applied = 0;
+    exif_size_limited = 0;
     xmp_applied = 0;
+    can_transfer_canvas = 0;
+    direct_canvas_decode = 0;
+    preroll_decode_start = 0;
+    decode_output_width = 0;
+    decode_output_height = 0;
+    decode_output_pixels = NULL;
+    decode_output_bytes = 0u;
+    decode_output_stride = 0u;
+    decode_output_offset = 0u;
     if (handled == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2541,6 +2937,26 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
         goto end;
     }
     sixel_webp_trace_anim_timing_contract(&stream);
+    /*
+     * On loop 0, frames before start_frame are still decoded to build the
+     * canvas baseline. If a full-canvas replace frame exists in pre-roll,
+     * frames before that point are guaranteed to be overwritten and can be
+     * skipped safely.
+     */
+    if (effective_start_frame_set != 0 && start_frame_resolved > 0) {
+        for (source_frame_no = start_frame_resolved - 1;
+             source_frame_no >= 0;
+             --source_frame_no) {
+            if (sixel_webp_anim_frame_is_full_replace(
+                    &stream.frames[source_frame_no],
+                    stream.canvas_width,
+                    stream.canvas_height) &&
+                stream.frames[source_frame_no].dispose_to_background == 0) {
+                preroll_decode_start = source_frame_no;
+                break;
+            }
+        }
+    }
 
     for (loop_no = 0;; ++loop_no) {
         if (sixel_loader_callback_is_canceled(cancel_context)) {
@@ -2569,10 +2985,70 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             if (effective_start_frame_set != 0 && loop_no == 0) {
                 emit_frame_no = source_frame_no - start_frame_resolved;
             }
+            if (emit_callback == 0 &&
+                loop_no == 0 &&
+                source_frame_no < preroll_decode_start) {
+                ++frames_in_loop;
+                continue;
+            }
+
+            /*
+             * Full-canvas replace frames do not need an extra composite copy.
+             * Decode straight into canvas and keep edge-safe compose for
+             * partial or blend-over frames.
+             */
+            direct_canvas_decode = 0;
+            decode_output_pixels = NULL;
+            decode_output_bytes = 0u;
+            decode_output_stride = 0u;
+            decode_output_width = 0;
+            decode_output_height = 0;
+            decode_output_offset = 0u;
+            if (sixel_webp_anim_frame_is_full_canvas(
+                    &stream.frames[source_frame_no],
+                    stream.canvas_width,
+                    stream.canvas_height) &&
+                (stream.frames[source_frame_no].blend_over == 0 ||
+                 stream.frames[source_frame_no].opaque_pixels_only != 0)) {
+                direct_canvas_decode = 1;
+                decode_output_pixels = canvas_pixels;
+                decode_output_bytes = canvas_bytes;
+            } else if (stream.frames[source_frame_no].blend_over == 0 &&
+                       (stream.frames[source_frame_no].kind
+                            == SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC ||
+                        stream.frames[source_frame_no].kind
+                            == SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC)) {
+                if ((size_t)stream.frames[source_frame_no].y_offset >
+                    SIZE_MAX / (size_t)stream.canvas_width) {
+                    status = SIXEL_BAD_INTEGER_OVERFLOW;
+                    goto end;
+                }
+                decode_output_offset =
+                    ((size_t)stream.frames[source_frame_no].y_offset
+                     * (size_t)stream.canvas_width
+                     + (size_t)stream.frames[source_frame_no].x_offset) * 4u;
+                if (decode_output_offset > canvas_bytes) {
+                    status = SIXEL_BAD_INTEGER_OVERFLOW;
+                    goto end;
+                }
+                direct_canvas_decode = 1;
+                decode_output_pixels = canvas_pixels + decode_output_offset;
+                decode_output_bytes = canvas_bytes - decode_output_offset;
+                decode_output_stride = (size_t)stream.canvas_width * 4u;
+                decode_output_width = stream.frames[source_frame_no].width;
+                decode_output_height = stream.frames[source_frame_no].height;
+            }
 
             status = sixel_webp_decode_anim_frame_rgba(
                 &stream.frames[source_frame_no],
                 allocator,
+                &scratch,
+                &decode_workspace,
+                decode_output_pixels,
+                decode_output_bytes,
+                decode_output_stride,
+                decode_output_width,
+                decode_output_height,
                 &rgba,
                 &subframe_width,
                 &subframe_height);
@@ -2592,12 +3068,12 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             sixel_webp_trace_anim_frame_success(
                 &stream.frames[source_frame_no]);
 
-            sixel_webp_anim_composite_rect(canvas_pixels,
-                                           stream.canvas_width,
-                                           &stream.frames[source_frame_no],
-                                           rgba);
-            sixel_allocator_free(allocator, rgba);
-            rgba = NULL;
+            if (direct_canvas_decode == 0) {
+                sixel_webp_anim_composite_rect(canvas_pixels,
+                                               stream.canvas_width,
+                                               &stream.frames[source_frame_no],
+                                               rgba);
+            }
 
             if (emit_callback == 0) {
                 if (stream.frames[source_frame_no].dispose_to_background != 0) {
@@ -2614,7 +3090,15 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
-            if (fstatic != 0) {
+            can_transfer_canvas = sixel_webp_anim_can_transfer_canvas_ownership(
+                fstatic,
+                source_frame_no,
+                stream.frame_count,
+                loop_control,
+                frames_in_loop,
+                loop_no,
+                stream.loop_count);
+            if (can_transfer_canvas != 0) {
                 emitted_pixels = canvas_pixels;
                 canvas_pixels = NULL;
             } else {
@@ -2714,6 +3198,11 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                 } else {
                     sixel_webp_trace_contract_add_code(
                         SIXEL_WEBP_CODE_META_EXIF_IGNORED);
+                    exif_size_limited = meta_cache.exif_size_limited;
+                    if (exif_size_limited != 0) {
+                        sixel_webp_trace_contract_add_code(
+                            SIXEL_WEBP_CODE_META_EXIF_SIZE_LIMIT_IGNORED);
+                    }
                 }
                 exif_code_reported = 1;
             }
@@ -2750,6 +3239,11 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             sixel_frame_unref(frame);
             frame = NULL;
             ++emitted_frames;
+            if (can_transfer_canvas != 0) {
+                sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_OK_ANIM);
+                status = SIXEL_OK;
+                goto end;
+            }
 
             if (stream.frames[source_frame_no].dispose_to_background != 0) {
                 sixel_webp_anim_clear_rect(canvas_pixels,
@@ -2758,11 +3252,6 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                                            background_rgba);
             }
             ++frames_in_loop;
-            if (fstatic) {
-                sixel_webp_trace_contract_add_code(SIXEL_WEBP_CODE_OK_ANIM);
-                status = SIXEL_OK;
-                goto end;
-            }
         }
 
         if (emitted_frames <= 0) {
@@ -2783,15 +3272,18 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
 
 end:
     sixel_frame_unref(frame);
-    if (rgba != NULL && chunk != NULL && allocator != NULL) {
-        sixel_allocator_free(allocator, rgba);
-    }
     if (emitted_pixels != NULL && chunk != NULL && allocator != NULL) {
         sixel_allocator_free(allocator, emitted_pixels);
     }
     if (canvas_pixels != NULL && chunk != NULL && allocator != NULL) {
         sixel_allocator_free(allocator, canvas_pixels);
     }
+    sixel_webp_anim_rgba_scratch_reset(&scratch,
+                                       chunk != NULL ? allocator
+                                                     : NULL);
+    sixel_webp_anim_decode_workspace_reset(&decode_workspace,
+                                           chunk != NULL ? allocator
+                                                         : NULL);
     sixel_webp_anim_meta_cache_reset(&meta_cache);
     sixel_webp_anim_stream_reset(&stream, chunk != NULL ? allocator
                                                         : NULL);
@@ -2825,6 +3317,7 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     int xmp_cms_applied;
     int xmp_cms_bare_fallback_used;
     int exif_applied;
+    int exif_size_limited;
     int xmp_applied;
     int iccp_size_limited;
     int xmp_orientation_size_limited;
@@ -2844,6 +3337,7 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
     xmp_cms_applied = 0;
     xmp_cms_bare_fallback_used = 0;
     exif_applied = 0;
+    exif_size_limited = 0;
     xmp_applied = 0;
     iccp_size_limited = 0;
     xmp_orientation_size_limited = 0;
@@ -3015,7 +3509,8 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
         status = sixel_webp_try_apply_exif_orientation(&plan,
                                                        enable_orientation,
                                                        frame,
-                                                       &exif_applied);
+                                                       &exif_applied,
+                                                       &exif_size_limited);
         if (SIXEL_FAILED(status)) {
             sixel_webp_trace_contract_add_code(
                 SIXEL_WEBP_CODE_META_EXIF_IGNORED);
@@ -3028,6 +3523,10 @@ sixel_fromwebp_load(sixel_chunk_t const *chunk,
         } else {
             sixel_webp_trace_contract_add_code(
                 SIXEL_WEBP_CODE_META_EXIF_IGNORED);
+            if (exif_size_limited != 0) {
+                sixel_webp_trace_contract_add_code(
+                    SIXEL_WEBP_CODE_META_EXIF_SIZE_LIMIT_IGNORED);
+            }
         }
         exif_code_reported = 1;
     }
