@@ -297,19 +297,6 @@ sixel_webp_vp8_bool_read_signed_value_fast(
     return SIXEL_OK;
 }
 
-static SIXELSTATUS
-sixel_webp_vp8_bool_read_signed_value(sixel_webp_vp8_bool_decoder_t *decoder,
-                                      unsigned int value,
-                                      int *psigned)
-{
-    if (decoder == NULL || psigned == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    return sixel_webp_vp8_bool_read_signed_value_fast(decoder,
-                                                      value,
-                                                      psigned);
-}
-
 SIXELSTATUS
 sixel_webp_vp8_decode_coeff_block(
     sixel_webp_vp8_bool_decoder_t *decoder,
