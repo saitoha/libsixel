@@ -158,10 +158,13 @@ static int img2sixel_compat_strcpy(char *destination,
                                    size_t destination_size,
                                    const char *source);
 #endif
+#if (defined(_MSC_VER) && defined(HAVE__CHMOD)) || defined(HAVE_CHMOD)
+#define IMG2SIXEL_COMPAT_NEEDS_LOG_ERRNO 1
 static void img2sixel_compat_log_errno_impl(int saved_errno,
                                             const char *fmt, ...);
 #define img2sixel_compat_log_errno(...) \
     img2sixel_compat_log_errno_impl(errno, __VA_ARGS__)
+#endif
 char *
 img2sixel_compat_strerror(int error_number,
                           char *buffer,
@@ -542,6 +545,7 @@ img2sixel_compat_strcpy(char *destination,
 }
 #endif
 
+#if defined(IMG2SIXEL_COMPAT_NEEDS_LOG_ERRNO)
 static void
 img2sixel_compat_log_errno_impl(int saved_errno, const char *fmt, ...)
 {
@@ -599,6 +603,7 @@ img2sixel_compat_log_errno_impl(int saved_errno, const char *fmt, ...)
     }
     fprintf(stderr, "\n");
 }
+#endif
 
 /*
  * Use the platform-specific chmod entry point so MSVC does not warn

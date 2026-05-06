@@ -2320,7 +2320,8 @@ fi
 # In CI, CFLAGS includes -Werror. Keep emcc post-link optimization warnings
 # non-fatal in normal build compilation as well as feature checks.
 AS_IF([test -n "$EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT" -a -n "$CI"],
-      [AM_CFLAGS="$AM_CFLAGS $EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"])
+      [AM_CFLAGS="$AM_CFLAGS $EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"
+       LDFLAGS="$LDFLAGS $EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"])
 
 AS_IF([test "x$enable_sanitizer" != "xno"], [
   # Target-specific Automake CFLAGS in this tree are based on AM_CFLAGS, so
