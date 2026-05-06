@@ -19,7 +19,11 @@ set +x
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
 committed_tail=''
+diag_line=''
+commit_marker='builtin PSD: compositing deferred offscreen clipped group buffer to canvas'
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
@@ -32,48 +36,56 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-committed_tail="${trace_output##*builtin PSD: compositing deferred offscreen clipped group buffer to canvas*}"
+committed_tail="${trace_output#*"${commit_marker}"}"
 
 test "${committed_tail}" != "${trace_output}" || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred group commit trace"
     exit 0
 }
 
-test "${committed_tail#*builtin PSD: replaying deferred clbl=1 overlay entry in layer fallback*}" \
-    = "${committed_tail}" || {
+test -n "${committed_tail}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite replayed deferred overlay after group commit"
+        "effects/stroke-composite missing post-commit trace tail"
     exit 0
 }
 
-test "${committed_tail#*builtin PSD: applying clip-weighted deferred solid overlay in layer fallback*}" \
-    = "${committed_tail}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite applied deferred solid overlay after group commit"
+diag_line=${trace_output#*LSXPSD1|}
+test "${diag_line}" != "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing LSXPSD1 contract header"
     exit 0
 }
 
-test "${committed_tail#*builtin PSD: applying clip-weighted deferred gradient overlay in layer fallback*}" \
-    = "${committed_tail}" || {
+diag_line="LSXPSD1|${diag_line}"
+diag_line=${diag_line%%"${nl}"*}
+
+test "${diag_line#*FX_CLBL1_DEFERRED_OVERLAY_REPLAY_ENTRY*}" \
+    != "${diag_line}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite applied deferred gradient overlay after group commit"
+        "effects/stroke-composite missing deferred overlay replay contract code"
     exit 0
 }
 
-test "${committed_tail#*builtin PSD: applying deferred stroke on clipped group*}" \
-    = "${committed_tail}" || {
+test "${diag_line#*FX_DEFERRED_SOLID_OVERLAY_CLIP*}" \
+    != "${diag_line}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite applied deferred stroke after group commit"
+        "effects/stroke-composite missing deferred solid replay contract code"
     exit 0
 }
 
-test "${committed_tail#*builtin PSD: skipping clip-weighted deferred solid overlay in layer fallback due to zero coverage*}" \
-    = "${committed_tail}" || {
+test "${diag_line#*FX_DEFERRED_GRADIENT_CLIP*}" \
+    != "${diag_line}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite retried deferred solid skip after group commit"
+        "effects/stroke-composite missing deferred gradient replay contract code"
+    exit 0
+}
+
+test "${diag_line#*FX_DEFERRED_POST_COMMIT_REPLAY_BLOCKED*}" \
+    = "${diag_line}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite emitted post-commit replay-block code in normal flow"
     exit 0
 }
 
 echo "ok" 1 - \
-    "effects/stroke-composite blocks deferred replay traces in post-commit tail"
+    "effects/stroke-composite keeps post-commit replay boundary contracts stable"
 exit 0

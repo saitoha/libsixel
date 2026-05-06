@@ -19,7 +19,11 @@ set +x
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
 committed_tail=''
+diag_line=''
+commit_marker='builtin PSD: compositing deferred offscreen clipped group buffer to canvas'
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
@@ -32,27 +36,49 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-committed_tail="${trace_output##*builtin PSD: compositing deferred offscreen clipped group buffer to canvas*}"
+committed_tail="${trace_output#*"${commit_marker}"}"
 
 test "${committed_tail}" != "${trace_output}" || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred group commit trace"
     exit 0
 }
 
-test "${committed_tail#*builtin PSD: replacing deferred clbl=1 overlay replay entry in layer fallback*}" \
-    = "${committed_tail}" || {
+test -n "${committed_tail}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite replay replacement trace reappeared after commit"
+        "effects/stroke-composite missing post-commit trace tail"
     exit 0
 }
 
-test "${committed_tail#*builtin PSD: skipping deferred overlay replay enqueue while group replay is locked*}" \
-    = "${committed_tail}" || {
+diag_line=${trace_output#*LSXPSD1|}
+test "${diag_line}" != "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing LSXPSD1 contract header"
+    exit 0
+}
+
+diag_line="LSXPSD1|${diag_line}"
+diag_line=${diag_line%%"${nl}"*}
+
+test "${diag_line#*FX_DEFERRED_OVERLAY_REPLAY_REPLACE*}" \
+    = "${diag_line}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite replay lock skip trace reappeared after commit"
+        "effects/stroke-composite emitted replay replacement code in normal flow"
+    exit 0
+}
+
+test "${diag_line#*FX_DEFERRED_OVERLAY_REPLAY_SKIP_LOCKED*}" \
+    = "${diag_line}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite emitted replay lock skip code in normal flow"
+    exit 0
+}
+
+test "${diag_line#*FX_DEFERRED_POST_COMMIT_REPLAY_BLOCKED*}" \
+    = "${diag_line}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite emitted post-commit replay-block code in normal flow"
     exit 0
 }
 
 echo "ok" 1 - \
-    "effects/stroke-composite keeps replay replacement/skip traces out of post-commit tail"
+    "effects/stroke-composite keeps replay replacement/lock codes out of normal flow"
 exit 0

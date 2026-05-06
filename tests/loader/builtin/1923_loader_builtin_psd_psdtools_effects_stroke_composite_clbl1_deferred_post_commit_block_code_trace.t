@@ -18,7 +18,10 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
+diag_line=''
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
@@ -31,13 +34,34 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
+diag_line=${trace_output#*LSXPSD1|}
+test "${diag_line}" != "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing LSXPSD1 contract header"
+    exit 0
+}
+
+diag_line="LSXPSD1|${diag_line}"
+diag_line=${diag_line%%"${nl}"*}
+
+test "${diag_line#*FX_CLBL1_BASE_OVERLAY_SUPPRESS*}" != "${diag_line}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite missing deferred overlay suppression contract code"
+    exit 0
+}
+
+test "${diag_line#*FX_CLBL1_DEFERRED_OVERLAY_REPLAY_ENTRY*}" != "${diag_line}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite missing deferred overlay replay contract code"
+    exit 0
+}
+
 test "${trace_output#*builtin PSD: compositing deferred offscreen clipped group buffer to canvas*}" \
     != "${trace_output}" || {
     echo "not ok" 1 - "effects/stroke-composite missing deferred group commit trace"
     exit 0
 }
 
-test "${trace_output#*FX_DEFERRED_POST_COMMIT_REPLAY_BLOCKED*}" = "${trace_output}" || {
+test "${diag_line#*FX_DEFERRED_POST_COMMIT_REPLAY_BLOCKED*}" = "${diag_line}" || {
     echo "not ok" 1 - \
         "effects/stroke-composite emitted post-commit replay blocked code in normal flow"
     exit 0
