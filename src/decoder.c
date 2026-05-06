@@ -808,7 +808,7 @@ sixel_scale_threshold(unsigned short base, int percent)
     return (unsigned short)scaled;
 }
 
-static SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dequantize_k_undither(unsigned char *indexed_pixels,
                             int width,
                             int height,

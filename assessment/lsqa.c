@@ -61,8 +61,11 @@
 #include <sixel.h>
 
 #include "assessment.h"
+#include "chunk-factory.h"
+#include "chunk-view.h"
 #include "getopt_stub.h"
 #include "cli.h"
+#include "decoder.h"
 #include "options.h"
 #include "tty.h"
 
@@ -319,6 +322,177 @@ error:
     sixel_loader_unref(loader);
     if (capture.frame != NULL) {
         sixel_frame_unref(capture.frame);
+    }
+    return -1;
+}
+
+static int
+load_dequantized_target_frame(char const *path,
+                              sixel_allocator_t *allocator,
+                              int dequantize_method,
+                              int similarity_bias,
+                              int edge_strength,
+                              sixel_frame_t **out_frame)
+{
+    SIXELSTATUS status;
+    sixel_chunk_t *chunk;
+    unsigned char const *bytes;
+    size_t byte_size;
+    unsigned char *indexed_pixels;
+    unsigned char *palette;
+    unsigned char *rgb_pixels;
+    sixel_frame_t *frame;
+    int width;
+    int height;
+    int ncolors;
+
+    status = SIXEL_FALSE;
+    chunk = NULL;
+    bytes = NULL;
+    byte_size = 0u;
+    indexed_pixels = NULL;
+    palette = NULL;
+    rgb_pixels = NULL;
+    frame = NULL;
+    width = 0;
+    height = 0;
+    ncolors = 0;
+
+    if (path == NULL || allocator == NULL || out_frame == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto error;
+    }
+    *out_frame = NULL;
+
+    status = sixel_chunk_create_from_source(&chunk,
+                                            path,
+                                            0,
+                                            NULL,
+                                            allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    bytes = sixel_chunk_get_buffer(chunk);
+    byte_size = sixel_chunk_get_size(chunk);
+    if (bytes == NULL || byte_size == 0u) {
+        sixel_helper_set_additional_message(
+            "target input did not provide SIXEL bytes.");
+        status = SIXEL_BAD_INPUT;
+        goto error;
+    }
+    if (byte_size > (size_t)INT_MAX) {
+        sixel_helper_set_additional_message(
+            "target SIXEL input is too large to decode.");
+        status = SIXEL_BAD_INPUT;
+        goto error;
+    }
+
+    /*
+     * Dequantization is target-side only and intentionally bypasses the
+     * general image loader, matching `sixel2png -d METHOD | lsqa ref -`.
+     */
+    status = sixel_decode_raw((unsigned char *)bytes,
+                              (int)byte_size,
+                              &indexed_pixels,
+                              &width,
+                              &height,
+                              &palette,
+                              &ncolors,
+                              allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    if (width > SIXEL_WIDTH_LIMIT || height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "target SIXEL dimensions exceed the decoder limit.");
+        status = SIXEL_BAD_INPUT;
+        goto error;
+    }
+
+    if (dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER) {
+        status = sixel_dequantize_k_undither(indexed_pixels,
+                                             width,
+                                             height,
+                                             palette,
+                                             ncolors,
+                                             similarity_bias,
+                                             edge_strength,
+                                             allocator,
+                                             &rgb_pixels);
+        if (SIXEL_FAILED(status)) {
+            goto error;
+        }
+    } else {
+        sixel_helper_set_additional_message(
+            "target dequantize method is not supported.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto error;
+    }
+
+    status = sixel_frame_new(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_frame_init(frame,
+                              rgb_pixels,
+                              width,
+                              height,
+                              SIXEL_PIXELFORMAT_RGB888,
+                              NULL,
+                              0);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    rgb_pixels = NULL;
+    *out_frame = frame;
+    frame = NULL;
+
+    if (chunk != NULL && chunk->vtbl != NULL &&
+            chunk->vtbl->unref != NULL) {
+        chunk->vtbl->unref(chunk);
+    }
+    if (indexed_pixels != NULL) {
+        sixel_allocator_free(allocator, indexed_pixels);
+    }
+    if (palette != NULL) {
+        sixel_allocator_free(allocator, palette);
+    }
+    return 0;
+
+error:
+    if (SIXEL_FAILED(status)) {
+        char const *detail;
+
+        detail = sixel_helper_get_additional_message();
+        if (detail != NULL && detail[0] != '\0') {
+            fprintf(stderr,
+                    "libsixel target dequantize failed for %s: %s (%s)\n",
+                    path != NULL ? path : "(null)",
+                    sixel_helper_format_error(status),
+                    detail);
+        } else {
+            fprintf(stderr,
+                    "libsixel target dequantize failed for %s: %s\n",
+                    path != NULL ? path : "(null)",
+                    sixel_helper_format_error(status));
+        }
+    }
+    if (frame != NULL) {
+        sixel_frame_unref(frame);
+    }
+    if (rgb_pixels != NULL) {
+        sixel_allocator_free(allocator, rgb_pixels);
+    }
+    if (indexed_pixels != NULL) {
+        sixel_allocator_free(allocator, indexed_pixels);
+    }
+    if (palette != NULL) {
+        sixel_allocator_free(allocator, palette);
+    }
+    if (chunk != NULL && chunk->vtbl != NULL &&
+            chunk->vtbl->unref != NULL) {
+        chunk->vtbl->unref(chunk);
     }
     return -1;
 }
@@ -973,12 +1147,20 @@ static sixel_option_choice_t const g_lsqa_compare_precision_choices[] = {
     { "float32", LSQA_COMPARE_PRECISION_FLOAT32 }
 };
 
+static sixel_option_choice_t const g_lsqa_dequantize_choices[] = {
+    { "none", SIXEL_DEQUANTIZE_NONE },
+    { "k_undither", SIXEL_DEQUANTIZE_K_UNDITHER }
+};
+
 static char const g_lsqa_compare_colorspace_detail[] =
     "compare-colorspace accepts reference, gamma, linear, oklab, "
     "cielab, or din99d.";
 
 static char const g_lsqa_compare_precision_detail[] =
     "compare-precision accepts reference, 8bit, or float32.";
+
+static char const g_lsqa_dequantize_detail[] =
+    "dequantize accepts none or k_undither.";
 
 static void
 lsqa_copy_parse_detail(char *detail,
@@ -1329,6 +1511,64 @@ lsqa_parse_compare_precision(char const *argument,
 }
 
 static int
+lsqa_parse_dequantize_method(char const *argument,
+                             int *out_method,
+                             char *detail,
+                             size_t detail_size)
+{
+    return lsqa_parse_choice_argument(argument,
+                                      g_lsqa_dequantize_choices,
+                                      sizeof(g_lsqa_dequantize_choices) /
+                                      sizeof(g_lsqa_dequantize_choices[0]),
+                                      g_lsqa_dequantize_detail,
+                                      out_method,
+                                      detail,
+                                      detail_size);
+}
+
+static int
+lsqa_parse_dequantize_bias(char const *argument,
+                           int *out_bias,
+                           char *detail,
+                           size_t detail_size,
+                           char const *name)
+{
+    long parsed_value;
+    char *endptr;
+
+    parsed_value = 0L;
+    endptr = NULL;
+    if (detail != NULL && detail_size > 0u) {
+        detail[0] = '\0';
+    }
+    if (argument == NULL || argument[0] == '\0' || out_bias == NULL) {
+        if (detail != NULL && detail_size > 0u) {
+            (void)snprintf(detail,
+                           detail_size,
+                           "%s requires an integer between 0 and 1000.",
+                           name);
+        }
+        return -1;
+    }
+
+    errno = 0;
+    parsed_value = strtol(argument, &endptr, 10);
+    if (endptr == argument || endptr[0] != '\0' || errno == ERANGE ||
+            parsed_value < 0L || parsed_value > 1000L) {
+        if (detail != NULL && detail_size > 0u) {
+            (void)snprintf(detail,
+                           detail_size,
+                           "%s must be an integer between 0 and 1000.",
+                           name);
+        }
+        return -1;
+    }
+
+    *out_bias = (int)parsed_value;
+    return 0;
+}
+
+static int
 lsqa_parse_boolean(char const *argument,
                    int *out_value)
 {
@@ -1438,6 +1678,9 @@ typedef struct Options {
     int grayscale_compare;
     int compare_colorspace;
     int compare_precision;
+    int dequantize_method;
+    int dequantize_similarity_bias;
+    int dequantize_edge_strength;
     const char *loader_order;
     int grayscale_specified;
     int compare_colorspace_specified;
@@ -1673,6 +1916,31 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             rgb:rrrr/gggg/bbbb\n"
     },
     {
+        'd',
+        "dequantize",
+        "-d METHOD, --dequantize=METHOD\n"
+        "                           dequantize target SIXEL input\n"
+        "                           before comparison.\n"
+        "                           METHOD is one of:\n"
+        "                             none        -> disable\n"
+        "                             k_undither  -> Kornelski's\n"
+        "                                            undither\n"
+    },
+    {
+        'S',
+        "similarity",
+        "-S BIAS, --similarity=BIAS specify dequantize similarity\n"
+        "                           bias, range: 0-1000\n"
+        "                           (default: 100).\n"
+    },
+    {
+        'e',
+        "edge",
+        "-e BIAS, --edge=BIAS       specify dequantize edge\n"
+        "                           protection bias, range: 0-1000\n"
+        "                           (default: 0).\n"
+    },
+    {
         'H',
         "help",
         "-H, --help                 show this help.\n"
@@ -1689,7 +1957,7 @@ lsqa_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_lsqa_optstring[] = "m:b:%:gW:P:L:B:Hh";
+static char const g_lsqa_optstring[] = "m:b:%:gW:P:L:B:d:S:e:Hh";
 
 static void
 lsqa_print_option_help(FILE *stream)
@@ -1862,20 +2130,20 @@ print_usage(const char *prog)
     fprintf(stderr,
             "Usage: %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
             "             [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
-            "             [-B BGCOLOR]\n"
-            "             <reference> [output]\n",
+            "             [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
+            "             <reference> [target]\n",
             prog);
     fprintf(stderr,
             "       %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
             "             [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
-            "             [-B BGCOLOR]\n"
-            "             <reference> < output\n",
+            "             [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
+            "             <reference> < target\n",
             prog);
     fprintf(stderr,
             "       %s [-m NAME] [-b METRIC:VALUE] [-g]\n"
             "             [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
-            "             [-B BGCOLOR]\n"
-            "             <reference> - < output\n",
+            "             [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
+            "             <reference> - < target\n",
             prog);
     fprintf(stderr,
     "  -m, --metrics NAME  limit computation to a single metric\n");
@@ -1902,6 +2170,16 @@ print_usage(const char *prog)
             "  -B, --bgcolor BGCOLOR\n");
     fprintf(stderr,
             "                        background color for alpha composition\n");
+    fprintf(stderr,
+            "  -d, --dequantize METHOD\n");
+    fprintf(stderr,
+            "                        dequantize target SIXEL input\n");
+    fprintf(stderr,
+            "  -S, --similarity BIAS\n");
+    fprintf(stderr,
+            "                        dequantize similarity bias\n");
+    fprintf(stderr,
+            "  -e, --edge BIAS  dequantize edge protection bias\n");
 }
 
 static void
@@ -1913,16 +2191,16 @@ show_help(void)
     fprintf(stdout,
             "Usage: lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
             "            [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
-            "            [-B BGCOLOR]\n"
-            "            <reference> [output]\n"
+            "            [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
+            "            <reference> [target]\n"
             "       lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
             "            [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
-            "            [-B BGCOLOR]\n"
-            "            <reference> < output\n"
+            "            [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
+            "            <reference> < target\n"
             "       lsqa [-m NAME] [-b METRIC:VALUE] [-g]\n"
             "            [-W COLORSPACE] [-P PRECISION] [-L LIST]\n"
-            "            [-B BGCOLOR]\n"
-            "            <reference> - < output\n"
+            "            [-B BGCOLOR] [-d METHOD] [-S BIAS] [-e BIAS]\n"
+            "            <reference> - < target\n"
             "\n"
             "Options:\n");
     lsqa_print_option_help(stdout);
@@ -2246,6 +2524,9 @@ parse_args(int argc, char **argv, Options *opts)
     opts->grayscale_compare = 0;
     opts->compare_colorspace = LSQA_COMPARE_COLORSPACE_REFERENCE;
     opts->compare_precision = LSQA_COMPARE_PRECISION_REFERENCE;
+    opts->dequantize_method = SIXEL_DEQUANTIZE_NONE;
+    opts->dequantize_similarity_bias = 100;
+    opts->dequantize_edge_strength = 0;
     opts->loader_order = NULL;
     opts->grayscale_specified = 0;
     opts->compare_colorspace_specified = 0;
@@ -2293,6 +2574,9 @@ parse_args(int argc, char **argv, Options *opts)
             {"compare-precision", required_argument, &long_opt, 'P'},
             {"loaders", required_argument, &long_opt, 'L'},
             {"bgcolor", required_argument, &long_opt, 'B'},
+            {"dequantize", required_argument, &long_opt, 'd'},
+            {"similarity", required_argument, &long_opt, 'S'},
+            {"edge", required_argument, &long_opt, 'e'},
             {"help", no_argument, &long_opt, 'H'},
             {0, 0, 0, 0}
         };
@@ -2395,6 +2679,56 @@ parse_args(int argc, char **argv, Options *opts)
                 goto cleanup;
             }
             opts->has_bgcolor = 1;
+            break;
+        case 'd':
+            if (lsqa_parse_dequantize_method(
+                        optarg,
+                        &opts->dequantize_method,
+                        detail_buffer,
+                        sizeof(detail_buffer)) != 0) {
+                lsqa_report_invalid_argument(
+                    'd',
+                    optarg,
+                    detail_buffer[0] != '\0'
+                        ? detail_buffer
+                        : g_lsqa_dequantize_detail);
+                parse_status = -1;
+                goto cleanup;
+            }
+            break;
+        case 'S':
+            if (lsqa_parse_dequantize_bias(
+                        optarg,
+                        &opts->dequantize_similarity_bias,
+                        detail_buffer,
+                        sizeof(detail_buffer),
+                        "similarity bias") != 0) {
+                lsqa_report_invalid_argument(
+                    'S',
+                    optarg,
+                    detail_buffer[0] != '\0'
+                        ? detail_buffer
+                        : "similarity bias must be 0-1000.");
+                parse_status = -1;
+                goto cleanup;
+            }
+            break;
+        case 'e':
+            if (lsqa_parse_dequantize_bias(
+                        optarg,
+                        &opts->dequantize_edge_strength,
+                        detail_buffer,
+                        sizeof(detail_buffer),
+                        "edge bias") != 0) {
+                lsqa_report_invalid_argument(
+                    'e',
+                    optarg,
+                    detail_buffer[0] != '\0'
+                        ? detail_buffer
+                        : "edge bias must be 0-1000.");
+                parse_status = -1;
+                goto cleanup;
+            }
             break;
         case 'b':
             if (opts->baseline_enabled) {
@@ -2581,11 +2915,23 @@ main(int argc, char **argv)
         sixel_allocator_unref(allocator);
         return LSQA_EXIT_LOAD_FAILED;
     }
-    if (load_frame(opts.out_path,
-                   allocator,
-                   opts.loader_order,
-                   opts.has_bgcolor ? opts.bgcolor : NULL,
-                   &out_frame) != 0) {
+    if (opts.dequantize_method != SIXEL_DEQUANTIZE_NONE) {
+        if (load_dequantized_target_frame(
+                    opts.out_path,
+                    allocator,
+                    opts.dequantize_method,
+                    opts.dequantize_similarity_bias,
+                    opts.dequantize_edge_strength,
+                    &out_frame) != 0) {
+            sixel_frame_unref(ref_frame);
+            sixel_allocator_unref(allocator);
+            return LSQA_EXIT_LOAD_FAILED;
+        }
+    } else if (load_frame(opts.out_path,
+                          allocator,
+                          opts.loader_order,
+                          opts.has_bgcolor ? opts.bgcolor : NULL,
+                          &out_frame) != 0) {
         sixel_frame_unref(ref_frame);
         sixel_allocator_unref(allocator);
         return LSQA_EXIT_LOAD_FAILED;
@@ -2644,12 +2990,12 @@ main(int argc, char **argv)
         detail = sixel_helper_get_additional_message();
         if (detail != NULL && detail[0] != '\0') {
             fprintf(stderr,
-                    "Failed to normalize output frame: %s (%s)\n",
+                    "Failed to normalize target frame: %s (%s)\n",
                     sixel_helper_format_error(status),
                     detail);
         } else {
             fprintf(stderr,
-                    "Failed to normalize output frame: %s\n",
+                    "Failed to normalize target frame: %s\n",
                     sixel_helper_format_error(status));
         }
         sixel_frame_unref(ref_frame);

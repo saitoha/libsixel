@@ -46,6 +46,21 @@ struct sixel_decoder {
     char clipboard_output_format[32];
 };
 
+/*
+ * Shared k_undither dequantizer used by decoder-side -d handling and tools
+ * that need the same decoded target pixels without a PNG round trip.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_k_undither(unsigned char *indexed_pixels,
+                            int width,
+                            int height,
+                            unsigned char *palette,
+                            int ncolors,
+                            int similarity_bias,
+                            int edge_strength,
+                            sixel_allocator_t *allocator,
+                            unsigned char **output);
+
 
 #endif /* LIBSIXEL_DECODER_H */
 
