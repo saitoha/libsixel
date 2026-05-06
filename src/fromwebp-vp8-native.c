@@ -956,8 +956,9 @@ sixel_webp_vp8_predict_bmode(unsigned int bmode,
 
     for (i = 0u; i < 8u; ++i) {
         ref_x = x + i;
-        ref_y = y - 1u;
+        ref_y = 0u;
         if (y != 0u) {
+            ref_y = y - 1u;
             if ((y & 15u) != 0u && ref_x > mb_right) {
                 if (mb_top_y == 0u) {
                     above[i] = SIXEL_WEBP_VP8_BORDER_TOP;
