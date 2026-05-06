@@ -307,6 +307,21 @@ sixel_webp_decode_vp8_payload_into_with_workspace(
     sixel_webp_vp8_workspace_t *workspace,
     sixel_allocator_t *allocator);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_webp_decode_vp8_payload_into_strided_with_workspace(
+    unsigned char const *payload,
+    size_t payload_size,
+    unsigned char *rgba,
+    size_t rgba_size,
+    size_t rgba_stride,
+    int rgba_width,
+    int rgba_height,
+    unsigned char **prgba,
+    int *pwidth,
+    int *pheight,
+    sixel_webp_vp8_workspace_t *workspace,
+    sixel_allocator_t *allocator);
+
 SIXEL_INTERNAL_API void
 sixel_webp_vp8_workspace_reset(sixel_webp_vp8_workspace_t *workspace,
                                sixel_allocator_t *allocator);

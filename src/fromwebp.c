@@ -2244,6 +2244,9 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
                                   sixel_webp_anim_decode_workspace_t *workspace,
                                   unsigned char *out_pixels,
                                   size_t out_pixels_bytes,
+                                  size_t out_pixels_stride,
+                                  int out_pixels_width,
+                                  int out_pixels_height,
                                   unsigned char **prgba,
                                   int *pwidth,
                                   int *pheight)
@@ -2253,12 +2256,20 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
     size_t required_bytes;
     unsigned char *decode_pixels;
     size_t decode_pixels_bytes;
+    size_t decode_pixels_stride;
+    int decode_pixels_width;
+    int decode_pixels_height;
+    int direct_subrect_decode;
 
     status = SIXEL_OK;
     pixel_count = 0u;
     required_bytes = 0u;
     decode_pixels = NULL;
     decode_pixels_bytes = 0u;
+    decode_pixels_stride = 0u;
+    decode_pixels_width = 0;
+    decode_pixels_height = 0;
+    direct_subrect_decode = 0;
     if (anim_frame == NULL || allocator == NULL || scratch == NULL ||
         workspace == NULL || prgba == NULL ||
         pwidth == NULL || pheight == NULL) {
@@ -2277,10 +2288,17 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
     }
     required_bytes = pixel_count * 4u;
     if (out_pixels != NULL) {
-        if (out_pixels_bytes < required_bytes) {
-            sixel_helper_set_additional_message(
-                "builtin webp: direct ANIM output buffer is too small.");
-            return SIXEL_BAD_ARGUMENT;
+        if (out_pixels_stride != 0u) {
+            direct_subrect_decode = 1;
+            decode_pixels_stride = out_pixels_stride;
+            decode_pixels_width = out_pixels_width;
+            decode_pixels_height = out_pixels_height;
+        } else {
+            if (out_pixels_bytes < required_bytes) {
+                sixel_helper_set_additional_message(
+                    "builtin webp: direct ANIM output buffer is too small.");
+                return SIXEL_BAD_ARGUMENT;
+            }
         }
         decode_pixels = out_pixels;
         decode_pixels_bytes = out_pixels_bytes;
@@ -2298,16 +2316,32 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
 
     if (anim_frame->kind == SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC ||
         anim_frame->kind == SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC) {
-        status = sixel_webp_decode_vp8_payload_into_with_workspace(
-            anim_frame->vp8_payload,
-            anim_frame->vp8_payload_size,
-            decode_pixels,
-            decode_pixels_bytes,
-            prgba,
-            pwidth,
-            pheight,
-            &workspace->vp8,
-            allocator);
+        if (direct_subrect_decode != 0) {
+            status = sixel_webp_decode_vp8_payload_into_strided_with_workspace(
+                anim_frame->vp8_payload,
+                anim_frame->vp8_payload_size,
+                decode_pixels,
+                decode_pixels_bytes,
+                decode_pixels_stride,
+                decode_pixels_width,
+                decode_pixels_height,
+                prgba,
+                pwidth,
+                pheight,
+                &workspace->vp8,
+                allocator);
+        } else {
+            status = sixel_webp_decode_vp8_payload_into_with_workspace(
+                anim_frame->vp8_payload,
+                anim_frame->vp8_payload_size,
+                decode_pixels,
+                decode_pixels_bytes,
+                prgba,
+                pwidth,
+                pheight,
+                &workspace->vp8,
+                allocator);
+        }
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -2333,6 +2367,9 @@ sixel_webp_decode_anim_frame_rgba(sixel_webp_anim_frame_t const *anim_frame,
     }
 
     if (anim_frame->kind == SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC) {
+        if (direct_subrect_decode != 0) {
+            return SIXEL_BAD_ARGUMENT;
+        }
         status = sixel_webp_decode_vp8l_payload_into_with_workspace(
             anim_frame->vp8l_payload,
             anim_frame->vp8l_payload_size,
@@ -2765,11 +2802,15 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     int can_transfer_canvas;
     int direct_canvas_decode;
     int preroll_decode_start;
+    int decode_output_width;
+    int decode_output_height;
     sixel_webp_anim_meta_cache_t meta_cache;
     sixel_webp_rgba_scratch_t scratch;
     sixel_webp_anim_decode_workspace_t decode_workspace;
     unsigned char *decode_output_pixels;
     size_t decode_output_bytes;
+    size_t decode_output_stride;
+    size_t decode_output_offset;
 
     status = SIXEL_OK;
     memset(&container, 0, sizeof(container));
@@ -2810,8 +2851,12 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     can_transfer_canvas = 0;
     direct_canvas_decode = 0;
     preroll_decode_start = 0;
+    decode_output_width = 0;
+    decode_output_height = 0;
     decode_output_pixels = NULL;
     decode_output_bytes = 0u;
+    decode_output_stride = 0u;
+    decode_output_offset = 0u;
     if (handled == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -2955,6 +3000,10 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             direct_canvas_decode = 0;
             decode_output_pixels = NULL;
             decode_output_bytes = 0u;
+            decode_output_stride = 0u;
+            decode_output_width = 0;
+            decode_output_height = 0;
+            decode_output_offset = 0u;
             if (sixel_webp_anim_frame_is_full_canvas(
                     &stream.frames[source_frame_no],
                     stream.canvas_width,
@@ -2964,6 +3013,30 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                 direct_canvas_decode = 1;
                 decode_output_pixels = canvas_pixels;
                 decode_output_bytes = canvas_bytes;
+            } else if (stream.frames[source_frame_no].blend_over == 0 &&
+                       (stream.frames[source_frame_no].kind
+                            == SIXEL_WEBP_CONTAINER_KIND_VP8_STATIC ||
+                        stream.frames[source_frame_no].kind
+                            == SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC)) {
+                if ((size_t)stream.frames[source_frame_no].y_offset >
+                    SIZE_MAX / (size_t)stream.canvas_width) {
+                    status = SIXEL_BAD_INTEGER_OVERFLOW;
+                    goto end;
+                }
+                decode_output_offset =
+                    ((size_t)stream.frames[source_frame_no].y_offset
+                     * (size_t)stream.canvas_width
+                     + (size_t)stream.frames[source_frame_no].x_offset) * 4u;
+                if (decode_output_offset > canvas_bytes) {
+                    status = SIXEL_BAD_INTEGER_OVERFLOW;
+                    goto end;
+                }
+                direct_canvas_decode = 1;
+                decode_output_pixels = canvas_pixels + decode_output_offset;
+                decode_output_bytes = canvas_bytes - decode_output_offset;
+                decode_output_stride = (size_t)stream.canvas_width * 4u;
+                decode_output_width = stream.frames[source_frame_no].width;
+                decode_output_height = stream.frames[source_frame_no].height;
             }
 
             status = sixel_webp_decode_anim_frame_rgba(
@@ -2973,6 +3046,9 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                 &decode_workspace,
                 decode_output_pixels,
                 decode_output_bytes,
+                decode_output_stride,
+                decode_output_width,
+                decode_output_height,
                 &rgba,
                 &subframe_width,
                 &subframe_height);

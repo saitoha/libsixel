@@ -69,6 +69,36 @@ sixel_webp_decode_vp8_payload_into_with_workspace(
     sixel_webp_vp8_workspace_t *workspace,
     sixel_allocator_t *allocator)
 {
+    return sixel_webp_decode_vp8_payload_into_strided_with_workspace(
+        payload,
+        payload_size,
+        rgba,
+        rgba_size,
+        0u,
+        0,
+        0,
+        prgba,
+        pwidth,
+        pheight,
+        workspace,
+        allocator);
+}
+
+SIXELSTATUS
+sixel_webp_decode_vp8_payload_into_strided_with_workspace(
+    unsigned char const *payload,
+    size_t payload_size,
+    unsigned char *rgba,
+    size_t rgba_size,
+    size_t rgba_stride,
+    int rgba_width,
+    int rgba_height,
+    unsigned char **prgba,
+    int *pwidth,
+    int *pheight,
+    sixel_webp_vp8_workspace_t *workspace,
+    sixel_allocator_t *allocator)
+{
     SIXELSTATUS status;
     sixel_webp_vp8_frame_header_t header;
     unsigned char *decoded_rgba;
@@ -81,8 +111,8 @@ sixel_webp_decode_vp8_payload_into_with_workspace(
     header.first_partition_size = 0u;
     decoded_rgba = NULL;
     if (payload == NULL || payload_size == 0u || prgba == NULL ||
-        pwidth == NULL || pheight == NULL || allocator == NULL || rgba == NULL ||
-        rgba_size == 0u) {
+        pwidth == NULL || pheight == NULL || allocator == NULL ||
+        rgba == NULL || rgba_size == 0u) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -95,16 +125,19 @@ sixel_webp_decode_vp8_payload_into_with_workspace(
         return status;
     }
 
-    status = sixel_webp_vp8_decode_native_payload(payload,
-                                                  payload_size,
-                                                  &header,
-                                                  rgba,
-                                                  rgba_size,
-                                                  prgba,
-                                                  pwidth,
-                                                  pheight,
-                                                  workspace,
-                                                  allocator);
+    status = sixel_webp_vp8_decode_native_payload_strided(payload,
+                                                          payload_size,
+                                                          &header,
+                                                          rgba,
+                                                          rgba_size,
+                                                          rgba_stride,
+                                                          rgba_width,
+                                                          rgba_height,
+                                                          prgba,
+                                                          pwidth,
+                                                          pheight,
+                                                          workspace,
+                                                          allocator);
     decoded_rgba = *prgba;
     if (SIXEL_SUCCEEDED(status) && decoded_rgba != rgba) {
         return SIXEL_LOGIC_ERROR;
@@ -167,16 +200,19 @@ sixel_webp_decode_vp8_payload(unsigned char const *payload,
         return SIXEL_BAD_ALLOCATION;
     }
 
-    status = sixel_webp_vp8_decode_native_payload(payload,
-                                                  payload_size,
-                                                  &header,
-                                                  rgba,
-                                                  rgba_size,
-                                                  prgba,
-                                                  pwidth,
-                                                  pheight,
-                                                  NULL,
-                                                  allocator);
+    status = sixel_webp_vp8_decode_native_payload_strided(payload,
+                                                          payload_size,
+                                                          &header,
+                                                          rgba,
+                                                          rgba_size,
+                                                          0u,
+                                                          0,
+                                                          0,
+                                                          prgba,
+                                                          pwidth,
+                                                          pheight,
+                                                          NULL,
+                                                          allocator);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, rgba);
         return status;

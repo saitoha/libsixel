@@ -2992,6 +2992,9 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
     sixel_webp_vp8_frame_header_t const *header,
     unsigned char *out_rgba,
     size_t out_rgba_size,
+    size_t out_rgba_stride,
+    int out_rgba_width,
+    int out_rgba_height,
     unsigned char **prgba,
     sixel_allocator_t *allocator)
 {
@@ -3018,6 +3021,7 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
     size_t pixel_count;
     size_t rgba_size;
     size_t rgba_stride;
+    size_t min_required;
     int yv;
     int yv0;
     int yv1;
@@ -3058,6 +3062,7 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
     pixel_count = 0u;
     rgba_size = 0u;
     rgba_stride = 0u;
+    min_required = 0u;
     yv = 0;
     yv0 = 0;
     yv1 = 0;
@@ -3086,7 +3091,31 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
     rgba_size = pixel_count * 4u;
     rgba_stride = (size_t)width * 4u;
     if (out_rgba != NULL) {
-        if (out_rgba_size < rgba_size) {
+        if (out_rgba_stride != 0u) {
+            if (out_rgba_width < (int)width ||
+                out_rgba_height < (int)height) {
+                sixel_helper_set_additional_message(
+                    "builtin webp: VP8 destination rectangle is too small.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+            if (out_rgba_stride < (size_t)out_rgba_width * 4u) {
+                sixel_helper_set_additional_message(
+                    "builtin webp: VP8 destination stride is too small.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+            rgba_stride = out_rgba_stride;
+        }
+        if (height > 1u && rgba_stride > SIZE_MAX / (size_t)(height - 1u)) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+        min_required = (height > 0u)
+                     ? (size_t)(height - 1u) * rgba_stride
+                     : 0u;
+        if (min_required > SIZE_MAX - (size_t)width * 4u) {
+            return SIXEL_BAD_INTEGER_OVERFLOW;
+        }
+        min_required += (size_t)width * 4u;
+        if (out_rgba_size < min_required) {
             sixel_helper_set_additional_message(
                 "builtin webp: VP8 scratch RGBA buffer is too small.");
             return SIXEL_BAD_ARGUMENT;
@@ -3930,6 +3959,37 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
                                      sixel_webp_vp8_workspace_t *workspace,
                                      sixel_allocator_t *allocator)
 {
+    return sixel_webp_vp8_decode_native_payload_strided(payload,
+                                                        payload_size,
+                                                        header,
+                                                        out_rgba,
+                                                        out_rgba_size,
+                                                        0u,
+                                                        0,
+                                                        0,
+                                                        prgba,
+                                                        pwidth,
+                                                        pheight,
+                                                        workspace,
+                                                        allocator);
+}
+
+SIXELSTATUS
+sixel_webp_vp8_decode_native_payload_strided(
+    unsigned char const *payload,
+    size_t payload_size,
+    sixel_webp_vp8_frame_header_t const *header,
+    unsigned char *out_rgba,
+    size_t out_rgba_size,
+    size_t out_rgba_stride,
+    int out_rgba_width,
+    int out_rgba_height,
+    unsigned char **prgba,
+    int *pwidth,
+    int *pheight,
+    sixel_webp_vp8_workspace_t *workspace,
+    sixel_allocator_t *allocator)
+{
     SIXELSTATUS status;
     sixel_webp_vp8_partition_layout_t layout;
     sixel_webp_vp8_frame_context_t context;
@@ -4001,6 +4061,9 @@ sixel_webp_vp8_decode_native_payload(unsigned char const *payload,
                                                    header,
                                                    out_rgba,
                                                    out_rgba_size,
+                                                   out_rgba_stride,
+                                                   out_rgba_width,
+                                                   out_rgba_height,
                                                    prgba,
                                                    allocator);
     if (SIXEL_FAILED(status)) {
