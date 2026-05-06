@@ -5527,6 +5527,7 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     int quantize_animation_enabled;
     int histogram_colors;
     int method_for_diffuse;
+    int skip_palette_diffusion;
 
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -5535,6 +5536,7 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     quantize_animation_enabled = 0;
     histogram_colors = 0;
     method_for_diffuse = SIXEL_DIFFUSE_NONE;
+    skip_palette_diffusion = 0;
 
     if (context->palette_job_started != 0) {
         status = sixel_encoder_palette_job_wait(&context->palette_job,
@@ -5620,12 +5622,28 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     histogram_colors =
         sixel_dither_get_num_of_histogram_colors(context->dither);
     method_for_diffuse = context->encoder->method_for_diffuse;
-    if (histogram_colors <= context->encoder->reqcolors) {
+    if (context->encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
         /*
-         * Keep the exact-palette fast path local to this frame.
+         * High-color output does not quantize pixels through a palette.
+         * Treat palette-space diffusion requests as no-ops here so unsupported
+         * interframe policies do not reach the high-color encoder.
+         */
+        skip_palette_diffusion = 1;
+    } else if (context->encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
+               histogram_colors >= 0 &&
+               histogram_colors <= context->encoder->reqcolors) {
+        /*
+         * Keep the exact-palette fast path local to this frame.  Unknown
+         * histogram counts (-1) occur for externally supplied palettes.  A
+         * mapfile image can also report its own palette histogram here, which
+         * is not the source image's color count, so fixed-palette paths still
+         * need the requested diffusion policy.
          * Updating encoder->method_for_diffuse here races with planner reads
          * when palette jobs run on worker threads.
          */
+        skip_palette_diffusion = 1;
+    }
+    if (skip_palette_diffusion != 0) {
         method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
     sixel_dither_set_diffusion_type(context->dither, method_for_diffuse);
