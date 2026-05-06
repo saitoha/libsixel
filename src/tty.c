@@ -516,6 +516,10 @@ sixel_tty_init_output_device(int fd)
     state->supports_color = 0;
     istty = 0;
 
+#if !HAVE_ISATTY && !defined(_WIN32)
+    (void)fd;
+#endif
+
 #if HAVE_ISATTY
     if (sixel_compat_isatty(fd)) {
         istty = 1;
