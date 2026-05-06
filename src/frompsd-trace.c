@@ -375,6 +375,11 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
         return "FX_DEFERRED_OVERLAY_REPLAY_SKIP_LOCKED";
     }
     if (strstr(message,
+               "blocking deferred replay apply after offscreen group "
+               "commit") != NULL) {
+        return "FX_DEFERRED_POST_COMMIT_REPLAY_BLOCKED";
+    }
+    if (strstr(message,
                "suppressing clbl=1 deferred base interior glow/choke/"
                "bevel-shadow") != NULL) {
         return "FX_CLBL1_BASE_INTERIOR_SUPPRESS";
