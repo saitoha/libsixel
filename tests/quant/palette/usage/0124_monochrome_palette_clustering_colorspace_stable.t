@@ -24,6 +24,10 @@ actual_palette=$(
     echo "not ok" 1 - "monochrome palette export failed with -X oklab"
     exit 0
 }
+actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
+    echo "not ok" 1 - "monochrome palette output normalization failed"
+    exit 0
+}
 
 test "${actual_palette}" = "${expected_palette}" || {
     echo "not ok" 1 - "monochrome palette changed under -X oklab"

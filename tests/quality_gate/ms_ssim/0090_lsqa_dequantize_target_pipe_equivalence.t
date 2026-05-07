@@ -11,6 +11,10 @@ test -n "${LSQA_PATH-}" || {
     printf '1..0 # SKIP lsqa is disabled in this build\n'
     exit 0
 }
+test "${HAVE_LIBPNG-}" = 1 || {
+    printf '1..0 # SKIP libpng is required for PNG pipe input\n'
+    exit 0
+}
 
 printf '1..1\n'
 set -v

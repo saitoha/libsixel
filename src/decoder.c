@@ -774,10 +774,27 @@ sixel_prewitt_value(const int *gray, int width, int height, int x, int y)
               (long)bot_next - (long)bot_prev;
     long gy = (long)bot_prev + (long)bot_curr + (long)bot_next -
               (long)top_prev - (long)top_curr - (long)top_next;
-    unsigned long long magnitude = (unsigned long long)gx
-                                 * (unsigned long long)gx
-                                 + (unsigned long long)gy
-                                 * (unsigned long long)gy;
+    unsigned long long ux;
+    unsigned long long uy;
+    unsigned long long magnitude;
+
+    /*
+     * gx and gy are signed Prewitt gradients. Convert their absolute values
+     * before squaring so unsigned-overflow sanitizers do not see the modulo
+     * product that comes from casting a negative long directly to unsigned.
+     */
+    if (gx < 0L) {
+        ux = (unsigned long long)(-gx);
+    } else {
+        ux = (unsigned long long)gx;
+    }
+    if (gy < 0L) {
+        uy = (unsigned long long)(-gy);
+    } else {
+        uy = (unsigned long long)gy;
+    }
+
+    magnitude = ux * ux + uy * uy;
     magnitude /= 256ULL;
     if (magnitude > 65535ULL) {
         magnitude = 65535ULL;

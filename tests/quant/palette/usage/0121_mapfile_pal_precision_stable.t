@@ -43,6 +43,10 @@ PAL
     echo "not ok" 1 - "PAL mapfile export failed with float32 precision"
     exit 0
 }
+actual_palette=$(printf "%s" "${actual_palette}" | tr -d '\015') || {
+    echo "not ok" 1 - "PAL mapfile output normalization failed"
+    exit 0
+}
 
 test "${actual_palette}" = "${expected_palette}" || {
     echo "not ok" 1 - "PAL mapfile changed under float32 precision"
