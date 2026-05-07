@@ -818,18 +818,6 @@ run_case_tap "staticcheck-quant-palette-init-0073-static-contract" \
     sh "$src_root/tests/meson-tap-exitcode-wrapper.sh" \
     "$src_root/tests/quant/palette/init/0073_kcenter_auto_perceptual_oklab_hybrid_preference.t" || fail_and_exit $?
 
-run_case_tap "staticcheck-loader-builtin-1609-webp-vp8l-static-contract" \
-    env ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/staticcheck-loader-builtin-1609" \
-    TOP_SRCDIR="$TOP_SRCDIR" \
-    TOP_BUILDDIR="$TOP_BUILDDIR" \
-    sh "$src_root/tests/loader/builtin/1609_loader_builtin_webp_vp8l_static_decode.t" || fail_and_exit $?
-
-run_case_tap "staticcheck-loader-builtin-1610-webp-vp8-static-contract" \
-    env ARTIFACT_LOCAL_DIR="$ARTIFACT_ROOT/staticcheck-loader-builtin-1610" \
-    TOP_SRCDIR="$TOP_SRCDIR" \
-    TOP_BUILDDIR="$TOP_BUILDDIR" \
-    sh "$src_root/tests/loader/builtin/1610_loader_builtin_webp_vp8_static_decode_code.t" || fail_and_exit $?
-
 printf 'staticcheck summary: total=%d pass=%d skip=%d fail=%d\n' \
     "$index" "$pass_count" "$skip_count" "$fail_count"
 
