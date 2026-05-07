@@ -142,6 +142,51 @@ jobs:
               ;;
           esac
           fuzz_args="$FUZZ_STRUCT_ARGS_BASE -max_total_time=$struct_max_total_time -max_len=$struct_max_len -dict=$dict_merged"
+          semantic_min_features=0
+          case "${{ matrix.target }}" in
+            sixel-stream)
+              semantic_min_features=12
+              ;;
+          esac
+
+          run_semantic_smoke() {
+            if [ "$semantic_min_features" -eq 0 ]; then
+              return 0
+            fi
+
+            semantic_log="$FUZZ_STRUCT_ARTIFACT_DIR/semantic-smoke.log"
+            semantic_rc=0
+            set +e
+            "$harness" -runs=64 -max_len="$struct_max_len" \
+              -seed=1 \
+              -timeout=5 -rss_limit_mb=4096 -use_value_profile=1 \
+              -artifact_prefix="$FUZZ_STRUCT_ARTIFACT_DIR/" \
+              -dict="$dict_merged" >"$semantic_log" 2>&1
+            semantic_rc=$?
+            set -e
+            cat "$semantic_log"
+            if [ "$semantic_rc" -ne 0 ]; then
+              echo "::error::struct target '${{ matrix.target }}' semantic smoke failed: exit=$semantic_rc."
+              exit "$semantic_rc"
+            fi
+
+            semantic_count="$(awk '
+              /sixel-stream-semantic-features:/ {
+                for (i = 1; i <= NF; ++i) {
+                  if ($i ~ /^count=/) {
+                    sub(/^count=/, "", $i)
+                    count = $i
+                  }
+                }
+              }
+              END { print count }
+            ' "$semantic_log")"
+            if [ -z "$semantic_count" ] || \
+               [ "$semantic_count" -lt "$semantic_min_features" ]; then
+              echo "::error::struct target '${{ matrix.target }}' semantic feature coverage too low: count=${semantic_count:-0} (expected >= $semantic_min_features)."
+              exit 1
+            fi
+          }
 
           if [ "${{ matrix.buildtool }}" = "autotools" ]; then
             CC=clang CXX=clang++ ./configure --enable-fuzz
@@ -152,6 +197,7 @@ jobs:
               echo "::error::missing struct harness: $harness"
               exit 1
             fi
+            run_semantic_smoke
             merge_seed="$FUZZ_STRUCT_ARTIFACT_DIR/corpus-premerge"
             rm -rf "$merge_seed"
             mkdir -p "$merge_seed"
@@ -175,6 +221,7 @@ jobs:
               echo "::error::missing struct harness: $harness"
               exit 1
             fi
+            run_semantic_smoke
             merge_seed="$FUZZ_STRUCT_ARTIFACT_DIR/corpus-premerge"
             rm -rf "$merge_seed"
             mkdir -p "$merge_seed"
