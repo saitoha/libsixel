@@ -210,7 +210,7 @@ runs:
           ~\vcpkg\buildtrees
           ~\vcpkg\packages
           ~\vcpkg\downloads
-        key: vcpkg-${{ runner.os }}-msvc-${{ fromJSON(inputs.matrix_json).vcpkg_packages || 'none' }}-${{ hashFiles('.github/workflows/ci.yml') }}
+        key: vcpkg-${{ runner.os }}-msvc-${{ fromJSON(inputs.matrix_json).vcpkg_packages || 'none' }}-${{ hashFiles('.github/workflows/ci.yml', '.github/workflows/experimental.yml', '.github/actions/ci-steps/action.yml') }}
 
     - name: Install vcpkg dependencies (MSVC, vcpkg deps)
       if: ${{ fromJSON(inputs.matrix_json).vcpkg_packages != '' }}

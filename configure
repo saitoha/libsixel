@@ -26575,7 +26575,7 @@ printf "%s\n" "$sixel_emscripten_use_libtiff" >&6; }
             as_fn_error $? "-sUSE_LIBTIFF=1 is not supported by this emscripten" "$LINENO" 5
         fi
     fi
-    if test x$build = x$host; then
+    if test x$build = x$host -o x$using_cl = xyes; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for tiff" >&5
 printf "%s\n" "$as_me: checking for tiff" >&6;}
         CFLAGS_BACKUP=$CFLAGS
@@ -26987,7 +26987,7 @@ printf "%s\n" "$sixel_emscripten_use_libwebp" >&6; }
             as_fn_error $? "-sUSE_LIBWEBP=1 is not supported by this emscripten" "$LINENO" 5
         fi
     fi
-    if test x$build = x$host; then
+    if test x$build = x$host -o x$using_cl = xyes; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for webp" >&5
 printf "%s\n" "$as_me: checking for webp" >&6;}
         CFLAGS_BACKUP=$CFLAGS
