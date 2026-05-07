@@ -24689,6 +24689,65 @@ sixel_builtin_psd_overlay_has_actionable_coverage(
     return 0;
 }
 
+static int
+sixel_builtin_psd_capture_deferred_solid_overlay_coverage(
+    float *captured_coverage_map,
+    size_t pixel_count,
+    float const *source_alpha_map,
+    float const *clip_alpha_map)
+{
+    size_t i;
+    float source_alpha;
+    float effective_alpha;
+    int has_clip_alpha;
+    int captured_any;
+
+    i = 0u;
+    source_alpha = 0.0f;
+    effective_alpha = 0.0f;
+    has_clip_alpha = 0;
+    captured_any = 0;
+    if (captured_coverage_map == NULL) {
+        return 0;
+    }
+    for (i = 0u; i < pixel_count; ++i) {
+        source_alpha = 0.0f;
+        has_clip_alpha = 1;
+        if (source_alpha_map != NULL) {
+            source_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                source_alpha_map[i]);
+        }
+        if (clip_alpha_map != NULL) {
+            if (sixel_builtin_psd_clamp_alpha_float32(
+                    clip_alpha_map[i]) <= 0.0f) {
+                has_clip_alpha = 0;
+            }
+        }
+        if (has_clip_alpha == 0) {
+            continue;
+        }
+        /*
+         * Deferred solid replay coverage follows the effective clipped
+         * silhouette when clip gate is available. For non-clipped fallback
+         * paths, keep source alpha as coverage.
+         */
+        if (clip_alpha_map != NULL) {
+            effective_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                clip_alpha_map[i]);
+        } else {
+            effective_alpha = source_alpha;
+        }
+        if (effective_alpha <= 0.0f) {
+            continue;
+        }
+        if (effective_alpha > captured_coverage_map[i]) {
+            captured_coverage_map[i] = effective_alpha;
+        }
+        captured_any = 1;
+    }
+    return captured_any;
+}
+
 static void
 sixel_builtin_psd_reset_deferred_clip_group_state(
     int *pending_clip_group_overlay,
@@ -26453,25 +26512,18 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                 }
                 if (overlay_replay_action &
                     SIXEL_BUILTIN_PSD_OVERLAY_REPLAY_CAPTURE_SOLID) {
-                    if (clip_alpha_valid != 0 &&
-                        clip_alpha_map != NULL &&
-                        pending_overlay_fill_coverage_map != NULL) {
-                        for (clip_alpha_index = 0u;
-                             clip_alpha_index < pixel_count;
-                             ++clip_alpha_index) {
-                            if (clip_alpha_map[clip_alpha_index] >
-                                pending_overlay_fill_coverage_map[
-                                    clip_alpha_index]) {
-                                pending_overlay_fill_coverage_map[
-                                    clip_alpha_index] =
-                                    clip_alpha_map[clip_alpha_index];
-                            }
-                        }
+                    if (src_layer.alpha != NULL &&
+                        pending_overlay_fill_coverage_map != NULL &&
+                        sixel_builtin_psd_capture_deferred_solid_overlay_coverage(
+                            pending_overlay_fill_coverage_map,
+                            pixel_count,
+                            src_layer.alpha,
+                            clip_alpha_valid != 0 ? clip_alpha_map : NULL) !=
+                        0) {
                         pending_overlay_fill_coverage_valid = 1;
                         solid_replay_ready = 1;
                     }
                     if (solid_replay_ready != 0) {
-                        layer_for_composite.has_effect_solid_overlay = 0;
                         suppressed_any_overlay = 1;
                     }
                 }
