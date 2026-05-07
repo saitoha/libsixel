@@ -10,8 +10,387 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "fuzz-loader-builtin-struct-common.h"
+
+extern size_t LLVMFuzzerMutate(uint8_t *data, size_t size, size_t max_size);
+
+enum fuzz_png_apng_feature {
+    FUZZ_PNG_APNG_FEATURE_SIGNATURE = 0,
+    FUZZ_PNG_APNG_FEATURE_IHDR,
+    FUZZ_PNG_APNG_FEATURE_ACTL,
+    FUZZ_PNG_APNG_FEATURE_MULTI_FRAME,
+    FUZZ_PNG_APNG_FEATURE_FCTL,
+    FUZZ_PNG_APNG_FEATURE_IDAT,
+    FUZZ_PNG_APNG_FEATURE_FDAT,
+    FUZZ_PNG_APNG_FEATURE_SEQUENCE_SKEW,
+    FUZZ_PNG_APNG_FEATURE_BAD_CRC,
+    FUZZ_PNG_APNG_FEATURE_FALLBACK_IDAT,
+    FUZZ_PNG_APNG_FEATURE_DISPOSE,
+    FUZZ_PNG_APNG_FEATURE_BLEND,
+    FUZZ_PNG_APNG_FEATURE_COUNT
+};
+
+static unsigned int g_png_apng_feature_mask = 0u;
+static unsigned int g_png_apng_feature_hits[FUZZ_PNG_APNG_FEATURE_COUNT];
+static int g_png_apng_stats_registered = 0;
+
+#define FUZZ_PNG_APNG_RECORD_FEATURE(_feature) \
+    do { \
+        g_png_apng_feature_mask |= 1u << (_feature); \
+        ++g_png_apng_feature_hits[(_feature)]; \
+    } while (0)
+
+static unsigned int
+fuzz_png_apng_count_bits(unsigned int value)
+{
+    unsigned int count;
+
+    count = 0u;
+    while (value != 0u) {
+        count += value & 1u;
+        value >>= 1;
+    }
+
+    return count;
+}
+
+static void
+fuzz_png_apng_note_feature(unsigned int feature)
+{
+    if (feature >= FUZZ_PNG_APNG_FEATURE_COUNT) {
+        return;
+    }
+
+    /*
+     * APNG coverage needs chunk-order milestones. A malformed sequence can
+     * reuse the same parser edges while exercising different animation state.
+     */
+    switch (feature) {
+    case FUZZ_PNG_APNG_FEATURE_SIGNATURE:
+        FUZZ_PNG_APNG_RECORD_FEATURE(FUZZ_PNG_APNG_FEATURE_SIGNATURE);
+        break;
+    case FUZZ_PNG_APNG_FEATURE_IHDR:
+        FUZZ_PNG_APNG_RECORD_FEATURE(FUZZ_PNG_APNG_FEATURE_IHDR);
+        break;
+    case FUZZ_PNG_APNG_FEATURE_ACTL:
+        FUZZ_PNG_APNG_RECORD_FEATURE(FUZZ_PNG_APNG_FEATURE_ACTL);
+        break;
+    case FUZZ_PNG_APNG_FEATURE_MULTI_FRAME:
+        FUZZ_PNG_APNG_RECORD_FEATURE(FUZZ_PNG_APNG_FEATURE_MULTI_FRAME);
+        break;
+    case FUZZ_PNG_APNG_FEATURE_FCTL:
+        FUZZ_PNG_APNG_RECORD_FEATURE(FUZZ_PNG_APNG_FEATURE_FCTL);
+        break;
+    case FUZZ_PNG_APNG_FEATURE_IDAT:
+        FUZZ_PNG_APNG_RECORD_FEATURE(FUZZ_PNG_APNG_FEATURE_IDAT);
+        break;
+    case FUZZ_PNG_APNG_FEATURE_FDAT:
+        FUZZ_PNG_APNG_RECORD_FEATURE(FUZZ_PNG_APNG_FEATURE_FDAT);
+        break;
+    case FUZZ_PNG_APNG_FEATURE_SEQUENCE_SKEW:
+        FUZZ_PNG_APNG_RECORD_FEATURE(FUZZ_PNG_APNG_FEATURE_SEQUENCE_SKEW);
+        break;
+    case FUZZ_PNG_APNG_FEATURE_BAD_CRC:
+        FUZZ_PNG_APNG_RECORD_FEATURE(FUZZ_PNG_APNG_FEATURE_BAD_CRC);
+        break;
+    case FUZZ_PNG_APNG_FEATURE_FALLBACK_IDAT:
+        FUZZ_PNG_APNG_RECORD_FEATURE(FUZZ_PNG_APNG_FEATURE_FALLBACK_IDAT);
+        break;
+    case FUZZ_PNG_APNG_FEATURE_DISPOSE:
+        FUZZ_PNG_APNG_RECORD_FEATURE(FUZZ_PNG_APNG_FEATURE_DISPOSE);
+        break;
+    case FUZZ_PNG_APNG_FEATURE_BLEND:
+        FUZZ_PNG_APNG_RECORD_FEATURE(FUZZ_PNG_APNG_FEATURE_BLEND);
+        break;
+    default:
+        break;
+    }
+}
+
+static void
+fuzz_png_apng_print_semantic_stats(void)
+{
+    fprintf(stderr,
+            "png-apng-semantic-features: mask=0x%08x count=%u "
+            "signature=%u ihdr=%u actl=%u multi-frame=%u fctl=%u "
+            "idat=%u fdat=%u sequence-skew=%u bad-crc=%u "
+            "fallback-idat=%u dispose=%u blend=%u\n",
+            g_png_apng_feature_mask,
+            fuzz_png_apng_count_bits(g_png_apng_feature_mask),
+            g_png_apng_feature_hits[FUZZ_PNG_APNG_FEATURE_SIGNATURE],
+            g_png_apng_feature_hits[FUZZ_PNG_APNG_FEATURE_IHDR],
+            g_png_apng_feature_hits[FUZZ_PNG_APNG_FEATURE_ACTL],
+            g_png_apng_feature_hits[FUZZ_PNG_APNG_FEATURE_MULTI_FRAME],
+            g_png_apng_feature_hits[FUZZ_PNG_APNG_FEATURE_FCTL],
+            g_png_apng_feature_hits[FUZZ_PNG_APNG_FEATURE_IDAT],
+            g_png_apng_feature_hits[FUZZ_PNG_APNG_FEATURE_FDAT],
+            g_png_apng_feature_hits[FUZZ_PNG_APNG_FEATURE_SEQUENCE_SKEW],
+            g_png_apng_feature_hits[FUZZ_PNG_APNG_FEATURE_BAD_CRC],
+            g_png_apng_feature_hits[FUZZ_PNG_APNG_FEATURE_FALLBACK_IDAT],
+            g_png_apng_feature_hits[FUZZ_PNG_APNG_FEATURE_DISPOSE],
+            g_png_apng_feature_hits[FUZZ_PNG_APNG_FEATURE_BLEND]);
+}
+
+static void
+fuzz_png_apng_register_semantic_stats(void)
+{
+    if (g_png_apng_stats_registered) {
+        return;
+    }
+
+    (void)atexit(fuzz_png_apng_print_semantic_stats);
+    g_png_apng_stats_registered = 1;
+}
+
+static uint32_t
+fuzz_png_apng_mutator_next(uint32_t *state)
+{
+    uint32_t value;
+
+    value = *state;
+    value ^= value << 13;
+    value ^= value >> 17;
+    value ^= value << 5;
+    if (value == 0u) {
+        value = UINT32_C(0x85ebca6b);
+    }
+    *state = value;
+
+    return value;
+}
+
+static int
+fuzz_png_apng_mutator_append_u8(uint8_t *data,
+                                size_t *pos,
+                                size_t max_size,
+                                unsigned char value)
+{
+    if (data == NULL || pos == NULL || *pos >= max_size) {
+        return 0;
+    }
+
+    data[*pos] = value;
+    ++*pos;
+    return 1;
+}
+
+static int
+fuzz_png_apng_mutator_append_u32(uint8_t *data,
+                                 size_t *pos,
+                                 size_t max_size,
+                                 uint32_t value)
+{
+    return fuzz_png_apng_mutator_append_u8(
+        data,
+        pos,
+        max_size,
+        (unsigned char)((value >> 24) & 0xffu)) &&
+        fuzz_png_apng_mutator_append_u8(
+            data,
+            pos,
+            max_size,
+            (unsigned char)((value >> 16) & 0xffu)) &&
+        fuzz_png_apng_mutator_append_u8(
+            data,
+            pos,
+            max_size,
+            (unsigned char)((value >> 8) & 0xffu)) &&
+        fuzz_png_apng_mutator_append_u8(
+            data,
+            pos,
+            max_size,
+            (unsigned char)(value & 0xffu));
+}
+
+static int
+fuzz_png_apng_mutator_append_chunk_ctl(uint8_t *data,
+                                       size_t *pos,
+                                       size_t max_size,
+                                       uint32_t *state,
+                                       int bad_crc)
+{
+    if (!fuzz_png_apng_mutator_append_u8(data,
+                                         pos,
+                                         max_size,
+                                         bad_crc != 0 ? 1u : 0u)) {
+        return 0;
+    }
+
+    return fuzz_png_apng_mutator_append_u32(
+        data,
+        pos,
+        max_size,
+        fuzz_png_apng_mutator_next(state));
+}
+
+static int
+fuzz_png_apng_mutator_append_frame(uint8_t *data,
+                                   size_t *pos,
+                                   size_t max_size,
+                                   uint32_t *state,
+                                   unsigned char index)
+{
+    size_t j;
+
+    if (!fuzz_png_apng_mutator_append_u8(data, pos, max_size, 31u) ||
+        !fuzz_png_apng_mutator_append_u8(data, pos, max_size, 31u) ||
+        !fuzz_png_apng_mutator_append_u8(data, pos, max_size, 1u) ||
+        !fuzz_png_apng_mutator_append_u8(data, pos, max_size, index) ||
+        !fuzz_png_apng_mutator_append_u8(data, pos, max_size, 1u) ||
+        !fuzz_png_apng_mutator_append_u8(data, pos, max_size, 1u) ||
+        !fuzz_png_apng_mutator_append_u8(data, pos, max_size, 1u) ||
+        !fuzz_png_apng_mutator_append_u8(data, pos, max_size, 1u) ||
+        !fuzz_png_apng_mutator_append_u8(data, pos, max_size, 2u) ||
+        !fuzz_png_apng_mutator_append_u8(data, pos, max_size, 1u) ||
+        !fuzz_png_apng_mutator_append_u8(data, pos, max_size, 1u) ||
+        !fuzz_png_apng_mutator_append_chunk_ctl(data,
+                                                pos,
+                                                max_size,
+                                                state,
+                                                index == 1u)) {
+        return 0;
+    }
+
+    if (index == 0u) {
+        if (!fuzz_png_apng_mutator_append_u8(data, pos, max_size, 0u) ||
+            !fuzz_png_apng_mutator_append_u8(data, pos, max_size, 0u) ||
+            !fuzz_png_apng_mutator_append_u8(data, pos, max_size, 0u) ||
+            !fuzz_png_apng_mutator_append_u8(data, pos, max_size, 0u)) {
+            return 0;
+        }
+        return fuzz_png_apng_mutator_append_chunk_ctl(data,
+                                                      pos,
+                                                      max_size,
+                                                      state,
+                                                      1);
+    }
+
+    if (!fuzz_png_apng_mutator_append_u8(data, pos, max_size, 0u) ||
+        !fuzz_png_apng_mutator_append_u8(data, pos, max_size, 8u)) {
+        return 0;
+    }
+    for (j = 0u; j < 8u; ++j) {
+        if (!fuzz_png_apng_mutator_append_u8(
+                data,
+                pos,
+                max_size,
+                (unsigned char)fuzz_png_apng_mutator_next(state))) {
+            return 0;
+        }
+    }
+
+    return fuzz_png_apng_mutator_append_chunk_ctl(data,
+                                                  pos,
+                                                  max_size,
+                                                  state,
+                                                  index == 2u);
+}
+
+static size_t
+fuzz_png_apng_mutator_synthesize(uint8_t *data,
+                                 size_t max_size,
+                                 uint32_t *state)
+{
+    size_t pos;
+
+    if (data == NULL || state == NULL || max_size == 0u) {
+        return 0u;
+    }
+
+    pos = 0u;
+    if (!fuzz_png_apng_mutator_append_u8(data, &pos, max_size, 63u) ||
+        !fuzz_png_apng_mutator_append_u8(data, &pos, max_size, 63u) ||
+        !fuzz_png_apng_mutator_append_chunk_ctl(data,
+                                                &pos,
+                                                max_size,
+                                                state,
+                                                1) ||
+        !fuzz_png_apng_mutator_append_u8(data, &pos, max_size, 2u) ||
+        !fuzz_png_apng_mutator_append_u8(data, &pos, max_size, 1u) ||
+        !fuzz_png_apng_mutator_append_u8(data, &pos, max_size, 1u) ||
+        !fuzz_png_apng_mutator_append_chunk_ctl(data,
+                                                &pos,
+                                                max_size,
+                                                state,
+                                                0) ||
+        !fuzz_png_apng_mutator_append_u32(data,
+                                          &pos,
+                                          max_size,
+                                          fuzz_png_apng_mutator_next(state))) {
+        return pos;
+    }
+
+    if (!fuzz_png_apng_mutator_append_frame(data, &pos, max_size, state, 0u) ||
+        !fuzz_png_apng_mutator_append_frame(data, &pos, max_size, state, 1u) ||
+        !fuzz_png_apng_mutator_append_frame(data, &pos, max_size, state, 2u)) {
+        return pos;
+    }
+
+    return pos;
+}
+
+size_t
+LLVMFuzzerCustomMutator(uint8_t *data,
+                        size_t size,
+                        size_t max_size,
+                        unsigned int seed)
+{
+    uint32_t state;
+    size_t mutated_size;
+
+    if (data == NULL || max_size == 0u) {
+        return 0u;
+    }
+
+    state = (uint32_t)seed ^ (uint32_t)size ^ UINT32_C(0x27d4eb2d);
+    if (size != 0u && (fuzz_png_apng_mutator_next(&state) & 0x07u) == 0u) {
+        mutated_size = LLVMFuzzerMutate(data, size, max_size);
+        if (mutated_size != 0u) {
+            return mutated_size;
+        }
+    }
+
+    return fuzz_png_apng_mutator_synthesize(data, max_size, &state);
+}
+
+static int
+fuzz_png_apng_append_chunk(fuzz_byte_buffer_t *payload,
+                           char const type[4],
+                           unsigned char const *data,
+                           size_t length,
+                           int force_bad_crc,
+                           uint32_t crc_salt)
+{
+    if (force_bad_crc != 0) {
+        fuzz_png_apng_note_feature(FUZZ_PNG_APNG_FEATURE_BAD_CRC);
+    }
+    if (type[0] == 'I' && type[1] == 'H' &&
+        type[2] == 'D' && type[3] == 'R') {
+        fuzz_png_apng_note_feature(FUZZ_PNG_APNG_FEATURE_IHDR);
+    } else if (type[0] == 'a' && type[1] == 'c' &&
+               type[2] == 'T' && type[3] == 'L') {
+        fuzz_png_apng_note_feature(FUZZ_PNG_APNG_FEATURE_ACTL);
+    } else if (type[0] == 'f' && type[1] == 'c' &&
+               type[2] == 'T' && type[3] == 'L') {
+        fuzz_png_apng_note_feature(FUZZ_PNG_APNG_FEATURE_FCTL);
+    } else if (type[0] == 'I' && type[1] == 'D' &&
+               type[2] == 'A' && type[3] == 'T') {
+        fuzz_png_apng_note_feature(FUZZ_PNG_APNG_FEATURE_IDAT);
+    } else if (type[0] == 'f' && type[1] == 'd' &&
+               type[2] == 'A' && type[3] == 'T') {
+        fuzz_png_apng_note_feature(FUZZ_PNG_APNG_FEATURE_FDAT);
+    }
+
+    return fuzz_append_png_chunk(payload,
+                                 type,
+                                 data,
+                                 length,
+                                 force_bad_crc,
+                                 crc_salt);
+}
 
 static int
 fuzz_build_png_apng_payload(uint8_t const *data,
@@ -40,9 +419,12 @@ fuzz_build_png_apng_payload(uint8_t const *data,
     }
 
     fuzz_cursor_init(&cursor, data, size);
-    if (!fuzz_byte_buffer_append(payload, png_signature, sizeof(png_signature))) {
+    if (!fuzz_byte_buffer_append(payload,
+                                 png_signature,
+                                 sizeof(png_signature))) {
         return 0;
     }
+    fuzz_png_apng_note_feature(FUZZ_PNG_APNG_FEATURE_SIGNATURE);
 
     canvas_width = 1u + (uint32_t)(fuzz_cursor_take_u8(&cursor, 0u) % 64u);
     canvas_height = 1u + (uint32_t)(fuzz_cursor_take_u8(&cursor, 0u) % 64u);
@@ -61,16 +443,20 @@ fuzz_build_png_apng_payload(uint8_t const *data,
     ihdr[11] = 0u;
     ihdr[12] = 0u;
 
-    if (!fuzz_append_png_chunk(payload,
-                               "IHDR",
-                               ihdr,
-                               sizeof(ihdr),
-                               (int)(fuzz_cursor_take_u8(&cursor, 0u) & 0x01u),
-                               (uint32_t)fuzz_cursor_take_u32be(&cursor, 1u))) {
+    if (!fuzz_png_apng_append_chunk(
+            payload,
+            "IHDR",
+            ihdr,
+            sizeof(ihdr),
+            (int)(fuzz_cursor_take_u8(&cursor, 0u) & 0x01u),
+            (uint32_t)fuzz_cursor_take_u32be(&cursor, 1u))) {
         return 0;
     }
 
     frame_count = 1u + (uint32_t)(fuzz_cursor_take_u8(&cursor, 0u) % 3u);
+    if (frame_count > 1u) {
+        fuzz_png_apng_note_feature(FUZZ_PNG_APNG_FEATURE_MULTI_FRAME);
+    }
     actl[0] = (unsigned char)((frame_count >> 24) & 0xffu);
     actl[1] = (unsigned char)((frame_count >> 16) & 0xffu);
     actl[2] = (unsigned char)((frame_count >> 8) & 0xffu);
@@ -81,12 +467,13 @@ fuzz_build_png_apng_payload(uint8_t const *data,
     actl[7] = fuzz_cursor_take_u8(&cursor, 0u);
 
     if ((fuzz_cursor_take_u8(&cursor, 1u) & 0x01u) != 0u) {
-        if (!fuzz_append_png_chunk(payload,
-                                   "acTL",
-                                   actl,
-                                   sizeof(actl),
-                                   (int)(fuzz_cursor_take_u8(&cursor, 0u) & 0x01u),
-                                   (uint32_t)fuzz_cursor_take_u32be(&cursor, 1u))) {
+        if (!fuzz_png_apng_append_chunk(
+                payload,
+                "acTL",
+                actl,
+                sizeof(actl),
+                (int)(fuzz_cursor_take_u8(&cursor, 0u) & 0x01u),
+                (uint32_t)fuzz_cursor_take_u32be(&cursor, 1u))) {
             return 0;
         }
     }
@@ -108,6 +495,7 @@ fuzz_build_png_apng_payload(uint8_t const *data,
 
         if ((fuzz_cursor_take_u8(&cursor, 0u) & 0x01u) != 0u) {
             frame_seq ^= (uint32_t)fuzz_cursor_take_u8(&cursor, 0u);
+            fuzz_png_apng_note_feature(FUZZ_PNG_APNG_FEATURE_SEQUENCE_SKEW);
         }
 
         fctl[0] = (unsigned char)((frame_seq >> 24) & 0xffu);
@@ -136,14 +524,21 @@ fuzz_build_png_apng_payload(uint8_t const *data,
         fctl[23] = fuzz_cursor_take_u8(&cursor, 0u);
         fctl[24] = (unsigned char)(fuzz_cursor_take_u8(&cursor, 0u) % 3u);
         fctl[25] = (unsigned char)(fuzz_cursor_take_u8(&cursor, 0u) % 2u);
+        if (fctl[24] != 0u) {
+            fuzz_png_apng_note_feature(FUZZ_PNG_APNG_FEATURE_DISPOSE);
+        }
+        if (fctl[25] != 0u) {
+            fuzz_png_apng_note_feature(FUZZ_PNG_APNG_FEATURE_BLEND);
+        }
 
         if ((fuzz_cursor_take_u8(&cursor, 1u) & 0x01u) != 0u) {
-            if (!fuzz_append_png_chunk(payload,
-                                       "fcTL",
-                                       fctl,
-                                       sizeof(fctl),
-                                       (int)(fuzz_cursor_take_u8(&cursor, 0u) & 0x01u),
-                                       (uint32_t)fuzz_cursor_take_u32be(&cursor, 1u))) {
+            if (!fuzz_png_apng_append_chunk(
+                    payload,
+                    "fcTL",
+                    fctl,
+                    sizeof(fctl),
+                    (int)(fuzz_cursor_take_u8(&cursor, 0u) & 0x01u),
+                    (uint32_t)fuzz_cursor_take_u32be(&cursor, 1u))) {
                 return 0;
             }
         }
@@ -163,13 +558,16 @@ fuzz_build_png_apng_payload(uint8_t const *data,
             if (frame_size == 0u) {
                 frame_bytes = fallback_idat;
                 frame_size = sizeof(fallback_idat);
+                fuzz_png_apng_note_feature(
+                    FUZZ_PNG_APNG_FEATURE_FALLBACK_IDAT);
             }
-            if (!fuzz_append_png_chunk(payload,
-                                       "IDAT",
-                                       frame_bytes,
-                                       frame_size,
-                                       (int)(fuzz_cursor_take_u8(&cursor, 0u) & 0x01u),
-                                       (uint32_t)fuzz_cursor_take_u32be(&cursor, 1u))) {
+            if (!fuzz_png_apng_append_chunk(
+                    payload,
+                    "IDAT",
+                    frame_bytes,
+                    frame_size,
+                    (int)(fuzz_cursor_take_u8(&cursor, 0u) & 0x01u),
+                    (uint32_t)fuzz_cursor_take_u32be(&cursor, 1u))) {
                 return 0;
             }
             wrote_frame_payload = 1;
@@ -185,12 +583,13 @@ fuzz_build_png_apng_payload(uint8_t const *data,
                 return 0;
             }
 
-            if (!fuzz_append_png_chunk(payload,
-                                       "fdAT",
-                                       fdat.data,
-                                       fdat.size,
-                                       (int)(fuzz_cursor_take_u8(&cursor, 0u) & 0x01u),
-                                       (uint32_t)fuzz_cursor_take_u32be(&cursor, 1u))) {
+            if (!fuzz_png_apng_append_chunk(
+                    payload,
+                    "fdAT",
+                    fdat.data,
+                    fdat.size,
+                    (int)(fuzz_cursor_take_u8(&cursor, 0u) & 0x01u),
+                    (uint32_t)fuzz_cursor_take_u32be(&cursor, 1u))) {
                 fuzz_byte_buffer_reset(&fdat);
                 return 0;
             }
@@ -200,17 +599,18 @@ fuzz_build_png_apng_payload(uint8_t const *data,
     }
 
     if (!wrote_frame_payload) {
-        if (!fuzz_append_png_chunk(payload,
-                                   "IDAT",
-                                   fallback_idat,
-                                   sizeof(fallback_idat),
-                                   0,
-                                   0u)) {
+        fuzz_png_apng_note_feature(FUZZ_PNG_APNG_FEATURE_FALLBACK_IDAT);
+        if (!fuzz_png_apng_append_chunk(payload,
+                                        "IDAT",
+                                        fallback_idat,
+                                        sizeof(fallback_idat),
+                                        0,
+                                        0u)) {
             return 0;
         }
     }
 
-    if (!fuzz_append_png_chunk(payload, "IEND", NULL, 0u, 0, 0u)) {
+    if (!fuzz_png_apng_append_chunk(payload, "IEND", NULL, 0u, 0, 0u)) {
         return 0;
     }
 
@@ -222,6 +622,7 @@ LLVMFuzzerInitialize(int *argc, char ***argv)
 {
     (void)argc;
     (void)argv;
+    fuzz_png_apng_register_semantic_stats();
     (void)fuzz_loader_builtin_runtime_bootstrap();
     return 0;
 }
@@ -236,12 +637,14 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
     if (data == NULL || size > (size_t)FUZZ_MAX_INPUT_BYTES) {
         return 0;
     }
-    if (!fuzz_loader_builtin_runtime_bootstrap()) {
-        return 0;
-    }
 
+    fuzz_png_apng_register_semantic_stats();
     fuzz_byte_buffer_init(&payload);
     if (!fuzz_build_png_apng_payload(data, size, &payload)) {
+        fuzz_byte_buffer_reset(&payload);
+        return 0;
+    }
+    if (!fuzz_loader_builtin_runtime_bootstrap()) {
         fuzz_byte_buffer_reset(&payload);
         return 0;
     }
