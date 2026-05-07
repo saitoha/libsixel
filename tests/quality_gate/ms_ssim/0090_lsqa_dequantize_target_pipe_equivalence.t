@@ -39,8 +39,23 @@ pipe_value=$(
     exit 0
 }
 
-test "${direct_value}" = "${pipe_value}" || {
-    echo "not ok" 1 - "lsqa dequantize did not match sixel2png pipe"
+direct_value=$(printf '%s' "${direct_value}" | tr -d '\015')
+pipe_value=$(printf '%s' "${pipe_value}" | tr -d '\015')
+
+# Some C libraries differ by the last printed MS-SSIM digit for this PNG
+# roundtrip, so keep the equivalence check at five decimal places.
+direct_rounded=$(printf '%.5f' "${direct_value}") || {
+    echo "not ok" 1 - "invalid direct MS-SSIM value: ${direct_value}"
+    exit 0
+}
+pipe_rounded=$(printf '%.5f' "${pipe_value}") || {
+    echo "not ok" 1 - "invalid pipe MS-SSIM value: ${pipe_value}"
+    exit 0
+}
+
+test "${direct_rounded}" = "${pipe_rounded}" || {
+    echo "not ok" 1 - \
+        "lsqa dequantize did not match sixel2png pipe: ${direct_value} != ${pipe_value}"
     exit 0
 }
 

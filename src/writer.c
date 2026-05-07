@@ -987,6 +987,17 @@ write_png_to_file(
     }
 #endif  /* HAVE_LIBPNG */
 
+    /*
+     * Emscripten's Node stdout path does not reliably drain the C stdio
+     * buffer at process exit.  Flush explicitly so stdout PNG streams keep the
+     * final chunk bytes even when the destination is not closed here.
+     */
+    if (fflush(output_fp) != 0) {
+        status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+        sixel_helper_set_additional_message("fflush() failed.");
+        goto end;
+    }
+
     status = SIXEL_OK;
 
 end:
