@@ -3972,7 +3972,7 @@ if test x$with_tiff != xno; then
             AC_MSG_ERROR([-sUSE_LIBTIFF=1 is not supported by this emscripten])
         fi
     fi
-    if test x$build = x$host; then
+    if test x$build = x$host -o x$using_cl = xyes; then
         AC_MSG_NOTICE([checking for tiff])
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
@@ -4114,7 +4114,7 @@ if test x$with_webp != xno; then
             AC_MSG_ERROR([-sUSE_LIBWEBP=1 is not supported by this emscripten])
         fi
     fi
-    if test x$build = x$host; then
+    if test x$build = x$host -o x$using_cl = xyes; then
         AC_MSG_NOTICE([checking for webp])
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
