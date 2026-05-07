@@ -2460,6 +2460,41 @@ sixel_webp_anim_div255_floor(unsigned int value)
     return q;
 }
 
+static unsigned int const sixel_webp_anim_div_alpha_recip_q18[256] = {
+    0u, 262144u, 131072u, 87381u, 65536u, 52428u, 43690u, 37449u,
+    32768u, 29127u, 26214u, 23831u, 21845u, 20164u, 18724u, 17476u,
+    16384u, 15420u, 14563u, 13797u, 13107u, 12483u, 11915u, 11397u,
+    10922u, 10485u, 10082u, 9709u, 9362u, 9039u, 8738u, 8456u,
+    8192u, 7943u, 7710u, 7489u, 7281u, 7084u, 6898u, 6721u,
+    6553u, 6393u, 6241u, 6096u, 5957u, 5825u, 5698u, 5577u,
+    5461u, 5349u, 5242u, 5140u, 5041u, 4946u, 4854u, 4766u,
+    4681u, 4599u, 4519u, 4443u, 4369u, 4297u, 4228u, 4161u,
+    4096u, 4032u, 3971u, 3912u, 3855u, 3799u, 3744u, 3692u,
+    3640u, 3591u, 3542u, 3495u, 3449u, 3404u, 3360u, 3318u,
+    3276u, 3236u, 3196u, 3158u, 3120u, 3084u, 3048u, 3013u,
+    2978u, 2945u, 2912u, 2880u, 2849u, 2818u, 2788u, 2759u,
+    2730u, 2702u, 2674u, 2647u, 2621u, 2595u, 2570u, 2545u,
+    2520u, 2496u, 2473u, 2449u, 2427u, 2404u, 2383u, 2361u,
+    2340u, 2319u, 2299u, 2279u, 2259u, 2240u, 2221u, 2202u,
+    2184u, 2166u, 2148u, 2131u, 2114u, 2097u, 2080u, 2064u,
+    2048u, 2032u, 2016u, 2001u, 1985u, 1971u, 1956u, 1941u,
+    1927u, 1913u, 1899u, 1885u, 1872u, 1859u, 1846u, 1833u,
+    1820u, 1807u, 1795u, 1783u, 1771u, 1759u, 1747u, 1736u,
+    1724u, 1713u, 1702u, 1691u, 1680u, 1669u, 1659u, 1648u,
+    1638u, 1628u, 1618u, 1608u, 1598u, 1588u, 1579u, 1569u,
+    1560u, 1551u, 1542u, 1533u, 1524u, 1515u, 1506u, 1497u,
+    1489u, 1481u, 1472u, 1464u, 1456u, 1448u, 1440u, 1432u,
+    1424u, 1416u, 1409u, 1401u, 1394u, 1387u, 1379u, 1372u,
+    1365u, 1358u, 1351u, 1344u, 1337u, 1330u, 1323u, 1317u,
+    1310u, 1304u, 1297u, 1291u, 1285u, 1278u, 1272u, 1266u,
+    1260u, 1254u, 1248u, 1242u, 1236u, 1230u, 1224u, 1219u,
+    1213u, 1208u, 1202u, 1197u, 1191u, 1186u, 1180u, 1175u,
+    1170u, 1165u, 1159u, 1154u, 1149u, 1144u, 1139u, 1134u,
+    1129u, 1125u, 1120u, 1115u, 1110u, 1106u, 1101u, 1096u,
+    1092u, 1087u, 1083u, 1078u, 1074u, 1069u, 1065u, 1061u,
+    1057u, 1052u, 1048u, 1044u, 1040u, 1036u, 1032u, 1028u,
+};
+
 static void
 sixel_webp_anim_fill_canvas(unsigned char *canvas_pixels,
                             int canvas_width,
@@ -2559,6 +2594,8 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
     unsigned int inv_sa;
     unsigned int da_scaled;
     unsigned int num;
+    unsigned int recip;
+    unsigned int q;
     int span;
     size_t span_bytes;
 
@@ -2575,6 +2612,8 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
     inv_sa = 0u;
     da_scaled = 0u;
     num = 0u;
+    recip = 0u;
+    q = 0u;
     span = 0;
     span_bytes = 0u;
     if (canvas_pixels == NULL || canvas_width <= 0 || anim_frame == NULL ||
@@ -2674,15 +2713,34 @@ sixel_webp_anim_composite_rect(unsigned char *canvas_pixels,
                 ++x;
                 continue;
             }
+            /*
+             * Blend-over numerator is bounded in [0, 130050]. With Q18
+             * reciprocal approximation, one correction step keeps
+             * floor(num/oa) bit-identical to integer division for oa in
+             * [1, 255].
+             */
+            recip = sixel_webp_anim_div_alpha_recip_q18[oa];
             num = (unsigned int)sp[0u] * sa
                 + (unsigned int)dp[0u] * da_scaled;
-            dp[0u] = (unsigned char)(num / oa);
+            q = (unsigned int)(((unsigned long long)num * recip) >> 18u);
+            if ((q + 1u) * oa <= num) {
+                ++q;
+            }
+            dp[0u] = (unsigned char)q;
             num = (unsigned int)sp[1u] * sa
                 + (unsigned int)dp[1u] * da_scaled;
-            dp[1u] = (unsigned char)(num / oa);
+            q = (unsigned int)(((unsigned long long)num * recip) >> 18u);
+            if ((q + 1u) * oa <= num) {
+                ++q;
+            }
+            dp[1u] = (unsigned char)q;
             num = (unsigned int)sp[2u] * sa
                 + (unsigned int)dp[2u] * da_scaled;
-            dp[2u] = (unsigned char)(num / oa);
+            q = (unsigned int)(((unsigned long long)num * recip) >> 18u);
+            if ((q + 1u) * oa <= num) {
+                ++q;
+            }
+            dp[2u] = (unsigned char)q;
             dp[3u] = (unsigned char)oa;
             sp += 4;
             dp += 4;
