@@ -13,7 +13,7 @@ set -v
 set +xv
 
 set +e
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -h 1890177820 -e -I -C 1 -S \
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -h 1890177820 -e -C 1 -S \
     -o /dev/null <<'PPM'
 P3
 1 1

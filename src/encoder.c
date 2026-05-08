@@ -11083,6 +11083,64 @@ sixel_encoder_apply_macro_number_option(
 }
 
 
+static char const *
+sixel_encoder_get_palette_option_name(
+    int color_option)
+{
+    switch (color_option) {
+    case SIXEL_COLOR_OPTION_MAPFILE:
+        return "-m, --mapfile";
+    case SIXEL_COLOR_OPTION_MONOCHROME:
+        return "-e, --monochrome";
+    case SIXEL_COLOR_OPTION_HIGHCOLOR:
+        return "-I, --high-color";
+    case SIXEL_COLOR_OPTION_BUILTIN:
+        return "-b, --builtin-palette";
+    default:
+        break;
+    }
+
+    return NULL;
+}
+
+
+static SIXELSTATUS
+sixel_encoder_check_palette_option_conflict(
+    sixel_encoder_t *encoder,
+    int new_color_option,
+    char const *new_option_name)
+{
+    char message[128];
+    char const *current_option_name;
+
+    message[0] = '\0';
+    current_option_name = NULL;
+    if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT ||
+        encoder->color_option == new_color_option) {
+        return SIXEL_OK;
+    }
+
+    /*
+     * Fixed palette and high-color options select mutually exclusive encoder
+     * output modes.  Reject the second selector immediately so option order
+     * never reinterprets colors by silently replacing the first selector.
+     */
+    current_option_name = sixel_encoder_get_palette_option_name(
+        encoder->color_option);
+    if (current_option_name == NULL) {
+        return SIXEL_OK;
+    }
+
+    (void)sixel_compat_snprintf(message,
+                                sizeof(message),
+                                "option %s conflicts with %s.",
+                                new_option_name,
+                                current_option_name);
+    sixel_helper_set_additional_message(message);
+    return SIXEL_BAD_ARGUMENT;
+}
+
+
 static SIXELSTATUS
 sixel_encoder_apply_mapfile_option(
     sixel_encoder_t *encoder,
@@ -11205,6 +11263,15 @@ sixel_encoder_apply_mapfile_option(
     if (path_check != 0) {
         sixel_allocator_free(encoder->allocator, mapfile_copy);
         return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_encoder_check_palette_option_conflict(
+        encoder,
+        SIXEL_COLOR_OPTION_MAPFILE,
+        "-m, --mapfile");
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(encoder->allocator, mapfile_copy);
+        return status;
     }
 
     if (encoder->mapfile != NULL) {
@@ -11843,9 +11910,23 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_MONOCHROME:  /* e */
+        status = sixel_encoder_check_palette_option_conflict(
+            encoder,
+            SIXEL_COLOR_OPTION_MONOCHROME,
+            "-e, --monochrome");
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         encoder->color_option = SIXEL_COLOR_OPTION_MONOCHROME;
         break;
     case SIXEL_OPTFLAG_HIGH_COLOR:  /* I */
+        status = sixel_encoder_check_palette_option_conflict(
+            encoder,
+            SIXEL_COLOR_OPTION_HIGHCOLOR,
+            "-I, --high-color");
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         encoder->color_option = SIXEL_COLOR_OPTION_HIGHCOLOR;
         break;
     case SIXEL_OPTFLAG_BUILTIN_PALETTE:  /* b */
@@ -11856,6 +11937,13 @@ sixel_encoder_setopt(
                 sizeof(g_option_choices_builtin_palette[0]),
             "cannot parse builtin palette option.",
             &match_value);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        status = sixel_encoder_check_palette_option_conflict(
+            encoder,
+            SIXEL_COLOR_OPTION_BUILTIN,
+            "-b, --builtin-palette");
         if (SIXEL_FAILED(status)) {
             goto end;
         }
