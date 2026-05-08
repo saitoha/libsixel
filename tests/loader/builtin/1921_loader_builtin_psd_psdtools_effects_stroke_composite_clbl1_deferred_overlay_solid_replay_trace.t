@@ -1,5 +1,6 @@
 #!/bin/sh
-# Verify clbl=1 deferred solid overlay resolves to replay or zero-coverage skip.
+# Verify clbl=1 deferred solid overlay emits exactly one replay/skip decision
+# code in the contract header.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -18,16 +19,19 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
-suppressed_tail=''
-apply_tail=''
-skip_tail=''
+diag_line=''
 solid_apply_count=0
 solid_skip_count=0
+solid_unsuppressed_skip_count=0
 command_status=0
+nl='
+'
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --lookup-policy=none \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -36,34 +40,26 @@ test "${command_status}" -eq 0 || {
     exit 0
 }
 
-suppressed_tail="${trace_output#*builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays*}"
-
-test "${suppressed_tail}" != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing clbl=1 suppression trace"
+diag_line=${trace_output#*LSXPSD1|}
+test "${diag_line}" != "${trace_output}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing LSXPSD1 contract header"
     exit 0
 }
 
-apply_tail="${suppressed_tail}"
-while :
-do
-    skip_tail="${apply_tail#*builtin PSD: applying clip-weighted deferred solid overlay in layer fallback*}"
-    test "${skip_tail}" = "${apply_tail}" && break
+diag_line="LSXPSD1|${diag_line}"
+diag_line=${diag_line%%"${nl}"*}
+
+test "${diag_line#*FX_DEFERRED_SOLID_OVERLAY_CLIP*}" = "${diag_line}" || \
     solid_apply_count=$((solid_apply_count + 1))
-    apply_tail="${skip_tail}"
-done
-
-skip_tail="${suppressed_tail}"
-while :
-do
-    apply_tail="${skip_tail#*builtin PSD: skipping clip-weighted deferred solid overlay in layer fallback due to zero coverage*}"
-    test "${apply_tail}" = "${skip_tail}" && break
+test "${diag_line#*FX_DEFERRED_SOLID_SKIP_ZERO_COVERAGE*}" = "${diag_line}" || \
     solid_skip_count=$((solid_skip_count + 1))
-    skip_tail="${apply_tail}"
-done
+test "${diag_line#*FX_DEFERRED_SOLID_SKIP_UNSUPPRESSED*}" = "${diag_line}" || \
+    solid_unsuppressed_skip_count=$((solid_unsuppressed_skip_count + 1))
 
-test $((solid_apply_count + solid_skip_count)) -gt 0 || {
+test $((solid_apply_count + solid_skip_count + solid_unsuppressed_skip_count)) \
+    -eq 1 || {
     echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred solid replay/skip decision trace"
+        "effects/stroke-composite must emit exactly one deferred solid replay/skip decision code"
     exit 0
 }
 
