@@ -63,6 +63,34 @@ jobs:
               libwebp
             exec_type: msys2
 
+          - label: Autotools-msys2-msvc-vcpkg-no-png-jpeg-tiff-webp-lcms2
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --without-webp
+              --with-lcms2
+              --without-librsvg
+              --without-gd
+              --without-gdk-pixbuf2
+              --without-libcurl
+              --without-libfetch
+            extra_packages: make
+            vcpkg_packages: lcms
+            exec_type: msys2
+
           - label: Autotools-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2
             buildtool: autotools
             runner: windows-latest
@@ -112,6 +140,11 @@ jobs:
         shell: pwsh
         run: |
           Stop-Service WSearch
+
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
 
       - uses: actions/checkout@v6
         with:
