@@ -4923,6 +4923,17 @@ end:
     return status;
 }
 
+static void
+sixel_encoder_clear_dither_cache(sixel_encoder_t *encoder)
+{
+    if (encoder == NULL || encoder->dither_cache == NULL) {
+        return;
+    }
+
+    sixel_dither_unref((sixel_dither_t *)encoder->dither_cache);
+    encoder->dither_cache = NULL;
+}
+
 static int
 sixel_encoder_thumbnail_hint(sixel_encoder_t *encoder)
 {
@@ -6728,6 +6739,8 @@ sixel_encoder_prepare_palette(
     unsigned int effective_merge_lloyd;
     int effective_lut_policy;
     int effective_lut_policy_override;
+    int fixed_palette_cache_candidate;
+    int dither_cache_hit;
 
     target_logger = logger;
     cache_allowed = allow_cache != 0;
@@ -6751,6 +6764,8 @@ sixel_encoder_prepare_palette(
     effective_merge_lloyd = 3u;
     effective_lut_policy = SIXEL_LUT_POLICY_CERTLUT;
     effective_lut_policy_override = 0;
+    fixed_palette_cache_candidate = 0;
+    dither_cache_hit = 0;
     if (encoder == NULL || frame == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -6788,24 +6803,33 @@ sixel_encoder_prepare_palette(
         }
         goto end;
     case SIXEL_COLOR_OPTION_MONOCHROME:
+        fixed_palette_cache_candidate = 1;
         if (cache_allowed && encoder->dither_cache) {
             *dither = encoder->dither_cache;
+            sixel_dither_ref(*dither);
+            dither_cache_hit = 1;
             status = SIXEL_OK;
         } else {
             status = sixel_prepare_monochrome_palette(dither, encoder->finvert);
         }
         goto end;
     case SIXEL_COLOR_OPTION_MAPFILE:
+        fixed_palette_cache_candidate = 1;
         if (cache_allowed && encoder->dither_cache) {
             *dither = encoder->dither_cache;
+            sixel_dither_ref(*dither);
+            dither_cache_hit = 1;
             status = SIXEL_OK;
         } else {
             status = sixel_prepare_specified_palette(dither, encoder);
         }
         goto end;
     case SIXEL_COLOR_OPTION_BUILTIN:
+        fixed_palette_cache_candidate = 1;
         if (cache_allowed && encoder->dither_cache) {
             *dither = encoder->dither_cache;
+            sixel_dither_ref(*dither);
+            dither_cache_hit = 1;
             status = SIXEL_OK;
         } else {
             status = sixel_prepare_builtin_palette(dither, encoder->builtin_palette);
@@ -7317,6 +7341,18 @@ end:
             encoder->lut_policy_shared_instance;
         /* pass down the user's demand for an exact palette size */
         (*dither)->force_palette = encoder->force_palette;
+        if (cache_allowed
+                && fixed_palette_cache_candidate != 0
+                && dither_cache_hit == 0) {
+            /*
+             * Fixed palette sources are invariant across animation frames.
+             * Cache the parsed dither object so stdin mapfiles are consumed
+             * only once while later frames still observe the same palette.
+             */
+            sixel_encoder_clear_dither_cache(encoder);
+            encoder->dither_cache = *dither;
+            sixel_dither_ref(*dither);
+        }
     }
     return status;
 }
@@ -14648,6 +14684,7 @@ sixel_encoder_encode(
         goto end;
     }
     sixel_encoder_ref(encoder);
+    sixel_encoder_clear_dither_cache(encoder);
     (void)sixel_timeline_logger_prepare_env(encoder->allocator, &logger);
     logger_prepared = logger != NULL;
 
@@ -15245,6 +15282,7 @@ end:
     if (encoder != NULL) {
         encoder->logger = NULL;
         encoder->parallel_job_id = -1;
+        sixel_encoder_clear_dither_cache(encoder);
     }
     if (logger_prepared) {
         sixel_timeline_logger_unref(logger);
