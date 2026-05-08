@@ -26578,12 +26578,11 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     if (solid_replay_ready != 0) {
                         /*
                          * Keep clbl=1 SoFi suppression effect-local. Only
-                         * suppress the current base SoFi when the solid replay
-                         * slot resolves to this exact source layer index.
+                         * suppress SoFi on the base layer when the solid
+                         * replay slot resolves to this exact source layer.
                          */
                         if (pending_overlay_replay_slots.solid_valid != 0 &&
-                            (overlay_replay_action &
-                             SIXEL_BUILTIN_PSD_OVERLAY_REPLAY_CAPTURE_REPLACED) != 0 &&
+                            layer->clipping == 0u &&
                             pending_overlay_replay_slots.solid_entry.
                                 source_layer_index == (size_t)i) {
                             layer_for_composite.has_effect_solid_overlay = 0;
@@ -26601,8 +26600,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                          * coverage to avoid stale deferred SoFi reuse.
                          */
                         if (pending_overlay_replay_slots.solid_valid != 0 &&
-                            (overlay_replay_action &
-                             SIXEL_BUILTIN_PSD_OVERLAY_REPLAY_CAPTURE_REPLACED) != 0 &&
+                            layer->clipping == 0u &&
                             pending_overlay_replay_slots.solid_entry.
                                 source_layer_index == (size_t)i) {
                             pending_overlay_replay_slots.solid_valid = 0;

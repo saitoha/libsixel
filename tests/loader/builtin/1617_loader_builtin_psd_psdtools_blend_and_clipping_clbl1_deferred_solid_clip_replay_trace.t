@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify clbl=1 deferred solid replay is skipped when suppression is not
-# adopted for the selected replay source layer.
+# Verify clbl=1 deferred solid replay is emitted when suppression is adopted
+# for the selected replay source layer.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -51,18 +51,18 @@ test "${diag_line#*FX_SOLID_OVERLAY_BASE*}" != "${diag_line}" || {
     exit 0
 }
 
-test "${diag_line#*FX_DEFERRED_SOLID_SKIP_UNSUPPRESSED*}" != "${diag_line}" || {
+test "${diag_line#*FX_DEFERRED_SOLID_OVERLAY_CLIP*}" != "${diag_line}" || {
     echo "not ok" 1 - \
-        "blend_and_clipping missing deferred solid unsuppressed-skip code"
+        "blend_and_clipping missing deferred solid replay code"
     exit 0
 }
 
-test "${diag_line#*FX_DEFERRED_SOLID_OVERLAY_CLIP*}" = "${diag_line}" || {
+test "${diag_line#*FX_DEFERRED_SOLID_SKIP_UNSUPPRESSED*}" = "${diag_line}" || {
     echo "not ok" 1 - \
-        "blend_and_clipping emitted deferred solid replay code"
+        "blend_and_clipping emitted deferred solid unsuppressed-skip code"
     exit 0
 }
 
 echo "ok" 1 - \
-    "blend_and_clipping keeps clbl=1 deferred solid suppression/replay consistent"
+    "blend_and_clipping emits clbl=1 deferred solid replay when suppression is adopted"
 exit 0
