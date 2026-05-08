@@ -69,6 +69,7 @@ typedef struct sixel_webp_anim_frame {
     int dispose_to_background;
     int blend_over;
     int opaque_pixels_only;
+    int has_alpha;
 } sixel_webp_anim_frame_t;
 
 typedef struct sixel_webp_anim_stream {
@@ -77,6 +78,7 @@ typedef struct sixel_webp_anim_stream {
     int canvas_width;
     int canvas_height;
     int loop_count;
+    int has_alpha;
 } sixel_webp_anim_stream_t;
 
 typedef enum sixel_webp_xmp_cms_profile_kind {
@@ -1943,6 +1945,7 @@ sixel_webp_parse_anmf_frame(unsigned char const *payload,
     if (frame->vp8_payload != NULL && frame->alpha_payload != NULL) {
         frame->kind = SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC;
         frame->opaque_pixels_only = 0;
+        frame->has_alpha = 1;
         return SIXEL_OK;
     }
     if (frame->vp8_payload != NULL) {
@@ -1960,6 +1963,7 @@ sixel_webp_parse_anmf_frame(unsigned char const *payload,
             frame->opaque_pixels_only = 1;
         } else {
             frame->opaque_pixels_only = 0;
+            frame->has_alpha = vp8l_has_alpha != 0 ? 1 : 0;
         }
         return SIXEL_OK;
     }
@@ -2072,6 +2076,9 @@ sixel_webp_parse_anim_stream(sixel_chunk_t const *chunk,
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
+            if (stream->frames[frame_index].has_alpha != 0) {
+                stream->has_alpha = 1;
+            }
             ++frame_index;
         }
         offset += chunk_total_size;
@@ -2107,57 +2114,29 @@ static SIXELSTATUS
 sixel_webp_validate_anim_alpha_flag(sixel_webp_anim_stream_t const *stream,
                                     unsigned int vp8x_flags)
 {
-    unsigned int alpha_flag_set;
-    int has_anim_alpha;
-    int vp8l_has_alpha;
-    int frame_index;
+    int alpha_flag_set;
 
-    alpha_flag_set = 0u;
-    has_anim_alpha = 0;
-    vp8l_has_alpha = 0;
-    frame_index = 0;
+    alpha_flag_set = 0;
 
     if (stream == NULL || stream->frames == NULL || stream->frame_count <= 0) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    alpha_flag_set = (vp8x_flags & SIXEL_WEBP_VP8X_ALPHA_FLAG) != 0u;
-    for (frame_index = 0; frame_index < stream->frame_count; ++frame_index) {
-        if (stream->frames[frame_index].kind ==
-            SIXEL_WEBP_CONTAINER_KIND_VP8_ALPHA_STATIC) {
-            has_anim_alpha = 1;
-            break;
-        }
-        if (stream->frames[frame_index].kind !=
-            SIXEL_WEBP_CONTAINER_KIND_VP8L_STATIC) {
-            continue;
-        }
-        vp8l_has_alpha = 0;
-        if (sixel_webp_vp8l_payload_header_has_alpha(
-                stream->frames[frame_index].vp8l_payload,
-                stream->frames[frame_index].vp8l_payload_size,
-                &vp8l_has_alpha) == 0) {
-            continue;
-        }
-        if (vp8l_has_alpha != 0) {
-            has_anim_alpha = 1;
-            break;
-        }
+    alpha_flag_set = (vp8x_flags & SIXEL_WEBP_VP8X_ALPHA_FLAG) != 0u ? 1 : 0;
+    /*
+     * A set VP8X alpha flag is compatible with both alpha-bearing frames and
+     * streams whose frames are actually opaque. The cached stream flag is only
+     * needed to reject hidden alpha when the container-level flag is clear.
+     */
+    if (alpha_flag_set != 0) {
+        return SIXEL_OK;
     }
-
-    if (has_anim_alpha != 0 && alpha_flag_set == 0u) {
+    if (stream->has_alpha != 0) {
         sixel_helper_set_additional_message(
             "builtin webp: VP8X alpha flag does not match ANMF alpha "
             "frames.");
         return SIXEL_BAD_INPUT;
     }
-    if (has_anim_alpha != 0) {
-        return SIXEL_OK;
-    }
-    /*
-     * Keep decoder compatibility with libwebp: ANIM streams with VP8X alpha
-     * set but no actual frame alpha stay decodable.
-     */
     return SIXEL_OK;
 }
 
