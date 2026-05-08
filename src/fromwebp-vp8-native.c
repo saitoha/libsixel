@@ -2349,18 +2349,31 @@ sixel_webp_vp8_decode_native_intra(
                                                    y_pred);
                 }
                 if (skip_coeff != 0) {
-                    for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_Y;
-                         ++block) {
-                        if (y_block_w[block] == 0u) {
-                            continue;
+                    if (y_inner_mb != 0u) {
+                        for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                             ++block) {
+                            sixel_webp_vp8_copy_block(
+                                y_block_pred[block],
+                                16u,
+                                y_block_dst[block],
+                                planes->y_stride,
+                                4u,
+                                4u);
                         }
-                        sixel_webp_vp8_copy_block(
-                            y_block_pred[block],
-                            16u,
-                            y_block_dst[block],
-                            planes->y_stride,
-                            y_block_w[block],
-                            y_block_h[block]);
+                    } else {
+                        for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                             ++block) {
+                            if (y_block_w[block] == 0u) {
+                                continue;
+                            }
+                            sixel_webp_vp8_copy_block(
+                                y_block_pred[block],
+                                16u,
+                                y_block_dst[block],
+                                planes->y_stride,
+                                y_block_w[block],
+                                y_block_h[block]);
+                        }
                     }
                 } else {
                     if (y2_nz != 0u) {
@@ -2370,7 +2383,86 @@ sixel_webp_vp8_decode_native_intra(
                                                      dequant);
                         sixel_webp_vp8_iwht4x4(dequant, y2_output);
                     }
-                    if (all_y_nonzero != 0u) {
+                    if (y_inner_mb != 0u) {
+                        if (all_y_nonzero != 0u) {
+                            if (y2_nz != 0u) {
+                                for (block = 0u;
+                                     block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                                     ++block) {
+                                    sixel_webp_vp8_dequant_block(
+                                        coeffs[block],
+                                        quant_values.y1_dc,
+                                        quant_values.y1_ac,
+                                        dequant);
+                                    dequant[0] += y2_output[block];
+                                    sixel_webp_vp8_add_residual_4x4(
+                                        y_block_pred[block],
+                                        16u,
+                                        y_block_dst[block],
+                                        planes->y_stride,
+                                        dequant);
+                                }
+                            } else {
+                                for (block = 0u;
+                                     block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                                     ++block) {
+                                    sixel_webp_vp8_dequant_block(
+                                        coeffs[block],
+                                        quant_values.y1_dc,
+                                        quant_values.y1_ac,
+                                        dequant);
+                                    sixel_webp_vp8_add_residual_4x4(
+                                        y_block_pred[block],
+                                        16u,
+                                        y_block_dst[block],
+                                        planes->y_stride,
+                                        dequant);
+                                }
+                            }
+                        } else if (y2_nz == 0u) {
+                            for (block = 0u;
+                                 block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                                 ++block) {
+                                if ((y_zero_mask & (1u << block)) != 0u) {
+                                    sixel_webp_vp8_copy_block(
+                                        y_block_pred[block],
+                                        16u,
+                                        y_block_dst[block],
+                                        planes->y_stride,
+                                        4u,
+                                        4u);
+                                    continue;
+                                }
+                                sixel_webp_vp8_dequant_block(
+                                    coeffs[block],
+                                    quant_values.y1_dc,
+                                    quant_values.y1_ac,
+                                    dequant);
+                                sixel_webp_vp8_add_residual_4x4(
+                                    y_block_pred[block],
+                                    16u,
+                                    y_block_dst[block],
+                                    planes->y_stride,
+                                    dequant);
+                            }
+                        } else {
+                            for (block = 0u;
+                                 block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                                 ++block) {
+                                sixel_webp_vp8_dequant_block(coeffs[block],
+                                                             quant_values.y1_dc,
+                                                             quant_values.y1_ac,
+                                                             dequant);
+                                dequant[0] += y2_output[block];
+                                sixel_webp_vp8_add_residual_4x4(
+                                    y_block_pred[block],
+                                    16u,
+                                    y_block_dst[block],
+                                    planes->y_stride,
+                                    dequant);
+                            }
+                        }
+                    } else if (all_y_nonzero != 0u) {
                         if (y2_nz != 0u) {
                             for (block = 0u;
                                  block < SIXEL_WEBP_VP8_BLOCKS_Y;
