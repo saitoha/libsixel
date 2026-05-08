@@ -26545,7 +26545,43 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         solid_replay_ready = 1;
                     }
                     if (solid_replay_ready != 0) {
+                        /*
+                         * Keep clbl=1 SoFi suppression effect-local. Only
+                         * suppress the current base SoFi when the solid replay
+                         * slot resolves to this exact source layer index.
+                         */
+                        if (pending_overlay_replay_slots.solid_valid != 0 &&
+                            (overlay_replay_action &
+                             SIXEL_BUILTIN_PSD_OVERLAY_REPLAY_CAPTURE_REPLACED) != 0 &&
+                            pending_overlay_replay_slots.solid_entry.
+                                source_layer_index == (size_t)i) {
+                            layer_for_composite.has_effect_solid_overlay = 0;
+                        }
                         suppressed_any_overlay = 1;
+                    } else {
+                        /*
+                         * Keep suppression/replay effect-local. When this
+                         * layer cannot provide actionable solid coverage,
+                         * drop the solid replay slot and clear captured
+                         * coverage to avoid stale deferred SoFi reuse.
+                         */
+                        if (pending_overlay_replay_slots.solid_valid != 0 &&
+                            (overlay_replay_action &
+                             SIXEL_BUILTIN_PSD_OVERLAY_REPLAY_CAPTURE_REPLACED) != 0 &&
+                            pending_overlay_replay_slots.solid_entry.
+                                source_layer_index == (size_t)i) {
+                            pending_overlay_replay_slots.solid_valid = 0;
+                            memset(&pending_overlay_replay_slots.solid_entry,
+                                   0,
+                                   sizeof(pending_overlay_replay_slots.
+                                          solid_entry));
+                            pending_overlay_fill_coverage_valid = 0;
+                            if (pending_overlay_fill_coverage_map != NULL) {
+                                memset(pending_overlay_fill_coverage_map,
+                                       0,
+                                       pixel_count * sizeof(float));
+                            }
+                        }
                     }
                 }
                 if (overlay_replay_action &
