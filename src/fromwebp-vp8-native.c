@@ -207,6 +207,181 @@ static int const sixel_webp_vp8_ac_qlookup[128] = {
     239, 245, 249, 254, 259, 264, 269, 274, 279, 284
 };
 
+static int const sixel_webp_vp8_y_term[256] = {
+    0, 74, 149, 223, 298, 372, 447, 521,
+    596, 670, 745, 819, 894, 968, 1043, 1117,
+    1192, 1266, 1341, 1415, 1490, 1564, 1639, 1713,
+    1788, 1862, 1937, 2012, 2086, 2161, 2235, 2310,
+    2384, 2459, 2533, 2608, 2682, 2757, 2831, 2906,
+    2980, 3055, 3129, 3204, 3278, 3353, 3427, 3502,
+    3576, 3651, 3725, 3800, 3875, 3949, 4024, 4098,
+    4173, 4247, 4322, 4396, 4471, 4545, 4620, 4694,
+    4769, 4843, 4918, 4992, 5067, 5141, 5216, 5290,
+    5365, 5439, 5514, 5588, 5663, 5738, 5812, 5887,
+    5961, 6036, 6110, 6185, 6259, 6334, 6408, 6483,
+    6557, 6632, 6706, 6781, 6855, 6930, 7004, 7079,
+    7153, 7228, 7302, 7377, 7451, 7526, 7600, 7675,
+    7750, 7824, 7899, 7973, 8048, 8122, 8197, 8271,
+    8346, 8420, 8495, 8569, 8644, 8718, 8793, 8867,
+    8942, 9016, 9091, 9165, 9240, 9314, 9389, 9463,
+    9538, 9613, 9687, 9762, 9836, 9911, 9985, 10060,
+    10134, 10209, 10283, 10358, 10432, 10507, 10581, 10656,
+    10730, 10805, 10879, 10954, 11028, 11103, 11177, 11252,
+    11326, 11401, 11476, 11550, 11625, 11699, 11774, 11848,
+    11923, 11997, 12072, 12146, 12221, 12295, 12370, 12444,
+    12519, 12593, 12668, 12742, 12817, 12891, 12966, 13040,
+    13115, 13189, 13264, 13338, 13413, 13488, 13562, 13637,
+    13711, 13786, 13860, 13935, 14009, 14084, 14158, 14233,
+    14307, 14382, 14456, 14531, 14605, 14680, 14754, 14829,
+    14903, 14978, 15052, 15127, 15201, 15276, 15351, 15425,
+    15500, 15574, 15649, 15723, 15798, 15872, 15947, 16021,
+    16096, 16170, 16245, 16319, 16394, 16468, 16543, 16617,
+    16692, 16766, 16841, 16915, 16990, 17064, 17139, 17214,
+    17288, 17363, 17437, 17512, 17586, 17661, 17735, 17810,
+    17884, 17959, 18033, 18108, 18182, 18257, 18331, 18406,
+    18480, 18555, 18629, 18704, 18778, 18853, 18927, 19002,
+};
+
+static int const sixel_webp_vp8_u_to_b[256] = {
+    -17685, -17556, -17427, -17298, -17169, -17040, -16911, -16782,
+    -16653, -16524, -16394, -16265, -16136, -16007, -15878, -15749,
+    -15620, -15491, -15362, -15233, -15103, -14974, -14845, -14716,
+    -14587, -14458, -14329, -14200, -14071, -13942, -13812, -13683,
+    -13554, -13425, -13296, -13167, -13038, -12909, -12780, -12651,
+    -12521, -12392, -12263, -12134, -12005, -11876, -11747, -11618,
+    -11489, -11360, -11230, -11101, -10972, -10843, -10714, -10585,
+    -10456, -10327, -10198, -10069, -9939, -9810, -9681, -9552,
+    -9423, -9294, -9165, -9036, -8907, -8777, -8648, -8519,
+    -8390, -8261, -8132, -8003, -7874, -7745, -7616, -7486,
+    -7357, -7228, -7099, -6970, -6841, -6712, -6583, -6454,
+    -6325, -6195, -6066, -5937, -5808, -5679, -5550, -5421,
+    -5292, -5163, -5034, -4904, -4775, -4646, -4517, -4388,
+    -4259, -4130, -4001, -3872, -3743, -3613, -3484, -3355,
+    -3226, -3097, -2968, -2839, -2710, -2581, -2452, -2322,
+    -2193, -2064, -1935, -1806, -1677, -1548, -1419, -1290,
+    -1160, -1031, -902, -773, -644, -515, -386, -257,
+    -128, 1, 131, 260, 389, 518, 647, 776,
+    905, 1034, 1163, 1292, 1422, 1551, 1680, 1809,
+    1938, 2067, 2196, 2325, 2454, 2583, 2713, 2842,
+    2971, 3100, 3229, 3358, 3487, 3616, 3745, 3874,
+    4004, 4133, 4262, 4391, 4520, 4649, 4778, 4907,
+    5036, 5165, 5295, 5424, 5553, 5682, 5811, 5940,
+    6069, 6198, 6327, 6456, 6586, 6715, 6844, 6973,
+    7102, 7231, 7360, 7489, 7618, 7748, 7877, 8006,
+    8135, 8264, 8393, 8522, 8651, 8780, 8909, 9039,
+    9168, 9297, 9426, 9555, 9684, 9813, 9942, 10071,
+    10200, 10330, 10459, 10588, 10717, 10846, 10975, 11104,
+    11233, 11362, 11491, 11621, 11750, 11879, 12008, 12137,
+    12266, 12395, 12524, 12653, 12782, 12912, 13041, 13170,
+    13299, 13428, 13557, 13686, 13815, 13944, 14073, 14203,
+    14332, 14461, 14590, 14719, 14848, 14977, 15106, 15235,
+};
+
+static int const sixel_webp_vp8_u_to_g[256] = {
+    0, -25, -50, -75, -100, -125, -150, -175,
+    -200, -225, -250, -275, -300, -325, -351, -376,
+    -401, -426, -451, -476, -501, -526, -551, -576,
+    -601, -626, -651, -677, -702, -727, -752, -777,
+    -802, -827, -852, -877, -902, -927, -952, -977,
+    -1002, -1028, -1053, -1078, -1103, -1128, -1153, -1178,
+    -1203, -1228, -1253, -1278, -1303, -1328, -1354, -1379,
+    -1404, -1429, -1454, -1479, -1504, -1529, -1554, -1579,
+    -1604, -1629, -1654, -1679, -1705, -1730, -1755, -1780,
+    -1805, -1830, -1855, -1880, -1905, -1930, -1955, -1980,
+    -2005, -2031, -2056, -2081, -2106, -2131, -2156, -2181,
+    -2206, -2231, -2256, -2281, -2306, -2331, -2356, -2382,
+    -2407, -2432, -2457, -2482, -2507, -2532, -2557, -2582,
+    -2607, -2632, -2657, -2682, -2708, -2733, -2758, -2783,
+    -2808, -2833, -2858, -2883, -2908, -2933, -2958, -2983,
+    -3008, -3033, -3059, -3084, -3109, -3134, -3159, -3184,
+    -3209, -3234, -3259, -3284, -3309, -3334, -3359, -3385,
+    -3410, -3435, -3460, -3485, -3510, -3535, -3560, -3585,
+    -3610, -3635, -3660, -3685, -3710, -3736, -3761, -3786,
+    -3811, -3836, -3861, -3886, -3911, -3936, -3961, -3986,
+    -4011, -4036, -4062, -4087, -4112, -4137, -4162, -4187,
+    -4212, -4237, -4262, -4287, -4312, -4337, -4362, -4387,
+    -4413, -4438, -4463, -4488, -4513, -4538, -4563, -4588,
+    -4613, -4638, -4663, -4688, -4713, -4739, -4764, -4789,
+    -4814, -4839, -4864, -4889, -4914, -4939, -4964, -4989,
+    -5014, -5039, -5064, -5090, -5115, -5140, -5165, -5190,
+    -5215, -5240, -5265, -5290, -5315, -5340, -5365, -5390,
+    -5416, -5441, -5466, -5491, -5516, -5541, -5566, -5591,
+    -5616, -5641, -5666, -5691, -5716, -5741, -5767, -5792,
+    -5817, -5842, -5867, -5892, -5917, -5942, -5967, -5992,
+    -6017, -6042, -6067, -6093, -6118, -6143, -6168, -6193,
+    -6218, -6243, -6268, -6293, -6318, -6343, -6368, -6393,
+};
+
+static int const sixel_webp_vp8_v_to_r[256] = {
+    -14234, -14132, -14030, -13928, -13826, -13724, -13622, -13519,
+    -13417, -13315, -13213, -13111, -13009, -12907, -12804, -12702,
+    -12600, -12498, -12396, -12294, -12192, -12089, -11987, -11885,
+    -11783, -11681, -11579, -11477, -11374, -11272, -11170, -11068,
+    -10966, -10864, -10762, -10659, -10557, -10455, -10353, -10251,
+    -10149, -10047, -9944, -9842, -9740, -9638, -9536, -9434,
+    -9332, -9229, -9127, -9025, -8923, -8821, -8719, -8617,
+    -8514, -8412, -8310, -8208, -8106, -8004, -7902, -7799,
+    -7697, -7595, -7493, -7391, -7289, -7187, -7084, -6982,
+    -6880, -6778, -6676, -6574, -6472, -6369, -6267, -6165,
+    -6063, -5961, -5859, -5757, -5654, -5552, -5450, -5348,
+    -5246, -5144, -5041, -4939, -4837, -4735, -4633, -4531,
+    -4429, -4326, -4224, -4122, -4020, -3918, -3816, -3714,
+    -3611, -3509, -3407, -3305, -3203, -3101, -2999, -2896,
+    -2794, -2692, -2590, -2488, -2386, -2284, -2181, -2079,
+    -1977, -1875, -1773, -1671, -1569, -1466, -1364, -1262,
+    -1160, -1058, -956, -854, -751, -649, -547, -445,
+    -343, -241, -139, -36, 66, 168, 270, 372,
+    474, 576, 679, 781, 883, 985, 1087, 1189,
+    1291, 1394, 1496, 1598, 1700, 1802, 1904, 2006,
+    2109, 2211, 2313, 2415, 2517, 2619, 2721, 2824,
+    2926, 3028, 3130, 3232, 3334, 3437, 3539, 3641,
+    3743, 3845, 3947, 4049, 4152, 4254, 4356, 4458,
+    4560, 4662, 4764, 4867, 4969, 5071, 5173, 5275,
+    5377, 5479, 5582, 5684, 5786, 5888, 5990, 6092,
+    6194, 6297, 6399, 6501, 6603, 6705, 6807, 6909,
+    7012, 7114, 7216, 7318, 7420, 7522, 7624, 7727,
+    7829, 7931, 8033, 8135, 8237, 8339, 8442, 8544,
+    8646, 8748, 8850, 8952, 9054, 9157, 9259, 9361,
+    9463, 9565, 9667, 9769, 9872, 9974, 10076, 10178,
+    10280, 10382, 10484, 10587, 10689, 10791, 10893, 10995,
+    11097, 11199, 11302, 11404, 11506, 11608, 11710, 11812,
+};
+
+static int const sixel_webp_vp8_v_to_g[256] = {
+    8708, 8656, 8604, 8552, 8500, 8448, 8396, 8344,
+    8292, 8240, 8188, 8136, 8084, 8032, 7980, 7928,
+    7876, 7824, 7772, 7720, 7668, 7616, 7564, 7512,
+    7460, 7408, 7356, 7304, 7252, 7200, 7148, 7096,
+    7043, 6991, 6939, 6887, 6835, 6783, 6731, 6679,
+    6627, 6575, 6523, 6471, 6419, 6367, 6315, 6263,
+    6211, 6159, 6107, 6055, 6003, 5951, 5899, 5847,
+    5795, 5743, 5691, 5639, 5587, 5535, 5483, 5431,
+    5378, 5326, 5274, 5222, 5170, 5118, 5066, 5014,
+    4962, 4910, 4858, 4806, 4754, 4702, 4650, 4598,
+    4546, 4494, 4442, 4390, 4338, 4286, 4234, 4182,
+    4130, 4078, 4026, 3974, 3922, 3870, 3818, 3766,
+    3713, 3661, 3609, 3557, 3505, 3453, 3401, 3349,
+    3297, 3245, 3193, 3141, 3089, 3037, 2985, 2933,
+    2881, 2829, 2777, 2725, 2673, 2621, 2569, 2517,
+    2465, 2413, 2361, 2309, 2257, 2205, 2153, 2101,
+    2048, 1996, 1944, 1892, 1840, 1788, 1736, 1684,
+    1632, 1580, 1528, 1476, 1424, 1372, 1320, 1268,
+    1216, 1164, 1112, 1060, 1008, 956, 904, 852,
+    800, 748, 696, 644, 592, 540, 488, 436,
+    383, 331, 279, 227, 175, 123, 71, 19,
+    -33, -85, -137, -189, -241, -293, -345, -397,
+    -449, -501, -553, -605, -657, -709, -761, -813,
+    -865, -917, -969, -1021, -1073, -1125, -1177, -1229,
+    -1282, -1334, -1386, -1438, -1490, -1542, -1594, -1646,
+    -1698, -1750, -1802, -1854, -1906, -1958, -2010, -2062,
+    -2114, -2166, -2218, -2270, -2322, -2374, -2426, -2478,
+    -2530, -2582, -2634, -2686, -2738, -2790, -2842, -2894,
+    -2947, -2999, -3051, -3103, -3155, -3207, -3259, -3311,
+    -3363, -3415, -3467, -3519, -3571, -3623, -3675, -3727,
+    -3779, -3831, -3883, -3935, -3987, -4039, -4091, -4143,
+    -4195, -4247, -4299, -4351, -4403, -4455, -4507, -4559,
+};
+
 static unsigned int
 sixel_webp_vp8_read_u24le(unsigned char const *p)
 {
@@ -230,16 +405,14 @@ sixel_webp_vp8_clamp_u8(int value)
     return (unsigned char)value;
 }
 
-static unsigned char
+static inline unsigned char
 sixel_webp_vp8_clip_yuv2(int value)
 {
-    if ((value & ~(int)SIXEL_WEBP_VP8_YUV_MASK2) == 0) {
-        return (unsigned char)(value >> SIXEL_WEBP_VP8_YUV_FIX2);
+    if ((unsigned int)value <= SIXEL_WEBP_VP8_YUV_MASK2) {
+        return (unsigned char)((unsigned int)value >>
+                               SIXEL_WEBP_VP8_YUV_FIX2);
     }
-    if (value < 0) {
-        return 0u;
-    }
-    return 255u;
+    return (value < 0) ? 0u : 255u;
 }
 
 static unsigned char
@@ -1770,6 +1943,8 @@ sixel_webp_vp8_decode_native_intra(
     unsigned int all_y_nonzero;
     unsigned int all_u_nonzero;
     unsigned int all_v_nonzero;
+    unsigned int u_zero_mask;
+    unsigned int v_zero_mask;
     unsigned int y_inner_mb;
     unsigned int ypred_fast_inner_mb;
     unsigned int bpred_fast_inner_mb;
@@ -1787,16 +1962,18 @@ sixel_webp_vp8_decode_native_intra(
     unsigned char u_pred[8 * 8];
     unsigned char v_pred[8 * 8];
     unsigned char block_pred[16];
-    unsigned char *u_dst;
-    unsigned char *v_dst;
-    unsigned char const *u_block_pred_ptr;
-    unsigned char const *v_block_pred_ptr;
     unsigned int y_block_x[SIXEL_WEBP_VP8_BLOCKS_Y];
     unsigned int y_block_y[SIXEL_WEBP_VP8_BLOCKS_Y];
     unsigned int y_block_w[SIXEL_WEBP_VP8_BLOCKS_Y];
     unsigned int y_block_h[SIXEL_WEBP_VP8_BLOCKS_Y];
     unsigned char *y_block_dst[SIXEL_WEBP_VP8_BLOCKS_Y];
     unsigned char const *y_block_pred[SIXEL_WEBP_VP8_BLOCKS_Y];
+    unsigned int uv_block_w[SIXEL_WEBP_VP8_BLOCKS_UV];
+    unsigned int uv_block_h[SIXEL_WEBP_VP8_BLOCKS_UV];
+    unsigned char *u_block_dst[SIXEL_WEBP_VP8_BLOCKS_UV];
+    unsigned char *v_block_dst[SIXEL_WEBP_VP8_BLOCKS_UV];
+    unsigned char const *u_block_pred[SIXEL_WEBP_VP8_BLOCKS_UV];
+    unsigned char const *v_block_pred[SIXEL_WEBP_VP8_BLOCKS_UV];
     size_t above_y_size;
     size_t above_u_size;
     size_t above_v_size;
@@ -1864,6 +2041,8 @@ sixel_webp_vp8_decode_native_intra(
     all_y_nonzero = 0u;
     all_u_nonzero = 0u;
     all_v_nonzero = 0u;
+    u_zero_mask = 0u;
+    v_zero_mask = 0u;
     y_inner_mb = 0u;
     ypred_fast_inner_mb = 0u;
     bpred_fast_inner_mb = 0u;
@@ -1881,17 +2060,21 @@ sixel_webp_vp8_decode_native_intra(
     memset(u_pred, 0, sizeof(u_pred));
     memset(v_pred, 0, sizeof(v_pred));
     memset(block_pred, 0, sizeof(block_pred));
-    u_dst = NULL;
-    v_dst = NULL;
-    u_block_pred_ptr = NULL;
-    v_block_pred_ptr = NULL;
     memset(y_block_x, 0, sizeof(y_block_x));
     memset(y_block_y, 0, sizeof(y_block_y));
     memset(y_block_w, 0, sizeof(y_block_w));
     memset(y_block_h, 0, sizeof(y_block_h));
     memset(y_block_dst, 0, sizeof(y_block_dst));
+    memset(uv_block_w, 0, sizeof(uv_block_w));
+    memset(uv_block_h, 0, sizeof(uv_block_h));
+    memset(u_block_dst, 0, sizeof(u_block_dst));
+    memset(v_block_dst, 0, sizeof(v_block_dst));
     for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_Y; ++block) {
         y_block_pred[block] = NULL;
+    }
+    for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_UV; ++block) {
+        u_block_pred[block] = NULL;
+        v_block_pred[block] = NULL;
     }
     above_y_size = 0u;
     above_u_size = 0u;
@@ -2038,6 +2221,8 @@ sixel_webp_vp8_decode_native_intra(
             nz_v = 0u;
             nz_y2 = 0u;
             y_zero_mask = 0u;
+            u_zero_mask = 0u;
+            v_zero_mask = 0u;
             memset(y_nz, 0, sizeof(y_nz));
             memset(u_nz, 0, sizeof(u_nz));
             memset(v_nz, 0, sizeof(v_nz));
@@ -2204,6 +2389,8 @@ sixel_webp_vp8_decode_native_intra(
                     left_u[block >> 1u] = u_nz[block];
                     if (u_nz[block] != 0u) {
                         ++nz_u;
+                    } else {
+                        u_zero_mask |= 1u << block;
                     }
                 }
 
@@ -2230,6 +2417,8 @@ sixel_webp_vp8_decode_native_intra(
                     left_v[block >> 1u] = v_nz[block];
                     if (v_nz[block] != 0u) {
                         ++nz_v;
+                    } else {
+                        v_zero_mask |= 1u << block;
                     }
                 }
             } else {
@@ -2253,6 +2442,8 @@ sixel_webp_vp8_decode_native_intra(
                 y2_nz = 0u;
                 /* skip_coeff clears all Y residual blocks for this MB. */
                 y_zero_mask = 0xffffu;
+                u_zero_mask = 0x0fu;
+                v_zero_mask = 0x0fu;
             }
             if (mb_x < 2u && mb_y < 2u &&
                 sixel_trace_topic_is_enabled("webp_decode") != 0) {
@@ -2349,18 +2540,31 @@ sixel_webp_vp8_decode_native_intra(
                                                    y_pred);
                 }
                 if (skip_coeff != 0) {
-                    for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_Y;
-                         ++block) {
-                        if (y_block_w[block] == 0u) {
-                            continue;
+                    if (y_inner_mb != 0u) {
+                        for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                             ++block) {
+                            sixel_webp_vp8_copy_block(
+                                y_block_pred[block],
+                                16u,
+                                y_block_dst[block],
+                                planes->y_stride,
+                                4u,
+                                4u);
                         }
-                        sixel_webp_vp8_copy_block(
-                            y_block_pred[block],
-                            16u,
-                            y_block_dst[block],
-                            planes->y_stride,
-                            y_block_w[block],
-                            y_block_h[block]);
+                    } else {
+                        for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                             ++block) {
+                            if (y_block_w[block] == 0u) {
+                                continue;
+                            }
+                            sixel_webp_vp8_copy_block(
+                                y_block_pred[block],
+                                16u,
+                                y_block_dst[block],
+                                planes->y_stride,
+                                y_block_w[block],
+                                y_block_h[block]);
+                        }
                     }
                 } else {
                     if (y2_nz != 0u) {
@@ -2370,7 +2574,86 @@ sixel_webp_vp8_decode_native_intra(
                                                      dequant);
                         sixel_webp_vp8_iwht4x4(dequant, y2_output);
                     }
-                    if (all_y_nonzero != 0u) {
+                    if (y_inner_mb != 0u) {
+                        if (all_y_nonzero != 0u) {
+                            if (y2_nz != 0u) {
+                                for (block = 0u;
+                                     block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                                     ++block) {
+                                    sixel_webp_vp8_dequant_block(
+                                        coeffs[block],
+                                        quant_values.y1_dc,
+                                        quant_values.y1_ac,
+                                        dequant);
+                                    dequant[0] += y2_output[block];
+                                    sixel_webp_vp8_add_residual_4x4(
+                                        y_block_pred[block],
+                                        16u,
+                                        y_block_dst[block],
+                                        planes->y_stride,
+                                        dequant);
+                                }
+                            } else {
+                                for (block = 0u;
+                                     block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                                     ++block) {
+                                    sixel_webp_vp8_dequant_block(
+                                        coeffs[block],
+                                        quant_values.y1_dc,
+                                        quant_values.y1_ac,
+                                        dequant);
+                                    sixel_webp_vp8_add_residual_4x4(
+                                        y_block_pred[block],
+                                        16u,
+                                        y_block_dst[block],
+                                        planes->y_stride,
+                                        dequant);
+                                }
+                            }
+                        } else if (y2_nz == 0u) {
+                            for (block = 0u;
+                                 block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                                 ++block) {
+                                if ((y_zero_mask & (1u << block)) != 0u) {
+                                    sixel_webp_vp8_copy_block(
+                                        y_block_pred[block],
+                                        16u,
+                                        y_block_dst[block],
+                                        planes->y_stride,
+                                        4u,
+                                        4u);
+                                    continue;
+                                }
+                                sixel_webp_vp8_dequant_block(
+                                    coeffs[block],
+                                    quant_values.y1_dc,
+                                    quant_values.y1_ac,
+                                    dequant);
+                                sixel_webp_vp8_add_residual_4x4(
+                                    y_block_pred[block],
+                                    16u,
+                                    y_block_dst[block],
+                                    planes->y_stride,
+                                    dequant);
+                            }
+                        } else {
+                            for (block = 0u;
+                                 block < SIXEL_WEBP_VP8_BLOCKS_Y;
+                                 ++block) {
+                                sixel_webp_vp8_dequant_block(coeffs[block],
+                                                             quant_values.y1_dc,
+                                                             quant_values.y1_ac,
+                                                             dequant);
+                                dequant[0] += y2_output[block];
+                                sixel_webp_vp8_add_residual_4x4(
+                                    y_block_pred[block],
+                                    16u,
+                                    y_block_dst[block],
+                                    planes->y_stride,
+                                    dequant);
+                            }
+                        }
+                    } else if (all_y_nonzero != 0u) {
                         if (y2_nz != 0u) {
                             for (block = 0u;
                                  block < SIXEL_WEBP_VP8_BLOCKS_Y;
@@ -2726,29 +3009,57 @@ sixel_webp_vp8_decode_native_intra(
                                                  uv_height,
                                                  v_pred);
             }
+            for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_UV; ++block) {
+                dst_x = x0 + sixel_webp_vp8_uv_block_x[block];
+                dst_y = y0 + sixel_webp_vp8_uv_block_y[block];
+                u_block_pred[block] = u_pred +
+                    sixel_webp_vp8_uv_block_offset[block];
+                v_block_pred[block] = v_pred +
+                    sixel_webp_vp8_uv_block_offset[block];
+                if (uv_inner_mb != 0u) {
+                    uv_block_w[block] = 4u;
+                    uv_block_h[block] = 4u;
+                    u_block_dst[block] =
+                        planes->u + (size_t)dst_y * planes->uv_stride + dst_x;
+                    v_block_dst[block] =
+                        planes->v + (size_t)dst_y * planes->uv_stride + dst_x;
+                    continue;
+                }
+                if (dst_x >= uv_width || dst_y >= uv_height) {
+                    uv_block_w[block] = 0u;
+                    uv_block_h[block] = 0u;
+                    u_block_dst[block] = NULL;
+                    v_block_dst[block] = NULL;
+                    continue;
+                }
+                copy_w = 4u;
+                copy_h = 4u;
+                if (copy_w > uv_width - dst_x) {
+                    copy_w = uv_width - dst_x;
+                }
+                if (copy_h > uv_height - dst_y) {
+                    copy_h = uv_height - dst_y;
+                }
+                uv_block_w[block] = copy_w;
+                uv_block_h[block] = copy_h;
+                u_block_dst[block] =
+                    planes->u + (size_t)dst_y * planes->uv_stride + dst_x;
+                v_block_dst[block] =
+                    planes->v + (size_t)dst_y * planes->uv_stride + dst_x;
+            }
             if (uv_inner_mb != 0u) {
                 if (skip_coeff != 0) {
                     for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_UV;
                          ++block) {
-                        dst_x = x0 + sixel_webp_vp8_uv_block_x[block];
-                        dst_y = y0 + sixel_webp_vp8_uv_block_y[block];
-                        u_block_pred_ptr = u_pred +
-                            sixel_webp_vp8_uv_block_offset[block];
-                        v_block_pred_ptr = v_pred +
-                            sixel_webp_vp8_uv_block_offset[block];
-                        u_dst = planes->u + (size_t)dst_y * planes->uv_stride
-                            + dst_x;
-                        v_dst = planes->v + (size_t)dst_y * planes->uv_stride
-                            + dst_x;
-                        sixel_webp_vp8_copy_block(u_block_pred_ptr,
+                        sixel_webp_vp8_copy_block(u_block_pred[block],
                                                   8u,
-                                                  u_dst,
+                                                  u_block_dst[block],
                                                   planes->uv_stride,
                                                   4u,
                                                   4u);
-                        sixel_webp_vp8_copy_block(v_block_pred_ptr,
+                        sixel_webp_vp8_copy_block(v_block_pred[block],
                                                   8u,
-                                                  v_dst,
+                                                  v_block_dst[block],
                                                   planes->uv_stride,
                                                   4u,
                                                   4u);
@@ -2756,52 +3067,32 @@ sixel_webp_vp8_decode_native_intra(
                 } else if (all_u_nonzero != 0u && all_v_nonzero != 0u) {
                     for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_UV;
                          ++block) {
-                        dst_x = x0 + sixel_webp_vp8_uv_block_x[block];
-                        dst_y = y0 + sixel_webp_vp8_uv_block_y[block];
-                        u_block_pred_ptr = u_pred +
-                            sixel_webp_vp8_uv_block_offset[block];
-                        v_block_pred_ptr = v_pred +
-                            sixel_webp_vp8_uv_block_offset[block];
-                        u_dst = planes->u + (size_t)dst_y * planes->uv_stride
-                            + dst_x;
-                        v_dst = planes->v + (size_t)dst_y * planes->uv_stride
-                            + dst_x;
                         sixel_webp_vp8_dequant_block(coeffs[16u + block],
                                                      quant_values.uv_dc,
                                                      quant_values.uv_ac,
                                                      dequant);
-                        sixel_webp_vp8_add_residual_4x4(u_block_pred_ptr,
+                        sixel_webp_vp8_add_residual_4x4(u_block_pred[block],
                                                         8u,
-                                                        u_dst,
+                                                        u_block_dst[block],
                                                         planes->uv_stride,
                                                         dequant);
                         sixel_webp_vp8_dequant_block(coeffs[20u + block],
                                                      quant_values.uv_dc,
                                                      quant_values.uv_ac,
                                                      dequant);
-                        sixel_webp_vp8_add_residual_4x4(v_block_pred_ptr,
+                        sixel_webp_vp8_add_residual_4x4(v_block_pred[block],
                                                         8u,
-                                                        v_dst,
+                                                        v_block_dst[block],
                                                         planes->uv_stride,
                                                         dequant);
                     }
                 } else {
                     for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_UV;
                          ++block) {
-                        dst_x = x0 + sixel_webp_vp8_uv_block_x[block];
-                        dst_y = y0 + sixel_webp_vp8_uv_block_y[block];
-                        u_block_pred_ptr = u_pred +
-                            sixel_webp_vp8_uv_block_offset[block];
-                        v_block_pred_ptr = v_pred +
-                            sixel_webp_vp8_uv_block_offset[block];
-                        u_dst = planes->u + (size_t)dst_y * planes->uv_stride
-                            + dst_x;
-                        v_dst = planes->v + (size_t)dst_y * planes->uv_stride
-                            + dst_x;
-                        if (all_u_nonzero == 0u && u_nz[block] == 0u) {
-                            sixel_webp_vp8_copy_block(u_block_pred_ptr,
+                        if ((u_zero_mask & (1u << block)) != 0u) {
+                            sixel_webp_vp8_copy_block(u_block_pred[block],
                                                       8u,
-                                                      u_dst,
+                                                      u_block_dst[block],
                                                       planes->uv_stride,
                                                       4u,
                                                       4u);
@@ -2810,16 +3101,16 @@ sixel_webp_vp8_decode_native_intra(
                                                          quant_values.uv_dc,
                                                          quant_values.uv_ac,
                                                          dequant);
-                            sixel_webp_vp8_add_residual_4x4(u_block_pred_ptr,
+                            sixel_webp_vp8_add_residual_4x4(u_block_pred[block],
                                                             8u,
-                                                            u_dst,
+                                                            u_block_dst[block],
                                                             planes->uv_stride,
                                                             dequant);
                         }
-                        if (all_v_nonzero == 0u && v_nz[block] == 0u) {
-                            sixel_webp_vp8_copy_block(v_block_pred_ptr,
+                        if ((v_zero_mask & (1u << block)) != 0u) {
+                            sixel_webp_vp8_copy_block(v_block_pred[block],
                                                       8u,
-                                                      v_dst,
+                                                      v_block_dst[block],
                                                       planes->uv_stride,
                                                       4u,
                                                       4u);
@@ -2828,9 +3119,9 @@ sixel_webp_vp8_decode_native_intra(
                                                          quant_values.uv_dc,
                                                          quant_values.uv_ac,
                                                          dequant);
-                            sixel_webp_vp8_add_residual_4x4(v_block_pred_ptr,
+                            sixel_webp_vp8_add_residual_4x4(v_block_pred[block],
                                                             8u,
-                                                            v_dst,
+                                                            v_block_dst[block],
                                                             planes->uv_stride,
                                                             dequant);
                         }
@@ -2838,80 +3129,62 @@ sixel_webp_vp8_decode_native_intra(
                 }
             } else {
                 for (block = 0u; block < SIXEL_WEBP_VP8_BLOCKS_UV; ++block) {
-                    dst_x = x0 + sixel_webp_vp8_uv_block_x[block];
-                    dst_y = y0 + sixel_webp_vp8_uv_block_y[block];
-                    copy_w = 4u;
-                    copy_h = 4u;
-                    if (dst_x >= uv_width || dst_y >= uv_height) {
+                    if (uv_block_w[block] == 0u) {
                         continue;
                     }
-                    if (copy_w > uv_width - dst_x) {
-                        copy_w = uv_width - dst_x;
-                    }
-                    if (copy_h > uv_height - dst_y) {
-                        copy_h = uv_height - dst_y;
-                    }
-                    u_block_pred_ptr = u_pred +
-                        sixel_webp_vp8_uv_block_offset[block];
-                    v_block_pred_ptr = v_pred +
-                        sixel_webp_vp8_uv_block_offset[block];
-                    u_dst = planes->u + (size_t)dst_y * planes->uv_stride +
-                        dst_x;
-                    v_dst = planes->v + (size_t)dst_y * planes->uv_stride +
-                        dst_x;
                     if (skip_coeff != 0) {
-                        sixel_webp_vp8_copy_block(u_block_pred_ptr,
+                        sixel_webp_vp8_copy_block(u_block_pred[block],
                                                   8u,
-                                                  u_dst,
+                                                  u_block_dst[block],
                                                   planes->uv_stride,
-                                                  copy_w,
-                                                  copy_h);
-                        sixel_webp_vp8_copy_block(v_block_pred_ptr,
+                                                  uv_block_w[block],
+                                                  uv_block_h[block]);
+                        sixel_webp_vp8_copy_block(v_block_pred[block],
                                                   8u,
-                                                  v_dst,
+                                                  v_block_dst[block],
                                                   planes->uv_stride,
-                                                  copy_w,
-                                                  copy_h);
+                                                  uv_block_w[block],
+                                                  uv_block_h[block]);
                         continue;
                     }
-                    if (all_u_nonzero == 0u && u_nz[block] == 0u) {
-                        sixel_webp_vp8_copy_block(u_block_pred_ptr,
+                    if ((u_zero_mask & (1u << block)) != 0u) {
+                        sixel_webp_vp8_copy_block(u_block_pred[block],
                                                   8u,
-                                                  u_dst,
+                                                  u_block_dst[block],
                                                   planes->uv_stride,
-                                                  copy_w,
-                                                  copy_h);
+                                                  uv_block_w[block],
+                                                  uv_block_h[block]);
                     } else {
                         sixel_webp_vp8_dequant_block(coeffs[16u + block],
                                                      quant_values.uv_dc,
                                                      quant_values.uv_ac,
                                                      dequant);
-                        sixel_webp_vp8_add_residual(u_block_pred_ptr,
+                        sixel_webp_vp8_add_residual(u_block_pred[block],
                                                     8u,
-                                                    u_dst,
+                                                    u_block_dst[block],
                                                     planes->uv_stride,
-                                                    copy_w,
-                                                    copy_h,
+                                                    uv_block_w[block],
+                                                    uv_block_h[block],
                                                     dequant);
                     }
-                    if (all_v_nonzero == 0u && v_nz[block] == 0u) {
-                        sixel_webp_vp8_copy_block(v_block_pred_ptr,
+                    if ((v_zero_mask & (1u << block)) != 0u) {
+                        sixel_webp_vp8_copy_block(v_block_pred[block],
                                                   8u,
-                                                  v_dst,
+                                                  v_block_dst[block],
                                                   planes->uv_stride,
-                                                  copy_w,
-                                                  copy_h);
+                                                  uv_block_w[block],
+                                                  uv_block_h[block]);
                     } else {
                         sixel_webp_vp8_dequant_block(coeffs[20u + block],
                                                      quant_values.uv_dc,
                                                      quant_values.uv_ac,
                                                      dequant);
-                        sixel_webp_vp8_add_residual(v_block_pred_ptr,
+                        sixel_webp_vp8_add_residual(v_block_pred[block],
                                                     8u,
-                                                    v_dst,
+                                                    v_block_dst[block],
                                                     planes->uv_stride,
-                                                    copy_w,
-                                                    copy_h,
+                                                    uv_block_w[block],
+                                                    uv_block_h[block],
                                                     dequant);
                     }
                 }
@@ -3014,7 +3287,6 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
     unsigned int x;
     unsigned int y;
     unsigned int uv_y;
-    unsigned int i;
     unsigned int width;
     unsigned int height;
     unsigned int y_limit;
@@ -3028,11 +3300,11 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
     int yv1;
     int u;
     int v;
-    int y_term[256];
-    int u_to_b[256];
-    int u_to_g[256];
-    int v_to_r[256];
-    int v_to_g[256];
+    int const *y_term_table;
+    int const *u_to_b_table;
+    int const *u_to_g_table;
+    int const *v_to_r_table;
+    int const *v_to_g_table;
     int rv;
     int guv;
     int b_u;
@@ -3055,7 +3327,6 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
     x = 0u;
     y = 0u;
     uv_y = 0u;
-    i = 0u;
     width = 0u;
     height = 0u;
     y_limit = 0u;
@@ -3069,6 +3340,11 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
     yv1 = 0;
     u = 0;
     v = 0;
+    y_term_table = sixel_webp_vp8_y_term;
+    u_to_b_table = sixel_webp_vp8_u_to_b;
+    u_to_g_table = sixel_webp_vp8_u_to_g;
+    v_to_r_table = sixel_webp_vp8_v_to_r;
+    v_to_g_table = sixel_webp_vp8_v_to_g;
     rv = 0;
     guv = 0;
     b_u = 0;
@@ -3131,17 +3407,6 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
         }
     }
 
-    for (i = 0u; i < 256u; ++i) {
-        y_term[i] = ((int)i * 19077) >> 8;
-        u_to_b[i] = ((int)i * 33050) >> 8;
-        u_to_b[i] -= 17685;
-        u_to_g[i] = -(((int)i * 6419) >> 8);
-        v_to_r[i] = ((int)i * 26149) >> 8;
-        v_to_r[i] -= 14234;
-        v_to_g[i] = -(((int)i * 13320) >> 8);
-        v_to_g[i] += 8708;
-    }
-
     /*
      * Tiny images are branch-sensitive on some platforms.
      * Keep a compact row path for tiny frames and use 2x2 reuse for others.
@@ -3158,14 +3423,15 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
             for (x = 0u; x + 1u < width; x += 2u) {
                 u = (int)u_row[x >> 1];
                 v = (int)v_row[x >> 1];
-                rv = v_to_r[(unsigned int)v];
-                guv = u_to_g[(unsigned int)u] + v_to_g[(unsigned int)v];
-                b_u = u_to_b[(unsigned int)u];
+                rv = v_to_r_table[(unsigned int)v];
+                guv = u_to_g_table[(unsigned int)u] +
+                      v_to_g_table[(unsigned int)v];
+                b_u = u_to_b_table[(unsigned int)u];
 
                 yv0 = (int)y_row[x];
                 yv1 = (int)y_row[x + 1u];
 
-                yv = y_term[(unsigned int)yv0];
+                yv = y_term_table[(unsigned int)yv0];
                 r = yv + rv;
                 g = yv + guv;
                 b = yv + b_u;
@@ -3174,7 +3440,7 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
                 rgba_px[2] = sixel_webp_vp8_clip_yuv2(b);
                 rgba_px[3] = 255u;
 
-                yv = y_term[(unsigned int)yv1];
+                yv = y_term_table[(unsigned int)yv1];
                 r = yv + rv;
                 g = yv + guv;
                 b = yv + b_u;
@@ -3187,10 +3453,11 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
             if ((width & 1u) != 0u) {
                 u = (int)u_row[(width - 1u) >> 1];
                 v = (int)v_row[(width - 1u) >> 1];
-                rv = v_to_r[(unsigned int)v];
-                guv = u_to_g[(unsigned int)u] + v_to_g[(unsigned int)v];
-                b_u = u_to_b[(unsigned int)u];
-                yv = y_term[(unsigned int)y_row[width - 1u]];
+                rv = v_to_r_table[(unsigned int)v];
+                guv = u_to_g_table[(unsigned int)u] +
+                      v_to_g_table[(unsigned int)v];
+                b_u = u_to_b_table[(unsigned int)u];
+                yv = y_term_table[(unsigned int)y_row[width - 1u]];
                 r = yv + rv;
                 g = yv + guv;
                 b = yv + b_u;
@@ -3217,11 +3484,12 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
             for (x = 0u; x + 1u < width; x += 2u) {
                 u = (int)(*u_px);
                 v = (int)(*v_px);
-                rv = v_to_r[(unsigned int)v];
-                guv = u_to_g[(unsigned int)u] + v_to_g[(unsigned int)v];
-                b_u = u_to_b[(unsigned int)u];
+                rv = v_to_r_table[(unsigned int)v];
+                guv = u_to_g_table[(unsigned int)u] +
+                      v_to_g_table[(unsigned int)v];
+                b_u = u_to_b_table[(unsigned int)u];
 
-                yv = y_term[(unsigned int)y_row[0]];
+                yv = y_term_table[(unsigned int)y_row[0]];
                 r = yv + rv;
                 g = yv + guv;
                 b = yv + b_u;
@@ -3230,7 +3498,7 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
                 rgba_px[2] = sixel_webp_vp8_clip_yuv2(b);
                 rgba_px[3] = 255u;
 
-                yv = y_term[(unsigned int)y_row[1]];
+                yv = y_term_table[(unsigned int)y_row[1]];
                 r = yv + rv;
                 g = yv + guv;
                 b = yv + b_u;
@@ -3239,7 +3507,7 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
                 rgba_px[6] = sixel_webp_vp8_clip_yuv2(b);
                 rgba_px[7] = 255u;
 
-                yv = y_term[(unsigned int)y_row_next[0]];
+                yv = y_term_table[(unsigned int)y_row_next[0]];
                 r = yv + rv;
                 g = yv + guv;
                 b = yv + b_u;
@@ -3248,7 +3516,7 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
                 rgba_row_next_px[2] = sixel_webp_vp8_clip_yuv2(b);
                 rgba_row_next_px[3] = 255u;
 
-                yv = y_term[(unsigned int)y_row_next[1]];
+                yv = y_term_table[(unsigned int)y_row_next[1]];
                 r = yv + rv;
                 g = yv + guv;
                 b = yv + b_u;
@@ -3267,11 +3535,12 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
             if ((width & 1u) != 0u) {
                 u = (int)(*u_px);
                 v = (int)(*v_px);
-                rv = v_to_r[(unsigned int)v];
-                guv = u_to_g[(unsigned int)u] + v_to_g[(unsigned int)v];
-                b_u = u_to_b[(unsigned int)u];
+                rv = v_to_r_table[(unsigned int)v];
+                guv = u_to_g_table[(unsigned int)u] +
+                      v_to_g_table[(unsigned int)v];
+                b_u = u_to_b_table[(unsigned int)u];
 
-                yv = y_term[(unsigned int)y_row[0]];
+                yv = y_term_table[(unsigned int)y_row[0]];
                 r = yv + rv;
                 g = yv + guv;
                 b = yv + b_u;
@@ -3280,7 +3549,7 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
                 rgba_px[2] = sixel_webp_vp8_clip_yuv2(b);
                 rgba_px[3] = 255u;
 
-                yv = y_term[(unsigned int)y_row_next[0]];
+                yv = y_term_table[(unsigned int)y_row_next[0]];
                 r = yv + rv;
                 g = yv + guv;
                 b = yv + b_u;
@@ -3301,13 +3570,14 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
             for (x = 0u; x + 1u < width; x += 2u) {
                 u = (int)u_row[x >> 1];
                 v = (int)v_row[x >> 1];
-                rv = v_to_r[(unsigned int)v];
-                guv = u_to_g[(unsigned int)u] + v_to_g[(unsigned int)v];
-                b_u = u_to_b[(unsigned int)u];
+                rv = v_to_r_table[(unsigned int)v];
+                guv = u_to_g_table[(unsigned int)u] +
+                      v_to_g_table[(unsigned int)v];
+                b_u = u_to_b_table[(unsigned int)u];
                 yv0 = (int)y_row[x];
                 yv1 = (int)y_row[x + 1u];
 
-                yv = y_term[(unsigned int)yv0];
+                yv = y_term_table[(unsigned int)yv0];
                 r = yv + rv;
                 g = yv + guv;
                 b = yv + b_u;
@@ -3316,7 +3586,7 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
                 rgba_px[2] = sixel_webp_vp8_clip_yuv2(b);
                 rgba_px[3] = 255u;
 
-                yv = y_term[(unsigned int)yv1];
+                yv = y_term_table[(unsigned int)yv1];
                 r = yv + rv;
                 g = yv + guv;
                 b = yv + b_u;
@@ -3329,10 +3599,11 @@ sixel_webp_vp8_convert_yuv420_to_rgba(
             if ((width & 1u) != 0u) {
                 u = (int)u_row[(width - 1u) >> 1];
                 v = (int)v_row[(width - 1u) >> 1];
-                rv = v_to_r[(unsigned int)v];
-                guv = u_to_g[(unsigned int)u] + v_to_g[(unsigned int)v];
-                b_u = u_to_b[(unsigned int)u];
-                yv = y_term[(unsigned int)y_row[width - 1u]];
+                rv = v_to_r_table[(unsigned int)v];
+                guv = u_to_g_table[(unsigned int)u] +
+                      v_to_g_table[(unsigned int)v];
+                b_u = u_to_b_table[(unsigned int)u];
+                yv = y_term_table[(unsigned int)y_row[width - 1u]];
                 r = yv + rv;
                 g = yv + guv;
                 b = yv + b_u;
