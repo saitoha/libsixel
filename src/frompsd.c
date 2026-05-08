@@ -24699,12 +24699,14 @@ sixel_builtin_psd_capture_deferred_solid_overlay_coverage(
     size_t i;
     float source_alpha;
     float effective_alpha;
+    float clip_alpha;
     int has_clip_alpha;
     int captured_any;
 
     i = 0u;
     source_alpha = 0.0f;
     effective_alpha = 0.0f;
+    clip_alpha = 0.0f;
     has_clip_alpha = 0;
     captured_any = 0;
     if (captured_coverage_map == NULL) {
@@ -24712,14 +24714,16 @@ sixel_builtin_psd_capture_deferred_solid_overlay_coverage(
     }
     for (i = 0u; i < pixel_count; ++i) {
         source_alpha = 0.0f;
+        clip_alpha = 0.0f;
         has_clip_alpha = 1;
         if (source_alpha_map != NULL) {
             source_alpha = sixel_builtin_psd_clamp_alpha_float32(
                 source_alpha_map[i]);
         }
         if (clip_alpha_map != NULL) {
-            if (sixel_builtin_psd_clamp_alpha_float32(
-                    clip_alpha_map[i]) <= 0.0f) {
+            clip_alpha = sixel_builtin_psd_clamp_alpha_float32(
+                clip_alpha_map[i]);
+            if (clip_alpha <= 0.0f) {
                 has_clip_alpha = 0;
             }
         }
@@ -24727,15 +24731,13 @@ sixel_builtin_psd_capture_deferred_solid_overlay_coverage(
             continue;
         }
         /*
-         * Deferred solid replay coverage follows the effective clipped
-         * silhouette when clip gate is available. For non-clipped fallback
-         * paths, keep source alpha as coverage.
+         * Prefer layer-local pre-effect alpha as replay coverage and keep
+         * clip gate as an inclusion mask. If layer alpha is unavailable in
+         * this fallback path, use clip alpha as a conservative fallback.
          */
+        effective_alpha = source_alpha;
         if (clip_alpha_map != NULL) {
-            effective_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                clip_alpha_map[i]);
-        } else {
-            effective_alpha = source_alpha;
+            effective_alpha = 1.0f;
         }
         if (effective_alpha <= 0.0f) {
             continue;
@@ -25812,9 +25814,12 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         int has_deferred_overlay_owner;
         int overlay_owned_by_deferred;
         int overlay_replay_action;
+        int solid_slot_valid_before;
+        sixel_builtin_psd_deferred_overlay_replay_entry_t solid_slot_before;
         layer = &model.layers[(size_t)i];
         memset(&synthetic_layer, 0, sizeof(synthetic_layer));
         memset(&layer_for_composite, 0, sizeof(layer_for_composite));
+        memset(&solid_slot_before, 0, sizeof(solid_slot_before));
         composite_layer = layer;
         effective_composite_layer = layer;
         src_layer.rgb_linear = NULL;
@@ -25836,6 +25841,7 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         has_deferred_overlay_owner = 0;
         overlay_owned_by_deferred = 0;
         overlay_replay_action = 0;
+        solid_slot_valid_before = 0;
         apply_effects_subset = 0;
         has_pixel_channels = sixel_builtin_psd_layer_has_decodable_pixel_channels(
             info,
@@ -26512,6 +26518,10 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                     "while group replay is locked");
                 overlay_replay_action = 0;
             } else {
+                solid_slot_valid_before = pending_overlay_replay_slots.solid_valid;
+                if (solid_slot_valid_before != 0) {
+                    solid_slot_before = pending_overlay_replay_slots.solid_entry;
+                }
                 overlay_replay_action =
                     sixel_builtin_psd_enqueue_deferred_overlay_replay_slots(
                         &pending_overlay_replay_slots,
@@ -26545,7 +26555,23 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                         solid_replay_ready = 1;
                     }
                     if (solid_replay_ready != 0) {
-                        suppressed_any_overlay = 1;
+                        if (layer_for_composite.clipping != 0u) {
+                            layer_for_composite.has_effect_solid_overlay = 0;
+                            suppressed_any_overlay = 1;
+                        }
+                    } else {
+                        /*
+                         * Keep solid suppression and replay aligned. If this
+                         * layer cannot provide actionable deferred coverage,
+                         * restore the previous solid replay slot when present.
+                         */
+                        if (solid_slot_valid_before != 0) {
+                            pending_overlay_replay_slots.solid_entry =
+                                solid_slot_before;
+                            pending_overlay_replay_slots.solid_valid = 1;
+                        } else {
+                            pending_overlay_replay_slots.solid_valid = 0;
+                        }
                     }
                 }
                 if (overlay_replay_action &
