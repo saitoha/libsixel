@@ -145,6 +145,10 @@ jobs:
           semantic_feature_pattern=''
           semantic_min_features=0
           case "${{ matrix.target }}" in
+            gif-block)
+              semantic_feature_pattern='gif-block-semantic-features:'
+              semantic_min_features=12
+              ;;
             bmp-rle-bitfields)
               semantic_feature_pattern='bmp-rle-semantic-features:'
               semantic_min_features=12
@@ -155,6 +159,10 @@ jobs:
               ;;
             png-apng)
               semantic_feature_pattern='png-apng-semantic-features:'
+              semantic_min_features=12
+              ;;
+            png-chunk)
+              semantic_feature_pattern='png-chunk-semantic-features:'
               semantic_min_features=12
               ;;
             sixel-stream)
