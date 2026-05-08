@@ -291,6 +291,42 @@ runs:
         location: ${{ runner.temp }}\msys64-ci-attempt-3
         install: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
 
+    - name: Prepare vcpkg environment (MSYS2, MSVC deps)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).msystem != ''
+            && fromJSON(inputs.matrix_json).vcpkg_packages != '' }}
+      shell: msys2 {0}
+      run: |
+        set -exv
+        VCPKG_TRIPLET="${VCPKG_DEFAULT_TRIPLET:-x64-windows}"
+        VCPKG_ROOT_UNIX="$(cygpath -u "$VCPKG_ROOT")"
+        VCPKG_PREFIX="$VCPKG_ROOT_UNIX/installed/$VCPKG_TRIPLET"
+        PKG_CONFIG="$VCPKG_PREFIX/tools/pkgconf/pkgconf"
+        test -x "$PKG_CONFIG" || PKG_CONFIG="$VCPKG_PREFIX/tools/pkgconf/pkgconf.exe"
+        test -x "$PKG_CONFIG"
+
+        GITHUB_ENV_UNIX="$(cygpath -u "$GITHUB_ENV")"
+        GITHUB_PATH_UNIX="$(cygpath -u "$GITHUB_PATH")"
+        {
+          printf 'VCPKG_PREFIX=%s\n' "$VCPKG_PREFIX"
+          printf 'PKG_CONFIG=%s\n' "$PKG_CONFIG"
+          printf 'PKG_CONFIG_LIBDIR=%s\n' "$VCPKG_PREFIX/lib/pkgconfig:$VCPKG_PREFIX/share/pkgconfig"
+          printf 'PKG_CONFIG_PATH=\n'
+          printf 'CPPFLAGS=%s\n' "${CPPFLAGS:+$CPPFLAGS }-I$VCPKG_PREFIX/include"
+          printf 'LDFLAGS=%s\n' "${LDFLAGS:+$LDFLAGS }-L$VCPKG_PREFIX/lib"
+          printf 'SIXEL_TEST_ADDITIOANL_PATH=%s\n' "$VCPKG_PREFIX/bin"
+        } >> "$GITHUB_ENV_UNIX"
+        printf '%s\n' "$VCPKG_PREFIX/bin" >> "$GITHUB_PATH_UNIX"
+
+        mkdir -p build-aux/meson-native
+        cat > build-aux/meson-native/msvc-vcpkg.ini <<EOF
+        [binaries]
+        pkg-config = '$PKG_CONFIG'
+
+        [properties]
+        pkg_config_libdir = ['$VCPKG_PREFIX/lib/pkgconfig', '$VCPKG_PREFIX/share/pkgconfig']
+        EOF
+
     - name: Create junction to Git for Windows
       if: ${{ fromJSON(inputs.matrix_json).exec_type == 'gitbash' }}
       shell: pwsh
@@ -569,25 +605,7 @@ runs:
         set -exv
         MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
         PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
-
-        # Pin pkg-config to the vcpkg instance so MSYS2 .pc files cannot leak
-        # into MSVC jobs.
-        if test -n "${VCPKG_ROOT:-}" -a -n "${{ fromJSON(inputs.matrix_json).vcpkg_packages || '' }}"; then
-          VCPKG_TRIPLET="${VCPKG_DEFAULT_TRIPLET:-x64-windows}"
-          VCPKG_ROOT_UNIX="$(cygpath -u "$VCPKG_ROOT")"
-          VCPKG_PREFIX="$VCPKG_ROOT_UNIX/installed/$VCPKG_TRIPLET"
-          PKG_CONFIG="$VCPKG_PREFIX/tools/pkgconf/pkgconf"
-          test -x "$PKG_CONFIG" || PKG_CONFIG="$VCPKG_PREFIX/tools/pkgconf/pkgconf.exe"
-          export PKG_CONFIG
-          export PKG_CONFIG_LIBDIR="$VCPKG_PREFIX/lib/pkgconfig:$VCPKG_PREFIX/share/pkgconfig"
-          export PKG_CONFIG_PATH=
-          CPPFLAGS="${CPPFLAGS:+$CPPFLAGS }-I$VCPKG_PREFIX/include"
-          LDFLAGS="${LDFLAGS:+$LDFLAGS }-L$VCPKG_PREFIX/lib"
-          SIXEL_TEST_ADDITIOANL_PATH="$VCPKG_PREFIX/bin"
-          export CPPFLAGS LDFLAGS SIXEL_TEST_ADDITIOANL_PATH
-        fi
-
-        PKG_CONFIG="$PKG_CONFIG" PKG_CONFIG_LIBDIR="$PKG_CONFIG_LIBDIR" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CPPFLAGS="$CPPFLAGS" LDFLAGS="$LDFLAGS" SIXEL_TEST_ADDITIOANL_PATH="$SIXEL_TEST_ADDITIOANL_PATH" ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
@@ -982,7 +1000,7 @@ runs:
           gmake V=1
           gmake ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
-    - name: Validate DragonFlyBSD retry result (Autotools)
+    - name: Wait before DragonFlyBSD cacheless retry (Autotools)
       if: >-
         ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
             && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
@@ -991,7 +1009,45 @@ runs:
       shell: bash
       run: |
         set -o igncr 2>/dev/null || true
-        echo "DragonFlyBSD Autotools failed on both retry attempts."
+        sleep 30
+
+    - name: Build and test (Autotools, DragonFlyBSD, no cache) (attempt 3)
+      id: dragonflybsd_autotools_3
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
+            && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
+            && steps.dragonflybsd_autotools_1.outcome != 'success'
+            && steps.dragonflybsd_autotools_2.outcome != 'success' }}
+      continue-on-error: true
+      uses: vmactions/dragonflybsd-vm@v1
+      with:
+        release: ${{ fromJSON(inputs.matrix_json).version || '' }}
+        sync-time: true
+        sync: rsync
+        cpu: 2
+        mem: 4096
+        disable-cache: true
+        prepare: |
+          echo "__DFBSD_PHASE_PREPARE__"
+          #pkg update -f
+          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
+        run: |
+          echo "__DFBSD_PHASE_RUN__"
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          gmake V=1
+          gmake ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
+
+    - name: Validate DragonFlyBSD retry result (Autotools)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools'
+            && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
+            && steps.dragonflybsd_autotools_1.outcome != 'success'
+            && steps.dragonflybsd_autotools_2.outcome != 'success'
+            && steps.dragonflybsd_autotools_3.outcome != 'success' }}
+      shell: bash
+      run: |
+        set -o igncr 2>/dev/null || true
+        echo "DragonFlyBSD Autotools failed on cached retries and cacheless final retry."
         exit 1
 
     - name: Configure, build, and test (Meson, DragonFlyBSD) (attempt 1)
@@ -1051,7 +1107,7 @@ runs:
           meson compile -C builddir
           meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
 
-    - name: Validate DragonFlyBSD retry result (Meson)
+    - name: Wait before DragonFlyBSD cacheless retry (Meson)
       if: >-
         ${{ fromJSON(inputs.matrix_json).buildtool == 'meson'
             && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
@@ -1060,7 +1116,46 @@ runs:
       shell: bash
       run: |
         set -o igncr 2>/dev/null || true
-        echo "DragonFlyBSD Meson failed on both retry attempts."
+        sleep 30
+
+    - name: Configure, build, and test (Meson, DragonFlyBSD, no cache) (attempt 3)
+      id: dragonflybsd_meson_3
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'meson'
+            && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
+            && steps.dragonflybsd_meson_1.outcome != 'success'
+            && steps.dragonflybsd_meson_2.outcome != 'success' }}
+      continue-on-error: true
+      uses: vmactions/dragonflybsd-vm@v1
+      with:
+        release: ${{ fromJSON(inputs.matrix_json).version || '' }}
+        sync-time: true
+        sync: rsync
+        cpu: 2
+        mem: 4096
+        disable-cache: true
+        prepare: |
+          echo "__DFBSD_PHASE_PREPARE__"
+          #pkg update -f
+          pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'meson' }}
+        run: |
+          echo "__DFBSD_PHASE_RUN__"
+          cd "$GITHUB_WORKSPACE"
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          meson compile -C builddir
+          meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+
+    - name: Validate DragonFlyBSD retry result (Meson)
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).buildtool == 'meson'
+            && fromJSON(inputs.matrix_json).exec_type == 'dragonflybsd-vm'
+            && steps.dragonflybsd_meson_1.outcome != 'success'
+            && steps.dragonflybsd_meson_2.outcome != 'success'
+            && steps.dragonflybsd_meson_3.outcome != 'success' }}
+      shell: bash
+      run: |
+        set -o igncr 2>/dev/null || true
+        echo "DragonFlyBSD Meson failed on cached retries and cacheless final retry."
         exit 1
 
     - name: Build and test (Autotools, OpenIndiana)

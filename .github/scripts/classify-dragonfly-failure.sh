@@ -3,6 +3,7 @@
 # Classify DragonFlyBSD CI failures from GitHub Actions job logs.
 #
 # Usage:
+#   classify-dragonfly-failure.sh --job-id <id> [--repo <owner/repo>]
 #   classify-dragonfly-failure.sh --run-id <id> --job-name <name> [--repo <owner/repo>]
 #
 # Output:
@@ -14,8 +15,7 @@ set -euo pipefail
 usage() {
     cat >&2 <<'USAGE'
 usage: classify-dragonfly-failure.sh \
-  --run-id <id> \
-  --job-name <matrix.label> \
+  (--job-id <id> | --run-id <id> --job-name <matrix.label>) \
   [--repo <owner/repo>]
 USAGE
 }
@@ -56,12 +56,32 @@ extract_first_regex_line() {
     grep -m 1 -E "$pattern" <<<"$haystack" || true
 }
 
+fetch_job_conclusion() {
+    local job_id_arg
+
+    job_id_arg="$1"
+    gh api "/repos/$repo/actions/jobs/$job_id_arg" \
+        --jq '.conclusion // ""' 2>/dev/null || true
+}
+
+fetch_job_log() {
+    local job_id_arg
+
+    job_id_arg="$1"
+    gh api "/repos/$repo/actions/jobs/$job_id_arg/logs" 2>/dev/null || true
+}
+
 run_id=""
 job_name=""
+job_id=""
 repo=""
 
 while test "$#" -gt 0; do
     case "$1" in
+        --job-id)
+            job_id="${2-}"
+            shift 2
+            ;;
         --run-id)
             run_id="${2-}"
             shift 2
@@ -86,8 +106,8 @@ while test "$#" -gt 0; do
     esac
 done
 
-if test -z "$run_id" || test -z "$job_name"; then
-    echo "error: --run-id and --job-name are required" >&2
+if test -z "$job_id" && { test -z "$run_id" || test -z "$job_name"; }; then
+    echo "error: --job-id or --run-id plus --job-name is required" >&2
     usage
     exit 2
 fi
@@ -105,16 +125,20 @@ if ! command -v gh >/dev/null 2>&1; then
     exit 2
 fi
 
-job_id="$(
-    gh run view "$run_id" --repo "$repo" --json jobs \
-        --jq ".jobs[] | select(.name == \"$job_name\") | .databaseId" \
-        2>/dev/null | head -n 1
-)"
-job_conclusion="$(
-    gh run view "$run_id" --repo "$repo" --json jobs \
-        --jq ".jobs[] | select(.name == \"$job_name\") | .conclusion" \
-        2>/dev/null | head -n 1
-)"
+if test -z "$job_id"; then
+    job_id="$(
+        gh run view "$run_id" --repo "$repo" --json jobs \
+            --jq "[.jobs[] | select(.name == \"$job_name\")][0].databaseId // \"\"" \
+            2>/dev/null || true
+    )"
+    job_conclusion="$(
+        gh run view "$run_id" --repo "$repo" --json jobs \
+            --jq "[.jobs[] | select(.name == \"$job_name\")][0].conclusion // \"\"" \
+            2>/dev/null || true
+    )"
+else
+    job_conclusion="$(fetch_job_conclusion "$job_id")"
+fi
 
 if test -z "$job_id"; then
     printf '%s\n' "UNKNOWN"
@@ -122,10 +146,19 @@ if test -z "$job_id"; then
     exit 0
 fi
 
-log_text="$(gh run view "$run_id" --repo "$repo" --job "$job_id" --log 2>/dev/null || true)"
+log_text=""
+if test -n "$run_id"; then
+    log_text="$(
+        gh run view "$run_id" --repo "$repo" --job "$job_id" --log \
+            2>/dev/null || true
+    )"
+fi
+if test -z "$log_text"; then
+    log_text="$(fetch_job_log "$job_id")"
+fi
 if test -z "$log_text"; then
     printf '%s\n' "UNKNOWN"
-    printf 'evidence: %s\n' "job log is unavailable for run=$run_id job=$job_name"
+    printf 'evidence: %s\n' "job log is unavailable for job_id=$job_id"
     exit 0
 fi
 
