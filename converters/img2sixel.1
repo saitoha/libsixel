@@ -275,6 +275,8 @@ and GIMP Palette (*.gpl) formats. Use TYPE:PATH prefixes (act:, pal:,
 pal\-jasc:, pal\-riff:, gpl:) to force a format. Without TYPE the
 extension or file contents decide the palette type. Using TYPE:- reads
 palette bytes from standard input (for example, gpl:-).
+This option is mutually exclusive with \fB-b\fP, \fB-e\fP, and
+\fB-I\fP. Repeating \fB-m\fP is allowed; the last mapfile wins.
 .TP 5
 .B \-M \fIFILE\fP, \-\-mapfile\-output=\fIFILE\fP
 export the computed palette. TYPE:PATH prefixes or file extensions
@@ -285,6 +287,8 @@ requires TYPE:PATH; TYPE:- directs the palette to standard output.
 .B \-e, \-\-monochrome
 output monochrome sixel image.
 this option assumes the terminal background color is black.
+This option is mutually exclusive with \fB-b\fP, \fB-m\fP, and
+\fB-I\fP. Repeating \fB-e\fP is allowed.
 .TP 5
 .B \-k, \-\-insecure
 allow to connect to SSL sites without certs
@@ -296,6 +300,8 @@ make sense only when -e option is given.
 .TP 5
 .B \-I, \-\-high-color
 output 15bpp sixel image
+This option is mutually exclusive with \fB-b\fP, \fB-m\fP, and
+\fB-e\fP. Repeating \fB-I\fP is allowed.
 .TP 5
 .B \-u, \-\-use-macro
 use DECDMAC and DECINVM sequences to optimize GIF animation rendering.
@@ -700,6 +706,9 @@ gray2      -> 2bit grayscale map
 gray4      -> 4bit grayscale map
 .br
 gray8      -> 8bit grayscale map
+.br
+This option is mutually exclusive with \fB-m\fP, \fB-e\fP, and
+\fB-I\fP. Repeating \fB-b\fP is allowed; the last built-in palette wins.
 .TP 5
 .B \-E \fIENCODEPOLICY\fP, \-\-encode\-policy=\fIENCODEPOLICY\fP
 select encoding policy

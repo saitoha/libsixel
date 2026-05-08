@@ -529,6 +529,9 @@ Options:
                            contents are used to detect the palette.
                            TYPE:- reads palette bytes from standard
                            input (for example, gpl:-).
+                           This option is mutually exclusive with -b,
+                           -e, and -I. Repeating -m is allowed; the
+                           last mapfile wins.
 -M FILE, --mapfile-output=FILE
                            export the computed palette. The format is
                            chosen from TYPE:PATH prefixes or file
@@ -539,6 +542,8 @@ Options:
 -e, --monochrome           output monochrome sixel image
                            this option assumes the terminal
                            background color is black
+                           This option is mutually exclusive with -b,
+                           -m, and -I. Repeating -e is allowed.
 -k, --insecure             allow to connect to SSL sites without
                            certs (enabled only when configured
                            with a supported network backend)
@@ -546,6 +551,8 @@ Options:
                            is white, make sense only when -e
                            option is given
 -I, --high-color           output 15bpp sixel image
+                           This option is mutually exclusive with -b,
+                           -m, and -e. Repeating -I is allowed.
 -u, --use-macro            use DECDMAC and DEVINVM sequences to
                            optimize GIF animation rendering
 -n MACRONO, --macro-number=MACRONO
@@ -901,6 +908,9 @@ steps.
                              gray2      -> 2bit grayscale map
                              gray4      -> 4bit grayscale map
                              gray8      -> 8bit grayscale map
+                           This option is mutually exclusive with -m,
+                           -e, and -I. Repeating -b is allowed; the
+                           last built-in palette wins.
 -E ENCODEPOLICY, --encode-policy=ENCODEPOLICY
                            select encoding policy
                              auto -> choose encoding policy

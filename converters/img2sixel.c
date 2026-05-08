@@ -365,6 +365,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "    files in ACT, PAL, and GPL formats. Use TYPE:PATH (act:, pal:, pal-jasc:, pal-riff:,\n"
         "    gpl:) to force a format. Without TYPE the extension or file contents decide. TYPE:-\n"
         "    reads palette bytes from stdin (for example, gpl:-).\n"
+        "    This option is mutually exclusive with -b, -e, and -I. Repeating\n"
+        "    -m is allowed; the last mapfile wins.\n"
     },
     {
         'M',
@@ -380,6 +382,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "-e, --monochrome\n"
         "    output monochrome sixel image this option assumes the terminal background color is\n"
         "    black\n"
+        "    This option is mutually exclusive with -b, -m, and -I. Repeating\n"
+        "    -e is allowed.\n"
     },
     {
         'k',
@@ -400,6 +404,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "high-color",
         "-I, --high-color\n"
         "    output 15bpp sixel image\n"
+        "    This option is mutually exclusive with -b, -m, and -e. Repeating\n"
+        "    -I is allowed.\n"
     },
     {
         'u',
@@ -670,6 +676,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      gray2      -> 2bit grayscale map\n"
         "      gray4      -> 4bit grayscale map\n"
         "      gray8      -> 8bit grayscale map\n"
+        "    This option is mutually exclusive with -m, -e, and -I. Repeating\n"
+        "    -b is allowed; the last built-in palette wins.\n"
     },
     {
         'E',
