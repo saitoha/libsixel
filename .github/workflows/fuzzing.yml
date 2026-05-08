@@ -289,7 +289,7 @@ jobs:
       fail-fast: false
       matrix:
         buildtool: [autotools, meson]
-        target: [png, gif, jpeg, pnm, sixel, hdr, psd, pic, bmp]
+        target: [png, gif, jpeg, pnm, sixel, hdr, psd, pic, bmp, webp]
     env:
       FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader
       FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/${{ matrix.target }}
@@ -368,6 +368,11 @@ jobs:
           export PATH="$PWD/build-aux:$PWD/bin:$PATH"
           run_log="$FUZZ_BUILTIN_ARTIFACT_DIR/run.log"
           min_cov=18
+          case "${{ matrix.target }}" in
+            webp)
+              min_cov=15
+              ;;
+          esac
           dict_common="$PWD/fuzz/loader-builtin.dict"
           dict_target="$PWD/fuzz/dicts/loader/${{ matrix.target }}.dict"
           dict_merged="$FUZZ_BUILTIN_ARTIFACT_DIR/dict.merged"
@@ -455,6 +460,318 @@ jobs:
           path: |
             ${{ env.FUZZ_BUILTIN_ARTIFACT_DIR }}
             ${{ env.FUZZ_BUILTIN_CORPUS }}
+
+  fuzz_push_loader_autodetect:
+    if: github.event_name == 'push'
+    name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-autodetect
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        buildtool: [autotools, meson]
+    env:
+      FUZZ_BUILTIN_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-loader-autodetect
+      FUZZ_BUILTIN_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-loader-autodetect/${{ matrix.buildtool }}
+      FUZZ_BUILTIN_ARGS_BASE: ${{ format('-fork={0} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={1}/.tmp/fuzz-artifacts-loader-autodetect/{2}/', github.event_name == 'push' && '10' || '2', github.workspace, matrix.buildtool) }}
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang meson ninja-build autoconf automake libtool pkg-config make
+
+      - name: Restore loader-autodetect fuzz corpus cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.FUZZ_BUILTIN_CORPUS }}
+          key: fuzz-corpus-loader-autodetect-push-${{ matrix.buildtool }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            fuzz-corpus-loader-autodetect-push-${{ matrix.buildtool }}-${{ github.ref_name }}-
+            fuzz-corpus-loader-autodetect-push-${{ matrix.buildtool }}-
+            fuzz-corpus-loader-autodetect-${{ matrix.buildtool }}-
+
+      - name: Seed loader-autodetect fuzz corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FUZZ_BUILTIN_CORPUS" "$FUZZ_BUILTIN_ARTIFACT_DIR"
+
+          if test -d tests/data/security/fuzzing/data; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$FUZZ_BUILTIN_CORPUS/" || true
+            done < <(find tests/data/security/fuzzing/data -type f -print0)
+          fi
+
+          while IFS= read -r -d '' seed; do
+            cp -n "$seed" "$FUZZ_BUILTIN_CORPUS/" || true
+          done < <(find tests/data -type f \
+            \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
+               -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
+               -o -name '*.pnm' -o -name '*.ppm' -o -name '*.pgm' \
+               -o -name '*.pbm' -o -name '*.psd' -o -name '*.hdr' \
+               -o -name '*.six' -o -name '*.sixel' -o -name '*.pic' \
+               -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
+            -print0)
+
+          echo "loader-autodetect seed files: $(find "$FUZZ_BUILTIN_CORPUS" -type f | wc -l)"
+
+      - name: Build and run loader-autodetect fuzz target
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+          run_log="$FUZZ_BUILTIN_ARTIFACT_DIR/run.log"
+          min_cov=15
+          dict_common="$PWD/fuzz/loader-builtin.dict"
+          fuzz_args="$FUZZ_BUILTIN_ARGS_BASE -max_total_time=600 -dict=$dict_common"
+
+          if [ "${{ matrix.buildtool }}" = "autotools" ]; then
+            CC=clang CXX=clang++ ./configure --enable-fuzz
+            make -j"$(nproc)"
+            harness="$PWD/fuzz/fuzz-loader-builtin-libfuzzer"
+            if [ ! -x "$harness" ]; then
+              echo "::error::missing loader harness: $harness"
+              exit 1
+            fi
+            merge_seed="$FUZZ_BUILTIN_ARTIFACT_DIR/corpus-premerge"
+            rm -rf "$merge_seed"
+            mkdir -p "$merge_seed"
+            if find "$FUZZ_BUILTIN_CORPUS" -type f -print -quit | grep -q .; then
+              cp -a "$FUZZ_BUILTIN_CORPUS"/. "$merge_seed"/
+              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
+                -dict="$dict_common" "$FUZZ_BUILTIN_CORPUS" "$merge_seed"
+            else
+              echo "loader-autodetect corpus: no files to merge"
+            fi
+            rm -rf "$merge_seed"
+            make fuzz-run-loader-builtin \
+              FUZZ_BUILTIN_CORPUS="$FUZZ_BUILTIN_CORPUS" \
+              FUZZ_BUILTIN_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
+          else
+            CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
+            meson compile -C builddir -v
+            harness="$PWD/builddir/fuzz/fuzz-loader-builtin-libfuzzer"
+            if [ ! -x "$harness" ]; then
+              echo "::error::missing loader harness: $harness"
+              exit 1
+            fi
+            merge_seed="$FUZZ_BUILTIN_ARTIFACT_DIR/corpus-premerge"
+            rm -rf "$merge_seed"
+            mkdir -p "$merge_seed"
+            if find "$FUZZ_BUILTIN_CORPUS" -type f -print -quit | grep -q .; then
+              cp -a "$FUZZ_BUILTIN_CORPUS"/. "$merge_seed"/
+              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
+                -dict="$dict_common" "$FUZZ_BUILTIN_CORPUS" "$merge_seed"
+            else
+              echo "loader-autodetect corpus: no files to merge"
+            fi
+            rm -rf "$merge_seed"
+            export FUZZ_BUILTIN_ARGS="$fuzz_args"
+            meson compile -C builddir fuzz-run-loader-builtin 2>&1 | tee "$run_log"
+          fi
+
+          if ! grep -Eq 'DONE   cov:|INFO: exiting: 0' "$run_log"; then
+            echo "::error::libFuzzer did not report completion for loader-autodetect target."
+            exit 1
+          fi
+
+          cov="$(grep -Eo 'cov: [0-9]+' "$run_log" | tail -n1 | awk '{print $2}')"
+          if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
+            echo "::error::loader-autodetect coverage too low: cov=$cov (expected >= $min_cov)."
+            exit 1
+          fi
+
+      - name: Upload loader-autodetect fuzz artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-autodetect
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            ${{ env.FUZZ_BUILTIN_ARTIFACT_DIR }}
+            ${{ env.FUZZ_BUILTIN_CORPUS }}
+
+  fuzz_push_encode_helpers:
+    if: github.event_name == 'push'
+    name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        buildtool: [autotools, meson]
+        target: [encoder-encode-bytes, helper-write-image-file]
+    env:
+      FUZZ_IMAGE_API_CORPUS: ${{ github.workspace }}/.tmp/fuzz-corpus-image-api/${{ matrix.target }}
+      FUZZ_IMAGE_API_ARTIFACT_DIR: ${{ github.workspace }}/.tmp/fuzz-artifacts-image-api/${{ matrix.buildtool }}/${{ matrix.target }}
+      FUZZ_IMAGE_API_ARGS_BASE: ${{ format('-fork={0} -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix={1}/.tmp/fuzz-artifacts-image-api/{2}/{3}/', github.event_name == 'push' && '10' || '2', github.workspace, matrix.buildtool, matrix.target) }}
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Install build dependencies
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang meson ninja-build autoconf automake libtool pkg-config make
+
+      - name: Restore image API fuzz corpus cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.FUZZ_IMAGE_API_CORPUS }}
+          key: fuzz-corpus-image-api-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            fuzz-corpus-image-api-push-${{ matrix.buildtool }}-${{ matrix.target }}-${{ github.ref_name }}-
+            fuzz-corpus-image-api-push-${{ matrix.buildtool }}-${{ matrix.target }}-
+            fuzz-corpus-image-api-${{ matrix.buildtool }}-${{ matrix.target }}-
+
+      - name: Seed image API fuzz corpus
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$FUZZ_IMAGE_API_CORPUS" "$FUZZ_IMAGE_API_ARTIFACT_DIR"
+
+          case "${{ matrix.target }}" in
+            encoder-encode-bytes)
+              printf '\x00\x00\x00\x00\x00\x00\xff\x00\x00' \
+                > "$FUZZ_IMAGE_API_CORPUS/encoder-rgb888-1x1"
+              printf '\x03\x00\x00\x00\x00\x00\x7f' \
+                > "$FUZZ_IMAGE_API_CORPUS/encoder-g8-1x1"
+              printf '\x02\x00\x00\x01\x00\x00\x00\x00\x00\xff\xff\xff' \
+                > "$FUZZ_IMAGE_API_CORPUS/encoder-pal8-1x1"
+              ;;
+            helper-write-image-file)
+              printf '\x00\x00\x04\x00\xff\x00\x00' \
+                > "$FUZZ_IMAGE_API_CORPUS/helper-rgb888-png-1x1"
+              printf '\x01\x01\x03\x01\x00\x55\xaa\xff' \
+                > "$FUZZ_IMAGE_API_CORPUS/helper-pal8-gif-2x2"
+              printf '\x00\x00\x12\x07\xff\x00\x00\xff' \
+                > "$FUZZ_IMAGE_API_CORPUS/helper-rgba8888-sixel-1x1"
+              ;;
+          esac
+
+          if test -d tests/data/security/fuzzing/data; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$FUZZ_IMAGE_API_CORPUS/" || true
+            done < <(find tests/data/security/fuzzing/data -type f -print0)
+          fi
+
+          while IFS= read -r -d '' seed; do
+            cp -n "$seed" "$FUZZ_IMAGE_API_CORPUS/" || true
+          done < <(find tests/data -type f \
+            \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
+               -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
+               -o -name '*.pnm' -o -name '*.ppm' -o -name '*.pgm' \
+               -o -name '*.pbm' -o -name '*.psd' -o -name '*.hdr' \
+               -o -name '*.six' -o -name '*.sixel' -o -name '*.pic' \
+               -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
+            -print0)
+
+          echo "image-api seed files (${{ matrix.target }}): $(find "$FUZZ_IMAGE_API_CORPUS" -type f | wc -l)"
+
+      - name: Build and run image API fuzz target
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+          run_log="$FUZZ_IMAGE_API_ARTIFACT_DIR/run.log"
+          min_cov=10
+          dict_common="$PWD/fuzz/loader-builtin.dict"
+          fuzz_args="$FUZZ_IMAGE_API_ARGS_BASE -max_total_time=600 -dict=$dict_common"
+          run_target="run-${{ matrix.target }}"
+          meson_run_target="fuzz-run-${{ matrix.target }}"
+          harness_name="fuzz-${{ matrix.target }}-libfuzzer"
+
+          if [ "${{ matrix.buildtool }}" = "autotools" ]; then
+            CC=clang CXX=clang++ ./configure --enable-fuzz
+            make -j"$(nproc)"
+            harness="$PWD/fuzz/$harness_name"
+          else
+            CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
+            meson compile -C builddir -v
+            harness="$PWD/builddir/fuzz/$harness_name"
+          fi
+
+          if [ ! -x "$harness" ]; then
+            echo "::error::missing image API harness: $harness"
+            exit 1
+          fi
+
+          merge_seed="$FUZZ_IMAGE_API_ARTIFACT_DIR/corpus-premerge"
+          rm -rf "$merge_seed"
+          mkdir -p "$merge_seed"
+          if find "$FUZZ_IMAGE_API_CORPUS" -type f -print -quit | grep -q .; then
+            cp -a "$FUZZ_IMAGE_API_CORPUS"/. "$merge_seed"/
+            "$harness" -merge=1 -reduce_inputs=1 -timeout=5 -rss_limit_mb=4096 \
+              -dict="$dict_common" "$FUZZ_IMAGE_API_CORPUS" "$merge_seed"
+          else
+            echo "image-api corpus: no files to merge for ${{ matrix.target }}"
+          fi
+          rm -rf "$merge_seed"
+
+          if [ "${{ matrix.buildtool }}" = "autotools" ]; then
+            case "${{ matrix.target }}" in
+              encoder-encode-bytes)
+                make -C fuzz "$run_target" \
+                  FUZZ_ENCODE_BYTES_CORPUS="$FUZZ_IMAGE_API_CORPUS" \
+                  FUZZ_ENCODE_BYTES_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
+                ;;
+              helper-write-image-file)
+                make -C fuzz "$run_target" \
+                  FUZZ_WRITE_IMAGE_CORPUS="$FUZZ_IMAGE_API_CORPUS" \
+                  FUZZ_WRITE_IMAGE_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
+                ;;
+            esac
+          else
+            case "${{ matrix.target }}" in
+              encoder-encode-bytes)
+                export FUZZ_ENCODE_BYTES_CORPUS="$FUZZ_IMAGE_API_CORPUS"
+                export FUZZ_ENCODE_BYTES_ARGS="$fuzz_args"
+                ;;
+              helper-write-image-file)
+                export FUZZ_WRITE_IMAGE_CORPUS="$FUZZ_IMAGE_API_CORPUS"
+                export FUZZ_WRITE_IMAGE_ARGS="$fuzz_args"
+                ;;
+            esac
+            meson compile -C builddir "$meson_run_target" 2>&1 | tee "$run_log"
+          fi
+
+          if ! grep -Eq 'DONE   cov:|INFO: exiting: 0' "$run_log"; then
+            echo "::error::libFuzzer did not report completion for image API target '${{ matrix.target }}'."
+            exit 1
+          fi
+
+          cov="$(grep -Eo 'cov: [0-9]+' "$run_log" | tail -n1 | awk '{print $2}')"
+          if [ -z "$cov" ] || [ "$cov" -lt "$min_cov" ]; then
+            echo "::error::image API target '${{ matrix.target }}' coverage too low: cov=$cov (expected >= $min_cov)."
+            exit 1
+          fi
+
+      - name: Upload image API fuzz artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            ${{ env.FUZZ_IMAGE_API_ARTIFACT_DIR }}
+            ${{ env.FUZZ_IMAGE_API_CORPUS }}
 
   fuzz_push_cli_img2sixel:
     if: github.event_name == 'push'

@@ -129,7 +129,9 @@ LLVMFuzzerTestOneInput(uint8_t const *data, size_t size)
     uint8_t const *payload;
     size_t payload_size;
 
-    if (data == NULL || size > FUZZ_MAX_INPUT_BYTES) {
+    if (data == NULL
+            || size < FUZZ_HEADER_BYTES
+            || size > FUZZ_MAX_INPUT_BYTES) {
         return 0;
     }
 
