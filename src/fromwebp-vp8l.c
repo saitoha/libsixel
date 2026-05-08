@@ -330,16 +330,19 @@ sixel_webp_bit_reader_read_bits(sixel_webp_bit_reader_t *br,
 }
 
 static int
-sixel_webp_bit_reader_read_bit(sixel_webp_bit_reader_t *br,
-                               uint32_t *value)
+sixel_webp_bit_reader_read_bit(sixel_webp_bit_reader_t *br)
 {
-    if (br == NULL || value == NULL) {
-        return 0;
+    int value;
+
+    value = 0;
+
+    if (br == NULL) {
+        return -1;
     }
 
     if (br->bit_count <= 0) {
         if (br->position >= br->size) {
-            return 0;
+            return -1;
         }
         br->bit_buffer |= ((uint64_t)br->data[br->position])
             << br->bit_count;
@@ -347,10 +350,10 @@ sixel_webp_bit_reader_read_bit(sixel_webp_bit_reader_t *br,
         br->position++;
     }
 
-    *value = (uint32_t)(br->bit_buffer & 1u);
+    value = (int)(br->bit_buffer & 1u);
     br->bit_buffer >>= 1;
     br->bit_count--;
-    return 1;
+    return value;
 }
 
 static void
@@ -530,11 +533,11 @@ sixel_webp_huffman_read_symbol(sixel_webp_huffman_t const *huff,
                                sixel_webp_bit_reader_t *br,
                                int *symbol)
 {
-    uint32_t bit_value;
+    int bit_value;
     int node;
     int depth;
 
-    bit_value = 0u;
+    bit_value = 0;
     node = 0;
     depth = 0;
 
@@ -557,13 +560,14 @@ sixel_webp_huffman_read_symbol(sixel_webp_huffman_t const *huff,
             *symbol = huff->nodes[node].symbol;
             return SIXEL_OK;
         }
-        if (!sixel_webp_bit_reader_read_bit(br, &bit_value)) {
+        bit_value = sixel_webp_bit_reader_read_bit(br);
+        if (bit_value < 0) {
             sixel_helper_set_additional_message(
                 "builtin webp: truncated Huffman-coded data.");
             return SIXEL_BAD_INPUT;
         }
-        node = bit_value == 0u ? huff->nodes[node].left
-                               : huff->nodes[node].right;
+        node = bit_value == 0 ? huff->nodes[node].left
+                              : huff->nodes[node].right;
         if (node < 0 || node >= huff->node_count) {
             sixel_helper_set_additional_message(
                 "builtin webp: invalid Huffman symbol.");
