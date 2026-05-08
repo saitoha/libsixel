@@ -22,28 +22,21 @@ AM_INIT_AUTOMAKE([foreign subdir-objects tar-pax])
 AC_REQUIRE_AUX_FILE([ar-lib])
 AM_MAINTAINER_MODE([disable])
 AM_SILENT_RULES([yes])
-LT_INIT
 
-# Expose libtool runtime metadata to test environments so shell tests can
-# execute the real binaries directly without probing stale build artifacts.
-AC_SUBST([SIXEL_LIBTOOL_OBJDIR], [$objdir])
-AC_SUBST([SIXEL_LIBTOOL_SHLIBPATH_VAR], [$shlibpath_var])
-AC_SUBST([SIXEL_SHLIBPATH_OVERRIDES_RUNPATH],
-         [$shlibpath_overrides_runpath])
-AC_SUBST([SIXEL_LIBTOOL_BUILD_LIBS], [$enable_shared])
-# The test harness prepends libtool output directories to the runtime search
-# variable.  When libtool requests PATH, we are executing under a shell
-# environment where PATH itself remains colon-separated (including MSYS2), so
-# use ':' to keep the path list parseable by child processes.
-case "$shlibpath_var" in
-  PATH)
-    SIXEL_LIBTOOL_PATH_SEPARATOR=':'
-    ;;
-  *)
-    SIXEL_LIBTOOL_PATH_SEPARATOR=':'
-    ;;
-esac
-AC_SUBST([SIXEL_LIBTOOL_PATH_SEPARATOR])
+# Let configure users override the MSVC companion tools explicitly while still
+# allowing the defaults below to keep simple --host=*-msvc builds short.
+AC_ARG_VAR([LD], [linker command for MSVC-style Autotools builds])
+AC_ARG_VAR([AR], [archiver command])
+AC_ARG_VAR([ARFLAGS], [archiver flags])
+AC_ARG_VAR([NM], [symbol lister command])
+AC_ARG_VAR([STRIP], [strip command])
+AC_ARG_VAR([RANLIB], [archive index command])
+
+AS_IF([test "x$ac_env_ARFLAGS_set" != "xset"], [
+  # Automake historically defaulted non-libtool archive rules to "cr"; keep
+  # that behavior now that ARFLAGS is an explicit configure variable.
+  ARFLAGS=cr
+])
 
 # Optional runtime path prefix for test commands.
 #
@@ -473,6 +466,41 @@ if test "x$sixel_emscripten_mode" = "xyes" &&
   fi
 fi
 
+# Detect MSVC toolchain intent before AC_PROG_CC and LT_INIT.  This lets a
+# simple --host=*-windows-msvc select cl.exe, while CC=cl/clang-cl can imply the
+# MSVC host ABI when the caller did not pass --host explicitly.
+sixel_msvc_mode=no
+case "$host_os" in
+  windows-msvc*|msvc*)
+    sixel_msvc_mode=yes
+    ;;
+esac
+for sixel_cc_word in $CC; do
+    case "$sixel_cc_word" in
+      --driver-mode=cl|*clang-cl*|*clang-cl.exe)
+        sixel_msvc_mode=yes
+        ;;
+      cl|cl.exe|*/cl|*/cl.exe|*\\cl|*\\cl.exe)
+        sixel_msvc_mode=yes
+        ;;
+    esac
+done
+if test "x$sixel_msvc_mode" = "xyes" &&
+   test "x$host_alias" = "x"; then
+  host_vendor=pc
+  host_os=windows-msvc
+  host="$host_cpu-$host_vendor-$host_os"
+  AC_MSG_NOTICE([forcing host triplet to $host from MSVC compiler hints])
+fi
+if test "x$sixel_msvc_mode" = "xyes" &&
+   test "x$ac_env_CC_set" != "xset"; then
+  CC=cl
+  AC_CHECK_PROGS([SIXEL_MSVC_CC], [cl cl.exe clang-cl clang-cl.exe], [cl])
+  if test -n "$SIXEL_MSVC_CC"; then
+    CC="$SIXEL_MSVC_CC"
+  fi
+fi
+
 AC_PROG_CC
 AC_PROG_OBJC
 AC_PROG_CPP
@@ -497,6 +525,78 @@ if test "x$sixel_emscripten_mode" = "xyes"; then
     AC_PATH_PROG([STRIP], [emstrip], [strip])
   fi
 fi
+
+# Detect Microsoft Visual C compiler and clang-cl.  AC_PROG_CC may append
+# a language-mode flag, and Automake may wrap CC with build-aux/compile, so
+# inspect command words instead of matching the complete CC value.
+using_cl=no
+using_clangcl=no
+for sixel_cc_word in $CC; do
+    case "$sixel_cc_word" in
+      --driver-mode=cl)
+        using_cl=yes
+        using_clangcl=yes
+        ;;
+      *clang-cl*|*clang-cl.exe)
+        using_cl=yes
+        using_clangcl=yes
+        ;;
+      cl|cl.exe|*/cl|*/cl.exe|*\\cl|*\\cl.exe)
+        using_cl=yes
+        ;;
+    esac
+done
+AS_IF([test "x$using_cl" = "xyes"], [
+  new_CFLAGS=
+  for w in $CFLAGS; do
+      test "$w" = "-g" || \
+          new_CFLAGS="${new_CFLAGS:+$new_CFLAGS }$w"
+  done
+  CFLAGS="${new_CFLAGS:+$new_CFLAGS }-O2"
+  LDFLAGS="$LDFLAGS -DEBUG"
+  if test "x$ac_env_LD_set" != "xset"; then
+      LD=link
+  fi
+  if test "x$ac_env_AR_set" != "xset"; then
+      AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
+  fi
+  if test "x$ac_env_ARFLAGS_set" != "xset"; then
+      ARFLAGS=cr
+  fi
+  if test "x$ac_env_NM_set" != "xset"; then
+      NM="dumpbin -symbols"
+  fi
+  if test "x$ac_env_STRIP_set" != "xset"; then
+      STRIP=:
+  fi
+  if test "x$ac_env_RANLIB_set" != "xset"; then
+      RANLIB=:
+  fi
+])
+AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
+
+LT_INIT
+
+# Expose libtool runtime metadata to test environments so shell tests can
+# execute the real binaries directly without probing stale build artifacts.
+AC_SUBST([SIXEL_LIBTOOL_OBJDIR], [$objdir])
+AC_SUBST([SIXEL_LIBTOOL_SHLIBPATH_VAR], [$shlibpath_var])
+AC_SUBST([SIXEL_SHLIBPATH_OVERRIDES_RUNPATH],
+         [$shlibpath_overrides_runpath])
+AC_SUBST([SIXEL_LIBTOOL_BUILD_LIBS], [$enable_shared])
+# The test harness prepends libtool output directories to the runtime search
+# variable.  When libtool requests PATH, we are executing under a shell
+# environment where PATH itself remains colon-separated (including MSYS2), so
+# use ':' to keep the path list parseable by child processes.
+case "$shlibpath_var" in
+  PATH)
+    SIXEL_LIBTOOL_PATH_SEPARATOR=':'
+    ;;
+  *)
+    SIXEL_LIBTOOL_PATH_SEPARATOR=':'
+    ;;
+esac
+AC_SUBST([SIXEL_LIBTOOL_PATH_SEPARATOR])
 
 # Provide a conservative default parallelism for Makefiles when the caller
 # did not already set -j/--jobs. The logic is:
@@ -575,46 +675,6 @@ AS_CASE([$host_os],
          AC_DEFINE([_DARWIN_C_SOURCE],
                    [1],
                    [Define to 1 to enable Darwin extensions])])
-
-# Detect Microsoft Visual C compiler and clang-cl.  AC_PROG_CC may append
-# a language-mode flag, and Automake may wrap CC with build-aux/compile, so
-# inspect command words instead of matching the complete CC value.
-using_cl=no
-using_clangcl=no
-for sixel_cc_word in $CC; do
-    case "$sixel_cc_word" in
-      --driver-mode=cl)
-        using_cl=yes
-        using_clangcl=yes
-        ;;
-      *clang-cl*|*clang-cl.exe)
-        using_cl=yes
-        using_clangcl=yes
-        ;;
-      cl|cl.exe|*/cl|*/cl.exe|*\\cl|*\\cl.exe)
-        using_cl=yes
-        ;;
-    esac
-done
-AS_IF([test "x$using_cl" = "xyes"], [
-  new_CFLAGS=
-  for w in $CFLAGS; do
-      test "$w" = "-g" || \
-          new_CFLAGS="${new_CFLAGS:+$new_CFLAGS }$w"
-  done
-  CFLAGS="${new_CFLAGS:+$new_CFLAGS }-O2"
-  LDFLAGS="$LDFLAGS -DEBUG"
-  LD=link
-  if test -z "${AR}"; then
-      AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
-  fi
-  if test -z "${NM}"; then
-      NM="dumpbin -symbols"
-  fi
-  STRIP=:
-  RANLIB=:
-])
-AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
 
 AS_IF([test "x$using_cl" = "xyes"], [
   # Autoconf's undeclared-builtin probe uses GCC-style -Werror, which

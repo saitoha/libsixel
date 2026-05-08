@@ -35,14 +35,6 @@ jobs:
             buildtool: autotools
             runner: windows-latest
             msystem: MSYS
-            setup_prefix: >-
-              CC=cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
             setup_options: >-
               --host=x86_64-pc-windows-msvc
               --with-png
@@ -67,14 +59,6 @@ jobs:
             buildtool: autotools
             runner: windows-latest
             msystem: MSYS
-            setup_prefix: >-
-              CC=cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
             setup_options: >-
               --host=x86_64-pc-windows-msvc
               --without-png
@@ -95,14 +79,6 @@ jobs:
             buildtool: autotools
             runner: windows-latest
             msystem: MSYS
-            setup_prefix: >-
-              CC=cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
             setup_options: >-
               --host=x86_64-pc-windows-msvc
               --with-png
