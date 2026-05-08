@@ -24848,12 +24848,16 @@ sixel_builtin_psd_flush_deferred_clip_group_state(
     float const *replay_solid_coverage_map;
     int pending_overlay_interior_enabled;
     int solid_replay_actionable;
+    int replay_phase_allows_apply;
+    int replay_entries_available;
     size_t replay_index;
 
     pending_solid_coverage_map = NULL;
     replay_solid_coverage_map = NULL;
     pending_overlay_interior_enabled = 0;
     solid_replay_actionable = 0;
+    replay_phase_allows_apply = 0;
+    replay_entries_available = 0;
     replay_index = 0u;
 
     if (pending_clip_group_overlay == NULL ||
@@ -24942,12 +24946,23 @@ sixel_builtin_psd_flush_deferred_clip_group_state(
     *pending_overlay_replay_locked = 1;
     *pending_overlay_replay_phase =
         SIXEL_BUILTIN_PSD_DEFERRED_REPLAY_PHASE_REPLAY;
+    replay_phase_allows_apply =
+        *pending_overlay_replay_phase ==
+        SIXEL_BUILTIN_PSD_DEFERRED_REPLAY_PHASE_REPLAY ? 1 : 0;
+    replay_entries_available = *pending_overlay_replay_count > 0u ? 1 : 0;
     *pending_overlay_dual_stroke =
         *pending_overlay_defer_stroke != 0 &&
         *pending_overlay_stroke_mode ==
             SIXEL_BUILTIN_PSD_STROKE_APPLY_DUAL ? 1 : 0;
 
     if (pending_overlay_interior_enabled != 0) {
+        if (replay_phase_allows_apply == 0) {
+            sixel_builtin_psd_trace_message(
+                "psd_decode",
+                "builtin PSD: blocking deferred replay apply after offscreen "
+                "group commit");
+            goto commit_and_consume;
+        }
         if (*pending_overlay_dual_stroke != 0) {
             sixel_builtin_psd_trace_message(
                 "psd_decode",
@@ -24971,7 +24986,8 @@ sixel_builtin_psd_flush_deferred_clip_group_state(
                     pixel_count);
         }
         if (pending_overlay_replay_slots->solid_valid != 0 &&
-            solid_replay_actionable != 0) {
+            solid_replay_actionable != 0 &&
+            replay_entries_available != 0) {
             replay_solid_coverage_map = pending_solid_coverage_map;
             sixel_builtin_psd_apply_solid_overlay_to_canvas_with_clip(
                 group_rgb_premul,
@@ -24989,7 +25005,8 @@ sixel_builtin_psd_flush_deferred_clip_group_state(
                 "builtin PSD: skipping clip-weighted deferred solid "
                 "overlay in layer fallback due to zero coverage");
         }
-        if (pending_overlay_replay_slots->gradient_valid != 0) {
+        if (pending_overlay_replay_slots->gradient_valid != 0 &&
+            replay_entries_available != 0) {
             sixel_builtin_psd_apply_gradient_overlay_to_canvas_with_clip(
                 group_rgb_premul,
                 group_canvas_alpha,
@@ -25058,6 +25075,7 @@ sixel_builtin_psd_flush_deferred_clip_group_state(
         sixel_builtin_psd_layer_effects_trace_interior_skip();
     }
 
+commit_and_consume:
     if (*group_active != 0 &&
         canvas_rgb_premul != NULL &&
         canvas_alpha != NULL &&
@@ -25076,6 +25094,9 @@ sixel_builtin_psd_flush_deferred_clip_group_state(
                group_canvas_alpha,
                pixel_count * sizeof(float));
     }
+    pending_overlay_replay_slots->solid_valid = 0;
+    pending_overlay_replay_slots->gradient_valid = 0;
+    *pending_overlay_replay_count = 0u;
     *pending_overlay_replay_phase =
         SIXEL_BUILTIN_PSD_DEFERRED_REPLAY_PHASE_CONSUMED;
     sixel_builtin_psd_reset_deferred_clip_group_state(
