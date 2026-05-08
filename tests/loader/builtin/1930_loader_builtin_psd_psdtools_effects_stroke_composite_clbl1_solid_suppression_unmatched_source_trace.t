@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify clbl=1 deferred solid replay keeps base SoFi when replay replacement
-# does not promote a different source layer in the current fixture.
+# Verify clbl=1 deferred replay keeps base SoFi when replay replacement is
+# absent in the current fixture.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -28,6 +28,7 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --lookup-policy=none \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -46,18 +47,14 @@ diag_line="LSXPSD1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
 test "${diag_line#*FX_DEFERRED_OVERLAY_REPLAY_REPLACE*}" = "${diag_line}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite emitted deferred overlay replay replacement code"
+    echo "not ok" 1 - "effects/stroke-composite emitted deferred replay replacement code"
     exit 0
 }
 
-test "${trace_output#*builtin PSD: applying solid overlay effect in layer fallback*}" \
-    != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing global base solid apply trace"
+test "${diag_line#*FX_SOLID_OVERLAY_BASE*}" != "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing base solid overlay code"
     exit 0
 }
 
-echo "ok" 1 - \
-    "effects/stroke-composite keeps base SoFi when deferred replay source is unchanged"
+echo "ok" 1 - "effects/stroke-composite keeps base SoFi when deferred replay source is unchanged"
 exit 0

@@ -332,6 +332,11 @@ sixel_builtin_psd_trace_code_from_message(char const *message)
                "fallback due to zero coverage") != NULL) {
         return "FX_DEFERRED_SOLID_SKIP_ZERO_COVERAGE";
     }
+    if (strstr(message,
+               "skipping deferred solid replay in layer fallback because "
+               "base suppression was not adopted") != NULL) {
+        return "FX_DEFERRED_SOLID_SKIP_UNSUPPRESSED";
+    }
     if (strstr(message, "parsed clbl=0") != NULL) {
         return "FX_CLBL0_PARSE";
     }

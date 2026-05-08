@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify clbl=1 deferred solid capture suppresses base SoFi only when
-# actionable replay coverage is available in the suppression tail.
+# Verify clbl=1 actionable solid capture keeps suppression code while solid
+# replay remains blocked without adopted base suppression.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -20,14 +20,15 @@ set +x
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
 diag_line=''
-suppressed_tail=''
 command_status=0
 nl='
 '
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --lookup-policy=none \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -46,39 +47,19 @@ diag_line="LSXPSD1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
 test "${diag_line#*FX_CLBL1_BASE_OVERLAY_SUPPRESS*}" != "${diag_line}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing clbl=1 overlay suppression code"
+    echo "not ok" 1 - "effects/stroke-composite missing clbl=1 suppression code"
     exit 0
 }
 
-test "${diag_line#*FX_DEFERRED_SOLID_OVERLAY_CLIP*}" != "${diag_line}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred solid replay code"
+test "${diag_line#*FX_DEFERRED_SOLID_SKIP_UNSUPPRESSED*}" != "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing deferred solid unsuppressed-skip code"
     exit 0
 }
 
-suppressed_tail="${trace_output#*builtin PSD: suppressing clbl=1 deferred base solid/gradient overlays*}"
-
-test "${suppressed_tail}" != "${trace_output}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing clbl=1 suppression trace"
+test "${diag_line#*FX_DEFERRED_SOLID_OVERLAY_CLIP*}" = "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite emitted deferred solid replay code"
     exit 0
 }
 
-test "${suppressed_tail#*builtin PSD: applying clip-weighted deferred solid overlay in layer fallback*}" \
-    != "${suppressed_tail}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred solid replay in suppression tail"
-    exit 0
-}
-
-test "${suppressed_tail#*builtin PSD: applying solid overlay effect in layer fallback*}" \
-    = "${suppressed_tail}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite found base solid apply in suppression tail"
-    exit 0
-}
-
-echo "ok" 1 - \
-    "effects/stroke-composite keeps clbl=1 solid suppression/replay effect-local"
+echo "ok" 1 - "effects/stroke-composite keeps clbl=1 solid capture suppression/replay aligned"
 exit 0

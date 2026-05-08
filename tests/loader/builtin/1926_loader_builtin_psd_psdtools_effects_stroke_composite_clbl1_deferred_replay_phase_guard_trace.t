@@ -1,6 +1,6 @@
 #!/bin/sh
-# Verify clbl=1 deferred replay keeps SoFi/GrFl applies in replay phase and
-# avoids post-commit replay-block contract code in normal decode flow.
+# Verify replay-phase guard keeps gradient replay active while solid replay is
+# blocked by unsuppressed ownership in header-only trace output.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -28,6 +28,7 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --lookup-policy=none \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
@@ -45,34 +46,20 @@ test "${diag_line}" != "${trace_output}" || {
 diag_line="LSXPSD1|${diag_line}"
 diag_line=${diag_line%%"${nl}"*}
 
-test "${diag_line#*FX_CLBL1_DEFERRED_OVERLAY_REPLAY_ENTRY*}" \
-    != "${diag_line}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred overlay replay entry code"
+test "${diag_line#*FX_DEFERRED_GRADIENT_CLIP*}" != "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing deferred gradient replay code"
     exit 0
 }
 
-test "${diag_line#*FX_DEFERRED_SOLID_OVERLAY_CLIP*}" \
-    != "${diag_line}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred solid overlay replay code"
+test "${diag_line#*FX_DEFERRED_SOLID_SKIP_UNSUPPRESSED*}" != "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite missing deferred solid unsuppressed-skip code"
     exit 0
 }
 
-test "${diag_line#*FX_DEFERRED_GRADIENT_CLIP*}" \
-    != "${diag_line}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred gradient overlay replay code"
+test "${diag_line#*FX_DEFERRED_POST_COMMIT_REPLAY_BLOCKED*}" = "${diag_line}" || {
+    echo "not ok" 1 - "effects/stroke-composite emitted post-commit replay-block code"
     exit 0
 }
 
-test "${diag_line#*FX_DEFERRED_POST_COMMIT_REPLAY_BLOCKED*}" \
-    = "${diag_line}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite emitted post-commit replay-block code"
-    exit 0
-}
-
-echo "ok" 1 - \
-    "effects/stroke-composite keeps deferred replay phase boundary contracts stable"
+echo "ok" 1 - "effects/stroke-composite keeps deferred replay phase boundary contracts stable"
 exit 0

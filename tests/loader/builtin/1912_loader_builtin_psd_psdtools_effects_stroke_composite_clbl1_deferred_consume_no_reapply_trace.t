@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify deferred overlay/stroke apply traces do not reappear after consume.
+# Verify clbl=1 deferred replay keeps consume boundary contracts stable.
 # Fixture/expected regeneration command:
 #   python3 tests/data/psd-tools/generate_psdtools_hybrid_assets.py --download
 
@@ -18,34 +18,21 @@ set +x
 
 input_psd="${TOP_SRCDIR}/tests/data/psd-tools/psdtools_effects_stroke_composite.psd"
 trace_output=''
-committed_tail=''
 diag_line=''
-commit_marker='builtin PSD: compositing deferred offscreen clipped group buffer to canvas'
 command_status=0
 nl='
 '
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --lookup-policy=none \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
+    --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
     -Lbuiltin:e=auto! -o /dev/null "${input_psd}" 2>&1) || \
     command_status=$?
 
 test "${command_status}" -eq 0 || {
     echo "not ok" 1 - "effects/stroke-composite decode failed"
-    exit 0
-}
-
-committed_tail="${trace_output#*"${commit_marker}"}"
-
-test "${committed_tail}" != "${trace_output}" || {
-    echo "not ok" 1 - "effects/stroke-composite missing deferred group commit trace"
-    exit 0
-}
-
-test -n "${committed_tail}" || {
-    echo "not ok" 1 - \
-        "effects/stroke-composite missing post-commit trace tail"
     exit 0
 }
 
@@ -65,10 +52,17 @@ test "${diag_line#*FX_CLBL1_DEFERRED_OVERLAY_REPLAY_ENTRY*}" \
     exit 0
 }
 
-test "${diag_line#*FX_DEFERRED_SOLID_OVERLAY_CLIP*}" \
+test "${diag_line#*FX_DEFERRED_SOLID_SKIP_UNSUPPRESSED*}" \
     != "${diag_line}" || {
     echo "not ok" 1 - \
-        "effects/stroke-composite missing deferred solid replay contract code"
+        "effects/stroke-composite missing deferred solid unsuppressed-skip contract code"
+    exit 0
+}
+
+test "${diag_line#*FX_DEFERRED_SOLID_OVERLAY_CLIP*}" \
+    = "${diag_line}" || {
+    echo "not ok" 1 - \
+        "effects/stroke-composite emitted deferred solid replay contract code"
     exit 0
 }
 
