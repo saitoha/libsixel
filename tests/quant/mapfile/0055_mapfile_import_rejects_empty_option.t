@@ -1,0 +1,30 @@
+#!/bin/sh
+# TAP test: empty mapfile option values are rejected.
+
+set -eux
+
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build\n"
+    exit 0
+}
+
+echo "1..1"
+set -v
+
+snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
+          -m "" "${snake_png}" \
+          -o/dev/null 2>&1) && {
+    echo "not ok" 1 - "empty mapfile option unexpectedly succeeded"
+    exit 0
+}
+
+test "${msg#*sixel_encoder_setopt: no mapfile specified.}" != "${msg}" || {
+    echo "not ok" 1 - "missing empty mapfile option diagnostic"
+    exit 0
+}
+
+echo "ok" 1 - "empty mapfile option is rejected"
+
+exit 0

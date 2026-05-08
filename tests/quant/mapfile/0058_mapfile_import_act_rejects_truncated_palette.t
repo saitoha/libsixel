@@ -1,0 +1,31 @@
+#!/bin/sh
+# TAP test: ACT import rejects truncated payloads.
+
+set -eux
+
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build\n"
+    exit 0
+}
+
+echo "1..1"
+set -v
+
+snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+act_palette="${TOP_SRCDIR}/tests/data/inputs/mapfile/unknown-format-noext"
+
+msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin \
+          -m act:"${act_palette}" "${snake_png}" \
+          -o/dev/null 2>&1) && {
+    echo "not ok" 1 - "truncated ACT palette unexpectedly succeeded"
+    exit 0
+}
+
+test "${msg#*sixel_palette_parse_act: truncated ACT palette.}" != "${msg}" || {
+    echo "not ok" 1 - "missing truncated ACT diagnostic"
+    exit 0
+}
+
+echo "ok" 1 - "truncated ACT palette is rejected"
+
+exit 0
