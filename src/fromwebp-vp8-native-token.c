@@ -60,6 +60,40 @@ static unsigned int const *const sixel_webp_vp8_cat_prob_table[4] =
      sixel_webp_vp8_cat6_prob};
 static unsigned int const sixel_webp_vp8_cat_len_table[4] =
     {3u, 4u, 5u, 11u};
+static unsigned char const sixel_webp_vp8_norm_shift_table[256] = {
+    0u, 7u, 6u, 6u, 5u, 5u, 5u, 5u,
+    4u, 4u, 4u, 4u, 4u, 4u, 4u, 4u,
+    3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u,
+    3u, 3u, 3u, 3u, 3u, 3u, 3u, 3u,
+    2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u,
+    2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u,
+    2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u,
+    2u, 2u, 2u, 2u, 2u, 2u, 2u, 2u,
+    1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u,
+    1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u,
+    1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u,
+    1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u,
+    1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u,
+    1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u,
+    1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u,
+    1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+    0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u
+};
 
 /* Preserve VP8 modulo arithmetic without unsigned-overflow reports. */
 static uint32_t
@@ -176,28 +210,11 @@ sixel_webp_vp8_bool_read_fast(sixel_webp_vp8_bool_decoder_t *decoder,
     }
 
     /*
-     * Decoder range before normalization is in [1, 255].
-     * This is equivalent to:
-     *   shift = 7 - floor(log2(range));
-     * but avoids the per-bit loop in this hot path.
+     * Decoder range before normalization is in [1, 255]. A table lookup keeps
+     * the per-bit hot path free of a branch ladder while preserving the exact
+     * shift value: shift = 7 - floor(log2(range)).
      */
-    if (range >= 128u) {
-        shift = 0u;
-    } else if (range >= 64u) {
-        shift = 1u;
-    } else if (range >= 32u) {
-        shift = 2u;
-    } else if (range >= 16u) {
-        shift = 3u;
-    } else if (range >= 8u) {
-        shift = 4u;
-    } else if (range >= 4u) {
-        shift = 5u;
-    } else if (range >= 2u) {
-        shift = 6u;
-    } else {
-        shift = 7u;
-    }
+    shift = (unsigned int)sixel_webp_vp8_norm_shift_table[range];
     range <<= shift;
     decoder->bits -= (int)shift;
     decoder->range = range - 1u;
