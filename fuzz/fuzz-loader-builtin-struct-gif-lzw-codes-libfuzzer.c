@@ -196,10 +196,86 @@ fuzz_gif_lzw_mutator_append_next(uint8_t *data,
         (unsigned char)fuzz_gif_lzw_mutator_next(state));
 }
 
+static int
+fuzz_gif_lzw_mutator_append_span(uint8_t *data,
+                                 size_t *pos,
+                                 size_t max_size,
+                                 uint8_t const *source,
+                                 size_t source_size)
+{
+    size_t copy_size;
+
+    if (data == NULL || pos == NULL || source == NULL || *pos >= max_size) {
+        return 0;
+    }
+
+    copy_size = source_size;
+    if (copy_size > max_size - *pos) {
+        copy_size = max_size - *pos;
+    }
+    if (copy_size == 0u) {
+        return 1;
+    }
+
+    memcpy(data + *pos, source, copy_size);
+    *pos += copy_size;
+    return 1;
+}
+
+static unsigned int
+fuzz_gif_lzw_mutator_choose_focus(uint32_t *state)
+{
+    unsigned int feature;
+    unsigned int best;
+    unsigned int hits;
+    unsigned int best_hits;
+
+    if (state == NULL) {
+        return FUZZ_GIF_LZW_FEATURE_HEADER;
+    }
+
+    best = (unsigned int)(fuzz_gif_lzw_mutator_next(state) %
+                          FUZZ_GIF_LZW_FEATURE_COUNT);
+    best_hits = g_gif_lzw_feature_hits[best];
+    for (feature = 0u; feature < FUZZ_GIF_LZW_FEATURE_COUNT; ++feature) {
+        hits = g_gif_lzw_feature_hits[feature];
+        if (hits < best_hits ||
+            (hits == best_hits &&
+             (fuzz_gif_lzw_mutator_next(state) & 0x01u) != 0u)) {
+            best = feature;
+            best_hits = hits;
+        }
+    }
+
+    return best;
+}
+
+static size_t
+fuzz_gif_lzw_mutator_control_prefix(uint8_t const *data, size_t size)
+{
+    unsigned int min_code_size;
+    unsigned int color_table_entries;
+    size_t prefix_size;
+
+    if (data == NULL || size == 0u) {
+        return 0u;
+    }
+
+    min_code_size = 2u + (unsigned int)(data[0] % 4u);
+    color_table_entries = 1u << min_code_size;
+    prefix_size = 3u + (size_t)color_table_entries * 3u + 8u;
+    if (prefix_size > size) {
+        prefix_size = size;
+    }
+
+    return prefix_size;
+}
+
 static size_t
 fuzz_gif_lzw_mutator_synthesize(uint8_t *data,
                                 size_t max_size,
-                                uint32_t *state)
+                                uint32_t *state,
+                                unsigned int focus)
 {
     size_t pos;
     unsigned int min_selector;
@@ -208,14 +284,20 @@ fuzz_gif_lzw_mutator_synthesize(uint8_t *data,
     unsigned int i;
     unsigned int op_count;
     unsigned int dict_code;
+    unsigned char gce_flag;
+    unsigned char gce_packed;
+    unsigned char image_packed;
 
     if (data == NULL || state == NULL || max_size == 0u) {
         return 0u;
     }
 
     pos = 0u;
-    min_selector = 3u;
-    if ((fuzz_gif_lzw_mutator_next(state) & 0x07u) == 0u) {
+    if (focus == FUZZ_GIF_LZW_FEATURE_LARGE_MIN_CODE ||
+        focus == FUZZ_GIF_LZW_FEATURE_WIDTH_GROW ||
+        focus == FUZZ_GIF_LZW_FEATURE_DICT) {
+        min_selector = 3u;
+    } else {
         min_selector = fuzz_gif_lzw_mutator_next(state) & 0x03u;
     }
     min_code_size = 2u + min_selector;
@@ -247,18 +329,26 @@ fuzz_gif_lzw_mutator_synthesize(uint8_t *data,
         }
     }
 
-    if (!fuzz_gif_lzw_mutator_append_u8(data, &pos, max_size, 1u) ||
-        !fuzz_gif_lzw_mutator_append_u8(data, &pos, max_size, 1u) ||
+    gce_flag = 1u;
+    gce_packed = focus == FUZZ_GIF_LZW_FEATURE_TRANSPARENT_GCE
+        ? 1u
+        : (unsigned char)(fuzz_gif_lzw_mutator_next(state) & 0x1fu);
+    image_packed = focus == FUZZ_GIF_LZW_FEATURE_INTERLACE
+        ? 0x40u
+        : (unsigned char)(fuzz_gif_lzw_mutator_next(state) & 0x40u);
+    if (!fuzz_gif_lzw_mutator_append_u8(data, &pos, max_size, gce_flag) ||
+        !fuzz_gif_lzw_mutator_append_u8(data, &pos, max_size, gce_packed) ||
         !fuzz_gif_lzw_mutator_append_u8(data, &pos, max_size, 0u) ||
         !fuzz_gif_lzw_mutator_append_u8(data, &pos, max_size, 1u) ||
         !fuzz_gif_lzw_mutator_append_u8(data, &pos, max_size, 0u) ||
         !fuzz_gif_lzw_mutator_append_u8(data, &pos, max_size, 0u) ||
         !fuzz_gif_lzw_mutator_append_u8(data, &pos, max_size, 0u) ||
-        !fuzz_gif_lzw_mutator_append_u8(data, &pos, max_size, 0x40u)) {
+        !fuzz_gif_lzw_mutator_append_u8(data, &pos, max_size, image_packed)) {
         return pos;
     }
 
-    op_count = 96u;
+    op_count = focus == FUZZ_GIF_LZW_FEATURE_WIDTH_GROW ||
+               focus == FUZZ_GIF_LZW_FEATURE_DICT ? 128u : 64u;
     if (!fuzz_gif_lzw_mutator_append_u8(data,
                                         &pos,
                                         max_size,
@@ -331,12 +421,14 @@ LLVMFuzzerCustomMutator(uint8_t *data,
 {
     uint32_t state;
     size_t mutated_size;
+    unsigned int focus;
 
     if (data == NULL || max_size == 0u) {
         return 0u;
     }
 
     state = (uint32_t)seed ^ (uint32_t)size ^ UINT32_C(0x9e3779b9);
+    focus = fuzz_gif_lzw_mutator_choose_focus(&state);
     if (size != 0u && (fuzz_gif_lzw_mutator_next(&state) & 0x07u) == 0u) {
         mutated_size = LLVMFuzzerMutate(data, size, max_size);
         if (mutated_size != 0u) {
@@ -344,7 +436,82 @@ LLVMFuzzerCustomMutator(uint8_t *data,
         }
     }
 
-    return fuzz_gif_lzw_mutator_synthesize(data, max_size, &state);
+    return fuzz_gif_lzw_mutator_synthesize(data, max_size, &state, focus);
+}
+
+size_t
+LLVMFuzzerCustomCrossOver(uint8_t const *data1,
+                          size_t size1,
+                          uint8_t const *data2,
+                          size_t size2,
+                          uint8_t *out,
+                          size_t max_out_size,
+                          unsigned int seed)
+{
+    uint32_t state;
+    size_t pos;
+    size_t prefix_size;
+    size_t suffix_offset;
+    uint8_t const *prefix_data;
+    uint8_t const *suffix_data;
+    size_t prefix_data_size;
+    size_t suffix_data_size;
+    unsigned int focus;
+
+    if (out == NULL || max_out_size == 0u) {
+        return 0u;
+    }
+
+    state = (uint32_t)seed ^ (uint32_t)size1 ^
+            ((uint32_t)size2 << 1) ^ UINT32_C(0x165667b1);
+    focus = fuzz_gif_lzw_mutator_choose_focus(&state);
+    if ((fuzz_gif_lzw_mutator_next(&state) & 0x01u) == 0u) {
+        prefix_data = data1;
+        prefix_data_size = size1;
+        suffix_data = data2;
+        suffix_data_size = size2;
+    } else {
+        prefix_data = data2;
+        prefix_data_size = size2;
+        suffix_data = data1;
+        suffix_data_size = size1;
+    }
+
+    pos = 0u;
+    prefix_size = fuzz_gif_lzw_mutator_control_prefix(prefix_data,
+                                                     prefix_data_size);
+    if (prefix_size > 0u) {
+        (void)fuzz_gif_lzw_mutator_append_span(out,
+                                               &pos,
+                                               max_out_size,
+                                               prefix_data,
+                                               prefix_size);
+    }
+
+    suffix_offset = fuzz_gif_lzw_mutator_control_prefix(suffix_data,
+                                                       suffix_data_size);
+    if (suffix_offset >= suffix_data_size) {
+        suffix_offset = suffix_data_size / 2u;
+    }
+    if (suffix_offset < suffix_data_size) {
+        (void)fuzz_gif_lzw_mutator_append_span(out,
+                                               &pos,
+                                               max_out_size,
+                                               suffix_data + suffix_offset,
+                                               suffix_data_size -
+                                                   suffix_offset);
+    }
+    if (pos == 0u) {
+        return fuzz_gif_lzw_mutator_synthesize(out,
+                                               max_out_size,
+                                               &state,
+                                               focus);
+    }
+    if (focus == FUZZ_GIF_LZW_FEATURE_LARGE_MIN_CODE && pos > 0u) {
+        out[0] = 3u;
+    }
+
+    return pos;
 }
 
 static int

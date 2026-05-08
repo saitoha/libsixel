@@ -232,6 +232,112 @@ fuzz_bmp_rle_mutator_append_noise(uint8_t *data,
 }
 
 static int
+fuzz_bmp_rle_mutator_append_span(uint8_t *data,
+                                 size_t *pos,
+                                 size_t max_size,
+                                 uint8_t const *source,
+                                 size_t source_size)
+{
+    size_t copy_size;
+
+    if (data == NULL || pos == NULL || source == NULL || *pos >= max_size) {
+        return 0;
+    }
+
+    copy_size = source_size;
+    if (copy_size > max_size - *pos) {
+        copy_size = max_size - *pos;
+    }
+    if (copy_size == 0u) {
+        return 1;
+    }
+
+    memcpy(data + *pos, source, copy_size);
+    *pos += copy_size;
+    return 1;
+}
+
+static unsigned int
+fuzz_bmp_rle_mutator_choose_focus(uint32_t *state)
+{
+    unsigned int feature;
+    unsigned int best;
+    unsigned int hits;
+    unsigned int best_hits;
+
+    if (state == NULL) {
+        return FUZZ_BMP_RLE_FEATURE_HEADER;
+    }
+
+    best = (unsigned int)(fuzz_bmp_rle_mutator_next(state) %
+                          FUZZ_BMP_RLE_FEATURE_COUNT);
+    best_hits = g_bmp_rle_feature_hits[best];
+    for (feature = 0u; feature < FUZZ_BMP_RLE_FEATURE_COUNT; ++feature) {
+        hits = g_bmp_rle_feature_hits[feature];
+        if (hits < best_hits ||
+            (hits == best_hits &&
+             (fuzz_bmp_rle_mutator_next(state) & 0x01u) != 0u)) {
+            best = feature;
+            best_hits = hits;
+        }
+    }
+
+    return best;
+}
+
+static unsigned char
+fuzz_bmp_rle_mutator_mode_for_focus(unsigned int focus, uint32_t *state)
+{
+    switch (focus) {
+    case FUZZ_BMP_RLE_FEATURE_RLE8:
+    case FUZZ_BMP_RLE_FEATURE_ENCODED_RUN:
+    case FUZZ_BMP_RLE_FEATURE_ABSOLUTE_RUN:
+    case FUZZ_BMP_RLE_FEATURE_DELTA:
+    case FUZZ_BMP_RLE_FEATURE_EOL:
+    case FUZZ_BMP_RLE_FEATURE_EOB:
+    case FUZZ_BMP_RLE_FEATURE_ESCAPE:
+    case FUZZ_BMP_RLE_FEATURE_PALETTE:
+        return 0u;
+    case FUZZ_BMP_RLE_FEATURE_RLE4:
+        return 1u;
+    case FUZZ_BMP_RLE_FEATURE_BITFIELDS:
+    case FUZZ_BMP_RLE_FEATURE_ALPHA_BITFIELDS:
+    case FUZZ_BMP_RLE_FEATURE_MASKS:
+        return 2u;
+    case FUZZ_BMP_RLE_FEATURE_OS2_HUFFMAN1D:
+        return 3u;
+    case FUZZ_BMP_RLE_FEATURE_OS2_RLE24:
+        return 4u;
+    case FUZZ_BMP_RLE_FEATURE_CMYK_RLE:
+        return (fuzz_bmp_rle_mutator_next(state) & 0x01u) != 0u ? 5u : 6u;
+    case FUZZ_BMP_RLE_FEATURE_CMYK_RAW:
+    case FUZZ_BMP_RLE_FEATURE_RAW_DATA:
+        return 7u;
+    default:
+        break;
+    }
+
+    return (unsigned char)(fuzz_bmp_rle_mutator_next(state) % 8u);
+}
+
+static size_t
+fuzz_bmp_rle_mutator_control_prefix(uint8_t const *data, size_t size)
+{
+    size_t prefix_size;
+
+    if (data == NULL || size == 0u) {
+        return 0u;
+    }
+
+    prefix_size = 3u;
+    if (prefix_size > size) {
+        prefix_size = size;
+    }
+
+    return prefix_size;
+}
+
+static int
 fuzz_bmp_rle_mutator_append_rle_commands(uint8_t *data,
                                          size_t *pos,
                                          size_t max_size,
@@ -297,7 +403,8 @@ fuzz_bmp_rle_mutator_append_rle_commands(uint8_t *data,
 static size_t
 fuzz_bmp_rle_mutator_synthesize(uint8_t *data,
                                 size_t max_size,
-                                uint32_t *state)
+                                uint32_t *state,
+                                unsigned int focus)
 {
     size_t pos;
     unsigned char mode;
@@ -310,7 +417,7 @@ fuzz_bmp_rle_mutator_synthesize(uint8_t *data,
     }
 
     pos = 0u;
-    mode = (unsigned char)(fuzz_bmp_rle_mutator_next(state) % 8u);
+    mode = fuzz_bmp_rle_mutator_mode_for_focus(focus, state);
     palette_entries = 0u;
     is_rle_mode = 0;
     is_rle24 = 0;
@@ -400,12 +507,14 @@ LLVMFuzzerCustomMutator(uint8_t *data,
 {
     uint32_t state;
     size_t mutated_size;
+    unsigned int focus;
 
     if (data == NULL || max_size == 0u) {
         return 0u;
     }
 
     state = (uint32_t)seed ^ (uint32_t)size ^ UINT32_C(0x9e3779b9);
+    focus = fuzz_bmp_rle_mutator_choose_focus(&state);
     if (size != 0u && (fuzz_bmp_rle_mutator_next(&state) & 0x07u) == 0u) {
         mutated_size = LLVMFuzzerMutate(data, size, max_size);
         if (mutated_size != 0u) {
@@ -413,7 +522,80 @@ LLVMFuzzerCustomMutator(uint8_t *data,
         }
     }
 
-    return fuzz_bmp_rle_mutator_synthesize(data, max_size, &state);
+    return fuzz_bmp_rle_mutator_synthesize(data, max_size, &state, focus);
+}
+
+size_t
+LLVMFuzzerCustomCrossOver(uint8_t const *data1,
+                          size_t size1,
+                          uint8_t const *data2,
+                          size_t size2,
+                          uint8_t *out,
+                          size_t max_out_size,
+                          unsigned int seed)
+{
+    uint32_t state;
+    size_t pos;
+    size_t prefix_size;
+    size_t suffix_offset;
+    uint8_t const *prefix_data;
+    uint8_t const *suffix_data;
+    size_t prefix_data_size;
+    size_t suffix_data_size;
+    unsigned int focus;
+
+    if (out == NULL || max_out_size == 0u) {
+        return 0u;
+    }
+
+    state = (uint32_t)seed ^ (uint32_t)size1 ^
+            ((uint32_t)size2 << 1) ^ UINT32_C(0x7f4a7c15);
+    focus = fuzz_bmp_rle_mutator_choose_focus(&state);
+    if ((fuzz_bmp_rle_mutator_next(&state) & 0x01u) == 0u) {
+        prefix_data = data1;
+        prefix_data_size = size1;
+        suffix_data = data2;
+        suffix_data_size = size2;
+    } else {
+        prefix_data = data2;
+        prefix_data_size = size2;
+        suffix_data = data1;
+        suffix_data_size = size1;
+    }
+
+    pos = 0u;
+    prefix_size = fuzz_bmp_rle_mutator_control_prefix(prefix_data,
+                                                     prefix_data_size);
+    if (prefix_size > 0u) {
+        (void)fuzz_bmp_rle_mutator_append_span(out,
+                                               &pos,
+                                               max_out_size,
+                                               prefix_data,
+                                               prefix_size);
+    }
+
+    suffix_offset = fuzz_bmp_rle_mutator_control_prefix(suffix_data,
+                                                       suffix_data_size);
+    if (suffix_offset >= suffix_data_size) {
+        suffix_offset = suffix_data_size / 2u;
+    }
+    if (suffix_offset < suffix_data_size) {
+        (void)fuzz_bmp_rle_mutator_append_span(out,
+                                               &pos,
+                                               max_out_size,
+                                               suffix_data + suffix_offset,
+                                               suffix_data_size -
+                                                   suffix_offset);
+    }
+    if (pos == 0u) {
+        return fuzz_bmp_rle_mutator_synthesize(out,
+                                               max_out_size,
+                                               &state,
+                                               focus);
+    }
+    out[0] = fuzz_bmp_rle_mutator_mode_for_focus(focus, &state);
+
+    return pos;
 }
 
 static int
