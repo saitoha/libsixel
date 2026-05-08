@@ -2794,23 +2794,6 @@ sixel_webp_anim_frame_is_full_canvas(
 }
 
 static int
-sixel_webp_anim_frame_is_full_replace(
-    sixel_webp_anim_frame_t const *anim_frame,
-    int canvas_width,
-    int canvas_height)
-{
-    if (!sixel_webp_anim_frame_is_full_canvas(anim_frame,
-                                              canvas_width,
-                                              canvas_height)) {
-        return 0;
-    }
-    if (anim_frame->blend_over != 0) {
-        return 0;
-    }
-    return 1;
-}
-
-static int
 sixel_webp_anim_frame_overwrites_canvas(
     sixel_webp_anim_frame_t const *anim_frame,
     int canvas_width,
@@ -3021,20 +3004,21 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     }
     sixel_webp_trace_anim_timing_contract(&stream);
     /*
-     * On loop 0, frames before start_frame are still decoded to build the
-     * canvas baseline. If a full-canvas replace frame exists in pre-roll,
-     * frames before that point are guaranteed to be overwritten and can be
-     * skipped safely.
+     * On loop 0, frames before start_frame are usually decoded to build the
+     * canvas baseline. If the start frame, or a pre-roll frame that survives
+     * disposal, overwrites the full canvas, older frames are irrelevant and can
+     * be skipped safely.
      */
     if (effective_start_frame_set != 0 && start_frame_resolved > 0) {
-        for (source_frame_no = start_frame_resolved - 1;
+        for (source_frame_no = start_frame_resolved;
              source_frame_no >= 0;
              --source_frame_no) {
-            if (sixel_webp_anim_frame_is_full_replace(
+            if (sixel_webp_anim_frame_overwrites_canvas(
                     &stream.frames[source_frame_no],
                     stream.canvas_width,
                     stream.canvas_height) &&
-                stream.frames[source_frame_no].dispose_to_background == 0) {
+                (source_frame_no == start_frame_resolved ||
+                 stream.frames[source_frame_no].dispose_to_background == 0)) {
                 preroll_decode_start = source_frame_no;
                 break;
             }
