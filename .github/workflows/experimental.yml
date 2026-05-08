@@ -100,6 +100,34 @@ jobs:
               lcms
             exec_type: msys2
 
+          - label: Meson-msys2-msvc-vcpkg-png-jpeg-tiff-webp-lcms2
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --native-file build-aux/meson-native/msvc.ini
+              --native-file build-aux/meson-native/msvc-vcpkg.ini
+              -Dpng=enabled
+              -Djpeg=enabled
+              -Dtiff=enabled
+              -Dwebp=enabled
+              -Dlcms2=enabled
+              -Dlibrsvg=disabled
+              -Dgd=disabled
+              -Dgdk_pixbuf2=disabled
+              -Dcurl=disabled
+              -Dfetch=disabled
+            extra_packages: >-
+              make
+              meson
+            vcpkg_packages: >-
+              libpng
+              libjpeg-turbo
+              tiff
+              libwebp
+              lcms
+            exec_type: msys2
+
     steps:
       - name: Set Windows Defender ExclusionPath (Windows)
         if: runner.os == 'Windows'
