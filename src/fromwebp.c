@@ -2810,6 +2810,27 @@ sixel_webp_anim_frame_is_full_replace(
     return 1;
 }
 
+static int
+sixel_webp_anim_frame_overwrites_canvas(
+    sixel_webp_anim_frame_t const *anim_frame,
+    int canvas_width,
+    int canvas_height)
+{
+    /*
+     * Full-canvas replace frames and known-opaque blend-over frames overwrite
+     * every canvas pixel before composition can read the previous baseline.
+     */
+    if (!sixel_webp_anim_frame_is_full_canvas(anim_frame,
+                                              canvas_width,
+                                              canvas_height)) {
+        return 0;
+    }
+    if (anim_frame->blend_over == 0 || anim_frame->opaque_pixels_only != 0) {
+        return 1;
+    }
+    return 0;
+}
+
 SIXELSTATUS
 sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
                               sixel_allocator_t *allocator,
@@ -2869,6 +2890,8 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     size_t decode_output_bytes;
     size_t decode_output_stride;
     size_t decode_output_offset;
+    int loop_decode_start_frame;
+    int fill_canvas;
 
     status = SIXEL_OK;
     memset(&container, 0, sizeof(container));
@@ -2915,6 +2938,8 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
     decode_output_bytes = 0u;
     decode_output_stride = 0u;
     decode_output_offset = 0u;
+    loop_decode_start_frame = 0;
+    fill_canvas = 0;
     if (handled == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -3021,10 +3046,31 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             status = SIXEL_INTERRUPTED;
             goto end;
         }
-        sixel_webp_anim_fill_canvas(canvas_pixels,
-                                    stream.canvas_width,
-                                    stream.canvas_height,
-                                    background_rgba);
+        /*
+         * Skip the loop baseline fill when the first decoded frame is known to
+         * overwrite the full canvas. Partial or alpha-blended starts still need
+         * the background as their destination.
+         */
+        loop_decode_start_frame = 0;
+        if (effective_start_frame_set != 0 &&
+            loop_no == 0 &&
+            start_frame_resolved > 0) {
+            loop_decode_start_frame = preroll_decode_start;
+        }
+        fill_canvas = 1;
+        if (loop_decode_start_frame < stream.frame_count &&
+            sixel_webp_anim_frame_overwrites_canvas(
+                &stream.frames[loop_decode_start_frame],
+                stream.canvas_width,
+                stream.canvas_height)) {
+            fill_canvas = 0;
+        }
+        if (fill_canvas != 0) {
+            sixel_webp_anim_fill_canvas(canvas_pixels,
+                                        stream.canvas_width,
+                                        stream.canvas_height,
+                                        background_rgba);
+        }
         frames_in_loop = 0;
         for (source_frame_no = 0; source_frame_no < stream.frame_count;
              ++source_frame_no) {
@@ -3051,9 +3097,9 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             }
 
             /*
-             * Full-canvas replace frames do not need an extra composite copy.
-             * Decode straight into canvas and keep edge-safe compose for
-             * partial or blend-over frames.
+             * Full-canvas replace frames and known-opaque blend-over frames do
+             * not need an extra composite copy. Decode straight into canvas and
+             * keep edge-safe compose for partial or alpha-blended frames.
              */
             direct_canvas_decode = 0;
             decode_output_pixels = NULL;
@@ -3062,12 +3108,10 @@ sixel_fromwebp_load_animation(sixel_chunk_t const *chunk,
             decode_output_width = 0;
             decode_output_height = 0;
             decode_output_offset = 0u;
-            if (sixel_webp_anim_frame_is_full_canvas(
+            if (sixel_webp_anim_frame_overwrites_canvas(
                     &stream.frames[source_frame_no],
                     stream.canvas_width,
-                    stream.canvas_height) &&
-                (stream.frames[source_frame_no].blend_over == 0 ||
-                 stream.frames[source_frame_no].opaque_pixels_only != 0)) {
+                    stream.canvas_height)) {
                 direct_canvas_decode = 1;
                 decode_output_pixels = canvas_pixels;
                 decode_output_bytes = canvas_bytes;
