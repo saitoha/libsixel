@@ -163,6 +163,23 @@ sixel_webp_vp8_alpha_reconstruct(unsigned char *alpha_plane,
     return SIXEL_OK;
 }
 
+static void
+sixel_webp_vp8_alpha_copy_to_rgba(unsigned char *rgba,
+                                  unsigned char const *alpha_plane,
+                                  size_t pixel_count)
+{
+    size_t i;
+
+    i = 0u;
+    if (rgba == NULL || alpha_plane == NULL) {
+        return;
+    }
+
+    for (i = 0u; i < pixel_count; ++i) {
+        rgba[i * 4u + 3u] = alpha_plane[i];
+    }
+}
+
 static SIXELSTATUS
 sixel_webp_vp8_alpha_fail(SIXELSTATUS status, char const *message)
 {
@@ -330,9 +347,9 @@ sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
     SIXELSTATUS status;
     size_t pixel_count;
     size_t expected_size;
-    size_t i;
     unsigned char control;
     unsigned int compression_method;
+    unsigned int filter_method;
     unsigned int preprocess_method;
     unsigned int reserved_bits;
     unsigned char const *encoded_payload;
@@ -342,9 +359,9 @@ sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
     status = SIXEL_OK;
     pixel_count = 0u;
     expected_size = 0u;
-    i = 0u;
     control = 0u;
     compression_method = 0u;
+    filter_method = 0u;
     preprocess_method = 0u;
     reserved_bits = 0u;
     encoded_payload = NULL;
@@ -378,6 +395,7 @@ sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
 
     control = payload[0];
     compression_method = (unsigned int)(control & 0x03u);
+    filter_method = (unsigned int)((control >> 2u) & 0x03u);
     preprocess_method = (unsigned int)((control >> 4u) & 0x03u);
     reserved_bits = (unsigned int)((control >> 6u) & 0x03u);
 
@@ -401,18 +419,9 @@ sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
             "builtin webp: VP8 ALPHA preprocessing mode is invalid.");
     }
 
-    alpha_plane = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                           pixel_count);
-    if (alpha_plane == NULL) {
-        return sixel_webp_vp8_alpha_fail(
-            SIXEL_BAD_ALLOCATION,
-            "builtin webp: sixel_allocator_malloc() failed.");
-    }
-
     if (compression_method == 0u) {
         expected_size = pixel_count + 1u;
         if (payload_size != expected_size) {
-            sixel_allocator_free(allocator, alpha_plane);
             return sixel_webp_vp8_alpha_fail(
                 SIXEL_BAD_INPUT,
                 "builtin webp: VP8 ALPHA payload size mismatch.");
@@ -426,10 +435,34 @@ sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
                                                         &encoded_payload_owned,
                                                         allocator);
         if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(allocator, alpha_plane);
             return status;
         }
         encoded_payload = encoded_payload_owned;
+    }
+
+    /*
+     * Filter 0 stores final alpha samples, so applying it only needs the
+     * RGBA alpha-lane copy. Other filters still need the reconstructed plane.
+     */
+    if (filter_method == 0u) {
+        sixel_webp_vp8_alpha_copy_to_rgba(rgba,
+                                          encoded_payload + 1u,
+                                          pixel_count);
+        if (encoded_payload_owned != NULL) {
+            sixel_allocator_free(allocator, encoded_payload_owned);
+        }
+        return SIXEL_OK;
+    }
+
+    alpha_plane = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                           pixel_count);
+    if (alpha_plane == NULL) {
+        if (encoded_payload_owned != NULL) {
+            sixel_allocator_free(allocator, encoded_payload_owned);
+        }
+        return sixel_webp_vp8_alpha_fail(
+            SIXEL_BAD_ALLOCATION,
+            "builtin webp: sixel_allocator_malloc() failed.");
     }
 
     status = sixel_webp_vp8_alpha_reconstruct(alpha_plane,
@@ -443,9 +476,7 @@ sixel_webp_apply_vp8_alpha_payload(unsigned char *rgba,
         sixel_allocator_free(allocator, alpha_plane);
         return status;
     }
-    for (i = 0u; i < pixel_count; ++i) {
-        rgba[i * 4u + 3u] = alpha_plane[i];
-    }
+    sixel_webp_vp8_alpha_copy_to_rgba(rgba, alpha_plane, pixel_count);
     if (encoded_payload_owned != NULL) {
         sixel_allocator_free(allocator, encoded_payload_owned);
     }
