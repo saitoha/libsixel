@@ -329,6 +329,30 @@ sixel_webp_bit_reader_read_bits(sixel_webp_bit_reader_t *br,
     return 1;
 }
 
+static int
+sixel_webp_bit_reader_read_bit(sixel_webp_bit_reader_t *br,
+                               uint32_t *value)
+{
+    if (br == NULL || value == NULL) {
+        return 0;
+    }
+
+    if (br->bit_count <= 0) {
+        if (br->position >= br->size) {
+            return 0;
+        }
+        br->bit_buffer |= ((uint64_t)br->data[br->position])
+            << br->bit_count;
+        br->bit_count += 8;
+        br->position++;
+    }
+
+    *value = (uint32_t)(br->bit_buffer & 1u);
+    br->bit_buffer >>= 1;
+    br->bit_count--;
+    return 1;
+}
+
 static void
 sixel_webp_huffman_reset(sixel_webp_huffman_t *huff,
                          sixel_allocator_t *allocator)
@@ -533,7 +557,7 @@ sixel_webp_huffman_read_symbol(sixel_webp_huffman_t const *huff,
             *symbol = huff->nodes[node].symbol;
             return SIXEL_OK;
         }
-        if (!sixel_webp_bit_reader_read_bits(br, 1, &bit_value)) {
+        if (!sixel_webp_bit_reader_read_bit(br, &bit_value)) {
             sixel_helper_set_additional_message(
                 "builtin webp: truncated Huffman-coded data.");
             return SIXEL_BAD_INPUT;
