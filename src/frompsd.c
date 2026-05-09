@@ -24505,7 +24505,27 @@ typedef struct sixel_builtin_psd_deferred_overlay_replay_slots {
     sixel_builtin_psd_deferred_overlay_replay_entry_t gradient_entry;
     int solid_valid;
     int gradient_valid;
+    int solid_capture_seen;
 } sixel_builtin_psd_deferred_overlay_replay_slots_t;
+
+typedef struct sixel_builtin_psd_deferred_clip_state_refs {
+    int *pending_clip_group_overlay;
+    int *pending_overlay_defer_stroke;
+    int *pending_overlay_stroke_mode;
+    int *pending_overlay_stroke_consumed;
+    int *pending_overlay_dual_stroke;
+    int *pending_overlay_fill_coverage_valid;
+    int *pending_overlay_stroke_coverage_valid;
+    int *pending_overlay_dual_stroke_source_alpha_valid;
+    int *pending_overlay_solid_replay_allowed;
+    size_t *pending_overlay_replay_count;
+    int *pending_overlay_replay_locked;
+    sixel_builtin_psd_deferred_overlay_replay_slots_t
+        *pending_overlay_replay_slots;
+    int *group_active;
+    int *pending_overlay_replay_phase;
+    sixel_builtin_psd_layer_record_t *pending_overlay_layer;
+} sixel_builtin_psd_deferred_clip_state_refs_t;
 
 #define SIXEL_BUILTIN_PSD_OVERLAY_SLOT_SOLID 1
 #define SIXEL_BUILTIN_PSD_OVERLAY_SLOT_GRADIENT 2
@@ -24648,6 +24668,7 @@ sixel_builtin_psd_enqueue_deferred_overlay_replay_slots(
         &candidate_entry,
         SIXEL_BUILTIN_PSD_OVERLAY_SLOT_GRADIENT);
     if (solid_action != 0) {
+        slots->solid_capture_seen = 1;
         action_flags |= SIXEL_BUILTIN_PSD_OVERLAY_REPLAY_CAPTURE_SOLID;
     }
     if (gradient_action != 0) {
@@ -24750,69 +24771,61 @@ sixel_builtin_psd_capture_deferred_solid_overlay_coverage(
 
 static void
 sixel_builtin_psd_reset_deferred_clip_group_state(
-    int *pending_clip_group_overlay,
-    int *pending_overlay_defer_stroke,
-    int *pending_overlay_stroke_mode,
-    int *pending_overlay_stroke_consumed,
-    int *pending_overlay_dual_stroke,
-    int *pending_overlay_fill_coverage_valid,
-    int *pending_overlay_stroke_coverage_valid,
-    int *pending_overlay_dual_stroke_source_alpha_valid,
-    int *pending_overlay_solid_replay_allowed,
-    size_t *pending_overlay_replay_count,
-    int *pending_overlay_replay_locked,
-    sixel_builtin_psd_deferred_overlay_replay_slots_t *pending_overlay_replay_slots,
-    int *group_active,
-    int *pending_overlay_replay_phase,
-    sixel_builtin_psd_layer_record_t *pending_overlay_layer)
+    sixel_builtin_psd_deferred_clip_state_refs_t const *state)
 {
-    if (pending_clip_group_overlay != NULL) {
-        *pending_clip_group_overlay = 0;
+    if (state == NULL) {
+        return;
     }
-    if (pending_overlay_defer_stroke != NULL) {
-        *pending_overlay_defer_stroke = 0;
+    if (state->pending_clip_group_overlay != NULL) {
+        *state->pending_clip_group_overlay = 0;
     }
-    if (pending_overlay_stroke_mode != NULL) {
-        *pending_overlay_stroke_mode = SIXEL_BUILTIN_PSD_STROKE_APPLY_NONE;
+    if (state->pending_overlay_defer_stroke != NULL) {
+        *state->pending_overlay_defer_stroke = 0;
     }
-    if (pending_overlay_stroke_consumed != NULL) {
-        *pending_overlay_stroke_consumed = 0;
+    if (state->pending_overlay_stroke_mode != NULL) {
+        *state->pending_overlay_stroke_mode =
+            SIXEL_BUILTIN_PSD_STROKE_APPLY_NONE;
     }
-    if (pending_overlay_dual_stroke != NULL) {
-        *pending_overlay_dual_stroke = 0;
+    if (state->pending_overlay_stroke_consumed != NULL) {
+        *state->pending_overlay_stroke_consumed = 0;
     }
-    if (pending_overlay_fill_coverage_valid != NULL) {
-        *pending_overlay_fill_coverage_valid = 0;
+    if (state->pending_overlay_dual_stroke != NULL) {
+        *state->pending_overlay_dual_stroke = 0;
     }
-    if (pending_overlay_stroke_coverage_valid != NULL) {
-        *pending_overlay_stroke_coverage_valid = 0;
+    if (state->pending_overlay_fill_coverage_valid != NULL) {
+        *state->pending_overlay_fill_coverage_valid = 0;
     }
-    if (pending_overlay_dual_stroke_source_alpha_valid != NULL) {
-        *pending_overlay_dual_stroke_source_alpha_valid = 0;
+    if (state->pending_overlay_stroke_coverage_valid != NULL) {
+        *state->pending_overlay_stroke_coverage_valid = 0;
     }
-    if (pending_overlay_solid_replay_allowed != NULL) {
-        *pending_overlay_solid_replay_allowed = 0;
+    if (state->pending_overlay_dual_stroke_source_alpha_valid != NULL) {
+        *state->pending_overlay_dual_stroke_source_alpha_valid = 0;
     }
-    if (pending_overlay_replay_count != NULL) {
-        *pending_overlay_replay_count = 0u;
+    if (state->pending_overlay_solid_replay_allowed != NULL) {
+        *state->pending_overlay_solid_replay_allowed = 0;
     }
-    if (pending_overlay_replay_locked != NULL) {
-        *pending_overlay_replay_locked = 0;
+    if (state->pending_overlay_replay_count != NULL) {
+        *state->pending_overlay_replay_count = 0u;
     }
-    if (pending_overlay_replay_slots != NULL) {
-        memset(pending_overlay_replay_slots,
+    if (state->pending_overlay_replay_locked != NULL) {
+        *state->pending_overlay_replay_locked = 0;
+    }
+    if (state->pending_overlay_replay_slots != NULL) {
+        memset(state->pending_overlay_replay_slots,
                0,
-               sizeof(*pending_overlay_replay_slots));
+               sizeof(*state->pending_overlay_replay_slots));
     }
-    if (group_active != NULL) {
-        *group_active = 0;
+    if (state->group_active != NULL) {
+        *state->group_active = 0;
     }
-    if (pending_overlay_replay_phase != NULL) {
-        *pending_overlay_replay_phase =
+    if (state->pending_overlay_replay_phase != NULL) {
+        *state->pending_overlay_replay_phase =
             SIXEL_BUILTIN_PSD_DEFERRED_REPLAY_PHASE_CONSUMED;
     }
-    if (pending_overlay_layer != NULL) {
-        memset(pending_overlay_layer, 0, sizeof(*pending_overlay_layer));
+    if (state->pending_overlay_layer != NULL) {
+        memset(state->pending_overlay_layer,
+               0,
+               sizeof(*state->pending_overlay_layer));
     }
 }
 
@@ -24844,7 +24857,8 @@ sixel_builtin_psd_flush_deferred_clip_group_state(
     int *pending_overlay_solid_replay_allowed,
     size_t *pending_overlay_replay_count,
     int *pending_overlay_replay_locked,
-    sixel_builtin_psd_deferred_overlay_replay_slots_t *pending_overlay_replay_slots,
+    sixel_builtin_psd_deferred_overlay_replay_slots_t
+        *pending_overlay_replay_slots,
     int *group_active,
     int *pending_overlay_replay_phase,
     sixel_builtin_psd_layer_record_t *pending_overlay_layer)
@@ -24857,6 +24871,7 @@ sixel_builtin_psd_flush_deferred_clip_group_state(
     int replay_phase_allows_apply;
     int replay_entries_available;
     size_t replay_index;
+    sixel_builtin_psd_deferred_clip_state_refs_t state_refs;
 
     pending_solid_coverage_map = NULL;
     replay_solid_coverage_map = NULL;
@@ -24866,6 +24881,27 @@ sixel_builtin_psd_flush_deferred_clip_group_state(
     replay_phase_allows_apply = 0;
     replay_entries_available = 0;
     replay_index = 0u;
+    memset(&state_refs, 0, sizeof(state_refs));
+    state_refs.pending_clip_group_overlay = pending_clip_group_overlay;
+    state_refs.pending_overlay_defer_stroke = pending_overlay_defer_stroke;
+    state_refs.pending_overlay_stroke_mode = pending_overlay_stroke_mode;
+    state_refs.pending_overlay_stroke_consumed =
+        pending_overlay_stroke_consumed;
+    state_refs.pending_overlay_dual_stroke = pending_overlay_dual_stroke;
+    state_refs.pending_overlay_fill_coverage_valid =
+        pending_overlay_fill_coverage_valid;
+    state_refs.pending_overlay_stroke_coverage_valid =
+        pending_overlay_stroke_coverage_valid;
+    state_refs.pending_overlay_dual_stroke_source_alpha_valid =
+        pending_overlay_dual_stroke_source_alpha_valid;
+    state_refs.pending_overlay_solid_replay_allowed =
+        pending_overlay_solid_replay_allowed;
+    state_refs.pending_overlay_replay_count = pending_overlay_replay_count;
+    state_refs.pending_overlay_replay_locked = pending_overlay_replay_locked;
+    state_refs.pending_overlay_replay_slots = pending_overlay_replay_slots;
+    state_refs.group_active = group_active;
+    state_refs.pending_overlay_replay_phase = pending_overlay_replay_phase;
+    state_refs.pending_overlay_layer = pending_overlay_layer;
 
     if (pending_clip_group_overlay == NULL ||
         pending_overlay_defer_stroke == NULL ||
@@ -24895,41 +24931,11 @@ sixel_builtin_psd_flush_deferred_clip_group_state(
             "psd_decode",
             "builtin PSD: blocking deferred replay apply after offscreen "
             "group commit");
-        sixel_builtin_psd_reset_deferred_clip_group_state(
-            pending_clip_group_overlay,
-            pending_overlay_defer_stroke,
-            pending_overlay_stroke_mode,
-            pending_overlay_stroke_consumed,
-            pending_overlay_dual_stroke,
-            pending_overlay_fill_coverage_valid,
-            pending_overlay_stroke_coverage_valid,
-            pending_overlay_dual_stroke_source_alpha_valid,
-            pending_overlay_solid_replay_allowed,
-            pending_overlay_replay_count,
-            pending_overlay_replay_locked,
-            pending_overlay_replay_slots,
-            group_active,
-            pending_overlay_replay_phase,
-            pending_overlay_layer);
+        sixel_builtin_psd_reset_deferred_clip_group_state(&state_refs);
         return;
     }
     if (*group_active == 0) {
-        sixel_builtin_psd_reset_deferred_clip_group_state(
-            pending_clip_group_overlay,
-            pending_overlay_defer_stroke,
-            pending_overlay_stroke_mode,
-            pending_overlay_stroke_consumed,
-            pending_overlay_dual_stroke,
-            pending_overlay_fill_coverage_valid,
-            pending_overlay_stroke_coverage_valid,
-            pending_overlay_dual_stroke_source_alpha_valid,
-            pending_overlay_solid_replay_allowed,
-            pending_overlay_replay_count,
-            pending_overlay_replay_locked,
-            pending_overlay_replay_slots,
-            group_active,
-            pending_overlay_replay_phase,
-            pending_overlay_layer);
+        sixel_builtin_psd_reset_deferred_clip_group_state(&state_refs);
         return;
     }
 
@@ -25025,6 +25031,19 @@ sixel_builtin_psd_flush_deferred_clip_group_state(
                     "builtin PSD: skipping deferred solid replay in layer "
                     "fallback because base suppression was not adopted");
             }
+        } else if (pending_overlay_replay_slots->solid_capture_seen != 0 &&
+                   solid_replay_allowed == 0 &&
+                   replay_entries_available != 0) {
+            /*
+             * A later overlay candidate can invalidate the SoFi replay slot
+             * before the deferred group is flushed. Keep the trace contract
+             * explicit: solid replay was considered, but applying it would
+             * no longer match an adopted base-layer suppression.
+             */
+            sixel_builtin_psd_trace_message(
+                "psd_decode",
+                "builtin PSD: skipping deferred solid replay in layer "
+                "fallback because base suppression was not adopted");
         }
         if (pending_overlay_replay_slots->gradient_valid != 0 &&
             replay_entries_available != 0) {
@@ -25120,22 +25139,7 @@ commit_and_consume:
     *pending_overlay_replay_count = 0u;
     *pending_overlay_replay_phase =
         SIXEL_BUILTIN_PSD_DEFERRED_REPLAY_PHASE_CONSUMED;
-    sixel_builtin_psd_reset_deferred_clip_group_state(
-        pending_clip_group_overlay,
-        pending_overlay_defer_stroke,
-        pending_overlay_stroke_mode,
-        pending_overlay_stroke_consumed,
-        pending_overlay_dual_stroke,
-        pending_overlay_fill_coverage_valid,
-        pending_overlay_stroke_coverage_valid,
-        pending_overlay_dual_stroke_source_alpha_valid,
-        pending_overlay_solid_replay_allowed,
-        pending_overlay_replay_count,
-        pending_overlay_replay_locked,
-        pending_overlay_replay_slots,
-        group_active,
-        pending_overlay_replay_phase,
-        pending_overlay_layer);
+    sixel_builtin_psd_reset_deferred_clip_group_state(&state_refs);
 }
 
 static void
@@ -25166,7 +25170,8 @@ sixel_builtin_psd_maybe_flush_deferred_clip_group_state(
     int *pending_overlay_solid_replay_allowed,
     size_t *pending_overlay_replay_count,
     int *pending_overlay_replay_locked,
-    sixel_builtin_psd_deferred_overlay_replay_slots_t *pending_overlay_replay_slots,
+    sixel_builtin_psd_deferred_overlay_replay_slots_t
+        *pending_overlay_replay_slots,
     int *group_active,
     int *pending_overlay_replay_phase,
     sixel_builtin_psd_layer_record_t *pending_overlay_layer)
