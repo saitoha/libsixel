@@ -120,19 +120,27 @@ sixel_webp_vp8_alpha_reconstruct(unsigned char *alpha_plane,
                                  int height,
                                  unsigned char const *encoded_payload)
 {
-    size_t pixel_count;
-    size_t i;
+    size_t stride;
+    size_t row_start;
+    size_t index;
     unsigned int filter_method;
     unsigned char encoded;
     unsigned char predictor;
+    unsigned char left;
+    unsigned char top;
+    unsigned char top_left;
     int x;
     int y;
 
-    pixel_count = 0u;
-    i = 0u;
+    stride = 0u;
+    row_start = 0u;
+    index = 0u;
     filter_method = 0u;
     encoded = 0u;
     predictor = 0u;
+    left = 0u;
+    top = 0u;
+    top_left = 0u;
     x = 0;
     y = 0;
 
@@ -146,19 +154,88 @@ sixel_webp_vp8_alpha_reconstruct(unsigned char *alpha_plane,
         return SIXEL_BAD_INTEGER_OVERFLOW;
     }
 
-    pixel_count = (size_t)width * (size_t)height;
+    stride = (size_t)width;
     filter_method = (unsigned int)((encoded_payload[0] >> 2u) & 0x03u);
-    for (i = 0u; i < pixel_count; ++i) {
-        x = (int)(i % (size_t)width);
-        y = (int)(i / (size_t)width);
-        predictor = sixel_webp_vp8_alpha_predictor(filter_method,
-                                                   x,
-                                                   y,
-                                                   alpha_plane,
-                                                   width);
-        encoded = encoded_payload[i + 1u];
-        alpha_plane[i] = (unsigned char)((unsigned int)encoded +
-                                         (unsigned int)predictor);
+    /*
+     * Keep the per-filter predictor shape outside the inner loop.  Filtered
+     * ALPHA streams are tiny but common enough that avoiding per-pixel
+     * coordinate division and method dispatch is measurable.
+     */
+    if (filter_method == 1u) {
+        for (y = 0; y < height; ++y) {
+            row_start = (size_t)y * stride;
+            for (x = 0; x < width; ++x) {
+                index = row_start + (size_t)x;
+                if (x == 0) {
+                    predictor = y > 0 ? alpha_plane[index - stride] : 0u;
+                } else {
+                    predictor = alpha_plane[index - 1u];
+                }
+                encoded = encoded_payload[index + 1u];
+                alpha_plane[index] = (unsigned char)((unsigned int)encoded +
+                                                     (unsigned int)predictor);
+            }
+        }
+        return SIXEL_OK;
+    }
+
+    if (filter_method == 2u) {
+        for (y = 0; y < height; ++y) {
+            row_start = (size_t)y * stride;
+            for (x = 0; x < width; ++x) {
+                index = row_start + (size_t)x;
+                if (y == 0) {
+                    predictor = x > 0 ? alpha_plane[index - 1u] : 0u;
+                } else {
+                    predictor = alpha_plane[index - stride];
+                }
+                encoded = encoded_payload[index + 1u];
+                alpha_plane[index] = (unsigned char)((unsigned int)encoded +
+                                                     (unsigned int)predictor);
+            }
+        }
+        return SIXEL_OK;
+    }
+
+    if (filter_method == 3u) {
+        for (y = 0; y < height; ++y) {
+            row_start = (size_t)y * stride;
+            for (x = 0; x < width; ++x) {
+                index = row_start + (size_t)x;
+                if (y == 0) {
+                    predictor = x > 0 ? alpha_plane[index - 1u] : 0u;
+                } else if (x == 0) {
+                    predictor = alpha_plane[index - stride];
+                } else {
+                    left = alpha_plane[index - 1u];
+                    top = alpha_plane[index - stride];
+                    top_left = alpha_plane[index - stride - 1u];
+                    predictor = sixel_webp_vp8_alpha_gradient_predictor(
+                        (unsigned int)left,
+                        (unsigned int)top,
+                        (unsigned int)top_left);
+                }
+                encoded = encoded_payload[index + 1u];
+                alpha_plane[index] = (unsigned char)((unsigned int)encoded +
+                                                     (unsigned int)predictor);
+            }
+        }
+        return SIXEL_OK;
+    }
+
+    for (y = 0; y < height; ++y) {
+        row_start = (size_t)y * stride;
+        for (x = 0; x < width; ++x) {
+            index = row_start + (size_t)x;
+            predictor = sixel_webp_vp8_alpha_predictor(filter_method,
+                                                       x,
+                                                       y,
+                                                       alpha_plane,
+                                                       width);
+            encoded = encoded_payload[index + 1u];
+            alpha_plane[index] = (unsigned char)((unsigned int)encoded +
+                                                 (unsigned int)predictor);
+        }
     }
     return SIXEL_OK;
 }
