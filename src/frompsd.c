@@ -24527,6 +24527,24 @@ typedef struct sixel_builtin_psd_deferred_clip_state_refs {
     sixel_builtin_psd_layer_record_t *pending_overlay_layer;
 } sixel_builtin_psd_deferred_clip_state_refs_t;
 
+typedef struct sixel_builtin_psd_deferred_clip_buffers {
+    float *canvas_rgb_premul;
+    float *canvas_alpha;
+    float *group_rgb_premul;
+    float *group_canvas_alpha;
+    float *group_clip_gate;
+    float *pending_overlay_fill_coverage_map;
+    float *pending_overlay_stroke_coverage_map;
+    float *pending_overlay_dual_stroke_source_alpha_map;
+    float *group_backdrop_rgb_premul;
+    float *group_backdrop_alpha;
+    float *group_stroke_backdrop_rgb_premul;
+    float *group_stroke_backdrop_alpha;
+    size_t pixel_count;
+    int canvas_width;
+    int canvas_height;
+} sixel_builtin_psd_deferred_clip_buffers_t;
+
 #define SIXEL_BUILTIN_PSD_OVERLAY_SLOT_SOLID 1
 #define SIXEL_BUILTIN_PSD_OVERLAY_SLOT_GRADIENT 2
 #define SIXEL_BUILTIN_PSD_OVERLAY_REPLAY_CAPTURE_SOLID 1
@@ -24715,28 +24733,71 @@ sixel_builtin_psd_capture_deferred_solid_overlay_coverage(
     float *captured_coverage_map,
     size_t pixel_count,
     float const *source_alpha_map,
-    float const *clip_alpha_map)
+    float const *clip_alpha_map,
+    int canvas_width,
+    int canvas_height,
+    sixel_builtin_psd_layer_record_t const *source_layer)
 {
     size_t i;
+    size_t source_index;
     float source_alpha;
     float effective_alpha;
+    int canvas_x;
+    int canvas_y;
+    int source_x;
+    int source_y;
     int has_clip_alpha;
     int captured_any;
 
     i = 0u;
+    source_index = 0u;
     source_alpha = 0.0f;
     effective_alpha = 0.0f;
+    canvas_x = 0;
+    canvas_y = 0;
+    source_x = 0;
+    source_y = 0;
     has_clip_alpha = 0;
     captured_any = 0;
-    if (captured_coverage_map == NULL) {
+    if (captured_coverage_map == NULL ||
+        canvas_width <= 0 ||
+        canvas_height <= 0 ||
+        (size_t)canvas_width > SIZE_MAX / (size_t)canvas_height ||
+        pixel_count != (size_t)canvas_width * (size_t)canvas_height) {
         return 0;
     }
+    if (source_alpha_map != NULL && clip_alpha_map == NULL) {
+        if (source_layer == NULL ||
+            source_layer->width == 0u ||
+            source_layer->height == 0u ||
+            (size_t)source_layer->width >
+                SIZE_MAX / (size_t)source_layer->height) {
+            return 0;
+        }
+    }
+    /*
+     * Source alpha is only needed for non-clipped fallback coverage. It is
+     * layer-local, while coverage maps are canvas-wide, so map the canvas
+     * pixel back into the layer before reading the source alpha buffer.
+     */
     for (i = 0u; i < pixel_count; ++i) {
         source_alpha = 0.0f;
         has_clip_alpha = 1;
-        if (source_alpha_map != NULL) {
+        if (source_alpha_map != NULL && clip_alpha_map == NULL) {
+            canvas_y = (int)(i / (size_t)canvas_width);
+            canvas_x = (int)(i % (size_t)canvas_width);
+            source_x = canvas_x - source_layer->left;
+            source_y = canvas_y - source_layer->top;
+            if (source_x < 0 || source_y < 0 ||
+                (size_t)source_x >= (size_t)source_layer->width ||
+                (size_t)source_y >= (size_t)source_layer->height) {
+                continue;
+            }
+            source_index =
+                (size_t)source_y * (size_t)source_layer->width +
+                (size_t)source_x;
             source_alpha = sixel_builtin_psd_clamp_alpha_float32(
-                source_alpha_map[i]);
+                source_alpha_map[source_index]);
         }
         if (clip_alpha_map != NULL) {
             if (sixel_builtin_psd_clamp_alpha_float32(
@@ -24831,77 +24892,130 @@ sixel_builtin_psd_reset_deferred_clip_group_state(
 
 static void
 sixel_builtin_psd_flush_deferred_clip_group_state(
-    float *canvas_rgb_premul,
-    float *canvas_alpha,
-    float *group_rgb_premul,
-    float *group_canvas_alpha,
-    float *group_clip_gate,
-    float *pending_overlay_fill_coverage_map,
-    float *pending_overlay_stroke_coverage_map,
-    float *pending_overlay_dual_stroke_source_alpha_map,
-    float *group_backdrop_rgb_premul,
-    float *group_backdrop_alpha,
-    float *group_stroke_backdrop_rgb_premul,
-    float *group_stroke_backdrop_alpha,
-    size_t pixel_count,
-    int canvas_width,
-    int canvas_height,
-    int *pending_clip_group_overlay,
-    int *pending_overlay_defer_stroke,
-    int *pending_overlay_stroke_mode,
-    int *pending_overlay_stroke_consumed,
-    int *pending_overlay_dual_stroke,
-    int *pending_overlay_fill_coverage_valid,
-    int *pending_overlay_stroke_coverage_valid,
-    int *pending_overlay_dual_stroke_source_alpha_valid,
-    int *pending_overlay_solid_replay_allowed,
-    size_t *pending_overlay_replay_count,
-    int *pending_overlay_replay_locked,
-    sixel_builtin_psd_deferred_overlay_replay_slots_t
-        *pending_overlay_replay_slots,
-    int *group_active,
-    int *pending_overlay_replay_phase,
-    sixel_builtin_psd_layer_record_t *pending_overlay_layer)
+    sixel_builtin_psd_deferred_clip_buffers_t const *buffers,
+    sixel_builtin_psd_deferred_clip_state_refs_t const *state_refs)
 {
+    float *canvas_rgb_premul;
+    float *canvas_alpha;
+    float *group_rgb_premul;
+    float *group_canvas_alpha;
+    float *group_clip_gate;
+    float *pending_overlay_fill_coverage_map;
+    float *pending_overlay_stroke_coverage_map;
+    float *pending_overlay_dual_stroke_source_alpha_map;
+    float *group_backdrop_rgb_premul;
+    float *group_backdrop_alpha;
+    float *group_stroke_backdrop_rgb_premul;
+    float *group_stroke_backdrop_alpha;
     float const *pending_solid_coverage_map;
     float const *replay_solid_coverage_map;
+    size_t pixel_count;
+    int canvas_width;
+    int canvas_height;
+    int *pending_clip_group_overlay;
+    int *pending_overlay_defer_stroke;
+    int *pending_overlay_stroke_mode;
+    int *pending_overlay_stroke_consumed;
+    int *pending_overlay_dual_stroke;
+    int *pending_overlay_fill_coverage_valid;
+    int *pending_overlay_stroke_coverage_valid;
+    int *pending_overlay_dual_stroke_source_alpha_valid;
+    int *pending_overlay_solid_replay_allowed;
+    size_t *pending_overlay_replay_count;
+    int *pending_overlay_replay_locked;
+    sixel_builtin_psd_deferred_overlay_replay_slots_t
+        *pending_overlay_replay_slots;
+    int *group_active;
+    int *pending_overlay_replay_phase;
+    sixel_builtin_psd_layer_record_t *pending_overlay_layer;
     int pending_overlay_interior_enabled;
     int solid_replay_actionable;
     int solid_replay_allowed;
     int replay_phase_allows_apply;
     int replay_entries_available;
     size_t replay_index;
-    sixel_builtin_psd_deferred_clip_state_refs_t state_refs;
 
+    canvas_rgb_premul = NULL;
+    canvas_alpha = NULL;
+    group_rgb_premul = NULL;
+    group_canvas_alpha = NULL;
+    group_clip_gate = NULL;
+    pending_overlay_fill_coverage_map = NULL;
+    pending_overlay_stroke_coverage_map = NULL;
+    pending_overlay_dual_stroke_source_alpha_map = NULL;
+    group_backdrop_rgb_premul = NULL;
+    group_backdrop_alpha = NULL;
+    group_stroke_backdrop_rgb_premul = NULL;
+    group_stroke_backdrop_alpha = NULL;
     pending_solid_coverage_map = NULL;
     replay_solid_coverage_map = NULL;
+    pixel_count = 0u;
+    canvas_width = 0;
+    canvas_height = 0;
+    pending_clip_group_overlay = NULL;
+    pending_overlay_defer_stroke = NULL;
+    pending_overlay_stroke_mode = NULL;
+    pending_overlay_stroke_consumed = NULL;
+    pending_overlay_dual_stroke = NULL;
+    pending_overlay_fill_coverage_valid = NULL;
+    pending_overlay_stroke_coverage_valid = NULL;
+    pending_overlay_dual_stroke_source_alpha_valid = NULL;
+    pending_overlay_solid_replay_allowed = NULL;
+    pending_overlay_replay_count = NULL;
+    pending_overlay_replay_locked = NULL;
+    pending_overlay_replay_slots = NULL;
+    group_active = NULL;
+    pending_overlay_replay_phase = NULL;
+    pending_overlay_layer = NULL;
     pending_overlay_interior_enabled = 0;
     solid_replay_actionable = 0;
     solid_replay_allowed = 0;
     replay_phase_allows_apply = 0;
     replay_entries_available = 0;
     replay_index = 0u;
-    memset(&state_refs, 0, sizeof(state_refs));
-    state_refs.pending_clip_group_overlay = pending_clip_group_overlay;
-    state_refs.pending_overlay_defer_stroke = pending_overlay_defer_stroke;
-    state_refs.pending_overlay_stroke_mode = pending_overlay_stroke_mode;
-    state_refs.pending_overlay_stroke_consumed =
-        pending_overlay_stroke_consumed;
-    state_refs.pending_overlay_dual_stroke = pending_overlay_dual_stroke;
-    state_refs.pending_overlay_fill_coverage_valid =
-        pending_overlay_fill_coverage_valid;
-    state_refs.pending_overlay_stroke_coverage_valid =
-        pending_overlay_stroke_coverage_valid;
-    state_refs.pending_overlay_dual_stroke_source_alpha_valid =
-        pending_overlay_dual_stroke_source_alpha_valid;
-    state_refs.pending_overlay_solid_replay_allowed =
-        pending_overlay_solid_replay_allowed;
-    state_refs.pending_overlay_replay_count = pending_overlay_replay_count;
-    state_refs.pending_overlay_replay_locked = pending_overlay_replay_locked;
-    state_refs.pending_overlay_replay_slots = pending_overlay_replay_slots;
-    state_refs.group_active = group_active;
-    state_refs.pending_overlay_replay_phase = pending_overlay_replay_phase;
-    state_refs.pending_overlay_layer = pending_overlay_layer;
+
+    if (buffers == NULL || state_refs == NULL) {
+        return;
+    }
+    canvas_rgb_premul = buffers->canvas_rgb_premul;
+    canvas_alpha = buffers->canvas_alpha;
+    group_rgb_premul = buffers->group_rgb_premul;
+    group_canvas_alpha = buffers->group_canvas_alpha;
+    group_clip_gate = buffers->group_clip_gate;
+    pending_overlay_fill_coverage_map =
+        buffers->pending_overlay_fill_coverage_map;
+    pending_overlay_stroke_coverage_map =
+        buffers->pending_overlay_stroke_coverage_map;
+    pending_overlay_dual_stroke_source_alpha_map =
+        buffers->pending_overlay_dual_stroke_source_alpha_map;
+    group_backdrop_rgb_premul = buffers->group_backdrop_rgb_premul;
+    group_backdrop_alpha = buffers->group_backdrop_alpha;
+    group_stroke_backdrop_rgb_premul =
+        buffers->group_stroke_backdrop_rgb_premul;
+    group_stroke_backdrop_alpha = buffers->group_stroke_backdrop_alpha;
+    pixel_count = buffers->pixel_count;
+    canvas_width = buffers->canvas_width;
+    canvas_height = buffers->canvas_height;
+    pending_clip_group_overlay = state_refs->pending_clip_group_overlay;
+    pending_overlay_defer_stroke = state_refs->pending_overlay_defer_stroke;
+    pending_overlay_stroke_mode = state_refs->pending_overlay_stroke_mode;
+    pending_overlay_stroke_consumed =
+        state_refs->pending_overlay_stroke_consumed;
+    pending_overlay_dual_stroke = state_refs->pending_overlay_dual_stroke;
+    pending_overlay_fill_coverage_valid =
+        state_refs->pending_overlay_fill_coverage_valid;
+    pending_overlay_stroke_coverage_valid =
+        state_refs->pending_overlay_stroke_coverage_valid;
+    pending_overlay_dual_stroke_source_alpha_valid =
+        state_refs->pending_overlay_dual_stroke_source_alpha_valid;
+    pending_overlay_solid_replay_allowed =
+        state_refs->pending_overlay_solid_replay_allowed;
+    pending_overlay_replay_count = state_refs->pending_overlay_replay_count;
+    pending_overlay_replay_locked = state_refs->pending_overlay_replay_locked;
+    pending_overlay_replay_slots = state_refs->pending_overlay_replay_slots;
+    group_active = state_refs->group_active;
+    pending_overlay_replay_phase = state_refs->pending_overlay_replay_phase;
+    pending_overlay_layer = state_refs->pending_overlay_layer;
 
     if (pending_clip_group_overlay == NULL ||
         pending_overlay_defer_stroke == NULL ||
@@ -24931,11 +25045,11 @@ sixel_builtin_psd_flush_deferred_clip_group_state(
             "psd_decode",
             "builtin PSD: blocking deferred replay apply after offscreen "
             "group commit");
-        sixel_builtin_psd_reset_deferred_clip_group_state(&state_refs);
+        sixel_builtin_psd_reset_deferred_clip_group_state(state_refs);
         return;
     }
     if (*group_active == 0) {
-        sixel_builtin_psd_reset_deferred_clip_group_state(&state_refs);
+        sixel_builtin_psd_reset_deferred_clip_group_state(state_refs);
         return;
     }
 
@@ -25139,78 +25253,22 @@ commit_and_consume:
     *pending_overlay_replay_count = 0u;
     *pending_overlay_replay_phase =
         SIXEL_BUILTIN_PSD_DEFERRED_REPLAY_PHASE_CONSUMED;
-    sixel_builtin_psd_reset_deferred_clip_group_state(&state_refs);
+    sixel_builtin_psd_reset_deferred_clip_group_state(state_refs);
 }
 
 static void
 sixel_builtin_psd_maybe_flush_deferred_clip_group_state(
-    float *canvas_rgb_premul,
-    float *canvas_alpha,
-    float *group_rgb_premul,
-    float *group_canvas_alpha,
-    float *group_clip_gate,
-    float *pending_overlay_fill_coverage_map,
-    float *pending_overlay_stroke_coverage_map,
-    float *pending_overlay_dual_stroke_source_alpha_map,
-    float *group_backdrop_rgb_premul,
-    float *group_backdrop_alpha,
-    float *group_stroke_backdrop_rgb_premul,
-    float *group_stroke_backdrop_alpha,
-    size_t pixel_count,
-    int canvas_width,
-    int canvas_height,
-    int *pending_clip_group_overlay,
-    int *pending_overlay_defer_stroke,
-    int *pending_overlay_stroke_mode,
-    int *pending_overlay_stroke_consumed,
-    int *pending_overlay_dual_stroke,
-    int *pending_overlay_fill_coverage_valid,
-    int *pending_overlay_stroke_coverage_valid,
-    int *pending_overlay_dual_stroke_source_alpha_valid,
-    int *pending_overlay_solid_replay_allowed,
-    size_t *pending_overlay_replay_count,
-    int *pending_overlay_replay_locked,
-    sixel_builtin_psd_deferred_overlay_replay_slots_t
-        *pending_overlay_replay_slots,
-    int *group_active,
-    int *pending_overlay_replay_phase,
-    sixel_builtin_psd_layer_record_t *pending_overlay_layer)
+    sixel_builtin_psd_deferred_clip_buffers_t const *buffers,
+    sixel_builtin_psd_deferred_clip_state_refs_t const *state_refs)
 {
-    if (pending_clip_group_overlay == NULL ||
-        *pending_clip_group_overlay == 0) {
+    if (state_refs == NULL ||
+        state_refs->pending_clip_group_overlay == NULL ||
+        *state_refs->pending_clip_group_overlay == 0) {
         return;
     }
     sixel_builtin_psd_flush_deferred_clip_group_state(
-        canvas_rgb_premul,
-        canvas_alpha,
-        group_rgb_premul,
-        group_canvas_alpha,
-        group_clip_gate,
-        pending_overlay_fill_coverage_map,
-        pending_overlay_stroke_coverage_map,
-        pending_overlay_dual_stroke_source_alpha_map,
-        group_backdrop_rgb_premul,
-        group_backdrop_alpha,
-        group_stroke_backdrop_rgb_premul,
-        group_stroke_backdrop_alpha,
-        pixel_count,
-        canvas_width,
-        canvas_height,
-        pending_clip_group_overlay,
-        pending_overlay_defer_stroke,
-        pending_overlay_stroke_mode,
-        pending_overlay_stroke_consumed,
-        pending_overlay_dual_stroke,
-        pending_overlay_fill_coverage_valid,
-        pending_overlay_stroke_coverage_valid,
-        pending_overlay_dual_stroke_source_alpha_valid,
-        pending_overlay_solid_replay_allowed,
-        pending_overlay_replay_count,
-        pending_overlay_replay_locked,
-        pending_overlay_replay_slots,
-        group_active,
-        pending_overlay_replay_phase,
-        pending_overlay_layer);
+        buffers,
+        state_refs);
 }
 
 static SIXELSTATUS
@@ -25484,6 +25542,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     float *clipped_inside_stroke_alpha_map;
     sixel_builtin_psd_deferred_overlay_replay_slots_t
         pending_overlay_replay_slots;
+    sixel_builtin_psd_deferred_clip_buffers_t deferred_clip_buffers;
+    sixel_builtin_psd_deferred_clip_state_refs_t deferred_clip_state_refs;
     int *clip_base_indices;
     int *clip_base_indices_forward;
     int *clip_base_indices_reverse;
@@ -25546,6 +25606,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     memset(&pending_overlay_replay_slots,
            0,
            sizeof(pending_overlay_replay_slots));
+    memset(&deferred_clip_buffers, 0, sizeof(deferred_clip_buffers));
+    memset(&deferred_clip_state_refs, 0, sizeof(deferred_clip_state_refs));
     clip_base_indices = NULL;
     clip_base_indices_forward = NULL;
     clip_base_indices_reverse = NULL;
@@ -25589,6 +25651,35 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     apply_effects_subset = 0;
     memset(&pending_overlay_layer, 0, sizeof(pending_overlay_layer));
     status = SIXEL_FALSE;
+
+    deferred_clip_state_refs.pending_clip_group_overlay =
+        &pending_clip_group_overlay;
+    deferred_clip_state_refs.pending_overlay_defer_stroke =
+        &pending_overlay_defer_stroke;
+    deferred_clip_state_refs.pending_overlay_stroke_mode =
+        &pending_overlay_stroke_mode;
+    deferred_clip_state_refs.pending_overlay_stroke_consumed =
+        &pending_overlay_stroke_consumed;
+    deferred_clip_state_refs.pending_overlay_dual_stroke =
+        &pending_overlay_dual_stroke;
+    deferred_clip_state_refs.pending_overlay_fill_coverage_valid =
+        &pending_overlay_fill_coverage_valid;
+    deferred_clip_state_refs.pending_overlay_stroke_coverage_valid =
+        &pending_overlay_stroke_coverage_valid;
+    deferred_clip_state_refs.pending_overlay_dual_stroke_source_alpha_valid =
+        &pending_overlay_dual_stroke_source_alpha_valid;
+    deferred_clip_state_refs.pending_overlay_solid_replay_allowed =
+        &pending_overlay_solid_replay_allowed;
+    deferred_clip_state_refs.pending_overlay_replay_count =
+        &pending_overlay_replay_count;
+    deferred_clip_state_refs.pending_overlay_replay_locked =
+        &pending_overlay_replay_locked;
+    deferred_clip_state_refs.pending_overlay_replay_slots =
+        &pending_overlay_replay_slots;
+    deferred_clip_state_refs.group_active = &group_active;
+    deferred_clip_state_refs.pending_overlay_replay_phase =
+        &pending_overlay_replay_phase;
+    deferred_clip_state_refs.pending_overlay_layer = &pending_overlay_layer;
 
     if (chunk == NULL || info == NULL || ppixels == NULL || pwidth == NULL ||
         pheight == NULL || ppixelformat == NULL || info->allocator == NULL) {
@@ -25771,6 +25862,29 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
     memset(clipped_inside_stroke_alpha_map,
            0,
            pixel_count * sizeof(float));
+
+    deferred_clip_buffers.canvas_rgb_premul = canvas_rgb_premul;
+    deferred_clip_buffers.canvas_alpha = canvas_alpha;
+    deferred_clip_buffers.group_rgb_premul = group_rgb_premul;
+    deferred_clip_buffers.group_canvas_alpha = group_canvas_alpha;
+    deferred_clip_buffers.group_clip_gate = group_clip_gate;
+    deferred_clip_buffers.pending_overlay_fill_coverage_map =
+        pending_overlay_fill_coverage_map;
+    deferred_clip_buffers.pending_overlay_stroke_coverage_map =
+        pending_overlay_stroke_coverage_map;
+    deferred_clip_buffers.pending_overlay_dual_stroke_source_alpha_map =
+        pending_overlay_dual_stroke_source_alpha_map;
+    deferred_clip_buffers.group_backdrop_rgb_premul =
+        group_backdrop_rgb_premul;
+    deferred_clip_buffers.group_backdrop_alpha = group_backdrop_alpha;
+    deferred_clip_buffers.group_stroke_backdrop_rgb_premul =
+        group_stroke_backdrop_rgb_premul;
+    deferred_clip_buffers.group_stroke_backdrop_alpha =
+        group_stroke_backdrop_alpha;
+    deferred_clip_buffers.pixel_count = pixel_count;
+    deferred_clip_buffers.canvas_width = info->width;
+    deferred_clip_buffers.canvas_height = info->height;
+
     if (!sixel_builtin_psd_prepare_clipping_base_indices(
             info,
             &model,
@@ -25894,36 +26008,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         ignore_placeholder_vector_bbox = 0;
         if (layer->clipping == 0u) {
             sixel_builtin_psd_maybe_flush_deferred_clip_group_state(
-                canvas_rgb_premul,
-                canvas_alpha,
-                group_rgb_premul,
-                group_canvas_alpha,
-                group_clip_gate,
-                pending_overlay_fill_coverage_map,
-                pending_overlay_stroke_coverage_map,
-                pending_overlay_dual_stroke_source_alpha_map,
-                group_backdrop_rgb_premul,
-                group_backdrop_alpha,
-                group_stroke_backdrop_rgb_premul,
-                group_stroke_backdrop_alpha,
-                pixel_count,
-                info->width,
-                info->height,
-                &pending_clip_group_overlay,
-                &pending_overlay_defer_stroke,
-                &pending_overlay_stroke_mode,
-                &pending_overlay_stroke_consumed,
-                &pending_overlay_dual_stroke,
-                &pending_overlay_fill_coverage_valid,
-                &pending_overlay_stroke_coverage_valid,
-                &pending_overlay_dual_stroke_source_alpha_valid,
-                &pending_overlay_solid_replay_allowed,
-                &pending_overlay_replay_count,
-                &pending_overlay_replay_locked,
-                &pending_overlay_replay_slots,
-                &group_active,
-                &pending_overlay_replay_phase,
-                &pending_overlay_layer);
+                &deferred_clip_buffers,
+                &deferred_clip_state_refs);
         }
         if (layer->has_non_pixel_payload != 0) {
             sixel_builtin_psd_trace_message(
@@ -26575,7 +26661,10 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
                             pending_overlay_fill_coverage_map,
                             pixel_count,
                             src_layer.alpha,
-                            clip_alpha_valid != 0 ? clip_alpha_map : NULL) !=
+                            clip_alpha_valid != 0 ? clip_alpha_map : NULL,
+                            info->width,
+                            info->height,
+                            layer) !=
                         0) {
                         pending_overlay_fill_coverage_valid = 1;
                         solid_replay_ready = 1;
@@ -26771,36 +26860,8 @@ sixel_builtin_decode_psd_multilayer_missing_composite(
         sixel_builtin_psd_layer_buffers_destroy(info->allocator, &src_layer);
     }
     sixel_builtin_psd_maybe_flush_deferred_clip_group_state(
-        canvas_rgb_premul,
-        canvas_alpha,
-        group_rgb_premul,
-        group_canvas_alpha,
-        group_clip_gate,
-        pending_overlay_fill_coverage_map,
-        pending_overlay_stroke_coverage_map,
-        pending_overlay_dual_stroke_source_alpha_map,
-        group_backdrop_rgb_premul,
-        group_backdrop_alpha,
-        group_stroke_backdrop_rgb_premul,
-        group_stroke_backdrop_alpha,
-        pixel_count,
-        info->width,
-        info->height,
-        &pending_clip_group_overlay,
-        &pending_overlay_defer_stroke,
-        &pending_overlay_stroke_mode,
-        &pending_overlay_stroke_consumed,
-        &pending_overlay_dual_stroke,
-        &pending_overlay_fill_coverage_valid,
-        &pending_overlay_stroke_coverage_valid,
-        &pending_overlay_dual_stroke_source_alpha_valid,
-        &pending_overlay_solid_replay_allowed,
-        &pending_overlay_replay_count,
-        &pending_overlay_replay_locked,
-        &pending_overlay_replay_slots,
-        &group_active,
-        &pending_overlay_replay_phase,
-        &pending_overlay_layer);
+        &deferred_clip_buffers,
+        &deferred_clip_state_refs);
     if (allow_pixel_layer_decode_skip != 0 &&
         skipped_pixel_layer_decode_count > 0u &&
         composed_layer_count == 0u) {
