@@ -20,7 +20,7 @@ mapfile="${TOP_SRCDIR}/images/map64.six"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${input_image}" -m "${mapfile}" |
     ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m ms-ssim -dk \
-        -b "MS-SSIM:0.95" "${input_image}" || {
+        -b "MS-SSIM:0.95" "${input_image}" >/dev/null || {
     echo "not ok" 1 - "mapfile default diffusion fell below MS-SSIM 0.95"
     exit 0
 }

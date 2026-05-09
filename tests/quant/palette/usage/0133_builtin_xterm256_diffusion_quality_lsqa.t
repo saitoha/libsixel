@@ -19,7 +19,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${input_image}" -bxterm256 |
     ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m ms-ssim -dk \
-        -b "MS-SSIM:0.98" "${input_image}" || {
+        -b "MS-SSIM:0.98" "${input_image}" >/dev/null || {
     echo "not ok" 1 - "xterm256 default diffusion fell below MS-SSIM 0.98"
     exit 0
 }
