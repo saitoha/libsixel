@@ -11159,6 +11159,7 @@ sixel_encoder_apply_mapfile_option(
     size_t libc_buffer_size;
     unsigned int path_flags;
     int path_check;
+    char mapfile_message[256];
 
     status = SIXEL_OK;
     mapfile_view = NULL;
@@ -11173,6 +11174,7 @@ sixel_encoder_apply_mapfile_option(
     libc_buffer_size = 0u;
     path_flags = 0u;
     path_check = 0;
+    mapfile_message[0] = '\0';
     if (value == NULL || *value == '\0') {
         sixel_helper_set_additional_message(
             "sixel_encoder_setopt: no mapfile specified.");
@@ -11182,6 +11184,19 @@ sixel_encoder_apply_mapfile_option(
     mapfile_view = sixel_palette_strip_prefix(value, NULL);
     if (mapfile_view == NULL) {
         mapfile_view = value;
+    }
+    /*
+     * A recognized TYPE: prefix without PATH still names the exact token the
+     * user provided.  Reject it here so platform-specific path probes cannot
+     * let the late palette import collapse it into a generic empty path.
+     */
+    if (mapfile_view != value && *mapfile_view == '\0') {
+        sixel_compat_snprintf(mapfile_message,
+                              sizeof(mapfile_message),
+                              "path \"%s\" not found.",
+                              value);
+        sixel_helper_set_additional_message(mapfile_message);
+        return SIXEL_BAD_ARGUMENT;
     }
     mapfile_length = strlen(value);
     mapfile_offset = (size_t)(mapfile_view - value);
