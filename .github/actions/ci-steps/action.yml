@@ -738,6 +738,10 @@ runs:
           done
           chmod +x "$MSVC_WRAPPER_DIR"/*
           PATH="$MSVC_WRAPPER_DIR:$PWD/build-aux:$PWD/bin:$MSVC_BIN_PATH:$PATH"
+          # The wrapper also exports this before execing cl/link, but MSYS2
+          # can convert argv while Meson is still launching the wrapper.
+          # Export it here so MSVC slash options reach the wrapper unchanged.
+          export MSYS2_ARG_CONV_EXCL='*'
         else
           PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
         fi
