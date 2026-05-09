@@ -615,7 +615,11 @@ runs:
       run: |
         set -exv
         MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
-        PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
+        if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"-msvc-"* ]]; then
+          PATH="$PWD/build-aux:$PWD/bin:$MSVC_BIN_PATH:$PATH"
+        else
+          PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
+        fi
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         meson compile -C builddir -v
         meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
