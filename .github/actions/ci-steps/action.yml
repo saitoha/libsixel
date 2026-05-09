@@ -616,10 +616,81 @@ runs:
         set -exv
         MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
         if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"-msvc-"* ]]; then
-          # Keep MSYS2 from rewriting MSVC slash options while preserving
-          # conversion for embedded /c/... paths in -I and -L arguments.
-          export MSYS2_ARG_CONV_EXCL=/
-          PATH="$PWD/build-aux:$PWD/bin:$MSVC_BIN_PATH:$PATH"
+          # Meson emits MSYS2 absolute paths for temporary sources while cl
+          # also needs MSVC slash options such as /nologo, /Fe..., and
+          # /LIBPATH:... to survive unchanged.  A broad MSYS2_ARG_CONV_EXCL=/
+          # protects the options but also leaves /d/a/... source paths
+          # unconverted, so wrap the tools and convert only path-bearing
+          # argv fields before calling the native MSVC executables.
+          MSVC_WRAPPER_DIR="$(mktemp -d)"
+          cat > "$MSVC_WRAPPER_DIR/cl" <<'EOF'
+        #!/usr/bin/env bash
+        set -e
+
+        convert_msys_path() {
+          case "$1" in
+            /[A-Za-z]/*)
+              cygpath -w "$1"
+              ;;
+            *)
+              printf '%s\n' "$1"
+              ;;
+          esac
+        }
+
+        convert_arg() {
+          local arg
+          local prefix
+          local value
+
+          arg=$1
+          case "$arg" in
+            @/[A-Za-z]/*)
+              printf '@%s\n' "$(convert_msys_path "${arg#@}")"
+              ;;
+            /*:/[A-Za-z]/*)
+              prefix=${arg%%:*}:
+              value=${arg#*:}
+              printf '%s%s\n' "$prefix" "$(convert_msys_path "$value")"
+              ;;
+            /Fe/[A-Za-z]/*|/Fo/[A-Za-z]/*|/Fd/[A-Za-z]/*|/Fp/[A-Za-z]/*|/Fa/[A-Za-z]/*)
+              prefix=${arg:0:3}
+              value=${arg:3}
+              printf '%s%s\n' "$prefix" "$(convert_msys_path "$value")"
+              ;;
+            /I/[A-Za-z]/*)
+              prefix=${arg:0:2}
+              value=${arg:2}
+              printf '%s%s\n' "$prefix" "$(convert_msys_path "$value")"
+              ;;
+            -I/[A-Za-z]/*|-L/[A-Za-z]/*)
+              prefix=${arg:0:2}
+              value=${arg:2}
+              printf '%s%s\n' "$prefix" "$(convert_msys_path "$value")"
+              ;;
+            /[A-Za-z]/*)
+              convert_msys_path "$arg"
+              ;;
+            *)
+              printf '%s\n' "$arg"
+              ;;
+          esac
+        }
+
+        tool=${0##*/}.exe
+        converted=()
+        for arg in "$@"; do
+          converted+=("$(convert_arg "$arg")")
+        done
+
+        export MSYS2_ARG_CONV_EXCL='*'
+        exec "$tool" "${converted[@]}"
+        EOF
+          cp "$MSVC_WRAPPER_DIR/cl" "$MSVC_WRAPPER_DIR/lib"
+          cp "$MSVC_WRAPPER_DIR/cl" "$MSVC_WRAPPER_DIR/link"
+          chmod +x "$MSVC_WRAPPER_DIR/cl" "$MSVC_WRAPPER_DIR/lib"
+          chmod +x "$MSVC_WRAPPER_DIR/link"
+          PATH="$MSVC_WRAPPER_DIR:$PWD/build-aux:$PWD/bin:$MSVC_BIN_PATH:$PATH"
         else
           PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
         fi
