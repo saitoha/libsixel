@@ -677,19 +677,26 @@ runs:
           esac
         }
 
-        tool=${0##*/}.exe
+        tool=${0##*/}
+        tool=${tool%.exe}.exe
         converted=()
         for arg in "$@"; do
           converted+=("$(convert_arg "$arg")")
         done
 
+        # Resolve through the saved MSVC path so link.exe cannot fall through
+        # to the MSYS2/GNU coreutils program with the same name.
         export MSYS2_ARG_CONV_EXCL='*'
+        export PATH="$MSVC_TOOL_PATH"
         exec "$tool" "${converted[@]}"
         EOF
-          cp "$MSVC_WRAPPER_DIR/cl" "$MSVC_WRAPPER_DIR/lib"
-          cp "$MSVC_WRAPPER_DIR/cl" "$MSVC_WRAPPER_DIR/link"
-          chmod +x "$MSVC_WRAPPER_DIR/cl" "$MSVC_WRAPPER_DIR/lib"
-          chmod +x "$MSVC_WRAPPER_DIR/link"
+          # MSYS2 Python may execute the .exe name even when shutil.which()
+          # reports the extensionless wrapper path.
+          for tool in cl.exe lib lib.exe link link.exe; do
+            cp "$MSVC_WRAPPER_DIR/cl" "$MSVC_WRAPPER_DIR/$tool"
+          done
+          chmod +x "$MSVC_WRAPPER_DIR"/*
+          export MSVC_TOOL_PATH="$MSVC_BIN_PATH"
           PATH="$MSVC_WRAPPER_DIR:$PWD/build-aux:$PWD/bin:$MSVC_BIN_PATH:$PATH"
         else
           PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
