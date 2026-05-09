@@ -41,7 +41,7 @@ test -n "${diag_line}" || {
     exit 0
 }
 
-test "${diag_line#LSXPSD1|rc=0|kind=OK|codes=}" != "${diag_line}" || {
+test "${diag_line#LSXPSD1\|rc=0\|kind=OK\|codes=}" != "${diag_line}" || {
     echo "not ok" 1 - "effects/stroke-composite diagnostic header is malformed"
     exit 0
 }

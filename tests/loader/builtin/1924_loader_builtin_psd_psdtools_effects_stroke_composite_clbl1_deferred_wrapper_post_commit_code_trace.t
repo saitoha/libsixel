@@ -49,7 +49,7 @@ test -n "${committed_tail}" || {
     exit 0
 }
 
-diag_line=${trace_output#*LSXPSD1|}
+diag_line=${trace_output#*LSXPSD1\|}
 test "${diag_line}" != "${trace_output}" || {
     echo "not ok" 1 - "effects/stroke-composite missing LSXPSD1 contract header"
     exit 0
