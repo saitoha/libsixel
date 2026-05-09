@@ -5,7 +5,7 @@
 
 set -eux
 
-IMG2SIXEL_PATH="${TOP_BUILDDIR}/converters/img2sixel"
+: "${IMG2SIXEL_PATH:=${TOP_BUILDDIR}/converters/img2sixel}"
 : "${LSQA_PATH:=${TOP_BUILDDIR}/assessment/lsqa}"
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {

@@ -5,7 +5,7 @@
 
 set -eux
 
-IMG2SIXEL_PATH="${TOP_BUILDDIR}/converters/img2sixel"
+: "${IMG2SIXEL_PATH:=${TOP_BUILDDIR}/converters/img2sixel}"
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n"
