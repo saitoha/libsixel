@@ -616,6 +616,9 @@ runs:
         set -exv
         MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
         if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"-msvc-"* ]]; then
+          # Keep MSYS2 from rewriting MSVC slash options while preserving
+          # conversion for embedded /c/... paths in -I and -L arguments.
+          export MSYS2_ARG_CONV_EXCL=/
           PATH="$PWD/build-aux:$PWD/bin:$MSVC_BIN_PATH:$PATH"
         else
           PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
