@@ -5606,6 +5606,12 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
     }
 
     if (context->encoder->dither_cache != NULL) {
+        /*
+         * LUT preparation may update the cached dither object in place.  Drop
+         * the old cache reference before storing the post-LUT reference so a
+         * fixed palette cache hit does not accumulate one reference per frame.
+         */
+        sixel_encoder_clear_dither_cache(context->encoder);
         context->encoder->dither_cache = context->dither;
         sixel_dither_ref(context->dither);
     }
