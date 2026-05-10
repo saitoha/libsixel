@@ -151,10 +151,11 @@ jobs:
             entry['buildtool'] == 'autotools' ? autotools_prefix : meson_prefix
           end
 
-          def render_fuzzing_label(job_id, entry)
+          def fuzzing_replay_entry(job_id, entry)
             case job_id
             when 'fuzz_push_full', 'fuzz_push_encode_helpers'
-              format(
+              kind = job_id == 'fuzz_push_full' ? 'struct' : 'image_api'
+              label = format(
                 '%s-fuzz-%s',
                 buildtool_prefix(
                   entry,
@@ -163,8 +164,15 @@ jobs:
                 ),
                 entry.fetch('target')
               )
+              {
+                'buildtool' => entry.fetch('buildtool'),
+                'kind' => kind,
+                'label' => label,
+                'runner' => 'ubuntu-latest',
+                'target' => entry.fetch('target')
+              }
             when 'fuzz_push_loader_formats'
-              format(
+              label = format(
                 '%s-fuzz-loader-%s',
                 buildtool_prefix(
                   entry,
@@ -173,8 +181,15 @@ jobs:
                 ),
                 entry.fetch('target')
               )
+              {
+                'buildtool' => entry.fetch('buildtool'),
+                'kind' => 'loader_format',
+                'label' => label,
+                'runner' => 'ubuntu-latest',
+                'target' => entry.fetch('target')
+              }
             when 'fuzz_push_loader_autodetect'
-              format(
+              label = format(
                 '%s-fuzz-loader-autodetect',
                 buildtool_prefix(
                   entry,
@@ -182,8 +197,15 @@ jobs:
                   'Meson-ubuntu-x86_64-gcc'
                 )
               )
+              {
+                'buildtool' => entry.fetch('buildtool'),
+                'kind' => 'loader_autodetect',
+                'label' => label,
+                'runner' => 'ubuntu-latest',
+                'target' => 'autodetect'
+              }
             when 'fuzz_push_cli_img2sixel'
-              format(
+              label = format(
                 '%s-fuzz-cli-img2sixel-%s',
                 buildtool_prefix(
                   entry,
@@ -192,8 +214,15 @@ jobs:
                 ),
                 entry.fetch('target')
               )
+              {
+                'buildtool' => entry.fetch('buildtool'),
+                'kind' => 'cli_img2sixel',
+                'label' => label,
+                'runner' => 'ubuntu-latest',
+                'target' => entry.fetch('target')
+              }
             when 'fuzz_push_loader_coregraphics'
-              format(
+              label = format(
                 '%s-fuzz-loader-coregraphics',
                 buildtool_prefix(
                   entry,
@@ -201,10 +230,31 @@ jobs:
                   'Meson-macos-aarch64-clang'
                 )
               )
+              {
+                'buildtool' => entry.fetch('buildtool'),
+                'kind' => 'coregraphics',
+                'label' => label,
+                'runner' => 'macos-latest',
+                'target' => 'coregraphics'
+              }
             when 'fuzz_push_loader_wic_detect'
-              'Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect'
+              {
+                'buildtool' => 'meson',
+                'kind' => 'wic',
+                'label' => 'Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect',
+                'runner' => 'windows-latest',
+                'target' => 'wic',
+                'wic_repro' => false
+              }
             when 'fuzz_push_loader_wic_repro_nosan'
-              'Meson-cmd-x86_64-msvc-fuzz-loader-wic-repro-nosan'
+              {
+                'buildtool' => 'meson',
+                'kind' => 'wic',
+                'label' => 'Meson-cmd-x86_64-msvc-fuzz-loader-wic-repro-nosan',
+                'runner' => 'windows-latest',
+                'target' => 'wic',
+                'wic_repro' => true
+              }
             end
           end
 
@@ -213,7 +263,6 @@ jobs:
           max_jobs = Integer(ENV.fetch('MAX_JOBS'))
           workflow = YAML.load_file(".github/workflows/#{workflow_file}")
           include_entries = []
-          fuzz_labels = []
           replay_kind = workflow_file == 'fuzzing.yml' ? 'fuzzing' : 'ci_steps'
 
           workflow.fetch('jobs').each do |job_id, job|
@@ -221,11 +270,11 @@ jobs:
 
             if workflow_file == 'fuzzing.yml'
               matrix_entries(job).each do |entry|
-                label = render_fuzzing_label(job_id, entry)
-                next if label.nil?
-                next unless failed_jobs.include?(label)
+                replay_entry = fuzzing_replay_entry(job_id, entry)
+                next if replay_entry.nil?
+                next unless failed_jobs.include?(replay_entry.fetch('label'))
 
-                fuzz_labels << label
+                include_entries << replay_entry
               end
               next
             end
@@ -239,25 +288,29 @@ jobs:
               next unless failed_jobs.include?(entry['label'])
 
               replay_entry = entry.dup
+              replay_entry['job_env'] = (job['env'] || {}).dup
               replay_entry['runner'] ||= job['runs-on']
               include_entries << replay_entry
             end
           end
 
           if workflow_file == 'fuzzing.yml'
-            fuzz_labels = fuzz_labels.uniq.first(max_jobs)
             wic_repro = 'Meson-cmd-x86_64-msvc-fuzz-loader-wic-repro-nosan'
             wic_detect = 'Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect'
-            if fuzz_labels.include?(wic_repro) && !fuzz_labels.include?(wic_detect)
-              fuzz_labels.unshift(wic_detect)
+            if include_entries.any? { |entry| entry.fetch('label') == wic_repro }
+              include_entries.reject! { |entry| entry.fetch('label') == wic_detect }
             end
+            include_entries = include_entries.uniq do |entry|
+              [entry.fetch('kind'), entry.fetch('buildtool'), entry.fetch('target')]
+            end
+            include_entries = include_entries.first(max_jobs)
           else
             include_entries = include_entries.first(max_jobs)
           end
 
           matrix = { 'include' => include_entries }
-          fuzz_label_set = "|#{fuzz_labels.join('|')}|"
-          count = workflow_file == 'fuzzing.yml' ? fuzz_labels.length : include_entries.length
+          fuzz_label_set = "|#{include_entries.map { |entry| entry.fetch('label') }.join('|')}|"
+          count = include_entries.length
 
           File.open(ENV.fetch('GITHUB_OUTPUT'), 'a') do |output|
             output.puts("matrix=#{JSON.generate(matrix)}")
@@ -271,8 +324,8 @@ jobs:
           if count.zero?
             warn 'No failed job names matched the target workflow matrix labels.'
           elsif workflow_file == 'fuzzing.yml'
-            fuzz_labels.each do |label|
-              puts "triage: #{label}"
+            include_entries.each do |entry|
+              puts "triage: #{entry.fetch('label')}"
             end
           else
             include_entries.each do |entry|
@@ -338,6 +391,46 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Apply source job env
+        env:
+          SOURCE_JOB_ENV_JSON: ${{ toJSON(matrix.job_env) }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const crypto = require('crypto');
+          const fs = require('fs');
+
+          const sourceEnv = JSON.parse(process.env.SOURCE_JOB_ENV_JSON || '{}');
+          if (
+            sourceEnv === null ||
+            Array.isArray(sourceEnv) ||
+            typeof sourceEnv !== 'object'
+          ) {
+            throw new Error('source job env must be a JSON object');
+          }
+
+          let contents = '';
+          for (const [name, rawValue] of Object.entries(sourceEnv)) {
+            if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
+              throw new Error(`invalid environment variable name: ${name}`);
+            }
+            const value = String(rawValue).replace(/\r\n?/g, '\n');
+            const delimiter = [
+              'TRIAGE_SOURCE_JOB_ENV',
+              name,
+              crypto.randomUUID().replace(/-/g, '_'),
+            ].join('_');
+
+            // Write through GITHUB_ENV to avoid evaluating source values in
+            // the shell while preserving the job-level CI environment.
+            contents += `${name}<<${delimiter}\n${value}\n${delimiter}\n`;
+            console.log(`applied source job env: ${name}`);
+          }
+
+          fs.appendFileSync(process.env.GITHUB_ENV, contents);
+          NODE
+
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
@@ -352,15 +445,25 @@ jobs:
         needs.collect.outputs.replay_kind == 'fuzzing'
         && needs.collect.outputs.count != '0'
       }}
-    name: Dispatch fuzzing replay
-    runs-on: ubuntu-latest
-    permissions:
-      actions: write
-      contents: read
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix: ${{ fromJson(needs.collect.outputs.matrix) }}
+    env:
+      AFL_IMPORT_FIRST: 1
+      AFL_NO_AFFINITY: 1
+      AFL_SKIP_CPUFREQ: 1
+      AFL_USE_ASAN: 1
+      AFL_USE_UBSAN: 1
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
     steps:
       - name: Report triage selection
         env:
-          FUZZ_LABELS: ${{ needs.collect.outputs.fuzz_labels }}
+          MATRIX_JSON: ${{ toJSON(matrix) }}
           SOURCE_RUN_ID: ${{ needs.collect.outputs.source_run_id }}
           WORKFLOW_FILE: ${{ needs.collect.outputs.workflow_file }}
         shell: bash
@@ -370,21 +473,832 @@ jobs:
             echo "workflow: ${WORKFLOW_FILE}"
             echo "source run: ${SOURCE_RUN_ID}"
             echo
-            echo '```'
-            printf '%s\n' "$FUZZ_LABELS" | tr '|' '\n' | sed '/^$/d'
+            echo '```json'
+            echo "$MATRIX_JSON"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Dispatch fuzzing workflow replay
-        env:
-          FUZZ_LABELS: ${{ needs.collect.outputs.fuzz_labels }}
-          GH_TOKEN: ${{ github.token }}
-          SOURCE_RUN_ID: ${{ needs.collect.outputs.source_run_id }}
-          WORKFLOW_FILE: ${{ needs.collect.outputs.workflow_file }}
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: pwsh
+        run: |
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Configure git EOL (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - name: Disable Spotlight (macOS)
+        if: ${{ runner.os == 'macOS' }}
         shell: bash
         run: |
-          set -euo pipefail
-          gh workflow run "$WORKFLOW_FILE" \
-            --ref "$GITHUB_REF_NAME" \
-            -f "triage_job_labels=$FUZZ_LABELS" \
-            -f "triage_source_run_id=$SOURCE_RUN_ID"
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Install Ubuntu libFuzzer dependencies
+        if: >-
+          ${{
+            matrix.kind == 'struct'
+            || matrix.kind == 'loader_format'
+            || matrix.kind == 'loader_autodetect'
+            || matrix.kind == 'image_api'
+          }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            clang meson ninja-build autoconf automake libtool pkg-config make
+
+      - name: Install Ubuntu AFL dependencies
+        if: ${{ matrix.kind == 'cli_img2sixel' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            afl++ clang meson ninja-build autoconf automake libtool pkg-config make
+
+      - name: Configure AFL core_pattern
+        if: ${{ matrix.kind == 'cli_img2sixel' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          before="$(cat /proc/sys/kernel/core_pattern)"
+          echo "kernel.core_pattern(before)=$before"
+          if [[ "$before" == \|* ]]; then
+            echo core | sudo tee /proc/sys/kernel/core_pattern >/dev/null
+          fi
+          after="$(cat /proc/sys/kernel/core_pattern)"
+          echo "kernel.core_pattern(after)=$after"
+
+      - name: Install macOS CoreGraphics dependencies
+        if: ${{ matrix.kind == 'coregraphics' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          brew update
+          brew install llvm meson ninja autoconf automake libtool pkg-config
+
+      - name: Setup MSVC developer env (vcvars, x86_64 target)
+        if: ${{ matrix.kind == 'wic' }}
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}\.github\scripts\setup-msvc-env.ps1" -Arch x64
+
+      - name: Run Ubuntu libFuzzer replay
+        if: >-
+          ${{
+            matrix.kind == 'struct'
+            || matrix.kind == 'loader_format'
+            || matrix.kind == 'loader_autodetect'
+            || matrix.kind == 'image_api'
+          }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+          kind="${{ matrix.kind }}"
+          buildtool="${{ matrix.buildtool }}"
+          target="${{ matrix.target }}"
+          common_corpus="$PWD/.tmp/fuzz-corpus-common/$kind/$target"
+          dict_common="$PWD/fuzz/loader-builtin.dict"
+          mkdir -p "$common_corpus"
+
+          if test -d tests/data/security/fuzzing/data; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$common_corpus/" || true
+            done < <(find tests/data/security/fuzzing/data -type f -print0)
+          fi
+          while IFS= read -r -d '' seed; do
+            cp -n "$seed" "$common_corpus/" || true
+          done < <(find tests/data -type f \
+            \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
+               -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
+               -o -name '*.pnm' -o -name '*.ppm' -o -name '*.pgm' \
+               -o -name '*.pbm' -o -name '*.psd' -o -name '*.hdr' \
+               -o -name '*.six' -o -name '*.sixel' -o -name '*.pic' \
+               -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
+            -print0)
+
+          case "$kind" in
+            struct)
+              corpus="$PWD/.tmp/fuzz-corpus-struct/$target"
+              artifact_dir="$PWD/.tmp/fuzz-artifacts-struct/$target"
+              harness_name="fuzz-loader-builtin-struct-$target-libfuzzer"
+              min_cov=60
+              semantic_feature_pattern=
+              semantic_min_features=0
+              test "$buildtool" != autotools || min_cov=55
+              max_len=4096
+              case "$target" in
+                hdr-header|mapfile-spec|mapfile-palette|pnm-ascii|option-arglist|exif-orientation|loader-order)
+                  max_len=2048
+                  ;;
+                gif-lzw-codes)
+                  max_len=3072
+                  ;;
+                png-icc-gamma|png-plte-trns|psd-resource)
+                  max_len=8192
+                  ;;
+                bmp-rle-bitfields)
+                  max_len=16384
+                  ;;
+              esac
+              max_total_time=600
+              case "$target" in
+                psd-resource|loader-order)
+                  max_total_time=1800
+                  ;;
+              esac
+              case "$target" in
+                gif-block)
+                  semantic_feature_pattern='gif-block-semantic-features:'
+                  semantic_min_features=12
+                  ;;
+                bmp-rle-bitfields)
+                  semantic_feature_pattern='bmp-rle-semantic-features:'
+                  semantic_min_features=12
+                  ;;
+                gif-lzw-codes)
+                  semantic_feature_pattern='gif-lzw-semantic-features:'
+                  semantic_min_features=12
+                  ;;
+                png-apng)
+                  semantic_feature_pattern='png-apng-semantic-features:'
+                  semantic_min_features=12
+                  ;;
+                png-chunk)
+                  semantic_feature_pattern='png-chunk-semantic-features:'
+                  semantic_min_features=12
+                  ;;
+                sixel-stream)
+                  semantic_feature_pattern='sixel-stream-semantic-features:'
+                  semantic_min_features=12
+                  ;;
+              esac
+              dict_target="$PWD/fuzz/dicts/struct/$target.dict"
+              run_log="$artifact_dir/run.log"
+              ;;
+            loader_format)
+              corpus="$PWD/.tmp/fuzz-corpus-loader/$target"
+              artifact_dir="$PWD/.tmp/fuzz-artifacts-loader/$target"
+              harness_name="fuzz-loader-builtin-libfuzzer"
+              min_cov=18
+              test "$target" != webp || min_cov=15
+              max_total_time=600
+              case "$target" in
+                png|gif|psd)
+                  max_total_time=1800
+                  ;;
+              esac
+              dict_target="$PWD/fuzz/dicts/loader/$target.dict"
+              run_log="$artifact_dir/run.log"
+              ;;
+            loader_autodetect)
+              corpus="$PWD/.tmp/fuzz-corpus-loader-autodetect"
+              artifact_dir="$PWD/.tmp/fuzz-artifacts-loader-autodetect/$buildtool"
+              harness_name="fuzz-loader-builtin-libfuzzer"
+              min_cov=15
+              max_total_time=600
+              dict_target=
+              run_log="$artifact_dir/run.log"
+              ;;
+            image_api)
+              corpus="$PWD/.tmp/fuzz-corpus-image-api/$target"
+              artifact_dir="$PWD/.tmp/fuzz-artifacts-image-api/$buildtool/$target"
+              harness_name="fuzz-$target-libfuzzer"
+              min_cov=10
+              max_total_time=600
+              dict_target=
+              run_log="$artifact_dir/run.log"
+              ;;
+            *)
+              echo "::error::unsupported Ubuntu libFuzzer kind: $kind"
+              exit 1
+              ;;
+          esac
+
+          mkdir -p "$corpus" "$artifact_dir"
+          while IFS= read -r -d '' seed; do
+            cp -n "$seed" "$corpus/" || true
+          done < <(find "$common_corpus" -type f -print0)
+
+          if test "$kind" = image_api; then
+            case "$target" in
+              encoder-encode-bytes)
+                printf '\x00\x00\x00\x00\x00\x00\xff\x00\x00' \
+                  > "$corpus/encoder-rgb888-1x1"
+                printf '\x03\x00\x00\x00\x00\x00\x7f' \
+                  > "$corpus/encoder-g8-1x1"
+                printf '\x02\x00\x00\x01\x00\x00\x00\x00\x00\xff\xff\xff' \
+                  > "$corpus/encoder-pal8-1x1"
+                ;;
+              helper-write-image-file)
+                printf '\x00\x00\x04\x00\xff\x00\x00' \
+                  > "$corpus/helper-rgb888-png-1x1"
+                printf '\x01\x01\x03\x01\x00\x55\xaa\xff' \
+                  > "$corpus/helper-pal8-gif-2x2"
+                printf '\x00\x00\x12\x07\xff\x00\x00\xff' \
+                  > "$corpus/helper-rgba8888-sixel-1x1"
+                ;;
+            esac
+          fi
+
+          dict_merged="$artifact_dir/dict.merged"
+          if test -n "${dict_target:-}" && test -f "$dict_target"; then
+            awk '!seen[$0]++' "$dict_common" "$dict_target" > "$dict_merged"
+          else
+            cp "$dict_common" "$dict_merged"
+          fi
+
+          if test "$buildtool" = autotools; then
+            CC=clang CXX=clang++ ./configure --enable-fuzz
+            make -j"$(nproc)"
+            harness="$PWD/fuzz/$harness_name"
+          else
+            CC=clang CXX=clang++ meson setup builddir -Dfuzz=true
+            meson compile -C builddir -v
+            harness="$PWD/builddir/fuzz/$harness_name"
+          fi
+          if test ! -x "$harness"; then
+            echo "::error::missing fuzz harness: $harness"
+            exit 1
+          fi
+
+          if test "${semantic_min_features:-0}" -ne 0; then
+            semantic_log="$artifact_dir/semantic-smoke.log"
+            semantic_rc=0
+            set +e
+            "$harness" -runs=64 -max_len="$max_len" \
+              -seed=1 \
+              -timeout=5 -rss_limit_mb=4096 -use_value_profile=1 \
+              -artifact_prefix="$artifact_dir/" \
+              -dict="$dict_merged" >"$semantic_log" 2>&1
+            semantic_rc=$?
+            set -e
+            cat "$semantic_log"
+            if test "$semantic_rc" -ne 0; then
+              echo "::error::struct target '$target' semantic smoke failed: exit=$semantic_rc."
+              exit "$semantic_rc"
+            fi
+            semantic_count="$(awk -v pattern="$semantic_feature_pattern" '
+              index($0, pattern) != 0 {
+                for (i = 1; i <= NF; ++i) {
+                  if ($i ~ /^count=/) {
+                    sub(/^count=/, "", $i)
+                    count = $i
+                  }
+                }
+              }
+              END { print count }
+            ' "$semantic_log")"
+            if test -z "$semantic_count" || \
+               test "$semantic_count" -lt "$semantic_min_features"; then
+              echo "::error::struct target '$target' semantic feature coverage too low: count=${semantic_count:-0} (expected >= $semantic_min_features)."
+              exit 1
+            fi
+          fi
+
+          merge_seed="$artifact_dir/corpus-premerge"
+          rm -rf "$merge_seed"
+          mkdir -p "$merge_seed"
+          if find "$corpus" -type f -print -quit | grep -q .; then
+            cp -a "$corpus"/. "$merge_seed"/
+            if test "$kind" = loader_format; then
+              FUZZ_BUILTIN_FORCE_FORMAT="$target" \
+                "$harness" -merge=1 -reduce_inputs=1 -timeout=5 \
+                  -rss_limit_mb=4096 -dict="$dict_merged" "$corpus" "$merge_seed"
+            else
+              "$harness" -merge=1 -reduce_inputs=1 -timeout=5 \
+                -rss_limit_mb=4096 -dict="$dict_merged" "$corpus" "$merge_seed"
+            fi
+          else
+            echo "$kind corpus: no files to merge"
+          fi
+          rm -rf "$merge_seed"
+
+          fuzz_args="-fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix=$artifact_dir/ -max_total_time=$max_total_time -dict=$dict_merged"
+          if test "$kind" = struct; then
+            fuzz_args="$fuzz_args -max_len=$max_len"
+          fi
+
+          if test "$buildtool" = autotools; then
+            case "$kind" in
+              struct)
+                make "fuzz-run-struct-$target" \
+                  FUZZ_STRUCT_CORPUS="$(dirname "$corpus")" \
+                  FUZZ_STRUCT_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
+                ;;
+              loader_format)
+                make "fuzz-run-loader-builtin-$target" \
+                  FUZZ_BUILTIN_CORPUS="$(dirname "$corpus")" \
+                  FUZZ_BUILTIN_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
+                ;;
+              loader_autodetect)
+                make fuzz-run-loader-builtin \
+                  FUZZ_BUILTIN_CORPUS="$corpus" \
+                  FUZZ_BUILTIN_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
+                ;;
+              image_api)
+                case "$target" in
+                  encoder-encode-bytes)
+                    make -C fuzz run-encoder-encode-bytes \
+                      FUZZ_ENCODE_BYTES_CORPUS="$corpus" \
+                      FUZZ_ENCODE_BYTES_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
+                    ;;
+                  helper-write-image-file)
+                    make -C fuzz run-helper-write-image-file \
+                      FUZZ_WRITE_IMAGE_CORPUS="$corpus" \
+                      FUZZ_WRITE_IMAGE_ARGS="$fuzz_args" 2>&1 | tee "$run_log"
+                    ;;
+                esac
+                ;;
+            esac
+          else
+            case "$kind" in
+              struct)
+                FUZZ_STRUCT_CORPUS="$(dirname "$corpus")"
+                export FUZZ_STRUCT_CORPUS
+                export FUZZ_STRUCT_ARGS="$fuzz_args"
+                meson compile -C builddir "fuzz-run-struct-$target" 2>&1 | tee "$run_log"
+                ;;
+              loader_format)
+                FUZZ_BUILTIN_CORPUS="$(dirname "$corpus")"
+                export FUZZ_BUILTIN_CORPUS
+                export FUZZ_BUILTIN_ARGS="$fuzz_args"
+                meson compile -C builddir "fuzz-run-loader-builtin-$target" 2>&1 | tee "$run_log"
+                ;;
+              loader_autodetect)
+                export FUZZ_BUILTIN_CORPUS="$corpus"
+                export FUZZ_BUILTIN_ARGS="$fuzz_args"
+                meson compile -C builddir fuzz-run-loader-builtin 2>&1 | tee "$run_log"
+                ;;
+              image_api)
+                case "$target" in
+                  encoder-encode-bytes)
+                    export FUZZ_ENCODE_BYTES_CORPUS="$corpus"
+                    export FUZZ_ENCODE_BYTES_ARGS="$fuzz_args"
+                    ;;
+                  helper-write-image-file)
+                    export FUZZ_WRITE_IMAGE_CORPUS="$corpus"
+                    export FUZZ_WRITE_IMAGE_ARGS="$fuzz_args"
+                    ;;
+                esac
+                meson compile -C builddir "fuzz-run-$target" 2>&1 | tee "$run_log"
+                ;;
+            esac
+          fi
+
+          if ! grep -Eq 'DONE   cov:|INFO: exiting: 0' "$run_log"; then
+            echo "::error::libFuzzer did not report completion for ${{ matrix.label }}."
+            exit 1
+          fi
+          cov="$(grep -Eo 'cov: [0-9]+' "$run_log" | tail -n1 | awk '{print $2}')"
+          if test -z "$cov" || test "$cov" -lt "$min_cov"; then
+            echo "::error::${{ matrix.label }} coverage too low: cov=$cov (expected >= $min_cov)."
+            exit 1
+          fi
+
+      - name: Run img2sixel CLI AFL replay
+        if: ${{ matrix.kind == 'cli_img2sixel' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+          buildtool="${{ matrix.buildtool }}"
+          target="${{ matrix.target }}"
+          input_dir="$PWD/.tmp/fuzz-corpus-cli-img2sixel/$target"
+          output_dir="$PWD/.tmp/fuzz-artifacts-cli-img2sixel/$buildtool/$target"
+          mkdir -p "$input_dir" "$output_dir"
+          export FUZZ_INPUT_DIR="$input_dir"
+          export FUZZ_OUTPUT_DIR="$output_dir"
+
+          if test -d fuzz/corpus/img2sixel-cli; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$input_dir/" || true
+            done < <(find fuzz/corpus/img2sixel-cli -type f -print0)
+          fi
+          if test -d tests/data/security/fuzzing/data; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$input_dir/" || true
+            done < <(find tests/data/security/fuzzing/data -type f -print0)
+          fi
+          while IFS= read -r -d '' seed; do
+            cp -n "$seed" "$input_dir/" || true
+          done < <(find tests/data -type f \
+            \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
+               -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
+               -o -name '*.pnm' -o -name '*.ppm' -o -name '*.pgm' \
+               -o -name '*.pbm' -o -name '*.psd' -o -name '*.hdr' \
+               -o -name '*.six' -o -name '*.sixel' -o -name '*.pic' \
+               -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
+            -print0)
+
+          sanitizer_cflags="-O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined"
+          sanitizer_ldflags="-fsanitize=address,undefined"
+          fuzz_target='fuzz-cli-img2sixel'
+          asan_runner="$PWD/.tmp/fuzz-img2sixel-afl-persistent"
+          case "$target" in
+            parser)
+              fuzz_target='fuzz-cli-img2sixel-parser'
+              asan_runner="$PWD/.tmp/fuzz-img2sixel-cli-parser-afl-persistent"
+              ;;
+            boundary)
+              fuzz_target='fuzz-cli-img2sixel-boundary'
+              asan_runner="$PWD/.tmp/fuzz-img2sixel-cli-boundary-afl-persistent"
+              ;;
+            pathenv)
+              fuzz_target='fuzz-cli-img2sixel-pathenv'
+              asan_runner="$PWD/.tmp/fuzz-img2sixel-cli-pathenv-afl-persistent"
+              ;;
+            numeric)
+              fuzz_target='fuzz-cli-img2sixel-numeric'
+              asan_runner="$PWD/.tmp/fuzz-img2sixel-cli-numeric-afl-persistent"
+              ;;
+          esac
+          fuzz_timeout=600
+          case "$target" in
+            combo|parser)
+              fuzz_timeout=1800
+              ;;
+          esac
+          export FUZZ_AFL=afl-fuzz
+          export FUZZ_TIMEOUT="$fuzz_timeout"
+          export FUZZ_AFL_WORKERS=2
+          export FUZZ_AFL_MODE=normal
+          export FUZZ_AFL_CMPLOG_RUNNER=
+          export FUZZ_AFL_EXTRA_OPTS=
+          export ASAN_OPTIONS=detect_leaks=0:abort_on_error=1:symbolize=0
+
+          if test "$buildtool" = autotools; then
+            CC=afl-clang-fast CXX=afl-clang-fast++ \
+              CFLAGS="$sanitizer_cflags" LDFLAGS="$sanitizer_ldflags" \
+              ./configure
+            make -j"$(nproc)"
+            make "$fuzz_target"
+          else
+            CC=afl-clang-fast CXX=afl-clang-fast++ \
+              CFLAGS="$sanitizer_cflags" LDFLAGS="$sanitizer_ldflags" \
+              meson setup builddir
+            meson compile -C builddir -v
+            case "$target" in
+              combo)
+                asan_runner="$PWD/builddir/converters/fuzz-img2sixel-afl-persistent"
+                ;;
+              parser)
+                asan_runner="$PWD/builddir/converters/fuzz-img2sixel-cli-parser-afl-persistent"
+                ;;
+              boundary)
+                asan_runner="$PWD/builddir/converters/fuzz-img2sixel-cli-boundary-afl-persistent"
+                ;;
+              pathenv)
+                asan_runner="$PWD/builddir/converters/fuzz-img2sixel-cli-pathenv-afl-persistent"
+                ;;
+              numeric)
+                asan_runner="$PWD/builddir/converters/fuzz-img2sixel-cli-numeric-afl-persistent"
+                ;;
+            esac
+            meson compile -C builddir "$fuzz_target"
+          fi
+
+          if test -f "$asan_runner" && head -n 1 "$asan_runner" | grep -q '^#!'; then
+            candidate="$(dirname "$asan_runner")/.libs/$(basename "$asan_runner")"
+            test ! -x "$candidate" || asan_runner="$candidate"
+          fi
+          if test ! -x "$asan_runner"; then
+            echo "::error::missing CLI ASAN runner: $asan_runner"
+            exit 1
+          fi
+
+          mapfile -d '' -t crash_inputs < <(find "$output_dir" -type f -path '*/crashes/*' \
+            ! -name 'README.txt' -print0)
+          crash_count="${#crash_inputs[@]}"
+          queue_count="$(find "$output_dir" -type f -path '*/queue/*' \
+            ! -name 'README.txt' | wc -l | tr -d ' ')"
+          hang_count="$(find "$output_dir" -type f -path '*/hangs/*' \
+            ! -name 'README.txt' | wc -l | tr -d ' ')"
+          echo "cli-afl findings: queue=${queue_count} hangs=${hang_count} crashes=${crash_count}"
+
+          if test "$hang_count" -gt 0; then
+            echo "::warning::AFL detected ${hang_count} hang input(s)."
+            find "$output_dir" -type f -path '*/hangs/*' \
+              ! -name 'README.txt' -print
+          fi
+          if test "$crash_count" -gt 0; then
+            triage_dir="$output_dir/triage"
+            mkdir -p "$triage_dir"
+            for crash_input in "${crash_inputs[@]}"; do
+              .github/scripts/fuzz/triage_afl_crash.sh \
+                --crash-file "$crash_input" \
+                --triage-dir "$triage_dir" \
+                --asan-runner "$asan_runner" \
+                --timeout 20 \
+                --label "$buildtool-$target"
+            done
+            asan_repro_count="$(grep -R --include '*.json' -h '"asan_reproduced": true' "$triage_dir" | wc -l | tr -d ' ' || true)"
+            echo "::error::AFL detected ${crash_count} crash input(s); ASAN-reproducible=${asan_repro_count}."
+            find "$output_dir" -type f -path '*/crashes/*' \
+              ! -name 'README.txt' -print
+            exit 1
+          fi
+
+      - name: Run CoreGraphics fuzz replay
+        if: ${{ matrix.kind == 'coregraphics' }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          buildtool="${{ matrix.buildtool }}"
+          llvm_prefix="$(brew --prefix llvm)"
+          export PATH="$llvm_prefix/bin:$PWD/build-aux:$PWD/bin:$PATH"
+          export CC="$llvm_prefix/bin/clang"
+          export CXX="$llvm_prefix/bin/clang++"
+          export FUZZ_CFLAGS="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer-no-link,address,undefined"
+          export FUZZ_LDFLAGS="-fsanitize=fuzzer,address,undefined"
+          corpus="$PWD/.tmp/fuzz-corpus-loader/component/coregraphics"
+          artifact_dir="$PWD/.tmp/fuzz-artifacts-loader/coregraphics"
+          mkdir -p "$corpus" "$artifact_dir"
+
+          if test -d tests/data/security/fuzzing/data; then
+            while IFS= read -r -d '' seed; do
+              cp -n "$seed" "$corpus/" || true
+            done < <(find tests/data/security/fuzzing/data -type f -print0)
+          fi
+          while IFS= read -r -d '' seed; do
+            cp -n "$seed" "$corpus/" || true
+          done < <(find tests/data -type f \
+            \( -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' \
+               -o -name '*.gif' -o -name '*.webp' -o -name '*.tiff' \
+               -o -name '*.pnm' -o -name '*.ppm' -o -name '*.pgm' \
+               -o -name '*.pbm' -o -name '*.psd' -o -name '*.hdr' \
+               -o -name '*.six' -o -name '*.sixel' -o -name '*.pic' \
+               -o -name '*.tga' -o -name '*.bmp' -o -name '*.bin' \) \
+            -print0)
+          find "$corpus" -type f -name 'gif-transparent-anim-dispose2.gif' -print -delete || true
+
+          dict_common="$PWD/fuzz/loader-builtin.dict"
+          dict_target="$PWD/fuzz/dicts/component/coregraphics.dict"
+          dict_merged="$artifact_dir/dict.merged"
+          if test -f "$dict_target"; then
+            awk '!seen[$0]++' "$dict_common" "$dict_target" > "$dict_merged"
+          else
+            cp "$dict_common" "$dict_merged"
+          fi
+          max_total_time=600
+          test "$buildtool" != meson || max_total_time=1800
+          fuzz_args="-fork=2 -print_final_stats=1 -timeout=20 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix=$artifact_dir/ -max_total_time=$max_total_time -dict=$dict_merged"
+          run_log="$artifact_dir/run.log"
+
+          if test "$buildtool" = autotools; then
+            ./configure --enable-fuzz --with-coregraphics
+            make -C src -j"$(sysctl -n hw.ncpu)" libsixel.la
+            make -C fuzz -j"$(sysctl -n hw.ncpu)" fuzz-loader-coregraphics-libfuzzer
+            harness="$PWD/fuzz/fuzz-loader-coregraphics-libfuzzer"
+            test -x "$harness" || { echo "::error::missing coregraphics harness: $harness"; exit 1; }
+            make -C fuzz run-loader-coregraphics \
+              FUZZ_COMPONENT_CORPUS="$(dirname "$corpus")" \
+              FUZZ_COMPONENT_ARGS="$fuzz_args" 2>&1 \
+              | sed -E '/^RGBE read error: No such file or directory$/d; /^RGBE bad file format: no FORMAT specifier found$/d; /^Unknown error: 260$/d' \
+              | tee "$run_log"
+          else
+            meson setup builddir -Dfuzz=true -Dcoregraphics=enabled
+            meson compile -C builddir -v fuzz-loader-coregraphics-libfuzzer
+            harness="$PWD/builddir/fuzz/fuzz-loader-coregraphics-libfuzzer"
+            test -x "$harness" || { echo "::error::missing coregraphics harness: $harness"; exit 1; }
+            FUZZ_COMPONENT_CORPUS="$(dirname "$corpus")"
+            export FUZZ_COMPONENT_CORPUS
+            export FUZZ_COMPONENT_ARTIFACT_DIR="$artifact_dir"
+            export FUZZ_COMPONENT_ARGS="$fuzz_args"
+            meson compile -C builddir -v fuzz-run-loader-coregraphics 2>&1 \
+              | sed -E '/^RGBE read error: No such file or directory$/d; /^RGBE bad file format: no FORMAT specifier found$/d; /^Unknown error: 260$/d' \
+              | tee "$run_log"
+          fi
+          if ! grep -Eq 'DONE   cov:|INFO: exiting: 0' "$run_log"; then
+            echo "::error::libFuzzer did not report completion for ${{ matrix.label }}."
+            exit 1
+          fi
+          cov="$(grep -Eo 'cov: [0-9]+' "$run_log" | tail -n1 | awk '{print $2}')"
+          if test -z "$cov" || test "$cov" -lt 10; then
+            echo "::error::${{ matrix.label }} coverage too low: cov=$cov (expected >= 10)."
+            exit 1
+          fi
+
+      - name: Run WIC fuzz replay
+        if: ${{ matrix.kind == 'wic' }}
+        env:
+          WIC_REPRO: ${{ matrix.wic_repro || false }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          python -m pip install --upgrade pip
+          python -m pip install meson ninja
+          if (-not (Get-Command clang -ErrorAction SilentlyContinue)) {
+            throw "clang was not found in PATH after MSVC environment setup."
+          }
+
+          $workspace = (Get-Location).Path
+          $targetCorpus = Join-Path $workspace '.tmp\fuzz-corpus-loader\component\wic'
+          $artifactDir = Join-Path $workspace '.tmp\fuzz-artifacts-loader\wic'
+          New-Item -ItemType Directory -Force -Path $targetCorpus, $artifactDir | Out-Null
+
+          $env:ASAN_OPTIONS = 'detect_leaks=0:abort_on_error=1:check_malloc_usable_size=0'
+          $env:UBSAN_OPTIONS = 'halt_on_error=1:print_stacktrace=1:report_error_type=1'
+
+          function Copy-SeedFiles([string]$Root, [string[]]$Patterns) {
+            if (-not (Test-Path $Root)) {
+              return
+            }
+            $items = if ($Patterns.Count -eq 0) {
+              Get-ChildItem -Path $Root -Recurse -File
+            } else {
+              Get-ChildItem -Path $Root -Recurse -File -Include $Patterns
+            }
+            foreach ($item in $items) {
+              $dst = Join-Path $targetCorpus $item.Name
+              if (-not (Test-Path $dst)) {
+                Copy-Item -LiteralPath $item.FullName -Destination $dst
+              }
+            }
+          }
+
+          Copy-SeedFiles (Join-Path $workspace 'tests/data/security/fuzzing/data') @()
+          Copy-SeedFiles (Join-Path $workspace 'tests/data') @(
+            '*.png', '*.jpg', '*.jpeg',
+            '*.gif', '*.webp', '*.tiff',
+            '*.pnm', '*.ppm', '*.pgm',
+            '*.pbm', '*.psd', '*.hdr',
+            '*.six', '*.sixel', '*.pic',
+            '*.tga', '*.bmp', '*.bin'
+          )
+
+          $dictCommon = Join-Path $workspace 'fuzz/loader-builtin.dict'
+          $dictTarget = Join-Path $workspace 'fuzz/dicts/component/wic.dict'
+          $dictMerged = Join-Path $artifactDir 'dict.merged'
+          $seen = @{}
+          $mergedLines = New-Object 'System.Collections.Generic.List[string]'
+          foreach ($dict in @($dictCommon, $dictTarget)) {
+            if (-not (Test-Path $dict)) {
+              continue
+            }
+            foreach ($line in Get-Content -LiteralPath $dict) {
+              if (-not $seen.ContainsKey($line)) {
+                $seen[$line] = $true
+                [void]$mergedLines.Add($line)
+              }
+            }
+          }
+          $writer = New-Object System.IO.StreamWriter($dictMerged, $false, [System.Text.UTF8Encoding]::new($false))
+          $writer.NewLine = "`n"
+          foreach ($line in $mergedLines) {
+            $writer.WriteLine($line)
+          }
+          $writer.Dispose()
+
+          $artifactPrefix = ((Join-Path $artifactDir '').Replace('\', '/'))
+          $dictMergedPosix = $dictMerged.Replace('\', '/')
+          $targetCorpusPosix = $targetCorpus.Replace('\', '/')
+          $fuzzArgs = @(
+            '-max_total_time=1800',
+            '-fork=4',
+            '-print_final_stats=1',
+            '-timeout=5',
+            '-use_value_profile=1',
+            '-reduce_inputs=1',
+            '-rss_limit_mb=4096',
+            "-artifact_prefix=$artifactPrefix",
+            "-dict=$dictMergedPosix"
+          )
+
+          $env:CC = 'clang'
+          $env:CXX = 'clang++'
+          python -m mesonbuild.mesonmain setup builddir -Dfuzz=true -Dwic=enabled -Dfuzz_sanitizers=full
+          python -m mesonbuild.mesonmain compile -C builddir -v fuzz-loader-wic-libfuzzer
+
+          $harness = Join-Path $workspace 'builddir\fuzz\fuzz-loader-wic-libfuzzer.exe'
+          if (-not (Test-Path $harness)) {
+            $harnessNoExt = Join-Path $workspace 'builddir\fuzz\fuzz-loader-wic-libfuzzer'
+            if (Test-Path $harnessNoExt) {
+              $harness = $harnessNoExt
+            } else {
+              throw "missing wic harness: $harness"
+            }
+          }
+          foreach ($runtimeDir in @(
+            (Join-Path $workspace 'builddir\src'),
+            (Join-Path $workspace 'builddir\fuzz')
+          )) {
+            if (Test-Path $runtimeDir) {
+              $env:PATH = "$runtimeDir;$env:PATH"
+            }
+          }
+
+          $runLog = Join-Path $artifactDir 'run.log'
+          & $harness @fuzzArgs $targetCorpusPosix 2>&1 | Tee-Object -FilePath $runLog
+          $fuzzExit = $LASTEXITCODE
+          $completed = Select-String -Path $runLog -Pattern 'DONE   cov:|INFO: exiting: 0' | Select-Object -Last 1
+          $crashPatterns = @('crash-*', 'timeout-*', 'oom-*', 'leak-*')
+          $crashInputs = @()
+          foreach ($pattern in $crashPatterns) {
+            $crashInputs += Get-ChildItem -Path $artifactDir -Filter $pattern -File -ErrorAction SilentlyContinue
+          }
+          $crashInputs = @($crashInputs | Sort-Object -Property FullName -Unique)
+
+          if (($fuzzExit -ne 0) -and ($crashInputs.Count -eq 0)) {
+            throw "fuzz-loader-wic failed with exit code $fuzzExit and no crash artifact was produced."
+          }
+          if (($fuzzExit -eq 0) -and (-not $completed)) {
+            throw "libFuzzer did not report completion for wic loader target."
+          }
+          if ($fuzzExit -eq 0) {
+            $covLine = Select-String -Path $runLog -Pattern 'cov: [0-9]+' | Select-Object -Last 1
+            if (-not $covLine -or $covLine.Line -notmatch 'cov: ([0-9]+)') {
+              throw "could not parse final coverage from run.log."
+            }
+            $cov = [int]$Matches[1]
+            if ($cov -lt 10) {
+              throw "wic loader coverage too low: cov=$cov (expected >= 10)."
+            }
+          }
+
+          if ($env:WIC_REPRO -ne 'true') {
+            if ($crashInputs.Count -gt 0) {
+              Write-Warning "wic detect found $($crashInputs.Count) crash artifact(s); detect replay completed."
+            }
+            exit 0
+          }
+          if ($crashInputs.Count -eq 0) {
+            throw "repro replay requested, but detect run produced no crash artifacts."
+          }
+
+          Remove-Item -LiteralPath builddir -Recurse -Force
+          $env:CC = 'clang'
+          $env:CXX = 'clang++'
+          python -m mesonbuild.mesonmain setup builddir -Dfuzz=true -Dwic=enabled -Dfuzz_sanitizers=fuzzer
+          python -m mesonbuild.mesonmain compile -C builddir -v fuzz-loader-wic-libfuzzer
+
+          $reproHarness = Join-Path $workspace 'builddir\fuzz\fuzz-loader-wic-libfuzzer.exe'
+          if (-not (Test-Path $reproHarness)) {
+            $reproHarnessNoExt = Join-Path $workspace 'builddir\fuzz\fuzz-loader-wic-libfuzzer'
+            if (Test-Path $reproHarnessNoExt) {
+              $reproHarness = $reproHarnessNoExt
+            } else {
+              throw "missing wic repro harness: $reproHarness"
+            }
+          }
+          foreach ($runtimeDir in @(
+            (Join-Path $workspace 'builddir\src'),
+            (Join-Path $workspace 'builddir\fuzz')
+          )) {
+            if (Test-Path $runtimeDir) {
+              $env:PATH = "$runtimeDir;$env:PATH"
+            }
+          }
+
+          $reproDir = Join-Path $workspace '.tmp\fuzz-artifacts-loader\wic-repro'
+          New-Item -ItemType Directory -Force -Path $reproDir | Out-Null
+          $reproduced = New-Object 'System.Collections.Generic.List[string]'
+          foreach ($input in $crashInputs) {
+            $inputPosix = $input.FullName.Replace('\', '/')
+            $logFile = Join-Path $reproDir ("repro-" + $input.Name + ".log")
+            & $reproHarness '-runs=1' '-timeout=5' $inputPosix 2>&1 | Tee-Object -FilePath $logFile
+            $exitCode = $LASTEXITCODE
+            Write-Host "repro: $($input.Name) => exit=$exitCode"
+            if ($exitCode -ne 0) {
+              [void]$reproduced.Add($input.FullName)
+            }
+          }
+          if ($reproduced.Count -gt 0) {
+            Write-Host 'Reproduced in non-ASan mode:'
+            foreach ($path in $reproduced) {
+              Write-Host "  $path"
+            }
+            throw "non-ASan reproduction succeeded for $($reproduced.Count) input(s); classify as real crash."
+          }
+          Write-Warning 'No crash artifact reproduced without ASan; classify as ASan-boundary noise.'
+
+      - name: Upload fuzz replay artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.label }}
+          if-no-files-found: ignore
+          retention-days: 7
+          path: |
+            .tmp/fuzz-artifacts-*
+            .tmp/fuzz-corpus-*
