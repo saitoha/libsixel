@@ -4,6 +4,14 @@ on:
   push:
     branches:
       - 'ci/triage/**'
+  workflow_run:
+    workflows:
+      - libsixel CI (build & test)
+      - libsixel Fuzzing (push)
+    types:
+      - completed
+    branches:
+      - develop
   workflow_dispatch:
     inputs:
       workflow_file:
@@ -49,6 +57,14 @@ env:
 jobs:
   collect:
     name: Collect failed jobs
+    if: >-
+      ${{
+        github.event_name != 'workflow_run'
+        || (
+          github.event.workflow_run.conclusion == 'failure'
+          && github.event.workflow_run.head_branch == 'develop'
+        )
+      }}
     runs-on: ubuntu-latest
     outputs:
       count: ${{ steps.collect.outputs.count }}
@@ -67,12 +83,29 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           MAX_JOBS: ${{ inputs.max_jobs || '8' }}
-          SOURCE_BRANCH: ${{ inputs.source_branch || 'develop' }}
-          SOURCE_RUN_ID: ${{ inputs.source_run_id || '' }}
+          SOURCE_BRANCH: ${{ github.event.workflow_run.head_branch || inputs.source_branch || 'develop' }}
+          SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.source_run_id || '' }}
+          SOURCE_WORKFLOW_NAME: ${{ github.event.workflow_run.name || '' }}
+          TRIAGE_EVENT_NAME: ${{ github.event_name }}
           WORKFLOW_FILE: ${{ inputs.workflow_file || 'experimental.yml' }}
         shell: bash
         run: |
           set -euo pipefail
+
+          if test "$TRIAGE_EVENT_NAME" = workflow_run; then
+            case "$SOURCE_WORKFLOW_NAME" in
+              "libsixel CI (build & test)")
+                WORKFLOW_FILE=ci.yml
+                ;;
+              "libsixel Fuzzing (push)")
+                WORKFLOW_FILE=fuzzing.yml
+                ;;
+              *)
+                echo "::error::unsupported triage source workflow: $SOURCE_WORKFLOW_NAME"
+                exit 1
+                ;;
+            esac
+          fi
 
           case "$WORKFLOW_FILE" in
             experimental.yml|ci.yml|fuzzing.yml)
