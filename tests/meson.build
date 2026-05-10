@@ -197,9 +197,17 @@ test_runner_inc = [
   include_directories('..'),
 ]
 
+test_runner_deps = [libsixel_dep] + gdk_pixbuf_loader_deps + abort_trace_deps
+if host_machine.system() == 'windows'
+  # Fault-injection tests include loader sources directly.  MSVC import
+  # libraries expose only exported DLL symbols, so private loader helpers must
+  # be linked into the test runner explicitly.
+  test_runner_deps += [loader_helpers_dep]
+endif
+
 test_runner_exe = executable('test_runner', test_runner_sources,
   include_directories: test_runner_inc,
-  dependencies: [libsixel_dep, gdk_pixbuf_loader_deps, abort_trace_deps],
+  dependencies: test_runner_deps,
   # Keep feature-test macros aligned with converter/library targets so
   # unity-included aborttrace.c sees sigaction declarations on Cygwin.
   c_args: libsixel_posix_defs + ['-DGDK_PIXBUF_ENABLE_BACKEND',
