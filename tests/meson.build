@@ -198,12 +198,6 @@ test_runner_inc = [
 ]
 
 test_runner_deps = [libsixel_dep] + gdk_pixbuf_loader_deps + abort_trace_deps
-if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
-  # Fault-injection tests include loader sources directly.  MSVC import
-  # libraries expose only exported DLL symbols, so private loader helpers must
-  # be linked into the test runner explicitly.
-  test_runner_deps += [loader_helpers_dep]
-endif
 
 test_runner_exe = executable('test_runner', test_runner_sources,
   include_directories: test_runner_inc,
