@@ -33,7 +33,5 @@ test_aborttrace_0001_img2sixel_aborttrace(int argc, char **argv)
     fprintf(stderr, "aborttrace: runner triggered\n");
     sixel_aborttrace_install_if_unhandled();
     abort();
-
-    return EXIT_FAILURE;
 #endif
 }
