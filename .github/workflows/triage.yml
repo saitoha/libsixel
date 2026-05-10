@@ -13,6 +13,8 @@ on:
         type: choice
         options:
           - experimental.yml
+          - ci.yml
+          - fuzzing.yml
       source_branch:
         description: Branch to search for the latest failed run
         required: true
@@ -45,13 +47,16 @@ env:
   UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
 
 jobs:
-  collect-experimental:
-    name: Collect failed experimental jobs
+  collect:
+    name: Collect failed jobs
     runs-on: ubuntu-latest
     outputs:
       count: ${{ steps.collect.outputs.count }}
+      fuzz_labels: ${{ steps.collect.outputs.fuzz_labels }}
       matrix: ${{ steps.collect.outputs.matrix }}
+      replay_kind: ${{ steps.collect.outputs.replay_kind }}
       source_run_id: ${{ steps.collect.outputs.source_run_id }}
+      workflow_file: ${{ steps.collect.outputs.workflow_file }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -69,10 +74,17 @@ jobs:
         run: |
           set -euo pipefail
 
-          if test "$WORKFLOW_FILE" != "experimental.yml"; then
-            echo "::error::triage currently supports experimental.yml only."
-            exit 1
-          fi
+          case "$WORKFLOW_FILE" in
+            experimental.yml|ci.yml|fuzzing.yml)
+              ;;
+            fuzz.yml)
+              WORKFLOW_FILE=fuzzing.yml
+              ;;
+            *)
+              echo "::error::unsupported triage workflow: $WORKFLOW_FILE"
+              exit 1
+              ;;
+          esac
 
           if test -n "$SOURCE_RUN_ID"; then
             run_id="$SOURCE_RUN_ID"
@@ -93,33 +105,136 @@ jobs:
             echo "::notice::no failed ${WORKFLOW_FILE} run found on ${SOURCE_BRANCH}."
             {
               echo 'matrix={"include":[]}'
+              echo 'fuzz_labels=||'
               echo 'count=0'
+              echo 'replay_kind=none'
               echo 'source_run_id='
+              echo "workflow_file=$WORKFLOW_FILE"
             } >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           failed_jobs_json="$(
             gh api \
+              --paginate \
               "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" \
-              --jq '[.jobs[] | select(.conclusion == "failure") | .name]'
+              --jq '.jobs[] | select(.conclusion == "failure") | .name' |
+              ruby -rjson -e 'puts JSON.generate(STDIN.read.lines.map(&:chomp))'
           )"
 
           RUN_ID="$run_id" FAILED_JOBS_JSON="$failed_jobs_json" ruby <<'RUBY'
           require 'json'
           require 'yaml'
 
+          def ci_steps_job?(job)
+            (job['steps'] || []).any? do |step|
+              step.is_a?(Hash) && step['uses'] == './.github/actions/ci-steps'
+            end
+          end
+
+          def matrix_entries(job)
+            matrix = job.dig('strategy', 'matrix') || {}
+            include_entries = matrix['include']
+            return include_entries if include_entries.is_a?(Array)
+
+            axes = matrix.reject { |key, _| %w[include exclude].include?(key) }
+            return [{}] if axes.empty?
+
+            axes.reduce([{}]) do |entries, (axis, values)|
+              entries.flat_map do |entry|
+                values.map { |value| entry.merge(axis => value) }
+              end
+            end
+          end
+
+          def buildtool_prefix(entry, autotools_prefix, meson_prefix)
+            entry['buildtool'] == 'autotools' ? autotools_prefix : meson_prefix
+          end
+
+          def render_fuzzing_label(job_id, entry)
+            case job_id
+            when 'fuzz_push_full', 'fuzz_push_encode_helpers'
+              format(
+                '%s-fuzz-%s',
+                buildtool_prefix(
+                  entry,
+                  'Autotools-ubuntu-x86_64-gcc',
+                  'Meson-ubuntu-x86_64-gcc'
+                ),
+                entry.fetch('target')
+              )
+            when 'fuzz_push_loader_formats'
+              format(
+                '%s-fuzz-loader-%s',
+                buildtool_prefix(
+                  entry,
+                  'Autotools-ubuntu-x86_64-gcc',
+                  'Meson-ubuntu-x86_64-gcc'
+                ),
+                entry.fetch('target')
+              )
+            when 'fuzz_push_loader_autodetect'
+              format(
+                '%s-fuzz-loader-autodetect',
+                buildtool_prefix(
+                  entry,
+                  'Autotools-ubuntu-x86_64-gcc',
+                  'Meson-ubuntu-x86_64-gcc'
+                )
+              )
+            when 'fuzz_push_cli_img2sixel'
+              format(
+                '%s-fuzz-cli-img2sixel-%s',
+                buildtool_prefix(
+                  entry,
+                  'Autotools-ubuntu-x86_64-clang',
+                  'Meson-ubuntu-x86_64-clang'
+                ),
+                entry.fetch('target')
+              )
+            when 'fuzz_push_loader_coregraphics'
+              format(
+                '%s-fuzz-loader-coregraphics',
+                buildtool_prefix(
+                  entry,
+                  'Autotools-macos-aarch64-clang',
+                  'Meson-macos-aarch64-clang'
+                )
+              )
+            when 'fuzz_push_loader_wic_detect'
+              'Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect'
+            when 'fuzz_push_loader_wic_repro_nosan'
+              'Meson-cmd-x86_64-msvc-fuzz-loader-wic-repro-nosan'
+            end
+          end
+
           workflow_file = ENV.fetch('WORKFLOW_FILE')
           failed_jobs = JSON.parse(ENV.fetch('FAILED_JOBS_JSON'))
           max_jobs = Integer(ENV.fetch('MAX_JOBS'))
           workflow = YAML.load_file(".github/workflows/#{workflow_file}")
           include_entries = []
+          fuzz_labels = []
+          replay_kind = workflow_file == 'fuzzing.yml' ? 'fuzzing' : 'ci_steps'
 
-          workflow.fetch('jobs').each_value do |job|
+          workflow.fetch('jobs').each do |job_id, job|
             next unless job.is_a?(Hash)
 
-            matrix_entries = job.dig('strategy', 'matrix', 'include') || []
-            matrix_entries.each do |entry|
+            if workflow_file == 'fuzzing.yml'
+              matrix_entries(job).each do |entry|
+                label = render_fuzzing_label(job_id, entry)
+                next if label.nil?
+                next unless failed_jobs.include?(label)
+
+                fuzz_labels << label
+              end
+              next
+            end
+
+            unless ci_steps_job?(job)
+              next
+            end
+
+            matrix_entries(job).each do |entry|
               next unless entry.is_a?(Hash)
               next unless failed_jobs.include?(entry['label'])
 
@@ -129,17 +244,36 @@ jobs:
             end
           end
 
-          include_entries = include_entries.first(max_jobs)
+          if workflow_file == 'fuzzing.yml'
+            fuzz_labels = fuzz_labels.uniq.first(max_jobs)
+            wic_repro = 'Meson-cmd-x86_64-msvc-fuzz-loader-wic-repro-nosan'
+            wic_detect = 'Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect'
+            if fuzz_labels.include?(wic_repro) && !fuzz_labels.include?(wic_detect)
+              fuzz_labels.unshift(wic_detect)
+            end
+          else
+            include_entries = include_entries.first(max_jobs)
+          end
+
           matrix = { 'include' => include_entries }
+          fuzz_label_set = "|#{fuzz_labels.join('|')}|"
+          count = workflow_file == 'fuzzing.yml' ? fuzz_labels.length : include_entries.length
 
           File.open(ENV.fetch('GITHUB_OUTPUT'), 'a') do |output|
             output.puts("matrix=#{JSON.generate(matrix)}")
-            output.puts("count=#{include_entries.length}")
+            output.puts("fuzz_labels=#{fuzz_label_set}")
+            output.puts("count=#{count}")
+            output.puts("replay_kind=#{replay_kind}")
             output.puts("source_run_id=#{ENV.fetch('RUN_ID')}")
+            output.puts("workflow_file=#{workflow_file}")
           end
 
-          if include_entries.empty?
+          if count.zero?
             warn 'No failed job names matched the target workflow matrix labels.'
+          elsif workflow_file == 'fuzzing.yml'
+            fuzz_labels.each do |label|
+              puts "triage: #{label}"
+            end
           else
             include_entries.each do |entry|
               puts "triage: #{entry.fetch('label')}"
@@ -147,25 +281,31 @@ jobs:
           end
           RUBY
 
-  experimental:
-    needs: collect-experimental
-    if: needs.collect-experimental.outputs.count != '0'
+  ci-steps:
+    needs: collect
+    if: >-
+      ${{
+        needs.collect.outputs.replay_kind == 'ci_steps'
+        && needs.collect.outputs.count != '0'
+      }}
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
     strategy:
       fail-fast: false
       max-parallel: 1
-      matrix: ${{ fromJson(needs.collect-experimental.outputs.matrix) }}
+      matrix: ${{ fromJson(needs.collect.outputs.matrix) }}
     steps:
       - name: Report triage selection
         env:
-          MATRIX_JSON: ${{ needs.collect-experimental.outputs.matrix }}
-          SOURCE_RUN_ID: ${{ needs.collect-experimental.outputs.source_run_id }}
+          MATRIX_JSON: ${{ needs.collect.outputs.matrix }}
+          SOURCE_RUN_ID: ${{ needs.collect.outputs.source_run_id }}
+          WORKFLOW_FILE: ${{ needs.collect.outputs.workflow_file }}
         shell: bash
         run: |
           set -euo pipefail
           {
+            echo "workflow: ${WORKFLOW_FILE}"
             echo "source run: ${SOURCE_RUN_ID}"
             echo
             echo '```json'
@@ -204,3 +344,47 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           codecov_token: ${{ secrets.CODECOV_TOKEN }}
+
+  fuzzing:
+    needs: collect
+    if: >-
+      ${{
+        needs.collect.outputs.replay_kind == 'fuzzing'
+        && needs.collect.outputs.count != '0'
+      }}
+    name: Dispatch fuzzing replay
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Report triage selection
+        env:
+          FUZZ_LABELS: ${{ needs.collect.outputs.fuzz_labels }}
+          SOURCE_RUN_ID: ${{ needs.collect.outputs.source_run_id }}
+          WORKFLOW_FILE: ${{ needs.collect.outputs.workflow_file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "workflow: ${WORKFLOW_FILE}"
+            echo "source run: ${SOURCE_RUN_ID}"
+            echo
+            echo '```'
+            printf '%s\n' "$FUZZ_LABELS" | tr '|' '\n' | sed '/^$/d'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Dispatch fuzzing workflow replay
+        env:
+          FUZZ_LABELS: ${{ needs.collect.outputs.fuzz_labels }}
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN_ID: ${{ needs.collect.outputs.source_run_id }}
+          WORKFLOW_FILE: ${{ needs.collect.outputs.workflow_file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh workflow run "$WORKFLOW_FILE" \
+            --ref "$GITHUB_REF_NAME" \
+            -f "triage_job_labels=$FUZZ_LABELS" \
+            -f "triage_source_run_id=$SOURCE_RUN_ID"

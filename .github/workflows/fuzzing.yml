@@ -4,6 +4,18 @@ on:
   push:
     branches-ignore:
       - 'ci/triage/**'
+  workflow_dispatch:
+    inputs:
+      triage_job_labels:
+        description: Pipe-delimited fuzz job labels selected by triage.yml
+        required: false
+        default: '||'
+        type: string
+      triage_source_run_id:
+        description: Source workflow run id collected by triage.yml
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -23,7 +35,11 @@ env:
 
 jobs:
   fuzz_push_full:
-    if: github.event_name == 'push'
+    if: >-
+      ${{
+        github.event_name == 'push'
+        || inputs.triage_job_labels != '||'
+      }}
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -47,6 +63,15 @@ jobs:
           # Run every matrix job on push to avoid effectively skipped fuzz
           # configurations. Duration is controlled by per-target fuzz limits.
           run_target=1
+          if test "${{ github.event_name }}" = "workflow_dispatch"; then
+            label="${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}"
+            run_target=0
+            case "${{ inputs.triage_job_labels }}" in
+              *"|$label|"*)
+                run_target=1
+                ;;
+            esac
+          fi
           echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v6
@@ -283,7 +308,11 @@ jobs:
             ${{ env.FUZZ_STRUCT_CORPUS }}
 
   fuzz_push_loader_formats:
-    if: github.event_name == 'push'
+    if: >-
+      ${{
+        github.event_name == 'push'
+        || inputs.triage_job_labels != '||'
+      }}
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -307,6 +336,15 @@ jobs:
           # Keep all loader-format matrix jobs active on push. Individual fuzz
           # runtimes are governed by max_total_time settings in each job.
           run_target=1
+          if test "${{ github.event_name }}" = "workflow_dispatch"; then
+            label="${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-${{ matrix.target }}"
+            run_target=0
+            case "${{ inputs.triage_job_labels }}" in
+              *"|$label|"*)
+                run_target=1
+                ;;
+            esac
+          fi
           echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v6
@@ -463,7 +501,11 @@ jobs:
             ${{ env.FUZZ_BUILTIN_CORPUS }}
 
   fuzz_push_loader_autodetect:
-    if: github.event_name == 'push'
+    if: >-
+      ${{
+        github.event_name == 'push'
+        || inputs.triage_job_labels != '||'
+      }}
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-autodetect
     runs-on: ubuntu-latest
     strategy:
@@ -478,11 +520,30 @@ jobs:
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
     steps:
+      - name: Select loader-autodetect fuzz scope
+        id: autodetect_scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_target=1
+          if test "${{ github.event_name }}" = "workflow_dispatch"; then
+            label="${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-autodetect"
+            run_target=0
+            case "${{ inputs.triage_job_labels }}" in
+              *"|$label|"*)
+                run_target=1
+                ;;
+            esac
+          fi
+          echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v6
+        if: ${{ steps.autodetect_scope.outputs.run_target == '1' }}
         with:
           fetch-depth: 1
 
       - name: Install build dependencies
+        if: ${{ steps.autodetect_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -491,6 +552,7 @@ jobs:
             clang meson ninja-build autoconf automake libtool pkg-config make
 
       - name: Restore loader-autodetect fuzz corpus cache
+        if: ${{ steps.autodetect_scope.outputs.run_target == '1' }}
         uses: actions/cache@v5
         with:
           path: ${{ env.FUZZ_BUILTIN_CORPUS }}
@@ -501,6 +563,7 @@ jobs:
             fuzz-corpus-loader-autodetect-${{ matrix.buildtool }}-
 
       - name: Seed loader-autodetect fuzz corpus
+        if: ${{ steps.autodetect_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -526,6 +589,7 @@ jobs:
           echo "loader-autodetect seed files: $(find "$FUZZ_BUILTIN_CORPUS" -type f | wc -l)"
 
       - name: Build and run loader-autodetect fuzz target
+        if: ${{ steps.autodetect_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -592,7 +656,7 @@ jobs:
           fi
 
       - name: Upload loader-autodetect fuzz artifacts
-        if: ${{ always() }}
+        if: ${{ always() && steps.autodetect_scope.outputs.run_target == '1' }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-loader-autodetect
@@ -603,7 +667,11 @@ jobs:
             ${{ env.FUZZ_BUILTIN_CORPUS }}
 
   fuzz_push_encode_helpers:
-    if: github.event_name == 'push'
+    if: >-
+      ${{
+        github.event_name == 'push'
+        || inputs.triage_job_labels != '||'
+      }}
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -619,11 +687,30 @@ jobs:
       UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1:report_error_type=1
 
     steps:
+      - name: Select image API fuzz scope
+        id: image_api_scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_target=1
+          if test "${{ github.event_name }}" = "workflow_dispatch"; then
+            label="${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}"
+            run_target=0
+            case "${{ inputs.triage_job_labels }}" in
+              *"|$label|"*)
+                run_target=1
+                ;;
+            esac
+          fi
+          echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
+
       - uses: actions/checkout@v6
+        if: ${{ steps.image_api_scope.outputs.run_target == '1' }}
         with:
           fetch-depth: 1
 
       - name: Install build dependencies
+        if: ${{ steps.image_api_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -632,6 +719,7 @@ jobs:
             clang meson ninja-build autoconf automake libtool pkg-config make
 
       - name: Restore image API fuzz corpus cache
+        if: ${{ steps.image_api_scope.outputs.run_target == '1' }}
         uses: actions/cache@v5
         with:
           path: ${{ env.FUZZ_IMAGE_API_CORPUS }}
@@ -642,6 +730,7 @@ jobs:
             fuzz-corpus-image-api-${{ matrix.buildtool }}-${{ matrix.target }}-
 
       - name: Seed image API fuzz corpus
+        if: ${{ steps.image_api_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -686,6 +775,7 @@ jobs:
           echo "image-api seed files (${{ matrix.target }}): $(find "$FUZZ_IMAGE_API_CORPUS" -type f | wc -l)"
 
       - name: Build and run image API fuzz target
+        if: ${{ steps.image_api_scope.outputs.run_target == '1' }}
         shell: bash
         run: |
           set -euxo pipefail
@@ -764,7 +854,7 @@ jobs:
           fi
 
       - name: Upload image API fuzz artifacts
-        if: ${{ always() }}
+        if: ${{ always() && steps.image_api_scope.outputs.run_target == '1' }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-gcc' || 'Meson-ubuntu-x86_64-gcc' }}-fuzz-${{ matrix.target }}
@@ -775,7 +865,11 @@ jobs:
             ${{ env.FUZZ_IMAGE_API_CORPUS }}
 
   fuzz_push_cli_img2sixel:
-    if: github.event_name == 'push'
+    if: >-
+      ${{
+        github.event_name == 'push'
+        || inputs.triage_job_labels != '||'
+      }}
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cli-img2sixel-${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
@@ -809,6 +903,15 @@ jobs:
           # Execute all CLI fuzz matrix jobs on push; timeout policy is handled
           # by FUZZ_TIMEOUT/fuzz_timeout below.
           run_target=1
+          if test "${{ github.event_name }}" = "workflow_dispatch"; then
+            label="${{ matrix.buildtool == 'autotools' && 'Autotools-ubuntu-x86_64-clang' || 'Meson-ubuntu-x86_64-clang' }}-fuzz-cli-img2sixel-${{ matrix.target }}"
+            run_target=0
+            case "${{ inputs.triage_job_labels }}" in
+              *"|$label|"*)
+                run_target=1
+                ;;
+            esac
+          fi
           echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v6
@@ -1146,7 +1249,11 @@ jobs:
             ${{ env.FUZZ_INPUT_DIR }}.tar.gz
 
   fuzz_push_loader_coregraphics:
-    if: github.event_name == 'push'
+    if: >-
+      ${{
+        github.event_name == 'push'
+        || inputs.triage_job_labels != '||'
+      }}
     name: ${{ matrix.buildtool == 'autotools' && 'Autotools-macos-aarch64-clang' || 'Meson-macos-aarch64-clang' }}-fuzz-loader-coregraphics
     runs-on: macos-latest
     strategy:
@@ -1169,6 +1276,15 @@ jobs:
           # Keep both build systems enabled so coregraphics fuzzing does not
           # silently skip half of the matrix on push.
           run_target=1
+          if test "${{ github.event_name }}" = "workflow_dispatch"; then
+            label="${{ matrix.buildtool == 'autotools' && 'Autotools-macos-aarch64-clang' || 'Meson-macos-aarch64-clang' }}-fuzz-loader-coregraphics"
+            run_target=0
+            case "${{ inputs.triage_job_labels }}" in
+              *"|$label|"*)
+                run_target=1
+                ;;
+            esac
+          fi
           echo "run_target=$run_target" >> "$GITHUB_OUTPUT"
 
       - name: Disable Spotlight (macOS)
@@ -1315,7 +1431,12 @@ jobs:
             ${{ env.FUZZ_COMPONENT_CORPUS }}
 
   fuzz_push_loader_wic_detect:
-    if: github.event_name == 'push'
+    if: >-
+      ${{
+        github.event_name == 'push'
+        || contains(inputs.triage_job_labels, '|Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect|')
+        || contains(inputs.triage_job_labels, '|Meson-cmd-x86_64-msvc-fuzz-loader-wic-repro-nosan|')
+      }}
     name: Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect
     runs-on: windows-latest
     outputs:
@@ -1567,7 +1688,15 @@ jobs:
             ${{ github.workspace }}/.tmp/fuzz-corpus-loader/component/wic
 
   fuzz_push_loader_wic_repro_nosan:
-    if: needs.fuzz_push_loader_wic_detect.result == 'success'
+    if: >-
+      ${{
+        needs.fuzz_push_loader_wic_detect.result == 'success'
+        && (
+          github.event_name == 'push'
+          || contains(inputs.triage_job_labels, '|Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect|')
+          || contains(inputs.triage_job_labels, '|Meson-cmd-x86_64-msvc-fuzz-loader-wic-repro-nosan|')
+        )
+      }}
     needs: [fuzz_push_loader_wic_detect]
     name: Meson-cmd-x86_64-msvc-fuzz-loader-wic-repro-nosan
     runs-on: windows-latest
