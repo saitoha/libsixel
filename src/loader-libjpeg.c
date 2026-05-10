@@ -99,11 +99,23 @@ typedef struct sixel_loader_libjpeg_component {
 static int
 loader_can_try_libjpeg(sixel_chunk_t const *chunk);
 
+/*
+ * MSVC warns that jmp_buf may force padding in this structure. The padding is
+ * compiler-owned state for setjmp/longjmp and does not change the
+ * jpeg_error_mgr prefix used by libjpeg.
+ */
+#if defined(_MSC_VER)
+# pragma warning(push)
+# pragma warning(disable: 4324)
+#endif
 typedef struct sixel_loader_libjpeg_error_context {
     struct jpeg_error_mgr pub;
     jmp_buf jmpbuf;
     char message[JMSG_LENGTH_MAX];
 } sixel_loader_libjpeg_error_context_t;
+#if defined(_MSC_VER)
+# pragma warning(pop)
+#endif
 
 static void
 sixel_loader_libjpeg_error_exit(j_common_ptr cinfo)
@@ -1247,7 +1259,11 @@ load_jpeg(unsigned char **result,
     }
 
     jpeg_create_decompress(&cinfo);
-    jpeg_mem_src(&cinfo, (unsigned char *)data, datasize);
+    if (datasize > (size_t)ULONG_MAX) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    jpeg_mem_src(&cinfo, (unsigned char *)data, (unsigned long)datasize);
     if (enable_cms) {
         jpeg_save_markers(&cinfo, JPEG_APP0 + 2, 0xFFFF);
     }

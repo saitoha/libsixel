@@ -363,12 +363,15 @@ read_palette(png_structp png_ptr,
                 palette[i * 3 + 2] = (unsigned char)(
                     png_encode_srgb_unit(out_linear) * 255.0 + 0.5);
             } else {
-                palette[i * 3 + 0] = ((0xff - alpha) * pbackground->red
-                                       + alpha * png_palette[i].red) >> 8;
-                palette[i * 3 + 1] = ((0xff - alpha) * pbackground->green
-                                       + alpha * png_palette[i].green) >> 8;
-                palette[i * 3 + 2] = ((0xff - alpha) * pbackground->blue
-                                       + alpha * png_palette[i].blue) >> 8;
+                palette[i * 3 + 0] = (unsigned char)(
+                    ((0xff - alpha) * pbackground->red
+                     + alpha * png_palette[i].red) >> 8);
+                palette[i * 3 + 1] = (unsigned char)(
+                    ((0xff - alpha) * pbackground->green
+                     + alpha * png_palette[i].green) >> 8);
+                palette[i * 3 + 2] = (unsigned char)(
+                    ((0xff - alpha) * pbackground->blue
+                     + alpha * png_palette[i].blue) >> 8);
             }
         } else {
             palette[i * 3 + 0] = png_palette[i].red;
@@ -3594,7 +3597,7 @@ decode_png_rgba(
     png_infop info_ptr;
     png_uint_32 width;
     png_uint_32 height;
-    png_uint_32 rowbytes;
+    png_size_t rowbytes;
     png_byte color_type;
     png_byte bitdepth;
     unsigned char **rows;
@@ -3670,7 +3673,7 @@ decode_png_rgba(
 
     png_read_update_info(png_ptr, info_ptr);
     rowbytes = png_get_rowbytes(png_ptr, info_ptr);
-    if (rowbytes != width * 4) {
+    if (rowbytes != (png_size_t)width * 4u) {
         status = SIXEL_BAD_INPUT;
         goto end;
     }
@@ -3690,7 +3693,7 @@ decode_png_rgba(
         goto end;
     }
     for (i = 0; i < (int)height; ++i) {
-        rows[i] = *result + (size_t)i * rowbytes;
+        rows[i] = *result + (size_t)i * (size_t)rowbytes;
     }
     png_read_image(png_ptr, rows);
 
