@@ -5,6 +5,9 @@ on:
     branches:
       - 'ci/triage/**'
   workflow_run:
+    # workflow_run starts only from workflow definitions on the default
+    # branch. Keep replay checkouts pinned to the source run below so a
+    # default-branch copy triages the branch that actually failed.
     workflows:
       - libsixel CI (build & test)
       - libsixel Fuzzing (push)
@@ -76,6 +79,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          ref: ${{ github.event.workflow_run.head_sha || inputs.source_branch || 'develop' }}
           fetch-depth: 1
 
       - name: Collect failed jobs from target workflow
@@ -152,6 +156,20 @@ jobs:
               --method GET \
               "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}"
           )"
+          source_head_sha="$(
+            RUN_META_JSON="$run_meta_json" ruby -rjson -e '
+              puts JSON.parse(ENV.fetch("RUN_META_JSON")).fetch("head_sha")
+            '
+          )"
+          if test -z "$source_head_sha"; then
+            echo "::error::source run ${run_id} does not expose head_sha."
+            exit 1
+          fi
+
+          # The workflow file that drives matrix reconstruction must come from
+          # the source run commit, not from the default branch running triage.
+          git fetch --depth=1 origin "$source_head_sha"
+          git checkout --detach "$source_head_sha"
 
           failed_jobs_json="$(
             gh api \
@@ -281,6 +299,8 @@ jobs:
               'libfuzzer_fork' => libfuzzer_fork(source.fetch('event_name')),
               'runner' => runner,
               'source_event_name' => source.fetch('event_name'),
+              'source_head_branch' => source.fetch('head_branch'),
+              'source_head_sha' => source.fetch('head_sha'),
               'source_ref_name' => source.fetch('ref_name'),
               'target' => target
             }
@@ -403,6 +423,8 @@ jobs:
           run_meta = JSON.parse(ENV.fetch('RUN_META_JSON'))
           source = {
             'event_name' => run_meta.fetch('event'),
+            'head_branch' => run_meta['head_branch'] || ENV.fetch('SOURCE_BRANCH'),
+            'head_sha' => run_meta.fetch('head_sha'),
             'ref_name' => run_meta['head_branch'] || ENV.fetch('SOURCE_BRANCH'),
             'run_attempt' => run_meta.fetch('run_attempt').to_s,
             'run_id' => ENV.fetch('RUN_ID')
@@ -436,6 +458,8 @@ jobs:
               replay_entry = entry.dup
               replay_entry['job_env'] = (job['env'] || {}).dup
               replay_entry['runner'] ||= job['runs-on']
+              replay_entry['source_head_branch'] = source.fetch('head_branch')
+              replay_entry['source_head_sha'] = source.fetch('head_sha')
               include_entries << replay_entry
             end
           end
@@ -498,6 +522,8 @@ jobs:
       - name: Report triage selection
         env:
           MATRIX_JSON: ${{ needs.collect.outputs.matrix }}
+          SOURCE_HEAD_BRANCH: ${{ matrix.source_head_branch }}
+          SOURCE_HEAD_SHA: ${{ matrix.source_head_sha }}
           SOURCE_RUN_ID: ${{ needs.collect.outputs.source_run_id }}
           WORKFLOW_FILE: ${{ needs.collect.outputs.workflow_file }}
         shell: bash
@@ -506,6 +532,7 @@ jobs:
           {
             echo "workflow: ${WORKFLOW_FILE}"
             echo "source run: ${SOURCE_RUN_ID}"
+            echo "source ref: ${SOURCE_HEAD_BRANCH}@${SOURCE_HEAD_SHA}"
             echo
             echo '```json'
             echo "$MATRIX_JSON"
@@ -535,6 +562,7 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
+          ref: ${{ matrix.source_head_sha }}
           fetch-depth: 1
 
       - name: Apply source job env
@@ -610,6 +638,8 @@ jobs:
       - name: Report triage selection
         env:
           MATRIX_JSON: ${{ toJSON(matrix) }}
+          SOURCE_HEAD_BRANCH: ${{ matrix.source_head_branch }}
+          SOURCE_HEAD_SHA: ${{ matrix.source_head_sha }}
           SOURCE_RUN_ID: ${{ needs.collect.outputs.source_run_id }}
           WORKFLOW_FILE: ${{ needs.collect.outputs.workflow_file }}
         shell: bash
@@ -618,6 +648,7 @@ jobs:
           {
             echo "workflow: ${WORKFLOW_FILE}"
             echo "source run: ${SOURCE_RUN_ID}"
+            echo "source ref: ${SOURCE_HEAD_BRANCH}@${SOURCE_HEAD_SHA}"
             echo
             echo '```json'
             echo "$MATRIX_JSON"
@@ -654,6 +685,7 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
+          ref: ${{ matrix.source_head_sha }}
           fetch-depth: 1
 
       - name: Restore source fuzz corpus cache
