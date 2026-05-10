@@ -79,6 +79,7 @@ jobs:
           else
             run_id="$(
               gh api \
+                --method GET \
                 "repos/${GITHUB_REPOSITORY}/actions/workflows/${WORKFLOW_FILE}/runs" \
                 -f branch="$SOURCE_BRANCH" \
                 -f status=completed \
