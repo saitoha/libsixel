@@ -1258,11 +1258,11 @@ load_jpeg(unsigned char **result,
         goto end;
     }
 
-    jpeg_create_decompress(&cinfo);
     if (datasize > (size_t)ULONG_MAX) {
         status = SIXEL_BAD_INPUT;
         goto end;
     }
+    jpeg_create_decompress(&cinfo);
     jpeg_mem_src(&cinfo, (unsigned char *)data, (unsigned long)datasize);
     if (enable_cms) {
         jpeg_save_markers(&cinfo, JPEG_APP0 + 2, 0xFFFF);
