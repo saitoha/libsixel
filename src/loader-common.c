@@ -644,7 +644,7 @@ loader_cms_prefer_8bit(void)
     return prefer_8bit;
 }
 
-int
+SIXEL_INTERNAL_API int
 loader_cms_target_colorspace(void)
 {
     int target_colorspace;
@@ -688,7 +688,7 @@ loader_cms_target_pixelformat(void)
     }
 }
 
-void
+SIXEL_INTERNAL_API void
 sixel_helper_set_loader_cms_engine(int engine)
 {
     if (engine < 0) {

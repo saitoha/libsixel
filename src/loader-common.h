@@ -91,15 +91,16 @@ void sixel_helper_set_libpng_enable_cms(int enable);
 int loader_builtin_get_enable_cms(void);
 void sixel_helper_set_builtin_enable_cms(int enable);
 /*
- * Keep these exported: test runners call them through the shared libsixel
- * library on Windows.
+ * Keep these exported: test runners and backend-specific unity tests call
+ * them through the shared libsixel library on Windows.
  */
 SIXEL_INTERNAL_API void
 sixel_helper_set_loader_background_colorspace(int colorspace);
 SIXEL_INTERNAL_API int
 loader_background_colorspace(void);
 int loader_cms_prefer_8bit(void);
-int loader_cms_target_colorspace(void);
+SIXEL_INTERNAL_API int
+loader_cms_target_colorspace(void);
 int loader_transparent_policy(void);
 /*
  * Keep this exported: the test runner references this helper via the shared
@@ -108,7 +109,7 @@ int loader_transparent_policy(void);
 SIXEL_INTERNAL_API int loader_background_policy(void);
 /* Keep this exported: test runners call it via the shared libsixel DLL. */
 SIXEL_INTERNAL_API int loader_cms_target_pixelformat(void);
-void sixel_helper_set_loader_cms_engine(int engine);
+SIXEL_INTERNAL_API void sixel_helper_set_loader_cms_engine(int engine);
 void loader_trace_try(char const *name);
 void loader_trace_result(char const *name, SIXELSTATUS status);
 int loader_trace_is_enabled(void);
