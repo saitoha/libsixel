@@ -120,6 +120,7 @@ jobs:
             extra_packages: >-
               make
               meson
+              ninja
             vcpkg_packages: >-
               libpng
               libjpeg-turbo
