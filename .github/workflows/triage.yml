@@ -114,6 +114,12 @@ jobs:
             exit 0
           fi
 
+          run_meta_json="$(
+            gh api \
+              --method GET \
+              "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}"
+          )"
+
           failed_jobs_json="$(
             gh api \
               --paginate \
@@ -122,7 +128,7 @@ jobs:
               ruby -rjson -e 'puts JSON.generate(STDIN.read.lines.map(&:chomp))'
           )"
 
-          RUN_ID="$run_id" FAILED_JOBS_JSON="$failed_jobs_json" ruby <<'RUBY'
+          RUN_ID="$run_id" RUN_META_JSON="$run_meta_json" FAILED_JOBS_JSON="$failed_jobs_json" ruby <<'RUBY'
           require 'json'
           require 'yaml'
 
@@ -151,10 +157,119 @@ jobs:
             entry['buildtool'] == 'autotools' ? autotools_prefix : meson_prefix
           end
 
-          def fuzzing_replay_entry(job_id, entry)
+          def libfuzzer_fork(source_event_name)
+            source_event_name == 'push' ? '10' : '2'
+          end
+
+          def cache_restore_keys(*keys)
+            keys.join("\n")
+          end
+
+          def fuzz_cache_config(kind, buildtool, target, source_ref_name, run_id, run_attempt)
+            case kind
+            when 'struct'
+              {
+                'cache_path' => ".tmp/fuzz-corpus-struct/#{target}",
+                'cache_key' => "fuzz-corpus-struct-push-#{buildtool}-#{target}-#{source_ref_name}-#{run_id}-#{run_attempt}",
+                'cache_restore_keys' => cache_restore_keys(
+                  "fuzz-corpus-struct-push-#{buildtool}-#{target}-#{source_ref_name}-",
+                  "fuzz-corpus-struct-push-#{buildtool}-#{target}-",
+                  "fuzz-corpus-struct-#{buildtool}-#{target}-"
+                )
+              }
+            when 'loader_format'
+              {
+                'cache_path' => ".tmp/fuzz-corpus-loader/#{target}",
+                'cache_key' => "fuzz-corpus-loader-push-#{buildtool}-#{target}-#{source_ref_name}-#{run_id}-#{run_attempt}",
+                'cache_restore_keys' => cache_restore_keys(
+                  "fuzz-corpus-loader-push-#{buildtool}-#{target}-#{source_ref_name}-",
+                  "fuzz-corpus-loader-push-#{buildtool}-#{target}-",
+                  "fuzz-corpus-loader-#{buildtool}-#{target}-"
+                )
+              }
+            when 'loader_autodetect'
+              {
+                'cache_path' => '.tmp/fuzz-corpus-loader-autodetect',
+                'cache_key' => "fuzz-corpus-loader-autodetect-push-#{buildtool}-#{source_ref_name}-#{run_id}-#{run_attempt}",
+                'cache_restore_keys' => cache_restore_keys(
+                  "fuzz-corpus-loader-autodetect-push-#{buildtool}-#{source_ref_name}-",
+                  "fuzz-corpus-loader-autodetect-push-#{buildtool}-",
+                  "fuzz-corpus-loader-autodetect-#{buildtool}-"
+                )
+              }
+            when 'image_api'
+              {
+                'cache_path' => ".tmp/fuzz-corpus-image-api/#{target}",
+                'cache_key' => "fuzz-corpus-image-api-push-#{buildtool}-#{target}-#{source_ref_name}-#{run_id}-#{run_attempt}",
+                'cache_restore_keys' => cache_restore_keys(
+                  "fuzz-corpus-image-api-push-#{buildtool}-#{target}-#{source_ref_name}-",
+                  "fuzz-corpus-image-api-push-#{buildtool}-#{target}-",
+                  "fuzz-corpus-image-api-#{buildtool}-#{target}-"
+                )
+              }
+            when 'cli_img2sixel'
+              {
+                'cache_path' => ".tmp/fuzz-corpus-cli-img2sixel/#{target}",
+                'cache_key' => "fuzz-corpus-cli-#{buildtool}-#{target}-#{source_ref_name}-#{run_id}-#{run_attempt}",
+                'cache_restore_keys' => cache_restore_keys(
+                  "fuzz-corpus-cli-#{buildtool}-#{target}-#{source_ref_name}-",
+                  "fuzz-corpus-cli-#{buildtool}-#{target}-"
+                )
+              }
+            when 'coregraphics'
+              {
+                'cache_path' => '.tmp/fuzz-corpus-loader/component',
+                'cache_key' => "fuzz-corpus-loader-coregraphics-push-#{buildtool}-#{source_ref_name}-#{run_id}-#{run_attempt}",
+                'cache_restore_keys' => cache_restore_keys(
+                  "fuzz-corpus-loader-coregraphics-push-#{buildtool}-#{source_ref_name}-",
+                  "fuzz-corpus-loader-coregraphics-push-#{buildtool}-",
+                  "fuzz-corpus-loader-coregraphics-#{buildtool}-"
+                )
+              }
+            else
+              {
+                'cache_path' => '',
+                'cache_key' => '',
+                'cache_restore_keys' => ''
+              }
+            end
+          end
+
+          def fuzzing_entry(kind, label, runner, buildtool, target, source)
+            entry = {
+              'buildtool' => buildtool,
+              'cache_path' => '',
+              'cache_key' => '',
+              'cache_restore_keys' => '',
+              'fuzz_afl_mode' => '',
+              'fuzz_afl_workers' => '',
+              'kind' => kind,
+              'label' => label,
+              'libfuzzer_fork' => libfuzzer_fork(source.fetch('event_name')),
+              'runner' => runner,
+              'source_event_name' => source.fetch('event_name'),
+              'source_ref_name' => source.fetch('ref_name'),
+              'target' => target
+            }
+            entry.merge!(
+              fuzz_cache_config(
+                kind,
+                buildtool,
+                target,
+                source.fetch('ref_name'),
+                source.fetch('run_id'),
+                source.fetch('run_attempt')
+              )
+            )
+            entry
+          end
+
+          def fuzzing_replay_entry(job_id, entry, source)
             case job_id
             when 'fuzz_push_full', 'fuzz_push_encode_helpers'
               kind = job_id == 'fuzz_push_full' ? 'struct' : 'image_api'
+              buildtool = entry.fetch('buildtool')
+              target = entry.fetch('target')
               label = format(
                 '%s-fuzz-%s',
                 buildtool_prefix(
@@ -162,16 +277,12 @@ jobs:
                   'Autotools-ubuntu-x86_64-gcc',
                   'Meson-ubuntu-x86_64-gcc'
                 ),
-                entry.fetch('target')
+                target
               )
-              {
-                'buildtool' => entry.fetch('buildtool'),
-                'kind' => kind,
-                'label' => label,
-                'runner' => 'ubuntu-latest',
-                'target' => entry.fetch('target')
-              }
+              fuzzing_entry(kind, label, 'ubuntu-latest', buildtool, target, source)
             when 'fuzz_push_loader_formats'
+              buildtool = entry.fetch('buildtool')
+              target = entry.fetch('target')
               label = format(
                 '%s-fuzz-loader-%s',
                 buildtool_prefix(
@@ -179,16 +290,11 @@ jobs:
                   'Autotools-ubuntu-x86_64-gcc',
                   'Meson-ubuntu-x86_64-gcc'
                 ),
-                entry.fetch('target')
+                target
               )
-              {
-                'buildtool' => entry.fetch('buildtool'),
-                'kind' => 'loader_format',
-                'label' => label,
-                'runner' => 'ubuntu-latest',
-                'target' => entry.fetch('target')
-              }
+              fuzzing_entry('loader_format', label, 'ubuntu-latest', buildtool, target, source)
             when 'fuzz_push_loader_autodetect'
+              buildtool = entry.fetch('buildtool')
               label = format(
                 '%s-fuzz-loader-autodetect',
                 buildtool_prefix(
@@ -197,14 +303,10 @@ jobs:
                   'Meson-ubuntu-x86_64-gcc'
                 )
               )
-              {
-                'buildtool' => entry.fetch('buildtool'),
-                'kind' => 'loader_autodetect',
-                'label' => label,
-                'runner' => 'ubuntu-latest',
-                'target' => 'autodetect'
-              }
+              fuzzing_entry('loader_autodetect', label, 'ubuntu-latest', buildtool, 'autodetect', source)
             when 'fuzz_push_cli_img2sixel'
+              buildtool = entry.fetch('buildtool')
+              target = entry.fetch('target')
               label = format(
                 '%s-fuzz-cli-img2sixel-%s',
                 buildtool_prefix(
@@ -212,16 +314,22 @@ jobs:
                   'Autotools-ubuntu-x86_64-clang',
                   'Meson-ubuntu-x86_64-clang'
                 ),
-                entry.fetch('target')
+                target
               )
-              {
-                'buildtool' => entry.fetch('buildtool'),
-                'kind' => 'cli_img2sixel',
-                'label' => label,
-                'runner' => 'ubuntu-latest',
-                'target' => entry.fetch('target')
-              }
+              replay = fuzzing_entry(
+                'cli_img2sixel',
+                label,
+                'ubuntu-latest',
+                buildtool,
+                target,
+                source
+              )
+              replay['fuzz_afl_workers'] = source.fetch('event_name') == 'push' ? '6' : '2'
+              replay['fuzz_afl_mode'] =
+                source.fetch('event_name') == 'push' && buildtool == 'autotools' ? 'cmplog' : 'normal'
+              replay
             when 'fuzz_push_loader_coregraphics'
+              buildtool = entry.fetch('buildtool')
               label = format(
                 '%s-fuzz-loader-coregraphics',
                 buildtool_prefix(
@@ -230,37 +338,42 @@ jobs:
                   'Meson-macos-aarch64-clang'
                 )
               )
-              {
-                'buildtool' => entry.fetch('buildtool'),
-                'kind' => 'coregraphics',
-                'label' => label,
-                'runner' => 'macos-latest',
-                'target' => 'coregraphics'
-              }
+              fuzzing_entry('coregraphics', label, 'macos-latest', buildtool, 'coregraphics', source)
             when 'fuzz_push_loader_wic_detect'
-              {
-                'buildtool' => 'meson',
-                'kind' => 'wic',
-                'label' => 'Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect',
-                'runner' => 'windows-latest',
-                'target' => 'wic',
-                'wic_repro' => false
-              }
+              replay = fuzzing_entry(
+                'wic',
+                'Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect',
+                'windows-latest',
+                'meson',
+                'wic',
+                source
+              )
+              replay['wic_repro'] = false
+              replay
             when 'fuzz_push_loader_wic_repro_nosan'
-              {
-                'buildtool' => 'meson',
-                'kind' => 'wic',
-                'label' => 'Meson-cmd-x86_64-msvc-fuzz-loader-wic-repro-nosan',
-                'runner' => 'windows-latest',
-                'target' => 'wic',
-                'wic_repro' => true
-              }
+              replay = fuzzing_entry(
+                'wic',
+                'Meson-cmd-x86_64-msvc-fuzz-loader-wic-repro-nosan',
+                'windows-latest',
+                'meson',
+                'wic',
+                source
+              )
+              replay['wic_repro'] = true
+              replay
             end
           end
 
           workflow_file = ENV.fetch('WORKFLOW_FILE')
           failed_jobs = JSON.parse(ENV.fetch('FAILED_JOBS_JSON'))
           max_jobs = Integer(ENV.fetch('MAX_JOBS'))
+          run_meta = JSON.parse(ENV.fetch('RUN_META_JSON'))
+          source = {
+            'event_name' => run_meta.fetch('event'),
+            'ref_name' => run_meta['head_branch'] || ENV.fetch('SOURCE_BRANCH'),
+            'run_attempt' => run_meta.fetch('run_attempt').to_s,
+            'run_id' => ENV.fetch('RUN_ID')
+          }
           workflow = YAML.load_file(".github/workflows/#{workflow_file}")
           include_entries = []
           replay_kind = workflow_file == 'fuzzing.yml' ? 'fuzzing' : 'ci_steps'
@@ -270,7 +383,7 @@ jobs:
 
             if workflow_file == 'fuzzing.yml'
               matrix_entries(job).each do |entry|
-                replay_entry = fuzzing_replay_entry(job_id, entry)
+                replay_entry = fuzzing_replay_entry(job_id, entry, source)
                 next if replay_entry.nil?
                 next unless failed_jobs.include?(replay_entry.fetch('label'))
 
@@ -510,6 +623,14 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Restore source fuzz corpus cache
+        if: ${{ matrix.cache_path != '' }}
+        uses: actions/cache@v5
+        with:
+          path: ${{ matrix.cache_path }}
+          key: ${{ matrix.cache_key }}
+          restore-keys: ${{ matrix.cache_restore_keys }}
+
       - name: Install Ubuntu libFuzzer dependencies
         if: >-
           ${{
@@ -576,6 +697,7 @@ jobs:
           kind="${{ matrix.kind }}"
           buildtool="${{ matrix.buildtool }}"
           target="${{ matrix.target }}"
+          libfuzzer_fork="${{ matrix.libfuzzer_fork }}"
           common_corpus="$PWD/.tmp/fuzz-corpus-common/$kind/$target"
           dict_common="$PWD/fuzz/loader-builtin.dict"
           mkdir -p "$common_corpus"
@@ -793,7 +915,7 @@ jobs:
           fi
           rm -rf "$merge_seed"
 
-          fuzz_args="-fork=2 -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix=$artifact_dir/ -max_total_time=$max_total_time -dict=$dict_merged"
+          fuzz_args="-fork=$libfuzzer_fork -print_final_stats=1 -timeout=5 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -artifact_prefix=$artifact_dir/ -max_total_time=$max_total_time -dict=$dict_merged"
           if test "$kind" = struct; then
             fuzz_args="$fuzz_args -max_len=$max_len"
           fi
@@ -940,8 +1062,8 @@ jobs:
           esac
           export FUZZ_AFL=afl-fuzz
           export FUZZ_TIMEOUT="$fuzz_timeout"
-          export FUZZ_AFL_WORKERS=2
-          export FUZZ_AFL_MODE=normal
+          export FUZZ_AFL_WORKERS="${{ matrix.fuzz_afl_workers }}"
+          export FUZZ_AFL_MODE="${{ matrix.fuzz_afl_mode }}"
           export FUZZ_AFL_CMPLOG_RUNNER=
           export FUZZ_AFL_EXTRA_OPTS=
           export ASAN_OPTIONS=detect_leaks=0:abort_on_error=1:symbolize=0
@@ -1030,6 +1152,7 @@ jobs:
           export CXX="$llvm_prefix/bin/clang++"
           export FUZZ_CFLAGS="-O1 -g -fno-omit-frame-pointer -fsanitize=fuzzer-no-link,address,undefined"
           export FUZZ_LDFLAGS="-fsanitize=fuzzer,address,undefined"
+          libfuzzer_fork="${{ matrix.libfuzzer_fork }}"
           corpus="$PWD/.tmp/fuzz-corpus-loader/component/coregraphics"
           artifact_dir="$PWD/.tmp/fuzz-artifacts-loader/coregraphics"
           mkdir -p "$corpus" "$artifact_dir"
@@ -1061,7 +1184,7 @@ jobs:
           fi
           max_total_time=600
           test "$buildtool" != meson || max_total_time=1800
-          fuzz_args="-fork=2 -print_final_stats=1 -timeout=20 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix=$artifact_dir/ -max_total_time=$max_total_time -dict=$dict_merged"
+          fuzz_args="-fork=$libfuzzer_fork -print_final_stats=1 -timeout=20 -use_value_profile=1 -reduce_inputs=1 -rss_limit_mb=4096 -ignore_ooms=1 -artifact_prefix=$artifact_dir/ -max_total_time=$max_total_time -dict=$dict_merged"
           run_log="$artifact_dir/run.log"
 
           if test "$buildtool" = autotools; then
