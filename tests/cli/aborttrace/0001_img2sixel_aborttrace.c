@@ -33,5 +33,12 @@ test_aborttrace_0001_img2sixel_aborttrace(int argc, char **argv)
     fprintf(stderr, "aborttrace: runner triggered\n");
     sixel_aborttrace_install_if_unhandled();
     abort();
+#if defined(__TINYC__)
+    /*
+     * tcc does not treat abort() as noreturn here. Keep this fallback hidden
+     * from MSVC, where the same statement is reported as unreachable code.
+     */
+    return EXIT_FAILURE;
+#endif
 #endif
 }
