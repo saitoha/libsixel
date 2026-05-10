@@ -2,7 +2,8 @@ name: libsixel experimental CI
 
 on:
   push:
-    branches: ['**']
+    branches-ignore:
+      - 'ci/triage/**'
   pull_request:
     branches: ['**']
   workflow_dispatch:

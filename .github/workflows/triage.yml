@@ -1,0 +1,205 @@
+name: libsixel CI triage
+
+on:
+  push:
+    branches:
+      - 'ci/triage/**'
+  workflow_dispatch:
+    inputs:
+      workflow_file:
+        description: Target workflow file to inspect
+        required: true
+        default: experimental.yml
+        type: choice
+        options:
+          - experimental.yml
+      source_branch:
+        description: Branch to search for the latest failed run
+        required: true
+        default: develop
+        type: string
+      source_run_id:
+        description: Optional source run id. Uses latest failed target run when empty
+        required: false
+        default: ''
+        type: string
+      max_jobs:
+        description: Maximum failed jobs to replay
+        required: true
+        default: '8'
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: triage-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # Pin vcpkg to a stable release to avoid fetching future tool builds that
+  # depend on unavailable CMake versions during bootstrap.
+  VCPKG_REF: 2024.12.16
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+  UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+
+jobs:
+  collect-experimental:
+    name: Collect failed experimental jobs
+    runs-on: ubuntu-latest
+    outputs:
+      count: ${{ steps.collect.outputs.count }}
+      matrix: ${{ steps.collect.outputs.matrix }}
+      source_run_id: ${{ steps.collect.outputs.source_run_id }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Collect failed jobs from target workflow
+        id: collect
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MAX_JOBS: ${{ inputs.max_jobs || '8' }}
+          SOURCE_BRANCH: ${{ inputs.source_branch || 'develop' }}
+          SOURCE_RUN_ID: ${{ inputs.source_run_id || '' }}
+          WORKFLOW_FILE: ${{ inputs.workflow_file || 'experimental.yml' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if test "$WORKFLOW_FILE" != "experimental.yml"; then
+            echo "::error::triage currently supports experimental.yml only."
+            exit 1
+          fi
+
+          if test -n "$SOURCE_RUN_ID"; then
+            run_id="$SOURCE_RUN_ID"
+          else
+            run_id="$(
+              gh api \
+                "repos/${GITHUB_REPOSITORY}/actions/workflows/${WORKFLOW_FILE}/runs" \
+                -f branch="$SOURCE_BRANCH" \
+                -f status=completed \
+                -f per_page=20 \
+                --jq '.workflow_runs[] | select(.conclusion == "failure") | .id' |
+                sed -n '1p'
+            )"
+          fi
+
+          if test -z "$run_id"; then
+            echo "::notice::no failed ${WORKFLOW_FILE} run found on ${SOURCE_BRANCH}."
+            {
+              echo 'matrix={"include":[]}'
+              echo 'count=0'
+              echo 'source_run_id='
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          failed_jobs_json="$(
+            gh api \
+              "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/jobs?per_page=100" \
+              --jq '[.jobs[] | select(.conclusion == "failure") | .name]'
+          )"
+
+          RUN_ID="$run_id" FAILED_JOBS_JSON="$failed_jobs_json" ruby <<'RUBY'
+          require 'json'
+          require 'yaml'
+
+          workflow_file = ENV.fetch('WORKFLOW_FILE')
+          failed_jobs = JSON.parse(ENV.fetch('FAILED_JOBS_JSON'))
+          max_jobs = Integer(ENV.fetch('MAX_JOBS'))
+          workflow = YAML.load_file(".github/workflows/#{workflow_file}")
+          include_entries = []
+
+          workflow.fetch('jobs').each_value do |job|
+            next unless job.is_a?(Hash)
+
+            matrix_entries = job.dig('strategy', 'matrix', 'include') || []
+            matrix_entries.each do |entry|
+              next unless entry.is_a?(Hash)
+              next unless failed_jobs.include?(entry['label'])
+
+              replay_entry = entry.dup
+              replay_entry['runner'] ||= job['runs-on']
+              include_entries << replay_entry
+            end
+          end
+
+          include_entries = include_entries.first(max_jobs)
+          matrix = { 'include' => include_entries }
+
+          File.open(ENV.fetch('GITHUB_OUTPUT'), 'a') do |output|
+            output.puts("matrix=#{JSON.generate(matrix)}")
+            output.puts("count=#{include_entries.length}")
+            output.puts("source_run_id=#{ENV.fetch('RUN_ID')}")
+          end
+
+          if include_entries.empty?
+            warn 'No failed job names matched the target workflow matrix labels.'
+          else
+            include_entries.each do |entry|
+              puts "triage: #{entry.fetch('label')}"
+            end
+          end
+          RUBY
+
+  experimental:
+    needs: collect-experimental
+    if: needs.collect-experimental.outputs.count != '0'
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix: ${{ fromJson(needs.collect-experimental.outputs.matrix) }}
+    steps:
+      - name: Report triage selection
+        env:
+          MATRIX_JSON: ${{ needs.collect-experimental.outputs.matrix }}
+          SOURCE_RUN_ID: ${{ needs.collect-experimental.outputs.source_run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "source run: ${SOURCE_RUN_ID}"
+            echo
+            echo '```json'
+            echo "$MATRIX_JSON"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          try {
+            Add-MpPreference -ExclusionPath "C:\a" -ErrorAction Stop
+          } catch {
+            Write-Warning "Windows Defender exclusion setup failed; continuing: $($_.Exception.Message)"
+          }
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          codecov_token: ${{ secrets.CODECOV_TOKEN }}

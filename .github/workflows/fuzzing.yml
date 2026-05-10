@@ -2,7 +2,8 @@ name: libsixel Fuzzing (push)
 
 on:
   push:
-    branches: ['**']
+    branches-ignore:
+      - 'ci/triage/**'
 
 permissions:
   contents: read

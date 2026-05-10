@@ -2,7 +2,8 @@ name: libsixel CI (build & test)
 
 on:
   push:
-    branches: ['**']
+    branches-ignore:
+      - 'ci/triage/**'
   pull_request:
     branches: ['**']
   schedule:
