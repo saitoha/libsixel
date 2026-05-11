@@ -85,17 +85,29 @@ if img2sixel_opt.enabled()
   endif
   img2sixel_deps = [img2sixel_exe]
 
-  # The AFL persistent CLI harnesses depend on POSIX process-environment
-  # APIs (setenv/unsetenv). Linux/Unix toolchains provide these reliably;
-  # Windows toolchains may not.
-  img2sixel_cli_fuzz_supported = host_machine.system() != 'windows'
-  if host_machine.system() == 'windows'
+  # The AFL persistent CLI harnesses rely on POSIX-only headers and temp-file
+  # or stdio redirection APIs (`unistd.h`, `dup2`, `mkstemp`, `setenv`).
+  # MSVC-based environments under MSYS2 may satisfy some Unix probes while
+  # still failing to compile the harness sources because `unistd.h` is absent.
+  # Gate these helpers on the concrete API surface they require.
+  img2sixel_cli_fuzz_supported = cc.has_header('unistd.h')
+  if img2sixel_cli_fuzz_supported
     img2sixel_cli_fuzz_supported = cc.has_function('setenv',
       prefix: '#include <stdlib.h>',
       args: libsixel_posix_defs)
   endif
+  if img2sixel_cli_fuzz_supported
+    img2sixel_cli_fuzz_supported = cc.has_function('dup2',
+      prefix: '#include <unistd.h>',
+      args: libsixel_posix_defs)
+  endif
+  if img2sixel_cli_fuzz_supported
+    img2sixel_cli_fuzz_supported = cc.has_function('mkstemp',
+      prefix: '#include <stdlib.h>\n#include <unistd.h>',
+      args: libsixel_posix_defs)
+  endif
   if not img2sixel_cli_fuzz_supported
-    message('img2sixel AFL persistent CLI harnesses are disabled: setenv() is unavailable on this toolchain')
+    message('img2sixel AFL persistent CLI harnesses are disabled: required POSIX APIs are unavailable on this toolchain')
   endif
 
   if img2sixel_cli_fuzz_supported
