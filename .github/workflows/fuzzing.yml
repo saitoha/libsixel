@@ -1683,9 +1683,11 @@ jobs:
           name: Meson-cmd-x86_64-msvc-fuzz-loader-wic-detect
           if-no-files-found: ignore
           retention-days: 7
+          # Repro only needs logs, merged dict, and any crash artifacts.
+          # Uploading the restored seed corpus inflates the archive and has
+          # triggered Windows artifact upload failures.
           path: |
             ${{ github.workspace }}/.tmp/fuzz-artifacts-loader/wic
-            ${{ github.workspace }}/.tmp/fuzz-corpus-loader/component/wic
 
   fuzz_push_loader_wic_repro_nosan:
     if: >-
