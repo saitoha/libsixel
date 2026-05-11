@@ -95,6 +95,18 @@ base_env_settings = [
   ['LIBSIXEL_LIBDIR', meson.project_build_root() / 'src'],
 ]
 
+test_additional_path = run_command(
+  sh,
+  '-c',
+  'if test -n "${SIXEL_TEST_ADDITIOANL_PATH-}"; then ' +
+  'printf "%s" "$SIXEL_TEST_ADDITIOANL_PATH"; else ' +
+  'printf "%s" "${SIXEL_TEST_ADDITIONAL_PATH-}"; fi',
+  check: true,
+).stdout()
+if test_additional_path != ''
+  base_env_settings += [['SIXEL_TEST_ADDITIOANL_PATH', test_additional_path]]
+endif
+
 thumbnailer_case_dir = join_paths(
   meson.current_build_dir(),
   'data/inputs/thumbnailer/cases/0040/thumbnailers',
@@ -223,12 +235,15 @@ endif
 is_windows = host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
 if is_windows
   # Ensure Windows-style runners (including MSYS2) locate the freshly built
-  # DLLs when executing the converter TAP suite. Without these PATH entries
-  # the tests fail with "cannot open shared object file" errors because
-  # libsixel-1.dll or msys-sixel-1.dll is not discoverable beside the
-  # converter executables.
+  # DLLs and CI-provided dependency DLLs when executing the converter TAP
+  # suite. Without these PATH entries the tests fail before TAP assertions
+  # can run because libsixel-1.dll, msys-sixel-1.dll, or a vcpkg dependency
+  # DLL is not discoverable beside the converter executables.
   dll_paths = [meson.project_build_root() / 'src',
                meson.project_build_root() / 'converters']
+  if test_additional_path != ''
+    dll_paths += [test_additional_path]
+  endif
   foreach dll_path : dll_paths
     env.prepend('PATH', dll_path)
   endforeach
