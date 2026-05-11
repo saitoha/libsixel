@@ -147,6 +147,12 @@
 #define SIXEL_ENCODER_SIGINT_SYNC_EVENT_DISPATCH_START \
     "callback_dispatch_start"
 
+#if defined(__EMSCRIPTEN__) && HAVE_MKSTEMP
+# define SIXEL_ENCODER_USE_MKSTEMP_PNG_STAGING 1
+#else
+# define SIXEL_ENCODER_USE_MKSTEMP_PNG_STAGING 0
+#endif
+
 #define SIXEL_QUANTIZE_SCENE_CUT_THRESHOLD_DEFAULT 0.20
 #define SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE 8
 #define SIXEL_QUANTIZE_SCENE_PROBE_COUNT \
@@ -14735,13 +14741,19 @@ sixel_encoder_encode(
     char const *png_final_path = NULL;
     char *png_temp_path = NULL;
     size_t png_temp_capacity = 0u;
+#if !SIXEL_ENCODER_USE_MKSTEMP_PNG_STAGING
     char *png_tmpnam_result = NULL;
     int png_open_flags = 0;
+#endif
 #if defined(O_EXCL) && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
     int png_retry_flags = 0;
 #endif
+#if !SIXEL_ENCODER_USE_MKSTEMP_PNG_STAGING
     int png_open_attempt;
+#endif
+#if !SIXEL_ENCODER_USE_MKSTEMP_PNG_STAGING || defined(O_BINARY)
     int png_open_errno;
+#endif
     sixel_clipboard_spec_t clipboard_spec;
     char clipboard_input_format[32];
     char *clipboard_input_path;
@@ -14772,8 +14784,12 @@ sixel_encoder_encode(
     path_check = 0;
     logger_prepared = 0;
     pipeline_wait_status = SIXEL_OK;
+#if !SIXEL_ENCODER_USE_MKSTEMP_PNG_STAGING
     png_open_attempt = 0;
+#endif
+#if !SIXEL_ENCODER_USE_MKSTEMP_PNG_STAGING || defined(O_BINARY)
     png_open_errno = 0;
+#endif
     saved_errno = 0;
     saved_lut_policy = SIXEL_LUT_POLICY_AUTO;
     force_auto_lut_for_psd = 0;
@@ -14905,6 +14921,9 @@ sixel_encoder_encode(
     load_context.psd_trace_only = psd_trace_only;
 
     if (encoder->output_is_png) {
+#if !SIXEL_ENCODER_USE_MKSTEMP_PNG_STAGING
+        png_tmpnam_result = NULL;
+#endif
         sixel_encoder_log_stage(encoder,
                                 NULL,
                                 "main",
@@ -14915,7 +14934,6 @@ sixel_encoder_encode(
                                     ? encoder->png_output_path
                                     : "(stdout)");
         png_temp_capacity = 0u;
-        png_tmpnam_result = NULL;
         png_temp_path = create_temp_template(encoder->allocator,
                                              &png_temp_capacity);
         if (png_temp_path == NULL) {
@@ -14925,6 +14943,40 @@ sixel_encoder_encode(
             goto end;
         }
         temp_debug_log("png_template_allocated", png_temp_path, 0);
+#if SIXEL_ENCODER_USE_MKSTEMP_PNG_STAGING
+        if (encoder->outfd >= 0 && encoder->outfd != STDOUT_FILENO) {
+            (void)sixel_compat_close(encoder->outfd);
+        }
+        /*
+         * NODERAWFS can race when we reserve a name with mktemp() and reopen
+         * it later. Keep the mkstemp() descriptor for PNG staging so the
+         * temp path remains owned by this process until write_png_from_sixel()
+         * finishes decoding it back out to the final PNG target.
+         */
+        encoder->outfd = mkstemp(png_temp_path);
+        if (encoder->outfd < 0) {
+            temp_debug_log("png_mkstemp_open_failed", png_temp_path, errno);
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode: failed to create the PNG target file.");
+            status = SIXEL_LIBC_ERROR;
+            goto end;
+        }
+# if defined(O_BINARY)
+        if (setmode(encoder->outfd, O_BINARY) < 0) {
+            png_open_errno = errno;
+            temp_debug_log("png_mkstemp_setmode_failed",
+                           png_temp_path,
+                           png_open_errno);
+            (void)sixel_compat_close(encoder->outfd);
+            encoder->outfd = (-1);
+            errno = png_open_errno;
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode: failed to create the PNG target file.");
+            status = SIXEL_LIBC_ERROR;
+            goto end;
+        }
+# endif
+#else
         if (sixel_compat_mktemp(png_temp_path, png_temp_capacity) != 0) {
             temp_debug_log("png_mktemp_failed", png_temp_path, errno);
             png_tmpnam_result = sixel_compat_tmpnam(png_temp_path,
@@ -15017,6 +15069,7 @@ sixel_encoder_encode(
             status = SIXEL_LIBC_ERROR;
             goto end;
         }
+#endif
         sixel_encoder_log_stage(encoder,
                                 NULL,
                                 "main",
