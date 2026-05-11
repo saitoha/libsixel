@@ -7,6 +7,7 @@
 #include <errno.h>
 
 #include "tests/loader/pixelformat_test_common.h"
+#include "src/loader-common.h"
 
 #if HAVE_WEBP
 #include <webp/decode.h>
@@ -283,9 +284,197 @@ webpfi_sixel_allocator_malloc(sixel_allocator_t *allocator, size_t nbytes)
 #define WEBP_MAX_ANIMATION_FRAMES WEBP_FI_MAX_ANIMATION_FRAMES
 
 /*
+ * The fault-injection tests reach static helpers inside loader-libwebp.c, but
+ * the Windows test_runner build links that translation unit without the
+ * loader-common implementation object that normally provides these helpers.
+ * Keep the unity test self-contained by mapping only the required
+ * loader-common entry points to local test shims.
+ *
+ * These cases exercise libwebp error handling rather than loader trace or
+ * EXIF rotation behavior, so the shims preserve callback sequencing and WebP
+ * signature checks while leaving unrelated features inert.
+ */
+#define SIXEL_TESTONLY_LOADER_TIMELINE_CB_MAGIC 0x534c544dU
+
+static void
+testonly_sixel_trace_topic_message(char const *topic, char const *format, ...)
+{
+    (void)topic;
+    (void)format;
+}
+
+static int
+testonly_loader_timeline_phase_start(char const *role)
+{
+    (void)role;
+    return -1;
+}
+
+static void
+testonly_loader_timeline_phase_finish(char const *role,
+                                      int job_id,
+                                      SIXELSTATUS status)
+{
+    (void)role;
+    (void)job_id;
+    (void)status;
+}
+
+static void
+testonly_loader_timeline_optional_skip_if_unmarked(char const *role)
+{
+    (void)role;
+}
+
+static void
+testonly_loader_timeline_callback_state_init(
+    sixel_loader_timeline_callback_state_t *state,
+    sixel_load_image_function fn_load,
+    void *context,
+    int header_job_id,
+    int decode_job_id)
+{
+    if (state == NULL) {
+        return;
+    }
+    state->magic = SIXEL_TESTONLY_LOADER_TIMELINE_CB_MAGIC;
+    state->fn_load = fn_load;
+    state->context = context;
+    state->header_job_id = header_job_id;
+    state->header_closed = 0;
+    state->decode_job_id = decode_job_id;
+    state->decode_open = decode_job_id >= 0 ? 1 : 0;
+}
+
+static void
+testonly_loader_timeline_callback_close_header(
+    sixel_loader_timeline_callback_state_t *state,
+    SIXELSTATUS status)
+{
+    if (state == NULL || state->header_closed != 0) {
+        return;
+    }
+    if (state->header_job_id >= 0) {
+        testonly_loader_timeline_phase_finish("header/read",
+                                              state->header_job_id,
+                                              status);
+    }
+    state->header_closed = 1;
+}
+
+static void
+testonly_loader_timeline_callback_close_decode(
+    sixel_loader_timeline_callback_state_t *state,
+    SIXELSTATUS status)
+{
+    if (state == NULL || state->decode_open == 0) {
+        return;
+    }
+    if (state->decode_job_id >= 0) {
+        testonly_loader_timeline_phase_finish("decode/pixels",
+                                              state->decode_job_id,
+                                              status);
+    }
+    state->decode_open = 0;
+    state->decode_job_id = -1;
+}
+
+static SIXELSTATUS
+testonly_loader_timeline_emit_frame_callback(sixel_frame_t *frame, void *data)
+{
+    sixel_loader_timeline_callback_state_t *state;
+    SIXELSTATUS status;
+
+    state = (sixel_loader_timeline_callback_state_t *)data;
+    if (state == NULL || state->fn_load == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (state->header_closed == 0) {
+        testonly_loader_timeline_callback_close_header(state, SIXEL_OK);
+    }
+    testonly_loader_timeline_callback_close_decode(state, SIXEL_OK);
+
+    status = state->fn_load(frame, state->context);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    state->decode_job_id = testonly_loader_timeline_phase_start(
+        "decode/pixels");
+    state->decode_open = state->decode_job_id >= 0 ? 1 : 0;
+    return status;
+}
+
+static int
+testonly_chunk_is_webp(sixel_chunk_t const *chunk)
+{
+    sixel_chunk_bytes_view_t view;
+
+    view.bytes = NULL;
+    view.size = 0u;
+    if (sixel_chunk_get_bytes(chunk, &view) != SIXEL_OK ||
+        view.bytes == NULL || view.size < 12u) {
+        return 0;
+    }
+
+    if (view.bytes[0] == 'R' &&
+        view.bytes[1] == 'I' &&
+        view.bytes[2] == 'F' &&
+        view.bytes[3] == 'F' &&
+        view.bytes[8] == 'W' &&
+        view.bytes[9] == 'E' &&
+        view.bytes[10] == 'B' &&
+        view.bytes[11] == 'P') {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+testonly_loader_exif_parse_orientation(unsigned char const *data,
+                                       size_t size,
+                                       int *orientation)
+{
+    (void)data;
+    (void)size;
+    if (orientation != NULL) {
+        *orientation = 0;
+    }
+    return 0;
+}
+
+static SIXELSTATUS
+testonly_loader_frame_apply_orientation(sixel_frame_t *frame,
+                                        int orientation)
+{
+    (void)frame;
+    (void)orientation;
+    return SIXEL_OK;
+}
+
+/*
  * Avoid global symbol collisions with the linked libsixel objects while
  * keeping access to load_with_libwebp() inside this translation unit.
  */
+#define sixel_trace_topic_message testonly_sixel_trace_topic_message
+#define loader_timeline_phase_start testonly_loader_timeline_phase_start
+#define loader_timeline_optional_skip_if_unmarked \
+    testonly_loader_timeline_optional_skip_if_unmarked
+#define loader_timeline_callback_state_init \
+    testonly_loader_timeline_callback_state_init
+#define loader_timeline_callback_close_header \
+    testonly_loader_timeline_callback_close_header
+#define loader_timeline_callback_close_decode \
+    testonly_loader_timeline_callback_close_decode
+#define loader_timeline_emit_frame_callback \
+    testonly_loader_timeline_emit_frame_callback
+#define chunk_is_webp testonly_chunk_is_webp
+#define loader_exif_parse_orientation \
+    testonly_loader_exif_parse_orientation
+#define loader_frame_apply_orientation \
+    testonly_loader_frame_apply_orientation
 #define sixel_loader_libwebp_ref testonly_loader_libwebp_ref
 #define sixel_loader_libwebp_unref testonly_loader_libwebp_unref
 #define sixel_loader_libwebp_setopt testonly_loader_libwebp_setopt
@@ -321,6 +510,16 @@ webpfi_sixel_allocator_malloc(sixel_allocator_t *allocator, size_t nbytes)
 #undef sixel_allocator_malloc
 
 #undef WEBP_MAX_ANIMATION_FRAMES
+#undef sixel_trace_topic_message
+#undef loader_timeline_phase_start
+#undef loader_timeline_optional_skip_if_unmarked
+#undef loader_timeline_callback_state_init
+#undef loader_timeline_callback_close_header
+#undef loader_timeline_callback_close_decode
+#undef loader_timeline_emit_frame_callback
+#undef chunk_is_webp
+#undef loader_exif_parse_orientation
+#undef loader_frame_apply_orientation
 #endif
 
 #ifndef WEBP_FI_MAX_ANIMATION_FRAMES
