@@ -86,13 +86,19 @@ if img2sixel_opt.enabled()
   img2sixel_deps = [img2sixel_exe]
 
   # The AFL persistent CLI harnesses rely on POSIX-only headers and temp-file
-  # or stdio redirection APIs (`unistd.h`, `dup2`, `mkstemp`, `setenv`).
+  # or stdio redirection APIs (`unistd.h`, `dup2`, `mkstemp`, `setenv`,
+  # `unsetenv`).
   # MSVC-based environments under MSYS2 may satisfy some Unix probes while
   # still failing to compile the harness sources because `unistd.h` is absent.
   # Gate these helpers on the concrete API surface they require.
   img2sixel_cli_fuzz_supported = cc.has_header('unistd.h')
   if img2sixel_cli_fuzz_supported
     img2sixel_cli_fuzz_supported = cc.has_function('setenv',
+      prefix: '#include <stdlib.h>',
+      args: libsixel_posix_defs)
+  endif
+  if img2sixel_cli_fuzz_supported
+    img2sixel_cli_fuzz_supported = cc.has_function('unsetenv',
       prefix: '#include <stdlib.h>',
       args: libsixel_posix_defs)
   endif
