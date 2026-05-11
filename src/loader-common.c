@@ -733,7 +733,7 @@ loader_exif_read_u32(unsigned char const *data, int little_endian)
            (unsigned int)data[3];
 }
 
-int
+SIXEL_INTERNAL_API int
 loader_exif_parse_orientation(unsigned char const *data,
                               size_t size,
                               int *orientation)
@@ -913,7 +913,7 @@ loader_exif_map_coordinates(int orientation,
     }
 }
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 loader_frame_apply_orientation(sixel_frame_t *frame,
                                int orientation)
 {
@@ -1300,7 +1300,7 @@ sixel_trace_topic_is_enabled(char const *topic)
 }
 
 /* Emit topic-scoped diagnostics selected through SIXEL_TRACE_TOPIC. */
-void
+SIXEL_INTERNAL_API void
 sixel_trace_topic_message(
     char const *topic,
     char const *format,
@@ -1481,7 +1481,7 @@ loader_timeline_scope_end(void)
     loader_background_unlock();
 }
 
-int
+SIXEL_INTERNAL_API int
 loader_timeline_phase_start(char const *role)
 {
     int job_id;
@@ -1530,7 +1530,7 @@ loader_timeline_optional_mark(char const *role)
     loader_timeline_scope.optional_mask |= bit;
 }
 
-void
+SIXEL_INTERNAL_API void
 loader_timeline_optional_skip_if_unmarked(char const *role)
 {
     unsigned int bit;
@@ -1551,7 +1551,7 @@ loader_timeline_optional_skip_if_unmarked(char const *role)
     loader_timeline_scope.optional_mask |= bit;
 }
 
-void
+SIXEL_INTERNAL_API void
 loader_timeline_callback_state_init(
     sixel_loader_timeline_callback_state_t *state,
     sixel_load_image_function fn_load,
@@ -1571,7 +1571,7 @@ loader_timeline_callback_state_init(
     state->decode_open = decode_job_id >= 0 ? 1 : 0;
 }
 
-void
+SIXEL_INTERNAL_API void
 loader_timeline_callback_close_header(
     sixel_loader_timeline_callback_state_t *state,
     SIXELSTATUS status)
@@ -1587,7 +1587,7 @@ loader_timeline_callback_close_header(
     state->header_closed = 1;
 }
 
-void
+SIXEL_INTERNAL_API void
 loader_timeline_callback_close_decode(
     sixel_loader_timeline_callback_state_t *state,
     SIXELSTATUS status)
@@ -1616,7 +1616,7 @@ loader_timeline_unwrap_callback_context(void *context)
     return context;
 }
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 loader_timeline_emit_frame_callback(sixel_frame_t *frame, void *data)
 {
     sixel_loader_timeline_callback_state_t *state;
@@ -1713,7 +1713,7 @@ chunk_is_jpeg(sixel_chunk_t const *chunk)
     return 0;
 }
 
-int
+SIXEL_INTERNAL_API int
 chunk_is_webp(sixel_chunk_t const *chunk)
 {
     sixel_chunk_bytes_view_t view;

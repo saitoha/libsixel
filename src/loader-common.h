@@ -115,38 +115,50 @@ void loader_trace_result(char const *name, SIXELSTATUS status);
 int loader_trace_is_enabled(void);
 void loader_trace_message(char const *format, ...);
 int sixel_trace_topic_is_enabled(char const *topic);
-void sixel_trace_topic_message(char const *topic,
-                               char const *format, ...);
+/*
+ * Keep backend helpers exported for Windows test_runner builds. Some tests
+ * unity-include a backend source file while still linking the shared libsixel
+ * import library, so the backend must resolve shared loader-common helpers
+ * through the DLL instead of pulling another copy of loader-common.c.
+ */
+SIXEL_INTERNAL_API void
+sixel_trace_topic_message(char const *topic,
+                          char const *format, ...);
 
 void loader_timeline_scope_begin(sixel_timeline_logger_t *logger,
                                  char const *worker,
                                  int *job_seq);
 void loader_timeline_scope_end(void);
-int loader_timeline_phase_start(char const *role);
+SIXEL_INTERNAL_API int loader_timeline_phase_start(char const *role);
 void loader_timeline_phase_finish(char const *role,
                                   int job_id,
                                   SIXELSTATUS status);
 void loader_timeline_optional_mark(char const *role);
-void loader_timeline_optional_skip_if_unmarked(char const *role);
-void loader_timeline_callback_state_init(
+SIXEL_INTERNAL_API void
+loader_timeline_optional_skip_if_unmarked(char const *role);
+SIXEL_INTERNAL_API void
+loader_timeline_callback_state_init(
     sixel_loader_timeline_callback_state_t *state,
     sixel_load_image_function fn_load,
     void *context,
     int header_job_id,
     int decode_job_id);
-void loader_timeline_callback_close_header(
+SIXEL_INTERNAL_API void
+loader_timeline_callback_close_header(
     sixel_loader_timeline_callback_state_t *state,
     SIXELSTATUS status);
-void loader_timeline_callback_close_decode(
+SIXEL_INTERNAL_API void
+loader_timeline_callback_close_decode(
     sixel_loader_timeline_callback_state_t *state,
     SIXELSTATUS status);
 void *loader_timeline_unwrap_callback_context(void *context);
-SIXELSTATUS loader_timeline_emit_frame_callback(sixel_frame_t *frame,
-                                                void *data);
+SIXEL_INTERNAL_API SIXELSTATUS
+loader_timeline_emit_frame_callback(sixel_frame_t *frame,
+                                    void *data);
 
 int chunk_is_png(sixel_chunk_t const *chunk);
 int chunk_is_jpeg(sixel_chunk_t const *chunk);
-int chunk_is_webp(sixel_chunk_t const *chunk);
+SIXEL_INTERNAL_API int chunk_is_webp(sixel_chunk_t const *chunk);
 int chunk_is_bmp(sixel_chunk_t const *chunk);
 int chunk_is_gif(sixel_chunk_t const *chunk);
 int chunk_is_tiff(sixel_chunk_t const *chunk);
@@ -155,11 +167,13 @@ int chunk_is_tga(sixel_chunk_t const *chunk);
 int chunk_is_gd(sixel_chunk_t const *chunk);
 int chunk_is_gd2(sixel_chunk_t const *chunk);
 
-int loader_exif_parse_orientation(unsigned char const *data,
-                                  size_t size,
-                                  int *orientation);
-SIXELSTATUS loader_frame_apply_orientation(sixel_frame_t *frame,
-                                           int orientation);
+SIXEL_INTERNAL_API int
+loader_exif_parse_orientation(unsigned char const *data,
+                              size_t size,
+                              int *orientation);
+SIXEL_INTERNAL_API SIXELSTATUS
+loader_frame_apply_orientation(sixel_frame_t *frame,
+                               int orientation);
 
 #endif /* LIBSIXEL_LOADER_COMMON_H */
 
