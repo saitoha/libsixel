@@ -38,5 +38,5 @@ test "${probe_status-}" = "" || {
     exit 0
 }
 
-echo "ok" 1 - "-L accepts libtiff:c suboptions"
+echo "ok" 1 - "-L accepts libtiff:Eauto! suboptions"
 exit 0

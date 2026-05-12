@@ -38,5 +38,5 @@ test "${probe_status-}" = "" || {
     exit 0
 }
 
-echo "ok" 1 - "-L accepts libwebp:c suboptions"
+echo "ok" 1 - "-L accepts libwebp:Eauto! suboptions"
 exit 0
