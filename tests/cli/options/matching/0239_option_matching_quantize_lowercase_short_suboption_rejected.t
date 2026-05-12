@@ -40,5 +40,5 @@ test "${diag_tail}" != "${diag_line}" || {
     exit 0
 }
 
-echo "ok" 1 - "lowercase -Q short suboption key is rejected"
+echo "ok" 1 - "lowercase -Q short syntax is rejected"
 exit 0

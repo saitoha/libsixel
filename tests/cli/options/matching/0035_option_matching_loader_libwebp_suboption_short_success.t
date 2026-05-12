@@ -24,7 +24,7 @@ probe_output=$(
 
 case "${probe_output}" in
     *"invalid argument for -L,--loaders option"*)
-        echo "not ok" 1 - "-L libwebp short suboption key was rejected by option parser"
+        echo "not ok" 1 - "-L libwebp short syntax was rejected by option parser"
         printf '%s\n' '--- stderr ---' >&2
         printf '%s\n' "${probe_output}" >&2
         exit 0
@@ -34,7 +34,7 @@ case "${probe_output}" in
 esac
 
 test "${probe_status-}" = "" || {
-    echo "not ok" 1 - "-L libwebp short suboption key was rejected by option parser"
+    echo "not ok" 1 - "-L libwebp short syntax was rejected by option parser"
     exit 0
 }
 
