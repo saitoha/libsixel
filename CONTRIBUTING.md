@@ -59,7 +59,7 @@ Use short, specific commit messages. Prefixes such as `fix:`, `test:`,
 
 ## Development Environment
 
-For contributors, installing the optional staticcheck tools is strongly
+For contributors, installing the optional check tools is strongly
 recommended. Missing tools usually make the corresponding check skip rather
 than fail, but a full pre-PR staticcheck run is more useful when these tools
 are available:
@@ -68,7 +68,8 @@ are available:
 - `shellcheck` for shell TAP and helper scripts
 - `codespell` for typo checks
 - `python3` for Python syntax checks and Python-based static checks
-- Python `tree-sitter` and `tree-sitter-c` bindings for C AST contract checks
+- Python `tree-sitter` and `tree-sitter-c` bindings for C AST source-contract
+  checks
 
 Install the Python bindings for the same interpreter that Autotools or Meson
 will detect. For example:
@@ -83,8 +84,22 @@ On macOS with Homebrew, the standalone tools can usually be installed with:
 brew install actionlint shellcheck codespell
 ```
 
+On Ubuntu, the tools commonly available from apt can usually be installed with:
+
+```sh
+sudo apt-get update
+sudo apt-get install -y python3 python3-pip shellcheck codespell
+```
+
+Install `actionlint` separately if your Ubuntu release does not provide it as
+an apt package.
+
 End users do not need these tools; they are only recommended for contributors
 who run the full staticcheck suite locally.
+
+The current tree-sitter-c based check enforces source contracts that are
+awkward to express with text searches, such as timeline log-path handling and
+thread-local status message storage.
 
 Basic Autotools verification:
 
@@ -140,16 +155,21 @@ build system can break another platform, packager, CI job, or downstream user.
 The setup below is not required just to build or test the project. Contributors
 who modify or regenerate build-system files, commit generated build outputs, or
 update the build tools themselves should use the libsixel-standard Autotools
-and Meson versions. The setup script installs them under
-`$TOP_SRCDIR/.local/bin`; add that directory to `PATH` before running
-Autotools or Meson commands that affect committed files. From the source tree
-root:
+and Meson versions.
+
+By default, `tools/setup-buildtools.bash` installs those tools under the
+current working directory's `.local` directory. It does not always install
+under `$TOP_SRCDIR`. Run it from the source tree root when you want the
+toolchain under the source tree, then add that directory to `PATH` before
+running Autotools or Meson commands that affect committed files:
 
 ```sh
-TOP_SRCDIR=${TOP_SRCDIR:-$PWD}
-"$TOP_SRCDIR/tools/setup-buildtools.bash"
-export PATH="$TOP_SRCDIR/.local/bin:$PATH"
+./tools/setup-buildtools.bash
+export PATH="$PWD/.local/bin:$PATH"
 ```
+
+If you run the setup script from another directory, either pass `--prefix`
+explicitly or add that working directory's `.local/bin` to `PATH`.
 
 Using the standard versions avoids noisy generated Autotools diffs and
 prevents Meson files from accidentally using syntax that the supported Meson
@@ -486,7 +506,6 @@ commit message.
 - Build options, source lists, test registration, and install paths are aligned
   between the two build systems.
 - Changed shell TAP tests pass shellcheck.
-- Security issues were not reported publicly.
 - Build artifacts and local experiment files are not included.
 
 When in doubt, ask early in an issue or pull request. Small reproducible facts,
