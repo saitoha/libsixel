@@ -59,23 +59,6 @@ Use short, specific commit messages. Prefixes such as `fix:`, `test:`,
 
 ## Development Environment
 
-This repository maintains both Autotools and Meson. Neither is merely a
-fallback; both are supported user-facing build paths.
-
-This setup is not required just to build or test the project. Contributors who
-modify or regenerate build-system files, commit generated build outputs, or
-update the build tools themselves should use the libsixel-standard Autotools
-and Meson versions. This avoids noisy generated Autotools diffs and prevents
-Meson files from accidentally using syntax that the supported Meson version
-does not accept. Those tools are installed under `$TOP_SRCDIR/.local/bin` by
-the setup script. From the source tree root:
-
-```sh
-TOP_SRCDIR=${TOP_SRCDIR:-$PWD}
-"$TOP_SRCDIR/tools/setup-buildtools.bash"
-export PATH="$TOP_SRCDIR/.local/bin:$PATH"
-```
-
 For contributors, installing the optional staticcheck tools is strongly
 recommended. Missing tools usually make the corresponding check skip rather
 than fail, but a full pre-PR staticcheck run is more useful when these tools
@@ -148,10 +131,29 @@ any failing or still-running jobs.
 
 ## Autotools and Meson Dual Maintenance
 
-In libsixel, Autotools/Meson drift is not something to leave for someone else.
-It is a compatibility surface that the contributor should check. Updating only
-one build system can break another platform, packager, CI job, or downstream
-user.
+This repository maintains both Autotools and Meson. Neither is merely a
+fallback; both are supported user-facing build paths. In libsixel,
+Autotools/Meson drift is not something to leave for someone else. It is a
+compatibility surface that the contributor should check. Updating only one
+build system can break another platform, packager, CI job, or downstream user.
+
+The setup below is not required just to build or test the project. Contributors
+who modify or regenerate build-system files, commit generated build outputs, or
+update the build tools themselves should use the libsixel-standard Autotools
+and Meson versions. The setup script installs them under
+`$TOP_SRCDIR/.local/bin`; add that directory to `PATH` before running
+Autotools or Meson commands that affect committed files. From the source tree
+root:
+
+```sh
+TOP_SRCDIR=${TOP_SRCDIR:-$PWD}
+"$TOP_SRCDIR/tools/setup-buildtools.bash"
+export PATH="$TOP_SRCDIR/.local/bin:$PATH"
+```
+
+Using the standard versions avoids noisy generated Autotools diffs and
+prevents Meson files from accidentally using syntax that the supported Meson
+version does not accept.
 
 Check both Autotools and Meson when changing:
 
