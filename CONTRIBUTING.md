@@ -60,11 +60,20 @@ Use short, specific commit messages. Prefixes such as `fix:`, `test:`,
 ## Development Environment
 
 This repository maintains both Autotools and Meson. Neither is merely a
-fallback; both are supported user-facing build paths. If you use the bundled
-local tools, add `.local/bin` to `PATH` first:
+fallback; both are supported user-facing build paths.
+
+This setup is not required just to build or test the project. Contributors who
+modify or regenerate build-system files, commit generated build outputs, or
+update the build tools themselves should use the libsixel-standard Autotools
+and Meson versions. This avoids noisy generated Autotools diffs and prevents
+Meson files from accidentally using syntax that the supported Meson version
+does not accept. Those tools are installed under `$TOP_SRCDIR/.local/bin` by
+the setup script. From the source tree root:
 
 ```sh
-export PATH="$PWD/.local/bin:$PATH"
+TOP_SRCDIR=${TOP_SRCDIR:-$PWD}
+"$TOP_SRCDIR/tools/setup-buildtools.bash"
+export PATH="$TOP_SRCDIR/.local/bin:$PATH"
 ```
 
 For contributors, installing the optional staticcheck tools is strongly
