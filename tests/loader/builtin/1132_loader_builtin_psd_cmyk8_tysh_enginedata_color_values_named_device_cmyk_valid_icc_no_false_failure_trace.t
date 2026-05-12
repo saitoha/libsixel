@@ -24,7 +24,7 @@ input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_cmyk8_missing_composi
 trace_log=''
 command_status=0
 
-trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms=auto!     "${input_psd}" -o /dev/null 2>&1) || command_status=$?
+trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto!     "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {
     echo "not ok" 1 - "valid ICC decode failed: ${trace_log}"

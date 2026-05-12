@@ -31,7 +31,7 @@ inside_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
     --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
-    -Lbuiltin:e=auto! -o /dev/null "${inside_psd}" 2>&1) || \
+    -Lbuiltin:Eauto! -o /dev/null "${inside_psd}" 2>&1) || \
     inside_status=$?
 
 test "${inside_status}" -eq 0 || {
@@ -43,7 +43,7 @@ outside_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
     --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
-    -Lbuiltin:e=auto! -o /dev/null "${outside_psd}" 2>&1) || \
+    -Lbuiltin:Eauto! -o /dev/null "${outside_psd}" 2>&1) || \
     outside_status=$?
 
 test "${outside_status}" -eq 0 || {

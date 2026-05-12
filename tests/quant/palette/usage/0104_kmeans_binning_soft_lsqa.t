@@ -20,7 +20,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/kmeans-binning-soft.six"
 lsqa_run_status=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qk:b=soft:n=6:m=srgb:d=trilinear:r=32 \
+    -Qk:Bsoft:N6:Msrgb:Dtrilinear:R32 \
     -p 64 \
     -o "${output_sixel}" \
     "${input_image}" || {

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying -d bluenoise accepts g short suboption.
+# TAP test verifying -d bluenoise accepts the GVALUE short form.
 
 set -eux
 
@@ -12,12 +12,12 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -d bluenoise:g=1.0 \
+    -d bluenoise:G1.0 \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o /dev/null || {
-    echo "not ok" 1 - "bluenoise g short suboption was rejected"
+    echo "not ok" 1 - "bluenoise GVALUE short form was rejected"
     exit 0
 }
 
-echo "ok" 1 - "bluenoise g short suboption is accepted"
+echo "ok" 1 - "bluenoise GVALUE short form is accepted"
 exit 0

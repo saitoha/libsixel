@@ -78,7 +78,7 @@ g_suboption_choices_loader_orientation[] = {
 static sixel_suboption_key_t const g_subkeys_loader_libpng[] = {
     {
         "cms_engine",
-        "e",
+        "E",
         "SIXEL_LOADER_LIBPNG_CMS_ENGINE",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_suboption_choices_loader_cms_engine,
@@ -87,7 +87,7 @@ static sixel_suboption_key_t const g_subkeys_loader_libpng[] = {
     },
     {
         "orientation",
-        "o",
+        "O",
         "SIXEL_LOADER_LIBPNG_ORIENTATION",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_suboption_choices_loader_orientation,
@@ -101,7 +101,7 @@ static sixel_suboption_key_t const g_subkeys_loader_libpng[] = {
 static sixel_suboption_key_t const g_subkeys_loader_libjpeg[] = {
     {
         "cms_engine",
-        "e",
+        "E",
         "SIXEL_LOADER_LIBJPEG_CMS_ENGINE",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_suboption_choices_loader_cms_engine,
@@ -110,7 +110,7 @@ static sixel_suboption_key_t const g_subkeys_loader_libjpeg[] = {
     },
     {
         "orientation",
-        "o",
+        "O",
         "SIXEL_LOADER_LIBJPEG_ORIENTATION",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_suboption_choices_loader_orientation,
@@ -124,7 +124,7 @@ static sixel_suboption_key_t const g_subkeys_loader_libjpeg[] = {
 static sixel_suboption_key_t const g_subkeys_loader_libwebp[] = {
     {
         "cms_engine",
-        "e",
+        "E",
         "SIXEL_LOADER_LIBWEBP_CMS_ENGINE",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_suboption_choices_loader_cms_engine,
@@ -133,7 +133,7 @@ static sixel_suboption_key_t const g_subkeys_loader_libwebp[] = {
     },
     {
         "orientation",
-        "o",
+        "O",
         "SIXEL_LOADER_LIBWEBP_ORIENTATION",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_suboption_choices_loader_orientation,
@@ -147,7 +147,7 @@ static sixel_suboption_key_t const g_subkeys_loader_libwebp[] = {
 static sixel_suboption_key_t const g_subkeys_loader_coregraphics[] = {
     {
         "orientation",
-        "o",
+        "O",
         "SIXEL_LOADER_COREGRAPHICS_ORIENTATION",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_suboption_choices_loader_orientation,
@@ -161,7 +161,7 @@ static sixel_suboption_key_t const g_subkeys_loader_coregraphics[] = {
 static sixel_suboption_key_t const g_subkeys_loader_libtiff_cms[] = {
     {
         "cms_engine",
-        "e",
+        "E",
         "SIXEL_LOADER_LIBTIFF_CMS_ENGINE",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_suboption_choices_loader_cms_engine,
@@ -174,7 +174,7 @@ static sixel_suboption_key_t const g_subkeys_loader_libtiff_cms[] = {
 static sixel_suboption_key_t const g_subkeys_loader_builtin_enable_cms[] = {
     {
         "cms_engine",
-        "e",
+        "E",
         "SIXEL_LOADER_BUILTIN_CMS_ENGINE",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_suboption_choices_loader_cms_engine,
@@ -183,7 +183,7 @@ static sixel_suboption_key_t const g_subkeys_loader_builtin_enable_cms[] = {
     },
     {
         "orientation",
-        "o",
+        "O",
         "SIXEL_LOADER_BUILTIN_ORIENTATION",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_suboption_choices_loader_orientation,

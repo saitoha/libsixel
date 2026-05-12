@@ -29,7 +29,7 @@ command_status=0
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --lookup-policy=none \
     --env SIXEL_TRACE_TOPIC=psd_decode \
-    -Lbuiltin:e=auto! -o "${output_sixel}" "${input_psd}" 2>&1) || \
+    -Lbuiltin:Eauto! -o "${output_sixel}" "${input_psd}" 2>&1) || \
     command_status=$?
 
 test "${command_status}" -eq 0 || {

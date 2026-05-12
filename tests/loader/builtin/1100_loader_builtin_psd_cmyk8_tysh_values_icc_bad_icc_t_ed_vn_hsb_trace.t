@@ -26,7 +26,7 @@ trace_log=''
 suffix=nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb
     input_psd="${base_dir}/snake16_cmyk8_missing_composite_multilayer_${suffix}_valid_icc_profile.psd"
     command_status=0
-    trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms=auto! \
+    trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! \
         "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
     test "${command_status}" -eq 0 || {
@@ -45,7 +45,7 @@ suffix=nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb
 
     input_psd="${base_dir}/snake16_cmyk8_missing_composite_multilayer_${suffix}_bad_icc_profile.psd"
     command_status=0
-    trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms=auto! \
+    trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! \
         "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
     test "${command_status}" -eq 0 || {
@@ -66,7 +66,7 @@ suffix=nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb
 
     input_psd="${base_dir}/snake16_cmyk8_missing_composite_multilayer_${suffix}_malformed_resource.psd"
     command_status=0
-    trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms=auto! \
+    trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! \
         "${input_psd}" -o /dev/null 2>&1) || command_status=$?
 
     test "${command_status}" -eq 0 || {

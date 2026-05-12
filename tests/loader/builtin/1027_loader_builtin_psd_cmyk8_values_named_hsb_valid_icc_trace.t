@@ -34,7 +34,7 @@ lsqa_msg=''
 case_name=snake16_cmyk8_missing_composite_multilayer_nonpixel_nopixel_tysh_enginedata_fillcolor_values_named_hsb_valid_icc_profile
     input_psd="${base_dir}/${case_name}.psd"
     command_status=0
-    trace_output=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms=auto! \
+    trace_output=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! \
         -o "${output_sixel}" "${input_psd}" 2>&1) || command_status=$?
 
     test "${command_status}" -eq 0 || {

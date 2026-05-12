@@ -26,7 +26,7 @@ command_status=0
 set +e
 set +xv
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Lbuiltin:e=auto! -o "${output_sixel}" "${input_psd}" >/dev/null 2>&1
+    -Lbuiltin:Eauto! -o "${output_sixel}" "${input_psd}" >/dev/null 2>&1
 command_status=$?
 set -e
 

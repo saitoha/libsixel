@@ -32,7 +32,7 @@ none_status=0
 auto_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --lookup-policy=auto \
     --env SIXEL_TRACE_TOPIC=psd_decode \
-    -Lbuiltin:e=auto! -o "${auto_output}" "${input_psd}" 2>&1) || \
+    -Lbuiltin:Eauto! -o "${auto_output}" "${input_psd}" 2>&1) || \
     auto_status=$?
 
 test "${auto_status}" -eq 0 || {
@@ -43,7 +43,7 @@ test "${auto_status}" -eq 0 || {
 none_trace=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --lookup-policy=none \
     --env SIXEL_TRACE_TOPIC=psd_decode \
-    -Lbuiltin:e=auto! -o "${none_output}" "${input_psd}" 2>&1) || \
+    -Lbuiltin:Eauto! -o "${none_output}" "${input_psd}" 2>&1) || \
     none_status=$?
 
 test "${none_status}" -eq 0 || {

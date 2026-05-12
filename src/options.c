@@ -236,6 +236,14 @@ sixel_option_match_suboption_key(
     char *diagnostic,
     size_t diagnostic_size);
 
+static sixel_option_choice_result_t
+sixel_option_match_suboption_short_key(
+    char const *token,
+    sixel_suboption_key_t const *keys,
+    size_t key_count,
+    int *matched_index,
+    char const **value_text_out);
+
 static int
 sixel_option_suboption_key_token_is_removed_alias(
     sixel_suboption_key_t const *key,
@@ -885,22 +893,35 @@ sixel_option_parse_argument_with_suboptions(
             *entry_end = '\0';
         }
         equal_pos = strchr(cursor, '=');
-        if (equal_pos == NULL || equal_pos == cursor || equal_pos[1] == '\0') {
-            sixel_helper_set_additional_message(
-                "suboption must be written as key=value.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto cleanup;
+        /*
+         * Long keys keep the explicit key=value spelling.  Short keys use
+         * the compact KEYvalue form so abbreviated long keys cannot collide
+         * with the short-key namespace.
+         */
+        if (equal_pos != NULL) {
+            if (equal_pos == cursor || equal_pos[1] == '\0') {
+                sixel_helper_set_additional_message(
+                    "suboption must be written as key=value or KEYvalue.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto cleanup;
+            }
+            *equal_pos = '\0';
+            value_text = equal_pos + 1;
+            match_result = sixel_option_match_suboption_key(
+                cursor,
+                resolution->base_def->subkeys,
+                resolution->base_def->subkey_count,
+                &key_index,
+                diagnostic,
+                diagnostic_size);
+        } else {
+            match_result = sixel_option_match_suboption_short_key(
+                cursor,
+                resolution->base_def->subkeys,
+                resolution->base_def->subkey_count,
+                &key_index,
+                &value_text);
         }
-        *equal_pos = '\0';
-        value_text = equal_pos + 1;
-
-        match_result = sixel_option_match_suboption_key(
-            cursor,
-            resolution->base_def->subkeys,
-            resolution->base_def->subkey_count,
-            &key_index,
-            diagnostic,
-            diagnostic_size);
         if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
             sixel_option_report_ambiguous_prefix(cursor,
                                                  diagnostic,
@@ -1507,18 +1528,14 @@ sixel_option_match_suboption_key(
     size_t diagnostic_size)
 {
     size_t index;
-    size_t capacity;
     size_t choice_count;
     sixel_option_choice_t *choices;
-    sixel_option_choice_result_t result;
-    int matched_value;
+    int candidate_index;
 
     index = 0u;
-    capacity = 0u;
     choice_count = 0u;
     choices = NULL;
-    result = SIXEL_OPTION_CHOICE_NONE;
-    matched_value = 0;
+    candidate_index = (-1);
 
     if (matched_index != NULL) {
         *matched_index = 0;
@@ -1534,21 +1551,32 @@ sixel_option_match_suboption_key(
             ++index;
             continue;
         }
-        choice_count += 1u;
-        if (keys[index].short_name != NULL &&
-                keys[index].short_name[0] != '\0') {
-            choice_count += 1u;
+        if (keys[index].name != NULL &&
+                strcmp(keys[index].name, token) == 0) {
+            if (candidate_index != (-1)) {
+                return SIXEL_OPTION_CHOICE_AMBIGUOUS;
+            }
+            candidate_index = (int)index;
         }
         ++index;
     }
 
-    capacity = choice_count;
-    if (capacity == 0u ||
-            capacity > (SIZE_MAX / sizeof(sixel_option_choice_t))) {
+    if (candidate_index != (-1)) {
+        if (matched_index != NULL) {
+            *matched_index = candidate_index;
+        }
+        return SIXEL_OPTION_CHOICE_MATCH;
+    }
+
+    if (diagnostic != NULL && diagnostic_size > 0u) {
+        diagnostic[0] = '\0';
+    }
+    if (key_count > (SIZE_MAX / sizeof(sixel_option_choice_t))) {
         return SIXEL_OPTION_CHOICE_NONE;
     }
+
     choices = (sixel_option_choice_t *)malloc(
-        capacity * sizeof(sixel_option_choice_t));
+        key_count * sizeof(sixel_option_choice_t));
     if (choices == NULL) {
         return SIXEL_OPTION_CHOICE_NONE;
     }
@@ -1562,37 +1590,86 @@ sixel_option_match_suboption_key(
             ++index;
             continue;
         }
-        if (choice_count >= capacity) {
-            break;
-        }
-        choices[choice_count].name = keys[index].name;
-        choices[choice_count].value = (int)index;
-        choice_count += 1u;
-        if (keys[index].short_name != NULL &&
-                keys[index].short_name[0] != '\0') {
-            if (choice_count >= capacity) {
-                break;
-            }
-            choices[choice_count].name = keys[index].short_name;
+        if (keys[index].name != NULL && keys[index].name[0] != '\0') {
+            choices[choice_count].name = keys[index].name;
             choices[choice_count].value = (int)index;
             choice_count += 1u;
         }
         ++index;
     }
 
-    result = sixel_option_match_choice(token,
-                                       choices,
-                                       choice_count,
-                                       &matched_value,
-                                       diagnostic,
-                                       diagnostic_size);
+    (void)sixel_option_collect_choice_suggestions(token,
+                                                  choices,
+                                                  choice_count,
+                                                  diagnostic,
+                                                  diagnostic_size);
     free(choices);
 
-    if (result == SIXEL_OPTION_CHOICE_MATCH && matched_index != NULL) {
-        *matched_index = matched_value;
+    return SIXEL_OPTION_CHOICE_NONE;
+}
+
+static sixel_option_choice_result_t
+sixel_option_match_suboption_short_key(
+    char const *token,
+    sixel_suboption_key_t const *keys,
+    size_t key_count,
+    int *matched_index,
+    char const **value_text_out)
+{
+    size_t index;
+    size_t short_length;
+    int candidate_index;
+    char const *candidate_value_text;
+
+    index = 0u;
+    short_length = 0u;
+    candidate_index = (-1);
+    candidate_value_text = NULL;
+
+    if (matched_index != NULL) {
+        *matched_index = 0;
+    }
+    if (value_text_out != NULL) {
+        *value_text_out = NULL;
+    }
+    if (token == NULL || keys == NULL || key_count == 0u) {
+        return SIXEL_OPTION_CHOICE_NONE;
     }
 
-    return result;
+    /*
+     * Short spellings are stored in schema as canonical uppercase prefixes.
+     * A nonempty suffix is required because the suffix is the value text.
+     */
+    while (index < key_count) {
+        if (keys[index].short_name == NULL ||
+                keys[index].short_name[0] == '\0') {
+            ++index;
+            continue;
+        }
+        short_length = strlen(keys[index].short_name);
+        if (strncmp(token, keys[index].short_name, short_length) == 0
+                && token[short_length] != '\0') {
+            if (candidate_index != (-1)) {
+                return SIXEL_OPTION_CHOICE_AMBIGUOUS;
+            }
+            candidate_index = (int)index;
+            candidate_value_text = token + short_length;
+        }
+        ++index;
+    }
+
+    if (candidate_index == (-1)) {
+        return SIXEL_OPTION_CHOICE_NONE;
+    }
+
+    if (matched_index != NULL) {
+        *matched_index = candidate_index;
+    }
+    if (value_text_out != NULL) {
+        *value_text_out = candidate_value_text;
+    }
+
+    return SIXEL_OPTION_CHOICE_MATCH;
 }
 
 static int

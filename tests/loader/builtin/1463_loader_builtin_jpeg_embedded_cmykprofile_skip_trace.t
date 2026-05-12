@@ -16,7 +16,7 @@ input_jpeg="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-embedded-cmykprofil
 trace_log=''
 command_status=0
 
-trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms=auto! \
+trace_log=$(set +xv; SIXEL_TRACE_TOPIC=loader ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin:cms_engine=auto! \
     "${input_jpeg}" -o /dev/null 2>&1) || command_status=$?
 
 test "${command_status}" -eq 0 || {

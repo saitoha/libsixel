@@ -479,26 +479,37 @@ Options:
                            the image to (default=256)
 -Q MODEL, --quantize-model=MODEL
                            choose the palette solver. MODEL accepts
-                           auto, heckbert, kmeans, or medoids. auto
+                           auto, heckbert, kmeans, medoids, or center.
+                           auto
                            preserves the historical Heckbert median-cut
                            behaviour.
+                           Long suboptions use key=value. Uppercase short
+                           forms use Kvalue without an equals sign.
                            kmeans accepts suboptions using
                            kmeans:key=value[:key=value...].
-                             inittype (or i)  -> auto, none, or pca
-                             threshold (or t) -> float in 0.0-0.5
-                             binning (or b)   -> auto, none, hard, or soft
-                             binbits (or n)   -> integer in 4-8
-                             mapping (or m)   -> uniform or srgb
-                             softdist (or d)  -> trilinear
-                             autoratio (or r) -> integer in 1-1048576
-                             feedback (or f)  -> off or on
+                             inittype (or Ivalue)
+                                               -> auto, none, or pca
+                             threshold (or Tvalue)
+                                               -> float in 0.0-0.5
+                             binning (or Bvalue)
+                                               -> auto, none, hard, or soft
+                             binbits (or Nvalue)
+                                               -> integer in 4-8
+                             mapping (or Mvalue)
+                                               -> uniform or srgb
+                             softdist (or Dvalue)
+                                               -> trilinear
+                             autoratio (or Rvalue)
+                                               -> integer in 1-1048576
+                             feedback (or Fvalue)
+                                               -> off or on
                            medoids accepts suboptions using
                            medoids:key=value[:key=value...].
-                             algo (or a)      -> auto, pam,
+                             algo (or Avalue) -> auto, pam,
                                                   sample (CLARA),
                                                   random (CLARANS), or
                                                   bandit (BanditPAM)
-                             seed (or s)      -> integer in 0-4294967295
+                             seed (or Svalue) -> integer in 0-4294967295
                              iter             -> integer in 1-64
                              sample           -> 0 or integer in
                                                   64-1048576
@@ -940,13 +951,14 @@ steps.
                            loader names such as 'gd,builtin'.
                            Unique prefixes are accepted, so
                            'core,b' expands to 'coregraphics,builtin'.
-                           libpng/libjpeg/libwebp/builtin accept
+                           libpng/libjpeg/libwebp/coregraphics/builtin
+                           accept
                            :orientation=on|off
-                           (or :o=..., default on).
+                           (or :Oon/:Ooff, default on).
                            libpng/libjpeg/libwebp/libtiff/builtin
                            accept
                            :cms_engine=none|auto|builtin|lcms2|colorsync
-                           (or :e=..., default none).
+                           (or :Evalue, default none).
                            WIC accepts :ico_minsize=SIZE to select
                            the smallest ICO frame whose edge is
                            greater than or equal to SIZE.

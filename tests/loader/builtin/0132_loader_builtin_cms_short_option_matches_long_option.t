@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify builtin loader suboption short form e=auto matches
+# Verify builtin loader suboption short form Eauto matches
 # cms_engine=auto for JPEG ICC.
 
 set -eux
@@ -23,15 +23,15 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:cms_engine=auto! "${input_jpeg}
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:e=auto! "${input_jpeg}" >"${output_short}" || {
-    echo "not ok" 1 - "builtin decode with e=auto failed"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin:Eauto! "${input_jpeg}" >"${output_short}" || {
+    echo "not ok" 1 - "builtin decode with Eauto failed"
     exit 0
 }
 
 cmp -s "${output_long}" "${output_short}" || {
-    echo "not ok" 1 - "builtin e=auto output differs from cms_engine=auto output"
+    echo "not ok" 1 - "builtin Eauto output differs from cms_engine=auto output"
     exit 0
 }
 
-echo "ok" 1 - "builtin e=auto output matches cms_engine=auto output"
+echo "ok" 1 - "builtin Eauto output matches cms_engine=auto output"
 exit 0

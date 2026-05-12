@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify libtiff loader suboption short form e=auto matches
+# Verify libtiff loader suboption short form Eauto matches
 # cms_engine=auto for TIFF.
 
 set -eux
@@ -28,15 +28,15 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libtiff:cms_engine=auto! "${input_tiff}
     exit 0
 }
 
-${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libtiff:e=auto! "${input_tiff}" >"${output_short}" || {
-    echo "not ok" 1 - "libtiff decode with e=auto failed"
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libtiff:Eauto! "${input_tiff}" >"${output_short}" || {
+    echo "not ok" 1 - "libtiff decode with Eauto failed"
     exit 0
 }
 
 cmp -s "${output_long}" "${output_short}" || {
-    echo "not ok" 1 - "libtiff e=auto output differs from cms_engine=auto output"
+    echo "not ok" 1 - "libtiff Eauto output differs from cms_engine=auto output"
     exit 0
 }
 
-echo "ok" 1 - "libtiff e=auto output matches cms_engine=auto output"
+echo "ok" 1 - "libtiff Eauto output matches cms_engine=auto output"
 exit 0

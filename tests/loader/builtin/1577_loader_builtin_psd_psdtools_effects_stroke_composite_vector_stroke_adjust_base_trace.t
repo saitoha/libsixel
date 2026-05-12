@@ -33,7 +33,7 @@ trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_TRACE_TOPIC=psd_decode \
     --env SIXEL_PSD_TRACE_ONLY=1 \
     --env SIXEL_PSD_TRACE_HEADER_ONLY=1 \
-    -Lbuiltin:e=auto! -o /dev/null "${input_psd_off}" 2>&1) || \
+    -Lbuiltin:Eauto! -o /dev/null "${input_psd_off}" 2>&1) || \
     command_status=$?
 
 test "${command_status}" -eq 0 || {

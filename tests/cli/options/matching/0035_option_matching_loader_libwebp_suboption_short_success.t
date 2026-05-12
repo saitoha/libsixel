@@ -17,7 +17,7 @@ echo "1..1"
 
 probe_output=$(
     set +xv
-    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:e=auto! \
+    ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:Eauto! \
         "${TOP_SRCDIR}/tests/data/inputs/snake_64.webp" \
         -o/dev/null 2>&1
 ) || probe_status=$?

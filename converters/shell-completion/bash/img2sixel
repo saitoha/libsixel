@@ -126,7 +126,7 @@ _img2sixel()
                 quant_key="${quant_item%%=*}"
                 quant_value="${quant_item#*=}"
                 quant_prefix="${cur%${quant_value}}"
-                if [[ ${quant_key} == merge || ${quant_key} == g ]]; then
+                if [[ ${quant_key} == merge ]]; then
                     for quant_candidate in auto none ward; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
@@ -141,14 +141,12 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == merge_oversplit || \
-                        ${quant_key} == o ]]; then
+                elif [[ ${quant_key} == merge_oversplit ]]; then
                     for quant_candidate in 1.2 1.5 1.8 2.0; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == merge_lloyd || \
-                        ${quant_key} == l ]]; then
+                elif [[ ${quant_key} == merge_lloyd ]]; then
                     for quant_candidate in 0 1 3 5 8; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
@@ -160,7 +158,9 @@ _img2sixel()
             quant_prefix="${cur%${quant_item}}"
             for quant_candidate in \
                 animation_mode= scene_cut_threshold= \
-                g= merge= o= merge_oversplit= l= merge_lloyd=; do
+                Gauto Gnone Gward merge= \
+                O1.2 O1.5 O2.0 merge_oversplit= \
+                L0 L1 L3 L5 merge_lloyd=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")
             done
@@ -172,37 +172,37 @@ _img2sixel()
                 quant_key="${quant_item%%=*}"
                 quant_value="${quant_item#*=}"
                 quant_prefix="${cur%${quant_value}}"
-                if [[ ${quant_key} == i || ${quant_key} == inittype ]]; then
+                if [[ ${quant_key} == inittype ]]; then
                     for quant_candidate in auto none pca; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == b || ${quant_key} == binning ]]; then
+                elif [[ ${quant_key} == binning ]]; then
                     for quant_candidate in auto none hard soft; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == m || ${quant_key} == mapping ]]; then
+                elif [[ ${quant_key} == mapping ]]; then
                     for quant_candidate in uniform srgb; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == d || ${quant_key} == softdist ]]; then
+                elif [[ ${quant_key} == softdist ]]; then
                     for quant_candidate in trilinear; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == n || ${quant_key} == binbits ]]; then
+                elif [[ ${quant_key} == binbits ]]; then
                     for quant_candidate in 4 5 6 7 8; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == r || ${quant_key} == autoratio ]]; then
+                elif [[ ${quant_key} == autoratio ]]; then
                     for quant_candidate in 8 16 32 64; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == f || ${quant_key} == feedback ]]; then
+                elif [[ ${quant_key} == feedback ]]; then
                     for quant_candidate in off on; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
@@ -212,7 +212,7 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == s || ${quant_key} == seed ]]; then
+                elif [[ ${quant_key} == seed ]]; then
                     for quant_candidate in 1 7 42 256; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
@@ -257,19 +257,17 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == merge || ${quant_key} == g ]]; then
+                elif [[ ${quant_key} == merge ]]; then
                     for quant_candidate in auto none ward; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == merge_oversplit || \
-                        ${quant_key} == o ]]; then
+                elif [[ ${quant_key} == merge_oversplit ]]; then
                     for quant_candidate in 1.2 1.5 1.8 2.0; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == merge_lloyd || \
-                        ${quant_key} == l ]]; then
+                elif [[ ${quant_key} == merge_lloyd ]]; then
                     for quant_candidate in 0 1 3 5 8; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
@@ -280,14 +278,17 @@ _img2sixel()
 
             quant_prefix="${cur%${quant_item}}"
             for quant_candidate in \
-                i= inittype= t= threshold= \
-                b= binning= n= binbits= m= mapping= \
-                d= softdist= r= autoratio= \
-                f= feedback= prune= s= seed= restarts= \
+                Iauto Inone Ipca inittype= T0.120 threshold= \
+                Bauto Bhard Bsoft binning= N4 N6 N8 binbits= \
+                Muniform Msrgb mapping= Dtrilinear softdist= \
+                R32 autoratio= Foff Fon feedback= prune= \
+                S1 S42 seed= restarts= \
                 iter= iter_max= miniter= polish_iter= \
                 feedback_slots= feedback_interval= \
                 animation_mode= scene_cut_threshold= \
-                g= merge= o= merge_oversplit= l= merge_lloyd=; do
+                Gauto Gnone Gward merge= \
+                O1.2 O1.5 O2.0 merge_oversplit= \
+                L0 L1 L3 L5 merge_lloyd=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")
             done
@@ -299,13 +300,13 @@ _img2sixel()
                 quant_key="${quant_item%%=*}"
                 quant_value="${quant_item#*=}"
                 quant_prefix="${cur%${quant_value}}"
-                if [[ ${quant_key} == a || ${quant_key} == algo ]]; then
+                if [[ ${quant_key} == algo ]]; then
                     for quant_candidate in \
                         auto pam sample random bandit; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == s || ${quant_key} == seed ]]; then
+                elif [[ ${quant_key} == seed ]]; then
                     for quant_candidate in 1 7 42 256; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
@@ -380,19 +381,17 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == merge || ${quant_key} == g ]]; then
+                elif [[ ${quant_key} == merge ]]; then
                     for quant_candidate in auto none ward; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == merge_oversplit || \
-                        ${quant_key} == o ]]; then
+                elif [[ ${quant_key} == merge_oversplit ]]; then
                     for quant_candidate in 1.2 1.5 1.8 2.0; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == merge_lloyd || \
-                        ${quant_key} == l ]]; then
+                elif [[ ${quant_key} == merge_lloyd ]]; then
                     for quant_candidate in 0 1 3 5 8; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
@@ -403,14 +402,17 @@ _img2sixel()
 
             quant_prefix="${cur%${quant_item}}"
             for quant_candidate in \
-                a= algo= s= seed= iter= sample= \
+                Aauto Apam Asample Arandom Abandit algo= \
+                S1 S42 seed= iter= sample= \
                 histbits= point_budget= rare_keep= prune_mass= \
                 auction= auction_shortlist= \
                 clara_trials= clara_sample= \
                 clarans_local= clarans_neighbors= \
                 bandit_iter= bandit_candidates= bandit_batch= \
                 animation_mode= scene_cut_threshold= \
-                g= merge= o= merge_oversplit= l= merge_lloyd=; do
+                Gauto Gnone Gward merge= \
+                O1.2 O1.5 O2.0 merge_oversplit= \
+                L0 L1 L3 L5 merge_lloyd=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")
             done
@@ -423,7 +425,7 @@ _img2sixel()
                 quant_key="${quant_item%%=*}"
                 quant_value="${quant_item#*=}"
                 quant_prefix="${cur%${quant_value}}"
-                if [[ ${quant_key} == a || ${quant_key} == algo ]]; then
+                if [[ ${quant_key} == algo ]]; then
                     for quant_candidate in auto fft swap hybrid; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
@@ -453,7 +455,7 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == s || ${quant_key} == seed ]]; then
+                elif [[ ${quant_key} == seed ]]; then
                     for quant_candidate in 1 7 42 256; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
@@ -533,19 +535,17 @@ _img2sixel()
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == merge || ${quant_key} == g ]]; then
+                elif [[ ${quant_key} == merge ]]; then
                     for quant_candidate in auto none ward; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == merge_oversplit || \
-                        ${quant_key} == o ]]; then
+                elif [[ ${quant_key} == merge_oversplit ]]; then
                     for quant_candidate in 1.2 1.5 1.8 2.0; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
                     done
-                elif [[ ${quant_key} == merge_lloyd || \
-                        ${quant_key} == l ]]; then
+                elif [[ ${quant_key} == merge_lloyd ]]; then
                     for quant_candidate in 0 1 3 5 8; do
                         [[ ${quant_candidate} == ${quant_value}* ]] || continue
                         COMPREPLY+=("${quant_prefix}${quant_candidate}")
@@ -556,14 +556,17 @@ _img2sixel()
 
             quant_prefix="${cur%${quant_item}}"
             for quant_candidate in \
-                a= algo= profile= auto_policy= auto_fft_threshold= \
-                space_policy= candidate_policy= s= seed= \
+                Aauto Afft Aswap Ahybrid algo= \
+                profile= auto_policy= auto_fft_threshold= \
+                space_policy= candidate_policy= S1 S42 seed= \
                 restarts= init_seeds= iter= \
                 histbits= point_budget= rare_keep= prune_mass= \
                 budget_policy= budget_scale= swap_topk= \
                 swap_update= swap_patience= swap_min_gain= \
                 animation_mode= scene_cut_threshold= \
-                g= merge= o= merge_oversplit= l= merge_lloyd=; do
+                Gauto Gnone Gward merge= \
+                O1.2 O1.5 O2.0 merge_oversplit= \
+                L0 L1 L3 L5 merge_lloyd=; do
                 [[ ${quant_candidate} == ${quant_item}* ]] || continue
                 COMPREPLY+=("${quant_prefix}${quant_candidate}")
             done
@@ -636,7 +639,7 @@ _img2sixel()
                                    bluenoise \
                                    bluenoise:strength=0.055 \
                                    bluenoise:gradient_factor=1.0 \
-                                   bluenoise:g=1.0 \
+                                   bluenoise:G1.0 \
                                    bluenoise:phase=10,20 \
                                    bluenoise:seed=123 \
                                    bluenoise:channel=mono \

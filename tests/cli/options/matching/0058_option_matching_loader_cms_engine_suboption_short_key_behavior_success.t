@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying loader short key :e= maps to cms_engine behavior.
+# TAP test verifying loader short key :E maps to cms_engine behavior.
 
 set -eux
 
@@ -35,26 +35,26 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! "${input_webp}"
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibwebp:e=auto! "${input_webp}" >"${output_subkey_auto}" || {
-    echo "not ok" 1 - "short subkey :e=auto decode failed"
+    -Llibwebp:Eauto! "${input_webp}" >"${output_subkey_auto}" || {
+    echo "not ok" 1 - "short subkey :Eauto decode failed"
     exit 0
 }
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibwebp:cms_engine=auto:e=none! "${input_webp}" >"${output_subkey_none}" || {
-    echo "not ok" 1 - "short subkey :e=none decode failed"
+    -Llibwebp:cms_engine=auto:Enone! "${input_webp}" >"${output_subkey_none}" || {
+    echo "not ok" 1 - "short subkey :Enone decode failed"
     exit 0
 }
 
 cmp -s "${output_ref_cms1}" "${output_subkey_auto}" || {
-    echo "not ok" 1 - "short subkey :e=auto did not match cms=1 behavior"
+    echo "not ok" 1 - "short subkey :Eauto did not match cms=1 behavior"
     exit 0
 }
 
 cmp -s "${output_ref_cms0}" "${output_subkey_none}" || {
-    echo "not ok" 1 - "short subkey :e=none did not match cms=0 behavior"
+    echo "not ok" 1 - "short subkey :Enone did not match cms=0 behavior"
     exit 0
 }
 
-echo "ok" 1 - "short subkey :e=... controls loader cms_engine"
+echo "ok" 1 - "short subkey :E... controls loader cms_engine"
 exit 0

@@ -16,7 +16,7 @@ CoreGraphics/ImageIO output for a controlled matrix of metadata tags.
   - `PrimaryChromaticities` (tag 319)
   - `TransferFunction` (tag 301)
 - CMS mode:
-  - loader option `libtiff:cms=1` (same as `libtiff:c=1`)
+  - loader option `libtiff:cms_engine=auto`
 - Expected outputs:
   - generated with `-Lcoregraphics!` and stored as `.six`.
 
@@ -93,12 +93,12 @@ Resulting precedence rule:
 ## libsixel Mapping
 
 - TIFF decode uses `TIFFReadRGBAImageOriented()` / high-precision TIFF path.
-- Embedded ICC application is controlled by `cms` suboption:
-  - `cms=1`: apply ICC to sRGB output path.
-  - `cms=0`: skip ICC application.
+- Embedded ICC application is controlled by `cms_engine` suboption:
+  - `cms_engine=auto`: apply ICC to sRGB output path.
+  - `cms_engine=none`: skip ICC application.
 - lcms2 disabled build:
-  - fallback ICC conversion is used (RGB/Gray compatible path) to preserve `cms=1`
-    behavior close to lcms2 builds.
+  - fallback ICC conversion is used (RGB/Gray compatible path) to preserve
+    `cms_engine=auto` behavior close to lcms2 builds.
   - fallback ICC application scope is intentionally limited:
     - RGBA decode path applies ICC only for RGB/Gray-like photometric inputs.
     - high-precision path applies ICC for RGB/Gray and high-precision
@@ -113,14 +113,15 @@ Resulting precedence rule:
   - Embedded Lab ICC application is enabled only for high-precision CIELAB
     decode (16-bit/float32) in the no-lcms builtin path.
 
-## `cms` Axis Policy
+## `cms_engine` Axis Policy
 
-Tests are split per case and include both `cms=1` and `cms=0`.
+Tests are split per case and include both `cms_engine=auto` and
+`cms_engine=none`.
 
-- `cms=1`:
+- `cms_engine=auto`:
   - Compare against same-name CoreGraphics reference
     (`img_tiff_*_iccX_*` -> same `iccX`).
-- `cms=0`:
+- `cms_engine=none`:
   - Treat embedded ICC as disabled.
   - Compare against `icc0` CoreGraphics reference for the same non-ICC axes:
     - `img_tiff_*_icc0_*` -> `icc0` reference
@@ -128,16 +129,16 @@ Tests are split per case and include both `cms=1` and `cms=0`.
 
 Observed result on current fixtures:
 
-- RGB: `cms=0` outputs align with `icc0` reference behavior.
-- Lab: all combinations collapse to one group, so `cms=0/1` both match the
-  single Lab reference group.
+- RGB: `cms_engine=none` outputs align with `icc0` reference behavior.
+- Lab: all combinations collapse to one group, so `cms_engine=none` and
+  `cms_engine=auto` both match the single Lab reference group.
   - In no-lcms builds, 8-bit CIELAB keeps the CoreGraphics-aligned matrix
     baseline without embedded ICC transforms.
   - High-precision CIELAB (16-bit/float32) is the only no-lcms path where
     embedded Lab ICC is applied.
-- Grayscale: all combinations collapse to one group, so `cms=0/1` both match the
-  single grayscale reference group.
-- Palette: `cms=0` outputs align with `icc0` reference behavior.
+- Grayscale: all combinations collapse to one group, so `cms_engine=none` and
+  `cms_engine=auto` both match the single grayscale reference group.
+- Palette: `cms_engine=none` outputs align with `icc0` reference behavior.
 
 ## Gamma Notes
 

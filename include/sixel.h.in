@@ -381,11 +381,14 @@ typedef int SIXELSTATUS;
                                                   auto/heckbert/kmeans/medoids/
                                                   center
                                                   share merge suboptions:
-                                                    merge (or g):
+                                                    long forms use key=value;
+                                                    short forms use Kvalue
+                                                    merge (or Gvalue):
                                                       auto, none, ward
-                                                    merge_oversplit (or o):
+                                                    merge_oversplit
+                                                      (or Ovalue):
                                                       float in 1.0-3.0
-                                                    merge_lloyd (or l):
+                                                    merge_lloyd (or Lvalue):
                                                       0 or integer in 1-30
                                                   heckbert accepts profile:
                                                     profile:
@@ -393,25 +396,25 @@ typedef int SIXELSTATUS;
                                                   kmeans accepts suboptions in:
                                                     kmeans:key=value[:key=value...]
                                                   supported suboptions:
-                                                    inittype (or i):
+                                                    inittype (or Ivalue):
                                                       auto, none, pca
-                                                    threshold (or t):
+                                                    threshold (or Tvalue):
                                                       float in 0.0-0.5
-                                                    binning (or b):
+                                                    binning (or Bvalue):
                                                       auto, none, hard, soft
-                                                    binbits (or n):
+                                                    binbits (or Nvalue):
                                                       integer in 4-8
-                                                    mapping (or m):
+                                                    mapping (or Mvalue):
                                                       uniform, srgb
-                                                    softdist (or d):
+                                                    softdist (or Dvalue):
                                                       trilinear
-                                                    autoratio (or r):
+                                                    autoratio (or Rvalue):
                                                       integer in 1-1048576
-                                                    feedback (or f):
+                                                    feedback (or Fvalue):
                                                       off, on
                                                     prune:
                                                       auto, none, hamerly
-                                                    seed (or s):
+                                                    seed (or Svalue):
                                                       integer in 0-4294967295
                                                     restarts:
                                                       integer in 1-32
@@ -432,10 +435,10 @@ typedef int SIXELSTATUS;
                                                   medoids accepts suboptions in:
                                                     medoids:key=value[:key=value...]
                                                   supported suboptions:
-                                                    algo:
+                                                    algo (or Avalue):
                                                       auto, pam, sample,
                                                       random, bandit
-                                                    seed:
+                                                    seed (or Svalue):
                                                       integer in 0-4294967295
                                                     iter:
                                                       integer in 1-64
@@ -465,12 +468,12 @@ typedef int SIXELSTATUS;
                                                   center accepts suboptions in:
                                                     center:key=value[:key=value...]
                                                   supported suboptions:
-                                                    algo (or a):
+                                                    algo (or Avalue):
                                                       auto, fft, swap, hybrid
                                                     profile:
                                                       legacy, speed,
                                                       balance, quality
-                                                    seed (or s):
+                                                    seed (or Svalue):
                                                       integer in 0-4294967295
                                                     auto_policy:
                                                       legacy, adaptive
@@ -692,8 +695,14 @@ typedef int SIXELSTATUS;
                                                   read source images from stdin continuously */
 #define SIXEL_OPTFLAG_VERBOSE           ('v')  /* -v, --verbose: show debugging info */
 #define SIXEL_OPTFLAG_LOADERS           ('L')  /* -L LIST, --loaders=LIST: override loader order
-                                                  (libpng/libjpeg/libwebp/libtiff/builtin accept :cms=0|1;
-                                                  WIC accepts :ico_minsize=SIZE) */
+                                                  (libpng/libjpeg/libwebp/
+                                                  coregraphics/builtin accept
+                                                  :orientation=value or
+                                                  :Ovalue; libpng/libjpeg/
+                                                  libwebp/libtiff/builtin
+                                                  accept :cms_engine=value
+                                                  or :Evalue; WIC accepts
+                                                  :ico_minsize=SIZE) */
 #define SIXEL_OPTFLAG_VERSION           ('V')  /* -V, --version: show version and license info */
 #define SIXEL_OPTFLAG_HELP              ('H')  /* -H, --help: show this help */
 

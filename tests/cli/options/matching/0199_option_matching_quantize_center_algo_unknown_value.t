@@ -13,7 +13,7 @@ echo "1..1"
 set -v
 
 msg=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Qcenter:a=invalid \
+    -Qcenter:Ainvalid \
     "${TOP_SRCDIR}/tests/data/inputs/small.ppm" \
     -o/dev/null 2>&1) && {
     echo "not ok" 1 - "unknown center algo value unexpectedly succeeded"

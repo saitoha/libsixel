@@ -34,7 +34,7 @@ _diffusiontype() {
     'bluenoise[tileable blue-noise ordered dither]' \
     'bluenoise:strength=0.055[bluenoise amplitude override]' \
     'bluenoise:gradient_factor=1.0[bluenoise gradient attenuation gamma]' \
-    'bluenoise:g=1.0[short alias for bluenoise gradient attenuation gamma]' \
+    'bluenoise:G1.0[short alias for bluenoise gradient attenuation gamma]' \
     'bluenoise:phase=10,20[bluenoise tile phase override]' \
     'bluenoise:seed=123[bluenoise phase seed override]' \
     'bluenoise:channel=mono[bluenoise mono channel mode]' \
@@ -230,7 +230,7 @@ _quantizemodel() {
       if [[ ${segment} == *=* ]]; then
         key=${segment%%=*}
         prefix=${current%${segment}}
-        if [[ ${key} == merge || ${key} == g ]]; then
+        if [[ ${key} == merge ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=none" \
                      "${prefix}${key}=ward"
@@ -244,13 +244,13 @@ _quantizemodel() {
                      "${prefix}${key}=0.20" \
                      "${prefix}${key}=0.30"
           return 0
-        elif [[ ${key} == merge_oversplit || ${key} == o ]]; then
+        elif [[ ${key} == merge_oversplit ]]; then
           compadd -- "${prefix}${key}=1.2" \
                      "${prefix}${key}=1.5" \
                      "${prefix}${key}=1.8" \
                      "${prefix}${key}=2.0"
           return 0
-        elif [[ ${key} == merge_lloyd || ${key} == l ]]; then
+        elif [[ ${key} == merge_lloyd ]]; then
           compadd -- "${prefix}${key}=0" \
                      "${prefix}${key}=1" \
                      "${prefix}${key}=3" \
@@ -262,11 +262,18 @@ _quantizemodel() {
         prefix=${current%${segment}}
         compadd -- "${prefix}animation_mode=" \
                    "${prefix}scene_cut_threshold=" \
-                   "${prefix}g=" \
+                   "${prefix}Gauto" \
+                   "${prefix}Gnone" \
+                   "${prefix}Gward" \
                    "${prefix}merge=" \
-                   "${prefix}o=" \
+                   "${prefix}O1.2" \
+                   "${prefix}O1.5" \
+                   "${prefix}O2.0" \
                    "${prefix}merge_oversplit=" \
-                   "${prefix}l=" \
+                   "${prefix}L0" \
+                   "${prefix}L1" \
+                   "${prefix}L3" \
+                   "${prefix}L5" \
                    "${prefix}merge_lloyd="
         return 0
       fi
@@ -274,42 +281,42 @@ _quantizemodel() {
       if [[ ${segment} == *=* ]]; then
         key=${segment%%=*}
         prefix=${current%${segment}}
-        if [[ ${key} == i || ${key} == inittype ]]; then
+        if [[ ${key} == inittype ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=none" \
                      "${prefix}${key}=pca"
           return 0
-        elif [[ ${key} == b || ${key} == binning ]]; then
+        elif [[ ${key} == binning ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=none" \
                      "${prefix}${key}=hard" \
                      "${prefix}${key}=soft"
           return 0
-        elif [[ ${key} == m || ${key} == mapping ]]; then
+        elif [[ ${key} == mapping ]]; then
           compadd -- "${prefix}${key}=uniform" \
                      "${prefix}${key}=srgb"
           return 0
-        elif [[ ${key} == d || ${key} == softdist ]]; then
+        elif [[ ${key} == softdist ]]; then
           compadd -- "${prefix}${key}=trilinear"
           return 0
-        elif [[ ${key} == n || ${key} == binbits ]]; then
+        elif [[ ${key} == binbits ]]; then
           compadd -- "${prefix}${key}=4" \
                      "${prefix}${key}=5" \
                      "${prefix}${key}=6" \
                      "${prefix}${key}=7" \
                      "${prefix}${key}=8"
           return 0
-        elif [[ ${key} == r || ${key} == autoratio ]]; then
+        elif [[ ${key} == autoratio ]]; then
           compadd -- "${prefix}${key}=8" \
                      "${prefix}${key}=16" \
                      "${prefix}${key}=32" \
                      "${prefix}${key}=64"
           return 0
-        elif [[ ${key} == f || ${key} == feedback ]]; then
+        elif [[ ${key} == feedback ]]; then
           compadd -- "${prefix}${key}=off" \
                      "${prefix}${key}=on"
           return 0
-        elif [[ ${key} == s || ${key} == seed ]]; then
+        elif [[ ${key} == seed ]]; then
           compadd -- "${prefix}${key}=1" \
                      "${prefix}${key}=7" \
                      "${prefix}${key}=42" \
@@ -381,18 +388,18 @@ _quantizemodel() {
                      "${prefix}${key}=0.20" \
                      "${prefix}${key}=0.30"
           return 0
-        elif [[ ${key} == merge || ${key} == g ]]; then
+        elif [[ ${key} == merge ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=none" \
                      "${prefix}${key}=ward"
           return 0
-        elif [[ ${key} == merge_oversplit || ${key} == o ]]; then
+        elif [[ ${key} == merge_oversplit ]]; then
           compadd -- "${prefix}${key}=1.2" \
                      "${prefix}${key}=1.5" \
                      "${prefix}${key}=1.8" \
                      "${prefix}${key}=2.0"
           return 0
-        elif [[ ${key} == merge_lloyd || ${key} == l ]]; then
+        elif [[ ${key} == merge_lloyd ]]; then
           compadd -- "${prefix}${key}=0" \
                      "${prefix}${key}=1" \
                      "${prefix}${key}=3" \
@@ -402,16 +409,22 @@ _quantizemodel() {
         fi
       else
         prefix=${current%${segment}}
-        compadd -- "${prefix}i=" "${prefix}inittype=" \
-                   "${prefix}t=" "${prefix}threshold=" \
-                   "${prefix}b=" "${prefix}binning=" \
-                   "${prefix}n=" "${prefix}binbits=" \
-                   "${prefix}m=" "${prefix}mapping=" \
-                   "${prefix}d=" "${prefix}softdist=" \
-                   "${prefix}r=" "${prefix}autoratio=" \
-                   "${prefix}f=" "${prefix}feedback=" \
+        compadd -- "${prefix}Iauto" "${prefix}Inone" \
+                   "${prefix}Ipca" "${prefix}inittype=" \
+                   "${prefix}T0.120" "${prefix}threshold=" \
+                   "${prefix}Bauto" "${prefix}Bhard" \
+                   "${prefix}Bsoft" "${prefix}binning=" \
+                   "${prefix}N4" "${prefix}N6" \
+                   "${prefix}N8" "${prefix}binbits=" \
+                   "${prefix}Muniform" "${prefix}Msrgb" \
+                   "${prefix}mapping=" \
+                   "${prefix}Dtrilinear" "${prefix}softdist=" \
+                   "${prefix}R32" "${prefix}autoratio=" \
+                   "${prefix}Foff" "${prefix}Fon" \
+                   "${prefix}feedback=" \
                    "${prefix}prune=" \
-                   "${prefix}s=" "${prefix}seed=" \
+                   "${prefix}S1" "${prefix}S42" \
+                   "${prefix}seed=" \
                    "${prefix}restarts=" \
                    "${prefix}iter=" "${prefix}iter_max=" \
                    "${prefix}miniter=" "${prefix}polish_iter=" \
@@ -419,11 +432,18 @@ _quantizemodel() {
                    "${prefix}feedback_interval=" \
                    "${prefix}animation_mode=" \
                    "${prefix}scene_cut_threshold=" \
-                   "${prefix}g=" \
+                   "${prefix}Gauto" \
+                   "${prefix}Gnone" \
+                   "${prefix}Gward" \
                    "${prefix}merge=" \
-                   "${prefix}o=" \
+                   "${prefix}O1.2" \
+                   "${prefix}O1.5" \
+                   "${prefix}O2.0" \
                    "${prefix}merge_oversplit=" \
-                   "${prefix}l=" \
+                   "${prefix}L0" \
+                   "${prefix}L1" \
+                   "${prefix}L3" \
+                   "${prefix}L5" \
                    "${prefix}merge_lloyd="
         return 0
       fi
@@ -431,14 +451,14 @@ _quantizemodel() {
       if [[ ${segment} == *=* ]]; then
         key=${segment%%=*}
         prefix=${current%${segment}}
-        if [[ ${key} == a || ${key} == algo ]]; then
+        if [[ ${key} == algo ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=pam" \
                      "${prefix}${key}=sample" \
                      "${prefix}${key}=random" \
                      "${prefix}${key}=bandit"
           return 0
-        elif [[ ${key} == s || ${key} == seed ]]; then
+        elif [[ ${key} == seed ]]; then
           compadd -- "${prefix}${key}=1" \
                      "${prefix}${key}=7" \
                      "${prefix}${key}=42" \
@@ -528,18 +548,18 @@ _quantizemodel() {
                      "${prefix}${key}=0.20" \
                      "${prefix}${key}=0.30"
           return 0
-        elif [[ ${key} == merge || ${key} == g ]]; then
+        elif [[ ${key} == merge ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=none" \
                      "${prefix}${key}=ward"
           return 0
-        elif [[ ${key} == merge_oversplit || ${key} == o ]]; then
+        elif [[ ${key} == merge_oversplit ]]; then
           compadd -- "${prefix}${key}=1.2" \
                      "${prefix}${key}=1.5" \
                      "${prefix}${key}=1.8" \
                      "${prefix}${key}=2.0"
           return 0
-        elif [[ ${key} == merge_lloyd || ${key} == l ]]; then
+        elif [[ ${key} == merge_lloyd ]]; then
           compadd -- "${prefix}${key}=0" \
                      "${prefix}${key}=1" \
                      "${prefix}${key}=3" \
@@ -549,8 +569,11 @@ _quantizemodel() {
         fi
       else
         prefix=${current%${segment}}
-        compadd -- "${prefix}a=" "${prefix}algo=" \
-                   "${prefix}s=" "${prefix}seed=" \
+        compadd -- "${prefix}Aauto" "${prefix}Apam" \
+                   "${prefix}Asample" "${prefix}Arandom" \
+                   "${prefix}Abandit" "${prefix}algo=" \
+                   "${prefix}S1" "${prefix}S42" \
+                   "${prefix}seed=" \
                    "${prefix}iter=" "${prefix}sample=" \
                    "${prefix}histbits=" \
                    "${prefix}point_budget=" \
@@ -566,11 +589,18 @@ _quantizemodel() {
                    "${prefix}bandit_batch=" \
                    "${prefix}animation_mode=" \
                    "${prefix}scene_cut_threshold=" \
-                   "${prefix}g=" \
+                   "${prefix}Gauto" \
+                   "${prefix}Gnone" \
+                   "${prefix}Gward" \
                    "${prefix}merge=" \
-                   "${prefix}o=" \
+                   "${prefix}O1.2" \
+                   "${prefix}O1.5" \
+                   "${prefix}O2.0" \
                    "${prefix}merge_oversplit=" \
-                   "${prefix}l=" \
+                   "${prefix}L0" \
+                   "${prefix}L1" \
+                   "${prefix}L3" \
+                   "${prefix}L5" \
                    "${prefix}merge_lloyd="
         return 0
       fi
@@ -578,7 +608,7 @@ _quantizemodel() {
       if [[ ${segment} == *=* ]]; then
         key=${segment%%=*}
         prefix=${current%${segment}}
-        if [[ ${key} == a || ${key} == algo ]]; then
+        if [[ ${key} == algo ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=fft" \
                      "${prefix}${key}=swap" \
@@ -609,7 +639,7 @@ _quantizemodel() {
           compadd -- "${prefix}${key}=legacy" \
                      "${prefix}${key}=hybrid"
           return 0
-        elif [[ ${key} == s || ${key} == seed ]]; then
+        elif [[ ${key} == seed ]]; then
           compadd -- "${prefix}${key}=1" \
                      "${prefix}${key}=7" \
                      "${prefix}${key}=42" \
@@ -714,18 +744,18 @@ _quantizemodel() {
                      "${prefix}${key}=0.20" \
                      "${prefix}${key}=0.30"
           return 0
-        elif [[ ${key} == merge || ${key} == g ]]; then
+        elif [[ ${key} == merge ]]; then
           compadd -- "${prefix}${key}=auto" \
                      "${prefix}${key}=none" \
                      "${prefix}${key}=ward"
           return 0
-        elif [[ ${key} == merge_oversplit || ${key} == o ]]; then
+        elif [[ ${key} == merge_oversplit ]]; then
           compadd -- "${prefix}${key}=1.2" \
                      "${prefix}${key}=1.5" \
                      "${prefix}${key}=1.8" \
                      "${prefix}${key}=2.0"
           return 0
-        elif [[ ${key} == merge_lloyd || ${key} == l ]]; then
+        elif [[ ${key} == merge_lloyd ]]; then
           compadd -- "${prefix}${key}=0" \
                      "${prefix}${key}=1" \
                      "${prefix}${key}=3" \
@@ -735,13 +765,16 @@ _quantizemodel() {
         fi
       else
         prefix=${current%${segment}}
-        compadd -- "${prefix}a=" "${prefix}algo=" \
+        compadd -- "${prefix}Aauto" "${prefix}Afft" \
+                   "${prefix}Aswap" "${prefix}Ahybrid" \
+                   "${prefix}algo=" \
                    "${prefix}profile=" \
                    "${prefix}auto_policy=" \
                    "${prefix}auto_fft_threshold=" \
                    "${prefix}space_policy=" \
                    "${prefix}candidate_policy=" \
-                   "${prefix}s=" "${prefix}seed=" \
+                   "${prefix}S1" "${prefix}S42" \
+                   "${prefix}seed=" \
                    "${prefix}restarts=" \
                    "${prefix}init_seeds=" \
                    "${prefix}iter=" \
@@ -757,11 +790,18 @@ _quantizemodel() {
                    "${prefix}swap_min_gain=" \
                    "${prefix}animation_mode=" \
                    "${prefix}scene_cut_threshold=" \
-                   "${prefix}g=" \
+                   "${prefix}Gauto" \
+                   "${prefix}Gnone" \
+                   "${prefix}Gward" \
                    "${prefix}merge=" \
-                   "${prefix}o=" \
+                   "${prefix}O1.2" \
+                   "${prefix}O1.5" \
+                   "${prefix}O2.0" \
                    "${prefix}merge_oversplit=" \
-                   "${prefix}l=" \
+                   "${prefix}L0" \
+                   "${prefix}L1" \
+                   "${prefix}L3" \
+                   "${prefix}L5" \
                    "${prefix}merge_lloyd="
         return 0
       fi

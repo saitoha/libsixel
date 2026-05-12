@@ -1708,7 +1708,7 @@ static sixel_suboption_key_t const g_subkeys_diffusion_bluenoise[] = {
     },
     {
         "gradient_factor",
-        "g",
+        "G",
         "SIXEL_DITHER_BLUENOISE_GRADIENT_FACTOR",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2005,7 +2005,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_merge_only[] = {
     },
     {
         "merge",
-        "g",
+        "G",
         NULL,
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_quantize_merge,
@@ -2014,7 +2014,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_merge_only[] = {
     },
     {
         "merge_oversplit",
-        "o",
+        "O",
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2022,7 +2022,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_merge_only[] = {
     },
     {
         "merge_lloyd",
-        "l",
+        "L",
         "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2058,7 +2058,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_heckbert[] = {
     },
     {
         "merge",
-        "g",
+        "G",
         NULL,
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_quantize_merge,
@@ -2067,7 +2067,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_heckbert[] = {
     },
     {
         "merge_oversplit",
-        "o",
+        "O",
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2075,7 +2075,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_heckbert[] = {
     },
     {
         "merge_lloyd",
-        "l",
+        "L",
         "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2086,7 +2086,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_heckbert[] = {
 static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     {
         "inittype",
-        "i",
+        "I",
         "SIXEL_PALETTE_KMEANS_INITTYPE",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_kmeans_init_type,
@@ -2095,7 +2095,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "threshold",
-        "t",
+        "T",
         "SIXEL_PALETTE_KMEANS_THRESHOLD",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2103,7 +2103,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "binning",
-        "b",
+        "B",
         "SIXEL_PALETTE_KMEANS_BINNING",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_kmeans_binning,
@@ -2112,7 +2112,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "binbits",
-        "n",
+        "N",
         "SIXEL_PALETTE_KMEANS_BINBITS",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2120,7 +2120,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "mapping",
-        "m",
+        "M",
         "SIXEL_PALETTE_KMEANS_MAPPING",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_kmeans_mapping,
@@ -2129,7 +2129,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "softdist",
-        "d",
+        "D",
         "SIXEL_PALETTE_KMEANS_SOFTDIST",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_kmeans_softdist,
@@ -2138,7 +2138,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "autoratio",
-        "r",
+        "R",
         "SIXEL_PALETTE_KMEANS_AUTORATIO",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2146,7 +2146,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "feedback",
-        "f",
+        "F",
         "SIXEL_PALETTE_KMEANS_FEEDBACK",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_kmeans_feedback,
@@ -2164,7 +2164,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "seed",
-        "s",
+        "S",
         "SIXEL_PALETTE_KMEANS_SEED",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2244,7 +2244,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "merge",
-        "g",
+        "G",
         NULL,
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_quantize_merge,
@@ -2253,7 +2253,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "merge_oversplit",
-        "o",
+        "O",
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2261,7 +2261,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     },
     {
         "merge_lloyd",
-        "l",
+        "L",
         "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2272,7 +2272,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
 static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
     {
         "algo",
-        "a",
+        "A",
         "SIXEL_PALETTE_KMEDOIDS_ALGO",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_kmedoids_algo,
@@ -2281,7 +2281,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
     },
     {
         "seed",
-        "s",
+        "S",
         "SIXEL_PALETTE_KMEDOIDS_SEED",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2426,7 +2426,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
     },
     {
         "merge",
-        "g",
+        "G",
         NULL,
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_quantize_merge,
@@ -2435,7 +2435,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
     },
     {
         "merge_oversplit",
-        "o",
+        "O",
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2443,7 +2443,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
     },
     {
         "merge_lloyd",
-        "l",
+        "L",
         "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2454,7 +2454,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
 static sixel_suboption_key_t const g_subkeys_quantize_model_center[] = {
     {
         "algo",
-        "a",
+        "A",
         "SIXEL_PALETTE_KCENTER_ALGO",
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_kcenter_algo,
@@ -2472,7 +2472,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_center[] = {
     },
     {
         "seed",
-        "s",
+        "S",
         "SIXEL_PALETTE_KCENTER_SEED",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2637,7 +2637,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_center[] = {
     },
     {
         "merge",
-        "g",
+        "G",
         NULL,
         SIXEL_SUBOPTION_VALUE_CHOICE,
         g_option_choices_quantize_merge,
@@ -2646,7 +2646,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_center[] = {
     },
     {
         "merge_oversplit",
-        "o",
+        "O",
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
@@ -2654,7 +2654,7 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_center[] = {
     },
     {
         "merge_lloyd",
-        "l",
+        "L",
         "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,

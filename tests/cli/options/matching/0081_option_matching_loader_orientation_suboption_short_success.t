@@ -18,7 +18,7 @@ echo "1..1"
 set -v
 
 probe_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
-    -Llibpng:o=off! \
+    -Llibpng:Ooff! \
     "${TOP_SRCDIR}/tests/data/inputs/formats/orientation_exif_o6_12x8.png" \
     -o/dev/null 2>&1) || probe_status=$?
 

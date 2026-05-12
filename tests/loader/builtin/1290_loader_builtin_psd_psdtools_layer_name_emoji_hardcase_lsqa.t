@@ -27,7 +27,7 @@ command_status=0
 
 trace_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --bgcolor="#000000" \
-    -Lbuiltin:e=auto! -o "${output_sixel}" "${input_psd}" 2>&1) || command_status=$?
+    -Lbuiltin:Eauto! -o "${output_sixel}" "${input_psd}" 2>&1) || command_status=$?
 : "${trace_output}"
 
 test "${command_status}" -eq 0 || {

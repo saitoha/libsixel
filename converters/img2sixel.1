@@ -98,24 +98,27 @@ select the palette solver. \fIMODEL\fP accepts \fBauto\fP,
 \fBauto\fP setting preserves
 the historical Heckbert median\-cut behaviour.
 .br
+Long suboption keys use \fBkey=value\fP. Uppercase short keys use
+\fBKvalue\fP without an equals sign, for example \fBkmeans:Ipca:Gward\fP.
+.br
 The \fBauto\fP and \fBheckbert\fP base values accept suboptions:
 .br
 \fBanimation_mode\fP: 0 or 1 (default 0).
 .br
 \fBscene_cut_threshold\fP: floating value in 0.0-1.0 (default 0.20).
 .br
-\fBmerge\fP (or short key \fBg\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
+\fBmerge\fP (short form \fBGMODE\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
 .br
-\fBmerge_oversplit\fP (or short key \fBo\fP): floating value in 1.0-3.0.
+\fBmerge_oversplit\fP (short form \fBOFACTOR\fP): floating value in 1.0-3.0.
 .br
-\fBmerge_lloyd\fP (or short key \fBl\fP): 0 or integer value in 1-30.
+\fBmerge_lloyd\fP (short form \fBLCOUNT\fP): 0 or integer value in 1-30.
 .br
 The \fBcenter\fP base value accepts suboptions using
 \fBcenter:key=value[:key=value...]\fP.
 .br
 Supported k-center suboptions:
 .br
-\fBalgo\fP (or short key \fBa\fP): \fBauto\fP, \fBfft\fP, \fBswap\fP,
+\fBalgo\fP (short form \fBANAME\fP): \fBauto\fP, \fBfft\fP, \fBswap\fP,
 or \fBhybrid\fP.
 .br
 \fBprofile\fP: \fBlegacy\fP, \fBspeed\fP, \fBbalance\fP, or
@@ -129,7 +132,7 @@ or \fBhybrid\fP.
 .br
 \fBcandidate_policy\fP: \fBlegacy\fP or \fBhybrid\fP.
 .br
-\fBseed\fP (or short key \fBs\fP): integer value in 0-4294967295.
+\fBseed\fP (short form \fBSVALUE\fP): integer value in 0-4294967295.
 .br
 \fBrestarts\fP: integer value in 1-32.
 .br
@@ -161,37 +164,37 @@ or \fBhybrid\fP.
 .br
 \fBscene_cut_threshold\fP: floating value in 0.0-1.0 (default 0.20).
 .br
-\fBmerge\fP (or short key \fBg\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
+\fBmerge\fP (short form \fBGMODE\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
 .br
-\fBmerge_oversplit\fP (or short key \fBo\fP): floating value in 1.0-3.0.
+\fBmerge_oversplit\fP (short form \fBOFACTOR\fP): floating value in 1.0-3.0.
 .br
-\fBmerge_lloyd\fP (or short key \fBl\fP): 0 or integer value in 1-30.
+\fBmerge_lloyd\fP (short form \fBLCOUNT\fP): 0 or integer value in 1-30.
 .br
 The \fBkmeans\fP base value accepts suboptions using
 \fBkmeans:key=value[:key=value...]\fP.
 .br
 Supported k-means suboptions:
 .br
-\fBinittype\fP (or short key \fBi\fP): \fBauto\fP, \fBnone\fP, \fBpca\fP.
+\fBinittype\fP (short form \fBITYPE\fP): \fBauto\fP, \fBnone\fP, \fBpca\fP.
 .br
-\fBthreshold\fP (or short key \fBt\fP): floating value in 0.0-0.5.
+\fBthreshold\fP (short form \fBTVALUE\fP): floating value in 0.0-0.5.
 .br
-\fBbinning\fP (or short key \fBb\fP): \fBauto\fP, \fBnone\fP, \fBhard\fP, \fBsoft\fP.
+\fBbinning\fP (short form \fBBMODE\fP): \fBauto\fP, \fBnone\fP, \fBhard\fP, \fBsoft\fP.
 .br
-\fBbinbits\fP (or short key \fBn\fP): integer value in 4-8.
+\fBbinbits\fP (short form \fBNBITS\fP): integer value in 4-8.
 .br
-\fBmapping\fP (or short key \fBm\fP): \fBuniform\fP or \fBsrgb\fP.
+\fBmapping\fP (short form \fBMSPACE\fP): \fBuniform\fP or \fBsrgb\fP.
 .br
-\fBsoftdist\fP (or short key \fBd\fP): \fBtrilinear\fP.
+\fBsoftdist\fP (short form \fBDKIND\fP): \fBtrilinear\fP.
 .br
-\fBautoratio\fP (or short key \fBr\fP): integer value in 1-1048576.
+\fBautoratio\fP (short form \fBRRATIO\fP): integer value in 1-1048576.
 .br
-\fBfeedback\fP (or short key \fBf\fP): \fBoff\fP or \fBon\fP.
+\fBfeedback\fP (short form \fBFMODE\fP): \fBoff\fP or \fBon\fP.
 .br
 \fBprune\fP: \fBauto\fP, \fBnone\fP, \fBhamerly\fP, \fBelkan\fP, or
 \fByinyang\fP.
 .br
-\fBseed\fP (or short key \fBs\fP): integer value in 0-4294967295.
+\fBseed\fP (short form \fBSVALUE\fP): integer value in 0-4294967295.
 .br
 \fBrestarts\fP: integer value in 1-32.
 .br
@@ -212,21 +215,21 @@ when both are specified.
 .br
 \fBscene_cut_threshold\fP: floating value in 0.0-1.0 (default 0.20).
 .br
-\fBmerge\fP (or short key \fBg\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
+\fBmerge\fP (short form \fBGMODE\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
 .br
-\fBmerge_oversplit\fP (or short key \fBo\fP): floating value in 1.0-3.0.
+\fBmerge_oversplit\fP (short form \fBOFACTOR\fP): floating value in 1.0-3.0.
 .br
-\fBmerge_lloyd\fP (or short key \fBl\fP): 0 or integer value in 1-30.
+\fBmerge_lloyd\fP (short form \fBLCOUNT\fP): 0 or integer value in 1-30.
 .br
 The \fBmedoids\fP base value accepts suboptions using
 \fBmedoids:key=value[:key=value...]\fP.
 .br
 Supported k-medoids suboptions:
 .br
-\fBalgo\fP (or short key \fBa\fP): \fBauto\fP, \fBpam\fP, \fBsample\fP
+\fBalgo\fP (short form \fBANAME\fP): \fBauto\fP, \fBpam\fP, \fBsample\fP
 (CLARA), \fBrandom\fP (CLARANS), or \fBbandit\fP (BanditPAM).
 .br
-\fBseed\fP (or short key \fBs\fP): integer value in 0-4294967295.
+\fBseed\fP (short form \fBSVALUE\fP): integer value in 0-4294967295.
 .br
 \fBiter\fP: integer value in 1-64.
 .br
@@ -262,11 +265,11 @@ Supported k-medoids suboptions:
 .br
 \fBscene_cut_threshold\fP: floating value in 0.0-1.0 (default 0.20).
 .br
-\fBmerge\fP (or short key \fBg\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
+\fBmerge\fP (short form \fBGMODE\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
 .br
-\fBmerge_oversplit\fP (or short key \fBo\fP): floating value in 1.0-3.0.
+\fBmerge_oversplit\fP (short form \fBOFACTOR\fP): floating value in 1.0-3.0.
 .br
-\fBmerge_lloyd\fP (or short key \fBl\fP): 0 or integer value in 1-30.
+\fBmerge_lloyd\fP (short form \fBLCOUNT\fP): 0 or integer value in 1-30.
 .TP 5
 .B \-m \fIFILE\fP, \-\-mapfile=\fIFILE\fP
 transform image colors to match this set of colors. Accepts image files
@@ -391,7 +394,7 @@ sub-option:
 .br
 \fBgradient_factor=VALUE\fP -> gamma for gradient attenuation (\fB<=0\fP disables; default 0)
 .br
-\fBg=VALUE\fP -> short alias of \fBgradient_factor\fP
+\fBGVALUE\fP -> short form of \fBgradient_factor\fP
 .br
 \fBphase=X,Y\fP -> phase offsets for blue-noise tile
 .br
@@ -753,11 +756,11 @@ show debugging info and print the planner DAG (Directed Acyclic Graph).
 .B \-L \fILIST\fP, \-\-loaders=\fILIST\fP
 choose the loader priority order. \fILIST\fP is a comma separated
 sequence of loader names. Each entry may be abbreviated by a unique prefix,
-and a trailing "!" disables fallback loaders. The libpng, libjpeg, and
-libwebp loaders accept
-\fBorientation=on|off\fP (short form \fBo=\fP..., default on).
+and a trailing "!" disables fallback loaders. The libpng, libjpeg, libwebp,
+coregraphics, and builtin loaders accept
+\fBorientation=on|off\fP (short form \fBOon\fP or \fBOoff\fP, default on).
 The libpng, libjpeg, libwebp, libtiff, and builtin loaders accept
-\fBcms_engine=none|auto|builtin|lcms2|colorsync\fP (short form \fBe=\fP...,
+\fBcms_engine=none|auto|builtin|lcms2|colorsync\fP (short form \fBEvalue\fP,
 default none).
 The WIC loader also accepts suboptions such as \fBwic:ico_minsize=SIZE\fP to pick
 the smallest ICO frame whose edge is at least SIZE.
