@@ -756,11 +756,23 @@ runs:
         export PATH
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         meson compile -C builddir -v
+        meson_test_path="$PATH"
+        if test -n "${SIXEL_TEST_ADDITIOANL_PATH-}"; then
+          case ":$meson_test_path:" in
+            *":$SIXEL_TEST_ADDITIOANL_PATH:"*)
+              ;;
+            *)
+              meson_test_path="$SIXEL_TEST_ADDITIOANL_PATH:$meson_test_path"
+              ;;
+          esac
+        fi
         # Re-enable MSYS2 argv/PATH conversion for TAP tests. The MSVC tool
         # wrapper disables it while Meson launches cl/link, but native test
-        # binaries need translated PATH entries to find vcpkg DLLs.
-        unset MSYS2_ARG_CONV_EXCL
-        meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+        # binaries need translated PATH entries to find vcpkg DLLs. Use env -u
+        # here so Meson's test child environment cannot inherit the compile
+        # phase protection.
+        env -u MSYS2_ARG_CONV_EXCL PATH="$meson_test_path" \
+          meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
 
     - name: Build and test (Autotools, Cygwin)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
