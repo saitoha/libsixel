@@ -234,11 +234,24 @@ endif
 
 is_windows = host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
 if is_windows
+  dll_path_separator = ';'
   # Meson defaults environment.prepend() to the Python host path separator.
-  # MSYS2 Meson runs the TAP suite through sh, so keep PATH in the POSIX
-  # form that the shell and its native-executable environment translation
-  # understand before launching test_runner.exe or converter tools.
-  dll_path_separator = ':'
+  # Keep that Windows form for cmd/MSVC prompt runs, but switch to the POSIX
+  # form when the TAP suite is configured from MSYS2/Cygwin shells. Those
+  # shells translate the POSIX PATH before launching native test binaries.
+  tap_uses_posix_windows_path = host_machine.system() == 'cygwin'
+  if not tap_uses_posix_windows_path
+    tap_windows_shell = run_command(
+      sh,
+      '-c',
+      'case "${MSYSTEM-}" in ?*) printf "yes";; *) printf "no";; esac',
+      check: true,
+    ).stdout().strip()
+    tap_uses_posix_windows_path = tap_windows_shell == 'yes'
+  endif
+  if tap_uses_posix_windows_path
+    dll_path_separator = ':'
+  endif
   # Ensure Windows-style runners (including MSYS2) locate the freshly built
   # DLLs and CI-provided dependency DLLs when executing the converter TAP
   # suite. Without these PATH entries the tests fail before TAP assertions
