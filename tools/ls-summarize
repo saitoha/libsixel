@@ -159,8 +159,9 @@ def parse_trs(path: Path, text: str) -> Summary:
 def parse_test_suite_log(path: Path, text: str, args: argparse.Namespace) -> Summary:
     summary = Summary(str(path), kind="test-suite-log")
     fail_re = re.compile(r"^(FAIL|ERROR|XPASS):\s+(.+)$")
+    lines = split_possible_json_lines(strip_ansi(text))
 
-    for raw in text.splitlines():
+    for raw in lines:
         line = raw.strip()
         matched = fail_re.search(line)
         if matched:
@@ -168,20 +169,22 @@ def parse_test_suite_log(path: Path, text: str, args: argparse.Namespace) -> Sum
             if not name.isdigit():
                 summary.failed_tests.append(name)
     if summary.failed_tests:
-        summary.evidence = pick_evidence(text, args)
+        summary.evidence = pick_test_suite_evidence(lines, fail_re, args)
     set_status(summary)
     return summary
 
 
 def parse_config_log(path: Path, text: str, args: argparse.Namespace) -> Summary:
     summary = Summary(str(path), kind="config-log")
-    summary.evidence = [
-        short_line(line.strip(), args.max_line_chars)
-        for line in text.splitlines()
-        if "configure: error:" in line and "failed program was" not in line
-    ]
-    if not summary.evidence:
-        summary.evidence = pick_evidence(text, args)
+    exit_re = re.compile(r"^configure: exit ([0-9]+)$")
+
+    for raw in text.splitlines():
+        line = raw.strip()
+        matched = exit_re.search(line)
+        if "configure: error:" in line and "failed program was" not in line:
+            summary.evidence.append(short_line(line, args.max_line_chars))
+        elif matched and int(matched.group(1)) != 0:
+            summary.evidence.append(short_line(line, args.max_line_chars))
     set_status(summary)
     return summary
 
@@ -220,6 +223,28 @@ def pick_evidence(text: str, args: argparse.Namespace) -> List[str]:
     if picked:
         return picked
     return []
+
+
+def pick_test_suite_evidence(
+    lines: List[str], pattern: re.Pattern[str], args: argparse.Namespace
+) -> List[str]:
+    picked: List[str] = []
+
+    for index, line in enumerate(lines):
+        matched = pattern.search(line.strip())
+        if matched and not matched.group(2).strip().isdigit():
+            unique_extend(
+                picked,
+                (
+                    short_line(value.strip(), args.max_line_chars)
+                    for value in context_window(lines, index, args.context)
+                    if value.strip()
+                ),
+                args.max_lines,
+            )
+        if len(picked) >= args.max_lines:
+            return picked
+    return picked
 
 
 def summarize_file(path: Path, args: argparse.Namespace) -> Summary:
@@ -388,6 +413,44 @@ def run_self_test() -> None:
         summaries = collect_summaries(args)
         assert any("tests/example" in " ".join(item.failed_tests) for item in summaries)
         assert any("boom" in " ".join(item.evidence) for item in summaries)
+        config_args = get_arg_parser().parse_args([])
+        config_summary = parse_config_log(
+            root / "config.log",
+            "\n".join(
+                [
+                    "configure:3456: clang: error: unsupported argument",
+                    "configure: failed program was:",
+                    "configure: exit 0",
+                ]
+            ),
+            config_args,
+        )
+        assert config_summary.status == "pass-or-no-failure-found"
+        assert not config_summary.evidence
+        config_summary = parse_config_log(
+            root / "config.log",
+            "configure: exit 1",
+            config_args,
+        )
+        assert config_summary.status == "fail"
+        assert config_summary.evidence == ["configure: exit 1"]
+        suite_summary = parse_test_suite_log(
+            root / "test-suite.log",
+            "\n".join(
+                [
+                    "XFAIL: tests/known_xfail.t",
+                    "not ok 1 - expected xfail",
+                    "ok 1 - setup",
+                    "not ok 1 - actual failure",
+                    "FAIL: tests/actual_failure.t",
+                ]
+            ),
+            config_args,
+        )
+        assert suite_summary.status == "fail"
+        assert suite_summary.failed_tests == ["tests/actual_failure.t"]
+        assert any("FAIL: tests/actual_failure.t" in item for item in suite_summary.evidence)
+        assert not any("expected xfail" in item for item in suite_summary.evidence)
     print("ok")
 
 
