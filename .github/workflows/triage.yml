@@ -46,7 +46,7 @@ on:
           - normal
           - forensic
       checkout_ref:
-        description: Optional replay ref for normal mode. Defaults to source_branch
+        description: Optional replay ref for normal mode. Defaults to failed run branch
         required: false
         default: ''
         type: string
@@ -199,6 +199,17 @@ jobs:
             echo "::error::source run ${run_id} does not expose head_sha."
             exit 1
           fi
+          source_head_branch="$(
+            RUN_META_JSON="$run_meta_json" ruby -rjson -e '
+              run = JSON.parse(ENV.fetch("RUN_META_JSON"))
+              head_branch = run["head_branch"].to_s
+              puts(head_branch.empty? ? ENV.fetch("SOURCE_BRANCH") : head_branch)
+            '
+          )"
+          if test -z "$source_head_branch"; then
+            echo "::error::source run ${run_id} does not expose head_branch."
+            exit 1
+          fi
 
           checkout_ref="$CHECKOUT_REF"
           checkout_sha="$CHECKOUT_SHA"
@@ -207,7 +218,7 @@ jobs:
             checkout_sha="$source_head_sha"
           elif test -z "$checkout_sha"; then
             if test -z "$checkout_ref"; then
-              checkout_ref="$SOURCE_BRANCH"
+              checkout_ref="$source_head_branch"
             fi
             if ! checkout_sha="$(
               git ls-remote --exit-code origin "$checkout_ref" |
@@ -236,7 +247,11 @@ jobs:
               ruby -rjson -e 'puts JSON.generate(STDIN.read.lines.map(&:chomp))'
           )"
 
+          # Manual dispatch with source_run_id can leave SOURCE_BRANCH at its
+          # default. Prefer the source run metadata so normal replay follows
+          # the failed branch's current head, matching workflow_run behavior.
           CHECKOUT_REF="$checkout_ref" CHECKOUT_SHA="$checkout_sha" \
+            SOURCE_HEAD_BRANCH="$source_head_branch" \
             RUN_ID="$run_id" RUN_META_JSON="$run_meta_json" \
             FAILED_JOBS_JSON="$failed_jobs_json" ruby <<'RUBY'
           require 'json'
@@ -489,9 +504,9 @@ jobs:
             'checkout_sha' => ENV.fetch('CHECKOUT_SHA'),
             'event_name' => run_meta.fetch('event'),
             'failure_sha' => run_meta.fetch('head_sha'),
-            'head_branch' => run_meta['head_branch'] || ENV.fetch('SOURCE_BRANCH'),
+            'head_branch' => ENV.fetch('SOURCE_HEAD_BRANCH'),
             'head_sha' => run_meta.fetch('head_sha'),
-            'ref_name' => run_meta['head_branch'] || ENV.fetch('SOURCE_BRANCH'),
+            'ref_name' => ENV.fetch('SOURCE_HEAD_BRANCH'),
             'run_attempt' => run_meta.fetch('run_attempt').to_s,
             'run_id' => ENV.fetch('RUN_ID'),
             'triage_mode' => ENV.fetch('TRIAGE_MODE')
