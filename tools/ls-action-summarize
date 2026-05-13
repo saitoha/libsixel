@@ -153,7 +153,17 @@ def fetch_run(repo: str, run_id: str) -> Dict[str, Any]:
     return load_json(["gh", "api", f"repos/{repo}/actions/runs/{run_id}"])
 
 
-def fetch_jobs(repo: str, run_id: str) -> List[Dict[str, Any]]:
+def fetch_jobs(repo: str, run: Dict[str, Any]) -> List[Dict[str, Any]]:
+    run_id = str(run["id"])
+    attempt = run.get("run_attempt")
+    endpoint = f"repos/{repo}/actions/runs/{run_id}/jobs"
+    if attempt:
+        # GitHub's aggregate jobs endpoint can return HTTP 502 after a run is
+        # cancelled and rerun.  The attempt endpoint keeps the summary scoped
+        # to the current attempt and avoids mixing stale cancelled jobs with
+        # newly scheduled ones.
+        endpoint = f"repos/{repo}/actions/runs/{run_id}/attempts/{attempt}/jobs"
+
     # gh emits each paginated --jq result as a separate JSON value.  Ask jq for
     # one compact job object per line so Python never sees adjacent arrays.
     output = run_cmd(
@@ -161,7 +171,7 @@ def fetch_jobs(repo: str, run_id: str) -> List[Dict[str, Any]]:
             "gh",
             "api",
             "--paginate",
-            f"repos/{repo}/actions/runs/{run_id}/jobs",
+            endpoint,
             "--jq",
             ".jobs[] | @json",
         ]
@@ -770,7 +780,7 @@ def main() -> int:
 
     Path(args.download_dir).mkdir(parents=True, exist_ok=True)
     run = fetch_run(args.repo, args.run_id)
-    all_jobs = fetch_jobs(args.repo, args.run_id)
+    all_jobs = fetch_jobs(args.repo, run)
     artifacts = fetch_artifacts(args.repo, args.run_id) if args.artifacts else []
 
     if args.job_id and all(j.get("id") != int(args.job_id) if str(args.job_id).isdigit() else True for j in all_jobs):
