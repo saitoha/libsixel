@@ -372,7 +372,10 @@ def parse_testlog(path: Path) -> List[str]:
     if isinstance(data, list):
         items = data
     elif isinstance(data, dict):
-        items = data.get("tests", [])
+        if "result" in data:
+            items = [data]
+        else:
+            items = data.get("tests", [])
     else:
         items = []
     names: List[str] = []
@@ -684,6 +687,15 @@ def self_test() -> int:
         )
         if parse_testlog(object_testlog) != ["failing object test"]:
             fail("self-test: meson object testlog parsing failed")
+
+        single_object_testlog = tmp / "single-object-testlog.json"
+        single_object_testlog.write_text(
+            json.dumps({"name": "failing single object test", "result": "FAIL"})
+        )
+        if parse_testlog(single_object_testlog) != [
+            "failing single object test",
+        ]:
+            fail("self-test: meson single object testlog parsing failed")
 
         empty_testlog = tmp / "empty-testlog.json"
         empty_testlog.write_text("")
