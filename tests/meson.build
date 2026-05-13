@@ -234,6 +234,11 @@ endif
 
 is_windows = host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
 if is_windows
+  # Meson defaults environment.prepend() to the Python host path separator.
+  # MSYS2 Meson runs the TAP suite through sh, so keep PATH in the POSIX
+  # form that the shell and its native-executable environment translation
+  # understand before launching test_runner.exe or converter tools.
+  dll_path_separator = ':'
   # Ensure Windows-style runners (including MSYS2) locate the freshly built
   # DLLs and CI-provided dependency DLLs when executing the converter TAP
   # suite. Without these PATH entries the tests fail before TAP assertions
@@ -245,7 +250,7 @@ if is_windows
     dll_paths += [test_additional_path]
   endif
   foreach dll_path : dll_paths
-    env.prepend('PATH', dll_path)
+    env.prepend('PATH', dll_path, separator: dll_path_separator)
   endforeach
 endif
 
@@ -312,7 +317,7 @@ foreach t : tests
   endforeach
   if is_windows
     foreach dll_path : dll_paths
-      test_env.prepend('PATH', dll_path)
+      test_env.prepend('PATH', dll_path, separator: dll_path_separator)
     endforeach
   endif
   test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)
