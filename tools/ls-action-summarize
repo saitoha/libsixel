@@ -11,6 +11,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -19,6 +20,14 @@ from typing import Any, Dict, Iterable, List, Optional
 
 
 ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+FAILED_TEST_RESULTS = {
+    "ERROR",
+    "FAIL",
+    "INTERRUPT",
+    "TIMEOUT",
+    "TIMED_OUT",
+    "UNEXPECTEDPASS",
+}
 
 
 def run_cmd(cmd: list[str], cwd: str | None = None, text: bool = True) -> str:
@@ -345,9 +354,17 @@ def parse_testlog(path: Path) -> List[str]:
         data = json.loads(path.read_text())
     except Exception:
         return []
+    if isinstance(data, list):
+        items = data
+    elif isinstance(data, dict):
+        items = data.get("tests", [])
+    else:
+        items = []
     names: List[str] = []
-    for item in data.get("tests", []):
-        if (item.get("result") or "").upper() not in {"OK", "PASS", "PASS (2)"}:
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        if (item.get("result") or "").upper() in FAILED_TEST_RESULTS:
             name = item.get("name") or item.get("test")
             if name:
                 names.append(name)
@@ -356,21 +373,18 @@ def parse_testlog(path: Path) -> List[str]:
 
 def parse_trs(path: Path) -> List[str]:
     lines: List[str] = []
-    state: Optional[str] = None
-    test_name = ""
     for raw in path.read_text(errors="ignore").splitlines():
         line = raw.strip()
-        if line.startswith("XFAIL") or line.startswith("XPASS"):
+        marker = ":test-result:"
+        if marker not in line:
             continue
-        if ":test-result:" in line:
-            if " :test-result:" in line:
-                parts = line.split(":")
-                if len(parts) > 4:
-                    test_name = parts[3].strip()
-                    state = parts[2].strip().upper()
-            if state in {"FAIL", "ERROR", "XPASS"} and test_name:
-                lines.append(test_name)
-                state = None
+        result = line.split(marker, 1)[1].strip().split(None, 1)
+        if len(result) != 2:
+            continue
+        state = result[0].upper()
+        test_name = result[1].strip()
+        if state in FAILED_TEST_RESULTS and test_name:
+            lines.append(test_name)
     return lines
 
 
@@ -453,7 +467,7 @@ def collect_artifact_failures(artifact_dirs: Iterable[Path]) -> List[str]:
             if not path.is_file():
                 continue
             if path.name == "testlog.json":
-                logs.extend(parse_testlog(path))
+                tests.extend(parse_testlog(path))
             elif path.suffix == ".trs":
                 tests.extend(parse_trs(path))
             elif path.name == "test-suite.log":
@@ -579,6 +593,47 @@ def self_test() -> int:
     upload = pick_evidence_from_log(log_text, "Upload artifacts", "failure")
     if not any(is_artifact_log_line(line) for line in upload):
         fail("self-test: artifact failure missed artifact evidence")
+
+    with tempfile.TemporaryDirectory(prefix="ls-action-summarize-") as tmpdir:
+        tmp = Path(tmpdir)
+        trs = tmp / "legacy.trs"
+        trs.write_text(
+            "\n".join(
+                [
+                    ":test-result: PASS passing test",
+                    ":test-result: SKIP skipped test",
+                    ":test-result: XFAIL expected failing test",
+                    ":test-result: FAIL failing test name",
+                    ":test-result: ERROR crashing test name",
+                    ":test-result: TIMEOUT hanging test name",
+                ]
+            )
+        )
+        if parse_trs(trs) != [
+            "failing test name",
+            "crashing test name",
+            "hanging test name",
+        ]:
+            fail("self-test: trs failure parsing failed")
+
+        testlog = tmp / "testlog.json"
+        testlog.write_text(
+            json.dumps(
+                [
+                    {"name": "passing test", "result": "OK"},
+                    {"name": "skipped test", "result": "SKIP"},
+                    {"name": "failing test", "result": "FAIL"},
+                    {"name": "error test", "result": "ERROR"},
+                    {"name": "timeout test", "result": "TIMEOUT"},
+                ]
+            )
+        )
+        if parse_testlog(testlog) != [
+            "failing test",
+            "error test",
+            "timeout test",
+        ]:
+            fail("self-test: meson testlog failure parsing failed")
     print("self-test: ok")
     return 0
 
