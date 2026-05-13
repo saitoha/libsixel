@@ -61,6 +61,7 @@
 #include "palette-common-snap.h"
 #include "palette-kmeans.h"
 #include "palette-kmeans-build.h"
+#include "palette-private.h"
 #include "palette.h"
 #include "pixelformat.h"
 #include "status.h"
@@ -261,8 +262,7 @@ sixel_palette_kmeans_log_start(sixel_timeline_logger_t *logger,
         return job_id;
     }
     if (job_seq != NULL) {
-        job_id = *job_seq;
-        *job_seq += 1;
+        job_id = sixel_palette_timeline_next_job_id();
     }
     sixel_timeline_logger_logf(logger,
                       (role != NULL && role[0] != '\0') ? role : "palette",

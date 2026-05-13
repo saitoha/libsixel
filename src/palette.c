@@ -127,6 +127,26 @@ static sixel_palette_vtbl_t const g_sixel_palette_vtbl = {
     sixel_palette_vtbl_get_metadata
 };
 
+static sixel_atomic_u32_t g_sixel_palette_timeline_job_seq;
+
+SIXEL_INTERNAL_API int
+sixel_palette_timeline_next_job_id(void)
+{
+    unsigned int job_id;
+
+    /*
+     * Palette timeline rows share one process-wide id space.  Top-level build
+     * spans and nested quantizer phases both allocate from this counter so
+     * concurrent palette runs cannot reuse rows.
+     */
+    job_id = sixel_atomic_fetch_add_u32(&g_sixel_palette_timeline_job_seq, 1U);
+    if (job_id > (unsigned int)INT_MAX) {
+        return -1;
+    }
+
+    return (int)job_id;
+}
+
 /*
  * Quantizer engines wrap each palette solver behind a uniform interface so
  * palette.c can switch between the legacy 8bit implementations and future
@@ -540,10 +560,10 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
     sixel_timeline_logger_t *logger;
     sixel_palette_telemetry_t telemetry;
     /*
-     * The job id increments per build attempt so timeline rows can split
-     * horizontally when multiple quantizers run sequentially.
+     * Quantizer internals still accept an int pointer as the timeline logging
+     * enable flag, but concrete ids now come from the shared atomic allocator.
      */
-    static int palette_build_job_seq = 0;
+    int child_job_seq;
     int job_id;
     char span_message[192];
 
@@ -554,7 +574,8 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
 
     logger = NULL;
     (void)sixel_timeline_logger_prepare_env(allocator, &logger);
-    job_id = palette_build_job_seq++;
+    job_id = sixel_palette_timeline_next_job_id();
+    child_job_seq = 0;
     memset(&telemetry, 0, sizeof(telemetry));
     span_message[0] = '\0';
 
@@ -570,7 +591,7 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
                               pixelformat,
                               allocator,
                               logger,
-                              &palette_build_job_seq,
+                              &child_job_seq,
                               engine->name,
                               &telemetry);
 

@@ -112,6 +112,9 @@ sixel_palette_set_entries_float32(sixel_palette_t *palette,
                                   int depth,
                                   sixel_allocator_t *allocator);
 
+SIXEL_INTERNAL_API int
+sixel_palette_timeline_next_job_id(void);
+
 #endif /* LIBSIXEL_PALETTE_PRIVATE_H */
 
 /* emacs Local Variables:      */
