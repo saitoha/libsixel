@@ -36,6 +36,24 @@ export LSQA_PATH
 export TEST_RUNNER_PATH
 export LIBSIXEL_LIBDIR
 
+# Meson may pass CI-provided dependency DLL directories through the historic
+# misspelled variable instead of making them visible in PATH for every TAP
+# process.  The wrapper runs under a POSIX shell on MSYS2/Cygwin, so prepend
+# the path with ':' here before a TAP script launches native Windows tools.
+if test -n "${SIXEL_TEST_ADDITIOANL_PATH-}"; then
+  sixel_test_additional_path=$SIXEL_TEST_ADDITIOANL_PATH
+else
+  sixel_test_additional_path=${SIXEL_TEST_ADDITIONAL_PATH-}
+fi
+if test -n "$sixel_test_additional_path"; then
+  if test -n "${PATH-}"; then
+    PATH="$sixel_test_additional_path:$PATH"
+  else
+    PATH=$sixel_test_additional_path
+  fi
+  export PATH
+fi
+
 test_requires_large_fixtures() {
   case "$test_script" in
     *xxlarge*|*oversized_iccp*)
