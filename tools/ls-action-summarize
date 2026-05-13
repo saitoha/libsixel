@@ -27,6 +27,7 @@ FAILED_TEST_RESULTS = {
     "TIMEOUT",
     "TIMED_OUT",
     "UNEXPECTEDPASS",
+    "XPASS",
 }
 
 
@@ -606,6 +607,7 @@ def self_test() -> int:
                     ":test-result: FAIL failing test name",
                     ":test-result: ERROR crashing test name",
                     ":test-result: TIMEOUT hanging test name",
+                    ":test-result: XPASS unexpected pass test",
                 ]
             )
         )
@@ -613,6 +615,7 @@ def self_test() -> int:
             "failing test name",
             "crashing test name",
             "hanging test name",
+            "unexpected pass test",
         ]:
             fail("self-test: trs failure parsing failed")
 
