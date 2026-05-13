@@ -11,7 +11,6 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -51,11 +50,50 @@ def load_json(cmd: list[str]) -> Dict[str, Any]:
     return json.loads(run_cmd(cmd))
 
 
+def load_json_lines(output: str) -> List[Any]:
+    items: List[Any] = []
+    decoder = json.JSONDecoder()
+    for raw in output.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        try:
+            item = json.loads(line)
+        except json.JSONDecodeError:
+            pos = 0
+            while pos < len(line):
+                value, pos = decoder.raw_decode(line, pos)
+                items.append(value)
+                while pos < len(line) and line[pos].isspace():
+                    pos += 1
+            continue
+        if isinstance(item, str):
+            item = json.loads(item)
+        if isinstance(item, list):
+            items.extend(item)
+            continue
+        if isinstance(item, dict):
+            items.append(item)
+            continue
+        items.append(item)
+    return items
+
+
+def parse_job_items(items: Iterable[Any]) -> List[Dict[str, Any]]:
+    jobs: List[Dict[str, Any]] = []
+    for item in items:
+        if isinstance(item, dict) and isinstance(item.get("jobs"), list):
+            jobs.extend(job for job in item["jobs"] if isinstance(job, dict))
+        elif isinstance(item, dict):
+            jobs.append(item)
+    return jobs
+
+
 def get_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Summarize GitHub Actions run and failed jobs."
     )
-    parser.add_argument("run_id", help="GitHub Actions run id")
+    parser.add_argument("run_id", nargs="?", help="GitHub Actions run id")
     parser.add_argument("job_id", nargs="?", help="Target single job id")
     parser.add_argument(
         "--repo",
@@ -88,6 +126,11 @@ def get_arg_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Also include cancelled jobs in failure analysis",
     )
+    parser.add_argument(
+        "--self-test",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
     return parser
 
 
@@ -101,19 +144,19 @@ def fetch_run(repo: str, run_id: str) -> Dict[str, Any]:
 
 
 def fetch_jobs(repo: str, run_id: str) -> List[Dict[str, Any]]:
-    payload = load_json(
+    # gh emits each paginated --jq result as a separate JSON value.  Ask jq for
+    # one compact job object per line so Python never sees adjacent arrays.
+    output = run_cmd(
         [
             "gh",
             "api",
             "--paginate",
             f"repos/{repo}/actions/runs/{run_id}/jobs",
             "--jq",
-            ".jobs",
+            ".jobs[] | @json",
         ]
     )
-    if isinstance(payload, dict):
-        return payload.get("jobs", [])
-    return payload
+    return parse_job_items(load_json_lines(output))
 
 
 def fetch_artifacts(repo: str, run_id: str) -> List[Dict[str, Any]]:
@@ -130,28 +173,22 @@ def download_job_log(repo: str, run_id: str, job_id: int, out_dir: Path) -> Path
     log_path = out_dir / f"{job_id}.log"
     if log_path.exists() and log_path.stat().st_size > 0:
         return log_path
-    with tempfile.TemporaryDirectory() as tmpdir:
-        run_cmd(
-            [
-                "gh",
-                "run",
-                "view",
-                run_id,
-                "--repo",
-                repo,
-                "--log",
-                "--job",
-                str(job_id),
-                "--log-format",
-                "txt",
-                "--output",
-                os.path.join(tmpdir, f"{job_id}.log"),
-            ]
-        )
-        src = Path(tmpdir) / f"{job_id}.log"
-        if not src.exists():
-            return log_path
-        shutil.copy2(src, log_path)
+    log_text = subprocess.check_output(
+        [
+            "gh",
+            "run",
+            "view",
+            run_id,
+            "--repo",
+            repo,
+            "--log",
+            "--job",
+            str(job_id),
+        ],
+        text=True,
+        stderr=subprocess.STDOUT,
+    )
+    log_path.write_text(log_text)
     return log_path
 
 
@@ -181,6 +218,18 @@ def find_failed_step(job: Dict[str, Any], include_cancelled: bool) -> Optional[D
         if step.get("number") == step.get("number") and step.get("status") == "in_progress":
             return step
     return None
+
+
+def is_artifact_step(step_name: str, step_conclusion: str) -> bool:
+    lower = step_name.lower()
+    if step_conclusion in {"", "success", "skipped"}:
+        return False
+    return "upload" in lower or "artifact" in lower
+
+
+def is_artifact_log_line(line: str) -> bool:
+    lower = line.lower()
+    return "upload" in lower or "artifact" in lower
 
 
 def generic_phase(job_name: str, step_name: str) -> str:
@@ -235,15 +284,15 @@ def detect_phase(job: Dict[str, Any], step_name: str) -> str:
 
 
 def pick_evidence_from_log(
-    log_text: str, step_name: str, conclusion: str
+    log_text: str, step_name: str, step_conclusion: str = "failure"
 ) -> List[str]:
     if not log_text:
         return []
     text = normalize_log(log_text)
-    lower = step_name.lower()
+    artifact_step = is_artifact_step(step_name, step_conclusion)
 
-    if "upload" in lower or "artifact" in lower or conclusion in {"cancelled", "failure"}:
-        return clean_log_lines(
+    if artifact_step:
+        artifact_lines = clean_log_lines(
             text,
             {
                 "Multiple search paths detected.",
@@ -252,18 +301,27 @@ def pick_evidence_from_log(
                 "Upload",
             },
         )[:20]
+        if artifact_lines:
+            return artifact_lines
 
     lines = []
-    for marker in (step_name, "ERROR", "Error", "error", "FAILED", "FAILED:", "FAIL:"):
-        if marker and marker in text:
-            for line in text.splitlines():
-                if marker in line:
-                    lines.append(line.strip())
+    failure_re = re.compile(
+        r"(##\[error\]|\bERROR\b|\bFAILED\b|FAIL:|\bFAIL\b|\b[Ee]rror\b|[Ee]rror:)"
+    )
+    for line in text.splitlines():
+        plain = line.strip()
+        if not artifact_step and is_artifact_log_line(plain):
+            continue
+        if failure_re.search(plain):
+            lines.append(plain)
     if not lines:
-        return clean_log_lines(
+        fallback = clean_log_lines(
             text,
             {"FAILED", "ERROR", "error", "FAIL:", "configure", "configuring"},
         )[:20]
+        if artifact_step:
+            return fallback
+        return [line for line in fallback if not is_artifact_log_line(line)]
     return lines[:40]
 
 
@@ -463,6 +521,40 @@ def should_analyze(job: Dict[str, Any], args: argparse.Namespace) -> bool:
     return False
 
 
+def self_test() -> int:
+    paginated = "\n".join(
+        [
+            json.dumps({"id": 1, "name": "build"}),
+            json.dumps(json.dumps({"id": 2, "name": "test"})),
+            json.dumps([{"id": 3, "name": "deploy"}]),
+            json.dumps({"jobs": [{"id": 4, "name": "legacy"}]}),
+        ]
+    )
+    jobs = parse_job_items(load_json_lines(paginated))
+    if [job.get("id") for job in jobs] != [1, 2, 3, 4]:
+        fail("self-test: paginated job parsing failed")
+
+    log_text = "\n".join(
+        [
+            "FAILED: test_runner",
+            "##[error]Process completed with exit code 1.",
+            "Upload artifact",
+            "##[error]Artifact upload failed",
+        ]
+    )
+    evidence = pick_evidence_from_log(log_text, "Run tests", "failure")
+    if any(is_artifact_log_line(line) for line in evidence):
+        fail("self-test: normal failure included artifact evidence")
+    if not any("FAILED" in line or "error" in line for line in evidence):
+        fail("self-test: normal failure missed failure evidence")
+
+    upload = pick_evidence_from_log(log_text, "Upload artifacts", "failure")
+    if not any(is_artifact_log_line(line) for line in upload):
+        fail("self-test: artifact failure missed artifact evidence")
+    print("self-test: ok")
+    return 0
+
+
 def print_summary(run: Dict[str, Any], jobs: List[Dict[str, Any]], results: List[Dict[str, Any]]) -> None:
     statuses = Counter(j.get("conclusion") or "n/a" for j in jobs)
     started = run.get("created_at")
@@ -514,6 +606,10 @@ def print_summary(run: Dict[str, Any], jobs: List[Dict[str, Any]], results: List
 def main() -> int:
     parser = get_arg_parser()
     args = parser.parse_args()
+    if args.self_test:
+        return self_test()
+    if not args.run_id:
+        parser.error("the following arguments are required: run_id")
     if not shutil.which("gh"):
         fail("gh is required in PATH")
 
