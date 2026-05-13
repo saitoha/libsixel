@@ -756,6 +756,10 @@ runs:
         export PATH
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         meson compile -C builddir -v
+        # Re-enable MSYS2 argv/PATH conversion for TAP tests. The MSVC tool
+        # wrapper disables it while Meson launches cl/link, but native test
+        # binaries need translated PATH entries to find vcpkg DLLs.
+        unset MSYS2_ARG_CONV_EXCL
         meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
 
     - name: Build and test (Autotools, Cygwin)
