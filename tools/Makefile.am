@@ -32,7 +32,8 @@ EXTRA_DIST = libsixel-config.in \
 	             timer.c \
              lso-timeout.c \
              jpegref.c \
-             ls-action-summarize
+             ls-action-summarize \
+             ls-summarize
 
 if HAVE_JPEG
 EXTRA_PROGRAMS += jpegref

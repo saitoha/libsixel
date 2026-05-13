@@ -1,0 +1,432 @@
+#!/usr/bin/env python3
+"""Summarize local build, test, and CI logs without printing the full log."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+import tempfile
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Any, Iterable, List, Optional
+
+
+ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+ERROR_RE = re.compile(
+    r"(##\[error\]|\bERROR\b|\bFAILED\b|FAIL:|\bFAIL\b|"
+    r"\bnot ok\b|\bXPASS\b|\bTIMEOUT\b|\bTimed out\b|"
+    r"\bAssertion\b|[Ee]rror:|[Ff]ailed|[Tt]raceback|"
+    r"Sanitizer|AddressSanitizer|ThreadSanitizer|UndefinedBehaviorSanitizer)"
+)
+FAILED_TEST_RESULTS = {
+    "ERROR",
+    "FAIL",
+    "INTERRUPT",
+    "TIMEOUT",
+    "TIMED_OUT",
+    "UNEXPECTEDPASS",
+    "XPASS",
+}
+DEFAULT_MAX_LINES = 80
+DEFAULT_MAX_LINE_CHARS = 240
+MAX_DISCOVERED_FILES = 64
+
+
+@dataclass
+class Summary:
+    source: str
+    kind: str = "log"
+    bytes: int = 0
+    status: str = "unknown"
+    failed_tests: List[str] = field(default_factory=list)
+    evidence: List[str] = field(default_factory=list)
+    notes: List[str] = field(default_factory=list)
+
+
+def strip_ansi(text: str) -> str:
+    return ANSI_RE.sub("", text)
+
+
+def short_line(line: str, max_chars: int) -> str:
+    text = strip_ansi(line).rstrip()
+
+    if len(text) <= max_chars:
+        return text
+    if max_chars <= 1:
+        return text[:max_chars]
+    return text[: max_chars - 3] + "..."
+
+
+def unique_extend(out: List[str], values: Iterable[str], limit: int) -> None:
+    seen = set(out)
+
+    for value in values:
+        if value in seen or value == "":
+            continue
+        out.append(value)
+        seen.add(value)
+        if len(out) >= limit:
+            return
+
+
+def read_text(path: Path) -> str:
+    return path.read_text(errors="ignore")
+
+
+def split_possible_json_lines(text: str) -> List[str]:
+    lines: List[str] = []
+    decoder = json.JSONDecoder()
+
+    for raw in text.splitlines():
+        line = raw.strip()
+        pos = 0
+        if not line:
+            continue
+        while pos < len(line):
+            try:
+                _value, next_pos = decoder.raw_decode(line, pos)
+            except json.JSONDecodeError:
+                lines.append(raw)
+                break
+            lines.append(line[pos:next_pos])
+            pos = next_pos
+            while pos < len(line) and line[pos].isspace():
+                pos += 1
+    return lines
+
+
+def load_json_items(text: str) -> Optional[List[Any]]:
+    try:
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        data = []
+        for raw in split_possible_json_lines(text):
+            try:
+                data.append(json.loads(raw))
+            except json.JSONDecodeError:
+                return None
+    if isinstance(data, list):
+        return data
+    if isinstance(data, dict):
+        if "tests" in data and isinstance(data["tests"], list):
+            return data["tests"]
+        return [data]
+    return None
+
+
+def parse_meson_json(path: Path, text: str, args: argparse.Namespace) -> Summary:
+    summary = Summary(str(path), kind="meson-testlog-json")
+    items = load_json_items(text) or []
+
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        result = str(item.get("result") or "").upper()
+        if result not in FAILED_TEST_RESULTS:
+            continue
+        name = item.get("name") or item.get("test") or "(unnamed test)"
+        summary.failed_tests.append(str(name))
+        for key in ("stdout", "stderr", "command", "duration"):
+            value = item.get(key)
+            if value:
+                summary.evidence.append(
+                    short_line(f"{name}: {key}: {value}", args.max_line_chars)
+                )
+    set_status(summary)
+    return summary
+
+
+def parse_trs(path: Path, text: str) -> Summary:
+    summary = Summary(str(path), kind="automake-trs")
+    marker = ":test-result:"
+
+    for raw in text.splitlines():
+        line = raw.strip()
+        if marker not in line:
+            continue
+        result = line.split(marker, 1)[1].strip().split(None, 1)
+        if len(result) != 2:
+            continue
+        state = result[0].upper()
+        if state in FAILED_TEST_RESULTS:
+            summary.failed_tests.append(result[1].strip())
+    set_status(summary)
+    return summary
+
+
+def parse_test_suite_log(path: Path, text: str, args: argparse.Namespace) -> Summary:
+    summary = Summary(str(path), kind="test-suite-log")
+    fail_re = re.compile(r"^(FAIL|ERROR|XPASS):\s+(.+)$")
+
+    for raw in text.splitlines():
+        line = raw.strip()
+        matched = fail_re.search(line)
+        if matched:
+            name = matched.group(2).strip()
+            if not name.isdigit():
+                summary.failed_tests.append(name)
+    if summary.failed_tests:
+        summary.evidence = pick_evidence(text, args)
+    set_status(summary)
+    return summary
+
+
+def parse_config_log(path: Path, text: str, args: argparse.Namespace) -> Summary:
+    summary = Summary(str(path), kind="config-log")
+    summary.evidence = [
+        short_line(line.strip(), args.max_line_chars)
+        for line in text.splitlines()
+        if "configure: error:" in line and "failed program was" not in line
+    ]
+    if not summary.evidence:
+        summary.evidence = pick_evidence(text, args)
+    set_status(summary)
+    return summary
+
+
+def parse_plain_log(path: Path, text: str, args: argparse.Namespace) -> Summary:
+    summary = Summary(str(path), kind="log")
+    summary.evidence = pick_evidence(text, args)
+    set_status(summary)
+    return summary
+
+
+def context_window(lines: List[str], index: int, context: int) -> Iterable[str]:
+    start = max(0, index - context)
+    end = min(len(lines), index + context + 1)
+
+    return lines[start:end]
+
+
+def pick_evidence(text: str, args: argparse.Namespace) -> List[str]:
+    lines = split_possible_json_lines(strip_ansi(text))
+    picked: List[str] = []
+
+    for index, line in enumerate(lines):
+        if ERROR_RE.search(line):
+            unique_extend(
+                picked,
+                (
+                    short_line(value.strip(), args.max_line_chars)
+                    for value in context_window(lines, index, args.context)
+                    if value.strip()
+                ),
+                args.max_lines,
+            )
+        if len(picked) >= args.max_lines:
+            return picked
+    if picked:
+        return picked
+    return []
+
+
+def summarize_file(path: Path, args: argparse.Namespace) -> Summary:
+    text = read_text(path)
+    name = path.name
+
+    if name == "testlog.json" or name.endswith(".jsonl"):
+        summary = parse_meson_json(path, text, args)
+        if summary.failed_tests or summary.evidence or name == "testlog.json":
+            summary.bytes = path.stat().st_size
+            return summary
+    if name.endswith(".trs"):
+        summary = parse_trs(path, text)
+    elif name == "test-suite.log" or name == "testlog.txt":
+        summary = parse_test_suite_log(path, text, args)
+    elif name == "config.log":
+        summary = parse_config_log(path, text, args)
+    else:
+        summary = parse_plain_log(path, text, args)
+    summary.bytes = path.stat().st_size
+    return summary
+
+
+def interesting_file(path: Path) -> bool:
+    name = path.name
+
+    return (
+        name in {"testlog.json", "testlog.txt", "test-suite.log", "config.log"}
+        or name.endswith(".trs")
+        or name.endswith(".log")
+        or name.endswith(".jsonl")
+    )
+
+
+def discover_files(path: Path) -> List[Path]:
+    if path.is_file():
+        return [path]
+    files = [item for item in path.rglob("*") if item.is_file() and interesting_file(item)]
+    files.sort(key=lambda item: (item.stat().st_size, str(item)), reverse=True)
+    return files[:MAX_DISCOVERED_FILES]
+
+
+def set_status(summary: Summary) -> None:
+    if summary.failed_tests or summary.evidence:
+        summary.status = "fail"
+    else:
+        summary.status = "pass-or-no-failure-found"
+
+
+def summarize_stdin(args: argparse.Namespace) -> Summary:
+    text = sys.stdin.read()
+    summary = parse_plain_log(Path("<stdin>"), text, args)
+
+    summary.source = "<stdin>"
+    summary.bytes = len(text.encode())
+    return summary
+
+
+def print_text(summaries: List[Summary], args: argparse.Namespace) -> None:
+    total_lines = 0
+
+    print("local log summary")
+    for summary in summaries:
+        if total_lines >= args.max_lines:
+            print("... output truncated by --max-lines ...")
+            return
+        print(
+            f"- source={summary.source} kind={summary.kind} "
+            f"status={summary.status} bytes={summary.bytes}"
+        )
+        total_lines += 1
+        if summary.failed_tests:
+            print("  failed tests:")
+            total_lines += 1
+            for name in summary.failed_tests[: args.max_tests]:
+                print(f"  - {short_line(name, args.max_line_chars)}")
+                total_lines += 1
+                if total_lines >= args.max_lines:
+                    return
+        if summary.evidence:
+            print("  evidence:")
+            total_lines += 1
+            for line in summary.evidence:
+                print(f"  | {line}")
+                total_lines += 1
+                if total_lines >= args.max_lines:
+                    return
+        if summary.notes:
+            for note in summary.notes:
+                print(f"  note: {note}")
+                total_lines += 1
+                if total_lines >= args.max_lines:
+                    return
+
+
+def summary_to_json(summary: Summary) -> dict[str, Any]:
+    return {
+        "source": summary.source,
+        "kind": summary.kind,
+        "bytes": summary.bytes,
+        "status": summary.status,
+        "failed_tests": summary.failed_tests,
+        "evidence": summary.evidence,
+        "notes": summary.notes,
+    }
+
+
+def get_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Summarize local build, test, and CI logs."
+    )
+    parser.add_argument(
+        "paths",
+        nargs="*",
+        help="log file or directory; reads stdin when omitted",
+    )
+    parser.add_argument(
+        "--max-lines",
+        type=int,
+        default=DEFAULT_MAX_LINES,
+        help="maximum lines printed in text mode",
+    )
+    parser.add_argument(
+        "--max-line-chars",
+        type=int,
+        default=DEFAULT_MAX_LINE_CHARS,
+        help="maximum characters per evidence line",
+    )
+    parser.add_argument(
+        "--max-tests",
+        type=int,
+        default=40,
+        help="maximum failed test names to print per source",
+    )
+    parser.add_argument(
+        "--context",
+        type=int,
+        default=2,
+        help="context lines around matching evidence",
+    )
+    parser.add_argument("--json", action="store_true", help="print JSON")
+    parser.add_argument("--self-test", action="store_true", help=argparse.SUPPRESS)
+    return parser
+
+
+def run_self_test() -> None:
+    with tempfile.TemporaryDirectory(prefix="ls-summarize-") as tmp:
+        root = Path(tmp)
+        meson_dir = root / "build" / "meson-logs"
+        meson_dir.mkdir(parents=True)
+        (meson_dir / "testlog.json").write_text(
+            json.dumps(
+                [
+                    {"name": "ok test", "result": "OK"},
+                    {
+                        "name": "tap - libsixel:tests/example",
+                        "result": "FAIL",
+                        "stdout": "not ok 1 - example failed",
+                    },
+                ]
+            )
+        )
+        plain = root / "make-check.log"
+        plain.write_text("setup\nFAIL: codec/format/0001_sample.t\nerror: boom\n")
+        args = get_arg_parser().parse_args([str(root)])
+        summaries = collect_summaries(args)
+        assert any("tests/example" in " ".join(item.failed_tests) for item in summaries)
+        assert any("boom" in " ".join(item.evidence) for item in summaries)
+    print("ok")
+
+
+def collect_summaries(args: argparse.Namespace) -> List[Summary]:
+    summaries: List[Summary] = []
+    paths = [Path(value) for value in args.paths]
+
+    if not paths:
+        return [summarize_stdin(args)]
+    for path in paths:
+        if not path.exists():
+            summaries.append(
+                Summary(str(path), status="missing", notes=["path does not exist"])
+            )
+            continue
+        for file_path in discover_files(path):
+            summaries.append(summarize_file(file_path, args))
+    return summaries
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    parser = get_arg_parser()
+    args = parser.parse_args(argv)
+    summaries: List[Summary]
+
+    args.max_lines = max(1, args.max_lines)
+    args.max_line_chars = max(20, args.max_line_chars)
+    args.max_tests = max(1, args.max_tests)
+    args.context = max(0, args.context)
+    if args.self_test:
+        run_self_test()
+        return 0
+    summaries = collect_summaries(args)
+    if args.json:
+        print(json.dumps([summary_to_json(item) for item in summaries], indent=2))
+    else:
+        print_text(summaries, args)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
