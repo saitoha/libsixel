@@ -745,6 +745,15 @@ runs:
         else
           PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
         fi
+        if test -n "${{ fromJSON(inputs.matrix_json).vcpkg_packages || '' }}"; then
+          VCPKG_TRIPLET="${VCPKG_DEFAULT_TRIPLET:-x64-windows}"
+          VCPKG_ROOT_UNIX="$(cygpath -u "$VCPKG_ROOT")"
+          # Meson snapshots this variable during setup and injects it into
+          # each TAP test PATH so MSVC-built tools can load vcpkg DLLs.
+          export SIXEL_TEST_ADDITIOANL_PATH="$VCPKG_ROOT_UNIX/installed/$VCPKG_TRIPLET/bin"
+          PATH="$SIXEL_TEST_ADDITIOANL_PATH:$PATH"
+        fi
+        export PATH
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         meson compile -C builddir -v
         meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
