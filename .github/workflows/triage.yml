@@ -10,6 +10,7 @@ on:
     # default-branch copy triages the branch that actually failed.
     workflows:
       - libsixel CI (build & test)
+      - libsixel experimental CI
       - libsixel Fuzzing (push)
     types:
       - completed
@@ -100,6 +101,9 @@ jobs:
             case "$SOURCE_WORKFLOW_NAME" in
               "libsixel CI (build & test)")
                 WORKFLOW_FILE=ci.yml
+                ;;
+              "libsixel experimental CI")
+                WORKFLOW_FILE=experimental.yml
                 ;;
               "libsixel Fuzzing (push)")
                 WORKFLOW_FILE=fuzzing.yml
@@ -431,6 +435,9 @@ jobs:
           }
           workflow = YAML.load_file(".github/workflows/#{workflow_file}")
           include_entries = []
+          # ci.yml and experimental.yml replay jobs through ci-steps. The
+          # fuzzing workflow uses dedicated collectors, with fuzz.yml kept as
+          # a dispatch alias for fuzzing.yml above.
           replay_kind = workflow_file == 'fuzzing.yml' ? 'fuzzing' : 'ci_steps'
 
           workflow.fetch('jobs').each do |job_id, job|
