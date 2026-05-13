@@ -205,6 +205,20 @@ def clean_log_lines(text: str, patterns: Iterable[str]) -> List[str]:
     return keep
 
 
+def filter_log_text_by_step(text: str, step_name: str) -> str:
+    if not step_name or step_name == "unknown":
+        return text
+    keep: List[str] = []
+    for line in text.splitlines():
+        # gh run view --log prefixes job logs as job<TAB>step<TAB>message.
+        parts = line.split("\t", 2)
+        if len(parts) >= 3 and parts[1].strip() == step_name:
+            keep.append(line)
+    if keep:
+        return "\n".join(keep)
+    return text
+
+
 def find_failed_step(job: Dict[str, Any], include_cancelled: bool) -> Optional[Dict[str, Any]]:
     steps = job.get("steps") or []
     interest = {"failure", "cancelled", "timed_out"}
@@ -308,7 +322,8 @@ def pick_evidence_from_log(
     failure_re = re.compile(
         r"(##\[error\]|\bERROR\b|\bFAILED\b|FAIL:|\bFAIL\b|\b[Ee]rror\b|[Ee]rror:)"
     )
-    for line in text.splitlines():
+    scan_text = text if artifact_step else filter_log_text_by_step(text, step_name)
+    for line in scan_text.splitlines():
         plain = line.strip()
         if not artifact_step and is_artifact_log_line(plain):
             continue
@@ -316,7 +331,7 @@ def pick_evidence_from_log(
             lines.append(plain)
     if not lines:
         fallback = clean_log_lines(
-            text,
+            scan_text,
             {"FAILED", "ERROR", "error", "FAIL:", "configure", "configuring"},
         )[:20]
         if artifact_step:
@@ -547,6 +562,19 @@ def self_test() -> int:
         fail("self-test: normal failure included artifact evidence")
     if not any("FAILED" in line or "error" in line for line in evidence):
         fail("self-test: normal failure missed failure evidence")
+
+    tab_log_text = "\n".join(
+        [
+            "job\tApply source job env\tthrow new Error('env failed')",
+            "job\tRun CI steps\tFAILED: test_runner",
+            "job\tRun CI steps\t##[error]Process completed with exit code 1.",
+        ]
+    )
+    evidence = pick_evidence_from_log(tab_log_text, "Run CI steps", "failure")
+    if any("Apply source job env" in line for line in evidence):
+        fail("self-test: normal failure included another step evidence")
+    if not any("Run CI steps" in line and "FAILED" in line for line in evidence):
+        fail("self-test: normal failure missed failed step evidence")
 
     upload = pick_evidence_from_log(log_text, "Upload artifacts", "failure")
     if not any(is_artifact_log_line(line) for line in upload):
