@@ -31,7 +31,8 @@ EXTRA_DIST = libsixel-config.in \
 	             gen-amalgamation.sh \
 	             timer.c \
              lso-timeout.c \
-             jpegref.c
+             jpegref.c \
+             ls-action-summarize
 
 if HAVE_JPEG
 EXTRA_PROGRAMS += jpegref

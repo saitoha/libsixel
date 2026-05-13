@@ -495,7 +495,8 @@ EXTRA_DIST = libsixel-config.in \
 	             gen-amalgamation.sh \
 	             timer.c \
              lso-timeout.c \
-             jpegref.c
+             jpegref.c \
+             ls-action-summarize
 
 @HAVE_JPEG_TRUE@jpegref_SOURCES = $(srcdir)/jpegref.c
 @HAVE_JPEG_TRUE@jpegref_CPPFLAGS = $(AM_CPPFLAGS) $(LIBJPEG_CFLAGS)

@@ -1,0 +1,562 @@
+#!/usr/bin/env python3
+"""Summarize GitHub Actions run results with optional failed-job details."""
+
+from __future__ import annotations
+
+import argparse
+import concurrent.futures
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+from collections import Counter, defaultdict
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional
+
+
+ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def run_cmd(cmd: list[str], cwd: str | None = None, text: bool = True) -> str:
+    return subprocess.check_output(cmd, cwd=cwd, text=text, stderr=subprocess.STDOUT).strip()
+
+
+def parse_iso8601(ts: Optional[str]) -> Optional[datetime]:
+    if not ts:
+        return None
+    return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+
+
+def format_time_delta(start: Optional[datetime], end: Optional[datetime]) -> str:
+    if not start or not end:
+        return "n/a"
+    seconds = max(0, int((end - start).total_seconds()))
+    minutes, sec = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    return f"{hours}h {minutes}m {sec}s"
+
+
+def to_text(value: Any) -> str:
+    if value is None:
+        return "n/a"
+    return str(value)
+
+
+def load_json(cmd: list[str]) -> Dict[str, Any]:
+    return json.loads(run_cmd(cmd))
+
+
+def get_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Summarize GitHub Actions run and failed jobs."
+    )
+    parser.add_argument("run_id", help="GitHub Actions run id")
+    parser.add_argument("job_id", nargs="?", help="Target single job id")
+    parser.add_argument(
+        "--repo",
+        default=os.environ.get("GITHUB_REPOSITORY", "saitoha/libsixel"),
+        help="owner/repo used for gh api requests",
+    )
+    parser.add_argument(
+        "--download-dir",
+        default=".artifacts/action-summarize",
+        help="Directory to store downloaded logs and artifacts",
+    )
+    parser.add_argument(
+        "--artifacts",
+        action="store_true",
+        help="Download failed-job artifacts and parse details from logs",
+    )
+    parser.add_argument(
+        "--jobs",
+        type=int,
+        default=16,
+        help="parallel workers for per-job analysis",
+    )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print final summary as JSON",
+    )
+    parser.add_argument(
+        "--include-cancelled",
+        action="store_true",
+        help="Also include cancelled jobs in failure analysis",
+    )
+    return parser
+
+
+def fail(message: str, code: int = 1) -> None:
+    print(f"error: {message}", file=sys.stderr)
+    raise SystemExit(code)
+
+
+def fetch_run(repo: str, run_id: str) -> Dict[str, Any]:
+    return load_json(["gh", "api", f"repos/{repo}/actions/runs/{run_id}"])
+
+
+def fetch_jobs(repo: str, run_id: str) -> List[Dict[str, Any]]:
+    payload = load_json(
+        [
+            "gh",
+            "api",
+            "--paginate",
+            f"repos/{repo}/actions/runs/{run_id}/jobs",
+            "--jq",
+            ".jobs",
+        ]
+    )
+    if isinstance(payload, dict):
+        return payload.get("jobs", [])
+    return payload
+
+
+def fetch_artifacts(repo: str, run_id: str) -> List[Dict[str, Any]]:
+    data = load_json(["gh", "api", f"repos/{repo}/actions/runs/{run_id}/artifacts"])
+    return data.get("artifacts", [])
+
+
+def safe_name(name: str) -> str:
+    return re.sub(r"[\\/:*?\"<>|]", "_", name)
+
+
+def download_job_log(repo: str, run_id: str, job_id: int, out_dir: Path) -> Path:
+    out_dir.mkdir(parents=True, exist_ok=True)
+    log_path = out_dir / f"{job_id}.log"
+    if log_path.exists() and log_path.stat().st_size > 0:
+        return log_path
+    with tempfile.TemporaryDirectory() as tmpdir:
+        run_cmd(
+            [
+                "gh",
+                "run",
+                "view",
+                run_id,
+                "--repo",
+                repo,
+                "--log",
+                "--job",
+                str(job_id),
+                "--log-format",
+                "txt",
+                "--output",
+                os.path.join(tmpdir, f"{job_id}.log"),
+            ]
+        )
+        src = Path(tmpdir) / f"{job_id}.log"
+        if not src.exists():
+            return log_path
+        shutil.copy2(src, log_path)
+    return log_path
+
+
+def normalize_log(text: str) -> str:
+    return ANSI_RE.sub("", text)
+
+
+def clean_log_lines(text: str, patterns: Iterable[str]) -> List[str]:
+    keep: List[str] = []
+    for line in text.splitlines():
+        plain = line.strip()
+        if any(pat in plain for pat in patterns):
+            keep.append(plain)
+    return keep
+
+
+def find_failed_step(job: Dict[str, Any], include_cancelled: bool) -> Optional[Dict[str, Any]]:
+    steps = job.get("steps") or []
+    interest = {"failure", "cancelled", "timed_out"}
+    if include_cancelled:
+        interest = interest | {"failure", "cancelled", "timed_out"}
+    for step in steps:
+        conclusion = (step.get("conclusion") or "").lower()
+        if conclusion in interest and conclusion != "success":
+            return step
+    for step in steps:
+        if step.get("number") == step.get("number") and step.get("status") == "in_progress":
+            return step
+    return None
+
+
+def generic_phase(job_name: str, step_name: str) -> str:
+    candidate = f"{job_name} {step_name}".lower()
+    if "setup" in candidate or "checkout" in candidate:
+        return "workflow/setup"
+    if "install" in candidate or "dependency" in candidate or "download" in candidate:
+        return "dependency/install"
+    if "configure" in candidate or "autogen" in candidate:
+        return "configure/setup"
+    if "build" in candidate and "artifact" not in candidate:
+        return "build"
+    if "test" in candidate or "verify" in candidate:
+        return "test"
+    if "coverage" in candidate:
+        return "coverage"
+    if "upload" in candidate or "artifact" in candidate:
+        return "artifact/upload"
+    if "machine" in candidate or "provision" in candidate:
+        return "vm/provision"
+    return "unknown"
+
+
+def fuzz_phase(job_name: str, step_name: str) -> str:
+    base = f"{job_name} {step_name}".lower()
+    if "fuzz" not in base:
+        return generic_phase(job_name, step_name)
+    if "setup" in base or "install" in base:
+        return "fuzz/setup"
+    if "build" in base:
+        return "fuzz/build"
+    if "premerge" in base or "pre-merge" in base or "corpus" in base:
+        return "fuzz/corpus-premerge"
+    if "artifact" in base or "upload" in base:
+        return "fuzz/artifact-upload"
+    if "coverage" in base:
+        return "fuzz/coverage"
+    if "minimize" in base:
+        return "fuzz/corpus-minimize"
+    if "crash" in base:
+        return "fuzz/crash-detect"
+    if "run" in base or "fuzz" in base:
+        return "fuzz/run"
+    return "fuzz/unknown"
+
+
+def detect_phase(job: Dict[str, Any], step_name: str) -> str:
+    job_name = job.get("name", "")
+    if "fuzz" in job_name.lower():
+        return fuzz_phase(job_name, step_name)
+    return generic_phase(job_name, step_name)
+
+
+def pick_evidence_from_log(
+    log_text: str, step_name: str, conclusion: str
+) -> List[str]:
+    if not log_text:
+        return []
+    text = normalize_log(log_text)
+    lower = step_name.lower()
+
+    if "upload" in lower or "artifact" in lower or conclusion in {"cancelled", "failure"}:
+        return clean_log_lines(
+            text,
+            {
+                "Multiple search paths detected.",
+                "The least common ancestor is",
+                "With the provided path, there will be",
+                "Upload",
+            },
+        )[:20]
+
+    lines = []
+    for marker in (step_name, "ERROR", "Error", "error", "FAILED", "FAILED:", "FAIL:"):
+        if marker and marker in text:
+            for line in text.splitlines():
+                if marker in line:
+                    lines.append(line.strip())
+    if not lines:
+        return clean_log_lines(
+            text,
+            {"FAILED", "ERROR", "error", "FAIL:", "configure", "configuring"},
+        )[:20]
+    return lines[:40]
+
+
+def parse_testlog(path: Path) -> List[str]:
+    try:
+        data = json.loads(path.read_text())
+    except Exception:
+        return []
+    names: List[str] = []
+    for item in data.get("tests", []):
+        if (item.get("result") or "").upper() not in {"OK", "PASS", "PASS (2)"}:
+            name = item.get("name") or item.get("test")
+            if name:
+                names.append(name)
+    return names
+
+
+def parse_trs(path: Path) -> List[str]:
+    lines: List[str] = []
+    state: Optional[str] = None
+    test_name = ""
+    for raw in path.read_text(errors="ignore").splitlines():
+        line = raw.strip()
+        if line.startswith("XFAIL") or line.startswith("XPASS"):
+            continue
+        if ":test-result:" in line:
+            if " :test-result:" in line:
+                parts = line.split(":")
+                if len(parts) > 4:
+                    test_name = parts[3].strip()
+                    state = parts[2].strip().upper()
+            if state in {"FAIL", "ERROR", "XPASS"} and test_name:
+                lines.append(test_name)
+                state = None
+    return lines
+
+
+def parse_meson_test_log(path: Path) -> List[str]:
+    fail_re = re.compile(r"^(FAIL|ERROR):\s+(.+)$")
+    names: List[str] = []
+    for line in path.read_text(errors="ignore").splitlines():
+        matched = fail_re.search(line)
+        if matched:
+            names.append(matched.group(2).strip())
+    return names
+
+
+def parse_configure_log(path: Path) -> List[str]:
+    return [
+        line.strip()
+        for line in path.read_text(errors="ignore").splitlines()
+        if "configure: error:" in line
+        and "failed program was" not in line
+    ]
+
+
+def find_artifacts_for_job(
+    artifacts: List[Dict[str, Any]], job_name: str
+) -> List[Dict[str, Any]]:
+    safe = safe_name(job_name)
+    hits: List[Dict[str, Any]] = []
+    for art in artifacts:
+        name = str(art.get("name") or "")
+        if safe in safe_name(name) or name.startswith(safe_name(job_name)[:20]):
+            hits.append(art)
+    return hits
+
+
+def download_artifacts(
+    repo: str,
+    run_id: str,
+    job_name: str,
+    artifacts: List[Dict[str, Any]],
+    base_dir: Path,
+) -> List[Path]:
+    base_dir.mkdir(parents=True, exist_ok=True)
+    paths: List[Path] = []
+    matched = find_artifacts_for_job(artifacts, job_name)
+    for art in matched:
+        name = art.get("name")
+        if not name:
+            continue
+        safe = safe_name(name)
+        out_dir = base_dir / "artifacts" / safe
+        out_dir.mkdir(parents=True, exist_ok=True)
+        manifest = out_dir / ".downloaded"
+        if manifest.exists() and manifest.read_text().strip() == name:
+            paths.append(out_dir)
+            continue
+        run_cmd(
+            [
+                "gh",
+                "run",
+                "download",
+                "--repo",
+                repo,
+                run_id,
+                "--name",
+                name,
+                "--dir",
+                str(out_dir),
+            ]
+        )
+        manifest.write_text(name)
+        paths.append(out_dir)
+    return paths
+
+
+def collect_artifact_failures(artifact_dirs: Iterable[Path]) -> List[str]:
+    tests: List[str] = []
+    logs: List[str] = []
+    for root in artifact_dirs:
+        for path in root.rglob("*"):
+            if not path.is_file():
+                continue
+            if path.name == "testlog.json":
+                logs.extend(parse_testlog(path))
+            elif path.suffix == ".trs":
+                tests.extend(parse_trs(path))
+            elif path.name == "test-suite.log":
+                tests.extend(parse_meson_test_log(path))
+            elif path.name == "config.log":
+                logs.extend(parse_configure_log(path))
+    return [f"failed tests: {t}" for t in tests] + [
+        f"configure: {line}" for line in logs[:20]
+    ]
+
+
+def summarize_job(
+    repo: str,
+    run_id: str,
+    job: Dict[str, Any],
+    args: argparse.Namespace,
+    artifacts: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    job_id = job.get("id")
+    job_name = job.get("name", "unknown")
+    conclusion = (job.get("conclusion") or "n/a").lower()
+    failed_step = find_failed_step(job, args.include_cancelled)
+    failed_step_name = failed_step.get("name") if failed_step else "unknown"
+    failed_step_conclusion = (failed_step.get("conclusion") or "").lower() if failed_step else "unknown"
+    failed_step_url = failed_step.get("details_url") if failed_step else ""
+    phase = detect_phase(job, failed_step_name or "")
+    duration = format_time_delta(
+        parse_iso8601(job.get("started_at")),
+        parse_iso8601(job.get("completed_at")),
+    )
+
+    job_dir = (
+        Path(args.download_dir)
+        / str(run_id)
+        / "logs"
+    )
+    log_path = download_job_log(repo, run_id, int(job_id), job_dir)
+    evidence = pick_evidence_from_log(
+        log_path.read_text(errors="ignore") if log_path.exists() else "",
+        failed_step_name or "",
+        failed_step_conclusion,
+    )
+
+    artifact_paths: List[str] = []
+    evidence_lines: List[str] = list(evidence)
+    if args.artifacts and conclusion != "success":
+        artifact_dirs = download_artifacts(
+            repo, run_id, job_name, artifacts, Path(args.download_dir) / str(run_id)
+        )
+        artifact_lines = collect_artifact_failures(artifact_dirs)
+        for p in artifact_dirs:
+            artifact_paths.append(str(p))
+        evidence_lines.extend(artifact_lines[:50])
+
+    return {
+        "id": job_id,
+        "name": job_name,
+        "conclusion": conclusion,
+        "phase": phase,
+        "duration": duration,
+        "failed_step": failed_step_name,
+        "failed_step_conclusion": failed_step_conclusion,
+        "failed_step_url": failed_step_url,
+        "evidence": evidence_lines[:120],
+        "artifact_paths": artifact_paths,
+        "log": str(log_path),
+        "duration_seconds": (parse_iso8601(job.get("completed_at")) - parse_iso8601(job.get("started_at"))).total_seconds()
+        if parse_iso8601(job.get("completed_at")) and parse_iso8601(job.get("started_at"))
+        else None,
+    }
+
+
+def should_analyze(job: Dict[str, Any], args: argparse.Namespace) -> bool:
+    if args.job_id:
+        return str(job.get("id")) == str(args.job_id)
+    if job.get("conclusion") == "failure":
+        return True
+    if args.include_cancelled and job.get("conclusion") in {"cancelled", "timed_out"}:
+        return True
+    return False
+
+
+def print_summary(run: Dict[str, Any], jobs: List[Dict[str, Any]], results: List[Dict[str, Any]]) -> None:
+    statuses = Counter(j.get("conclusion") or "n/a" for j in jobs)
+    started = run.get("created_at")
+    completed = run.get("completed_at")
+    duration = format_time_delta(parse_iso8601(started), parse_iso8601(completed))
+    total = len(jobs)
+    done = sum(1 for j in jobs if j.get("status") == "completed")
+    print(f"Run: {run.get('name', 'n/a')} (#{run.get('id')})")
+    print(f"Branch: {run.get('head_branch', 'n/a')}  SHA: {run.get('head_sha', 'n/a')}")
+    print(
+        "Summary: total={0} success={1} failure={2} cancelled={3} skipped={4} timed_out={5} in_progress={6}".format(
+            total,
+            statuses.get("success", 0),
+            statuses.get("failure", 0),
+            statuses.get("cancelled", 0),
+            statuses.get("skipped", 0),
+            statuses.get("timed_out", 0),
+            statuses.get("in_progress", 0),
+        )
+    )
+    print(f"Duration: {duration}  jobs_completed={done}")
+    if not results:
+        print("Failures: none")
+        return
+
+    print(f"\nFailures: {len(results)}")
+    for idx, item in enumerate(results, 1):
+        title = item["name"]
+        if item["id"]:
+            title = f"{title} ({item['id']})"
+        print(f"[{idx}] {title}")
+        print(f"  conclusion: {to_text(item['conclusion'])}")
+        print(f"  phase: {item['phase']}")
+        print(f"  duration: {item['duration']}")
+        print(f"  failed step: {to_text(item['failed_step'])}")
+        print(f"  logs: {item['log']}")
+        if item["failed_step_url"]:
+            print(f"  failed-step-url: {item['failed_step_url']}")
+        if item["artifact_paths"]:
+            print("  artifact paths:")
+            for path in item["artifact_paths"]:
+                print(f"    - {path}")
+        print("  evidence:")
+        for line in item["evidence"]:
+            print(f"    - {line}")
+        print()
+
+
+def main() -> int:
+    parser = get_arg_parser()
+    args = parser.parse_args()
+    if not shutil.which("gh"):
+        fail("gh is required in PATH")
+
+    Path(args.download_dir).mkdir(parents=True, exist_ok=True)
+    run = fetch_run(args.repo, args.run_id)
+    all_jobs = fetch_jobs(args.repo, args.run_id)
+    artifacts = fetch_artifacts(args.repo, args.run_id) if args.artifacts else []
+
+    if args.job_id and all(j.get("id") != int(args.job_id) if str(args.job_id).isdigit() else True for j in all_jobs):
+        target = str(args.job_id)
+        if not any(str(j.get("id")) == target for j in all_jobs):
+            fail(f"job id was not found in run {args.run_id}: {target}")
+        fail("invalid job id")
+
+    selected: List[Dict[str, Any]] = []
+    for job in all_jobs:
+        if should_analyze(job, args):
+            selected.append(job)
+
+    results: List[Dict[str, Any]] = []
+    if selected:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
+            futures = [
+                pool.submit(
+                    summarize_job,
+                    args.repo,
+                    args.run_id,
+                    job,
+                    args,
+                    artifacts,
+                )
+                for job in selected
+            ]
+            for future in concurrent.futures.as_completed(futures):
+                results.append(future.result())
+
+    ordered = sorted(results, key=lambda item: str(item["id"]))
+    if args.json:
+        print(json.dumps({"run": run, "jobs": ordered}, indent=2, sort_keys=True))
+    else:
+        print_summary(run, all_jobs, ordered)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
