@@ -352,9 +352,23 @@ def pick_evidence_from_log(
 
 def parse_testlog(path: Path) -> List[str]:
     try:
-        data = json.loads(path.read_text())
+        text = path.read_text(errors="ignore").strip()
     except Exception:
         return []
+    if not text:
+        return []
+    try:
+        data = json.loads(text)
+    except Exception:
+        data = []
+        for raw in text.splitlines():
+            line = raw.strip()
+            if not line:
+                continue
+            try:
+                data.append(json.loads(line))
+            except Exception:
+                return []
     if isinstance(data, list):
         items = data
     elif isinstance(data, dict):
@@ -621,13 +635,14 @@ def self_test() -> int:
 
         testlog = tmp / "testlog.json"
         testlog.write_text(
-            json.dumps(
+            "\n".join(
                 [
-                    {"name": "passing test", "result": "OK"},
-                    {"name": "skipped test", "result": "SKIP"},
-                    {"name": "failing test", "result": "FAIL"},
-                    {"name": "error test", "result": "ERROR"},
-                    {"name": "timeout test", "result": "TIMEOUT"},
+                    json.dumps({"name": "passing test", "result": "OK"}),
+                    json.dumps({"name": "skipped test", "result": "SKIP"}),
+                    json.dumps({"name": "failing test", "result": "FAIL"}),
+                    json.dumps({"name": "error test", "result": "ERROR"}),
+                    json.dumps({"name": "timeout test", "result": "TIMEOUT"}),
+                    json.dumps({"name": "xpass test", "result": "XPASS"}),
                 ]
             )
         )
@@ -635,8 +650,50 @@ def self_test() -> int:
             "failing test",
             "error test",
             "timeout test",
+            "xpass test",
         ]:
-            fail("self-test: meson testlog failure parsing failed")
+            fail("self-test: meson json-lines testlog parsing failed")
+        artifact_lines = collect_artifact_failures([tmp])
+        if "failed tests: failing test" not in artifact_lines:
+            fail("self-test: meson json-lines artifact missed failure")
+        if "failed tests: xpass test" not in artifact_lines:
+            fail("self-test: meson json-lines artifact missed XPASS")
+
+        array_testlog = tmp / "array-testlog.json"
+        array_testlog.write_text(
+            json.dumps(
+                [
+                    {"name": "passing array test", "result": "OK"},
+                    {"name": "failing array test", "result": "FAIL"},
+                ]
+            )
+        )
+        if parse_testlog(array_testlog) != ["failing array test"]:
+            fail("self-test: meson array testlog parsing failed")
+
+        object_testlog = tmp / "object-testlog.json"
+        object_testlog.write_text(
+            json.dumps(
+                {
+                    "tests": [
+                        {"name": "passing object test", "result": "OK"},
+                        {"name": "failing object test", "result": "FAIL"},
+                    ]
+                }
+            )
+        )
+        if parse_testlog(object_testlog) != ["failing object test"]:
+            fail("self-test: meson object testlog parsing failed")
+
+        empty_testlog = tmp / "empty-testlog.json"
+        empty_testlog.write_text("")
+        if parse_testlog(empty_testlog) != []:
+            fail("self-test: empty meson testlog parsing failed")
+
+        broken_testlog = tmp / "broken-testlog.json"
+        broken_testlog.write_text('{"name": "broken test", "result": "FAIL"')
+        if parse_testlog(broken_testlog) != []:
+            fail("self-test: broken meson testlog parsing failed")
     print("self-test: ok")
     return 0
 
