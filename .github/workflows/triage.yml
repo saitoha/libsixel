@@ -6,8 +6,8 @@ on:
       - 'ci/triage/**'
   workflow_run:
     # workflow_run starts only from workflow definitions on the default
-    # branch. Keep replay checkouts pinned to the source run below so a
-    # default-branch copy triages the branch that actually failed.
+    # branch. Reconstruct the matrix from the failed run commit below, then
+    # let normal replay check out the failed branch's current head.
     workflows:
       - libsixel CI (build & test)
       - libsixel experimental CI
@@ -34,6 +34,24 @@ on:
         type: string
       source_run_id:
         description: Optional source run id. Uses latest failed target run when empty
+        required: false
+        default: ''
+        type: string
+      triage_mode:
+        description: Replay current branch head or the exact failed commit
+        required: true
+        default: normal
+        type: choice
+        options:
+          - normal
+          - forensic
+      checkout_ref:
+        description: Optional replay ref for normal mode. Defaults to failed run branch
+        required: false
+        default: ''
+        type: string
+      checkout_sha:
+        description: Optional exact replay SHA. Overrides checkout_ref in normal mode
         required: false
         default: ''
         type: string
@@ -87,10 +105,13 @@ jobs:
         id: collect
         env:
           GH_TOKEN: ${{ github.token }}
+          CHECKOUT_REF: ${{ inputs.checkout_ref || '' }}
+          CHECKOUT_SHA: ${{ inputs.checkout_sha || '' }}
           MAX_JOBS: ${{ inputs.max_jobs || '8' }}
           SOURCE_BRANCH: ${{ github.event.workflow_run.head_branch || inputs.source_branch || 'develop' }}
           SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.source_run_id || '' }}
           SOURCE_WORKFLOW_NAME: ${{ github.event.workflow_run.name || '' }}
+          TRIAGE_MODE: ${{ inputs.triage_mode || 'normal' }}
           TRIAGE_EVENT_NAME: ${{ github.event_name }}
           WORKFLOW_FILE: ${{ inputs.workflow_file || 'experimental.yml' }}
         shell: bash
@@ -123,6 +144,15 @@ jobs:
               ;;
             *)
               echo "::error::unsupported triage workflow: $WORKFLOW_FILE"
+              exit 1
+              ;;
+          esac
+
+          case "$TRIAGE_MODE" in
+            normal|forensic)
+              ;;
+            *)
+              echo "::error::unsupported triage mode: $TRIAGE_MODE"
               exit 1
               ;;
           esac
@@ -169,9 +199,43 @@ jobs:
             echo "::error::source run ${run_id} does not expose head_sha."
             exit 1
           fi
+          source_head_branch="$(
+            RUN_META_JSON="$run_meta_json" ruby -rjson -e '
+              run = JSON.parse(ENV.fetch("RUN_META_JSON"))
+              head_branch = run["head_branch"].to_s
+              puts(head_branch.empty? ? ENV.fetch("SOURCE_BRANCH") : head_branch)
+            '
+          )"
+          if test -z "$source_head_branch"; then
+            echo "::error::source run ${run_id} does not expose head_branch."
+            exit 1
+          fi
 
-          # The workflow file that drives matrix reconstruction must come from
-          # the source run commit, not from the default branch running triage.
+          checkout_ref="$CHECKOUT_REF"
+          checkout_sha="$CHECKOUT_SHA"
+          if test "$TRIAGE_MODE" = forensic; then
+            checkout_ref="$source_head_sha"
+            checkout_sha="$source_head_sha"
+          elif test -z "$checkout_sha"; then
+            if test -z "$checkout_ref"; then
+              checkout_ref="$source_head_branch"
+            fi
+            if ! checkout_sha="$(
+              git ls-remote --exit-code origin "$checkout_ref" |
+                sed -n '1s/[[:space:]].*//p'
+            )"; then
+              checkout_sha=
+            fi
+          elif test -z "$checkout_ref"; then
+            checkout_ref="$checkout_sha"
+          fi
+          if test -z "$checkout_sha"; then
+            echo "::error::replay checkout ref '${checkout_ref}' does not resolve."
+            exit 1
+          fi
+
+          # Matrix reconstruction stays pinned to the failed run commit, while
+          # normal replay checkout can follow the current branch head.
           git fetch --depth=1 origin "$source_head_sha"
           git checkout --detach "$source_head_sha"
 
@@ -183,7 +247,13 @@ jobs:
               ruby -rjson -e 'puts JSON.generate(STDIN.read.lines.map(&:chomp))'
           )"
 
-          RUN_ID="$run_id" RUN_META_JSON="$run_meta_json" FAILED_JOBS_JSON="$failed_jobs_json" ruby <<'RUBY'
+          # Manual dispatch with source_run_id can leave SOURCE_BRANCH at its
+          # default. Prefer the source run metadata so normal replay follows
+          # the failed branch's current head, matching workflow_run behavior.
+          CHECKOUT_REF="$checkout_ref" CHECKOUT_SHA="$checkout_sha" \
+            SOURCE_HEAD_BRANCH="$source_head_branch" \
+            RUN_ID="$run_id" RUN_META_JSON="$run_meta_json" \
+            FAILED_JOBS_JSON="$failed_jobs_json" ruby <<'RUBY'
           require 'json'
           require 'yaml'
 
@@ -302,11 +372,15 @@ jobs:
               'label' => label,
               'libfuzzer_fork' => libfuzzer_fork(source.fetch('event_name')),
               'runner' => runner,
+              'checkout_ref' => source.fetch('checkout_ref'),
+              'checkout_sha' => source.fetch('checkout_sha'),
+              'failure_sha' => source.fetch('failure_sha'),
               'source_event_name' => source.fetch('event_name'),
               'source_head_branch' => source.fetch('head_branch'),
               'source_head_sha' => source.fetch('head_sha'),
               'source_ref_name' => source.fetch('ref_name'),
-              'target' => target
+              'target' => target,
+              'triage_mode' => source.fetch('triage_mode')
             }
             entry.merge!(
               fuzz_cache_config(
@@ -426,12 +500,16 @@ jobs:
           max_jobs = Integer(ENV.fetch('MAX_JOBS'))
           run_meta = JSON.parse(ENV.fetch('RUN_META_JSON'))
           source = {
+            'checkout_ref' => ENV.fetch('CHECKOUT_REF'),
+            'checkout_sha' => ENV.fetch('CHECKOUT_SHA'),
             'event_name' => run_meta.fetch('event'),
-            'head_branch' => run_meta['head_branch'] || ENV.fetch('SOURCE_BRANCH'),
+            'failure_sha' => run_meta.fetch('head_sha'),
+            'head_branch' => ENV.fetch('SOURCE_HEAD_BRANCH'),
             'head_sha' => run_meta.fetch('head_sha'),
-            'ref_name' => run_meta['head_branch'] || ENV.fetch('SOURCE_BRANCH'),
+            'ref_name' => ENV.fetch('SOURCE_HEAD_BRANCH'),
             'run_attempt' => run_meta.fetch('run_attempt').to_s,
-            'run_id' => ENV.fetch('RUN_ID')
+            'run_id' => ENV.fetch('RUN_ID'),
+            'triage_mode' => ENV.fetch('TRIAGE_MODE')
           }
           workflow = YAML.load_file(".github/workflows/#{workflow_file}")
           include_entries = []
@@ -465,8 +543,12 @@ jobs:
               replay_entry = entry.dup
               replay_entry['job_env'] = (job['env'] || {}).dup
               replay_entry['runner'] ||= job['runs-on']
+              replay_entry['checkout_ref'] = source.fetch('checkout_ref')
+              replay_entry['checkout_sha'] = source.fetch('checkout_sha')
+              replay_entry['failure_sha'] = source.fetch('failure_sha')
               replay_entry['source_head_branch'] = source.fetch('head_branch')
               replay_entry['source_head_sha'] = source.fetch('head_sha')
+              replay_entry['triage_mode'] = source.fetch('triage_mode')
               include_entries << replay_entry
             end
           end
@@ -528,18 +610,23 @@ jobs:
     steps:
       - name: Report triage selection
         env:
+          CHECKOUT_REF: ${{ matrix.checkout_ref }}
+          CHECKOUT_SHA: ${{ matrix.checkout_sha }}
+          FAILURE_SHA: ${{ matrix.failure_sha }}
           MATRIX_JSON: ${{ needs.collect.outputs.matrix }}
           SOURCE_HEAD_BRANCH: ${{ matrix.source_head_branch }}
-          SOURCE_HEAD_SHA: ${{ matrix.source_head_sha }}
           SOURCE_RUN_ID: ${{ needs.collect.outputs.source_run_id }}
+          TRIAGE_MODE: ${{ matrix.triage_mode }}
           WORKFLOW_FILE: ${{ needs.collect.outputs.workflow_file }}
         shell: bash
         run: |
           set -euo pipefail
           {
             echo "workflow: ${WORKFLOW_FILE}"
+            echo "mode: ${TRIAGE_MODE}"
             echo "source run: ${SOURCE_RUN_ID}"
-            echo "source ref: ${SOURCE_HEAD_BRANCH}@${SOURCE_HEAD_SHA}"
+            echo "failure ref: ${SOURCE_HEAD_BRANCH}@${FAILURE_SHA}"
+            echo "checkout ref: ${CHECKOUT_REF}@${CHECKOUT_SHA}"
             echo
             echo '```json'
             echo "$MATRIX_JSON"
@@ -569,7 +656,7 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
-          ref: ${{ matrix.source_head_sha }}
+          ref: ${{ matrix.checkout_sha }}
           fetch-depth: 1
 
       - name: Apply source job env
@@ -644,18 +731,23 @@ jobs:
     steps:
       - name: Report triage selection
         env:
+          CHECKOUT_REF: ${{ matrix.checkout_ref }}
+          CHECKOUT_SHA: ${{ matrix.checkout_sha }}
+          FAILURE_SHA: ${{ matrix.failure_sha }}
           MATRIX_JSON: ${{ toJSON(matrix) }}
           SOURCE_HEAD_BRANCH: ${{ matrix.source_head_branch }}
-          SOURCE_HEAD_SHA: ${{ matrix.source_head_sha }}
           SOURCE_RUN_ID: ${{ needs.collect.outputs.source_run_id }}
+          TRIAGE_MODE: ${{ matrix.triage_mode }}
           WORKFLOW_FILE: ${{ needs.collect.outputs.workflow_file }}
         shell: bash
         run: |
           set -euo pipefail
           {
             echo "workflow: ${WORKFLOW_FILE}"
+            echo "mode: ${TRIAGE_MODE}"
             echo "source run: ${SOURCE_RUN_ID}"
-            echo "source ref: ${SOURCE_HEAD_BRANCH}@${SOURCE_HEAD_SHA}"
+            echo "failure ref: ${SOURCE_HEAD_BRANCH}@${FAILURE_SHA}"
+            echo "checkout ref: ${CHECKOUT_REF}@${CHECKOUT_SHA}"
             echo
             echo '```json'
             echo "$MATRIX_JSON"
@@ -692,7 +784,7 @@ jobs:
 
       - uses: actions/checkout@v6
         with:
-          ref: ${{ matrix.source_head_sha }}
+          ref: ${{ matrix.checkout_sha }}
           fetch-depth: 1
 
       - name: Restore source fuzz corpus cache
