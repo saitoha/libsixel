@@ -152,6 +152,34 @@ jobs:
       with:
         arch: x64
 
+    - name: Hotfix develop Windows TAP driver
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        test -f build-aux/lso-tap-driver.sh.in || exit 0
+        python - <<'PY'
+        from pathlib import Path
+
+        path = Path("build-aux/lso-tap-driver.sh.in")
+        text = path.read_text()
+        old = """      if [ \"$runtime_inject_active\" = \"yes\" ] && [ -n \"$runtime_var\" ]; then
+                set -- \"$SIXEL_TEST_SHELL\" -c \\
+                  'runtime_var=$1; runtime_value=$2; script=$3; shift 3; export \"$runtime_var=$runtime_value\"; . \"$script\" \"$@\"' \\
+                  \"$test_path\" \"$runtime_var\" \"$LSO_RUNTIME_SHLIBPATH_VALUE\" \"$test_path\" \"$@\"
+              else
+        """
+        new = """      if [ \"$runtime_inject_active\" = \"yes\" ] && [ -n \"$runtime_var\" ]; then
+                # Launch shell TAP tests directly under env-prefixed PATH injection.
+                # The source-wrapper path can fail under MSYS before TAP is emitted.
+                set -- env \"$runtime_var=$LSO_RUNTIME_SHLIBPATH_VALUE\" \\
+                  \"$SIXEL_TEST_SHELL\" \"$test_path\" \"$@\"
+              else
+        """
+        if old not in text:
+            raise SystemExit("expected Windows TAP driver wrapper not found")
+        path.write_text(text.replace(old, new, 1))
+        PY
+
     - name: Configure and build (non-Windows)
       if: runner.os != 'Windows'
       shell: bash
