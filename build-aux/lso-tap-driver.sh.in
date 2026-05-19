@@ -57,8 +57,27 @@ stream_output=auto
 stream_fifo=
 tee_pid=
 run_pid=
+shell_timeout_child_pid=
+shell_timeout_watchdog_pid=
+shell_timeout_marker=
+
+cleanup_shell_timeout_children() {
+  if [ -n "${shell_timeout_child_pid}" ]; then
+    kill "${shell_timeout_child_pid}" >/dev/null 2>&1 || true
+    shell_timeout_child_pid=
+  fi
+  if [ -n "${shell_timeout_watchdog_pid}" ]; then
+    kill "${shell_timeout_watchdog_pid}" >/dev/null 2>&1 || true
+    shell_timeout_watchdog_pid=
+  fi
+  if [ -n "${shell_timeout_marker}" ]; then
+    rm -f "${shell_timeout_marker}" >/dev/null 2>&1 || true
+    shell_timeout_marker=
+  fi
+}
 
 cleanup_stream_children() {
+  cleanup_shell_timeout_children
   if [ -n "${run_pid}" ]; then
     kill "${run_pid}" >/dev/null 2>&1 || true
     run_pid=
@@ -161,7 +180,7 @@ test_script=$1
 test_name_base=${test_name##*[/\\]}
 artifact_leaf=${test_name_base}
 if [ ${#artifact_leaf} -gt 43 ]; then
-  artifact_leaf="${artifact_leaf%${artifact_leaf#????????????????????}}...${artifact_leaf#${artifact_leaf%????????????????????}}"
+  artifact_leaf="${artifact_leaf%"${artifact_leaf#????????????????????}"}...${artifact_leaf#"${artifact_leaf%????????????????????}"}"
 fi
 test_dir=${test_script%[/\\]*}
 if [ "${test_dir}" = "${test_script}" ]; then
@@ -216,6 +235,29 @@ timestamp_millis() {
   date +%s
 }
 
+timestamp_to_scaled_millis() {
+  timestamp=$1
+  case "$timestamp" in
+    *.*)
+      timestamp_sec=${timestamp%%.*}
+      timestamp_frac=${timestamp#*.}000
+      timestamp_frac=${timestamp_frac%"${timestamp_frac#???}"}
+      ;;
+    *)
+      timestamp_sec=$timestamp
+      timestamp_frac=000
+      ;;
+  esac
+  timestamp_scaled=${timestamp_sec}${timestamp_frac}
+  # Many /bin/sh implementations parse leading-zero arithmetic operands as
+  # octal. Keep this value decimal before the reduce_fork path subtracts it.
+  timestamp_scaled=${timestamp_scaled#"${timestamp_scaled%%[!0]*}"}
+  if [ -z "$timestamp_scaled" ]; then
+    timestamp_scaled=0
+  fi
+  printf '%s\n' "$timestamp_scaled"
+}
+
 select_timeout_bin() {
   if command -v timeout >/dev/null 2>&1; then
     echo "timeout"
@@ -256,8 +298,81 @@ run_with_helper() {
   return "$status"
 }
 
+timeout_helper_available() {
+  helper=$1
+
+  # The selected helper is usually checked before it is returned, but keep the
+  # final launch gate local to the timeout path. This preserves a bounded test
+  # run when a generated driver or configured path goes stale.
+  case "$helper" in
+    "") return 1 ;;
+    */*) test -x "$helper" ;;
+    *) command -v "$helper" >/dev/null 2>&1 ;;
+  esac
+}
+
+can_run_shell_timeout() {
+  # The shell watchdog relies on POSIX sleep, whose portable operand is an
+  # integer number of seconds. Keep the helper path for richer duration syntax.
+  case "$timeout_budget" in
+    ""|*[!0123456789]*)
+      return 1
+      ;;
+  esac
+
+  return 0
+}
+
+run_with_shell_timeout() {
+  if [ "$timeout_budget" -eq 0 ]; then
+    "$@"
+    return $?
+  fi
+
+  shell_timeout_marker=${trs_file}.timeout
+  rm -f "$shell_timeout_marker" >/dev/null 2>&1 || true
+
+  # Wait for the test directly and let a lightweight watchdog signal it after
+  # the deadline. The marker lets the parent distinguish a watchdog kill from
+  # a test that exited with the same signal status on its own.
+  "$@" &
+  shell_timeout_child_pid=$!
+
+  (
+    sleep "$timeout_budget" || exit 0
+    : >"$shell_timeout_marker" || exit 0
+    kill "$shell_timeout_child_pid" >/dev/null 2>&1 || exit 0
+    sleep "$kill_delay" || exit 0
+    kill -KILL "$shell_timeout_child_pid" >/dev/null 2>&1 || true
+  ) &
+  shell_timeout_watchdog_pid=$!
+
+  wait "$shell_timeout_child_pid" 2>/dev/null
+  status=$?
+  shell_timeout_child_pid=
+
+  if [ -f "$shell_timeout_marker" ]; then
+    timed_out=yes
+  else
+    timed_out=no
+  fi
+
+  kill "$shell_timeout_watchdog_pid" >/dev/null 2>&1 || true
+  wait "$shell_timeout_watchdog_pid" >/dev/null 2>&1 || true
+  shell_timeout_watchdog_pid=
+
+  rm -f "$shell_timeout_marker" >/dev/null 2>&1 || true
+  shell_timeout_marker=
+
+  if [ "$timed_out" = yes ]; then
+    echo "Bail out! timeout after ${timeout_budget}s" >&2
+    return 124
+  fi
+
+  return "$status"
+}
+
 run_with_timeout() {
-  helper_bin=$(select_timeout_bin)
   test_path=$1
   shift
 
@@ -383,6 +498,7 @@ EOF
     *)
       run_desc="shell ${test_path}"
       if [ "$runtime_inject_active" = "yes" ] && [ -n "$runtime_var" ]; then
+        # shellcheck disable=SC2016
         set -- "$SIXEL_TEST_SHELL" -c \
           'runtime_var=$1; runtime_value=$2; script=$3; shift 3; export "$runtime_var=$runtime_value"; . "$script" "$@"' \
           "$test_path" "$runtime_var" "$LSO_RUNTIME_SHLIBPATH_VALUE" "$test_path" "$@"
@@ -394,8 +510,14 @@ EOF
 
   echo "# lso-tap-driver: ${run_desc}"
 
-  if [ -n "$helper_bin" ]; then
+  helper_bin=$(select_timeout_bin)
+  if timeout_helper_available "$helper_bin"; then
     run_with_helper "$helper_bin" "$@"
+    return $?
+  fi
+
+  if can_run_shell_timeout; then
+    run_with_shell_timeout "$@"
     return $?
   fi
 
@@ -456,6 +578,7 @@ if test "${reduce_fork-}" != yes; then
 # Generate .trs (reStructuredText fields), at minimum :test-result: fields. :contentReference[oaicite:4]{index=4}
 # Also write :global-test-result:, :recheck:, :copy-in-global-log: for convenience
 # (Automake recognizes these fields). :contentReference[oaicite:5]{index=5}
+# shellcheck disable=SC2016
 LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
   -v test_name="$test_name" \
   -v rc="$rc" \
@@ -610,7 +733,6 @@ else
 # - Skip:        "ok <case> # SKIP <reason>"
 {
     rc=0
-    saw_plan=0
     saw_tap=0
     pass=0
     skip=0
@@ -618,27 +740,22 @@ else
     fail=0
     xfail=0
     xpass=0
-    is_not=0
     shutdown=0
-    while read line; do
-        read col1 col2 col3 col4 <<__line__
+    while IFS= read -r line; do
+        read -r col1 col2 col3 col4 <<__line__
 ${line}
 __line__
         case "$col1" in
             1..*)
-                saw_plan=1
                 saw_tap=1
                 test "$col2" = '#' && test "$col3" = SKIP && {
                     desc="${col4}"
                     echo ":test-result: SKIP $desc" >&2
                     break
                 }
-                plan="${col1%1..}"
                 ;;
             ok)
                 saw_tap=1
-                is_not=0
-                n="${col2}"
                 test "$col3" = '#' && test "$col4" = SKIP && {
                     skip=$((skip+1))
                     desc="${line#*SKIP}"
@@ -664,8 +781,6 @@ __line__
             not)
                 test "$col2" = ok || continue
                 saw_tap=1
-                is_not=1
-                n="${col3}"
                 case "$line" in
                     *"# TODO"*)
                         xfail=$((xfail+1))
@@ -718,45 +833,45 @@ __line__
     global="PASS"
     recheck=no
     copy=no
-    sgr="$e[0;32m"
+    sgr="${e}[0;32m"
     test "$error" -gt 0 && {
         global="ERROR"
         recheck=yes
         copy=yes
-        sgr="$e[1;31m"
+        sgr="${e}[1;31m"
         test "$hard_errors" = "yes" && shutdown=1
     }
     test "$fail" -gt 0 && {
         global="FAIL"
         recheck=yes
         copy=yes
-        sgr="$e[0;31m"
+        sgr="${e}[0;31m"
         test "$hard_errors" = "yes" && shutdown=1
     }
     test "$xpass" -gt 0 && {
         global="XPASS"
         recheck=yes
         copy=yes
-        sgr="$e[0;31m"
+        sgr="${e}[0;31m"
         test "$hard_errors" = "yes" && shutdown=1
     }
     test "$fail" -eq 0 && test "$error" -eq 0 && test "$xpass" -eq 0 && test "$xfail" -gt 0 && {
         global="XFAIL"
         recheck=no
         copy=yes
-        sgr="$e[1;32m"
+        sgr="${e}[1;32m"
     }
     test "$fail" -eq 0 && test "$error" -eq 0 && test "$xpass" -eq 0 && test "$xfail" -eq 0 && test "$pass" -eq 0 && test "$skip" -gt 0 && {
         global="SKIP"
         copy=yes
-        sgr="$e[0;33m"
+        sgr="${e}[0;33m"
     }
     test "$color_tests" = yes || {
         sgr=
     }
-    time_begin_scaled=$(printf %d "${time_begin%.*}${time_begin#*.}")
-    time_end_scaled=$(printf %d "${time_end%.*}${time_end#*.}")
-    duration_ms=$((${time_end_scaled} - ${time_begin_scaled}))
+    time_begin_scaled=$(timestamp_to_scaled_millis "$time_begin")
+    time_end_scaled=$(timestamp_to_scaled_millis "$time_end")
+    duration_ms=$((time_end_scaled - time_begin_scaled))
     duration=$(printf "%d.%03d" $((duration_ms/1000)) $((duration_ms%1000)))
     {
         echo ":global-test-result: $global"
