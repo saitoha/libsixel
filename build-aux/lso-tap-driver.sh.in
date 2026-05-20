@@ -268,16 +268,12 @@ select_timeout_bin() {
     return
   fi
   if [ -n "${SIXEL_RUNTIME-}" ]; then
-    runtime_host_os=$(uname -s 2>/dev/null || printf unknown)
-    # Keep the shell-native fallback for Windows runtimes where the helper
-    # binary struggles to launch MSYS-style shell scripts correctly. Other
-    # hosts can keep the native helper and avoid doubling shell watchdogs.
-    case "${OS-}:${runtime_host_os}" in
-      Windows_NT:*|*:CYGWIN*|*:MINGW*|*:MSYS*)
-        echo ""
-        return
-        ;;
-    esac
+    # Cross runtimes such as wine execute the test payload through a host
+    # launcher, while the bundled helper is built for the configured host
+    # target. Skip the target-built fallback in that mode and let the shell
+    # watchdog manage the launched process tree instead.
+    echo ""
+    return
   fi
   if [ -x "$LSO_TAP_TIMEOUT_BIN" ]; then
     echo "$LSO_TAP_TIMEOUT_BIN"
