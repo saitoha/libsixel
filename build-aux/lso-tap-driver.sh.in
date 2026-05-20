@@ -495,7 +495,7 @@ EOF
         return 0
       fi
       ;;
-    *)
+    *.t)
       run_desc="shell ${test_path}"
       if [ "$runtime_inject_active" = "yes" ] && [ -n "$runtime_var" ]; then
         # shellcheck disable=SC2016
@@ -504,6 +504,17 @@ EOF
           "$test_path" "$runtime_var" "$LSO_RUNTIME_SHLIBPATH_VALUE" "$test_path" "$@"
       else
         set -- "$SIXEL_TEST_SHELL" "$test_path" "$@"
+      fi
+      ;;
+    *)
+      run_desc="program ${test_path}"
+      if [ "$runtime_inject_active" = "yes" ] && [ -n "$runtime_var" ]; then
+        export "$runtime_var=$LSO_RUNTIME_SHLIBPATH_VALUE"
+      fi
+      if [ -n "${SIXEL_RUNTIME-}" ]; then
+        set -- "$SIXEL_RUNTIME" "$test_path" "$@"
+      else
+        set -- "$test_path" "$@"
       fi
       ;;
   esac
