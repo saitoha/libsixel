@@ -17,7 +17,10 @@ echo "1..1"
 set -v
 
 set +e
-capture_output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" 'https:///test' 2>/dev/null)
+# OpenBSD libcurl resolves "https:///test" as a host lookup and can spend the
+# full network timeout before failing. Use a hostless HTTPS form that
+# backends reject immediately at URL-parse time instead.
+capture_output=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" 'https://' 2>/dev/null)
 set -e
 
 test -z "${capture_output}" || {
