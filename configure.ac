@@ -16,6 +16,42 @@ AC_SUBST([PACKAGE_DESCRIPTION],
 #AS_IF([test -z "$CC" && { test "x$MSYSTEM" = "xCLANG64" || test "x$MSYSTEM" = "xCLANGARM64"; }], [
 #  AC_CHECK_TOOLS([CC],  [clang], [gcc])
 #])
+
+# OpenVMS/GNV presents POSIX-like paths to configure, but system roots such as
+# /SYS$SYSROOT contain a dollar sign.  Automake rejects those paths later with
+# a terse generic error, so fail before platform canonicalization with a more
+# useful message.
+sixel_openvms_pwd=`pwd`
+case "$sixel_openvms_pwd" in
+  *'$'*)
+    AC_MSG_ERROR([configure cannot run from an absolute working directory containing a dollar sign; please build under a POSIX-style path such as /usr/tmp/libsixel-build])
+    ;;
+esac
+
+# config.sub already accepts x86_64-dec-vms, but config.guess can misdetect
+# current x86_64 OpenVMS/GNV systems.  Seed the native aliases before
+# AC_CANONICAL_HOST so configure does not need to invoke config.guess there.
+sixel_openvms_uname_s=`(uname -s) 2>/dev/null || echo unknown`
+case "$sixel_openvms_uname_s" in
+  OpenVMS*|*VMS*)
+    sixel_openvms_uname_p=`(uname -p) 2>/dev/null || echo unknown`
+    sixel_openvms_cpu=x86_64
+    case "$sixel_openvms_uname_p" in
+      A*) sixel_openvms_cpu=alpha ;;
+      I*) sixel_openvms_cpu=ia64 ;;
+      V*) sixel_openvms_cpu=vax ;;
+    esac
+
+    AS_IF([test "x$build_alias" = x],
+          [build_alias=$sixel_openvms_cpu-dec-vms])
+    AS_IF([test "x$host_alias" = x], [host_alias=$build_alias])
+
+    # AC_PROG_AWK and early Automake probes run before AC_PROG_CC can derive
+    # executable suffixes, so teach the generic program search about .exe now.
+    ac_executable_extensions=".exe $ac_executable_extensions"
+    ;;
+esac
+
 AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([foreign subdir-objects tar-pax])
