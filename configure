@@ -23223,16 +23223,26 @@ fi
 
 
 if test x$with_coregraphics != xno; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C compiler can use CoreGraphics and ImageIO" >&5
+printf %s "checking whether the C compiler can use CoreGraphics and ImageIO... " >&6; }
     saved_LIBS="$LIBS"
-    LIBS="$LIBS -framework CoreGraphics -framework ImageIO"
+    LIBS="$LIBS -framework CoreFoundation -framework CoreGraphics \
+          -framework ImageIO"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <CoreGraphics/CoreGraphics.h>
+#include <CoreFoundation/CoreFoundation.h>
+                           #include <CoreGraphics/CoreGraphics.h>
                            #include <ImageIO/ImageIO.h>
 int
 main (void)
 {
 CGImageRef image = NULL;
+                           CGImageSourceRef source = NULL;
+                           CFTypeRef object = NULL;
+
+                           return image == NULL
+                               && source == NULL
+                               && object == NULL ? 0 : 1;
   ;
   return 0;
 }
@@ -23247,6 +23257,8 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
     LIBS="$saved_LIBS"
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_coregraphics" >&5
+printf "%s\n" "$have_coregraphics" >&6; }
     if test x$have_coregraphics = xyes; then
 
 printf "%s\n" "#define HAVE_COREGRAPHICS 1" >>confdefs.h
@@ -23277,6 +23289,8 @@ case $host_os in
             saved_LIBS="$LIBS"
             LIBS="$LIBS -framework QuickLook -framework CoreServices \
                   -framework ApplicationServices -framework CoreGraphics"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C compiler can use Quick Look preview frameworks" >&5
+printf %s "checking whether the C compiler can use Quick Look preview frameworks... " >&6; }
             cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <CoreServices/CoreServices.h>
@@ -23317,6 +23331,8 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
             LIBS="$saved_LIBS"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_quicklook_preview" >&5
+printf "%s\n" "$have_quicklook_preview" >&6; }
             if test x$have_quicklook_preview = xyes; then
 
 printf "%s\n" "#define HAVE_QUICKLOOK 1" >>confdefs.h
@@ -23427,6 +23443,8 @@ ac_compiler_gnu=$ac_cv_objc_compiler_gnu
 
         saved_LIBS="$LIBS"
         LIBS="$LIBS -framework AppKit -framework Foundation"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the Objective-C compiler can use AppKit clipboard frameworks" >&5
+printf %s "checking whether the Objective-C compiler can use AppKit clipboard frameworks... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #import <AppKit/AppKit.h>
@@ -23452,6 +23470,8 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
         LIBS="$saved_LIBS"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_clipboard_macos_appkit" >&5
+printf "%s\n" "$have_clipboard_macos_appkit" >&6; }
         ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -23475,6 +23495,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
         saved_LIBS="$LIBS"
         LIBS="$LIBS -framework Carbon -framework CoreGraphics \
             -framework CoreFoundation"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the C compiler can use Carbon clipboard frameworks" >&5
+printf %s "checking whether the C compiler can use Carbon clipboard frameworks... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <ApplicationServices/ApplicationServices.h>
@@ -23508,6 +23530,8 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
         LIBS="$saved_LIBS"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_clipboard_macos_carbon" >&5
+printf "%s\n" "$have_clipboard_macos_carbon" >&6; }
         ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -23687,6 +23711,8 @@ ac_compiler_gnu=$ac_cv_objc_compiler_gnu
         added_LIBS="$added_LIBS -framework CoreGraphics "
         added_LIBS="$added_LIBS -framework ImageIO "
         LIBS="$LIBS $added_LIBS"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the Objective-C compiler can use Quick Look extension frameworks" >&5
+printf %s "checking whether the Objective-C compiler can use Quick Look extension frameworks... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -23713,6 +23739,8 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
         LIBS="$saved_LIBS"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_quicklook_extension" >&5
+printf "%s\n" "$have_quicklook_extension" >&6; }
         ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -32239,4 +32267,3 @@ echo "       fuzz targets            : $sixel_fuzz_summary"
 echo "       tests                   : $enable_tests"
 echo ""
 echo ""
-

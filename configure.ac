@@ -2789,15 +2789,25 @@ AC_SUBST(GDK_PIXBUF_LIBS)
 AC_SUBST(GDK_PIXBUF_QUERY_LOADERS)
 
 if test x$with_coregraphics != xno; then
+    AC_MSG_CHECKING([whether the C compiler can use CoreGraphics and ImageIO])
     saved_LIBS="$LIBS"
-    LIBS="$LIBS -framework CoreGraphics -framework ImageIO"
+    LIBS="$LIBS -framework CoreFoundation -framework CoreGraphics \
+          -framework ImageIO"
     AC_LINK_IFELSE(
-        [AC_LANG_PROGRAM([[#include <CoreGraphics/CoreGraphics.h>
+        [AC_LANG_PROGRAM([[#include <CoreFoundation/CoreFoundation.h>
+                           #include <CoreGraphics/CoreGraphics.h>
                            #include <ImageIO/ImageIO.h>]],
-                         [[CGImageRef image = NULL;]])],
+                         [[CGImageRef image = NULL;
+                           CGImageSourceRef source = NULL;
+                           CFTypeRef object = NULL;
+
+                           return image == NULL
+                               && source == NULL
+                               && object == NULL ? 0 : 1;]])],
         [have_coregraphics=yes],
         [have_coregraphics=no])
     LIBS="$saved_LIBS"
+    AC_MSG_RESULT([$have_coregraphics])
     if test x$have_coregraphics = xyes; then
         AC_DEFINE(HAVE_COREGRAPHICS, 1, [whether CoreGraphics is available])
         COREGRAPHICS_LIBS="-framework CoreFoundation -framework CoreGraphics -framework ImageIO"
@@ -2826,6 +2836,7 @@ case $host_os in
             saved_LIBS="$LIBS"
             LIBS="$LIBS -framework QuickLook -framework CoreServices \
                   -framework ApplicationServices -framework CoreGraphics"
+            AC_MSG_CHECKING([whether the C compiler can use Quick Look preview frameworks])
             AC_LINK_IFELSE(
                 [AC_LANG_PROGRAM([[#include <CoreServices/CoreServices.h>
 #include <QuickLook/QuickLook.h>
@@ -2851,6 +2862,7 @@ if (image) {
                 [have_quicklook_preview=yes],
                 [have_quicklook_preview=no])
             LIBS="$saved_LIBS"
+            AC_MSG_RESULT([$have_quicklook_preview])
             if test x$have_quicklook_preview = xyes; then
                 AC_DEFINE(HAVE_QUICKLOOK, 1,
                           [whether macOS Quick Look is available])
@@ -2922,6 +2934,7 @@ case $host_os in
         AC_LANG_PUSH([Objective C])
         saved_LIBS="$LIBS"
         LIBS="$LIBS -framework AppKit -framework Foundation"
+        AC_MSG_CHECKING([whether the Objective-C compiler can use AppKit clipboard frameworks])
         AC_LINK_IFELSE(
             [AC_LANG_PROGRAM([[#import <AppKit/AppKit.h>]],
                              [[@autoreleasepool {
@@ -2932,6 +2945,7 @@ case $host_os in
              have_clipboard_macos_appkit=yes],
             [have_clipboard_macos=no])
         LIBS="$saved_LIBS"
+        AC_MSG_RESULT([$have_clipboard_macos_appkit])
         AC_LANG_POP([Objective C])
         if test x$have_clipboard_macos_appkit = xyes; then
             AC_DEFINE(HAVE_APPKIT, 1,
@@ -2944,6 +2958,7 @@ case $host_os in
         saved_LIBS="$LIBS"
         LIBS="$LIBS -framework Carbon -framework CoreGraphics \
             -framework CoreFoundation"
+        AC_MSG_CHECKING([whether the C compiler can use Carbon clipboard frameworks])
         AC_LINK_IFELSE(
             [AC_LANG_PROGRAM([[#include <ApplicationServices/ApplicationServices.h>]],
                              [[PasteboardRef pasteboard;
@@ -2962,6 +2977,7 @@ case $host_os in
                 -framework CoreFoundation"],
             [have_clipboard_macos=no])
         LIBS="$saved_LIBS"
+        AC_MSG_RESULT([$have_clipboard_macos_carbon])
         AC_LANG_POP([C])
     fi
     if test x$have_clipboard_macos = xyes; then
@@ -3062,6 +3078,7 @@ case $host_os in
         added_LIBS="$added_LIBS -framework CoreGraphics "
         added_LIBS="$added_LIBS -framework ImageIO "
         LIBS="$LIBS $added_LIBS"
+        AC_MSG_CHECKING([whether the Objective-C compiler can use Quick Look extension frameworks])
         AC_LINK_IFELSE(
             [AC_LANG_PROGRAM([[
 #import <Foundation/Foundation.h>
@@ -3073,6 +3090,7 @@ case $host_os in
             [have_quicklook_extension=yes],
             [have_quicklook_extension=no])
         LIBS="$saved_LIBS"
+        AC_MSG_RESULT([$have_quicklook_extension])
         AC_LANG_POP([Objective C])
         if test x$have_quicklook_extension = xyes; then
             AC_MSG_CHECKING([whether NSWorkspace openURLs returns NSRunningApplication *])

@@ -1349,10 +1349,31 @@ if host_system == 'darwin'
                         modules: cg_modules, \
                         required: cg_opt.enabled())
     if cg_dep.found()
-      conf.set('HAVE_COREGRAPHICS', 1)
-      deps += cg_dep
-      link_libs += cg_dep
-      loaders += 'coregraphics'
+      # appleframeworks only proves that the SDK exposes the framework.  GNU
+      # GCC can still fail to parse modern Apple headers that use Blocks syntax,
+      # so the C compiler must compile the same header family used by the
+      # CoreGraphics loader before the feature is enabled.
+      coregraphics_probe = '''
+          #include <CoreFoundation/CoreFoundation.h>
+          #include <CoreGraphics/CoreGraphics.h>
+          #include <ImageIO/ImageIO.h>
+          int main(void) {
+              CGImageRef image = 0;
+              CGImageSourceRef source = 0;
+              CFTypeRef object = 0;
+              return (image == 0 && source == 0 && object == 0) ? 0 : 1;
+          }
+      '''
+      if cc.links(coregraphics_probe,
+          name: 'CoreGraphics C compiler probe',
+          dependencies: cg_dep)
+        conf.set('HAVE_COREGRAPHICS', 1)
+        deps += cg_dep
+        link_libs += cg_dep
+        loaders += 'coregraphics'
+      elif cg_opt.enabled()
+        error('CoreGraphics requested, but the C compiler cannot use CoreGraphics/ImageIO headers')
+      endif
     endif
   endif
 elif cg_opt.enabled()
@@ -1377,39 +1398,58 @@ if host_system == 'darwin'
         modules: ['QuickLookThumbnailing', 'UniformTypeIdentifiers', 'Foundation'],
         required: false)
       if quicklook_dep.found()
-        conf.set('HAVE_QUICKLOOK', 1)
-        deps += quicklook_dep
-        link_libs += quicklook_dep
-        loaders += 'quicklook'
-        if have_objc and quicklook_thumb_dep.found()
-          thumb_test = '''
-            #import <Foundation/Foundation.h>
-            #import <QuickLookThumbnailing/QuickLookThumbnailing.h>
-            int main(void)
-            {
-                @autoreleasepool {
-                    NSURL *url = [NSURL fileURLWithPath:@"/"];
-                    CGSize size = CGSizeMake(16.0f, 16.0f);
-                    QLThumbnailGenerationRequest *request =
-                        [[QLThumbnailGenerationRequest alloc]
-                            initWithFileAtURL:url
-                                         size:size
-                                        scale:1.0f
-                          representationTypes:
-                              QLThumbnailGenerationRequestRepresentationTypeThumbnail];
-                    [[QLThumbnailGenerator sharedGenerator] cancelRequest:request];
-                    [request release];
+        quicklook_preview_probe = '''
+            #include <CoreServices/CoreServices.h>
+            #include <QuickLook/QuickLook.h>
+            #include <CoreGraphics/CoreGraphics.h>
+            int main(void) {
+                CGSize size = CGSizeMake(1.0f, 1.0f);
+                CGImageRef image = QLThumbnailImageCreate(0, 0, size, 0);
+                if (image != 0) {
+                    CGImageRelease(image);
                 }
                 return 0;
             }
-          '''
-          if objc.compiles(thumb_test, name: 'quicklook thumbnailing probe',
-                           dependencies: quicklook_thumb_dep)
-            have_quicklook_thumbnailing = true
-            conf.set('HAVE_QUICKLOOK_THUMBNAILING', 1)
-            deps += quicklook_thumb_dep
-            link_libs += quicklook_thumb_dep
+        '''
+        if cc.links(quicklook_preview_probe,
+            name: 'Quick Look preview C compiler probe',
+            dependencies: quicklook_dep)
+          conf.set('HAVE_QUICKLOOK', 1)
+          deps += quicklook_dep
+          link_libs += quicklook_dep
+          loaders += 'quicklook'
+          if have_objc and quicklook_thumb_dep.found()
+            thumb_test = '''
+              #import <Foundation/Foundation.h>
+              #import <QuickLookThumbnailing/QuickLookThumbnailing.h>
+              int main(void)
+              {
+                  @autoreleasepool {
+                      NSURL *url = [NSURL fileURLWithPath:@"/"];
+                      CGSize size = CGSizeMake(16.0f, 16.0f);
+                      QLThumbnailGenerationRequest *request =
+                          [[QLThumbnailGenerationRequest alloc]
+                              initWithFileAtURL:url
+                                           size:size
+                                          scale:1.0f
+                            representationTypes:
+                                QLThumbnailGenerationRequestRepresentationTypeThumbnail];
+                      [[QLThumbnailGenerator sharedGenerator] cancelRequest:request];
+                      [request release];
+                  }
+                  return 0;
+              }
+            '''
+            if objc.compiles(thumb_test, name: 'quicklook thumbnailing probe',
+                             dependencies: quicklook_thumb_dep)
+              have_quicklook_thumbnailing = true
+              conf.set('HAVE_QUICKLOOK_THUMBNAILING', 1)
+              deps += quicklook_thumb_dep
+              link_libs += quicklook_thumb_dep
+            endif
           endif
+        elif quicklook_preview_opt.enabled()
+          error('Quick Look preview requested, but the C compiler cannot use Quick Look/CoreGraphics headers')
         endif
       elif quicklook_preview_opt.enabled()
         error('Quick Look preview requested, but required frameworks were not found')
@@ -1446,7 +1486,27 @@ if host_system == 'darwin'
           quicklook_extension_message = 'no (Objective-C compiler unavailable)'
         endif
       else
-        openurls_returns_running_application = objc.compiles('''
+        quicklook_ext_compiles = objc.links('''
+            #import <Foundation/Foundation.h>
+            #import <AppKit/AppKit.h>
+            #import <QuickLookUI/QuickLookUI.h>
+            #import <QuickLookThumbnailing/QuickLookThumbnailing.h>
+            #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+            int main(void) {
+                QLThumbnailReply *reply = nil;
+                return reply == nil ? 0 : 1;
+            }
+          ''',
+          name: 'Quick Look extension Objective-C compiler probe',
+          dependencies: quicklook_ext_dep,
+          args: ['-fobjc-arc', '-fmodules'])
+        if not quicklook_ext_compiles
+          if quicklook_ext_opt.enabled()
+            error('Quick Look extension requested, but the Objective-C compiler cannot use required framework headers')
+          endif
+          quicklook_extension_message = 'no (Objective-C compiler cannot use frameworks)'
+        else
+          openurls_returns_running_application = objc.compiles('''
             #import <Foundation/Foundation.h>
             #import <AppKit/AppKit.h>
             int main(void) {
@@ -1468,9 +1528,9 @@ if host_system == 'darwin'
           dependencies: quicklook_ext_dep,
           args: ['-fobjc-arc', '-fmodules'])
 
-        openurls_returns_bool = false
-        if not openurls_returns_running_application
-          openurls_returns_bool = objc.compiles('''
+          openurls_returns_bool = false
+          if not openurls_returns_running_application
+            openurls_returns_bool = objc.compiles('''
               #import <Foundation/Foundation.h>
               #import <AppKit/AppKit.h>
               int main(void) {
@@ -1491,20 +1551,21 @@ if host_system == 'darwin'
             name: 'NSWorkspace openURLs returns BOOL',
             dependencies: quicklook_ext_dep,
             args: ['-fobjc-arc', '-fmodules'])
-        endif
+          endif
 
-        if openurls_returns_running_application
-          conf.set('HAVE_NSWORKSPACE_OPENURLS_RETURNS_RUNNING_APPLICATION', 1)
-        elif openurls_returns_bool
-          conf.set('HAVE_NSWORKSPACE_OPENURLS_RETURNS_BOOL', 1)
-        elif quicklook_ext_opt.enabled()
-          error('Unable to determine NSWorkspace openURLs return type')
-        endif
+          if openurls_returns_running_application
+            conf.set('HAVE_NSWORKSPACE_OPENURLS_RETURNS_RUNNING_APPLICATION', 1)
+          elif openurls_returns_bool
+            conf.set('HAVE_NSWORKSPACE_OPENURLS_RETURNS_BOOL', 1)
+          elif quicklook_ext_opt.enabled()
+            error('Unable to determine NSWorkspace openURLs return type')
+          endif
 
-        have_quicklook_extension = true
-        quicklook_extension_frameworks = [quicklook_ext_dep]
-        quicklook_extension_register_frameworks = [quicklook_register_dep]
-        quicklook_extension_message = 'yes'
+          have_quicklook_extension = true
+          quicklook_extension_frameworks = [quicklook_ext_dep]
+          quicklook_extension_register_frameworks = [quicklook_register_dep]
+          quicklook_extension_message = 'yes'
+        endif
       endif
     elif quicklook_ext_opt.enabled()
       error('Quick Look extension requested, but required frameworks were not found')
@@ -1526,11 +1587,26 @@ if host_system == 'darwin'
         modules: ['AppKit', 'Foundation'],
         required: appkit_opt.enabled())
       if clipboard_candidate.found()
-        have_clipboard_macos = true
-        clipboard_dep = [clipboard_candidate]
-        conf.set('HAVE_APPKIT', 1)
-        conf.set('HAVE_CLIPBOARD_MACOS', 1)
-        deps += clipboard_dep
+        appkit_clipboard_probe = '''
+            #import <AppKit/AppKit.h>
+            int main(void) {
+                @autoreleasepool {
+                    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+                    return pb == nil ? 1 : 0;
+                }
+            }
+        '''
+        if objc.links(appkit_clipboard_probe,
+            name: 'AppKit clipboard Objective-C compiler probe',
+            dependencies: clipboard_candidate)
+          have_clipboard_macos = true
+          clipboard_dep = [clipboard_candidate]
+          conf.set('HAVE_APPKIT', 1)
+          conf.set('HAVE_CLIPBOARD_MACOS', 1)
+          deps += clipboard_dep
+        elif appkit_opt.enabled()
+          error('AppKit clipboard backend requested, but the Objective-C compiler cannot use AppKit')
+        endif
       endif
     endif
   endif
@@ -1540,7 +1616,7 @@ if host_system == 'darwin'
       modules: ['Carbon', 'CoreGraphics', 'CoreFoundation'],
       required: false)
     if clipboard_candidate.found()
-      if cc.compiles('''
+      if cc.links('''
           __attribute__((deprecated)) void test(void) {}
           #include <ApplicationServices/ApplicationServices.h>
           int main(void) {
@@ -1554,7 +1630,9 @@ if host_system == 'darwin'
               status = PasteboardSynchronize(pasteboard);
               return status != noErr;
           }
-      ''')
+      ''',
+        name: 'Carbon clipboard C compiler probe',
+        dependencies: clipboard_candidate)
         have_clipboard_macos = true
         clipboard_dep = [clipboard_candidate]
         conf.set('HAVE_CLIPBOARD_MACOS', 1)
