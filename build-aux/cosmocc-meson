@@ -2,10 +2,12 @@
 
 for a in "$@"; do
   if [ "$prev" = "-o" ]; then
-    if [ "$a" = "sanitycheckc.exe" ]; then
-      cp "$(which true)" "$a"
-      exit 0
-    fi
+    case "${a##*/}" in
+      sanitycheckc.exe|sanity_check_for_c.exe)
+        cp "$(which true)" "$a"
+        exit 0
+        ;;
+    esac
   fi
   prev="$a"
 done
