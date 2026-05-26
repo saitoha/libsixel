@@ -6,80 +6,117 @@ $!   $ @ [.openvms]build.com
 $!
 $ SET NOON
 $ SET PROCESS /PARSE_STYLE=EXTENDED
-$ SET DEFAULT SYS$SPECIFIC:[SYSMGR]
+$ SET DEFAULT SYS$SYSROOT:[SYSMGR]
 $ ON CONTROL_Y THEN GOTO failed
+$ DEFINE /NOLOG LIBSIXEL_OPENVMS_DIR SYS$SYSROOT:[SYSMGR.openvms]
+$ DEFINE /NOLOG LIBSIXEL_INCLUDE_DIR SYS$SYSROOT:[SYSMGR.include]
+$ DEFINE /NOLOG LIBSIXEL_SRC_DIR SYS$SYSROOT:[SYSMGR.src]
+$ DEFINE /NOLOG LIBSIXEL_CONVERTERS_DIR SYS$SYSROOT:[SYSMGR.converters]
 $
 $ root = F$ENVIRONMENT("DEFAULT")
-$ srcdir = "SYS$SPECIFIC:[SYSMGR.src]"
-$ incdir = "SYS$SPECIFIC:[SYSMGR.include]"
-$ convdir = "SYS$SPECIFIC:[SYSMGR.converters]"
-$ vmsdir = "SYS$SPECIFIC:[SYSMGR.openvms]"
-$ objdir = "SYS$SPECIFIC:[SYSMGR.openvms.obj]"
+$ srcdir = "SYS$SYSROOT:[SYSMGR.src]"
+$ incdir = "SYS$SYSROOT:[SYSMGR.include]"
+$ convdir = "SYS$SYSROOT:[SYSMGR.converters]"
+$ vmsdir = "SYS$SYSROOT:[SYSMGR.openvms]"
+$ objdir = "SYS$SYSROOT:[SYSMGR.openvms.obj]"
 $ libfile = objdir + "libsixel.olb"
+$ shared_image = objdir + "libsixelshr.exe"
 $ created_library == "0"
 $
 $ ccflags = "/STANDARD=RELAXED_ANSI/NAMES=(AS_IS,SHORTENED)/PREFIX=ALL"
 $ ccdefs = "/DEFINE=(HAVE_CONFIG_H=1)"
 $ imgdefs = "/DEFINE=(HAVE_CONFIG_H=1,BUILD_IMG2SIXEL=1)"
-$ ccincs = "/INCLUDE_DIRECTORY=(SYS$SPECIFIC:[SYSMGR.openvms],SYS$SPECIFIC:[SYSMGR.include],SYS$SPECIFIC:[SYSMGR.src],SYS$SPECIFIC:[SYSMGR.converters])"
+$ ccincs = "/INCLUDE_DIRECTORY=(LIBSIXEL_OPENVMS_DIR:,LIBSIXEL_INCLUDE_DIR:,LIBSIXEL_SRC_DIR:,LIBSIXEL_CONVERTERS_DIR:)"
 $
 $ WRITE SYS$OUTPUT "libsixel OpenVMS bootstrap build"
 $ WRITE SYS$OUTPUT "source root: ''root'"
 $
 $ command_severity = 1
-$ IF F$SEARCH("SYS$SPECIFIC:[SYSMGR.openvms]obj.dir") .NES. "" THEN GOTO objdir_ready
-$ CREATE /DIRECTORY SYS$SPECIFIC:[SYSMGR.openvms.obj]
+$ found_file = F$SEARCH("SYS$SYSROOT:[SYSMGR.openvms]obj.dir")
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .NE. 0 THEN GOTO objdir_ready
+$ CREATE /DIRECTORY SYS$SYSROOT:[SYSMGR.openvms.obj]
 $ command_severity = $SEVERITY
 $objdir_ready:
-$ CALL check_status "create object directory" "''command_severity'"
+$ WRITE SYS$OUTPUT "object directory ready"
+$ checked_message = "create object directory"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
 $
-$ CALL generate_sixel_h
+$ WRITE SYS$OUTPUT "generating [.openvms]sixel.h"
+$ GOSUB generate_sixel_h
 $ command_severity = $SEVERITY
-$ CALL check_status "generate sixel.h" "''command_severity'"
+$ checked_message = "generate sixel.h"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ WRITE SYS$OUTPUT "generated [.openvms]sixel.h"
 $
 $ command_severity = 1
 $ old_library = objdir + "libsixel.olb;*"
-$ IF F$SEARCH(old_library) .EQS. "" THEN GOTO old_library_done
+$ found_file = F$SEARCH(old_library)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .EQ. 0 THEN GOTO old_library_done
 $ DELETE 'old_library'
 $ command_severity = $SEVERITY
 $old_library_done:
-$ CALL check_status "delete old object library" "''command_severity'"
+$ checked_message = "delete old object library"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ WRITE SYS$OUTPUT "building static library"
 $
-$ OPEN /READ srcs SYS$SPECIFIC:[SYSMGR.openvms]sources.dat
+$ OPEN /READ srcs SYS$SYSROOT:[SYSMGR.openvms]sources.dat
 $source_loop:
 $ READ /END_OF_FILE=source_done srcs source
 $ IF source .EQS. "" THEN GOTO source_loop
-$ CALL compile_source "''source'"
-$ CALL add_object_to_library "''source'"
+$ GOSUB compile_source
+$ GOSUB add_object_to_library
 $ GOTO source_loop
 $
 $source_done:
 $ CLOSE srcs
-$ CALL build_smoke
-$ IF $SEVERITY .NE. 1 THEN GOTO failed
-$ CALL build_img2sixel
-$ IF $SEVERITY .NE. 1 THEN GOTO failed
+$ WRITE SYS$OUTPUT "building shareable image"
+$ GOSUB build_shareable_image
+$ GOSUB build_smoke
+$ GOSUB build_shared_smoke
+$ GOSUB build_img2sixel
 $
 $ WRITE SYS$OUTPUT "OpenVMS bootstrap build complete"
 $ WRITE SYS$OUTPUT "static library: [.openvms.obj]libsixel.olb"
+$ WRITE SYS$OUTPUT "shareable image: [.openvms.obj]libsixelshr.exe"
 $ WRITE SYS$OUTPUT "smoke output:   [.openvms.obj]sixel_smoke.six"
+$ WRITE SYS$OUTPUT "shared smoke:   [.openvms.obj]smoke_sixel_shared.exe"
 $ WRITE SYS$OUTPUT "img2sixel:      [.openvms.obj]img2sixel.exe"
 $ WRITE SYS$OUTPUT "img2sixel out:  [.openvms.obj]img2sixel_smoke.six"
 $ EXIT 1
 $
-$compile_source: SUBROUTINE
-$ source = P1
+$check_status:
+$ IF checked_severity .EQS. "" THEN checked_severity = $SEVERITY
+$ checked_severity = F$INTEGER(checked_severity)
+$ IF checked_severity .EQ. 0 .AND. allow_warning .EQS. "ALLOW_WARNING" THEN RETURN
+$ IF checked_severity .NE. 1 .AND. checked_severity .NE. 3
+$ THEN
+$     WRITE SYS$OUTPUT "failed: ''checked_message' (severity ''checked_severity')"
+$     GOTO failed
+$ ENDIF
+$ RETURN
+$
+$compile_source:
 $ dot = F$LOCATE(".", source)
 $ object_name = F$EXTRACT(0, dot, source) + ".obj"
 $ object = objdir + object_name
 $ source_file = srcdir + source
 $ CC 'ccflags' 'ccdefs' 'ccincs' /OBJECT='object' 'source_file'
 $ command_severity = $SEVERITY
-$ CALL check_status "compile ''source'" "''command_severity'" "ALLOW_WARNING"
-$ ENDSUBROUTINE
+$ checked_message = "compile ''source'"
+$ checked_severity = command_severity
+$ allow_warning = "ALLOW_WARNING"
+$ GOSUB check_status
+$ RETURN
 $
-$add_object_to_library: SUBROUTINE
-$ source = P1
+$add_object_to_library:
 $ dot = F$LOCATE(".", source)
 $ object_name = F$EXTRACT(0, dot, source) + ".obj"
 $ object = objdir + object_name
@@ -92,82 +129,233 @@ $ ELSE
 $     LIBRARY 'libfile' 'object'
 $     command_severity = $SEVERITY
 $ ENDIF
-$ CALL check_status "archive ''object_name'" "''command_severity'"
-$ ENDSUBROUTINE
+$ checked_message = "archive ''object_name'"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ RETURN
 $
-$build_smoke: SUBROUTINE
+$build_shareable_image:
+$ link_options = objdir + "libsixelshr.opt"
+$ GOSUB write_shareable_link_options
+$ found_file = F$SEARCH(shared_image)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .EQ. 0 THEN GOTO old_shared_done
+$ DELETE 'shared_image';*
+$old_shared_done:
+$ LINK /SHAREABLE='shared_image' 'link_options'/OPTIONS
+$ command_severity = $SEVERITY
+$ checked_message = "link libsixelshr.exe"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ RETURN
+$
+$write_shareable_link_options:
+$ found_file = F$SEARCH(link_options)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .EQ. 0 THEN GOTO old_shared_opt_done
+$ DELETE 'link_options';*
+$old_shared_opt_done:
+$ OPEN /WRITE opt 'link_options'
+$ OPEN /READ srcs SYS$SYSROOT:[SYSMGR.openvms]sources.dat
+$share_object_loop:
+$ READ /END_OF_FILE=share_object_done srcs source
+$ IF source .EQS. "" THEN GOTO share_object_loop
+$ dot = F$LOCATE(".", source)
+$ object_name = F$EXTRACT(0, dot, source) + ".obj"
+$ WRITE opt objdir + object_name
+$ GOTO share_object_loop
+$share_object_done:
+$ CLOSE srcs
+$ WRITE opt "! Bootstrap exports used by smoke_sixel.c."
+$ WRITE opt "CASE_SENSITIVE=YES"
+$ WRITE opt "SYMBOL_VECTOR=(sixel_output_new=PROCEDURE,sixel_dither_get=PROCEDURE,sixel_dither_set_pixelformat=PROCEDURE,sixel_encode=PROCEDURE,sixel_output_unref=PROCEDURE)"
+$ WRITE opt "CASE_SENSITIVE=NO"
+$ WRITE opt "GSMATCH=LEQUAL,1,0"
+$ CLOSE opt
+$ command_severity = $SEVERITY
+$ checked_message = "write libsixelshr link options"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ RETURN
+$
+$build_smoke:
 $ smoke_obj = objdir + "smoke_sixel.obj"
 $ smoke_exe = objdir + "smoke_sixel.exe"
 $ smoke_source = vmsdir + "smoke_sixel.c"
 $ smoke_output = objdir + "sixel_smoke.six"
 $ CC 'ccflags' 'ccdefs' 'ccincs' /OBJECT='smoke_obj' 'smoke_source'
 $ command_severity = $SEVERITY
-$ CALL check_status "compile smoke_sixel.c" "''command_severity'" "ALLOW_WARNING"
-$ IF F$SEARCH(smoke_exe) .EQS. "" THEN GOTO old_smoke_done
+$ checked_message = "compile smoke_sixel.c"
+$ checked_severity = command_severity
+$ allow_warning = "ALLOW_WARNING"
+$ GOSUB check_status
+$ found_file = F$SEARCH(smoke_exe)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .EQ. 0 THEN GOTO old_smoke_done
 $ DELETE 'smoke_exe';*
 $old_smoke_done:
 $ LINK /EXECUTABLE='smoke_exe' 'smoke_obj','libfile'/LIBRARY
 $ command_severity = $SEVERITY
-$ CALL check_status "link smoke_sixel.exe" "''command_severity'"
-$ IF F$SEARCH(smoke_output) .EQS. "" THEN GOTO old_smoke_out_done
+$ checked_message = "link smoke_sixel.exe"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ found_file = F$SEARCH(smoke_output)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .EQ. 0 THEN GOTO old_smoke_out_done
 $ DELETE 'smoke_output';*
 $old_smoke_out_done:
 $ RUN 'smoke_exe'
 $ command_severity = $SEVERITY
-$ CALL check_status "run smoke_sixel.exe" "''command_severity'"
-$ IF F$SEARCH(smoke_output) .NES. "" THEN GOTO smoke_output_ready
+$ checked_message = "run smoke_sixel.exe"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ found_file = F$SEARCH(smoke_output)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .NE. 0 THEN GOTO smoke_output_ready
 $ WRITE SYS$OUTPUT "failed: smoke_sixel.exe did not create sixel output"
-$ EXIT 2
+$ GOTO failed
 $smoke_output_ready:
-$ EXIT 1
-$ ENDSUBROUTINE
+$ RETURN
 $
-$build_img2sixel: SUBROUTINE
+$build_shared_smoke:
+$ smoke_obj = objdir + "smoke_sixel.obj"
+$ smoke_exe = objdir + "smoke_sixel_shared.exe"
+$ smoke_output = objdir + "sixel_smoke.six"
+$ link_options = objdir + "smoke_sixel_shared.opt"
+$ GOSUB write_shared_smoke_link_options
+$ found_file = F$SEARCH(smoke_exe)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .EQ. 0 THEN GOTO old_shared_smoke_done
+$ DELETE 'smoke_exe';*
+$old_shared_smoke_done:
+$ LINK /EXECUTABLE='smoke_exe' 'link_options'/OPTIONS
+$ command_severity = $SEVERITY
+$ checked_message = "link smoke_sixel_shared.exe"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ found_file = F$SEARCH(smoke_output)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .EQ. 0 THEN GOTO old_shared_smoke_out_done
+$ DELETE 'smoke_output';*
+$old_shared_smoke_out_done:
+$ DEFINE /USER_MODE LIBSIXELSHR 'shared_image'
+$ command_severity = $SEVERITY
+$ checked_message = "define LIBSIXELSHR"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ RUN 'smoke_exe'
+$ command_severity = $SEVERITY
+$ checked_message = "run smoke_sixel_shared.exe"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ found_file = F$SEARCH(smoke_output)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .NE. 0 THEN GOTO shared_smoke_output_ready
+$ WRITE SYS$OUTPUT "failed: smoke_sixel_shared.exe did not create sixel output"
+$ GOTO failed
+$shared_smoke_output_ready:
+$ RETURN
+$
+$write_shared_smoke_link_options:
+$ found_file = F$SEARCH(link_options)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .EQ. 0 THEN GOTO old_shared_smoke_opt_done
+$ DELETE 'link_options';*
+$old_shared_smoke_opt_done:
+$ OPEN /WRITE opt 'link_options'
+$ WRITE opt smoke_obj
+$ WRITE opt shared_image + "/SHAREABLE"
+$ CLOSE opt
+$ command_severity = $SEVERITY
+$ checked_message = "write shared smoke link options"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ RETURN
+$
+$build_img2sixel:
 $ img2sixel_exe = objdir + "img2sixel.exe"
 $ link_options = objdir + "img2sixel.opt"
 $ sixel_input = objdir + "sixel_smoke.six"
 $ sixel_output = objdir + "img2sixel_smoke.six"
 $ img2sixel_cmd == "$" + img2sixel_exe
-$ CALL compile_converter "img2sixel.c" "img2sixel.obj"
-$ CALL compile_converter "completion_utils.c" "img2sixel_completion_utils.obj"
-$ CALL compile_converter "compat.c" "img2sixel_compat.obj"
-$ CALL compile_converter "path.c" "img2sixel_path.obj"
-$ CALL compile_converter "malloc_stub.c" "img2sixel_malloc_stub.obj"
-$ CALL compile_converter "cli.c" "img2sixel_cli.obj"
-$ CALL compile_converter "aborttrace.c" "img2sixel_aborttrace.obj"
-$ CALL write_img2sixel_link_options "''link_options'"
-$ IF F$SEARCH(img2sixel_exe) .EQS. "" THEN GOTO old_img2sixel_done
+$ converter_source = "img2sixel.c"
+$ converter_object = "img2sixel.obj"
+$ GOSUB compile_converter
+$ converter_source = "completion_utils.c"
+$ converter_object = "img2sixel_completion_utils.obj"
+$ GOSUB compile_converter
+$ converter_source = "compat.c"
+$ converter_object = "img2sixel_compat.obj"
+$ GOSUB compile_converter
+$ converter_source = "path.c"
+$ converter_object = "img2sixel_path.obj"
+$ GOSUB compile_converter
+$ converter_source = "malloc_stub.c"
+$ converter_object = "img2sixel_malloc_stub.obj"
+$ GOSUB compile_converter
+$ converter_source = "cli.c"
+$ converter_object = "img2sixel_cli.obj"
+$ GOSUB compile_converter
+$ converter_source = "aborttrace.c"
+$ converter_object = "img2sixel_aborttrace.obj"
+$ GOSUB compile_converter
+$ GOSUB write_img2sixel_link_options
+$ found_file = F$SEARCH(img2sixel_exe)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .EQ. 0 THEN GOTO old_img2sixel_done
 $ DELETE 'img2sixel_exe';*
 $old_img2sixel_done:
 $ LINK /EXECUTABLE='img2sixel_exe' 'link_options'/OPTIONS
 $ command_severity = $SEVERITY
-$ CALL check_status "link img2sixel.exe" "''command_severity'"
-$ IF F$SEARCH(sixel_output) .EQS. "" THEN GOTO old_img2sixel_out_done
+$ checked_message = "link img2sixel.exe"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ found_file = F$SEARCH(sixel_output)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .EQ. 0 THEN GOTO old_img2sixel_out_done
 $ DELETE 'sixel_output';*
 $old_img2sixel_out_done:
 $ img2sixel_cmd --outfile='sixel_output' 'sixel_input'
 $ command_severity = $SEVERITY
-$ CALL check_status "run img2sixel smoke conversion" "''command_severity'"
-$ IF F$SEARCH(sixel_output) .NES. "" THEN GOTO img2sixel_output_ready
+$ checked_message = "run img2sixel smoke conversion"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ found_file = F$SEARCH(sixel_output)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .NE. 0 THEN GOTO img2sixel_output_ready
 $ WRITE SYS$OUTPUT "failed: img2sixel.exe did not create sixel output"
-$ EXIT 2
+$ GOTO failed
 $img2sixel_output_ready:
-$ EXIT 1
-$ ENDSUBROUTINE
+$ RETURN
 $
-$compile_converter: SUBROUTINE
-$ source = P1
-$ object_name = P2
+$compile_converter:
+$ source = converter_source
+$ object_name = converter_object
 $ object = objdir + object_name
 $ source_file = convdir + source
 $ CC 'ccflags' 'imgdefs' 'ccincs' /OBJECT='object' 'source_file'
 $ command_severity = $SEVERITY
-$ CALL check_status "compile converters/''source'" "''command_severity'" "ALLOW_WARNING"
-$ ENDSUBROUTINE
+$ checked_message = "compile converters/''source'"
+$ checked_severity = command_severity
+$ allow_warning = "ALLOW_WARNING"
+$ GOSUB check_status
+$ RETURN
 $
-$write_img2sixel_link_options: SUBROUTINE
-$ link_options = P1
-$ IF F$SEARCH(link_options) .EQS. "" THEN GOTO old_img2sixel_opt_done
+$write_img2sixel_link_options:
+$ found_file = F$SEARCH(link_options)
+$ found_len = F$LENGTH("''found_file'")
+$ IF found_len .EQ. 0 THEN GOTO old_img2sixel_opt_done
 $ DELETE 'link_options';*
 $old_img2sixel_opt_done:
 $ OPEN /WRITE opt 'link_options'
@@ -181,10 +369,13 @@ $ WRITE opt objdir + "img2sixel_aborttrace.obj"
 $ WRITE opt libfile + "/LIBRARY"
 $ CLOSE opt
 $ command_severity = $SEVERITY
-$ CALL check_status "write img2sixel link options" "''command_severity'"
-$ ENDSUBROUTINE
+$ checked_message = "write img2sixel link options"
+$ checked_severity = command_severity
+$ allow_warning = ""
+$ GOSUB check_status
+$ RETURN
 $
-$generate_sixel_h: SUBROUTINE
+$generate_sixel_h:
 $ input_file = incdir + "sixel^.h.in"
 $ output_file = vmsdir + "sixel.h"
 $ OPEN /READ in 'input_file'
@@ -220,20 +411,7 @@ $
 $generate_done:
 $ CLOSE in
 $ CLOSE out
-$ ENDSUBROUTINE
-$
-$check_status: SUBROUTINE
-$ checked_severity = P2
-$ allow_warning = P3
-$ IF checked_severity .EQS. "" THEN checked_severity = $SEVERITY
-$ checked_severity = F$INTEGER(checked_severity)
-$ IF checked_severity .EQ. 0 .AND. allow_warning .EQS. "ALLOW_WARNING" THEN EXIT 1
-$ IF checked_severity .NE. 1 .AND. checked_severity .NE. 3
-$ THEN
-$     WRITE SYS$OUTPUT "failed: ''P1' (severity ''checked_severity')"
-$     EXIT 2
-$ ENDIF
-$ ENDSUBROUTINE
+$ RETURN
 $
 $failed:
 $ WRITE SYS$OUTPUT "OpenVMS bootstrap build failed"

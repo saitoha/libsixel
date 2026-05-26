@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Minimal OpenVMS smoke program for the native static-library bootstrap.
+ * Minimal OpenVMS smoke program for static and shareable-image bootstraps.
  */
 
 #include <stdio.h>
