@@ -7,6 +7,8 @@ The current target is intentionally small:
 - build a static OpenVMS object library, `libsixel.olb`
 - compile `smoke_sixel.c` against that library
 - run the smoke program and produce `sixel_smoke.six`
+- build `img2sixel.exe`
+- convert `sixel_smoke.six` and produce `img2sixel_smoke.six`
 
 Run from the repository root on OpenVMS:
 
@@ -20,7 +22,11 @@ expanded under `SYS$SPECIFIC:[SYSMGR]` for the `SYSTEM` account.
 The build uses VSI C directly. It does not require GNV shell, Make, Meson, or
 Autotools on the OpenVMS guest. The script generates `openvms/sixel.h` from
 `include/sixel.h.in`, then compiles the source files listed in
-`openvms/sources.dat`.
+`openvms/sources.dat`. The `img2sixel` build also compiles the converter
+support files directly and uses the fallback `getopt_long()` implementation in
+`converters/getopt_stub.h`.
 
-This is a bootstrap port. Shared image support, CLI programs, and the full
-test suite are intentionally left for later steps.
+This is a bootstrap port. Shared image support and the full test suite are
+intentionally left for later steps. The current `img2sixel` smoke path uses the
+built-in SIXEL loader, so it does not depend on libpng, libjpeg, WebP, or other
+optional image libraries.

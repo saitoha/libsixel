@@ -158,6 +158,11 @@ static int img2sixel_compat_strcpy(char *destination,
                                    size_t destination_size,
                                    const char *source);
 #endif
+#if defined(LIBSIXEL_OPENVMS)
+int putenv(char *);
+static int img2sixel_compat_openvms_setenv(char const *name,
+                                           char const *value);
+#endif
 #if (defined(_MSC_VER) && defined(HAVE__CHMOD)) || defined(HAVE_CHMOD)
 #define IMG2SIXEL_COMPAT_NEEDS_LOG_ERRNO 1
 static void img2sixel_compat_log_errno_impl(int saved_errno,
@@ -179,6 +184,9 @@ img2sixel_compat_strerror(int error_number,
     char *message;
     size_t copy_length;
 # endif
+#elif defined(LIBSIXEL_OPENVMS)
+    char *message;
+    size_t copy_length;
 #else
 # if defined(__GLIBC__) && defined(_GNU_SOURCE) && !defined(__APPLE__)
     char *message;
@@ -221,6 +229,19 @@ img2sixel_compat_strerror(int error_number,
     buffer[copy_length] = '\0';
     return buffer;
 # endif
+#elif defined(LIBSIXEL_OPENVMS)
+    message = strerror(error_number);
+    if (message == NULL) {
+        buffer[0] = '\0';
+        return NULL;
+    }
+    copy_length = strlen(message);
+    if (copy_length >= buffer_size) {
+        copy_length = buffer_size - 1u;
+    }
+    memcpy(buffer, message, copy_length);
+    buffer[copy_length] = '\0';
+    return buffer;
 #else
 # if defined(__GLIBC__) && defined(_GNU_SOURCE) && !defined(__APPLE__)
     /* GNU strerror_r returns the error message pointer. */
@@ -247,6 +268,54 @@ img2sixel_compat_strerror(int error_number,
 # endif
 #endif
 }
+
+#if defined(LIBSIXEL_OPENVMS)
+static int
+img2sixel_compat_openvms_setenv(char const *name, char const *value)
+{
+    char *entry;
+    size_t name_len;
+    size_t value_len;
+    size_t entry_len;
+    int saved_errno;
+
+    entry = NULL;
+    name_len = 0u;
+    value_len = 0u;
+    entry_len = 0u;
+    saved_errno = 0;
+
+    if (name == NULL || value == NULL) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    name_len = strlen(name);
+    value_len = strlen(value);
+    entry_len = name_len + value_len + 2u;
+    entry = (char *)malloc(entry_len);
+    if (entry == NULL) {
+        return (-1);
+    }
+
+    memcpy(entry, name, name_len);
+    entry[name_len] = '=';
+    memcpy(entry + name_len + 1u, value, value_len + 1u);
+
+    /*
+     * putenv() may keep the caller-owned buffer.  Keep it alive after a
+     * successful environment update.
+     */
+    if (putenv(entry) != 0) {
+        saved_errno = errno;
+        free(entry);
+        errno = saved_errno;
+        return (-1);
+    }
+
+    return 0;
+}
+#endif
 
 /*
  * Normalize incoming paths for the current platform. The converter builds
@@ -492,6 +561,8 @@ img2sixel_compat_setenv(const char *name, const char *value)
     }
 
     return 0;
+#elif defined(LIBSIXEL_OPENVMS)
+    return img2sixel_compat_openvms_setenv(name, value);
 #else
     if (name == NULL || value == NULL) {
         errno = EINVAL;

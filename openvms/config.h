@@ -20,6 +20,8 @@
 
 #define SIXEL_FILE_MIME_OPTION ""
 
+#define LIBSIXEL_OPENVMS 1
+
 #define STDC_HEADERS 1
 
 #define HAVE_ASSERT_H 1
@@ -47,6 +49,17 @@
 #define HAVE_UNISTD_H 1
 
 /*
+ * OpenVMS does not provide a GNU-compatible getopt_long() header in the
+ * conservative bootstrap environment.  The img2sixel converter already ships
+ * converters/getopt_stub.h, so expose that fallback intentionally and keep
+ * long-option parsing enabled for the native tool.
+ */
+#define HAVE_GETOPT_H 0
+#define HAVE_GETOPT 1
+#define HAVE_GETOPT_LONG 1
+#define LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT 1
+
+/*
  * The first OpenVMS build avoids terminal probing and POSIX multiplexing.
  * Those paths are not required for memory-to-sixel encoding.
  */
@@ -72,15 +85,6 @@
 #define HAVE_CLEARERR 1
 #define HAVE_LDIV 1
 #define HAVE_CLOCK 1
-
-/*
- * VSI C exposes enough time() support for the bootstrap fallback, but the
- * POSIX timeval declaration is not available in the conservative header set.
- */
-struct timeval {
-    long tv_sec;
-    long tv_usec;
-};
 
 /*
  * Keep thread support disabled for the bootstrap.  Leave SIXEL_ENABLE_THREADS

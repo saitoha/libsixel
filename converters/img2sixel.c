@@ -2765,6 +2765,17 @@ img2sixel_emit_option_parse_diagnostic(int status, char const *detail_source)
 static int
 img2sixel_exit_code(SIXELSTATUS status)
 {
+#if defined(LIBSIXEL_OPENVMS)
+    /*
+     * OpenVMS foreign commands hand the returned integer to DCL as a condition
+     * value.  Use C RTL constants so successful conversions have a success
+     * severity bit instead of POSIX exit code 0, which DCL treats as warning.
+     */
+    if (status == SIXEL_OK) {
+        return EXIT_SUCCESS;
+    }
+    return EXIT_FAILURE;
+#else
     /*
      * Map SIXEL_STATUS to stable process exit codes.
      *
@@ -2786,6 +2797,7 @@ img2sixel_exit_code(SIXELSTATUS status)
     default:
         return 1;
     }
+#endif
 }
 
 typedef struct img2sixel_parsed_option {

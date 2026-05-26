@@ -43,10 +43,17 @@ struct option {
 #  define optional_argument  2
 
 /* global variables as in libc getopt */
+#  if defined(LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT)
+extern char *optarg;
+extern int optind;
+extern int opterr;
+extern int optopt;
+#  else
 static char *optarg;
 static int optind = 1;
 static int opterr = 1;
 static int optopt;
+#  endif
 
 /* internal state for getopt */
 static char *nextchar;
@@ -151,6 +158,7 @@ next_option_token(int argc, char * const argv[], int allow_long, char **long_tok
     return 0;
 }
 
+#  if !defined(LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT)
 static int
 getopt(int argc, char * const argv[], const char *optstring)
 {
@@ -211,6 +219,7 @@ getopt(int argc, char * const argv[], const char *optstring)
     }
     return c;
 }
+#  endif
 
 static int
 getopt_long(int argc,
@@ -233,6 +242,15 @@ getopt_long(int argc,
         last_nonopt = 1;
     }
 
+#  if defined(LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT)
+    if (optind >= argc || argv[optind] == NULL ||
+            argv[optind][0] != '-' || argv[optind][1] != '-' ||
+            argv[optind][2] == '\0') {
+        return getopt(argc, argv, optstring);
+    }
+    name = argv[optind] + 2;
+    ++optind;
+#  else
     if (nextchar && *nextchar != '\0') {
         return getopt(argc, argv, optstring);
     }
@@ -244,6 +262,7 @@ getopt_long(int argc,
     if (status == 0) {
         return getopt(argc, argv, optstring);
     }
+#  endif
 
     value = strchr(name, '=');
     namelen = value ? (size_t)(value - name) : strlen(name);
