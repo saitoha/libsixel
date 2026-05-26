@@ -127,7 +127,7 @@ AC_DEFUN([AC_CHECK_HEADERS_PARALLEL], [
   ])
   m4_ifval([$4], [ac_check_headers_parallel_includes="$4"],
            [ac_check_headers_parallel_includes=""])
-  ac_check_headers_parallel_dir="ac-check-headers.$$"
+  ac_check_headers_parallel_dir="accheckheaders$$"
   ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
   ac_check_headers_parallel_list="$1"
   ac_check_headers_parallel_todo=""
@@ -171,8 +171,10 @@ AC_DEFUN([AC_CHECK_HEADERS_PARALLEL], [
   if test "x$ac_check_headers_parallel_todo" != "x"; then
     AS_MKDIR_P(["$ac_check_headers_parallel_dir"])
     for ac_check_header in $ac_check_headers_parallel_todo; do
+      ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
       ac_check_headers_parallel_subdir=\
-"$ac_check_headers_parallel_dir/$ac_check_header"
+"$ac_check_headers_parallel_dir/$ac_check_headers_parallel_cache"
       AS_MKDIR_P(["$ac_check_headers_parallel_subdir"])
       (
         cd "$ac_check_headers_parallel_subdir" || exit 1
@@ -217,7 +219,7 @@ $ac_check_headers_parallel_batch_pids; do
 \${ac_cv_header_$ac_check_headers_parallel_cache-no}"
     if test "x$ac_check_headers_parallel_result" = "xno"; then
       ac_check_headers_parallel_subdir=\
-"$ac_check_headers_parallel_dir/$ac_check_header"
+"$ac_check_headers_parallel_dir/$ac_check_headers_parallel_cache"
       if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
         IFS= read -r ac_check_headers_parallel_result \
           < "$ac_check_headers_parallel_subdir/conftest.out"
@@ -270,7 +272,7 @@ AC_DEFUN([AC_CHECK_FUNCS_PARALLEL], [
   if test "x$ac_cv_c_no_builtin" = "xyes"; then
     ac_check_funcs_parallel_cflags="-fno-builtin"
   fi
-  ac_check_funcs_parallel_dir="ac-check-funcs.$$"
+  ac_check_funcs_parallel_dir="accheckfuncs$$"
   ac_check_funcs_parallel_confdefs="$ac_pwd/confdefs.h"
   ac_check_funcs_parallel_list="$1"
   ac_check_funcs_parallel_todo=""
@@ -2327,10 +2329,12 @@ else
       AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
   fi
   AX_GCC_BUILTIN([__builtin_unreachable])
-  LS_CHECK_CFLAG([-std=c99],
-                 [CFLAGS="$CFLAGS -std=c99"],
-                 [],
-                 [std_c99])
+  AS_IF([test "x$sixel_openvms_mode" != "xyes"], [
+    LS_CHECK_CFLAG([-std=c99],
+                   [CFLAGS="$CFLAGS -std=c99"],
+                   [],
+                   [std_c99])
+  ])
   LS_CHECK_CFLAG([-Wall],
                  [AM_CFLAGS="$AM_CFLAGS -Wall"],
                  [],
@@ -2468,6 +2472,7 @@ AC_CHECK_HEADERS_PARALLEL([assert.h \
                            sys/time.h \
                            time.h \
                            signal.h \
+                           setjmp.h \
                            sys/select.h \
                            sys/signal.h \
                            sys/param.h \
@@ -2655,6 +2660,131 @@ AC_CHECK_FUNCS_PARALLEL([assert \
                          tmpnam \
                          gettimeofday \
                         ])
+
+AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+  # OpenVMS CRTL exposes several POSIX names through headers rather than as
+  # plain lowercase linker symbols.  Re-check those functions with the normal
+  # headers visible instead of relying on Autoconf's prototype-free fallback.
+  for ac_func in chmod clock_gettime fchmod fileno fsync gettimeofday \
+                 getopt isatty mkdir mkstemp mktemp open realpath select \
+                 setenv stat strcasecmp strerror_r strdup waitpid; do
+    eval "sixel_openvms_func_result=\${ac_cv_func_$ac_func-no}"
+    AS_IF([test "x$sixel_openvms_func_result" != "xyes"], [
+      AC_MSG_CHECKING([for $ac_func with OpenVMS CRTL headers])
+      case "$ac_func" in
+        chmod) sixel_openvms_func_body='return chmod("conftest.no", 0600);' ;;
+        clock_gettime) sixel_openvms_func_body='struct timespec ts; return clock_gettime(CLOCK_REALTIME, &ts);' ;;
+        fchmod) sixel_openvms_func_body='return fchmod(0, 0600);' ;;
+        fileno) sixel_openvms_func_body='return fileno(stdin);' ;;
+        fsync) sixel_openvms_func_body='return fsync(0);' ;;
+        gettimeofday) sixel_openvms_func_body='struct timeval tv; return gettimeofday(&tv, 0);' ;;
+        getopt) sixel_openvms_func_body='return getopt(0, (char * const *)0, "");' ;;
+        isatty) sixel_openvms_func_body='return isatty(0);' ;;
+        mkdir) sixel_openvms_func_body='return mkdir("conftest.dir", 0777);' ;;
+        mkstemp) sixel_openvms_func_body='char tmpl[] = "tmpXXXXXX"; return mkstemp(tmpl);' ;;
+        mktemp) sixel_openvms_func_body='char tmpl[] = "tmpXXXXXX"; return mktemp(tmpl) == 0;' ;;
+        open) sixel_openvms_func_body='return open("conftest.no", O_RDONLY);' ;;
+        realpath) sixel_openvms_func_body='char path[4096]; return realpath(".", path) == 0;' ;;
+        select) sixel_openvms_func_body='return select(0, 0, 0, 0, 0);' ;;
+        setenv) sixel_openvms_func_body='return setenv("A", "B", 1);' ;;
+        stat) sixel_openvms_func_body='struct stat st; return stat("conftest.no", &st);' ;;
+        strcasecmp) sixel_openvms_func_body='return strcasecmp("a", "A");' ;;
+        strerror_r) sixel_openvms_func_body='char buf[64]; return strerror_r(1, buf, sizeof(buf));' ;;
+        strdup) sixel_openvms_func_body='return strdup("x") == 0;' ;;
+        waitpid) sixel_openvms_func_body='int status; return waitpid(-1, &status, 0);' ;;
+      esac
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#if HAVE_CTYPE_H
+# include <ctype.h>
+#endif
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+#if HAVE_MATH_H
+# include <math.h>
+#endif
+#if HAVE_SETJMP_H
+# include <setjmp.h>
+#endif
+#if HAVE_SIGNAL_H
+# include <signal.h>
+#elif HAVE_SYS_SIGNAL_H
+# include <sys/signal.h>
+#endif
+#if HAVE_STDIO_H
+# include <stdio.h>
+#endif
+#if HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#if HAVE_STRING_H
+# include <string.h>
+#endif
+#if HAVE_STRINGS_H
+# include <strings.h>
+#endif
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#if HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_SYS_WAIT_H
+# include <sys/wait.h>
+#endif
+#if HAVE_TIME_H
+# include <time.h>
+#endif
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#elif HAVE_SYS_UNISTD_H
+# include <sys/unistd.h>
+#endif
+int
+main (void)
+{
+  $sixel_openvms_func_body
+}
+_ACEOF
+      AS_IF([ac_fn_c_try_link "$LINENO"],
+            [sixel_openvms_func_result=yes],
+            [sixel_openvms_func_result=no])
+      rm -f core conftest.err conftest.$ac_objext conftest.beam \
+        conftest$ac_exeext conftest.$ac_ext
+      eval "ac_cv_func_$ac_func=\$sixel_openvms_func_result"
+      AC_MSG_RESULT([$sixel_openvms_func_result])
+      AS_IF([test "x$sixel_openvms_func_result" = "xyes"], [
+        sixel_openvms_func_define=`printf '%s\n' "$ac_func" | $as_tr_cpp`
+        AC_DEFINE_UNQUOTED([HAVE_$sixel_openvms_func_define], [1],
+                           [Define to 1 if you have the `$ac_func' function.])
+      ])
+    ])
+  done
+
+  AS_IF([test "x$ac_cv_func_setjmp" != "xyes"], [
+    AC_MSG_CHECKING([for setjmp with OpenVMS CRTL headers])
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([[
+#if HAVE_SETJMP_H
+# include <setjmp.h>
+#endif
+      ]], [[
+        jmp_buf sixel_openvms_setjmp_buf;
+        return setjmp(sixel_openvms_setjmp_buf);
+      ]])],
+      [ac_cv_func_setjmp=yes],
+      [ac_cv_func_setjmp=no])
+    AC_MSG_RESULT([$ac_cv_func_setjmp])
+    AS_IF([test "x$ac_cv_func_setjmp" = "xyes"], [
+      AC_DEFINE([HAVE_SETJMP], [1],
+                [Define to 1 if you have the `setjmp' function.])
+    ])
+  ])
+])
 LIBS=$LS_SAVED_LIBS
 AC_SUBST([CLOCK_GETTIME_LIBS])
 AC_CHECK_FUNCS([_sopen_s], [], [], [[#include <io.h>

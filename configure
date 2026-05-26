@@ -19084,9 +19084,10 @@ printf "%s\n" "#define HAVE___BUILTIN_UNREACHABLE 1" >>confdefs.h
 
 fi
 
+  if test "x$sixel_openvms_mode" != "xyes"
+then :
 
-
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -std=c99" >&5
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -std=c99" >&5
 printf %s "checking if $CC supports -std=c99... " >&6; }
 if test ${ac_cv_cc_flag_std_c99+y}
 then :
@@ -19124,6 +19125,8 @@ then :
 else case e in #(
   e) : ;;
 esac
+fi
+
 fi
 
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Wall" >&5
@@ -19972,7 +19975,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
   ac_check_headers_parallel_includes=""
-  ac_check_headers_parallel_dir="ac-check-headers.$$"
+  ac_check_headers_parallel_dir="accheckheaders$$"
   ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
   ac_check_headers_parallel_list="assert.h \
                            math.h \
@@ -19993,6 +19996,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
                            sys/time.h \
                            time.h \
                            signal.h \
+                           setjmp.h \
                            sys/select.h \
                            sys/signal.h \
                            sys/param.h \
@@ -20056,8 +20060,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
   if test "x$ac_check_headers_parallel_todo" != "x"; then
     as_dir="$ac_check_headers_parallel_dir"; as_fn_mkdir_p
     for ac_check_header in $ac_check_headers_parallel_todo; do
+      ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
       ac_check_headers_parallel_subdir=\
-"$ac_check_headers_parallel_dir/$ac_check_header"
+"$ac_check_headers_parallel_dir/$ac_check_headers_parallel_cache"
       as_dir="$ac_check_headers_parallel_subdir"; as_fn_mkdir_p
       (
         cd "$ac_check_headers_parallel_subdir" || exit 1
@@ -20103,7 +20109,7 @@ printf %s "checking for $ac_check_header... " >&6; }
 \${ac_cv_header_$ac_check_headers_parallel_cache-no}"
     if test "x$ac_check_headers_parallel_result" = "xno"; then
       ac_check_headers_parallel_subdir=\
-"$ac_check_headers_parallel_dir/$ac_check_header"
+"$ac_check_headers_parallel_dir/$ac_check_headers_parallel_cache"
       if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
         IFS= read -r ac_check_headers_parallel_result \
           < "$ac_check_headers_parallel_subdir/conftest.out"
@@ -20819,7 +20825,7 @@ printf "%s\n" "$ac_cv_c_no_builtin" >&6; }
   if test "x$ac_cv_c_no_builtin" = "xyes"; then
     ac_check_funcs_parallel_cflags="-fno-builtin"
   fi
-  ac_check_funcs_parallel_dir="ac-check-funcs.$$"
+  ac_check_funcs_parallel_dir="accheckfuncs$$"
   ac_check_funcs_parallel_confdefs="$ac_pwd/confdefs.h"
   ac_check_funcs_parallel_list="assert \
                          setmode \
@@ -21044,6 +21050,171 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+if test "x$sixel_openvms_mode" = "xyes"
+then :
+
+  # OpenVMS CRTL exposes several POSIX names through headers rather than as
+  # plain lowercase linker symbols.  Re-check those functions with the normal
+  # headers visible instead of relying on Autoconf's prototype-free fallback.
+  for ac_func in chmod clock_gettime fchmod fileno fsync gettimeofday \
+                 getopt isatty mkdir mkstemp mktemp open realpath select \
+                 setenv stat strcasecmp strerror_r strdup waitpid; do
+    eval "sixel_openvms_func_result=\${ac_cv_func_$ac_func-no}"
+    if test "x$sixel_openvms_func_result" != "xyes"
+then :
+
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_func with OpenVMS CRTL headers" >&5
+printf %s "checking for $ac_func with OpenVMS CRTL headers... " >&6; }
+      case "$ac_func" in
+        chmod) sixel_openvms_func_body='return chmod("conftest.no", 0600);' ;;
+        clock_gettime) sixel_openvms_func_body='struct timespec ts; return clock_gettime(CLOCK_REALTIME, &ts);' ;;
+        fchmod) sixel_openvms_func_body='return fchmod(0, 0600);' ;;
+        fileno) sixel_openvms_func_body='return fileno(stdin);' ;;
+        fsync) sixel_openvms_func_body='return fsync(0);' ;;
+        gettimeofday) sixel_openvms_func_body='struct timeval tv; return gettimeofday(&tv, 0);' ;;
+        getopt) sixel_openvms_func_body='return getopt(0, (char * const *)0, "");' ;;
+        isatty) sixel_openvms_func_body='return isatty(0);' ;;
+        mkdir) sixel_openvms_func_body='return mkdir("conftest.dir", 0777);' ;;
+        mkstemp) sixel_openvms_func_body='char tmpl[] = "tmpXXXXXX"; return mkstemp(tmpl);' ;;
+        mktemp) sixel_openvms_func_body='char tmpl[] = "tmpXXXXXX"; return mktemp(tmpl) == 0;' ;;
+        open) sixel_openvms_func_body='return open("conftest.no", O_RDONLY);' ;;
+        realpath) sixel_openvms_func_body='char path[4096]; return realpath(".", path) == 0;' ;;
+        select) sixel_openvms_func_body='return select(0, 0, 0, 0, 0);' ;;
+        setenv) sixel_openvms_func_body='return setenv("A", "B", 1);' ;;
+        stat) sixel_openvms_func_body='struct stat st; return stat("conftest.no", &st);' ;;
+        strcasecmp) sixel_openvms_func_body='return strcasecmp("a", "A");' ;;
+        strerror_r) sixel_openvms_func_body='char buf[64]; return strerror_r(1, buf, sizeof(buf));' ;;
+        strdup) sixel_openvms_func_body='return strdup("x") == 0;' ;;
+        waitpid) sixel_openvms_func_body='int status; return waitpid(-1, &status, 0);' ;;
+      esac
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#if HAVE_CTYPE_H
+# include <ctype.h>
+#endif
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+#if HAVE_MATH_H
+# include <math.h>
+#endif
+#if HAVE_SETJMP_H
+# include <setjmp.h>
+#endif
+#if HAVE_SIGNAL_H
+# include <signal.h>
+#elif HAVE_SYS_SIGNAL_H
+# include <sys/signal.h>
+#endif
+#if HAVE_STDIO_H
+# include <stdio.h>
+#endif
+#if HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#if HAVE_STRING_H
+# include <string.h>
+#endif
+#if HAVE_STRINGS_H
+# include <strings.h>
+#endif
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#if HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_SYS_WAIT_H
+# include <sys/wait.h>
+#endif
+#if HAVE_TIME_H
+# include <time.h>
+#endif
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#elif HAVE_SYS_UNISTD_H
+# include <sys/unistd.h>
+#endif
+int
+main (void)
+{
+  $sixel_openvms_func_body
+}
+_ACEOF
+      if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_openvms_func_result=yes
+else case e in #(
+  e) sixel_openvms_func_result=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+        conftest$ac_exeext conftest.$ac_ext
+      eval "ac_cv_func_$ac_func=\$sixel_openvms_func_result"
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_openvms_func_result" >&5
+printf "%s\n" "$sixel_openvms_func_result" >&6; }
+      if test "x$sixel_openvms_func_result" = "xyes"
+then :
+
+        sixel_openvms_func_define=`printf '%s\n' "$ac_func" | $as_tr_cpp`
+
+printf "%s\n" "#define HAVE_$sixel_openvms_func_define 1" >>confdefs.h
+
+
+fi
+
+fi
+  done
+
+  if test "x$ac_cv_func_setjmp" != "xyes"
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for setjmp with OpenVMS CRTL headers" >&5
+printf %s "checking for setjmp with OpenVMS CRTL headers... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#if HAVE_SETJMP_H
+# include <setjmp.h>
+#endif
+
+int
+main (void)
+{
+
+        jmp_buf sixel_openvms_setjmp_buf;
+        return setjmp(sixel_openvms_setjmp_buf);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_func_setjmp=yes
+else case e in #(
+  e) ac_cv_func_setjmp=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_setjmp" >&5
+printf "%s\n" "$ac_cv_func_setjmp" >&6; }
+    if test "x$ac_cv_func_setjmp" = "xyes"
+then :
+
+      printf "%s\n" "#define HAVE_SETJMP 1" >>confdefs.h
+
+
+fi
+
+fi
+
+fi
+
 LIBS=$LS_SAVED_LIBS
 
 ac_fn_c_check_func "$LINENO" "_sopen_s" "ac_cv_func__sopen_s"
@@ -21202,7 +21373,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
   ac_check_headers_parallel_includes=""
-  ac_check_headers_parallel_dir="ac-check-headers.$$"
+  ac_check_headers_parallel_dir="accheckheaders$$"
   ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
   ac_check_headers_parallel_list="emscripten.h"
   ac_check_headers_parallel_todo=""
@@ -21246,8 +21417,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
   if test "x$ac_check_headers_parallel_todo" != "x"; then
     as_dir="$ac_check_headers_parallel_dir"; as_fn_mkdir_p
     for ac_check_header in $ac_check_headers_parallel_todo; do
+      ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
       ac_check_headers_parallel_subdir=\
-"$ac_check_headers_parallel_dir/$ac_check_header"
+"$ac_check_headers_parallel_dir/$ac_check_headers_parallel_cache"
       as_dir="$ac_check_headers_parallel_subdir"; as_fn_mkdir_p
       (
         cd "$ac_check_headers_parallel_subdir" || exit 1
@@ -21293,7 +21466,7 @@ printf %s "checking for $ac_check_header... " >&6; }
 \${ac_cv_header_$ac_check_headers_parallel_cache-no}"
     if test "x$ac_check_headers_parallel_result" = "xno"; then
       ac_check_headers_parallel_subdir=\
-"$ac_check_headers_parallel_dir/$ac_check_header"
+"$ac_check_headers_parallel_dir/$ac_check_headers_parallel_cache"
       if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
         IFS= read -r ac_check_headers_parallel_result \
           < "$ac_check_headers_parallel_subdir/conftest.out"
@@ -21393,7 +21566,7 @@ printf "%s\n" "$ac_cv_c_no_builtin" >&6; }
   if test "x$ac_cv_c_no_builtin" = "xyes"; then
     ac_check_funcs_parallel_cflags="-fno-builtin"
   fi
-  ac_check_funcs_parallel_dir="ac-check-funcs.$$"
+  ac_check_funcs_parallel_dir="accheckfuncs$$"
   ac_check_funcs_parallel_confdefs="$ac_pwd/confdefs.h"
   ac_check_funcs_parallel_list=" \
         clock \
@@ -21626,7 +21799,7 @@ printf "%s\n" "$ac_cv_c_no_builtin" >&6; }
   if test "x$ac_cv_c_no_builtin" = "xyes"; then
     ac_check_funcs_parallel_cflags="-fno-builtin"
   fi
-  ac_check_funcs_parallel_dir="ac-check-funcs.$$"
+  ac_check_funcs_parallel_dir="accheckfuncs$$"
   ac_check_funcs_parallel_confdefs="$ac_pwd/confdefs.h"
   ac_check_funcs_parallel_list=" \
         clock \
@@ -26785,7 +26958,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
   ac_check_headers_parallel_includes=""
-  ac_check_headers_parallel_dir="ac-check-headers.$$"
+  ac_check_headers_parallel_dir="accheckheaders$$"
   ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
   ac_check_headers_parallel_list="windows.h wincodec.h"
   ac_check_headers_parallel_todo=""
@@ -26829,8 +27002,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
   if test "x$ac_check_headers_parallel_todo" != "x"; then
     as_dir="$ac_check_headers_parallel_dir"; as_fn_mkdir_p
     for ac_check_header in $ac_check_headers_parallel_todo; do
+      ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
       ac_check_headers_parallel_subdir=\
-"$ac_check_headers_parallel_dir/$ac_check_header"
+"$ac_check_headers_parallel_dir/$ac_check_headers_parallel_cache"
       as_dir="$ac_check_headers_parallel_subdir"; as_fn_mkdir_p
       (
         cd "$ac_check_headers_parallel_subdir" || exit 1
@@ -26876,7 +27051,7 @@ printf %s "checking for $ac_check_header... " >&6; }
 \${ac_cv_header_$ac_check_headers_parallel_cache-no}"
     if test "x$ac_check_headers_parallel_result" = "xno"; then
       ac_check_headers_parallel_subdir=\
-"$ac_check_headers_parallel_dir/$ac_check_header"
+"$ac_check_headers_parallel_dir/$ac_check_headers_parallel_cache"
       if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
         IFS= read -r ac_check_headers_parallel_result \
           < "$ac_check_headers_parallel_subdir/conftest.out"
@@ -27278,7 +27453,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
   ac_check_headers_parallel_includes=""
-  ac_check_headers_parallel_dir="ac-check-headers.$$"
+  ac_check_headers_parallel_dir="accheckheaders$$"
   ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
   ac_check_headers_parallel_list="windows.h wincodec.h wincodecsdk.h"
   ac_check_headers_parallel_todo=""
@@ -27322,8 +27497,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
   if test "x$ac_check_headers_parallel_todo" != "x"; then
     as_dir="$ac_check_headers_parallel_dir"; as_fn_mkdir_p
     for ac_check_header in $ac_check_headers_parallel_todo; do
+      ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
       ac_check_headers_parallel_subdir=\
-"$ac_check_headers_parallel_dir/$ac_check_header"
+"$ac_check_headers_parallel_dir/$ac_check_headers_parallel_cache"
       as_dir="$ac_check_headers_parallel_subdir"; as_fn_mkdir_p
       (
         cd "$ac_check_headers_parallel_subdir" || exit 1
@@ -27369,7 +27546,7 @@ printf %s "checking for $ac_check_header... " >&6; }
 \${ac_cv_header_$ac_check_headers_parallel_cache-no}"
     if test "x$ac_check_headers_parallel_result" = "xno"; then
       ac_check_headers_parallel_subdir=\
-"$ac_check_headers_parallel_dir/$ac_check_header"
+"$ac_check_headers_parallel_dir/$ac_check_headers_parallel_cache"
       if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
         IFS= read -r ac_check_headers_parallel_result \
           < "$ac_check_headers_parallel_subdir/conftest.out"
