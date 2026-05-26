@@ -1,0 +1,9 @@
+sixel.h
+obj.dir
+obj/
+*.obj
+*.olb
+*.exe
+*.six
+*.lis
+*.map
