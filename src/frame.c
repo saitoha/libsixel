@@ -970,15 +970,31 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
 
     sixel_frame_ref(frame);
 
+    pixel_count = 0u;
     raw_pixels = frame->pixels.u8ptr;
     float_pixels = frame->pixels.f32ptr;
     source_pixels = raw_pixels;
+
+    if (frame->width <= 0 || frame->height <= 0 ||
+        (size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_convert_to_rgb888: invalid frame size.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    pixel_count = (size_t)frame->width * (size_t)frame->height;
+    if (pixel_count > SIZE_MAX / 4u) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_convert_to_rgb888: buffer size overflow.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
 
     switch (frame->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
-        size = (size_t)(frame->width * frame->height * 4);
+        size = pixel_count * 4u;
         normalized_pixels = (unsigned char *)
             sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
@@ -988,6 +1004,11 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
+        /*
+         * Expand packed palette indexes into the scratch byte lane first.
+         * The leading three lanes are then filled with RGB triples without
+         * overwriting unread indexes.
+         */
         src = normalized_pixels + pixel_count * 3u;
         dst = normalized_pixels;
         status = sixel_helper_normalize_pixelformat(src,
@@ -1012,7 +1033,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             SIXEL_PIXELFORMAT_RGB888);
         break;
     case SIXEL_PIXELFORMAT_PAL8:
-        size = (size_t)(frame->width * frame->height * 3);
+        size = pixel_count * 3u;
         normalized_pixels = (unsigned char *)
             sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
@@ -1052,7 +1073,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_CIELABFLOAT32:
     case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
         /* normalize pixelformat */
-        size = (size_t)(frame->width * frame->height * 3);
+        size = pixel_count * 3u;
         normalized_pixels = (unsigned char *)
             sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
