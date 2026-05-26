@@ -31,9 +31,11 @@ esac
 # config.sub already accepts x86_64-dec-vms, but config.guess can misdetect
 # current x86_64 OpenVMS/GNV systems.  Seed the native aliases before
 # AC_CANONICAL_HOST so configure does not need to invoke config.guess there.
+sixel_openvms_mode=no
 sixel_openvms_uname_s=`(uname -s) 2>/dev/null || echo unknown`
 case "$sixel_openvms_uname_s" in
   OpenVMS*|*VMS*)
+    sixel_openvms_mode=yes
     sixel_openvms_uname_p=`(uname -p) 2>/dev/null || echo unknown`
     sixel_openvms_cpu=x86_64
     case "$sixel_openvms_uname_p" in
@@ -133,6 +135,11 @@ AC_DEFUN([AC_CHECK_HEADERS_PARALLEL], [
   ac_check_headers_parallel_active=0
   ac_check_headers_parallel_max="$CPU_COUNT"
   ac_check_headers_parallel_batch_pids=""
+
+  if test "x$sixel_openvms_mode" = "xyes"; then
+    # OpenVMS/GNV can lose child statuses for background configure probes.
+    ac_check_headers_parallel_max=1
+  fi
 
   # Limit parallelism by CPU_COUNT, falling back to 1 on invalid values.
   case "$ac_check_headers_parallel_max" in
@@ -273,6 +280,11 @@ AC_DEFUN([AC_CHECK_FUNCS_PARALLEL], [
   ac_check_funcs_parallel_batch_pids=""
   ac_check_funcs_parallel_diag_mismatch_pragma=""
   ac_check_funcs_parallel_diag_mismatch_pragma_end=""
+
+  if test "x$sixel_openvms_mode" = "xyes"; then
+    # OpenVMS/GNV can lose child statuses for background configure probes.
+    ac_check_funcs_parallel_max=1
+  fi
 
   # Only emit the pragma when the compiler supports it.
   if test "x$ac_cv_c_pragma_wbuiltin_decl_mismatch" = "xyes"; then
@@ -424,6 +436,11 @@ AC_DEFUN([AC_OUTPUT_PARALLEL], [
   AC_OUTPUT
   AS_IF([test "x$ls_saved_no_create" != xyes], [
     AS_IF([test "x$CPU_COUNT" = x || test "$CPU_COUNT" -lt 1 2>/dev/null], [
+      CPU_COUNT=1
+    ])
+    AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+      # config.status --jobs creates the same child-status hazards as the
+      # background header/function probes on OpenVMS/GNV.
       CPU_COUNT=1
     ])
     AS_IF([test "$CPU_COUNT" -gt 1 2>/dev/null], [
