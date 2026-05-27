@@ -1854,8 +1854,8 @@ dist-hook:
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
-CLEANFILES =
-DISTCLEANFILES = check-tests.list check-tests.mk
+CLEANFILES = check-tests.list
+DISTCLEANFILES = check-tests.mk
 
 # Avoid deleting in-tree test scripts when "make clean" is invoked.
 # Only remove copied test files in an out-of-tree build so that the

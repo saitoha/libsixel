@@ -1338,8 +1338,8 @@ EXTRA_DIST = $(HELPER_FILES) \
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
-CLEANFILES = 
-DISTCLEANFILES = check-tests.list check-tests.mk
+CLEANFILES = check-tests.list
+DISTCLEANFILES = check-tests.mk
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
