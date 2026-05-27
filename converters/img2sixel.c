@@ -2767,14 +2767,24 @@ img2sixel_exit_code(SIXELSTATUS status)
 {
 #if defined(LIBSIXEL_OPENVMS)
     /*
-     * OpenVMS foreign commands hand the returned integer to DCL as a condition
-     * value.  Use C RTL constants so successful conversions have a success
-     * severity bit instead of POSIX exit code 0, which DCL treats as warning.
+     * OpenVMS condition values use the low severity bit for success.  A plain
+     * return value of 1 therefore looks successful to GNV bash and becomes
+     * `$? == 0`.  Keep the shell-facing contract POSIX-like by returning 0 for
+     * success and even non-zero values for failures.  Set the inhibit-message
+     * bit so DCL does not print an extra condition-code line into TAP logs.
      */
-    if (status == SIXEL_OK) {
-        return EXIT_SUCCESS;
+    enum { IMG2SIXEL_OPENVMS_INHIBIT_MSG = 0x10000000 };
+
+    switch (status) {
+    case SIXEL_OK:
+        return 0;
+    case SIXEL_BAD_ARGUMENT:
+        return IMG2SIXEL_OPENVMS_INHIBIT_MSG | 2;
+    case SIXEL_BAD_CLIPBOARD:
+        return IMG2SIXEL_OPENVMS_INHIBIT_MSG | 4;
+    default:
+        return IMG2SIXEL_OPENVMS_INHIBIT_MSG | 4;
     }
-    return EXIT_FAILURE;
 #else
     /*
      * Map SIXEL_STATUS to stable process exit codes.

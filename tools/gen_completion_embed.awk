@@ -35,13 +35,29 @@ function emit_byte(byte,
         }
 }
 
+function shell_quote(path,
+    idx, ch, quoted)
+{
+        quoted = "\""
+        for (idx = 1; idx <= length(path); idx++) {
+                ch = substr(path, idx, 1)
+                if (ch == "\\" || ch == "\"" || ch == "$" || ch == "`") {
+                        quoted = quoted "\\"
+                }
+                quoted = quoted ch
+        }
+        quoted = quoted "\""
+
+        return quoted
+}
+
 function emit_bytes(path, symbol,
     cmd, line, fields, idx, field_count)
 {
         print "static const unsigned char " symbol "[] = {"
 
         byte_count = 0
-        cmd = "od -tx1 -v '" path "'"
+        cmd = "od -tx1 -v " shell_quote(path)
         while ((cmd | getline line) > 0) {
                 field_count = split(line, fields, /[ \t]+/)
                 for (idx = 1; idx <= field_count; idx++) {

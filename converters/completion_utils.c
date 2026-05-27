@@ -511,10 +511,6 @@ read_entire_file(const char *path, char **buf, size_t *len)
         return (-1);
     }
 
-    if (read_len <= 0) {
-        return (-1);
-    }
-
     tmp[st.st_size] = '\0';
     *buf = tmp;
     *len = (size_t)st.st_size;
@@ -522,9 +518,70 @@ read_entire_file(const char *path, char **buf, size_t *len)
     return 0;
 }
 
+#if defined(LIBSIXEL_OPENVMS)
+static int
+write_direct_openvms(const char *dst_path, const void *buf, size_t len,
+                     mode_t mode)
+{
+    FILE *fp;
+    const unsigned char *cursor;
+    size_t total;
+    size_t written;
+    int saved_errno;
+
+    if (dst_path == NULL || buf == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    /*
+     * OpenVMS C RTL rename() can preserve the temporary file extension when
+     * the target name has no POSIX extension.  Completion files are small, so
+     * direct replacement gives GNV tools a stable path to test and read.
+     */
+    fp = img2sixel_compat_fopen(dst_path, "wb");
+    if (fp == NULL) {
+        return -1;
+    }
+
+    cursor = (const unsigned char *)buf;
+    total = 0u;
+    while (total < len) {
+        written = fwrite(cursor + total, 1, len - total, fp);
+        if (written == 0u) {
+            saved_errno = errno != 0 ? errno : EIO;
+            (void)fclose(fp);
+            errno = saved_errno;
+            return -1;
+        }
+        total += written;
+    }
+
+    if (fflush(fp) != 0) {
+        saved_errno = errno;
+        (void)fclose(fp);
+        errno = saved_errno;
+        return -1;
+    }
+
+    if (fclose(fp) != 0) {
+        return -1;
+    }
+
+    if (img2sixel_compat_chmod(dst_path, mode) != 0) {
+        return -1;
+    }
+
+    return 0;
+}
+#endif
+
 int
 write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
 {
+#if defined(LIBSIXEL_OPENVMS)
+    return write_direct_openvms(dst_path, buf, len, mode);
+#else
     int fd;
     ssize_t written;
     size_t total;
@@ -648,6 +705,7 @@ rename_stage:
 
     free(tmp_path);
     return 0;
+#endif
 }
 
 static int
