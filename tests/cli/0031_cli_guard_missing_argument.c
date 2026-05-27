@@ -89,10 +89,13 @@ test_cli_0031_cli_guard_missing_argument(int argc, char **argv)
     char argv0[] = "tool";
     char argv1[] = "-x";
     char argv2[] = "dummy";
+    char argv3[] = "far";
+    char argv4[] = "away";
     char dash_value[] = "-file.six";
     char copied_option[] = "-x";
     char *args[] = { argv0, argv1, NULL };
     char *lagged_args[] = { argv0, argv1, argv2, NULL };
+    char *far_args[] = { argv0, argv1, copied_option, argv3, argv4, NULL };
     size_t table_count;
     int optind_value;
     guard_result_t result;
@@ -174,6 +177,21 @@ test_cli_0031_cli_guard_missing_argument(int argc, char **argv)
             result.rewind_by == 2) {
     } else {
         fprintf(stderr, "case 5: lagged optind did not rewind by two\n");
+        status = 1;
+    }
+
+    optind_value = 5;
+    result = run_guard_case(far_args,
+                             copied_option,
+                             &optind_value,
+                             "i:",
+                             table,
+                             table_count,
+                             0);
+    if (result.code == -1 && result.missing_calls == 1 &&
+            result.rewind_by == 0) {
+    } else {
+        fprintf(stderr, "case 6: far optind accepted recognised option\n");
         status = 1;
     }
 

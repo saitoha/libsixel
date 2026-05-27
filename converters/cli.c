@@ -348,6 +348,19 @@ cli_guard_missing_argument(int short_opt,
             }
             return -1;
         }
+
+        /*
+         * Some getopt implementations can advance optind beyond the consumed
+         * argument token before callers get a chance to inspect it.  A token
+         * that is itself a known option must still be rejected for options that
+         * do not explicitly allow leading-dash arguments; otherwise commands
+         * such as "-m -w" can silently lose their input option and fall through
+         * to stdin-driven execution.
+         */
+        if (report_cb != NULL) {
+            report_cb(short_opt, report_user_data);
+        }
+        return -1;
     }
 
     return 0;

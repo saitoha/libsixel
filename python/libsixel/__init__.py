@@ -1354,6 +1354,9 @@ def sixel_encoder_encode_bytes(encoder, buf, width, height, pixelformat, palette
     if depth <= 0:
         raise ValueError("invalid pixelformat value : %d" % pixelformat)
 
+    if not isinstance(buf, bytes):
+        raise TypeError("buf must be bytes")
+
     if len(buf) < width * height * depth:
         raise ValueError("buf.len is too short : %d < %d * %d * %d" % (len(buf), width, height, depth))
 
