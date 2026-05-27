@@ -10,7 +10,15 @@ AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 if WANT_AMALGAMATED_TOOLS
 BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 endif
+# OpenVMS record-oriented files can reject the full test list when
+# config.status writes it as one substituted line.  Avoid feeding the large
+# list to Automake variables on that platform; check-TESTS reads this file.
+if OPENVMS_GNV
+OPENVMS_CHECK_TESTS_LIST = $(builddir)/check-tests.list
+TESTS =
+else
 TESTS = @SIXEL_CHECK_TESTS@
+endif
 XFAIL_TESTS = \
     loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t \
     loader/builtin/1317_loader_builtin_psd_psdtools_effects_shape_fx2_hardcase_lsqa.t \
@@ -66,6 +74,8 @@ AM_TESTS_ENVIRONMENT += SIXEL_SHLIBPATH_OVERRIDES_RUNPATH='@SIXEL_SHLIBPATH_OVER
        export SIXEL_SHLIBPATH_OVERRIDES_RUNPATH;
 AM_TESTS_ENVIRONMENT += SIXEL_TEST_ADDITIOANL_PATH='@SIXEL_TEST_ADDITIOANL_PATH@'; \
        export SIXEL_TEST_ADDITIOANL_PATH;
+AM_TESTS_ENVIRONMENT += SIXEL_TEST_GZIP='@SIXEL_TEST_GZIP@'; \
+       export SIXEL_TEST_GZIP;
 AM_TESTS_ENVIRONMENT += SIXEL_TEST_MACOS_PRODUCT_VERSION='$(SIXEL_TEST_MACOS_PRODUCT_VERSION)'; \
        export SIXEL_TEST_MACOS_PRODUCT_VERSION;
 AM_TESTS_ENVIRONMENT += SIXEL_TEST_HOST_ARCH='@host_cpu@'; \
@@ -353,6 +363,9 @@ test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) \
         $(CLIPBOARD_LIBS) \
         $(ABORTTRACE_LIBS) \
         @THREAD_LIBS@
+endif
+if OPENVMS_GNV
+test_runner_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 endif
 
 LOG_DRIVER = $(T_LOG_DRIVER)
@@ -1145,8 +1158,18 @@ if WANT_SIXEL2PNG
 	$(MAKE) -C "$(top_builddir)/converters" sixel2png@EXEEXT@
 endif
 
+if OPENVMS_GNV
+sixel-check-test-logs: sixel-check-test-tools
+	@set -eu; \
+	while IFS= read -r test_path || test -n "$$test_path"; do \
+	    test -n "$$test_path" || continue; \
+	    test_log_path="$${test_path%.*}.log"; \
+	    $(MAKE) $(AM_MAKEFLAGS) "$$test_log_path"; \
+	done < "$(OPENVMS_CHECK_TESTS_LIST)"
+else
 sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
 	@:
+endif
 
 # Run the regular TAP suite against installed commands.
 # installcheck expects `make install` to have completed first.
@@ -1199,8 +1222,10 @@ installcheck-local:
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
 check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtures
-	@find "$(abs_builddir)" -type f -name '*.log' ! -name 'staticcheck-*.log' -exec rm -f {} +
-	@find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -exec rm -f {} +
+	@find "$(builddir)" -type f -name '*.log' ! -name 'staticcheck-*.log' -print | \
+	    while IFS= read -r file; do rm -f "$$file"; done
+	@find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -print | \
+	    while IFS= read -r file; do rm -f "$$file"; done
 	@$(am__rm_f) $(TEST_SUITE_LOG)
 	@set +e; \
 	config_header="$(top_builddir)/config.h"; \
@@ -1322,18 +1347,19 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	    export RUNTIME_ENV_IS_WINE=1; \
 	export RUNTIME_ENV_BUILD_OS='@build_os@'; \
 	mkdir -p "$(ARTIFACT_ROOT)"; \
-	trs_manifest="$(abs_builddir)/.check-test-trs.list"; \
-	failed_manifest="$(abs_builddir)/.check-test-failures.list"; \
+	trs_manifest="$(builddir)/.check-test-trs.list"; \
+	failed_manifest="$(builddir)/.check-test-failures.list"; \
 	testsuite_tmp="$(TEST_SUITE_LOG).tmp"; \
 	rm -f "$$trs_manifest"; \
 	rm -f "$$failed_manifest"; \
-	find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -exec rm -f {} +; \
+	find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -print | \
+	    while IFS= read -r file; do rm -f "$$file"; done; \
 	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-logs \
 	    $$python_make_arg \
 	    $$ruby_make_arg \
 	    $$perl_make_arg \
 	    $$php_make_arg || exit $$?; \
-	find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' | LC_ALL=C sort > "$$trs_manifest"; \
+	find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' | LC_ALL=C sort > "$$trs_manifest"; \
 	all=0; \
 	pass=0; \
 	fail=0; \
@@ -1439,7 +1465,8 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 # Avoid expanding $(TEST_LOGS) into a single rm invocation during
 # mostlyclean/distclean; the test suite can exceed shell argument limits.
 mostlyclean-generic:
-	-@find "$(abs_builddir)" -type f \( -name '*.log' -o -name '*.trs' \) -exec rm -f {} +
+	-@find "$(builddir)" -type f \( -name '*.log' -o -name '*.trs' \) -print | \
+	    while IFS= read -r file; do rm -f "$$file"; done
 
 .PHONY: check-binding-loader-setopt-sync prepare-binding-artifacts prepare-psd-large-fixtures check-python check-ruby check-perl check-php sixel-check-test-logs
 check-binding-loader-setopt-sync:
@@ -1460,6 +1487,7 @@ prepare-binding-artifacts:
 
 prepare-psd-large-fixtures:
 	@set -eu; \
+	SIXEL_TEST_GZIP='@SIXEL_TEST_GZIP@'; export SIXEL_TEST_GZIP; \
 	"$(SHELL)" "$(abs_top_srcdir)/tests/_static/sh/prepare-psb-large-fixtures.sh" \
 	    "$(abs_top_srcdir)" "$(abs_top_builddir)"
 
@@ -1827,6 +1855,7 @@ dist-hook:
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
 CLEANFILES =
+DISTCLEANFILES = check-tests.list check-tests.mk
 
 # Avoid deleting in-tree test scripts when "make clean" is invoked.
 # Only remove copied test files in an out-of-tree build so that the

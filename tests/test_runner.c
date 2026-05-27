@@ -51,15 +51,24 @@
 # include <windows.h>
 #endif
 
+#if !defined(_WIN32) && !defined(__EMSCRIPTEN__) \
+    && HAVE_FCNTL_H && HAVE_FORK && HAVE_NANOSLEEP \
+    && HAVE_SIGNAL_H && HAVE_SYS_WAIT_H && HAVE_UNISTD_H \
+    && HAVE_WAITPID && HAVE_EXECVP
+# define TEST_RUNNER_HAVE_POSIX_SIGINT_RUNNER 1
+#else
+# define TEST_RUNNER_HAVE_POSIX_SIGINT_RUNNER 0
+#endif
+
 static int
 test_runner_setenv_portable(char const *name, char const *value);
 
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if TEST_RUNNER_HAVE_POSIX_SIGINT_RUNNER
 # define TEST_RUNNER_SIGINT_SYNC_FD_ENVVAR \
     "LSO_TEST_SIGINT_NOTIFY_FD"
 #endif
 
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__) && HAVE_SIGNAL_H
+#if TEST_RUNNER_HAVE_POSIX_SIGINT_RUNNER
 # define TEST_RUNNER_SIGINT_SYNC_PID_ENVVAR \
     "LSO_TEST_SIGINT_NOTIFY_PID"
 # define TEST_RUNNER_SIGINT_SYNC_EVENT_ENVVAR \
@@ -823,7 +832,7 @@ cleanup:
  * Keep its sleep helper in the same platform scope so -Wunused-function
  * does not fail Windows toolchains that treat warnings as errors.
  */
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if TEST_RUNNER_HAVE_POSIX_SIGINT_RUNNER
 static int
 test_runner_sleep_milliseconds(unsigned long milliseconds)
 {
@@ -852,7 +861,7 @@ test_runner_sleep_milliseconds(unsigned long milliseconds)
 }
 #endif
 
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if TEST_RUNNER_HAVE_POSIX_SIGINT_RUNNER
 /*
  * Some runtimes (notably APE wrappers) do not always propagate signals sent
  * only to the process group. Send to both the process group and the direct
@@ -916,7 +925,7 @@ test_runner_signal_group_and_child(pid_t child_pid, int signum)
 static int
 test_runner_run_posix_sigint(int argc, char **argv)
 {
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if TEST_RUNNER_HAVE_POSIX_SIGINT_RUNNER
     char const *delay_token;
     char const *timeout_token;
     unsigned long parsed_delay;
@@ -1083,7 +1092,7 @@ timeout_cleanup:
 #endif
 }
 
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if TEST_RUNNER_HAVE_POSIX_SIGINT_RUNNER
 static int
 test_runner_buffer_contains(char const *buffer,
                             size_t buffer_length,
@@ -1124,7 +1133,7 @@ test_runner_buffer_contains(char const *buffer,
 static int
 test_runner_run_posix_sigint_until(int argc, char **argv)
 {
-#if !defined(_WIN32) && !defined(__EMSCRIPTEN__)
+#if TEST_RUNNER_HAVE_POSIX_SIGINT_RUNNER
     char const *needle_token;
     char const *timeout_token;
     unsigned long parsed_timeout;

@@ -5137,8 +5137,17 @@ AS_IF([test "x$enable_perl" != xno -a "x$have_perl" = xyes], [
 SIXEL_CHECK_TESTS=
 AS_IF([test x$enable_tests != xno], [
   sixel_ruby_tests_mode=include
-  SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
-      tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
+  AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+    SIXEL_CHECK_TESTS=
+    AS_MKDIR_P([tests])
+    $SHELL "$srcdir/build-aux/read-check-test-list.sh" \
+        tests "$srcdir/tests" "$sixel_ruby_tests_mode" newline \
+        > tests/check-tests.list ||
+      AC_MSG_ERROR([could not create tests/check-tests.list])
+  ], [
+    SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
+        tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
+  ])
 ])
 AC_SUBST([SIXEL_CHECK_TESTS])
 
@@ -5155,6 +5164,10 @@ AS_IF([test "x$BASH" = x -o "x$BASH" = xno], [
   AC_MSG_WARN([bash not found; converter tests will be skipped])
 ])
 AM_CONDITIONAL([HAVE_BASH], [test "x$BASH" != x -a "x$BASH" != xno])
+
+AC_ARG_VAR([SIXEL_TEST_GZIP],
+           [gzip command used to expand packaged test fixtures])
+AC_PATH_PROGS([SIXEL_TEST_GZIP], [gzip gzip.exe], [])
 
 dnl Detect static analysis tools in configure phase so staticcheck can
 dnl provide consistent skip messages when tools are unavailable.

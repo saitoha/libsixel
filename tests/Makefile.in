@@ -316,6 +316,7 @@ am__v_lt_1 =
 test_runner_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_runner_CFLAGS) \
 	$(CFLAGS) $(test_runner_LDFLAGS) $(LDFLAGS) -o $@
+@OPENVMS_GNV_TRUE@test_runner_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -835,6 +836,7 @@ SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 SIXEL_SHLIBPATH_OVERRIDES_RUNPATH = @SIXEL_SHLIBPATH_OVERRIDES_RUNPATH@
 SIXEL_TEST_ADDITIOANL_PATH = @SIXEL_TEST_ADDITIOANL_PATH@
 SIXEL_TEST_ADDITIONAL_PATH = @SIXEL_TEST_ADDITIONAL_PATH@
+SIXEL_TEST_GZIP = @SIXEL_TEST_GZIP@
 SIXEL_TEST_SHELL = @SIXEL_TEST_SHELL@
 SIXEL_TSAN_BUILD = @SIXEL_TSAN_BUILD@
 STRIP = @STRIP@
@@ -918,7 +920,9 @@ zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
-TESTS = @SIXEL_CHECK_TESTS@
+@OPENVMS_GNV_FALSE@TESTS = @SIXEL_CHECK_TESTS@
+@OPENVMS_GNV_TRUE@OPENVMS_CHECK_TESTS_LIST = $(builddir)/check-tests.list
+@OPENVMS_GNV_TRUE@TESTS =
 XFAIL_TESTS = \
     loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t \
     loader/builtin/1317_loader_builtin_psd_psdtools_effects_shape_fx2_hardcase_lsqa.t \
@@ -966,6 +970,7 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	export SIXEL_SHLIBPATH_OVERRIDES_RUNPATH; \
 	SIXEL_TEST_ADDITIOANL_PATH='@SIXEL_TEST_ADDITIOANL_PATH@'; \
 	export SIXEL_TEST_ADDITIOANL_PATH; \
+	SIXEL_TEST_GZIP='@SIXEL_TEST_GZIP@'; export SIXEL_TEST_GZIP; \
 	SIXEL_TEST_MACOS_PRODUCT_VERSION='$(SIXEL_TEST_MACOS_PRODUCT_VERSION)'; \
 	export SIXEL_TEST_MACOS_PRODUCT_VERSION; \
 	SIXEL_TEST_HOST_ARCH='@host_cpu@'; export \
@@ -1334,6 +1339,7 @@ EXTRA_DIST = $(HELPER_FILES) \
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
 CLEANFILES = 
+DISTCLEANFILES = check-tests.list check-tests.mk
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -4394,8 +4400,15 @@ sixel-check-test-tools:
 @WANT_SIXEL2PNG_TRUE@	@set -eu; \
 @WANT_SIXEL2PNG_TRUE@	$(MAKE) -C "$(top_builddir)/converters" sixel2png@EXEEXT@
 
-sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
-	@:
+@OPENVMS_GNV_TRUE@sixel-check-test-logs: sixel-check-test-tools
+@OPENVMS_GNV_TRUE@	@set -eu; \
+@OPENVMS_GNV_TRUE@	while IFS= read -r test_path || test -n "$$test_path"; do \
+@OPENVMS_GNV_TRUE@	    test -n "$$test_path" || continue; \
+@OPENVMS_GNV_TRUE@	    test_log_path="$${test_path%.*}.log"; \
+@OPENVMS_GNV_TRUE@	    $(MAKE) $(AM_MAKEFLAGS) "$$test_log_path"; \
+@OPENVMS_GNV_TRUE@	done < "$(OPENVMS_CHECK_TESTS_LIST)"
+@OPENVMS_GNV_FALSE@sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
+@OPENVMS_GNV_FALSE@	@:
 
 # Run the regular TAP suite against installed commands.
 # installcheck expects `make install` to have completed first.
@@ -4448,8 +4461,10 @@ installcheck-local:
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
 check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtures
-	@find "$(abs_builddir)" -type f -name '*.log' ! -name 'staticcheck-*.log' -exec rm -f {} +
-	@find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -exec rm -f {} +
+	@find "$(builddir)" -type f -name '*.log' ! -name 'staticcheck-*.log' -print | \
+	    while IFS= read -r file; do rm -f "$$file"; done
+	@find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -print | \
+	    while IFS= read -r file; do rm -f "$$file"; done
 	@$(am__rm_f) $(TEST_SUITE_LOG)
 	@set +e; \
 	config_header="$(top_builddir)/config.h"; \
@@ -4571,18 +4586,19 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	    export RUNTIME_ENV_IS_WINE=1; \
 	export RUNTIME_ENV_BUILD_OS='@build_os@'; \
 	mkdir -p "$(ARTIFACT_ROOT)"; \
-	trs_manifest="$(abs_builddir)/.check-test-trs.list"; \
-	failed_manifest="$(abs_builddir)/.check-test-failures.list"; \
+	trs_manifest="$(builddir)/.check-test-trs.list"; \
+	failed_manifest="$(builddir)/.check-test-failures.list"; \
 	testsuite_tmp="$(TEST_SUITE_LOG).tmp"; \
 	rm -f "$$trs_manifest"; \
 	rm -f "$$failed_manifest"; \
-	find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -exec rm -f {} +; \
+	find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -print | \
+	    while IFS= read -r file; do rm -f "$$file"; done; \
 	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-logs \
 	    $$python_make_arg \
 	    $$ruby_make_arg \
 	    $$perl_make_arg \
 	    $$php_make_arg || exit $$?; \
-	find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' | LC_ALL=C sort > "$$trs_manifest"; \
+	find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' | LC_ALL=C sort > "$$trs_manifest"; \
 	all=0; \
 	pass=0; \
 	fail=0; \
@@ -4688,7 +4704,8 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 # Avoid expanding $(TEST_LOGS) into a single rm invocation during
 # mostlyclean/distclean; the test suite can exceed shell argument limits.
 mostlyclean-generic:
-	-@find "$(abs_builddir)" -type f \( -name '*.log' -o -name '*.trs' \) -exec rm -f {} +
+	-@find "$(builddir)" -type f \( -name '*.log' -o -name '*.trs' \) -print | \
+	    while IFS= read -r file; do rm -f "$$file"; done
 
 .PHONY: check-binding-loader-setopt-sync prepare-binding-artifacts prepare-psd-large-fixtures check-python check-ruby check-perl check-php sixel-check-test-logs
 check-binding-loader-setopt-sync:
@@ -4709,6 +4726,7 @@ prepare-binding-artifacts:
 
 prepare-psd-large-fixtures:
 	@set -eu; \
+	SIXEL_TEST_GZIP='@SIXEL_TEST_GZIP@'; export SIXEL_TEST_GZIP; \
 	"$(SHELL)" "$(abs_top_srcdir)/tests/_static/sh/prepare-psb-large-fixtures.sh" \
 	    "$(abs_top_srcdir)" "$(abs_top_builddir)"
 

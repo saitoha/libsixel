@@ -887,6 +887,7 @@ CFLAGS
 CC
 SIXEL_MSVC_CC
 SIXEL_EMSCRIPTEN_CC
+SIXEL_TEST_GZIP
 SIXEL_TEST_ADDITIONAL_PATH
 SIXEL_TEST_ADDITIOANL_PATH
 RANLIB
@@ -1069,6 +1070,7 @@ STRIP
 RANLIB
 SIXEL_TEST_ADDITIOANL_PATH
 SIXEL_TEST_ADDITIONAL_PATH
+SIXEL_TEST_GZIP
 CC
 CFLAGS
 LDFLAGS
@@ -1891,6 +1893,8 @@ Some influential environment variables:
               additional runtime library search path for test execution
   SIXEL_TEST_ADDITIONAL_PATH
               alias of SIXEL_TEST_ADDITIOANL_PATH
+  SIXEL_TEST_GZIP
+              gzip command used to expand packaged test fixtures
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -28850,8 +28854,22 @@ if test x$enable_tests != xno
 then :
 
   sixel_ruby_tests_mode=include
-  SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
-      tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
+  if test "x$sixel_openvms_mode" = "xyes"
+then :
+
+    SIXEL_CHECK_TESTS=
+    mkdir -p tests
+    $SHELL "$srcdir/build-aux/read-check-test-list.sh" \
+        tests "$srcdir/tests" "$sixel_ruby_tests_mode" newline \
+        > tests/check-tests.list ||
+      as_fn_error $? "could not create tests/check-tests.list" "$LINENO" 5
+
+else $as_nop
+
+    SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
+        tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
+
+fi
 
 fi
 
@@ -28932,12 +28950,61 @@ then :
 printf "%s\n" "$as_me: WARNING: bash not found; converter tests will be skipped" >&2;}
 
 fi
- if test "x$BASH" != x -a "x$BASH" != xno; then
+if test "x$BASH" != x -a "x$BASH" != xno; then
   HAVE_BASH_TRUE=
   HAVE_BASH_FALSE='#'
 else
   HAVE_BASH_TRUE='#'
   HAVE_BASH_FALSE=
+fi
+
+
+if test "x$SIXEL_TEST_GZIP" != x
+then :
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: SIXEL_TEST_GZIP preset to ${SIXEL_TEST_GZIP}" >&5
+printf "%s\n" "$as_me: SIXEL_TEST_GZIP preset to ${SIXEL_TEST_GZIP}" >&6;}
+
+else case e in #(
+  e)
+for ac_prog in gzip gzip.exe
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    SIXEL_TEST_GZIP="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+if test -n "$SIXEL_TEST_GZIP"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $SIXEL_TEST_GZIP" >&5
+printf "%s\n" "$SIXEL_TEST_GZIP" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+  test -n "$SIXEL_TEST_GZIP" && break
+done
+ ;;
+esac
 fi
 
 
