@@ -25,17 +25,23 @@ As of this note, `bash ./configure` completes on the OpenVMS/GNV guest when it
 is run from a safe POSIX-style directory such as `/tmp/libsixel-openvms-build`.
 The build can produce the static archive `src/.libs/libsixel.a`.
 
-Manual native linking also works:
+The GNV program-link wrapper can now build the first useful command set:
 
-- DCL `LINK` can produce `converters/img2sixel.exe` from the converter objects
-  and `src/.libs/libsixel.a`.
-- The resulting `img2sixel.exe --help` path runs.
-- A 2x2 PPM input can be converted to a SIXEL file.
-- The smoke output starts with the expected DCS/SIXEL bytes and ends with ST.
+- `converters/img2sixel.exe`
+- `converters/sixel2png.exe`
+- `assessment/lsqa.exe`
+- `tools/lso-timer.exe`
+- `tools/lso-timeout.exe`
 
-The remaining blocker for normal `make` is the program link step.  GNV `gcc`
-does not reliably create executables when it is invoked only with existing
-object files and archives.
+The current smoke path uses a tiny ASCII PPM (P3) input, converts it to SIXEL
+with `img2sixel`, converts that SIXEL stream back to PNG with `sixel2png`, and
+runs `lsqa` against the generated PNG.  A hand-written binary PPM (P6) is a
+poor smoke fixture on GNV because shell text output can add a trailing newline
+byte unless the file is created with a truly binary-safe producer.
+
+Top-level `make` still needs a follow-up pass.  The useful command targets can
+be built directly, but a full recursive build may still stall outside the
+final program-link steps.
 
 ## GNV and Autotools traps
 
@@ -155,9 +161,10 @@ Reference:
 
 ## Link-wrapper plan
 
-The next GNV milestone is an OpenVMS native link wrapper.  It should accept
-the compiler-style arguments emitted by Automake/libtool, translate the final
-link step into a DCL option file, and call `/bin/dcl.exe` with native `LINK`.
+The initial program-link wrapper is `openvms/gnv-link-program.sh`.  It accepts
+the compiler-style arguments emitted by Automake program targets, translates
+the final link step into a DCL option file, and calls `/bin/dcl.exe` with
+native `LINK`.
 
 The first version should support the exact paths needed by the current CI
 guest and the current non-optional libsixel build:
@@ -169,6 +176,10 @@ guest and the current non-optional libsixel build:
 - pass archives as `/LIBRARY`
 - call `LINK /EXECUTABLE=<output> <option-file>/OPTIONS`
 - verify that the output image exists before returning success
+
+DCL `LINK` can return a warning status after creating a usable image.  The
+wrapper therefore treats the output image as the success criterion and reports
+the native status only when no output was produced.
 
 After program linking is stable, extend the same wrapper family for the
 shareable image:
@@ -185,17 +196,22 @@ added later.
 
 ## Integration plan
 
-The preferred order is:
+The completed and remaining order is:
 
-1. Add a small OpenVMS link wrapper under `openvms/` or `build-aux/`.
+1. Add a small OpenVMS link wrapper under `openvms/` or `build-aux/`.  Done for
+   program targets.
 2. Teach `configure.ac` to select it only when `LIBSIXEL_OPENVMS` is active.
+   Done.
 3. Use it for program link commands before trying to replace all libtool
    shared-library behavior.
-4. Build `src/.libs/libsixel.a`.
-5. Link `img2sixel.exe` statically through native `LINK`.
-6. Add a GNV smoke target that converts a tiny generated PPM to SIXEL.
+4. Build `src/.libs/libsixel.a`.  Done.
+5. Link `img2sixel.exe`, `sixel2png.exe`, and `lsqa.exe` statically through
+   native `LINK`.  Done.
+6. Add a GNV smoke target that converts a tiny generated PPM to SIXEL.  Still
+   needs to be encoded as a Make target.
 7. Add native shareable-image generation from the same object/archive set.
-8. Only after those are stable, evaluate optional loaders and larger tests.
+8. Investigate the remaining top-level recursive `make` stall.
+9. Only after those are stable, evaluate optional loaders and larger tests.
 
 This keeps the port moving without hiding real OpenVMS differences behind a
 large `config.site` or a dummy-source compiler workaround.

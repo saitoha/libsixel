@@ -137,12 +137,14 @@ lso_timeout_OBJECTS = $(am_lso_timeout_OBJECTS)
 lso_timeout_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lso_timeout_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+@BUILD_LSO_TIMEOUT_TRUE@@OPENVMS_GNV_TRUE@lso_timeout_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 am_lso_timer_OBJECTS = lso_timer-timer.$(OBJEXT)
 lso_timer_OBJECTS = $(am_lso_timer_OBJECTS)
 lso_timer_DEPENDENCIES = $(am__DEPENDENCIES_1)
 lso_timer_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lso_timer_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+@OPENVMS_GNV_TRUE@lso_timer_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \

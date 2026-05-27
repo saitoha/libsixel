@@ -106,6 +106,9 @@ EXTRA_lsqa_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
 endif
 endif
 endif
+if OPENVMS_GNV
+lsqa_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
+endif
 
 if WITH_SHEBANG_FILE
 SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS)

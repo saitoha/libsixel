@@ -119,7 +119,19 @@ sixel_tty_strdup(char const *text);
 static SIXELSTATUS
 sixel_tty_wait_fd_readable(int fd, int usec, int *is_readable);
 
-#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
+/*
+ * OpenVMS/GNV can provide <termios.h> without tcgetattr()/tcsetattr() linker
+ * symbols. Keep all cbreak-mode code behind the function probes as well as
+ * the header probes so the final native LINK step has no unresolved symbols.
+ */
+#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY \
+    && HAVE_TCGETATTR && HAVE_TCSETATTR
+# define SIXEL_TTY_HAVE_TERMIOS_CBREAK 1
+#else
+# define SIXEL_TTY_HAVE_TERMIOS_CBREAK 0
+#endif
+
+#if SIXEL_TTY_HAVE_TERMIOS_CBREAK
 #define SIXEL_TTY_ABORT_RESTORE_MAX 8
 
 typedef struct sixel_tty_abort_restore_slot {
@@ -152,7 +164,7 @@ sixel_tty_cbreak_fd(int fd,
 
 static SIXELSTATUS
 sixel_tty_restore_fd(int fd, struct termios *old_termios);
-#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
+#endif  /* SIXEL_TTY_HAVE_TERMIOS_CBREAK */
 
 static int
 sixel_tty_term_supports_ansi(const char *term)
@@ -630,7 +642,7 @@ sixel_tty_wait_fd_readable(int fd, int usec, int *is_readable)
     return status;
 }
 
-#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
+#if SIXEL_TTY_HAVE_TERMIOS_CBREAK
 static int
 sixel_tty_find_abort_restore_slot(int fd)
 {
@@ -1072,9 +1084,9 @@ sixel_tty_cbreak(struct termios *old_termios, struct termios *new_termios)
     }
     return status;
 }
-#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
+#endif  /* SIXEL_TTY_HAVE_TERMIOS_CBREAK */
 
-#if !HAVE_TERMIOS_H || !HAVE_SYS_IOCTL_H || !HAVE_ISATTY
+#if !SIXEL_TTY_HAVE_TERMIOS_CBREAK
 SIXEL_INTERNAL_API int
 sixel_tty_is_animation_hide_cursor_enabled(char const *value)
 {
@@ -1163,10 +1175,10 @@ SIXEL_INTERNAL_API void
 sixel_tty_restore_cbreak_for_abort(void)
 {
 }
-#endif  /* !HAVE_TERMIOS_H || !HAVE_SYS_IOCTL_H || !HAVE_ISATTY */
+#endif  /* !SIXEL_TTY_HAVE_TERMIOS_CBREAK */
 
 
-#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
+#if SIXEL_TTY_HAVE_TERMIOS_CBREAK
 SIXELSTATUS
 sixel_tty_restore(struct termios *old_termios)
 {
@@ -1189,7 +1201,7 @@ sixel_tty_restore(struct termios *old_termios)
 end:
     return status;
 }
-#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
+#endif  /* SIXEL_TTY_HAVE_TERMIOS_CBREAK */
 
 
 SIXELSTATUS
@@ -1217,7 +1229,7 @@ sixel_tty_query_osc11_bgcolor_with_drain(
     sixel_tty_query_stop_function should_stop,
     void *context)
 {
-#if HAVE_FCNTL_H && HAVE_SYS_SELECT_H && HAVE_TERMIOS_H && HAVE_ISATTY \
+#if HAVE_FCNTL_H && HAVE_SYS_SELECT_H && SIXEL_TTY_HAVE_TERMIOS_CBREAK \
     && !defined(_WIN32) && !defined(__EMSCRIPTEN__)
     static char const query[] = "\033]11;?\007";
     SIXELSTATUS status;
@@ -1388,7 +1400,7 @@ sixel_tty_scroll(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
-#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY \
+#if SIXEL_TTY_HAVE_TERMIOS_CBREAK \
     && !defined(__EMSCRIPTEN__) && defined(TIOCGWINSZ)
     struct winsize size = {0, 0, 0, 0};
     struct termios old_termios;
@@ -1543,7 +1555,7 @@ sixel_tty_scroll(
             "sixel_tty_scroll: f_write() failed.");
         goto end;
     }
-#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY && !defined(__EMSCRIPTEN__) */
+#endif  /* SIXEL_TTY_HAVE_TERMIOS_CBREAK && !defined(__EMSCRIPTEN__) */
 
     status = SIXEL_OK;
 

@@ -861,6 +861,8 @@ USING_CL_TRUE
 UPDATE_MIME_DATABASE
 LN_S
 CPP
+OPENVMS_GNV_FALSE
+OPENVMS_GNV_TRUE
 am__fastdepOBJC_FALSE
 am__fastdepOBJC_TRUE
 OBJCDEPMODE
@@ -3600,6 +3602,14 @@ then :
   printf "%s\n" "#define LIBSIXEL_OPENVMS 1" >>confdefs.h
 
 
+fi
+
+ if test "x$sixel_openvms_mode" = "xyes"; then
+  OPENVMS_GNV_TRUE=
+  OPENVMS_GNV_FALSE='#'
+else
+  OPENVMS_GNV_TRUE='#'
+  OPENVMS_GNV_FALSE=
 fi
 
 
@@ -21005,6 +21015,8 @@ printf "%s\n" "$ac_cv_c_no_builtin" >&6; }
                          _strerror_r \
                          _isatty \
                          isatty \
+                         tcgetattr \
+                         tcsetattr \
                          clock_gettime \
                          _sopen_s \
                          _open \
@@ -29559,6 +29571,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USING_CL_TRUE}" && test -z "${USING_CL_FALSE}"; then
   as_fn_error $? "conditional \"USING_CL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${OPENVMS_GNV_TRUE}" && test -z "${OPENVMS_GNV_FALSE}"; then
+  as_fn_error $? "conditional \"OPENVMS_GNV\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILDING_ON_WINDOWS_TRUE}" && test -z "${BUILDING_ON_WINDOWS_FALSE}"; then

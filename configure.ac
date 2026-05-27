@@ -65,6 +65,7 @@ AM_INIT_AUTOMAKE([foreign subdir-objects tar-pax])
 AC_REQUIRE_AUX_FILE([ar-lib])
 AM_MAINTAINER_MODE([disable])
 AM_SILENT_RULES([yes])
+AM_CONDITIONAL([OPENVMS_GNV], [test "x$sixel_openvms_mode" = "xyes"])
 
 # Let configure users override the MSVC companion tools explicitly while still
 # allowing the defaults below to keep simple --host=*-msvc builds short.
@@ -2797,6 +2798,8 @@ AC_CHECK_FUNCS_PARALLEL([assert \
                          _strerror_r \
                          _isatty \
                          isatty \
+                         tcgetattr \
+                         tcsetattr \
                          clock_gettime \
                          _sopen_s \
                          _open \
