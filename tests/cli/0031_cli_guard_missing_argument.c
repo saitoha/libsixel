@@ -85,6 +85,7 @@ test_cli_0031_cli_guard_missing_argument(int argc, char **argv)
     cli_option_help_t const table[] = {
         { 'i', "input", "--input help\n" },
         { 'x', "extract", "--extract help\n" },
+        { '1', "show-completion", "--show-completion help\n" },
     };
     char argv0[] = "tool";
     char argv1[] = "-x";
@@ -93,9 +94,12 @@ test_cli_0031_cli_guard_missing_argument(int argc, char **argv)
     char argv4[] = "away";
     char dash_value[] = "-file.six";
     char copied_option[] = "-x";
+    char negative_value[] = "-1";
+    char attached_negative[] = "--input=-1";
     char *args[] = { argv0, argv1, NULL };
     char *lagged_args[] = { argv0, argv1, argv2, NULL };
     char *far_args[] = { argv0, argv1, copied_option, argv3, argv4, NULL };
+    char *attached_args[] = { argv0, attached_negative, NULL };
     size_t table_count;
     int optind_value;
     guard_result_t result;
@@ -192,6 +196,20 @@ test_cli_0031_cli_guard_missing_argument(int argc, char **argv)
             result.rewind_by == 0) {
     } else {
         fprintf(stderr, "case 6: far optind accepted recognised option\n");
+        status = 1;
+    }
+
+    optind_value = 2;
+    result = run_guard_case(attached_args,
+                             negative_value,
+                             &optind_value,
+                             "i:1:",
+                             table,
+                             table_count,
+                             0);
+    if (result.code == 0 && result.missing_calls == 0) {
+    } else {
+        fprintf(stderr, "case 7: attached negative value was rejected\n");
         status = 1;
     }
 

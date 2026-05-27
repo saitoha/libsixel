@@ -257,8 +257,10 @@ cli_guard_missing_argument(int short_opt,
     int opt_index;
     char const *candidate_token;
     char const *previous_token;
+    char const *scan_token;
     int matched_token;
     int rewind_count;
+    int token_index;
 
     if (cli_option_requires_argument(optstring, short_opt) == 0) {
         return 0;
@@ -349,18 +351,35 @@ cli_guard_missing_argument(int short_opt,
             return -1;
         }
 
+        token_index = 0;
+        if (argv != NULL) {
+            while (argv[token_index] != NULL) {
+                scan_token = argv[token_index];
+                if (argument == scan_token
+                        || strcmp(argument, scan_token) == 0) {
+                    matched_token = 1;
+                    break;
+                }
+                token_index += 1;
+            }
+        }
+
         /*
          * Some getopt implementations can advance optind beyond the consumed
          * argument token before callers get a chance to inspect it.  A token
-         * that is itself a known option must still be rejected for options that
-         * do not explicitly allow leading-dash arguments; otherwise commands
-         * such as "-m -w" can silently lose their input option and fall through
-         * to stdin-driven execution.
+         * that is itself a known argv option must still be rejected for options
+         * that do not explicitly allow leading-dash arguments; otherwise
+         * commands such as "-m -w" can silently lose their input option and
+         * fall through to stdin-driven execution.  Do not reject attached
+         * option values such as "--start-frame=-1": getopt exposes "-1" as
+         * optarg, but it is not a standalone argv token.
          */
-        if (report_cb != NULL) {
-            report_cb(short_opt, report_user_data);
+        if (matched_token != 0) {
+            if (report_cb != NULL) {
+                report_cb(short_opt, report_user_data);
+            }
+            return -1;
         }
-        return -1;
     }
 
     return 0;
