@@ -458,8 +458,14 @@
 /* Define if SSE2 is available */
 #undef HAVE_SSE2
 
+/* Define to 1 if the system has the type `ssize_t'. */
+#undef HAVE_SSIZE_T
+
 /* Define to 1 if you have the `stat' function. */
 #undef HAVE_STAT
+
+/* Define to 1 if the system has the type `struct timeval'. */
+#undef HAVE_STRUCT_TIMEVAL
 
 /* Define to 1 if you have the <stdarg.h> header file. */
 #undef HAVE_STDARG_H
@@ -665,6 +671,9 @@
 
 /* Name of package */
 #undef PACKAGE
+
+/* Define when building with OpenVMS and GNV. */
+#undef LIBSIXEL_OPENVMS
 
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT

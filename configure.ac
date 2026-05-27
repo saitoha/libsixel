@@ -56,6 +56,11 @@ esac
 
 AC_CANONICAL_HOST
 
+AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+  AC_DEFINE([LIBSIXEL_OPENVMS], [1],
+            [Define when building with OpenVMS and GNV.])
+])
+
 AM_INIT_AUTOMAKE([foreign subdir-objects tar-pax])
 AC_REQUIRE_AUX_FILE([ar-lib])
 AM_MAINTAINER_MODE([disable])
@@ -435,6 +440,14 @@ AC_DEFUN([AC_OUTPUT_PARALLEL], [
   AC_REQUIRE([AX_COUNT_CPUS])
   ls_saved_no_create=$no_create
   no_create=yes
+  AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+    # Some GNV probes can leave configure under a temporary directory.  Return
+    # before AC_OUTPUT writes config.status and any generated build files.
+    cd "$ac_pwd" || as_fn_exit $?
+    PWD=$ac_pwd
+    export PWD
+    as_fn_unset OLDPWD
+  ])
   AC_OUTPUT
   AS_IF([test "x$ls_saved_no_create" != xyes], [
     AS_IF([test "x$CPU_COUNT" = x || test "$CPU_COUNT" -lt 1 2>/dev/null], [
@@ -476,6 +489,87 @@ AC_DEFUN([AC_OUTPUT_PARALLEL], [
             [ac_config_status_jobs=""])
     ], [
       ac_config_status_jobs=""
+    ])
+    AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+      # config.status resolves Makefile.in and similar inputs relative to the
+      # current directory, so return to the original build directory first.
+      cd "$ac_pwd" || as_fn_exit $?
+      PWD=$ac_pwd
+      export PWD
+      as_fn_unset OLDPWD
+
+      # GNV /bin/sh can run the EXIT trap from helper subprocesses used while
+      # config.status is still consuming its temporary AWK files.  It also
+      # mishandles some Autoconf compound redirections against those files.
+      # Disable the generated trap, split the fragile setup commands into
+      # simple commands, and clean the temp directory explicitly at normal exit.
+      $AWK '
+        BEGIN {
+          dollar = sprintf("%c", 36)
+        }
+        {
+          line = $ 0
+        }
+        /^ac_tmp=[$]tmp$/ {
+          print line
+          print "trap - 0"
+          next
+        }
+        line ~ /echo '\''BEGIN [{]'\'' >"[$]ac_tmp\/subs1[.]awk" &&$/ {
+          sub(/ &&$/, "", line)
+          print line
+          next
+        }
+        line ~ /cat >>"[$]ac_tmp\/subs1[.]awk" <<\\?_ACAWK &&$/ {
+          sub(/ &&$/, "", line)
+          print line
+          next
+        }
+        line ~ /if sed "s\/[$]ac_cr\/\/" < \/dev\/null/ {
+          print "test -s \"" dollar "ac_tmp/subs1.awk\" || \\"
+          print "  as_fn_error " dollar "? \"could not setup config files machinery\" \"" dollar "LINENO\" 5"
+          print "if sed \"s/" dollar "ac_cr//\" < /dev/null > /dev/null 2>&1; then"
+          print "  sed \"s/" dollar "ac_cr\\" dollar "//; s/" \
+                dollar "ac_cr/" dollar "ac_cs_awk_cr/g\" < \"" \
+                dollar "ac_tmp/subs1.awk\" > \"" dollar "ac_tmp/subs.awk\" || \\"
+          print "    as_fn_error " dollar "? \"could not setup config files machinery\" \"" dollar "LINENO\" 5"
+          print "else"
+          print "  cat < \"" dollar "ac_tmp/subs1.awk\" > \"" \
+                dollar "ac_tmp/subs.awk\" || \\"
+          print "    as_fn_error " dollar "? \"could not setup config files machinery\" \"" dollar "LINENO\" 5"
+          print "fi"
+          print "test -s \"" dollar "ac_tmp/subs.awk\" \\"
+          skip = 1
+          next
+        }
+        line ~ /cat >"[$]ac_tmp\/defines[.]awk" <<\\_ACAWK \|\|/ {
+          print "cat >\"" dollar "ac_tmp/defines.awk\" <<\\_ACAWK"
+          header = 1
+          next
+        }
+        header && /could not setup config headers machinery/ {
+          print "test -s \"" dollar "ac_tmp/defines.awk\" || \\"
+          print line
+          header = 0
+          next
+        }
+        skip && /\|\| as_fn_error/ {
+          print line
+          skip = 0
+          next
+        }
+        skip {
+          next
+        }
+        /^as_fn_exit 0$/ && !done {
+          print "{ test ! -d \"" dollar "ac_tmp\" || rm -fr \"" \
+                dollar "ac_tmp\"; }"
+          done = 1
+        }
+        { print line }
+      ' "$CONFIG_STATUS" > "$CONFIG_STATUS.tmp" &&
+        mv "$CONFIG_STATUS.tmp" "$CONFIG_STATUS" &&
+        chmod +x "$CONFIG_STATUS" || as_fn_exit $?
     ])
     $SHELL $CONFIG_STATUS $ac_config_status_jobs $ac_config_status_args \
       || as_fn_exit $?
@@ -555,6 +649,14 @@ if test "x$sixel_msvc_mode" = "xyes" &&
     CC="$SIXEL_MSVC_CC"
   fi
 fi
+
+AS_IF([test "x$sixel_openvms_mode" = "xyes" &&
+       test "${enable_dependency_tracking+set}" != set], [
+  # Automake bootstraps dependency fragments by piping generated Makefiles
+  # back into make.  GNV make can hang there after config.status has already
+  # generated all build files, so default to the documented fallback.
+  enable_dependency_tracking=no
+])
 
 AC_PROG_CC
 AC_PROG_OBJC
@@ -664,7 +766,9 @@ case " $MAKEFLAGS " in
   *\ -j*|*\ --jobs*|*\ --jobs=* )
     ;;
   *)
-    LS_DEFAULT_MAKEFLAGS="-j${CPU_COUNT}"
+    AS_IF([test "x$sixel_openvms_mode" != "xyes"], [
+      LS_DEFAULT_MAKEFLAGS="-j${CPU_COUNT}"
+    ])
     ;;
 esac
 AC_SUBST([LS_DEFAULT_MAKEFLAGS])
@@ -2320,14 +2424,20 @@ LIBSIXEL_LDFLAGS=""
     LDFLAGS="-nologo $LDFLAGS"
     AC_DEFINE([HAVE_MSVC], [1], [Define if building with MSVC])
 else
-  AX_GCC_VAR_ATTRIBUTE([deprecated])
-  if test x$ax_cv_have_var_attribute_deprecated != x; then
-      AC_SUBST(attr_var_deprecated, [__attribute__\(\(deprecated\)\)])
-  fi
-  AX_GCC_FUNC_ATTRIBUTE([deprecated])
-  if test x$ax_cv_have_func_attribute_deprecated != x; then
-      AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
-  fi
+  attr_var_deprecated=
+  attr_func_deprecated=
+  AS_IF([test "x$sixel_openvms_mode" != "xyes"], [
+    AX_GCC_VAR_ATTRIBUTE([deprecated])
+    if test x$ax_cv_have_var_attribute_deprecated != x; then
+        attr_var_deprecated='__attribute__((deprecated))'
+    fi
+    AX_GCC_FUNC_ATTRIBUTE([deprecated])
+    if test x$ax_cv_have_func_attribute_deprecated != x; then
+        attr_func_deprecated='__attribute__((deprecated))'
+    fi
+  ])
+  AC_SUBST([attr_var_deprecated])
+  AC_SUBST([attr_func_deprecated])
   AX_GCC_BUILTIN([__builtin_unreachable])
   AS_IF([test "x$sixel_openvms_mode" != "xyes"], [
     LS_CHECK_CFLAG([-std=c99],
@@ -2343,10 +2453,12 @@ else
                  [AM_CFLAGS="$AM_CFLAGS -Wextra"],
                  [],
                  [wextra])
-  LS_CHECK_CFLAG([-Wformat=2],
-                 [AM_CFLAGS="$AM_CFLAGS -Wformat=2"],
-                 [],
-                 [wformat_2])
+  AS_IF([test "x$sixel_openvms_mode" != "xyes"], [
+    LS_CHECK_CFLAG([-Wformat=2],
+                   [AM_CFLAGS="$AM_CFLAGS -Wformat=2"],
+                   [],
+                   [wformat_2])
+  ])
   LS_CHECK_CFLAG([-Wsign-conversion],
                  [AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION,
                             [1],
@@ -2408,10 +2520,11 @@ else
                  [],
                  [wformat_nonliteral])
   case "$host_os" in
-    openbsd*)
+    openbsd*|vms*)
       # Align Autotools with Meson: OpenBSD links shared objects with
       # --no-allow-shlib-undefined, and enabling -fno-emulated-tls can leave
       # __tls_get_addr unresolved when final tools link against libsixel.
+      # OpenVMS rejects the option at compile time despite the configure probe.
       ;;
     *)
       LS_CHECK_LDFLAG([-Wl,-Bsymbolic],
@@ -2444,6 +2557,13 @@ AS_IF([test "x$enable_sanitizer" != "xno"], [
   # Target-specific Automake CFLAGS in this tree are based on AM_CFLAGS, so
   # apply sanitizer compile flags there without contaminating configure probes.
   AM_CFLAGS="$AM_CFLAGS $sixel_sanitizer_cflags"
+])
+
+AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+  # VSI C may emit assert() as an external reference that is not resolved by
+  # the GNV link path.  Disable runtime assertions for the OpenVMS port until
+  # the native linker integration is complete.
+  AM_CFLAGS="$AM_CFLAGS -DNDEBUG"
 ])
 
 AC_SUBST([AM_CFLAGS])
@@ -2541,6 +2661,54 @@ AC_C_INLINE
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
 AC_TYPE_SIZE_T
+AC_CACHE_CHECK([for ssize_t], [ls_cv_type_ssize_t], [
+    AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([[
+#if !defined(_POSIX_C_SOURCE)
+# define _POSIX_C_SOURCE 200809L
+#endif
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+        ]], [[
+            ssize_t value;
+            value = (ssize_t)0;
+            (void)value;
+        ]])],
+        [ls_cv_type_ssize_t=yes],
+        [ls_cv_type_ssize_t=no])
+])
+AS_IF([test "x$ls_cv_type_ssize_t" = xyes], [
+    AC_DEFINE([HAVE_SSIZE_T], [1],
+              [Define to 1 if the system has the type `ssize_t'.])
+])
+AC_CACHE_CHECK([for struct timeval], [ls_cv_type_struct_timeval], [
+    AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([[
+#if !defined(_POSIX_C_SOURCE)
+# define _POSIX_C_SOURCE 200809L
+#endif
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_TIME_H
+# include <time.h>
+#endif
+#if HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+        ]], [[
+            struct timeval value;
+            value.tv_sec = 0;
+            value.tv_usec = 0;
+        ]])],
+        [ls_cv_type_struct_timeval=yes],
+        [ls_cv_type_struct_timeval=no])
+])
+AS_IF([test "x$ls_cv_type_struct_timeval" = xyes], [
+    AC_DEFINE([HAVE_STRUCT_TIMEVAL], [1],
+              [Define to 1 if the system has the type `struct timeval'.])
+])
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 
@@ -4963,9 +5131,12 @@ AS_IF([test "x$enable_perl" != xno -a "x$have_perl" = xyes], [
   ENABLE_PERL=1
 ])
 
-sixel_ruby_tests_mode=include
-SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
-    tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
+SIXEL_CHECK_TESTS=
+AS_IF([test x$enable_tests != xno], [
+  sixel_ruby_tests_mode=include
+  SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
+      tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
+])
 AC_SUBST([SIXEL_CHECK_TESTS])
 
 AC_SUBST([ENABLE_RUBY])

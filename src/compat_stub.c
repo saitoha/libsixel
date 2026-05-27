@@ -160,7 +160,7 @@ int gettimeofday(struct timeval *tv, struct timezone *tz);
 # include <share.h>
 #endif
 
-#if defined(LIBSIXEL_OPENVMS) && !HAVE_SYS_TIME_H
+#if defined(LIBSIXEL_OPENVMS) && !HAVE_SYS_TIME_H && !HAVE_STRUCT_TIMEVAL
 /*
  * VSI C exposes time() in the conservative header set used by the native
  * bootstrap, but not the POSIX timeval declaration needed by the fallback
@@ -170,6 +170,7 @@ struct timeval {
     long tv_sec;
     long tv_usec;
 };
+# define HAVE_STRUCT_TIMEVAL 1
 #endif
 
 #include "compat_stub.h"

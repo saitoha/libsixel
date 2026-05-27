@@ -77,7 +77,14 @@ sixel_timer_now(void)
         return 0.0;
     }
     return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
-#elif defined(HAVE_GETTIMEOFDAY)
+#elif defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_REALTIME)
+    struct timespec ts;
+
+    if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
+        return 0.0;
+    }
+    return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
+#elif defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
     struct timeval tv;
 
     if (sixel_compat_gettimeofday(&tv) != 0) {

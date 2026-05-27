@@ -131,8 +131,6 @@
  */
 
 #if SIXEL_USE_PTHREADS
-# include <sched.h>
-
 /*
  * Abort the process when a pthread call fails in a context where recovery is
  * impossible. Encoding without locking guarantees would corrupt state, so we

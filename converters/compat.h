@@ -69,6 +69,15 @@ typedef SSIZE_T ssize_t;
 # define _SSIZE_T_DEFINED
 #endif
 
+/*
+ * Some POSIX-like environments, notably OpenVMS with GNV, provide write()
+ * wrappers without exposing ssize_t from the public headers.
+ */
+#if defined(HAVE_CONFIG_H) && !HAVE_SSIZE_T && !defined(_SSIZE_T_DEFINED)
+typedef long ssize_t;
+# define _SSIZE_T_DEFINED
+#endif
+
 char *img2sixel_compat_strerror(int error_number,
                                 char *buffer,
                                 size_t buffer_size);

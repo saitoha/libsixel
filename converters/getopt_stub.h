@@ -29,6 +29,20 @@
 #  include <stdlib.h>
 #  include <string.h>
 
+#  if HAVE_GETOPT && !defined(LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT)
+#   if HAVE_UNISTD_H
+#    include <unistd.h>
+#   elif HAVE_SYS_UNISTD_H
+#    include <sys/unistd.h>
+#   endif
+/*
+ * Some systems, including OpenVMS/GNV, expose getopt() from unistd.h but do
+ * not provide getopt_long().  Reuse the system getopt globals in that case
+ * and keep only the long-option shim local to this header.
+ */
+#   define LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT 1
+#  endif
+
 /* provide long option interface */
 struct option {
     const char *name;
