@@ -24,6 +24,11 @@ fi
 
 echo "1..1"
 
+cd "$src_root" || {
+    echo "not ok 1 - private include check"
+    exit 1
+}
+
 if "$python_bin" "$src_root/tools/check_private_includes.py"; then
     echo "ok 1 - private include check"
 else

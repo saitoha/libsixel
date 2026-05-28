@@ -786,6 +786,7 @@ extra_funcs = [
   'nanosleep',
   'usleep',
   'fork',
+  'waitpid',
   'posix_spawnp',
   'execvp',
   '_chmod',
@@ -801,7 +802,8 @@ func_prefixes = {
   '_sopen_s': '#include <io.h>\n#include <share.h>',
   '_commit': '#include <io.h>',
   'open': '#include <fcntl.h>',
-  'clock_gettime': '#include <time.h>'
+  'clock_gettime': '#include <time.h>',
+  'waitpid': '#include <sys/types.h>\n#include <sys/wait.h>'
 }
 
 foreach f : extra_funcs
@@ -846,6 +848,20 @@ if conf.has('HAVE_GETTIMEOFDAY')
                    args: ['-Werror=implicit-function-declaration'])
     conf.set('HAVE_GETTIMEOFDAY_TZ_TIMEZONE', 1)
   endif
+endif
+
+if conf.has('HAVE_SYS_TIME_H') and cc.compiles('''
+    #include <sys/types.h>
+    #include <sys/time.h>
+    int main(void) {
+      struct timeval value;
+      value.tv_sec = 0;
+      value.tv_usec = 0;
+      return (int)value.tv_sec;
+    }
+  ''',
+  name: 'struct timeval')
+  conf.set('HAVE_STRUCT_TIMEVAL', 1)
 endif
 
 if not cc.has_function('getopt_long') and cc.has_function('getopt')
