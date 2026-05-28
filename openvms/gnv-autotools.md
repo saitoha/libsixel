@@ -188,6 +188,11 @@ The Autotools path therefore uses `openvms/gnv-ar.sh` and
 `openvms/gnv-cc.sh` as narrow wrappers on OpenVMS/GNV.  They print native tool
 output unchanged, treat pure warning diagnostics as success, and still fail on
 `%...-E-`, `%...-F-`, `error:`, or gcc driver `?` diagnostics.
+For compile-only commands, `gnv-cc.sh` also accepts a non-zero status as a pure
+warning condition when the requested object file was produced and no error
+diagnostics were printed.  This covers GNV compiler-driver cases where the
+OpenVMS condition value reaches POSIX make but the warning text itself is not
+emitted on stdout or stderr.
 
 ## Link-wrapper plan
 
