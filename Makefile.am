@@ -59,6 +59,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/install-emscripten-sidecar.sh \
 	build-aux/meson-test-with-failures.sh \
 	build-aux/resolve-test-tool-paths.sh.in \
+	openvms/gnv-ar.sh \
 	openvms/gnv-link-program.sh \
 	tools/fuzz-afl-runner.sh \
 	tools/fuzz-img2sixel-cli.sh \

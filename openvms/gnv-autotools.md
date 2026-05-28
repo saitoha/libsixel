@@ -177,6 +177,18 @@ steps.
 Reference:
 <https://docs.vmssoftware.com/gnv-v3-0-2f-for-vsi-openvms-x86-64-release-notes/>
 
+### Archive warning statuses
+
+The GNV `ar` command is backed by the native OpenVMS `LIBRARY` utility.  When
+an object module contains compiler-warning records, `LIBRARY` can print
+`%LIBRAR-W-COMCOD` while still creating or updating the archive.  GNU make sees
+the translated non-zero warning status as a hard failure.
+
+The Autotools path therefore uses `openvms/gnv-ar.sh` as a narrow wrapper on
+OpenVMS/GNV.  It prints the native archiver output unchanged, treats pure
+`%LIBRAR-W-*` diagnostics as success, and still fails on `%...-E-` or
+`%...-F-` diagnostics.
+
 ## Link-wrapper plan
 
 The initial program-link wrapper is `openvms/gnv-link-program.sh`.  It accepts

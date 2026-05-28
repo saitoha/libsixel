@@ -4797,6 +4797,15 @@ test -n "$SIXEL_MSVC_CC" || SIXEL_MSVC_CC="cl"
   fi
 fi
 
+if test "x$sixel_openvms_mode" = "xyes" &&
+       test "x$ac_env_AR_set" != "xset"
+then :
+
+  sixel_openvms_ar_wrapper=`cd "$srcdir" && pwd`/openvms/gnv-ar.sh
+  AR="${CONFIG_SHELL-$SHELL} $sixel_openvms_ar_wrapper ar"
+
+fi
+
 
   if test "x$sixel_openvms_mode" = "xyes" &&
        test "${enable_dependency_tracking+set}" != set

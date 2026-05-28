@@ -658,6 +658,12 @@ if test "x$sixel_msvc_mode" = "xyes" &&
 fi
 
 AS_IF([test "x$sixel_openvms_mode" = "xyes" &&
+       test "x$ac_env_AR_set" != "xset"], [
+  sixel_openvms_ar_wrapper=`cd "$srcdir" && pwd`/openvms/gnv-ar.sh
+  AR="${CONFIG_SHELL-$SHELL} $sixel_openvms_ar_wrapper ar"
+])
+
+AS_IF([test "x$sixel_openvms_mode" = "xyes" &&
        test "${enable_dependency_tracking+set}" != set], [
   # Automake bootstraps dependency fragments by piping generated Makefiles
   # back into make.  GNV make can hang there after config.status has already
