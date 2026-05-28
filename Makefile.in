@@ -588,7 +588,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 # no user-provided job control is visible in MFLAGS/MAKEFLAGS.
 # Accept both explicit jobs options and GNU make jobserver tokens.
 LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=% --jobserver-style=%,$(MFLAGS) $(MAKEFLAGS))
-AM_MAKEFLAGS = -s $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
+@OPENVMS_GNV_TRUE@# GNV/OpenVMS compiler-driver condition values can destabilize recursive
+@OPENVMS_GNV_TRUE@# Automake builds under a jobserver.  Keep build recursion serial there; test
+@OPENVMS_GNV_TRUE@# sharding is controlled separately by OPENVMS_TEST_JOBS.
+@OPENVMS_GNV_TRUE@LS_OPENVMS_BUILD_MAKEFLAGS = -j1
+AM_MAKEFLAGS = -s $(LS_OPENVMS_BUILD_MAKEFLAGS) $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
 FUZZ_IMG2SIXEL_EMBED_CPPFLAGS = \
 	-DHAVE_CONFIG_H \
 	-DBUILD_IMG2SIXEL \

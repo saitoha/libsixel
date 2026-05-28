@@ -75,7 +75,13 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 # no user-provided job control is visible in MFLAGS/MAKEFLAGS.
 # Accept both explicit jobs options and GNU make jobserver tokens.
 LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=% --jobserver-style=%,$(MFLAGS) $(MAKEFLAGS))
-AM_MAKEFLAGS = -s $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
+if OPENVMS_GNV
+# GNV/OpenVMS compiler-driver condition values can destabilize recursive
+# Automake builds under a jobserver.  Keep build recursion serial there; test
+# sharding is controlled separately by OPENVMS_TEST_JOBS.
+LS_OPENVMS_BUILD_MAKEFLAGS = -j1
+endif
+AM_MAKEFLAGS = -s $(LS_OPENVMS_BUILD_MAKEFLAGS) $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
 
 # Automake/libtool may require a top-level ltmain.sh in DIST_COMMON even when
 # AC_CONFIG_AUX_DIR points at build-aux/.  Generate it from the canonical copy
