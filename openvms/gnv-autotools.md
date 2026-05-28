@@ -83,6 +83,24 @@ status, so those probes are serialized when `LIBSIXEL_OPENVMS` is active.
 
 `config.status --jobs` is disabled on OpenVMS/GNV for the same reason.
 
+### Test sharding
+
+The OpenVMS/GNV `make check` path avoids feeding the huge TAP file list back
+to Automake.  Instead, `tests/Makefile` reads `check-tests.list` and writes
+the individual `.log` and `.trs` files itself.
+
+That custom runner now defaults to `OPENVMS_TEST_JOBS=2`.  It first runs
+`SERIAL_TESTS` with the normal single-worker path, then splits the remaining
+test list into two round-robin shards.  Each shard still runs tests serially,
+which keeps per-test TAP handling unchanged while allowing two independent
+test streams to make progress.
+
+The parent shell polls shard `.done` files and reads explicit `.status` files
+instead of using `wait` for completion or status.  This keeps the test phase
+compatible with the same GNV background-job limitations that require
+serialized configure probes.  Set `OPENVMS_TEST_JOBS=1` to return to the old
+fully serial behavior when isolating a race or a platform-specific failure.
+
 ### `config.status`
 
 GNV `/bin/sh` has trouble with a few generated `config.status` patterns:

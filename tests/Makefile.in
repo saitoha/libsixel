@@ -922,6 +922,9 @@ AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 @OPENVMS_GNV_FALSE@TESTS = @SIXEL_CHECK_TESTS@
 @OPENVMS_GNV_TRUE@OPENVMS_CHECK_TESTS_LIST = $(builddir)/check-tests.list
+@OPENVMS_GNV_TRUE@OPENVMS_TEST_JOBS ?= 2
+@OPENVMS_GNV_TRUE@OPENVMS_TEST_SHARD_DIR = $(builddir)/check-tests-shards
+@OPENVMS_GNV_TRUE@OPENVMS_TEST_WORKER_LIST = $(OPENVMS_CHECK_TESTS_LIST)
 @OPENVMS_GNV_TRUE@TESTS =
 XFAIL_TESTS = \
     loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t \
@@ -4390,7 +4393,8 @@ staticcheck-c-header-modeline:
 
 # Build all test logs through a phony target so recursive make does not need
 # to receive thousands of .log paths as command-line arguments.
-.PHONY: sixel-check-test-tools sixel-check-test-logs installcheck-local
+.PHONY: sixel-check-test-tools sixel-check-test-logs \
+	sixel-check-test-openvms-shard installcheck-local
 sixel-check-test-tools:
 	@set -eu; \
 	$(MAKE) -C "$(top_builddir)/src" libsixel.la; \
@@ -4402,6 +4406,80 @@ sixel-check-test-tools:
 
 @OPENVMS_GNV_TRUE@sixel-check-test-logs: sixel-check-test-tools
 @OPENVMS_GNV_TRUE@	@set -eu; \
+@OPENVMS_GNV_TRUE@	jobs='$(OPENVMS_TEST_JOBS)'; \
+@OPENVMS_GNV_TRUE@	case "$$jobs" in \
+@OPENVMS_GNV_TRUE@	    1) \
+@OPENVMS_GNV_TRUE@	        $(MAKE) $(AM_MAKEFLAGS) sixel-check-test-openvms-shard \
+@OPENVMS_GNV_TRUE@	            OPENVMS_TEST_WORKER_LIST='$(OPENVMS_CHECK_TESTS_LIST)' \
+@OPENVMS_GNV_TRUE@	        ;; \
+@OPENVMS_GNV_TRUE@	    2) \
+@OPENVMS_GNV_TRUE@	        shard_dir='$(OPENVMS_TEST_SHARD_DIR)'; \
+@OPENVMS_GNV_TRUE@	        while test -e "$$shard_dir"; do \
+@OPENVMS_GNV_TRUE@	            rm -rf "$$shard_dir" || exit $$?; \
+@OPENVMS_GNV_TRUE@	        done; \
+@OPENVMS_GNV_TRUE@	        $(MKDIR_P) "$$shard_dir"; \
+@OPENVMS_GNV_TRUE@	        : > "$$shard_dir/serial.list"; \
+@OPENVMS_GNV_TRUE@	        : > "$$shard_dir/1.list"; \
+@OPENVMS_GNV_TRUE@	        : > "$$shard_dir/2.list"; \
+@OPENVMS_GNV_TRUE@	        shard_id=1; \
+@OPENVMS_GNV_TRUE@	        while IFS= read -r test_path || test -n "$$test_path"; do \
+@OPENVMS_GNV_TRUE@	            test -n "$$test_path" || continue; \
+@OPENVMS_GNV_TRUE@	            case " $(SERIAL_TESTS) " in \
+@OPENVMS_GNV_TRUE@	                *" $$test_path "*) \
+@OPENVMS_GNV_TRUE@	                    printf '%s\n' "$$test_path" >> \
+@OPENVMS_GNV_TRUE@	                        "$$shard_dir/serial.list" \
+@OPENVMS_GNV_TRUE@	                    ;; \
+@OPENVMS_GNV_TRUE@	                *) \
+@OPENVMS_GNV_TRUE@	                    printf '%s\n' "$$test_path" >> \
+@OPENVMS_GNV_TRUE@	                        "$$shard_dir/$$shard_id.list"; \
+@OPENVMS_GNV_TRUE@	                    if test "$$shard_id" = 1; then \
+@OPENVMS_GNV_TRUE@	                        shard_id=2; \
+@OPENVMS_GNV_TRUE@	                    else \
+@OPENVMS_GNV_TRUE@	                        shard_id=1; \
+@OPENVMS_GNV_TRUE@	                    fi \
+@OPENVMS_GNV_TRUE@	                    ;; \
+@OPENVMS_GNV_TRUE@	            esac; \
+@OPENVMS_GNV_TRUE@	        done < "$(OPENVMS_CHECK_TESTS_LIST)"; \
+@OPENVMS_GNV_TRUE@	        $(MAKE) $(AM_MAKEFLAGS) sixel-check-test-openvms-shard \
+@OPENVMS_GNV_TRUE@	            OPENVMS_TEST_WORKER_LIST="$$shard_dir/serial.list"; \
+@OPENVMS_GNV_TRUE@	        for shard_id in 1 2; do \
+@OPENVMS_GNV_TRUE@	            ( \
+@OPENVMS_GNV_TRUE@	                set +e; \
+@OPENVMS_GNV_TRUE@	                $(MAKE) $(AM_MAKEFLAGS) sixel-check-test-openvms-shard \
+@OPENVMS_GNV_TRUE@	                    OPENVMS_TEST_WORKER_LIST="$$shard_dir/$$shard_id.list" \
+@OPENVMS_GNV_TRUE@	                    > "$$shard_dir/$$shard_id.out" 2>&1; \
+@OPENVMS_GNV_TRUE@	                printf '%s\n' "$$?" > "$$shard_dir/$$shard_id.status"; \
+@OPENVMS_GNV_TRUE@	                : > "$$shard_dir/$$shard_id.done" \
+@OPENVMS_GNV_TRUE@	            ) & \
+@OPENVMS_GNV_TRUE@	        done; \
+@OPENVMS_GNV_TRUE@	        while test ! -f "$$shard_dir/1.done" || \
+@OPENVMS_GNV_TRUE@	            test ! -f "$$shard_dir/2.done"; do \
+@OPENVMS_GNV_TRUE@	            echo "openvms test shards still running..."; \
+@OPENVMS_GNV_TRUE@	            sleep 10; \
+@OPENVMS_GNV_TRUE@	        done; \
+@OPENVMS_GNV_TRUE@	        cat "$$shard_dir/1.out" "$$shard_dir/2.out"; \
+@OPENVMS_GNV_TRUE@	        status=0; \
+@OPENVMS_GNV_TRUE@	        for shard_id in 1 2; do \
+@OPENVMS_GNV_TRUE@	            shard_status=1; \
+@OPENVMS_GNV_TRUE@	            if test -r "$$shard_dir/$$shard_id.status"; then \
+@OPENVMS_GNV_TRUE@	                read shard_status < "$$shard_dir/$$shard_id.status"; \
+@OPENVMS_GNV_TRUE@	            fi; \
+@OPENVMS_GNV_TRUE@	            test "$$shard_status" = 0 || status="$$shard_status"; \
+@OPENVMS_GNV_TRUE@	        done; \
+@OPENVMS_GNV_TRUE@	        exit "$$status" \
+@OPENVMS_GNV_TRUE@	        ;; \
+@OPENVMS_GNV_TRUE@	    *) \
+@OPENVMS_GNV_TRUE@	        echo "error: OPENVMS_TEST_JOBS must be 1 or 2" >&2; \
+@OPENVMS_GNV_TRUE@	        exit 1 \
+@OPENVMS_GNV_TRUE@	        ;; \
+@OPENVMS_GNV_TRUE@	esac
+
+@OPENVMS_GNV_TRUE@sixel-check-test-openvms-shard:
+@OPENVMS_GNV_TRUE@	@set -eu; \
+@OPENVMS_GNV_TRUE@	test -r "$(OPENVMS_TEST_WORKER_LIST)" || { \
+@OPENVMS_GNV_TRUE@	    echo "error: missing test list: $(OPENVMS_TEST_WORKER_LIST)" >&2; \
+@OPENVMS_GNV_TRUE@	    exit 1; \
+@OPENVMS_GNV_TRUE@	}; \
 @OPENVMS_GNV_TRUE@	SIXEL_TEST_PYTHON='$(SIXEL_TEST_PYTHON)'; export SIXEL_TEST_PYTHON; \
 @OPENVMS_GNV_TRUE@	SIXEL_TEST_RUBY='$(SIXEL_TEST_RUBY)'; export SIXEL_TEST_RUBY; \
 @OPENVMS_GNV_TRUE@	SIXEL_TEST_RUBY_GEM_HOME='$(SIXEL_TEST_RUBY_GEM_HOME)'; \
@@ -4464,7 +4542,7 @@ sixel-check-test-tools:
 @OPENVMS_GNV_TRUE@	        --expect-failure "$$am__expect_failure" \
 @OPENVMS_GNV_TRUE@	        $(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- "$$tst" \
 @OPENVMS_GNV_TRUE@	        $(AM_TESTS_FD_REDIRECT); \
-@OPENVMS_GNV_TRUE@	done < "$(OPENVMS_CHECK_TESTS_LIST)"
+@OPENVMS_GNV_TRUE@	done < "$(OPENVMS_TEST_WORKER_LIST)"
 @OPENVMS_GNV_FALSE@sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
 @OPENVMS_GNV_FALSE@	@:
 
@@ -5120,6 +5198,7 @@ clean-local:
 	done; \
 	fi
 	rm -rf $(ARTIFACT_ROOT)
+	rm -rf $(OPENVMS_TEST_SHARD_DIR)
 	rm -rf $(abs_top_builddir)/tests/.lso-test-bin
 	rm -rf $(abs_top_builddir)/tests/.python-test-venv
 	rm -rf $(abs_top_builddir)/tests/.ruby-test-venv

@@ -15,6 +15,9 @@ endif
 # list to Automake variables on that platform; check-TESTS reads this file.
 if OPENVMS_GNV
 OPENVMS_CHECK_TESTS_LIST = $(builddir)/check-tests.list
+OPENVMS_TEST_JOBS ?= 2
+OPENVMS_TEST_SHARD_DIR = $(builddir)/check-tests-shards
+OPENVMS_TEST_WORKER_LIST = $(OPENVMS_CHECK_TESTS_LIST)
 TESTS =
 else
 TESTS = @SIXEL_CHECK_TESTS@
@@ -1144,7 +1147,8 @@ staticcheck-c-header-modeline:
 
 # Build all test logs through a phony target so recursive make does not need
 # to receive thousands of .log paths as command-line arguments.
-.PHONY: sixel-check-test-tools sixel-check-test-logs installcheck-local
+.PHONY: sixel-check-test-tools sixel-check-test-logs \
+	sixel-check-test-openvms-shard installcheck-local
 sixel-check-test-tools:
 	@set -eu; \
 	$(MAKE) -C "$(top_builddir)/src" libsixel.la; \
@@ -1161,6 +1165,80 @@ endif
 if OPENVMS_GNV
 sixel-check-test-logs: sixel-check-test-tools
 	@set -eu; \
+	jobs='$(OPENVMS_TEST_JOBS)'; \
+	case "$$jobs" in \
+	    1) \
+	        $(MAKE) $(AM_MAKEFLAGS) sixel-check-test-openvms-shard \
+	            OPENVMS_TEST_WORKER_LIST='$(OPENVMS_CHECK_TESTS_LIST)' \
+	        ;; \
+	    2) \
+	        shard_dir='$(OPENVMS_TEST_SHARD_DIR)'; \
+	        while test -e "$$shard_dir"; do \
+	            rm -rf "$$shard_dir" || exit $$?; \
+	        done; \
+	        $(MKDIR_P) "$$shard_dir"; \
+	        : > "$$shard_dir/serial.list"; \
+	        : > "$$shard_dir/1.list"; \
+	        : > "$$shard_dir/2.list"; \
+	        shard_id=1; \
+	        while IFS= read -r test_path || test -n "$$test_path"; do \
+	            test -n "$$test_path" || continue; \
+	            case " $(SERIAL_TESTS) " in \
+	                *" $$test_path "*) \
+	                    printf '%s\n' "$$test_path" >> \
+	                        "$$shard_dir/serial.list" \
+	                    ;; \
+	                *) \
+	                    printf '%s\n' "$$test_path" >> \
+	                        "$$shard_dir/$$shard_id.list"; \
+	                    if test "$$shard_id" = 1; then \
+	                        shard_id=2; \
+	                    else \
+	                        shard_id=1; \
+	                    fi \
+	                    ;; \
+	            esac; \
+	        done < "$(OPENVMS_CHECK_TESTS_LIST)"; \
+	        $(MAKE) $(AM_MAKEFLAGS) sixel-check-test-openvms-shard \
+	            OPENVMS_TEST_WORKER_LIST="$$shard_dir/serial.list"; \
+	        for shard_id in 1 2; do \
+	            ( \
+	                set +e; \
+	                $(MAKE) $(AM_MAKEFLAGS) sixel-check-test-openvms-shard \
+	                    OPENVMS_TEST_WORKER_LIST="$$shard_dir/$$shard_id.list" \
+	                    > "$$shard_dir/$$shard_id.out" 2>&1; \
+	                printf '%s\n' "$$?" > "$$shard_dir/$$shard_id.status"; \
+	                : > "$$shard_dir/$$shard_id.done" \
+	            ) & \
+	        done; \
+	        while test ! -f "$$shard_dir/1.done" || \
+	            test ! -f "$$shard_dir/2.done"; do \
+	            echo "openvms test shards still running..."; \
+	            sleep 10; \
+	        done; \
+	        cat "$$shard_dir/1.out" "$$shard_dir/2.out"; \
+	        status=0; \
+	        for shard_id in 1 2; do \
+	            shard_status=1; \
+	            if test -r "$$shard_dir/$$shard_id.status"; then \
+	                read shard_status < "$$shard_dir/$$shard_id.status"; \
+	            fi; \
+	            test "$$shard_status" = 0 || status="$$shard_status"; \
+	        done; \
+	        exit "$$status" \
+	        ;; \
+	    *) \
+	        echo "error: OPENVMS_TEST_JOBS must be 1 or 2" >&2; \
+	        exit 1 \
+	        ;; \
+	esac
+
+sixel-check-test-openvms-shard:
+	@set -eu; \
+	test -r "$(OPENVMS_TEST_WORKER_LIST)" || { \
+	    echo "error: missing test list: $(OPENVMS_TEST_WORKER_LIST)" >&2; \
+	    exit 1; \
+	}; \
 	SIXEL_TEST_PYTHON='$(SIXEL_TEST_PYTHON)'; export SIXEL_TEST_PYTHON; \
 	SIXEL_TEST_RUBY='$(SIXEL_TEST_RUBY)'; export SIXEL_TEST_RUBY; \
 	SIXEL_TEST_RUBY_GEM_HOME='$(SIXEL_TEST_RUBY_GEM_HOME)'; \
@@ -1223,7 +1301,7 @@ sixel-check-test-logs: sixel-check-test-tools
 	        --expect-failure "$$am__expect_failure" \
 	        $(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- "$$tst" \
 	        $(AM_TESTS_FD_REDIRECT); \
-	done < "$(OPENVMS_CHECK_TESTS_LIST)"
+	done < "$(OPENVMS_TEST_WORKER_LIST)"
 else
 sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
 	@:
@@ -1960,6 +2038,7 @@ clean-local:
 	done; \
 	fi
 	rm -rf $(ARTIFACT_ROOT)
+	rm -rf $(OPENVMS_TEST_SHARD_DIR)
 	rm -rf $(abs_top_builddir)/tests/.lso-test-bin
 	rm -rf $(abs_top_builddir)/tests/.python-test-venv
 	rm -rf $(abs_top_builddir)/tests/.ruby-test-venv
