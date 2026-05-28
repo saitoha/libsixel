@@ -173,6 +173,20 @@ struct timeval {
 # define HAVE_STRUCT_TIMEVAL 1
 #endif
 
+/*
+ * GNV's configure probes can see these CRTL entry points at link time while
+ * the public headers still omit their POSIX prototypes.  Declare only the
+ * functions that this translation unit calls so OpenVMS does not turn the
+ * calls into implicit function diagnostics.
+ */
+#if defined(LIBSIXEL_OPENVMS) && defined(HAVE_GETTIMEOFDAY)
+int gettimeofday(struct timeval *tv, void *tz);
+#endif
+
+#if defined(LIBSIXEL_OPENVMS) && HAVE_MKSTEMP
+int mkstemp(char *templ);
+#endif
+
 #include "compat_stub.h"
 #include "path.h"
 
