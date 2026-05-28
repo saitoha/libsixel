@@ -511,6 +511,12 @@ AC_DEFUN([AC_OUTPUT_PARALLEL], [
         {
           line = $ 0
         }
+        line ~ /test ! -d "[$]ac_tmp" \|\| rm -fr "[$]ac_tmp"; [}] && exit [$]exit_status/ {
+          print "  { test ! -d \"" dollar "ac_tmp\" || rm -fr \"" \
+                dollar "ac_tmp\" || :; }"
+          print "  exit " dollar "exit_status"
+          next
+        }
         /^ac_tmp=[$]tmp$/ {
           print line
           print "trap - 0"
@@ -564,7 +570,7 @@ AC_DEFUN([AC_OUTPUT_PARALLEL], [
         }
         /^as_fn_exit 0$/ && !done {
           print "{ test ! -d \"" dollar "ac_tmp\" || rm -fr \"" \
-                dollar "ac_tmp\"; }"
+                dollar "ac_tmp\" || :; }"
           done = 1
         }
         { print line }
