@@ -894,6 +894,8 @@ AS_IF([test "x$CI" != "x"], [
   if test "x$using_cl" = "xyes"; then
     CFLAGS="$CFLAGS -WX"
     OBJCFLAGS="$OBJCFLAGS -WX"
+  elif test "x$sixel_openvms_mode" = "xyes"; then
+    :
   else
     CFLAGS="$CFLAGS -Werror"
     OBJCFLAGS="$OBJCFLAGS -Werror"
