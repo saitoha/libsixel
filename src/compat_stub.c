@@ -160,11 +160,11 @@ int gettimeofday(struct timeval *tv, struct timezone *tz);
 # include <share.h>
 #endif
 
-#if defined(LIBSIXEL_OPENVMS) && !HAVE_SYS_TIME_H && !HAVE_STRUCT_TIMEVAL
+#if defined(LIBSIXEL_OPENVMS) && !HAVE_STRUCT_TIMEVAL
 /*
- * VSI C exposes time() in the conservative header set used by the native
- * bootstrap, but not the POSIX timeval declaration needed by the fallback
- * gettimeofday wrapper below.
+ * GNV can provide sys/time.h without exposing a complete timeval under the
+ * feature-macro set used here.  Fill in the POSIX layout so the public compat
+ * wrapper can still be compiled when gettimeofday() is available at link time.
  */
 struct timeval {
     long tv_sec;
