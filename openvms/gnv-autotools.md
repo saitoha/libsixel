@@ -194,6 +194,19 @@ diagnostics were printed.  This covers GNV compiler-driver cases where the
 OpenVMS condition value reaches POSIX make but the warning text itself is not
 emitted on stdout or stderr.
 
+### Cleanup command statuses
+
+Generated Autotools and libtool scripts frequently use `rm -f` for harmless
+cleanup before and after compile commands.  GNV `rm.exe` can still report a
+warning condition for already-absent operands, and that condition can leak out
+as a non-zero image status even when a surrounding shell script later exits
+successfully.
+
+The OpenVMS/GNV configure path sets libtool `RM` to `openvms/gnv-rm.sh -f`.
+The wrapper skips absent `-f` operands before invoking `rm.exe`, so cleanup
+does not poison otherwise successful compile rules.  It still preserves real
+non-forced removal failures.
+
 ## Link-wrapper plan
 
 The initial program-link wrapper is `openvms/gnv-link-program.sh`.  It accepts

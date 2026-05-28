@@ -61,6 +61,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/resolve-test-tool-paths.sh.in \
 	openvms/gnv-ar.sh \
 	openvms/gnv-cc.sh \
+	openvms/gnv-rm.sh \
 	openvms/gnv-link-program.sh \
 	tools/fuzz-afl-runner.sh \
 	tools/fuzz-img2sixel-cli.sh \

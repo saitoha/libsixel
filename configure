@@ -4806,6 +4806,15 @@ then :
 
 fi
 
+if test "x$sixel_openvms_mode" = "xyes" &&
+       test "${RM+set}" != set
+then :
+
+  sixel_openvms_rm_wrapper=`cd "$srcdir" && pwd`/openvms/gnv-rm.sh
+  RM="${CONFIG_SHELL-$SHELL} $sixel_openvms_rm_wrapper -f"
+
+fi
+
 
   if test "x$sixel_openvms_mode" = "xyes" &&
        test "${enable_dependency_tracking+set}" != set
