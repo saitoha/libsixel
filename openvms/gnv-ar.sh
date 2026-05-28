@@ -32,7 +32,7 @@ set -e
 
 cat "$ar_log"
 
-if test "$ar_status" -eq 2 &&
+if test "$ar_status" -ne 0 &&
    grep '^%LIBRAR-W-' "$ar_log" >/dev/null 2>&1 &&
    ! grep '^%[^-][^-]*-[EF]-' "$ar_log" >/dev/null 2>&1; then
     exit 0

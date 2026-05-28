@@ -672,6 +672,11 @@ AS_IF([test "x$sixel_openvms_mode" = "xyes" &&
 ])
 
 AC_PROG_CC
+AS_IF([test "x$sixel_openvms_mode" = "xyes" &&
+       test "x$ac_env_CC_set" != "xset"], [
+  sixel_openvms_cc_wrapper=`cd "$srcdir" && pwd`/openvms/gnv-cc.sh
+  CC="${CONFIG_SHELL-$SHELL} $sixel_openvms_cc_wrapper $CC"
+])
 AC_PROG_OBJC
 AC_PROG_CPP
 AC_PROG_INSTALL

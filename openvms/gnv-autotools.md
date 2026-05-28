@@ -184,10 +184,10 @@ an object module contains compiler-warning records, `LIBRARY` can print
 `%LIBRAR-W-COMCOD` while still creating or updating the archive.  GNU make sees
 the translated non-zero warning status as a hard failure.
 
-The Autotools path therefore uses `openvms/gnv-ar.sh` as a narrow wrapper on
-OpenVMS/GNV.  It prints the native archiver output unchanged, treats pure
-`%LIBRAR-W-*` diagnostics as success, and still fails on `%...-E-` or
-`%...-F-` diagnostics.
+The Autotools path therefore uses `openvms/gnv-ar.sh` and
+`openvms/gnv-cc.sh` as narrow wrappers on OpenVMS/GNV.  They print native tool
+output unchanged, treat pure warning diagnostics as success, and still fail on
+`%...-E-`, `%...-F-`, `error:`, or gcc driver `?` diagnostics.
 
 ## Link-wrapper plan
 

@@ -6099,6 +6099,14 @@ else
   am__fastdepCC_FALSE=
 fi
 
+if test "x$sixel_openvms_mode" = "xyes" &&
+       test "x$ac_env_CC_set" != "xset"
+then :
+
+  sixel_openvms_cc_wrapper=`cd "$srcdir" && pwd`/openvms/gnv-cc.sh
+  CC="${CONFIG_SHELL-$SHELL} $sixel_openvms_cc_wrapper $CC"
+
+fi
 
 ac_ext=m
 ac_cpp='$OBJCPP $CPPFLAGS'
