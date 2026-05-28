@@ -17,7 +17,8 @@ input_file="${TOP_SRCDIR}/tests/data/security/issue/data/220/poc8_gif_lzw_mincod
 rc=0
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! "${input_file}" -o /dev/null || rc=$?
 
-test "${rc-0}" -ge 1 -a "${rc-0}" -le 3 || {
+test "${rc-0}" -ge 1 -a \
+    "${rc-0}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {
     echo "not ok" 1 - "min code size 0 GIF did not return mapped error status"
     exit 0
 }

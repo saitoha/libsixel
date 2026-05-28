@@ -42,6 +42,16 @@
 # include <windows.h>
 #endif
 
+/*
+ * OpenVMS/GNV can report nanosleep() while the C headers still leave
+ * struct timespec incomplete.  Prefer the usleep()/clock() fallbacks until
+ * configure can prove the function and its public type together.
+ */
+#if defined(LIBSIXEL_OPENVMS)
+# undef HAVE_NANOSLEEP
+# define HAVE_NANOSLEEP 0
+#endif
+
 #include "sleep.h"
 
 void

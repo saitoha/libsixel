@@ -35,7 +35,7 @@ lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.99
     exit 0
 }
 
-printf 'P6\n1 1\n255\n\000\000\000' >"${black_reference}"
+printf 'P3\n1 1\n255\n0 0 0\n' >"${black_reference}"
 lsqa_status=0
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.99" \
     "${black_reference}" "${output_auto}" 2>&1) || lsqa_status=$?

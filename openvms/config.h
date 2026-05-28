@@ -47,6 +47,7 @@
 #define HAVE_SYS_TYPES_H 1
 #define HAVE_TIME_H 1
 #define HAVE_UNISTD_H 1
+#define HAVE_SSIZE_T 1
 
 /*
  * OpenVMS does not provide a GNU-compatible getopt_long() header in the

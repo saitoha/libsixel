@@ -8,6 +8,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
+test "${RUNTIME_ENV_IS_OPENVMS-0}" = "1" && {
+    printf "1..0 # SKIP OpenVMS/GNV cannot redirect a 16 MiB record through stdin\n"
+    exit 0
+}
+
 echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"

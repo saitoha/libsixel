@@ -2304,10 +2304,12 @@ AM_CONDITIONAL([CFLAGS_HAVE_COVERAGE],
                [test x$coverage_from_cflags = xyes])
 
 AC_ARG_ENABLE([tests],
-              [AS_HELP_STRING([--enable-tests],
-                              [Build tests])],
-              [AC_DEFINE(HAVE_TESTS, [1], [enable tests])],
-              [enable_tests=no])
+              [AS_HELP_STRING([--disable-tests],
+                              [Do not build tests for make check])],
+              [enable_tests="$enableval"],
+              [enable_tests=yes])
+AS_IF([test "x$enable_tests" != xno],
+      [AC_DEFINE(HAVE_TESTS, [1], [enable tests])])
 AM_CONDITIONAL([COND_TESTS], [test x$enable_tests != xno])
 
 AC_ARG_ENABLE([fuzz],

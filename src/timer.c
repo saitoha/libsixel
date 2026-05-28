@@ -70,29 +70,50 @@ sixel_timer_now(void)
     }
     QueryPerformanceCounter(&counter);
     return (double)counter.QuadPart / (double)frequency.QuadPart;
-#elif defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_MONOTONIC)
-    struct timespec ts;
-
-    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
-        return 0.0;
-    }
-    return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
-#elif defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_REALTIME)
-    struct timespec ts;
-
-    if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
-        return 0.0;
-    }
-    return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
-#elif defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
-    struct timeval tv;
-
-    if (sixel_compat_gettimeofday(&tv) != 0) {
-        return 0.0;
-    }
-    return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
 #else
-    return (double)clock() / (double)CLOCKS_PER_SEC;
+#if defined(HAVE_CLOCK_GETTIME) && \
+    (defined(CLOCK_MONOTONIC) || defined(CLOCK_REALTIME))
+    struct timespec ts;
+#endif
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
+    struct timeval tv;
+#endif
+#if defined(HAVE_TIME_H)
+    clock_t ticks;
+    time_t seconds;
+#endif
+
+    /*
+     * Some C runtimes, notably OpenVMS/GNV, expose clock_gettime() during
+     * configure but reject POSIX clock ids at runtime.  Fall through to the
+     * lower-fidelity clocks rather than returning a frozen zero timestamp.
+     */
+#if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_MONOTONIC)
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0) {
+        return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
+    }
+#endif
+#if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_REALTIME)
+    if (clock_gettime(CLOCK_REALTIME, &ts) == 0) {
+        return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
+    }
+#endif
+#if defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
+    if (sixel_compat_gettimeofday(&tv) == 0) {
+        return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
+    }
+#endif
+#if defined(HAVE_TIME_H)
+    ticks = clock();
+    if (ticks != (clock_t)(-1)) {
+        return (double)ticks / (double)CLOCKS_PER_SEC;
+    }
+    seconds = time(NULL);
+    if (seconds != (time_t)(-1)) {
+        return (double)seconds;
+    }
+#endif
+    return 0.0;
 #endif
 }
 

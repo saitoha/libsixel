@@ -23,8 +23,8 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${issue51}" -o /dev/null
 command_status=$?
 set -e
 
-# Accept success or mapped error exits (1/2/3) without crashing.
-test "${command_status}" -le 3 || {
+# Accept success or mapped error exits without crashing.
+test "${command_status}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {
     echo "not ok" 1 - "issue #51 PoC handling failed"
     exit 0
 }

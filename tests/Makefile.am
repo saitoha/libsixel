@@ -1161,10 +1161,68 @@ endif
 if OPENVMS_GNV
 sixel-check-test-logs: sixel-check-test-tools
 	@set -eu; \
+	SIXEL_TEST_PYTHON='$(SIXEL_TEST_PYTHON)'; export SIXEL_TEST_PYTHON; \
+	SIXEL_TEST_RUBY='$(SIXEL_TEST_RUBY)'; export SIXEL_TEST_RUBY; \
+	SIXEL_TEST_RUBY_GEM_HOME='$(SIXEL_TEST_RUBY_GEM_HOME)'; \
+	    export SIXEL_TEST_RUBY_GEM_HOME; \
+	SIXEL_TEST_RUBYLIB='$(SIXEL_TEST_RUBYLIB)'; \
+	    export SIXEL_TEST_RUBYLIB; \
+	SIXEL_TEST_PERL='$(SIXEL_TEST_PERL)'; export SIXEL_TEST_PERL; \
+	SIXEL_TEST_PERL_CPANM='$(SIXEL_TEST_PERL_CPANM)'; \
+	    export SIXEL_TEST_PERL_CPANM; \
+	SIXEL_TEST_PERL5LIB='$(SIXEL_TEST_PERL5LIB)'; \
+	    export SIXEL_TEST_PERL5LIB; \
+	SIXEL_TEST_PERL_LOCAL_LIB_ROOT='$(SIXEL_TEST_PERL_LOCAL_LIB_ROOT)'; \
+	    export SIXEL_TEST_PERL_LOCAL_LIB_ROOT; \
+	SIXEL_TEST_PERL_MB_OPT='$(SIXEL_TEST_PERL_MB_OPT)'; \
+	    export SIXEL_TEST_PERL_MB_OPT; \
+	SIXEL_TEST_PERL_MM_OPT='$(SIXEL_TEST_PERL_MM_OPT)'; \
+	    export SIXEL_TEST_PERL_MM_OPT; \
+	SIXEL_TEST_PHP='$(SIXEL_TEST_PHP)'; export SIXEL_TEST_PHP; \
+	SIXEL_TEST_PHP_BINDING_ROOT='$(SIXEL_TEST_PHP_BINDING_ROOT)'; \
+	    export SIXEL_TEST_PHP_BINDING_ROOT; \
+	SIXEL_TEST_PHP_LIBDIR='$(SIXEL_TEST_PHP_LIBDIR)'; \
+	    export SIXEL_TEST_PHP_LIBDIR; \
+	SIXEL_TEST_PHP_LIBPATH='$(SIXEL_TEST_PHP_LIBPATH)'; \
+	    export SIXEL_TEST_PHP_LIBPATH; \
+	TERM=$${TERM-dumb}; export TERM; \
+	$(am__tty_colors); \
+	srcdir=$(srcdir); export srcdir; \
+	if test -n '$(DISABLE_HARD_ERRORS)'; then \
+	    am__enable_hard_errors=no; \
+	else \
+	    am__enable_hard_errors=yes; \
+	fi; \
 	while IFS= read -r test_path || test -n "$$test_path"; do \
 	    test -n "$$test_path" || continue; \
-	    test_log_path="$${test_path%.*}.log"; \
-	    $(MAKE) $(AM_MAKEFLAGS) "$$test_log_path"; \
+	    log_base="$${test_path%.*}"; \
+	    log_path="$$log_base.log"; \
+	    trs_path="$$log_base.trs"; \
+	    log_dir="$${log_path%/*}"; \
+	    test "$$log_dir" != "$$log_path" || log_dir=.; \
+	    test -d "$$log_dir" || $(MKDIR_P) "$$log_dir" || exit $$?; \
+	    for file in "$$log_path" "$$trs_path"; do \
+	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+	    done; \
+	    if test -f "./$$test_path"; then \
+	        tst="./$$test_path"; \
+	    elif test -f "$$test_path"; then \
+	        tst="$$test_path"; \
+	    else \
+	        tst="$(srcdir)/$$test_path"; \
+	    fi; \
+	    case " $(XFAIL_TESTS) " in \
+	        *" $$test_path "*) am__expect_failure=yes ;; \
+	        *) am__expect_failure=no ;; \
+	    esac; \
+	    $(AM_TESTS_ENVIRONMENT) $(TESTS_ENVIRONMENT) \
+	    $(T_LOG_DRIVER) --test-name "$$test_path" \
+	        --log-file "$$log_path" --trs-file "$$trs_path" \
+	        --color-tests "$$am__color_tests" \
+	        --enable-hard-errors "$$am__enable_hard_errors" \
+	        --expect-failure "$$am__expect_failure" \
+	        $(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- "$$tst" \
+	        $(AM_TESTS_FD_REDIRECT); \
 	done < "$(OPENVMS_CHECK_TESTS_LIST)"
 else
 sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
@@ -1223,10 +1281,22 @@ installcheck-local:
 # variables instead of repeatedly reading the header.
 check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtures
 	@find "$(builddir)" -type f -name '*.log' ! -name 'staticcheck-*.log' -print | \
-	    while IFS= read -r file; do rm -f "$$file"; done
+	    while IFS= read -r file; do \
+	        test -n "$$file" || continue; \
+	        test "$$file" != "." || continue; \
+	        test "$$file" != "./" || continue; \
+	        test -f "$$file" || continue; \
+	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+	    done
 	@find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -print | \
-	    while IFS= read -r file; do rm -f "$$file"; done
-	@$(am__rm_f) $(TEST_SUITE_LOG)
+	    while IFS= read -r file; do \
+	        test -n "$$file" || continue; \
+	        test "$$file" != "." || continue; \
+	        test "$$file" != "./" || continue; \
+	        test -f "$$file" || continue; \
+	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+	    done
+	@file="$(TEST_SUITE_LOG)"; while test -e "$$file"; do rm -f "$$file" || exit $$?; done
 	@set +e; \
 	config_header="$(top_builddir)/config.h"; \
 	resolved_test_paths=`$(SHELL) -xv "$(top_builddir)/build-aux/resolve-test-tool-paths.sh" \
@@ -1350,10 +1420,17 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	trs_manifest="$(builddir)/.check-test-trs.list"; \
 	failed_manifest="$(builddir)/.check-test-failures.list"; \
 	testsuite_tmp="$(TEST_SUITE_LOG).tmp"; \
-	rm -f "$$trs_manifest"; \
-	rm -f "$$failed_manifest"; \
+	for file in "$$trs_manifest" "$$failed_manifest" "$$testsuite_tmp"; do \
+	    while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+	done; \
 	find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -print | \
-	    while IFS= read -r file; do rm -f "$$file"; done; \
+	    while IFS= read -r file; do \
+	        test -n "$$file" || continue; \
+	        test "$$file" != "." || continue; \
+	        test "$$file" != "./" || continue; \
+	        test -f "$$file" || continue; \
+	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+	    done; \
 	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-logs \
 	    $$python_make_arg \
 	    $$ruby_make_arg \
@@ -1456,17 +1533,27 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	if test $$((fail + xpass + error)) -ne 0; then \
 	    test x"$$VERBOSE" = x || cat "$(TEST_SUITE_LOG)"; \
 	    echo "See $(subdir)/$(TEST_SUITE_LOG) for debugging."; \
-	    rm -f "$$trs_manifest" "$$failed_manifest"; \
+	    for file in "$$trs_manifest" "$$failed_manifest"; do \
+	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+	    done; \
 	    exit 1; \
 	fi; \
-	rm -f "$$trs_manifest" "$$failed_manifest"; \
+	for file in "$$trs_manifest" "$$failed_manifest"; do \
+	    while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+	done; \
 	exit 0
 
 # Avoid expanding $(TEST_LOGS) into a single rm invocation during
 # mostlyclean/distclean; the test suite can exceed shell argument limits.
 mostlyclean-generic:
 	-@find "$(builddir)" -type f \( -name '*.log' -o -name '*.trs' \) -print | \
-	    while IFS= read -r file; do rm -f "$$file"; done
+	    while IFS= read -r file; do \
+	        test -n "$$file" || continue; \
+	        test "$$file" != "." || continue; \
+	        test "$$file" != "./" || continue; \
+	        test -f "$$file" || continue; \
+	        rm -f "$$file"; \
+	    done
 
 .PHONY: check-binding-loader-setopt-sync prepare-binding-artifacts prepare-psd-large-fixtures check-python check-ruby check-perl check-php sixel-check-test-logs
 check-binding-loader-setopt-sync:
@@ -1873,6 +1960,7 @@ clean-local:
 	done; \
 	fi
 	rm -rf $(ARTIFACT_ROOT)
+	rm -rf $(abs_top_builddir)/tests/.lso-test-bin
 	rm -rf $(abs_top_builddir)/tests/.python-test-venv
 	rm -rf $(abs_top_builddir)/tests/.ruby-test-venv
 	rm -rf $(abs_top_builddir)/tests/.perl-test-venv

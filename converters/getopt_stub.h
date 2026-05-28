@@ -29,7 +29,24 @@
 #  include <stdlib.h>
 #  include <string.h>
 
-#  if HAVE_GETOPT && !defined(LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT)
+#  if defined(LIBSIXEL_OPENVMS)
+/*
+ * OpenVMS/GNV exposes getopt() without getopt_long(), but its getopt()
+ * stops at the first positional argument.  The command line tools have long
+ * relied on GNU-style option permutation, so use the local implementation
+ * with private symbol names instead of mixing it with the system globals.
+ */
+#   define LIBSIXEL_GETOPT_STUB_FORCE_PRIVATE 1
+#   define getopt sixel_getopt_stub_getopt
+#   define getopt_long sixel_getopt_stub_getopt_long
+#   define optarg sixel_getopt_stub_optarg
+#   define optind sixel_getopt_stub_optind
+#   define opterr sixel_getopt_stub_opterr
+#   define optopt sixel_getopt_stub_optopt
+#  endif
+
+#  if HAVE_GETOPT && !defined(LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT) && \
+        !defined(LIBSIXEL_GETOPT_STUB_FORCE_PRIVATE)
 #   if HAVE_UNISTD_H
 #    include <unistd.h>
 #   elif HAVE_SYS_UNISTD_H

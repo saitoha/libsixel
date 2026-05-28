@@ -104,7 +104,7 @@ thread-local status message storage.
 Basic Autotools verification:
 
 ```sh
-./configure --enable-tests
+./configure
 make staticcheck
 make
 make check

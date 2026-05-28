@@ -1827,7 +1827,7 @@ Optional Features:
   --enable-debug          Use debug macro and specific CFLAGS
   --enable-coverage       Enable compiler coverage instrumentation
   --enable-gcov           Deprecated alias for --enable-coverage
-  --enable-tests          Build tests
+  --disable-tests         Do not build tests for make check
   --enable-fuzz           Build libFuzzer targets under fuzz/ (default: no)
 
 Optional Packages:
@@ -18676,11 +18676,17 @@ fi
 if test ${enable_tests+y}
 then :
   enableval=$enable_tests;
+enable_tests="$enableval"
+else case e in #(
+  e) enable_tests=yes ;;
+esac
+fi
+
+if test "x$enable_tests" != xno
+then :
+
 printf "%s\n" "#define HAVE_TESTS 1" >>confdefs.h
 
-else case e in #(
-  e) enable_tests=no ;;
-esac
 fi
 
  if test x$enable_tests != xno; then

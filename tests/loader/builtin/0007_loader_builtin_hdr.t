@@ -23,7 +23,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L builtin! "${input_hdr}" >"${output_sixe
     exit 0
 }
 
-printf 'P6\n1 1\n255\n\000\000\000' >"${black_reference}"
+printf 'P3\n1 1\n255\n0 0 0\n' >"${black_reference}"
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.99" \
     "${black_reference}" "${output_sixel}" 2>&1) || lsqa_status=$?
 lsqa_status=${lsqa_status-0}

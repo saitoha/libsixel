@@ -21,8 +21,8 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "${issue167}" -h128 >"${ARTIFACT_LOCAL_DIR
 command_status=$?
 set -e
 
-# Accept success or mapped error exits (1/2/3) without crashing.
-test "${command_status}" -le 3 || {
+# Accept success or mapped error exits without crashing.
+test "${command_status}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {
     echo "not ok" 1 - "crafted height input failed"
     exit 0
 }

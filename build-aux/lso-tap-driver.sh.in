@@ -175,6 +175,18 @@ esac
 : "${LSO_TAP_TIMEOUT_BUILD:=@top_builddir@/tools/lso-timeout@EXEEXT@}"
 timeout_budget=${test_timeout:-90}
 kill_delay=10
+sixel_tap_openvms=no
+@OPENVMS_GNV_TRUE@sixel_tap_openvms=yes
+SIXEL_TEST_MAX_MAPPED_ERROR_STATUS=3
+RUNTIME_ENV_IS_OPENVMS=0
+if [ "$sixel_tap_openvms" = yes ]; then
+  # OpenVMS condition values must use even non-zero severities for failures
+  # visible to GNV bash.  Runtime errors therefore surface as shell status 4.
+  SIXEL_TEST_MAX_MAPPED_ERROR_STATUS=4
+  RUNTIME_ENV_IS_OPENVMS=1
+fi
+export SIXEL_TEST_MAX_MAPPED_ERROR_STATUS
+export RUNTIME_ENV_IS_OPENVMS
 
 test_script=$1
 test_name_base=${test_name##*[/\\]}
@@ -192,6 +204,65 @@ ARTIFACT_LOCAL_DIR="${artifact_root}/${category_name}/${artifact_leaf}"
 export test_dir
 export category_name
 export ARTIFACT_LOCAL_DIR
+
+if [ "$sixel_tap_openvms" = yes ]; then
+  lso_cmp_real=$(command -v cmp 2>/dev/null || printf '')
+  lso_cmp_wrapper_dir="${TOP_BUILDDIR}/tests/.lso-test-bin"
+  lso_cmp_wrapper="${lso_cmp_wrapper_dir}/cmp"
+
+  if [ -n "$lso_cmp_real" ]; then
+    if [ ! -x "$lso_cmp_wrapper" ]; then
+      mkdir -p "$lso_cmp_wrapper_dir" || exit 2
+      {
+        printf '%s\n' '#!/bin/sh'
+        printf "%s\n" "real_cmp='$lso_cmp_real'"
+        cat <<'EOF'
+top_builddir=${TOP_BUILDDIR-}
+needs_cd=no
+
+for arg do
+  case $arg in
+    "$top_builddir/tests"/*|"$top_builddir"/*)
+      needs_cd=yes
+      ;;
+  esac
+done
+
+test "$needs_cd" = yes || exec "$real_cmp" "$@"
+
+first_arg=yes
+for arg do
+  case $arg in
+    "$top_builddir/tests"/*)
+      arg=${arg#"$top_builddir/tests"/}
+      ;;
+    "$top_builddir"/*)
+      arg=../${arg#"$top_builddir"/}
+      ;;
+  esac
+
+  if test "$first_arg" = yes; then
+    set -- "$arg"
+    first_arg=no
+  else
+    set -- "$@" "$arg"
+  fi
+done
+
+cd "$top_builddir/tests" || exit 2
+exec "$real_cmp" "$@"
+EOF
+      } > "$lso_cmp_wrapper" || exit 2
+      chmod +x "$lso_cmp_wrapper" || exit 2
+    fi
+
+    # GNV cmp reports an error for POSIX absolute paths even though most
+    # other GNV tools can read them.  The wrapper preserves the normal test
+    # scripts and shortens build-tree paths only when cmp is invoked.
+    PATH="${lso_cmp_wrapper_dir}${PATH:+:$PATH}"
+    export PATH
+  fi
+fi
 
 # Keep runtime library lookup setup in the test driver so each test process
 # gets a fresh, direct assignment without relying on recursive make exports.
@@ -711,7 +782,7 @@ LC_ALL=C "$AM_TAP_AWK" < "$log_file" \
      else if (skip>0) global="SKIP"
 
      recheck = (global=="FAIL"||global=="ERROR"||global=="XPASS") ? "yes" : "no"
-     copy = (global=="FAIL"||global=="ERROR"||global=="SKIP"||global=="XFAIL"||global=="XPASS") ? "yes" : "no"
+     copy = (global=="FAIL"||global=="ERROR"||global=="XFAIL"||global=="XPASS") ? "yes" : "no"
 
      printf(":global-test-result: %s\n", global) > "'"$trs_file"'"
      printf(":recheck: %s\n", recheck) > "'"$trs_file"'"
@@ -874,7 +945,7 @@ __line__
     }
     test "$fail" -eq 0 && test "$error" -eq 0 && test "$xpass" -eq 0 && test "$xfail" -eq 0 && test "$pass" -eq 0 && test "$skip" -gt 0 && {
         global="SKIP"
-        copy=yes
+        copy=no
         sgr="${e}[0;33m"
     }
     test "$color_tests" = yes || {

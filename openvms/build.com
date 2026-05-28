@@ -104,8 +104,7 @@ $ ENDIF
 $ RETURN
 $
 $compile_source:
-$ dot = F$LOCATE(".", source)
-$ object_name = F$EXTRACT(0, dot, source) + ".obj"
+$ GOSUB source_to_object_name
 $ object = objdir + object_name
 $ source_file = srcdir + source
 $ CC 'ccflags' 'ccdefs' 'ccincs' /OBJECT='object' 'source_file'
@@ -117,8 +116,7 @@ $ GOSUB check_status
 $ RETURN
 $
 $add_object_to_library:
-$ dot = F$LOCATE(".", source)
-$ object_name = F$EXTRACT(0, dot, source) + ".obj"
+$ GOSUB source_to_object_name
 $ object = objdir + object_name
 $ IF created_library .EQS. "0"
 $ THEN
@@ -134,6 +132,22 @@ $ checked_severity = command_severity
 $ allow_warning = ""
 $ GOSUB check_status
 $ RETURN
+$
+$source_to_object_name:
+$! Keep DCL LINK option files in sync with the actual compiler output.
+$! Some hyphenated OpenVMS object names can be shortened or versioned by the
+$! compiler front-end.  Using underscores keeps object names unique and stable.
+$ dot = F$LOCATE(".", source)
+$ object_name = F$EXTRACT(0, dot, source) + ".obj"
+$source_object_hyphen_loop:
+$ hyphen = F$LOCATE("-", object_name)
+$ IF hyphen .EQ. F$LENGTH(object_name) THEN RETURN
+$ head = F$EXTRACT(0, hyphen, object_name)
+$ tail_pos = hyphen + 1
+$ tail_len = F$LENGTH(object_name) - tail_pos
+$ tail = F$EXTRACT(tail_pos, tail_len, object_name)
+$ object_name = head + "_" + tail
+$ GOTO source_object_hyphen_loop
 $
 $build_shareable_image:
 $ link_options = objdir + "libsixelshr.opt"
@@ -162,8 +176,7 @@ $ OPEN /READ srcs SYS$SYSROOT:[SYSMGR.openvms]sources.dat
 $share_object_loop:
 $ READ /END_OF_FILE=share_object_done srcs source
 $ IF source .EQS. "" THEN GOTO share_object_loop
-$ dot = F$LOCATE(".", source)
-$ object_name = F$EXTRACT(0, dot, source) + ".obj"
+$ GOSUB source_to_object_name
 $ WRITE opt objdir + object_name
 $ GOTO share_object_loop
 $share_object_done:
