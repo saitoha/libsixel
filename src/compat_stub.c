@@ -180,6 +180,7 @@ struct timeval {
  * calls into implicit function diagnostics.
  */
 #if defined(LIBSIXEL_OPENVMS) && defined(HAVE_GETTIMEOFDAY)
+struct timeval;
 int gettimeofday(struct timeval *tv, void *tz);
 #endif
 
