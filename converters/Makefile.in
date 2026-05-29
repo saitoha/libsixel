@@ -1614,8 +1614,9 @@ completion_embed.h: \
 @WANT_SIXEL2PNG_TRUE@@WITH_EMSCRIPTEN_SPLIT_MODE_TRUE@	rm -f "$(DESTDIR)$(pkglibexecdir)/sixel2png.wasm"
 
 .PHONY: prelink-objs
-@OPENVMS_GNV_TRUE@prelink-objs: $(BUILT_SOURCES)
+@OPENVMS_GNV_TRUE@prelink-objs:
 @OPENVMS_GNV_TRUE@	@set -e; \
+@OPENVMS_GNV_TRUE@	$(MAKE) $(AM_MAKEFLAGS) $(BUILT_SOURCES) || exit $$?; \
 @OPENVMS_GNV_TRUE@	set -- $(PRELINK_OBJECTS); \
 @OPENVMS_GNV_TRUE@	for obj do \
 @OPENVMS_GNV_TRUE@		$(MAKE) $(AM_MAKEFLAGS) "$$obj" || exit $$?; \

@@ -291,11 +291,12 @@ if WANT_SIXEL2PNG
 PRELINK_OBJECTS += $(sixel2png_OBJECTS)
 endif
 if OPENVMS_GNV
-# GNV make can misreport the next object prerequisite after a successful
-# completion header generation step.  Build each converter object through a
-# fresh recursive make so the top-level phase split stays usable on OpenVMS.
-prelink-objs: $(BUILT_SOURCES)
+# GNV make can misreport the parent target after a successful generated-header
+# prerequisite.  Keep the OpenVMS target dependency-free and build both the
+# generated header and each converter object through fresh recursive makes.
+prelink-objs:
 	@set -e; \
+	$(MAKE) $(AM_MAKEFLAGS) $(BUILT_SOURCES) || exit $$?; \
 	set -- $(PRELINK_OBJECTS); \
 	for obj do \
 		$(MAKE) $(AM_MAKEFLAGS) "$$obj" || exit $$?; \
