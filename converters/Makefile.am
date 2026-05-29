@@ -296,7 +296,8 @@ if OPENVMS_GNV
 # fresh recursive make so the top-level phase split stays usable on OpenVMS.
 prelink-objs: $(BUILT_SOURCES)
 	@set -e; \
-	for obj in $(PRELINK_OBJECTS); do \
+	set -- $(PRELINK_OBJECTS); \
+	for obj do \
 		$(MAKE) $(AM_MAKEFLAGS) "$$obj" || exit $$?; \
 	done
 else
