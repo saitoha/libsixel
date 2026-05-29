@@ -447,6 +447,7 @@ CLEANFILES = ltmain.sh $(builddir)/package.json $(builddir)/*.log
 	phase3-members-all \
 	all-src-lib \
 	all-src-libobjs \
+	maybe-all-src-lib \
 	all-converters-objs \
 	all-assessment-objs \
 	all-converters \
@@ -511,8 +512,8 @@ phase2-members-all: $(PHASE2_ALL_TARGETS)
 phase3-members-all: $(PHASE3_ALL_TARGETS)
 
 phase2-all: phase1-all
-	$(MAKE) $(AM_MAKEFLAGS) phase2-members-all
-	$(MAKE) $(AM_MAKEFLAGS) phase3-all
+	$(MAKE) $(AM_MAKEFLAGS) LS_PHASED_ALL=yes phase2-members-all
+	$(MAKE) $(AM_MAKEFLAGS) LS_PHASED_ALL=yes phase3-all
 
 phase3-all:
 	$(MAKE) $(AM_MAKEFLAGS) phase3-members-all
@@ -523,6 +524,17 @@ all-src-libobjs:
 all-src-lib: all-src-libobjs
 	$(MAKE) -C src $(AM_MAKEFLAGS) libsixel.la
 	$(MAKE) -C src $(AM_MAKEFLAGS) libsixel-import-lib-alias
+
+# Language binding targets can also be invoked directly.  During the top-level
+# phased build, phase1-all has already built libsixel.la; rerunning all-src-lib
+# there is redundant and especially expensive on OpenVMS because libobjs is
+# intentionally expanded into one recursive make per object.
+maybe-all-src-lib:
+	@if test "x$(LS_PHASED_ALL)" = xyes; then \
+	  :; \
+	else \
+	  $(MAKE) $(AM_MAKEFLAGS) all-src-lib; \
+	fi
 
 all-converters-objs:
 	$(MAKE) -C converters $(AM_MAKEFLAGS) prelink-objs
@@ -551,18 +563,15 @@ all-wic:
 # Build libsixel.la at the top level before entering ruby/python.
 # This prevents parallel recursion from racing on src/libsixel.la when
 # language packaging targets run at the same time.
-all-ruby:
-	$(MAKE) $(AM_MAKEFLAGS) all-src-lib
+all-ruby: maybe-all-src-lib
 	$(MAKE) -C ruby $(AM_MAKEFLAGS) all
 
-all-php:
-	$(MAKE) $(AM_MAKEFLAGS) all-src-lib
+all-php: maybe-all-src-lib
 	$(MAKE) -C php $(AM_MAKEFLAGS) all
 
 # Keep the src/lib link step serialized at the top level to avoid
 # duplicate "make -C src all" recursion from language bindings.
-all-python:
-	$(MAKE) $(AM_MAKEFLAGS) all-src-lib
+all-python: maybe-all-src-lib
 	$(MAKE) -C python $(AM_MAKEFLAGS) all
 
 all-am: phase2-all
