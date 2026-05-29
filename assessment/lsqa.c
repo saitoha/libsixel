@@ -15,8 +15,8 @@
 /*
  * Guard the feature test macros so unity builds do not complain when the
  * build system already defines the same POSIX surface area globally.  The
- * macros remain visible when missing so mkstemp() and strerror_r() stay
- * declared.
+ * macros remain visible when missing so mkstemp() and POSIX strerror_r()
+ * stay declared on platforms that expose it through feature macros.
  */
 #if !defined(_POSIX_C_SOURCE)
 #define _POSIX_C_SOURCE 200809L
@@ -119,10 +119,34 @@ lsqa_strerror(int errnum, char *buffer, size_t size)
 {
 #if defined(_MSC_VER)
     errno_t rc;
+#elif defined(LIBSIXEL_OPENVMS)
+    char const *message;
+    size_t length;
+#endif
 
+#if defined(_MSC_VER)
     if (buffer != NULL && size > 0) {
         rc = strerror_s(buffer, size, errnum);
         if (rc == 0) {
+            return buffer;
+        }
+    }
+    return "unknown error";
+#elif defined(LIBSIXEL_OPENVMS)
+    if (buffer != NULL && size > 0) {
+        /*
+         * OpenVMS CRTL can provide the strerror_r() symbol in GNV builds
+         * without exposing a public prototype.  Use strerror() here to avoid
+         * relying on an undeclared interface in this standalone CLI shim.
+         */
+        message = strerror(errnum);
+        if (message != NULL) {
+            length = strlen(message);
+            if (length >= size) {
+                length = size - 1u;
+            }
+            memcpy(buffer, message, length);
+            buffer[length] = '\0';
             return buffer;
         }
     }
