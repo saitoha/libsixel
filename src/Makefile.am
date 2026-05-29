@@ -425,7 +425,18 @@ EXTRA_DIST = $(srcdir)/rgblookup.gperf \
 #
 # This target lets the top-level Makefile overlap executable object
 # compilation in other directories with the libsixel link step.
+if OPENVMS_GNV
+# GNV make can report the following libtool object target as failed after a
+# successful compile when many libtool objects are prerequisites of one target.
+# Invoke one recursive make per object so each compile has a fresh make state.
+libobjs:
+	@set -e; \
+	for obj in $(libsixel_la_OBJECTS); do \
+		$(MAKE) $(AM_MAKEFLAGS) "$$obj" || exit $$?; \
+	done
+else
 libobjs: $(libsixel_la_OBJECTS)
+endif
 
 if BUILDING_ON_WINDOWS
 if USING_CL
