@@ -590,10 +590,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 # Accept both explicit jobs options and GNU make jobserver tokens.
 LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=% --jobserver-style=%,$(MFLAGS) $(MAKEFLAGS))
 @OPENVMS_GNV_TRUE@# GNV make loses the following libtool object target when recursive makes are
-@OPENVMS_GNV_TRUE@# run with the silent flag.  Keep build recursion serial there, but leave make
-@OPENVMS_GNV_TRUE@# output enabled so each compiler-driver condition value remains observable.
+@OPENVMS_GNV_TRUE@# run with the silent flag.  Keep build recursion serial there, and force
+@OPENVMS_GNV_TRUE@# Automake's verbose recipes so generated prerequisite recipes do not poison
+@OPENVMS_GNV_TRUE@# the following libtool object target.
 @OPENVMS_GNV_TRUE@# Test sharding is controlled separately by OPENVMS_TEST_JOBS.
-@OPENVMS_GNV_TRUE@LS_OPENVMS_BUILD_MAKEFLAGS = -j1
+@OPENVMS_GNV_TRUE@LS_OPENVMS_BUILD_MAKEFLAGS = -j1 V=1
 @OPENVMS_GNV_FALSE@LS_SILENT_MAKEFLAGS = -s
 AM_MAKEFLAGS = $(LS_SILENT_MAKEFLAGS) $(LS_OPENVMS_BUILD_MAKEFLAGS) $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
 FUZZ_IMG2SIXEL_EMBED_CPPFLAGS = \

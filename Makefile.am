@@ -78,10 +78,11 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=% --jobserver-style=%,$(MFLAGS) $(MAKEFLAGS))
 if OPENVMS_GNV
 # GNV make loses the following libtool object target when recursive makes are
-# run with the silent flag.  Keep build recursion serial there, but leave make
-# output enabled so each compiler-driver condition value remains observable.
+# run with the silent flag.  Keep build recursion serial there, and force
+# Automake's verbose recipes so generated prerequisite recipes do not poison
+# the following libtool object target.
 # Test sharding is controlled separately by OPENVMS_TEST_JOBS.
-LS_OPENVMS_BUILD_MAKEFLAGS = -j1
+LS_OPENVMS_BUILD_MAKEFLAGS = -j1 V=1
 else
 LS_SILENT_MAKEFLAGS = -s
 endif
