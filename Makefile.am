@@ -88,13 +88,6 @@ LS_SILENT_MAKEFLAGS = -s
 endif
 AM_MAKEFLAGS = $(LS_SILENT_MAKEFLAGS) $(LS_OPENVMS_BUILD_MAKEFLAGS) $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
 
-if OPENVMS_GNV
-# GNV make can finish Automake's full all-recursive traversal with status 1
-# after all child targets have succeeded.  Keep plain "make" useful there by
-# making the default goal run the already-serialized phased build directly.
-.DEFAULT_GOAL = openvms-all
-endif
-
 # Automake/libtool may require a top-level ltmain.sh in DIST_COMMON even when
 # AC_CONFIG_AUX_DIR points at build-aux/.  Generate it from the canonical copy
 # so distcheck can always stage distribution files.
@@ -469,6 +462,9 @@ CLEANFILES = ltmain.sh $(builddir)/package.json $(builddir)/*.log
 	openvms-all \
 	staticcheck
 
+# GNV make can finish Automake's full all-recursive traversal with status 1
+# after all child targets have succeeded.  The OpenVMS CI job calls this
+# explicit target to run the already-serialized phased build directly.
 openvms-all: config.h
 	$(MAKE) -C include $(AM_MAKEFLAGS) all
 	$(MAKE) $(AM_MAKEFLAGS) all-am
