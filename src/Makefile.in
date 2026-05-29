@@ -3271,15 +3271,7 @@ uninstall-man: uninstall-man5
 #
 # This target lets the top-level Makefile overlap executable object
 # compilation in other directories with the libsixel link step.
-@OPENVMS_GNV_TRUE@# GNV make can report the next object target as failed after a successful
-@OPENVMS_GNV_TRUE@# compile when many libtool objects are prerequisites of one target.  Invoke
-@OPENVMS_GNV_TRUE@# one recursive make per object so each compile has a fresh make state.
-@OPENVMS_GNV_TRUE@libobjs:
-@OPENVMS_GNV_TRUE@	@set -e; \
-@OPENVMS_GNV_TRUE@	for obj in $(libsixel_la_OBJECTS); do \
-@OPENVMS_GNV_TRUE@		$(MAKE) $(AM_MAKEFLAGS) "$$obj" || exit $$?; \
-@OPENVMS_GNV_TRUE@	done
-@OPENVMS_GNV_FALSE@libobjs: $(libsixel_la_OBJECTS)
+libobjs: $(libsixel_la_OBJECTS)
 
 # clang-cl/link.exe may emit only versioned import libraries such as
 # '.libs/sixel-1.lib'. Provide the stable '.libs/sixel.dll.lib' alias
