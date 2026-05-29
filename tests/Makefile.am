@@ -15,7 +15,10 @@ endif
 # list to Automake variables on that platform; check-TESTS reads this file.
 if OPENVMS_GNV
 OPENVMS_CHECK_TESTS_LIST = $(builddir)/check-tests.list
-OPENVMS_TEST_JOBS ?= 2
+# Keep the default serialized on OpenVMS.  N=2 sharding is still available for
+# experiments, but the extra GNV process and file I/O overhead is slower on the
+# current runner.
+OPENVMS_TEST_JOBS ?= 1
 OPENVMS_TEST_SHARD_DIR = $(builddir)/check-tests-shards
 OPENVMS_TEST_WORKER_LIST = $(OPENVMS_CHECK_TESTS_LIST)
 TESTS =

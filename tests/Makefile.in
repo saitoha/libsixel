@@ -922,7 +922,10 @@ AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 @OPENVMS_GNV_FALSE@TESTS = @SIXEL_CHECK_TESTS@
 @OPENVMS_GNV_TRUE@OPENVMS_CHECK_TESTS_LIST = $(builddir)/check-tests.list
-@OPENVMS_GNV_TRUE@OPENVMS_TEST_JOBS ?= 2
+@OPENVMS_GNV_TRUE@# Keep the default serialized on OpenVMS.  N=2 sharding is still available for
+@OPENVMS_GNV_TRUE@# experiments, but the extra GNV process and file I/O overhead is slower on the
+@OPENVMS_GNV_TRUE@# current runner.
+@OPENVMS_GNV_TRUE@OPENVMS_TEST_JOBS ?= 1
 @OPENVMS_GNV_TRUE@OPENVMS_TEST_SHARD_DIR = $(builddir)/check-tests-shards
 @OPENVMS_GNV_TRUE@OPENVMS_TEST_WORKER_LIST = $(OPENVMS_CHECK_TESTS_LIST)
 @OPENVMS_GNV_TRUE@TESTS =
