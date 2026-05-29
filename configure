@@ -29502,6 +29502,11 @@ ac_config_files="$ac_config_files amalgamation/Makefile"
 # Generate Ruby constants file from include/sixel.h when Ruby is enabled
 ac_config_commands="$ac_config_commands rubyconstants"
 
+# GNV make 3.78.1 can hang while reading long Automake comments and
+# expanded tags prerequisites. The tags targets are developer conveniences,
+# so keep them inert on OpenVMS instead of blocking normal builds.
+ac_config_commands="$ac_config_commands openvms-makefiles"
+
 
 # Generate Quick Look Info.plist files only when the extension is enabled
 if test x$have_quicklook_extension = xyes
@@ -30320,6 +30325,7 @@ INSTALL='$INSTALL'
 MKDIR_P='$MKDIR_P'
 AWK='$AWK'
 test -n "\$AWK" || AWK=awk
+sixel_openvms_mode='$sixel_openvms_mode'
 _ACEOF
 
 cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
@@ -30757,6 +30763,7 @@ do
     "wic/Makefile") CONFIG_FILES="$CONFIG_FILES wic/Makefile" ;;
     "amalgamation/Makefile") CONFIG_FILES="$CONFIG_FILES amalgamation/Makefile" ;;
     "rubyconstants") CONFIG_COMMANDS="$CONFIG_COMMANDS rubyconstants" ;;
+    "openvms-makefiles") CONFIG_COMMANDS="$CONFIG_COMMANDS openvms-makefiles" ;;
     "quicklook-extension/generated-resources/Host-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Host-Info.plist:quicklook-extension/Resources/Host-Info.plist.in" ;;
     "quicklook-extension/generated-resources/Preview-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Preview-Info.plist:quicklook-extension/Resources/Preview-Info.plist.in" ;;
     "quicklook-extension/generated-resources/Thumbnail-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Thumbnail-Info.plist:quicklook-extension/Resources/Thumbnail-Info.plist.in" ;;
@@ -32005,6 +32012,41 @@ ltmain=$ac_aux_dir/ltmain.sh
   if test "x$enable_ruby" != xno && test "x$RUBY" != x; then
     echo "Generating ruby/lib/libsixel/constants.rb from include/sixel.h"
     $RUBY tools/gen_ruby_constants.rb include/sixel.h ruby/lib/libsixel/constants.rb || exit 1
+  fi
+ ;;
+    "openvms-makefiles":C)
+  if test "x$sixel_openvms_mode" = xyes; then
+    echo "Sanitizing OpenVMS Makefiles for GNV make"
+    for mf in \
+      Makefile \
+      src/Makefile \
+      include/Makefile \
+      converters/Makefile \
+      assessment/Makefile \
+      tools/Makefile \
+      examples/Makefile \
+      examples/drawing/Makefile \
+      examples/opengl/Makefile \
+      examples/python/Makefile \
+      examples/ruby/Makefile \
+      examples/windows/Makefile \
+      images/Makefile \
+      fuzz/Makefile \
+      tests/Makefile \
+      python/Makefile \
+      ruby/Makefile \
+      php/Makefile \
+      gdk-pixbuf-loader/Makefile \
+      quicklook-extension/Makefile \
+      wic/Makefile \
+      amalgamation/Makefile
+    do
+      test -f "$mf" || continue
+      mf_tmp=${mf}.openvms-tmp
+      sed -e '/^#	/d' \
+          -e 's/^am__tagged_files =.*/am__tagged_files =/' \
+          "$mf" > "$mf_tmp" && mv "$mf_tmp" "$mf" || exit 1
+    done
   fi
  ;;
 

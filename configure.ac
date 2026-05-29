@@ -5325,6 +5325,45 @@ AC_CONFIG_COMMANDS([rubyconstants], [
   fi
 ])
 
+# GNV make 3.78.1 can hang while reading long Automake comments and
+# expanded tags prerequisites. The tags targets are developer conveniences,
+# so keep them inert on OpenVMS instead of blocking normal builds.
+AC_CONFIG_COMMANDS([openvms-makefiles], [
+  if test "x$sixel_openvms_mode" = xyes; then
+    echo "Sanitizing OpenVMS Makefiles for GNV make"
+    for mf in \
+      Makefile \
+      src/Makefile \
+      include/Makefile \
+      converters/Makefile \
+      assessment/Makefile \
+      tools/Makefile \
+      examples/Makefile \
+      examples/drawing/Makefile \
+      examples/opengl/Makefile \
+      examples/python/Makefile \
+      examples/ruby/Makefile \
+      examples/windows/Makefile \
+      images/Makefile \
+      fuzz/Makefile \
+      tests/Makefile \
+      python/Makefile \
+      ruby/Makefile \
+      php/Makefile \
+      gdk-pixbuf-loader/Makefile \
+      quicklook-extension/Makefile \
+      wic/Makefile \
+      amalgamation/Makefile
+    do
+      test -f "$mf" || continue
+      mf_tmp=${mf}.openvms-tmp
+      sed -e '/^#	/d' \
+          -e 's/^am__tagged_files =.*/am__tagged_files =/' \
+          "$mf" > "$mf_tmp" && mv "$mf_tmp" "$mf" || exit 1
+    done
+  fi
+], [sixel_openvms_mode=$sixel_openvms_mode])
+
 # Generate Quick Look Info.plist files only when the extension is enabled
 AS_IF([test x$have_quicklook_extension = xyes], [
   AC_CONFIG_COMMANDS_PRE([
