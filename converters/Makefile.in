@@ -1616,10 +1616,10 @@ completion_embed.h: \
 .PHONY: prelink-objs
 @OPENVMS_GNV_TRUE@prelink-objs:
 @OPENVMS_GNV_TRUE@	@set -e; \
-@OPENVMS_GNV_TRUE@	$(MAKE) $(AM_MAKEFLAGS) $(BUILT_SOURCES) || exit $$?; \
+@OPENVMS_GNV_TRUE@	$(MAKE) $(AM_MAKEFLAGS) V=1 $(BUILT_SOURCES) || exit $$?; \
 @OPENVMS_GNV_TRUE@	set -- $(PRELINK_OBJECTS); \
 @OPENVMS_GNV_TRUE@	for obj do \
-@OPENVMS_GNV_TRUE@		$(MAKE) $(AM_MAKEFLAGS) "$$obj" || exit $$?; \
+@OPENVMS_GNV_TRUE@		$(MAKE) $(AM_MAKEFLAGS) V=1 "$$obj" || exit $$?; \
 @OPENVMS_GNV_TRUE@	done
 @OPENVMS_GNV_FALSE@prelink-objs: $(BUILT_SOURCES) $(PRELINK_OBJECTS)
 

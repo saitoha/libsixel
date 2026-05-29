@@ -296,10 +296,10 @@ if OPENVMS_GNV
 # generated header and each converter object through fresh recursive makes.
 prelink-objs:
 	@set -e; \
-	$(MAKE) $(AM_MAKEFLAGS) $(BUILT_SOURCES) || exit $$?; \
+	$(MAKE) $(AM_MAKEFLAGS) V=1 $(BUILT_SOURCES) || exit $$?; \
 	set -- $(PRELINK_OBJECTS); \
 	for obj do \
-		$(MAKE) $(AM_MAKEFLAGS) "$$obj" || exit $$?; \
+		$(MAKE) $(AM_MAKEFLAGS) V=1 "$$obj" || exit $$?; \
 	done
 else
 prelink-objs: $(BUILT_SOURCES) $(PRELINK_OBJECTS)
