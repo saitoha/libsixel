@@ -81,6 +81,16 @@
 # define STDERR_FILENO 2
 #endif
 
+/*
+ * GNV can expose fsync() at link time while unistd.h still omits the POSIX
+ * prototype under this feature-macro set.  Keep the declaration local to the
+ * completion helper because this is the only converter translation unit that
+ * calls fsync() directly.
+ */
+#if defined(LIBSIXEL_OPENVMS) && HAVE_FSYNC
+int fsync(int fd);
+#endif
+
 /* Provide ssize_t so MSVC matches POSIX I/O signatures. */
 #if defined(_MSC_VER) && !defined(_SSIZE_T_DEFINED)
 # include <BaseTsd.h>
