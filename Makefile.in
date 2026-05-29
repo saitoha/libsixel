@@ -597,6 +597,11 @@ LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=%
 @OPENVMS_GNV_TRUE@LS_OPENVMS_BUILD_MAKEFLAGS = -j1 V=1
 @OPENVMS_GNV_FALSE@LS_SILENT_MAKEFLAGS = -s
 AM_MAKEFLAGS = $(LS_SILENT_MAKEFLAGS) $(LS_OPENVMS_BUILD_MAKEFLAGS) $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
+
+@OPENVMS_GNV_TRUE@# GNV make can finish Automake's full all-recursive traversal with status 1
+@OPENVMS_GNV_TRUE@# after all child targets have succeeded.  Keep plain "make" useful there by
+@OPENVMS_GNV_TRUE@# making the default goal run the already-serialized phased build directly.
+@OPENVMS_GNV_TRUE@.DEFAULT_GOAL = openvms-all
 FUZZ_IMG2SIXEL_EMBED_CPPFLAGS = \
 	-DHAVE_CONFIG_H \
 	-DBUILD_IMG2SIXEL \
@@ -1509,7 +1514,12 @@ fuzz-run-struct-full-set:
 	all-ruby \
 	all-php \
 	all-python \
+	openvms-all \
 	staticcheck
+
+openvms-all: config.h
+	$(MAKE) -C include $(AM_MAKEFLAGS) all
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 prepare-amalgamation-all:
 @WANT_AMALGAMATED_TOOLS_ONLY_TRUE@	$(MAKE) -C converters $(AM_MAKEFLAGS) completion_embed.h
