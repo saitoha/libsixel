@@ -5374,6 +5374,22 @@ AC_CONFIG_COMMANDS([openvms-makefiles], [
         }
         { print }
       ' "$mf" > "$mf_tmp" && mv "$mf_tmp" "$mf" || exit 1
+      case $mf in
+        src/Makefile)
+          cat >> "$mf" <<'SIXEL_OPENVMS_SRC_OBJECTS'
+
+# GNV make 3.78.1 can lose Automake's multiline assignment when
+# libsixel_la_OBJECTS is defined through helper variables.  Re-state the
+# final object list on one physical line so OpenVMS links the real library.
+libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS) $(nodist_libsixel_la_OBJECTS)
+libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir)/include -I$(top_srcdir) $(AM_CPPFLAGS) $(THREAD_CPPFLAGS) $(AMALGAMATION_CPPFLAGS)
+
+# Add the prerequisites after the one-line value is visible.  The existing
+# Automake rule keeps its libtool recipe, and GNU make merges this dependency.
+libsixel.la: $(libsixel_la_OBJECTS)
+SIXEL_OPENVMS_SRC_OBJECTS
+          ;;
+      esac
     done
   fi
 ], [sixel_openvms_mode=$sixel_openvms_mode])
