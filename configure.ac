@@ -5357,9 +5357,23 @@ AC_CONFIG_COMMANDS([openvms-makefiles], [
     do
       test -f "$mf" || continue
       mf_tmp=${mf}.openvms-tmp
-      sed -e '/^#	/d' \
-          -e 's/^am__tagged_files =.*/am__tagged_files =/' \
-          "$mf" > "$mf_tmp" && mv "$mf_tmp" "$mf" || exit 1
+      awk '
+        /^#	/ { next }
+        skip_tagged {
+          if ($0 !~ /\\$/) {
+            skip_tagged = 0
+          }
+          next
+        }
+        /^am__tagged_files =/ {
+          print "am__tagged_files ="
+          if ($0 ~ /\\$/) {
+            skip_tagged = 1
+          }
+          next
+        }
+        { print }
+      ' "$mf" > "$mf_tmp" && mv "$mf_tmp" "$mf" || exit 1
     done
   fi
 ], [sixel_openvms_mode=$sixel_openvms_mode])
