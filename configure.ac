@@ -5389,6 +5389,20 @@ libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir)/include -I$(to
 libsixel.la: $(libsixel_la_OBJECTS)
 SIXEL_OPENVMS_SRC_OBJECTS
           ;;
+        tests/Makefile)
+          cat >> "$mf" <<'SIXEL_OPENVMS_TEST_OBJECTS'
+
+# GNV make 3.78.1 can lose Automake's multiline assignment before check-am
+# invokes the nested "make test_runner".  Re-state the object list on one
+# physical line and add prerequisites after that value is visible, otherwise
+# the native linker sees only libsixel.la and reports NOMODS.
+test_runner_OBJECTS = $(am_test_runner_OBJECTS) $(nodist_test_runner_OBJECTS)
+
+test_runner$(EXEEXT): $(test_runner_OBJECTS) \
+        $(test_runner_DEPENDENCIES) \
+        $(EXTRA_test_runner_DEPENDENCIES)
+SIXEL_OPENVMS_TEST_OBJECTS
+          ;;
       esac
     done
   fi
