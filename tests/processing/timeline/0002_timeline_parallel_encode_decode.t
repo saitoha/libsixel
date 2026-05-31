@@ -20,9 +20,13 @@ saw_other_session=0
 session_tail=
 session_id=
 
+# Keep the test focused on concurrent timeline sessions.  Nested encoder and
+# decoder worker pools are not part of this contract and can overwhelm slow
+# pthread runtimes.
 MSYS_NO_PATHCONV=1 \
 MSYS2_ARG_CONV_EXCL='*' \
 SIXEL_LOG_PATH="${log_path}" \
+SIXEL_THREADS=1 \
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "timeline/0002_timeline_parallel_encode_decode" || {
     status=$?
