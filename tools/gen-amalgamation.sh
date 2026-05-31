@@ -239,6 +239,18 @@ else
 fi
 
 config_path="${build_root}/config.h"
+keep_local_includes=${SIXEL_AMALGAMATION_KEEP_LOCAL_INCLUDES:-0}
+
+case "${keep_local_includes}" in
+    0)
+        uname_s=$(uname -s 2>/dev/null || printf '%s\n' unknown)
+        case "${uname_s}" in
+            *VMS*|*vms*)
+                keep_local_includes=1
+                ;;
+        esac
+        ;;
+esac
 
 append_unique_unit() {
     candidate=$1
@@ -380,6 +392,7 @@ filter_local_includes() {
     inline_state=$4
 
     awk -v header_file="${header_file}" -v src_root="${src_root}" \
+        -v keep_local_includes="${keep_local_includes}" \
         -v inline_state="${inline_state}" -v unit_path="${unit_path}" '
 BEGIN {
     while ((getline line < header_file) > 0) {
@@ -411,6 +424,10 @@ BEGIN {
         sub(/^[ \t]*#[ \t]*include[ \t]*["<]/, "", name);
         sub(/[">].*/, "", name);
         if (name in header) {
+            if (keep_local_includes == "1") {
+                print $0;
+                next;
+            }
             if (name in inline_once && !(name in emitted)) {
                 emitted[name] = 1;
                 print name >> inline_state;
