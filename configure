@@ -863,6 +863,7 @@ LN_S
 CPP
 OPENVMS_GNV_FALSE
 OPENVMS_GNV_TRUE
+RUNTIME_ENV_IS_OPENVMS
 am__fastdepOBJC_FALSE
 am__fastdepOBJC_TRUE
 OBJCDEPMODE
@@ -3606,6 +3607,11 @@ then :
   printf "%s\n" "#define LIBSIXEL_OPENVMS 1" >>confdefs.h
 
 
+fi
+RUNTIME_ENV_IS_OPENVMS=0
+if test "x$sixel_openvms_mode" = "xyes"
+then :
+  RUNTIME_ENV_IS_OPENVMS=1
 fi
 
  if test "x$sixel_openvms_mode" = "xyes"; then

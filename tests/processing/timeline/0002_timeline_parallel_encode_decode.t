@@ -8,6 +8,11 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
     exit 0
 }
 
+test "${RUNTIME_ENV_IS_OPENVMS-0}" != 1 || {
+    printf "1..0 # SKIP OpenVMS/GNV raises ACCVIO in this native thread stress test\n"
+    exit 0
+}
+
 echo "1..1"
 set -v
 

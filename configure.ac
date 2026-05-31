@@ -60,6 +60,10 @@ AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
   AC_DEFINE([LIBSIXEL_OPENVMS], [1],
             [Define when building with OpenVMS and GNV.])
 ])
+RUNTIME_ENV_IS_OPENVMS=0
+AS_IF([test "x$sixel_openvms_mode" = "xyes"],
+      [RUNTIME_ENV_IS_OPENVMS=1])
+AC_SUBST([RUNTIME_ENV_IS_OPENVMS])
 
 AM_INIT_AUTOMAKE([foreign subdir-objects tar-pax])
 AC_REQUIRE_AUX_FILE([ar-lib])
