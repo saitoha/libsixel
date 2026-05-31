@@ -201,7 +201,14 @@ EOF_HEADERS
 
 header_units=$(printf "%s\n" "${existing_headers}" | \
     order_headers_by_includes)
-header_units=$(printf "%s\n%s\n" "${header_units}" \
+
+# Keep public API headers at the front even on minimal awk implementations.
+# Private headers may only include 6cells.h indirectly, but they still use
+# SIXELSTATUS, sixel_allocator_t, and SIXEL_INTERNAL_API directly.
+header_units=$(printf "%s\n%s\n%s\n%s\n" \
+    "include/sixel.h" \
+    "include/6cells.h" \
+    "${header_units}" \
     "${missing_headers}" | awk 'NF && !seen[$0]++')
 
 header_filter_units="${header_units}"
