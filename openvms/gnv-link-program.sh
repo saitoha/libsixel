@@ -13,8 +13,11 @@ prog=${0##*/}
 out=
 input_count=0
 opt_file=${TMPDIR:-.}/libsixel-gnv-link-$$.opt
+link_log=${TMPDIR:-.}/libsixel-gnv-link-$$.log
+archive_members_file=${TMPDIR:-.}/libsixel-gnv-link-$$.members
+archive_objects_file=${TMPDIR:-.}/libsixel-gnv-link-$$.objects
 
-trap 'rm -f "$opt_file"' 0 1 2 3 15
+trap 'rm -f "$opt_file" "$link_log" "$archive_members_file" "$archive_objects_file"' 0 1 2 3 15
 : > "$opt_file"
 
 die()
@@ -34,6 +37,19 @@ find_realpath()
         return
     fi
     die "realpath.exe was not found"
+}
+
+find_ar()
+{
+    if command -v ar.exe >/dev/null 2>&1; then
+        echo ar.exe
+        return
+    fi
+    if command -v ar >/dev/null 2>&1; then
+        echo ar
+        return
+    fi
+    return 1
 }
 
 escape_vms_dir_component()
@@ -124,6 +140,76 @@ add_link_input()
     input_count=$((input_count + 1))
 }
 
+resolve_archive_member()
+{
+    member=$1
+    archive_dir=$2
+    la_dir=$3
+
+    for candidate in \
+        "$archive_dir/$member" \
+        "$la_dir/$member" \
+        "$member"; do
+        if test -f "$candidate"; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+resolve_archive_member_objects()
+{
+    archive_file=$1
+    la_dir=$2
+    ar_cmd=$3
+    resolved_count=0
+
+    case "$archive_file" in
+      */*) archive_dir=${archive_file%/*} ;;
+      *) archive_dir=. ;;
+    esac
+
+    : > "$archive_members_file"
+    : > "$archive_objects_file"
+    "$ar_cmd" t "$archive_file" > "$archive_members_file" 2>/dev/null ||
+        return 1
+    test -s "$archive_members_file" || return 1
+
+    while IFS= read -r member || test -n "$member"; do
+        test -n "$member" || continue
+        case "$member" in
+          *.o|*.obj)
+            ;;
+          *)
+            return 1
+            ;;
+        esac
+        member_path=`resolve_archive_member "$member" "$archive_dir" "$la_dir"` ||
+            return 1
+        printf '%s\n' "$member_path" >> "$archive_objects_file"
+        resolved_count=$((resolved_count + 1))
+    done < "$archive_members_file"
+
+    test "$resolved_count" -gt 0
+}
+
+add_archive_member_objects()
+{
+    archive_file=$1
+    la_dir=$2
+    realpath_cmd=$3
+    ar_cmd=`find_ar` || return 1
+
+    resolve_archive_member_objects "$archive_file" "$la_dir" "$ar_cmd" ||
+        return 1
+    while IFS= read -r member_path || test -n "$member_path"; do
+        test -n "$member_path" || continue
+        add_link_input "$member_path" "" "$realpath_cmd"
+    done < "$archive_objects_file"
+}
+
 read_la_value()
 {
     key=$1
@@ -147,7 +233,18 @@ add_libtool_archive()
       *) la_dir=. ;;
     esac
 
-    add_link_input "$la_dir/.libs/$old_library" "/LIBRARY" "$realpath_cmd"
+    archive_file=$la_dir/.libs/$old_library
+
+    # OpenVMS LINK can leave unresolved references when a libtool archive
+    # contains a single large amalgamation object and is passed as /LIBRARY.
+    # When the archive members still exist on disk, list those objects
+    # directly in the option file so LINK does not have to perform archive
+    # member selection.
+    if add_archive_member_objects "$archive_file" "$la_dir" "$realpath_cmd"; then
+        return
+    fi
+
+    add_link_input "$archive_file" "/LIBRARY" "$realpath_cmd"
 }
 
 realpath_cmd=`find_realpath`
@@ -209,9 +306,16 @@ vms_out=`posix_to_vms "$out" "$realpath_cmd"`
 vms_opt=`posix_to_vms "$opt_file" "$realpath_cmd"`
 
 set +e
-/bin/dcl.exe "link/executable=$vms_out $vms_opt/options"
+/bin/dcl.exe "link/executable=$vms_out $vms_opt/options" > "$link_log" 2>&1
 link_status=$?
 set -e
+
+cat "$link_log"
+
+if grep '^%ILINK-W-NUDFSYMS' "$link_log" >/dev/null 2>&1 ||
+   grep '^%ILINK-W-USEUNDEF' "$link_log" >/dev/null 2>&1; then
+    die "OpenVMS LINK left undefined symbols while linking $out"
+fi
 
 if test -f "$out"; then
     exit 0
