@@ -28,7 +28,6 @@ mkdir -p "$(dirname "${output}")"
 collect_units_from_dirs() {
     search_dirs=$1
     shift
-    units=""
 
     # Discovery rules:
     # - Use repository paths so downstream logic can resolve paths uniformly.
@@ -39,19 +38,9 @@ collect_units_from_dirs() {
         if [ ! -d "${src_root}/${dir}" ]; then
             continue
         fi
-        found=$(find "${src_root}/${dir}" -type f "$@" | \
-            LC_ALL=C sort | sed "s#^${src_root}/##")
-        if [ -n "${found}" ]; then
-            if [ -n "${units}" ]; then
-                units="${units}
-${found}"
-            else
-                units="${found}"
-            fi
-        fi
+        find "${src_root}/${dir}" -type f "$@" | \
+            LC_ALL=C sort | sed "s#^${src_root}/##"
     done
-
-    printf "%s\n" "${units}"
 }
 
 order_headers_by_includes() {
@@ -167,75 +156,70 @@ END {
 default_source_dirs="src tests converters assessment gdk-pixbuf-loader"
 default_header_dirs="include src converters tests assessment"
 
-default_units=$(collect_units_from_dirs \
-    "${default_source_dirs}" \
-    \( -name '*.c' -o -name '*.m' \))
-
-# Header discovery follows the same default scope as source discovery.
-header_units=$(collect_units_from_dirs \
-    "${default_header_dirs}" \
-    \( -name '*.h' \))
-
-# Ensure generated headers that may not exist in the source tree are still
-# recognized by the amalgamation workflow.
-header_units=$(printf "%s\n" \
-    "include/sixel.h" \
-    "${header_units}" \
-    "converters/completion_embed.h" | \
-    awk 'NF && !seen[$0]++')
-
-existing_headers=""
-missing_headers=""
-while IFS= read -r header; do
-    [ -z "${header}" ] && continue
-    if [ -f "${src_root}/${header}" ] || [ -f "${build_root}/${header}" ]; then
-        existing_headers="${existing_headers}
-${header}"
-    else
-        missing_headers="${missing_headers}
-${header}"
-    fi
-done <<EOF_HEADERS
-${header_units}
-EOF_HEADERS
-
-header_units=$(printf "%s\n" "${existing_headers}" | \
-    order_headers_by_includes)
-
-# Keep public API headers at the front even on minimal awk implementations.
-# Private headers may only include 6cells.h indirectly, but they still use
-# SIXELSTATUS, sixel_allocator_t, and SIXEL_INTERNAL_API directly.
-header_units=$(printf "%s\n%s\n%s\n%s\n" \
-    "include/sixel.h" \
-    "include/6cells.h" \
-    "${header_units}" \
-    "${missing_headers}" | awk 'NF && !seen[$0]++')
-
-header_filter_units="${header_units}"
-header_units=$(printf "%s\n" "${header_units}" | \
-    awk '$0 != "src/stb_image.h" && $0 != "src/stb_image_write.h"')
-
 # Persist header names to a temporary file so portable awk can read them
 # without depending on vendor-specific split() behavior.
 header_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-headers.XXXXXX")
+header_units_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-header-units.XXXXXX")
+header_filter_units_temp=$(mktemp \
+    "${TMPDIR:-/tmp}/sixel-header-filter-units.XXXXXX")
+existing_headers_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-existing-headers.XXXXXX")
+missing_headers_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-missing-headers.XXXXXX")
+user_units_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-user-units.XXXXXX")
 license_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-licenses.XXXXXX")
 license_hash_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-license-hash.XXXXXX")
 inline_state_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-inline-once.XXXXXX")
-trap 'rm -f "${header_temp}" "${license_temp}" \
-    "${license_hash_temp}" "${inline_state_temp}"' EXIT
+trap 'rm -f "${header_temp}" "${header_units_temp}" \
+    "${header_filter_units_temp}" "${existing_headers_temp}" \
+    "${missing_headers_temp}" "${user_units_temp}" \
+    "${license_temp}" "${license_hash_temp}" "${inline_state_temp}"' EXIT
+
+# Header discovery follows the same default scope as source discovery.  Keep
+# large path lists in temporary files because GNV shell variables can corrupt
+# very long newline-separated values on OpenVMS.
+{
+    printf "%s\n" "include/sixel.h"
+    collect_units_from_dirs "${default_header_dirs}" \( -name '*.h' \)
+    printf "%s\n" "converters/completion_embed.h"
+} | awk 'NF && !seen[$0]++' >"${header_units_temp}"
+
+: >"${existing_headers_temp}"
+: >"${missing_headers_temp}"
+while IFS= read -r header; do
+    [ -z "${header}" ] && continue
+    if [ -f "${src_root}/${header}" ] || [ -f "${build_root}/${header}" ]; then
+        printf "%s\n" "${header}" >>"${existing_headers_temp}"
+    else
+        printf "%s\n" "${header}" >>"${missing_headers_temp}"
+    fi
+done <"${header_units_temp}"
+
+{
+    printf "%s\n" "include/sixel.h"
+    printf "%s\n" "include/6cells.h"
+    order_headers_by_includes <"${existing_headers_temp}"
+    cat "${missing_headers_temp}"
+} | awk 'NF && !seen[$0]++' >"${header_filter_units_temp}"
+
+awk '$0 != "src/stb_image.h" && $0 != "src/stb_image_write.h"' \
+    "${header_filter_units_temp}" >"${header_units_temp}"
+
 # Use the dynamically collected header list to build a basename registry for
 # local-include filtering. The filter logic relies on filename matches rather
 # than paths, so we collapse each entry to its final component.
-printf "%s\n" "${header_filter_units}" | \
-    awk -F/ 'NF { print $NF }' | LC_ALL=C sort -u >"${header_temp}"
+awk -F/ 'NF { print $NF }' "${header_filter_units_temp}" | \
+    LC_ALL=C sort -u >"${header_temp}"
 
 # Headers are concatenated upfront so that the generated translation unit does
 # not rely on project-local includes at compile time.
 
 if [ "$#" -gt 0 ]; then
-    user_units="$*"
+    : >"${user_units_temp}"
+    for unit_arg in "$@"; do
+        printf "%s\n" "${unit_arg}" >>"${user_units_temp}"
+    done
 else
-    user_units="${default_units}"
+    collect_units_from_dirs "${default_source_dirs}" \
+        \( -name '*.c' -o -name '*.m' \) >"${user_units_temp}"
 fi
 
 config_path="${build_root}/config.h"
@@ -254,17 +238,11 @@ esac
 
 append_unique_unit() {
     candidate=$1
-    pattern=$(printf '\n%s\n' "${candidate}")
 
-    case "${user_units}" in
-        *"${pattern}"*)
-            return
-            ;;
-        *)
-            user_units="${user_units}
-${candidate}"
-            ;;
-    esac
+    if grep -Fx "${candidate}" "${user_units_temp}" >/dev/null 2>&1; then
+        return
+    fi
+    printf "%s\n" "${candidate}" >>"${user_units_temp}"
 }
 
 resolve_unit() {
@@ -351,7 +329,7 @@ append_license_block() {
 }
 
 collect_license_blocks() {
-    printf "%s\n" "${header_filter_units}" | while IFS= read -r unit; do
+    while IFS= read -r unit; do
         [ -z "${unit}" ] && continue
 
         case "${unit}" in
@@ -373,13 +351,13 @@ collect_license_blocks() {
                 append_license_block "$(resolve_header_unit "${unit}")"
                 ;;
         esac
-    done
+    done <"${header_filter_units_temp}"
 
-    printf "%s\n" "${user_units}" | while IFS= read -r unit; do
+    while IFS= read -r unit; do
         [ -z "${unit}" ] && continue
 
         append_license_block "$(resolve_unit "${unit}")"
-    done
+    done <"${user_units_temp}"
 }
 
 # Remove project-local includes so the generated translation unit can compile
@@ -511,7 +489,7 @@ emit_header_unit() {
 }
 
 emit_all_headers() {
-    echo "${header_units}" | while IFS= read -r unit; do
+    while IFS= read -r unit; do
         [ -z "${unit}" ] && continue
         case "${unit}" in
             *.inc.h)
@@ -574,11 +552,11 @@ emit_all_headers() {
                 emit_header_unit "${unit}" ""
                 ;;
         esac
-    done
+    done <"${header_units_temp}"
 }
 
 emit_all_units() {
-    echo "${user_units}" | while IFS= read -r unit; do
+    while IFS= read -r unit; do
         [ -z "${unit}" ] && continue
 
         case "${unit}" in
@@ -625,7 +603,7 @@ emit_all_units() {
                 emit_unit "${unit}" ""
                 ;;
         esac
-    done
+    done <"${user_units_temp}"
 }
 
 collect_license_blocks
@@ -689,4 +667,7 @@ printf '\n' >>"${output}"
 emit_config_header
 emit_all_headers
 emit_all_units
-rm -f "${header_temp}" "${license_temp}" "${license_hash_temp}"
+rm -f "${header_temp}" "${header_units_temp}" \
+    "${header_filter_units_temp}" "${existing_headers_temp}" \
+    "${missing_headers_temp}" "${user_units_temp}" \
+    "${license_temp}" "${license_hash_temp}" "${inline_state_temp}"
