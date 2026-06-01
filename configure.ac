@@ -5380,33 +5380,24 @@ AC_CONFIG_COMMANDS([openvms-makefiles], [
       ' "$mf" > "$mf_tmp" && mv "$mf_tmp" "$mf" || exit 1
       case $mf in
         src/Makefile)
-          if test "x$enable_amalgamated_lib" = xyes; then
-            cat >> "$mf" <<'SIXEL_OPENVMS_SRC_OBJECTS'
+          cat >> "$mf" <<'SIXEL_OPENVMS_SRC_OBJECTS'
 
 # GNV make 3.78.1 can lose Automake's multiline assignment when
 # libsixel_la_OBJECTS is defined through helper variables.  Re-state the
 # final object list on one physical line so OpenVMS links the real library.
+# The amalgamated build must keep libsixel_la-dither.lo because sixel.c is
+# compiled with SIXEL_AMALGAMATION_SPLIT_DITHER to avoid compiler ICEs.
+ifdef AMALGAMATION_SIXEL
 libsixel_la_OBJECTS = libsixel_la-dither.lo $(top_builddir)/amalgamation/libsixel_la-sixel.lo
-libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir)/include -I$(top_srcdir) $(AM_CPPFLAGS) $(THREAD_CPPFLAGS) $(AMALGAMATION_CPPFLAGS)
-
-# Add the prerequisites after the one-line value is visible.  The existing
-# Automake rule keeps its libtool recipe, and GNU make merges this dependency.
-libsixel.la: $(libsixel_la_OBJECTS)
-SIXEL_OPENVMS_SRC_OBJECTS
-          else
-            cat >> "$mf" <<'SIXEL_OPENVMS_SRC_OBJECTS'
-
-# GNV make 3.78.1 can lose Automake's multiline assignment when
-# libsixel_la_OBJECTS is defined through helper variables.  Re-state the
-# final object list on one physical line so OpenVMS links the real library.
+else
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS) $(nodist_libsixel_la_OBJECTS)
+endif
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir)/include -I$(top_srcdir) $(AM_CPPFLAGS) $(THREAD_CPPFLAGS) $(AMALGAMATION_CPPFLAGS)
 
 # Add the prerequisites after the one-line value is visible.  The existing
 # Automake rule keeps its libtool recipe, and GNU make merges this dependency.
 libsixel.la: $(libsixel_la_OBJECTS)
 SIXEL_OPENVMS_SRC_OBJECTS
-          fi
           ;;
         tests/Makefile)
           cat >> "$mf" <<'SIXEL_OPENVMS_TEST_OBJECTS'

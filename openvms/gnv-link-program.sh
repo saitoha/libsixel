@@ -14,10 +14,11 @@ out=
 input_count=0
 opt_file=${TMPDIR:-.}/libsixel-gnv-link-$$.opt
 link_log=${TMPDIR:-.}/libsixel-gnv-link-$$.log
+link_scan_log=${TMPDIR:-.}/libsixel-gnv-link-$$.scan
 archive_members_file=${TMPDIR:-.}/libsixel-gnv-link-$$.members
 archive_objects_file=${TMPDIR:-.}/libsixel-gnv-link-$$.objects
 
-trap 'rm -f "$opt_file" "$link_log" "$archive_members_file" "$archive_objects_file"' 0 1 2 3 15
+trap 'rm -f "$opt_file" "$link_log" "$link_scan_log" "$archive_members_file" "$archive_objects_file"' 0 1 2 3 15
 : > "$opt_file"
 
 die()
@@ -63,6 +64,19 @@ find_grep()
         return
     fi
     die "grep.exe was not found"
+}
+
+find_tr()
+{
+    if command -v tr.exe >/dev/null 2>&1; then
+        echo tr.exe
+        return
+    fi
+    if command -v tr >/dev/null 2>&1; then
+        echo tr
+        return
+    fi
+    die "tr.exe was not found"
 }
 
 escape_vms_dir_component()
@@ -303,6 +317,7 @@ add_libtool_archive()
 
 realpath_cmd=`find_realpath`
 grep_cmd=`find_grep`
+tr_cmd=`find_tr`
 
 while test "$#" -gt 0; do
     arg=$1
@@ -367,8 +382,11 @@ set -e
 
 cat "$link_log"
 
-if "$grep_cmd" '%ILINK-W-NUDFSYMS' "$link_log" >/dev/null 2>&1 ||
-   "$grep_cmd" '%ILINK-W-USEUNDEF' "$link_log" >/dev/null 2>&1; then
+"$tr_cmd" -d '\000\015' < "$link_log" > "$link_scan_log" 2>/dev/null ||
+    die "cannot normalize OpenVMS LINK log for $out"
+
+if "$grep_cmd" '%ILINK-W-NUDFSYMS' "$link_scan_log" >/dev/null 2>&1 ||
+   "$grep_cmd" '%ILINK-W-USEUNDEF' "$link_scan_log" >/dev/null 2>&1; then
     die "OpenVMS LINK left undefined symbols while linking $out"
 fi
 
