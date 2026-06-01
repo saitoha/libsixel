@@ -207,7 +207,10 @@ awk '$0 != "src/stb_image.h" && $0 != "src/stb_image_write.h"' \
 # local-include filtering. The filter logic relies on filename matches rather
 # than paths, so we collapse each entry to its final component.
 awk -F/ 'NF { print $NF }' "${header_filter_units_temp}" | \
-    LC_ALL=C sort -u >"${header_temp}"
+    {
+        printf "%s\n" "config.h"
+        cat
+    } | LC_ALL=C sort -u >"${header_temp}"
 
 # Headers are concatenated upfront so that the generated translation unit does
 # not rely on project-local includes at compile time.
@@ -224,17 +227,6 @@ fi
 
 config_path="${build_root}/config.h"
 keep_local_includes=${SIXEL_AMALGAMATION_KEEP_LOCAL_INCLUDES:-0}
-
-case "${keep_local_includes}" in
-    0)
-        uname_s=$(uname -s 2>/dev/null || printf '%s\n' unknown)
-        case "${uname_s}" in
-            *VMS*|*vms*)
-                keep_local_includes=1
-                ;;
-        esac
-        ;;
-esac
 
 append_unique_unit() {
     candidate=$1
