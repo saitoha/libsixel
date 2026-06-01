@@ -367,8 +367,8 @@ set -e
 
 cat "$link_log"
 
-if "$grep_cmd" '^%ILINK-W-NUDFSYMS' "$link_log" >/dev/null 2>&1 ||
-   "$grep_cmd" '^%ILINK-W-USEUNDEF' "$link_log" >/dev/null 2>&1; then
+if "$grep_cmd" '%ILINK-W-NUDFSYMS' "$link_log" >/dev/null 2>&1 ||
+   "$grep_cmd" '%ILINK-W-USEUNDEF' "$link_log" >/dev/null 2>&1; then
     die "OpenVMS LINK left undefined symbols while linking $out"
 fi
 
