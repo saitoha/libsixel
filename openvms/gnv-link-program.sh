@@ -146,9 +146,13 @@ resolve_archive_member()
     archive_dir=$2
     la_dir=$3
 
+    # GNU ar may store only the basename of a libtool object.  The
+    # amalgamated OpenVMS build compiles src/libsixel.la from
+    # ../amalgamation, so check that sibling build directory explicitly.
     for candidate in \
         "$archive_dir/$member" \
         "$la_dir/$member" \
+        "$la_dir/../amalgamation/$member" \
         "$member"; do
         if test -f "$candidate"; then
             printf '%s\n' "$candidate"
