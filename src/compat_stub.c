@@ -160,11 +160,14 @@ int gettimeofday(struct timeval *tv, struct timezone *tz);
 # include <share.h>
 #endif
 
-#if defined(LIBSIXEL_OPENVMS) && !HAVE_STRUCT_TIMEVAL
+#if defined(LIBSIXEL_OPENVMS) && !HAVE_STRUCT_TIMEVAL \
+    && !defined(SIXEL_AMALGAMATION)
 /*
  * GNV can provide sys/time.h without exposing a complete timeval under the
  * feature-macro set used here.  Fill in the POSIX layout so the public compat
  * wrapper can still be compiled when gettimeofday() is available at link time.
+ * The amalgamated translation unit sees the OpenVMS socket headers from other
+ * units, so repeating this fallback there becomes a hard redefinition error.
  */
 struct timeval {
     long tv_sec;
@@ -205,9 +208,11 @@ int mkstemp(char *templ);
 # define _CRTIMP
 #endif
 
-#if defined(LIBSIXEL_OPENVMS)
+#if defined(LIBSIXEL_OPENVMS) && !defined(SIXEL_AMALGAMATION)
 int putenv(char *);
+#endif
 
+#if defined(LIBSIXEL_OPENVMS)
 static int
 sixel_compat_openvms_setenv(char const *name, char const *value)
 {
