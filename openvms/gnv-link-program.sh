@@ -52,6 +52,19 @@ find_ar()
     return 1
 }
 
+find_grep()
+{
+    if command -v grep.exe >/dev/null 2>&1; then
+        echo grep.exe
+        return
+    fi
+    if command -v grep >/dev/null 2>&1; then
+        echo grep
+        return
+    fi
+    die "grep.exe was not found"
+}
+
 escape_vms_dir_component()
 {
     # A POSIX directory named ".libs" must become "^.libs" inside a VMS
@@ -214,6 +227,39 @@ add_archive_member_objects()
     done < "$archive_objects_file"
 }
 
+add_existing_objects()
+{
+    realpath_cmd=$1
+    found_count=0
+    shift
+
+    for object_file in "$@"; do
+        test -f "$object_file" || continue
+        add_link_input "$object_file" "" "$realpath_cmd"
+        found_count=$((found_count + 1))
+    done
+
+    test "$found_count" -gt 0
+}
+
+add_libtool_object_files()
+{
+    old_library=$1
+    la_dir=$2
+    realpath_cmd=$3
+    libbase=${old_library%.*}
+    object_prefix=${libbase}_la-
+
+    # OpenVMS LIBRARY/ar can expose module names rather than the original
+    # object file names, so archive-member expansion is not always possible.
+    # Libtool names its per-library objects as <library>_la-*.o; use those
+    # objects directly before falling back to the native archive.
+    add_existing_objects "$realpath_cmd" \
+        "$la_dir/../amalgamation"/"$object_prefix"*.o \
+        "$la_dir/.libs"/"$object_prefix"*.o \
+        "$la_dir"/"$object_prefix"*.o
+}
+
 read_la_value()
 {
     key=$1
@@ -248,10 +294,15 @@ add_libtool_archive()
         return
     fi
 
+    if add_libtool_object_files "$old_library" "$la_dir" "$realpath_cmd"; then
+        return
+    fi
+
     add_link_input "$archive_file" "/LIBRARY" "$realpath_cmd"
 }
 
 realpath_cmd=`find_realpath`
+grep_cmd=`find_grep`
 
 while test "$#" -gt 0; do
     arg=$1
@@ -316,8 +367,8 @@ set -e
 
 cat "$link_log"
 
-if grep '^%ILINK-W-NUDFSYMS' "$link_log" >/dev/null 2>&1 ||
-   grep '^%ILINK-W-USEUNDEF' "$link_log" >/dev/null 2>&1; then
+if "$grep_cmd" '^%ILINK-W-NUDFSYMS' "$link_log" >/dev/null 2>&1 ||
+   "$grep_cmd" '^%ILINK-W-USEUNDEF' "$link_log" >/dev/null 2>&1; then
     die "OpenVMS LINK left undefined symbols while linking $out"
 fi
 
