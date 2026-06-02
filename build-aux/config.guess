@@ -1570,6 +1570,7 @@ EOF
 	case $UNAME_MACHINE in
 	    A*) GUESS=alpha-dec-vms ;;
 	    I*) GUESS=ia64-dec-vms ;;
+	    QEMU*|X86_64*|x86_64*|AMD64*|amd64*) GUESS=x86_64-dec-vms ;;
 	    V*) GUESS=vax-dec-vms ;;
 	esac ;;
     *:XENIX:*:SysV)

@@ -49,7 +49,7 @@ get_time_seconds(void)
   }
 
   return (double) ts.tv_sec + (double) ts.tv_nsec / 1.0e9;
-#elif defined(HAVE_GETTIMEOFDAY)
+#elif defined(HAVE_GETTIMEOFDAY) && defined(HAVE_STRUCT_TIMEVAL)
   struct timeval tv;
 
   if (gettimeofday(&tv, NULL) != 0) {
@@ -58,7 +58,7 @@ get_time_seconds(void)
 
   return (double) tv.tv_sec + (double) tv.tv_usec / 1.0e6;
 #else
-  return -1.0;
+  return (double) clock() / (double) CLOCKS_PER_SEC;
 #endif
 }
 

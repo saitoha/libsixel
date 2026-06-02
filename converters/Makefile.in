@@ -192,6 +192,7 @@ am__v_lt_1 =
 img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
 	$(CFLAGS) $(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
+@OPENVMS_GNV_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 am__sixel2png_SOURCES_DIST = $(srcdir)/sixel2png.c $(srcdir)/cli.c \
 	$(srcdir)/cli.h $(srcdir)/malloc_stub.c \
 	$(srcdir)/malloc_stub.h $(srcdir)/getopt_stub.h \
@@ -225,6 +226,7 @@ sixel2png_OBJECTS = $(am_sixel2png_OBJECTS) \
 sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
 	$(CFLAGS) $(sixel2png_LDFLAGS) $(LDFLAGS) -o $@
+@OPENVMS_GNV_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false

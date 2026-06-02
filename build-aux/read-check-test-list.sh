@@ -5,20 +5,30 @@
 
 set -eu
 
-if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
-    echo "Usage: $0 <tests> <tests-dir> [include|skip]" >&2
+if [ "$#" -lt 2 ] || [ "$#" -gt 4 ]; then
+    echo "Usage: $0 <tests> <tests-dir> [include|skip] [space|newline|make]" >&2
     exit 1
 fi
 
 mode=$1
 tests_dir=$2
 ruby_tests_mode=${3:-include}
+output_mode=${4:-space}
 
 case "$ruby_tests_mode" in
     include|skip)
         ;;
     *)
         echo "Unknown ruby-tests mode: $ruby_tests_mode" >&2
+        exit 1
+        ;;
+esac
+
+case "$output_mode" in
+    space|newline|make)
+        ;;
+    *)
+        echo "Unknown output mode: $output_mode" >&2
         exit 1
         ;;
 esac
@@ -59,7 +69,27 @@ esac
         \) -print
 ) |
     LC_ALL=C sort |
-    awk -v ruby_tests_mode="$ruby_tests_mode" '
+    awk -v ruby_tests_mode="$ruby_tests_mode" \
+        -v output_mode="$output_mode" '
+        function emit_make_path(path) {
+            prefix = "TESTS +="
+            extra = length(path) + 1
+            if (make_line_len == 0) {
+                printf "%s %s", prefix, path
+                make_line_len = length(prefix) + extra
+            } else if (make_line_len + extra > 1800) {
+                printf "\n%s %s", prefix, path
+                make_line_len = length(prefix) + extra
+            } else {
+                printf " %s", path
+                make_line_len += extra
+            }
+        }
+        BEGIN {
+            if (output_mode == "make") {
+                printf "TESTS =\n"
+            }
+        }
         {
             path = $0
             sub("^\\./", "", path)
@@ -95,9 +125,19 @@ esac
                 path ~ /^bindings\/ruby\/[0-9][0-9][0-9][0-9]_.+\.rb$/) {
                 next
             }
-            printf "%s ", path
+            if (output_mode == "make") {
+                emit_make_path(path)
+            } else if (output_mode == "newline") {
+                printf "%s\n", path
+            } else {
+                printf "%s ", path
+            }
         }
         END {
-            printf "\n"
+            if (output_mode == "make" && make_line_len != 0) {
+                printf "\n"
+            } else if (output_mode != "newline") {
+                printf "\n"
+            }
         }
     '

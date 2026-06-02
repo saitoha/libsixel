@@ -59,6 +59,10 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/install-emscripten-sidecar.sh \
 	build-aux/meson-test-with-failures.sh \
 	build-aux/resolve-test-tool-paths.sh.in \
+	openvms/gnv-ar.sh \
+	openvms/gnv-cc.sh \
+	openvms/gnv-rm.sh \
+	openvms/gnv-link-program.sh \
 	tools/fuzz-afl-runner.sh \
 	tools/fuzz-img2sixel-cli.sh \
 	tools/gen_perl_constants.pl \
@@ -72,7 +76,17 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 # no user-provided job control is visible in MFLAGS/MAKEFLAGS.
 # Accept both explicit jobs options and GNU make jobserver tokens.
 LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=% --jobserver-style=%,$(MFLAGS) $(MAKEFLAGS))
-AM_MAKEFLAGS = -s $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
+if OPENVMS_GNV
+# GNV make loses the following libtool object target when recursive makes are
+# run with the silent flag.  Keep build recursion serial there, and force
+# Automake's verbose recipes so generated prerequisite recipes do not poison
+# the following libtool object target.
+# Test sharding is controlled separately by OPENVMS_TEST_JOBS.
+LS_OPENVMS_BUILD_MAKEFLAGS = -j1 V=1
+else
+LS_SILENT_MAKEFLAGS = -s
+endif
+AM_MAKEFLAGS = $(LS_SILENT_MAKEFLAGS) $(LS_OPENVMS_BUILD_MAKEFLAGS) $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
 
 # Automake/libtool may require a top-level ltmain.sh in DIST_COMMON even when
 # AC_CONFIG_AUX_DIR points at build-aux/.  Generate it from the canonical copy
@@ -433,6 +447,7 @@ CLEANFILES = ltmain.sh $(builddir)/package.json $(builddir)/*.log
 	phase3-members-all \
 	all-src-lib \
 	all-src-libobjs \
+	maybe-all-src-lib \
 	all-converters-objs \
 	all-assessment-objs \
 	all-converters \
@@ -444,7 +459,15 @@ CLEANFILES = ltmain.sh $(builddir)/package.json $(builddir)/*.log
 	all-ruby \
 	all-php \
 	all-python \
+	openvms-all \
 	staticcheck
+
+# GNV make can finish Automake's full all-recursive traversal with status 1
+# after all child targets have succeeded.  The OpenVMS CI job calls this
+# explicit target to run the already-serialized phased build directly.
+openvms-all: config.h
+	$(MAKE) -C include $(AM_MAKEFLAGS) all
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 PHASE2_ALL_TARGETS = \
 	all-converters-objs \
@@ -497,8 +520,8 @@ phase2-members-all: $(PHASE2_ALL_TARGETS)
 phase3-members-all: $(PHASE3_ALL_TARGETS)
 
 phase2-all: phase1-all
-	$(MAKE) $(AM_MAKEFLAGS) phase2-members-all
-	$(MAKE) $(AM_MAKEFLAGS) phase3-all
+	$(MAKE) $(AM_MAKEFLAGS) LS_PHASED_ALL=yes phase2-members-all
+	$(MAKE) $(AM_MAKEFLAGS) LS_PHASED_ALL=yes phase3-all
 
 phase3-all:
 	$(MAKE) $(AM_MAKEFLAGS) phase3-members-all
@@ -510,6 +533,17 @@ all-src-lib: all-src-libobjs
 	$(MAKE) -C src $(AM_MAKEFLAGS) libsixel.la
 	$(MAKE) -C src $(AM_MAKEFLAGS) libsixel-import-lib-alias
 
+# Language binding targets can also be invoked directly.  During the top-level
+# phased build, phase1-all has already built libsixel.la; rerunning all-src-lib
+# there is redundant and especially expensive on OpenVMS because libobjs is
+# intentionally expanded into one recursive make per object.
+maybe-all-src-lib:
+	@if test "x$(LS_PHASED_ALL)" = xyes; then \
+	  :; \
+	else \
+	  $(MAKE) $(AM_MAKEFLAGS) all-src-lib; \
+	fi
+
 all-converters-objs:
 	$(MAKE) -C converters $(AM_MAKEFLAGS) prelink-objs
 
@@ -517,7 +551,7 @@ all-assessment-objs:
 	$(MAKE) -C assessment $(AM_MAKEFLAGS) prelink-objs
 
 all-converters:
-	$(MAKE) -s -C converters $(AM_MAKEFLAGS) all
+	$(MAKE) -C converters $(AM_MAKEFLAGS) all
 
 all-tools:
 	$(MAKE) -C tools $(AM_MAKEFLAGS) all
@@ -537,18 +571,15 @@ all-wic:
 # Build libsixel.la at the top level before entering ruby/python.
 # This prevents parallel recursion from racing on src/libsixel.la when
 # language packaging targets run at the same time.
-all-ruby:
-	$(MAKE) $(AM_MAKEFLAGS) all-src-lib
+all-ruby: maybe-all-src-lib
 	$(MAKE) -C ruby $(AM_MAKEFLAGS) all
 
-all-php:
-	$(MAKE) $(AM_MAKEFLAGS) all-src-lib
+all-php: maybe-all-src-lib
 	$(MAKE) -C php $(AM_MAKEFLAGS) all
 
 # Keep the src/lib link step serialized at the top level to avoid
 # duplicate "make -C src all" recursion from language bindings.
-all-python:
-	$(MAKE) $(AM_MAKEFLAGS) all-src-lib
+all-python: maybe-all-src-lib
 	$(MAKE) -C python $(AM_MAKEFLAGS) all
 
 all-am: phase2-all

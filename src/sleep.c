@@ -42,13 +42,26 @@
 # include <windows.h>
 #endif
 
+/*
+ * OpenVMS/GNV can report nanosleep()/usleep() while the C headers still leave
+ * struct timespec incomplete or usleep() undeclared.  Prefer the clock()
+ * fallback until configure can prove the function and its public type
+ * together.
+ */
+#if defined(LIBSIXEL_OPENVMS)
+# undef HAVE_NANOSLEEP
+# define HAVE_NANOSLEEP 0
+# undef HAVE_USLEEP
+# define HAVE_USLEEP 0
+#endif
+
 #include "sleep.h"
 
 void
 sixel_sleep(unsigned int usec)
 {
 #if defined(HAVE_CLOCK) && !HAVE_NANOSLEEP && \
-    !defined(_WIN32) && !defined(HAVE_USLEEP)
+    !defined(_WIN32) && !HAVE_USLEEP
     clock_t start;
     clock_t elapsed;
     clock_t target_ticks;
@@ -79,7 +92,7 @@ sixel_sleep(unsigned int usec)
         millis = 1;
     }
     Sleep(millis);
-#elif defined(HAVE_USLEEP)
+#elif HAVE_USLEEP
     (void)usleep(usec);
 #elif defined(HAVE_CLOCK)
     /*

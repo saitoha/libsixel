@@ -316,6 +316,7 @@ am__v_lt_1 =
 test_runner_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_runner_CFLAGS) \
 	$(CFLAGS) $(test_runner_LDFLAGS) $(LDFLAGS) -o $@
+@OPENVMS_GNV_TRUE@test_runner_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -835,6 +836,7 @@ SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 SIXEL_SHLIBPATH_OVERRIDES_RUNPATH = @SIXEL_SHLIBPATH_OVERRIDES_RUNPATH@
 SIXEL_TEST_ADDITIOANL_PATH = @SIXEL_TEST_ADDITIOANL_PATH@
 SIXEL_TEST_ADDITIONAL_PATH = @SIXEL_TEST_ADDITIONAL_PATH@
+SIXEL_TEST_GZIP = @SIXEL_TEST_GZIP@
 SIXEL_TEST_SHELL = @SIXEL_TEST_SHELL@
 SIXEL_TSAN_BUILD = @SIXEL_TSAN_BUILD@
 STRIP = @STRIP@
@@ -918,7 +920,15 @@ zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
-TESTS = @SIXEL_CHECK_TESTS@
+@OPENVMS_GNV_FALSE@TESTS = @SIXEL_CHECK_TESTS@
+@OPENVMS_GNV_TRUE@OPENVMS_CHECK_TESTS_LIST = $(builddir)/check-tests.list
+@OPENVMS_GNV_TRUE@# Keep the default serialized on OpenVMS.  N=2 sharding is still available for
+@OPENVMS_GNV_TRUE@# experiments, but the extra GNV process and file I/O overhead is slower on the
+@OPENVMS_GNV_TRUE@# current runner.
+@OPENVMS_GNV_TRUE@OPENVMS_TEST_JOBS ?= 1
+@OPENVMS_GNV_TRUE@OPENVMS_TEST_SHARD_DIR = $(builddir)/check-tests-shards
+@OPENVMS_GNV_TRUE@OPENVMS_TEST_WORKER_LIST = $(OPENVMS_CHECK_TESTS_LIST)
+@OPENVMS_GNV_TRUE@TESTS =
 XFAIL_TESTS = \
     loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t \
     loader/builtin/1317_loader_builtin_psd_psdtools_effects_shape_fx2_hardcase_lsqa.t \
@@ -966,10 +976,13 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	export SIXEL_SHLIBPATH_OVERRIDES_RUNPATH; \
 	SIXEL_TEST_ADDITIOANL_PATH='@SIXEL_TEST_ADDITIOANL_PATH@'; \
 	export SIXEL_TEST_ADDITIOANL_PATH; \
+	SIXEL_TEST_GZIP='@SIXEL_TEST_GZIP@'; export SIXEL_TEST_GZIP; \
 	SIXEL_TEST_MACOS_PRODUCT_VERSION='$(SIXEL_TEST_MACOS_PRODUCT_VERSION)'; \
 	export SIXEL_TEST_MACOS_PRODUCT_VERSION; \
 	SIXEL_TEST_HOST_ARCH='@host_cpu@'; export \
-	SIXEL_TEST_HOST_ARCH;
+	SIXEL_TEST_HOST_ARCH; \
+	RUNTIME_ENV_IS_OPENVMS='@RUNTIME_ENV_IS_OPENVMS@'; export \
+	RUNTIME_ENV_IS_OPENVMS;
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
@@ -1333,7 +1346,8 @@ EXTRA_DIST = $(HELPER_FILES) \
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
-CLEANFILES = 
+CLEANFILES = check-tests.list
+DISTCLEANFILES = check-tests.mk
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -4384,7 +4398,8 @@ staticcheck-c-header-modeline:
 
 # Build all test logs through a phony target so recursive make does not need
 # to receive thousands of .log paths as command-line arguments.
-.PHONY: sixel-check-test-tools sixel-check-test-logs installcheck-local
+.PHONY: sixel-check-test-tools sixel-check-test-logs \
+	sixel-check-test-openvms-shard installcheck-local
 sixel-check-test-tools:
 	@set -eu; \
 	$(MAKE) -C "$(top_builddir)/src" libsixel.la; \
@@ -4394,8 +4409,147 @@ sixel-check-test-tools:
 @WANT_SIXEL2PNG_TRUE@	@set -eu; \
 @WANT_SIXEL2PNG_TRUE@	$(MAKE) -C "$(top_builddir)/converters" sixel2png@EXEEXT@
 
-sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
-	@:
+@OPENVMS_GNV_TRUE@sixel-check-test-logs: sixel-check-test-tools
+@OPENVMS_GNV_TRUE@	@set -eu; \
+@OPENVMS_GNV_TRUE@	jobs='$(OPENVMS_TEST_JOBS)'; \
+@OPENVMS_GNV_TRUE@	case "$$jobs" in \
+@OPENVMS_GNV_TRUE@	    1) \
+@OPENVMS_GNV_TRUE@	        $(MAKE) $(AM_MAKEFLAGS) sixel-check-test-openvms-shard \
+@OPENVMS_GNV_TRUE@	            OPENVMS_TEST_WORKER_LIST='$(OPENVMS_CHECK_TESTS_LIST)' \
+@OPENVMS_GNV_TRUE@	        ;; \
+@OPENVMS_GNV_TRUE@	    2) \
+@OPENVMS_GNV_TRUE@	        shard_dir='$(OPENVMS_TEST_SHARD_DIR)'; \
+@OPENVMS_GNV_TRUE@	        while test -e "$$shard_dir"; do \
+@OPENVMS_GNV_TRUE@	            rm -rf "$$shard_dir" || exit $$?; \
+@OPENVMS_GNV_TRUE@	        done; \
+@OPENVMS_GNV_TRUE@	        $(MKDIR_P) "$$shard_dir"; \
+@OPENVMS_GNV_TRUE@	        : > "$$shard_dir/serial.list"; \
+@OPENVMS_GNV_TRUE@	        : > "$$shard_dir/1.list"; \
+@OPENVMS_GNV_TRUE@	        : > "$$shard_dir/2.list"; \
+@OPENVMS_GNV_TRUE@	        shard_id=1; \
+@OPENVMS_GNV_TRUE@	        while IFS= read -r test_path || test -n "$$test_path"; do \
+@OPENVMS_GNV_TRUE@	            test -n "$$test_path" || continue; \
+@OPENVMS_GNV_TRUE@	            case " $(SERIAL_TESTS) " in \
+@OPENVMS_GNV_TRUE@	                *" $$test_path "*) \
+@OPENVMS_GNV_TRUE@	                    printf '%s\n' "$$test_path" >> \
+@OPENVMS_GNV_TRUE@	                        "$$shard_dir/serial.list" \
+@OPENVMS_GNV_TRUE@	                    ;; \
+@OPENVMS_GNV_TRUE@	                *) \
+@OPENVMS_GNV_TRUE@	                    printf '%s\n' "$$test_path" >> \
+@OPENVMS_GNV_TRUE@	                        "$$shard_dir/$$shard_id.list"; \
+@OPENVMS_GNV_TRUE@	                    if test "$$shard_id" = 1; then \
+@OPENVMS_GNV_TRUE@	                        shard_id=2; \
+@OPENVMS_GNV_TRUE@	                    else \
+@OPENVMS_GNV_TRUE@	                        shard_id=1; \
+@OPENVMS_GNV_TRUE@	                    fi \
+@OPENVMS_GNV_TRUE@	                    ;; \
+@OPENVMS_GNV_TRUE@	            esac; \
+@OPENVMS_GNV_TRUE@	        done < "$(OPENVMS_CHECK_TESTS_LIST)"; \
+@OPENVMS_GNV_TRUE@	        $(MAKE) $(AM_MAKEFLAGS) sixel-check-test-openvms-shard \
+@OPENVMS_GNV_TRUE@	            OPENVMS_TEST_WORKER_LIST="$$shard_dir/serial.list"; \
+@OPENVMS_GNV_TRUE@	        for shard_id in 1 2; do \
+@OPENVMS_GNV_TRUE@	            ( \
+@OPENVMS_GNV_TRUE@	                set +e; \
+@OPENVMS_GNV_TRUE@	                $(MAKE) $(AM_MAKEFLAGS) sixel-check-test-openvms-shard \
+@OPENVMS_GNV_TRUE@	                    OPENVMS_TEST_WORKER_LIST="$$shard_dir/$$shard_id.list" \
+@OPENVMS_GNV_TRUE@	                    > "$$shard_dir/$$shard_id.out" 2>&1; \
+@OPENVMS_GNV_TRUE@	                printf '%s\n' "$$?" > "$$shard_dir/$$shard_id.status"; \
+@OPENVMS_GNV_TRUE@	                : > "$$shard_dir/$$shard_id.done" \
+@OPENVMS_GNV_TRUE@	            ) & \
+@OPENVMS_GNV_TRUE@	        done; \
+@OPENVMS_GNV_TRUE@	        while test ! -f "$$shard_dir/1.done" || \
+@OPENVMS_GNV_TRUE@	            test ! -f "$$shard_dir/2.done"; do \
+@OPENVMS_GNV_TRUE@	            echo "openvms test shards still running..."; \
+@OPENVMS_GNV_TRUE@	            sleep 10; \
+@OPENVMS_GNV_TRUE@	        done; \
+@OPENVMS_GNV_TRUE@	        cat "$$shard_dir/1.out" "$$shard_dir/2.out"; \
+@OPENVMS_GNV_TRUE@	        status=0; \
+@OPENVMS_GNV_TRUE@	        for shard_id in 1 2; do \
+@OPENVMS_GNV_TRUE@	            shard_status=1; \
+@OPENVMS_GNV_TRUE@	            if test -r "$$shard_dir/$$shard_id.status"; then \
+@OPENVMS_GNV_TRUE@	                read shard_status < "$$shard_dir/$$shard_id.status"; \
+@OPENVMS_GNV_TRUE@	            fi; \
+@OPENVMS_GNV_TRUE@	            test "$$shard_status" = 0 || status="$$shard_status"; \
+@OPENVMS_GNV_TRUE@	        done; \
+@OPENVMS_GNV_TRUE@	        exit "$$status" \
+@OPENVMS_GNV_TRUE@	        ;; \
+@OPENVMS_GNV_TRUE@	    *) \
+@OPENVMS_GNV_TRUE@	        echo "error: OPENVMS_TEST_JOBS must be 1 or 2" >&2; \
+@OPENVMS_GNV_TRUE@	        exit 1 \
+@OPENVMS_GNV_TRUE@	        ;; \
+@OPENVMS_GNV_TRUE@	esac
+
+@OPENVMS_GNV_TRUE@sixel-check-test-openvms-shard:
+@OPENVMS_GNV_TRUE@	@set -eu; \
+@OPENVMS_GNV_TRUE@	test -r "$(OPENVMS_TEST_WORKER_LIST)" || { \
+@OPENVMS_GNV_TRUE@	    echo "error: missing test list: $(OPENVMS_TEST_WORKER_LIST)" >&2; \
+@OPENVMS_GNV_TRUE@	    exit 1; \
+@OPENVMS_GNV_TRUE@	}; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_PYTHON='$(SIXEL_TEST_PYTHON)'; export SIXEL_TEST_PYTHON; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_RUBY='$(SIXEL_TEST_RUBY)'; export SIXEL_TEST_RUBY; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_RUBY_GEM_HOME='$(SIXEL_TEST_RUBY_GEM_HOME)'; \
+@OPENVMS_GNV_TRUE@	    export SIXEL_TEST_RUBY_GEM_HOME; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_RUBYLIB='$(SIXEL_TEST_RUBYLIB)'; \
+@OPENVMS_GNV_TRUE@	    export SIXEL_TEST_RUBYLIB; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_PERL='$(SIXEL_TEST_PERL)'; export SIXEL_TEST_PERL; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_PERL_CPANM='$(SIXEL_TEST_PERL_CPANM)'; \
+@OPENVMS_GNV_TRUE@	    export SIXEL_TEST_PERL_CPANM; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_PERL5LIB='$(SIXEL_TEST_PERL5LIB)'; \
+@OPENVMS_GNV_TRUE@	    export SIXEL_TEST_PERL5LIB; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_PERL_LOCAL_LIB_ROOT='$(SIXEL_TEST_PERL_LOCAL_LIB_ROOT)'; \
+@OPENVMS_GNV_TRUE@	    export SIXEL_TEST_PERL_LOCAL_LIB_ROOT; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_PERL_MB_OPT='$(SIXEL_TEST_PERL_MB_OPT)'; \
+@OPENVMS_GNV_TRUE@	    export SIXEL_TEST_PERL_MB_OPT; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_PERL_MM_OPT='$(SIXEL_TEST_PERL_MM_OPT)'; \
+@OPENVMS_GNV_TRUE@	    export SIXEL_TEST_PERL_MM_OPT; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_PHP='$(SIXEL_TEST_PHP)'; export SIXEL_TEST_PHP; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_PHP_BINDING_ROOT='$(SIXEL_TEST_PHP_BINDING_ROOT)'; \
+@OPENVMS_GNV_TRUE@	    export SIXEL_TEST_PHP_BINDING_ROOT; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_PHP_LIBDIR='$(SIXEL_TEST_PHP_LIBDIR)'; \
+@OPENVMS_GNV_TRUE@	    export SIXEL_TEST_PHP_LIBDIR; \
+@OPENVMS_GNV_TRUE@	SIXEL_TEST_PHP_LIBPATH='$(SIXEL_TEST_PHP_LIBPATH)'; \
+@OPENVMS_GNV_TRUE@	    export SIXEL_TEST_PHP_LIBPATH; \
+@OPENVMS_GNV_TRUE@	TERM=$${TERM-dumb}; export TERM; \
+@OPENVMS_GNV_TRUE@	$(am__tty_colors); \
+@OPENVMS_GNV_TRUE@	srcdir=$(srcdir); export srcdir; \
+@OPENVMS_GNV_TRUE@	if test -n '$(DISABLE_HARD_ERRORS)'; then \
+@OPENVMS_GNV_TRUE@	    am__enable_hard_errors=no; \
+@OPENVMS_GNV_TRUE@	else \
+@OPENVMS_GNV_TRUE@	    am__enable_hard_errors=yes; \
+@OPENVMS_GNV_TRUE@	fi; \
+@OPENVMS_GNV_TRUE@	while IFS= read -r test_path || test -n "$$test_path"; do \
+@OPENVMS_GNV_TRUE@	    test -n "$$test_path" || continue; \
+@OPENVMS_GNV_TRUE@	    log_base="$${test_path%.*}"; \
+@OPENVMS_GNV_TRUE@	    log_path="$$log_base.log"; \
+@OPENVMS_GNV_TRUE@	    trs_path="$$log_base.trs"; \
+@OPENVMS_GNV_TRUE@	    log_dir="$${log_path%/*}"; \
+@OPENVMS_GNV_TRUE@	    test "$$log_dir" != "$$log_path" || log_dir=.; \
+@OPENVMS_GNV_TRUE@	    test -d "$$log_dir" || $(MKDIR_P) "$$log_dir" || exit $$?; \
+@OPENVMS_GNV_TRUE@	    for file in "$$log_path" "$$trs_path"; do \
+@OPENVMS_GNV_TRUE@	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+@OPENVMS_GNV_TRUE@	    done; \
+@OPENVMS_GNV_TRUE@	    if test -f "./$$test_path"; then \
+@OPENVMS_GNV_TRUE@	        tst="./$$test_path"; \
+@OPENVMS_GNV_TRUE@	    elif test -f "$$test_path"; then \
+@OPENVMS_GNV_TRUE@	        tst="$$test_path"; \
+@OPENVMS_GNV_TRUE@	    else \
+@OPENVMS_GNV_TRUE@	        tst="$(srcdir)/$$test_path"; \
+@OPENVMS_GNV_TRUE@	    fi; \
+@OPENVMS_GNV_TRUE@	    case " $(XFAIL_TESTS) " in \
+@OPENVMS_GNV_TRUE@	        *" $$test_path "*) am__expect_failure=yes ;; \
+@OPENVMS_GNV_TRUE@	        *) am__expect_failure=no ;; \
+@OPENVMS_GNV_TRUE@	    esac; \
+@OPENVMS_GNV_TRUE@	    $(AM_TESTS_ENVIRONMENT) $(TESTS_ENVIRONMENT) \
+@OPENVMS_GNV_TRUE@	    $(T_LOG_DRIVER) --test-name "$$test_path" \
+@OPENVMS_GNV_TRUE@	        --log-file "$$log_path" --trs-file "$$trs_path" \
+@OPENVMS_GNV_TRUE@	        --color-tests "$$am__color_tests" \
+@OPENVMS_GNV_TRUE@	        --enable-hard-errors "$$am__enable_hard_errors" \
+@OPENVMS_GNV_TRUE@	        --expect-failure "$$am__expect_failure" \
+@OPENVMS_GNV_TRUE@	        $(AM_T_LOG_DRIVER_FLAGS) $(T_LOG_DRIVER_FLAGS) -- "$$tst" \
+@OPENVMS_GNV_TRUE@	        $(AM_TESTS_FD_REDIRECT); \
+@OPENVMS_GNV_TRUE@	done < "$(OPENVMS_TEST_WORKER_LIST)"
+@OPENVMS_GNV_FALSE@sixel-check-test-logs: sixel-check-test-tools $(TEST_LOGS)
+@OPENVMS_GNV_FALSE@	@:
 
 # Run the regular TAP suite against installed commands.
 # installcheck expects `make install` to have completed first.
@@ -4448,9 +4602,23 @@ installcheck-local:
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
 check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtures
-	@find "$(abs_builddir)" -type f -name '*.log' ! -name 'staticcheck-*.log' -exec rm -f {} +
-	@find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -exec rm -f {} +
-	@$(am__rm_f) $(TEST_SUITE_LOG)
+	@find "$(builddir)" -type f -name '*.log' ! -name 'staticcheck-*.log' -print | \
+	    while IFS= read -r file; do \
+	        test -n "$$file" || continue; \
+	        test "$$file" != "." || continue; \
+	        test "$$file" != "./" || continue; \
+	        test -f "$$file" || continue; \
+	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+	    done
+	@find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -print | \
+	    while IFS= read -r file; do \
+	        test -n "$$file" || continue; \
+	        test "$$file" != "." || continue; \
+	        test "$$file" != "./" || continue; \
+	        test -f "$$file" || continue; \
+	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+	    done
+	@file="$(TEST_SUITE_LOG)"; while test -e "$$file"; do rm -f "$$file" || exit $$?; done
 	@set +e; \
 	config_header="$(top_builddir)/config.h"; \
 	resolved_test_paths=`$(SHELL) -xv "$(top_builddir)/build-aux/resolve-test-tool-paths.sh" \
@@ -4571,18 +4739,26 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	    export RUNTIME_ENV_IS_WINE=1; \
 	export RUNTIME_ENV_BUILD_OS='@build_os@'; \
 	mkdir -p "$(ARTIFACT_ROOT)"; \
-	trs_manifest="$(abs_builddir)/.check-test-trs.list"; \
-	failed_manifest="$(abs_builddir)/.check-test-failures.list"; \
+	trs_manifest="$(builddir)/.check-test-trs.list"; \
+	failed_manifest="$(builddir)/.check-test-failures.list"; \
 	testsuite_tmp="$(TEST_SUITE_LOG).tmp"; \
-	rm -f "$$trs_manifest"; \
-	rm -f "$$failed_manifest"; \
-	find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -exec rm -f {} +; \
+	for file in "$$trs_manifest" "$$failed_manifest" "$$testsuite_tmp"; do \
+	    while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+	done; \
+	find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' -print | \
+	    while IFS= read -r file; do \
+	        test -n "$$file" || continue; \
+	        test "$$file" != "." || continue; \
+	        test "$$file" != "./" || continue; \
+	        test -f "$$file" || continue; \
+	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+	    done; \
 	$(MAKE) $(AM_MAKEFLAGS) sixel-check-test-logs \
 	    $$python_make_arg \
 	    $$ruby_make_arg \
 	    $$perl_make_arg \
 	    $$php_make_arg || exit $$?; \
-	find "$(abs_builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' | LC_ALL=C sort > "$$trs_manifest"; \
+	find "$(builddir)" -type f -name '*.trs' ! -name 'staticcheck-*.trs' | LC_ALL=C sort > "$$trs_manifest"; \
 	all=0; \
 	pass=0; \
 	fail=0; \
@@ -4679,16 +4855,27 @@ check-TESTS: $(check_PROGRAMS) prepare-binding-artifacts prepare-psd-large-fixtu
 	if test $$((fail + xpass + error)) -ne 0; then \
 	    test x"$$VERBOSE" = x || cat "$(TEST_SUITE_LOG)"; \
 	    echo "See $(subdir)/$(TEST_SUITE_LOG) for debugging."; \
-	    rm -f "$$trs_manifest" "$$failed_manifest"; \
+	    for file in "$$trs_manifest" "$$failed_manifest"; do \
+	        while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+	    done; \
 	    exit 1; \
 	fi; \
-	rm -f "$$trs_manifest" "$$failed_manifest"; \
+	for file in "$$trs_manifest" "$$failed_manifest"; do \
+	    while test -e "$$file"; do rm -f "$$file" || exit $$?; done; \
+	done; \
 	exit 0
 
 # Avoid expanding $(TEST_LOGS) into a single rm invocation during
 # mostlyclean/distclean; the test suite can exceed shell argument limits.
 mostlyclean-generic:
-	-@find "$(abs_builddir)" -type f \( -name '*.log' -o -name '*.trs' \) -exec rm -f {} +
+	-@find "$(builddir)" -type f \( -name '*.log' -o -name '*.trs' \) -print | \
+	    while IFS= read -r file; do \
+	        test -n "$$file" || continue; \
+	        test "$$file" != "." || continue; \
+	        test "$$file" != "./" || continue; \
+	        test -f "$$file" || continue; \
+	        rm -f "$$file"; \
+	    done
 
 .PHONY: check-binding-loader-setopt-sync prepare-binding-artifacts prepare-psd-large-fixtures check-python check-ruby check-perl check-php sixel-check-test-logs
 check-binding-loader-setopt-sync:
@@ -4709,6 +4896,7 @@ prepare-binding-artifacts:
 
 prepare-psd-large-fixtures:
 	@set -eu; \
+	SIXEL_TEST_GZIP='@SIXEL_TEST_GZIP@'; export SIXEL_TEST_GZIP; \
 	"$(SHELL)" "$(abs_top_srcdir)/tests/_static/sh/prepare-psb-large-fixtures.sh" \
 	    "$(abs_top_srcdir)" "$(abs_top_builddir)"
 
@@ -5015,6 +5203,8 @@ clean-local:
 	done; \
 	fi
 	rm -rf $(ARTIFACT_ROOT)
+	rm -rf $(OPENVMS_TEST_SHARD_DIR)
+	rm -rf $(abs_top_builddir)/tests/.lso-test-bin
 	rm -rf $(abs_top_builddir)/tests/.python-test-venv
 	rm -rf $(abs_top_builddir)/tests/.ruby-test-venv
 	rm -rf $(abs_top_builddir)/tests/.perl-test-venv

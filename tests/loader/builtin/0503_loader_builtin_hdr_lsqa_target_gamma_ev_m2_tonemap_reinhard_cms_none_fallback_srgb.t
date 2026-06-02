@@ -35,7 +35,7 @@ SIXEL_LOADER_HDR_TONEMAP="${SIXEL_HDR_TONEMAP}" \
     exit 0
 }
 
-printf 'P6\n1 1\n255\n\000\000\000' >"${black_reference}"
+printf 'P3\n1 1\n255\n0 0 0\n' >"${black_reference}"
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" \
     "${black_reference}" "${output_sixel}" 2>&1) || lsqa_status=$?
 lsqa_status=${lsqa_status-0}
@@ -45,7 +45,7 @@ test "${lsqa_status}" -eq 5 || {
 }
 
 lsqa_status=0
-printf 'P6\n1 1\n255\n\377\377\377' >"${white_reference}"
+printf 'P3\n1 1\n255\n255 255 255\n' >"${white_reference}"
 lsqa_msg=$(set +xv; ${SIXEL_RUNTIME-} "${LSQA_PATH}" -m MS-SSIM -b "MS-SSIM:0.995" \
     "${white_reference}" "${output_sixel}" 2>&1) || lsqa_status=$?
 lsqa_status=${lsqa_status-0}

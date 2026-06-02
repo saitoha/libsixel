@@ -4537,7 +4537,7 @@ sixel_encoder_ensure_cell_size(sixel_encoder_t *encoder)
         return (SIXEL_LIBC_ERROR | (errno & 0xff));
     }
 
-    if (ws.ws_col <= 0 || ws.ws_row <= 0 ||
+    if (ws.ws_col == 0 || ws.ws_row == 0 ||
         ws.ws_xpixel <= ws.ws_col || ws.ws_ypixel <= ws.ws_row) {
         sixel_helper_set_additional_message(
             "terminal does not report pixel cell size for drcs option.");
@@ -10894,6 +10894,22 @@ sixel_encoder_apply_crop_option(
 }
 
 
+static size_t
+sixel_encoder_bounded_strlen(
+    char const *text,
+    size_t limit)
+{
+    size_t length;
+
+    /* Some strict C environments expose strnlen() without declaring it. */
+    length = 0;
+    while (length < limit && text[length] != '\0') {
+        ++length;
+    }
+    return length;
+}
+
+
 static void
 sixel_encoder_set_cell_probe_error(
     char const *base_message,
@@ -10911,7 +10927,7 @@ sixel_encoder_set_cell_probe_error(
     }
 
     prefix_length = strlen(prefix_message);
-    detail_length = strnlen(detail, sizeof(message));
+    detail_length = sixel_encoder_bounded_strlen(detail, sizeof(message));
     if (prefix_length + detail_length >= sizeof(message)) {
         detail_length = sizeof(message) - prefix_length - 1U;
     }

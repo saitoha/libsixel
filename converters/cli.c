@@ -58,6 +58,55 @@
 
 #include "cli.h"
 
+#if defined(LIBSIXEL_OPENVMS)
+int putenv(char *);
+
+static int
+cli_openvms_setenv(char const *name, char const *value)
+{
+    char *entry;
+    size_t name_len;
+    size_t value_len;
+    size_t entry_len;
+    int saved_errno;
+
+    entry = NULL;
+    name_len = 0u;
+    value_len = 0u;
+    entry_len = 0u;
+    saved_errno = 0;
+
+    if (name == NULL || value == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    name_len = strlen(name);
+    value_len = strlen(value);
+    entry_len = name_len + value_len + 2u;
+    entry = (char *)malloc(entry_len);
+    if (entry == NULL) {
+        return -1;
+    }
+
+    memcpy(entry, name, name_len);
+    entry[name_len] = '=';
+    memcpy(entry + name_len + 1u, value, value_len + 1u);
+
+    /*
+     * OpenVMS putenv() keeps using the input buffer after the call returns.
+     */
+    if (putenv(entry) != 0) {
+        saved_errno = errno;
+        free(entry);
+        errno = saved_errno;
+        return -1;
+    }
+
+    return 0;
+}
+#endif
+
 static int
 cli_setenv_portable(char const *name, char const *value)
 {
@@ -85,6 +134,8 @@ cli_setenv_portable(char const *name, char const *value)
     }
 
     return 0;
+#elif defined(LIBSIXEL_OPENVMS)
+    return cli_openvms_setenv(name, value);
 #else
     if (name == NULL || value == NULL) {
         errno = EINVAL;

@@ -96,7 +96,7 @@ or provide the desired directory path explicitly.
 | `--with-pgo-data=PATH` | empty | Profile data directory/path used by PGO generate/use mode. |
 | `--with-pgo-profdata=FILE` | empty | LLVM merged profile used by `--enable-pgo=use` (GNU/LLVM toolchains). |
 | `--enable-fuzz` | `no` | Build libFuzzer targets under `fuzz/`. |
-| `--enable-tests` | `no` | Build the optional test suites. |
+| `--enable-tests` / `--disable-tests` | `yes` | Build the optional test suites for `make check`. |
 | `--enable-xsave-probe` / `--disable-xsave-probe` | `auto` | Control `_xgetbv` probing during AVX capability detection. |
 | `--with-shebang-file=PATH` | disabled | Prepend the contents of `PATH` to generated executables (skips files that already start with a shebang) and mark them executable. |
 | `--disable-emscripten-retain_compiler_settings` | enabled | Disable `-sRETAIN_COMPILER_SETTINGS=1` in Emscripten builds. |

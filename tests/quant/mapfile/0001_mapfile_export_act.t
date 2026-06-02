@@ -22,6 +22,9 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -M "${act_palette}" -o "${ARTIFACT_LOCAL_D
 }
 
 act_size=$(wc -c <"${act_palette}")
+test "${RUNTIME_ENV_IS_OPENVMS-0}" = "1" && {
+    act_size=$(stat -c %s "${act_palette}")
+}
 test "${act_size}" -eq 772 || {
     echo "not ok" 1 - "ACT palette length mismatch (${act_size})"
     exit 0

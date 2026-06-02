@@ -18,7 +18,8 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Lbuiltin! -S -o /dev/null "${issue220}"
 command_status=$?
 set -e
 
-test "${command_status}" -ge 0 -a "${command_status}" -le 3 || {
+test "${command_status}" -ge 0 -a \
+    "${command_status}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {
     echo "not ok" 1 - "issue #220 item5 did not return mapped status"
     exit 0
 }

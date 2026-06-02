@@ -164,6 +164,9 @@ EXTRA_img2sixel_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
 endif
 endif
 endif
+if OPENVMS_GNV
+img2sixel_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
+endif
 dist_man_MANS += $(srcdir)/img2sixel.1
 dist_bashcompletion_DATA += $(srcdir)/shell-completion/bash/img2sixel
 dist_zshcompletion_DATA += $(srcdir)/shell-completion/zsh/_img2sixel
@@ -219,6 +222,9 @@ if USING_CL
 EXTRA_sixel2png_DEPENDENCIES = $(top_builddir)/src/.libs/sixel.dll.lib
 endif
 endif
+endif
+if OPENVMS_GNV
+sixel2png_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 endif
 dist_man_MANS += $(srcdir)/sixel2png.1
 endif

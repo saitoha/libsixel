@@ -9,6 +9,7 @@ fi
 
 top_srcdir=$1
 top_builddir=${2:-$1}
+gzip_cmd=${SIXEL_TEST_GZIP-}
 src_formats_dir="${top_srcdir}/tests/data/inputs/formats"
 dst_formats_dir="${top_builddir}/tests/data/inputs/formats"
 webp_large_fixtures="\
@@ -53,6 +54,12 @@ if [ "${fixtures_ready}" -eq 1 ]; then
     test "${fixtures_ready}" -eq 1 && exit 0
 fi
 
+test -n "${gzip_cmd}" || {
+    printf '%s\n' \
+        "prepare-psd-large-fixtures: gzip not configured; skipping extraction" >&2
+    exit 0
+}
+
 printf '%s\n' "prepare-psd-large-fixtures: extracting packaged large fixtures"
 
 for mode_prefix in cmyk mode7_cmyk; do
@@ -72,7 +79,7 @@ for mode_prefix in cmyk mode7_cmyk; do
                 printf '%s\n' "error: missing packaged fixture: ${src_file_gz}" >&2
                 exit 1
             }
-            gzip -dc "${src_file_gz}" > "${dst_file}"
+            "${gzip_cmd}" -dc "${src_file_gz}" > "${dst_file}"
         done
     done
 done
@@ -85,5 +92,5 @@ for fixture in ${webp_large_fixtures}; do
         printf '%s\n' "error: missing packaged fixture: ${src_file_gz}" >&2
         exit 1
     }
-    gzip -dc "${src_file_gz}" > "${dst_file}"
+    "${gzip_cmd}" -dc "${src_file_gz}" > "${dst_file}"
 done

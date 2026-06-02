@@ -13,6 +13,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
+test -n "${SIXEL_TEST_GZIP-}" || {
+    printf "1..0 # SKIP gzip is unavailable for compressed WebP fixture\n"
+    exit 0
+}
+
 echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"

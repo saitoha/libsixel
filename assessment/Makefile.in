@@ -154,6 +154,7 @@ am__v_lt_1 =
 lsqa_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lsqa_CFLAGS) $(CFLAGS) \
 	$(lsqa_LDFLAGS) $(LDFLAGS) -o $@
+@OPENVMS_GNV_TRUE@lsqa_LINK = $(SHELL) $(top_srcdir)/openvms/gnv-link-program.sh -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false

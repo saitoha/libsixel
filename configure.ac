@@ -16,12 +16,60 @@ AC_SUBST([PACKAGE_DESCRIPTION],
 #AS_IF([test -z "$CC" && { test "x$MSYSTEM" = "xCLANG64" || test "x$MSYSTEM" = "xCLANGARM64"; }], [
 #  AC_CHECK_TOOLS([CC],  [clang], [gcc])
 #])
+
+# OpenVMS/GNV presents POSIX-like paths to configure, but system roots such as
+# /SYS$SYSROOT contain a dollar sign.  Automake rejects those paths later with
+# a terse generic error, so fail before platform canonicalization with a more
+# useful message.
+sixel_openvms_pwd=`pwd`
+case "$sixel_openvms_pwd" in
+  *'$'*)
+    AC_MSG_ERROR([configure cannot run from an absolute working directory containing a dollar sign; please build under a POSIX-style path such as /usr/tmp/libsixel-build])
+    ;;
+esac
+
+# config.sub already accepts x86_64-dec-vms, but config.guess can misdetect
+# current x86_64 OpenVMS/GNV systems.  Seed the native aliases before
+# AC_CANONICAL_HOST so configure does not need to invoke config.guess there.
+sixel_openvms_mode=no
+sixel_openvms_uname_s=`(uname -s) 2>/dev/null || echo unknown`
+case "$sixel_openvms_uname_s" in
+  OpenVMS*|*VMS*)
+    sixel_openvms_mode=yes
+    sixel_openvms_uname_p=`(uname -p) 2>/dev/null || echo unknown`
+    sixel_openvms_cpu=x86_64
+    case "$sixel_openvms_uname_p" in
+      A*) sixel_openvms_cpu=alpha ;;
+      I*) sixel_openvms_cpu=ia64 ;;
+      V*) sixel_openvms_cpu=vax ;;
+    esac
+
+    AS_IF([test "x$build_alias" = x],
+          [build_alias=$sixel_openvms_cpu-dec-vms])
+    AS_IF([test "x$host_alias" = x], [host_alias=$build_alias])
+
+    # AC_PROG_AWK and early Automake probes run before AC_PROG_CC can derive
+    # executable suffixes, so teach the generic program search about .exe now.
+    ac_executable_extensions=".exe $ac_executable_extensions"
+    ;;
+esac
+
 AC_CANONICAL_HOST
+
+AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+  AC_DEFINE([LIBSIXEL_OPENVMS], [1],
+            [Define when building with OpenVMS and GNV.])
+])
+RUNTIME_ENV_IS_OPENVMS=0
+AS_IF([test "x$sixel_openvms_mode" = "xyes"],
+      [RUNTIME_ENV_IS_OPENVMS=1])
+AC_SUBST([RUNTIME_ENV_IS_OPENVMS])
 
 AM_INIT_AUTOMAKE([foreign subdir-objects tar-pax])
 AC_REQUIRE_AUX_FILE([ar-lib])
 AM_MAINTAINER_MODE([disable])
 AM_SILENT_RULES([yes])
+AM_CONDITIONAL([OPENVMS_GNV], [test "x$sixel_openvms_mode" = "xyes"])
 
 # Let configure users override the MSVC companion tools explicitly while still
 # allowing the defaults below to keep simple --host=*-msvc builds short.
@@ -89,7 +137,7 @@ AC_DEFUN([AC_CHECK_HEADERS_PARALLEL], [
   ])
   m4_ifval([$4], [ac_check_headers_parallel_includes="$4"],
            [ac_check_headers_parallel_includes=""])
-  ac_check_headers_parallel_dir="ac-check-headers.$$"
+  ac_check_headers_parallel_dir="accheckheaders$$"
   ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
   ac_check_headers_parallel_list="$1"
   ac_check_headers_parallel_todo=""
@@ -97,6 +145,11 @@ AC_DEFUN([AC_CHECK_HEADERS_PARALLEL], [
   ac_check_headers_parallel_active=0
   ac_check_headers_parallel_max="$CPU_COUNT"
   ac_check_headers_parallel_batch_pids=""
+
+  if test "x$sixel_openvms_mode" = "xyes"; then
+    # OpenVMS/GNV can lose child statuses for background configure probes.
+    ac_check_headers_parallel_max=1
+  fi
 
   # Limit parallelism by CPU_COUNT, falling back to 1 on invalid values.
   case "$ac_check_headers_parallel_max" in
@@ -128,8 +181,10 @@ AC_DEFUN([AC_CHECK_HEADERS_PARALLEL], [
   if test "x$ac_check_headers_parallel_todo" != "x"; then
     AS_MKDIR_P(["$ac_check_headers_parallel_dir"])
     for ac_check_header in $ac_check_headers_parallel_todo; do
+      ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
       ac_check_headers_parallel_subdir=\
-"$ac_check_headers_parallel_dir/$ac_check_header"
+"$ac_check_headers_parallel_dir/$ac_check_headers_parallel_cache"
       AS_MKDIR_P(["$ac_check_headers_parallel_subdir"])
       (
         cd "$ac_check_headers_parallel_subdir" || exit 1
@@ -174,7 +229,7 @@ $ac_check_headers_parallel_batch_pids; do
 \${ac_cv_header_$ac_check_headers_parallel_cache-no}"
     if test "x$ac_check_headers_parallel_result" = "xno"; then
       ac_check_headers_parallel_subdir=\
-"$ac_check_headers_parallel_dir/$ac_check_header"
+"$ac_check_headers_parallel_dir/$ac_check_headers_parallel_cache"
       if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
         IFS= read -r ac_check_headers_parallel_result \
           < "$ac_check_headers_parallel_subdir/conftest.out"
@@ -227,7 +282,7 @@ AC_DEFUN([AC_CHECK_FUNCS_PARALLEL], [
   if test "x$ac_cv_c_no_builtin" = "xyes"; then
     ac_check_funcs_parallel_cflags="-fno-builtin"
   fi
-  ac_check_funcs_parallel_dir="ac-check-funcs.$$"
+  ac_check_funcs_parallel_dir="accheckfuncs$$"
   ac_check_funcs_parallel_confdefs="$ac_pwd/confdefs.h"
   ac_check_funcs_parallel_list="$1"
   ac_check_funcs_parallel_todo=""
@@ -237,6 +292,11 @@ AC_DEFUN([AC_CHECK_FUNCS_PARALLEL], [
   ac_check_funcs_parallel_batch_pids=""
   ac_check_funcs_parallel_diag_mismatch_pragma=""
   ac_check_funcs_parallel_diag_mismatch_pragma_end=""
+
+  if test "x$sixel_openvms_mode" = "xyes"; then
+    # OpenVMS/GNV can lose child statuses for background configure probes.
+    ac_check_funcs_parallel_max=1
+  fi
 
   # Only emit the pragma when the compiler supports it.
   if test "x$ac_cv_c_pragma_wbuiltin_decl_mismatch" = "xyes"; then
@@ -385,9 +445,22 @@ AC_DEFUN([AC_OUTPUT_PARALLEL], [
   AC_REQUIRE([AX_COUNT_CPUS])
   ls_saved_no_create=$no_create
   no_create=yes
+  AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+    # Some GNV probes can leave configure under a temporary directory.  Return
+    # before AC_OUTPUT writes config.status and any generated build files.
+    cd "$ac_pwd" || as_fn_exit $?
+    PWD=$ac_pwd
+    export PWD
+    as_fn_unset OLDPWD
+  ])
   AC_OUTPUT
   AS_IF([test "x$ls_saved_no_create" != xyes], [
     AS_IF([test "x$CPU_COUNT" = x || test "$CPU_COUNT" -lt 1 2>/dev/null], [
+      CPU_COUNT=1
+    ])
+    AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+      # config.status --jobs creates the same child-status hazards as the
+      # background header/function probes on OpenVMS/GNV.
       CPU_COUNT=1
     ])
     AS_IF([test "$CPU_COUNT" -gt 1 2>/dev/null], [
@@ -421,6 +494,93 @@ AC_DEFUN([AC_OUTPUT_PARALLEL], [
             [ac_config_status_jobs=""])
     ], [
       ac_config_status_jobs=""
+    ])
+    AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+      # config.status resolves Makefile.in and similar inputs relative to the
+      # current directory, so return to the original build directory first.
+      cd "$ac_pwd" || as_fn_exit $?
+      PWD=$ac_pwd
+      export PWD
+      as_fn_unset OLDPWD
+
+      # GNV /bin/sh can run the EXIT trap from helper subprocesses used while
+      # config.status is still consuming its temporary AWK files.  It also
+      # mishandles some Autoconf compound redirections against those files.
+      # Disable the generated trap, split the fragile setup commands into
+      # simple commands, and clean the temp directory explicitly at normal exit.
+      $AWK '
+        BEGIN {
+          dollar = sprintf("%c", 36)
+        }
+        {
+          line = $ 0
+        }
+        line ~ /test ! -d "[$]ac_tmp" \|\| rm -fr "[$]ac_tmp"; [}] && exit [$]exit_status/ {
+          print "  { test ! -d \"" dollar "ac_tmp\" || rm -fr \"" \
+                dollar "ac_tmp\" || :; }"
+          print "  exit " dollar "exit_status"
+          next
+        }
+        /^ac_tmp=[$]tmp$/ {
+          print line
+          print "trap - 0"
+          next
+        }
+        line ~ /echo '\''BEGIN [{]'\'' >"[$]ac_tmp\/subs1[.]awk" &&$/ {
+          sub(/ &&$/, "", line)
+          print line
+          next
+        }
+        line ~ /cat >>"[$]ac_tmp\/subs1[.]awk" <<\\?_ACAWK &&$/ {
+          sub(/ &&$/, "", line)
+          print line
+          next
+        }
+        line ~ /if sed "s\/[$]ac_cr\/\/" < \/dev\/null/ {
+          print "test -s \"" dollar "ac_tmp/subs1.awk\" || \\"
+          print "  as_fn_error " dollar "? \"could not setup config files machinery\" \"" dollar "LINENO\" 5"
+          print "if sed \"s/" dollar "ac_cr//\" < /dev/null > /dev/null 2>&1; then"
+          print "  sed \"s/" dollar "ac_cr\\" dollar "//; s/" \
+                dollar "ac_cr/" dollar "ac_cs_awk_cr/g\" < \"" \
+                dollar "ac_tmp/subs1.awk\" > \"" dollar "ac_tmp/subs.awk\" || \\"
+          print "    as_fn_error " dollar "? \"could not setup config files machinery\" \"" dollar "LINENO\" 5"
+          print "else"
+          print "  cat < \"" dollar "ac_tmp/subs1.awk\" > \"" \
+                dollar "ac_tmp/subs.awk\" || \\"
+          print "    as_fn_error " dollar "? \"could not setup config files machinery\" \"" dollar "LINENO\" 5"
+          print "fi"
+          print "test -s \"" dollar "ac_tmp/subs.awk\" \\"
+          skip = 1
+          next
+        }
+        line ~ /cat >"[$]ac_tmp\/defines[.]awk" <<\\_ACAWK \|\|/ {
+          print "cat >\"" dollar "ac_tmp/defines.awk\" <<\\_ACAWK"
+          header = 1
+          next
+        }
+        header && /could not setup config headers machinery/ {
+          print "test -s \"" dollar "ac_tmp/defines.awk\" || \\"
+          print line
+          header = 0
+          next
+        }
+        skip && /\|\| as_fn_error/ {
+          print line
+          skip = 0
+          next
+        }
+        skip {
+          next
+        }
+        /^as_fn_exit 0$/ && !done {
+          print "{ test ! -d \"" dollar "ac_tmp\" || rm -fr \"" \
+                dollar "ac_tmp\" || :; }"
+          done = 1
+        }
+        { print line }
+      ' "$CONFIG_STATUS" > "$CONFIG_STATUS.tmp" &&
+        mv "$CONFIG_STATUS.tmp" "$CONFIG_STATUS" &&
+        chmod +x "$CONFIG_STATUS" || as_fn_exit $?
     ])
     $SHELL $CONFIG_STATUS $ac_config_status_jobs $ac_config_status_args \
       || as_fn_exit $?
@@ -501,7 +661,32 @@ if test "x$sixel_msvc_mode" = "xyes" &&
   fi
 fi
 
+AS_IF([test "x$sixel_openvms_mode" = "xyes" &&
+       test "x$ac_env_AR_set" != "xset"], [
+  sixel_openvms_ar_wrapper=`cd "$srcdir" && pwd`/openvms/gnv-ar.sh
+  AR="${CONFIG_SHELL-$SHELL} $sixel_openvms_ar_wrapper ar"
+])
+
+AS_IF([test "x$sixel_openvms_mode" = "xyes" &&
+       test "${RM+set}" != set], [
+  sixel_openvms_rm_wrapper=`cd "$srcdir" && pwd`/openvms/gnv-rm.sh
+  RM="${CONFIG_SHELL-$SHELL} $sixel_openvms_rm_wrapper -f"
+])
+
+AS_IF([test "x$sixel_openvms_mode" = "xyes" &&
+       test "${enable_dependency_tracking+set}" != set], [
+  # Automake bootstraps dependency fragments by piping generated Makefiles
+  # back into make.  GNV make can hang there after config.status has already
+  # generated all build files, so default to the documented fallback.
+  enable_dependency_tracking=no
+])
+
 AC_PROG_CC
+AS_IF([test "x$sixel_openvms_mode" = "xyes" &&
+       test "x$ac_env_CC_set" != "xset"], [
+  sixel_openvms_cc_wrapper=`cd "$srcdir" && pwd`/openvms/gnv-cc.sh
+  CC="${CONFIG_SHELL-$SHELL} $sixel_openvms_cc_wrapper $CC"
+])
 AC_PROG_OBJC
 AC_PROG_CPP
 AC_PROG_INSTALL
@@ -609,7 +794,9 @@ case " $MAKEFLAGS " in
   *\ -j*|*\ --jobs*|*\ --jobs=* )
     ;;
   *)
-    LS_DEFAULT_MAKEFLAGS="-j${CPU_COUNT}"
+    AS_IF([test "x$sixel_openvms_mode" != "xyes"], [
+      LS_DEFAULT_MAKEFLAGS="-j${CPU_COUNT}"
+    ])
     ;;
 esac
 AC_SUBST([LS_DEFAULT_MAKEFLAGS])
@@ -728,6 +915,8 @@ AS_IF([test "x$CI" != "x"], [
   if test "x$using_cl" = "xyes"; then
     CFLAGS="$CFLAGS -WX"
     OBJCFLAGS="$OBJCFLAGS -WX"
+  elif test "x$sixel_openvms_mode" = "xyes"; then
+    :
   else
     CFLAGS="$CFLAGS -Werror"
     OBJCFLAGS="$OBJCFLAGS -Werror"
@@ -2144,10 +2333,12 @@ AM_CONDITIONAL([CFLAGS_HAVE_COVERAGE],
                [test x$coverage_from_cflags = xyes])
 
 AC_ARG_ENABLE([tests],
-              [AS_HELP_STRING([--enable-tests],
-                              [Build tests])],
-              [AC_DEFINE(HAVE_TESTS, [1], [enable tests])],
-              [enable_tests=no])
+              [AS_HELP_STRING([--disable-tests],
+                              [Do not build tests for make check])],
+              [enable_tests="$enableval"],
+              [enable_tests=yes])
+AS_IF([test "x$enable_tests" != xno],
+      [AC_DEFINE(HAVE_TESTS, [1], [enable tests])])
 AM_CONDITIONAL([COND_TESTS], [test x$enable_tests != xno])
 
 AC_ARG_ENABLE([fuzz],
@@ -2265,19 +2456,27 @@ LIBSIXEL_LDFLAGS=""
     LDFLAGS="-nologo $LDFLAGS"
     AC_DEFINE([HAVE_MSVC], [1], [Define if building with MSVC])
 else
-  AX_GCC_VAR_ATTRIBUTE([deprecated])
-  if test x$ax_cv_have_var_attribute_deprecated != x; then
-      AC_SUBST(attr_var_deprecated, [__attribute__\(\(deprecated\)\)])
-  fi
-  AX_GCC_FUNC_ATTRIBUTE([deprecated])
-  if test x$ax_cv_have_func_attribute_deprecated != x; then
-      AC_SUBST(attr_func_deprecated, [__attribute__\(\(deprecated\)\)])
-  fi
+  attr_var_deprecated=
+  attr_func_deprecated=
+  AS_IF([test "x$sixel_openvms_mode" != "xyes"], [
+    AX_GCC_VAR_ATTRIBUTE([deprecated])
+    if test x$ax_cv_have_var_attribute_deprecated != x; then
+        attr_var_deprecated='__attribute__((deprecated))'
+    fi
+    AX_GCC_FUNC_ATTRIBUTE([deprecated])
+    if test x$ax_cv_have_func_attribute_deprecated != x; then
+        attr_func_deprecated='__attribute__((deprecated))'
+    fi
+  ])
+  AC_SUBST([attr_var_deprecated])
+  AC_SUBST([attr_func_deprecated])
   AX_GCC_BUILTIN([__builtin_unreachable])
-  LS_CHECK_CFLAG([-std=c99],
-                 [CFLAGS="$CFLAGS -std=c99"],
-                 [],
-                 [std_c99])
+  AS_IF([test "x$sixel_openvms_mode" != "xyes"], [
+    LS_CHECK_CFLAG([-std=c99],
+                   [CFLAGS="$CFLAGS -std=c99"],
+                   [],
+                   [std_c99])
+  ])
   LS_CHECK_CFLAG([-Wall],
                  [AM_CFLAGS="$AM_CFLAGS -Wall"],
                  [],
@@ -2286,10 +2485,12 @@ else
                  [AM_CFLAGS="$AM_CFLAGS -Wextra"],
                  [],
                  [wextra])
-  LS_CHECK_CFLAG([-Wformat=2],
-                 [AM_CFLAGS="$AM_CFLAGS -Wformat=2"],
-                 [],
-                 [wformat_2])
+  AS_IF([test "x$sixel_openvms_mode" != "xyes"], [
+    LS_CHECK_CFLAG([-Wformat=2],
+                   [AM_CFLAGS="$AM_CFLAGS -Wformat=2"],
+                   [],
+                   [wformat_2])
+  ])
   LS_CHECK_CFLAG([-Wsign-conversion],
                  [AC_DEFINE(HAVE_DIAGNOSTIC_SIGN_CONVERSION,
                             [1],
@@ -2351,10 +2552,11 @@ else
                  [],
                  [wformat_nonliteral])
   case "$host_os" in
-    openbsd*)
+    openbsd*|vms*)
       # Align Autotools with Meson: OpenBSD links shared objects with
       # --no-allow-shlib-undefined, and enabling -fno-emulated-tls can leave
       # __tls_get_addr unresolved when final tools link against libsixel.
+      # OpenVMS rejects the option at compile time despite the configure probe.
       ;;
     *)
       LS_CHECK_LDFLAG([-Wl,-Bsymbolic],
@@ -2389,6 +2591,13 @@ AS_IF([test "x$enable_sanitizer" != "xno"], [
   AM_CFLAGS="$AM_CFLAGS $sixel_sanitizer_cflags"
 ])
 
+AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+  # VSI C may emit assert() as an external reference that is not resolved by
+  # the GNV link path.  Disable runtime assertions for the OpenVMS port until
+  # the native linker integration is complete.
+  AM_CFLAGS="$AM_CFLAGS -DNDEBUG"
+])
+
 AC_SUBST([AM_CFLAGS])
 AC_SUBST([LIBSIXEL_LDFLAGS])
 
@@ -2415,6 +2624,7 @@ AC_CHECK_HEADERS_PARALLEL([assert.h \
                            sys/time.h \
                            time.h \
                            signal.h \
+                           setjmp.h \
                            sys/select.h \
                            sys/signal.h \
                            sys/param.h \
@@ -2483,6 +2693,54 @@ AC_C_INLINE
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
 AC_TYPE_SIZE_T
+AC_CACHE_CHECK([for ssize_t], [ls_cv_type_ssize_t], [
+    AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([[
+#if !defined(_POSIX_C_SOURCE)
+# define _POSIX_C_SOURCE 200809L
+#endif
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+        ]], [[
+            ssize_t value;
+            value = (ssize_t)0;
+            (void)value;
+        ]])],
+        [ls_cv_type_ssize_t=yes],
+        [ls_cv_type_ssize_t=no])
+])
+AS_IF([test "x$ls_cv_type_ssize_t" = xyes], [
+    AC_DEFINE([HAVE_SSIZE_T], [1],
+              [Define to 1 if the system has the type `ssize_t'.])
+])
+AC_CACHE_CHECK([for struct timeval], [ls_cv_type_struct_timeval], [
+    AC_COMPILE_IFELSE(
+        [AC_LANG_PROGRAM([[
+#if !defined(_POSIX_C_SOURCE)
+# define _POSIX_C_SOURCE 200809L
+#endif
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_TIME_H
+# include <time.h>
+#endif
+#if HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+        ]], [[
+            struct timeval value;
+            value.tv_sec = 0;
+            value.tv_usec = 0;
+        ]])],
+        [ls_cv_type_struct_timeval=yes],
+        [ls_cv_type_struct_timeval=no])
+])
+AS_IF([test "x$ls_cv_type_struct_timeval" = xyes], [
+    AC_DEFINE([HAVE_STRUCT_TIMEVAL], [1],
+              [Define to 1 if the system has the type `struct timeval'.])
+])
 AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 
@@ -2571,6 +2829,8 @@ AC_CHECK_FUNCS_PARALLEL([assert \
                          _strerror_r \
                          _isatty \
                          isatty \
+                         tcgetattr \
+                         tcsetattr \
                          clock_gettime \
                          _sopen_s \
                          _open \
@@ -2602,6 +2862,131 @@ AC_CHECK_FUNCS_PARALLEL([assert \
                          tmpnam \
                          gettimeofday \
                         ])
+
+AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+  # OpenVMS CRTL exposes several POSIX names through headers rather than as
+  # plain lowercase linker symbols.  Re-check those functions with the normal
+  # headers visible instead of relying on Autoconf's prototype-free fallback.
+  for ac_func in chmod clock_gettime fchmod fileno fsync gettimeofday \
+                 getopt isatty mkdir mkstemp mktemp open realpath select \
+                 setenv stat strcasecmp strerror_r strdup waitpid; do
+    eval "sixel_openvms_func_result=\${ac_cv_func_$ac_func-no}"
+    AS_IF([test "x$sixel_openvms_func_result" != "xyes"], [
+      AC_MSG_CHECKING([for $ac_func with OpenVMS CRTL headers])
+      case "$ac_func" in
+        chmod) sixel_openvms_func_body='return chmod("conftest.no", 0600);' ;;
+        clock_gettime) sixel_openvms_func_body='struct timespec ts; return clock_gettime(CLOCK_REALTIME, &ts);' ;;
+        fchmod) sixel_openvms_func_body='return fchmod(0, 0600);' ;;
+        fileno) sixel_openvms_func_body='return fileno(stdin);' ;;
+        fsync) sixel_openvms_func_body='return fsync(0);' ;;
+        gettimeofday) sixel_openvms_func_body='struct timeval tv; return gettimeofday(&tv, 0);' ;;
+        getopt) sixel_openvms_func_body='return getopt(0, (char * const *)0, "");' ;;
+        isatty) sixel_openvms_func_body='return isatty(0);' ;;
+        mkdir) sixel_openvms_func_body='return mkdir("conftest.dir", 0777);' ;;
+        mkstemp) sixel_openvms_func_body='char tmpl[] = "tmpXXXXXX"; return mkstemp(tmpl);' ;;
+        mktemp) sixel_openvms_func_body='char tmpl[] = "tmpXXXXXX"; return mktemp(tmpl) == 0;' ;;
+        open) sixel_openvms_func_body='return open("conftest.no", O_RDONLY);' ;;
+        realpath) sixel_openvms_func_body='char path[4096]; return realpath(".", path) == 0;' ;;
+        select) sixel_openvms_func_body='return select(0, 0, 0, 0, 0);' ;;
+        setenv) sixel_openvms_func_body='return setenv("A", "B", 1);' ;;
+        stat) sixel_openvms_func_body='struct stat st; return stat("conftest.no", &st);' ;;
+        strcasecmp) sixel_openvms_func_body='return strcasecmp("a", "A");' ;;
+        strerror_r) sixel_openvms_func_body='char buf[64]; return strerror_r(1, buf, sizeof(buf));' ;;
+        strdup) sixel_openvms_func_body='return strdup("x") == 0;' ;;
+        waitpid) sixel_openvms_func_body='int status; return waitpid(-1, &status, 0);' ;;
+      esac
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#if HAVE_CTYPE_H
+# include <ctype.h>
+#endif
+#if HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
+#if HAVE_MATH_H
+# include <math.h>
+#endif
+#if HAVE_SETJMP_H
+# include <setjmp.h>
+#endif
+#if HAVE_SIGNAL_H
+# include <signal.h>
+#elif HAVE_SYS_SIGNAL_H
+# include <sys/signal.h>
+#endif
+#if HAVE_STDIO_H
+# include <stdio.h>
+#endif
+#if HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#if HAVE_STRING_H
+# include <string.h>
+#endif
+#if HAVE_STRINGS_H
+# include <strings.h>
+#endif
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
+#if HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_SYS_WAIT_H
+# include <sys/wait.h>
+#endif
+#if HAVE_TIME_H
+# include <time.h>
+#endif
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#elif HAVE_SYS_UNISTD_H
+# include <sys/unistd.h>
+#endif
+int
+main (void)
+{
+  $sixel_openvms_func_body
+}
+_ACEOF
+      AS_IF([ac_fn_c_try_link "$LINENO"],
+            [sixel_openvms_func_result=yes],
+            [sixel_openvms_func_result=no])
+      rm -f core conftest.err conftest.$ac_objext conftest.beam \
+        conftest$ac_exeext conftest.$ac_ext
+      eval "ac_cv_func_$ac_func=\$sixel_openvms_func_result"
+      AC_MSG_RESULT([$sixel_openvms_func_result])
+      AS_IF([test "x$sixel_openvms_func_result" = "xyes"], [
+        sixel_openvms_func_define=`printf '%s\n' "$ac_func" | $as_tr_cpp`
+        AC_DEFINE_UNQUOTED([HAVE_$sixel_openvms_func_define], [1],
+                           [Define to 1 if you have the `$ac_func' function.])
+      ])
+    ])
+  done
+
+  AS_IF([test "x$ac_cv_func_setjmp" != "xyes"], [
+    AC_MSG_CHECKING([for setjmp with OpenVMS CRTL headers])
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([[
+#if HAVE_SETJMP_H
+# include <setjmp.h>
+#endif
+      ]], [[
+        jmp_buf sixel_openvms_setjmp_buf;
+        return setjmp(sixel_openvms_setjmp_buf);
+      ]])],
+      [ac_cv_func_setjmp=yes],
+      [ac_cv_func_setjmp=no])
+    AC_MSG_RESULT([$ac_cv_func_setjmp])
+    AS_IF([test "x$ac_cv_func_setjmp" = "xyes"], [
+      AC_DEFINE([HAVE_SETJMP], [1],
+                [Define to 1 if you have the `setjmp' function.])
+    ])
+  ])
+])
 LIBS=$LS_SAVED_LIBS
 AC_SUBST([CLOCK_GETTIME_LIBS])
 AC_CHECK_FUNCS([_sopen_s], [], [], [[#include <io.h>
@@ -4780,9 +5165,21 @@ AS_IF([test "x$enable_perl" != xno -a "x$have_perl" = xyes], [
   ENABLE_PERL=1
 ])
 
-sixel_ruby_tests_mode=include
-SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
-    tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
+SIXEL_CHECK_TESTS=
+AS_IF([test x$enable_tests != xno], [
+  sixel_ruby_tests_mode=include
+  AS_IF([test "x$sixel_openvms_mode" = "xyes"], [
+    SIXEL_CHECK_TESTS=
+    AS_MKDIR_P([tests])
+    $SHELL "$srcdir/build-aux/read-check-test-list.sh" \
+        tests "$srcdir/tests" "$sixel_ruby_tests_mode" newline \
+        > tests/check-tests.list ||
+      AC_MSG_ERROR([could not create tests/check-tests.list])
+  ], [
+    SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh" \
+        tests "$srcdir/tests" "$sixel_ruby_tests_mode"`
+  ])
+])
 AC_SUBST([SIXEL_CHECK_TESTS])
 
 AC_SUBST([ENABLE_RUBY])
@@ -4798,6 +5195,10 @@ AS_IF([test "x$BASH" = x -o "x$BASH" = xno], [
   AC_MSG_WARN([bash not found; converter tests will be skipped])
 ])
 AM_CONDITIONAL([HAVE_BASH], [test "x$BASH" != x -a "x$BASH" != xno])
+
+AC_ARG_VAR([SIXEL_TEST_GZIP],
+           [gzip command used to expand packaged test fixtures])
+AC_PATH_PROGS([SIXEL_TEST_GZIP], [gzip gzip.exe], [])
 
 dnl Detect static analysis tools in configure phase so staticcheck can
 dnl provide consistent skip messages when tools are unavailable.
@@ -4927,6 +5328,95 @@ AC_CONFIG_COMMANDS([rubyconstants], [
     $RUBY tools/gen_ruby_constants.rb include/sixel.h ruby/lib/libsixel/constants.rb || exit 1
   fi
 ])
+
+# GNV make 3.78.1 can hang while reading long Automake comments and
+# expanded tags prerequisites. The tags targets are developer conveniences,
+# so keep them inert on OpenVMS instead of blocking normal builds.
+AC_CONFIG_COMMANDS([openvms-makefiles], [
+  if test "x$sixel_openvms_mode" = xyes; then
+    echo "Sanitizing OpenVMS Makefiles for GNV make"
+    for mf in \
+      Makefile \
+      src/Makefile \
+      include/Makefile \
+      converters/Makefile \
+      assessment/Makefile \
+      tools/Makefile \
+      examples/Makefile \
+      examples/drawing/Makefile \
+      examples/opengl/Makefile \
+      examples/python/Makefile \
+      examples/ruby/Makefile \
+      examples/windows/Makefile \
+      images/Makefile \
+      fuzz/Makefile \
+      tests/Makefile \
+      python/Makefile \
+      ruby/Makefile \
+      php/Makefile \
+      gdk-pixbuf-loader/Makefile \
+      quicklook-extension/Makefile \
+      wic/Makefile \
+      amalgamation/Makefile
+    do
+      test -f "$mf" || continue
+      mf_tmp=${mf}.openvms-tmp
+      awk '
+        /^#	/ { next }
+        skip_tagged {
+          if ($0 !~ /\\$/) {
+            skip_tagged = 0
+          }
+          next
+        }
+        /^am__tagged_files =/ {
+          print "am__tagged_files ="
+          if ($0 ~ /\\$/) {
+            skip_tagged = 1
+          }
+          next
+        }
+        { print }
+      ' "$mf" > "$mf_tmp" && mv "$mf_tmp" "$mf" || exit 1
+      case $mf in
+        src/Makefile)
+          cat >> "$mf" <<'SIXEL_OPENVMS_SRC_OBJECTS'
+
+# GNV make 3.78.1 can lose Automake's multiline assignment when
+# libsixel_la_OBJECTS is defined through helper variables.  Re-state the
+# final object list on one physical line so OpenVMS links the real library.
+# The amalgamated build must keep libsixel_la-dither.lo because sixel.c is
+# compiled with SIXEL_AMALGAMATION_SPLIT_DITHER to avoid compiler ICEs.
+ifdef AMALGAMATION_SIXEL
+libsixel_la_OBJECTS = libsixel_la-dither.lo $(top_builddir)/amalgamation/libsixel_la-sixel.lo
+else
+libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS) $(nodist_libsixel_la_OBJECTS)
+endif
+libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir)/include -I$(top_srcdir) $(AM_CPPFLAGS) $(THREAD_CPPFLAGS) $(AMALGAMATION_CPPFLAGS)
+
+# Add the prerequisites after the one-line value is visible.  The existing
+# Automake rule keeps its libtool recipe, and GNU make merges this dependency.
+libsixel.la: $(libsixel_la_OBJECTS)
+SIXEL_OPENVMS_SRC_OBJECTS
+          ;;
+        tests/Makefile)
+          cat >> "$mf" <<'SIXEL_OPENVMS_TEST_OBJECTS'
+
+# GNV make 3.78.1 can lose Automake's multiline assignment before check-am
+# invokes the nested "make test_runner".  Re-state the object list on one
+# physical line and add prerequisites after that value is visible, otherwise
+# the native linker sees only libsixel.la and reports NOMODS.
+test_runner_OBJECTS = $(am_test_runner_OBJECTS) $(nodist_test_runner_OBJECTS)
+
+test_runner$(EXEEXT): $(test_runner_OBJECTS) \
+        $(test_runner_DEPENDENCIES) \
+        $(EXTRA_test_runner_DEPENDENCIES)
+SIXEL_OPENVMS_TEST_OBJECTS
+          ;;
+      esac
+    done
+  fi
+], [sixel_openvms_mode=$sixel_openvms_mode])
 
 # Generate Quick Look Info.plist files only when the extension is enabled
 AS_IF([test x$have_quicklook_extension = xyes], [

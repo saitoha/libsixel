@@ -18,7 +18,8 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibpng! "${issue220}" -o /dev/null
 command_status=$?
 set -e
 
-test "${command_status}" -ge 1 -a "${command_status}" -le 3 || {
+test "${command_status}" -ge 1 -a \
+    "${command_status}" -le "${SIXEL_TEST_MAX_MAPPED_ERROR_STATUS-3}" || {
     echo "not ok" 1 - "issue #220 item4 did not return mapped error status"
     exit 0
 }

@@ -8,6 +8,11 @@ test "${SIXEL_ENABLE_THREADS-0}" = 1 || {
     exit 0
 }
 
+test "${RUNTIME_ENV_IS_OPENVMS-0}" != 1 || {
+    printf "1..0 # SKIP OpenVMS/GNV raises ACCVIO in this native thread stress test\n"
+    exit 0
+}
+
 echo "1..1"
 set -v
 
@@ -20,9 +25,13 @@ saw_other_session=0
 session_tail=
 session_id=
 
+# Keep the test focused on concurrent timeline sessions.  Nested encoder and
+# decoder worker pools are not part of this contract and can overwhelm slow
+# pthread runtimes.
 MSYS_NO_PATHCONV=1 \
 MSYS2_ARG_CONV_EXCL='*' \
 SIXEL_LOG_PATH="${log_path}" \
+SIXEL_THREADS=1 \
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
     "timeline/0002_timeline_parallel_encode_decode" || {
     status=$?

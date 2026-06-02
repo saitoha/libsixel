@@ -160,6 +160,37 @@ int gettimeofday(struct timeval *tv, struct timezone *tz);
 # include <share.h>
 #endif
 
+#if defined(LIBSIXEL_OPENVMS) && !HAVE_STRUCT_TIMEVAL \
+    && !defined(SIXEL_AMALGAMATION)
+/*
+ * GNV can provide sys/time.h without exposing a complete timeval under the
+ * feature-macro set used here.  Fill in the POSIX layout so the public compat
+ * wrapper can still be compiled when gettimeofday() is available at link time.
+ * The amalgamated translation unit sees the OpenVMS socket headers from other
+ * units, so repeating this fallback there becomes a hard redefinition error.
+ */
+struct timeval {
+    long tv_sec;
+    long tv_usec;
+};
+# define HAVE_STRUCT_TIMEVAL 1
+#endif
+
+/*
+ * GNV's configure probes can see these CRTL entry points at link time while
+ * the public headers still omit their POSIX prototypes.  Declare only the
+ * functions that this translation unit calls so OpenVMS does not turn the
+ * calls into implicit function diagnostics.
+ */
+#if defined(LIBSIXEL_OPENVMS) && defined(HAVE_GETTIMEOFDAY)
+struct timeval;
+int gettimeofday(struct timeval *tv, void *tz);
+#endif
+
+#if defined(LIBSIXEL_OPENVMS) && HAVE_MKSTEMP
+int mkstemp(char *templ);
+#endif
+
 #include "compat_stub.h"
 #include "path.h"
 
@@ -175,6 +206,58 @@ int gettimeofday(struct timeval *tv, struct timezone *tz);
 
 #if !defined(_CRTIMP)
 # define _CRTIMP
+#endif
+
+#if defined(LIBSIXEL_OPENVMS) && !defined(SIXEL_AMALGAMATION)
+int putenv(char *);
+#endif
+
+#if defined(LIBSIXEL_OPENVMS)
+static int
+sixel_compat_openvms_setenv(char const *name, char const *value)
+{
+    char *entry;
+    size_t name_len;
+    size_t value_len;
+    size_t entry_len;
+    int saved_errno;
+
+    entry = NULL;
+    name_len = 0u;
+    value_len = 0u;
+    entry_len = 0u;
+    saved_errno = 0;
+
+    if (name == NULL || value == NULL) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    name_len = strlen(name);
+    value_len = strlen(value);
+    entry_len = name_len + value_len + 2u;
+    entry = (char *)malloc(entry_len);
+    if (entry == NULL) {
+        return (-1);
+    }
+
+    memcpy(entry, name, name_len);
+    entry[name_len] = '=';
+    memcpy(entry + name_len + 1u, value, value_len + 1u);
+
+    /*
+     * OpenVMS C RTL putenv() keeps the provided buffer, so ownership moves to
+     * the environment on success.
+     */
+    if (putenv(entry) != 0) {
+        saved_errno = errno;
+        free(entry);
+        errno = saved_errno;
+        return (-1);
+    }
+
+    return 0;
+}
 #endif
 
 #if defined(_WIN32) && HAVE__DUPENV_S && !defined(_MSC_VER)
@@ -548,6 +631,9 @@ sixel_compat_strerror(int error_number,
      */
     char *message;
     size_t copy_length;
+# elif defined(LIBSIXEL_OPENVMS)
+    char *message;
+    size_t copy_length;
 # endif
 #endif
 
@@ -605,6 +691,19 @@ sixel_compat_strerror(int error_number,
         (void)strncpy(buffer, message, copy_length);
         buffer[buffer_size - 1] = '\0';
     }
+    return buffer;
+# elif defined(LIBSIXEL_OPENVMS)
+    message = strerror(error_number);
+    if (message == NULL) {
+        buffer[0] = '\0';
+        return NULL;
+    }
+    copy_length = strlen(message);
+    if (copy_length >= buffer_size) {
+        copy_length = buffer_size - 1u;
+    }
+    memcpy(buffer, message, copy_length);
+    buffer[copy_length] = '\0';
     return buffer;
 # else
     if (strerror_r(error_number, buffer, buffer_size) != 0) {
@@ -1004,6 +1103,8 @@ sixel_compat_setenv(const char *name, const char *value)
     }
 
     return 0;
+#elif defined(LIBSIXEL_OPENVMS)
+    return sixel_compat_openvms_setenv(name, value);
 #else
     if (name == NULL || value == NULL) {
         errno = EINVAL;
@@ -1026,6 +1127,9 @@ sixel_compat_strtok(char *string,
 {
 #if defined(_MSC_VER)
     return strtok_s(string, delimiters, context);
+#elif defined(LIBSIXEL_OPENVMS)
+    (void)context;
+    return strtok(string, delimiters);
 #elif defined(_POSIX_VERSION)
     return strtok_r(string, delimiters, context);
 #else

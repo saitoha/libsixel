@@ -29,6 +29,37 @@
 #  include <stdlib.h>
 #  include <string.h>
 
+#  if defined(LIBSIXEL_OPENVMS)
+/*
+ * OpenVMS/GNV exposes getopt() without getopt_long(), but its getopt()
+ * stops at the first positional argument.  The command line tools have long
+ * relied on GNU-style option permutation, so use the local implementation
+ * with private symbol names instead of mixing it with the system globals.
+ */
+#   define LIBSIXEL_GETOPT_STUB_FORCE_PRIVATE 1
+#   define getopt sixel_getopt_stub_getopt
+#   define getopt_long sixel_getopt_stub_getopt_long
+#   define optarg sixel_getopt_stub_optarg
+#   define optind sixel_getopt_stub_optind
+#   define opterr sixel_getopt_stub_opterr
+#   define optopt sixel_getopt_stub_optopt
+#  endif
+
+#  if HAVE_GETOPT && !defined(LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT) && \
+        !defined(LIBSIXEL_GETOPT_STUB_FORCE_PRIVATE)
+#   if HAVE_UNISTD_H
+#    include <unistd.h>
+#   elif HAVE_SYS_UNISTD_H
+#    include <sys/unistd.h>
+#   endif
+/*
+ * Some systems, including OpenVMS/GNV, expose getopt() from unistd.h but do
+ * not provide getopt_long().  Reuse the system getopt globals in that case
+ * and keep only the long-option shim local to this header.
+ */
+#   define LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT 1
+#  endif
+
 /* provide long option interface */
 struct option {
     const char *name;
@@ -43,10 +74,17 @@ struct option {
 #  define optional_argument  2
 
 /* global variables as in libc getopt */
+#  if defined(LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT)
+extern char *optarg;
+extern int optind;
+extern int opterr;
+extern int optopt;
+#  else
 static char *optarg;
 static int optind = 1;
 static int opterr = 1;
 static int optopt;
+#  endif
 
 /* internal state for getopt */
 static char *nextchar;
@@ -151,6 +189,7 @@ next_option_token(int argc, char * const argv[], int allow_long, char **long_tok
     return 0;
 }
 
+#  if !defined(LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT)
 static int
 getopt(int argc, char * const argv[], const char *optstring)
 {
@@ -211,6 +250,7 @@ getopt(int argc, char * const argv[], const char *optstring)
     }
     return c;
 }
+#  endif
 
 static int
 getopt_long(int argc,
@@ -233,6 +273,15 @@ getopt_long(int argc,
         last_nonopt = 1;
     }
 
+#  if defined(LIBSIXEL_GETOPT_STUB_USE_SYSTEM_GETOPT)
+    if (optind >= argc || argv[optind] == NULL ||
+            argv[optind][0] != '-' || argv[optind][1] != '-' ||
+            argv[optind][2] == '\0') {
+        return getopt(argc, argv, optstring);
+    }
+    name = argv[optind] + 2;
+    ++optind;
+#  else
     if (nextchar && *nextchar != '\0') {
         return getopt(argc, argv, optstring);
     }
@@ -244,6 +293,7 @@ getopt_long(int argc,
     if (status == 0) {
         return getopt(argc, argv, optstring);
     }
+#  endif
 
     value = strchr(name, '=');
     namelen = value ? (size_t)(value - name) : strlen(name);

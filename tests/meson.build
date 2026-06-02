@@ -3,6 +3,7 @@ cp_cmd = find_program('cp', required: true)
 actionlint_prog = find_program('actionlint', required: false)
 shellcheck_prog = find_program('shellcheck', required: false)
 codespell_prog = find_program('codespell', required: false)
+gzip_prog = find_program('gzip', 'gzip.exe', required: false)
 python_for_tests = find_program('python3', required: false)
 if not get_option('python').disabled() and not python_for_tests.found()
   error('python option is enabled but python3 executable was not found')
@@ -74,6 +75,10 @@ base_env_settings = [
   ['MESON_SOURCE_ROOT', meson.project_source_root()],
   ['MESON_BUILD_ROOT', meson.project_build_root()],
   ['CROSS_COMPILING', cross_compiling],
+  ['RUNTIME_ENV_BUILD_OS', host_machine.system()],
+  ['RUNTIME_ENV_IS_OPENVMS',
+    (host_machine.system().contains('openvms') or
+     host_machine.system().contains('vms')) ? '1' : '0'],
   ['SIXEL_TSAN_BUILD', sixel_tsan_build],
   ['SIXEL_MSAN_BUILD', sixel_msan_build],
   # Expose the configured C compiler ID to TAP scripts so platform quirks
@@ -87,6 +92,7 @@ base_env_settings = [
   ['SIXEL_CONFIGURED_PERL', perl_for_tests_path],
   ['ENABLE_PHP', (have_php ? '1' : '0')],
   ['SIXEL_CONFIGURED_PHP', php_for_tests_path],
+  ['SIXEL_TEST_GZIP', (gzip_prog.found() ? gzip_prog.full_path() : '')],
   # Mirror autotools check-TESTS metadata so TAP helper scripts can share
   # one execution path across build systems.
   # Keep the build-tree shared library path available for bindings and

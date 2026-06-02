@@ -12,12 +12,33 @@ echo "1..1"
 set -v
 
 expected="3871514854 39"
-sum=$(printf '%b' '\033Pq"1;1;1;1!6~\033\057' | ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=1 -rne -h200% -wauto | cksum)
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
-test -n "${sum}" || {
+source_sixel="${ARTIFACT_LOCAL_DIR}/dcs-height-auto-width-input.sixel"
+scaled_sixel="${ARTIFACT_LOCAL_DIR}/dcs-height-auto-width-output.sixel"
+
+printf '%b' '\033Pq"1;1;1;1!6~\033\057' >"${source_sixel}" || {
+    echo "not ok" 1 - "DCS coordinates stayed consistent (input write failed)"
+    exit 0
+}
+
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -=1 -rne -h200% -wauto \
+    <"${source_sixel}" >"${scaled_sixel}" || {
+    echo "not ok" 1 - "DCS coordinates stayed consistent"
+    exit 0
+}
+
+test -s "${scaled_sixel}" || {
     echo "not ok" 1 - "DCS coordinates stayed consistent (no payload produced)"
     exit 0
 }
+
+# GNV exposes an OpenVMS text-record terminator as a trailing newline.
+set -- $(tr -d '\n' <"${scaled_sixel}" | cksum) || {
+    echo "not ok" 1 - "DCS coordinates stayed consistent (cksum failed)"
+    exit 0
+}
+sum="$1 $2"
 
 test "${sum}" = "${expected}" || {
     echo "not ok" 1 - "DCS coordinates stayed consistent"
