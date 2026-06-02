@@ -34,11 +34,10 @@ test -s "${scaled_sixel}" || {
 }
 
 # GNV exposes an OpenVMS text-record terminator as a trailing newline.
-set -- $(tr -d '\n' <"${scaled_sixel}" | cksum) || {
+sum=$(tr -d '\n' <"${scaled_sixel}" | cksum) || {
     echo "not ok" 1 - "DCS coordinates stayed consistent (cksum failed)"
     exit 0
 }
-sum="$1 $2"
 
 test "${sum}" = "${expected}" || {
     echo "not ok" 1 - "DCS coordinates stayed consistent"

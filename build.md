@@ -20,6 +20,76 @@ Before building, ensure the following tools are available:
 - On Windows, install MSYS2, Cygwin, or Visual Studio depending on the target
   build environment.
 
+## Running Static Checks
+
+The CI staticcheck jobs run repository policy checks, ShellCheck, actionlint,
+codespell, Python bytecode checks, C AST checks, and several warning-clean
+compile probes.  For a complete local run on Debian or Ubuntu, install the
+required commands first:
+
+```sh
+sudo apt-get update
+sudo apt-get install -y \
+  autoconf automake build-essential ca-certificates clang codespell curl \
+  gzip libtool meson ninja-build pkg-config python3 python3-pip python3-venv \
+  ripgrep shellcheck
+```
+
+`actionlint` may not be packaged by every distribution.  The CI job installs
+the upstream release into a local tool directory; the same approach works for
+local reproduction:
+
+```sh
+TOP_SRCDIR=$PWD
+mkdir -p "$TOP_SRCDIR/.local/bin"
+command -v actionlint >/dev/null 2>&1 || \
+  curl -sSfL \
+    https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash \
+    | bash -s -- latest "$TOP_SRCDIR/.local/bin"
+```
+
+The optional C AST checker needs the Python `tree_sitter` and `tree_sitter_c`
+modules.  Keep them in the ignored `.local` tree rather than installing them
+into the system Python:
+
+```sh
+python3 -m venv "$TOP_SRCDIR/.local/venvs/staticcheck"
+"$TOP_SRCDIR/.local/venvs/staticcheck/bin/python" -m pip install \
+  --upgrade pip tree_sitter tree_sitter_c
+```
+
+To run the full staticcheck suite with no tool-related skips, use an
+Autotools build that has already built the command-line tools.  This lets the
+suite compare generated help text against the checked-in documentation and
+exercise the Autotools-specific Makefile probes:
+
+```sh
+mkdir -p build-staticcheck
+cd build-staticcheck
+PATH="$PWD/../.local/bin:$PATH" \
+PYTHON_STATICCHECK="$PWD/../.local/venvs/staticcheck/bin/python" \
+  ../configure
+PATH="$PWD/../.local/bin:$PATH" make -j"$(nproc)"
+PATH="$PWD/../.local/bin:$PATH" \
+PYTHON_STATICCHECK="$PWD/../.local/venvs/staticcheck/bin/python" \
+STATICCHECK_JOBS="${STATICCHECK_JOBS:-$(nproc)}" \
+  make staticcheck
+```
+
+Meson exposes the same staticcheck target used by the Meson CI job:
+
+```sh
+PATH="$PWD/.local/venvs/staticcheck/bin:$PWD/.local/bin:$PATH" \
+  meson setup builddir
+meson compile -C builddir
+STATICCHECK_JOBS="${STATICCHECK_JOBS:-$(nproc)}" \
+  meson compile -C builddir staticcheck
+```
+
+Some checks are intentionally build-system-specific.  In particular, the
+Meson target does not have Autotools `src/Makefile` outputs, so the full
+skip-free run is the Autotools sequence above.
+
 ## Building with Autotools
 
 ### Unix-like systems (Linux, macOS, \*BSD)

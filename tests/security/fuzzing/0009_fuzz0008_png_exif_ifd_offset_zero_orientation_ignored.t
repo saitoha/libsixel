@@ -26,8 +26,11 @@ test -f "${fuzz_seed}" || {
     echo "not ok" 1 - "fuzz0008 minimized seed is missing"
     exit 0
 }
-set -- $(wc -c "${fuzz_seed}")
-size=$1
+size=$(wc -c <"${fuzz_seed}") || {
+    echo "not ok" 1 - "fuzz0008 minimized seed size check failed"
+    exit 0
+}
+size=${size##* }
 test "${size}" -eq 35 || {
     echo "not ok" 1 - "fuzz0008 minimized seed size drifted"
     exit 0
@@ -39,8 +42,11 @@ test -f "${input_png}" || {
     echo "not ok" 1 - "fuzz0008 malformed PNG input is missing"
     exit 0
 }
-set -- $(wc -c "${input_png}")
-size=$1
+size=$(wc -c <"${input_png}") || {
+    echo "not ok" 1 - "fuzz0008 malformed PNG fixture size check failed"
+    exit 0
+}
+size=${size##* }
 test "${size}" -eq 733 || {
     echo "not ok" 1 - "fuzz0008 malformed PNG fixture size drifted"
     exit 0
