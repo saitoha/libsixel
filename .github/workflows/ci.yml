@@ -4093,6 +4093,10 @@ jobs:
               --without-libfetch
             extra_packages: >-
               node
+            # This job runs many short Emscripten TAP scripts on macOS, where
+            # the hosted runner can hit the per-user process limit before the
+            # default CPU-sized make jobserver finishes draining skipped tests.
+            make: make MAKEFLAGS=-j2
             exec_type: bash
 
           - label: Meson-macos-aarch64-emscripten-static
