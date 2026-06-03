@@ -503,8 +503,13 @@ png_detect_chunk_flags_raw_nolcms(unsigned char const *buffer,
     return 1;
 }
 
+/*
+ * Keep stack-matrix parameters non-const in these helpers.  Pre-C23 C treats
+ * pointer-to-array qualifiers narrowly enough that passing ordinary stack
+ * matrices to const-qualified parameters can trip -Wpedantic.
+ */
 static int
-png_invert_3x3(double const in[3][3], double out[3][3])
+png_invert_3x3(double in[3][3], double out[3][3])
 {
     double det;
     double inv_det;
@@ -611,7 +616,7 @@ png_build_chrm_to_srgb_matrix(double white_x,
 
 static void
 png_apply_linear_matrix_triplet(double rgb[3],
-                                double const source_to_srgb[3][3])
+                                double source_to_srgb[3][3])
 {
     double in_r;
     double in_g;
@@ -644,7 +649,7 @@ png_apply_linear_matrix_triplet(double rgb[3],
 static void
 png_apply_linear_matrix_float32(float *pixels,
                                 size_t pixel_count,
-                                double const source_to_srgb[3][3])
+                                double source_to_srgb[3][3])
 {
     size_t index;
     size_t offset;
@@ -710,7 +715,7 @@ static void
 png_apply_gama_chrm_to_srgb_u8(unsigned char *samples,
                                size_t pixel_count,
                                double file_gamma,
-                               double const source_to_srgb[3][3])
+                               double source_to_srgb[3][3])
 {
     size_t index;
     size_t offset;
@@ -742,7 +747,7 @@ static void
 png_apply_gama_chrm_to_srgb_float32(float *samples,
                                     size_t pixel_count,
                                     double file_gamma,
-                                    double const source_to_srgb[3][3])
+                                    double source_to_srgb[3][3])
 {
     size_t index;
     size_t offset;
