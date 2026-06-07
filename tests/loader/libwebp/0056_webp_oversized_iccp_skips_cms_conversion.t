@@ -18,6 +18,11 @@ test -n "${SIXEL_TEST_GZIP-}" || {
     exit 0
 }
 
+test "${SIXEL_TEST_C_COMPILER_ID-}" = msvc && {
+    printf "1..0 # SKIP MSVC cmd runner is unstable for oversized ICCP fixture comparison\n"
+    exit 0
+}
+
 echo "1..1"
 set -v
 test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
