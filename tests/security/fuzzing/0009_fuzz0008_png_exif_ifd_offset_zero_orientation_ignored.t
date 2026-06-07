@@ -16,23 +16,15 @@ fuzz_seed="${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0008/png_exif_ifd_
 input_png="${TOP_SRCDIR}/tests/data/security/fuzzing/data/fuzz0008/png_exif_ifd_offset_zero_orientation6.png"
 output_on="${ARTIFACT_ROOT}/${0##*/}.on.png"
 output_off="${ARTIFACT_ROOT}/${0##*/}.off.png"
-size=0
 dims_on=''
 dims_off=''
 
-# The minimized fuzz seed remains in-tree so future fuzz sessions start from
-# the reduced reproducer instead of re-discovering it from larger samples.
+# The minimized fuzz seed remains in-tree for future fuzz sessions.  The
+# regression below uses the PNG fixture, so avoid byte-counting this unused
+# seed; OpenVMS can expose small binary files through record formats that make
+# wc output unsuitable as a portability guard here.
 test -f "${fuzz_seed}" || {
     echo "not ok" 1 - "fuzz0008 minimized seed is missing"
-    exit 0
-}
-size=$(wc -c <"${fuzz_seed}") || {
-    echo "not ok" 1 - "fuzz0008 minimized seed size check failed"
-    exit 0
-}
-size=${size##* }
-test "${size}" -eq 35 || {
-    echo "not ok" 1 - "fuzz0008 minimized seed size drifted"
     exit 0
 }
 
