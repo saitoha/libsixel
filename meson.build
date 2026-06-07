@@ -1495,6 +1495,7 @@ if host_system == 'windows'
     ole32 = cc.find_library('ole32', required: false)
     oleaut32 = cc.find_library('oleaut32', required: false)
     gdi32 = cc.find_library('gdi32', required: false)
+    uuid = cc.find_library('uuid', required: false)
     windowscodecs = cc.find_library('windowscodecs', required: false)
     advapi32 = cc.find_library('advapi32', required: false)
     user32 = cc.find_library('user32', required: false)
@@ -1502,6 +1503,7 @@ if host_system == 'windows'
          and ole32.found() \
          and oleaut32.found() \
          and gdi32.found() \
+         and uuid.found() \
          and windowscodecs.found() \
          and advapi32.found() \
          and user32.found()
@@ -1514,8 +1516,8 @@ if host_system == 'windows'
         conf.set('HAVE_WINCODECSDK_H', 1)
       endif
       if not have_wic
-        deps += [ole32, oleaut32, gdi32, windowscodecs]
-        link_libs += [ole32, oleaut32, gdi32, windowscodecs]
+        deps += [ole32, oleaut32, gdi32, uuid, windowscodecs]
+        link_libs += [ole32, oleaut32, gdi32, uuid, windowscodecs]
       endif
       deps += [advapi32, user32]
       link_libs += [advapi32, user32]

@@ -56,7 +56,7 @@ shared_module(
   'wicsixel',
   wic_sources,
   include_directories: project_inc,
-  dependencies: [ole32, oleaut32, gdi32, windowscodecs],
+  dependencies: [ole32, oleaut32, gdi32, uuid, windowscodecs],
   c_args: wic_c_args,
   link_args: wic_link_args,
   install: true,

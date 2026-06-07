@@ -27596,7 +27596,7 @@ else
                     -lgdi32"
             else
                 WICCODEC_CFLAGS="$WIC_CFLAGS"
-                WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32"
+                WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32 -luuid"
             fi
             ac_fn_c_check_header_compile "$LINENO" "wincodecsdk.h" "ac_cv_header_wincodecsdk_h" "$ac_includes_default"
 if test "x$ac_cv_header_wincodecsdk_h" = xyes
@@ -27621,7 +27621,7 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs \
-                        -loleaut32 -lgdi32"
+                        -loleaut32 -lgdi32 -luuid"
                 fi
             else
                 if test "x${using_cl}" = xyes; then
@@ -27631,7 +27631,7 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs \
-                        -loleaut32 -lgdi32"
+                        -loleaut32 -lgdi32 -luuid"
                 fi
             fi
             CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
