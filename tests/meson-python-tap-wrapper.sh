@@ -45,6 +45,16 @@ test_requires_large_fixtures() {
   return 1
 }
 
+test_requires_msvc_large_fixture_skip() {
+  test "${SIXEL_TEST_C_COMPILER_ID-}" = msvc || {
+    return 1
+  }
+  test_requires_large_fixtures || {
+    return 1
+  }
+  return 0
+}
+
 prepare_psb_large_fixtures_once() {
   state_dir="$MESON_BUILD_ROOT/tests"
   # Keep a single shared marker per build dir. Using PPID as a fallback
@@ -86,6 +96,11 @@ prepare_psb_large_fixtures_once() {
     sleep 0.05
   done
 }
+
+if test_requires_msvc_large_fixture_skip; then
+  printf "1..0 # SKIP MSVC cmd runner is too slow for compressed large fixtures\n"
+  exit 0
+fi
 
 if test_requires_large_fixtures; then
   if ! prepare_psb_large_fixtures_once; then
