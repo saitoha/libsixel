@@ -19,9 +19,9 @@ output_off="${ARTIFACT_ROOT}/${0##*/}.off.png"
 dims_on=''
 dims_off=''
 
-# The minimized fuzz seed remains in-tree for future fuzz sessions.  The
-# regression below uses the PNG fixture, so avoid byte-counting this unused
-# seed; OpenVMS can expose small binary files through record formats that make
+# The minimized fuzz seed remains in-tree for future fuzz sessions, while the
+# regression below uses the PNG fixture.  Avoid byte-counting either binary
+# file; OpenVMS can expose small binary files through record formats that make
 # wc output unsuitable as a portability guard here.
 test -f "${fuzz_seed}" || {
     echo "not ok" 1 - "fuzz0008 minimized seed is missing"
@@ -32,15 +32,6 @@ test -f "${fuzz_seed}" || {
 # where IFD0 offset is zero. A strict parser must ignore this metadata.
 test -f "${input_png}" || {
     echo "not ok" 1 - "fuzz0008 malformed PNG input is missing"
-    exit 0
-}
-size=$(wc -c <"${input_png}") || {
-    echo "not ok" 1 - "fuzz0008 malformed PNG fixture size check failed"
-    exit 0
-}
-size=${size##* }
-test "${size}" -eq 733 || {
-    echo "not ok" 1 - "fuzz0008 malformed PNG fixture size drifted"
     exit 0
 }
 

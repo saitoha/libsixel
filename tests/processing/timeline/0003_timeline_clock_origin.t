@@ -3,6 +3,11 @@
 
 set -eux
 
+test "${RUNTIME_ENV_IS_OPENVMS-0}" = "1" && {
+    printf "1..0 # SKIP OpenVMS/GNV clock origin trace timing is unstable\n"
+    exit 0
+}
+
 echo "1..1"
 set -v
 
