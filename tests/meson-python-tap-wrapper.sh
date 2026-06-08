@@ -36,9 +36,9 @@ export LSQA_PATH
 export TEST_RUNNER_PATH
 export LIBSIXEL_LIBDIR
 
-test_requires_large_fixtures() {
+test_requires_packaged_large_fixtures() {
   case "$test_script" in
-    *xxlarge*|*oversized_iccp*)
+    *xxlarge*|*oversized_iccp*|*webp_*_limit_exact*|*webp_*_overlimit*|*webp_*_oversize*)
       return 0
       ;;
   esac
@@ -49,10 +49,15 @@ test_requires_msvc_large_fixture_skip() {
   test "${SIXEL_TEST_C_COMPILER_ID-}" = msvc || {
     return 1
   }
-  test_requires_large_fixtures || {
-    return 1
-  }
-  return 0
+  # Keep this early wrapper skip aligned with the PSB xxlarge TAP scripts.
+  # Other packaged fixtures, such as WebP metadata-limit samples, should still
+  # be unpacked and tested under MSVC when gzip is available.
+  case "$test_script" in
+    *xxlarge*)
+      return 0
+      ;;
+  esac
+  return 1
 }
 
 prepare_psb_large_fixtures_once() {
@@ -98,11 +103,11 @@ prepare_psb_large_fixtures_once() {
 }
 
 if test_requires_msvc_large_fixture_skip; then
-  printf "1..0 # SKIP MSVC cmd runner is too slow for compressed large fixtures\n"
+  printf "1..0 # SKIP MSVC cmd runner is too slow for xxlarge PSB fixtures\n"
   exit 0
 fi
 
-if test_requires_large_fixtures; then
+if test_requires_packaged_large_fixtures; then
   if ! prepare_psb_large_fixtures_once; then
     exit 1
   fi
