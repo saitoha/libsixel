@@ -218,7 +218,7 @@ image_buffer_init(
 
     if (image->data == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_deocde_raw: sixel_allocator_malloc() failed.");
+            "sixel_decode_raw: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
