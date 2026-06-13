@@ -1721,6 +1721,12 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_BGR565:
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
+    case SIXEL_PIXELFORMAT_RGBX8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
+    case SIXEL_PIXELFORMAT_BGRX8888:
     case SIXEL_PIXELFORMAT_RGBFLOAT32:
     case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
@@ -2026,24 +2032,28 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame)
         index_b = 0;
         break;
     case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_RGBX8888:
         step = 4;
         index_r = 0;
         index_g = 1;
         index_b = 2;
         break;
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
         step = 4;
         index_r = 1;
         index_g = 2;
         index_b = 3;
         break;
     case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_BGRX8888:
         step = 4;
         index_r = 2;
         index_g = 1;
         index_b = 0;
         break;
     case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
         step = 4;
         index_r = 3;
         index_g = 2;

@@ -97,6 +97,7 @@ int test_filter_0008_filter_load(int argc, char **argv);
 int test_filter_0009_filter_dither(int argc, char **argv);
 int test_filter_0010_filter_encode(int argc, char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
+int test_encoder_core_0002_encode_alpha_keycolor(int argc, char **argv);
 int test_sixel_writer_0001_sixel_writer_factory(int argc, char **argv);
 int test_frame_0001_frame_factory(int argc, char **argv);
 int test_chunk_0001_chunk_factory(int argc, char **argv);
@@ -237,6 +238,8 @@ static test_entry_t const test_entries[] = {
       test_security_0001_issue222_encoder_encode_bytes_packed_g1 },
     { "encoder-core/0001_encoder_core_factory",
       test_encoder_core_0001_encoder_core_factory },
+    { "encoder-core/0002_encode_alpha_keycolor",
+      test_encoder_core_0002_encode_alpha_keycolor },
     { "sixel-writer/0001_sixel_writer_factory",
       test_sixel_writer_0001_sixel_writer_factory },
     { "frame/0001_frame_factory", test_frame_0001_frame_factory },

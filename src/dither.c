@@ -87,6 +87,17 @@ sixel_dither_composite_alpha_to_rgb(unsigned char *dst,
                                     int pixelformat,
                                     unsigned char const *background);
 
+static unsigned char
+sixel_dither_extract_alpha_u8(unsigned char const *pixel, int pixelformat);
+
+static SIXELSTATUS
+sixel_dither_compact_visible_alpha_to_rgb888(unsigned char **out_pixels,
+                                             unsigned int *out_length,
+                                             unsigned char const *src,
+                                             size_t total_pixels,
+                                             int pixelformat,
+                                             sixel_allocator_t *allocator);
+
 static void
 sixel_dither_interframe_state_init(sixel_dither_t *dither);
 
@@ -1408,6 +1419,7 @@ sixel_dither_new(
     (*ppdither)->keycolor = (-1);
     sixel_dither_clear_transparent_bgcolor_hint(*ppdither);
     (*ppdither)->optimized = 0;
+    (*ppdither)->terminal_monochrome = 0;
     (*ppdither)->bodyonly = 0;
     (*ppdither)->method_for_largest = SIXEL_LARGE_NORM;
     (*ppdither)->method_for_rep = SIXEL_REP_CENTER_BOX;
@@ -1612,19 +1624,23 @@ sixel_dither_get(
     unsigned char *palette;
     int ncolors;
     int keycolor;
+    int terminal_monochrome;
     sixel_dither_t *dither = NULL;
     sixel_palette_entries_request_t palette_request;
 
+    terminal_monochrome = 0;
     switch (builtin_dither) {
     case SIXEL_BUILTIN_MONO_DARK:
         ncolors = 2;
         palette = (unsigned char *)pal_mono_dark;
         keycolor = 0;
+        terminal_monochrome = 1;
         break;
     case SIXEL_BUILTIN_MONO_LIGHT:
         ncolors = 2;
         palette = (unsigned char *)pal_mono_light;
         keycolor = 0;
+        terminal_monochrome = 1;
         break;
     case SIXEL_BUILTIN_XTERM16:
         ncolors = 16;
@@ -1692,6 +1708,7 @@ sixel_dither_get(
     }
     dither->keycolor = keycolor;
     dither->optimized = 1;
+    dither->terminal_monochrome = terminal_monochrome;
 
 end:
     return dither;
@@ -1737,6 +1754,113 @@ sixel_dither_set_quality_mode(
         }
     }
     dither->quality_mode = quality_mode;
+}
+
+static SIXELSTATUS
+sixel_dither_compact_visible_alpha_to_rgb888(unsigned char **out_pixels,
+                                             unsigned int *out_length,
+                                             unsigned char const *src,
+                                             size_t total_pixels,
+                                             int pixelformat,
+                                             sixel_allocator_t *allocator)
+{
+    unsigned char *pixels;
+    unsigned char *dst;
+    unsigned char const *pixel;
+    size_t index;
+    size_t sample_capacity;
+    size_t visible_pixels;
+    int source_depth;
+
+    pixels = NULL;
+    dst = NULL;
+    pixel = NULL;
+    index = 0U;
+    sample_capacity = 0U;
+    visible_pixels = 0U;
+    source_depth = 0;
+
+    if (out_pixels == NULL || out_length == NULL || src == NULL
+        || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *out_pixels = NULL;
+    *out_length = 0U;
+
+    source_depth = sixel_helper_compute_depth(pixelformat);
+    if (source_depth <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    sample_capacity = total_pixels != 0U ? total_pixels : 1U;
+    if (sample_capacity > SIZE_MAX / 3U
+        || sample_capacity > (size_t)UINT_MAX / 3U) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    pixels = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                     sample_capacity * 3U);
+    if (pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dither_compact_visible_alpha_to_rgb888: "
+            "sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    dst = pixels;
+    pixel = src;
+    for (index = 0U; index < total_pixels; ++index) {
+        if (sixel_dither_extract_alpha_u8(pixel, pixelformat) != 0U) {
+            switch (pixelformat) {
+            case SIXEL_PIXELFORMAT_RGBA8888:
+                dst[0] = pixel[0];
+                dst[1] = pixel[1];
+                dst[2] = pixel[2];
+                break;
+            case SIXEL_PIXELFORMAT_ARGB8888:
+                dst[0] = pixel[1];
+                dst[1] = pixel[2];
+                dst[2] = pixel[3];
+                break;
+            case SIXEL_PIXELFORMAT_BGRA8888:
+                dst[0] = pixel[2];
+                dst[1] = pixel[1];
+                dst[2] = pixel[0];
+                break;
+            case SIXEL_PIXELFORMAT_ABGR8888:
+                dst[0] = pixel[3];
+                dst[1] = pixel[2];
+                dst[2] = pixel[1];
+                break;
+            case SIXEL_PIXELFORMAT_GA88:
+                dst[0] = pixel[0];
+                dst[1] = pixel[0];
+                dst[2] = pixel[0];
+                break;
+            case SIXEL_PIXELFORMAT_AG88:
+                dst[0] = pixel[1];
+                dst[1] = pixel[1];
+                dst[2] = pixel[1];
+                break;
+            default:
+                sixel_allocator_free(allocator, pixels);
+                return SIXEL_BAD_ARGUMENT;
+            }
+            dst += 3;
+            ++visible_pixels;
+        }
+        pixel += source_depth;
+    }
+
+    if (visible_pixels == 0U) {
+        pixels[0] = 0U;
+        pixels[1] = 0U;
+        pixels[2] = 0U;
+        visible_pixels = 1U;
+    }
+
+    *out_pixels = pixels;
+    *out_length = (unsigned int)(visible_pixels * 3U);
+    return SIXEL_OK;
 }
 
 
@@ -1830,6 +1954,25 @@ sixel_dither_initialize(
                     goto end;
                 }
                 input_pixels = alpha_pixels;
+            } else {
+                /*
+                 * Palette builders operate on color channels only.  Compact
+                 * visible alpha pixels to RGB888 so fully transparent gaps do
+                 * not skew the representative colors, and so alpha itself is
+                 * never treated as a fourth color component.
+                 */
+                status = sixel_dither_compact_visible_alpha_to_rgb888(
+                    &alpha_pixels,
+                    &payload_length,
+                    data,
+                    total_pixels,
+                    pixelformat,
+                    dither->allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                input_pixels = alpha_pixels;
+                palette_pixelformat = SIXEL_PIXELFORMAT_RGB888;
             }
             break;
         }

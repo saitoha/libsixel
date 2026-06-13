@@ -146,6 +146,7 @@ sixel_encoder_core_init_defaults(sixel_output_t *output,
     output->save_pixel = 0;
     output->save_count = 0;
     output->active_palette = (-1);
+    output->omit_two_color_keycolor_palette = 0;
     output->node_top = NULL;
     output->node_free = NULL;
     output->pos = 0;

@@ -92,6 +92,7 @@ struct sixel_dither {
     int ncolors;                    /* active colors */
     int origcolors;                 /* original colors */
     int optimized;                  /* pixel is 15bpp compressible */
+    int terminal_monochrome;         /* use terminal foreground/background */
     int bodyonly;                   /* do not output palette section if true */
     int method_for_largest;         /* method for finding the largest dimension
                                        for splitting */

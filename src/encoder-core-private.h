@@ -70,6 +70,7 @@ struct sixel_output {
     int save_pixel;
     int save_count;
     int active_palette;
+    int omit_two_color_keycolor_palette;
 
     sixel_node_t *node_top;
     sixel_node_t *node_free;

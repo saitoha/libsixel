@@ -651,6 +651,8 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
         ctx->output->penetrate_multiplexer;
     state->output->encode_policy = ctx->output->encode_policy;
     state->output->ormode = ctx->output->ormode;
+    state->output->omit_two_color_keycolor_palette =
+        ctx->output->omit_two_color_keycolor_palette;
 
     state->initialized = 1;
     state->index = (-1);
@@ -2118,16 +2120,22 @@ sixel_put_node(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
+    int omit_palette_selector;
 
-    if (ncolors != 2 || keycolor == (-1)) {
-        /* designate palette index */
-        if (output->active_palette != np->pal) {
+    omit_palette_selector = output->omit_two_color_keycolor_palette &&
+                            ncolors == 2 &&
+                            keycolor >= 0;
+
+    /* designate palette index */
+    if (output->active_palette != np->pal) {
+        if (!omit_palette_selector) {
             sixel_putc(output->buffer + output->pos, '#');
             sixel_advance(output, 1);
-            nwrite = sixel_putnum((char *)output->buffer + output->pos, np->pal);
+            nwrite = sixel_putnum((char *)output->buffer + output->pos,
+                                  np->pal);
             sixel_advance(output, nwrite);
-            output->active_palette = np->pal;
         }
+        output->active_palette = np->pal;
     }
 
     if (*x < np->sx) {
@@ -2714,7 +2722,10 @@ sixel_encode_emit_palette(int bodyonly,
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
 
-    if (bodyonly || (ncolors == 2 && keycolor != (-1))) {
+    if (bodyonly ||
+        (output->omit_two_color_keycolor_palette &&
+         ncolors == 2 &&
+         keycolor >= 0)) {
         return SIXEL_OK;
     }
 
@@ -3752,6 +3763,9 @@ sixel_encode_dither(
             "sixel_encode_dither: palette copy failed.");
         goto end;
     }
+
+    output->omit_two_color_keycolor_palette =
+        dither->terminal_monochrome != 0 ? 1 : 0;
 
     status = sixel_encode_header(width, height, dither->keycolor, output);
     if (SIXEL_FAILED(status)) {

@@ -389,6 +389,30 @@ sixel_writer_convert_to_rgba(
             output[2] = cursor[1];
             output[3] = cursor[0];
             break;
+        case SIXEL_PIXELFORMAT_XRGB8888:
+            output[0] = cursor[1];
+            output[1] = cursor[2];
+            output[2] = cursor[3];
+            output[3] = 0xffU;
+            break;
+        case SIXEL_PIXELFORMAT_RGBX8888:
+            output[0] = cursor[0];
+            output[1] = cursor[1];
+            output[2] = cursor[2];
+            output[3] = 0xffU;
+            break;
+        case SIXEL_PIXELFORMAT_XBGR8888:
+            output[0] = cursor[3];
+            output[1] = cursor[2];
+            output[2] = cursor[1];
+            output[3] = 0xffU;
+            break;
+        case SIXEL_PIXELFORMAT_BGRX8888:
+            output[0] = cursor[2];
+            output[1] = cursor[1];
+            output[2] = cursor[0];
+            output[3] = 0xffU;
+            break;
         default:
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -575,6 +599,10 @@ write_png_to_file(
     case SIXEL_PIXELFORMAT_ARGB8888:
     case SIXEL_PIXELFORMAT_BGRA8888:
     case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
+    case SIXEL_PIXELFORMAT_RGBX8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
+    case SIXEL_PIXELFORMAT_BGRX8888:
         new_pixels = sixel_allocator_malloc(allocator,
                                             (size_t)width
                                             * (size_t)height

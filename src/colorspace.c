@@ -473,8 +473,10 @@ sixel_colorspace_alpha_mask_neon(int pixelformat)
     case SIXEL_PIXELFORMAT_BGRA8888:
         return vld1q_u8(mask_bgra);
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
         return vld1q_u8(mask_argb);
     case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
         return vld1q_u8(mask_abgr);
     case SIXEL_PIXELFORMAT_GA88:
         return vld1q_u8(mask_ga);
@@ -600,8 +602,10 @@ sixel_colorspace_alpha_mask_sse2(int pixelformat)
     case SIXEL_PIXELFORMAT_BGRA8888:
         return _mm_loadu_si128((const __m128i *)mask_bgra);
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
         return _mm_loadu_si128((const __m128i *)mask_argb);
     case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
         return _mm_loadu_si128((const __m128i *)mask_abgr);
     case SIXEL_PIXELFORMAT_GA88:
         return _mm_loadu_si128((const __m128i *)mask_ga);
@@ -698,9 +702,13 @@ sixel_colorspace_convert_sse2(unsigned char *pixels,
         sixel_colorspace_apply_sse2(pixels, size, pixelformat, lut);
         return SIXEL_OK;
     case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_RGBX8888:
     case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_BGRX8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
     case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
         if (size % 4U != 0U) {
             return SIXEL_BAD_INPUT;
         }
@@ -734,9 +742,13 @@ sixel_colorspace_neon_supported_format(int pixelformat)
     case SIXEL_PIXELFORMAT_RGB888:
     case SIXEL_PIXELFORMAT_BGR888:
     case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_RGBX8888:
     case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_BGRX8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
     case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_GA88:
     case SIXEL_PIXELFORMAT_AG88:
@@ -769,9 +781,13 @@ sixel_colorspace_convert_neon(unsigned char *pixels,
         sixel_colorspace_apply_neon(pixels, size, pixelformat, lut);
         return SIXEL_OK;
     case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_RGBX8888:
     case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_BGRX8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
     case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
         if (size % 4U != 0U) {
             return SIXEL_BAD_INPUT;
         }
@@ -1709,24 +1725,28 @@ sixel_pixelformat_layout_init(int pixelformat,
         layout->index_b = 0;
         break;
     case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_RGBX8888:
         layout->step = 4;
         layout->index_r = 0;
         layout->index_g = 1;
         layout->index_b = 2;
         break;
     case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_BGRX8888:
         layout->step = 4;
         layout->index_r = 2;
         layout->index_g = 1;
         layout->index_b = 0;
         break;
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
         layout->step = 4;
         layout->index_r = 1;
         layout->index_g = 2;
         layout->index_b = 3;
         break;
     case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
         layout->step = 4;
         layout->index_r = 3;
         layout->index_g = 2;
@@ -2753,9 +2773,13 @@ sixel_colorspace_supports_pixelformat(int pixelformat)
     case SIXEL_PIXELFORMAT_RGB888:
     case SIXEL_PIXELFORMAT_BGR888:
     case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_RGBX8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
     case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_BGRX8888:
     case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_GA88:
     case SIXEL_PIXELFORMAT_AG88:
@@ -2779,9 +2803,13 @@ sixel_colorspace_supports_byte_format(int pixelformat)
     case SIXEL_PIXELFORMAT_RGB888:
     case SIXEL_PIXELFORMAT_BGR888:
     case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_RGBX8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
     case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_BGRX8888:
     case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_GA88:
     case SIXEL_PIXELFORMAT_AG88:
@@ -2961,6 +2989,7 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
         }
         break;
     case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_RGBX8888:
         if (size % 4 != 0) {
             sixel_helper_set_additional_message(
                 "sixel_helper_convert_colorspace: invalid data size.");
@@ -2976,6 +3005,7 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
         }
         break;
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
         if (size % 4 != 0) {
             sixel_helper_set_additional_message(
                 "sixel_helper_convert_colorspace: invalid data size.");
@@ -2991,6 +3021,7 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
         }
         break;
     case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_BGRX8888:
         if (size % 4 != 0) {
             sixel_helper_set_additional_message(
                 "sixel_helper_convert_colorspace: invalid data size.");
@@ -3006,6 +3037,7 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
         }
         break;
     case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
         if (size % 4 != 0) {
             sixel_helper_set_additional_message(
                 "sixel_helper_convert_colorspace: invalid data size.");

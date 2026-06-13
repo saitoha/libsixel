@@ -321,6 +321,17 @@ static int sixel_encoder_parse_threads_argument(char const *text,
 static SIXELSTATUS sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
                                                   sixel_dither_t *dither);
 static int sixel_encoder_pixelformat_has_alpha(int pixelformat);
+static unsigned char sixel_encoder_extract_alpha_u8(
+    unsigned char const *pixel,
+    int pixelformat);
+static SIXELSTATUS sixel_encoder_build_alpha_zero_mask(
+    unsigned char const *pixels,
+    size_t pixel_total,
+    int depth,
+    int pixelformat,
+    sixel_allocator_t *allocator,
+    unsigned char **mask_out,
+    size_t *mask_size_out);
 static int sixel_encoder_frame_has_transparent_mask(
     sixel_frame_t const *frame);
 static int sixel_encoder_frame_preserves_alpha_key(
@@ -6635,6 +6646,89 @@ sixel_encoder_pixelformat_has_alpha(int pixelformat)
     }
 }
 
+static unsigned char
+sixel_encoder_extract_alpha_u8(unsigned char const *pixel, int pixelformat)
+{
+    if (pixel == NULL) {
+        return 0xffU;
+    }
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        return pixel[3];
+    case SIXEL_PIXELFORMAT_GA88:
+        return pixel[1];
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_AG88:
+        return pixel[0];
+    default:
+        return 0xffU;
+    }
+}
+
+static SIXELSTATUS
+sixel_encoder_build_alpha_zero_mask(
+    unsigned char const *pixels,
+    size_t pixel_total,
+    int depth,
+    int pixelformat,
+    sixel_allocator_t *allocator,
+    unsigned char **mask_out,
+    size_t *mask_size_out)
+{
+    unsigned char *mask;
+    size_t index;
+    int has_transparent;
+
+    mask = NULL;
+    index = 0u;
+    has_transparent = 0;
+
+    if (mask_out == NULL || mask_size_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *mask_out = NULL;
+    *mask_size_out = 0u;
+    if (pixels == NULL || allocator == NULL || depth <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (pixel_total == 0u) {
+        return SIXEL_OK;
+    }
+    if (!sixel_encoder_pixelformat_has_alpha(pixelformat)) {
+        return SIXEL_OK;
+    }
+
+    mask = (unsigned char *)sixel_allocator_malloc(allocator, pixel_total);
+    if (mask == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_build_alpha_zero_mask: "
+            "sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (index = 0u; index < pixel_total; ++index) {
+        if (sixel_encoder_extract_alpha_u8(
+                pixels + index * (size_t)depth,
+                pixelformat) == 0U) {
+            mask[index] = 1U;
+            has_transparent = 1;
+        } else {
+            mask[index] = 0U;
+        }
+    }
+    if (has_transparent == 0) {
+        sixel_allocator_free(allocator, mask);
+        return SIXEL_OK;
+    }
+
+    *mask_out = mask;
+    *mask_size_out = pixel_total;
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
                                     sixel_dither_t *dither)
@@ -6968,8 +7062,12 @@ sixel_encoder_prepare_palette(
          * generation can ignore fully transparent pixels.
          */
         sixel_dither_set_transparent(*dither, 0);
-        sixel_dither_set_transparent_bgcolor_hint(*dither,
-                                                  encoder->bgcolor);
+        if (encoder->bgcolor != NULL) {
+            sixel_dither_set_transparent_bgcolor_hint(*dither,
+                                                      encoder->bgcolor);
+        } else {
+            sixel_dither_clear_transparent_bgcolor_hint(*dither);
+        }
     } else {
         sixel_dither_clear_transparent_bgcolor_hint(*dither);
     }
@@ -15503,15 +15601,22 @@ sixel_encoder_encode_bytes(
     unsigned char *owned_pixels = NULL;
     unsigned char *owned_palette = NULL;
     unsigned char *normalized_pixels = NULL;
+    unsigned char *transparent_mask = NULL;
     size_t pixel_bytes;
     size_t pixel_total;
     size_t palette_bytes;
     size_t normalized_bytes;
+    size_t transparent_mask_size;
     int depth;
     int normalized_pixelformat;
     int normalize_packed_pixels;
+    int preserve_alpha_key;
+    sixel_frame_transparency_t transparency;
 
     normalized_pixels = NULL;
+    transparent_mask = NULL;
+    transparent_mask_size = 0u;
+    memset(&transparency, 0, sizeof(transparency));
     if (encoder == NULL || bytes == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
@@ -15523,6 +15628,13 @@ sixel_encoder_encode_bytes(
             "sixel_encoder_encode_bytes: invalid pixelformat depth.");
         status = SIXEL_BAD_INPUT;
         goto end;
+    }
+
+    if (encoder->reqcolors == (-1)) {
+        encoder->reqcolors = SIXEL_PALETTE_MAX;
+    }
+    if (encoder->reqcolors < 2) {
+        encoder->reqcolors = SIXEL_PALETTE_MIN;
     }
 
     pixel_total = (size_t)width * (size_t)height;
@@ -15649,6 +15761,39 @@ sixel_encoder_encode_bytes(
     owned_pixels = NULL;
     owned_palette = NULL;
 
+    /*
+     * Raw byte encoding has no separate transparent-key argument.  Treat
+     * alpha-bearing input as an opt-in keycolor source only when the caller
+     * did not request explicit background compositing.  XRGB/RGBX/XBGR/BGRX
+     * deliberately do not satisfy pixelformat_has_alpha(), so their X byte
+     * stays opaque metadata rather than transparency.
+     */
+    preserve_alpha_key = encoder->bgcolor == NULL
+        && sixel_encoder_pixelformat_has_alpha(pixelformat);
+    if (preserve_alpha_key != 0) {
+        status = sixel_encoder_build_alpha_zero_mask(
+            sixel_frame_get_pixels(frame),
+            pixel_total,
+            depth,
+            pixelformat,
+            encoder->allocator,
+            &transparent_mask,
+            &transparent_mask_size);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        transparency.transparent = (-1);
+        transparency.alpha_zero_is_transparent = 1;
+        transparency.transparent_mask = transparent_mask;
+        transparency.transparent_mask_size = transparent_mask_size;
+        status = sixel_encoder_frame_set_transparency(frame, &transparency);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        transparent_mask = NULL;
+        transparent_mask_size = 0u;
+    }
+
     status = sixel_encoder_encode_frame(encoder, frame, NULL, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -15663,6 +15808,7 @@ end:
         sixel_allocator_free(encoder->allocator, normalized_pixels);
         sixel_allocator_free(encoder->allocator, owned_pixels);
         sixel_allocator_free(encoder->allocator, owned_palette);
+        sixel_allocator_free(encoder->allocator, transparent_mask);
     }
     if (frame != NULL) {
         /*

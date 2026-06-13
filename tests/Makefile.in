@@ -124,6 +124,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0009_filter_dither.c \
 	processing/filter/0010_filter_encode.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
+	processing/encoder-core/0002_encode_alpha_keycolor.c \
 	processing/sixel-writer/0001_sixel_writer_factory.c \
 	processing/frame/0001_frame_factory.c \
 	processing/chunk/0001_chunk_factory.c \
@@ -203,6 +204,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0009_filter_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0010_filter_encode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encode_alpha_keycolor.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/sixel-writer/test_runner-0001_sixel_writer_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0001_frame_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/chunk/test_runner-0001_chunk_factory.$(OBJEXT) \
@@ -388,6 +390,7 @@ am__depfiles_remade =  \
 	processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po \
 	processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0002_encode_alpha_keycolor.Po \
 	processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po \
 	processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po \
 	processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po \
@@ -1094,6 +1097,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FILTER_ENCODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_ENCODE_ALPHA_KEYCOLOR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SIXEL_WRITER_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FRAME_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CHUNK_FACTORY \
@@ -1194,6 +1198,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0009_filter_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0010_filter_encode.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encode_alpha_keycolor.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/sixel-writer/0001_sixel_writer_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0001_frame_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/chunk/0001_chunk_factory.c \
@@ -1451,6 +1456,9 @@ processing/encoder-core/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) processing/encoder-core/$(DEPDIR)
 	@: >>processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
 processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0002_encode_alpha_keycolor.$(OBJEXT):  \
 	processing/encoder-core/$(am__dirstamp) \
 	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
 processing/sixel-writer/$(am__dirstamp):
@@ -1881,6 +1889,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0002_encode_alpha_keycolor.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po@am__quote@ # am--include-marker
@@ -2156,6 +2165,20 @@ processing/encoder-core/test_runner-0001_encoder_core_factory.obj: processing/en
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0001_encoder_core_factory.c' object='processing/encoder-core/test_runner-0001_encoder_core_factory.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0001_encoder_core_factory.obj `if test -f 'processing/encoder-core/0001_encoder_core_factory.c'; then $(CYGPATH_W) 'processing/encoder-core/0001_encoder_core_factory.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0001_encoder_core_factory.c'; fi`
+
+processing/encoder-core/test_runner-0002_encode_alpha_keycolor.o: processing/encoder-core/0002_encode_alpha_keycolor.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0002_encode_alpha_keycolor.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0002_encode_alpha_keycolor.Tpo -c -o processing/encoder-core/test_runner-0002_encode_alpha_keycolor.o `test -f 'processing/encoder-core/0002_encode_alpha_keycolor.c' || echo '$(srcdir)/'`processing/encoder-core/0002_encode_alpha_keycolor.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0002_encode_alpha_keycolor.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0002_encode_alpha_keycolor.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0002_encode_alpha_keycolor.c' object='processing/encoder-core/test_runner-0002_encode_alpha_keycolor.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0002_encode_alpha_keycolor.o `test -f 'processing/encoder-core/0002_encode_alpha_keycolor.c' || echo '$(srcdir)/'`processing/encoder-core/0002_encode_alpha_keycolor.c
+
+processing/encoder-core/test_runner-0002_encode_alpha_keycolor.obj: processing/encoder-core/0002_encode_alpha_keycolor.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0002_encode_alpha_keycolor.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0002_encode_alpha_keycolor.Tpo -c -o processing/encoder-core/test_runner-0002_encode_alpha_keycolor.obj `if test -f 'processing/encoder-core/0002_encode_alpha_keycolor.c'; then $(CYGPATH_W) 'processing/encoder-core/0002_encode_alpha_keycolor.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0002_encode_alpha_keycolor.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0002_encode_alpha_keycolor.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0002_encode_alpha_keycolor.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0002_encode_alpha_keycolor.c' object='processing/encoder-core/test_runner-0002_encode_alpha_keycolor.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0002_encode_alpha_keycolor.obj `if test -f 'processing/encoder-core/0002_encode_alpha_keycolor.c'; then $(CYGPATH_W) 'processing/encoder-core/0002_encode_alpha_keycolor.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0002_encode_alpha_keycolor.c'; fi`
 
 processing/sixel-writer/test_runner-0001_sixel_writer_factory.o: processing/sixel-writer/0001_sixel_writer_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/sixel-writer/test_runner-0001_sixel_writer_factory.o -MD -MP -MF processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Tpo -c -o processing/sixel-writer/test_runner-0001_sixel_writer_factory.o `test -f 'processing/sixel-writer/0001_sixel_writer_factory.c' || echo '$(srcdir)/'`processing/sixel-writer/0001_sixel_writer_factory.c
@@ -3453,6 +3476,7 @@ distclean: distclean-am
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
 	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
 	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0002_encode_alpha_keycolor.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
@@ -3574,6 +3598,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
 	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
 	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0002_encode_alpha_keycolor.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po

@@ -581,6 +581,54 @@ sixel_rgb_from_abgr8888(unsigned char const *data,
 
 
 static void
+sixel_rgb_from_xrgb8888(unsigned char const *data,
+                        unsigned char *r,
+                        unsigned char *g,
+                        unsigned char *b)
+{
+    *r = data[1];
+    *g = data[2];
+    *b = data[3];
+}
+
+
+static void
+sixel_rgb_from_rgbx8888(unsigned char const *data,
+                        unsigned char *r,
+                        unsigned char *g,
+                        unsigned char *b)
+{
+    *r = data[0];
+    *g = data[1];
+    *b = data[2];
+}
+
+
+static void
+sixel_rgb_from_xbgr8888(unsigned char const *data,
+                        unsigned char *r,
+                        unsigned char *g,
+                        unsigned char *b)
+{
+    *r = data[3];
+    *g = data[2];
+    *b = data[1];
+}
+
+
+static void
+sixel_rgb_from_bgrx8888(unsigned char const *data,
+                        unsigned char *r,
+                        unsigned char *g,
+                        unsigned char *b)
+{
+    *r = data[2];
+    *g = data[1];
+    *b = data[0];
+}
+
+
+static void
 sixel_rgb_from_g8(unsigned char const *data,
                   unsigned char *r,
                   unsigned char *g,
@@ -694,6 +742,14 @@ sixel_select_rgb_reader(int pixelformat)
         return sixel_rgb_from_bgra8888;
     case SIXEL_PIXELFORMAT_ABGR8888:
         return sixel_rgb_from_abgr8888;
+    case SIXEL_PIXELFORMAT_XRGB8888:
+        return sixel_rgb_from_xrgb8888;
+    case SIXEL_PIXELFORMAT_RGBX8888:
+        return sixel_rgb_from_rgbx8888;
+    case SIXEL_PIXELFORMAT_XBGR8888:
+        return sixel_rgb_from_xbgr8888;
+    case SIXEL_PIXELFORMAT_BGRX8888:
+        return sixel_rgb_from_bgrx8888;
     case SIXEL_PIXELFORMAT_AG88:
         return sixel_rgb_from_ag88;
     case SIXEL_PIXELFORMAT_GA88:
@@ -727,6 +783,10 @@ sixel_helper_compute_depth(int pixelformat)
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ABGR8888:
     case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
+    case SIXEL_PIXELFORMAT_RGBX8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
+    case SIXEL_PIXELFORMAT_BGRX8888:
         depth = 4;
         break;
     case SIXEL_PIXELFORMAT_RGB888:
@@ -1288,6 +1348,10 @@ sixel_helper_normalize_pixelformat(
     case SIXEL_PIXELFORMAT_ARGB8888:
     case SIXEL_PIXELFORMAT_BGRA8888:
     case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_XRGB8888:
+    case SIXEL_PIXELFORMAT_RGBX8888:
+    case SIXEL_PIXELFORMAT_XBGR8888:
+    case SIXEL_PIXELFORMAT_BGRX8888:
         expand_rgb(dst, src, width, height, src_pixelformat, 4);
         *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;

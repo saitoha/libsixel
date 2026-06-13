@@ -1073,6 +1073,14 @@ sixel_encoding_planner_pixelformat_label(int pixelformat)
         return "abgr8888";
     case SIXEL_PIXELFORMAT_BGRA8888:
         return "bgra8888";
+    case SIXEL_PIXELFORMAT_XRGB8888:
+        return "xrgb8888";
+    case SIXEL_PIXELFORMAT_RGBX8888:
+        return "rgbx8888";
+    case SIXEL_PIXELFORMAT_XBGR8888:
+        return "xbgr8888";
+    case SIXEL_PIXELFORMAT_BGRX8888:
+        return "bgrx8888";
     case SIXEL_PIXELFORMAT_PAL1:
         return "pal1";
     case SIXEL_PIXELFORMAT_PAL2:
