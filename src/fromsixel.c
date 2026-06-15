@@ -1076,7 +1076,7 @@ sixel_decode_raw(
     goto end;
 
 error:
-    free(image.data);
+    sixel_allocator_free(allocator, image.data);
     image.data = NULL;
 
 end:
