@@ -66,6 +66,7 @@ typedef struct sixel_decoder_worker_context {
     int end_offset;
     int index;
     int direct_mode;
+    int initial_color_index;
     int const *palette;
     int palette_limit;
     int width;
@@ -493,6 +494,7 @@ sixel_decoder_parallel_worker(void *arg)
     int depth = 0;
     int height = 0;
     int chain_offset = 0;
+    int starts_after_newline = 0;
     unsigned char ch;
 
     context = (sixel_decoder_worker_context_t *)arg;
@@ -547,6 +549,18 @@ sixel_decoder_parallel_worker(void *arg)
         return status;
     }
 
+    /*
+     * The controller starts workers after palette/raster attributes are
+     * established.  Carry the current palette index across that anchor;
+     * otherwise chunks that begin with raster data would silently use color 0.
+     */
+    color_index = context->initial_color_index;
+    if (color_index < 0) {
+        color_index = 0;
+    } else if (color_index >= SIXEL_PALETTE_MAX_DECODER) {
+        color_index = SIXEL_PALETTE_MAX_DECODER - 1;
+    }
+
     status = 0;
 
     if (logger != NULL) {
@@ -572,18 +586,27 @@ sixel_decoder_parallel_worker(void *arg)
 
     cursor = start;
     if (context->index > 0) {
-        cursor = (unsigned char *)memchr(start,
-                                         '-',
-                                         (size_t)(context->length -
-                                         context->start_offset));
-        if (cursor != NULL &&
-                cursor + 1 < context->input + context->length) {
-            cursor += 1;
-        } else {
-            cursor = start;
+        /*
+         * A byte span can start immediately after DECGNL ('-') when the
+         * previous worker's inclusive end offset landed on that delimiter.
+         * In that case this worker is already positioned at the next sixel
+         * band. Searching for another '-' would skip exactly one 6-pixel band.
+         */
+        starts_after_newline = start > anchor && start[-1] == '-';
+        if (!starts_after_newline) {
+            cursor = (unsigned char *)memchr(start,
+                                             '-',
+                                             (size_t)(context->length -
+                                             context->start_offset));
+            if (cursor != NULL &&
+                    cursor + 1 < context->input + context->length) {
+                cursor += 1;
+            } else {
+                cursor = start;
+            }
         }
     }
-    if (context->index > 0 && cursor == start) {
+    if (context->index > 0 && cursor == start && !starts_after_newline) {
         status = (-1);
         context->result = status;
         return status;
@@ -685,6 +708,12 @@ sixel_decoder_parallel_worker(void *arg)
 
                     row_base = (pos_y + i - chunk_cursor->start_row) *
                         width + pos_x;
+                    /*
+                     * Track the actual row touched by this sixel bit.  A
+                     * single sixel byte may paint any of the six rows in the
+                     * current band, and the copy stage truncates local chunks
+                     * from this maximum touched position.
+                     */
                     relative = (pos_y + i) * width + pos_x;
 
                     if (pixel_size == 1 && repeat > 3) {
@@ -1103,6 +1132,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
                                      int length,
                                      unsigned char *anchor,
                                      image_buffer_t *image,
+                                     int initial_color_index,
                                      int const *palette,
                                      sixel_timeline_logger_t *logger)
 {
@@ -1258,6 +1288,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
         }
         contexts[i].index = i;
         contexts[i].direct_mode = direct_mode;
+        contexts[i].initial_color_index = initial_color_index;
         contexts[i].palette = palette;
         contexts[i].palette_limit = palette_limit;
         contexts[i].width = image->width;

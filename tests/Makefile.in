@@ -131,6 +131,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/timeline/0002_timeline_parallel_encode_decode.c \
 	processing/timeline/0003_timeline_clock_origin.c \
 	processing/threadpool/0001_threadpool_service.c \
+	processing/decoder/0001_decoder_parallel_split_after_newline.c \
 	processing/lookup/0001_lookup_policy.c \
 	processing/dither/0001_dither_policy.c \
 	processing/filter/filter_test_common.h \
@@ -210,6 +211,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0002_timeline_parallel_encode_decode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/timeline/test_runner-0003_timeline_clock_origin.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/threadpool/test_runner-0001_threadpool_service.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
@@ -399,6 +401,7 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po \
 	processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po \
 	processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po \
@@ -1201,6 +1204,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0002_timeline_parallel_encode_decode.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/timeline/0003_timeline_clock_origin.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/threadpool/0001_threadpool_service.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0001_decoder_parallel_split_after_newline.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0001_lookup_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_test_common.h \
@@ -1504,6 +1508,15 @@ processing/threadpool/$(DEPDIR)/$(am__dirstamp):
 processing/threadpool/test_runner-0001_threadpool_service.$(OBJEXT):  \
 	processing/threadpool/$(am__dirstamp) \
 	processing/threadpool/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/$(am__dirstamp):
+	@$(MKDIR_P) processing/decoder
+	@: >>processing/decoder/$(am__dirstamp)
+processing/decoder/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) processing/decoder/$(DEPDIR)
+	@: >>processing/decoder/$(DEPDIR)/$(am__dirstamp)
+processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.$(OBJEXT):  \
+	processing/decoder/$(am__dirstamp) \
+	processing/decoder/$(DEPDIR)/$(am__dirstamp)
 processing/lookup/$(am__dirstamp):
 	@$(MKDIR_P) processing/lookup
 	@: >>processing/lookup/$(am__dirstamp)
@@ -1813,6 +1826,7 @@ mostlyclean-compile:
 	-rm -f loader/quicklook/*.$(OBJEXT)
 	-rm -f loader/wic/*.$(OBJEXT)
 	-rm -f processing/chunk/*.$(OBJEXT)
+	-rm -f processing/decoder/*.$(OBJEXT)
 	-rm -f processing/dither/*.$(OBJEXT)
 	-rm -f processing/encoder-core/*.$(OBJEXT)
 	-rm -f processing/filter/*.$(OBJEXT)
@@ -1892,6 +1906,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po@am__quote@ # am--include-marker
@@ -2254,6 +2269,20 @@ processing/threadpool/test_runner-0001_threadpool_service.obj: processing/thread
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/threadpool/0001_threadpool_service.c' object='processing/threadpool/test_runner-0001_threadpool_service.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/threadpool/test_runner-0001_threadpool_service.obj `if test -f 'processing/threadpool/0001_threadpool_service.c'; then $(CYGPATH_W) 'processing/threadpool/0001_threadpool_service.c'; else $(CYGPATH_W) '$(srcdir)/processing/threadpool/0001_threadpool_service.c'; fi`
+
+processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.o: processing/decoder/0001_decoder_parallel_split_after_newline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Tpo -c -o processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.o `test -f 'processing/decoder/0001_decoder_parallel_split_after_newline.c' || echo '$(srcdir)/'`processing/decoder/0001_decoder_parallel_split_after_newline.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Tpo processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0001_decoder_parallel_split_after_newline.c' object='processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.o `test -f 'processing/decoder/0001_decoder_parallel_split_after_newline.c' || echo '$(srcdir)/'`processing/decoder/0001_decoder_parallel_split_after_newline.c
+
+processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.obj: processing/decoder/0001_decoder_parallel_split_after_newline.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Tpo -c -o processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.obj `if test -f 'processing/decoder/0001_decoder_parallel_split_after_newline.c'; then $(CYGPATH_W) 'processing/decoder/0001_decoder_parallel_split_after_newline.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0001_decoder_parallel_split_after_newline.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Tpo processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0001_decoder_parallel_split_after_newline.c' object='processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0001_decoder_parallel_split_after_newline.obj `if test -f 'processing/decoder/0001_decoder_parallel_split_after_newline.c'; then $(CYGPATH_W) 'processing/decoder/0001_decoder_parallel_split_after_newline.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0001_decoder_parallel_split_after_newline.c'; fi`
 
 processing/lookup/test_runner-0001_lookup_policy.o: processing/lookup/0001_lookup_policy.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0001_lookup_policy.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Tpo -c -o processing/lookup/test_runner-0001_lookup_policy.o `test -f 'processing/lookup/0001_lookup_policy.c' || echo '$(srcdir)/'`processing/lookup/0001_lookup_policy.c
@@ -3369,6 +3398,8 @@ distclean-generic:
 	-$(am__rm_f) loader/wic/$(am__dirstamp)
 	-$(am__rm_f) processing/chunk/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/chunk/$(am__dirstamp)
+	-$(am__rm_f) processing/decoder/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) processing/decoder/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/dither/$(am__dirstamp)
 	-$(am__rm_f) processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
@@ -3464,6 +3495,7 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po
@@ -3585,6 +3617,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po

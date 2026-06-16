@@ -796,6 +796,7 @@ sixel_decode_raw_impl(
                         len,
                         parallel_anchor,
                         image,
+                        context->color_index,
                         image->palette,
                         logger_prepared ? logger : NULL);
                     parallel_started = 1;
@@ -823,6 +824,7 @@ sixel_decode_raw_impl(
                         len,
                         parallel_anchor,
                         image,
+                        context->color_index,
                         image->palette,
                         logger_prepared ? logger : NULL);
                     parallel_started = 1;
@@ -848,6 +850,7 @@ sixel_decode_raw_impl(
                             len,
                             parallel_anchor,
                             image,
+                            context->color_index,
                             image->palette,
                             logger_prepared ? logger : NULL);
                         parallel_started = 1;

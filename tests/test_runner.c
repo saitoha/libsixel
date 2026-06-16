@@ -104,6 +104,8 @@ int test_timeline_0001_timeline_logger_factory(int argc, char **argv);
 int test_timeline_0002_timeline_parallel_encode_decode(int argc, char **argv);
 int test_timeline_0003_timeline_clock_origin(int argc, char **argv);
 int test_threadpool_0001_threadpool_service(int argc, char **argv);
+int test_decoder_0001_decoder_parallel_split_after_newline(int argc,
+                                                           char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
 int test_lookup_0001_lookup_policy(int argc, char **argv);
 
@@ -249,6 +251,8 @@ static test_entry_t const test_entries[] = {
       test_timeline_0003_timeline_clock_origin },
     { "threadpool/0001_threadpool_service",
       test_threadpool_0001_threadpool_service },
+    { "decoder/0001_decoder_parallel_split_after_newline",
+      test_decoder_0001_decoder_parallel_split_after_newline },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },
