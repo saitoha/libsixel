@@ -35,6 +35,10 @@
  */
 typedef struct sixel_palette_build_context {
     unsigned int requested_colors;
+    void const *temporal_reference_data;
+    unsigned int temporal_reference_length;
+    int temporal_reference_pixelformat;
+    unsigned int temporal_match_weight;
     int method_for_largest;
     int method_for_rep;
     int quality_mode;

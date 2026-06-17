@@ -97,6 +97,9 @@ sixel_dither_interframe_state_reset_with_reason(sixel_dither_t *dither,
 static void
 sixel_dither_interframe_state_dispose(sixel_dither_t *dither);
 
+static void
+sixel_dither_clear_temporal_palette_source(sixel_dither_t *dither);
+
 static int
 sixel_dither_interframe_resolve_apply_mode(int apply_mode);
 
@@ -1449,6 +1452,17 @@ sixel_dither_new(
     (*ppdither)->requested_quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     (*ppdither)->prefer_float32 = 0;
+    (*ppdither)->temporal_palette_reference_pixels = NULL;
+    (*ppdither)->temporal_palette_reference_size = 0U;
+    (*ppdither)->temporal_palette_reference_pixelformat =
+        SIXEL_PIXELFORMAT_RGB888;
+    (*ppdither)->temporal_palette_match_weight = 0U;
+    (*ppdither)->temporal_palette_source_pixels = NULL;
+    (*ppdither)->temporal_palette_source_size = 0U;
+    (*ppdither)->temporal_palette_source_pixelformat =
+        SIXEL_PIXELFORMAT_RGB888;
+    (*ppdither)->temporal_palette_source_valid = 0;
+    (*ppdither)->temporal_palette_capture_source = 0;
     (*ppdither)->allocator = allocator;
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->lut_policy_shared_instance_override = 0;
@@ -1567,6 +1581,7 @@ sixel_dither_destroy(
             dither->palette->vtbl->unref(dither->palette);
             dither->palette = NULL;
         }
+        sixel_dither_clear_temporal_palette_source(dither);
         sixel_dither_clear_bluenoise_gradient_map_hint(dither);
         sixel_dither_interframe_state_dispose(dither);
         sixel_allocator_free(allocator, dither);
@@ -1761,6 +1776,7 @@ sixel_dither_initialize(
     int method_for_largest_for_palette;
     int palette_pixelformat;
     int prefer_float32;
+    unsigned char *source_copy = NULL;
     sixel_palette_generate_request_t palette_request;
     sixel_palette_float32_entries_request_t drop_float_request;
     sixel_palette_metadata_t palette_metadata;
@@ -1783,6 +1799,7 @@ sixel_dither_initialize(
     payload_length = 0U;
     palette_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     prefer_float32 = dither->prefer_float32;
+    sixel_dither_clear_temporal_palette_source(dither);
 
     /* Float32 input requires the pipeline to honour higher precision. */
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
@@ -1910,10 +1927,43 @@ sixel_dither_initialize(
         method_for_largest_for_palette = dither->method_for_largest;
     }
 
+    if (dither->temporal_palette_capture_source != 0
+            && input_pixels != NULL && payload_length > 0U) {
+        source_copy = (unsigned char *)sixel_allocator_malloc(
+            dither->allocator,
+            (size_t)payload_length);
+        if (source_copy == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_dither_initialize: temporal palette source alloc "
+                "failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memcpy(source_copy, input_pixels, (size_t)payload_length);
+        dither->temporal_palette_source_pixels = source_copy;
+        dither->temporal_palette_source_size = (size_t)payload_length;
+        dither->temporal_palette_source_pixelformat = palette_pixelformat;
+        dither->temporal_palette_source_valid = 1;
+        source_copy = NULL;
+    }
+
     memset(&palette_request, 0, sizeof(palette_request));
     palette_request.data = input_pixels;
     palette_request.length = payload_length;
     palette_request.pixelformat = palette_pixelformat;
+    if (dither->temporal_palette_reference_pixels != NULL
+            && dither->temporal_palette_reference_size
+                == (size_t)payload_length
+            && dither->temporal_palette_reference_pixelformat
+                == palette_pixelformat
+            && dither->temporal_palette_match_weight > 0U) {
+        palette_request.temporal_reference_data =
+            dither->temporal_palette_reference_pixels;
+        palette_request.temporal_reference_length = payload_length;
+        palette_request.temporal_reference_pixelformat = palette_pixelformat;
+        palette_request.temporal_match_weight =
+            dither->temporal_palette_match_weight;
+    }
     palette_request.requested_colors = (unsigned int)dither->reqcolors;
     palette_request.method_for_largest = method_for_largest_for_palette;
     palette_request.method_for_rep = dither->method_for_rep;
@@ -1969,6 +2019,9 @@ end:
     }
     if (float_pixels != NULL) {
         sixel_allocator_free(dither->allocator, float_pixels);
+    }
+    if (source_copy != NULL) {
+        sixel_allocator_free(dither->allocator, source_copy);
     }
 
     /* decrement ref count */
@@ -2296,6 +2349,109 @@ sixel_dither_set_transparent_bgcolor_hint(
         dither->transparent_bgcolor[2] = 0U;
     }
     dither->transparent_bgcolor_valid = 1;
+}
+
+static void
+sixel_dither_clear_temporal_palette_source(sixel_dither_t *dither)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    if (dither->temporal_palette_source_pixels != NULL
+            && dither->allocator != NULL) {
+        sixel_allocator_free(dither->allocator,
+                             dither->temporal_palette_source_pixels);
+    }
+    dither->temporal_palette_source_pixels = NULL;
+    dither->temporal_palette_source_size = 0U;
+    dither->temporal_palette_source_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    dither->temporal_palette_source_valid = 0;
+}
+
+void
+sixel_dither_enable_temporal_palette_capture(sixel_dither_t *dither,
+                                             int enable)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    dither->temporal_palette_capture_source = enable != 0 ? 1 : 0;
+    if (enable == 0) {
+        sixel_dither_clear_temporal_palette_source(dither);
+    }
+}
+
+void
+sixel_dither_clear_temporal_palette_reference(sixel_dither_t *dither)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    dither->temporal_palette_reference_pixels = NULL;
+    dither->temporal_palette_reference_size = 0U;
+    dither->temporal_palette_reference_pixelformat =
+        SIXEL_PIXELFORMAT_RGB888;
+    dither->temporal_palette_match_weight = 0U;
+}
+
+void
+sixel_dither_set_temporal_palette_reference(
+    sixel_dither_t *dither,
+    unsigned char const *pixels,
+    size_t pixels_size,
+    int pixelformat,
+    unsigned int match_weight)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    sixel_dither_clear_temporal_palette_reference(dither);
+    if (pixels == NULL || pixels_size == 0U || match_weight == 0U) {
+        return;
+    }
+    dither->temporal_palette_reference_pixels = pixels;
+    dither->temporal_palette_reference_size = pixels_size;
+    dither->temporal_palette_reference_pixelformat = pixelformat;
+    dither->temporal_palette_match_weight = match_weight;
+}
+
+int
+sixel_dither_get_temporal_palette_source(
+    sixel_dither_t *dither,
+    unsigned char const **pixels,
+    size_t *pixels_size,
+    int *pixelformat)
+{
+    if (pixels != NULL) {
+        *pixels = NULL;
+    }
+    if (pixels_size != NULL) {
+        *pixels_size = 0U;
+    }
+    if (pixelformat != NULL) {
+        *pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    }
+    if (dither == NULL || dither->temporal_palette_source_valid == 0
+            || dither->temporal_palette_source_pixels == NULL
+            || dither->temporal_palette_source_size == 0U) {
+        return 0;
+    }
+
+    if (pixels != NULL) {
+        *pixels = dither->temporal_palette_source_pixels;
+    }
+    if (pixels_size != NULL) {
+        *pixels_size = dither->temporal_palette_source_size;
+    }
+    if (pixelformat != NULL) {
+        *pixelformat = dither->temporal_palette_source_pixelformat;
+    }
+
+    return 1;
 }
 
 void

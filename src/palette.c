@@ -1320,6 +1320,11 @@ sixel_palette_vtbl_generate(
     }
     depth = (unsigned int)result_depth;
     context.requested_colors = request->requested_colors;
+    context.temporal_reference_data = request->temporal_reference_data;
+    context.temporal_reference_length = request->temporal_reference_length;
+    context.temporal_reference_pixelformat =
+        request->temporal_reference_pixelformat;
+    context.temporal_match_weight = request->temporal_match_weight;
     context.method_for_largest = request->method_for_largest;
     context.method_for_rep = request->method_for_rep;
     context.quality_mode = request->quality_mode;

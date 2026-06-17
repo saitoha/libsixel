@@ -672,6 +672,10 @@ typedef struct sixel_palette_generate_request {
     void const *data;
     unsigned int length;
     int pixelformat;
+    void const *temporal_reference_data;
+    unsigned int temporal_reference_length;
+    int temporal_reference_pixelformat;
+    unsigned int temporal_match_weight;
     unsigned int requested_colors;
     int method_for_largest;
     int method_for_rep;

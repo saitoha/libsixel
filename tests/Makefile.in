@@ -169,6 +169,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	quant/palette/0002_kmedoids_constraints.c \
 	quant/palette/0003_kcenter_constraints.c \
 	quant/palette/0004_palette_factory.c \
+	quant/palette/0005_palette_temporal_reference.c \
 	diagnostics/probe/0001_probe_parse.c \
 	diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
 	diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.c \
@@ -247,6 +248,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0002_kmedoids_constraints.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0003_kcenter_constraints.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0004_palette_factory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0005_palette_temporal_reference.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0001_icc_builtin_rgb_gray_v4_paths.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/icc/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.$(OBJEXT) \
@@ -411,7 +413,8 @@ am__depfiles_remade =  \
 	quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po \
 	quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po \
 	quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po \
-	quant/palette/$(DEPDIR)/test_runner-0004_palette_factory.Po
+	quant/palette/$(DEPDIR)/test_runner-0004_palette_factory.Po \
+	quant/palette/$(DEPDIR)/test_runner-0005_palette_temporal_reference.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -923,7 +926,11 @@ zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
-@OPENVMS_GNV_FALSE@TESTS = @SIXEL_CHECK_TESTS@
+@OPENVMS_GNV_FALSE@# Keep normal builds sensitive to test renames without requiring a full
+@OPENVMS_GNV_FALSE@# reconfigure.  OpenVMS keeps using the configure-generated list above because
+@OPENVMS_GNV_FALSE@# the full list can exceed record-oriented file limits when stored inline.
+@OPENVMS_GNV_FALSE@TESTS := $(shell $(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
+@OPENVMS_GNV_FALSE@    tests "$(srcdir)" include)
 @OPENVMS_GNV_TRUE@OPENVMS_CHECK_TESTS_LIST = $(builddir)/check-tests.list
 @OPENVMS_GNV_TRUE@# Keep the default serialized on OpenVMS.  N=2 sharding is still available for
 @OPENVMS_GNV_TRUE@# experiments, but the extra GNV process and file I/O overhead is slower on the
@@ -1699,6 +1706,9 @@ quant/palette/test_runner-0003_kcenter_constraints.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
 quant/palette/test_runner-0004_palette_factory.$(OBJEXT):  \
+	quant/palette/$(am__dirstamp) \
+	quant/palette/$(DEPDIR)/$(am__dirstamp)
+quant/palette/test_runner-0005_palette_temporal_reference.$(OBJEXT):  \
 	quant/palette/$(am__dirstamp) \
 	quant/palette/$(DEPDIR)/$(am__dirstamp)
 diagnostics/probe/$(am__dirstamp):
@@ -2774,6 +2784,20 @@ quant/palette/test_runner-0004_palette_factory.obj: quant/palette/0004_palette_f
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0004_palette_factory.obj `if test -f 'quant/palette/0004_palette_factory.c'; then $(CYGPATH_W) 'quant/palette/0004_palette_factory.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0004_palette_factory.c'; fi`
 
+quant/palette/test_runner-0005_palette_temporal_reference.o: quant/palette/0005_palette_temporal_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0005_palette_temporal_reference.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0005_palette_temporal_reference.Tpo -c -o quant/palette/test_runner-0005_palette_temporal_reference.o `test -f 'quant/palette/0005_palette_temporal_reference.c' || echo '$(srcdir)/'`quant/palette/0005_palette_temporal_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0005_palette_temporal_reference.Tpo quant/palette/$(DEPDIR)/test_runner-0005_palette_temporal_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0005_palette_temporal_reference.c' object='quant/palette/test_runner-0005_palette_temporal_reference.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0005_palette_temporal_reference.o `test -f 'quant/palette/0005_palette_temporal_reference.c' || echo '$(srcdir)/'`quant/palette/0005_palette_temporal_reference.c
+
+quant/palette/test_runner-0005_palette_temporal_reference.obj: quant/palette/0005_palette_temporal_reference.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0005_palette_temporal_reference.obj -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0005_palette_temporal_reference.Tpo -c -o quant/palette/test_runner-0005_palette_temporal_reference.obj `if test -f 'quant/palette/0005_palette_temporal_reference.c'; then $(CYGPATH_W) 'quant/palette/0005_palette_temporal_reference.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0005_palette_temporal_reference.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) quant/palette/$(DEPDIR)/test_runner-0005_palette_temporal_reference.Tpo quant/palette/$(DEPDIR)/test_runner-0005_palette_temporal_reference.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant/palette/0005_palette_temporal_reference.c' object='quant/palette/test_runner-0005_palette_temporal_reference.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o quant/palette/test_runner-0005_palette_temporal_reference.obj `if test -f 'quant/palette/0005_palette_temporal_reference.c'; then $(CYGPATH_W) 'quant/palette/0005_palette_temporal_reference.c'; else $(CYGPATH_W) '$(srcdir)/quant/palette/0005_palette_temporal_reference.c'; fi`
+
 diagnostics/probe/test_runner-0001_probe_parse.o: diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT diagnostics/probe/test_runner-0001_probe_parse.o -MD -MP -MF diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo -c -o diagnostics/probe/test_runner-0001_probe_parse.o `test -f 'diagnostics/probe/0001_probe_parse.c' || echo '$(srcdir)/'`diagnostics/probe/0001_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Tpo diagnostics/probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
@@ -3506,6 +3530,7 @@ distclean: distclean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0004_palette_factory.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0005_palette_temporal_reference.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -3628,6 +3653,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0002_kmedoids_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0003_kcenter_constraints.Po
 	-rm -f quant/palette/$(DEPDIR)/test_runner-0004_palette_factory.Po
+	-rm -f quant/palette/$(DEPDIR)/test_runner-0005_palette_temporal_reference.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

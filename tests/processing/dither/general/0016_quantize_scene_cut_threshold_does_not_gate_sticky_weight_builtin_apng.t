@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring scene_cut_threshold changes animated APNG output.
+# TAP test ensuring scene_cut_threshold does not gate sticky_weight output.
 
 set -eux
 
@@ -15,7 +15,7 @@ low_threshold_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -Qauto:animation_mode=1:scene_cut_threshold=0.00 \
+        -Qauto:sticky_weight=8:scene_cut_threshold=0.00 \
         -d fs -p 2 \
         "${input_apng}"
 ) || {
@@ -31,7 +31,7 @@ high_threshold_output=$(
         --threads=1 \
         -L builtin \
         -ldisable \
-        -Qauto:animation_mode=1:scene_cut_threshold=1.00 \
+        -Qauto:sticky_weight=8:scene_cut_threshold=1.00 \
         -d fs -p 2 \
         "${input_apng}"
 ) || {
@@ -39,10 +39,10 @@ high_threshold_output=$(
     exit 0
 }
 
-test "${low_threshold_output}" != "${high_threshold_output}" || {
-    echo "not ok" 1 - "scene_cut_threshold did not change animated APNG output"
+test "${low_threshold_output}" = "${high_threshold_output}" || {
+    echo "not ok" 1 - "scene_cut_threshold changed sticky_weight output"
     exit 0
 }
 
-echo "ok" 1 - "-Q scene_cut_threshold changes animated APNG output"
+echo "ok" 1 - "-Q scene_cut_threshold does not gate sticky_weight"
 exit 0

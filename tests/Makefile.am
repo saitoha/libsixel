@@ -23,7 +23,11 @@ OPENVMS_TEST_SHARD_DIR = $(builddir)/check-tests-shards
 OPENVMS_TEST_WORKER_LIST = $(OPENVMS_CHECK_TESTS_LIST)
 TESTS =
 else
-TESTS = @SIXEL_CHECK_TESTS@
+# Keep normal builds sensitive to test renames without requiring a full
+# reconfigure.  OpenVMS keeps using the configure-generated list above because
+# the full list can exceed record-oriented file limits when stored inline.
+TESTS := $(shell $(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
+    tests "$(srcdir)" include)
 endif
 XFAIL_TESTS = \
     loader/builtin/1287_loader_builtin_psd_psdtools_advanced_blending_hardcase_lsqa.t \
@@ -331,6 +335,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0002_kmedoids_constraints.c \
     quant/palette/0003_kcenter_constraints.c \
     quant/palette/0004_palette_factory.c \
+    quant/palette/0005_palette_temporal_reference.c \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
     diagnostics/icc/0002_icc_builtin_mab_mba_a2b0_paths.c \

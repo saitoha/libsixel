@@ -227,7 +227,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      heckbert -> traditional Heckbert median-cut implementation. auto/heckbert\n"
         "      sub-option:\n"
         "        :animation_mode=0|1 default 0\n"
-        "        :scene_cut_threshold=VALUE 0.0-1.0 default 0.20\n"
+        "        :scene_cut_threshold=VALUE 0.0-1.0 compat\n"
+        "        :sticky_weight=COUNT 0-255 default 0\n"
         "        :merge=MODE (:GMODE) auto, none, ward\n"
         "        :merge_oversplit=FACTOR (:OFACTOR) 1.0-3.0\n"
         "        :merge_lloyd=COUNT (:LCOUNT) 0-30\n"
@@ -272,7 +273,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "          default 1).\n"
         "          :feedback_interval=COUNT run feedback every N iterations (1-64, default 1).\n"
         "          :animation_mode=0|1 default 0\n"
-        "          :scene_cut_threshold=VALUE 0.0-1.0 default 0.20\n"
+        "          :scene_cut_threshold=VALUE 0.0-1.0 compat\n"
         "          :merge=MODE (:GMODE) auto, none, ward\n"
         "          :merge_oversplit=FACTOR (:OFACTOR) 1.0-3.0\n"
         "          :merge_lloyd=COUNT (:LCOUNT) 0-30\n"
@@ -307,7 +308,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :bandit_candidates=COUNT Bandit candidate budget (8-4096).\n"
         "          :bandit_batch=COUNT Bandit mini-batch size (8-4096).\n"
         "          :animation_mode=0|1 default 0\n"
-        "          :scene_cut_threshold=VALUE 0.0-1.0 default 0.20\n"
+        "          :scene_cut_threshold=VALUE 0.0-1.0 compat\n"
         "          :merge=MODE (:GMODE) auto, none, ward\n"
         "          :merge_oversplit=FACTOR (:OFACTOR) 1.0-3.0\n"
         "          :merge_lloyd=COUNT (:LCOUNT) 0-30\n"
@@ -359,7 +360,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :swap_min_gain=VALUE minimum radius gain per accepted swap\n"
         "          (0.0-8.0, default 0.0).\n"
         "          :animation_mode=0|1 default 0\n"
-        "          :scene_cut_threshold=VALUE 0.0-1.0 default 0.20\n"
+        "          :scene_cut_threshold=VALUE 0.0-1.0 compat\n"
         "          :merge=MODE (:GMODE) auto, none, ward\n"
         "          :merge_oversplit=FACTOR (:OFACTOR) 1.0-3.0\n"
         "          :merge_lloyd=COUNT (:LCOUNT) 0-30\n"
@@ -1385,13 +1386,18 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_PALETTE_ANIMATION_MODE",
-        "enable frame-to-frame palette stabilization for animated inputs.\n"
+        "request per-frame palette handling for animated inputs.\n"
         "Accepts 0 or 1 (default 0)."
     },
     {
         "SIXEL_PALETTE_SCENE_CUT_THRESHOLD",
-        "scene-cut sensitivity for animation_mode.\n"
-        "Accepts 0.0-1.0 (default 0.20)."
+        "accepted for compatibility with older animation_mode builds.\n"
+        "Accepts 0.0-1.0; it does not gate sticky_weight."
+    },
+    {
+        "SIXEL_PALETTE_STICKY_WEIGHT",
+        "add COUNT extra histogram samples for pixels which match the\n"
+        "previous frame at the same position. Accepts 0-255 (default 0)."
     },
     {
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",

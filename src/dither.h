@@ -136,6 +136,15 @@ struct sixel_dither {
     int transparent_bgcolor_valid;  /* non-zero when backdrop is configured */
     int pixelformat;                /* pixelformat for internal processing */
     int prefer_float32;             /* opt-in flag for float32 internals */
+    unsigned char const *temporal_palette_reference_pixels;
+    size_t temporal_palette_reference_size;
+    int temporal_palette_reference_pixelformat;
+    unsigned int temporal_palette_match_weight;
+    unsigned char *temporal_palette_source_pixels;
+    size_t temporal_palette_source_size;
+    int temporal_palette_source_pixelformat;
+    int temporal_palette_source_valid;
+    int temporal_palette_capture_source;
     sixel_allocator_t *allocator;   /* allocator */
     int lut_policy;                 /* histogram LUT policy */
     int lut_policy_shared_instance_override; /* CLI shared override flag */
@@ -208,6 +217,28 @@ sixel_dither_clear_frame_context(sixel_dither_t *dither);
 SIXEL_INTERNAL_API void
 sixel_dither_note_interframe_reset_reason(sixel_dither_t *dither,
                                           int reason);
+
+SIXEL_INTERNAL_API void
+sixel_dither_enable_temporal_palette_capture(sixel_dither_t *dither,
+                                             int enable);
+
+SIXEL_INTERNAL_API void
+sixel_dither_clear_temporal_palette_reference(sixel_dither_t *dither);
+
+SIXEL_INTERNAL_API void
+sixel_dither_set_temporal_palette_reference(
+    sixel_dither_t *dither,
+    unsigned char const *pixels,
+    size_t pixels_size,
+    int pixelformat,
+    unsigned int match_weight);
+
+SIXEL_INTERNAL_API int
+sixel_dither_get_temporal_palette_source(
+    sixel_dither_t *dither,
+    unsigned char const **pixels,
+    size_t *pixels_size,
+    int *pixelformat);
 
 /*
  * Set or clear a caller-provided transparent mask hint used by the

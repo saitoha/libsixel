@@ -87,6 +87,7 @@ int palette_test_kmeans_float32_merge_scaling(void);
  */
 typedef unsigned long sample;
 typedef sample *tuple;
+typedef uint32_t histogram_unit_t;
 
 enum {
     sixel_palette_heckbert_max_channels = 4,
@@ -116,6 +117,13 @@ struct histogram_control {
     unsigned int channel_mask;
     int reversible_rounding;
 };
+
+typedef struct sixel_palette_heckbert_temporal_reference {
+    unsigned char const *data;
+    unsigned int length;
+    int pixelformat;
+    unsigned int match_weight;
+} sixel_palette_heckbert_temporal_reference_t;
 
 static int
 sixel_palette_heckbert_log_start(sixel_timeline_logger_t *logger,
@@ -596,6 +604,50 @@ histogram_pack_color_from_lut(unsigned char const *data,
     return packed;
 }
 
+static unsigned int
+histogram_temporal_pixel_weight(unsigned char const *data,
+                                unsigned char const *temporal_data,
+                                unsigned int offset,
+                                unsigned int pixel_stride,
+                                unsigned int match_weight)
+{
+    if (temporal_data == NULL || match_weight == 0U) {
+        return 1U;
+    }
+    if (memcmp(data + offset, temporal_data + offset,
+               (size_t)pixel_stride) != 0) {
+        return 1U;
+    }
+    if (match_weight >= UINT_MAX - 1U) {
+        return UINT_MAX;
+    }
+
+    return match_weight + 1U;
+}
+
+static void
+histogram_add_weight(histogram_unit_t *histogram,
+                     histogram_unit_t **ref_cursor,
+                     histogram_unit_t bucket_index,
+                     unsigned int weight)
+{
+    if (histogram == NULL || ref_cursor == NULL || *ref_cursor == NULL) {
+        return;
+    }
+    if (weight == 0U) {
+        weight = 1U;
+    }
+    if (histogram[bucket_index] == 0U) {
+        **ref_cursor = bucket_index;
+        ++(*ref_cursor);
+    }
+    if (histogram[bucket_index] > UINT32_MAX - weight) {
+        histogram[bucket_index] = UINT32_MAX;
+    } else {
+        histogram[bucket_index] += weight;
+    }
+}
+
 /*
  * Construct the histogram consumed by the median-cut splitter.  The control
  * flow is intentionally verbose:
@@ -613,18 +665,19 @@ sixel_lut_build_histogram(unsigned char const *data,
                           int quality_mode,
                           int use_reversible,
                           int policy,
+                          sixel_palette_heckbert_temporal_reference_t const
+                              *temporal,
                           tupletable2 *colorfreqtable,
                           sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
-    typedef uint32_t unit_t;
-    unit_t *histogram;
-    unit_t *refmap;
-    unit_t *ref;
+    histogram_unit_t *histogram;
+    histogram_unit_t *refmap;
+    histogram_unit_t *ref;
     unsigned int bucket_index;
     unsigned int step;
     size_t hist_size;
-    unit_t bucket_value;
+    histogram_unit_t bucket_value;
     unsigned int component;
     unsigned int reconstructed;
     struct histogram_control control;
@@ -642,12 +695,18 @@ sixel_lut_build_histogram(unsigned char const *data,
     unsigned int bits;
     int use_fast_pack;
     int input_is_float32;
+    unsigned char const *temporal_data;
+    unsigned int temporal_match_weight;
+    unsigned int pixel_weight;
 
     status = SIXEL_FALSE;
     histogram = NULL;
     refmap = NULL;
     bucket_input = NULL;
     float_pixel = NULL;
+    temporal_data = NULL;
+    temporal_match_weight = 0U;
+    pixel_weight = 1U;
     if (colorfreqtable == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -683,6 +742,14 @@ sixel_lut_build_histogram(unsigned char const *data,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    if (temporal != NULL && temporal->data != NULL
+            && temporal->length == length
+            && temporal->pixelformat == pixelformat
+            && temporal->match_weight > 0U) {
+        temporal_data = temporal->data;
+        temporal_match_weight = temporal->match_weight;
+    }
+
     (void)quality_mode;
 
     /*
@@ -710,18 +777,19 @@ sixel_lut_build_histogram(unsigned char const *data,
         use_fast_pack = 1;
     }
     hist_size = histogram_dense_size(depth_u, &control);
-    histogram = (unit_t *)sixel_allocator_calloc(allocator,
-                                                 hist_size,
-                                                 sizeof(unit_t));
+    histogram = (histogram_unit_t *)sixel_allocator_calloc(
+        allocator,
+        hist_size,
+        sizeof(histogram_unit_t));
     if (histogram == NULL) {
         sixel_helper_set_additional_message(
             "unable to allocate memory for histogram.");
         status = SIXEL_BAD_ALLOCATION;
         goto cleanup;
     }
-    ref = refmap = (unit_t *)sixel_allocator_malloc(allocator,
-                                                    hist_size
-                                                    * sizeof(unit_t));
+    ref = refmap = (histogram_unit_t *)sixel_allocator_malloc(
+        allocator,
+        hist_size * sizeof(histogram_unit_t));
     if (refmap == NULL) {
         sixel_helper_set_additional_message(
             "unable to allocate memory for lookup table.");
@@ -740,12 +808,13 @@ sixel_lut_build_histogram(unsigned char const *data,
         for (i = 0U; i + pixel_stride <= length; i += step) {
             bucket_index = histogram_pack_color_fast_rgb(data + i,
                                                          packed_lut);
-            if (histogram[bucket_index] == 0U) {
-                *ref++ = bucket_index;
-            }
-            if (histogram[bucket_index] < UINT32_MAX) {
-                histogram[bucket_index]++;
-            }
+            pixel_weight = histogram_temporal_pixel_weight(
+                data,
+                temporal_data,
+                i,
+                pixel_stride,
+                temporal_match_weight);
+            histogram_add_weight(histogram, &ref, bucket_index, pixel_weight);
         }
     } else if (!input_is_float32
                && !use_reversible
@@ -754,12 +823,13 @@ sixel_lut_build_histogram(unsigned char const *data,
         for (i = 0U; i + pixel_stride <= length; i += step) {
             bucket_index = histogram_pack_color_fast_rgba(data + i,
                                                           packed_lut);
-            if (histogram[bucket_index] == 0U) {
-                *ref++ = bucket_index;
-            }
-            if (histogram[bucket_index] < UINT32_MAX) {
-                histogram[bucket_index]++;
-            }
+            pixel_weight = histogram_temporal_pixel_weight(
+                data,
+                temporal_data,
+                i,
+                pixel_stride,
+                temporal_match_weight);
+            histogram_add_weight(histogram, &ref, bucket_index, pixel_weight);
         }
     } else {
         for (i = 0U; i + pixel_stride <= length; i += step) {
@@ -799,12 +869,13 @@ sixel_lut_build_histogram(unsigned char const *data,
                                                              bits,
                                                              quantized_lut);
             }
-            if (histogram[bucket_index] == 0U) {
-                *ref++ = bucket_index;
-            }
-            if (histogram[bucket_index] < UINT32_MAX) {
-                histogram[bucket_index]++;
-            }
+            pixel_weight = histogram_temporal_pixel_weight(
+                data,
+                temporal_data,
+                i,
+                pixel_stride,
+                temporal_match_weight);
+            histogram_add_weight(histogram, &ref, bucket_index, pixel_weight);
         }
     }
 
@@ -3267,6 +3338,7 @@ typedef struct sixel_palette_heckbert_colormap_request {
     double *merge_ms;
     unsigned int *merge_iterate_count;
     int *merge_mode;
+    sixel_palette_heckbert_temporal_reference_t temporal_reference;
 } sixel_palette_heckbert_colormap_request_t;
 
 static SIXELSTATUS
@@ -3334,6 +3406,7 @@ sixel_palette_heckbert_colormap(
                                        use_reversible,
                                        SIXEL_PALETTE_CONTEXT(palette)
                                            ->lut_policy,
+                                       &request->temporal_reference,
                                        &colorfreqtable,
                                        allocator);
     if (SIXEL_FAILED(status)) {
@@ -3445,6 +3518,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     float *float_entries;
     int float_stride;
     int reversible_for_quantizer;
+    sixel_palette_build_context_t *build_context;
     sixel_palette_heckbert_colormap_request_t colormap_request;
     double wall_start;
     double init_stop;
@@ -3522,6 +3596,8 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     float_entries = NULL;
     float_stride = 0;
     reversible_for_quantizer = SIXEL_PALETTE_CONTEXT(palette)->use_reversible;
+    build_context = SIXEL_PALETTE_CONTEXT(palette);
+    memset(&colormap_request, 0, sizeof(colormap_request));
     colormap_request.palette = palette;
     colormap_request.data = data;
     colormap_request.length = length;
@@ -3540,6 +3616,20 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     colormap_request.merge_ms = &merge_ms;
     colormap_request.merge_iterate_count = &merge_iterate_count;
     colormap_request.merge_mode = &merge_mode;
+    if (build_context != NULL
+            && build_context->temporal_reference_data != NULL
+            && build_context->temporal_reference_length == length
+            && build_context->temporal_reference_pixelformat == pixelformat
+            && build_context->temporal_match_weight > 0U) {
+        colormap_request.temporal_reference.data =
+            (unsigned char const *)build_context->temporal_reference_data;
+        colormap_request.temporal_reference.length =
+            build_context->temporal_reference_length;
+        colormap_request.temporal_reference.pixelformat =
+            build_context->temporal_reference_pixelformat;
+        colormap_request.temporal_reference.match_weight =
+            build_context->temporal_match_weight;
+    }
     status = sixel_palette_heckbert_colormap(&colormap_request);
     init_stop = sixel_timer_now();
     export_start = init_stop;
