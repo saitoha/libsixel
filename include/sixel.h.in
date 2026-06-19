@@ -183,6 +183,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_QUANTIZE_MODEL_KMEANS      0x2
 #define SIXEL_QUANTIZE_MODEL_KMEDOIDS    0x3
 #define SIXEL_QUANTIZE_MODEL_KCENTER     0x4
+#define SIXEL_QUANTIZE_MODEL_STICKY      0x5
 
 /* final merge policy */
 #define SIXEL_FINAL_MERGE_AUTO        0x0  /* auto final merge (defaults to */
@@ -378,8 +379,10 @@ typedef int SIXELSTATUS;
                                                                 solver
                                                     center   -> discrete k-center
                                                                 solver
+                                                    sticky   -> frame-to-frame
+                                                                stable solver
                                                   auto/heckbert/kmeans/medoids/
-                                                  center
+                                                  center/sticky
                                                   share merge suboptions:
                                                     long forms use key=value;
                                                     short forms use Kvalue
@@ -390,7 +393,8 @@ typedef int SIXELSTATUS;
                                                       float in 1.0-3.0
                                                     merge_lloyd (or Lvalue):
                                                       0 or integer in 1-30
-                                                  heckbert accepts profile:
+                                                  heckbert/sticky accept
+                                                  profile:
                                                     profile:
                                                       compat, speed, quality
                                                   kmeans accepts suboptions in:

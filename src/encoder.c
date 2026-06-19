@@ -676,6 +676,9 @@ sixel_encoder_palette_model_name(int quantize_model)
     if (quantize_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
         return "center";
     }
+    if (quantize_model == SIXEL_QUANTIZE_MODEL_STICKY) {
+        return "sticky";
+    }
 
     return "auto";
 }
@@ -765,7 +768,8 @@ sixel_encoder_apply_heckbert_profile_defaults(sixel_encoder_t *encoder)
     if (encoder == NULL) {
         return;
     }
-    if (encoder->quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
+    if (encoder->quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT
+            && encoder->quantize_model != SIXEL_QUANTIZE_MODEL_STICKY) {
         return;
     }
 
@@ -859,6 +863,8 @@ sixel_encoder_emit_palette_contract(sixel_encoder_t const *encoder,
         sixel_encoder_emit_contract_code(stderr, &first, "MODEL_MEDOIDS");
     } else if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_KCENTER) {
         sixel_encoder_emit_contract_code(stderr, &first, "MODEL_CENTER");
+    } else if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY) {
+        sixel_encoder_emit_contract_code(stderr, &first, "MODEL_STICKY");
     } else {
         sixel_encoder_emit_contract_code(stderr, &first, "MODEL_AUTO");
     }
@@ -2083,6 +2089,51 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_heckbert[] = {
     }
 };
 
+static sixel_suboption_key_t const g_subkeys_quantize_model_sticky[] = {
+    {
+        "scene_cut_threshold",
+        NULL,
+        SIXEL_PALETTE_SCENE_CUT_THRESHOLD_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "profile",
+        NULL,
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_heckbert_profile,
+        sizeof(g_option_choices_heckbert_profile)
+        / sizeof(g_option_choices_heckbert_profile[0])
+    },
+    {
+        "merge",
+        "G",
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_quantize_merge,
+        sizeof(g_option_choices_quantize_merge)
+        / sizeof(g_option_choices_quantize_merge[0])
+    },
+    {
+        "merge_oversplit",
+        "O",
+        "SIXEL_PALETTE_OVERSPLIT_FACTOR",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "merge_lloyd",
+        "L",
+        "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    }
+};
+
 static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
     {
         "inittype",
@@ -2697,6 +2748,13 @@ static sixel_option_value_schema_t const g_schema_quantize_model_values[] = {
         g_subkeys_quantize_model_center,
         sizeof(g_subkeys_quantize_model_center)
         / sizeof(g_subkeys_quantize_model_center[0])
+    },
+    {
+        "sticky",
+        SIXEL_QUANTIZE_MODEL_STICKY,
+        g_subkeys_quantize_model_sticky,
+        sizeof(g_subkeys_quantize_model_sticky)
+        / sizeof(g_subkeys_quantize_model_sticky[0])
     }
 };
 
@@ -3662,7 +3720,9 @@ sixel_encoder_resolve_quantize_animation_options(
         return;
     }
 
-    if (encoder->quantize_model_animation_mode_override != 0) {
+    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY) {
+        resolved_mode = 1;
+    } else if (encoder->quantize_model_animation_mode_override != 0) {
         resolved_mode = encoder->quantize_model_animation_mode;
     } else {
         env_value = sixel_compat_getenv(SIXEL_PALETTE_ANIMATION_MODE_ENVVAR);
@@ -6911,10 +6971,12 @@ sixel_encoder_prepare_palette(
         palette_reqcolors = encoder->reqcolors - 1;
     }
     effective_method_for_largest = SIXEL_LARGE_NORM;
-    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
+    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
+            || encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY) {
         /*
          * Largest-axis selection only applies to the Heckbert median-cut
-         * palette builder.
+         * palette builder. Sticky uses the same builder for scene-cut
+         * candidate palettes.
          */
         effective_method_for_largest = encoder->method_for_largest;
     }
@@ -6927,7 +6989,8 @@ sixel_encoder_prepare_palette(
     effective_merge_lloyd = encoder->quantize_model_merge_lloyd;
     effective_lut_policy = encoder->lut_policy;
     effective_lut_policy_override = encoder->lut_policy_override;
-    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
+    if ((encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
+            || encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY)
             && encoder->quantize_model_heckbert_profile
                 == SIXEL_HECKBERT_PROFILE_QUALITY
             && effective_merge_oversplit_override == 0
@@ -6944,7 +7007,8 @@ sixel_encoder_prepare_palette(
             effective_merge_lloyd_override = 1;
         }
     }
-    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
+    if ((encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
+            || encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY)
             && encoder->quantize_model_heckbert_profile
                 == SIXEL_HECKBERT_PROFILE_SPEED
             && effective_lut_policy_override == 0

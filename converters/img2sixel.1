@@ -94,9 +94,13 @@ specify number of colors to reduce the image to (default=256).
 .TP 5
 .B \-Q \fIMODEL\fP, \-\-quantize\-model=\fIMODEL\fP
 select the palette solver. \fIMODEL\fP accepts \fBauto\fP,
-\fBheckbert\fP, \fBkmeans\fP, \fBmedoids\fP, or \fBcenter\fP. The
+\fBheckbert\fP, \fBkmeans\fP, \fBmedoids\fP, \fBcenter\fP, or
+\fBsticky\fP. The
 \fBauto\fP setting preserves
 the historical Heckbert median\-cut behaviour.
+.br
+\fBsticky\fP keeps palette slots stable across animation frames and rebuilds
+from Heckbert median\-cut when scene\-cut detection trips.
 .br
 Long suboption keys use \fBkey=value\fP. Uppercase short keys use
 \fBKvalue\fP without an equals sign, for example \fBkmeans:Ipca:Gward\fP.
@@ -106,6 +110,18 @@ The \fBauto\fP and \fBheckbert\fP base values accept suboptions:
 \fBanimation_mode\fP: 0 or 1 (default 0).
 .br
 \fBscene_cut_threshold\fP: floating value in 0.0-1.0 (default 0.20).
+.br
+\fBmerge\fP (short form \fBGMODE\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
+.br
+\fBmerge_oversplit\fP (short form \fBOFACTOR\fP): floating value in 1.0-3.0.
+.br
+\fBmerge_lloyd\fP (short form \fBLCOUNT\fP): 0 or integer value in 1-30.
+.br
+The \fBsticky\fP base value accepts suboptions:
+.br
+\fBscene_cut_threshold\fP: floating value in 0.0-1.0 (default 0.20).
+.br
+\fBprofile\fP: \fBcompat\fP, \fBspeed\fP, or \fBquality\fP.
 .br
 \fBmerge\fP (short form \fBGMODE\fP): \fBauto\fP, \fBnone\fP, or \fBward\fP.
 .br

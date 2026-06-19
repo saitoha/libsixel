@@ -479,12 +479,26 @@ Options:
                            the image to (default=256)
 -Q MODEL, --quantize-model=MODEL
                            choose the palette solver. MODEL accepts
-                           auto, heckbert, kmeans, medoids, or center.
+                           auto, heckbert, kmeans, medoids, center, or
+                           sticky.
                            auto
                            preserves the historical Heckbert median-cut
                            behaviour.
+                           sticky keeps palette slots stable across
+                           animation frames and rebuilds from Heckbert
+                           when scene-cut detection trips.
                            Long suboptions use key=value. Uppercase short
                            forms use Kvalue without an equals sign.
+                           sticky accepts suboptions using
+                           sticky:key=value[:key=value...].
+                             scene_cut_threshold
+                                               -> float in 0.0-1.0
+                             profile           -> compat, speed, or quality
+                             merge (or Gvalue) -> auto, none, or ward
+                             merge_oversplit (or Ovalue)
+                                               -> float in 1.0-3.0
+                             merge_lloyd (or Lvalue)
+                                               -> 0 or integer in 1-30
                            kmeans accepts suboptions using
                            kmeans:key=value[:key=value...].
                              inittype (or Ivalue)
