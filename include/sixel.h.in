@@ -1681,6 +1681,15 @@ sixel_encoder_encode(
     sixel_encoder_t /* in */ *encoder,
     char const      /* in */ *filename);
 
+#define SIXEL_HAVE_ENCODER_ENCODE_FRAME 1
+
+/* encode an initialized frame to SIXEL format */
+SIXELAPI SIXELSTATUS
+sixel_encoder_encode_frame(
+    sixel_encoder_t /* in */ *encoder,
+    sixel_frame_t   /* in */ *frame,
+    sixel_output_t  /* in */ *output);
+
 /* encode specified pixel data to SIXEL format
  * output to encoder->outfd */
 SIXELAPI SIXELSTATUS

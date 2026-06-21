@@ -171,6 +171,84 @@ cleanup:
 }
 
 static int
+test_encoder_encode_frame_writes_output(void)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_encoder_t *encoder;
+    sixel_frame_t *frame;
+    sixel_output_t *output;
+    test_output_counter_t counter;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    encoder = NULL;
+    frame = NULL;
+    output = NULL;
+    counter.calls = 0;
+    counter.bytes = 0;
+
+    status = make_allocator(&allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_encoder_new(&encoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = make_rgb_frame(allocator, 2, 2, &frame);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = make_counter_output(allocator, &counter, &output);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_COLORS, "8");
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "none");
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status =
+        sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_QUANTIZE_MODEL, "sticky");
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    sixel_frame_set_multiframe(frame, 1);
+    sixel_frame_set_frame_no(frame, 1);
+
+    status = sixel_encoder_encode_frame(encoder, frame, output);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    if (counter.calls <= 0 || counter.bytes <= 0) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+
+cleanup:
+    if (output != NULL) {
+        sixel_output_unref(output);
+    }
+    sixel_frame_unref(frame);
+    if (encoder != NULL) {
+        sixel_encoder_unref(encoder);
+    }
+    sixel_allocator_unref(allocator);
+
+    return SIXEL_SUCCEEDED(status);
+}
+
+static int
 test_encode_writes_stream_and_progress(void)
 {
     SIXELSTATUS status;
@@ -283,6 +361,11 @@ test_filter_0010_filter_encode(int argc, char **argv)
     if (!test_encode_writes_stream_and_progress()) {
         fprintf(stderr,
                 "encode filter streams data and reports progress failed\n");
+        success = 0;
+    }
+    if (!test_encoder_encode_frame_writes_output()) {
+        fprintf(stderr,
+                "encoder encode_frame writes callback output failed\n");
         success = 0;
     }
 

@@ -8201,7 +8201,7 @@ end:
 
 
 static SIXELSTATUS
-sixel_encoder_encode_frame(
+sixel_encoder_encode_frame_internal(
     sixel_encoder_t *encoder,
     sixel_frame_t   *frame,
     sixel_output_t  *output,
@@ -13540,10 +13540,10 @@ sixel_encoder_frame_pipeline_worker(void *priv)
                 SIXEL_OK,
                 SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
         }
-        status = sixel_encoder_encode_frame(pipeline->encoder,
-                                            work_frame,
-                                            pipeline->output,
-                                            &metadata);
+        status = sixel_encoder_encode_frame_internal(pipeline->encoder,
+                                                     work_frame,
+                                                     pipeline->output,
+                                                     &metadata);
         if (need_clone != 0) {
             sixel_frame_unref(work_frame);
             work_frame = NULL;
@@ -14019,7 +14019,10 @@ sixel_encoder_load_callback_dispatch(
         loop_no,
         SIXEL_OK,
         SIXEL_ENCODER_HANDOFF_TRACE_REASON_NONE);
-    status = sixel_encoder_encode_frame(encoder, frame, context->output, NULL);
+    status = sixel_encoder_encode_frame_internal(encoder,
+                                                 frame,
+                                                 context->output,
+                                                 NULL);
     sixel_encoder_handoff_trace_emit(
         pipeline,
         SIXEL_ENCODER_HANDOFF_TRACE_EVENT_CALLBACK_SERIAL_RESULT,
@@ -15591,6 +15594,34 @@ end:
 }
 
 
+/* encode an initialized frame to SIXEL format */
+SIXELAPI SIXELSTATUS
+sixel_encoder_encode_frame(
+    sixel_encoder_t *encoder,
+    sixel_frame_t   *frame,
+    sixel_output_t  *output)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_FALSE;
+
+    if (encoder == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (output != NULL) {
+        /*
+         * The internal DAG owns context.output until the encode finishes.  Take
+         * a balanced reference so callers keep their original output object.
+         */
+        sixel_output_ref(output);
+    }
+
+    status = sixel_encoder_encode_frame_internal(encoder, frame, output, NULL);
+
+    return status;
+}
+
+
 /* encode specified pixel data to SIXEL format
  * output to encoder->outfd */
 SIXELAPI SIXELSTATUS
@@ -15754,7 +15785,7 @@ sixel_encoder_encode_bytes(
     owned_pixels = NULL;
     owned_palette = NULL;
 
-    status = sixel_encoder_encode_frame(encoder, frame, NULL, NULL);
+    status = sixel_encoder_encode_frame_internal(encoder, frame, NULL, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
