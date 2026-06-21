@@ -101,6 +101,19 @@ sixel_encode_body_ormode(sixel_index_t *pixels,
                          int keycolor,
                          sixel_output_t *output);
 
+/*
+ * Pipeline entry for OR-mode body bytes.  Tests use this private boundary to
+ * prove that the producer/worker/writer path preserves the serial body bytes.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encode_body_ormode_pipeline(unsigned char *pixels,
+                                  int width,
+                                  int height,
+                                  unsigned char const *palette,
+                                  sixel_dither_t *dither,
+                                  sixel_output_t *output,
+                                  int encode_threads);
+
 #endif /* LIBSIXEL_ENCODER_CORE_PRIVATE_H */
 
 /* emacs Local Variables:      */

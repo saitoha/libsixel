@@ -211,6 +211,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
     -DBUILD_TEST_0003_ENCODER_CORE_ORMODE_BODY_TAIL_BAND \
     -DBUILD_TEST_0004_ENCODER_CORE_ORMODE_BODY_BAD_ARGUMENT \
+    -DBUILD_TEST_0005_ENCODER_CORE_ORMODE_PIPELINE_MATCHES_BODY \
     -DBUILD_TEST_0001_SIXEL_WRITER_FACTORY \
     -DBUILD_TEST_0001_FRAME_FACTORY \
     -DBUILD_TEST_0001_CHUNK_FACTORY \
@@ -296,6 +297,7 @@ test_runner_SOURCES = test_runner.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
     processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
     processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c \
+    processing/encoder-core/0005_encoder_core_ormode_pipeline_matches_body.c \
     processing/sixel-writer/0001_sixel_writer_factory.c \
     processing/frame/0001_frame_factory.c \
     processing/chunk/0001_chunk_factory.c \

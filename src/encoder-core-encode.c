@@ -246,6 +246,19 @@ static SIXELSTATUS sixel_band_emit(sixel_encode_work_t *work,
                                    int last_row_index);
 static SIXELSTATUS sixel_put_flash(sixel_output_t *const output);
 static void sixel_advance(sixel_output_t *output, int nwrite);
+static int sixel_encode_body_ormode_nplanes(int ncolors);
+static SIXELSTATUS
+sixel_encode_body_ormode_emit_palette(unsigned char const *palette,
+                                      int ncolors,
+                                      int keycolor,
+                                      sixel_output_t *output);
+static SIXELSTATUS
+sixel_encode_body_ormode_band(sixel_index_t const *pixels,
+                              int width,
+                              int height,
+                              int band_index,
+                              int nplanes,
+                              sixel_output_t *output);
 
 #if SIXEL_ENABLE_THREADS
 static void
@@ -428,6 +441,10 @@ static void sixel_parallel_submit_band(sixel_parallel_context_t *ctx,
 static SIXELSTATUS sixel_parallel_context_wait(sixel_parallel_context_t *ctx,
                                                int force_abort);
 static void sixel_parallel_palette_row_ready(void *priv, int row_index);
+static int
+sixel_parallel_context_is_ormode(sixel_parallel_context_t const *ctx);
+static SIXELSTATUS
+sixel_parallel_worker_flush_output(sixel_parallel_worker_state_t *state);
 static SIXELSTATUS sixel_encode_emit_palette(int bodyonly,
                           int ncolors,
                           int keycolor,
@@ -443,6 +460,15 @@ sixel_parallel_context_init(sixel_parallel_context_t *ctx)
     ctx->keycolor = (-1);
     ctx->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
     ctx->writer_error = SIXEL_OK;
+}
+
+static int
+sixel_parallel_context_is_ormode(sixel_parallel_context_t const *ctx)
+{
+    if (ctx == NULL || ctx->output == NULL) {
+        return 0;
+    }
+    return ctx->output->ormode != 0 ? 1 : 0;
 }
 
 static void
@@ -593,7 +619,9 @@ sixel_parallel_worker_reset(sixel_parallel_worker_state_t *state)
     }
 
     sixel_band_state_reset(&state->band);
-    sixel_band_clear_map(&state->work);
+    if (!sixel_parallel_context_is_ormode(state->context)) {
+        sixel_band_clear_map(&state->work);
+    }
     /* Parallel workers reset band-local buffers and output. */
     state->writer_error = SIXEL_OK;
     state->output->pos = 0;
@@ -620,12 +648,14 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
     state->band_buffer = NULL;
     state->context = ctx;
 
-    status = sixel_encode_work_allocate(&state->work,
-                                        ctx->width,
-                                        ctx->ncolors,
-                                        ctx->allocator);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    if (!sixel_parallel_context_is_ormode(ctx)) {
+        status = sixel_encode_work_allocate(&state->work,
+                                            ctx->width,
+                                            ctx->ncolors,
+                                            ctx->allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
     }
 
     status = sixel_encoder_core_create_output_from_factory(&state->output,
@@ -633,7 +663,9 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
                                               state,
                                               ctx->allocator);
     if (SIXEL_FAILED(status)) {
-        sixel_encode_work_cleanup(&state->work, ctx->allocator);
+        if (!sixel_parallel_context_is_ormode(ctx)) {
+            sixel_encode_work_cleanup(&state->work, ctx->allocator);
+        }
         return status;
     }
 
@@ -770,6 +802,25 @@ sixel_parallel_band_writer(char *data, int size, void *priv)
     band->used += (size_t)size;
 
     return size;
+}
+
+static SIXELSTATUS
+sixel_parallel_worker_flush_output(sixel_parallel_worker_state_t *state)
+{
+    if (state == NULL || state->output == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (state->output->pos > 0) {
+        state->writer_error = sixel_output_write_bytes(
+            state->output,
+            (char *)state->output->buffer,
+            state->output->pos);
+        state->output->pos = 0;
+    }
+    if (state->writer_error != SIXEL_OK) {
+        return state->writer_error;
+    }
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS
@@ -1152,6 +1203,7 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
     int row_index;
     int absolute_row;
     int last_row_index;
+    int nplanes;
 
     ctx = (sixel_parallel_context_t *)userdata;
     state = (sixel_parallel_worker_state_t *)workspace;
@@ -1229,6 +1281,24 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
                           band_index);
     }
 
+    if (sixel_parallel_context_is_ormode(ctx)) {
+        nplanes = sixel_encode_body_ormode_nplanes(ctx->ncolors);
+        status = sixel_encode_body_ormode_band(ctx->pixels,
+                                               ctx->width,
+                                               ctx->height,
+                                               band_index,
+                                               nplanes,
+                                               state->output);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        status = sixel_parallel_worker_flush_output(state);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+        goto done;
+    }
+
     for (row_index = 0; row_index < band_height; row_index++) {
         absolute_row = band_start + row_index;
         status = sixel_band_classify_row(&state->work,
@@ -1272,19 +1342,13 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
         goto cleanup;
     }
 
-    if (state->output->pos > 0) {
-        state->writer_error = sixel_output_write_bytes(
-            state->output,
-            (char *)state->output->buffer,
-            state->output->pos);
-        state->output->pos = 0;
-    }
-    if (state->writer_error != SIXEL_OK) {
-        status = state->writer_error;
+    status = sixel_parallel_worker_flush_output(state);
+    if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
 
     sixel_band_finish(&state->work, &state->band);
+done:
     status = SIXEL_OK;
 
 cleanup:
@@ -1708,6 +1772,209 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     (void)height;
     (void)palette;
     (void)palette_float;
+    (void)dither;
+    (void)output;
+    (void)encode_threads;
+    return SIXEL_RUNTIME_ERROR;
+}
+#endif
+
+#if SIXEL_ENABLE_THREADS
+/*
+ * OR mode shares the producer/writer pipeline with the normal encoder, but its
+ * worker body emits bit-planes from the finished palette-index rows directly.
+ * The palette is emitted before workers start so every band can stay
+ * independent and the writer only has to concatenate ordered body fragments.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encode_body_ormode_pipeline(unsigned char *pixels,
+                                  int width,
+                                  int height,
+                                  unsigned char const *palette,
+                                  sixel_dither_t *dither,
+                                  sixel_output_t *output,
+                                  int encode_threads)
+{
+    SIXELSTATUS status;
+    SIXELSTATUS wait_status;
+    sixel_parallel_context_t ctx = {0};
+    sixel_index_t *indexes;
+    sixel_index_t *result;
+    sixel_allocator_t *allocator;
+    size_t pixel_count;
+    size_t buffer_size;
+    int threads;
+    int nbands;
+    int queue_depth;
+    int waited;
+    int dither_threads_budget;
+    int worker_capacity;
+    int boost_target;
+    sixel_timeline_logger_t *logger;
+    int owns_logger;
+    sixel_parallel_row_notifier_t notifier;
+
+    if (pixels == NULL || palette == NULL || dither == NULL ||
+            output == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    threads = encode_threads;
+    nbands = (height + 5) / 6;
+    if (threads <= 1 || nbands <= 1) {
+        return SIXEL_RUNTIME_ERROR;
+    }
+
+    pixel_count = (size_t)width * (size_t)height;
+    if (height != 0 && pixel_count / (size_t)height != (size_t)width) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+    buffer_size = pixel_count * sizeof(*indexes);
+    allocator = dither->allocator;
+    indexes = (sixel_index_t *)sixel_allocator_malloc(allocator, buffer_size);
+    if (indexes == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    sixel_parallel_context_init(&ctx);
+    logger = dither->pipeline_logger;
+    owns_logger = 0;
+    if (logger == NULL) {
+        logger = NULL;
+        sixel_timeline_logger_prepare_default(allocator, &logger);
+        owns_logger = logger != NULL ? 1 : 0;
+    }
+    notifier.context = &ctx;
+    notifier.logger = logger;
+    notifier.band_height = 6;
+    notifier.image_height = height;
+    waited = 0;
+    status = SIXEL_OK;
+
+    status = sixel_encode_body_ormode_emit_palette(palette,
+                                                   dither->ncolors,
+                                                   dither->keycolor,
+                                                   output);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    queue_depth = threads * 3;
+    if (queue_depth > nbands) {
+        queue_depth = nbands;
+    }
+    if (queue_depth < 1) {
+        queue_depth = 1;
+    }
+
+    dither_threads_budget = dither->pipeline_dither_threads;
+    worker_capacity = threads + dither_threads_budget;
+    if (worker_capacity < threads) {
+        worker_capacity = threads;
+    }
+    if (worker_capacity > nbands) {
+        worker_capacity = nbands;
+    }
+
+    dither->pipeline_index_buffer = indexes;
+    dither->pipeline_index_size = buffer_size;
+    dither->pipeline_row_callback = sixel_parallel_palette_row_ready;
+    dither->pipeline_row_priv = &notifier;
+    dither->pipeline_logger = logger;
+    dither->pipeline_image_width = width;
+    dither->pipeline_image_height = height;
+
+    if (logger != NULL) {
+        sixel_timeline_logger_logf(logger,
+                          "controller",
+                          "pipeline",
+                          "configure",
+                          -1);
+    }
+
+    status = sixel_parallel_context_begin(&ctx,
+                                          indexes,
+                                          width,
+                                          height,
+                                          dither->ncolors,
+                                          dither->keycolor,
+                                          NULL,
+                                          output,
+                                          allocator,
+                                          threads,
+                                          worker_capacity,
+                                          queue_depth,
+                                          dither->pipeline_pin_threads,
+                                          logger);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    result = sixel_dither_apply_palette(dither, pixels, width, height);
+    if (result == NULL) {
+        status = SIXEL_RUNTIME_ERROR;
+        goto cleanup;
+    }
+    if (result != indexes) {
+        status = SIXEL_RUNTIME_ERROR;
+        goto cleanup;
+    }
+
+    /*
+     * PaletteApply is complete, so the encode queue can borrow the dither-side
+     * thread budget and finish any remaining bands with a wider worker set.
+     */
+    boost_target = threads + dither_threads_budget;
+    status = sixel_parallel_context_grow(&ctx, boost_target);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_parallel_context_wait(&ctx, 0);
+    waited = 1;
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+cleanup:
+    dither->pipeline_row_callback = NULL;
+    dither->pipeline_row_priv = NULL;
+    dither->pipeline_index_buffer = NULL;
+    dither->pipeline_index_size = 0;
+    dither->pipeline_image_width = 0;
+    dither->pipeline_image_height = 0;
+    dither->pipeline_transparent_mask = NULL;
+    dither->pipeline_transparent_mask_size = 0;
+    dither->pipeline_transparent_keycolor = (-1);
+    if (!waited && ctx.pool != NULL) {
+        wait_status = sixel_parallel_context_wait(&ctx, status != SIXEL_OK);
+        if (status == SIXEL_OK) {
+            status = wait_status;
+        }
+    }
+    sixel_parallel_context_cleanup(&ctx);
+    if (owns_logger) {
+        sixel_timeline_logger_unref(logger);
+    }
+    if (indexes != NULL) {
+        sixel_allocator_free(allocator, indexes);
+    }
+    return status;
+}
+#else
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encode_body_ormode_pipeline(unsigned char *pixels,
+                                  int width,
+                                  int height,
+                                  unsigned char const *palette,
+                                  sixel_dither_t *dither,
+                                  sixel_output_t *output,
+                                  int encode_threads)
+{
+    (void)pixels;
+    (void)width;
+    (void)height;
+    (void)palette;
     (void)dither;
     (void)output;
     (void)encode_threads;
@@ -3296,31 +3563,32 @@ sixel_encode_footer(sixel_output_t *output)
     return status;
 }
 
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_encode_body_ormode(
-    sixel_index_t       /* in */ *pixels,
-    int                 /* in */ width,
-    int                 /* in */ height,
-    unsigned char       /* in */ *palette,
-    int                 /* in */ ncolors,
-    int                 /* in */ keycolor,
-    sixel_output_t      /* in */ *output)
+static int
+sixel_encode_body_ormode_nplanes(int ncolors)
+{
+    int nplanes;
+
+    for (nplanes = 8; nplanes > 1; nplanes--) {
+        if (ncolors > (1 << (nplanes - 1))) {
+            break;
+        }
+    }
+
+    return nplanes;
+}
+
+static SIXELSTATUS
+sixel_encode_body_ormode_emit_palette(unsigned char const *palette,
+                                      int ncolors,
+                                      int keycolor,
+                                      sixel_output_t *output)
 {
     SIXELSTATUS status;
     int n;
-    int nplanes;
-    sixel_index_t *buf;
-    sixel_index_t *buf_p;
-    int x;
-    int cur_h;
-    int nwrite;
-    int plane;
 
-    if (pixels == NULL) {
+    if (palette == NULL || output == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    buf = pixels;
-
     for (n = 0; n < ncolors; n++) {
         status = output_rgb_palette_definition(output,
                                                palette,
@@ -3332,84 +3600,116 @@ sixel_encode_body_ormode(
         }
     }
 
-    for (nplanes = 8; nplanes > 1; nplanes--) {
-        if (ncolors > (1 << (nplanes - 1))) {
-            break;
-        }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encode_body_ormode_band(sixel_index_t const *pixels,
+                              int width,
+                              int height,
+                              int band_index,
+                              int nplanes,
+                              sixel_output_t *output)
+{
+    SIXELSTATUS status;
+    sixel_index_t const *band_pixels;
+    sixel_index_t const *column_pixels;
+    int band_start;
+    int band_height;
+    int nwrite;
+    int plane;
+    int x;
+    int y;
+    int pix;
+
+    if (pixels == NULL || output == NULL || width < 1 || height < 0 ||
+            band_index < 0 || nplanes < 1) {
+        return SIXEL_BAD_ARGUMENT;
     }
 
-    for (cur_h = 6; cur_h <= height; cur_h += 6) {
-        for (plane = 0; plane < nplanes; plane++) {
-            sixel_putc(output->buffer + output->pos, '#');
-            sixel_advance(output, 1);
-            nwrite = sixel_putnum((char *)output->buffer + output->pos,
-                                  1 << plane);
-            sixel_advance(output, nwrite);
+    band_start = band_index * 6;
+    if (band_start >= height) {
+        return SIXEL_OK;
+    }
+    band_height = height - band_start;
+    if (band_height > 6) {
+        band_height = 6;
+    }
+    band_pixels = pixels + (size_t)band_start * (size_t)width;
 
-            buf_p = buf;
-            for (x = 0; x < width; x++, buf_p++) {
-                sixel_put_pixel(output,
-                                ((buf_p[0] >> plane) & 0x1) |
-                                (((buf_p[width] >> plane) << 1) & 0x2) |
-                                (((buf_p[width * 2] >> plane) << 2) & 0x4) |
-                                (((buf_p[width * 3] >> plane) << 3) & 0x8) |
-                                (((buf_p[width * 4] >> plane) << 4) & 0x10) |
-                                (((buf_p[width * 5] >> plane) << 5) & 0x20));
+    for (plane = 0; plane < nplanes; plane++) {
+        sixel_putc(output->buffer + output->pos, '#');
+        sixel_advance(output, 1);
+        nwrite = sixel_putnum((char *)output->buffer + output->pos,
+                              1 << plane);
+        sixel_advance(output, nwrite);
+
+        column_pixels = band_pixels;
+        for (x = 0; x < width; x++, column_pixels++) {
+            pix = 0;
+            for (y = 0; y < band_height; y++) {
+                pix |= (((column_pixels[width * y] >> plane) & 0x1) << y);
             }
-            status = sixel_put_flash(output);
-            if (SIXEL_FAILED(status)) {
-                return status;
-            }
-            sixel_putc(output->buffer + output->pos, '$');
-            sixel_advance(output, 1);
+            sixel_put_pixel(output, pix);
         }
+        status = sixel_put_flash(output);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+
+        sixel_putc(output->buffer + output->pos, '$');
+        sixel_advance(output, 1);
+    }
+    if (band_height == 6) {
         sixel_putc(output->buffer + output->pos, '-');
         sixel_advance(output, 1);
-        buf += (width * 6);
-	}
+    }
 
-    if (cur_h - height < 6) {
-        for (plane = 0; plane < nplanes; plane++) {
-            sixel_putc(output->buffer + output->pos, '#');
-            sixel_advance(output, 1);
-            nwrite = sixel_putnum((char *)output->buffer + output->pos,
-                                  1 << plane);
-            sixel_advance(output, nwrite);
+    return SIXEL_OK;
+}
 
-            buf_p = buf;
-            for (x = 0; x < width; x++, buf_p++) {
-                int pix = ((buf_p[0] >> plane) & 0x1);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encode_body_ormode(
+    sixel_index_t       /* in */ *pixels,
+    int                 /* in */ width,
+    int                 /* in */ height,
+    unsigned char       /* in */ *palette,
+    int                 /* in */ ncolors,
+    int                 /* in */ keycolor,
+    sixel_output_t      /* in */ *output)
+{
+    SIXELSTATUS status;
+    int nplanes;
+    int nbands;
+    int band_index;
 
-                switch(cur_h - height) {
-                case 1:
-                    pix |= (((buf_p[width * 4] >> plane) << 4) & 0x10);
-                    /* Fall through */
-                case 2:
-                    pix |= (((buf_p[width * 3] >> plane) << 3) & 0x8);
-                    /* Fall through */
-                case 3:
-                    pix |= (((buf_p[width * 2] >> plane) << 2) & 0x4);
-                    /* Fall through */
-                case 4:
-                    pix |= (((buf_p[width] >> plane) << 1) & 0x2);
-                    /* Fall through */
-                default:
-                    break;
-                }
+    if (pixels == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
 
-                sixel_put_pixel(output, pix);
-            }
-            status = sixel_put_flash(output);
-            if (SIXEL_FAILED(status)) {
-                return status;
-            }
+    status = sixel_encode_body_ormode_emit_palette(palette,
+                                                   ncolors,
+                                                   keycolor,
+                                                   output);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
 
-            sixel_putc(output->buffer + output->pos, '$');
-            sixel_advance(output, 1);
+    nplanes = sixel_encode_body_ormode_nplanes(ncolors);
+    nbands = (height + 5) / 6;
+    for (band_index = 0; band_index < nbands; band_index++) {
+        status = sixel_encode_body_ormode_band(pixels,
+                                               width,
+                                               height,
+                                               band_index,
+                                               nplanes,
+                                               output);
+        if (SIXEL_FAILED(status)) {
+            return status;
         }
     }
 
-    return 0;
+    return SIXEL_OK;
 }
 
 
@@ -3443,7 +3743,6 @@ sixel_encode_dither(
     int pipeline_nbands;
     sixel_parallel_dither_config_t dither_parallel;
     char const *band_env_text;
-    int ormode_enabled;
     sixel_palette_entries_view_t palette_view;
     sixel_palette_float32_entries_view_t palette_float_view;
 #if SIXEL_ENABLE_THREADS
@@ -3486,7 +3785,6 @@ sixel_encode_dither(
     dither_parallel.overlap = 0;
     dither_parallel.dither_threads = 0;
     dither_parallel.encode_threads = 0;
-    ormode_enabled = output != NULL && output->ormode != 0;
     /*
      * Normalize the planner-provided pinning request so both palette and
      * encode workers see the same 0/1 flag.
@@ -3542,17 +3840,12 @@ sixel_encode_dither(
         }
         pipeline_nbands = (height + 5) / 6;
         /*
-         * Ormode encoding expects a palette-index buffer in a single,
-         * contiguous memory block. The palette-apply pipeline emits
-         * six-line jobs and leaves input_pixels unset until the encode
-         * stage pulls from the job queue, so forcing it on would leave a
-         * NULL input buffer and can crash when multiple encode threads
-         * run. Disable the pipeline when ormode is active to keep the
-         * data flow deterministic and thread-safe.
+         * Pipeline mode lets PaletteApply produce contiguous index rows while
+         * band workers consume completed six-line slices. OR mode now has its
+         * own band encoder, so it can share this producer/writer path without
+         * dereferencing input_pixels on the caller side.
          */
-        if (!ormode_enabled
-                && pipeline_threads > 1
-                && pipeline_nbands > 1) {
+        if (pipeline_threads > 1 && pipeline_nbands > 1) {
             pipeline_active = 1;
             input_pixels = NULL;
         } else {
@@ -3764,7 +4057,26 @@ sixel_encode_dither(
         goto end;
     }
 
-    if (output->ormode) {
+    if (pipeline_active) {
+        if (output->ormode) {
+            status = sixel_encode_body_ormode_pipeline(pixels,
+                                                       width,
+                                                       height,
+                                                       palette_entries,
+                                                       dither,
+                                                       output,
+                                                       pipeline_threads);
+        } else {
+            status = sixel_encode_body_pipeline(pixels,
+                                                width,
+                                                height,
+                                                palette_entries,
+                                                palette_entries_float32,
+                                                dither,
+                                                output,
+                                                pipeline_threads);
+        }
+    } else if (output->ormode) {
         status = sixel_encode_body_ormode(input_pixels,
                                           width,
                                           height,
@@ -3772,15 +4084,6 @@ sixel_encode_dither(
                                           dither->ncolors,
                                           dither->keycolor,
                                           output);
-    } else if (pipeline_active) {
-        status = sixel_encode_body_pipeline(pixels,
-                                            width,
-                                            height,
-                                            palette_entries,
-                                            palette_entries_float32,
-                                            dither,
-                                            output,
-                                            pipeline_threads);
     } else {
         status = sixel_encode_body(input_pixels,
                                    width,
