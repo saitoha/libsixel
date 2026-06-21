@@ -2,7 +2,8 @@
  * SPDX-License-Identifier: MIT
  *
  * Verify OR mode direct-color decoding converts the composed palette index,
- * not the last bit-plane selector, into RGBA output.
+ * not the last bit-plane selector, into RGBA output.  Untouched pixels still
+ * represent palette index 0 in OR mode, so they must not stay transparent.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -17,8 +18,8 @@
 #include "src/decoder-parallel.h"
 
 static unsigned char g_ormode_payload[] =
-    "\033P7;5q\"1;1;1;1"
-    "#0;2;0;0;0"
+    "\033P7;5q\"1;1;2;1"
+    "#0;2;25;50;75"
     "#1;2;100;0;0"
     "#2;2;0;100;0"
     "#3;2;0;0;100"
@@ -61,7 +62,7 @@ test_decoder_0004_decoder_ormode_direct_overlay(int argc, char **argv)
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    if (width != 1 || height != 1) {
+    if (width != 2 || height != 1) {
         fprintf(stderr, "unexpected direct dimensions %dx%d\n",
                 width,
                 height);
@@ -77,6 +78,18 @@ test_decoder_0004_decoder_ormode_direct_overlay(int argc, char **argv)
                 pixels[1],
                 pixels[2],
                 pixels[3]);
+        goto end;
+    }
+    if (pixels[4] != 64 ||
+            pixels[5] != 128 ||
+            pixels[6] != 191 ||
+            pixels[7] != 255) {
+        fprintf(stderr,
+                "OR mode direct index 0 is %u,%u,%u,%u, expected #0\n",
+                pixels[4],
+                pixels[5],
+                pixels[6],
+                pixels[7]);
         goto end;
     }
 

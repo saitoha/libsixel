@@ -239,10 +239,41 @@ image_buffer_ormode_depth_is_supported(image_buffer_t const *image)
 }
 
 /*
+ * Direct-color OR mode keeps a side-car index buffer while parsing bit
+ * planes.  Finalizing after the parser has seen every palette definition
+ * lets palette index 0 become an opaque color instead of transparent black.
+ */
+static void
+image_buffer_finalize_ormode_direct(image_buffer_t *image)
+{
+    size_t pixels;
+    size_t n;
+    unsigned char *bytes;
+    unsigned short palette_index;
+    int color;
+
+    if (image == NULL || image->depth != 4U ||
+            image->pixels.p == NULL || image->ormode_indexes == NULL) {
+        return;
+    }
+
+    pixels = (size_t)image->width * (size_t)image->height;
+    for (n = 0; n < pixels; ++n) {
+        palette_index = image->ormode_indexes[n];
+        color = image->palette[palette_index];
+        bytes = image->pixels.in_bytes + n * 4U;
+        bytes[0] = (unsigned char)((color >> 16) & 0xff);
+        bytes[1] = (unsigned char)((color >> 8) & 0xff);
+        bytes[2] = (unsigned char)(color & 0xff);
+        bytes[3] = 255u;
+    }
+}
+
+/*
  * OR mode is a bit-plane dialect.  Keep this path separate from normal
  * repaint semantics so the common decoder path keeps its old overwrite
- * behavior, while OR mode can update repeated horizontal spans with one
- * depth dispatch per sixel byte.
+ * behavior.  The direct-color path only composes indexes here; a final linear
+ * pass expands them to RGBA after palette definitions are complete.
  */
 static void
 image_buffer_ormode_store_sixel(image_buffer_t *image,
@@ -254,7 +285,6 @@ image_buffer_ormode_store_sixel(image_buffer_t *image,
 {
     int i;
     int n;
-    int color;
     int max_index;
     int composed_index;
     size_t pos;
@@ -306,20 +336,10 @@ image_buffer_ormode_store_sixel(image_buffer_t *image,
             }
             pos = (size_t)image->width * (size_t)(pos_y + i) +
                 (size_t)pos_x;
-            bytes = image->pixels.in_bytes + pos * 4U;
             indexes = image->ormode_indexes + pos;
             for (n = 0; n < repeat; ++n) {
                 composed_index = indexes[n] | color_index;
-                if (indexes[n] != (unsigned short)composed_index) {
-                    indexes[n] = (unsigned short)composed_index;
-                    color = image->palette[composed_index];
-                    bytes[n * 4 + 0] =
-                        (unsigned char)((color >> 16) & 0xff);
-                    bytes[n * 4 + 1] =
-                        (unsigned char)((color >> 8) & 0xff);
-                    bytes[n * 4 + 2] = (unsigned char)(color & 0xff);
-                    bytes[n * 4 + 3] = 255u;
-                }
+                indexes[n] = (unsigned short)composed_index;
             }
         }
     }
@@ -1825,6 +1845,10 @@ sixel_decode_direct(
                                 allocator);
     if (SIXEL_FAILED(status)) {
         goto error;
+    }
+
+    if (context.ormode) {
+        image_buffer_finalize_ormode_direct(image);
     }
 
     *pwidth = image->width;
