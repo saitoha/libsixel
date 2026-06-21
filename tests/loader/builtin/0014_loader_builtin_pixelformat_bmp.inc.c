@@ -2259,10 +2259,11 @@ run_builtin_loader_bmp_fail_unsupported_comp_num_test(void)
 }
 
 static int
-verify_bmp_rgbfloat32_probe_metadata(char const *label,
-                                     bmp_numeric_probe_context_t const *probe,
-                                     int expected_width,
-                                     int expected_height)
+verify_bmp_rgb_probe_metadata(char const *label,
+                              bmp_numeric_probe_context_t const *probe,
+                              int expected_pixelformat,
+                              int expected_width,
+                              int expected_height)
 {
     if (label == NULL || probe == NULL) {
         return 1;
@@ -2273,7 +2274,7 @@ verify_bmp_rgbfloat32_probe_metadata(char const *label,
                 probe->callback_count);
         return 1;
     }
-    if (probe->pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+    if (probe->pixelformat != expected_pixelformat) {
         fprintf(stderr, "%s: pixelformat mismatch (%d)\n",
                 label,
                 probe->pixelformat);
@@ -2342,9 +2343,10 @@ run_builtin_loader_bmp_bi_jpeg_cms_off_numeric_test(void)
         return 1;
     }
 
-    return verify_bmp_rgbfloat32_probe_metadata(
+    return verify_bmp_rgb_probe_metadata(
         "builtin loader bmp bi-jpeg cms off numeric",
         &probe,
+        SIXEL_PIXELFORMAT_RGB888,
         64,
         64);
 }
@@ -2390,9 +2392,10 @@ run_builtin_loader_bmp_bi_jpeg_cms_on_numeric_test(void)
         return 1;
     }
 
-    return verify_bmp_rgbfloat32_probe_metadata(
+    return verify_bmp_rgb_probe_metadata(
         "builtin loader bmp bi-jpeg cms on numeric",
         &probe,
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
         64,
         64);
 }

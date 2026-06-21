@@ -304,7 +304,6 @@ stbi_free(void *p)
 #define STBI_NO_HDR
 #if HAVE_NEON && HAVE_ARM_NEON_H
 # define STBI_NEON 1
-# define STBI_NO_SIMD 1
 #elif !defined(HAVE_SSE2)
 # define STBI_NO_SIMD 1
 #elif !defined(HAVE_EMMINTRIN_H)
@@ -653,6 +652,90 @@ cleanup:
     sixel_allocator_free(allocator, assembled);
 
     return *profile != NULL;
+}
+
+static int
+sixel_builtin_jpeg_marker_is_sof(unsigned int marker)
+{
+    return marker == 0xc0u ||
+        marker == 0xc1u ||
+        marker == 0xc2u ||
+        marker == 0xc3u;
+}
+
+static int
+sixel_builtin_jpeg_can_use_8bit_api(unsigned char const *buffer, size_t size)
+{
+    unsigned char const *p;
+    unsigned int marker;
+    unsigned int segment_length;
+    size_t payload_size;
+    int precision;
+
+    p = NULL;
+    marker = 0u;
+    segment_length = 0u;
+    payload_size = 0u;
+    precision = 0;
+    if (buffer == NULL || size < 4u) {
+        return 0;
+    }
+    if (buffer[0] != 0xffu || buffer[1] != 0xd8u) {
+        return 0;
+    }
+
+    p = buffer + 2u;
+    while ((size_t)(p - buffer) + 4u <= size) {
+        if (p[0] != 0xffu) {
+            return 0;
+        }
+        while ((size_t)(p - buffer) < size && *p == 0xffu) {
+            ++p;
+        }
+        if ((size_t)(p - buffer) >= size) {
+            return 0;
+        }
+
+        marker = (unsigned int)*p;
+        ++p;
+        if (marker == 0xd9u || marker == 0xdau) {
+            return 0;
+        }
+        if (marker == 0x01u || (marker >= 0xd0u && marker <= 0xd7u)) {
+            continue;
+        }
+        if ((size_t)(p - buffer) + 2u > size) {
+            return 0;
+        }
+
+        segment_length = ((unsigned int)p[0] << 8) | (unsigned int)p[1];
+        p += 2u;
+        if (segment_length < 2u) {
+            return 0;
+        }
+        payload_size = (size_t)segment_length - 2u;
+        if (payload_size > size - (size_t)(p - buffer)) {
+            return 0;
+        }
+
+        if (!sixel_builtin_jpeg_marker_is_sof(marker)) {
+            p += payload_size;
+            continue;
+        }
+
+        /*
+         * stb's 8-bit JPEG API rejects SOF3 lossless streams even when their
+         * sample precision is 8. Keep those, and higher precision JPEGs, on the
+         * float path so existing quality guarantees stay intact.
+         */
+        if (payload_size < 1u) {
+            return 0;
+        }
+        precision = (int)p[0];
+        return precision == 8 && marker != 0xc3u;
+    }
+
+    return 0;
 }
 
 #if HAVE_LCMS2
@@ -4911,7 +4994,7 @@ sixel_builtin_load_png_single_frame(
 }
 
 static SIXELSTATUS
-sixel_builtin_load_jpeg_float32(
+sixel_builtin_load_jpeg_frame(
     sixel_chunk_t const *chunk,
     sixel_allocator_t *allocator,
     sixel_frame_t *frame,
@@ -4922,6 +5005,7 @@ sixel_builtin_load_jpeg_float32(
     size_t *icc_profile_length)
 {
     SIXELSTATUS status;
+    unsigned char *pixels;
     float *float_pixels;
     int depth;
     int cms_converted;
@@ -4929,6 +5013,7 @@ sixel_builtin_load_jpeg_float32(
     sixel_cms_color_space_t src_colorspace;
 
     status = SIXEL_FALSE;
+    pixels = NULL;
     float_pixels = NULL;
     depth = 0;
     cms_converted = 0;
@@ -4942,6 +5027,43 @@ sixel_builtin_load_jpeg_float32(
         icc_profile == NULL ||
         icc_profile_length == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+
+    *icc_profile = NULL;
+    *icc_profile_length = 0u;
+
+    if (enable_cms == 0 &&
+        sixel_builtin_jpeg_can_use_8bit_api(sixel_chunk_get_buffer(chunk),
+                                            sixel_chunk_get_size(chunk))) {
+        pixels = stbi__jpeg_load(stb_context,
+                                 &frame->width,
+                                 &frame->height,
+                                 &depth,
+                                 3,
+                                 ri);
+        if (pixels == NULL) {
+            sixel_helper_set_additional_message(stbi_failure_reason());
+            return SIXEL_STBI_ERROR;
+        }
+
+        status = sixel_frame_as_interface(frame)->vtbl->init_pixels(
+            sixel_frame_as_interface(frame),
+            &(sixel_frame_pixels_request_t){
+                pixels,
+                NULL,
+                frame->width,
+                frame->height,
+                SIXEL_PIXELFORMAT_RGB888,
+                SIXEL_COLORSPACE_GAMMA,
+                -1,
+                SIXEL_FRAME_PIXELS_U8
+            });
+        if (SIXEL_FAILED(status)) {
+            stbi_image_free(pixels);
+            return status;
+        }
+        frame->loop_count = 1;
+        return SIXEL_OK;
     }
 
     float_pixels = stbi__jpeg_loadf(stb_context,
@@ -5684,7 +5806,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                                 (unsigned char *)sixel_chunk_get_buffer(
                                     payload_chunk),
                                 (int)sixel_chunk_get_size(payload_chunk));
-                status = sixel_builtin_load_jpeg_float32(
+                status = sixel_builtin_load_jpeg_frame(
                     payload_chunk,
                     allocator,
                     frame,
@@ -6167,14 +6289,14 @@ sixel_builtin_load_nonpng_single_frame(
 
     stbi__start_mem(stb_context, sixel_chunk_get_buffer(chunk), chunk_size);
     if (is_jpeg) {
-        status = sixel_builtin_load_jpeg_float32(chunk,
-                                                 allocator,
-                                                 frame,
-                                                 stb_context,
-                                                 ri,
-                                                 enable_cms,
-                                                 icc_profile,
-                                                 icc_profile_length);
+        status = sixel_builtin_load_jpeg_frame(chunk,
+                                               allocator,
+                                               frame,
+                                               stb_context,
+                                               ri,
+                                               enable_cms,
+                                               icc_profile,
+                                               icc_profile_length);
         goto end;
     }
 

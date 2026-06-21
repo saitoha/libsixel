@@ -9,6 +9,7 @@
  * - GIF(alpha, palette on, low reqcolors + bgcolor) -> RGB888 fallback
  * - GIF(anim without NETSCAPE extension) reports multiframe metadata
  * - GIF(loop=auto/force) keeps unbounded NETSCAPE loop behavior
+ * - JPEG(8-bit, CMS off) -> RGB888
  * - HDR(RGBE) -> LINEARRGBFLOAT32
  * - Gray(16-bit) -> RGBFLOAT32 (no 8-bit precision loss)
  * - PSD RGB16/RGB32 callbacks keep float precision (RGBFLOAT32)
@@ -5922,6 +5923,17 @@ run_builtin_loader_test(void)
                                        2,
                                        1,
                                        new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_loader_component_case(
+        "builtin loader jpeg rgb8 cms off",
+        "/tests/data/inputs/formats/snake-jpeg-8bit-rgb-seq444.jpg",
+        SIXEL_PIXELFORMAT_RGB888,
+        GEOMETRY_ANY,
+        GEOMETRY_ANY,
+        new_builtin_component_for_pixelformat_test);
     if (result != 0) {
         return result;
     }
