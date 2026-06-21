@@ -293,6 +293,7 @@ test_runner_SOURCES = test_runner.c \
     processing/timeline/0003_timeline_clock_origin.c \
     processing/threadpool/0001_threadpool_service.c \
     processing/decoder/0001_decoder_parallel_split_after_newline.c \
+    processing/decoder/0002_decoder_ormode_overlay.c \
     processing/lookup/0001_lookup_policy.c \
     processing/dither/0001_dither_policy.c \
     processing/filter/filter_test_common.h \

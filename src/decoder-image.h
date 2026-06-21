@@ -45,6 +45,7 @@ typedef struct image_buffer {
     int height;
     int depth;
     int ncolors;
+    unsigned short *ormode_indexes;
     int palette[SIXEL_PALETTE_MAX_DECODER];
 } image_buffer_t;
 
