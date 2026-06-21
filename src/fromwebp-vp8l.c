@@ -2155,8 +2155,10 @@ sixel_webp_decode_vp8l_payload_into_with_workspace(
         transform->width_before = current_width;
         if (transform->type == 0 || transform->type == 1) {
             size_t rounded;
+            size_t rounded_height;
 
             rounded = 0u;
+            rounded_height = 0u;
             if (!sixel_webp_bit_reader_read_bits(&br, 3, &bit_value)) {
                 status = SIXEL_BAD_INPUT;
                 sixel_helper_set_additional_message(
@@ -2164,6 +2166,10 @@ sixel_webp_decode_vp8l_payload_into_with_workspace(
                 goto cleanup;
             }
             transform->size_bits = (int)bit_value + 2;
+            /*
+             * Predictor and color transform metadata are block images. The
+             * stored metadata dimensions are subsampled in both directions.
+             */
             rounded = sixel_webp_div_round_up_size(
                 (size_t)current_width,
                 (size_t)1u << transform->size_bits);
@@ -2171,8 +2177,16 @@ sixel_webp_decode_vp8l_payload_into_with_workspace(
                 status = SIXEL_BAD_INTEGER_OVERFLOW;
                 goto cleanup;
             }
+            rounded_height = sixel_webp_div_round_up_size(
+                (size_t)height,
+                (size_t)1u << transform->size_bits);
+            if (rounded_height == 0u ||
+                rounded_height > (size_t)INT_MAX) {
+                status = SIXEL_BAD_INTEGER_OVERFLOW;
+                goto cleanup;
+            }
             transform->data_width = (int)rounded;
-            transform->data_height = height;
+            transform->data_height = (int)rounded_height;
 
             status = sixel_webp_decode_stream(&br,
                                               transform->data_width,
@@ -2257,6 +2271,7 @@ sixel_webp_decode_vp8l_payload_into_with_workspace(
         } else if (transform->type == 1) {
             if (transform->data == NULL ||
                 transform->data_width <= 0 ||
+                transform->data_height <= 0 ||
                 transform->width_before != current_width) {
                 status = SIXEL_BAD_INPUT;
                 sixel_helper_set_additional_message(
@@ -2272,6 +2287,7 @@ sixel_webp_decode_vp8l_payload_into_with_workspace(
         } else if (transform->type == 0) {
             if (transform->data == NULL ||
                 transform->data_width <= 0 ||
+                transform->data_height <= 0 ||
                 transform->width_before != current_width) {
                 status = SIXEL_BAD_INPUT;
                 sixel_helper_set_additional_message(
