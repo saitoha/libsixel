@@ -1179,7 +1179,7 @@ sixel_decode_raw(
     unsigned char       /* out */ **pixels,     /* decoded pixels */
     int                 /* out */ *pwidth,      /* image width */
     int                 /* out */ *pheight,     /* image height */
-    unsigned char       /* out */ **palette,    /* ARGB palette */
+    unsigned char       /* out */ **palette,    /* RGB palette */
     int                 /* out */ *ncolors,     /* palette size (<= 256) */
     sixel_allocator_t   /* in */  *allocator);  /* allocator object or null */
 
@@ -1211,7 +1211,7 @@ sixel_decode(
     unsigned char            /* out */ **pixels,   /* decoded pixels */
     int                      /* out */ *pwidth,    /* image width */
     int                      /* out */ *pheight,   /* image height */
-    unsigned char            /* out */ **palette,  /* RGBA palette */
+    unsigned char            /* out */ **palette,  /* RGB palette */
     int                      /* out */ *ncolors,   /* palette size (<= 256) */
     sixel_allocator_function /* in */  fn_malloc); /* malloc function */
 

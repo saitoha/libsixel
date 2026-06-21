@@ -1878,29 +1878,38 @@ end:
 
 /* deprecated */
 SIXELAPI SIXELSTATUS
-sixel_decode(unsigned char              /* in */   *p,        /* sixel bytes */
-             int                        /* in */    len,      /* size of sixel bytes */
-             unsigned char              /* out */ **pixels,   /* decoded pixels */
-             int                        /* out */  *pwidth,   /* image width */
-             int                        /* out */  *pheight,  /* image height */
-             unsigned char              /* out */ **palette,  /* ARGB palette */
-             int                        /* out */  *ncolors,  /* palette size (<= 256) */
-    sixel_allocator_function   /* in */  fn_malloc)  /* malloc function */
+sixel_decode(unsigned char              /* in */   *p,
+             int                        /* in */    len,
+             unsigned char              /* out */ **pixels,
+             int                        /* out */  *pwidth,
+             int                        /* out */  *pheight,
+             unsigned char              /* out */ **palette,
+             int                        /* out */  *ncolors,
+             sixel_allocator_function   /* in */    fn_malloc)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    sixel_allocator_t *allocator = NULL;
-    parser_context_t context;
-    image_buffer_t *image = NULL;
-    int n;
+    sixel_allocator_t *allocator;
+    unsigned char *raw_pixels;
+    unsigned char *raw_palette;
+    unsigned char *legacy_palette;
+    size_t palette_bytes;
 
-    image = (image_buffer_t *)malloc(sizeof(*image));
-    if (image == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_decode: malloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
+    allocator = NULL;
+    raw_pixels = NULL;
+    raw_palette = NULL;
+    legacy_palette = NULL;
+    palette_bytes = 0U;
+
+    if (p == NULL || pixels == NULL || pwidth == NULL ||
+            pheight == NULL || palette == NULL || ncolors == NULL) {
+        return SIXEL_BAD_ARGUMENT;
     }
-    image->pixels.p = NULL;
+
+    *pixels = NULL;
+    *palette = NULL;
+    *pwidth = 0;
+    *pheight = 0;
+    *ncolors = 0;
 
     status = sixel_allocator_new(&allocator, fn_malloc, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
@@ -1908,52 +1917,59 @@ sixel_decode(unsigned char              /* in */   *p,        /* sixel bytes */
         goto end;
     }
 
-    status = sixel_decode_image(p,
-                                len,
-                                2048,
-                                2048,
-                                0,
-                                image,
-                                &context,
-                                allocator);
+    /*
+     * Keep the deprecated API on top of sixel_decode_raw() so every decoder
+     * entry point observes the same OR-mode bit-plane and background rules.
+     * The old private path used depth 0, which bypassed those invariants and
+     * could leave palette-index 0 ambiguous for callers that still use this
+     * compatibility function.
+     */
+    status = sixel_decode_raw(p,
+                              len,
+                              &raw_pixels,
+                              pwidth,
+                              pheight,
+                              &raw_palette,
+                              ncolors,
+                              allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-
-    *ncolors = image->ncolors;
-    *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(*ncolors * 3));
-    if (palette == NULL) {
-        sixel_allocator_free(allocator, image->pixels.p);
-        image->pixels.p = NULL;
+    if (*ncolors <= 0 || *ncolors > SIXEL_PALETTE_MAX_DECODER) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    palette_bytes = (size_t)*ncolors * 3U;
+    if (palette_bytes / 3U != (size_t)*ncolors) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    legacy_palette = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                             palette_bytes);
+    if (legacy_palette == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_deocde_raw: sixel_allocator_malloc() failed.");
+            "sixel_decode: palette allocation failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    for (n = 0; n < *ncolors; ++n) {
-        (*palette)[n * 3 + 0] = image->palette[n] >> 16 & 0xff;
-        (*palette)[n * 3 + 1] = image->palette[n] >> 8 & 0xff;
-        (*palette)[n * 3 + 2] = image->palette[n] & 0xff;
-    }
+    memcpy(legacy_palette, raw_palette, palette_bytes);
 
-    *pwidth = image->width;
-    *pheight = image->height;
-    *pixels = image->pixels.p;
-    image->pixels.p = NULL;
-
+    *pixels = raw_pixels;
+    *palette = legacy_palette;
+    raw_pixels = NULL;
+    legacy_palette = NULL;
     status = SIXEL_OK;
 
 end:
-    if (image != NULL && image->pixels.p != NULL) {
-        if (allocator != NULL) {
-            sixel_allocator_free(allocator, image->pixels.p);
-        } else {
-            free(image->pixels.p);
-        }
-        image->pixels.p = NULL;
+    if (raw_palette != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, raw_palette);
     }
-    image_buffer_release_ormode_indexes(image, allocator);
-    free(image);
+    if (legacy_palette != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, legacy_palette);
+    }
+    if (raw_pixels != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, raw_pixels);
+    }
     sixel_allocator_unref(allocator);
     return status;
 }

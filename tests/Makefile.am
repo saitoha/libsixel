@@ -297,6 +297,7 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0003_decoder_ormode_wide_overlay.c \
     processing/decoder/0004_decoder_ormode_direct_overlay.c \
     processing/decoder/0005_decoder_ormode_repeat_overlay.c \
+    processing/decoder/0006_decoder_ormode_legacy_api.c \
     processing/lookup/0001_lookup_policy.c \
     processing/dither/0001_dither_policy.c \
     processing/filter/filter_test_common.h \
