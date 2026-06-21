@@ -124,6 +124,9 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0009_filter_dither.c \
 	processing/filter/0010_filter_encode.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
+	processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
+	processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
+	processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c \
 	processing/sixel-writer/0001_sixel_writer_factory.c \
 	processing/frame/0001_frame_factory.c \
 	processing/chunk/0001_chunk_factory.c \
@@ -209,6 +212,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0009_filter_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0010_filter_encode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0004_encoder_core_ormode_body_bad_argument.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/sixel-writer/test_runner-0001_sixel_writer_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/frame/test_runner-0001_frame_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/chunk/test_runner-0001_chunk_factory.$(OBJEXT) \
@@ -400,6 +406,9 @@ am__depfiles_remade =  \
 	processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po \
 	processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po \
 	processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po \
+	processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po \
 	processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po \
 	processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po \
 	processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po \
@@ -1112,6 +1121,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FILTER_ENCODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_ENCODER_CORE_ORMODE_BODY_TAIL_BAND \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_ENCODER_CORE_ORMODE_BODY_BAD_ARGUMENT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_SIXEL_WRITER_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FRAME_FACTORY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_CHUNK_FACTORY \
@@ -1119,6 +1131,12 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_TIMELINE_PARALLEL_ENCODE_DECODE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_TIMELINE_CLOCK_ORIGIN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_THREADPOOL_SERVICE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DECODER_PARALLEL_SPLIT_AFTER_NEWLINE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_DECODER_ORMODE_RAW_OVERLAY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_DECODER_ORMODE_WIDE_OVERLAY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_DECODER_ORMODE_DIRECT_OVERLAY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_DECODER_ORMODE_REPEAT_OVERLAY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_DECODER_ORMODE_LEGACY_API \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LOOKUP_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DITHER_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -1212,6 +1230,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0009_filter_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0010_filter_encode.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/sixel-writer/0001_sixel_writer_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/frame/0001_frame_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/chunk/0001_chunk_factory.c \
@@ -1475,6 +1496,15 @@ processing/encoder-core/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) processing/encoder-core/$(DEPDIR)
 	@: >>processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
 processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.$(OBJEXT):  \
+	processing/encoder-core/$(am__dirstamp) \
+	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
+processing/encoder-core/test_runner-0004_encoder_core_ormode_body_bad_argument.$(OBJEXT):  \
 	processing/encoder-core/$(am__dirstamp) \
 	processing/encoder-core/$(DEPDIR)/$(am__dirstamp)
 processing/sixel-writer/$(am__dirstamp):
@@ -1915,6 +1945,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po@am__quote@ # am--include-marker
@@ -2196,6 +2229,48 @@ processing/encoder-core/test_runner-0001_encoder_core_factory.obj: processing/en
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0001_encoder_core_factory.c' object='processing/encoder-core/test_runner-0001_encoder_core_factory.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0001_encoder_core_factory.obj `if test -f 'processing/encoder-core/0001_encoder_core_factory.c'; then $(CYGPATH_W) 'processing/encoder-core/0001_encoder_core_factory.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0001_encoder_core_factory.c'; fi`
+
+processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.o: processing/encoder-core/0002_encoder_core_ormode_body_full_band.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Tpo -c -o processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.o `test -f 'processing/encoder-core/0002_encoder_core_ormode_body_full_band.c' || echo '$(srcdir)/'`processing/encoder-core/0002_encoder_core_ormode_body_full_band.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0002_encoder_core_ormode_body_full_band.c' object='processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.o `test -f 'processing/encoder-core/0002_encoder_core_ormode_body_full_band.c' || echo '$(srcdir)/'`processing/encoder-core/0002_encoder_core_ormode_body_full_band.c
+
+processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.obj: processing/encoder-core/0002_encoder_core_ormode_body_full_band.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Tpo -c -o processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.obj `if test -f 'processing/encoder-core/0002_encoder_core_ormode_body_full_band.c'; then $(CYGPATH_W) 'processing/encoder-core/0002_encoder_core_ormode_body_full_band.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0002_encoder_core_ormode_body_full_band.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0002_encoder_core_ormode_body_full_band.c' object='processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.obj `if test -f 'processing/encoder-core/0002_encoder_core_ormode_body_full_band.c'; then $(CYGPATH_W) 'processing/encoder-core/0002_encoder_core_ormode_body_full_band.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0002_encoder_core_ormode_body_full_band.c'; fi`
+
+processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.o: processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Tpo -c -o processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.o `test -f 'processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c' || echo '$(srcdir)/'`processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c' object='processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.o `test -f 'processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c' || echo '$(srcdir)/'`processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c
+
+processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.obj: processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Tpo -c -o processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.obj `if test -f 'processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c'; then $(CYGPATH_W) 'processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c' object='processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.obj `if test -f 'processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c'; then $(CYGPATH_W) 'processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c'; fi`
+
+processing/encoder-core/test_runner-0004_encoder_core_ormode_body_bad_argument.o: processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0004_encoder_core_ormode_body_bad_argument.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Tpo -c -o processing/encoder-core/test_runner-0004_encoder_core_ormode_body_bad_argument.o `test -f 'processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c' || echo '$(srcdir)/'`processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c' object='processing/encoder-core/test_runner-0004_encoder_core_ormode_body_bad_argument.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0004_encoder_core_ormode_body_bad_argument.o `test -f 'processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c' || echo '$(srcdir)/'`processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c
+
+processing/encoder-core/test_runner-0004_encoder_core_ormode_body_bad_argument.obj: processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0004_encoder_core_ormode_body_bad_argument.obj -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Tpo -c -o processing/encoder-core/test_runner-0004_encoder_core_ormode_body_bad_argument.obj `if test -f 'processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c'; then $(CYGPATH_W) 'processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Tpo processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c' object='processing/encoder-core/test_runner-0004_encoder_core_ormode_body_bad_argument.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/encoder-core/test_runner-0004_encoder_core_ormode_body_bad_argument.obj `if test -f 'processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c'; then $(CYGPATH_W) 'processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c'; else $(CYGPATH_W) '$(srcdir)/processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c'; fi`
 
 processing/sixel-writer/test_runner-0001_sixel_writer_factory.o: processing/sixel-writer/0001_sixel_writer_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/sixel-writer/test_runner-0001_sixel_writer_factory.o -MD -MP -MF processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Tpo -c -o processing/sixel-writer/test_runner-0001_sixel_writer_factory.o `test -f 'processing/sixel-writer/0001_sixel_writer_factory.c' || echo '$(srcdir)/'`processing/sixel-writer/0001_sixel_writer_factory.c
@@ -3579,6 +3654,9 @@ distclean: distclean-am
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
 	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
 	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
@@ -3706,6 +3784,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/chunk/$(DEPDIR)/test_runner-0001_chunk_factory.Po
 	-rm -f processing/dither/$(DEPDIR)/test_runner-0001_dither_policy.Po
 	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0002_encoder_core_ormode_body_full_band.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0003_encoder_core_ormode_body_tail_band.Po
+	-rm -f processing/encoder-core/$(DEPDIR)/test_runner-0004_encoder_core_ormode_body_bad_argument.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po

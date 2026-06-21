@@ -3296,9 +3296,9 @@ sixel_encode_footer(sixel_output_t *output)
     return status;
 }
 
-static SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encode_body_ormode(
-    uint8_t             /* in */ *pixels,
+    sixel_index_t       /* in */ *pixels,
     int                 /* in */ width,
     int                 /* in */ height,
     unsigned char       /* in */ *palette,
@@ -3309,8 +3309,8 @@ sixel_encode_body_ormode(
     SIXELSTATUS status;
     int n;
     int nplanes;
-    uint8_t *buf;
-    uint8_t *buf_p;
+    sixel_index_t *buf;
+    sixel_index_t *buf_p;
     int x;
     int cur_h;
     int nwrite;
@@ -3322,7 +3322,11 @@ sixel_encode_body_ormode(
     buf = pixels;
 
     for (n = 0; n < ncolors; n++) {
-        status = output_rgb_palette_definition(output, palette, NULL, n, keycolor);
+        status = output_rgb_palette_definition(output,
+                                               palette,
+                                               NULL,
+                                               n,
+                                               keycolor);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -3338,7 +3342,8 @@ sixel_encode_body_ormode(
         for (plane = 0; plane < nplanes; plane++) {
             sixel_putc(output->buffer + output->pos, '#');
             sixel_advance(output, 1);
-            nwrite = sixel_putnum((char *)output->buffer + output->pos, 1 << plane);
+            nwrite = sixel_putnum((char *)output->buffer + output->pos,
+                                  1 << plane);
             sixel_advance(output, nwrite);
 
             buf_p = buf;
@@ -3367,7 +3372,8 @@ sixel_encode_body_ormode(
         for (plane = 0; plane < nplanes; plane++) {
             sixel_putc(output->buffer + output->pos, '#');
             sixel_advance(output, 1);
-            nwrite = sixel_putnum((char *)output->buffer + output->pos, 1 << plane);
+            nwrite = sixel_putnum((char *)output->buffer + output->pos,
+                                  1 << plane);
             sixel_advance(output, nwrite);
 
             buf_p = buf;

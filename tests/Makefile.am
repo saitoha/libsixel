@@ -208,6 +208,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
     -DBUILD_TEST_0010_FILTER_ENCODE \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
+    -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
+    -DBUILD_TEST_0003_ENCODER_CORE_ORMODE_BODY_TAIL_BAND \
+    -DBUILD_TEST_0004_ENCODER_CORE_ORMODE_BODY_BAD_ARGUMENT \
     -DBUILD_TEST_0001_SIXEL_WRITER_FACTORY \
     -DBUILD_TEST_0001_FRAME_FACTORY \
     -DBUILD_TEST_0001_CHUNK_FACTORY \
@@ -216,6 +219,11 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0003_TIMELINE_CLOCK_ORIGIN \
     -DBUILD_TEST_0001_THREADPOOL_SERVICE \
     -DBUILD_TEST_0001_DECODER_PARALLEL_SPLIT_AFTER_NEWLINE \
+    -DBUILD_TEST_0002_DECODER_ORMODE_RAW_OVERLAY \
+    -DBUILD_TEST_0003_DECODER_ORMODE_WIDE_OVERLAY \
+    -DBUILD_TEST_0004_DECODER_ORMODE_DIRECT_OVERLAY \
+    -DBUILD_TEST_0005_DECODER_ORMODE_REPEAT_OVERLAY \
+    -DBUILD_TEST_0006_DECODER_ORMODE_LEGACY_API \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -285,6 +293,9 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0009_filter_dither.c \
     processing/filter/0010_filter_encode.c \
     processing/encoder-core/0001_encoder_core_factory.c \
+    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
+    processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
+    processing/encoder-core/0004_encoder_core_ormode_body_bad_argument.c \
     processing/sixel-writer/0001_sixel_writer_factory.c \
     processing/frame/0001_frame_factory.c \
     processing/chunk/0001_chunk_factory.c \

@@ -87,6 +87,20 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_encoder_core_encode_dispatch(
     sixel_encoder_core_encode_request_t const *request);
 
+/*
+ * Emit OR-mode body bytes from a complete contiguous palette-index image.
+ * Keeping this boundary explicit lets future band workers share the same
+ * observable byte contract while changing only how the index data is fed.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_encode_body_ormode(sixel_index_t *pixels,
+                         int width,
+                         int height,
+                         unsigned char *palette,
+                         int ncolors,
+                         int keycolor,
+                         sixel_output_t *output);
+
 #endif /* LIBSIXEL_ENCODER_CORE_PRIVATE_H */
 
 /* emacs Local Variables:      */
