@@ -58,6 +58,7 @@ struct sixel_loader_manager {
     size_t chain_count;
     size_t chain_capacity;
     int skip_predicate_gate;
+    int prefer_float32;
     sixel_timeline_logger_t *timeline_logger;
     int *timeline_job_seq;
     sixel_loader_t *timeline_loader;
@@ -862,6 +863,7 @@ sixel_loader_manager_append_chain(sixel_loader_manager_t *manager,
 
 static SIXELSTATUS
 sixel_loader_manager_apply_component_options(
+    struct sixel_loader_manager const *manager,
     sixel_loader_component_interface_t *component,
     sixel_loader_manager_build_request_t const *request)
 {
@@ -891,7 +893,7 @@ sixel_loader_manager_apply_component_options(
     status = SIXEL_FALSE;
     suboption_value = 0;
     component_name = NULL;
-    if (component == NULL || request == NULL) {
+    if (manager == NULL || component == NULL || request == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
     component_name = sixel_loader_component_get_name(component);
@@ -1024,6 +1026,20 @@ sixel_loader_manager_apply_component_options(
             "sixel_loader_manager_build_chain: failed to apply loader option "
             "'builtin-enable-cms'.");
         return status;
+    }
+
+    if (component_name != NULL && strcmp(component_name, "builtin") == 0) {
+        suboption_value = manager->prefer_float32;
+        status = sixel_loader_component_setopt(
+            component,
+            SIXEL_LOADER_COMPONENT_OPTION_PREFER_FLOAT32,
+            &suboption_value);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_loader_manager_build_chain: failed to apply loader "
+                "option 'prefer-float32'.");
+            return status;
+        }
     }
 
     suboption_value = request->suboptions->builtin_bmp_info40_mode;
@@ -1214,6 +1230,21 @@ sixel_loader_manager_unref_impl(sixel_loader_manager_t *manager)
     sixel_allocator_free(object->allocator, object);
 }
 
+SIXEL_INTERNAL_API void
+sixel_loader_manager_set_prefer_float32(sixel_loader_manager_t *manager,
+                                        int prefer_float32)
+{
+    struct sixel_loader_manager *object;
+
+    object = NULL;
+    if (manager == NULL) {
+        return;
+    }
+
+    object = (struct sixel_loader_manager *)manager;
+    object->prefer_float32 = prefer_float32 != 0 ? 1 : 0;
+}
+
 static SIXELSTATUS
 sixel_loader_manager_build_chain_impl(
     sixel_loader_manager_t *manager,
@@ -1292,7 +1323,8 @@ sixel_loader_manager_build_chain_impl(
             return status;
         }
         if (request != NULL) {
-            status = sixel_loader_manager_apply_component_options(loader,
+            status = sixel_loader_manager_apply_component_options(object,
+                                                                  loader,
                                                                   request);
             if (SIXEL_FAILED(status)) {
                 sixel_loader_component_unref(loader);
@@ -1445,6 +1477,7 @@ sixel_loader_manager_new(sixel_allocator_t *allocator,
     object->chain_count = 0u;
     object->chain_capacity = 0u;
     object->skip_predicate_gate = 0;
+    object->prefer_float32 = 0;
     object->timeline_logger = NULL;
     object->timeline_job_seq = NULL;
     object->timeline_loader = NULL;

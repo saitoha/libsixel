@@ -630,6 +630,8 @@ typedef struct builtin_loader_probe_options {
     int loop_control;
     int set_cms_engine;
     int cms_engine;
+    int set_prefer_float32;
+    int prefer_float32;
 } builtin_loader_probe_options_t;
 
 static int
@@ -655,6 +657,7 @@ run_builtin_loader_probe_case(char const *label,
     unsigned char const *bgcolor;
     int loop_control;
     int cms_engine;
+    int prefer_float32;
     int result;
 
     status = SIXEL_FALSE;
@@ -670,6 +673,7 @@ run_builtin_loader_probe_case(char const *label,
     bgcolor = NULL;
     loop_control = SIXEL_LOOP_AUTO;
     cms_engine = SIXEL_CMS_ENGINE_NONE;
+    prefer_float32 = 0;
     result = 1;
     if (load_status_out != NULL) {
         *load_status_out = SIXEL_FALSE;
@@ -716,6 +720,7 @@ run_builtin_loader_probe_case(char const *label,
     bgcolor = options->bgcolor;
     loop_control = options->loop_control;
     cms_engine = options->cms_engine;
+    prefer_float32 = options->prefer_float32;
 
     status = sixel_loader_component_setopt(component,
                                            SIXEL_LOADER_OPTION_REQUIRE_STATIC,
@@ -756,6 +761,15 @@ run_builtin_loader_probe_case(char const *label,
             component,
             SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE,
             &cms_engine);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
+    if (options->set_prefer_float32 != 0) {
+        status = sixel_loader_component_setopt(
+            component,
+            SIXEL_LOADER_COMPONENT_OPTION_PREFER_FLOAT32,
+            &prefer_float32);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }

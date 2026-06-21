@@ -76,6 +76,9 @@ SIXEL_INTERNAL_API int
 sixel_loader_get_start_frame_no(sixel_loader_t const *loader,
                                 int *start_frame_no);
 
+SIXEL_INTERNAL_API void
+sixel_loader_set_prefer_float32(sixel_loader_t *loader, int prefer_float32);
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_loader_set_cancel_callback(
     sixel_loader_t *loader,

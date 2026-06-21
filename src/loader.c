@@ -138,6 +138,7 @@ struct sixel_loader {
     int bgcolor_source;
     int loop_control;
     int finsecure;
+    int prefer_float32;
     int has_start_frame_no;
     int start_frame_no;
     int const *cancel_flag;
@@ -912,6 +913,7 @@ sixel_loader_new(
     loader->bgcolor_source = SIXEL_LOADER_BGCOLOR_SOURCE_EXPLICIT;
     loader->loop_control = SIXEL_LOOP_AUTO;
     loader->finsecure = 0;
+    loader->prefer_float32 = 0;
     loader->has_start_frame_no = 0;
     loader->start_frame_no = INT_MIN;
     loader->cancel_flag = NULL;
@@ -1170,6 +1172,16 @@ sixel_loader_get_start_frame_no(sixel_loader_t const *loader,
     return 1;
 }
 
+SIXEL_INTERNAL_API void
+sixel_loader_set_prefer_float32(sixel_loader_t *loader, int prefer_float32)
+{
+    if (loader == NULL) {
+        return;
+    }
+
+    loader->prefer_float32 = prefer_float32 != 0 ? 1 : 0;
+}
+
 SIXELAPI SIXELSTATUS
 sixel_loader_load_file(
     sixel_loader_t         /* in */ *loader,
@@ -1261,6 +1273,8 @@ sixel_loader_load_file(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    sixel_loader_manager_set_prefer_float32(manager,
+                                            loader->prefer_float32);
 
     osc11_timeout_env = sixel_compat_getenv(
         SIXEL_LOADER_OSC11_BG_QUERY_TIMEOUT_ENV);

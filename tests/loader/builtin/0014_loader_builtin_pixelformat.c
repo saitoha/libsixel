@@ -956,6 +956,58 @@ capture_pnm_numeric_probe(sixel_frame_t *frame, void *data)
 }
 
 static int
+run_builtin_loader_jpeg_prefer_float32_test(void)
+{
+    builtin_loader_probe_options_t options;
+    pnm_numeric_probe_context_t probe;
+    SIXELSTATUS status;
+    int result;
+
+    status = SIXEL_FALSE;
+    result = 1;
+    memset(&options, 0, sizeof(options));
+    memset(&probe, 0, sizeof(probe));
+
+    options.require_static = 1;
+    options.use_palette = 0;
+    options.reqcolors = 256;
+    options.set_prefer_float32 = 1;
+    options.prefer_float32 = 1;
+
+    result = run_builtin_loader_probe_case(
+        "builtin loader jpeg rgb8 prefer float32",
+        "/tests/data/inputs/formats/snake-jpeg-8bit-rgb-seq444.jpg",
+        &options,
+        capture_pnm_numeric_probe,
+        &probe,
+        &status);
+    if (result != 0) {
+        return result;
+    }
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "builtin loader jpeg rgb8 prefer float32: "
+                "loader failed (%d)\n",
+                (int)status);
+        return 1;
+    }
+    if (probe.callback_count != 1 ||
+        probe.pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 ||
+        probe.colorspace != SIXEL_COLORSPACE_GAMMA) {
+        fprintf(stderr,
+                "builtin loader jpeg rgb8 prefer float32: "
+                "metadata mismatch "
+                "(callbacks=%d pixelformat=%d colorspace=%d)\n",
+                probe.callback_count,
+                probe.pixelformat,
+                probe.colorspace);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 run_builtin_loader_probe_buffer_case(char const *label,
                                      unsigned char const *buffer,
                                      size_t buffer_size,
@@ -977,6 +1029,7 @@ run_builtin_loader_probe_buffer_case(char const *label,
     unsigned char const *bgcolor;
     int loop_control;
     int cms_engine;
+    int prefer_float32;
     char const *info40_mode_text;
     int info40_mode;
     int result;
@@ -992,6 +1045,7 @@ run_builtin_loader_probe_buffer_case(char const *label,
     bgcolor = NULL;
     loop_control = SIXEL_LOOP_AUTO;
     cms_engine = SIXEL_CMS_ENGINE_NONE;
+    prefer_float32 = 0;
     info40_mode_text = NULL;
     info40_mode = SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_AUTO;
     result = 1;
@@ -1035,6 +1089,7 @@ run_builtin_loader_probe_buffer_case(char const *label,
     bgcolor = options->bgcolor;
     loop_control = options->loop_control;
     cms_engine = options->cms_engine;
+    prefer_float32 = options->prefer_float32;
 
     status = sixel_loader_component_setopt(component,
                                            SIXEL_LOADER_OPTION_REQUIRE_STATIC,
@@ -1075,6 +1130,15 @@ run_builtin_loader_probe_buffer_case(char const *label,
             component,
             SIXEL_LOADER_COMPONENT_OPTION_CMS_ENGINE,
             &cms_engine);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
+    if (options->set_prefer_float32 != 0) {
+        status = sixel_loader_component_setopt(
+            component,
+            SIXEL_LOADER_COMPONENT_OPTION_PREFER_FLOAT32,
+            &prefer_float32);
         if (SIXEL_FAILED(status)) {
             goto cleanup;
         }
@@ -5934,6 +5998,11 @@ run_builtin_loader_test(void)
         GEOMETRY_ANY,
         GEOMETRY_ANY,
         new_builtin_component_for_pixelformat_test);
+    if (result != 0) {
+        return result;
+    }
+
+    result = run_builtin_loader_jpeg_prefer_float32_test();
     if (result != 0) {
         return result;
     }

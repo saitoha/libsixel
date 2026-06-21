@@ -5049,6 +5049,39 @@ sixel_encoder_thumbnail_hint(sixel_encoder_t *encoder)
     return (int)size;
 }
 
+static int
+sixel_encoder_loader_prefers_float32(sixel_encoder_t const *encoder)
+{
+    int scale_active;
+
+    scale_active = 0;
+    if (encoder == NULL) {
+        return 0;
+    }
+
+    scale_active = (encoder->pixelwidth >= 0 ||
+                    encoder->pixelheight >= 0 ||
+                    encoder->percentwidth >= 0 ||
+                    encoder->percentheight >= 0)
+        ? 1
+        : 0;
+    if (encoder->prefer_float32 != 0) {
+        return 1;
+    }
+    if (encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) {
+        return 1;
+    }
+    if (encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT &&
+        encoder->clustering_colorspace != SIXEL_COLORSPACE_GAMMA) {
+        return 1;
+    }
+    if (scale_active != 0) {
+        return 1;
+    }
+
+    return 0;
+}
+
 
 typedef struct sixel_callback_context_for_mapfile {
     int reqcolors;
@@ -6341,6 +6374,7 @@ sixel_prepare_specified_palette(
     int fuse_palette;
     int reqcolors;
     int loop_override;
+    int prefer_loader_float32;
     char const *path;
     sixel_palette_format_t format_hint;
     sixel_palette_format_t format_ext;
@@ -6362,6 +6396,7 @@ sixel_prepare_specified_palette(
     fuse_palette = 1;
     reqcolors = SIXEL_PALETTE_MAX;
     loop_override = SIXEL_LOOP_DISABLE;
+    prefer_loader_float32 = 0;
     path = NULL;
     format_hint = SIXEL_PALETTE_FORMAT_NONE;
     format_ext = SIXEL_PALETTE_FORMAT_NONE;
@@ -6554,6 +6589,8 @@ palette_cleanup:
     if (SIXEL_FAILED(status)) {
         goto end_loader;
     }
+    prefer_loader_float32 = sixel_encoder_loader_prefers_float32(encoder);
+    sixel_loader_set_prefer_float32(loader, prefer_loader_float32);
 
     status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_REQUIRE_STATIC,
@@ -14851,6 +14888,7 @@ sixel_encoder_encode(
     int saved_lut_policy;
     int force_auto_lut_for_psd;
     int psd_trace_only;
+    int prefer_loader_float32;
 
     clipboard_input_format[0] = '\0';
     clipboard_input_path = NULL;
@@ -14874,6 +14912,7 @@ sixel_encoder_encode(
     saved_lut_policy = SIXEL_LUT_POLICY_AUTO;
     force_auto_lut_for_psd = 0;
     psd_trace_only = 0;
+    prefer_loader_float32 = 0;
     memset(&load_context, 0, sizeof(load_context));
     logger = NULL;
     if (encoder == NULL) {
@@ -15208,6 +15247,8 @@ reload:
     if (SIXEL_FAILED(status)) {
         goto load_end;
     }
+    prefer_loader_float32 = sixel_encoder_loader_prefers_float32(encoder);
+    sixel_loader_set_prefer_float32(loader, prefer_loader_float32);
 
     status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_REQUIRE_STATIC,

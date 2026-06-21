@@ -83,6 +83,7 @@ typedef struct sixel_builtin_load_with_builtin_args {
     int                        fstatic;
     int                        fuse_palette;
     int                        reqcolors;
+    int                        prefer_float32;
     unsigned char             *bgcolor;
     int                        bgcolor_source;
     int                        loop_control;
@@ -128,6 +129,7 @@ load_with_builtin(
     int fstatic,
     int fuse_palette,
     int reqcolors,
+    int prefer_float32,
     unsigned char *bgcolor,
     int bgcolor_source,
     int loop_control,
@@ -146,6 +148,7 @@ load_with_builtin(
     args.fstatic = fstatic;
     args.fuse_palette = fuse_palette;
     args.reqcolors = reqcolors;
+    args.prefer_float32 = prefer_float32;
     args.bgcolor = bgcolor;
     args.bgcolor_source = bgcolor_source;
     args.loop_control = loop_control;
@@ -243,6 +246,7 @@ typedef struct sixel_loader_builtin_component {
     int fstatic;
     int fuse_palette;
     int reqcolors;
+    int prefer_float32;
     int has_bgcolor;
     unsigned char bgcolor[3];
     int bgcolor_source;
@@ -3754,6 +3758,11 @@ sixel_loader_builtin_setopt(sixel_loader_component_t *component,
         int_value = (int const *)value;
         self->enable_cms = (int_value != NULL && *int_value != 0) ? 1 : 0;
         return SIXEL_OK;
+    case SIXEL_LOADER_COMPONENT_OPTION_PREFER_FLOAT32:
+        int_value = (int const *)value;
+        self->prefer_float32 =
+            (int_value != NULL && *int_value != 0) ? 1 : 0;
+        return SIXEL_OK;
     case SIXEL_LOADER_COMPONENT_OPTION_BUILTIN_ENABLE_ORIENTATION:
         int_value = (int const *)value;
         self->enable_orientation =
@@ -3843,6 +3852,7 @@ sixel_loader_builtin_load(sixel_loader_component_t *component,
                                self->fstatic,
                                self->fuse_palette,
                                self->reqcolors,
+                               self->prefer_float32,
                                bgcolor,
                                self->bgcolor_source,
                                self->loop_control,
@@ -3916,6 +3926,7 @@ sixel_loader_builtin_new(sixel_allocator_t *allocator,
     self->fstatic = 0;
     self->fuse_palette = 0;
     self->reqcolors = SIXEL_PALETTE_MAX;
+    self->prefer_float32 = 0;
     self->has_bgcolor = 0;
     self->bgcolor[0] = 0;
     self->bgcolor[1] = 0;
@@ -3939,6 +3950,7 @@ typedef struct sixel_builtin_load_request {
     int fstatic;
     int fuse_palette;
     int reqcolors;
+    int prefer_float32;
     unsigned char *bgcolor;
     int bgcolor_source;
     int loop_control;
@@ -5001,6 +5013,7 @@ sixel_builtin_load_jpeg_frame(
     stbi__context *stb_context,
     stbi__result_info *ri,
     int enable_cms,
+    int prefer_float32,
     unsigned char **icc_profile,
     size_t *icc_profile_length)
 {
@@ -5033,6 +5046,7 @@ sixel_builtin_load_jpeg_frame(
     *icc_profile_length = 0u;
 
     if (enable_cms == 0 &&
+        prefer_float32 == 0 &&
         sixel_builtin_jpeg_can_use_8bit_api(sixel_chunk_get_buffer(chunk),
                                             sixel_chunk_get_size(chunk))) {
         pixels = stbi__jpeg_load(stb_context,
@@ -5690,6 +5704,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
     int bgcolor_source,
     int is_pic,
     int enable_cms,
+    int prefer_float32,
     int bmp_info40_mode,
     int is_tiff,
     unsigned char **icc_profile,
@@ -5813,6 +5828,7 @@ sixel_builtin_load_nonpng_rgb8_fallback(
                     stb_context,
                     &payload_ri,
                     enable_cms,
+                    prefer_float32,
                     &payload_icc_profile,
                     &payload_icc_profile_length);
                 sixel_allocator_free(allocator, payload_icc_profile);
@@ -6232,6 +6248,7 @@ sixel_builtin_load_nonpng_single_frame(
     unsigned char *bgcolor,
     int bgcolor_source,
     int enable_cms,
+    int prefer_float32,
     int bmp_info40_mode,
     int is_jpeg,
     int is_psd,
@@ -6295,6 +6312,7 @@ sixel_builtin_load_nonpng_single_frame(
                                                stb_context,
                                                ri,
                                                enable_cms,
+                                               prefer_float32,
                                                icc_profile,
                                                icc_profile_length);
         goto end;
@@ -6325,6 +6343,7 @@ sixel_builtin_load_nonpng_single_frame(
         bgcolor_source,
         is_pic,
         enable_cms,
+        prefer_float32,
         bmp_info40_mode,
         is_tiff,
         icc_profile,
@@ -6491,6 +6510,7 @@ sixel_builtin_load_stbi_path(
         load_request->bgcolor,
         load_request->bgcolor_source,
         load_request->enable_cms,
+        load_request->prefer_float32,
         load_request->bmp_info40_mode,
         route->is_jpeg,
         route->is_psd,
@@ -6510,6 +6530,7 @@ sixel_builtin_load_with_builtin_impl(
     int fstatic;
     int fuse_palette;
     int reqcolors;
+    int prefer_float32;
     unsigned char *bgcolor;
     int bgcolor_source;
     int loop_control;
@@ -6557,6 +6578,7 @@ sixel_builtin_load_with_builtin_impl(
     fstatic = args->fstatic;
     fuse_palette = args->fuse_palette;
     reqcolors = args->reqcolors;
+    prefer_float32 = args->prefer_float32;
     bgcolor = args->bgcolor;
     bgcolor_source = args->bgcolor_source;
     loop_control = args->loop_control;
@@ -6586,6 +6608,7 @@ sixel_builtin_load_with_builtin_impl(
     load_request.fstatic = fstatic;
     load_request.fuse_palette = fuse_palette;
     load_request.reqcolors = reqcolors;
+    load_request.prefer_float32 = prefer_float32;
     load_request.bgcolor = bgcolor;
     load_request.bgcolor_source = bgcolor_source;
     load_request.loop_control = loop_control;

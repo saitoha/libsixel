@@ -47,6 +47,10 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_loader_manager_new(sixel_allocator_t *allocator,
                          void **manager);
 
+SIXEL_INTERNAL_API void
+sixel_loader_manager_set_prefer_float32(sixel_loader_manager_t *manager,
+                                        int prefer_float32);
+
 SIXELSTATUS
 loader_manager_parse_loader_order(
     char const *order,
