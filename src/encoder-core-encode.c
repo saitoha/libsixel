@@ -3614,10 +3614,21 @@ sixel_encode_body_ormode_band(sixel_index_t const *pixels,
     SIXELSTATUS status;
     sixel_index_t const *band_pixels;
     sixel_index_t const *column_pixels;
+    sixel_index_t const *row0;
+    sixel_index_t const *row1;
+    sixel_index_t const *row2;
+    sixel_index_t const *row3;
+    sixel_index_t const *row4;
+    sixel_index_t const *row5;
     int band_start;
     int band_height;
     int nwrite;
     int plane;
+    int plane_bit;
+    int full_mask;
+    int sample_mask;
+    int sample_width;
+    int first_x;
     int x;
     int y;
     int pix;
@@ -3637,15 +3648,242 @@ sixel_encode_body_ormode_band(sixel_index_t const *pixels,
     }
     band_pixels = pixels + (size_t)band_start * (size_t)width;
 
+    /*
+     * Full six-row bands are the hot path for real images.  Keep the partial
+     * tail on the generic loop below, but avoid the inner row loop and repeated
+     * width multiplication for complete bands.
+     */
+    if (band_height == 6) {
+        row0 = band_pixels;
+        row1 = row0 + width;
+        row2 = row1 + width;
+        row3 = row2 + width;
+        row4 = row3 + width;
+        row5 = row4 + width;
+        if (output->encode_policy != SIXEL_ENCODEPOLICY_SIZE) {
+            for (plane = 0; plane < nplanes; plane++) {
+                sixel_putc(output->buffer + output->pos, '#');
+                sixel_advance(output, 1);
+                nwrite = sixel_putnum((char *)output->buffer + output->pos,
+                                      1 << plane);
+                sixel_advance(output, nwrite);
+
+                for (x = 0; x < width; x++) {
+                    pix = (((row0[x] >> plane) & 0x1) << 0) |
+                          (((row1[x] >> plane) & 0x1) << 1) |
+                          (((row2[x] >> plane) & 0x1) << 2) |
+                          (((row3[x] >> plane) & 0x1) << 3) |
+                          (((row4[x] >> plane) & 0x1) << 4) |
+                          (((row5[x] >> plane) & 0x1) << 5);
+                    sixel_put_pixel(output, pix);
+                }
+                status = sixel_put_flash(output);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+
+                sixel_putc(output->buffer + output->pos, '$');
+                sixel_advance(output, 1);
+            }
+            sixel_putc(output->buffer + output->pos, '-');
+            sixel_advance(output, 1);
+            return SIXEL_OK;
+        }
+
+        full_mask = (1 << nplanes) - 1;
+        sample_mask = 0;
+        sample_width = width < 64 ? width : 64;
+        for (x = 0; x < sample_width; x++) {
+            sample_mask |= row0[x] | row1[x] | row2[x] |
+                           row3[x] | row4[x] | row5[x];
+        }
+
+        if ((sample_mask & full_mask) == full_mask) {
+            for (plane = 0; plane < nplanes; plane++) {
+                plane_bit = 1 << plane;
+                sixel_putc(output->buffer + output->pos, '#');
+                sixel_advance(output, 1);
+                nwrite = sixel_putnum((char *)output->buffer + output->pos,
+                                      plane_bit);
+                sixel_advance(output, nwrite);
+
+                for (x = 0; x < width; x++) {
+                    pix = ((row0[x] & plane_bit) ? 0x01 : 0) |
+                          ((row1[x] & plane_bit) ? 0x02 : 0) |
+                          ((row2[x] & plane_bit) ? 0x04 : 0) |
+                          ((row3[x] & plane_bit) ? 0x08 : 0) |
+                          ((row4[x] & plane_bit) ? 0x10 : 0) |
+                          ((row5[x] & plane_bit) ? 0x20 : 0);
+                    sixel_put_pixel(output, pix);
+                }
+                status = sixel_put_flash(output);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+
+                sixel_putc(output->buffer + output->pos, '$');
+                sixel_advance(output, 1);
+            }
+            sixel_putc(output->buffer + output->pos, '-');
+            sixel_advance(output, 1);
+            return SIXEL_OK;
+        }
+
+        for (plane = 0; plane < nplanes; plane++) {
+            plane_bit = 1 << plane;
+            first_x = (-1);
+            for (x = 0; x < width; x++) {
+                pix = ((row0[x] & plane_bit) ? 0x01 : 0) |
+                      ((row1[x] & plane_bit) ? 0x02 : 0) |
+                      ((row2[x] & plane_bit) ? 0x04 : 0) |
+                      ((row3[x] & plane_bit) ? 0x08 : 0) |
+                      ((row4[x] & plane_bit) ? 0x10 : 0) |
+                      ((row5[x] & plane_bit) ? 0x20 : 0);
+                if (pix != 0) {
+                    first_x = x;
+                    break;
+                }
+            }
+            if (first_x < 0) {
+                continue;
+            }
+
+            sixel_putc(output->buffer + output->pos, '#');
+            sixel_advance(output, 1);
+            nwrite = sixel_putnum((char *)output->buffer + output->pos,
+                                  plane_bit);
+            sixel_advance(output, nwrite);
+
+            status = sixel_emit_run(output, '?', first_x);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            sixel_put_pixel(output, pix);
+            for (x = first_x + 1; x < width; x++) {
+                pix = ((row0[x] & plane_bit) ? 0x01 : 0) |
+                      ((row1[x] & plane_bit) ? 0x02 : 0) |
+                      ((row2[x] & plane_bit) ? 0x04 : 0) |
+                      ((row3[x] & plane_bit) ? 0x08 : 0) |
+                      ((row4[x] & plane_bit) ? 0x10 : 0) |
+                      ((row5[x] & plane_bit) ? 0x20 : 0);
+                sixel_put_pixel(output, pix);
+            }
+            status = sixel_put_flash(output);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+
+            sixel_putc(output->buffer + output->pos, '$');
+            sixel_advance(output, 1);
+        }
+        sixel_putc(output->buffer + output->pos, '-');
+        sixel_advance(output, 1);
+        return SIXEL_OK;
+    }
+
+    /*
+     * OR mode composes the final color by drawing powers-of-two bit-planes.
+     * Size policy may spend a little more branch work to avoid empty planes.
+     * Delay the plane header until the first non-zero cell.  A plane that never
+     * draws any cell cannot affect the OR-composited result, while a non-empty
+     * plane keeps its horizontal position by emitting the leading zero run
+     * before the first drawn cell.
+     */
+    if (output->encode_policy != SIXEL_ENCODEPOLICY_SIZE) {
+        for (plane = 0; plane < nplanes; plane++) {
+            sixel_putc(output->buffer + output->pos, '#');
+            sixel_advance(output, 1);
+            nwrite = sixel_putnum((char *)output->buffer + output->pos,
+                                  1 << plane);
+            sixel_advance(output, nwrite);
+
+            column_pixels = band_pixels;
+            for (x = 0; x < width; x++, column_pixels++) {
+                pix = 0;
+                for (y = 0; y < band_height; y++) {
+                    pix |= (((column_pixels[width * y] >> plane) & 0x1) << y);
+                }
+                sixel_put_pixel(output, pix);
+            }
+            status = sixel_put_flash(output);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+
+            sixel_putc(output->buffer + output->pos, '$');
+            sixel_advance(output, 1);
+        }
+        return SIXEL_OK;
+    }
+
+    full_mask = (1 << nplanes) - 1;
+    sample_mask = 0;
+    sample_width = width < 64 ? width : 64;
+    column_pixels = band_pixels;
+    for (x = 0; x < sample_width; x++, column_pixels++) {
+        for (y = 0; y < band_height; y++) {
+            sample_mask |= column_pixels[width * y];
+        }
+    }
+
+    if ((sample_mask & full_mask) == full_mask) {
+        for (plane = 0; plane < nplanes; plane++) {
+            sixel_putc(output->buffer + output->pos, '#');
+            sixel_advance(output, 1);
+            nwrite = sixel_putnum((char *)output->buffer + output->pos,
+                                  1 << plane);
+            sixel_advance(output, nwrite);
+
+            column_pixels = band_pixels;
+            for (x = 0; x < width; x++, column_pixels++) {
+                pix = 0;
+                for (y = 0; y < band_height; y++) {
+                    pix |= (((column_pixels[width * y] >> plane) & 0x1) << y);
+                }
+                sixel_put_pixel(output, pix);
+            }
+            status = sixel_put_flash(output);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+
+            sixel_putc(output->buffer + output->pos, '$');
+            sixel_advance(output, 1);
+        }
+        return SIXEL_OK;
+    }
+
     for (plane = 0; plane < nplanes; plane++) {
+        plane_bit = 1 << plane;
+        first_x = (-1);
+        column_pixels = band_pixels;
+        for (x = 0; x < width; x++, column_pixels++) {
+            pix = 0;
+            for (y = 0; y < band_height; y++) {
+                pix |= (((column_pixels[width * y] >> plane) & 0x1) << y);
+            }
+            if (pix != 0) {
+                first_x = x;
+                break;
+            }
+        }
+        if (first_x < 0) {
+            continue;
+        }
+
         sixel_putc(output->buffer + output->pos, '#');
         sixel_advance(output, 1);
         nwrite = sixel_putnum((char *)output->buffer + output->pos,
-                              1 << plane);
+                              plane_bit);
         sixel_advance(output, nwrite);
 
-        column_pixels = band_pixels;
-        for (x = 0; x < width; x++, column_pixels++) {
+        status = sixel_emit_run(output, '?', first_x);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        sixel_put_pixel(output, pix);
+        column_pixels = band_pixels + first_x + 1;
+        for (x = first_x + 1; x < width; x++, column_pixels++) {
             pix = 0;
             for (y = 0; y < band_height; y++) {
                 pix |= (((column_pixels[width * y] >> plane) & 0x1) << y);

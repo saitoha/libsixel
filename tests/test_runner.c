@@ -106,6 +106,9 @@ int test_encoder_core_0004_encoder_core_ormode_body_bad_argument(int argc,
 int
 test_encoder_core_0005_encoder_core_ormode_pipeline_matches_body(int argc,
                                                                  char **argv);
+int
+test_encoder_core_0006_encoder_core_ormode_body_skips_empty_planes(int argc,
+                                                                   char **argv);
 int test_sixel_writer_0001_sixel_writer_factory(int argc, char **argv);
 int test_frame_0001_frame_factory(int argc, char **argv);
 int test_chunk_0001_chunk_factory(int argc, char **argv);
@@ -261,6 +264,8 @@ static test_entry_t const test_entries[] = {
       test_encoder_core_0004_encoder_core_ormode_body_bad_argument },
     { "encoder-core/0005_encoder_core_ormode_pipeline_matches_body",
       test_encoder_core_0005_encoder_core_ormode_pipeline_matches_body },
+    { "encoder-core/0006_encoder_core_ormode_body_skips_empty_planes",
+      test_encoder_core_0006_encoder_core_ormode_body_skips_empty_planes },
     { "sixel-writer/0001_sixel_writer_factory",
       test_sixel_writer_0001_sixel_writer_factory },
     { "frame/0001_frame_factory", test_frame_0001_frame_factory },
