@@ -126,6 +126,9 @@ int test_decoder_0006_decoder_ormode_legacy_api(int argc, char **argv);
 int test_decoder_0007_decoder_ormode_parallel_request(int argc, char **argv);
 int test_decoder_0008_decoder_pixels_output_formats(int argc, char **argv);
 int test_decoder_0009_decoder_pixels_trust_raster_clip(int argc, char **argv);
+int test_decoder_0010_decoder_kundither_default(int argc, char **argv);
+int test_decoder_0011_decoder_kundither_similarity(int argc, char **argv);
+int test_decoder_0012_decoder_kundither_edge(int argc, char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
 int test_lookup_0001_lookup_policy(int argc, char **argv);
 
@@ -299,6 +302,12 @@ static test_entry_t const test_entries[] = {
       test_decoder_0008_decoder_pixels_output_formats },
     { "decoder/0009_decoder_pixels_trust_raster_clip",
       test_decoder_0009_decoder_pixels_trust_raster_clip },
+    { "decoder/0010_decoder_kundither_default",
+      test_decoder_0010_decoder_kundither_default },
+    { "decoder/0011_decoder_kundither_similarity",
+      test_decoder_0011_decoder_kundither_similarity },
+    { "decoder/0012_decoder_kundither_edge",
+      test_decoder_0012_decoder_kundither_edge },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },

@@ -145,6 +145,10 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/decoder/0007_decoder_ormode_parallel_request.c \
 	processing/decoder/0008_decoder_pixels_output_formats.c \
 	processing/decoder/0009_decoder_pixels_trust_raster_clip.c \
+	processing/decoder/0010_decoder_kundither_default.c \
+	processing/decoder/0011_decoder_kundither_similarity.c \
+	processing/decoder/0012_decoder_kundither_edge.c \
+	processing/decoder/kundither_test_common.h \
 	processing/lookup/0001_lookup_policy.c \
 	processing/dither/0001_dither_policy.c \
 	processing/filter/filter_test_common.h \
@@ -238,6 +242,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0007_decoder_ormode_parallel_request.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0008_decoder_pixels_output_formats.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0010_decoder_kundither_default.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0011_decoder_kundither_similarity.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0012_decoder_kundither_edge.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
@@ -441,6 +448,9 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0010_decoder_kundither_default.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0011_decoder_kundither_similarity.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po \
 	processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po \
@@ -1157,6 +1167,9 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_DECODER_ORMODE_PARALLEL_REQUEST \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_DECODER_PIXELS_OUTPUT_FORMATS \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_DECODER_PIXELS_TRUST_RASTER_CLIP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_DECODER_KUNDITHER_DEFAULT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_DECODER_KUNDITHER_SIMILARITY \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_DECODER_KUNDITHER_EDGE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LOOKUP_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DITHER_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -1271,6 +1284,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0007_decoder_ormode_parallel_request.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0008_decoder_pixels_output_formats.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0009_decoder_pixels_trust_raster_clip.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0010_decoder_kundither_default.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0011_decoder_kundither_similarity.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0012_decoder_kundither_edge.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/kundither_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0001_lookup_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_test_common.h \
@@ -1995,6 +2012,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0010_decoder_kundither_default.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0011_decoder_kundither_similarity.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po@am__quote@ # am--include-marker
@@ -2553,6 +2573,48 @@ processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.obj: proces
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0009_decoder_pixels_trust_raster_clip.c' object='processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.obj `if test -f 'processing/decoder/0009_decoder_pixels_trust_raster_clip.c'; then $(CYGPATH_W) 'processing/decoder/0009_decoder_pixels_trust_raster_clip.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0009_decoder_pixels_trust_raster_clip.c'; fi`
+
+processing/decoder/test_runner-0010_decoder_kundither_default.o: processing/decoder/0010_decoder_kundither_default.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0010_decoder_kundither_default.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0010_decoder_kundither_default.Tpo -c -o processing/decoder/test_runner-0010_decoder_kundither_default.o `test -f 'processing/decoder/0010_decoder_kundither_default.c' || echo '$(srcdir)/'`processing/decoder/0010_decoder_kundither_default.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0010_decoder_kundither_default.Tpo processing/decoder/$(DEPDIR)/test_runner-0010_decoder_kundither_default.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0010_decoder_kundither_default.c' object='processing/decoder/test_runner-0010_decoder_kundither_default.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0010_decoder_kundither_default.o `test -f 'processing/decoder/0010_decoder_kundither_default.c' || echo '$(srcdir)/'`processing/decoder/0010_decoder_kundither_default.c
+
+processing/decoder/test_runner-0010_decoder_kundither_default.obj: processing/decoder/0010_decoder_kundither_default.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0010_decoder_kundither_default.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0010_decoder_kundither_default.Tpo -c -o processing/decoder/test_runner-0010_decoder_kundither_default.obj `if test -f 'processing/decoder/0010_decoder_kundither_default.c'; then $(CYGPATH_W) 'processing/decoder/0010_decoder_kundither_default.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0010_decoder_kundither_default.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0010_decoder_kundither_default.Tpo processing/decoder/$(DEPDIR)/test_runner-0010_decoder_kundither_default.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0010_decoder_kundither_default.c' object='processing/decoder/test_runner-0010_decoder_kundither_default.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0010_decoder_kundither_default.obj `if test -f 'processing/decoder/0010_decoder_kundither_default.c'; then $(CYGPATH_W) 'processing/decoder/0010_decoder_kundither_default.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0010_decoder_kundither_default.c'; fi`
+
+processing/decoder/test_runner-0011_decoder_kundither_similarity.o: processing/decoder/0011_decoder_kundither_similarity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0011_decoder_kundither_similarity.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0011_decoder_kundither_similarity.Tpo -c -o processing/decoder/test_runner-0011_decoder_kundither_similarity.o `test -f 'processing/decoder/0011_decoder_kundither_similarity.c' || echo '$(srcdir)/'`processing/decoder/0011_decoder_kundither_similarity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0011_decoder_kundither_similarity.Tpo processing/decoder/$(DEPDIR)/test_runner-0011_decoder_kundither_similarity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0011_decoder_kundither_similarity.c' object='processing/decoder/test_runner-0011_decoder_kundither_similarity.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0011_decoder_kundither_similarity.o `test -f 'processing/decoder/0011_decoder_kundither_similarity.c' || echo '$(srcdir)/'`processing/decoder/0011_decoder_kundither_similarity.c
+
+processing/decoder/test_runner-0011_decoder_kundither_similarity.obj: processing/decoder/0011_decoder_kundither_similarity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0011_decoder_kundither_similarity.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0011_decoder_kundither_similarity.Tpo -c -o processing/decoder/test_runner-0011_decoder_kundither_similarity.obj `if test -f 'processing/decoder/0011_decoder_kundither_similarity.c'; then $(CYGPATH_W) 'processing/decoder/0011_decoder_kundither_similarity.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0011_decoder_kundither_similarity.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0011_decoder_kundither_similarity.Tpo processing/decoder/$(DEPDIR)/test_runner-0011_decoder_kundither_similarity.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0011_decoder_kundither_similarity.c' object='processing/decoder/test_runner-0011_decoder_kundither_similarity.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0011_decoder_kundither_similarity.obj `if test -f 'processing/decoder/0011_decoder_kundither_similarity.c'; then $(CYGPATH_W) 'processing/decoder/0011_decoder_kundither_similarity.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0011_decoder_kundither_similarity.c'; fi`
+
+processing/decoder/test_runner-0012_decoder_kundither_edge.o: processing/decoder/0012_decoder_kundither_edge.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0012_decoder_kundither_edge.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Tpo -c -o processing/decoder/test_runner-0012_decoder_kundither_edge.o `test -f 'processing/decoder/0012_decoder_kundither_edge.c' || echo '$(srcdir)/'`processing/decoder/0012_decoder_kundither_edge.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Tpo processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0012_decoder_kundither_edge.c' object='processing/decoder/test_runner-0012_decoder_kundither_edge.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0012_decoder_kundither_edge.o `test -f 'processing/decoder/0012_decoder_kundither_edge.c' || echo '$(srcdir)/'`processing/decoder/0012_decoder_kundither_edge.c
+
+processing/decoder/test_runner-0012_decoder_kundither_edge.obj: processing/decoder/0012_decoder_kundither_edge.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0012_decoder_kundither_edge.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Tpo -c -o processing/decoder/test_runner-0012_decoder_kundither_edge.obj `if test -f 'processing/decoder/0012_decoder_kundither_edge.c'; then $(CYGPATH_W) 'processing/decoder/0012_decoder_kundither_edge.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0012_decoder_kundither_edge.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Tpo processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0012_decoder_kundither_edge.c' object='processing/decoder/test_runner-0012_decoder_kundither_edge.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0012_decoder_kundither_edge.obj `if test -f 'processing/decoder/0012_decoder_kundither_edge.c'; then $(CYGPATH_W) 'processing/decoder/0012_decoder_kundither_edge.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0012_decoder_kundither_edge.c'; fi`
 
 processing/lookup/test_runner-0001_lookup_policy.o: processing/lookup/0001_lookup_policy.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0001_lookup_policy.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Tpo -c -o processing/lookup/test_runner-0001_lookup_policy.o `test -f 'processing/lookup/0001_lookup_policy.c' || echo '$(srcdir)/'`processing/lookup/0001_lookup_policy.c
@@ -3779,6 +3841,9 @@ distclean: distclean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0010_decoder_kundither_default.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0011_decoder_kundither_similarity.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po
@@ -3914,6 +3979,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0010_decoder_kundither_default.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0011_decoder_kundither_similarity.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po

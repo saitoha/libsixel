@@ -229,6 +229,9 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0007_DECODER_ORMODE_PARALLEL_REQUEST \
     -DBUILD_TEST_0008_DECODER_PIXELS_OUTPUT_FORMATS \
     -DBUILD_TEST_0009_DECODER_PIXELS_TRUST_RASTER_CLIP \
+    -DBUILD_TEST_0010_DECODER_KUNDITHER_DEFAULT \
+    -DBUILD_TEST_0011_DECODER_KUNDITHER_SIMILARITY \
+    -DBUILD_TEST_0012_DECODER_KUNDITHER_EDGE \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -319,6 +322,10 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0007_decoder_ormode_parallel_request.c \
     processing/decoder/0008_decoder_pixels_output_formats.c \
     processing/decoder/0009_decoder_pixels_trust_raster_clip.c \
+    processing/decoder/0010_decoder_kundither_default.c \
+    processing/decoder/0011_decoder_kundither_similarity.c \
+    processing/decoder/0012_decoder_kundither_edge.c \
+    processing/decoder/kundither_test_common.h \
     processing/lookup/0001_lookup_policy.c \
     processing/dither/0001_dither_policy.c \
     processing/filter/filter_test_common.h \
