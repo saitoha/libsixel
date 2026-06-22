@@ -44,10 +44,10 @@
 #include "compat_stub.h"
 
 /*
- * The previous prescan-based parallel decoder has been removed.
- * The current implementation keeps the public entry points so that
- * callers can fall back to the single threaded decoder while we
- * prepare the new chunked worker pipeline.
+ * Parallel decoding starts only after the serial parser has established
+ * raster bounds and an initial palette state.  Worker byte spans are allowed
+ * to fall back to the serial decoder when they see tokens that need global
+ * parser context, such as raster resets or palette redefinitions.
  */
 
 typedef struct sixel_decoder_thread_config {
