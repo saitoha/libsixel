@@ -193,6 +193,7 @@ Some NetBSD/OpenBSD users are doing amazing challenges.
   See https://github.com/dylanaraps/neofetch/wiki/Image-Backends#sixel
 
   ![neofetch](https://raw.githubusercontent.com/saitoha/libsixel/data/data/neofetch.png)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fsaitoha%2Flibsixel.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fsaitoha%2Flibsixel?ref=badge_shield)
 
 #### [termplay](https://github.com/jD91mZM2/termplay)
 
@@ -1051,6 +1052,9 @@ The MIT License (MIT)
 > COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 > IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 > CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fsaitoha%2Flibsixel.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fsaitoha%2Flibsixel?ref=badge_large)
 
 ## Contributers and Reviewers
 
