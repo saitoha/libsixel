@@ -66,6 +66,7 @@ typedef struct sixel_decoder_worker_context {
     int end_offset;
     int index;
     int direct_mode;
+    int ormode;
     int initial_color_index;
     int const *palette;
     int palette_limit;
@@ -77,6 +78,7 @@ typedef struct sixel_decoder_worker_context {
     unsigned char *local_buffer;
     int local_capacity;
     int local_written;
+    int max_color_index;
     int result;
 } sixel_decoder_worker_context_t;
 
@@ -336,6 +338,46 @@ sixel_decoder_parallel_store_pixel(unsigned char *dst,
     dst[3] = 255u;
 }
 
+static int
+sixel_decoder_parallel_store_ormode_span(unsigned char *dst,
+                                         int depth,
+                                         int color_index,
+                                         int repeat)
+{
+    unsigned char *bytes;
+    unsigned short *shorts;
+    int composed_index;
+    int max_index;
+    int n;
+
+    if (dst == NULL || repeat <= 0) {
+        return (-1);
+    }
+
+    max_index = (-1);
+    if (depth == 1) {
+        bytes = dst;
+        for (n = 0; n < repeat; ++n) {
+            composed_index = bytes[n] | color_index;
+            bytes[n] = (unsigned char)composed_index;
+            if (max_index < composed_index) {
+                max_index = composed_index;
+            }
+        }
+    } else {
+        shorts = (unsigned short *)dst;
+        for (n = 0; n < repeat; ++n) {
+            composed_index = shorts[n] | color_index;
+            shorts[n] = (unsigned short)composed_index;
+            if (max_index < composed_index) {
+                max_index = composed_index;
+            }
+        }
+    }
+
+    return max_index;
+}
+
 static void
 sixel_local_buffer_init(sixel_local_buffer_t *buffer,
                         int width,
@@ -495,6 +537,8 @@ sixel_decoder_parallel_worker(void *arg)
     int height = 0;
     int chain_offset = 0;
     int starts_after_newline = 0;
+    int max_color_index = (-1);
+    int span_max_index = (-1);
     unsigned char ch;
 
     context = (sixel_decoder_worker_context_t *)arg;
@@ -503,6 +547,7 @@ sixel_decoder_parallel_worker(void *arg)
     }
 
     context->result = status;
+    context->max_color_index = (-1);
 
     chain = context->chain;
     if (chain == NULL) {
@@ -716,7 +761,18 @@ sixel_decoder_parallel_worker(void *arg)
                      */
                     relative = (pos_y + i) * width + pos_x;
 
-                    if (pixel_size == 1 && repeat > 3) {
+                    if (context->ormode) {
+                        span_max_index =
+                            sixel_decoder_parallel_store_ormode_span(
+                                chunk_cursor->data +
+                                (size_t)row_base * (size_t)pixel_size,
+                                depth,
+                                color_index,
+                                repeat);
+                        if (span_max_index > max_color_index) {
+                            max_color_index = span_max_index;
+                        }
+                    } else if (pixel_size == 1 && repeat > 3) {
                         memset(chunk_cursor->data + (size_t)row_base,
                                color_index,
                                repeat);
@@ -984,6 +1040,7 @@ sixel_decoder_parallel_worker(void *arg)
     context->local_capacity = 0;
     context->local_written = 0;
 
+    context->max_color_index = max_color_index;
     context->result = status;
     return status;
 }
@@ -1128,6 +1185,7 @@ sixel_decoder_parallel_resolve_threads(void)
 
 SIXELSTATUS
 sixel_decoder_parallel_request_start(int direct_mode,
+                                     int ormode,
                                      unsigned char *input,
                                      int length,
                                      unsigned char *anchor,
@@ -1156,6 +1214,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
     int sync_ready;
     int pixel_size;
     int palette_limit;
+    int max_color_index;
 
     status = SIXEL_RUNTIME_ERROR;
     workers = NULL;
@@ -1174,6 +1233,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
     sync_ready = 0;
     pixel_size = 4;
     palette_limit = SIXEL_PALETTE_MAX_DECODER;
+    max_color_index = (-1);
     memset(&chain, 0, sizeof(chain));
 
     if (input == NULL || anchor == NULL || length <= 0 || image == NULL) {
@@ -1182,6 +1242,13 @@ sixel_decoder_parallel_request_start(int direct_mode,
     }
 
     pixel_size = sixel_decoder_parallel_pixel_size(image->depth);
+    if (ormode && image->depth == 4U) {
+        if (image->ormode_indexes == NULL) {
+            runtime_error = 1;
+            goto cleanup;
+        }
+        pixel_size = (int)sizeof(*image->ormode_indexes);
+    }
 
     payload_start = (int)(anchor - input);
     if (payload_start < 0 || payload_start >= length) {
@@ -1230,7 +1297,11 @@ sixel_decoder_parallel_request_start(int direct_mode,
         runtime_error = 1;
         goto cleanup;
     }
-    chain.global_buffer = (unsigned char *)image->pixels.p;
+    if (ormode && image->depth == 4U) {
+        chain.global_buffer = (unsigned char *)image->ormode_indexes;
+    } else {
+        chain.global_buffer = (unsigned char *)image->pixels.p;
+    }
     chain.pixel_size = pixel_size;
     chain.copy_offsets = copy_offsets;
     chain.copy_ready = copy_ready;
@@ -1288,6 +1359,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
         }
         contexts[i].index = i;
         contexts[i].direct_mode = direct_mode;
+        contexts[i].ormode = ormode;
         contexts[i].initial_color_index = initial_color_index;
         contexts[i].palette = palette;
         contexts[i].palette_limit = palette_limit;
@@ -1312,6 +1384,9 @@ sixel_decoder_parallel_request_start(int direct_mode,
         if (contexts[i].result != 0) {
             parallel_failed = 1;
         }
+        if (contexts[i].max_color_index > max_color_index) {
+            max_color_index = contexts[i].max_color_index;
+        }
     }
 
     if (chain.abort_requested) {
@@ -1323,6 +1398,10 @@ sixel_decoder_parallel_request_start(int direct_mode,
     } else if (parallel_failed) {
         status = SIXEL_FALSE;
     } else {
+        if (ormode && max_color_index >= 0 &&
+                max_color_index + 1 > image->ncolors) {
+            image->ncolors = max_color_index + 1;
+        }
         status = SIXEL_OK;
     }
 
@@ -1341,6 +1420,7 @@ cleanup:
     return status;
 #else
     (void)direct_mode;
+    (void)ormode;
     (void)input;
     (void)length;
     (void)anchor;

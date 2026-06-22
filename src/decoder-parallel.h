@@ -37,13 +37,15 @@ extern "C" {
 int sixel_decoder_parallel_resolve_threads(void);
 SIXELSTATUS sixel_decoder_parallel_override_threads(char const *text);
 SIXELSTATUS sixel_decoder_parallel_request_start(int direct_mode,
+                                                 int ormode,
                                                  unsigned char *input,
                                                  int length,
                                                  unsigned char *anchor,
                                                  image_buffer_t *image,
                                                  int initial_color_index,
                                                  int const *palette,
-                                                 sixel_timeline_logger_t *logger);
+                                                 sixel_timeline_logger_t
+                                                 *logger);
 
 #ifdef __cplusplus
 }

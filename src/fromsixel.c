@@ -1024,10 +1024,10 @@ sixel_decode_raw_impl(
                 if (!palette_ready) {
                     palette_ready = 1;
                 }
-                if (!context->ormode &&
-                        !parallel_started && raster_ready && palette_ready) {
+                if (!parallel_started && raster_ready && palette_ready) {
                     status = sixel_decoder_parallel_request_start(
                         image->depth == 4U ? 1: 0,
+                        context->ormode,
                         p0,
                         len,
                         parallel_anchor,
@@ -1053,10 +1053,10 @@ sixel_decode_raw_impl(
                 if (!palette_ready) {
                     palette_ready = 1;
                 }
-                if (!context->ormode &&
-                        !parallel_started && raster_ready && palette_ready) {
+                if (!parallel_started && raster_ready && palette_ready) {
                     status = sixel_decoder_parallel_request_start(
                         image->depth == 4U ? 1: 0,
+                        context->ormode,
                         p0,
                         len,
                         parallel_anchor,
@@ -1080,11 +1080,11 @@ sixel_decode_raw_impl(
                     if (!palette_ready) {
                         palette_ready = 1;
                     }
-                    if (!context->ormode &&
-                            !parallel_started && raster_ready &&
+                    if (!parallel_started && raster_ready &&
                             palette_ready) {
                         status = sixel_decoder_parallel_request_start(
                             image->depth == 4U ? 1: 0,
+                            context->ormode,
                             p0,
                             len,
                             parallel_anchor,

@@ -123,6 +123,7 @@ int test_decoder_0003_decoder_ormode_wide_overlay(int argc, char **argv);
 int test_decoder_0004_decoder_ormode_direct_overlay(int argc, char **argv);
 int test_decoder_0005_decoder_ormode_repeat_overlay(int argc, char **argv);
 int test_decoder_0006_decoder_ormode_legacy_api(int argc, char **argv);
+int test_decoder_0007_decoder_ormode_parallel_request(int argc, char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
 int test_lookup_0001_lookup_policy(int argc, char **argv);
 
@@ -290,6 +291,8 @@ static test_entry_t const test_entries[] = {
       test_decoder_0005_decoder_ormode_repeat_overlay },
     { "decoder/0006_decoder_ormode_legacy_api",
       test_decoder_0006_decoder_ormode_legacy_api },
+    { "decoder/0007_decoder_ormode_parallel_request",
+      test_decoder_0007_decoder_ormode_parallel_request },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },

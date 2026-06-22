@@ -142,6 +142,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/decoder/0004_decoder_ormode_direct_overlay.c \
 	processing/decoder/0005_decoder_ormode_repeat_overlay.c \
 	processing/decoder/0006_decoder_ormode_legacy_api.c \
+	processing/decoder/0007_decoder_ormode_parallel_request.c \
 	processing/lookup/0001_lookup_policy.c \
 	processing/dither/0001_dither_policy.c \
 	processing/filter/filter_test_common.h \
@@ -232,6 +233,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0004_decoder_ormode_direct_overlay.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0005_decoder_ormode_repeat_overlay.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0006_decoder_ormode_legacy_api.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0007_decoder_ormode_parallel_request.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
@@ -432,6 +434,7 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0004_decoder_ormode_direct_overlay.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0005_decoder_ormode_repeat_overlay.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0006_decoder_ormode_legacy_api.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po \
 	processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po \
@@ -1145,6 +1148,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_DECODER_ORMODE_DIRECT_OVERLAY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_DECODER_ORMODE_REPEAT_OVERLAY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_DECODER_ORMODE_LEGACY_API \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_DECODER_ORMODE_PARALLEL_REQUEST \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LOOKUP_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DITHER_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -1256,6 +1260,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0004_decoder_ormode_direct_overlay.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0005_decoder_ormode_repeat_overlay.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0006_decoder_ormode_legacy_api.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0007_decoder_ormode_parallel_request.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0001_lookup_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_test_common.h \
@@ -1977,6 +1982,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0004_decoder_ormode_direct_overlay.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0005_decoder_ormode_repeat_overlay.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0006_decoder_ormode_legacy_api.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po@am__quote@ # am--include-marker
@@ -2493,6 +2499,20 @@ processing/decoder/test_runner-0006_decoder_ormode_legacy_api.obj: processing/de
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0006_decoder_ormode_legacy_api.c' object='processing/decoder/test_runner-0006_decoder_ormode_legacy_api.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0006_decoder_ormode_legacy_api.obj `if test -f 'processing/decoder/0006_decoder_ormode_legacy_api.c'; then $(CYGPATH_W) 'processing/decoder/0006_decoder_ormode_legacy_api.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0006_decoder_ormode_legacy_api.c'; fi`
+
+processing/decoder/test_runner-0007_decoder_ormode_parallel_request.o: processing/decoder/0007_decoder_ormode_parallel_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0007_decoder_ormode_parallel_request.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Tpo -c -o processing/decoder/test_runner-0007_decoder_ormode_parallel_request.o `test -f 'processing/decoder/0007_decoder_ormode_parallel_request.c' || echo '$(srcdir)/'`processing/decoder/0007_decoder_ormode_parallel_request.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Tpo processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0007_decoder_ormode_parallel_request.c' object='processing/decoder/test_runner-0007_decoder_ormode_parallel_request.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0007_decoder_ormode_parallel_request.o `test -f 'processing/decoder/0007_decoder_ormode_parallel_request.c' || echo '$(srcdir)/'`processing/decoder/0007_decoder_ormode_parallel_request.c
+
+processing/decoder/test_runner-0007_decoder_ormode_parallel_request.obj: processing/decoder/0007_decoder_ormode_parallel_request.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0007_decoder_ormode_parallel_request.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Tpo -c -o processing/decoder/test_runner-0007_decoder_ormode_parallel_request.obj `if test -f 'processing/decoder/0007_decoder_ormode_parallel_request.c'; then $(CYGPATH_W) 'processing/decoder/0007_decoder_ormode_parallel_request.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0007_decoder_ormode_parallel_request.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Tpo processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0007_decoder_ormode_parallel_request.c' object='processing/decoder/test_runner-0007_decoder_ormode_parallel_request.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0007_decoder_ormode_parallel_request.obj `if test -f 'processing/decoder/0007_decoder_ormode_parallel_request.c'; then $(CYGPATH_W) 'processing/decoder/0007_decoder_ormode_parallel_request.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0007_decoder_ormode_parallel_request.c'; fi`
 
 processing/lookup/test_runner-0001_lookup_policy.o: processing/lookup/0001_lookup_policy.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0001_lookup_policy.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Tpo -c -o processing/lookup/test_runner-0001_lookup_policy.o `test -f 'processing/lookup/0001_lookup_policy.c' || echo '$(srcdir)/'`processing/lookup/0001_lookup_policy.c
@@ -3716,6 +3736,7 @@ distclean: distclean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0004_decoder_ormode_direct_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0005_decoder_ormode_repeat_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0006_decoder_ormode_legacy_api.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po
@@ -3848,6 +3869,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0004_decoder_ormode_direct_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0005_decoder_ormode_repeat_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0006_decoder_ormode_legacy_api.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po
