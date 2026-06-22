@@ -66,6 +66,7 @@
 #include "output.h"
 #include "decoder-image.h"
 #include "decoder-parallel.h"
+#include "sixel_decode_pixels.h"
 #include "timeline-logger.h"
 
 #define SIXEL_RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
@@ -373,6 +374,7 @@ typedef struct parser_context {
     int color_index;
     int bgindex;
     int ormode;
+    int painted_outside_raster;
     int param;
     int nparams;
     int params[DECSIXEL_PARAMS_MAX];
@@ -730,6 +732,7 @@ parser_context_init(parser_context_t *context)
     context->color_index = 15;
     context->bgindex = (-1);
     context->ormode = 0;
+    context->painted_outside_raster = 0;
     context->nparams = 0;
     context->param = 0;
 
@@ -805,7 +808,8 @@ sixel_decode_raw_impl(
     parser_context_t  *context,
     sixel_allocator_t *allocator, /* allocator object */
     sixel_timeline_logger_t    *logger,
-    int logger_prepared)
+    int logger_prepared,
+    unsigned int decode_flags)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
@@ -816,6 +820,11 @@ sixel_decode_raw_impl(
     int sx;
     int sy;
     int c;
+    int trust_raster_size;
+    int draw_repeat;
+    int target_bottom;
+    int drawn_y_end;
+    int store_bits;
     size_t pos;
     unsigned char *p0 = p;
 #if SIXEL_ENABLE_THREADS
@@ -827,6 +836,9 @@ sixel_decode_raw_impl(
     (void) logger;
     (void) logger_prepared;
 #endif  /* SIXEL_ENABLE_THREADS */
+
+    trust_raster_size = (decode_flags &
+        SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE) != 0U;
 
     while (p < p0 + len) {
         switch (context->state) {
@@ -1034,7 +1046,9 @@ sixel_decode_raw_impl(
                         image,
                         context->color_index,
                         image->palette,
-                        logger_prepared ? logger : NULL);
+                        logger_prepared ? logger : NULL,
+                        decode_flags,
+                        &context->painted_outside_raster);
                     parallel_started = 1;
                     if (status == SIXEL_FALSE) {
                         /* Parallel decode aborted; continue serially. */
@@ -1063,7 +1077,9 @@ sixel_decode_raw_impl(
                         image,
                         context->color_index,
                         image->palette,
-                        logger_prepared ? logger : NULL);
+                        logger_prepared ? logger : NULL,
+                        decode_flags,
+                        &context->painted_outside_raster);
                     parallel_started = 1;
                     if (status == SIXEL_FALSE) {
                         /* Parallel decode aborted; continue serially. */
@@ -1091,7 +1107,9 @@ sixel_decode_raw_impl(
                             image,
                             context->color_index,
                             image->palette,
-                            logger_prepared ? logger : NULL);
+                            logger_prepared ? logger : NULL,
+                            decode_flags,
+                            &context->painted_outside_raster);
                         parallel_started = 1;
                         if (status == SIXEL_FALSE) {
                             /* Parallel decode aborted; continue serially. */
@@ -1101,13 +1119,41 @@ sixel_decode_raw_impl(
                     }
 #endif  /* SIXEL_ENABLE_THREADS */
 
+                    if (context->pos_x < 0 || context->pos_y < 0) {
+                        status = SIXEL_BAD_INPUT;
+                        goto end;
+                    }
+                    bits = *p - '?';
+                    draw_repeat = context->repeat_count;
+                    if (trust_raster_size && context->attributed_ph > 0) {
+                        if (context->pos_x >= context->attributed_ph) {
+                            if (bits != 0) {
+                                context->painted_outside_raster = 1;
+                            }
+                            draw_repeat = 0;
+                        } else if (context->pos_x + draw_repeat >
+                                context->attributed_ph) {
+                            if (bits != 0) {
+                                context->painted_outside_raster = 1;
+                            }
+                            draw_repeat =
+                                context->attributed_ph - context->pos_x;
+                        }
+                    }
+
+                    target_bottom = context->pos_y + 6;
+                    if (trust_raster_size && context->attributed_pv > 0 &&
+                            target_bottom > context->attributed_pv) {
+                        target_bottom = context->attributed_pv;
+                    }
+
                     sx = image->width;
-                    while (sx < context->pos_x + context->repeat_count) {
+                    while (sx < context->pos_x + draw_repeat) {
                         sx *= 2;
                     }
 
                     sy = image->height;
-                    while (sy < context->pos_y + 6) {
+                    while (sy < target_bottom) {
                         sy *= 2;
                     }
 
@@ -1128,28 +1174,34 @@ sixel_decode_raw_impl(
                         image->ncolors = context->color_index;
                     }
 
-                    if (context->pos_x < 0 || context->pos_y < 0) {
-                        status = SIXEL_BAD_INPUT;
-                        goto end;
-                    }
-                    bits = *p - '?';
-
                     if (context->ormode) {
-                        if (bits != 0) {
+                        store_bits = bits;
+                        if (trust_raster_size &&
+                                context->attributed_pv > 0) {
+                            for (i = 0; i < 6; ++i) {
+                                if ((bits & (1 << i)) != 0 &&
+                                        context->pos_y + i >=
+                                        context->attributed_pv) {
+                                    context->painted_outside_raster = 1;
+                                    store_bits &= ~(1 << i);
+                                }
+                            }
+                        }
+                        if (store_bits != 0 && draw_repeat > 0) {
                             image_buffer_ormode_store_sixel(
                                 image,
                                 context->pos_y,
                                 context->pos_x,
-                                context->repeat_count,
-                                bits,
+                                draw_repeat,
+                                store_bits,
                                 context->color_index);
                             if (context->max_x < context->pos_x +
-                                    context->repeat_count - 1) {
+                                    draw_repeat - 1) {
                                 context->max_x = context->pos_x +
-                                    context->repeat_count - 1;
+                                    draw_repeat - 1;
                             }
                             for (i = 5; i >= 0; --i) {
-                                if ((bits & (1 << i)) != 0) {
+                                if ((store_bits & (1 << i)) != 0) {
                                     if (context->max_y <
                                             context->pos_y + i) {
                                         context->max_y =
@@ -1167,6 +1219,18 @@ sixel_decode_raw_impl(
                         if (context->repeat_count <= 1) {
                             for (i = 0; i < 6; i++) {
                                 if ((bits & sixel_vertical_mask) != 0) {
+                                    if (trust_raster_size &&
+                                            context->attributed_pv > 0 &&
+                                            context->pos_y + i >=
+                                            context->attributed_pv) {
+                                        context->painted_outside_raster = 1;
+                                        sixel_vertical_mask <<= 1;
+                                        continue;
+                                    }
+                                    if (draw_repeat <= 0) {
+                                        sixel_vertical_mask <<= 1;
+                                        continue;
+                                    }
                                     pos =
                                         (size_t)image->width *
                                         (size_t)(context->pos_y + i) +
@@ -1178,7 +1242,8 @@ sixel_decode_raw_impl(
                                     if (context->max_x < context->pos_x) {
                                         context->max_x = context->pos_x;
                                     }
-                                    if (context->max_y < (context->pos_y + i)) {
+                                    if (context->max_y <
+                                            context->pos_y + i) {
                                         context->max_y = context->pos_y + i;
                                     }
                                 }
@@ -1196,19 +1261,37 @@ sixel_decode_raw_impl(
                                         }
                                         c <<= 1;
                                     }
-                                    for (y = context->pos_y + i; y < context->pos_y + i + n; ++y) {
+                                    drawn_y_end = -1;
+                                    for (y = context->pos_y + i;
+                                            y < context->pos_y + i + n;
+                                            ++y) {
+                                        if (trust_raster_size &&
+                                                context->attributed_pv > 0 &&
+                                                y >= context->attributed_pv) {
+                                            context->painted_outside_raster =
+                                                1;
+                                            continue;
+                                        }
+                                        if (draw_repeat <= 0) {
+                                            continue;
+                                        }
                                         image_buffer_fill_span(
                                             image,
                                             y,
                                             context->pos_x,
-                                            context->repeat_count,
+                                            draw_repeat,
                                             context->color_index);
+                                        drawn_y_end = y;
                                     }
-                                    if (context->max_x < (context->pos_x + context->repeat_count - 1)) {
-                                        context->max_x = context->pos_x + context->repeat_count - 1;
+                                    if (drawn_y_end >= 0 &&
+                                            context->max_x <
+                                            context->pos_x +
+                                            draw_repeat - 1) {
+                                        context->max_x =
+                                            context->pos_x + draw_repeat - 1;
                                     }
-                                    if (context->max_y < (context->pos_y + i + n - 1)) {
-                                        context->max_y = context->pos_y + i + n - 1;
+                                    if (context->max_y < drawn_y_end) {
+                                        context->max_y = drawn_y_end;
                                     }
                                     i += (n - 1);
                                     sixel_vertical_mask <<= (n - 1);
@@ -1457,6 +1540,15 @@ finalize:
         context->max_y = context->attributed_pv;
     }
 
+    if (context->attributed_ph > 0 &&
+            context->max_x > context->attributed_ph) {
+        context->painted_outside_raster = 1;
+    }
+    if (context->attributed_pv > 0 &&
+            context->max_y > context->attributed_pv) {
+        context->painted_outside_raster = 1;
+    }
+
     if (image->width > context->max_x || image->height > context->max_y) {
         status = image_buffer_resize(image,
                                      context->max_x,
@@ -1484,7 +1576,8 @@ sixel_decode_image(
     int                depth,
     image_buffer_t    *image,
     parser_context_t  *context,
-    sixel_allocator_t *allocator)
+    sixel_allocator_t *allocator,
+    unsigned int       decode_flags)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_timeline_logger_t *logger;
@@ -1560,7 +1653,8 @@ sixel_decode_image(
                                    context,
                                    allocator,
                                    logger,
-                                   logger_prepared);
+                                   logger_prepared,
+                                   decode_flags);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, image->pixels.p);
         image->pixels.p = NULL;
@@ -1646,7 +1740,8 @@ sixel_decode_raw(
                                 1,  /* depth */
                                 image,
                                 &context,
-                                allocator);
+                                allocator,
+                                0U);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -1747,7 +1842,8 @@ sixel_decode_wide(
                                 2,  /* depth */
                                 image,
                                 &context,
-                                allocator);
+                                allocator,
+                                0U);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -1803,18 +1899,24 @@ end:
 }
 
 
-SIXELAPI SIXELSTATUS
-sixel_decode_direct(
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_direct_with_options(
     unsigned char       *p,
     int                  len,
+    unsigned int         decode_flags,
     unsigned char      **pixels,
     int                 *pwidth,
     int                 *pheight,
+    unsigned int        *result_flags,
     sixel_allocator_t   *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     parser_context_t context;
     image_buffer_t *image = NULL;
+
+    if (result_flags != NULL) {
+        *result_flags = 0U;
+    }
 
     if (allocator) {
         sixel_allocator_ref(allocator);
@@ -1842,7 +1944,8 @@ sixel_decode_direct(
                                 4U,
                                 image,
                                 &context,
-                                allocator);
+                                allocator,
+                                decode_flags);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -1854,6 +1957,13 @@ sixel_decode_direct(
     *pwidth = image->width;
     *pheight = image->height;
     *pixels = image->pixels.in_bytes;
+    if (result_flags != NULL && context.painted_outside_raster) {
+        *result_flags |= SIXEL_DECODE_PIXELS_RESULT_PAINT_OUTSIDE_RASTER;
+        if ((decode_flags &
+                SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE) != 0U) {
+            *result_flags |= SIXEL_DECODE_PIXELS_RESULT_CLIPPED_TO_RASTER;
+        }
+    }
 
     status = SIXEL_OK;
     goto end;
@@ -1873,6 +1983,26 @@ end:
     free(image);
     sixel_allocator_unref(allocator);
     return status;
+}
+
+
+SIXELAPI SIXELSTATUS
+sixel_decode_direct(
+    unsigned char       *p,
+    int                  len,
+    unsigned char      **pixels,
+    int                 *pwidth,
+    int                 *pheight,
+    sixel_allocator_t   *allocator)
+{
+    return sixel_decode_direct_with_options(p,
+                                            len,
+                                            0U,
+                                            pixels,
+                                            pwidth,
+                                            pheight,
+                                            NULL,
+                                            allocator);
 }
 
 

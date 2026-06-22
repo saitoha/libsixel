@@ -143,6 +143,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/decoder/0005_decoder_ormode_repeat_overlay.c \
 	processing/decoder/0006_decoder_ormode_legacy_api.c \
 	processing/decoder/0007_decoder_ormode_parallel_request.c \
+	processing/decoder/0008_decoder_pixels_output_formats.c \
+	processing/decoder/0009_decoder_pixels_trust_raster_clip.c \
 	processing/lookup/0001_lookup_policy.c \
 	processing/dither/0001_dither_policy.c \
 	processing/filter/filter_test_common.h \
@@ -234,6 +236,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0005_decoder_ormode_repeat_overlay.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0006_decoder_ormode_legacy_api.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0007_decoder_ormode_parallel_request.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0008_decoder_pixels_output_formats.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
@@ -435,6 +439,8 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0005_decoder_ormode_repeat_overlay.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0006_decoder_ormode_legacy_api.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po \
 	processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po \
@@ -1149,6 +1155,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_DECODER_ORMODE_REPEAT_OVERLAY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_DECODER_ORMODE_LEGACY_API \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_DECODER_ORMODE_PARALLEL_REQUEST \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_DECODER_PIXELS_OUTPUT_FORMATS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_DECODER_PIXELS_TRUST_RASTER_CLIP \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LOOKUP_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DITHER_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -1261,6 +1269,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0005_decoder_ormode_repeat_overlay.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0006_decoder_ormode_legacy_api.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0007_decoder_ormode_parallel_request.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0008_decoder_pixels_output_formats.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0009_decoder_pixels_trust_raster_clip.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0001_lookup_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/filter_test_common.h \
@@ -1983,6 +1993,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0005_decoder_ormode_repeat_overlay.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0006_decoder_ormode_legacy_api.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po@am__quote@ # am--include-marker
@@ -2513,6 +2525,34 @@ processing/decoder/test_runner-0007_decoder_ormode_parallel_request.obj: process
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0007_decoder_ormode_parallel_request.c' object='processing/decoder/test_runner-0007_decoder_ormode_parallel_request.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0007_decoder_ormode_parallel_request.obj `if test -f 'processing/decoder/0007_decoder_ormode_parallel_request.c'; then $(CYGPATH_W) 'processing/decoder/0007_decoder_ormode_parallel_request.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0007_decoder_ormode_parallel_request.c'; fi`
+
+processing/decoder/test_runner-0008_decoder_pixels_output_formats.o: processing/decoder/0008_decoder_pixels_output_formats.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0008_decoder_pixels_output_formats.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Tpo -c -o processing/decoder/test_runner-0008_decoder_pixels_output_formats.o `test -f 'processing/decoder/0008_decoder_pixels_output_formats.c' || echo '$(srcdir)/'`processing/decoder/0008_decoder_pixels_output_formats.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Tpo processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0008_decoder_pixels_output_formats.c' object='processing/decoder/test_runner-0008_decoder_pixels_output_formats.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0008_decoder_pixels_output_formats.o `test -f 'processing/decoder/0008_decoder_pixels_output_formats.c' || echo '$(srcdir)/'`processing/decoder/0008_decoder_pixels_output_formats.c
+
+processing/decoder/test_runner-0008_decoder_pixels_output_formats.obj: processing/decoder/0008_decoder_pixels_output_formats.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0008_decoder_pixels_output_formats.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Tpo -c -o processing/decoder/test_runner-0008_decoder_pixels_output_formats.obj `if test -f 'processing/decoder/0008_decoder_pixels_output_formats.c'; then $(CYGPATH_W) 'processing/decoder/0008_decoder_pixels_output_formats.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0008_decoder_pixels_output_formats.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Tpo processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0008_decoder_pixels_output_formats.c' object='processing/decoder/test_runner-0008_decoder_pixels_output_formats.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0008_decoder_pixels_output_formats.obj `if test -f 'processing/decoder/0008_decoder_pixels_output_formats.c'; then $(CYGPATH_W) 'processing/decoder/0008_decoder_pixels_output_formats.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0008_decoder_pixels_output_formats.c'; fi`
+
+processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.o: processing/decoder/0009_decoder_pixels_trust_raster_clip.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Tpo -c -o processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.o `test -f 'processing/decoder/0009_decoder_pixels_trust_raster_clip.c' || echo '$(srcdir)/'`processing/decoder/0009_decoder_pixels_trust_raster_clip.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Tpo processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0009_decoder_pixels_trust_raster_clip.c' object='processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.o `test -f 'processing/decoder/0009_decoder_pixels_trust_raster_clip.c' || echo '$(srcdir)/'`processing/decoder/0009_decoder_pixels_trust_raster_clip.c
+
+processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.obj: processing/decoder/0009_decoder_pixels_trust_raster_clip.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Tpo -c -o processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.obj `if test -f 'processing/decoder/0009_decoder_pixels_trust_raster_clip.c'; then $(CYGPATH_W) 'processing/decoder/0009_decoder_pixels_trust_raster_clip.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0009_decoder_pixels_trust_raster_clip.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Tpo processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0009_decoder_pixels_trust_raster_clip.c' object='processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0009_decoder_pixels_trust_raster_clip.obj `if test -f 'processing/decoder/0009_decoder_pixels_trust_raster_clip.c'; then $(CYGPATH_W) 'processing/decoder/0009_decoder_pixels_trust_raster_clip.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0009_decoder_pixels_trust_raster_clip.c'; fi`
 
 processing/lookup/test_runner-0001_lookup_policy.o: processing/lookup/0001_lookup_policy.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0001_lookup_policy.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Tpo -c -o processing/lookup/test_runner-0001_lookup_policy.o `test -f 'processing/lookup/0001_lookup_policy.c' || echo '$(srcdir)/'`processing/lookup/0001_lookup_policy.c
@@ -3737,6 +3777,8 @@ distclean: distclean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0005_decoder_ormode_repeat_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0006_decoder_ormode_legacy_api.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po
@@ -3870,6 +3912,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0005_decoder_ormode_repeat_overlay.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0006_decoder_ormode_legacy_api.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0007_decoder_ormode_parallel_request.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0008_decoder_pixels_output_formats.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0009_decoder_pixels_trust_raster_clip.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po

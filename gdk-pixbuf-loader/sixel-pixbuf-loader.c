@@ -18,7 +18,7 @@
 #include <gmodule.h>
 #include <sixel.h>
 
-#include "sixel_decode_rgba.h"
+#include "sixel_decode_pixels.h"
 
 #define SIXEL_PIXBUF_MAX_SIZE 6000
 
@@ -182,7 +182,10 @@ sixel_pixbuf_stop_load(gpointer context_ptr, GError **error)
     int width;
     int height;
     int channels;
+    int stride;
     SIXELSTATUS status;
+    sixel_decode_options_t options;
+    sixel_decode_result_t decoded;
     GdkPixbuf *pixbuf;
     gboolean result;
     gchar const *signature;
@@ -201,9 +204,12 @@ sixel_pixbuf_stop_load(gpointer context_ptr, GError **error)
     width = 0;
     height = 0;
     channels = 0;
+    stride = 0;
     pixbuf = NULL;
     result = FALSE;
     signature = "\x1bP";
+    memset(&options, 0, sizeof(options));
+    memset(&decoded, 0, sizeof(decoded));
 
     /*
      * Reject obvious non-SIXEL data before attempting to decode.  The SIXEL
@@ -220,23 +226,27 @@ sixel_pixbuf_stop_load(gpointer context_ptr, GError **error)
                                             " signature");
     }
 
-    /* Decode with black compositing. Missing ST/BEL terminators are
-     * tolerated inside sixel_decode_rgba(). */
-    status = sixel_decode_rgba(context->buffer->data,
-                               context->buffer->len,
-                               0,
-                               NULL,
-                               &pixels,
-                               &width,
-                               &height,
-                               &channels,
-                               NULL);
+    /*
+     * Decode with black compositing. Missing ST/BEL terminators are tolerated
+     * inside sixel_decode_pixels().
+     */
+    options.preferred_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    status = sixel_decode_pixels(context->buffer->data,
+                                 context->buffer->len,
+                                 &options,
+                                 &decoded,
+                                 NULL);
     if (SIXEL_FAILED(status)) {
         sixel_pixbuf_context_free(context);
         return sixel_pixbuf_propagate_error(error,
                                             status,
                                             "sixel loader: decode failed");
     }
+    pixels = decoded.pixels;
+    width = decoded.width;
+    height = decoded.height;
+    channels = 3;
+    stride = decoded.stride;
 
     if (width > SIXEL_PIXBUF_MAX_SIZE || height > SIXEL_PIXBUF_MAX_SIZE) {
         g_set_error(error,
@@ -254,7 +264,7 @@ sixel_pixbuf_stop_load(gpointer context_ptr, GError **error)
                                       8,
                                       width,
                                       height,
-                                      width * channels,
+                                      stride,
                                       sixel_pixbuf_destroy_pixels,
                                       pixels);
     if (pixbuf == NULL) {

@@ -203,6 +203,10 @@ typedef int SIXELSTATUS;
 #define SIXEL_PIXELFORMAT_RGBA8888 (SIXEL_FORMATTYPE_COLOR     | 0x11) /* 32bpp */
 #define SIXEL_PIXELFORMAT_ABGR8888 (SIXEL_FORMATTYPE_COLOR     | 0x12) /* 32bpp */
 #define SIXEL_PIXELFORMAT_BGRA8888 (SIXEL_FORMATTYPE_COLOR     | 0x13) /* 32bpp */
+#define SIXEL_PIXELFORMAT_XRGB8888 (SIXEL_FORMATTYPE_COLOR | 0x14) /* 32bpp */
+#define SIXEL_PIXELFORMAT_RGBX8888 (SIXEL_FORMATTYPE_COLOR | 0x15) /* 32bpp */
+#define SIXEL_PIXELFORMAT_XBGR8888 (SIXEL_FORMATTYPE_COLOR | 0x16) /* 32bpp */
+#define SIXEL_PIXELFORMAT_BGRX8888 (SIXEL_FORMATTYPE_COLOR | 0x17) /* 32bpp */
 #define SIXEL_PIXELFORMAT_RGBFLOAT32 (SIXEL_FORMATTYPE_COLOR   | 0x20) /* 96bpp float */
 #define SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 (SIXEL_FORMATTYPE_COLOR | 0x21)
 #define SIXEL_PIXELFORMAT_OKLABFLOAT32 (SIXEL_FORMATTYPE_COLOR | 0x22)
@@ -801,6 +805,12 @@ enum pixelFormat {
     PIXELFORMAT_BGR888   = FORMATTYPE_COLOR     | 0x06, /* 24bpp */
     PIXELFORMAT_ARGB8888 = FORMATTYPE_COLOR     | 0x10, /* 32bpp */
     PIXELFORMAT_RGBA8888 = FORMATTYPE_COLOR     | 0x11, /* 32bpp */
+    PIXELFORMAT_ABGR8888 = FORMATTYPE_COLOR     | 0x12, /* 32bpp */
+    PIXELFORMAT_BGRA8888 = FORMATTYPE_COLOR     | 0x13, /* 32bpp */
+    PIXELFORMAT_XRGB8888 = FORMATTYPE_COLOR     | 0x14, /* 32bpp */
+    PIXELFORMAT_RGBX8888 = FORMATTYPE_COLOR     | 0x15, /* 32bpp */
+    PIXELFORMAT_XBGR8888 = FORMATTYPE_COLOR     | 0x16, /* 32bpp */
+    PIXELFORMAT_BGRX8888 = FORMATTYPE_COLOR     | 0x17, /* 32bpp */
     PIXELFORMAT_RGBFLOAT32 = FORMATTYPE_COLOR   | 0x20, /* 96bpp float */
     PIXELFORMAT_G1       = FORMATTYPE_GRAYSCALE | 0x00, /* 1bpp grayscale */
     PIXELFORMAT_G2       = FORMATTYPE_GRAYSCALE | 0x01, /* 2bpp grayscale */
@@ -1193,16 +1203,35 @@ sixel_decode_direct(
     int                 /* out */ *pheight,    /* image height */
     sixel_allocator_t   /* in */  *allocator); /* allocator object or null */
 
+#define SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE 0x0001u
+
+#define SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE         0x0001u
+#define SIXEL_DECODE_PIXELS_RESULT_PAINT_OUTSIDE_RASTER 0x0002u
+#define SIXEL_DECODE_PIXELS_RESULT_CLIPPED_TO_RASTER    0x0004u
+
+typedef struct sixel_decode_options {
+    unsigned int flags;               /* SIXEL_DECODE_PIXELS_OPTION_* */
+    int preferred_pixelformat;        /* desired output pixelformat */
+    unsigned char bgcolor[3];         /* RGB background for non-alpha output */
+} sixel_decode_options_t;
+
+typedef struct sixel_decode_result {
+    unsigned char *pixels;            /* decoded pixel buffer */
+    int width;                        /* image width */
+    int height;                       /* image height */
+    int pixelformat;                  /* actual output pixelformat */
+    int stride;                       /* bytes per output row */
+    unsigned int flags;               /* SIXEL_DECODE_PIXELS_RESULT_* */
+} sixel_decode_result_t;
+
 SIXELAPI SIXELSTATUS
-sixel_decode_rgba(unsigned char const /* in */  *data,
-                  size_t              /* in */  size,
-                  int                 /* in */  request_alpha,
-                  unsigned char const /* in */  *bgcolor,
-                  unsigned char       /* out */ **out_pixels,
-                  int                 /* out */ *out_width,
-                  int                 /* out */ *out_height,
-                  int                 /* out */ *out_channels,
-                  sixel_allocator_t   /* in */  *allocator);
+sixel_decode_pixels(unsigned char const /* in */ *data,
+                    size_t              /* in */ size,
+                    sixel_decode_options_t const
+                                        /* in */ *options,
+                    sixel_decode_result_t
+                                        /* out */ *result,
+                    sixel_allocator_t   /* in */ *allocator);
 
 SIXELAPI @attr_func_deprecated@ SIXELSTATUS
 sixel_decode(

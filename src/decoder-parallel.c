@@ -75,6 +75,8 @@ typedef struct sixel_decoder_worker_context {
     int pixel_size;
     int depth;
     sixel_timeline_logger_t *logger;
+    int trust_raster_size;
+    int painted_outside_raster;
     unsigned char *local_buffer;
     int local_capacity;
     int local_written;
@@ -539,6 +541,7 @@ sixel_decoder_parallel_worker(void *arg)
     int starts_after_newline = 0;
     int max_color_index = (-1);
     int span_max_index = (-1);
+    int effective_repeat = 0;
     unsigned char ch;
 
     context = (sixel_decoder_worker_context_t *)arg;
@@ -548,6 +551,7 @@ sixel_decoder_parallel_worker(void *arg)
 
     context->result = status;
     context->max_color_index = (-1);
+    context->painted_outside_raster = 0;
 
     chain = context->chain;
     if (chain == NULL) {
@@ -735,13 +739,39 @@ sixel_decoder_parallel_worker(void *arg)
          */
         if (ch >= '?' && ch <= '~') {
             bits = ch - '?';
+            effective_repeat = repeat;
+            if (context->trust_raster_size) {
+                if (pos_x >= width) {
+                    if (bits != 0) {
+                        context->painted_outside_raster = 1;
+                    }
+                    effective_repeat = 0;
+                } else if (pos_x + effective_repeat > width) {
+                    if (bits != 0) {
+                        context->painted_outside_raster = 1;
+                    }
+                    effective_repeat = width - pos_x;
+                }
+            }
             for (i = 0; i < 6; ++i) {
                 if ((bits & (1 << i)) != 0) {
-                    if (pos_x + repeat > width ||
-                            row_offset + pos_y + i >= height) {
+                    if (row_offset + pos_y + i >= height) {
+                        if (context->trust_raster_size) {
+                            context->painted_outside_raster = 1;
+                            continue;
+                        }
                         fallback = 1;
                         status = (-1);
                         break;
+                    }
+                    if (!context->trust_raster_size &&
+                            pos_x + repeat > width) {
+                        fallback = 1;
+                        status = (-1);
+                        break;
+                    }
+                    if (effective_repeat <= 0) {
+                        continue;
                     }
                     chunk_cursor = sixel_local_buffer_reserve_row(
                         &local_buffer, pos_y + i);
@@ -768,16 +798,16 @@ sixel_decoder_parallel_worker(void *arg)
                                 (size_t)row_base * (size_t)pixel_size,
                                 depth,
                                 color_index,
-                                repeat);
+                                effective_repeat);
                         if (span_max_index > max_color_index) {
                             max_color_index = span_max_index;
                         }
-                    } else if (pixel_size == 1 && repeat > 3) {
+                    } else if (pixel_size == 1 && effective_repeat > 3) {
                         memset(chunk_cursor->data + (size_t)row_base,
                                color_index,
-                               repeat);
+                               effective_repeat);
                     } else {
-                        for (r = 0; r < repeat; ++r) {
+                        for (r = 0; r < effective_repeat; ++r) {
                             sixel_decoder_parallel_store_pixel(
                                 chunk_cursor->data +
                                 (size_t)(row_base + r) *
@@ -787,12 +817,12 @@ sixel_decoder_parallel_worker(void *arg)
                                 context->palette);
                         }
                     }
-                    written += repeat;
+                    written += effective_repeat;
                     if (min_relative < 0 || relative < min_relative) {
                         min_relative = relative;
                     }
-                    if (max_relative < relative + repeat - 1) {
-                        max_relative = relative + repeat - 1;
+                    if (max_relative < relative + effective_repeat - 1) {
+                        max_relative = relative + effective_repeat - 1;
                     }
                 }
             }
@@ -1192,7 +1222,9 @@ sixel_decoder_parallel_request_start(int direct_mode,
                                      image_buffer_t *image,
                                      int initial_color_index,
                                      int const *palette,
-                                     sixel_timeline_logger_t *logger)
+                                     sixel_timeline_logger_t *logger,
+                                     unsigned int decode_flags,
+                                     int *painted_outside_raster)
 {
 #if SIXEL_ENABLE_THREADS
     SIXELSTATUS status;
@@ -1215,6 +1247,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
     int pixel_size;
     int palette_limit;
     int max_color_index;
+    int trust_raster_size;
 
     status = SIXEL_RUNTIME_ERROR;
     workers = NULL;
@@ -1234,6 +1267,11 @@ sixel_decoder_parallel_request_start(int direct_mode,
     pixel_size = 4;
     palette_limit = SIXEL_PALETTE_MAX_DECODER;
     max_color_index = (-1);
+    trust_raster_size = (decode_flags &
+        SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE) != 0U;
+    if (painted_outside_raster != NULL) {
+        *painted_outside_raster = 0;
+    }
     memset(&chain, 0, sizeof(chain));
 
     if (input == NULL || anchor == NULL || length <= 0 || image == NULL) {
@@ -1368,6 +1406,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
         contexts[i].pixel_size = pixel_size;
         contexts[i].depth = image->depth;
         contexts[i].logger = logger;
+        contexts[i].trust_raster_size = trust_raster_size;
         contexts[i].result = (-1);
         status = sixel_thread_create(&workers[i],
                                      sixel_decoder_parallel_worker,
@@ -1386,6 +1425,10 @@ sixel_decoder_parallel_request_start(int direct_mode,
         }
         if (contexts[i].max_color_index > max_color_index) {
             max_color_index = contexts[i].max_color_index;
+        }
+        if (contexts[i].painted_outside_raster &&
+                painted_outside_raster != NULL) {
+            *painted_outside_raster = 1;
         }
     }
 
@@ -1425,8 +1468,11 @@ cleanup:
     (void)length;
     (void)anchor;
     (void)image;
+    (void)initial_color_index;
     (void)palette;
     (void)logger;
+    (void)decode_flags;
+    (void)painted_outside_raster;
 
     return SIXEL_RUNTIME_ERROR;
 #endif

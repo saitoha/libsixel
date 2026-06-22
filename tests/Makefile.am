@@ -227,6 +227,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0005_DECODER_ORMODE_REPEAT_OVERLAY \
     -DBUILD_TEST_0006_DECODER_ORMODE_LEGACY_API \
     -DBUILD_TEST_0007_DECODER_ORMODE_PARALLEL_REQUEST \
+    -DBUILD_TEST_0008_DECODER_PIXELS_OUTPUT_FORMATS \
+    -DBUILD_TEST_0009_DECODER_PIXELS_TRUST_RASTER_CLIP \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -315,6 +317,8 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0005_decoder_ormode_repeat_overlay.c \
     processing/decoder/0006_decoder_ormode_legacy_api.c \
     processing/decoder/0007_decoder_ormode_parallel_request.c \
+    processing/decoder/0008_decoder_pixels_output_formats.c \
+    processing/decoder/0009_decoder_pixels_trust_raster_clip.c \
     processing/lookup/0001_lookup_policy.c \
     processing/dither/0001_dither_policy.c \
     processing/filter/filter_test_common.h \

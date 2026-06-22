@@ -323,7 +323,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/tty.h $(srcdir)/threading.c $(srcdir)/threading.h \
 	$(srcdir)/threadpool.c $(srcdir)/threadpool.h \
 	$(srcdir)/probe.c $(srcdir)/probe.h \
-	$(srcdir)/sixel_decode_rgba.c $(srcdir)/sixel_decode_rgba.h \
+	$(srcdir)/sixel_decode_pixels.c $(srcdir)/sixel_decode_pixels.h \
 	$(srcdir)/sixel_atomic_fallback.c $(srcdir)/sixel_atomic.h \
 	$(srcdir)/classid-factory.h $(srcdir)/classid-service.h \
 	$(srcdir)/rgblookup.h $(srcdir)/lso2.h \
@@ -471,7 +471,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-threading.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-threadpool.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-probe.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel_decode_rgba.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel_decode_pixels.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel_atomic_fallback.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_1) $(am__objects_2) \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_3)
@@ -641,7 +641,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-scale.Plo \
 	./$(DEPDIR)/libsixel_la-sixel-writer.Plo \
 	./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo \
-	./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo \
+	./$(DEPDIR)/libsixel_la-sixel_decode_pixels.Plo \
 	./$(DEPDIR)/libsixel_la-sleep.Plo \
 	./$(DEPDIR)/libsixel_la-status.Plo \
 	./$(DEPDIR)/libsixel_la-stb_image_write.Plo \
@@ -1259,8 +1259,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/threadpool.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/probe.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/probe.h \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_decode_rgba.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_decode_rgba.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_decode_pixels.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_decode_pixels.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_atomic_fallback.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_atomic.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-factory.h \
@@ -1620,7 +1620,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-scale.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sixel-writer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sixel_decode_pixels.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sleep.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-status.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-stb_image_write.Plo@am__quote@ # am--include-marker
@@ -2628,12 +2628,12 @@ libsixel_la-probe.lo: probe.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-probe.lo `test -f 'probe.c' || echo '$(srcdir)/'`probe.c
 
-libsixel_la-sixel_decode_rgba.lo: sixel_decode_rgba.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-sixel_decode_rgba.lo -MD -MP -MF $(DEPDIR)/libsixel_la-sixel_decode_rgba.Tpo -c -o libsixel_la-sixel_decode_rgba.lo `test -f 'sixel_decode_rgba.c' || echo '$(srcdir)/'`sixel_decode_rgba.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-sixel_decode_rgba.Tpo $(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sixel_decode_rgba.c' object='libsixel_la-sixel_decode_rgba.lo' libtool=yes @AMDEPBACKSLASH@
+libsixel_la-sixel_decode_pixels.lo: sixel_decode_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-sixel_decode_pixels.lo -MD -MP -MF $(DEPDIR)/libsixel_la-sixel_decode_pixels.Tpo -c -o libsixel_la-sixel_decode_pixels.lo `test -f 'sixel_decode_pixels.c' || echo '$(srcdir)/'`sixel_decode_pixels.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-sixel_decode_pixels.Tpo $(DEPDIR)/libsixel_la-sixel_decode_pixels.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sixel_decode_pixels.c' object='libsixel_la-sixel_decode_pixels.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-sixel_decode_rgba.lo `test -f 'sixel_decode_rgba.c' || echo '$(srcdir)/'`sixel_decode_rgba.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-sixel_decode_pixels.lo `test -f 'sixel_decode_pixels.c' || echo '$(srcdir)/'`sixel_decode_pixels.c
 
 libsixel_la-sixel_atomic_fallback.lo: sixel_atomic_fallback.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-sixel_atomic_fallback.lo -MD -MP -MF $(DEPDIR)/libsixel_la-sixel_atomic_fallback.Tpo -c -o libsixel_la-sixel_atomic_fallback.lo `test -f 'sixel_atomic_fallback.c' || echo '$(srcdir)/'`sixel_atomic_fallback.c
@@ -3014,7 +3014,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel-writer.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-sixel_decode_pixels.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sleep.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-stb_image_write.Plo
@@ -3203,7 +3203,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel-writer.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sixel_atomic_fallback.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-sixel_decode_pixels.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sleep.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-stb_image_write.Plo

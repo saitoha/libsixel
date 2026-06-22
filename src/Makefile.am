@@ -346,8 +346,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/threadpool.h \
                 $(srcdir)/probe.c \
                 $(srcdir)/probe.h \
-                $(srcdir)/sixel_decode_rgba.c \
-                $(srcdir)/sixel_decode_rgba.h \
+                $(srcdir)/sixel_decode_pixels.c \
+                $(srcdir)/sixel_decode_pixels.h \
                 $(srcdir)/sixel_atomic_fallback.c \
                 $(srcdir)/sixel_atomic.h \
                 $(srcdir)/classid-factory.h \

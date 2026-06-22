@@ -23,28 +23,33 @@
  */
 
 /*
- * Shared SIXEL memory decoding helper for RGB/RGBA output.
+ * Shared SIXEL memory decoding helper for packed pixel output.
  */
-#ifndef SIXEL_DECODE_RGBA_H
-#define SIXEL_DECODE_RGBA_H
+#ifndef SIXEL_DECODE_PIXELS_H
+#define SIXEL_DECODE_PIXELS_H
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include <sixel.h>
 
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_decode_rgba(unsigned char const *data,
-                  size_t size,
-                  int request_alpha,
-                  unsigned char const *bgcolor,
-                  unsigned char **out_pixels,
-                  int *out_width,
-                  int *out_height,
-                  int *out_channels,
-                  sixel_allocator_t *allocator);
+sixel_decode_direct_with_options(unsigned char *p,
+                                 int len,
+                                 unsigned int decode_flags,
+                                 unsigned char **pixels,
+                                 int *pwidth,
+                                 int *pheight,
+                                 unsigned int *result_flags,
+                                 sixel_allocator_t *allocator);
 
-#endif /* SIXEL_DECODE_RGBA_H */
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_pixels(unsigned char const *data,
+                    size_t size,
+                    sixel_decode_options_t const *options,
+                    sixel_decode_result_t *result,
+                    sixel_allocator_t *allocator);
+
+#endif /* SIXEL_DECODE_PIXELS_H */
 
 
 /* emacs Local Variables:      */

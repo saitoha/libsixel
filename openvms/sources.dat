@@ -130,7 +130,7 @@ tty.c
 threading.c
 threadpool.c
 probe.c
-sixel_decode_rgba.c
+sixel_decode_pixels.c
 sixel_atomic_fallback.c
 dither-interframe-method.c
 dither-interframe-stbn-source.c

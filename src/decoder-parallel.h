@@ -45,7 +45,9 @@ SIXELSTATUS sixel_decoder_parallel_request_start(int direct_mode,
                                                  int initial_color_index,
                                                  int const *palette,
                                                  sixel_timeline_logger_t
-                                                 *logger);
+                                                 *logger,
+                                                 unsigned int decode_flags,
+                                                 int *painted_outside_raster);
 
 #ifdef __cplusplus
 }
