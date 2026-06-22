@@ -873,6 +873,10 @@ sixel_dequantize_k_undither(unsigned char *indexed_pixels,
         return SIXEL_BAD_INPUT;
     }
 
+    if ((size_t)width > ((size_t)-1 / (size_t)height)) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
     num_pixels = (size_t)width * (size_t)height;
 
     memset(&similarity, 0, sizeof(sixel_similarity_t));
@@ -1303,6 +1307,57 @@ end:
 }
 
 
+static SIXELSTATUS
+sixel_decoder_promote_rgb888_to_rgba8888(unsigned char **out_pixels,
+                                         unsigned char const *rgb_pixels,
+                                         int width,
+                                         int height,
+                                         sixel_allocator_t *allocator)
+{
+    unsigned char *rgba_pixels = NULL;
+    size_t num_pixels;
+    size_t pixel_index;
+    size_t rgb_index;
+    size_t rgba_index;
+
+    if (out_pixels == NULL || rgb_pixels == NULL ||
+            width <= 0 || height <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    num_pixels = (size_t)width * (size_t)height;
+    if (num_pixels > ((size_t)-1 / 4u)) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    rgba_pixels = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        num_pixels * 4u);
+    if (rgba_pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decoder_promote_rgb888_to_rgba8888: "
+            "sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    /*
+     * k_undither is an RGB-domain neighbour filter.  Its current cache is
+     * keyed by palette index, so keep that palette-aware pass and only add
+     * opaque alpha here to preserve --direct's RGBA output contract.
+     */
+    for (pixel_index = 0u; pixel_index < num_pixels; ++pixel_index) {
+        rgb_index = pixel_index * 3u;
+        rgba_index = pixel_index * 4u;
+        rgba_pixels[rgba_index + 0u] = rgb_pixels[rgb_index + 0u];
+        rgba_pixels[rgba_index + 1u] = rgb_pixels[rgb_index + 1u];
+        rgba_pixels[rgba_index + 2u] = rgb_pixels[rgb_index + 2u];
+        rgba_pixels[rgba_index + 3u] = 0xffu;
+    }
+
+    *out_pixels = rgba_pixels;
+    return SIXEL_OK;
+}
+
 /* load source data from stdin or the file specified with
    SIXEL_OPTFLAG_INPUT flag, and decode it */
 SIXELAPI SIXELSTATUS
@@ -1457,18 +1512,10 @@ sixel_decoder_decode(
         }
     }
 
-    if (decoder->direct_color != 0 &&
-            decoder->dequantize_method != SIXEL_DEQUANTIZE_NONE) {
-        sixel_helper_set_additional_message(
-            "sixel_decoder_decode: direct option "
-            "cannot be combined with dequantize option.");
-        status = SIXEL_BAD_ARGUMENT;
-        goto end;
-    }
-
     ncolors = 0;
 
-    if (decoder->direct_color != 0) {
+    if (decoder->direct_color != 0 &&
+            decoder->dequantize_method == SIXEL_DEQUANTIZE_NONE) {
         status = sixel_decode_direct(
             raw_data,
             raw_len,
@@ -1496,7 +1543,8 @@ sixel_decoder_decode(
         goto end;
     }
 
-    if (decoder->direct_color != 0) {
+    if (decoder->direct_color != 0 &&
+            decoder->dequantize_method == SIXEL_DEQUANTIZE_NONE) {
         output_pixels = direct_pixels;
         output_palette = NULL;
         output_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
@@ -1535,6 +1583,25 @@ sixel_decoder_decode(
                 }
                 goto end;
             }
+            if (decoder->direct_color != 0) {
+                status = sixel_decoder_promote_rgb888_to_rgba8888(
+                    &direct_pixels,
+                    rgb_pixels,
+                    sx,
+                    sy,
+                    decoder->allocator);
+                if (SIXEL_FAILED(status)) {
+                    if (logger_prepared) {
+                        sixel_timeline_logger_logf(
+                            logger,
+                            "decoder",
+                            "undither",
+                            "abort",
+                            0);
+                    }
+                    goto end;
+                }
+            }
             if (logger_prepared) {
                 sixel_timeline_logger_logf(logger,
                                   "decoder",
@@ -1542,9 +1609,15 @@ sixel_decoder_decode(
                                   "finish",
                                   0);
             }
-            output_pixels = rgb_pixels;
-            output_palette = NULL;
-            output_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            if (decoder->direct_color != 0) {
+                output_pixels = direct_pixels;
+                output_palette = NULL;
+                output_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+            } else {
+                output_pixels = rgb_pixels;
+                output_palette = NULL;
+                output_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            }
         }
 
         if (output_pixelformat == SIXEL_PIXELFORMAT_PAL8) {
@@ -1611,6 +1684,9 @@ sixel_decoder_decode(
                 }
                 if (output_pixels == rgb_pixels) {
                     rgb_pixels = NULL;
+                }
+                if (output_pixels == direct_pixels) {
+                    direct_pixels = NULL;
                 }
                 if (output_palette == palette) {
                     palette = NULL;
