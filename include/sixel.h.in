@@ -1203,25 +1203,56 @@ sixel_decode_direct(
     int                 /* out */ *pheight,    /* image height */
     sixel_allocator_t   /* in */  *allocator); /* allocator object or null */
 
+/*
+ * Decode options for sixel_decode_pixels().
+ *
+ * By default, raster attributes are treated as the declared canvas size, but
+ * the decoder still keeps pixels that are actually painted outside that
+ * rectangle.  This matters because SIXEL uses six-pixel-high bands, and some
+ * streams declare a height that is not aligned to that band size.
+ *
+ * TRUST_RASTER_SIZE is an optimization hint for callers that already trust the
+ * raster attributes.  When this flag is set, pixels outside the declared
+ * raster width or height are discarded instead of growing the output frame.
+ * The result flags still report that such paint was seen and clipped.
+ */
 #define SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE 0x0001u
 
+/*
+ * Result flags returned by sixel_decode_pixels().
+ *
+ * ALPHA_OPAQUE means that the returned buffer can be treated as fully opaque.
+ * For alpha-bearing formats, every returned alpha byte is 0xff.  For RGB and
+ * XRGB/RGBX/XBGR/BGRX formats this flag is always set because transparent
+ * pixels have already been composited over options->bgcolor and no alpha
+ * channel is returned.
+ *
+ * PAINT_OUTSIDE_RASTER means that at least one non-empty SIXEL paint operation
+ * addressed pixels outside the width or height declared by raster attributes.
+ * Without TRUST_RASTER_SIZE, those pixels are preserved and the output frame
+ * may be larger than the declared raster size.
+ *
+ * CLIPPED_TO_RASTER means that PAINT_OUTSIDE_RASTER was seen while
+ * TRUST_RASTER_SIZE was set, so the out-of-raster pixels were discarded and
+ * the output frame was clipped to the declared raster size.
+ */
 #define SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE         0x0001u
 #define SIXEL_DECODE_PIXELS_RESULT_PAINT_OUTSIDE_RASTER 0x0002u
 #define SIXEL_DECODE_PIXELS_RESULT_CLIPPED_TO_RASTER    0x0004u
 
 typedef struct sixel_decode_options {
-    unsigned int flags;               /* SIXEL_DECODE_PIXELS_OPTION_* */
-    int preferred_pixelformat;        /* desired output pixelformat */
-    unsigned char bgcolor[3];         /* RGB background for non-alpha output */
+    unsigned int flags;        /* bitwise OR of SIXEL_DECODE_PIXELS_OPTION_* */
+    int preferred_pixelformat; /* desired output format, or 0 for RGBA8888 */
+    unsigned char bgcolor[3];  /* RGB background for RGB/X output */
 } sixel_decode_options_t;
 
 typedef struct sixel_decode_result {
-    unsigned char *pixels;            /* decoded pixel buffer */
-    int width;                        /* image width */
-    int height;                       /* image height */
-    int pixelformat;                  /* actual output pixelformat */
-    int stride;                       /* bytes per output row */
-    unsigned int flags;               /* SIXEL_DECODE_PIXELS_RESULT_* */
+    unsigned char *pixels;     /* decoded pixel buffer */
+    int width;                 /* image width */
+    int height;                /* image height */
+    int pixelformat;           /* actual output pixelformat */
+    int stride;                /* bytes per output row */
+    unsigned int flags;        /* bitwise OR of SIXEL_DECODE_PIXELS_RESULT_* */
 } sixel_decode_result_t;
 
 SIXELAPI SIXELSTATUS

@@ -1809,6 +1809,38 @@ sixel_decode_raw(
     sixel_allocator_t   /* in */  *allocator);  /* allocator object */
 ```
 
+### SIXEL to packed pixels
+
+`sixel_decode_pixels` decodes a SIXEL byte buffer into packed direct-color
+pixels.  The default output format is `SIXEL_PIXELFORMAT_RGBA8888`; callers can
+set `sixel_decode_options_t.preferred_pixelformat` to request another supported
+packed format such as `RGB888`, `XRGB8888`, `RGBX8888`, `XBGR8888`, or
+`BGRX8888`.  RGB and X formats are composited against
+`sixel_decode_options_t.bgcolor`, and X bytes are filled with `0xff`.
+
+The option flags are:
+
+- `SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE`: trust the width and height
+  declared by SIXEL raster attributes.  By default, raster attributes are only
+  the declared canvas size; if the stream paints outside that rectangle, the
+  decoder keeps those painted pixels and may return a larger frame.  With this
+  option set, out-of-raster pixels are discarded and the returned frame is
+  clipped to the declared raster size.
+
+The result flags are:
+
+- `SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE`: the returned buffer can be treated
+  as fully opaque.  For alpha-bearing formats, every returned alpha byte is
+  `0xff`.  For RGB and X formats, this flag is always set because transparent
+  pixels have already been composited over `bgcolor`.
+- `SIXEL_DECODE_PIXELS_RESULT_PAINT_OUTSIDE_RASTER`: the decoder observed
+  non-empty SIXEL paint outside the raster width or height declared by raster
+  attributes.  Without `TRUST_RASTER_SIZE`, those pixels are preserved in the
+  returned frame.
+- `SIXEL_DECODE_PIXELS_RESULT_CLIPPED_TO_RASTER`: out-of-raster paint was seen
+  while `TRUST_RASTER_SIZE` was set, so those pixels were discarded.  This flag
+  is reported together with `PAINT_OUTSIDE_RASTER`.
+
 ## Perl interface
 
 This package includes a perl module `Image::Sixel`.
