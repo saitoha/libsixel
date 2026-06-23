@@ -307,6 +307,84 @@ cleanup:
     return SIXEL_SUCCEEDED(status);
 }
 
+static int
+test_accumulation_result_rgb_tracks_palette_indexes(void)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_dither_t *dither;
+    sixel_index_t indexes[3];
+    unsigned char palette[9];
+    unsigned char const *rgb;
+    size_t rgb_size;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    dither = NULL;
+    rgb = NULL;
+    rgb_size = 0U;
+    indexes[0] = 0;
+    indexes[1] = 2;
+    indexes[2] = 1;
+    palette[0] = 1u;
+    palette[1] = 2u;
+    palette[2] = 3u;
+    palette[3] = 4u;
+    palette[4] = 5u;
+    palette[5] = 6u;
+    palette[6] = 7u;
+    palette[7] = 8u;
+    palette[8] = 9u;
+
+    status = make_allocator(&allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = make_dither(allocator, 3, &dither);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = sixel_dither_set_pipeline_accumulation_result_rgb(
+        dither,
+        indexes,
+        3U,
+        palette,
+        3U);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    rgb = sixel_dither_get_pipeline_accumulation_result_rgb(dither,
+                                                            &rgb_size);
+    if (rgb == NULL || rgb_size != 9U) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+    if (rgb[0] != 1u || rgb[1] != 2u || rgb[2] != 3u ||
+        rgb[3] != 7u || rgb[4] != 8u || rgb[5] != 9u ||
+        rgb[6] != 4u || rgb[7] != 5u || rgb[8] != 6u) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+    sixel_dither_clear_pipeline_accumulation_result_rgb(dither);
+    rgb = sixel_dither_get_pipeline_accumulation_result_rgb(dither,
+                                                            &rgb_size);
+    if (rgb != NULL || rgb_size != 0U) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+    status = SIXEL_OK;
+
+cleanup:
+    if (dither != NULL) {
+        sixel_dither_unref(dither);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
+
+    return SIXEL_SUCCEEDED(status);
+}
+
 #if SIXEL_ENABLE_THREADS
 static int
 test_transparent_mask_fence_parallel(void)
@@ -415,6 +493,10 @@ test_filter_0009_filter_dither(int argc, char **argv)
     }
     if (!test_accumulation_buffer_beats_palette_candidate()) {
         fprintf(stderr, "accumulation candidate dither path failed\n");
+        success = 0;
+    }
+    if (!test_accumulation_result_rgb_tracks_palette_indexes()) {
+        fprintf(stderr, "accumulation result rgb tracking failed\n");
         success = 0;
     }
 #if SIXEL_ENABLE_THREADS

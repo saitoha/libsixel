@@ -1713,6 +1713,17 @@ sixel_encode_body_pipeline(unsigned char *pixels,
         status = SIXEL_RUNTIME_ERROR;
         goto cleanup;
     }
+    if (dither->pipeline_accumulation_result_enabled != 0) {
+        status = sixel_dither_set_pipeline_accumulation_result_rgb(
+            dither,
+            indexes,
+            pixel_count,
+            palette,
+            (size_t)dither->ncolors);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
 
     /*
      * All dithering work has finished at this point.  Reclaim the idle dither
@@ -1741,6 +1752,7 @@ cleanup:
     dither->pipeline_transparent_mask = NULL;
     dither->pipeline_transparent_mask_size = 0;
     dither->pipeline_transparent_keycolor = (-1);
+    dither->pipeline_accumulation_result_enabled = 0;
     if (!waited && ctx.pool != NULL) {
         wait_status = sixel_parallel_context_wait(&ctx, status != SIXEL_OK);
         if (status == SIXEL_OK) {
@@ -1919,6 +1931,17 @@ sixel_encode_body_ormode_pipeline(unsigned char *pixels,
         status = SIXEL_RUNTIME_ERROR;
         goto cleanup;
     }
+    if (dither->pipeline_accumulation_result_enabled != 0) {
+        status = sixel_dither_set_pipeline_accumulation_result_rgb(
+            dither,
+            indexes,
+            pixel_count,
+            palette,
+            (size_t)dither->ncolors);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
 
     /*
      * PaletteApply is complete, so the encode queue can borrow the dither-side
@@ -1946,6 +1969,7 @@ cleanup:
     dither->pipeline_transparent_mask = NULL;
     dither->pipeline_transparent_mask_size = 0;
     dither->pipeline_transparent_keycolor = (-1);
+    dither->pipeline_accumulation_result_enabled = 0;
     if (!waited && ctx.pool != NULL) {
         wait_status = sixel_parallel_context_wait(&ctx, status != SIXEL_OK);
         if (status == SIXEL_OK) {
@@ -3986,6 +4010,7 @@ sixel_encode_dither(
     size_t palette_float_bytes = 0U;
     size_t palette_channels = 0U;
     size_t palette_index = 0U;
+    size_t pixel_count = 0U;
     int palette_source_colorspace;
     int palette_float_pixelformat;
     int output_float_pixelformat;
@@ -4011,6 +4036,14 @@ sixel_encode_dither(
     serial_logger = NULL;
 #endif  /* SIXEL_ENABLE_THREADS */
     palette_source_colorspace = SIXEL_COLORSPACE_GAMMA;
+    if (width <= 0 || height <= 0 ||
+        (size_t)width > SIZE_MAX / (size_t)height) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_dither: image size overflow.");
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    pixel_count = (size_t)width * (size_t)height;
     palette_float_pixelformat =
         sixel_palette_float_pixelformat_for_colorspace(
             palette_source_colorspace);
@@ -4302,6 +4335,19 @@ sixel_encode_dither(
         sixel_helper_set_additional_message(
             "sixel_encode_dither: palette copy failed.");
         goto end;
+    }
+
+    if (input_pixels != NULL &&
+            dither->pipeline_accumulation_result_enabled != 0) {
+        status = sixel_dither_set_pipeline_accumulation_result_rgb(
+            dither,
+            input_pixels,
+            pixel_count,
+            palette_entries,
+            palette_count);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     status = sixel_encode_header(width, height, dither->keycolor, output);

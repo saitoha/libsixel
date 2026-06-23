@@ -3620,6 +3620,9 @@ sixel_encoder_bind_transparent_mask(
     }
     sixel_dither_clear_pipeline_transparent_mask_hint(dither);
     sixel_dither_clear_pipeline_accumulation_buffer_hint(dither);
+    sixel_dither_set_pipeline_accumulation_result_enabled(
+        dither,
+        sixel_encoder_accumulation_policy_requested(encoder));
 
     /*
      * Reuse frame-owned masks unless accumulation mode needs a combined mask.
@@ -3735,11 +3738,14 @@ sixel_encoder_update_accumulation_from_frame(
     SIXELSTATUS status;
     unsigned char *current_rgb;
     unsigned char const *encoded_mask;
+    unsigned char const *encoded_rgb;
+    unsigned char const *update_rgb;
     sixel_frame_pixels_view_t view;
     sixel_frame_transparency_t transparency;
     size_t current_size;
     size_t pixel_count;
     size_t encoded_mask_size;
+    size_t encoded_rgb_size;
     size_t index;
     int old_buffer_matches;
     int keep_previous;
@@ -3747,11 +3753,14 @@ sixel_encoder_update_accumulation_from_frame(
     status = SIXEL_FALSE;
     current_rgb = NULL;
     encoded_mask = NULL;
+    encoded_rgb = NULL;
+    update_rgb = NULL;
     memset(&view, 0, sizeof(view));
     memset(&transparency, 0, sizeof(transparency));
     current_size = 0u;
     pixel_count = 0u;
     encoded_mask_size = 0u;
+    encoded_rgb_size = 0u;
     index = 0u;
     old_buffer_matches = 0;
     keep_previous = 0;
@@ -3787,6 +3796,9 @@ sixel_encoder_update_accumulation_from_frame(
     encoded_mask = sixel_dither_get_pipeline_accumulation_result_mask(
         dither,
         &encoded_mask_size);
+    encoded_rgb = sixel_dither_get_pipeline_accumulation_result_rgb(
+        dither,
+        &encoded_rgb_size);
 
     old_buffer_matches =
         encoder->accumulation_pixels != NULL &&
@@ -3795,6 +3807,25 @@ sixel_encoder_update_accumulation_from_frame(
         encoder->accumulation_pixels_size == current_size;
 
     if (!old_buffer_matches) {
+        if (encoded_rgb != NULL && encoded_rgb_size >= current_size) {
+            for (index = 0u; index < pixel_count; ++index) {
+                keep_previous =
+                    (encoded_mask != NULL &&
+                     encoded_mask_size >= pixel_count &&
+                     encoded_mask[index] != 0U) ||
+                    sixel_encoder_frame_mask_covers_pixel(&transparency,
+                                                          pixel_count,
+                                                          index) ||
+                    sixel_encoder_frame_alpha_covers_pixel(&transparency,
+                                                           &view,
+                                                           index);
+                if (keep_previous == 0) {
+                    memcpy(current_rgb + index * 3u,
+                           encoded_rgb + index * 3u,
+                           3u);
+                }
+            }
+        }
         sixel_allocator_free(encoder->allocator,
                              encoder->accumulation_pixels);
         encoder->accumulation_pixels = current_rgb;
@@ -3813,8 +3844,10 @@ sixel_encoder_update_accumulation_from_frame(
          * Retained accumulation must describe the image plane that a P2=1
          * terminal will actually show after this frame.  The dither stage may
          * add transparent pixels after palette lookup, so prefer its final
-         * mask when it is available and keep older alpha/mask fallbacks for
-         * non-accumulation paths.
+         * mask when it is available.  Painted pixels must advance to the
+         * quantized palette RGB that was emitted, not the pre-quantized source
+         * RGB, otherwise the next frame compares against a color the terminal
+         * never displayed.
          */
         keep_previous =
             (encoded_mask != NULL &&
@@ -3827,8 +3860,12 @@ sixel_encoder_update_accumulation_from_frame(
                                                    &view,
                                                    index);
         if (keep_previous == 0) {
+            update_rgb = current_rgb + index * 3u;
+            if (encoded_rgb != NULL && encoded_rgb_size >= current_size) {
+                update_rgb = encoded_rgb + index * 3u;
+            }
             memcpy(encoder->accumulation_pixels + index * 3u,
-                   current_rgb + index * 3u,
+                   update_rgb,
                    3u);
         }
     }
@@ -8577,6 +8614,7 @@ sixel_encoder_output_without_macro(
         }
     } else {
         sixel_dither_clear_pipeline_transparent_mask_hint(dither);
+        sixel_dither_set_pipeline_accumulation_result_enabled(dither, 0);
     }
     status = sixel_encode(p, width, height, depth, dither, output);
     if (status != SIXEL_OK) {
@@ -8749,6 +8787,7 @@ sixel_encoder_output_with_macro(
             }
         } else {
             sixel_dither_clear_pipeline_transparent_mask_hint(dither);
+            sixel_dither_set_pipeline_accumulation_result_enabled(dither, 0);
         }
         status = sixel_encode(converted,
                               width,

@@ -168,6 +168,9 @@ struct sixel_dither {
     int pipeline_accumulation_keycolor; /* keycolor for previous hits */
     unsigned char *pipeline_accumulation_result_mask; /* encoded keeps */
     size_t pipeline_accumulation_result_mask_size; /* result mask length */
+    unsigned char *pipeline_accumulation_result_rgb; /* encoded RGB plane */
+    size_t pipeline_accumulation_result_rgb_size; /* encoded RGB byte length */
+    int pipeline_accumulation_result_enabled; /* retain encoded RGB result */
     unsigned char *bluenoise_gradient_map; /* owned gradient-strength map */
     size_t bluenoise_gradient_map_size; /* gradient map byte length */
     int bluenoise_gradient_width; /* gradient map width */
@@ -259,6 +262,28 @@ SIXEL_INTERNAL_API unsigned char const *
 sixel_dither_get_pipeline_accumulation_result_mask(
     sixel_dither_t const *dither,
     size_t *mask_size);
+
+SIXEL_INTERNAL_API void
+sixel_dither_clear_pipeline_accumulation_result_rgb(
+    sixel_dither_t *dither);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_set_pipeline_accumulation_result_rgb(
+    sixel_dither_t *dither,
+    sixel_index_t const *indexes,
+    size_t index_count,
+    unsigned char const *palette,
+    size_t palette_count);
+
+SIXEL_INTERNAL_API unsigned char const *
+sixel_dither_get_pipeline_accumulation_result_rgb(
+    sixel_dither_t const *dither,
+    size_t *rgb_size);
+
+SIXEL_INTERNAL_API void
+sixel_dither_set_pipeline_accumulation_result_enabled(
+    sixel_dither_t *dither,
+    int enabled);
 
 SIXEL_INTERNAL_API void
 sixel_dither_clear_bluenoise_gradient_map_hint(

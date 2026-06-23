@@ -1652,6 +1652,9 @@ sixel_dither_new(
     sixel_dither_clear_pipeline_accumulation_buffer_hint(*ppdither);
     (*ppdither)->pipeline_accumulation_result_mask = NULL;
     (*ppdither)->pipeline_accumulation_result_mask_size = 0U;
+    (*ppdither)->pipeline_accumulation_result_rgb = NULL;
+    (*ppdither)->pipeline_accumulation_result_rgb_size = 0U;
+    (*ppdither)->pipeline_accumulation_result_enabled = 0;
     (*ppdither)->bluenoise_gradient_map = NULL;
     (*ppdither)->bluenoise_gradient_map_size = 0U;
     (*ppdither)->bluenoise_gradient_width = 0;
@@ -1748,6 +1751,7 @@ sixel_dither_destroy(
             dither->palette = NULL;
         }
         sixel_dither_clear_pipeline_accumulation_result_mask(dither);
+        sixel_dither_clear_pipeline_accumulation_result_rgb(dither);
         sixel_dither_clear_bluenoise_gradient_map_hint(dither);
         sixel_dither_interframe_state_dispose(dither);
         sixel_allocator_free(allocator, dither);
@@ -2649,6 +2653,109 @@ sixel_dither_get_pipeline_accumulation_result_mask(
 }
 
 SIXEL_INTERNAL_API void
+sixel_dither_clear_pipeline_accumulation_result_rgb(
+    sixel_dither_t *dither)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    if (dither->pipeline_accumulation_result_rgb != NULL &&
+            dither->allocator != NULL) {
+        sixel_allocator_free(dither->allocator,
+                             dither->pipeline_accumulation_result_rgb);
+    }
+    dither->pipeline_accumulation_result_rgb = NULL;
+    dither->pipeline_accumulation_result_rgb_size = 0U;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_set_pipeline_accumulation_result_rgb(
+    sixel_dither_t *dither,
+    sixel_index_t const *indexes,
+    size_t index_count,
+    unsigned char const *palette,
+    size_t palette_count)
+{
+    unsigned char *rgb;
+    size_t rgb_size;
+    size_t index;
+    size_t color_index;
+
+    rgb = NULL;
+    rgb_size = 0U;
+    index = 0U;
+    color_index = 0U;
+    if (dither == NULL || indexes == NULL || palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (index_count == 0U || palette_count == 0U) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (index_count > SIZE_MAX / 3U) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    rgb_size = index_count * 3U;
+    rgb = (unsigned char *)sixel_allocator_malloc(dither->allocator,
+                                                  rgb_size);
+    if (rgb == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dither_set_pipeline_accumulation_result_rgb: "
+            "sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (index = 0U; index < index_count; ++index) {
+        color_index = (size_t)indexes[index];
+        if (color_index >= palette_count) {
+            color_index = 0U;
+        }
+        memcpy(rgb + index * 3U,
+               palette + color_index * 3U,
+               3U);
+    }
+
+    sixel_dither_clear_pipeline_accumulation_result_rgb(dither);
+    dither->pipeline_accumulation_result_rgb = rgb;
+    dither->pipeline_accumulation_result_rgb_size = rgb_size;
+
+    return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API unsigned char const *
+sixel_dither_get_pipeline_accumulation_result_rgb(
+    sixel_dither_t const *dither,
+    size_t *rgb_size)
+{
+    if (rgb_size != NULL) {
+        *rgb_size = 0U;
+    }
+    if (dither == NULL ||
+            dither->pipeline_accumulation_result_rgb == NULL ||
+            dither->pipeline_accumulation_result_rgb_size == 0U) {
+        return NULL;
+    }
+    if (rgb_size != NULL) {
+        *rgb_size = dither->pipeline_accumulation_result_rgb_size;
+    }
+
+    return dither->pipeline_accumulation_result_rgb;
+}
+
+SIXEL_INTERNAL_API void
+sixel_dither_set_pipeline_accumulation_result_enabled(
+    sixel_dither_t *dither,
+    int enabled)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    dither->pipeline_accumulation_result_enabled = enabled != 0 ? 1 : 0;
+}
+
+SIXEL_INTERNAL_API void
 sixel_dither_set_pipeline_accumulation_buffer_hint(
     sixel_dither_t *dither,
     unsigned char const *pixels,
@@ -3260,6 +3367,7 @@ sixel_dither_apply_palette_with_mode(
         sixel_dither_interframe_resolve_apply_mode(apply_mode);
     sixel_dither_ref(dither);
     sixel_dither_clear_pipeline_accumulation_result_mask(dither);
+    sixel_dither_clear_pipeline_accumulation_result_rgb(dither);
     if (resolved_apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) {
         /*
          * Keep size-change resets observable in diagnostics even when
