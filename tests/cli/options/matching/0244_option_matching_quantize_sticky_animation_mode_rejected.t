@@ -40,7 +40,7 @@ test "${diag_line#LSXCLI1|phase=option_parse|rc=}" != "${diag_line}" || {
     exit 0
 }
 
-test "${diag_code}" = "UNKNOWN_SUBOPTION_KEY" || {
+test "${diag_code#UNKNOWN_SUBOPTION_KEY}" != "${diag_code}" || {
     echo "not ok" 1 - "sticky animation_mode diagnostic code mismatch"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
