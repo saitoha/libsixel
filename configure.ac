@@ -4863,7 +4863,19 @@ else
         ;;
 
     aarch64|arm64)
-        have_neon=yes
+        if test x$ac_cv_header_arm_neon_h = xyes; then
+            AC_MSG_CHECKING([whether the compiler supports <arm_neon.h> NEON types])
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+                                #include <arm_neon.h>
+                              ]], [[
+                                int32x4_t v = vdupq_n_s32(0);
+                                (void) v;
+                                return 0;
+                              ]])],
+                              [have_neon=yes],
+                              [have_neon=no])
+            AC_MSG_RESULT([$have_neon])
+        fi
         ;;
 
     arm*|aarch32)

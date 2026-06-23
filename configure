@@ -27504,7 +27504,37 @@ printf "%s\n" "$have_sse2" >&6; }
         ;;
 
     aarch64|arm64)
-        have_neon=yes
+        if test x$ac_cv_header_arm_neon_h = xyes; then
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports <arm_neon.h> NEON types" >&5
+printf %s "checking whether the compiler supports <arm_neon.h> NEON types... " >&6; }
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+                                #include <arm_neon.h>
+
+int
+main (void)
+{
+
+                                int32x4_t v = vdupq_n_s32(0);
+                                (void) v;
+                                return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_neon=yes
+else case e in #(
+  e) have_neon=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_neon" >&5
+printf "%s\n" "$have_neon" >&6; }
+        fi
         ;;
 
     arm*|aarch32)
