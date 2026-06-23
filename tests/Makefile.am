@@ -325,6 +325,7 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0010_decoder_kundither_default.c \
     processing/decoder/0011_decoder_kundither_similarity.c \
     processing/decoder/0012_decoder_kundither_edge.c \
+    processing/decoder/0013_decoder_kundither_parallel_matches_scalar.c \
     processing/decoder/kundither_test_common.h \
     processing/lookup/0001_lookup_policy.c \
     processing/dither/0001_dither_policy.c \

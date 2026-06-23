@@ -28,6 +28,7 @@
 /* STDC_HEADERS */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 #if HAVE_MATH_H
@@ -61,7 +62,16 @@
 #include "compat_stub.h"
 #include "path.h"
 #include "options.h"
+#include "cpu.h"
 #include "sixel_atomic.h"
+#include "threading.h"
+
+#if defined(HAVE_NEON) && HAVE_NEON && \
+    defined(HAVE_ARM_NEON_H) && HAVE_ARM_NEON_H && \
+    (defined(__ARM_NEON) || defined(__ARM_NEON__))
+# include <arm_neon.h>
+# define SIXEL_KUNDITHER_USE_NEON 1
+#endif
 
 static void
 decoder_clipboard_select_format(char *dest,
@@ -531,7 +541,28 @@ typedef struct sixel_similarity {
     int stride;
     signed char *cache;
     int bias;
+#if defined(SIXEL_KUNDITHER_USE_NEON)
+    int simd_level;
+#endif
 } sixel_similarity_t;
+
+typedef struct sixel_kundither_filter_context {
+    unsigned char const *indexed_pixels;
+    int width;
+    int height;
+    unsigned char const *palette;
+    int ncolors;
+    sixel_similarity_t *similarity;
+    unsigned char *rgb;
+    int y_start;
+    int y_end;
+} sixel_kundither_filter_context_t;
+
+static const int g_kundither_neighbor_offsets[8][4] = {
+    {-1, -1,  10, 16}, {0, -1, 16, 16}, {1, -1,   6, 16},
+    {-1,  0,  11, 16},                  {1,  0,  11, 16},
+    {-1,  1,   6, 16}, {0,  1, 16, 16}, {1,  1,  10, 16}
+};
 
 static SIXELSTATUS
 sixel_similarity_init(sixel_similarity_t *similarity,
@@ -551,6 +582,9 @@ sixel_similarity_init(sixel_similarity_t *similarity,
     similarity->ncolors = ncolors;
     similarity->stride = ncolors;
     similarity->bias = bias;
+#if defined(SIXEL_KUNDITHER_USE_NEON)
+    similarity->simd_level = SIXEL_SIMD_LEVEL_SCALAR;
+#endif
 
     cache_size = (size_t)ncolors * (size_t)ncolors;
     if (cache_size == 0) {
@@ -593,6 +627,148 @@ sixel_similarity_diff(const unsigned char *a, const unsigned char *b)
     return (unsigned int)(dr * dr + dg * dg + db * db);
 }
 
+static inline unsigned int
+sixel_similarity_min_diff_scalar(const unsigned char *palette,
+                                 int ncolors,
+                                 int index1,
+                                 int index2,
+                                 const unsigned char *avg_color)
+{
+    unsigned int min_diff;
+    const unsigned char *pk;
+    unsigned int diff;
+    int i;
+
+    min_diff = UINT_MAX;
+    for (i = 0; i < ncolors; ++i) {
+        if (i == index1 || i == index2) {
+            continue;
+        }
+        pk = palette + i * 3;
+        diff = sixel_similarity_diff(avg_color, pk);
+        if (diff < min_diff) {
+            min_diff = diff;
+        }
+    }
+
+    return min_diff;
+}
+
+#if defined(SIXEL_KUNDITHER_USE_NEON)
+static inline unsigned int
+sixel_similarity_min_diff_neon(const unsigned char *palette,
+                               int ncolors,
+                               int index1,
+                               int index2,
+                               const unsigned char *avg_color)
+{
+    uint16x8_t avg_r_vec;
+    uint16x8_t avg_g_vec;
+    uint16x8_t avg_b_vec;
+    uint32x4_t min_vec;
+    uint8x8x3_t colors;
+    uint16x8_t r_u16;
+    uint16x8_t g_u16;
+    uint16x8_t b_u16;
+    int16x8_t dr;
+    int16x8_t dg;
+    int16x8_t db;
+    int32x4_t r2_lo;
+    int32x4_t r2_hi;
+    int32x4_t g2_lo;
+    int32x4_t g2_hi;
+    int32x4_t b2_lo;
+    int32x4_t b2_hi;
+    uint32x4_t sum_lo;
+    uint32x4_t sum_hi;
+    uint32_t lanes[4];
+    unsigned int min_diff;
+    const unsigned char *pk;
+    unsigned int diff;
+    int i;
+    int k;
+
+    avg_r_vec = vdupq_n_u16((uint16_t)avg_color[0]);
+    avg_g_vec = vdupq_n_u16((uint16_t)avg_color[1]);
+    avg_b_vec = vdupq_n_u16((uint16_t)avg_color[2]);
+    min_vec = vdupq_n_u32(UINT_MAX);
+    i = 0;
+
+    /*
+     * vld3_u8 maps the interleaved RGB palette to three byte vectors.  Chunks
+     * containing either endpoint fall back to scalar so the historical
+     * "ignore index1/index2" rule stays byte-for-byte identical.
+     */
+    for (; i + 8 <= ncolors; i += 8) {
+        if ((index1 >= i && index1 < i + 8) ||
+            (index2 >= i && index2 < i + 8)) {
+            for (k = i; k < i + 8; ++k) {
+                if (k == index1 || k == index2) {
+                    continue;
+                }
+                pk = palette + k * 3;
+                diff = sixel_similarity_diff(avg_color, pk);
+                if (diff < min_diff) {
+                    min_diff = diff;
+                }
+            }
+            continue;
+        }
+
+        colors = vld3_u8(palette + i * 3);
+        r_u16 = vmovl_u8(colors.val[0]);
+        g_u16 = vmovl_u8(colors.val[1]);
+        b_u16 = vmovl_u8(colors.val[2]);
+        dr = vreinterpretq_s16_u16(vsubq_u16(r_u16, avg_r_vec));
+        dg = vreinterpretq_s16_u16(vsubq_u16(g_u16, avg_g_vec));
+        db = vreinterpretq_s16_u16(vsubq_u16(b_u16, avg_b_vec));
+
+        r2_lo = vmull_s16(vget_low_s16(dr), vget_low_s16(dr));
+        r2_hi = vmull_s16(vget_high_s16(dr), vget_high_s16(dr));
+        g2_lo = vmull_s16(vget_low_s16(dg), vget_low_s16(dg));
+        g2_hi = vmull_s16(vget_high_s16(dg), vget_high_s16(dg));
+        b2_lo = vmull_s16(vget_low_s16(db), vget_low_s16(db));
+        b2_hi = vmull_s16(vget_high_s16(db), vget_high_s16(db));
+
+        sum_lo = vreinterpretq_u32_s32(vaddq_s32(
+            vaddq_s32(r2_lo, g2_lo),
+            b2_lo));
+        sum_hi = vreinterpretq_u32_s32(vaddq_s32(
+            vaddq_s32(r2_hi, g2_hi),
+            b2_hi));
+        min_vec = vminq_u32(min_vec, sum_lo);
+        min_vec = vminq_u32(min_vec, sum_hi);
+    }
+
+    vst1q_u32(lanes, min_vec);
+    if (lanes[0] < min_diff) {
+        min_diff = lanes[0];
+    }
+    if (lanes[1] < min_diff) {
+        min_diff = lanes[1];
+    }
+    if (lanes[2] < min_diff) {
+        min_diff = lanes[2];
+    }
+    if (lanes[3] < min_diff) {
+        min_diff = lanes[3];
+    }
+
+    for (; i < ncolors; ++i) {
+        if (i == index1 || i == index2) {
+            continue;
+        }
+        pk = palette + i * 3;
+        diff = sixel_similarity_diff(avg_color, pk);
+        if (diff < min_diff) {
+            min_diff = diff;
+        }
+    }
+
+    return min_diff;
+}
+#endif
+
 static unsigned int
 sixel_similarity_compare(sixel_similarity_t *similarity,
                          int index1,
@@ -612,11 +788,8 @@ sixel_similarity_compare(sixel_similarity_t *similarity,
     unsigned int base_distance;
     unsigned long long scaled_distance;
     int bias;
-    unsigned int min_diff = UINT_MAX;
-    int i;
+    unsigned int min_diff;
     unsigned int result;
-    const unsigned char *pk;
-    unsigned int diff;
 
     if (similarity->cache == NULL) {
         return 0;
@@ -692,16 +865,30 @@ sixel_similarity_compare(sixel_similarity_t *similarity,
         base_distance = 1U;
     }
 
-    for (i = 0; i < similarity->ncolors; ++i) {
-        if (i == index1 || i == index2) {
-            continue;
-        }
-        pk = palette + i * 3;
-        diff = sixel_similarity_diff(avg_color, pk);
-        if (diff < min_diff) {
-            min_diff = diff;
-        }
+#if defined(SIXEL_KUNDITHER_USE_NEON)
+    if (similarity->simd_level >= SIXEL_SIMD_LEVEL_NEON) {
+        min_diff = sixel_similarity_min_diff_neon(
+            palette,
+            similarity->ncolors,
+            index1,
+            index2,
+            avg_color);
+    } else {
+        min_diff = sixel_similarity_min_diff_scalar(
+            palette,
+            similarity->ncolors,
+            index1,
+            index2,
+            avg_color);
     }
+#else
+    min_diff = sixel_similarity_min_diff_scalar(
+        palette,
+        similarity->ncolors,
+        index1,
+        index2,
+        avg_color);
+#endif
 
     if (min_diff == UINT_MAX) {
         min_diff = base_distance * 2U;
@@ -736,6 +923,154 @@ sixel_similarity_compare(sixel_similarity_t *similarity,
     similarity->cache[cache_pos] = (signed char)result;
 
     return result;
+}
+
+static void
+sixel_similarity_enable_simd(sixel_similarity_t *similarity)
+{
+#if defined(SIXEL_KUNDITHER_USE_NEON)
+    if (similarity != NULL && similarity->ncolors >= 80) {
+        /*
+         * NEON only amortizes in the precomputed high-color path.  Lazy scalar
+         * decoding is dominated by cache-hit lookups, and 32-64 color images
+         * benchmark better with the compiler's scalar loop on Apple Silicon.
+         */
+        similarity->simd_level = sixel_cpu_simd_level();
+    }
+#else
+    (void)similarity;
+#endif
+}
+
+static void
+sixel_similarity_prepare_image_order(sixel_similarity_t *similarity,
+                                     unsigned char const *indexed_pixels,
+                                     int width,
+                                     int height,
+                                     int ncolors)
+{
+    size_t prepared_pairs;
+    size_t target_pairs;
+    size_t cache_pos;
+    int palette_index;
+    int neighbor_index;
+    int min_index;
+    int max_index;
+    int neighbor;
+    int numerator;
+    int denominator;
+    int nx;
+    int ny;
+    int x;
+    int y;
+
+    if (similarity == NULL || similarity->cache == NULL) {
+        return;
+    }
+
+    /*
+     * The similarity cache is indexed by an unordered palette pair, but the
+     * midpoint rounding in sixel_similarity_compare() is historically order
+     * sensitive.  Prepare cache entries by walking the image in scalar scan
+     * order so parallel workers read the same first-seen orientation.
+     */
+    prepared_pairs = 0u;
+    target_pairs = ((size_t)ncolors * (size_t)(ncolors - 1)) / 2u;
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < width; ++x) {
+            palette_index = indexed_pixels[y * width + x];
+            if (palette_index < 0 || palette_index >= ncolors) {
+                palette_index = 0;
+            }
+
+            for (neighbor = 0; neighbor < 8; ++neighbor) {
+                nx = x + g_kundither_neighbor_offsets[neighbor][0];
+                ny = y + g_kundither_neighbor_offsets[neighbor][1];
+                numerator = g_kundither_neighbor_offsets[neighbor][2];
+                denominator = g_kundither_neighbor_offsets[neighbor][3];
+
+                if (nx < 0 || nx >= width || ny < 0 || ny >= height) {
+                    continue;
+                }
+
+                neighbor_index = indexed_pixels[ny * width + nx];
+                if (neighbor_index < 0 || neighbor_index >= ncolors) {
+                    continue;
+                }
+                if (palette_index == neighbor_index) {
+                    continue;
+                }
+
+                if (palette_index <= neighbor_index) {
+                    min_index = palette_index;
+                    max_index = neighbor_index;
+                } else {
+                    min_index = neighbor_index;
+                    max_index = palette_index;
+                }
+
+                cache_pos = (size_t)min_index * (size_t)similarity->stride
+                          + (size_t)max_index;
+                if (similarity->cache[cache_pos] >= 0) {
+                    continue;
+                }
+
+                (void)sixel_similarity_compare(
+                    similarity,
+                    palette_index,
+                    neighbor_index,
+                    numerator,
+                    denominator);
+                prepared_pairs += 1u;
+                if (prepared_pairs >= target_pairs) {
+                    return;
+                }
+            }
+        }
+    }
+}
+
+static inline unsigned int
+sixel_similarity_cached_compare(sixel_similarity_t *similarity,
+                                int index1,
+                                int index2,
+                                int numerator,
+                                int denominator)
+{
+    int min_index;
+    int max_index;
+    size_t cache_pos;
+    signed char cached;
+
+    if (similarity == NULL || similarity->cache == NULL) {
+        return 0U;
+    }
+    if (index1 < 0 || index1 >= similarity->ncolors ||
+        index2 < 0 || index2 >= similarity->ncolors) {
+        return 0U;
+    }
+
+    if (index1 <= index2) {
+        min_index = index1;
+        max_index = index2;
+    } else {
+        min_index = index2;
+        max_index = index1;
+    }
+
+    cache_pos = (size_t)min_index * (size_t)similarity->stride
+              + (size_t)max_index;
+    cached = similarity->cache[cache_pos];
+    if (cached >= 0) {
+        return (unsigned int)cached;
+    }
+
+    return sixel_similarity_compare(
+        similarity,
+        index1,
+        index2,
+        numerator,
+        denominator);
 }
 
 static inline int
@@ -825,16 +1160,235 @@ sixel_scale_threshold(unsigned short base, int percent)
     return (unsigned short)scaled;
 }
 
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_dequantize_k_undither(unsigned char *indexed_pixels,
-                            int width,
-                            int height,
-                            unsigned char *palette,
-                            int ncolors,
-                            int similarity_bias,
-                            int edge_strength,
-                            sixel_allocator_t *allocator,
-                            unsigned char **output)
+static inline void
+sixel_kundither_filter_noedge_range(unsigned char const *indexed_pixels,
+                                    int width,
+                                    int height,
+                                    unsigned char const *palette,
+                                    int ncolors,
+                                    sixel_similarity_t *similarity,
+                                    unsigned char *rgb,
+                                    int y_start,
+                                    int y_end)
+{
+    const unsigned char *color;
+    size_t out_index;
+    int palette_index;
+    unsigned int total_weight;
+    unsigned int accum_r;
+    unsigned int accum_g;
+    unsigned int accum_b;
+    int neighbor;
+    int nx;
+    int ny;
+    int numerator;
+    int denominator;
+    unsigned int weight;
+    const unsigned char *neighbor_color;
+    int neighbor_index;
+    int x;
+    int y;
+
+    /*
+     * This path is intentionally independent per output pixel.  The edge
+     * preserving mode below has historical scan-order behaviour, but the
+     * common no-edge filter only depends on the indexed source and palette.
+     */
+    for (y = y_start; y < y_end; ++y) {
+        for (x = 0; x < width; ++x) {
+            palette_index = indexed_pixels[y * width + x];
+            if (palette_index < 0 || palette_index >= ncolors) {
+                palette_index = 0;
+            }
+
+            color = palette + palette_index * 3;
+            accum_r = (unsigned int)color[0] * 8U;
+            accum_g = (unsigned int)color[1] * 8U;
+            accum_b = (unsigned int)color[2] * 8U;
+            total_weight = 8U;
+
+            for (neighbor = 0; neighbor < 8; ++neighbor) {
+                nx = x + g_kundither_neighbor_offsets[neighbor][0];
+                ny = y + g_kundither_neighbor_offsets[neighbor][1];
+                numerator = g_kundither_neighbor_offsets[neighbor][2];
+                denominator = g_kundither_neighbor_offsets[neighbor][3];
+
+                if (nx < 0 || nx >= width || ny < 0 || ny >= height) {
+                    continue;
+                }
+
+                neighbor_index = indexed_pixels[ny * width + nx];
+                if (neighbor_index < 0 || neighbor_index >= ncolors) {
+                    continue;
+                }
+
+                weight = sixel_similarity_cached_compare(
+                    similarity,
+                    palette_index,
+                    neighbor_index,
+                    numerator,
+                    denominator);
+                if (weight == 0U) {
+                    continue;
+                }
+
+                neighbor_color = palette + neighbor_index * 3;
+                accum_r += (unsigned int)neighbor_color[0] * weight;
+                accum_g += (unsigned int)neighbor_color[1] * weight;
+                accum_b += (unsigned int)neighbor_color[2] * weight;
+                total_weight += weight;
+            }
+
+            out_index = (size_t)(y * width + x) * 3U;
+            rgb[out_index + 0] = (unsigned char)(accum_r / total_weight);
+            rgb[out_index + 1] = (unsigned char)(accum_g / total_weight);
+            rgb[out_index + 2] = (unsigned char)(accum_b / total_weight);
+        }
+    }
+}
+
+#if SIXEL_ENABLE_THREADS
+static int
+sixel_kundither_filter_noedge_worker(void *arg)
+{
+    sixel_kundither_filter_context_t *context;
+
+    context = (sixel_kundither_filter_context_t *)arg;
+    if (context == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_kundither_filter_noedge_range(
+        context->indexed_pixels,
+        context->width,
+        context->height,
+        context->palette,
+        context->ncolors,
+        context->similarity,
+        context->rgb,
+        context->y_start,
+        context->y_end);
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_kundither_filter_noedge_parallel(unsigned char const *indexed_pixels,
+                                       int width,
+                                       int height,
+                                       unsigned char const *palette,
+                                       int ncolors,
+                                       sixel_similarity_t *similarity,
+                                       unsigned char *rgb,
+                                       int threads)
+{
+    sixel_thread_t *workers;
+    sixel_kundither_filter_context_t *contexts;
+    size_t num_pixels;
+    int rows_per_thread;
+    int y_start;
+    int y_end;
+    int created;
+    int i;
+    int status;
+    int failed;
+
+    workers = NULL;
+    contexts = NULL;
+    num_pixels = (size_t)width * (size_t)height;
+    rows_per_thread = 0;
+    y_start = 0;
+    y_end = 0;
+    created = 0;
+    status = SIXEL_FALSE;
+    failed = 0;
+
+    if (threads < 2 || num_pixels < 65536U) {
+        return SIXEL_FALSE;
+    }
+    if (threads > height) {
+        threads = height;
+    }
+    if (threads < 2) {
+        return SIXEL_FALSE;
+    }
+
+    sixel_similarity_enable_simd(similarity);
+    sixel_similarity_prepare_image_order(
+        similarity,
+        indexed_pixels,
+        width,
+        height,
+        ncolors);
+
+    workers = (sixel_thread_t *)calloc((size_t)threads,
+                                       sizeof(sixel_thread_t));
+    contexts = (sixel_kundither_filter_context_t *)calloc(
+        (size_t)threads,
+        sizeof(sixel_kundither_filter_context_t));
+    if (workers == NULL || contexts == NULL) {
+        free(workers);
+        free(contexts);
+        return SIXEL_FALSE;
+    }
+
+    rows_per_thread = (height + threads - 1) / threads;
+    for (i = 0; i < threads; ++i) {
+        y_start = i * rows_per_thread;
+        y_end = y_start + rows_per_thread;
+        if (y_start >= height) {
+            break;
+        }
+        if (y_end > height) {
+            y_end = height;
+        }
+
+        contexts[i].indexed_pixels = indexed_pixels;
+        contexts[i].width = width;
+        contexts[i].height = height;
+        contexts[i].palette = palette;
+        contexts[i].ncolors = ncolors;
+        contexts[i].similarity = similarity;
+        contexts[i].rgb = rgb;
+        contexts[i].y_start = y_start;
+        contexts[i].y_end = y_end;
+
+        status = sixel_thread_create(
+            &workers[i],
+            sixel_kundither_filter_noedge_worker,
+            &contexts[i]);
+        if (SIXEL_FAILED(status)) {
+            failed = 1;
+            break;
+        }
+        created += 1;
+    }
+
+    for (i = 0; i < created; ++i) {
+        sixel_thread_join(&workers[i]);
+    }
+
+    free(workers);
+    free(contexts);
+
+    if (failed || created < 2) {
+        return SIXEL_FALSE;
+    }
+
+    return SIXEL_OK;
+}
+#endif  /* SIXEL_ENABLE_THREADS */
+
+static SIXELSTATUS
+sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
+                                   int width,
+                                   int height,
+                                   unsigned char *palette,
+                                   int ncolors,
+                                   int similarity_bias,
+                                   int edge_strength,
+                                   sixel_allocator_t *allocator,
+                                   unsigned char **output)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *rgb = NULL;
@@ -1007,7 +1561,7 @@ sixel_dequantize_k_undither(unsigned char *indexed_pixels,
                 }
 
                 if (numerator) {
-                    weight = sixel_similarity_compare(
+                    weight = sixel_similarity_cached_compare(
                         &similarity,
                         palette_index,
                         neighbor_index,
@@ -1044,6 +1598,98 @@ end:
     sixel_allocator_free(allocator, gray);
     sixel_allocator_free(allocator, prewitt);
     return status;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_k_undither(unsigned char *indexed_pixels,
+                            int width,
+                            int height,
+                            unsigned char *palette,
+                            int ncolors,
+                            int similarity_bias,
+                            int edge_strength,
+                            sixel_allocator_t *allocator,
+                            unsigned char **output)
+{
+#if SIXEL_ENABLE_THREADS
+    SIXELSTATUS status;
+    sixel_similarity_t similarity;
+    unsigned char *rgb;
+    size_t num_pixels;
+    SIXELSTATUS parallel_status;
+    int parallel_threads;
+
+    memset(&similarity, 0, sizeof(sixel_similarity_t));
+    rgb = NULL;
+    parallel_threads = 1;
+
+    /*
+     * The no-edge filter reads only the source index image and palette, so
+     * row bands are independent.  Edge-preserving mode intentionally keeps
+     * the historical scalar scan order because its gradient buffer is filled
+     * as the loop advances.
+     */
+    if (edge_strength <= 0 &&
+        width > 0 &&
+        height > 0 &&
+        palette != NULL &&
+        ncolors > 0 &&
+        (size_t)width <= ((size_t)-1 / (size_t)height)) {
+        num_pixels = (size_t)width * (size_t)height;
+        parallel_threads = sixel_threads_resolve();
+        if (parallel_threads >= 2 && num_pixels >= 65536U) {
+            rgb = (unsigned char *)sixel_allocator_malloc(
+                allocator,
+                num_pixels * 3);
+            if (rgb == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_dequantize_k_undither: "
+                    "sixel_allocator_malloc() failed.");
+                return SIXEL_BAD_ALLOCATION;
+            }
+
+            status = sixel_similarity_init(
+                &similarity,
+                palette,
+                ncolors,
+                similarity_bias,
+                allocator);
+            if (SIXEL_FAILED(status)) {
+                sixel_allocator_free(allocator, rgb);
+                return status;
+            }
+
+            parallel_status = sixel_kundither_filter_noedge_parallel(
+                indexed_pixels,
+                width,
+                height,
+                palette,
+                ncolors,
+                &similarity,
+                rgb,
+                parallel_threads);
+            if (parallel_status == SIXEL_OK) {
+                sixel_similarity_destroy(&similarity, allocator);
+                *output = rgb;
+                return SIXEL_OK;
+            }
+
+            sixel_similarity_destroy(&similarity, allocator);
+            sixel_allocator_free(allocator, rgb);
+        }
+    }
+#endif
+
+    return sixel_dequantize_k_undither_scalar(
+        indexed_pixels,
+        width,
+        height,
+        palette,
+        ncolors,
+        similarity_bias,
+        edge_strength,
+        allocator,
+        output);
 }
 /*
  * The dequantizer accepts a method supplied by the shared option helper. The
