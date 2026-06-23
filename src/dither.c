@@ -1333,6 +1333,10 @@ sixel_dither_has_compatible_accumulation_hint(
     if (dither->pipeline_accumulation_pixels_size < expected_size) {
         return 0;
     }
+    if (dither->pipeline_accumulation_valid_mask != NULL &&
+        dither->pipeline_accumulation_valid_mask_size < total_pixels) {
+        return 0;
+    }
 
     return 1;
 }
@@ -1354,6 +1358,7 @@ sixel_dither_expand_mask_with_accumulation(
     SIXELSTATUS status;
     unsigned char *expanded_mask;
     unsigned char const *accumulation;
+    unsigned char const *valid_mask;
     unsigned char const *pixel;
     unsigned char const *palette_pixel;
     unsigned char const *accumulation_pixel;
@@ -1367,6 +1372,7 @@ sixel_dither_expand_mask_with_accumulation(
     status = SIXEL_FALSE;
     expanded_mask = NULL;
     accumulation = NULL;
+    valid_mask = NULL;
     pixel = NULL;
     palette_pixel = NULL;
     accumulation_pixel = NULL;
@@ -1420,9 +1426,13 @@ sixel_dither_expand_mask_with_accumulation(
     }
 
     accumulation = dither->pipeline_accumulation_pixels;
+    valid_mask = dither->pipeline_accumulation_valid_mask;
     keycolor = dither->pipeline_accumulation_keycolor;
     for (index = 0u; index < total_pixels; ++index) {
         if (expanded_mask[index] != 0u) {
+            continue;
+        }
+        if (valid_mask != NULL && valid_mask[index] == 0u) {
             continue;
         }
         pixel = pixels + index * 3u;
@@ -2589,6 +2599,8 @@ sixel_dither_clear_pipeline_accumulation_buffer_hint(
 
     dither->pipeline_accumulation_pixels = NULL;
     dither->pipeline_accumulation_pixels_size = 0u;
+    dither->pipeline_accumulation_valid_mask = NULL;
+    dither->pipeline_accumulation_valid_mask_size = 0u;
     dither->pipeline_accumulation_width = 0;
     dither->pipeline_accumulation_height = 0;
     dither->pipeline_accumulation_keycolor = (-1);
@@ -2760,6 +2772,8 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
     sixel_dither_t *dither,
     unsigned char const *pixels,
     size_t pixels_size,
+    unsigned char const *valid_mask,
+    size_t valid_mask_size,
     int width,
     int height,
     int keycolor)
@@ -2789,9 +2803,15 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
     if (pixels_size < expected_size) {
         return;
     }
+    if (valid_mask != NULL && valid_mask_size < (size_t)width *
+            (size_t)height) {
+        return;
+    }
 
     dither->pipeline_accumulation_pixels = pixels;
     dither->pipeline_accumulation_pixels_size = pixels_size;
+    dither->pipeline_accumulation_valid_mask = valid_mask;
+    dither->pipeline_accumulation_valid_mask_size = valid_mask_size;
     dither->pipeline_accumulation_width = width;
     dither->pipeline_accumulation_height = height;
     dither->pipeline_accumulation_keycolor = keycolor;

@@ -13,7 +13,9 @@ set -v
 set +x
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
-status=0
+status_256=0
+status_negative=0
+status_text=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --transparent-policy=keep --accumulation-delta=8 \
@@ -26,10 +28,26 @@ set +e
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --transparent-policy=keep --accumulation-delta=256 \
     -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
-status=$?
+status_256=$?
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --transparent-policy=keep --accumulation-delta=-1 \
+    -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
+status_negative=$?
+${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
+    --transparent-policy=keep --accumulation-delta=fast \
+    -L builtin -e -o - "${input_image}" >/dev/null 2>/dev/null
+status_text=$?
 set -e
-test "${status}" -ne 0 || {
+test "${status_256}" -ne 0 || {
     echo "not ok" 1 - "out-of-range accumulation-delta was accepted"
+    exit 0
+}
+test "${status_negative}" -ne 0 || {
+    echo "not ok" 1 - "negative accumulation-delta was accepted"
+    exit 0
+}
+test "${status_text}" -ne 0 || {
+    echo "not ok" 1 - "non-numeric accumulation-delta was accepted"
     exit 0
 }
 

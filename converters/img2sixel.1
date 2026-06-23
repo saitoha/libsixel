@@ -767,7 +767,8 @@ composite -> composite alpha over the background color
 .br
 background -> emit transparent pixels with DCS P2=0 (default)
 .br
-keep -> emit transparent pixels with DCS P2=1
+keep -> emit transparent pixels with DCS P2=1 for terminals that preserve the
+previous image plane
 .br
 transparent -> alias for background
 .TP 5
@@ -1284,6 +1285,21 @@ command-line option is present.
 set how loader background colors are interpreted during alpha composition.
 accepts "gamma" (default) or "linear".
 ignored when OSC11 query supplies the background color.
+.TP 5
+.B SIXEL_BACKGROUND_POLICY
+.br
+choose background priority for builtin PNG/APNG/GIF composition.
+"file_first" (default) prefers file background over \fB-B\fP/\fBSIXEL_BGCOLOR\fP.
+"explicit_first" prefers \fB-B\fP/\fBSIXEL_BGCOLOR\fP over file background.
+Invalid or empty values fall back to "file_first".
+.TP 5
+.B SIXEL_TRANSPARENT_POLICY
+.br
+control alpha normalization and transparent SIXEL P2 handling.
+"composite" bakes alpha into the background when available.
+"background" and "transparent" keep alpha==0 as transparent and emit P2=0
+(default). "keep" keeps alpha==0 as transparent and emits P2=1 for previous
+image-plane reuse.
 .TP 5
 .B SIXEL_LOADER_ORIENTATION
 .br

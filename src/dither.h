@@ -163,6 +163,8 @@ struct sixel_dither {
     int pipeline_transparent_keycolor; /* keycolor applied to mask hits */
     unsigned char const *pipeline_accumulation_pixels; /* previous RGB888 */
     size_t pipeline_accumulation_pixels_size; /* previous RGB byte length */
+    unsigned char const *pipeline_accumulation_valid_mask; /* valid pixels */
+    size_t pipeline_accumulation_valid_mask_size; /* valid mask length */
     int pipeline_accumulation_width; /* previous frame width */
     int pipeline_accumulation_height; /* previous frame height */
     int pipeline_accumulation_keycolor; /* keycolor for previous hits */
@@ -240,6 +242,8 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
     sixel_dither_t *dither,
     unsigned char const *pixels,
     size_t pixels_size,
+    unsigned char const *valid_mask,
+    size_t valid_mask_size,
     int width,
     int height,
     int keycolor);

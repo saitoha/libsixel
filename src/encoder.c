@@ -3555,6 +3555,39 @@ sixel_encoder_ensure_accumulation_mask(sixel_encoder_t *encoder,
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+sixel_encoder_ensure_accumulation_valid_mask(sixel_encoder_t *encoder,
+                                             size_t pixel_count)
+{
+    unsigned char *resized;
+
+    resized = NULL;
+    if (encoder == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (pixel_count == 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (encoder->accumulation_valid_mask_size >= pixel_count) {
+        return SIXEL_OK;
+    }
+
+    resized = (unsigned char *)sixel_allocator_realloc(
+        encoder->allocator,
+        encoder->accumulation_valid_mask,
+        pixel_count);
+    if (resized == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_ensure_accumulation_valid_mask: "
+            "sixel_allocator_realloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    encoder->accumulation_valid_mask = resized;
+    encoder->accumulation_valid_mask_size = pixel_count;
+
+    return SIXEL_OK;
+}
+
 static int
 sixel_encoder_frame_mask_covers_pixel(
     sixel_frame_transparency_t const *transparency,
@@ -3602,6 +3635,7 @@ sixel_encoder_bind_transparent_mask(
     int accumulation_active;
     int alpha_covers;
     int frame_mask_covers;
+    int accumulation_pixel_valid;
     int same_as_accumulation;
 
     status = SIXEL_FALSE;
@@ -3614,6 +3648,7 @@ sixel_encoder_bind_transparent_mask(
     accumulation_active = 0;
     alpha_covers = 0;
     frame_mask_covers = 0;
+    accumulation_pixel_valid = 0;
     same_as_accumulation = 0;
     if (dither == NULL) {
         return SIXEL_OK;
@@ -3658,7 +3693,9 @@ sixel_encoder_bind_transparent_mask(
         encoder->accumulation_width == view.width &&
         encoder->accumulation_height == view.height &&
         encoder->accumulation_pixels != NULL &&
-        encoder->accumulation_pixels_size >= rgb_size;
+        encoder->accumulation_pixels_size >= rgb_size &&
+        encoder->accumulation_valid_mask != NULL &&
+        encoder->accumulation_valid_mask_size >= pixel_count;
 
     if (!accumulation_active) {
         if (sixel_encoder_frame_get_transparent_mask_pixels(frame,
@@ -3696,15 +3733,18 @@ sixel_encoder_bind_transparent_mask(
             &transparency,
             &view,
             index);
+        accumulation_pixel_valid =
+            encoder->accumulation_valid_mask[index] != 0u ? 1 : 0;
         /*
          * The delta option is an early acceptance gate.  It avoids the
          * palette lookup when the retained RGB888 pixel is already close
          * enough for the caller's animation tolerance.
          */
-        same_as_accumulation = sixel_encoder_rgb888_delta_within(
-            current_rgb + index * 3u,
-            encoder->accumulation_pixels + index * 3u,
-            encoder->accumulation_delta);
+        same_as_accumulation = accumulation_pixel_valid != 0 &&
+            sixel_encoder_rgb888_delta_within(
+                current_rgb + index * 3u,
+                encoder->accumulation_pixels + index * 3u,
+                encoder->accumulation_delta);
         encoder->accumulation_mask[index] =
             (unsigned char)((frame_mask_covers != 0 ||
                              alpha_covers != 0 ||
@@ -3720,6 +3760,8 @@ sixel_encoder_bind_transparent_mask(
         dither,
         encoder->accumulation_pixels,
         encoder->accumulation_pixels_size,
+        encoder->accumulation_valid_mask,
+        encoder->accumulation_valid_mask_size,
         encoder->accumulation_width,
         encoder->accumulation_height,
         dither->keycolor);
@@ -3807,6 +3849,11 @@ sixel_encoder_update_accumulation_from_frame(
         encoder->accumulation_pixels_size == current_size;
 
     if (!old_buffer_matches) {
+        status = sixel_encoder_ensure_accumulation_valid_mask(encoder,
+                                                              pixel_count);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         if (encoded_rgb != NULL && encoded_rgb_size >= current_size) {
             for (index = 0u; index < pixel_count; ++index) {
                 keep_previous =
@@ -3824,6 +3871,20 @@ sixel_encoder_update_accumulation_from_frame(
                            encoded_rgb + index * 3u,
                            3u);
                 }
+                encoder->accumulation_valid_mask[index] =
+                    keep_previous == 0 ? 1u : 0u;
+            }
+        } else {
+            for (index = 0u; index < pixel_count; ++index) {
+                keep_previous =
+                    sixel_encoder_frame_mask_covers_pixel(&transparency,
+                                                          pixel_count,
+                                                          index) ||
+                    sixel_encoder_frame_alpha_covers_pixel(&transparency,
+                                                           &view,
+                                                           index);
+                encoder->accumulation_valid_mask[index] =
+                    keep_previous == 0 ? 1u : 0u;
             }
         }
         sixel_allocator_free(encoder->allocator,
@@ -3837,6 +3898,16 @@ sixel_encoder_update_accumulation_from_frame(
         current_rgb = NULL;
         status = SIXEL_OK;
         goto end;
+    }
+
+    if (encoder->accumulation_valid_mask == NULL ||
+            encoder->accumulation_valid_mask_size < pixel_count) {
+        status = sixel_encoder_ensure_accumulation_valid_mask(encoder,
+                                                              pixel_count);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        memset(encoder->accumulation_valid_mask, 1, pixel_count);
     }
 
     for (index = 0u; index < pixel_count; ++index) {
@@ -3867,6 +3938,7 @@ sixel_encoder_update_accumulation_from_frame(
             memcpy(encoder->accumulation_pixels + index * 3u,
                    update_rgb,
                    3u);
+            encoder->accumulation_valid_mask[index] = 1u;
         }
     }
     status = SIXEL_OK;
@@ -9402,6 +9474,8 @@ sixel_encoder_new(
     (*ppencoder)->transparent_policy_override = 0;
     (*ppencoder)->accumulation_pixels   = NULL;
     (*ppencoder)->accumulation_pixels_size = 0;
+    (*ppencoder)->accumulation_valid_mask = NULL;
+    (*ppencoder)->accumulation_valid_mask_size = 0;
     (*ppencoder)->accumulation_mask     = NULL;
     (*ppencoder)->accumulation_mask_size = 0;
     (*ppencoder)->accumulation_width    = 0;
@@ -9585,6 +9659,7 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
         encoder->clipboard_output_active = 0;
         encoder->clipboard_output_format[0] = '\0';
         sixel_allocator_free(allocator, encoder->accumulation_pixels);
+        sixel_allocator_free(allocator, encoder->accumulation_valid_mask);
         sixel_allocator_free(allocator, encoder->accumulation_mask);
         sixel_allocator_free(allocator, encoder->capture_pixels);
         sixel_allocator_free(allocator, encoder->capture_palette);
@@ -9688,9 +9763,13 @@ sixel_encoder_set_accumulation_buffer(
         sixel_allocator_free(encoder->allocator,
                              encoder->accumulation_pixels);
         sixel_allocator_free(encoder->allocator,
+                             encoder->accumulation_valid_mask);
+        sixel_allocator_free(encoder->allocator,
                              encoder->accumulation_mask);
         encoder->accumulation_pixels = NULL;
         encoder->accumulation_pixels_size = 0u;
+        encoder->accumulation_valid_mask = NULL;
+        encoder->accumulation_valid_mask_size = 0u;
         encoder->accumulation_mask = NULL;
         encoder->accumulation_mask_size = 0u;
         encoder->accumulation_width = 0;
@@ -9710,6 +9789,13 @@ sixel_encoder_set_accumulation_buffer(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    status = sixel_encoder_ensure_accumulation_valid_mask(
+        encoder,
+        rgb_size / 3u);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    memset(encoder->accumulation_valid_mask, 1, rgb_size / 3u);
 
     sixel_allocator_free(encoder->allocator, encoder->accumulation_pixels);
     encoder->accumulation_pixels = rgb;

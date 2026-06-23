@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 set +x
 
-input_image="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
+input_image="${TOP_SRCDIR}/tests/data/inputs/formats/gif-transparent-static.gif"
 esc="$(printf '\033')"
 
 default_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \

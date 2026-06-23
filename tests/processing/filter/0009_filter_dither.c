@@ -267,6 +267,8 @@ test_accumulation_buffer_beats_palette_candidate(void)
         accumulation_dither,
         accumulation,
         sizeof(accumulation),
+        NULL,
+        0U,
         1,
         1,
         0);

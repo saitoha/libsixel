@@ -955,6 +955,22 @@ steps.
                              rgb:rr/gg/bb
                              rgb:rrr/ggg/bbb
                              rgb:rrrr/gggg/bbbb
+-A TRANSPARENTPOLICY, --transparent-policy=TRANSPARENTPOLICY
+                           choose transparent output policy
+                             composite   -> composite alpha over
+                                            background color
+                             background  -> emit transparent pixels
+                                            with DCS P2=0 (default)
+                             keep        -> emit transparent pixels
+                                            with DCS P2=1 for terminals
+                                            that preserve the previous
+                                            image plane
+                             transparent -> alias for background
+-Z DELTA, --accumulation-delta=DELTA
+                           set RGB per-channel tolerance for
+                           transparent-policy=keep accumulation
+                           reuse. DELTA must be 0..255
+                           (default: 0).
 -P, --penetrate            [[deprecated]] penetrate GNU Screen
                            using DCS pass-through sequence
 -D, --pipe-mode            [[deprecated]] read source images from
@@ -1068,6 +1084,14 @@ SIXEL_LOADER_BACKGROUND_COLORSPACE
                            Accepts gamma (default) or linear.
                            Ignored when bgcolor comes from
                            SIXEL_LOADER_OSC11_BG_QUERY.
+SIXEL_TRANSPARENT_POLICY   control alpha normalization and
+                           transparent SIXEL P2 handling.
+                           composite bakes alpha into the
+                           background when available.
+                           background/transparent keep alpha==0
+                           as transparent and emit P2=0 (default).
+                           keep keeps alpha==0 as transparent and
+                           emits P2=1 for previous image-plane reuse.
 SIXEL_LOADER_ORIENTATION   default EXIF orientation handling for
                            libjpeg/libpng/libwebp loaders.
                            Accepts on/off (preferred) and 1/0 aliases.
@@ -1488,6 +1512,15 @@ SIXELAPI SIXELSTATUS
 sixel_encoder_set_cancel_flag(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ *cancel_flag);
+
+/* set previous image-plane buffer for transparent-policy=keep/P2=1 */
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_accumulation_buffer(
+    sixel_encoder_t     /* in */ *encoder,
+    unsigned char const /* in */ *pixels,
+    int                 /* in */ width,
+    int                 /* in */ height,
+    int                 /* in */ pixelformat);
 
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS

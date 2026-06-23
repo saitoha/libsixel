@@ -270,6 +270,8 @@ struct sixel_encoder {
     int transparent_policy_override;
     unsigned char *accumulation_pixels;
     size_t accumulation_pixels_size;
+    unsigned char *accumulation_valid_mask;
+    size_t accumulation_valid_mask_size;
     unsigned char *accumulation_mask;
     size_t accumulation_mask_size;
     int accumulation_width;

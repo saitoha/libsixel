@@ -1748,8 +1748,10 @@ sixel_encoder_set_cancel_callback(
 
 /*
  * Set the encoder accumulation buffer used by transparent-policy=keep
- * differential encoding.  The buffer is copied as RGB888.  Pass NULL for
- * PIXELS to clear the retained accumulation buffer.
+ * differential encoding.  This is for P2=1 terminals that preserve the
+ * previous image plane; normal background transparency should use the default
+ * transparent-policy=background/P2=0 behavior.  The buffer is copied as
+ * RGB888.  Pass NULL for PIXELS to clear the retained accumulation buffer.
  */
 SIXELAPI SIXELSTATUS
 sixel_encoder_set_accumulation_buffer(

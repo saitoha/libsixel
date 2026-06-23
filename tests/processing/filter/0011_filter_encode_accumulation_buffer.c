@@ -12,12 +12,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <6cells.h>
 #include <sixel.h>
 
 #define ACCUMULATION_WIDTH 18
 #define ACCUMULATION_HEIGHT 18
 #define ACCUMULATION_PIXELS (ACCUMULATION_WIDTH * ACCUMULATION_HEIGHT)
 #define ACCUMULATION_BYTES (ACCUMULATION_PIXELS * 3)
+#define ACCUMULATION_RGBA_BYTES (ACCUMULATION_PIXELS * 4)
 #define ACCUMULATION_OUTPUT_CAPACITY 32768
 
 typedef struct accumulation_payload {
@@ -107,6 +109,76 @@ accumulation_make_frame(sixel_allocator_t *allocator,
                               SIXEL_PIXELFORMAT_RGB888,
                               NULL,
                               (-1));
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    pixels = NULL;
+    sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_GAMMA);
+    *frame_out = frame;
+    frame = NULL;
+    status = SIXEL_OK;
+
+end:
+    sixel_allocator_free(allocator, pixels);
+    sixel_frame_unref(frame);
+    return status;
+}
+
+static SIXELSTATUS
+accumulation_make_rgba_frame(sixel_allocator_t *allocator,
+                             unsigned char const *source,
+                             sixel_frame_t **frame_out)
+{
+    SIXELSTATUS status;
+    sixel_frame_t *frame;
+    sixel_frame_interface_t *frame_if;
+    sixel_frame_transparency_t transparency;
+    unsigned char *pixels;
+
+    status = SIXEL_FALSE;
+    frame = NULL;
+    frame_if = NULL;
+    memset(&transparency, 0, sizeof(transparency));
+    pixels = NULL;
+    if (allocator == NULL || source == NULL || frame_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *frame_out = NULL;
+
+    status = sixel_frame_new(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    pixels = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        ACCUMULATION_RGBA_BYTES);
+    if (pixels == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    memcpy(pixels, source, ACCUMULATION_RGBA_BYTES);
+
+    status = sixel_frame_init(frame,
+                              pixels,
+                              ACCUMULATION_WIDTH,
+                              ACCUMULATION_HEIGHT,
+                              SIXEL_PIXELFORMAT_RGBA8888,
+                              NULL,
+                              (-1));
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    frame_if = sixel_frame_as_interface(frame);
+    if (frame_if == NULL || frame_if->vtbl == NULL ||
+        frame_if->vtbl->set_transparency == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    transparency.transparent = (-1);
+    transparency.alpha_zero_is_transparent = 1;
+    transparency.transparent_mask = NULL;
+    transparency.transparent_mask_size = 0u;
+    status = frame_if->vtbl->set_transparency(frame_if, &transparency);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -424,6 +496,120 @@ end:
     return status;
 }
 
+static SIXELSTATUS
+accumulation_hidden_alpha_seed_second_alpha(sixel_allocator_t *allocator,
+                                           unsigned char const *first,
+                                           unsigned char const *second,
+                                           unsigned char *alpha_out)
+{
+    SIXELSTATUS status;
+    sixel_encoder_t *encoder;
+    sixel_frame_t *frame;
+    sixel_output_t *output;
+    sixel_decode_options_t options;
+    sixel_decode_result_t result;
+    accumulation_payload_t payload;
+
+    status = SIXEL_FALSE;
+    encoder = NULL;
+    frame = NULL;
+    output = NULL;
+    memset(&options, 0, sizeof(options));
+    memset(&result, 0, sizeof(result));
+    memset(&payload, 0, sizeof(payload));
+    if (allocator == NULL || first == NULL || second == NULL ||
+        alpha_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *alpha_out = 0u;
+
+    status = sixel_encoder_new(&encoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_COLORS, "4");
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "none");
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_setopt(encoder,
+                                  SIXEL_OPTFLAG_TRANSPARENT_POLICY,
+                                  "keep");
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = accumulation_make_rgba_frame(allocator, first, &frame);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_output_new(&output,
+                              accumulation_write,
+                              &payload,
+                              allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_encode_frame(encoder, frame, output);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    sixel_output_unref(output);
+    output = NULL;
+    sixel_frame_unref(frame);
+    frame = NULL;
+    memset(&payload, 0, sizeof(payload));
+
+    status = accumulation_make_rgba_frame(allocator, second, &frame);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_output_new(&output,
+                              accumulation_write,
+                              &payload,
+                              allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_encode_frame(encoder, frame, output);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    options.preferred_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    status = sixel_decode_pixels(payload.bytes,
+                                  (size_t)payload.size,
+                                  &options,
+                                  &result,
+                                  allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (result.pixels == NULL || result.width <= 0 ||
+        result.height <= 0 || result.stride < 4) {
+        status = SIXEL_RUNTIME_ERROR;
+        goto end;
+    }
+    *alpha_out = result.pixels[3];
+    status = SIXEL_OK;
+
+end:
+    if (result.pixels != NULL) {
+        sixel_allocator_free(allocator, result.pixels);
+    }
+    if (output != NULL) {
+        sixel_output_unref(output);
+    }
+    sixel_frame_unref(frame);
+    if (encoder != NULL) {
+        sixel_encoder_unref(encoder);
+    }
+    return status;
+}
+
 int
 test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
 {
@@ -434,6 +620,9 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     unsigned char near_previous[ACCUMULATION_BYTES];
     unsigned char near_current[ACCUMULATION_BYTES];
     unsigned char near_next[ACCUMULATION_BYTES];
+    unsigned char hidden_first[ACCUMULATION_RGBA_BYTES];
+    unsigned char hidden_second[ACCUMULATION_RGBA_BYTES];
+    unsigned char hidden_second_alpha;
     int index;
     int changed_index;
     int full_size;
@@ -467,6 +656,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     delta_first_size = 0;
     delta_second_size = 0;
     delta_third_size = 0;
+    hidden_second_alpha = 0u;
     full_has_keep_header = 0;
     accumulation_has_keep_header = 0;
     auto_second_has_keep_header = 0;
@@ -489,6 +679,14 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
         near_next[index * 3 + 0] = 108u;
         near_next[index * 3 + 1] = 108u;
         near_next[index * 3 + 2] = 108u;
+        hidden_first[index * 4 + 0] = 100u;
+        hidden_first[index * 4 + 1] = 100u;
+        hidden_first[index * 4 + 2] = 100u;
+        hidden_first[index * 4 + 3] = 0u;
+        hidden_second[index * 4 + 0] = 100u;
+        hidden_second[index * 4 + 1] = 100u;
+        hidden_second[index * 4 + 2] = 100u;
+        hidden_second[index * 4 + 3] = 255u;
     }
     changed_index = (ACCUMULATION_HEIGHT / 2) * ACCUMULATION_WIDTH
         + (ACCUMULATION_WIDTH / 2);
@@ -612,6 +810,22 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
                 "(%d <= %d)\n",
                 delta_third_size,
                 delta_second_size);
+        goto end;
+    }
+    status = accumulation_hidden_alpha_seed_second_alpha(
+        allocator,
+        hidden_first,
+        hidden_second,
+        &hidden_second_alpha);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "hidden alpha seed encode failed: %04x\n",
+                status);
+        goto end;
+    }
+    if (hidden_second_alpha == 0u) {
+        fprintf(stderr,
+                "hidden transparent RGB was retained as displayed plane\n");
         goto end;
     }
 

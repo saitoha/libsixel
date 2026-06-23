@@ -709,7 +709,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "    choose transparent output policy\n"
         "      composite   -> composite alpha over background color\n"
         "      background  -> emit transparent pixels with DCS P2=0 (default)\n"
-        "      keep        -> emit transparent pixels with DCS P2=1\n"
+        "      keep        -> emit transparent pixels with DCS P2=1 for\n"
+        "                     terminals that preserve the previous\n"
+        "                     image plane\n"
         "      transparent -> alias for background\n"
     },
     {
@@ -1187,7 +1189,8 @@ static cli_env_help_t const g_env_help_table[] = {
         "composite bakes alpha into the background when available.\n"
         "background/transparent keep alpha==0 as transparent and emit P2=0\n"
         "(default).\n"
-        "keep keeps alpha==0 as transparent and emits P2=1."
+        "keep keeps alpha==0 as transparent and emits P2=1 for previous\n"
+        "image-plane reuse."
     },
     {
         "SIXEL_LOADER_ORIENTATION",
