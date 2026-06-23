@@ -24,12 +24,278 @@ typedef struct decoder_pixels_format_case {
 static unsigned char const g_output_formats_payload[] =
     "\033Pq\"1;1;2;1#1;2;100;0;0#1@@\033\\";
 
+static unsigned char const g_output_formats_alpha_payload[] =
+    "\033Pq\"1;1;2;1#1;2;100;0;0#1@\033\\";
+
+static unsigned char const g_output_formats_transparent_neighbor_payload[] =
+    "\033Pq\"1;1;2;1#0;2;80;0;0#1;2;100;0;0#1?@\033\\";
+
 static decoder_pixels_format_case_t const g_output_format_cases[] = {
     { SIXEL_PIXELFORMAT_XRGB8888, "XRGB8888", { 0xffU, 0xffU, 0x00U, 0x00U } },
     { SIXEL_PIXELFORMAT_RGBX8888, "RGBX8888", { 0xffU, 0x00U, 0x00U, 0xffU } },
     { SIXEL_PIXELFORMAT_XBGR8888, "XBGR8888", { 0xffU, 0x00U, 0x00U, 0xffU } },
     { SIXEL_PIXELFORMAT_BGRX8888, "BGRX8888", { 0x00U, 0x00U, 0xffU, 0xffU } }
 };
+
+static char const *const g_output_format_dequantize_cases[] = {
+    "k_undither",
+    "lso_undither:Vlight",
+    "lso_undither:Vfs"
+};
+
+static int
+decoder_pixels_check_dequantize(char const *dequantize,
+                                sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    sixel_decoder_t *decoder;
+    sixel_decode_options_t options;
+    sixel_decode_result_t result;
+    int ok;
+
+    decoder = NULL;
+    ok = 0;
+    memset(&options, 0, sizeof(options));
+    memset(&result, 0, sizeof(result));
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_decoder_setopt(decoder,
+                                  SIXEL_OPTFLAG_DEQUANTIZE,
+                                  dequantize);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s setopt failed: %04x\n", dequantize, status);
+        goto end;
+    }
+
+    options.preferred_pixelformat = SIXEL_PIXELFORMAT_BGRX8888;
+    status = sixel_decoder_decode_pixels(
+        decoder,
+        g_output_formats_payload,
+        sizeof(g_output_formats_payload) - 1U,
+        &options,
+        &result);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s decode_pixels failed: %04x\n",
+                dequantize,
+                status);
+        goto end;
+    }
+    if (result.width != 2 || result.height != 1 || result.stride != 8) {
+        fprintf(stderr, "%s dimensions are %dx%d stride %d\n",
+                dequantize,
+                result.width,
+                result.height,
+                result.stride);
+        goto end;
+    }
+    if (result.pixelformat != SIXEL_PIXELFORMAT_BGRX8888) {
+        fprintf(stderr, "%s returned pixelformat %d\n",
+                dequantize,
+                result.pixelformat);
+        goto end;
+    }
+    if (result.pixels == NULL ||
+            result.pixels[0] != 0x00U ||
+            result.pixels[1] != 0x00U ||
+            result.pixels[2] != 0xffU ||
+            result.pixels[3] != 0xffU) {
+        fprintf(stderr, "%s first pixel is not BGRX red\n", dequantize);
+        goto end;
+    }
+    if ((result.flags & SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE) == 0U) {
+        fprintf(stderr, "%s did not report opaque alpha\n", dequantize);
+        goto end;
+    }
+
+    ok = 1;
+
+end:
+    if (allocator != NULL && result.pixels != NULL) {
+        sixel_allocator_free(allocator, result.pixels);
+    }
+    if (decoder != NULL) {
+        sixel_decoder_unref(decoder);
+    }
+    return ok;
+}
+
+static int
+decoder_pixels_check_dequantize_alpha(char const *dequantize,
+                                      sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    sixel_decoder_t *decoder;
+    sixel_decode_options_t options;
+    sixel_decode_result_t result;
+    int ok;
+
+    decoder = NULL;
+    ok = 0;
+    memset(&options, 0, sizeof(options));
+    memset(&result, 0, sizeof(result));
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_decoder_setopt(decoder,
+                                  SIXEL_OPTFLAG_DEQUANTIZE,
+                                  dequantize);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s alpha setopt failed: %04x\n",
+                dequantize,
+                status);
+        goto end;
+    }
+
+    options.preferred_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    status = sixel_decoder_decode_pixels(
+        decoder,
+        g_output_formats_alpha_payload,
+        sizeof(g_output_formats_alpha_payload) - 1U,
+        &options,
+        &result);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s alpha decode_pixels failed: %04x\n",
+                dequantize,
+                status);
+        goto end;
+    }
+    if (result.width != 2 || result.height != 1 || result.stride != 8) {
+        fprintf(stderr, "%s alpha dimensions are %dx%d stride %d\n",
+                dequantize,
+                result.width,
+                result.height,
+                result.stride);
+        goto end;
+    }
+    if ((result.flags & SIXEL_DECODE_PIXELS_RESULT_ALPHA_OPAQUE) != 0U) {
+        fprintf(stderr,
+                "%s alpha decode incorrectly reported opaque"
+                " flags=%08x a0=%u a1=%u\n",
+                dequantize,
+                result.flags,
+                result.pixels == NULL ? 0U : (unsigned int)result.pixels[3],
+                result.pixels == NULL ? 0U : (unsigned int)result.pixels[7]);
+        goto end;
+    }
+    if (result.pixels == NULL ||
+            result.pixels[3] != 0xffU ||
+            result.pixels[7] != 0x00U) {
+        fprintf(stderr, "%s alpha decode did not preserve alpha mask\n",
+                dequantize);
+        goto end;
+    }
+
+    ok = 1;
+
+end:
+    if (allocator != NULL && result.pixels != NULL) {
+        sixel_allocator_free(allocator, result.pixels);
+    }
+    if (decoder != NULL) {
+        sixel_decoder_unref(decoder);
+    }
+    return ok;
+}
+
+static int
+decoder_pixels_check_dequantize_transparent_neighbor(
+    char const *dequantize,
+    sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    sixel_decoder_t *decoder;
+    sixel_decode_options_t options;
+    sixel_decode_result_t result;
+    int ok;
+
+    decoder = NULL;
+    ok = 0;
+    memset(&options, 0, sizeof(options));
+    memset(&result, 0, sizeof(result));
+
+    status = sixel_decoder_new(&decoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_decoder_setopt(decoder,
+                                  SIXEL_OPTFLAG_DEQUANTIZE,
+                                  dequantize);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s neighbor setopt failed: %04x\n",
+                dequantize,
+                status);
+        goto end;
+    }
+
+    options.preferred_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    status = sixel_decoder_decode_pixels(
+        decoder,
+        g_output_formats_transparent_neighbor_payload,
+        sizeof(g_output_formats_transparent_neighbor_payload) - 1U,
+        &options,
+        &result);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "%s neighbor decode_pixels failed: %04x\n",
+                dequantize,
+                status);
+        goto end;
+    }
+    if (result.width != 2 || result.height != 1 || result.stride != 8) {
+        fprintf(stderr, "%s neighbor dimensions are %dx%d stride %d\n",
+                dequantize,
+                result.width,
+                result.height,
+                result.stride);
+        goto end;
+    }
+    if (result.pixels == NULL ||
+            result.pixels[0] != 0x00U ||
+            result.pixels[1] != 0x00U ||
+            result.pixels[2] != 0x00U ||
+            result.pixels[3] != 0x00U ||
+            result.pixels[4] != 0xffU ||
+            result.pixels[5] != 0x00U ||
+            result.pixels[6] != 0x00U ||
+            result.pixels[7] != 0xffU) {
+        fprintf(stderr,
+                "%s transparent neighbor influenced dequantize"
+                " rgba=%u,%u,%u,%u %u,%u,%u,%u\n",
+                dequantize,
+                result.pixels == NULL ? 0U :
+                    (unsigned int)result.pixels[0],
+                result.pixels == NULL ? 0U :
+                    (unsigned int)result.pixels[1],
+                result.pixels == NULL ? 0U :
+                    (unsigned int)result.pixels[2],
+                result.pixels == NULL ? 0U :
+                    (unsigned int)result.pixels[3],
+                result.pixels == NULL ? 0U :
+                    (unsigned int)result.pixels[4],
+                result.pixels == NULL ? 0U :
+                    (unsigned int)result.pixels[5],
+                result.pixels == NULL ? 0U :
+                    (unsigned int)result.pixels[6],
+                result.pixels == NULL ? 0U :
+                    (unsigned int)result.pixels[7]);
+        goto end;
+    }
+
+    ok = 1;
+
+end:
+    if (allocator != NULL && result.pixels != NULL) {
+        sixel_allocator_free(allocator, result.pixels);
+    }
+    if (decoder != NULL) {
+        sixel_decoder_unref(decoder);
+    }
+    return ok;
+}
 
 int
 test_decoder_0008_decoder_pixels_output_formats(int argc, char **argv)
@@ -40,6 +306,7 @@ test_decoder_0008_decoder_pixels_output_formats(int argc, char **argv)
     sixel_decode_result_t result;
     size_t i;
     size_t cases;
+    size_t dequantize_cases;
     int ok;
 
     (void)argc;
@@ -48,6 +315,8 @@ test_decoder_0008_decoder_pixels_output_formats(int argc, char **argv)
     allocator = NULL;
     i = 0U;
     cases = sizeof(g_output_format_cases) / sizeof(g_output_format_cases[0]);
+    dequantize_cases = sizeof(g_output_format_dequantize_cases) /
+        sizeof(g_output_format_dequantize_cases[0]);
     ok = 0;
     memset(&options, 0, sizeof(options));
     memset(&result, 0, sizeof(result));
@@ -107,6 +376,23 @@ test_decoder_0008_decoder_pixels_output_formats(int argc, char **argv)
 
         sixel_allocator_free(allocator, result.pixels);
         result.pixels = NULL;
+    }
+    for (i = 0U; i < dequantize_cases; ++i) {
+        if (!decoder_pixels_check_dequantize(
+                g_output_format_dequantize_cases[i],
+                allocator)) {
+            goto end;
+        }
+        if (!decoder_pixels_check_dequantize_alpha(
+                g_output_format_dequantize_cases[i],
+                allocator)) {
+            goto end;
+        }
+        if (!decoder_pixels_check_dequantize_transparent_neighbor(
+                g_output_format_dequantize_cases[i],
+                allocator)) {
+            goto end;
+        }
     }
 
     ok = 1;

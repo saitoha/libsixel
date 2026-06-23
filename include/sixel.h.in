@@ -1812,6 +1812,23 @@ SIXELAPI SIXELSTATUS
 sixel_decoder_decode(
     sixel_decoder_t /* in */ *decoder);
 
+/*
+ * Decode in-memory SIXEL bytes with sixel_decoder_setopt() state and return
+ * packed pixels.  The returned pixel buffer is allocated by the decoder's
+ * allocator.
+ */
+#define SIXEL_HAVE_DECODER_DECODE_PIXELS 1
+
+SIXELAPI SIXELSTATUS
+sixel_decoder_decode_pixels(
+    sixel_decoder_t /* in */ *decoder,
+    unsigned char const /* in */ *data,
+    size_t              /* in */ size,
+    sixel_decode_options_t const
+                        /* in */ *options,
+    sixel_decode_result_t
+                        /* out */ *result);
+
 #ifdef __cplusplus
 }
 #endif

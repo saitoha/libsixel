@@ -89,6 +89,7 @@ typedef struct sixel_decoder_worker_context {
 
 typedef struct sixel_decoder_local_chunk {
     unsigned char *data;
+    unsigned char *paint_mask;
     int start_row;
     int rows;
     struct sixel_decoder_local_chunk *next;
@@ -100,6 +101,7 @@ typedef struct sixel_local_buffer {
     sixel_decoder_local_chunk_t *cursor;
     int width;
     int pixel_size;
+    int keep_paint_mask;
 } sixel_local_buffer_t;
 
 typedef struct sixel_decoder_worker_chain {
@@ -109,6 +111,7 @@ typedef struct sixel_decoder_worker_chain {
     int *copy_ready;
     int thread_count;
     unsigned char *global_buffer;
+    unsigned char *global_mask;
     int global_capacity;
     int pixel_size;
     int abort_requested;
@@ -386,13 +389,15 @@ sixel_decoder_parallel_store_ormode_span(unsigned char *dst,
 static void
 sixel_local_buffer_init(sixel_local_buffer_t *buffer,
                         int width,
-                        int pixel_size)
+                        int pixel_size,
+                        int keep_paint_mask)
 {
     buffer->head = NULL;
     buffer->tail = NULL;
     buffer->cursor = NULL;
     buffer->width = width;
     buffer->pixel_size = pixel_size;
+    buffer->keep_paint_mask = keep_paint_mask != 0 ? 1 : 0;
 }
 
 static void
@@ -405,6 +410,7 @@ sixel_local_buffer_dispose(sixel_local_buffer_t *buffer)
         sixel_decoder_local_chunk_t *tmp;
 
         free(cursor->data);
+        free(cursor->paint_mask);
         tmp = cursor->next;
         free(cursor);
         cursor = tmp;
@@ -438,6 +444,15 @@ sixel_local_buffer_append(sixel_local_buffer_t *buffer,
     if (chunk->data == NULL) {
         free(chunk);
         return NULL;
+    }
+    if (buffer->keep_paint_mask) {
+        bytes = (size_t)(rows * buffer->width);
+        chunk->paint_mask = (unsigned char *)calloc(bytes, 1);
+        if (chunk->paint_mask == NULL) {
+            free(chunk->data);
+            free(chunk);
+            return NULL;
+        }
     }
 
     chunk->start_row = start_row;
@@ -783,7 +798,10 @@ sixel_decoder_parallel_worker(void *arg)
         context->result = status;
         return status;
     }
-    sixel_local_buffer_init(&local_buffer, width, pixel_size);
+    sixel_local_buffer_init(&local_buffer,
+                            width,
+                            pixel_size,
+                            chain->global_mask != NULL);
     if (context->payload_len <= 0) {
         context->result = status;
         return status;
@@ -1020,10 +1038,22 @@ sixel_decoder_parallel_worker(void *arg)
                         if (span_max_index > max_color_index) {
                             max_color_index = span_max_index;
                         }
+                        if (chunk_cursor->paint_mask != NULL) {
+                            memset(chunk_cursor->paint_mask +
+                                   (size_t)row_base,
+                                   0xff,
+                                   (size_t)effective_repeat);
+                        }
                     } else if (pixel_size == 1 && effective_repeat > 3) {
                         memset(chunk_cursor->data + (size_t)row_base,
                                color_index,
                                effective_repeat);
+                        if (chunk_cursor->paint_mask != NULL) {
+                            memset(chunk_cursor->paint_mask +
+                                   (size_t)row_base,
+                                   0xff,
+                                   (size_t)effective_repeat);
+                        }
                         if (color_index > max_color_index) {
                             max_color_index = color_index;
                         }
@@ -1036,6 +1066,10 @@ sixel_decoder_parallel_worker(void *arg)
                                 depth,
                                 color_index,
                                 context->palette);
+                            if (chunk_cursor->paint_mask != NULL) {
+                                chunk_cursor->paint_mask[row_base + r] =
+                                    0xffu;
+                            }
                         }
                         if (pixel_size == 1 &&
                                 color_index > max_color_index) {
@@ -1305,6 +1339,15 @@ sixel_decoder_parallel_worker(void *arg)
                 memcpy(chain->global_buffer + chunk_offset,
                        chunk_cursor->data,
                        chunk_bytes);
+                if (chain->global_mask != NULL &&
+                        chunk_cursor->paint_mask != NULL) {
+                    chunk_bytes = (size_t)(rows * width);
+                    chunk_offset = (size_t)(row_offset +
+                        chunk_cursor->start_row) * (size_t)width;
+                    memcpy(chain->global_mask + chunk_offset,
+                           chunk_cursor->paint_mask,
+                           chunk_bytes);
+                }
             }
             chunk_cursor = chunk_cursor->next;
         }
@@ -1742,6 +1785,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
     } else {
         chain.global_buffer = (unsigned char *)image->pixels.p;
     }
+    chain.global_mask = image->paint_mask;
     chain.pixel_size = pixel_size;
     chain.copy_offsets = copy_offsets;
     chain.copy_ready = copy_ready;

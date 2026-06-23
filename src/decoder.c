@@ -549,12 +549,14 @@ typedef struct sixel_similarity {
 
 typedef struct sixel_kundither_filter_context {
     unsigned char const *indexed_pixels;
+    unsigned char const *paint_mask;
     int width;
     int height;
     unsigned char const *palette;
     int ncolors;
     sixel_similarity_t *similarity;
-    unsigned char *rgb;
+    unsigned char *pixels;
+    int pixel_size;
     int y_start;
     int y_end;
     int const (*neighbor_offsets)[4];
@@ -958,6 +960,7 @@ static void
 sixel_similarity_prepare_image_order_offsets(
     sixel_similarity_t *similarity,
     unsigned char const *indexed_pixels,
+    unsigned char const *paint_mask,
     int width,
     int height,
     int ncolors,
@@ -996,6 +999,10 @@ sixel_similarity_prepare_image_order_offsets(
     target_pairs = ((size_t)ncolors * (size_t)(ncolors - 1)) / 2u;
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
+            if (paint_mask != NULL &&
+                    paint_mask[y * width + x] == 0U) {
+                continue;
+            }
             palette_index = indexed_pixels[y * width + x];
             if (palette_index < 0 || palette_index >= ncolors) {
                 palette_index = 0;
@@ -1008,6 +1015,10 @@ sixel_similarity_prepare_image_order_offsets(
                 denominator = neighbor_offsets[neighbor][3];
 
                 if (nx < 0 || nx >= width || ny < 0 || ny >= height) {
+                    continue;
+                }
+                if (paint_mask != NULL &&
+                        paint_mask[ny * width + nx] == 0U) {
                     continue;
                 }
 
@@ -1156,6 +1167,92 @@ sixel_prewitt_value(const int *gray, int width, int height, int x, int y)
     return (unsigned short)magnitude;
 }
 
+static int
+sixel_get_gray_masked(const int *gray,
+                      unsigned char const *paint_mask,
+                      int width,
+                      int height,
+                      int center_x,
+                      int center_y,
+                      int x,
+                      int y)
+{
+    int cx;
+    int cy;
+    int center;
+
+    cx = sixel_clamp(x, 0, width - 1);
+    cy = sixel_clamp(y, 0, height - 1);
+    center = center_y * width + center_x;
+    if (paint_mask != NULL && paint_mask[cy * width + cx] == 0U) {
+        return gray[center];
+    }
+    return gray[cy * width + cx];
+}
+
+static unsigned short
+sixel_prewitt_value_masked(const int *gray,
+                           unsigned char const *paint_mask,
+                           int width,
+                           int height,
+                           int x,
+                           int y)
+{
+    int top_prev;
+    int top_curr;
+    int top_next;
+    int mid_prev;
+    int mid_next;
+    int bot_prev;
+    int bot_curr;
+    int bot_next;
+    long gx;
+    long gy;
+    unsigned long long ux;
+    unsigned long long uy;
+    unsigned long long magnitude;
+
+    top_prev = sixel_get_gray_masked(gray, paint_mask, width, height,
+                                     x, y, x - 1, y - 1);
+    top_curr = sixel_get_gray_masked(gray, paint_mask, width, height,
+                                     x, y, x, y - 1);
+    top_next = sixel_get_gray_masked(gray, paint_mask, width, height,
+                                     x, y, x + 1, y - 1);
+    mid_prev = sixel_get_gray_masked(gray, paint_mask, width, height,
+                                     x, y, x - 1, y);
+    mid_next = sixel_get_gray_masked(gray, paint_mask, width, height,
+                                     x, y, x + 1, y);
+    bot_prev = sixel_get_gray_masked(gray, paint_mask, width, height,
+                                     x, y, x - 1, y + 1);
+    bot_curr = sixel_get_gray_masked(gray, paint_mask, width, height,
+                                     x, y, x, y + 1);
+    bot_next = sixel_get_gray_masked(gray, paint_mask, width, height,
+                                     x, y, x + 1, y + 1);
+    gx = (long)top_next - (long)top_prev +
+         (long)mid_next - (long)mid_prev +
+         (long)bot_next - (long)bot_prev;
+    gy = (long)bot_prev + (long)bot_curr + (long)bot_next -
+         (long)top_prev - (long)top_curr - (long)top_next;
+
+    if (gx < 0L) {
+        ux = (unsigned long long)(-gx);
+    } else {
+        ux = (unsigned long long)gx;
+    }
+    if (gy < 0L) {
+        uy = (unsigned long long)(-gy);
+    } else {
+        uy = (unsigned long long)gy;
+    }
+
+    magnitude = ux * ux + uy * uy;
+    magnitude /= 256ULL;
+    if (magnitude > 65535ULL) {
+        magnitude = 65535ULL;
+    }
+    return (unsigned short)magnitude;
+}
+
 static unsigned short
 sixel_scale_threshold(unsigned short base, int percent)
 {
@@ -1182,12 +1279,14 @@ sixel_scale_threshold(unsigned short base, int percent)
 static inline void
 sixel_kundither_filter_noedge_range_offsets(
     unsigned char const *indexed_pixels,
+    unsigned char const *paint_mask,
     int width,
     int height,
     unsigned char const *palette,
     int ncolors,
     sixel_similarity_t *similarity,
-    unsigned char *rgb,
+    unsigned char *pixels,
+    int pixel_size,
     int y_start,
     int y_end,
     int const (*neighbor_offsets)[4],
@@ -1195,6 +1294,7 @@ sixel_kundither_filter_noedge_range_offsets(
 {
     const unsigned char *color;
     size_t out_index;
+    size_t pixel_pos;
     int palette_index;
     unsigned int total_weight;
     unsigned int accum_r;
@@ -1221,7 +1321,19 @@ sixel_kundither_filter_noedge_range_offsets(
     }
     for (y = y_start; y < y_end; ++y) {
         for (x = 0; x < width; ++x) {
-            palette_index = indexed_pixels[y * width + x];
+            pixel_pos = (size_t)y * (size_t)width + (size_t)x;
+            out_index = pixel_pos * (size_t)pixel_size;
+            if (paint_mask != NULL && paint_mask[pixel_pos] == 0U) {
+                pixels[out_index + 0U] = 0U;
+                pixels[out_index + 1U] = 0U;
+                pixels[out_index + 2U] = 0U;
+                if (pixel_size == 4) {
+                    pixels[out_index + 3U] = 0U;
+                }
+                continue;
+            }
+
+            palette_index = indexed_pixels[pixel_pos];
             if (palette_index < 0 || palette_index >= ncolors) {
                 palette_index = 0;
             }
@@ -1242,7 +1354,12 @@ sixel_kundither_filter_noedge_range_offsets(
                     continue;
                 }
 
-                neighbor_index = indexed_pixels[ny * width + nx];
+                pixel_pos = (size_t)ny * (size_t)width + (size_t)nx;
+                if (paint_mask != NULL && paint_mask[pixel_pos] == 0U) {
+                    continue;
+                }
+
+                neighbor_index = indexed_pixels[pixel_pos];
                 if (neighbor_index < 0 || neighbor_index >= ncolors) {
                     continue;
                 }
@@ -1264,10 +1381,17 @@ sixel_kundither_filter_noedge_range_offsets(
                 total_weight += weight;
             }
 
-            out_index = (size_t)(y * width + x) * 3U;
-            rgb[out_index + 0] = (unsigned char)(accum_r / total_weight);
-            rgb[out_index + 1] = (unsigned char)(accum_g / total_weight);
-            rgb[out_index + 2] = (unsigned char)(accum_b / total_weight);
+            out_index = ((size_t)y * (size_t)width + (size_t)x) *
+                (size_t)pixel_size;
+            pixels[out_index + 0U] =
+                (unsigned char)(accum_r / total_weight);
+            pixels[out_index + 1U] =
+                (unsigned char)(accum_g / total_weight);
+            pixels[out_index + 2U] =
+                (unsigned char)(accum_b / total_weight);
+            if (pixel_size == 4) {
+                pixels[out_index + 3U] = 0xffU;
+            }
         }
     }
 }
@@ -1285,12 +1409,14 @@ sixel_kundither_filter_noedge_worker(void *arg)
 
     sixel_kundither_filter_noedge_range_offsets(
         context->indexed_pixels,
+        context->paint_mask,
         context->width,
         context->height,
         context->palette,
         context->ncolors,
         context->similarity,
-        context->rgb,
+        context->pixels,
+        context->pixel_size,
         context->y_start,
         context->y_end,
         context->neighbor_offsets,
@@ -1302,12 +1428,14 @@ sixel_kundither_filter_noedge_worker(void *arg)
 static SIXELSTATUS
 sixel_kundither_filter_noedge_parallel_offsets(
     unsigned char const *indexed_pixels,
+    unsigned char const *paint_mask,
     int width,
     int height,
     unsigned char const *palette,
     int ncolors,
     sixel_similarity_t *similarity,
-    unsigned char *rgb,
+    unsigned char *pixels,
+    int pixel_size,
     int threads,
     int const (*neighbor_offsets)[4],
     int neighbor_count)
@@ -1350,6 +1478,7 @@ sixel_kundither_filter_noedge_parallel_offsets(
     sixel_similarity_prepare_image_order_offsets(
         similarity,
         indexed_pixels,
+        paint_mask,
         width,
         height,
         ncolors,
@@ -1379,12 +1508,14 @@ sixel_kundither_filter_noedge_parallel_offsets(
         }
 
         contexts[i].indexed_pixels = indexed_pixels;
+        contexts[i].paint_mask = paint_mask;
         contexts[i].width = width;
         contexts[i].height = height;
         contexts[i].palette = palette;
         contexts[i].ncolors = ncolors;
         contexts[i].similarity = similarity;
-        contexts[i].rgb = rgb;
+        contexts[i].pixels = pixels;
+        contexts[i].pixel_size = pixel_size;
         contexts[i].y_start = y_start;
         contexts[i].y_end = y_end;
         contexts[i].neighbor_offsets = neighbor_offsets;
@@ -1427,12 +1558,14 @@ sixel_kundither_filter_noedge_parallel(unsigned char const *indexed_pixels,
 {
     return sixel_kundither_filter_noedge_parallel_offsets(
         indexed_pixels,
+        NULL,
         width,
         height,
         palette,
         ncolors,
         similarity,
         rgb,
+        3,
         threads,
         g_kundither_neighbor_offsets,
         8);
@@ -1440,18 +1573,21 @@ sixel_kundither_filter_noedge_parallel(unsigned char const *indexed_pixels,
 #endif  /* SIXEL_ENABLE_THREADS */
 
 static SIXELSTATUS
-sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
-                                   int width,
-                                   int height,
-                                   unsigned char *palette,
-                                   int ncolors,
-                                   int similarity_bias,
-                                   int edge_strength,
-                                   sixel_allocator_t *allocator,
-                                   unsigned char **output)
+sixel_dequantize_k_undither_scalar_common(
+    unsigned char *indexed_pixels,
+    unsigned char const *paint_mask,
+    int width,
+    int height,
+    unsigned char *palette,
+    int ncolors,
+    int similarity_bias,
+    int edge_strength,
+    int pixel_size,
+    sixel_allocator_t *allocator,
+    unsigned char **output)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    unsigned char *rgb = NULL;
+    unsigned char *pixels = NULL;
     int *gray = NULL;
     unsigned short *prewitt = NULL;
     sixel_similarity_t similarity;
@@ -1467,6 +1603,7 @@ sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
     };
     const unsigned char *color;
     size_t out_index;
+    size_t pixel_pos;
     int palette_index;
     unsigned int center_weight;
     unsigned int total_weight = 0;
@@ -1483,7 +1620,8 @@ sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
     const unsigned char *neighbor_color;
     int neighbor_index;
 
-    if (width <= 0 || height <= 0 || palette == NULL || ncolors <= 0) {
+    if (width <= 0 || height <= 0 || palette == NULL || ncolors <= 0 ||
+            pixel_size < 3 || pixel_size > 4 || output == NULL) {
         return SIXEL_BAD_INPUT;
     }
 
@@ -1492,6 +1630,9 @@ sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
     }
 
     num_pixels = (size_t)width * (size_t)height;
+    if (num_pixels > ((size_t)-1 / (size_t)pixel_size)) {
+        return SIXEL_BAD_ALLOCATION;
+    }
 
     memset(&similarity, 0, sizeof(sixel_similarity_t));
 
@@ -1505,10 +1646,10 @@ sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
      * Build RGB and luminance buffers so we can reuse the similarity cache
      * and gradient analysis across the reconstructed image.
      */
-    rgb = (unsigned char *)sixel_allocator_malloc(
+    pixels = (unsigned char *)sixel_allocator_malloc(
         allocator,
-        num_pixels * 3);
-    if (rgb == NULL) {
+        num_pixels * (size_t)pixel_size);
+    if (pixels == NULL) {
         sixel_helper_set_additional_message(
             "sixel_dequantize_k_undither: "
             "sixel_allocator_malloc() failed.");
@@ -1554,21 +1695,38 @@ sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
 
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
-            palette_index = indexed_pixels[y * width + x];
+            pixel_pos = (size_t)y * (size_t)width + (size_t)x;
+            out_index = pixel_pos * (size_t)pixel_size;
+            if (paint_mask != NULL && paint_mask[pixel_pos] == 0U) {
+                pixels[out_index + 0U] = 0U;
+                pixels[out_index + 1U] = 0U;
+                pixels[out_index + 2U] = 0U;
+                if (pixel_size == 4) {
+                    pixels[out_index + 3U] = 0U;
+                }
+                if (edge_strength > 0) {
+                    gray[pixel_pos] = 0;
+                }
+                continue;
+            }
+
+            palette_index = indexed_pixels[pixel_pos];
             if (palette_index < 0 || palette_index >= ncolors) {
                 palette_index = 0;
             }
 
             color = palette + palette_index * 3;
-            out_index = (size_t)(y * width + x) * 3;
-            rgb[out_index + 0] = color[0];
-            rgb[out_index + 1] = color[1];
-            rgb[out_index + 2] = color[2];
+            pixels[out_index + 0U] = color[0];
+            pixels[out_index + 1U] = color[1];
+            pixels[out_index + 2U] = color[2];
+            if (pixel_size == 4) {
+                pixels[out_index + 3U] = 0xffU;
+            }
 
             if (edge_strength > 0) {
-                gray[y * width + x] = (int)color[0]
-                                    + (int)color[1] * 2
-                                    + (int)color[2];
+                gray[pixel_pos] = (int)color[0]
+                                 + (int)color[1] * 2
+                                 + (int)color[2];
             }
         }
     }
@@ -1582,26 +1740,44 @@ sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
          */
         for (y = 0; y < height; ++y) {
             for (x = 0; x < width; ++x) {
-                prewitt[y * width + x] = sixel_prewitt_value(
-                    gray,
-                    width,
-                    height,
-                    x,
-                    y);
+                pixel_pos = (size_t)y * (size_t)width + (size_t)x;
+                if (paint_mask != NULL && paint_mask[pixel_pos] == 0U) {
+                    prewitt[pixel_pos] = 0U;
+                } else if (paint_mask != NULL) {
+                    prewitt[pixel_pos] = sixel_prewitt_value_masked(
+                        gray,
+                        paint_mask,
+                        width,
+                        height,
+                        x,
+                        y);
+                } else {
+                    prewitt[pixel_pos] = sixel_prewitt_value(
+                        gray,
+                        width,
+                        height,
+                        x,
+                        y);
+                }
             }
         }
     }
 
     for (y = 0; y < height; ++y) {
         for (x = 0; x < width; ++x) {
-            palette_index = indexed_pixels[y * width + x];
+            pixel_pos = (size_t)y * (size_t)width + (size_t)x;
+            out_index = pixel_pos * (size_t)pixel_size;
+            if (paint_mask != NULL && paint_mask[pixel_pos] == 0U) {
+                continue;
+            }
+
+            palette_index = indexed_pixels[pixel_pos];
             if (palette_index < 0 || palette_index >= ncolors) {
                 palette_index = 0;
             }
 
-            out_index = (size_t)(y * width + x) * 3;
             if (edge_strength > 0) {
-                gradient = prewitt[y * width + x];
+                gradient = prewitt[pixel_pos];
                 if (gradient > strong_threshold) {
                     continue;
                 }
@@ -1615,9 +1791,12 @@ sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
                 center_weight = 8U;
             }
 
-            accum_r = (unsigned int)rgb[out_index + 0] * center_weight;
-            accum_g = (unsigned int)rgb[out_index + 1] * center_weight;
-            accum_b = (unsigned int)rgb[out_index + 2] * center_weight;
+            accum_r = (unsigned int)pixels[out_index + 0U] *
+                center_weight;
+            accum_g = (unsigned int)pixels[out_index + 1U] *
+                center_weight;
+            accum_b = (unsigned int)pixels[out_index + 2U] *
+                center_weight;
             total_weight = center_weight;
 
             /*
@@ -1635,7 +1814,12 @@ sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
                     continue;
                 }
 
-                neighbor_index = indexed_pixels[ny * width + nx];
+                pixel_pos = (size_t)ny * (size_t)width + (size_t)nx;
+                if (paint_mask != NULL && paint_mask[pixel_pos] == 0U) {
+                    continue;
+                }
+
+                neighbor_index = indexed_pixels[pixel_pos];
                 if (neighbor_index < 0 || neighbor_index >= ncolors) {
                     continue;
                 }
@@ -1660,24 +1844,54 @@ sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
             }
 
             if (total_weight > 0U) {
-                rgb[out_index + 0] = (unsigned char)(accum_r / total_weight);
-                rgb[out_index + 1] = (unsigned char)(accum_g / total_weight);
-                rgb[out_index + 2] = (unsigned char)(accum_b / total_weight);
+                out_index = ((size_t)y * (size_t)width + (size_t)x) *
+                    (size_t)pixel_size;
+                pixels[out_index + 0U] =
+                    (unsigned char)(accum_r / total_weight);
+                pixels[out_index + 1U] =
+                    (unsigned char)(accum_g / total_weight);
+                pixels[out_index + 2U] =
+                    (unsigned char)(accum_b / total_weight);
             }
         }
     }
 
 
-    *output = rgb;
-    rgb = NULL;
+    *output = pixels;
+    pixels = NULL;
     status = SIXEL_OK;
 
 end:
     sixel_similarity_destroy(&similarity, allocator);
-    sixel_allocator_free(allocator, rgb);
+    sixel_allocator_free(allocator, pixels);
     sixel_allocator_free(allocator, gray);
     sixel_allocator_free(allocator, prewitt);
     return status;
+}
+
+static SIXELSTATUS
+sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
+                                   int width,
+                                   int height,
+                                   unsigned char *palette,
+                                   int ncolors,
+                                   int similarity_bias,
+                                   int edge_strength,
+                                   sixel_allocator_t *allocator,
+                                   unsigned char **output)
+{
+    return sixel_dequantize_k_undither_scalar_common(
+        indexed_pixels,
+        NULL,
+        width,
+        height,
+        palette,
+        ncolors,
+        similarity_bias,
+        edge_strength,
+        3,
+        allocator,
+        output);
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
@@ -1773,6 +1987,103 @@ sixel_dequantize_k_undither(unsigned char *indexed_pixels,
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_k_undither_rgba(unsigned char *indexed_pixels,
+                                 unsigned char const *paint_mask,
+                                 int width,
+                                 int height,
+                                 unsigned char *palette,
+                                 int ncolors,
+                                 int similarity_bias,
+                                 int edge_strength,
+                                 sixel_allocator_t *allocator,
+                                 unsigned char **output)
+{
+#if SIXEL_ENABLE_THREADS
+    SIXELSTATUS status;
+    sixel_similarity_t similarity;
+    unsigned char *rgba;
+    size_t num_pixels;
+    SIXELSTATUS parallel_status;
+    int parallel_threads;
+
+    memset(&similarity, 0, sizeof(sixel_similarity_t));
+    rgba = NULL;
+    parallel_threads = 1;
+
+    if (edge_strength <= 0 &&
+        width > 0 &&
+        height > 0 &&
+        palette != NULL &&
+        ncolors > 0 &&
+        output != NULL &&
+        (size_t)width <= ((size_t)-1 / (size_t)height)) {
+        num_pixels = (size_t)width * (size_t)height;
+        parallel_threads = sixel_threads_resolve();
+        if (parallel_threads >= 2 && num_pixels >= 65536U) {
+            if (num_pixels > ((size_t)-1 / 4u)) {
+                return SIXEL_BAD_ALLOCATION;
+            }
+            rgba = (unsigned char *)sixel_allocator_malloc(
+                allocator,
+                num_pixels * 4u);
+            if (rgba == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_dequantize_k_undither_rgba: "
+                    "sixel_allocator_malloc() failed.");
+                return SIXEL_BAD_ALLOCATION;
+            }
+
+            status = sixel_similarity_init(
+                &similarity,
+                palette,
+                ncolors,
+                similarity_bias,
+                allocator);
+            if (SIXEL_FAILED(status)) {
+                sixel_allocator_free(allocator, rgba);
+                return status;
+            }
+
+            parallel_status = sixel_kundither_filter_noedge_parallel_offsets(
+                indexed_pixels,
+                paint_mask,
+                width,
+                height,
+                palette,
+                ncolors,
+                &similarity,
+                rgba,
+                4,
+                parallel_threads,
+                g_kundither_neighbor_offsets,
+                8);
+            if (parallel_status == SIXEL_OK) {
+                sixel_similarity_destroy(&similarity, allocator);
+                *output = rgba;
+                return SIXEL_OK;
+            }
+
+            sixel_similarity_destroy(&similarity, allocator);
+            sixel_allocator_free(allocator, rgba);
+        }
+    }
+#endif
+
+    return sixel_dequantize_k_undither_scalar_common(
+        indexed_pixels,
+        paint_mask,
+        width,
+        height,
+        palette,
+        ncolors,
+        similarity_bias,
+        edge_strength,
+        4,
+        allocator,
+        output);
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dequantize_k_undither_fast4_rows(
     unsigned char const *indexed_pixels,
     int width,
@@ -1813,18 +2124,121 @@ sixel_dequantize_k_undither_fast4_rows(
 
     sixel_kundither_filter_noedge_range_offsets(
         indexed_pixels,
+        NULL,
         width,
         height,
         palette,
         ncolors,
         &similarity,
         rgb,
+        3,
         y_start,
         y_end,
         g_kundither_fast4_neighbor_offsets,
         4);
 
     sixel_similarity_destroy(&similarity, allocator);
+    return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_k_undither_fast4_rgba(unsigned char *indexed_pixels,
+                                       unsigned char const *paint_mask,
+                                       int width,
+                                       int height,
+                                       unsigned char *palette,
+                                       int ncolors,
+                                       int similarity_bias,
+                                       sixel_allocator_t *allocator,
+                                       unsigned char **output)
+{
+    SIXELSTATUS status;
+    sixel_similarity_t similarity;
+    unsigned char *rgba;
+    size_t num_pixels;
+#if SIXEL_ENABLE_THREADS
+    SIXELSTATUS parallel_status;
+    int parallel_threads;
+#endif
+
+    memset(&similarity, 0, sizeof(similarity));
+    rgba = NULL;
+    num_pixels = 0u;
+
+    if (indexed_pixels == NULL || width <= 0 || height <= 0 ||
+            palette == NULL || ncolors <= 0 || output == NULL) {
+        return SIXEL_BAD_INPUT;
+    }
+    if ((size_t)width > ((size_t)-1 / (size_t)height)) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    num_pixels = (size_t)width * (size_t)height;
+    if (num_pixels > ((size_t)-1 / 4u)) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    rgba = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                   num_pixels * 4u);
+    if (rgba == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dequantize_k_undither_fast4_rgba: "
+            "sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    status = sixel_similarity_init(
+        &similarity,
+        palette,
+        ncolors,
+        similarity_bias,
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, rgba);
+        return status;
+    }
+
+#if SIXEL_ENABLE_THREADS
+    parallel_threads = sixel_threads_resolve();
+    if (parallel_threads >= 2 && num_pixels >= 65536U) {
+        parallel_status = sixel_kundither_filter_noedge_parallel_offsets(
+            indexed_pixels,
+            paint_mask,
+            width,
+            height,
+            palette,
+            ncolors,
+            &similarity,
+            rgba,
+            4,
+            parallel_threads,
+            g_kundither_fast4_neighbor_offsets,
+            4);
+        if (parallel_status == SIXEL_OK) {
+            sixel_similarity_destroy(&similarity, allocator);
+            *output = rgba;
+            return SIXEL_OK;
+        }
+    }
+#endif
+
+    sixel_kundither_filter_noedge_range_offsets(
+        indexed_pixels,
+        paint_mask,
+        width,
+        height,
+        palette,
+        ncolors,
+        &similarity,
+        rgba,
+        4,
+        0,
+        height,
+        g_kundither_fast4_neighbor_offsets,
+        4);
+
+    sixel_similarity_destroy(&similarity, allocator);
+    *output = rgba;
     return SIXEL_OK;
 }
 
@@ -1895,12 +2309,14 @@ sixel_dequantize_k_undither_fast4(unsigned char *indexed_pixels,
     if (parallel_threads >= 2 && num_pixels >= 65536U) {
         parallel_status = sixel_kundither_filter_noedge_parallel_offsets(
             indexed_pixels,
+            NULL,
             width,
             height,
             palette,
             ncolors,
             &similarity,
             rgb,
+            3,
             parallel_threads,
             g_kundither_fast4_neighbor_offsets,
             4);
@@ -1914,12 +2330,14 @@ sixel_dequantize_k_undither_fast4(unsigned char *indexed_pixels,
 
     sixel_kundither_filter_noedge_range_offsets(
         indexed_pixels,
+        NULL,
         width,
         height,
         palette,
         ncolors,
         &similarity,
         rgb,
+        3,
         0,
         height,
         g_kundither_fast4_neighbor_offsets,
@@ -2182,9 +2600,8 @@ sixel_decoder_promote_rgb888_to_rgba8888(unsigned char **out_pixels,
     }
 
     /*
-     * k_undither is an RGB-domain neighbour filter.  Its current cache is
-     * keyed by palette index, so keep that palette-aware pass and only add
-     * opaque alpha here to preserve --direct's RGBA output contract.
+     * Command-line --direct output has no separate alpha mask in the
+     * dequantizer path, so keep the historical opaque PNG contract here.
      */
     for (pixel_index = 0u; pixel_index < num_pixels; ++pixel_index) {
         rgb_index = pixel_index * 3u;
@@ -2197,6 +2614,277 @@ sixel_decoder_promote_rgb888_to_rgba8888(unsigned char **out_pixels,
 
     *out_pixels = rgba_pixels;
     return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_decoder_decode_pixels_dequant_try(
+    sixel_decoder_t *decoder,
+    unsigned char *buffer,
+    size_t size,
+    unsigned int decode_flags,
+    unsigned char **out_pixels,
+    int *out_width,
+    int *out_height,
+    unsigned int *result_flags)
+{
+    SIXELSTATUS status;
+    unsigned char *indexed_pixels;
+    unsigned char *paint_mask;
+    unsigned char *palette;
+    unsigned char *rgba_pixels;
+    int ncolors;
+
+    status = SIXEL_FALSE;
+    indexed_pixels = NULL;
+    paint_mask = NULL;
+    palette = NULL;
+    rgba_pixels = NULL;
+    ncolors = 0;
+
+    if (out_pixels == NULL || out_width == NULL || out_height == NULL ||
+            result_flags == NULL || buffer == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *out_pixels = NULL;
+    *out_width = 0;
+    *out_height = 0;
+    *result_flags = 0U;
+    if (size == 0 || size > (size_t)(INT_MAX - 2)) {
+        sixel_helper_set_additional_message(
+            "sixel_decoder_decode_pixels: invalid input size.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    if (decoder->dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
+        /* handled below after the one-pass indexed decode */
+    } else if (decoder->dequantize_method != SIXEL_DEQUANTIZE_K_UNDITHER) {
+        sixel_helper_set_additional_message(
+            "sixel_decoder_decode_pixels: invalid dequantize method.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_decode_raw_with_options_mask(buffer,
+                                                (int)size,
+                                                decode_flags,
+                                                &indexed_pixels,
+                                                &paint_mask,
+                                                out_width,
+                                                out_height,
+                                                &palette,
+                                                &ncolors,
+                                                result_flags,
+                                                decoder->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    if (decoder->dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
+        status = sixel_dequantize_k_undither_fast4_rgba(
+            indexed_pixels,
+            paint_mask,
+            *out_width,
+            *out_height,
+            palette,
+            ncolors,
+            decoder->dequantize_similarity_bias,
+            decoder->allocator,
+            &rgba_pixels);
+    } else {
+        status = sixel_dequantize_k_undither_rgba(
+            indexed_pixels,
+            paint_mask,
+            *out_width,
+            *out_height,
+            palette,
+            ncolors,
+            decoder->dequantize_similarity_bias,
+            decoder->dequantize_edge_strength,
+            decoder->allocator,
+            &rgba_pixels);
+    }
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    *out_pixels = rgba_pixels;
+    rgba_pixels = NULL;
+    status = SIXEL_OK;
+
+end:
+    sixel_allocator_free(decoder->allocator, indexed_pixels);
+    sixel_allocator_free(decoder->allocator, paint_mask);
+    sixel_allocator_free(decoder->allocator, palette);
+    sixel_allocator_free(decoder->allocator, rgba_pixels);
+    return status;
+}
+
+static SIXELSTATUS
+sixel_decoder_decode_pixels_dequant_attempts(
+    sixel_decoder_t *decoder,
+    unsigned char *workbuf,
+    size_t size,
+    unsigned int decode_flags,
+    unsigned char **out_pixels,
+    int *out_width,
+    int *out_height,
+    unsigned int *result_flags)
+{
+    SIXELSTATUS status;
+    unsigned int first_flags;
+    unsigned int second_flags;
+    unsigned int third_flags;
+
+    first_flags = 0U;
+    second_flags = 0U;
+    third_flags = 0U;
+
+    status = sixel_decoder_decode_pixels_dequant_try(decoder,
+                                                     workbuf,
+                                                     size,
+                                                     decode_flags,
+                                                     out_pixels,
+                                                     out_width,
+                                                     out_height,
+                                                     &first_flags);
+    if (status == SIXEL_OK) {
+        *result_flags = first_flags;
+        return status;
+    }
+
+    /* Retry with a synthetic BEL terminator for truncated streams. */
+    workbuf[size] = 0x07U;
+    status = sixel_decoder_decode_pixels_dequant_try(decoder,
+                                                     workbuf,
+                                                     size + 1U,
+                                                     decode_flags,
+                                                     out_pixels,
+                                                     out_width,
+                                                     out_height,
+                                                     &second_flags);
+    if (status == SIXEL_OK) {
+        *result_flags = second_flags;
+        return status;
+    }
+
+    /* Retry with ESC \ (ST) in case BEL is not accepted. */
+    workbuf[size] = 0x1bU;
+    workbuf[size + 1U] = '\\';
+    status = sixel_decoder_decode_pixels_dequant_try(decoder,
+                                                     workbuf,
+                                                     size + 2U,
+                                                     decode_flags,
+                                                     out_pixels,
+                                                     out_width,
+                                                     out_height,
+                                                     &third_flags);
+    if (status == SIXEL_OK) {
+        *result_flags = third_flags;
+    }
+
+    return status;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_decoder_decode_pixels(sixel_decoder_t *decoder,
+                            unsigned char const *data,
+                            size_t size,
+                            sixel_decode_options_t const *options,
+                            sixel_decode_result_t *result)
+{
+    SIXELSTATUS status;
+    unsigned char *workbuf;
+    unsigned char *rgba_pixels;
+    unsigned char const default_bg[3] = { 0U, 0U, 0U };
+    unsigned char const *bg;
+    unsigned int decode_flags;
+    unsigned int result_flags;
+    int pixelformat;
+    int width;
+    int height;
+
+    status = SIXEL_FALSE;
+    workbuf = NULL;
+    rgba_pixels = NULL;
+    bg = default_bg;
+    decode_flags = 0U;
+    result_flags = 0U;
+    pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    width = 0;
+    height = 0;
+
+    if (decoder == NULL || data == NULL || result == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_decoder_ref(decoder);
+    result->pixels = NULL;
+    result->width = 0;
+    result->height = 0;
+    result->pixelformat = 0;
+    result->stride = 0;
+    result->flags = 0U;
+
+    if (options != NULL) {
+        decode_flags = options->flags;
+        if (options->preferred_pixelformat != 0) {
+            pixelformat = options->preferred_pixelformat;
+        }
+        bg = options->bgcolor;
+    }
+
+    if (decoder->dequantize_method == SIXEL_DEQUANTIZE_NONE) {
+        status = sixel_decode_pixels(data,
+                                     size,
+                                     options,
+                                     result,
+                                     decoder->allocator);
+        goto end;
+    }
+
+    if (size == 0 || size > (size_t)(INT_MAX - 2) ||
+            size > (SIZE_MAX - 2U)) {
+        sixel_helper_set_additional_message(
+            "sixel_decoder_decode_pixels: invalid input size.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    workbuf = (unsigned char *)sixel_allocator_malloc(decoder->allocator,
+                                                      size + 2U);
+    if (workbuf == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decoder_decode_pixels: allocation failed for input copy.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    memcpy(workbuf, data, size);
+
+    status = sixel_decoder_decode_pixels_dequant_attempts(decoder,
+                                                          workbuf,
+                                                          size,
+                                                          decode_flags,
+                                                          &rgba_pixels,
+                                                          &width,
+                                                          &height,
+                                                          &result_flags);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_decode_pixels_finish_rgba(&rgba_pixels,
+                                             width,
+                                             height,
+                                             pixelformat,
+                                             bg,
+                                             result_flags,
+                                             result,
+                                             decoder->allocator);
+
+end:
+    sixel_allocator_free(decoder->allocator, rgba_pixels);
+    sixel_allocator_free(decoder->allocator, workbuf);
+    sixel_decoder_unref(decoder);
+    return status;
 }
 
 /* load source data from stdin or the file specified with
@@ -2369,6 +3057,8 @@ sixel_decoder_decode(
             raw_len,
             decoder->direct_color != 0,
             decoder->dequantize_similarity_bias,
+            0U,
+            NULL,
             &fast4_pixels,
             &sx,
             &sy,

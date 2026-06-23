@@ -448,6 +448,7 @@ test_decoder_0015_decoder_kundither_fast4_fused_matches_scalar(
                                KUNDITHER_FUSED_HEIGHT,
                                0,
                                1,
+                               0,
                                allocator);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "image setup failed: %04x\n", status);
@@ -482,6 +483,7 @@ test_decoder_0015_decoder_kundither_fast4_fused_matches_scalar(
                                KUNDITHER_FUSED_HEIGHT,
                                0,
                                1,
+                               0,
                                allocator);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr, "plain image setup failed: %04x\n", status);

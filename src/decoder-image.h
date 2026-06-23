@@ -45,6 +45,7 @@ typedef struct image_buffer {
     int height;
     int depth;
     int ncolors;
+    unsigned char *paint_mask;
     unsigned short *ormode_indexes;
     int palette[SIXEL_PALETTE_MAX_DECODER];
 } image_buffer_t;
@@ -59,6 +60,7 @@ image_buffer_init(image_buffer_t *image,
                   int height,
                   int bgindex,
                   int depth,
+                  int keep_paint_mask,
                   sixel_allocator_t *allocator);
 
 SIXELSTATUS image_buffer_resize(image_buffer_t *image,

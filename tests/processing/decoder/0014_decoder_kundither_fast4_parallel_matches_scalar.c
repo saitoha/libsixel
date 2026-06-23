@@ -24,6 +24,8 @@
     (KUNDITHER_FAST4_WIDTH * KUNDITHER_FAST4_HEIGHT)
 #define KUNDITHER_FAST4_OUTPUT_SIZE \
     (KUNDITHER_FAST4_PIXELS * 3)
+#define KUNDITHER_FAST4_RGBA_OUTPUT_SIZE \
+    (KUNDITHER_FAST4_PIXELS * 4)
 
 static void
 kundither_fast4_init_palette(unsigned char *palette)
@@ -49,6 +51,20 @@ kundither_fast4_init_indexed(unsigned char *indexed)
             value = x * 17 + y * 5 + ((x >> 2) ^ (y >> 4)) * 19;
             indexed[y * KUNDITHER_FAST4_WIDTH + x] =
                 (unsigned char)(value % KUNDITHER_FAST4_COLORS);
+        }
+    }
+}
+
+static void
+kundither_fast4_init_mask(unsigned char *paint_mask)
+{
+    int x;
+    int y;
+
+    for (y = 0; y < KUNDITHER_FAST4_HEIGHT; ++y) {
+        for (x = 0; x < KUNDITHER_FAST4_WIDTH; ++x) {
+            paint_mask[y * KUNDITHER_FAST4_WIDTH + x] =
+                ((x * 7 + y * 2) % 13) == 0 ? 0x00U : 0xffU;
         }
     }
 }
@@ -83,6 +99,39 @@ kundither_fast4_decode(unsigned char const *indexed,
     return *output != NULL;
 }
 
+static int
+kundither_fast4_decode_rgba(unsigned char const *indexed,
+                            unsigned char const *paint_mask,
+                            unsigned char const *palette,
+                            int threads,
+                            sixel_allocator_t *allocator,
+                            unsigned char **output)
+{
+    SIXELSTATUS status;
+
+    sixel_set_threads(threads);
+    status = sixel_dequantize_k_undither_fast4_rgba(
+        (unsigned char *)indexed,
+        paint_mask,
+        KUNDITHER_FAST4_WIDTH,
+        KUNDITHER_FAST4_HEIGHT,
+        (unsigned char *)palette,
+        KUNDITHER_FAST4_COLORS,
+        100,
+        allocator,
+        output);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "fast4 k_undither RGBA decode with %d threads"
+                " failed: %04x\n",
+                threads,
+                status);
+        return 0;
+    }
+
+    return *output != NULL;
+}
+
 int
 test_decoder_0014_kundither_fast4_matches_scalar(
     int argc,
@@ -90,9 +139,12 @@ test_decoder_0014_kundither_fast4_matches_scalar(
 {
     sixel_allocator_t *allocator;
     unsigned char *indexed;
+    unsigned char *paint_mask;
     unsigned char palette[KUNDITHER_FAST4_COLORS * 3];
     unsigned char *serial;
     unsigned char *parallel;
+    unsigned char *serial_rgba;
+    unsigned char *parallel_rgba;
     size_t i;
     int success;
 
@@ -101,8 +153,11 @@ test_decoder_0014_kundither_fast4_matches_scalar(
 
     allocator = NULL;
     indexed = NULL;
+    paint_mask = NULL;
     serial = NULL;
     parallel = NULL;
+    serial_rgba = NULL;
+    parallel_rgba = NULL;
     success = 0;
 
     if (sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL) !=
@@ -118,9 +173,17 @@ test_decoder_0014_kundither_fast4_matches_scalar(
         fprintf(stderr, "indexed fixture allocation failed\n");
         goto end;
     }
+    paint_mask = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        KUNDITHER_FAST4_PIXELS);
+    if (paint_mask == NULL) {
+        fprintf(stderr, "mask fixture allocation failed\n");
+        goto end;
+    }
 
     kundither_fast4_init_palette(palette);
     kundither_fast4_init_indexed(indexed);
+    kundither_fast4_init_mask(paint_mask);
 
     if (!kundither_fast4_decode(indexed, palette, 1, allocator, &serial)) {
         goto end;
@@ -139,13 +202,35 @@ test_decoder_0014_kundither_fast4_matches_scalar(
             goto end;
         }
     }
+    if (!kundither_fast4_decode_rgba(indexed, paint_mask, palette, 1,
+                                     allocator, &serial_rgba)) {
+        goto end;
+    }
+    if (!kundither_fast4_decode_rgba(indexed, paint_mask, palette, 4,
+                                     allocator, &parallel_rgba)) {
+        goto end;
+    }
+    for (i = 0u; i < KUNDITHER_FAST4_RGBA_OUTPUT_SIZE; ++i) {
+        if (serial_rgba[i] != parallel_rgba[i]) {
+            fprintf(stderr,
+                    "parallel RGBA byte %lu is %u,"
+                    " expected scalar %u\n",
+                    (unsigned long)i,
+                    (unsigned int)parallel_rgba[i],
+                    (unsigned int)serial_rgba[i]);
+            goto end;
+        }
+    }
 
     success = 1;
 
 end:
     if (allocator != NULL) {
+        sixel_allocator_free(allocator, parallel_rgba);
+        sixel_allocator_free(allocator, serial_rgba);
         sixel_allocator_free(allocator, parallel);
         sixel_allocator_free(allocator, serial);
+        sixel_allocator_free(allocator, paint_mask);
         sixel_allocator_free(allocator, indexed);
         sixel_allocator_unref(allocator);
     }
