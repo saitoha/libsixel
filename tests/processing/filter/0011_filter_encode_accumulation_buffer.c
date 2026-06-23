@@ -219,6 +219,107 @@ end:
     return status;
 }
 
+static SIXELSTATUS
+accumulation_encode_sequence(sixel_allocator_t *allocator,
+                             unsigned char const *first,
+                             unsigned char const *second,
+                             int *first_size_out,
+                             int *second_size_out,
+                             int *second_has_keep_header_out)
+{
+    SIXELSTATUS status;
+    sixel_encoder_t *encoder;
+    sixel_frame_t *frame;
+    sixel_output_t *output;
+    accumulation_payload_t payload;
+
+    status = SIXEL_FALSE;
+    encoder = NULL;
+    frame = NULL;
+    output = NULL;
+    memset(&payload, 0, sizeof(payload));
+    if (allocator == NULL || first == NULL || second == NULL ||
+        first_size_out == NULL || second_size_out == NULL ||
+        second_has_keep_header_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *first_size_out = 0;
+    *second_size_out = 0;
+    *second_has_keep_header_out = 0;
+
+    status = sixel_encoder_new(&encoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_COLORS, "4");
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "none");
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_setopt(encoder,
+                                  SIXEL_OPTFLAG_TRANSPARENT_POLICY,
+                                  "keep");
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = accumulation_make_frame(allocator, first, &frame);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_output_new(&output,
+                              accumulation_write,
+                              &payload,
+                              allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_encode_frame(encoder, frame, output);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    *first_size_out = payload.size;
+    sixel_output_unref(output);
+    output = NULL;
+    sixel_frame_unref(frame);
+    frame = NULL;
+    memset(&payload, 0, sizeof(payload));
+
+    status = accumulation_make_frame(allocator, second, &frame);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_output_new(&output,
+                              accumulation_write,
+                              &payload,
+                              allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_encode_frame(encoder, frame, output);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    *second_size_out = payload.size;
+    *second_has_keep_header_out = accumulation_contains(payload.bytes,
+                                                        payload.size,
+                                                        "\033P0;1q");
+    status = SIXEL_OK;
+
+end:
+    if (output != NULL) {
+        sixel_output_unref(output);
+    }
+    sixel_frame_unref(frame);
+    if (encoder != NULL) {
+        sixel_encoder_unref(encoder);
+    }
+    return status;
+}
+
 int
 test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
 {
@@ -232,10 +333,13 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     int changed_index;
     int full_size;
     int accumulation_size;
+    int auto_first_size;
+    int auto_second_size;
     int near_without_delta_size;
     int near_with_delta_size;
     int full_has_keep_header;
     int accumulation_has_keep_header;
+    int auto_second_has_keep_header;
     int near_has_keep_header;
     int ok;
 
@@ -248,20 +352,23 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     changed_index = 0;
     full_size = 0;
     accumulation_size = 0;
+    auto_first_size = 0;
+    auto_second_size = 0;
     near_without_delta_size = 0;
     near_with_delta_size = 0;
     full_has_keep_header = 0;
     accumulation_has_keep_header = 0;
+    auto_second_has_keep_header = 0;
     near_has_keep_header = 0;
     ok = 0;
 
     for (index = 0; index < ACCUMULATION_PIXELS; ++index) {
-        previous[index * 3 + 0] = 255u;
+        previous[index * 3 + 0] = (index & 1) == 0 ? 255u : 0u;
         previous[index * 3 + 1] = 0u;
-        previous[index * 3 + 2] = 0u;
-        current[index * 3 + 0] = 255u;
+        previous[index * 3 + 2] = (index & 1) == 0 ? 0u : 255u;
+        current[index * 3 + 0] = previous[index * 3 + 0];
         current[index * 3 + 1] = 0u;
-        current[index * 3 + 2] = 0u;
+        current[index * 3 + 2] = previous[index * 3 + 2];
         near_previous[index * 3 + 0] = 100u;
         near_previous[index * 3 + 1] = 100u;
         near_previous[index * 3 + 2] = 100u;
@@ -312,6 +419,27 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
                 "accumulation output not smaller (%d >= %d)\n",
                 accumulation_size,
                 full_size);
+        goto end;
+    }
+    status = accumulation_encode_sequence(allocator,
+                                          previous,
+                                          current,
+                                          &auto_first_size,
+                                          &auto_second_size,
+                                          &auto_second_has_keep_header);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "auto accumulation encode failed: %04x\n", status);
+        goto end;
+    }
+    if (auto_second_has_keep_header == 0) {
+        fprintf(stderr, "auto accumulation did not use P2=1\n");
+        goto end;
+    }
+    if (auto_second_size >= auto_first_size) {
+        fprintf(stderr,
+                "auto accumulation output not smaller (%d >= %d)\n",
+                auto_second_size,
+                auto_first_size);
         goto end;
     }
     status = accumulation_encode(allocator,

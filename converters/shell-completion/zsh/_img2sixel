@@ -887,6 +887,7 @@ _arguments -S -s -A "-*" -S \
   {-E,--encode-policy=}'[select encoding policy]':encodepolicy:_encodepolicy \
   {-B,--bgcolor=}'[select background color]' \
   {-A,--transparent-policy=}'[select transparent output policy]':transparentpolicy:_transparentpolicy \
+  {-Z,--accumulation-delta=}'[set RGB tolerance for transparent-policy=keep]' \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \

@@ -764,6 +764,9 @@ _img2sixel()
                                    transparent' -- "$cur" ) )
         return 0
         ;;
+    -Z|--accumulation-delta)
+        return 0
+        ;;
     -L|--loaders)
         loader_prefix=${cur%,*}
         loader_cur=${cur##*,}
@@ -873,6 +876,7 @@ _img2sixel()
                                    -E --encode-policy \
                                    -B --bgcolor \
                                    -A --transparent-policy \
+                                   -Z --accumulation-delta \
                                    -P --penetrate \
                                    -D --pipe-mode \
                                    -v --verbose \

@@ -771,6 +771,10 @@ keep -> emit transparent pixels with DCS P2=1
 .br
 transparent -> alias for background
 .TP 5
+.B \-Z \fIDELTA\fP, \-\-accumulation\-delta=\fIDELTA\fP
+set RGB per-channel tolerance for transparent-policy=keep accumulation reuse.
+DELTA must be 0..255 (default: 0).
+.TP 5
 .B \-P, \-\-penetrate
 [[deprecated]] penetrate GNU Screen using DCS pass-through sequence.
 .TP 5

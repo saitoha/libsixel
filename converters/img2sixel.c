@@ -713,6 +713,13 @@ static cli_option_help_t const g_option_help_table[] = {
         "      transparent -> alias for background\n"
     },
     {
+        'Z',
+        "accumulation-delta",
+        "-Z DELTA, --accumulation-delta=DELTA\n"
+        "    set RGB per-channel tolerance for transparent-policy=keep\n"
+        "    accumulation reuse. DELTA must be 0..255 (default: 0).\n"
+    },
+    {
         'P',
         "penetrate",
         "-P, --penetrate\n"
@@ -1830,7 +1837,7 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:~:kil:T:t:ugvSn:PE:U:B:A:C:D@:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:~:kil:T:t:ugvSn:PE:U:B:A:Z:C:D@:"
     "OVX:W:H%:1:2:3:";
 
 static int
@@ -2886,6 +2893,7 @@ img2sixel_main(int argc, char *argv[])
         {"working-colorspace",    required_argument,  &long_opt, 'W'},
         {"bgcolor",               required_argument,  &long_opt, 'B'},
         {"transparent-policy",    required_argument,  &long_opt, 'A'},
+        {"accumulation-delta",    required_argument,  &long_opt, 'Z'},
         {"complexion-score",      required_argument,  &long_opt, 'C'}, /* deprecated */
         {"pipe-mode",             no_argument,        &long_opt, 'D'}, /* deprecated */
         {"drcs",                  required_argument,  &long_opt, '@'},
@@ -3228,7 +3236,7 @@ unknown_option_error:
             "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"
             "                 [-3 shell] [-X clusteringcolorspace]\n"
             "                 [-W workingcolorspace] [-U outputcolorspace]\n"
-            "                 [-B bgcolor] [-A transparentpolicy]\n"
+            "                 [-B bgcolor] [-A transparentpolicy] [-Z delta]\n"
             "                 [-o outfile] [filename ...]\n\n"
             "for more details, type: 'img2sixel -H'.\n\n");
     goto end;

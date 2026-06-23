@@ -3468,13 +3468,23 @@ sixel_encoder_pixel_alpha_is_zero(unsigned char const *pixels,
 }
 
 static int
-sixel_encoder_accumulation_policy_enabled(sixel_encoder_t const *encoder)
+sixel_encoder_accumulation_policy_requested(sixel_encoder_t const *encoder)
 {
-    if (encoder == NULL || encoder->accumulation_valid == 0) {
+    if (encoder == NULL) {
         return 0;
     }
     return sixel_encoder_resolve_transparent_policy(encoder)
         == SIXEL_TRANSPARENT_POLICY_KEEP ? 1 : 0;
+}
+
+static int
+sixel_encoder_accumulation_policy_enabled(sixel_encoder_t const *encoder)
+{
+    if (sixel_encoder_accumulation_policy_requested(encoder) == 0) {
+        return 0;
+    }
+
+    return encoder->accumulation_valid != 0 ? 1 : 0;
 }
 
 static int
@@ -3740,7 +3750,13 @@ sixel_encoder_update_accumulation_from_frame(
     old_buffer_matches = 0;
     keep_previous = 0;
 
-    if (encoder == NULL || frame == NULL || encoder->accumulation_valid == 0) {
+    /*
+     * transparent-policy=keep makes the first successful frame seed the
+     * retained image plane.  A caller can still pre-seed it explicitly via
+     * sixel_encoder_set_accumulation_buffer().
+     */
+    if (encoder == NULL || frame == NULL ||
+        sixel_encoder_accumulation_policy_requested(encoder) == 0) {
         return SIXEL_OK;
     }
 
