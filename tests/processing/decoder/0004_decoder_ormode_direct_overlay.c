@@ -17,7 +17,7 @@
 
 #include "src/decoder-parallel.h"
 
-static unsigned char g_ormode_payload[] =
+static unsigned char g_ormode_direct_payload[] =
     "\033P7;5q\"1;1;2;1"
     "#0;2;25;50;75"
     "#1;2;100;0;0"
@@ -53,8 +53,8 @@ test_decoder_0004_decoder_ormode_direct_overlay(int argc, char **argv)
         goto end;
     }
 
-    status = sixel_decode_direct(g_ormode_payload,
-                                 (int)(sizeof(g_ormode_payload) - 1U),
+    status = sixel_decode_direct(g_ormode_direct_payload,
+                                 (int)(sizeof(g_ormode_direct_payload) - 1U),
                                  &pixels,
                                  &width,
                                  &height,

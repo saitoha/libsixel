@@ -27,7 +27,7 @@ SIXELSTATUS sixel_decode_wide(unsigned char *p,
                               int *ncolors,
                               sixel_allocator_t *allocator);
 
-static unsigned char g_ormode_payload[] =
+static unsigned char g_ormode_wide_payload[] =
     "\033P7;5q\"1;1;1;1"
     "#0;2;0;0;0"
     "#1;2;100;0;0"
@@ -63,8 +63,8 @@ test_decoder_0003_decoder_ormode_wide_overlay(int argc, char **argv)
         goto end;
     }
 
-    status = sixel_decode_wide(g_ormode_payload,
-                               (int)(sizeof(g_ormode_payload) - 1U),
+    status = sixel_decode_wide(g_ormode_wide_payload,
+                               (int)(sizeof(g_ormode_wide_payload) - 1U),
                                &pixels,
                                &width,
                                &height,

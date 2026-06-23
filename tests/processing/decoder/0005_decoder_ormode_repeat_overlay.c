@@ -13,7 +13,7 @@
 
 #include <sixel.h>
 
-static unsigned char g_ormode_payload[] =
+static unsigned char g_ormode_repeat_payload[] =
     "\033P7;5q\"1;1;3;1"
     "#0;2;0;0;0"
     "#1;2;100;0;0"
@@ -49,8 +49,8 @@ test_decoder_0005_decoder_ormode_repeat_overlay(int argc, char **argv)
         goto end;
     }
 
-    status = sixel_decode_raw(g_ormode_payload,
-                              (int)(sizeof(g_ormode_payload) - 1U),
+    status = sixel_decode_raw(g_ormode_repeat_payload,
+                              (int)(sizeof(g_ormode_repeat_payload) - 1U),
                               &pixels,
                               &width,
                               &height,
