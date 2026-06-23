@@ -17,7 +17,7 @@
 #include "src/encoder-core-private.h"
 
 static int
-test_encoder_core_ormode_body_write(char *data, int size, void *priv)
+enc_core_0006_write(char *data, int size, void *priv)
 {
     (void)data;
     (void)size;
@@ -67,7 +67,7 @@ test_encoder_core_0006_ormode_body_skip_empty_planes(int argc, char **argv)
     expected_size = (int)strlen(expected);
 
     status = sixel_output_new(&output,
-                              test_encoder_core_ormode_body_write,
+                              enc_core_0006_write,
                               NULL,
                               NULL);
     if (SIXEL_FAILED(status)) {

@@ -17,7 +17,7 @@
 #include "src/encoder-core-private.h"
 
 static int
-test_encoder_core_ormode_body_write(char *data, int size, void *priv)
+enc_core_0003_write(char *data, int size, void *priv)
 {
     (void)data;
     (void)size;
@@ -70,7 +70,7 @@ test_encoder_core_0003_encoder_core_ormode_body_tail_band(int argc,
     expected_size = (int)strlen(expected);
 
     status = sixel_output_new(&output,
-                              test_encoder_core_ormode_body_write,
+                              enc_core_0003_write,
                               NULL,
                               NULL);
     if (SIXEL_FAILED(status)) {
