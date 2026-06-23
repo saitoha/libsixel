@@ -30,16 +30,16 @@ thread4_png="${artifact_dir}/vlight-thread4-$$.png"
 
 SIXEL_THREADS=1 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
         -D -dl:Vl \
-        <"${TOP_SRCDIR}/images/snake.six" \
-        >"${thread1_png}" || {
+        -i "${TOP_SRCDIR}/images/snake.six" \
+        -o "${thread1_png}" || {
     echo "not ok" 1 - "single-thread fast4 decode failed"
     exit 0
 }
 
 SIXEL_THREADS=4 ${SIXEL_RUNTIME-} "${SIXEL2PNG_PATH}" \
         -D -dl:Vl \
-        <"${TOP_SRCDIR}/images/snake.six" \
-        >"${thread4_png}" || {
+        -i "${TOP_SRCDIR}/images/snake.six" \
+        -o "${thread4_png}" || {
     echo "not ok" 1 - "four-thread fast4 decode failed"
     exit 0
 }
