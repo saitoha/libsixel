@@ -837,6 +837,7 @@ sixel_decode_raw_impl(
 #else
     (void) logger;
     (void) logger_prepared;
+    (void) undither;
 #endif  /* SIXEL_ENABLE_THREADS */
 
     trust_raster_size = (decode_flags &
@@ -1806,10 +1807,10 @@ end:
 }
 
 /*
- * Quick Look links fromsixel.c into a small static core without decoder.c.
- * Keep decoder-backed fast4 helpers out of that archive.
+ * Small embedded decoders may link fromsixel.c without decoder.c.  Keep the
+ * decoder-backed fast4 helpers out of those archives.
  */
-#if !defined(SIXEL_QUICKLOOK_CORE)
+#if !defined(SIXEL_DECODE_PIXELS_NO_FAST4)
 static SIXELSTATUS
 sixel_decode_fast4_promote_rgba(unsigned char **out_pixels,
                                 unsigned char const *rgb_pixels,

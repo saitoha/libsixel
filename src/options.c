@@ -1069,7 +1069,7 @@ sixel_option_free_argument_resolution(
     sixel_option_reset_argument_resolution(resolution);
 }
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_dequantize_argument(
     char const *argument,
     int *method,

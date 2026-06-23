@@ -629,7 +629,7 @@ libsixelquicklookcore_a_SOURCES = $(top_srcdir)/src/status.c \
 	$(am__append_1)
 libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS) \
     -DSIXEL_STATUS_HAVE_TTY_HELPERS=0 \
-    -DSIXEL_QUICKLOOK_CORE=1
+    -DSIXEL_DECODE_PIXELS_NO_FAST4=1
 
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@install_quicklook_script = $(top_srcdir)/tools/quicklook-extension.bash
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@SixelPreview_SOURCES = \

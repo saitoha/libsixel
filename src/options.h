@@ -171,7 +171,7 @@ sixel_option_parse_argument_with_suboptions(
     char *diagnostic,
     size_t diagnostic_size);
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_dequantize_argument(
     char const *argument,
     int *method,

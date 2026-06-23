@@ -534,6 +534,7 @@ sixel_decoder_parallel_count_newlines(unsigned char const *begin,
     return lines;
 }
 
+#if !defined(SIXEL_DECODE_PIXELS_NO_FAST4)
 static int
 sixel_decoder_parallel_copy_local_rows(sixel_local_buffer_t *buffer,
                                        unsigned char *indexed,
@@ -686,6 +687,7 @@ sixel_decoder_parallel_write_fast4_rows(
     free(rgb);
     return 0;
 }
+#endif
 
 /*
  * Worker entry for the fast sixel parser.  Each thread jumps to the next
@@ -1190,6 +1192,7 @@ sixel_decoder_parallel_worker(void *arg)
         return status;
     }
 
+#if !defined(SIXEL_DECODE_PIXELS_NO_FAST4)
     if (context->undither != NULL && context->undither->enabled) {
         status = sixel_decoder_parallel_write_fast4_rows(
             context,
@@ -1214,6 +1217,7 @@ sixel_decoder_parallel_worker(void *arg)
         context->result = status;
         return status;
     }
+#endif
 
     context->local_buffer = local_buffer.head != NULL ?
         local_buffer.head->data : NULL;
@@ -1469,6 +1473,7 @@ sixel_decoder_parallel_resolve_threads(void)
     return threads;
 }
 
+#if SIXEL_ENABLE_THREADS
 static SIXELSTATUS
 sixel_decoder_parallel_prepare_undither(
     sixel_decoder_undither_context_t *undither,
@@ -1476,6 +1481,19 @@ sixel_decoder_parallel_prepare_undither(
     int const *source_palette,
     int palette_limit)
 {
+#if defined(SIXEL_DECODE_PIXELS_NO_FAST4)
+    if (undither == NULL || !undither->enabled) {
+        return SIXEL_OK;
+    }
+    (void)image;
+    (void)source_palette;
+    (void)palette_limit;
+    /*
+     * Embedded decoder cores may link this file without decoder.c.  Report
+     * that fused fast4 is unavailable so the caller uses the serial path.
+     */
+    return SIXEL_FALSE;
+#else
     unsigned char *dst;
     size_t pixels;
     size_t bytes;
@@ -1573,7 +1591,9 @@ sixel_decoder_parallel_prepare_undither(
     }
 
     return SIXEL_OK;
+#endif
 }
+#endif
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decoder_parallel_request_start(int direct_mode,
