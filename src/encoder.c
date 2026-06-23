@@ -5947,7 +5947,6 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
     hide_cursor_env = NULL;
 
     if (context->output) {
-        sixel_output_ref(context->output);
         context->fn_write = sixel_encoder_core_write_callback;
         context->write_callback = sixel_encoder_core_write_callback;
         context->write_priv = context->output;
@@ -15610,8 +15609,8 @@ sixel_encoder_encode_frame(
     }
     if (output != NULL) {
         /*
-         * The internal DAG owns context.output until the encode finishes.  Take
-         * a balanced reference so callers keep their original output object.
+         * Internal cleanup always releases context.output.  Hold one temporary
+         * reference so early DAG failures cannot consume caller ownership.
          */
         sixel_output_ref(output);
     }
