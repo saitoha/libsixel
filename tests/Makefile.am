@@ -303,6 +303,7 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0008_filter_load.c \
     processing/filter/0009_filter_dither.c \
     processing/filter/0010_filter_encode.c \
+    processing/filter/0011_filter_encode_accumulation_buffer.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
     processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \

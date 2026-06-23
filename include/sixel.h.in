@@ -1744,6 +1744,19 @@ sixel_encoder_set_cancel_callback(
     sixel_cancel_function /* in */ cancel_function,
     void                  /* in */ *cancel_context);
 
+/*
+ * Set the encoder accumulation buffer used by transparent-policy=keep
+ * differential encoding.  The buffer is copied as RGB888.  Pass NULL for
+ * PIXELS to clear the retained accumulation buffer.
+ */
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_accumulation_buffer(
+    sixel_encoder_t     /* in */ *encoder,
+    unsigned char const /* in */ *pixels,
+    int                 /* in */ width,
+    int                 /* in */ height,
+    int                 /* in */ pixelformat);
+
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(

@@ -268,6 +268,14 @@ struct sixel_encoder {
     int ormode;
     int transparent_policy;
     int transparent_policy_override;
+    unsigned char *accumulation_pixels;
+    size_t accumulation_pixels_size;
+    unsigned char *accumulation_mask;
+    size_t accumulation_mask_size;
+    int accumulation_width;
+    int accumulation_height;
+    int accumulation_pixelformat;
+    int accumulation_valid;
     int pipe_mode;
     int verbose;
     int has_gri_arg_limit;

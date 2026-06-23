@@ -123,6 +123,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0008_filter_load.c \
 	processing/filter/0009_filter_dither.c \
 	processing/filter/0010_filter_encode.c \
+	processing/filter/0011_filter_encode_accumulation_buffer.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
 	processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
 	processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
@@ -223,6 +224,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0008_filter_load.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0009_filter_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0010_filter_encode.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0011_filter_encode_accumulation_buffer.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.$(OBJEXT) \
@@ -444,6 +446,7 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po \
 	processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po \
 	processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po \
+	processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po \
@@ -1274,6 +1277,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0008_filter_load.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0009_filter_dither.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0010_filter_encode.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0011_filter_encode_accumulation_buffer.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0001_encoder_core_factory.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
@@ -1544,6 +1548,9 @@ processing/filter/test_runner-0009_filter_dither.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/filter/test_runner-0010_filter_encode.$(OBJEXT):  \
+	processing/filter/$(am__dirstamp) \
+	processing/filter/$(DEPDIR)/$(am__dirstamp)
+processing/filter/test_runner-0011_filter_encode_accumulation_buffer.$(OBJEXT):  \
 	processing/filter/$(am__dirstamp) \
 	processing/filter/$(DEPDIR)/$(am__dirstamp)
 processing/encoder-core/$(am__dirstamp):
@@ -2017,6 +2024,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po@am__quote@ # am--include-marker
@@ -2283,6 +2291,20 @@ processing/filter/test_runner-0010_filter_encode.obj: processing/filter/0010_fil
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0010_filter_encode.c' object='processing/filter/test_runner-0010_filter_encode.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0010_filter_encode.obj `if test -f 'processing/filter/0010_filter_encode.c'; then $(CYGPATH_W) 'processing/filter/0010_filter_encode.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0010_filter_encode.c'; fi`
+
+processing/filter/test_runner-0011_filter_encode_accumulation_buffer.o: processing/filter/0011_filter_encode_accumulation_buffer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0011_filter_encode_accumulation_buffer.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Tpo -c -o processing/filter/test_runner-0011_filter_encode_accumulation_buffer.o `test -f 'processing/filter/0011_filter_encode_accumulation_buffer.c' || echo '$(srcdir)/'`processing/filter/0011_filter_encode_accumulation_buffer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Tpo processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0011_filter_encode_accumulation_buffer.c' object='processing/filter/test_runner-0011_filter_encode_accumulation_buffer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0011_filter_encode_accumulation_buffer.o `test -f 'processing/filter/0011_filter_encode_accumulation_buffer.c' || echo '$(srcdir)/'`processing/filter/0011_filter_encode_accumulation_buffer.c
+
+processing/filter/test_runner-0011_filter_encode_accumulation_buffer.obj: processing/filter/0011_filter_encode_accumulation_buffer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0011_filter_encode_accumulation_buffer.obj -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Tpo -c -o processing/filter/test_runner-0011_filter_encode_accumulation_buffer.obj `if test -f 'processing/filter/0011_filter_encode_accumulation_buffer.c'; then $(CYGPATH_W) 'processing/filter/0011_filter_encode_accumulation_buffer.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0011_filter_encode_accumulation_buffer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Tpo processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/filter/0011_filter_encode_accumulation_buffer.c' object='processing/filter/test_runner-0011_filter_encode_accumulation_buffer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/filter/test_runner-0011_filter_encode_accumulation_buffer.obj `if test -f 'processing/filter/0011_filter_encode_accumulation_buffer.c'; then $(CYGPATH_W) 'processing/filter/0011_filter_encode_accumulation_buffer.c'; else $(CYGPATH_W) '$(srcdir)/processing/filter/0011_filter_encode_accumulation_buffer.c'; fi`
 
 processing/encoder-core/test_runner-0001_encoder_core_factory.o: processing/encoder-core/0001_encoder_core_factory.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/encoder-core/test_runner-0001_encoder_core_factory.o -MD -MP -MF processing/encoder-core/$(DEPDIR)/test_runner-0001_encoder_core_factory.Tpo -c -o processing/encoder-core/test_runner-0001_encoder_core_factory.o `test -f 'processing/encoder-core/0001_encoder_core_factory.c' || echo '$(srcdir)/'`processing/encoder-core/0001_encoder_core_factory.c
@@ -3891,6 +3913,7 @@ distclean: distclean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po
@@ -4032,6 +4055,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0008_filter_load.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po
+	-rm -f processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po
 	-rm -f processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po
