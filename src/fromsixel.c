@@ -1805,6 +1805,11 @@ end:
     return status;
 }
 
+/*
+ * Quick Look links fromsixel.c into a small static core without decoder.c.
+ * Keep decoder-backed fast4 helpers out of that archive.
+ */
+#if !defined(SIXEL_QUICKLOOK_CORE)
 static SIXELSTATUS
 sixel_decode_fast4_promote_rgba(unsigned char **out_pixels,
                                 unsigned char const *rgb_pixels,
@@ -2003,6 +2008,7 @@ end:
     sixel_allocator_unref(allocator);
     return status;
 }
+#endif
 
 
 /* convert sixel data into wide-indexed(16bit) pixels and palette data */

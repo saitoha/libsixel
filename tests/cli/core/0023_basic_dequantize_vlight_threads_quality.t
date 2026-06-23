@@ -19,12 +19,8 @@ test -x "${LSQA_PATH}" || {
     printf "1..0 # SKIP lsqa is disabled in this build\n"
     exit 0
 }
-artifact_dir="${ARTIFACT_LOCAL_DIR:-/tmp}"
-test -d "${artifact_dir}" || artifact_dir="/tmp"
-test -d "${artifact_dir}" || {
-    printf "1..0 # SKIP artifact directory is unavailable\n"
-    exit 0
-}
+test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
+artifact_dir="${ARTIFACT_LOCAL_DIR}"
 
 echo "1..1"
 set -v

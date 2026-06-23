@@ -75,7 +75,8 @@ libsixelquicklookcore_a_SOURCES += \
 endif
 
 libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS) \
-    -DSIXEL_STATUS_HAVE_TTY_HELPERS=0
+    -DSIXEL_STATUS_HAVE_TTY_HELPERS=0 \
+    -DSIXEL_QUICKLOOK_CORE=1
 
 if HAVE_APPLE_QUICKLOOK_EXTENSION
 

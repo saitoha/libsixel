@@ -561,11 +561,13 @@ typedef struct sixel_kundither_filter_context {
     int neighbor_count;
 } sixel_kundither_filter_context_t;
 
+#if SIXEL_ENABLE_THREADS
 static const int g_kundither_neighbor_offsets[8][4] = {
     {-1, -1,  10, 16}, {0, -1, 16, 16}, {1, -1,   6, 16},
     {-1,  0,  11, 16},                  {1,  0,  11, 16},
     {-1,  1,   6, 16}, {0,  1, 16, 16}, {1,  1,  10, 16}
 };
+#endif
 
 static const int g_kundither_fast4_neighbor_offsets[4][4] = {
     {-1, -1,  10, 16}, {0, -1, 16, 16}, {1, -1,   6, 16},
@@ -934,6 +936,7 @@ sixel_similarity_compare(sixel_similarity_t *similarity,
     return result;
 }
 
+#if SIXEL_ENABLE_THREADS
 static void
 sixel_similarity_enable_simd(sixel_similarity_t *similarity)
 {
@@ -1044,6 +1047,7 @@ sixel_similarity_prepare_image_order_offsets(
         }
     }
 }
+#endif
 
 static inline unsigned int
 sixel_similarity_cached_compare(sixel_similarity_t *similarity,
