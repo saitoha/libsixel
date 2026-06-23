@@ -3732,6 +3732,7 @@ sixel_encode_body_ormode_band(sixel_index_t const *pixels,
         for (plane = 0; plane < nplanes; plane++) {
             plane_bit = 1 << plane;
             first_x = (-1);
+            pix = 0;
             for (x = 0; x < width; x++) {
                 pix = ((row0[x] & plane_bit) ? 0x01 : 0) |
                       ((row1[x] & plane_bit) ? 0x02 : 0) |
