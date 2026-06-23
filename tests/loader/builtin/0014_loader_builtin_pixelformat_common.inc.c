@@ -634,6 +634,27 @@ typedef struct builtin_loader_probe_options {
     int prefer_float32;
 } builtin_loader_probe_options_t;
 
+static void
+builtin_loader_probe_options_init(builtin_loader_probe_options_t *options)
+{
+    if (options == NULL) {
+        return;
+    }
+
+    memset(options, 0, sizeof(*options));
+    options->require_static = 0;
+    options->use_palette = 0;
+    options->reqcolors = 256;
+    options->set_bgcolor = 0;
+    options->bgcolor = NULL;
+    options->set_loop_control = 0;
+    options->loop_control = SIXEL_LOOP_AUTO;
+    options->set_cms_engine = 0;
+    options->cms_engine = SIXEL_CMS_ENGINE_NONE;
+    options->set_prefer_float32 = 0;
+    options->prefer_float32 = 0;
+}
+
 static int
 run_builtin_loader_probe_case(char const *label,
                               char const *relative_path,

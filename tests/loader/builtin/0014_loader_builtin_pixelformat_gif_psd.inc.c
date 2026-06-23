@@ -17,6 +17,7 @@ run_builtin_loader_gif_sequence_test(
     mismatch_expected_loop_no = -1;
     mismatch_expected_frame_no = -1;
     result = 1;
+    builtin_loader_probe_options_init(&options);
     memset(&probe, 0, sizeof(probe));
 
     if (label == NULL ||
@@ -175,6 +176,7 @@ run_builtin_loader_gif_unbounded_loop_probe_test(
 
     status = SIXEL_FALSE;
     result = 1;
+    builtin_loader_probe_options_init(&options);
     memset(&probe, 0, sizeof(probe));
 
     if (label == NULL || relative_path == NULL || required_loop_no < 0) {

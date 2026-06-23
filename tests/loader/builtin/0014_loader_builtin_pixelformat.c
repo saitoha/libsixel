@@ -1426,7 +1426,7 @@ pnm_set_default_probe_options(builtin_loader_probe_options_t *options)
         return;
     }
 
-    memset(options, 0, sizeof(*options));
+    builtin_loader_probe_options_init(options);
     options->require_static = 1;
     options->use_palette = 0;
     options->reqcolors = 256;
