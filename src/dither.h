@@ -166,6 +166,8 @@ struct sixel_dither {
     int pipeline_accumulation_width; /* previous frame width */
     int pipeline_accumulation_height; /* previous frame height */
     int pipeline_accumulation_keycolor; /* keycolor for previous hits */
+    unsigned char *pipeline_accumulation_result_mask; /* encoded keeps */
+    size_t pipeline_accumulation_result_mask_size; /* result mask length */
     unsigned char *bluenoise_gradient_map; /* owned gradient-strength map */
     size_t bluenoise_gradient_map_size; /* gradient map byte length */
     int bluenoise_gradient_width; /* gradient map width */
@@ -242,6 +244,21 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
 void
 sixel_dither_clear_pipeline_accumulation_buffer_hint(
     sixel_dither_t *dither);
+
+SIXEL_INTERNAL_API void
+sixel_dither_clear_pipeline_accumulation_result_mask(
+    sixel_dither_t *dither);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_set_pipeline_accumulation_result_mask(
+    sixel_dither_t *dither,
+    unsigned char *mask,
+    size_t mask_size);
+
+SIXEL_INTERNAL_API unsigned char const *
+sixel_dither_get_pipeline_accumulation_result_mask(
+    sixel_dither_t const *dither,
+    size_t *mask_size);
 
 SIXEL_INTERNAL_API void
 sixel_dither_clear_bluenoise_gradient_map_hint(

@@ -1445,14 +1445,23 @@ sixel_dither_expand_mask_with_accumulation(
     if (*mask_inout != NULL && *mask_owned_inout != 0) {
         sixel_allocator_free(dither->allocator, *mask_inout);
     }
-    *mask_inout = expanded_mask;
-    *mask_owned_inout = 1;
+    status = sixel_dither_set_pipeline_accumulation_result_mask(
+        dither,
+        expanded_mask,
+        total_pixels);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(dither->allocator, expanded_mask);
+        return status;
+    }
+    *mask_inout = dither->pipeline_accumulation_result_mask;
+    *mask_owned_inout = 0;
     *apply_mask_inout = 1;
     *keycolor_inout = keycolor;
     sixel_dither_set_pipeline_transparent_mask_hint(dither,
-                                                    expanded_mask,
+                                                    *mask_inout,
                                                     total_pixels,
                                                     keycolor);
+    expanded_mask = NULL;
     status = SIXEL_OK;
 
     return status;
@@ -1641,6 +1650,8 @@ sixel_dither_new(
     (*ppdither)->pipeline_image_height = 0;
     sixel_dither_clear_pipeline_transparent_mask_hint(*ppdither);
     sixel_dither_clear_pipeline_accumulation_buffer_hint(*ppdither);
+    (*ppdither)->pipeline_accumulation_result_mask = NULL;
+    (*ppdither)->pipeline_accumulation_result_mask_size = 0U;
     (*ppdither)->bluenoise_gradient_map = NULL;
     (*ppdither)->bluenoise_gradient_map_size = 0U;
     (*ppdither)->bluenoise_gradient_width = 0;
@@ -1736,6 +1747,7 @@ sixel_dither_destroy(
             dither->palette->vtbl->unref(dither->palette);
             dither->palette = NULL;
         }
+        sixel_dither_clear_pipeline_accumulation_result_mask(dither);
         sixel_dither_clear_bluenoise_gradient_map_hint(dither);
         sixel_dither_interframe_state_dispose(dither);
         sixel_allocator_free(allocator, dither);
@@ -2579,6 +2591,64 @@ sixel_dither_clear_pipeline_accumulation_buffer_hint(
 }
 
 SIXEL_INTERNAL_API void
+sixel_dither_clear_pipeline_accumulation_result_mask(
+    sixel_dither_t *dither)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    if (dither->pipeline_accumulation_result_mask != NULL &&
+            dither->allocator != NULL) {
+        sixel_allocator_free(dither->allocator,
+                             dither->pipeline_accumulation_result_mask);
+    }
+    dither->pipeline_accumulation_result_mask = NULL;
+    dither->pipeline_accumulation_result_mask_size = 0U;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_set_pipeline_accumulation_result_mask(
+    sixel_dither_t *dither,
+    unsigned char *mask,
+    size_t mask_size)
+{
+    if (dither == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_dither_clear_pipeline_accumulation_result_mask(dither);
+    if (mask == NULL || mask_size == 0U) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    dither->pipeline_accumulation_result_mask = mask;
+    dither->pipeline_accumulation_result_mask_size = mask_size;
+
+    return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API unsigned char const *
+sixel_dither_get_pipeline_accumulation_result_mask(
+    sixel_dither_t const *dither,
+    size_t *mask_size)
+{
+    if (mask_size != NULL) {
+        *mask_size = 0U;
+    }
+    if (dither == NULL ||
+            dither->pipeline_accumulation_result_mask == NULL ||
+            dither->pipeline_accumulation_result_mask_size == 0U) {
+        return NULL;
+    }
+    if (mask_size != NULL) {
+        *mask_size = dither->pipeline_accumulation_result_mask_size;
+    }
+
+    return dither->pipeline_accumulation_result_mask;
+}
+
+SIXEL_INTERNAL_API void
 sixel_dither_set_pipeline_accumulation_buffer_hint(
     sixel_dither_t *dither,
     unsigned char const *pixels,
@@ -3189,6 +3259,7 @@ sixel_dither_apply_palette_with_mode(
     resolved_apply_mode =
         sixel_dither_interframe_resolve_apply_mode(apply_mode);
     sixel_dither_ref(dither);
+    sixel_dither_clear_pipeline_accumulation_result_mask(dither);
     if (resolved_apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) {
         /*
          * Keep size-change resets observable in diagnostics even when

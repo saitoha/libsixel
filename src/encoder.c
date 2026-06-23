@@ -347,7 +347,8 @@ static SIXELSTATUS sixel_encoder_bind_transparent_mask(
     sixel_frame_t const *frame);
 static SIXELSTATUS sixel_encoder_update_accumulation_from_frame(
     sixel_encoder_t *encoder,
-    sixel_frame_t const *frame);
+    sixel_frame_t const *frame,
+    sixel_dither_t const *dither);
 static SIXELSTATUS sixel_encoder_promote_pal8_transparent_for_geometry(
     sixel_encoder_t *encoder,
     sixel_frame_t *frame);
@@ -3728,24 +3729,29 @@ end:
 static SIXELSTATUS
 sixel_encoder_update_accumulation_from_frame(
     sixel_encoder_t *encoder,
-    sixel_frame_t const *frame)
+    sixel_frame_t const *frame,
+    sixel_dither_t const *dither)
 {
     SIXELSTATUS status;
     unsigned char *current_rgb;
+    unsigned char const *encoded_mask;
     sixel_frame_pixels_view_t view;
     sixel_frame_transparency_t transparency;
     size_t current_size;
     size_t pixel_count;
+    size_t encoded_mask_size;
     size_t index;
     int old_buffer_matches;
     int keep_previous;
 
     status = SIXEL_FALSE;
     current_rgb = NULL;
+    encoded_mask = NULL;
     memset(&view, 0, sizeof(view));
     memset(&transparency, 0, sizeof(transparency));
     current_size = 0u;
     pixel_count = 0u;
+    encoded_mask_size = 0u;
     index = 0u;
     old_buffer_matches = 0;
     keep_previous = 0;
@@ -3778,6 +3784,9 @@ sixel_encoder_update_accumulation_from_frame(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    encoded_mask = sixel_dither_get_pipeline_accumulation_result_mask(
+        dither,
+        &encoded_mask_size);
 
     old_buffer_matches =
         encoder->accumulation_pixels != NULL &&
@@ -3800,7 +3809,17 @@ sixel_encoder_update_accumulation_from_frame(
     }
 
     for (index = 0u; index < pixel_count; ++index) {
+        /*
+         * Retained accumulation must describe the image plane that a P2=1
+         * terminal will actually show after this frame.  The dither stage may
+         * add transparent pixels after palette lookup, so prefer its final
+         * mask when it is available and keep older alpha/mask fallbacks for
+         * non-accumulation paths.
+         */
         keep_previous =
+            (encoded_mask != NULL &&
+             encoded_mask_size >= pixel_count &&
+             encoded_mask[index] != 0U) ||
             sixel_encoder_frame_mask_covers_pixel(&transparency,
                                                   pixel_count,
                                                   index) ||
@@ -8574,7 +8593,9 @@ sixel_encoder_output_without_macro(
             goto end;
         }
     }
-    status = sixel_encoder_update_accumulation_from_frame(encoder, frame);
+    status = sixel_encoder_update_accumulation_from_frame(encoder,
+                                                          frame,
+                                                          dither);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -8809,7 +8830,8 @@ sixel_encoder_output_with_macro(
     }
     if (SIXEL_SUCCEEDED(status)) {
         status = sixel_encoder_update_accumulation_from_frame(encoder,
-                                                              frame);
+                                                              frame,
+                                                              dither);
     }
 
 end:

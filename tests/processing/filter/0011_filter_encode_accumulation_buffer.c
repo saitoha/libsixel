@@ -320,6 +320,110 @@ end:
     return status;
 }
 
+static SIXELSTATUS
+accumulation_encode_sequence_delta3(sixel_allocator_t *allocator,
+                                    unsigned char const *first,
+                                    unsigned char const *second,
+                                    unsigned char const *third,
+                                    char const *accumulation_delta,
+                                    int *first_size_out,
+                                    int *second_size_out,
+                                    int *third_size_out)
+{
+    SIXELSTATUS status;
+    sixel_encoder_t *encoder;
+    sixel_frame_t *frame;
+    sixel_output_t *output;
+    accumulation_payload_t payload;
+    unsigned char const *frames[3];
+    int *sizes[3];
+    int frame_index;
+
+    status = SIXEL_FALSE;
+    encoder = NULL;
+    frame = NULL;
+    output = NULL;
+    memset(&payload, 0, sizeof(payload));
+    frames[0] = first;
+    frames[1] = second;
+    frames[2] = third;
+    sizes[0] = first_size_out;
+    sizes[1] = second_size_out;
+    sizes[2] = third_size_out;
+    frame_index = 0;
+    if (allocator == NULL || first == NULL || second == NULL ||
+        third == NULL || accumulation_delta == NULL ||
+        first_size_out == NULL || second_size_out == NULL ||
+        third_size_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *first_size_out = 0;
+    *second_size_out = 0;
+    *third_size_out = 0;
+
+    status = sixel_encoder_new(&encoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_COLORS, "4");
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_DIFFUSION, "none");
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_setopt(encoder,
+                                  SIXEL_OPTFLAG_TRANSPARENT_POLICY,
+                                  "keep");
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_setopt(encoder,
+                                  SIXEL_OPTFLAG_ACCUMULATION_DELTA,
+                                  accumulation_delta);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    for (frame_index = 0; frame_index < 3; ++frame_index) {
+        status = accumulation_make_frame(allocator,
+                                         frames[frame_index],
+                                         &frame);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        status = sixel_output_new(&output,
+                                  accumulation_write,
+                                  &payload,
+                                  allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        status = sixel_encoder_encode_frame(encoder, frame, output);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        *sizes[frame_index] = payload.size;
+        sixel_output_unref(output);
+        output = NULL;
+        sixel_frame_unref(frame);
+        frame = NULL;
+        memset(&payload, 0, sizeof(payload));
+    }
+    status = SIXEL_OK;
+
+end:
+    if (output != NULL) {
+        sixel_output_unref(output);
+    }
+    sixel_frame_unref(frame);
+    if (encoder != NULL) {
+        sixel_encoder_unref(encoder);
+    }
+    return status;
+}
+
 int
 test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
 {
@@ -329,6 +433,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     unsigned char current[ACCUMULATION_BYTES];
     unsigned char near_previous[ACCUMULATION_BYTES];
     unsigned char near_current[ACCUMULATION_BYTES];
+    unsigned char near_next[ACCUMULATION_BYTES];
     int index;
     int changed_index;
     int full_size;
@@ -337,6 +442,9 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     int auto_second_size;
     int near_without_delta_size;
     int near_with_delta_size;
+    int delta_first_size;
+    int delta_second_size;
+    int delta_third_size;
     int full_has_keep_header;
     int accumulation_has_keep_header;
     int auto_second_has_keep_header;
@@ -356,6 +464,9 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     auto_second_size = 0;
     near_without_delta_size = 0;
     near_with_delta_size = 0;
+    delta_first_size = 0;
+    delta_second_size = 0;
+    delta_third_size = 0;
     full_has_keep_header = 0;
     accumulation_has_keep_header = 0;
     auto_second_has_keep_header = 0;
@@ -375,6 +486,9 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
         near_current[index * 3 + 0] = 104u;
         near_current[index * 3 + 1] = 104u;
         near_current[index * 3 + 2] = 104u;
+        near_next[index * 3 + 0] = 108u;
+        near_next[index * 3 + 1] = 108u;
+        near_next[index * 3 + 2] = 108u;
     }
     changed_index = (ACCUMULATION_HEIGHT / 2) * ACCUMULATION_WIDTH
         + (ACCUMULATION_WIDTH / 2);
@@ -469,6 +583,35 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
                 "accumulation delta did not reduce output (%d >= %d)\n",
                 near_with_delta_size,
                 near_without_delta_size);
+        goto end;
+    }
+    status = accumulation_encode_sequence_delta3(allocator,
+                                                 near_previous,
+                                                 near_current,
+                                                 near_next,
+                                                 "4",
+                                                 &delta_first_size,
+                                                 &delta_second_size,
+                                                 &delta_third_size);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "auto accumulation delta sequence failed: %04x\n",
+                status);
+        goto end;
+    }
+    if (delta_second_size >= delta_first_size) {
+        fprintf(stderr,
+                "second delta frame was not retained (%d >= %d)\n",
+                delta_second_size,
+                delta_first_size);
+        goto end;
+    }
+    if (delta_third_size <= delta_second_size) {
+        fprintf(stderr,
+                "delta accumulation advanced past displayed plane "
+                "(%d <= %d)\n",
+                delta_third_size,
+                delta_second_size);
         goto end;
     }
 
