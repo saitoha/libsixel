@@ -84,7 +84,7 @@ kundither_fast4_decode(unsigned char const *indexed,
 }
 
 int
-test_decoder_0014_decoder_kundither_fast4_parallel_matches_scalar(
+test_decoder_0014_kundither_fast4_matches_scalar(
     int argc,
     char **argv)
 {

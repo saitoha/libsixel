@@ -129,10 +129,7 @@ int test_decoder_0011_decoder_kundither_similarity(int argc, char **argv);
 int test_decoder_0012_decoder_kundither_edge(int argc, char **argv);
 int test_decoder_0013_decoder_kundither_parallel_matches_scalar(int argc,
                                                                 char **argv);
-int
-test_decoder_0014_decoder_kundither_fast4_parallel_matches_scalar(
-    int argc,
-    char **argv);
+int test_decoder_0014_kundither_fast4_matches_scalar(int argc, char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
 int test_lookup_0001_lookup_policy(int argc, char **argv);
 
@@ -315,7 +312,7 @@ static test_entry_t const test_entries[] = {
     { "decoder/0013_decoder_kundither_parallel_matches_scalar",
       test_decoder_0013_decoder_kundither_parallel_matches_scalar },
     { "decoder/0014_decoder_kundither_fast4_parallel_matches_scalar",
-      test_decoder_0014_decoder_kundither_fast4_parallel_matches_scalar },
+      test_decoder_0014_kundither_fast4_matches_scalar },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },
