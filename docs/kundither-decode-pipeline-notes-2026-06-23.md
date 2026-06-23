@@ -294,8 +294,8 @@ worker 0 を早く終わらせる split は、fused undither が全 worker join 
 
 ## Current Branch State
 
-この branch では、fast 4-neighbor mode を `k_undither_fast4` として明示的に
-選べるようにし、parallel decoder worker 内で decode-band overlap と
+この branch では、fast 4-neighbor mode を `lso_undither:Vlight` として
+明示的に選べるようにし、parallel decoder worker 内で decode-band overlap と
 undither を同時に行う fused path を追加中です。
 
 - `sixel_dequantize_k_undither_fast4()` は internal API です。
@@ -323,10 +323,20 @@ undither を同時に行う fused path を追加中です。
   潰します。
 - 正しい方向は、palette storage 自体は広く持ちつつ、worker が観測した最大
   color index と初期 `image->ncolors` から active color count を決めることです。
-  その active count を scalar reference と fused worker の両方で揃えます。
+  ただし default palette 参照では 256 色までは暗黙に有効なので、active count
+  には 256 色 floor を置きます。その active count を scalar reference と fused
+  worker の両方で揃えます。
+- 256 を超える高い color index は active count を引き上げるため、Vlight でも
+  similarity cache の `ncolors * ncolors` cost は残ります。32-80 色を主戦場に
+  する限り問題は小さいですが、公開 option としての残リスクです。根本対応は
+  active palette remap または similarity cache 構造の変更です。
+- `-d` は `-Qk:Ia` と同じ suboption schema parser に載せます。実装上も
+  `src/options.c` の `sixel_option_parse_dequantize_argument()` に schema と
+  解決処理を集約し、decoder と `lsqa` は同じ helper を呼びます。これにより
+  `lso_undither:Vlight` は `l:Vl`、`lso_undither:Vfs` は `l:Vf` と短縮
+  できます。
 - ambiguous prefix については、既存ユーザーが使っていた `-dk_` を
-  `k_undither` として残し、`k_undither_fast4` は `-dk_undither_f` 以上の
-  unique prefix で選ぶ方針です。
+  `k_undither` として残します。
 
 ここまでの検証:
 
@@ -345,13 +355,21 @@ make -C tests \
 processing/decoder/0013_decoder_kundither_parallel_matches_scalar.t \
 processing/decoder/0014_decoder_kundither_fast4_parallel_matches_scalar.t \
 processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.t \
-cli/core/0016_basic_dequantize_unique_prefix.t \
+cli/core/0016_basic_dequantize_vlight_alias.t \
+cli/core/0022_basic_dequantize_legacy_k_prefix.t \
+cli/core/0023_basic_dequantize_vlight_threads_quality.t \
+cli/core/0024_basic_dequantize_vfs_alias.t \
+cli/core/0025_basic_lsqa_dequantize_vlight_alias.t \
 cli/core/0012_basic_direct_with_dequantize.t" \
   check
 shellcheck -x -P "$PWD" \
   tests/processing/decoder/0014_decoder_kundither_fast4_parallel_matches_scalar.t \
   tests/processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.t \
-  tests/cli/core/0016_basic_dequantize_unique_prefix.t
+  tests/cli/core/0016_basic_dequantize_vlight_alias.t \
+  tests/cli/core/0022_basic_dequantize_legacy_k_prefix.t \
+  tests/cli/core/0023_basic_dequantize_vlight_threads_quality.t \
+  tests/cli/core/0024_basic_dequantize_vfs_alias.t \
+  tests/cli/core/0025_basic_lsqa_dequantize_vlight_alias.t
 git diff --check -- \
   src/decoder.c \
   src/decoder.h \
@@ -374,25 +392,27 @@ Autotools は `$TOP_SRCDIR/.local/bin` を優先して使います。今回 `aut
 
 ## Implementation Benchmark
 
-`SIXEL_THREADS=4`、`sixel2png -D`、hyperfine 7 runs / warmup 2 で測定した
-暫定値です。入力は `img2sixel -d fs -p <colors>` で作った一時 SIXEL です。
-PNG 出力まで含む end-to-end time なので、decode filter 単体より保守的な
-比較です。
+`SIXEL_THREADS=4`、`sixel2png -D`、hyperfine 7 runs / warmup 2 で測定しました。
+入力は `img2sixel -d fs -p <colors>` で作った一時 SIXEL です。PNG 出力まで
+含む end-to-end time なので、decode filter 単体より保守的な比較です。
 
-この表は、active palette count の扱いをレビュー指摘後に確定する前の値です。
-fused path が確実に実行されていること、`SIXEL_THREADS` の実効値が同じこと、
-`k_undither` なしの通常 decode と同じ条件であることを再確認してから、最終値へ
-差し替えます。
+| sample | size | colors | direct | lso_undither:Vfs | lso_undither:Vlight |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| snake | 600x450 | 16 | 78.1 ms | 112.6 ms | 94.7 ms |
+| egret | 600x450 | 32 | 77.9 ms | 116.2 ms | 94.5 ms |
+| vimperator | 582x746 | 48 | 54.6 ms | 63.5 ms | 57.9 ms |
+| autumn | 2912x1464 | 64 | 626.8 ms | 1.828 s | 1.494 s |
+| fisheye | 2048x1720 | 80 | 463.3 ms | 1.056 s | 851.2 ms |
 
-| sample | colors | direct | k_undither | k_undither_fast4 |
-| --- | ---: | ---: | ---: | ---: |
-| snake | 16 | 69.1 ms | 105.7 ms | 79.0 ms |
-| egret | 32 | 70.1 ms | 108.9 ms | 87.7 ms |
-| vimperator | 48 | 49.1 ms | 58.7 ms | 50.3 ms |
-| autumn | 64 | 594.4 ms | 1.645 s | 1.436 s |
-| fisheye | 80 | 443.3 ms | 1.021 s | 817.2 ms |
+| sample | Vfs / direct | Vlight / direct | Vlight improvement vs Vfs |
+| --- | ---: | ---: | ---: |
+| snake | 144% | 121% | 16% |
+| egret | 149% | 121% | 19% |
+| vimperator | 116% | 106% | 9% |
+| autumn | 292% | 238% | 18% |
+| fisheye | 228% | 184% | 19% |
 
-fast4 は小中規模では direct decode にかなり近づきます。一方、大きい画像では
+Vlight は小中規模では direct decode にかなり近づきます。一方、大きい画像では
 worker ごとの local RGB 生成と per-worker similarity setup がまだ重く、通常
 decode との差は大きく残っています。次の高速化候補は local buffer flatten と
 RGB temporary allocation の削減、similarity cache の共有または事前固定化、

@@ -34,6 +34,18 @@
 extern "C" {
 #endif
 
+typedef struct sixel_decoder_undither_context {
+    int enabled;
+    int direct_output;
+    int similarity_bias;
+    unsigned char *pixels;
+    unsigned char *palette;
+    int ncolors;
+    int palette_size;
+    int pixel_size;
+    sixel_allocator_t *allocator;
+} sixel_decoder_undither_context_t;
+
 /*
  * Keep the private worker controls exported: Windows Meson test_runner builds
  * link through the shared libsixel import library while decoder regression
@@ -54,7 +66,9 @@ sixel_decoder_parallel_request_start(int direct_mode,
                                      int const *palette,
                                      sixel_timeline_logger_t *logger,
                                      unsigned int decode_flags,
-                                     int *painted_outside_raster);
+                                     int *painted_outside_raster,
+                                     sixel_decoder_undither_context_t
+                                         *undither);
 
 #ifdef __cplusplus
 }

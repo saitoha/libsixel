@@ -121,9 +121,14 @@ static cli_option_help_t const g_option_help_table[] = {
         "-d METHOD, --dequantize=METHOD\n"
         "                           apply palette dequantization.\n"
         "                           METHOD is one of:\n"
-        "                             none        -> disable\n"
-        "                             k_undither  -> Kornelski's\n"
-        "                                            undither\n"
+        "                             none              -> disable\n"
+        "                             k_undither        -> Kornelski's\n"
+        "                                                  undither\n"
+        "                             lso_undither:Vfs\n"
+        "                             l:Vf              -> full FS undither\n"
+        "                             lso_undither:Vlight\n"
+        "                             l:Vl              -> light causal\n"
+        "                                                  undither\n"
     },
     {
         'S',

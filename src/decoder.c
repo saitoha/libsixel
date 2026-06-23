@@ -57,6 +57,7 @@
 
 #include "decoder.h"
 #include "decoder-parallel.h"
+#include "sixel_decode_pixels.h"
 #include "frame-factory.h"
 #include "clipboard.h"
 #include "compat_stub.h"
@@ -1768,6 +1769,62 @@ sixel_dequantize_k_undither(unsigned char *indexed_pixels,
 }
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_k_undither_fast4_rows(
+    unsigned char const *indexed_pixels,
+    int width,
+    int height,
+    unsigned char const *palette,
+    int ncolors,
+    int similarity_bias,
+    int y_start,
+    int y_end,
+    sixel_allocator_t *allocator,
+    unsigned char *rgb)
+{
+    SIXELSTATUS status;
+    sixel_similarity_t similarity;
+
+    memset(&similarity, 0, sizeof(similarity));
+
+    if (indexed_pixels == NULL || width <= 0 || height <= 0 ||
+            palette == NULL || ncolors <= 0 || rgb == NULL ||
+            y_start < 0 || y_end < y_start || y_end > height) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    /*
+     * Decode-fused workers call this helper on a local image that includes
+     * the previous SIXEL band as a top halo.  The caller chooses y_start so
+     * only body rows are copied to the final output.
+     */
+    status = sixel_similarity_init(
+        &similarity,
+        palette,
+        ncolors,
+        similarity_bias,
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    sixel_kundither_filter_noedge_range_offsets(
+        indexed_pixels,
+        width,
+        height,
+        palette,
+        ncolors,
+        &similarity,
+        rgb,
+        y_start,
+        y_end,
+        g_kundither_fast4_neighbor_offsets,
+        4);
+
+    sixel_similarity_destroy(&similarity, allocator);
+    return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_dequantize_k_undither_fast4(unsigned char *indexed_pixels,
                                   int width,
                                   int height,
@@ -1868,21 +1925,6 @@ sixel_dequantize_k_undither_fast4(unsigned char *indexed_pixels,
     *output = rgb;
     return SIXEL_OK;
 }
-/*
- * The dequantizer accepts a method supplied by the shared option helper. The
- * decoder keeps a parallel lookup table that translates the matched index
- * into the execution constant.
- */
-static int const g_decoder_dequant_methods[] = {
-    SIXEL_DEQUANTIZE_NONE,
-    SIXEL_DEQUANTIZE_K_UNDITHER
-};
-
-static sixel_option_choice_t const g_decoder_dequant_choices[] = {
-    { "none", 0 },
-    { "k_undither", 1 }
-};
-
 /* set an option flag to decoder object */
 SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
@@ -1896,10 +1938,6 @@ sixel_decoder_setopt(
     int path_check;
     char const *payload = NULL;
     sixel_clipboard_spec_t clipboard_spec;
-    int match_index;
-    sixel_option_choice_result_t match_result;
-    char match_detail[128];
-    char match_message[256];
     char const *filename = NULL;
     size_t libc_buffer_size;
     char *libc_buffer;
@@ -2026,36 +2064,12 @@ sixel_decoder_setopt(
             goto end;
         }
 
-        match_index = 0;
-        memset(match_detail, 0, sizeof(match_detail));
-        memset(match_message, 0, sizeof(match_message));
-
-        match_result = sixel_option_match_choice(
+        status = sixel_option_parse_dequantize_argument(
             value,
-            g_decoder_dequant_choices,
-            sizeof(g_decoder_dequant_choices) /
-            sizeof(g_decoder_dequant_choices[0]),
-            &match_index,
-            match_detail,
-            sizeof(match_detail));
-        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
-            decoder->dequantize_method =
-                g_decoder_dequant_methods[match_index];
-        } else {
-            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_option_report_ambiguous_prefix(
-                    value,
-                    match_detail,
-                    match_message,
-                    sizeof(match_message));
-            } else {
-                sixel_option_report_invalid_choice(
-                    "unsupported dequantize method.",
-                    match_detail,
-                    match_message,
-                    sizeof(match_message));
-            }
-            status = SIXEL_BAD_ARGUMENT;
+            &decoder->dequantize_method,
+            NULL,
+            0u);
+        if (SIXEL_FAILED(status)) {
             goto end;
         }
         break;
@@ -2200,6 +2214,7 @@ sixel_decoder_decode(
     unsigned char *palette = NULL;
     unsigned char *rgb_pixels = NULL;
     unsigned char *direct_pixels = NULL;
+    unsigned char *fast4_pixels = NULL;
     unsigned char *output_pixels;
     unsigned char *output_palette;
     int output_pixelformat;
@@ -2337,7 +2352,31 @@ sixel_decoder_decode(
 
     ncolors = 0;
 
-    if (decoder->direct_color != 0 &&
+    if (decoder->dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
+        if (logger_prepared) {
+            sixel_timeline_logger_logf(logger,
+                              "decoder",
+                              "undither_fast4",
+                              "start",
+                              0);
+        }
+        status = sixel_decode_kundither_fast4_with_options(
+            raw_data,
+            raw_len,
+            decoder->direct_color != 0,
+            decoder->dequantize_similarity_bias,
+            &fast4_pixels,
+            &sx,
+            &sy,
+            decoder->allocator);
+        if (logger_prepared) {
+            sixel_timeline_logger_logf(logger,
+                              "decoder",
+                              "undither_fast4",
+                              SIXEL_FAILED(status) ? "abort" : "finish",
+                              0);
+        }
+    } else if (decoder->direct_color != 0 &&
             decoder->dequantize_method == SIXEL_DEQUANTIZE_NONE) {
         status = sixel_decode_direct(
             raw_data,
@@ -2366,7 +2405,13 @@ sixel_decoder_decode(
         goto end;
     }
 
-    if (decoder->direct_color != 0 &&
+    if (decoder->dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
+        output_pixels = fast4_pixels;
+        output_palette = NULL;
+        output_pixelformat = decoder->direct_color != 0 ?
+            SIXEL_PIXELFORMAT_RGBA8888 : SIXEL_PIXELFORMAT_RGB888;
+        frame_ncolors = 0;
+    } else if (decoder->direct_color != 0 &&
             decoder->dequantize_method == SIXEL_DEQUANTIZE_NONE) {
         output_pixels = direct_pixels;
         output_palette = NULL;
@@ -2511,6 +2556,9 @@ sixel_decoder_decode(
                 if (output_pixels == direct_pixels) {
                     direct_pixels = NULL;
                 }
+                if (output_pixels == fast4_pixels) {
+                    fast4_pixels = NULL;
+                }
                 if (output_palette == palette) {
                     palette = NULL;
                 }
@@ -2611,6 +2659,7 @@ end:
     sixel_allocator_free(decoder->allocator, palette);
     sixel_allocator_free(decoder->allocator, direct_pixels);
     sixel_allocator_free(decoder->allocator, rgb_pixels);
+    sixel_allocator_free(decoder->allocator, fast4_pixels);
     if (clipboard_blob != NULL) {
         free(clipboard_blob);
     }

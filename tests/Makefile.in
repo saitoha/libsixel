@@ -150,6 +150,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/decoder/0012_decoder_kundither_edge.c \
 	processing/decoder/0013_decoder_kundither_parallel_matches_scalar.c \
 	processing/decoder/0014_decoder_kundither_fast4_parallel_matches_scalar.c \
+	processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c \
 	processing/decoder/kundither_test_common.h \
 	processing/lookup/0001_lookup_policy.c \
 	processing/dither/0001_dither_policy.c \
@@ -249,6 +250,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0012_decoder_kundither_edge.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0013_decoder_kundither_parallel_matches_scalar.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0014_decoder_kundither_fast4_parallel_matches_scalar.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
@@ -457,6 +459,7 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0013_decoder_kundither_parallel_matches_scalar.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0014_decoder_kundither_fast4_parallel_matches_scalar.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po \
 	processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po \
@@ -1178,6 +1181,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_DECODER_KUNDITHER_EDGE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_DECODER_KUNDITHER_PARALLEL_MATCHES_SCALAR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_DECODER_KUNDITHER_FAST4_PARALLEL_MATCHES_SCALAR \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_DECODER_KUNDITHER_FAST4_FUSED_MATCHES_SCALAR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LOOKUP_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DITHER_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -1297,6 +1301,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0012_decoder_kundither_edge.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0013_decoder_kundither_parallel_matches_scalar.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0014_decoder_kundither_fast4_parallel_matches_scalar.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/kundither_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0001_lookup_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
@@ -2027,6 +2032,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0013_decoder_kundither_parallel_matches_scalar.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0014_decoder_kundither_fast4_parallel_matches_scalar.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po@am__quote@ # am--include-marker
@@ -2655,6 +2661,20 @@ processing/decoder/test_runner-0014_decoder_kundither_fast4_parallel_matches_sca
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0014_decoder_kundither_fast4_parallel_matches_scalar.c' object='processing/decoder/test_runner-0014_decoder_kundither_fast4_parallel_matches_scalar.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0014_decoder_kundither_fast4_parallel_matches_scalar.obj `if test -f 'processing/decoder/0014_decoder_kundither_fast4_parallel_matches_scalar.c'; then $(CYGPATH_W) 'processing/decoder/0014_decoder_kundither_fast4_parallel_matches_scalar.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0014_decoder_kundither_fast4_parallel_matches_scalar.c'; fi`
+
+processing/decoder/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.o: processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Tpo -c -o processing/decoder/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.o `test -f 'processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c' || echo '$(srcdir)/'`processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Tpo processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c' object='processing/decoder/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.o `test -f 'processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c' || echo '$(srcdir)/'`processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c
+
+processing/decoder/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.obj: processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Tpo -c -o processing/decoder/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.obj `if test -f 'processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c'; then $(CYGPATH_W) 'processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Tpo processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c' object='processing/decoder/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.obj `if test -f 'processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c'; then $(CYGPATH_W) 'processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c'; fi`
 
 processing/lookup/test_runner-0001_lookup_policy.o: processing/lookup/0001_lookup_policy.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0001_lookup_policy.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Tpo -c -o processing/lookup/test_runner-0001_lookup_policy.o `test -f 'processing/lookup/0001_lookup_policy.c' || echo '$(srcdir)/'`processing/lookup/0001_lookup_policy.c
@@ -3886,6 +3906,7 @@ distclean: distclean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0013_decoder_kundither_parallel_matches_scalar.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0014_decoder_kundither_fast4_parallel_matches_scalar.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po
@@ -4026,6 +4047,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0012_decoder_kundither_edge.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0013_decoder_kundither_parallel_matches_scalar.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0014_decoder_kundither_fast4_parallel_matches_scalar.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po

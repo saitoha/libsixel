@@ -174,8 +174,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_FORMATTYPE_PALETTE   (1 << 7)
 
 /* method for dequantization */
-#define SIXEL_DEQUANTIZE_NONE            0x0  /* don't dequantize */
-#define SIXEL_DEQUANTIZE_K_UNDITHER      0x1  /* Kornel's undither */
+#define SIXEL_DEQUANTIZE_NONE              0x0  /* don't dequantize */
+#define SIXEL_DEQUANTIZE_K_UNDITHER        0x1  /* Kornel's undither */
+#define SIXEL_DEQUANTIZE_LSO_UNDITHER_VFS  0x1  /* full FS undither */
+/* LSO Vlight causal undither. */
+#define SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT 0x2
 
 /* quantize model */
 #define SIXEL_QUANTIZE_MODEL_AUTO        0x0

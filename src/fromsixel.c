@@ -65,6 +65,7 @@
 #include <sixel.h>
 #include "output.h"
 #include "decoder-image.h"
+#include "decoder.h"
 #include "decoder-parallel.h"
 #include "sixel_decode_pixels.h"
 #include "timeline-logger.h"
@@ -809,7 +810,8 @@ sixel_decode_raw_impl(
     sixel_allocator_t *allocator, /* allocator object */
     sixel_timeline_logger_t    *logger,
     int logger_prepared,
-    unsigned int decode_flags)
+    unsigned int decode_flags,
+    sixel_decoder_undither_context_t *undither)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
@@ -1048,7 +1050,8 @@ sixel_decode_raw_impl(
                         image->palette,
                         logger_prepared ? logger : NULL,
                         decode_flags,
-                        &context->painted_outside_raster);
+                        &context->painted_outside_raster,
+                        undither);
                     parallel_started = 1;
                     if (status == SIXEL_FALSE) {
                         /* Parallel decode aborted; continue serially. */
@@ -1079,7 +1082,8 @@ sixel_decode_raw_impl(
                         image->palette,
                         logger_prepared ? logger : NULL,
                         decode_flags,
-                        &context->painted_outside_raster);
+                        &context->painted_outside_raster,
+                        undither);
                     parallel_started = 1;
                     if (status == SIXEL_FALSE) {
                         /* Parallel decode aborted; continue serially. */
@@ -1109,7 +1113,8 @@ sixel_decode_raw_impl(
                             image->palette,
                             logger_prepared ? logger : NULL,
                             decode_flags,
-                            &context->painted_outside_raster);
+                            &context->painted_outside_raster,
+                            undither);
                         parallel_started = 1;
                         if (status == SIXEL_FALSE) {
                             /* Parallel decode aborted; continue serially. */
@@ -1577,7 +1582,8 @@ sixel_decode_image(
     image_buffer_t    *image,
     parser_context_t  *context,
     sixel_allocator_t *allocator,
-    unsigned int       decode_flags)
+    unsigned int       decode_flags,
+    sixel_decoder_undither_context_t *undither)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_timeline_logger_t *logger;
@@ -1654,7 +1660,8 @@ sixel_decode_image(
                                    allocator,
                                    logger,
                                    logger_prepared,
-                                   decode_flags);
+                                   decode_flags,
+                                   undither);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, image->pixels.p);
         image->pixels.p = NULL;
@@ -1741,7 +1748,8 @@ sixel_decode_raw(
                                 image,
                                 &context,
                                 allocator,
-                                0U);
+                                0U,
+                                NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -1797,6 +1805,205 @@ end:
     return status;
 }
 
+static SIXELSTATUS
+sixel_decode_fast4_promote_rgba(unsigned char **out_pixels,
+                                unsigned char const *rgb_pixels,
+                                int width,
+                                int height,
+                                sixel_allocator_t *allocator)
+{
+    unsigned char *rgba_pixels;
+    size_t pixels;
+    size_t pixel_index;
+    size_t rgb_index;
+    size_t rgba_index;
+
+    if (out_pixels == NULL || rgb_pixels == NULL ||
+            width <= 0 || height <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((size_t)width > ((size_t)-1 / (size_t)height)) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    pixels = (size_t)width * (size_t)height;
+    if (pixels > ((size_t)-1 / 4u)) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    rgba_pixels = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        pixels * 4u);
+    if (rgba_pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decode_kundither_fast4: rgba allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (pixel_index = 0u; pixel_index < pixels; ++pixel_index) {
+        rgb_index = pixel_index * 3u;
+        rgba_index = pixel_index * 4u;
+        rgba_pixels[rgba_index + 0u] = rgb_pixels[rgb_index + 0u];
+        rgba_pixels[rgba_index + 1u] = rgb_pixels[rgb_index + 1u];
+        rgba_pixels[rgba_index + 2u] = rgb_pixels[rgb_index + 2u];
+        rgba_pixels[rgba_index + 3u] = 255u;
+    }
+
+    *out_pixels = rgba_pixels;
+    return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_kundither_fast4_with_options(unsigned char *p,
+                                          int len,
+                                          int direct_output,
+                                          int similarity_bias,
+                                          unsigned char **pixels,
+                                          int *pwidth,
+                                          int *pheight,
+                                          sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    parser_context_t context;
+    image_buffer_t *image;
+    sixel_decoder_undither_context_t undither;
+    unsigned char *palette;
+    unsigned char *rgb_pixels;
+    unsigned char *rgba_pixels;
+    int alloc_size;
+    int n;
+
+    status = SIXEL_FALSE;
+    image = NULL;
+    palette = NULL;
+    rgb_pixels = NULL;
+    rgba_pixels = NULL;
+    memset(&undither, 0, sizeof(undither));
+
+    if (p == NULL || len <= 0 || pixels == NULL ||
+            pwidth == NULL || pheight == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *pixels = NULL;
+    *pwidth = 0;
+    *pheight = 0;
+
+    if (allocator) {
+        sixel_allocator_ref(allocator);
+    } else {
+        status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+        if (SIXEL_FAILED(status)) {
+            allocator = NULL;
+            goto end;
+        }
+    }
+
+    image = (image_buffer_t *)malloc(sizeof(*image));
+    if (image == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decode_kundither_fast4: malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    image->pixels.p = NULL;
+    image->ormode_indexes = NULL;
+
+    undither.enabled = 1;
+    undither.direct_output = direct_output != 0;
+    undither.similarity_bias = similarity_bias;
+    undither.allocator = allocator;
+
+    status = sixel_decode_image(p,
+                                len,
+                                1,
+                                1,
+                                1,
+                                image,
+                                &context,
+                                allocator,
+                                0U,
+                                &undither);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    *pwidth = image->width;
+    *pheight = image->height;
+    if (undither.pixels != NULL) {
+        *pixels = undither.pixels;
+        undither.pixels = NULL;
+        status = SIXEL_OK;
+        goto end;
+    }
+
+    /*
+     * The fused path requires a raster-sized parallel decode.  Inputs without
+     * that shape still use the same fast4 reconstruction after normal raw
+     * decoding so the command-line mode has one stable visual definition.
+     */
+    alloc_size = image->ncolors;
+    if (alloc_size < SIXEL_PALETTE_MAX_DECODER) {
+        alloc_size = SIXEL_PALETTE_MAX_DECODER;
+    }
+    palette = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        (size_t)alloc_size * 3u);
+    if (palette == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decode_kundither_fast4: palette allocation failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    for (n = 0; n < alloc_size; ++n) {
+        palette[n * 3 + 0] = image->palette[n] >> 16 & 0xff;
+        palette[n * 3 + 1] = image->palette[n] >> 8 & 0xff;
+        palette[n * 3 + 2] = image->palette[n] & 0xff;
+    }
+
+    status = sixel_dequantize_k_undither_fast4(
+        image->pixels.in_bytes,
+        image->width,
+        image->height,
+        palette,
+        image->ncolors,
+        similarity_bias,
+        allocator,
+        &rgb_pixels);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    if (direct_output) {
+        status = sixel_decode_fast4_promote_rgba(
+            &rgba_pixels,
+            rgb_pixels,
+            image->width,
+            image->height,
+            allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        *pixels = rgba_pixels;
+        rgba_pixels = NULL;
+    } else {
+        *pixels = rgb_pixels;
+        rgb_pixels = NULL;
+    }
+    status = SIXEL_OK;
+
+end:
+    if (image != NULL) {
+        image_buffer_release_ormode_indexes(image, allocator);
+        sixel_allocator_free(allocator, image->pixels.p);
+        free(image);
+    }
+    sixel_allocator_free(allocator, palette);
+    sixel_allocator_free(allocator, rgb_pixels);
+    sixel_allocator_free(allocator, rgba_pixels);
+    sixel_allocator_free(allocator, undither.pixels);
+    sixel_allocator_unref(allocator);
+    return status;
+}
+
 
 /* convert sixel data into wide-indexed(16bit) pixels and palette data */
 SIXELAPI SIXELSTATUS
@@ -1843,7 +2050,8 @@ sixel_decode_wide(
                                 image,
                                 &context,
                                 allocator,
-                                0U);
+                                0U,
+                                NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -1945,7 +2153,8 @@ sixel_decode_direct_with_options(
                                 image,
                                 &context,
                                 allocator,
-                                decode_flags);
+                                decode_flags,
+                                NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }

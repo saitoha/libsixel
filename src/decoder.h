@@ -71,6 +71,19 @@ sixel_dequantize_k_undither_fast4(unsigned char *indexed_pixels,
                                   sixel_allocator_t *allocator,
                                   unsigned char **output);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_k_undither_fast4_rows(
+    unsigned char const *indexed_pixels,
+    int width,
+    int height,
+    unsigned char const *palette,
+    int ncolors,
+    int similarity_bias,
+    int y_start,
+    int y_end,
+    sixel_allocator_t *allocator,
+    unsigned char *rgb);
+
 
 #endif /* LIBSIXEL_DECODER_H */
 

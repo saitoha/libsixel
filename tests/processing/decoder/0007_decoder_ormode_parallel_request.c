@@ -83,6 +83,7 @@ test_decoder_0007_decoder_ormode_parallel_request(int argc, char **argv)
         image->palette,
         NULL,
         0U,
+        NULL,
         NULL);
     if (status != SIXEL_OK) {
         fprintf(stderr, "OR-mode parallel request returned %04x\n", status);

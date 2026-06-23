@@ -74,6 +74,7 @@
 #define SIXEL_OPTION_CHOICE_SUGGESTION_LIMIT 5u
 #define SIXEL_OPTION_CHOICE_SUGGESTION_THRESHOLD 0.6
 #define SIXEL_OPTION_CHOICE_SHORT_NAME_LENGTH 3u
+#define SIXEL_OPTION_DEQUANTIZE_LSO_BASE (-1)
 
 #if defined(__clang__)
 # if __has_attribute(unused)
@@ -101,6 +102,47 @@ typedef struct sixel_option_choice_suggestion {
     double score;
     size_t distance;
 } sixel_option_choice_suggestion_t;
+
+static sixel_suboption_choice_t const
+g_sixel_option_dequantize_lso_variant_choices[] = {
+    { "fs", SIXEL_DEQUANTIZE_LSO_UNDITHER_VFS },
+    { "light", SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT }
+};
+
+static sixel_suboption_key_t const
+g_sixel_option_dequantize_lso_subkeys[] = {
+    {
+        "variant",
+        "V",
+        NULL,
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_sixel_option_dequantize_lso_variant_choices,
+        sizeof(g_sixel_option_dequantize_lso_variant_choices)
+        / sizeof(g_sixel_option_dequantize_lso_variant_choices[0])
+    }
+};
+
+static sixel_option_value_schema_t const
+g_sixel_option_dequantize_values[] = {
+    { "none", SIXEL_DEQUANTIZE_NONE, NULL, 0u },
+    { "k_undither", SIXEL_DEQUANTIZE_K_UNDITHER, NULL, 0u },
+    {
+        "lso_undither",
+        SIXEL_OPTION_DEQUANTIZE_LSO_BASE,
+        g_sixel_option_dequantize_lso_subkeys,
+        sizeof(g_sixel_option_dequantize_lso_subkeys)
+        / sizeof(g_sixel_option_dequantize_lso_subkeys[0])
+    }
+};
+
+static sixel_option_argument_schema_t const
+g_sixel_option_dequantize_schema = {
+    SIXEL_OPTFLAG_DEQUANTIZE,
+    "dequantize",
+    g_sixel_option_dequantize_values,
+    sizeof(g_sixel_option_dequantize_values)
+    / sizeof(g_sixel_option_dequantize_values[0])
+};
 
 static double
 sixel_option_normalized_levenshtein(
@@ -1025,6 +1067,75 @@ sixel_option_free_argument_resolution(
     }
     free(resolution->assignments);
     sixel_option_reset_argument_resolution(resolution);
+}
+
+SIXELSTATUS
+sixel_option_parse_dequantize_argument(
+    char const *argument,
+    int *method,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+    sixel_option_argument_resolution_t resolution;
+    sixel_suboption_assignment_t const *assignment;
+    int parsed_method;
+
+    status = SIXEL_OK;
+    assignment = NULL;
+    parsed_method = SIXEL_DEQUANTIZE_NONE;
+    memset(&resolution, 0, sizeof(resolution));
+
+    if (diagnostic != NULL && diagnostic_size > 0u) {
+        diagnostic[0] = '\0';
+    }
+    if (method == NULL || argument == NULL || argument[0] == '\0') {
+        sixel_helper_set_additional_message(
+            "-d/--dequantize requires a dequantize method.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_option_parse_argument_with_suboptions(
+        argument,
+        &g_sixel_option_dequantize_schema,
+        &resolution,
+        diagnostic,
+        diagnostic_size);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    parsed_method = resolution.resolved_base_value;
+    if (parsed_method == SIXEL_OPTION_DEQUANTIZE_LSO_BASE) {
+        if (resolution.assignment_count != 1u) {
+            sixel_helper_set_additional_message(
+                "lso_undither requires Vfs or Vlight.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+        assignment = &resolution.assignments[0];
+        if (strcmp(assignment->resolved_value_text, "fs") == 0) {
+            parsed_method = SIXEL_DEQUANTIZE_LSO_UNDITHER_VFS;
+        } else if (strcmp(assignment->resolved_value_text, "light") == 0) {
+            parsed_method = SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT;
+        } else {
+            sixel_helper_set_additional_message(
+                "unsupported lso_undither variant.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+    } else if (resolution.assignment_count != 0u) {
+        sixel_helper_set_additional_message(
+            "this dequantize method does not accept suboptions.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+
+    *method = parsed_method;
+
+cleanup:
+    sixel_option_free_argument_resolution(&resolution);
+    return status;
 }
 
 SIXELSTATUS

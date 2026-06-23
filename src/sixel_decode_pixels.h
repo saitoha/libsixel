@@ -43,6 +43,16 @@ sixel_decode_direct_with_options(unsigned char *p,
                                  sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_kundither_fast4_with_options(unsigned char *p,
+                                          int len,
+                                          int direct_output,
+                                          int similarity_bias,
+                                          unsigned char **pixels,
+                                          int *pwidth,
+                                          int *pheight,
+                                          sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decode_pixels(unsigned char const *data,
                     size_t size,
                     sixel_decode_options_t const *options,
