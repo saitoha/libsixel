@@ -15,7 +15,7 @@
 
 #include <sixel.h>
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && defined(HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS)
 #define LSQA_BEGIN_DEPRECATED_DECLARATIONS \
     _Pragma("GCC diagnostic push") \
     _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
