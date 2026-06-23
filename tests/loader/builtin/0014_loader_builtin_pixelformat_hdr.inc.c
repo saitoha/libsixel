@@ -16,6 +16,7 @@ run_builtin_loader_hdr_numeric_probe_case(char const *label,
         return 1;
     }
 
+    memset(&options, 0, sizeof(options));
     memset(context, 0, sizeof(*context));
     options.require_static = 1;
     options.use_palette = 0;

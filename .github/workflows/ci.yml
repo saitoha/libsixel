@@ -4201,6 +4201,10 @@ jobs:
             extra_packages: >-
               node
             exec_type: bash
+            # On macOS Emscripten tests spawn node through the shebang, and
+            # the hosted runner can hit the per-user process limit even at
+            # modest parallelism.
+            make: make MAKEFLAGS=-j1
 
           - label: Meson-macos-aarch64-emscripten-ubsan-static
             buildtool: meson
@@ -4395,6 +4399,9 @@ jobs:
               node
               gcovr
             exec_type: bash
+            # On macOS Emscripten tests spawn node through the shebang, and
+            # coverage instrumentation keeps each process alive longer.
+            make: make MAKEFLAGS=-j1
 
           - label: Meson-macos-aarch64-emscripten-coverage
             buildtool: meson

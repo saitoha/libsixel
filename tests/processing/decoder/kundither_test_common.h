@@ -19,6 +19,18 @@
 
 #include "src/decoder.h"
 
+#if defined(__clang__)
+# if __has_attribute(unused)
+#  define SIXEL_TEST_UNUSED __attribute__((unused))
+# else
+#  define SIXEL_TEST_UNUSED
+# endif
+#elif defined(__GNUC__)
+# define SIXEL_TEST_UNUSED __attribute__((unused))
+#else
+# define SIXEL_TEST_UNUSED
+#endif
+
 #define KUNDITHER_TEST_WIDTH 6
 #define KUNDITHER_TEST_HEIGHT 4
 #define KUNDITHER_TEST_COLORS 32
@@ -67,7 +79,7 @@ kundither_test_compare(unsigned char const *actual,
     return 1;
 }
 
-static int
+static SIXEL_TEST_UNUSED int
 kundither_test_run(char const *label,
                    int similarity_bias,
                    int edge_strength,

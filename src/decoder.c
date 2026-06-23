@@ -926,6 +926,7 @@ sixel_similarity_compare(sixel_similarity_t *similarity,
     return result;
 }
 
+#if SIXEL_ENABLE_THREADS
 static void
 sixel_similarity_enable_simd(sixel_similarity_t *similarity)
 {
@@ -1030,6 +1031,7 @@ sixel_similarity_prepare_image_order(sixel_similarity_t *similarity,
         }
     }
 }
+#endif
 
 static inline unsigned int
 sixel_similarity_cached_compare(sixel_similarity_t *similarity,
