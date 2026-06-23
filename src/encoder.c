@@ -3581,6 +3581,7 @@ sixel_encoder_bind_transparent_mask(
         return SIXEL_OK;
     }
     sixel_dither_clear_pipeline_transparent_mask_hint(dither);
+    sixel_dither_clear_pipeline_accumulation_buffer_hint(dither);
 
     /*
      * Reuse frame-owned masks unless accumulation mode needs a combined mask.
@@ -3668,6 +3669,13 @@ sixel_encoder_bind_transparent_mask(
         dither,
         encoder->accumulation_mask,
         pixel_count,
+        dither->keycolor);
+    sixel_dither_set_pipeline_accumulation_buffer_hint(
+        dither,
+        encoder->accumulation_pixels,
+        encoder->accumulation_pixels_size,
+        encoder->accumulation_width,
+        encoder->accumulation_height,
         dither->keycolor);
 
 end:

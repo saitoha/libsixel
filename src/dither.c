@@ -1290,6 +1290,174 @@ sixel_dither_resolve_indexes(
     return status;
 }
 
+static unsigned int
+sixel_dither_distance_rgb888(unsigned char const *left,
+                             unsigned char const *right)
+{
+    int dr;
+    int dg;
+    int db;
+
+    dr = (int)left[0] - (int)right[0];
+    dg = (int)left[1] - (int)right[1];
+    db = (int)left[2] - (int)right[2];
+
+    return (unsigned int)(dr * dr + dg * dg + db * db);
+}
+
+static int
+sixel_dither_has_compatible_accumulation_hint(
+    sixel_dither_t const *dither,
+    int width,
+    int height,
+    size_t total_pixels)
+{
+    size_t expected_size;
+
+    expected_size = 0u;
+    if (dither == NULL || dither->pipeline_accumulation_pixels == NULL) {
+        return 0;
+    }
+    if (dither->pipeline_accumulation_keycolor < 0 ||
+        dither->pipeline_accumulation_keycolor >= SIXEL_PALETTE_MAX) {
+        return 0;
+    }
+    if (dither->pipeline_accumulation_width != width ||
+        dither->pipeline_accumulation_height != height) {
+        return 0;
+    }
+    if (total_pixels > SIZE_MAX / 3u) {
+        return 0;
+    }
+    expected_size = total_pixels * 3u;
+    if (dither->pipeline_accumulation_pixels_size < expected_size) {
+        return 0;
+    }
+
+    return 1;
+}
+
+static SIXELSTATUS
+sixel_dither_expand_mask_with_accumulation(
+    sixel_dither_t *dither,
+    unsigned char const *pixels,
+    int width,
+    int height,
+    unsigned char const *palette,
+    int ncolors,
+    sixel_lookup_policy_interface_t const *lookup_policy,
+    unsigned char **mask_inout,
+    int *mask_owned_inout,
+    int *apply_mask_inout,
+    int *keycolor_inout)
+{
+    SIXELSTATUS status;
+    unsigned char *expanded_mask;
+    unsigned char const *accumulation;
+    unsigned char const *pixel;
+    unsigned char const *palette_pixel;
+    unsigned char const *accumulation_pixel;
+    size_t total_pixels;
+    size_t index;
+    int color_index;
+    int keycolor;
+    unsigned int palette_distance;
+    unsigned int accumulation_distance;
+
+    status = SIXEL_FALSE;
+    expanded_mask = NULL;
+    accumulation = NULL;
+    pixel = NULL;
+    palette_pixel = NULL;
+    accumulation_pixel = NULL;
+    total_pixels = 0u;
+    index = 0u;
+    color_index = 0;
+    keycolor = (-1);
+    palette_distance = 0u;
+    accumulation_distance = 0u;
+
+    if (dither == NULL || pixels == NULL || palette == NULL ||
+        lookup_policy == NULL || lookup_policy->vtbl == NULL ||
+        lookup_policy->vtbl->map_pixel == NULL ||
+        mask_inout == NULL || mask_owned_inout == NULL ||
+        apply_mask_inout == NULL || keycolor_inout == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (width <= 0 || height <= 0 || ncolors <= 0) {
+        return SIXEL_OK;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    total_pixels = (size_t)width * (size_t)height;
+    if (!sixel_dither_has_compatible_accumulation_hint(dither,
+                                                       width,
+                                                       height,
+                                                       total_pixels)) {
+        return SIXEL_OK;
+    }
+
+    /*
+     * Treat the previous RGB888 frame as a virtual extra palette entry.
+     * When keeping the destination pixel is at least as good as the real
+     * palette entry selected by the lookup policy, mark the pixel as
+     * transparent so P2=1 terminals can reuse the accumulated image plane.
+     */
+    expanded_mask = (unsigned char *)sixel_allocator_malloc(
+        dither->allocator,
+        total_pixels);
+    if (expanded_mask == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dither_expand_mask_with_accumulation: "
+            "mask allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (*mask_inout != NULL) {
+        memcpy(expanded_mask, *mask_inout, total_pixels);
+    } else {
+        memset(expanded_mask, 0, total_pixels);
+    }
+
+    accumulation = dither->pipeline_accumulation_pixels;
+    keycolor = dither->pipeline_accumulation_keycolor;
+    for (index = 0u; index < total_pixels; ++index) {
+        if (expanded_mask[index] != 0u) {
+            continue;
+        }
+        pixel = pixels + index * 3u;
+        accumulation_pixel = accumulation + index * 3u;
+        color_index = lookup_policy->vtbl->map_pixel(lookup_policy, pixel);
+        if (color_index < 0 || color_index >= ncolors) {
+            continue;
+        }
+        palette_pixel = palette + (size_t)color_index * 3u;
+        palette_distance = sixel_dither_distance_rgb888(pixel,
+                                                        palette_pixel);
+        accumulation_distance = sixel_dither_distance_rgb888(
+            pixel,
+            accumulation_pixel);
+        if (accumulation_distance <= palette_distance) {
+            expanded_mask[index] = 1u;
+        }
+    }
+
+    if (*mask_inout != NULL && *mask_owned_inout != 0) {
+        sixel_allocator_free(dither->allocator, *mask_inout);
+    }
+    *mask_inout = expanded_mask;
+    *mask_owned_inout = 1;
+    *apply_mask_inout = 1;
+    *keycolor_inout = keycolor;
+    sixel_dither_set_pipeline_transparent_mask_hint(dither,
+                                                    expanded_mask,
+                                                    total_pixels,
+                                                    keycolor);
+    status = SIXEL_OK;
+
+    return status;
+}
+
 
 /*
  * VT340 undocumented behavior regarding the color palette reported
@@ -1472,6 +1640,7 @@ sixel_dither_new(
     (*ppdither)->pipeline_image_width = 0;
     (*ppdither)->pipeline_image_height = 0;
     sixel_dither_clear_pipeline_transparent_mask_hint(*ppdither);
+    sixel_dither_clear_pipeline_accumulation_buffer_hint(*ppdither);
     (*ppdither)->bluenoise_gradient_map = NULL;
     (*ppdither)->bluenoise_gradient_map_size = 0U;
     (*ppdither)->bluenoise_gradient_width = 0;
@@ -2394,6 +2563,63 @@ sixel_dither_set_pipeline_transparent_mask_hint(
     dither->pipeline_transparent_keycolor = keycolor;
 }
 
+void
+sixel_dither_clear_pipeline_accumulation_buffer_hint(
+    sixel_dither_t *dither)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    dither->pipeline_accumulation_pixels = NULL;
+    dither->pipeline_accumulation_pixels_size = 0u;
+    dither->pipeline_accumulation_width = 0;
+    dither->pipeline_accumulation_height = 0;
+    dither->pipeline_accumulation_keycolor = (-1);
+}
+
+SIXEL_INTERNAL_API void
+sixel_dither_set_pipeline_accumulation_buffer_hint(
+    sixel_dither_t *dither,
+    unsigned char const *pixels,
+    size_t pixels_size,
+    int width,
+    int height,
+    int keycolor)
+{
+    size_t expected_size;
+
+    expected_size = 0u;
+    if (dither == NULL) {
+        return;
+    }
+
+    sixel_dither_clear_pipeline_accumulation_buffer_hint(dither);
+    if (pixels == NULL || pixels_size == 0u || width <= 0 || height <= 0) {
+        return;
+    }
+    if (keycolor < 0 || keycolor >= SIXEL_PALETTE_MAX) {
+        return;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return;
+    }
+    expected_size = (size_t)width * (size_t)height;
+    if (expected_size > SIZE_MAX / 3u) {
+        return;
+    }
+    expected_size *= 3u;
+    if (pixels_size < expected_size) {
+        return;
+    }
+
+    dither->pipeline_accumulation_pixels = pixels;
+    dither->pipeline_accumulation_pixels_size = pixels_size;
+    dither->pipeline_accumulation_width = width;
+    dither->pipeline_accumulation_height = height;
+    dither->pipeline_accumulation_keycolor = keycolor;
+}
+
 static void
 sixel_dither_interframe_state_init(sixel_dither_t *dither)
 {
@@ -2591,6 +2817,7 @@ sixel_dither_cleanup_apply_hints(sixel_dither_t *dither)
     dither->pipeline_image_width = 0;
     dither->pipeline_image_height = 0;
     sixel_dither_clear_pipeline_transparent_mask_hint(dither);
+    sixel_dither_clear_pipeline_accumulation_buffer_hint(dither);
     sixel_dither_clear_bluenoise_gradient_map_hint(dither);
     dither->pipeline_logger = NULL;
 }
@@ -2924,7 +3151,7 @@ sixel_dither_apply_palette_with_mode(
     unsigned char const *preset_transparent_mask;
     size_t preset_transparent_mask_size;
     int preset_transparent_keycolor;
-    int using_preset_transparent_mask = 0;
+    int transparent_mask_owned = 0;
     int apply_transparent_mask = 0;
     int keycolor_for_mask = (-1);
     size_t source_depth;
@@ -2949,6 +3176,7 @@ sixel_dither_apply_palette_with_mode(
 #if SIXEL_ENABLE_THREADS
     int shared_lut;
 #endif  /* SIXEL_ENABLE_THREADS */
+    int shared_lut_for_accumulation;
 
     /* ensure dither object is not null */
     if (dither == NULL) {
@@ -3021,6 +3249,7 @@ sixel_dither_apply_palette_with_mode(
     preset_transparent_mask_size = 0u;
     preset_transparent_keycolor = (-1);
     parallel_active = dither->pipeline_parallel_active;
+    shared_lut_for_accumulation = 0;
 #if defined(__PCC__) || defined(__TINYC__)
     /*
      * pcc and TinyCC builds do not provide the thread-safety guarantees that
@@ -3066,7 +3295,7 @@ sixel_dither_apply_palette_with_mode(
         transparent_mask = (unsigned char *)preset_transparent_mask;
         keycolor_for_mask = preset_transparent_keycolor;
         apply_transparent_mask = 1;
-        using_preset_transparent_mask = 1;
+        transparent_mask_owned = 0;
     } else if (dither->keycolor >= 0
             && sixel_dither_pixelformat_has_alpha(source_pixelformat)
             && total_pixels > 0U) {
@@ -3087,6 +3316,7 @@ sixel_dither_apply_palette_with_mode(
             goto end;
         }
         memset(transparent_mask, 0, total_pixels);
+        transparent_mask_owned = 1;
         keycolor_for_mask = dither->keycolor;
         for (index = 0U; index < total_pixels; ++index) {
             if (sixel_dither_extract_alpha_u8(
@@ -3312,6 +3542,49 @@ sixel_dither_apply_palette_with_mode(
         palette_entry_capacity =
             entries_view.entries_size / (size_t)entries_view.depth;
     }
+    if (pipeline_pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+        entries_view.depth == 3 &&
+        sixel_dither_has_compatible_accumulation_hint(dither,
+                                                      width,
+                                                      height,
+                                                      total_pixels)) {
+        shared_lut_for_accumulation =
+            sixel_dither_lookup_shared_instance_enabled(dither,
+                                                        dither->lut_policy);
+        status = sixel_dither_prepare_lookup_policy(
+            &dither->lookup_policy,
+            entries_view.entries,
+            float32_view.entries,
+            entries_view.depth,
+            float32_view.depth,
+            dither->ncolors,
+            dither->optimized,
+            dither->lut_policy,
+            shared_lut_for_accumulation,
+            pipeline_pixelformat,
+            parallel_active,
+            dither->lookup_policy,
+            NULL,
+            dither->allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        status = sixel_dither_expand_mask_with_accumulation(
+            dither,
+            input_pixels,
+            width,
+            height,
+            entries_view.entries,
+            dither->ncolors,
+            dither->lookup_policy,
+            &transparent_mask,
+            &transparent_mask_owned,
+            &apply_transparent_mask,
+            &keycolor_for_mask);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
 #if SIXEL_ENABLE_THREADS
     shared_lut = sixel_dither_lookup_shared_instance_enabled(
         dither,
@@ -3495,7 +3768,7 @@ end:
          * Frame-owned preset masks are borrowed pointers and must not be
          * released here.
          */
-        if (transparent_mask != NULL && !using_preset_transparent_mask) {
+        if (transparent_mask != NULL && transparent_mask_owned != 0) {
             sixel_allocator_free(dither->allocator, transparent_mask);
         }
         sixel_dither_cleanup_apply_hints(dither);

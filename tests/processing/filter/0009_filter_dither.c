@@ -206,6 +206,107 @@ test_transparent_mask_fence_serial(void)
     return test_transparent_mask_fence_core(0);
 }
 
+static int
+test_accumulation_buffer_beats_palette_candidate(void)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_dither_t *baseline_dither;
+    sixel_dither_t *accumulation_dither;
+    sixel_index_t *baseline_indexes;
+    sixel_index_t *accumulation_indexes;
+    unsigned char palette[6];
+    unsigned char pixel[3];
+    unsigned char accumulation[3];
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    baseline_dither = NULL;
+    accumulation_dither = NULL;
+    baseline_indexes = NULL;
+    accumulation_indexes = NULL;
+    palette[0] = 0u;
+    palette[1] = 0u;
+    palette[2] = 0u;
+    palette[3] = 160u;
+    palette[4] = 160u;
+    palette[5] = 160u;
+    pixel[0] = 100u;
+    pixel[1] = 100u;
+    pixel[2] = 100u;
+    accumulation[0] = 105u;
+    accumulation[1] = 105u;
+    accumulation[2] = 105u;
+
+    status = make_allocator(&allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = make_dither(allocator, 2, &baseline_dither);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = make_dither(allocator, 2, &accumulation_dither);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    sixel_dither_set_palette(baseline_dither, palette);
+    sixel_dither_set_pixelformat(baseline_dither, SIXEL_PIXELFORMAT_RGB888);
+    sixel_dither_set_diffusion_type(baseline_dither, SIXEL_DIFFUSE_NONE);
+    sixel_dither_set_optimize_palette(baseline_dither, 0);
+    sixel_dither_set_transparent(baseline_dither, 0);
+
+    sixel_dither_set_palette(accumulation_dither, palette);
+    sixel_dither_set_pixelformat(accumulation_dither,
+                                 SIXEL_PIXELFORMAT_RGB888);
+    sixel_dither_set_diffusion_type(accumulation_dither, SIXEL_DIFFUSE_NONE);
+    sixel_dither_set_optimize_palette(accumulation_dither, 0);
+    sixel_dither_set_transparent(accumulation_dither, 0);
+    sixel_dither_set_pipeline_accumulation_buffer_hint(
+        accumulation_dither,
+        accumulation,
+        sizeof(accumulation),
+        1,
+        1,
+        0);
+
+    baseline_indexes = sixel_dither_apply_palette(baseline_dither,
+                                                  pixel,
+                                                  1,
+                                                  1);
+    if (baseline_indexes == NULL || baseline_indexes[0] == 0) {
+        goto cleanup;
+    }
+    accumulation_indexes = sixel_dither_apply_palette(accumulation_dither,
+                                                      pixel,
+                                                      1,
+                                                      1);
+    if (accumulation_indexes == NULL || accumulation_indexes[0] != 0) {
+        goto cleanup;
+    }
+    status = SIXEL_OK;
+
+cleanup:
+    if (baseline_indexes != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, baseline_indexes);
+    }
+    if (accumulation_indexes != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, accumulation_indexes);
+    }
+    if (baseline_dither != NULL) {
+        sixel_dither_unref(baseline_dither);
+    }
+    if (accumulation_dither != NULL) {
+        sixel_dither_unref(accumulation_dither);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
+
+    return SIXEL_SUCCEEDED(status);
+}
+
 #if SIXEL_ENABLE_THREADS
 static int
 test_transparent_mask_fence_parallel(void)
@@ -310,6 +411,10 @@ test_filter_0009_filter_dither(int argc, char **argv)
 #if !defined(_WIN32)
     if (!test_transparent_mask_fence_serial()) {
         fprintf(stderr, "transparent mask fence serial path failed\n");
+        success = 0;
+    }
+    if (!test_accumulation_buffer_beats_palette_candidate()) {
+        fprintf(stderr, "accumulation candidate dither path failed\n");
         success = 0;
     }
 #if SIXEL_ENABLE_THREADS
