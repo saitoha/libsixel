@@ -34,20 +34,27 @@
 extern "C" {
 #endif
 
-int sixel_decoder_parallel_resolve_threads(void);
-SIXELSTATUS sixel_decoder_parallel_override_threads(char const *text);
-SIXELSTATUS sixel_decoder_parallel_request_start(int direct_mode,
-                                                 int ormode,
-                                                 unsigned char *input,
-                                                 int length,
-                                                 unsigned char *anchor,
-                                                 image_buffer_t *image,
-                                                 int initial_color_index,
-                                                 int const *palette,
-                                                 sixel_timeline_logger_t
-                                                 *logger,
-                                                 unsigned int decode_flags,
-                                                 int *painted_outside_raster);
+/*
+ * Keep the private worker controls exported: Windows Meson test_runner builds
+ * link through the shared libsixel import library while decoder regression
+ * tests call these helpers directly.
+ */
+SIXEL_INTERNAL_API int
+sixel_decoder_parallel_resolve_threads(void);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decoder_parallel_override_threads(char const *text);
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decoder_parallel_request_start(int direct_mode,
+                                     int ormode,
+                                     unsigned char *input,
+                                     int length,
+                                     unsigned char *anchor,
+                                     image_buffer_t *image,
+                                     int initial_color_index,
+                                     int const *palette,
+                                     sixel_timeline_logger_t *logger,
+                                     unsigned int decode_flags,
+                                     int *painted_outside_raster);
 
 #ifdef __cplusplus
 }

@@ -1395,9 +1395,12 @@ jobs:
 
           python -m pip install --upgrade pip
           python -m pip install meson ninja
-          if (-not (Get-Command clang -ErrorAction SilentlyContinue)) {
+          $clangCommand = Get-Command clang -ErrorAction SilentlyContinue
+          if (-not $clangCommand) {
             throw "clang was not found in PATH after MSVC environment setup."
           }
+          $clangRuntimeDir = Split-Path -Parent $clangCommand.Source
+          $env:PATH = "$clangRuntimeDir;$env:PATH"
 
           $workspace = (Get-Location).Path
           $targetCorpus = Join-Path $workspace '.tmp\fuzz-corpus-loader\component\wic'
@@ -1496,9 +1499,10 @@ jobs:
           }
 
           $runLog = Join-Path $artifactDir 'run.log'
+          New-Item -ItemType File -Force -Path $runLog | Out-Null
           & $harness @fuzzArgs $targetCorpusPosix 2>&1 | Tee-Object -FilePath $runLog
           $fuzzExit = $LASTEXITCODE
-          $completed = Select-String -Path $runLog -Pattern 'DONE   cov:|INFO: exiting: 0' | Select-Object -Last 1
+          $completed = Select-String -Path $runLog -Pattern 'DONE   cov:|INFO: exiting: 0' -ErrorAction SilentlyContinue | Select-Object -Last 1
           $crashPatterns = @('crash-*', 'timeout-*', 'oom-*', 'leak-*')
           $crashInputs = @()
           foreach ($pattern in $crashPatterns) {
@@ -1513,7 +1517,7 @@ jobs:
             throw "libFuzzer did not report completion for wic loader target."
           }
           if ($fuzzExit -eq 0) {
-            $covLine = Select-String -Path $runLog -Pattern 'cov: [0-9]+' | Select-Object -Last 1
+            $covLine = Select-String -Path $runLog -Pattern 'cov: [0-9]+' -ErrorAction SilentlyContinue | Select-Object -Last 1
             if (-not $covLine -or $covLine.Line -notmatch 'cov: ([0-9]+)') {
               throw "could not parse final coverage from run.log."
             }

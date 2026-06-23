@@ -179,6 +179,7 @@ test_encoder_encode_frame_writes_output(void)
     sixel_frame_t *frame;
     sixel_output_t *output;
     test_output_counter_t counter;
+    char const *sink_path;
 
     status = SIXEL_FALSE;
     allocator = NULL;
@@ -187,6 +188,13 @@ test_encoder_encode_frame_writes_output(void)
     output = NULL;
     counter.calls = 0;
     counter.bytes = 0;
+    sink_path = NULL;
+
+#if defined(_WIN32)
+    sink_path = "NUL";
+#else
+    sink_path = "/dev/null";
+#endif
 
     status = make_allocator(&allocator);
     if (SIXEL_FAILED(status)) {
@@ -194,6 +202,16 @@ test_encoder_encode_frame_writes_output(void)
     }
 
     status = sixel_encoder_new(&encoder, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    /*
+     * encode_frame writes animation macro controls to encoder->outfd even
+     * when a custom sixel_output_t receives the image body. Keep this TAP
+     * runner quiet while still counting the callback output below.
+     */
+    status = sixel_encoder_setopt(encoder, SIXEL_OPTFLAG_OUTPUT, sink_path);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }

@@ -49,12 +49,17 @@ typedef struct image_buffer {
     int palette[SIXEL_PALETTE_MAX_DECODER];
 } image_buffer_t;
 
-SIXELSTATUS image_buffer_init(image_buffer_t *image,
-                              int width,
-                              int height,
-                              int bgindex,
-                              int depth,
-                              sixel_allocator_t *allocator);
+/*
+ * Decoder request tests initialize a private image buffer through test_runner.
+ * Export this constructor so Windows shared-library builds can link it.
+ */
+SIXEL_INTERNAL_API SIXELSTATUS
+image_buffer_init(image_buffer_t *image,
+                  int width,
+                  int height,
+                  int bgindex,
+                  int depth,
+                  sixel_allocator_t *allocator);
 
 SIXELSTATUS image_buffer_resize(image_buffer_t *image,
                                 int width,

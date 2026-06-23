@@ -28,8 +28,7 @@ test_encoder_core_ormode_pipeline_write(char *data, int size, void *priv)
 }
 
 int
-test_encoder_core_0005_encoder_core_ormode_pipeline_matches_body(int argc,
-                                                                 char **argv)
+test_encoder_core_0005_ormode_pipeline_body_match(int argc, char **argv)
 {
     SIXELSTATUS status;
     sixel_dither_t *serial_dither;

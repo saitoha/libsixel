@@ -1167,7 +1167,7 @@ sixel_decoder_threads_resolve_env(void)
     return 1;
 }
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decoder_parallel_override_threads(char const *text)
 {
     SIXELSTATUS status;
@@ -1193,7 +1193,7 @@ end:
     return status;
 }
 
-int
+SIXEL_INTERNAL_API int
 sixel_decoder_parallel_resolve_threads(void)
 {
     int threads;
@@ -1213,7 +1213,7 @@ sixel_decoder_parallel_resolve_threads(void)
     return threads;
 }
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decoder_parallel_request_start(int direct_mode,
                                      int ormode,
                                      unsigned char *input,

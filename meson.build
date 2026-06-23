@@ -1924,8 +1924,16 @@ elif cpu == 'x86'
 elif cpu == 'aarch64'
   if cc.has_header('arm_neon.h')
     conf.set('HAVE_ARM_NEON_H', 1)
-    conf.set('HAVE_NEON', 1)
-    simd_message = 'neon'
+    if cc.compiles('''
+        #include <arm_neon.h>
+        int main(void){
+          int32x4_t v = vdupq_n_s32(0); (void)v; return 0;
+        }''')
+      conf.set('HAVE_NEON', 1)
+      simd_message = 'neon'
+    else
+      simd_message = 'no 2'
+    endif
   else
     simd_message = 'no'
   endif

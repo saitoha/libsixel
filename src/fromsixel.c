@@ -458,7 +458,7 @@ hls_to_rgb(int hue, int lum, int sat)
 }
 
 
-SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 image_buffer_init(
     image_buffer_t        *image,
     int                    width,

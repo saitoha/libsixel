@@ -27,8 +27,7 @@ test_encoder_core_ormode_body_write(char *data, int size, void *priv)
 }
 
 int
-test_encoder_core_0006_encoder_core_ormode_body_skips_empty_planes(int argc,
-                                                                   char **argv)
+test_encoder_core_0006_ormode_body_skip_empty_planes(int argc, char **argv)
 {
     SIXELSTATUS status;
     sixel_output_t *output;
