@@ -718,6 +718,27 @@ foreach h : std_headers
   endif
 endforeach
 
+# Match Autotools so Meson does not force the fallback typedef on POSIX
+# libcs that already expose ssize_t, especially 32-bit glibc.
+ssize_t_prefix = '''
+#if !defined(_POSIX_C_SOURCE)
+# define _POSIX_C_SOURCE 200809L
+#endif
+'''
+if conf.has('HAVE_SYS_TYPES_H')
+  ssize_t_prefix += '#include <sys/types.h>\n'
+endif
+if cc.compiles(ssize_t_prefix + '''
+    int main(void) {
+      ssize_t value;
+      value = (ssize_t)0;
+      (void)value;
+      return 0;
+    }
+''', name: 'ssize_t')
+  conf.set('HAVE_SSIZE_T', 1)
+endif
+
 # miscellaneous functions
 extra_funcs = [
   'assert',
