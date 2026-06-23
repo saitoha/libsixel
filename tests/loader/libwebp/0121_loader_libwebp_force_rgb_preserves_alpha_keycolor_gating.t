@@ -21,7 +21,7 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/webp-static-alpha-keycolor-l
 out_default="${ARTIFACT_LOCAL_DIR}/webp-static-lossy-alpha-keycolor-default.six"
 out_forced="${ARTIFACT_LOCAL_DIR}/webp-static-lossy-alpha-keycolor-force-rgb.six"
 out_forced_bg="${ARTIFACT_LOCAL_DIR}/webp-static-lossy-alpha-keycolor-force-rgb-bg.six"
-keycolor_header="$(printf '\033P0;1q')"
+keycolor_header="$(printf '\033P0;0q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -L libwebp! -S "${input_webp}" >"${out_default}" || {
     echo "not ok" 1 - "baseline static lossy-alpha decode failed"

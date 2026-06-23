@@ -266,6 +266,8 @@ struct sixel_encoder {
     int output_colorspace;
     int prefer_float32;
     int ormode;
+    int transparent_policy;
+    int transparent_policy_override;
     int pipe_mode;
     int verbose;
     int has_gri_arg_limit;

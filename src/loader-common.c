@@ -100,7 +100,7 @@ static int loader_background_colorspace_initialized;
 static int loader_background_colorspace_value = SIXEL_COLORSPACE_GAMMA;
 static int loader_transparent_policy_initialized;
 static int loader_transparent_policy_value =
-    SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
+    SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND;
 static int loader_background_policy_initialized;
 static int loader_background_policy_value =
     SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST;
@@ -109,6 +109,7 @@ static int loader_background_policy_value =
  * a terminal UI background color.
  */
 static SIXEL_LOADER_TLS int loader_background_colorspace_override = -1;
+static SIXEL_LOADER_TLS int loader_transparent_policy_override = -1;
 static int loader_cms_target_initialized;
 static int loader_cms_prefer_8bit_flag;
 static int loader_cms_target_colorspace_value = SIXEL_COLORSPACE_LINEAR;
@@ -465,6 +466,51 @@ sixel_helper_set_loader_background_colorspace(int colorspace)
     loader_background_unlock();
 }
 
+SIXEL_INTERNAL_API int
+sixel_loader_parse_transparent_policy(char const *value, int *policy)
+{
+    if (value == NULL || policy == NULL || value[0] == '\0') {
+        return 0;
+    }
+
+    if (strcmp(value, "composite") == 0) {
+        *policy = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
+        return 1;
+    }
+    if (strcmp(value, "transparent") == 0 ||
+            strcmp(value, "background") == 0 ||
+            strcmp(value, "clear") == 0 ||
+            strcmp(value, "p2-0") == 0 ||
+            strcmp(value, "p20") == 0) {
+        *policy = SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND;
+        return 1;
+    }
+    if (strcmp(value, "keep") == 0 ||
+            strcmp(value, "keep-destination") == 0 ||
+            strcmp(value, "previous") == 0 ||
+            strcmp(value, "p2-1") == 0 ||
+            strcmp(value, "p21") == 0) {
+        *policy = SIXEL_LOADER_TRANSPARENT_POLICY_KEEP;
+        return 1;
+    }
+
+    return 0;
+}
+
+SIXEL_INTERNAL_API void
+sixel_helper_set_loader_transparent_policy(int policy)
+{
+    loader_background_lock();
+    if (policy == SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE ||
+            policy == SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND ||
+            policy == SIXEL_LOADER_TRANSPARENT_POLICY_KEEP) {
+        loader_transparent_policy_override = policy;
+    } else {
+        loader_transparent_policy_override = -1;
+    }
+    loader_background_unlock();
+}
+
 static void
 loader_background_initialize_colorspace(void)
 {
@@ -497,6 +543,7 @@ static void
 loader_initialize_transparent_policy(void)
 {
     char const *env_value;
+    int policy;
 
     loader_background_lock();
     if (loader_transparent_policy_initialized) {
@@ -504,16 +551,12 @@ loader_initialize_transparent_policy(void)
         return;
     }
     loader_transparent_policy_initialized = 1;
-    loader_transparent_policy_value = SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
+    loader_transparent_policy_value =
+        SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND;
     env_value = sixel_compat_getenv("SIXEL_TRANSPARENT_POLICY");
-    if (env_value != NULL && env_value[0] != '\0') {
-        if (strcmp(env_value, "composite") == 0) {
-            loader_transparent_policy_value =
-                SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE;
-        } else if (strcmp(env_value, "transparent") == 0) {
-            loader_transparent_policy_value =
-                SIXEL_LOADER_TRANSPARENT_POLICY_TRANSPARENT;
-        }
+    policy = SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND;
+    if (sixel_loader_parse_transparent_policy(env_value, &policy) != 0) {
+        loader_transparent_policy_value = policy;
     }
     loader_background_unlock();
 }
@@ -569,7 +612,18 @@ loader_background_colorspace(void)
 int
 loader_transparent_policy(void)
 {
+    int override_value;
     int policy;
+
+    loader_background_lock();
+    override_value = loader_transparent_policy_override;
+    if (override_value == SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE ||
+            override_value == SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND ||
+            override_value == SIXEL_LOADER_TRANSPARENT_POLICY_KEEP) {
+        loader_background_unlock();
+        return override_value;
+    }
+    loader_background_unlock();
 
     loader_initialize_transparent_policy();
     loader_background_lock();

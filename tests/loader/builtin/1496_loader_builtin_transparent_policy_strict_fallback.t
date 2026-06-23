@@ -40,8 +40,8 @@ out_transparent=$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${out_default}" = "${out_composite}" || {
-    echo "not ok 1 - default policy mismatch against explicit composite"
+test "${out_default}" != "${out_composite}" || {
+    echo "not ok 1 - explicit composite policy did not change output"
     exit 0
 }
 
@@ -50,8 +50,8 @@ test "${out_default}" = "${out_invalid}" || {
     exit 0
 }
 
-test "${out_default}" != "${out_transparent}" || {
-    echo "not ok 1 - transparent policy did not change alpha-zero behavior"
+test "${out_default}" = "${out_transparent}" || {
+    echo "not ok 1 - default policy mismatch against explicit transparent"
     exit 0
 }
 

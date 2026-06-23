@@ -33,7 +33,7 @@ set +x
 output_six_text=""
 IFS= read -r output_six_text < "${output_six}" || test -n "${output_six_text}"
 case "${output_six_text}" in
-    *"$(printf '\033')P0;1q"*)
+    *"$(printf '\033')P0;0q"*)
         echo "ok 1 - float32 fs carry keeps keycolor header"
         ;;
     *)

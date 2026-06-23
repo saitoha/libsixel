@@ -760,6 +760,17 @@ rgb:rrr/ggg/bbb
 .br
 rgb:rrrr/gggg/bbbb
 .TP 5
+.B \-A \fITRANSPARENTPOLICY\fP, \-\-transparent\-policy=\fITRANSPARENTPOLICY\fP
+choose transparent output policy
+.br
+composite -> composite alpha over the background color
+.br
+background -> emit transparent pixels with DCS P2=0 (default)
+.br
+keep -> emit transparent pixels with DCS P2=1
+.br
+transparent -> alias for background
+.TP 5
 .B \-P, \-\-penetrate
 [[deprecated]] penetrate GNU Screen using DCS pass-through sequence.
 .TP 5

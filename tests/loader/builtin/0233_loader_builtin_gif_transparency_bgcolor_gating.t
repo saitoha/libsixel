@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-transparent-anim-dispose2.gif"
-keycolor_header="$(printf '\033P0;1q')"
+keycolor_header="$(printf '\033P0;0q')"
 default_output=''
 bgcolor_output=''
 default_line=''

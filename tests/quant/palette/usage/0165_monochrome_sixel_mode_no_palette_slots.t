@@ -19,7 +19,7 @@ sixel_output=$(set +xv; ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     exit 0
 }
 
-test "${sixel_output#*P0;1q}" != "${sixel_output}" || {
+test "${sixel_output#*P0;0q}" != "${sixel_output}" || {
     echo "not ok" 1 - "monochrome SIXEL mode emitted palette slots"
     exit 0
 }

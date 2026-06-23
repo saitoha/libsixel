@@ -22,7 +22,7 @@ out_default="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-keycolor-default.six"
 out_default_cms="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-keycolor-default-cms.six"
 out_black="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-keycolor-bg-black.six"
 out_white="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-keycolor-bg-white.six"
-keycolor_header="$(printf '\033P0;1q')"
+keycolor_header="$(printf '\033P0;0q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
     echo "not ok" 1 - "libwebp static alpha decode without -B failed"

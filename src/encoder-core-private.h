@@ -77,6 +77,7 @@ struct sixel_output {
     int penetrate_multiplexer;
     int encode_policy;
     int ormode;
+    int transparent_policy;
     long long last_frame_time_usec;
 
     int pos;

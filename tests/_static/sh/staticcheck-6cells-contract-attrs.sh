@@ -132,7 +132,7 @@ BEGIN {
     forbid["timeline_logger"] = "output_file global_writer"
     forbid["thread_pool"] = "global_queue process_thread_budget"
     forbid["threadpool_service"] = "worker_threads job_queue encoder_state"
-    forbid["sixel_writer"] = "image_pixels palette dither_policy encode_policy ormode gri_arg_limit body_run_state"
+    forbid["sixel_writer"] = "image_pixels palette dither_policy encode_policy ormode transparent_policy gri_arg_limit body_run_state"
     forbid["encoder_core"] = "callback_output dcs_envelope terminal_multiplexer image_file_output clipboard_output"
 }
 function trim(text) {

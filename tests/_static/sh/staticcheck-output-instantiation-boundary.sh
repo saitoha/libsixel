@@ -226,7 +226,7 @@ find "$src_root/src" -type f \( -name '*.c' -o -name '*.h' \) \
     ! -name 'encoder-core-private.h' \
     -exec awk '
 BEGIN {
-    output_fields = "(ref|allocator|writer|writer_controls|has_8bit_control|has_sixel_scrolling|has_gri_arg_limit|has_sdm_glitch|skip_dcs_envelope|skip_header|palette_type|colorspace|source_colorspace|pixelformat|save_pixel|save_count|active_palette|node_top|node_free|penetrate_multiplexer|encode_policy|ormode|last_frame_time_usec|pos|buffer)"
+    output_fields = "(ref|allocator|writer|writer_controls|has_8bit_control|has_sixel_scrolling|has_gri_arg_limit|has_sdm_glitch|skip_dcs_envelope|skip_header|palette_type|colorspace|source_colorspace|pixelformat|save_pixel|save_count|active_palette|node_top|node_free|penetrate_multiplexer|encode_policy|ormode|transparent_policy|last_frame_time_usec|pos|buffer)"
 }
 /struct[ \t]+sixel_output[ \t]*\{/ {
     print FILENAME ":" FNR ":" $0
@@ -251,7 +251,7 @@ else
 fi
 
 awk '
-/image_pixels|palette|dither_policy|encode_policy|ormode|gri_arg_limit|body_run_state|sixel_node_t|save_pixel|save_count|active_palette|node_top|node_free/ {
+/image_pixels|palette|dither_policy|encode_policy|ormode|transparent_policy|gri_arg_limit|body_run_state|sixel_node_t|save_pixel|save_count|active_palette|node_top|node_free/ {
     print FILENAME ":" FNR ":" $0
 }
 ' "$src_root/src/sixel-writer.c" > "$writer_storage"

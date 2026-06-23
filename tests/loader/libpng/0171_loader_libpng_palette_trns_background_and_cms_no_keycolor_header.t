@@ -20,7 +20,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/images/pngsuite/transparency/tbbn3p08.png"
 out="${ARTIFACT_LOCAL_DIR}/palette-trns-cms1-white-tbbn3p08.six"
-keycolor_header="$(printf '\033P0;1q')"
+keycolor_header="$(printf '\033P0;0q')"
 out_payload=''
 out_has_header=0
 

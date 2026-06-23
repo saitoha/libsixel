@@ -15,7 +15,7 @@ set -v
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/pal8-trns-key0.png"
 scale_log=""
 scale_out=""
-keycolor_header="$(printf '\033P0;1q')"
+keycolor_header="$(printf '\033P0;0q')"
 scale_rgb=0
 scale_has_keycolor=0
 

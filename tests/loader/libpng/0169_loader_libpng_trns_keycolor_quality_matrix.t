@@ -33,7 +33,7 @@ set +x
 out_text=""
 IFS= read -r out_text < "${out}" || test -n "${out_text}"
 case "${out_text}" in
-    *"$(printf '\033')P0;1q"*)
+    *"$(printf '\033')P0;0q"*)
         echo "ok 1 - quality=full keeps keycolor header"
         ;;
     *)

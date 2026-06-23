@@ -20,7 +20,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-alpha-8x8-2frame-min.webp"
 out_default="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-alpha0-default.six"
 out_black="${ARTIFACT_LOCAL_DIR}/webp-anim-bg-alpha0-black.six"
-keycolor_header="$(printf '\033P0;1q')"
+keycolor_header="$(printf '\033P0;0q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
     echo "not ok" 1 - "libwebp animation decode without -B failed"

@@ -2160,8 +2160,8 @@ sixel_frompng_convert_rgba8_to_linearrgbfloat32(
         if (blend_with_background == 0) {
             continue;
         }
-        if (transparent_policy == SIXEL_LOADER_TRANSPARENT_POLICY_TRANSPARENT &&
-            alpha <= 0.0) {
+        if (SIXEL_LOADER_TRANSPARENT_POLICY_PRESERVES_ALPHA(
+                transparent_policy) && alpha <= 0.0) {
             continue;
         }
 
@@ -2436,8 +2436,8 @@ sixel_frompng_convert_rgba16_to_linearrgbfloat32(
         if (blend_with_background == 0) {
             continue;
         }
-        if (transparent_policy == SIXEL_LOADER_TRANSPARENT_POLICY_TRANSPARENT &&
-            alpha <= 0.0) {
+        if (SIXEL_LOADER_TRANSPARENT_POLICY_PRESERVES_ALPHA(
+                transparent_policy) && alpha <= 0.0) {
             continue;
         }
 

@@ -274,6 +274,15 @@ typedef int SIXELSTATUS;
 #define SIXEL_LOOP_FORCE           1   /* always enable loop */
 #define SIXEL_LOOP_DISABLE         2   /* always disable loop */
 
+/* transparent output policy */
+#define SIXEL_TRANSPARENT_POLICY_COMPOSITE  0  /* composite over background */
+#define SIXEL_TRANSPARENT_POLICY_BACKGROUND 1  /* transparent, DCS P2=0/2 */
+#define SIXEL_TRANSPARENT_POLICY_KEEP       2  /* transparent, DCS P2=1 */
+#define SIXEL_TRANSPARENT_POLICY_P2_0 \
+    SIXEL_TRANSPARENT_POLICY_BACKGROUND
+#define SIXEL_TRANSPARENT_POLICY_P2_1 \
+    SIXEL_TRANSPARENT_POLICY_KEEP
+
 /* setopt flags */
 #define SIXEL_OPTFLAG_INPUT             ('i')  /* -i, --input: specify input file name. */
 #define SIXEL_OPTFLAG_OUTPUT            ('o')  /* -o, --output: specify output file name. */
@@ -681,6 +690,10 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_ORMODE            ('O')  /* -O, --ormode:
                                                   output ormode sixel image
                                                 */
+/* -A TRANSPARENTPOLICY */
+/* --transparent-policy=TRANSPARENTPOLICY */
+/* choose transparent output policy: composite, background, keep */
+#define SIXEL_OPTFLAG_TRANSPARENT_POLICY ('A')
 #define SIXEL_OPTFLAG_BGCOLOR           ('B')  /* -B BGCOLOR, --bgcolor=BGCOLOR:
                                                   specify background color
                                                   BGCOLOR is represented by the

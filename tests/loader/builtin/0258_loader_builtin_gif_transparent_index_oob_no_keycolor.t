@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_gif="${TOP_SRCDIR}/tests/data/inputs/formats/gif-transparent-index-oob-static.gif"
 out_six="${ARTIFACT_LOCAL_DIR}/builtin_gif_transparent_index_oob.six"
-keycolor_header="$(printf '\033P0;1q')"
+keycolor_header="$(printf '\033P0;0q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" --env SIXEL_THREADS=4 \
               -Lbuiltin! -ldisable -d fs:scan=raster \

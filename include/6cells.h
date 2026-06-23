@@ -435,6 +435,7 @@ typedef struct sixel_writer_image_header {
  * - dither_policy
  * - encode_policy
  * - ormode
+ * - transparent_policy
  * - gri_arg_limit
  * - body_run_state
  */
@@ -443,7 +444,9 @@ typedef struct sixel_writer_image_header {
  * IDL contract:
  * [component, refcounted]
  * [responsibility("write framed terminal SIXEL bytes to callback-backed output")]
- * [forbid_state("image_pixels", "palette", "dither_policy", "encode_policy", "ormode", "gri_arg_limit", "body_run_state")]
+ * [forbid_state("image_pixels", "palette", "dither_policy")]
+ * [forbid_state("encode_policy", "ormode", "transparent_policy")]
+ * [forbid_state("gri_arg_limit", "body_run_state")]
  * interface sixel_writer {
  *     [lifetime(retained)]
  *     void ref();
@@ -499,6 +502,7 @@ typedef struct sixel_encoder_core_options {
     int palette_type;
     int encode_policy;
     int ormode;
+    int transparent_policy;
     int pixelformat;
     int source_colorspace;
     int colorspace;

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify builtin APNG RGBA default output does not depend on keycolor header.
+# Verify builtin APNG RGBA default output does not need a keycolor DCS header.
 
 set -eux
 
@@ -15,7 +15,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png"
 out_default="${ARTIFACT_LOCAL_DIR}/builtin-apng-trns-keycolor-default-header.six"
-keycolor_header="$(printf '\033P0;1q')"
+keycolor_header="$(printf '\033P0;0q')"
 out_payload=''
 has_header=0
 
@@ -40,6 +40,6 @@ test "${has_header}" = 0 || {
     exit 0
 }
 
-echo "ok 1 - builtin APNG RGBA default output does not depend on keycolor header"
+echo "ok 1 - builtin APNG RGBA default output has no keycolor DCS header"
 
 exit 0

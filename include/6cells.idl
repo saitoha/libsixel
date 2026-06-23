@@ -251,7 +251,9 @@ struct writer_image_header {
  */
 [component, refcounted]
 [responsibility("write framed terminal SIXEL bytes to callback-backed output")]
-[forbid_state("image_pixels", "palette", "dither_policy", "encode_policy", "ormode", "gri_arg_limit", "body_run_state")]
+[forbid_state("image_pixels", "palette", "dither_policy")]
+[forbid_state("encode_policy", "ormode", "transparent_policy")]
+[forbid_state("gri_arg_limit", "body_run_state")]
 interface sixel_writer {
     [lifetime(retained)]
     void ref();
@@ -277,6 +279,7 @@ struct encoder_core_options {
     int palette_type;
     int encode_policy;
     int ormode;
+    int transparent_policy;
     int pixelformat;
     int source_colorspace;
     int colorspace;

@@ -2443,16 +2443,26 @@ sixel_encode_header(int width, int height, int keycolor, sixel_output_t *output)
         p[0] = 7;
         p[1] = 5;
     } else if (keycolor >= 0) {
-        /*
-         * When a transparent keycolor is in use, request transparent
-         * background mode so untouched pixels keep the terminal background.
-         */
-        p[1] = 1;
+        if (output->transparent_policy == SIXEL_TRANSPARENT_POLICY_KEEP) {
+            /*
+             * P2=1 asks the terminal to keep the current image-plane pixel
+             * when a zero/transparent SIXEL cell is omitted.
+             */
+            p[1] = 1;
+        } else if (output->transparent_policy ==
+                   SIXEL_TRANSPARENT_POLICY_BACKGROUND) {
+            /*
+             * Spell out P2=0 for transparent output so the header carries
+             * the clear-to-background contract even when P2's default value
+             * would be equivalent.
+             */
+            pcount = 2;
+        }
     }
 
     output->pos = 0;
 
-    if (p[2] == 0) {
+    if (pcount == 3 && p[2] == 0) {
         pcount--;
         if (p[1] == 0) {
             pcount--;

@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal_gray8_alpha.psd"
-keycolor_header="$(printf '\033P0;1q')"
+keycolor_header="$(printf '\033P0;0q')"
 output_no=''
 output_bg=''
 status_no=0

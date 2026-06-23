@@ -20,7 +20,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/webp-static-alpha-keycolor-lossy.webp"
 out_default="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-default-path.six"
 out_forced_rgb="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-forced-rgb-path.six"
-keycolor_header="$(printf '\033P0;1q')"
+keycolor_header="$(printf '\033P0;0q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
     echo "not ok" 1 - "libwebp static alpha decode with default path failed"
