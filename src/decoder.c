@@ -688,6 +688,7 @@ sixel_similarity_min_diff_neon(const unsigned char *palette,
     int i;
     int k;
 
+    min_diff = UINT_MAX;
     avg_r_vec = vdupq_n_u16((uint16_t)avg_color[0]);
     avg_g_vec = vdupq_n_u16((uint16_t)avg_color[1]);
     avg_b_vec = vdupq_n_u16((uint16_t)avg_color[2]);
@@ -1509,17 +1510,38 @@ sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
                 gray[y * width + x] = (int)color[0]
                                     + (int)color[1] * 2
                                     + (int)color[2];
-                /*
-                 * Edge detection keeps high-frequency content intact while we
-                 * smooth dithering noise in flatter regions.
-                 */
+            }
+        }
+    }
+
+    if (edge_strength > 0) {
+        /*
+         * Prewitt samples neighbouring pixels, including rows and columns that
+         * appear later in scan order.  Fill the whole luminance buffer before
+         * computing gradients so the edge decision is deterministic under
+         * sanitizer and threaded builds.
+         */
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < width; ++x) {
                 prewitt[y * width + x] = sixel_prewitt_value(
                     gray,
                     width,
                     height,
                     x,
                     y);
+            }
+        }
+    }
 
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < width; ++x) {
+            palette_index = indexed_pixels[y * width + x];
+            if (palette_index < 0 || palette_index >= ncolors) {
+                palette_index = 0;
+            }
+
+            out_index = (size_t)(y * width + x) * 3;
+            if (edge_strength > 0) {
                 gradient = prewitt[y * width + x];
                 if (gradient > strong_threshold) {
                     continue;
@@ -1534,7 +1556,6 @@ sixel_dequantize_k_undither_scalar(unsigned char *indexed_pixels,
                 center_weight = 8U;
             }
 
-            out_index = (size_t)(y * width + x) * 3;
             accum_r = (unsigned int)rgb[out_index + 0] * center_weight;
             accum_g = (unsigned int)rgb[out_index + 1] * center_weight;
             accum_b = (unsigned int)rgb[out_index + 2] * center_weight;
