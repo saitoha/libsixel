@@ -13,6 +13,7 @@ set -v
 
 msg=''
 diag_line=''
+diag_code=''
 status=0
 nl='
 '
@@ -30,6 +31,7 @@ test "${status}" -eq 2 || {
 }
 
 diag_line=${msg%%"${nl}"*}
+diag_code=${diag_line#*|code=}
 
 test "${diag_line#LSXCLI1|phase=option_parse|rc=}" != "${diag_line}" || {
     echo "not ok" 1 - "sticky animation_mode diagnostic prefix mismatch"
@@ -38,7 +40,7 @@ test "${diag_line#LSXCLI1|phase=option_parse|rc=}" != "${diag_line}" || {
     exit 0
 }
 
-test "${diag_line%|code=UNKNOWN_SUBOPTION_KEY*}" != "${diag_line}" || {
+test "${diag_code}" = "UNKNOWN_SUBOPTION_KEY" || {
     echo "not ok" 1 - "sticky animation_mode diagnostic code mismatch"
     printf '%s\n' '--- stderr ---' >&2
     printf '%s\n' "${msg}" >&2
