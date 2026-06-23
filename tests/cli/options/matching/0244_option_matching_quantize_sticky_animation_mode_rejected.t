@@ -31,7 +31,7 @@ test "${status}" -eq 2 || {
 }
 
 diag_line=${msg%%"${nl}"*}
-diag_code=${diag_line#*|code=}
+diag_code=${diag_line##*code=}
 
 test "${diag_line#LSXCLI1|phase=option_parse|rc=}" != "${diag_line}" || {
     echo "not ok" 1 - "sticky animation_mode diagnostic prefix mismatch"
