@@ -694,6 +694,8 @@ typedef int SIXELSTATUS;
 /* --transparent-policy=TRANSPARENTPOLICY */
 /* choose transparent output policy: composite, background, keep */
 #define SIXEL_OPTFLAG_TRANSPARENT_POLICY ('A')
+/* set per-channel RGB tolerance for accumulation-buffer early keep */
+#define SIXEL_OPTFLAG_ACCUMULATION_DELTA ('Z')
 #define SIXEL_OPTFLAG_BGCOLOR           ('B')  /* -B BGCOLOR, --bgcolor=BGCOLOR:
                                                   specify background color
                                                   BGCOLOR is represented by the

@@ -126,6 +126,7 @@ static SIXELSTATUS
 accumulation_encode(sixel_allocator_t *allocator,
                     unsigned char const *previous,
                     unsigned char const *current,
+                    char const *accumulation_delta,
                     int *size_out,
                     int *has_keep_header_out)
 {
@@ -164,6 +165,14 @@ accumulation_encode(sixel_allocator_t *allocator,
                                   "keep");
     if (SIXEL_FAILED(status)) {
         goto end;
+    }
+    if (accumulation_delta != NULL) {
+        status = sixel_encoder_setopt(encoder,
+                                      SIXEL_OPTFLAG_ACCUMULATION_DELTA,
+                                      accumulation_delta);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
     if (previous != NULL) {
         status = sixel_encoder_set_accumulation_buffer(
@@ -217,12 +226,17 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     sixel_allocator_t *allocator;
     unsigned char previous[ACCUMULATION_BYTES];
     unsigned char current[ACCUMULATION_BYTES];
+    unsigned char near_previous[ACCUMULATION_BYTES];
+    unsigned char near_current[ACCUMULATION_BYTES];
     int index;
     int changed_index;
     int full_size;
     int accumulation_size;
+    int near_without_delta_size;
+    int near_with_delta_size;
     int full_has_keep_header;
     int accumulation_has_keep_header;
+    int near_has_keep_header;
     int ok;
 
     (void)argc;
@@ -234,8 +248,11 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     changed_index = 0;
     full_size = 0;
     accumulation_size = 0;
+    near_without_delta_size = 0;
+    near_with_delta_size = 0;
     full_has_keep_header = 0;
     accumulation_has_keep_header = 0;
+    near_has_keep_header = 0;
     ok = 0;
 
     for (index = 0; index < ACCUMULATION_PIXELS; ++index) {
@@ -245,6 +262,12 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
         current[index * 3 + 0] = 255u;
         current[index * 3 + 1] = 0u;
         current[index * 3 + 2] = 0u;
+        near_previous[index * 3 + 0] = 100u;
+        near_previous[index * 3 + 1] = 100u;
+        near_previous[index * 3 + 2] = 100u;
+        near_current[index * 3 + 0] = 104u;
+        near_current[index * 3 + 1] = 104u;
+        near_current[index * 3 + 2] = 104u;
     }
     changed_index = (ACCUMULATION_HEIGHT / 2) * ACCUMULATION_WIDTH
         + (ACCUMULATION_WIDTH / 2);
@@ -259,6 +282,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     status = accumulation_encode(allocator,
                                  NULL,
                                  current,
+                                 NULL,
                                  &full_size,
                                  &full_has_keep_header);
     if (SIXEL_FAILED(status)) {
@@ -268,6 +292,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     status = accumulation_encode(allocator,
                                  previous,
                                  current,
+                                 NULL,
                                  &accumulation_size,
                                  &accumulation_has_keep_header);
     if (SIXEL_FAILED(status)) {
@@ -287,6 +312,35 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
                 "accumulation output not smaller (%d >= %d)\n",
                 accumulation_size,
                 full_size);
+        goto end;
+    }
+    status = accumulation_encode(allocator,
+                                 near_previous,
+                                 near_current,
+                                 NULL,
+                                 &near_without_delta_size,
+                                 &near_has_keep_header);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "near accumulation encode failed: %04x\n", status);
+        goto end;
+    }
+    status = accumulation_encode(allocator,
+                                 near_previous,
+                                 near_current,
+                                 "4",
+                                 &near_with_delta_size,
+                                 &near_has_keep_header);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "near accumulation delta encode failed: %04x\n",
+                status);
+        goto end;
+    }
+    if (near_with_delta_size >= near_without_delta_size) {
+        fprintf(stderr,
+                "accumulation delta did not reduce output (%d >= %d)\n",
+                near_with_delta_size,
+                near_without_delta_size);
         goto end;
     }
 

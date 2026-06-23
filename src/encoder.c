@@ -3484,6 +3484,33 @@ sixel_encoder_accumulation_reserves_alpha_key(
     return sixel_encoder_accumulation_policy_enabled(encoder);
 }
 
+static int
+sixel_encoder_rgb888_delta_within(unsigned char const *left,
+                                  unsigned char const *right,
+                                  unsigned int delta)
+{
+    int dr;
+    int dg;
+    int db;
+
+    dr = (int)left[0] - (int)right[0];
+    dg = (int)left[1] - (int)right[1];
+    db = (int)left[2] - (int)right[2];
+    if (dr < 0) {
+        dr = -dr;
+    }
+    if (dg < 0) {
+        dg = -dg;
+    }
+    if (db < 0) {
+        db = -db;
+    }
+
+    return (unsigned int)dr <= delta &&
+           (unsigned int)dg <= delta &&
+           (unsigned int)db <= delta ? 1 : 0;
+}
+
 static SIXELSTATUS
 sixel_encoder_ensure_accumulation_mask(sixel_encoder_t *encoder,
                                        size_t pixel_count)
@@ -3655,10 +3682,15 @@ sixel_encoder_bind_transparent_mask(
             &transparency,
             &view,
             index);
-        same_as_accumulation =
-            memcmp(current_rgb + index * 3u,
-                   encoder->accumulation_pixels + index * 3u,
-                   3u) == 0 ? 1 : 0;
+        /*
+         * The delta option is an early acceptance gate.  It avoids the
+         * palette lookup when the retained RGB888 pixel is already close
+         * enough for the caller's animation tolerance.
+         */
+        same_as_accumulation = sixel_encoder_rgb888_delta_within(
+            current_rgb + index * 3u,
+            encoder->accumulation_pixels + index * 3u,
+            encoder->accumulation_delta);
         encoder->accumulation_mask[index] =
             (unsigned char)((frame_mask_covers != 0 ||
                              alpha_covers != 0 ||
@@ -9298,6 +9330,7 @@ sixel_encoder_new(
     (*ppencoder)->accumulation_width    = 0;
     (*ppencoder)->accumulation_height   = 0;
     (*ppencoder)->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    (*ppencoder)->accumulation_delta    = 0u;
     (*ppencoder)->accumulation_valid    = 0;
     (*ppencoder)->pipe_mode             = 0;
     (*ppencoder)->bgcolor               = NULL;
@@ -11864,6 +11897,28 @@ sixel_encoder_apply_macro_number_option(
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+sixel_encoder_apply_accumulation_delta_option(
+    sixel_encoder_t *encoder,
+    char const *value)
+{
+    char *endptr;
+    long parsed_value;
+
+    endptr = NULL;
+    parsed_value = 0L;
+    errno = 0;
+    parsed_value = strtol(value, &endptr, 10);
+    if (endptr == value || *endptr != '\0' || errno == ERANGE ||
+        parsed_value < 0L || parsed_value > 255L) {
+        sixel_helper_set_additional_message(
+            "accumulation delta must be an integer in range 0..255.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    encoder->accumulation_delta = (unsigned int)parsed_value;
+    return SIXEL_OK;
+}
+
 
 static char const *
 sixel_encoder_get_palette_option_name(
@@ -13776,6 +13831,13 @@ sixel_encoder_setopt(
         }
         encoder->transparent_policy = match_value;
         encoder->transparent_policy_override = 1;
+        break;
+    case SIXEL_OPTFLAG_ACCUMULATION_DELTA:  /* Z */
+        status = sixel_encoder_apply_accumulation_delta_option(encoder,
+                                                               value);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         break;
     case SIXEL_OPTFLAG_INSECURE:  /* k */
         encoder->finsecure = 1;

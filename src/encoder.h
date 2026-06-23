@@ -275,6 +275,7 @@ struct sixel_encoder {
     int accumulation_width;
     int accumulation_height;
     int accumulation_pixelformat;
+    unsigned int accumulation_delta;
     int accumulation_valid;
     int pipe_mode;
     int verbose;
