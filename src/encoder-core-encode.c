@@ -3629,6 +3629,7 @@ sixel_encode_body_ormode_band(sixel_index_t const *pixels,
     int sample_mask;
     int sample_width;
     int first_x;
+    int first_pix;
     int x;
     int y;
     int pix;
@@ -3857,6 +3858,7 @@ sixel_encode_body_ormode_band(sixel_index_t const *pixels,
     for (plane = 0; plane < nplanes; plane++) {
         plane_bit = 1 << plane;
         first_x = (-1);
+        first_pix = 0;
         column_pixels = band_pixels;
         for (x = 0; x < width; x++, column_pixels++) {
             pix = 0;
@@ -3865,6 +3867,7 @@ sixel_encode_body_ormode_band(sixel_index_t const *pixels,
             }
             if (pix != 0) {
                 first_x = x;
+                first_pix = pix;
                 break;
             }
         }
@@ -3882,7 +3885,7 @@ sixel_encode_body_ormode_band(sixel_index_t const *pixels,
         if (SIXEL_FAILED(status)) {
             return status;
         }
-        sixel_put_pixel(output, pix);
+        sixel_put_pixel(output, first_pix);
         column_pixels = band_pixels + first_x + 1;
         for (x = first_x + 1; x < width; x++, column_pixels++) {
             pix = 0;
