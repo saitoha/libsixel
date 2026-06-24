@@ -207,14 +207,16 @@ test_transparent_mask_fence_serial(void)
 }
 
 static int
-test_accumulation_buffer_beats_palette_candidate(void)
+test_accumulation_buffer_respects_delta_threshold(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_dither_t *baseline_dither;
-    sixel_dither_t *accumulation_dither;
+    sixel_dither_t *below_delta_dither;
+    sixel_dither_t *within_delta_dither;
     sixel_index_t *baseline_indexes;
-    sixel_index_t *accumulation_indexes;
+    sixel_index_t *below_delta_indexes;
+    sixel_index_t *within_delta_indexes;
     unsigned char palette[6];
     unsigned char pixel[3];
     unsigned char accumulation[3];
@@ -222,9 +224,11 @@ test_accumulation_buffer_beats_palette_candidate(void)
     status = SIXEL_FALSE;
     allocator = NULL;
     baseline_dither = NULL;
-    accumulation_dither = NULL;
+    below_delta_dither = NULL;
+    within_delta_dither = NULL;
     baseline_indexes = NULL;
-    accumulation_indexes = NULL;
+    below_delta_indexes = NULL;
+    within_delta_indexes = NULL;
     palette[0] = 0u;
     palette[1] = 0u;
     palette[2] = 0u;
@@ -246,7 +250,11 @@ test_accumulation_buffer_beats_palette_candidate(void)
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    status = make_dither(allocator, 2, &accumulation_dither);
+    status = make_dither(allocator, 2, &below_delta_dither);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = make_dither(allocator, 2, &within_delta_dither);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -257,21 +265,40 @@ test_accumulation_buffer_beats_palette_candidate(void)
     sixel_dither_set_optimize_palette(baseline_dither, 0);
     sixel_dither_set_transparent(baseline_dither, 0);
 
-    sixel_dither_set_palette(accumulation_dither, palette);
-    sixel_dither_set_pixelformat(accumulation_dither,
+    sixel_dither_set_palette(below_delta_dither, palette);
+    sixel_dither_set_pixelformat(below_delta_dither,
                                  SIXEL_PIXELFORMAT_RGB888);
-    sixel_dither_set_diffusion_type(accumulation_dither, SIXEL_DIFFUSE_NONE);
-    sixel_dither_set_optimize_palette(accumulation_dither, 0);
-    sixel_dither_set_transparent(accumulation_dither, 0);
+    sixel_dither_set_diffusion_type(below_delta_dither, SIXEL_DIFFUSE_NONE);
+    sixel_dither_set_optimize_palette(below_delta_dither, 0);
+    sixel_dither_set_transparent(below_delta_dither, 0);
     sixel_dither_set_pipeline_accumulation_buffer_hint(
-        accumulation_dither,
+        below_delta_dither,
         accumulation,
         sizeof(accumulation),
         NULL,
         0U,
         1,
         1,
-        0);
+        0,
+        4u);
+
+    sixel_dither_set_palette(within_delta_dither, palette);
+    sixel_dither_set_pixelformat(within_delta_dither,
+                                 SIXEL_PIXELFORMAT_RGB888);
+    sixel_dither_set_diffusion_type(within_delta_dither,
+                                    SIXEL_DIFFUSE_NONE);
+    sixel_dither_set_optimize_palette(within_delta_dither, 0);
+    sixel_dither_set_transparent(within_delta_dither, 0);
+    sixel_dither_set_pipeline_accumulation_buffer_hint(
+        within_delta_dither,
+        accumulation,
+        sizeof(accumulation),
+        NULL,
+        0U,
+        1,
+        1,
+        0,
+        5u);
 
     baseline_indexes = sixel_dither_apply_palette(baseline_dither,
                                                   pixel,
@@ -280,11 +307,18 @@ test_accumulation_buffer_beats_palette_candidate(void)
     if (baseline_indexes == NULL || baseline_indexes[0] == 0) {
         goto cleanup;
     }
-    accumulation_indexes = sixel_dither_apply_palette(accumulation_dither,
+    below_delta_indexes = sixel_dither_apply_palette(below_delta_dither,
+                                                     pixel,
+                                                     1,
+                                                     1);
+    if (below_delta_indexes == NULL || below_delta_indexes[0] == 0) {
+        goto cleanup;
+    }
+    within_delta_indexes = sixel_dither_apply_palette(within_delta_dither,
                                                       pixel,
                                                       1,
                                                       1);
-    if (accumulation_indexes == NULL || accumulation_indexes[0] != 0) {
+    if (within_delta_indexes == NULL || within_delta_indexes[0] != 0) {
         goto cleanup;
     }
     status = SIXEL_OK;
@@ -293,14 +327,20 @@ cleanup:
     if (baseline_indexes != NULL && allocator != NULL) {
         sixel_allocator_free(allocator, baseline_indexes);
     }
-    if (accumulation_indexes != NULL && allocator != NULL) {
-        sixel_allocator_free(allocator, accumulation_indexes);
+    if (below_delta_indexes != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, below_delta_indexes);
+    }
+    if (within_delta_indexes != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, within_delta_indexes);
     }
     if (baseline_dither != NULL) {
         sixel_dither_unref(baseline_dither);
     }
-    if (accumulation_dither != NULL) {
-        sixel_dither_unref(accumulation_dither);
+    if (below_delta_dither != NULL) {
+        sixel_dither_unref(below_delta_dither);
+    }
+    if (within_delta_dither != NULL) {
+        sixel_dither_unref(within_delta_dither);
     }
     if (allocator != NULL) {
         sixel_allocator_unref(allocator);
@@ -493,8 +533,8 @@ test_filter_0009_filter_dither(int argc, char **argv)
         fprintf(stderr, "transparent mask fence serial path failed\n");
         success = 0;
     }
-    if (!test_accumulation_buffer_beats_palette_candidate()) {
-        fprintf(stderr, "accumulation candidate dither path failed\n");
+    if (!test_accumulation_buffer_respects_delta_threshold()) {
+        fprintf(stderr, "accumulation delta dither path failed\n");
         success = 0;
     }
     if (!test_accumulation_result_rgb_tracks_palette_indexes()) {

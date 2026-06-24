@@ -630,6 +630,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     int auto_first_size;
     int auto_second_size;
     int near_without_delta_size;
+    int near_below_delta_size;
     int near_with_delta_size;
     int delta_first_size;
     int delta_second_size;
@@ -652,6 +653,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     auto_first_size = 0;
     auto_second_size = 0;
     near_without_delta_size = 0;
+    near_below_delta_size = 0;
     near_with_delta_size = 0;
     delta_first_size = 0;
     delta_second_size = 0;
@@ -767,6 +769,18 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     status = accumulation_encode(allocator,
                                  near_previous,
                                  near_current,
+                                 "3",
+                                 &near_below_delta_size,
+                                 &near_has_keep_header);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr,
+                "near accumulation below-delta encode failed: %04x\n",
+                status);
+        goto end;
+    }
+    status = accumulation_encode(allocator,
+                                 near_previous,
+                                 near_current,
                                  "4",
                                  &near_with_delta_size,
                                  &near_has_keep_header);
@@ -774,6 +788,14 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
         fprintf(stderr,
                 "near accumulation delta encode failed: %04x\n",
                 status);
+        goto end;
+    }
+    if (near_below_delta_size <= near_with_delta_size) {
+        fprintf(stderr,
+                "below-threshold delta unexpectedly retained near pixels "
+                "(%d <= %d)\n",
+                near_below_delta_size,
+                near_with_delta_size);
         goto end;
     }
     if (near_with_delta_size >= near_without_delta_size) {

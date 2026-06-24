@@ -1306,6 +1306,33 @@ sixel_dither_distance_rgb888(unsigned char const *left,
 }
 
 static int
+sixel_dither_rgb888_delta_within(unsigned char const *left,
+                                 unsigned char const *right,
+                                 unsigned int delta)
+{
+    int dr;
+    int dg;
+    int db;
+
+    dr = (int)left[0] - (int)right[0];
+    dg = (int)left[1] - (int)right[1];
+    db = (int)left[2] - (int)right[2];
+    if (dr < 0) {
+        dr = -dr;
+    }
+    if (dg < 0) {
+        dg = -dg;
+    }
+    if (db < 0) {
+        db = -db;
+    }
+
+    return (unsigned int)dr <= delta &&
+           (unsigned int)dg <= delta &&
+           (unsigned int)db <= delta ? 1 : 0;
+}
+
+static int
 sixel_dither_has_compatible_accumulation_hint(
     sixel_dither_t const *dither,
     int width,
@@ -1368,6 +1395,7 @@ sixel_dither_expand_mask_with_accumulation(
     int keycolor;
     unsigned int palette_distance;
     unsigned int accumulation_distance;
+    unsigned int accumulation_delta;
 
     status = SIXEL_FALSE;
     expanded_mask = NULL;
@@ -1382,6 +1410,7 @@ sixel_dither_expand_mask_with_accumulation(
     keycolor = (-1);
     palette_distance = 0u;
     accumulation_distance = 0u;
+    accumulation_delta = 0u;
 
     if (dither == NULL || pixels == NULL || palette == NULL ||
         lookup_policy == NULL || lookup_policy->vtbl == NULL ||
@@ -1405,10 +1434,11 @@ sixel_dither_expand_mask_with_accumulation(
     }
 
     /*
-     * Treat the previous RGB888 frame as a virtual extra palette entry.
-     * When keeping the destination pixel is at least as good as the real
-     * palette entry selected by the lookup policy, mark the pixel as
-     * transparent so P2=1 terminals can reuse the accumulated image plane.
+     * Treat the previous RGB888 frame as a virtual extra palette entry only
+     * inside the caller's per-channel RGB tolerance.  Source matches preserve
+     * unchanged pixels, and palette matches preserve already-quantized output,
+     * but merely-near previous pixels must not leave haze in moving regions.
+     * The final tie-break below still uses squared RGB distance from source.
      */
     expanded_mask = (unsigned char *)sixel_allocator_malloc(
         dither->allocator,
@@ -1428,6 +1458,7 @@ sixel_dither_expand_mask_with_accumulation(
     accumulation = dither->pipeline_accumulation_pixels;
     valid_mask = dither->pipeline_accumulation_valid_mask;
     keycolor = dither->pipeline_accumulation_keycolor;
+    accumulation_delta = dither->pipeline_accumulation_delta;
     for (index = 0u; index < total_pixels; ++index) {
         if (expanded_mask[index] != 0u) {
             continue;
@@ -1442,6 +1473,14 @@ sixel_dither_expand_mask_with_accumulation(
             continue;
         }
         palette_pixel = palette + (size_t)color_index * 3u;
+        if (!sixel_dither_rgb888_delta_within(pixel,
+                                              accumulation_pixel,
+                                              accumulation_delta) &&
+            !sixel_dither_rgb888_delta_within(palette_pixel,
+                                              accumulation_pixel,
+                                              accumulation_delta)) {
+            continue;
+        }
         palette_distance = sixel_dither_distance_rgb888(pixel,
                                                         palette_pixel);
         accumulation_distance = sixel_dither_distance_rgb888(
@@ -2604,6 +2643,7 @@ sixel_dither_clear_pipeline_accumulation_buffer_hint(
     dither->pipeline_accumulation_width = 0;
     dither->pipeline_accumulation_height = 0;
     dither->pipeline_accumulation_keycolor = (-1);
+    dither->pipeline_accumulation_delta = 0u;
 }
 
 SIXEL_INTERNAL_API void
@@ -2776,7 +2816,8 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
     size_t valid_mask_size,
     int width,
     int height,
-    int keycolor)
+    int keycolor,
+    unsigned int delta)
 {
     size_t expected_size;
 
@@ -2815,6 +2856,7 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
     dither->pipeline_accumulation_width = width;
     dither->pipeline_accumulation_height = height;
     dither->pipeline_accumulation_keycolor = keycolor;
+    dither->pipeline_accumulation_delta = delta;
 }
 
 static void

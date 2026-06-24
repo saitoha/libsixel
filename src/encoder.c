@@ -3737,8 +3737,8 @@ sixel_encoder_bind_transparent_mask(
             encoder->accumulation_valid_mask[index] != 0u ? 1 : 0;
         /*
          * The delta option is an early acceptance gate.  It avoids the
-         * palette lookup when the retained RGB888 pixel is already close
-         * enough for the caller's animation tolerance.
+         * palette lookup when every retained RGB888 channel is already
+         * within the caller's animation tolerance.
          */
         same_as_accumulation = accumulation_pixel_valid != 0 &&
             sixel_encoder_rgb888_delta_within(
@@ -3764,7 +3764,8 @@ sixel_encoder_bind_transparent_mask(
         encoder->accumulation_valid_mask_size,
         encoder->accumulation_width,
         encoder->accumulation_height,
-        dither->keycolor);
+        dither->keycolor,
+        encoder->accumulation_delta);
 
 end:
     sixel_allocator_free(encoder->allocator, current_rgb);
