@@ -378,6 +378,8 @@ SIXEL_FORMAT_HDR           = 0xb # read only
 SIXEL_LOOP_AUTO            = 0   # honer the setting of GIF header
 SIXEL_LOOP_FORCE           = 1   # always enable loop
 SIXEL_LOOP_DISABLE         = 2   # always disable loop
+SIXEL_6DELTA_ERROR_DIFFUSE = 0   # diffuse error from kept RGB
+SIXEL_6DELTA_ERROR_SKIP    = 1   # skip diffusion on kept pixels
 
 # setopt flags
 SIXEL_OPTFLAG_INPUT            = 'i'  # -i, --input: specify input file name.
@@ -655,6 +657,13 @@ SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U'  # -U OUTPUT_COLORSPACE, --output-colorspa
                                       #          linear  -> linear RGB output
                                       #          smpte-c -> SMPTE-C gamma encoded output
 SIXEL_OPTFLAG_ORMODE           = 'O'  # -O, --ormode: output ormode sixel image
+SIXEL_OPTFLAG_TRANSPARENT_POLICY = 'A'  # -A POLICY, --transparent-policy=POLICY:
+                                        #        select transparent pixel output
+                                        #        handling.
+SIXEL_OPTFLAG_6DELTA_THRESHOLD = 'Z'  # -Z DELTA, --6delta-threshold=DELTA:
+                                      #        set per-channel keep tolerance.
+SIXEL_OPTFLAG_6DELTA_ERROR     = 'Y'  # -Y MODE, --6delta-error=MODE:
+                                      #        select kept-pixel error handling.
 
 SIXEL_OPTFLAG_BGCOLOR          = 'B'  # -B BGCOLOR, --bgcolor=BGCOLOR:
                                       #        specify background color

@@ -26,6 +26,7 @@ run_builtin_loader_gif_sequence_test(
         return 1;
     }
 
+    init_builtin_loader_probe_options(&options);
     probe.callback_count = 0;
     probe.expected_count = expected_count;
     probe.mismatch_index = -1;
@@ -181,6 +182,7 @@ run_builtin_loader_gif_unbounded_loop_probe_test(
         return 1;
     }
 
+    init_builtin_loader_probe_options(&options);
     probe.callback_count = 0;
     /* Keep probe bounded while still allowing several full animation loops. */
     probe.max_callbacks = 64;

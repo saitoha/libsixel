@@ -16,6 +16,7 @@ run_builtin_loader_hdr_numeric_probe_case(char const *label,
         return 1;
     }
 
+    init_builtin_loader_probe_options(&options);
     memset(context, 0, sizeof(*context));
     options.require_static = 1;
     options.use_palette = 0;
@@ -492,6 +493,7 @@ run_builtin_loader_hdr_orientation_probe_case(
         return 1;
     }
 
+    init_builtin_loader_probe_options(&options);
     memset(context, 0, sizeof(*context));
     options.require_static = 1;
     options.use_palette = 0;
