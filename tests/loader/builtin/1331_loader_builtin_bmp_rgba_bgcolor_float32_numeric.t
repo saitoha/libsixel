@@ -8,6 +8,7 @@ echo "1..1"
 set -v
 
 ${SIXEL_RUNTIME-} "${TEST_RUNNER_PATH}" \
+    --env "SIXEL_TRANSPARENT_POLICY=composite" \
     --env "SIXEL_TEST_BMP_NUMERIC_RGBA_BGCOLOR_FLOAT32=1" \
     "loader/0014_loader_builtin_pixelformat" || {
     echo "not ok 1 - loader/0014_loader_builtin_pixelformat (bmp rgba bgcolor float32 numeric)"

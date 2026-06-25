@@ -355,6 +355,7 @@ jobs:
         shell: bash
         run: |
           set -eux
+          bash .github/scripts/disable-hosted-runner-microsoft-apt-sources.sh
           sudo apt-get update
           sudo apt-get install -y clang clang-tools
 
