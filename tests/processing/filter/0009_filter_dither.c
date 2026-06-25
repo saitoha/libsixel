@@ -280,7 +280,8 @@ test_accumulation_buffer_respects_delta_threshold(void)
         1,
         1,
         0,
-        4u);
+        4u,
+        SIXEL_6DELTA_ERROR_DIFFUSE);
 
     sixel_dither_set_palette(within_delta_dither, palette);
     sixel_dither_set_pixelformat(within_delta_dither,
@@ -298,7 +299,8 @@ test_accumulation_buffer_respects_delta_threshold(void)
         1,
         1,
         0,
-        5u);
+        5u,
+        SIXEL_6DELTA_ERROR_DIFFUSE);
 
     baseline_indexes = sixel_dither_apply_palette(baseline_dither,
                                                   pixel,
@@ -534,7 +536,7 @@ test_filter_0009_filter_dither(int argc, char **argv)
         success = 0;
     }
     if (!test_accumulation_buffer_respects_delta_threshold()) {
-        fprintf(stderr, "accumulation delta dither path failed\n");
+        fprintf(stderr, "6delta threshold dither path failed\n");
         success = 0;
     }
     if (!test_accumulation_result_rgb_tracks_palette_indexes()) {

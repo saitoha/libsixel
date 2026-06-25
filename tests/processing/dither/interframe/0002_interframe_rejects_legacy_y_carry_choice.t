@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming removed -Y option is rejected.
+# TAP test confirming legacy -Y carry is still rejected.
 
 set -eux
 
@@ -21,9 +21,9 @@ status=$?
 set -e
 
 test "${status}" -ne 0 || {
-    echo "not ok" 1 - "-Y must fail because the option was removed"
+    echo "not ok" 1 - "legacy -Y carry unexpectedly succeeded"
     exit 0
 }
 
-echo "ok" 1 - "-Y is rejected after option removal"
+echo "ok" 1 - "legacy -Y carry is rejected"
 exit 0

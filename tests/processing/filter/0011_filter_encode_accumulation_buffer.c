@@ -198,7 +198,7 @@ static SIXELSTATUS
 accumulation_encode(sixel_allocator_t *allocator,
                     unsigned char const *previous,
                     unsigned char const *current,
-                    char const *accumulation_delta,
+                    char const *sixdelta_threshold,
                     int *size_out,
                     int *has_keep_header_out)
 {
@@ -238,10 +238,10 @@ accumulation_encode(sixel_allocator_t *allocator,
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    if (accumulation_delta != NULL) {
+    if (sixdelta_threshold != NULL) {
         status = sixel_encoder_setopt(encoder,
-                                      SIXEL_OPTFLAG_ACCUMULATION_DELTA,
-                                      accumulation_delta);
+                                      SIXEL_OPTFLAG_6DELTA_THRESHOLD,
+                                      sixdelta_threshold);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -337,6 +337,17 @@ accumulation_encode_sequence(sixel_allocator_t *allocator,
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    /*
+     * Auto-seeded accumulation stores quantized display RGB, not the source
+     * frame.  Permit one LSB so stable source colors can still exercise the
+     * retained-plane path after palette application.
+     */
+    status = sixel_encoder_setopt(encoder,
+                                  SIXEL_OPTFLAG_6DELTA_THRESHOLD,
+                                  "8");
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
     status = accumulation_make_frame(allocator, first, &frame);
     if (SIXEL_FAILED(status)) {
@@ -397,7 +408,7 @@ accumulation_encode_sequence_delta3(sixel_allocator_t *allocator,
                                     unsigned char const *first,
                                     unsigned char const *second,
                                     unsigned char const *third,
-                                    char const *accumulation_delta,
+                                    char const *sixdelta_threshold,
                                     int *first_size_out,
                                     int *second_size_out,
                                     int *third_size_out)
@@ -424,7 +435,7 @@ accumulation_encode_sequence_delta3(sixel_allocator_t *allocator,
     sizes[2] = third_size_out;
     frame_index = 0;
     if (allocator == NULL || first == NULL || second == NULL ||
-        third == NULL || accumulation_delta == NULL ||
+        third == NULL || sixdelta_threshold == NULL ||
         first_size_out == NULL || second_size_out == NULL ||
         third_size_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -452,8 +463,8 @@ accumulation_encode_sequence_delta3(sixel_allocator_t *allocator,
         goto end;
     }
     status = sixel_encoder_setopt(encoder,
-                                  SIXEL_OPTFLAG_ACCUMULATION_DELTA,
-                                  accumulation_delta);
+                                  SIXEL_OPTFLAG_6DELTA_THRESHOLD,
+                                  sixdelta_threshold);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -786,7 +797,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
                                  &near_has_keep_header);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
-                "near accumulation delta encode failed: %04x\n",
+                "near 6delta threshold encode failed: %04x\n",
                 status);
         goto end;
     }
@@ -800,7 +811,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     }
     if (near_with_delta_size >= near_without_delta_size) {
         fprintf(stderr,
-                "accumulation delta did not reduce output (%d >= %d)\n",
+                "6delta threshold did not reduce output (%d >= %d)\n",
                 near_with_delta_size,
                 near_without_delta_size);
         goto end;
@@ -815,7 +826,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
                                                  &delta_third_size);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
-                "auto accumulation delta sequence failed: %04x\n",
+                "auto 6delta threshold sequence failed: %04x\n",
                 status);
         goto end;
     }

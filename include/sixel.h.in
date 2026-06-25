@@ -283,6 +283,10 @@ typedef int SIXELSTATUS;
 #define SIXEL_TRANSPARENT_POLICY_P2_1 \
     SIXEL_TRANSPARENT_POLICY_KEEP
 
+/* 6delta encoding error handling */
+#define SIXEL_6DELTA_ERROR_DIFFUSE 0  /* diffuse error from kept RGB */
+#define SIXEL_6DELTA_ERROR_SKIP    1  /* skip diffusion on kept pixels */
+
 /* setopt flags */
 #define SIXEL_OPTFLAG_INPUT             ('i')  /* -i, --input: specify input file name. */
 #define SIXEL_OPTFLAG_OUTPUT            ('o')  /* -o, --output: specify output file name. */
@@ -694,8 +698,12 @@ typedef int SIXELSTATUS;
 /* --transparent-policy=TRANSPARENTPOLICY */
 /* choose transparent output policy: composite, background, keep */
 #define SIXEL_OPTFLAG_TRANSPARENT_POLICY ('A')
-/* set per-channel RGB tolerance for accumulation-buffer early keep */
-#define SIXEL_OPTFLAG_ACCUMULATION_DELTA ('Z')
+/* -Z DELTA, --6delta-threshold=DELTA */
+/* set per-channel RGB tolerance for 6delta encoding early keep */
+#define SIXEL_OPTFLAG_6DELTA_THRESHOLD ('Z')
+/* -Y MODE, --6delta-error=MODE */
+/* choose 6delta kept-pixel error handling: diffuse or skip */
+#define SIXEL_OPTFLAG_6DELTA_ERROR     ('Y')
 #define SIXEL_OPTFLAG_BGCOLOR           ('B')  /* -B BGCOLOR, --bgcolor=BGCOLOR:
                                                   specify background color
                                                   BGCOLOR is represented by the

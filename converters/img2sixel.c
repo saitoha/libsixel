@@ -716,10 +716,18 @@ static cli_option_help_t const g_option_help_table[] = {
     },
     {
         'Z',
-        "accumulation-delta",
-        "-Z DELTA, --accumulation-delta=DELTA\n"
-        "    set RGB per-channel tolerance for transparent-policy=keep\n"
-        "    accumulation reuse. DELTA must be 0..255 (default: 0).\n"
+        "6delta-threshold",
+        "-Z DELTA, --6delta-threshold=DELTA\n"
+        "    set RGB per-channel tolerance for 6delta encoding.\n"
+        "    DELTA must be 0..255 (default: 0).\n"
+    },
+    {
+        'Y',
+        "6delta-error",
+        "-Y MODE, --6delta-error=MODE\n"
+        "    choose 6delta kept-pixel error handling.\n"
+        "      diffuse -> diffuse error from the retained RGB (default)\n"
+        "      skip    -> skip diffusion on kept pixels for speed\n"
     },
     {
         'P',
@@ -1840,7 +1848,7 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:~:kil:T:t:ugvSn:PE:U:B:A:Z:C:D@:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:~:kil:T:t:ugvSn:PE:U:B:A:Z:Y:C:D@:"
     "OVX:W:H%:1:2:3:";
 
 static int
@@ -2896,7 +2904,8 @@ img2sixel_main(int argc, char *argv[])
         {"working-colorspace",    required_argument,  &long_opt, 'W'},
         {"bgcolor",               required_argument,  &long_opt, 'B'},
         {"transparent-policy",    required_argument,  &long_opt, 'A'},
-        {"accumulation-delta",    required_argument,  &long_opt, 'Z'},
+        {"6delta-threshold",      required_argument,  &long_opt, 'Z'},
+        {"6delta-error",          required_argument,  &long_opt, 'Y'},
         {"complexion-score",      required_argument,  &long_opt, 'C'}, /* deprecated */
         {"pipe-mode",             no_argument,        &long_opt, 'D'}, /* deprecated */
         {"drcs",                  required_argument,  &long_opt, '@'},

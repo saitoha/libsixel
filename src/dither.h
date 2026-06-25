@@ -168,7 +168,8 @@ struct sixel_dither {
     int pipeline_accumulation_width; /* previous frame width */
     int pipeline_accumulation_height; /* previous frame height */
     int pipeline_accumulation_keycolor; /* keycolor for previous hits */
-    unsigned int pipeline_accumulation_delta; /* per-channel keep delta */
+    unsigned int pipeline_6delta_threshold; /* per-channel keep threshold */
+    int pipeline_6delta_error_mode; /* kept-pixel error handling */
     unsigned char *pipeline_accumulation_result_mask; /* encoded keeps */
     size_t pipeline_accumulation_result_mask_size; /* result mask length */
     unsigned char *pipeline_accumulation_result_rgb; /* encoded RGB plane */
@@ -248,7 +249,20 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
     int width,
     int height,
     int keycolor,
-    unsigned int delta);
+    unsigned int threshold,
+    int error_mode);
+
+SIXEL_INTERNAL_API int
+sixel_dither_pipeline_6delta_try_keep_rgb888(
+    sixel_dither_t *dither,
+    size_t index,
+    unsigned char const *rgb,
+    int record_result,
+    unsigned char const **accumulation_rgb_out,
+    int *keycolor_out);
+
+SIXEL_INTERNAL_API int
+sixel_dither_pipeline_6delta_error_mode(sixel_dither_t const *dither);
 
 void
 sixel_dither_clear_pipeline_accumulation_buffer_hint(

@@ -764,7 +764,12 @@ _img2sixel()
                                    transparent' -- "$cur" ) )
         return 0
         ;;
-    -Z|--accumulation-delta)
+    -Z|--6delta-threshold)
+        return 0
+        ;;
+    -Y|--6delta-error)
+        COMPREPLY=( $( compgen -W 'diffuse \
+                                   skip' -- "$cur" ) )
         return 0
         ;;
     -L|--loaders)
@@ -876,7 +881,8 @@ _img2sixel()
                                    -E --encode-policy \
                                    -B --bgcolor \
                                    -A --transparent-policy \
-                                   -Z --accumulation-delta \
+                                   -Z --6delta-threshold \
+                                   -Y --6delta-error \
                                    -P --penetrate \
                                    -D --pipe-mode \
                                    -v --verbose \

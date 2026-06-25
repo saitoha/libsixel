@@ -172,6 +172,13 @@ _transparentpolicy() {
     'transparent[alias for background]'
 }
 
+_6deltaerror() {
+  _values \
+    '6DELTAERROR' \
+    'diffuse[diffuse error from the retained RGB]' \
+    'skip[skip diffusion on kept pixels for speed]'
+}
+
 _cmsengine() {
   _values \
     'CMSENGINE' \
@@ -887,7 +894,8 @@ _arguments -S -s -A "-*" -S \
   {-E,--encode-policy=}'[select encoding policy]':encodepolicy:_encodepolicy \
   {-B,--bgcolor=}'[select background color]' \
   {-A,--transparent-policy=}'[select transparent output policy]':transparentpolicy:_transparentpolicy \
-  {-Z,--accumulation-delta=}'[set RGB tolerance for transparent-policy=keep]' \
+  {-Z,--6delta-threshold=}'[set RGB tolerance for 6delta encoding]' \
+  {-Y,--6delta-error=}'[choose 6delta kept-pixel error handling]':6deltaerror:_6deltaerror \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \

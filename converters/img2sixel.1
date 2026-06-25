@@ -772,9 +772,16 @@ previous image plane
 .br
 transparent -> alias for background
 .TP 5
-.B \-Z \fIDELTA\fP, \-\-accumulation\-delta=\fIDELTA\fP
-set RGB per-channel tolerance for transparent-policy=keep accumulation reuse.
+.B \-Z \fIDELTA\fP, \-\-6delta\-threshold=\fIDELTA\fP
+set RGB per-channel tolerance for 6delta encoding.
 DELTA must be 0..255 (default: 0).
+.TP 5
+.B \-Y \fIMODE\fP, \-\-6delta\-error=\fIMODE\fP
+choose 6delta kept-pixel error handling.
+.br
+diffuse -> diffuse error from the retained RGB (default)
+.br
+skip -> skip diffusion on kept pixels for speed
 .TP 5
 .B \-P, \-\-penetrate
 [[deprecated]] penetrate GNU Screen using DCS pass-through sequence.

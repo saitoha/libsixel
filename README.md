@@ -966,11 +966,16 @@ steps.
                                             that preserve the previous
                                             image plane
                              transparent -> alias for background
--Z DELTA, --accumulation-delta=DELTA
+-Z DELTA, --6delta-threshold=DELTA
                            set RGB per-channel tolerance for
-                           transparent-policy=keep accumulation
-                           reuse. DELTA must be 0..255
+                           6delta encoding. DELTA must be 0..255
                            (default: 0).
+-Y MODE, --6delta-error=MODE
+                           choose 6delta kept-pixel error handling.
+                             diffuse -> diffuse error from the
+                                        retained RGB (default)
+                             skip    -> skip diffusion on kept pixels
+                                        for speed
 -P, --penetrate            [[deprecated]] penetrate GNU Screen
                            using DCS pass-through sequence
 -D, --pipe-mode            [[deprecated]] read source images from
