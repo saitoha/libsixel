@@ -1308,6 +1308,18 @@ control alpha normalization and transparent SIXEL P2 handling.
 (default). "keep" keeps alpha==0 as transparent and emits P2=1 for previous
 image-plane reuse.
 .TP 5
+.B SIXEL_6DELTA_THRESHOLD
+.br
+set default RGB per-channel tolerance for 6delta encoding.
+accepts 0..255. invalid values keep the built-in default 0.
+overrided by \fB-Z\fP/\fB--6delta-threshold\fP.
+.TP 5
+.B SIXEL_6DELTA_ERROR
+.br
+set default 6delta kept-pixel error handling.
+accepts "diffuse" or "skip". invalid values keep "diffuse".
+overrided by \fB-Y\fP/\fB--6delta-error\fP.
+.TP 5
 .B SIXEL_LOADER_ORIENTATION
 .br
 set the default EXIF orientation handling for libjpeg/libpng/libwebp/

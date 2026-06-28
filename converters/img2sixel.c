@@ -1009,6 +1009,18 @@ static cli_env_help_t const g_env_help_table[] = {
         "specify palette size (default 256). Overrides -p/--colors when set."
     },
     {
+        "SIXEL_6DELTA_THRESHOLD",
+        "set default RGB per-channel tolerance for 6delta encoding.\n"
+        "Accepts 0..255. Invalid values keep the built-in default 0.\n"
+        "Overridden by -Z/--6delta-threshold."
+    },
+    {
+        "SIXEL_6DELTA_ERROR",
+        "set default 6delta kept-pixel error handling.\n"
+        "Accepts diffuse or skip. Invalid values keep diffuse.\n"
+        "Overridden by -Y/--6delta-error."
+    },
+    {
         "SIXEL_FLOAT32_DITHER",
         "prefer the float32 quantization path. Any non-zero/true string\n"
         "enables it while 0, off, false, or no keep the 8-bit pipeline."

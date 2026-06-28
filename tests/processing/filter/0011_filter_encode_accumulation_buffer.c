@@ -15,6 +15,9 @@
 #include <6cells.h>
 #include <sixel.h>
 
+#include "src/compat_stub.h"
+#include "src/encoder.h"
+
 #define ACCUMULATION_WIDTH 18
 #define ACCUMULATION_HEIGHT 18
 #define ACCUMULATION_PIXELS (ACCUMULATION_WIDTH * ACCUMULATION_HEIGHT)
@@ -71,6 +74,73 @@ accumulation_contains(unsigned char const *data,
     }
 
     return 0;
+}
+
+static int
+accumulation_test_6delta_env_defaults(void)
+{
+    SIXELSTATUS status;
+    sixel_encoder_t *encoder;
+    int ok;
+
+    status = SIXEL_FALSE;
+    encoder = NULL;
+    ok = 0;
+
+    if (sixel_compat_setenv("SIXEL_6DELTA_THRESHOLD", "7") != 0 ||
+        sixel_compat_setenv("SIXEL_6DELTA_ERROR", "skip") != 0) {
+        fprintf(stderr, "6delta env setup failed\n");
+        goto end;
+    }
+    status = sixel_encoder_new(&encoder, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "encoder allocation with 6delta env failed\n");
+        goto end;
+    }
+    if (encoder->sixdelta_threshold != 7u) {
+        fprintf(stderr, "6delta env threshold was not applied\n");
+        goto end;
+    }
+    if (encoder->sixdelta_error_mode != SIXEL_6DELTA_ERROR_SKIP) {
+        fprintf(stderr, "6delta env error mode was not applied\n");
+        goto end;
+    }
+    sixel_encoder_unref(encoder);
+    encoder = NULL;
+
+    /*
+     * Environment values seed defaults, so invalid text should not make
+     * encoder creation fail.  The explicit CLI/API options stay strict.
+     */
+    if (sixel_compat_setenv("SIXEL_6DELTA_THRESHOLD", "256") != 0 ||
+        sixel_compat_setenv("SIXEL_6DELTA_ERROR", "carry") != 0) {
+        fprintf(stderr, "invalid 6delta env setup failed\n");
+        goto end;
+    }
+    status = sixel_encoder_new(&encoder, NULL);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "encoder allocation with invalid 6delta env failed\n");
+        goto end;
+    }
+    if (encoder->sixdelta_threshold != 0u) {
+        fprintf(stderr, "invalid 6delta threshold env changed default\n");
+        goto end;
+    }
+    if (encoder->sixdelta_error_mode != SIXEL_6DELTA_ERROR_DIFFUSE) {
+        fprintf(stderr, "invalid 6delta error env changed default\n");
+        goto end;
+    }
+
+    ok = 1;
+
+end:
+    if (encoder != NULL) {
+        sixel_encoder_unref(encoder);
+    }
+    (void)sixel_compat_setenv("SIXEL_6DELTA_THRESHOLD", "");
+    (void)sixel_compat_setenv("SIXEL_6DELTA_ERROR", "");
+
+    return ok;
 }
 
 static SIXELSTATUS
@@ -675,6 +745,10 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     auto_second_has_keep_header = 0;
     near_has_keep_header = 0;
     ok = 0;
+
+    if (accumulation_test_6delta_env_defaults() == 0) {
+        goto end;
+    }
 
     for (index = 0; index < ACCUMULATION_PIXELS; ++index) {
         previous[index * 3 + 0] = (index & 1) == 0 ? 255u : 0u;

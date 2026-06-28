@@ -130,6 +130,9 @@
 #define SIXEL_ENCODER_LUT_POLICY_ENVVAR "SIXEL_DITHER_LOOKUP_POLICY"
 #define SIXEL_ENCODER_SAMPLE_TARGET_ENVVAR \
     "SIXEL_PALETTE_SAMPLE_TARGET"
+#define SIXEL_ENCODER_6DELTA_THRESHOLD_ENVVAR \
+    "SIXEL_6DELTA_THRESHOLD"
+#define SIXEL_ENCODER_6DELTA_ERROR_ENVVAR "SIXEL_6DELTA_ERROR"
 #define SIXEL_PALETTE_ANIMATION_MODE_ENVVAR \
     "SIXEL_PALETTE_ANIMATION_MODE"
 #define SIXEL_PALETTE_SCENE_CUT_THRESHOLD_ENVVAR \
@@ -9169,9 +9172,13 @@ sixel_encoder_new(
     char const *env_prefer_float32 = NULL;
     char const *env_lookup_policy = NULL;
     char const *env_sample_target = NULL;
+    char const *env_6delta_threshold = NULL;
+    char const *env_6delta_error = NULL;
     int ncolors;
     long parsed_ncolors;
+    long parsed_6delta_threshold;
     char *endptr;
+    char *threshold_endptr;
     int prefer_float32;
     int env_match_value;
     size_t parsed_sample_target;
@@ -9180,6 +9187,7 @@ sixel_encoder_new(
     char match_detail[128];
 
     parsed_sample_target = 0u;
+    parsed_6delta_threshold = 0L;
     has_sample_target = 0;
 
     if (allocator == NULL) {
@@ -9527,6 +9535,46 @@ sixel_encoder_new(
             (*ppencoder)->lut_policy_override = 1;
             (*ppencoder)->lut_policy_shared_instance_override = 0;
             (*ppencoder)->lut_policy_shared_instance = 0;
+        }
+    }
+
+    /*
+     * 6delta environment variables are process defaults.  Bad values are
+     * ignored like SIXEL_COLORS and the LUT policy env override, while the
+     * explicit CLI/API option remains strict.
+     */
+    env_6delta_threshold = sixel_compat_getenv(
+        SIXEL_ENCODER_6DELTA_THRESHOLD_ENVVAR);
+    if (env_6delta_threshold != NULL && env_6delta_threshold[0] != '\0') {
+        threshold_endptr = NULL;
+        errno = 0;
+        parsed_6delta_threshold = strtol(env_6delta_threshold,
+                                         &threshold_endptr,
+                                         10);
+        if (threshold_endptr != env_6delta_threshold &&
+            *threshold_endptr == '\0' &&
+            errno != ERANGE &&
+            parsed_6delta_threshold >= 0L &&
+            parsed_6delta_threshold <= 255L) {
+            (*ppencoder)->sixdelta_threshold =
+                (unsigned int)parsed_6delta_threshold;
+        }
+    }
+
+    env_6delta_error = sixel_compat_getenv(
+        SIXEL_ENCODER_6DELTA_ERROR_ENVVAR);
+    if (env_6delta_error != NULL && env_6delta_error[0] != '\0') {
+        match_detail[0] = '\0';
+        match_result = sixel_option_match_choice(
+            env_6delta_error,
+            g_option_choices_6delta_error,
+            sizeof(g_option_choices_6delta_error)
+            / sizeof(g_option_choices_6delta_error[0]),
+            &env_match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            (*ppencoder)->sixdelta_error_mode = env_match_value;
         }
     }
 

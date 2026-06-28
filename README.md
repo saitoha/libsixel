@@ -1097,6 +1097,14 @@ SIXEL_TRANSPARENT_POLICY   control alpha normalization and
                            as transparent and emit P2=0 (default).
                            keep keeps alpha==0 as transparent and
                            emits P2=1 for previous image-plane reuse.
+SIXEL_6DELTA_THRESHOLD     set default RGB per-channel tolerance for
+                           6delta encoding. Accepts 0..255.
+                           Invalid values keep the built-in default 0.
+                           overrided by -Z(--6delta-threshold) option.
+SIXEL_6DELTA_ERROR         set default 6delta kept-pixel error handling.
+                           Accepts diffuse or skip. Invalid values keep
+                           diffuse.
+                           overrided by -Y(--6delta-error) option.
 SIXEL_LOADER_ORIENTATION   default EXIF orientation handling for
                            libjpeg/libpng/libwebp loaders.
                            Accepts on/off (preferred) and 1/0 aliases.
