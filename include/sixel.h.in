@@ -698,6 +698,9 @@ typedef int SIXELSTATUS;
 /* --transparent-policy=TRANSPARENTPOLICY */
 /* choose transparent output policy: composite, background, keep */
 #define SIXEL_OPTFLAG_TRANSPARENT_POLICY ('A')
+/* -+ LEFT,TOP, --transparent-offset=LEFT,TOP */
+/* add transparent left/top pixel offset for P2=1 image-plane reuse */
+#define SIXEL_OPTFLAG_TRANSPARENT_OFFSET ('+')
 /* -Z DELTA, --6delta-threshold=DELTA */
 /* set per-channel RGB tolerance for 6delta encoding early keep */
 #define SIXEL_OPTFLAG_6DELTA_THRESHOLD ('Z')

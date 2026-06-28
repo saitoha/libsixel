@@ -78,6 +78,8 @@ struct sixel_output {
     int encode_policy;
     int ormode;
     int transparent_policy;
+    int transparent_offset_left;
+    int transparent_offset_top;
     long long last_frame_time_usec;
 
     int pos;

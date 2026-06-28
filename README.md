@@ -966,6 +966,11 @@ steps.
                                             that preserve the previous
                                             image plane
                              transparent -> alias for background
+-+ LEFT,TOP, --transparent-offset=LEFT,TOP
+                           add transparent left/top pixel offset with
+                           DCS P2=1 image-plane reuse. 0,0 disables
+                           the offset. Incompatible with -O, -I, and
+                           -E size.
 -Z DELTA, --6delta-threshold=DELTA
                            set RGB per-channel tolerance for
                            6delta encoding. DELTA must be 0..255

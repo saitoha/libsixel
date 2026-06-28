@@ -326,6 +326,8 @@ static SIXELSTATUS sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
 static int sixel_encoder_pixelformat_has_alpha(int pixelformat);
 static int sixel_encoder_resolve_transparent_policy(
     sixel_encoder_t const *encoder);
+static int sixel_encoder_transparent_offset_enabled(
+    sixel_encoder_t const *encoder);
 static int sixel_encoder_transparent_policy_preserves_alpha(
     sixel_encoder_t const *encoder);
 static void sixel_encoder_begin_loader_transparent_policy(
@@ -335,6 +337,12 @@ static void sixel_encoder_end_loader_transparent_policy(
 static SIXELSTATUS sixel_encoder_set_output_transparent_policy(
     sixel_output_t *output,
     int transparent_policy);
+static SIXELSTATUS sixel_encoder_set_output_transparent_offset(
+    sixel_output_t *output,
+    int left,
+    int top);
+static SIXELSTATUS sixel_encoder_validate_transparent_offset(
+    sixel_encoder_t const *encoder);
 static int sixel_encoder_frame_has_transparent_mask(
     sixel_frame_t const *frame);
 static int sixel_encoder_frame_preserves_alpha_key(
@@ -6601,9 +6609,20 @@ sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
     sixel_output_set_encode_policy(context->output,
                                    context->encoder->encode_policy);
     sixel_output_set_ormode(context->output, context->encoder->ormode);
+    status = sixel_encoder_validate_transparent_offset(context->encoder);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
     status = sixel_encoder_set_output_transparent_policy(
         context->output,
         sixel_encoder_resolve_transparent_policy(context->encoder));
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    status = sixel_encoder_set_output_transparent_offset(
+        context->output,
+        context->encoder->transparent_offset_left,
+        context->encoder->transparent_offset_top);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -7370,6 +7389,13 @@ sixel_encoder_resolve_transparent_policy(sixel_encoder_t const *encoder)
     if (encoder->transparent_policy_override != 0) {
         return encoder->transparent_policy;
     }
+    if (sixel_encoder_transparent_offset_enabled(encoder)) {
+        /*
+         * Transparent offset is a positional P2=1 contract.  Let the option
+         * override the environment unless the caller explicitly set -A.
+         */
+        return SIXEL_TRANSPARENT_POLICY_KEEP;
+    }
 
     policy = encoder->transparent_policy;
     env_value = sixel_compat_getenv("SIXEL_TRANSPARENT_POLICY");
@@ -7378,6 +7404,17 @@ sixel_encoder_resolve_transparent_policy(sixel_encoder_t const *encoder)
     }
 
     return encoder->transparent_policy;
+}
+
+static int
+sixel_encoder_transparent_offset_enabled(sixel_encoder_t const *encoder)
+{
+    if (encoder == NULL) {
+        return 0;
+    }
+
+    return encoder->transparent_offset_left != 0 ||
+           encoder->transparent_offset_top != 0;
 }
 
 static int
@@ -7395,18 +7432,23 @@ static void
 sixel_encoder_begin_loader_transparent_policy(
     sixel_encoder_t const *encoder)
 {
-    if (encoder == NULL || encoder->transparent_policy_override == 0) {
+    if (encoder == NULL ||
+        (encoder->transparent_policy_override == 0 &&
+         sixel_encoder_transparent_offset_enabled(encoder) == 0)) {
         return;
     }
 
-    sixel_helper_set_loader_transparent_policy(encoder->transparent_policy);
+    sixel_helper_set_loader_transparent_policy(
+        sixel_encoder_resolve_transparent_policy(encoder));
 }
 
 static void
 sixel_encoder_end_loader_transparent_policy(
     sixel_encoder_t const *encoder)
 {
-    if (encoder == NULL || encoder->transparent_policy_override == 0) {
+    if (encoder == NULL ||
+        (encoder->transparent_policy_override == 0 &&
+         sixel_encoder_transparent_offset_enabled(encoder) == 0)) {
         return;
     }
 
@@ -7430,6 +7472,58 @@ sixel_encoder_set_output_transparent_policy(sixel_output_t *output,
 
     options.transparent_policy = transparent_policy;
     return sixel_output_set_encoder_options(output, &options);
+}
+
+static SIXELSTATUS
+sixel_encoder_set_output_transparent_offset(sixel_output_t *output,
+                                            int left,
+                                            int top)
+{
+    SIXELSTATUS status;
+    sixel_encoder_core_options_t options;
+
+    status = SIXEL_FALSE;
+    memset(&options, 0, sizeof(options));
+
+    status = sixel_output_get_encoder_options(output, &options);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    options.transparent_offset_left = left;
+    options.transparent_offset_top = top;
+    return sixel_output_set_encoder_options(output, &options);
+}
+
+static SIXELSTATUS
+sixel_encoder_validate_transparent_offset(sixel_encoder_t const *encoder)
+{
+    if (sixel_encoder_transparent_offset_enabled(encoder) == 0) {
+        return SIXEL_OK;
+    }
+    if (encoder->ormode != 0) {
+        sixel_helper_set_additional_message(
+            "transparent-offset cannot be used with ormode.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (encoder->color_option == SIXEL_COLOR_OPTION_HIGHCOLOR) {
+        sixel_helper_set_additional_message(
+            "transparent-offset cannot be used with high-color output.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (encoder->encode_policy == SIXEL_ENCODEPOLICY_SIZE) {
+        sixel_helper_set_additional_message(
+            "transparent-offset cannot be used with encode-policy=size.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (encoder->transparent_policy_override != 0 &&
+        encoder->transparent_policy != SIXEL_TRANSPARENT_POLICY_KEEP) {
+        sixel_helper_set_additional_message(
+            "transparent-offset requires transparent-policy=keep.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS
@@ -9453,6 +9547,8 @@ sixel_encoder_new(
     (*ppencoder)->transparent_policy =
         SIXEL_TRANSPARENT_POLICY_BACKGROUND;
     (*ppencoder)->transparent_policy_override = 0;
+    (*ppencoder)->transparent_offset_left = 0;
+    (*ppencoder)->transparent_offset_top = 0;
     (*ppencoder)->accumulation_pixels   = NULL;
     (*ppencoder)->accumulation_pixels_size = 0;
     (*ppencoder)->accumulation_valid_mask = NULL;
@@ -11778,6 +11874,90 @@ sixel_encoder_apply_threads_option(char const *value)
 
 
 static SIXELSTATUS
+sixel_encoder_parse_transparent_offset(char const *value,
+                                       int *left_out,
+                                       int *top_out)
+{
+    char *endptr;
+    char const *top_text;
+    long parsed_left;
+    long parsed_top;
+
+    endptr = NULL;
+    top_text = NULL;
+    parsed_left = 0L;
+    parsed_top = 0L;
+
+    if (value == NULL || value[0] == '\0' ||
+        left_out == NULL || top_out == NULL) {
+        sixel_helper_set_additional_message(
+            "transparent-offset requires LEFT,TOP.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (value[0] == '-') {
+        sixel_helper_set_additional_message(
+            "transparent-offset must be non-negative.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed_left = strtol(value, &endptr, 10);
+    if (errno == ERANGE || endptr == value ||
+        endptr == NULL || *endptr != ',') {
+        sixel_helper_set_additional_message(
+            "transparent-offset requires LEFT,TOP.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    top_text = endptr + 1;
+    if (top_text[0] == '\0' || top_text[0] == '-') {
+        sixel_helper_set_additional_message(
+            "transparent-offset must be non-negative.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed_top = strtol(top_text, &endptr, 10);
+    if (errno == ERANGE || endptr == top_text ||
+        endptr == NULL || *endptr != '\0') {
+        sixel_helper_set_additional_message(
+            "transparent-offset requires LEFT,TOP.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (parsed_left < 0L || parsed_top < 0L ||
+        parsed_left > INT_MAX || parsed_top > INT_MAX) {
+        sixel_helper_set_additional_message(
+            "transparent-offset is out of range.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *left_out = (int)parsed_left;
+    *top_out = (int)parsed_top;
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
+sixel_encoder_apply_transparent_offset_option(
+    sixel_encoder_t *encoder,
+    char const *value)
+{
+    SIXELSTATUS status;
+    int left;
+    int top;
+
+    status = sixel_encoder_parse_transparent_offset(value, &left, &top);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    encoder->transparent_offset_left = left;
+    encoder->transparent_offset_top = top;
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
 sixel_encoder_apply_colors_option(
     sixel_encoder_t *encoder,
     char const *value)
@@ -14017,6 +14197,13 @@ sixel_encoder_setopt(
         encoder->transparent_policy = match_value;
         encoder->transparent_policy_override = 1;
         break;
+    case SIXEL_OPTFLAG_TRANSPARENT_OFFSET:  /* + */
+        status = sixel_encoder_apply_transparent_offset_option(encoder,
+                                                               value);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
     case SIXEL_OPTFLAG_6DELTA_THRESHOLD:  /* Z */
         status = sixel_encoder_apply_6delta_threshold_option(encoder,
                                                              value);
@@ -14287,6 +14474,11 @@ sixel_encoder_setopt(
             "option -8 --8bit-mode conflicts"
             " with -P, --penetrate.");
         status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    status = sixel_encoder_validate_transparent_offset(encoder);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
 

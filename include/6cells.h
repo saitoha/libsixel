@@ -503,6 +503,8 @@ typedef struct sixel_encoder_core_options {
     int encode_policy;
     int ormode;
     int transparent_policy;
+    int transparent_offset_left;
+    int transparent_offset_top;
     int pixelformat;
     int source_colorspace;
     int colorspace;

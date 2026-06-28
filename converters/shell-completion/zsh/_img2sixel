@@ -894,6 +894,7 @@ _arguments -S -s -A "-*" -S \
   {-E,--encode-policy=}'[select encoding policy]':encodepolicy:_encodepolicy \
   {-B,--bgcolor=}'[select background color]' \
   {-A,--transparent-policy=}'[select transparent output policy]':transparentpolicy:_transparentpolicy \
+  {-+,--transparent-offset=}'[add transparent left/top pixel offset]' \
   {-Z,--6delta-threshold=}'[set RGB tolerance for 6delta encoding]' \
   {-Y,--6delta-error=}'[choose 6delta kept-pixel error handling]':6deltaerror:_6deltaerror \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \

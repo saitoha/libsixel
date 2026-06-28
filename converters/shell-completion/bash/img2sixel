@@ -764,6 +764,9 @@ _img2sixel()
                                    transparent' -- "$cur" ) )
         return 0
         ;;
+    -+|--transparent-offset)
+        return 0
+        ;;
     -Z|--6delta-threshold)
         return 0
         ;;
@@ -881,6 +884,7 @@ _img2sixel()
                                    -E --encode-policy \
                                    -B --bgcolor \
                                    -A --transparent-policy \
+                                   -+ --transparent-offset \
                                    -Z --6delta-threshold \
                                    -Y --6delta-error \
                                    -P --penetrate \
