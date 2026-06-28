@@ -268,6 +268,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0058_LOADER_GD_STATUS_POLICY \
     -DBUILD_TEST_0059_LOADER_GD_PIXELPOLICY_DETAIL \
     -DBUILD_TEST_0060_LOADER_BUILTIN_WEBP_ANIM_POLICY_LIMITS_PLAN \
+    -DBUILD_TEST_0061_LOADER_TTY_CPR_PARSER \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -365,6 +366,7 @@ test_runner_SOURCES = test_runner.c \
     loader/0057_loader_gd_can_try_policy.c \
     loader/0058_loader_gd_status_policy.c \
     loader/0059_loader_gd_pixelpolicy_detail.c \
+    loader/0061_loader_tty_cpr_parser.c \
     loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
     loader/chunk_test_common.h \
     loader/pixelformat_test_common.h \

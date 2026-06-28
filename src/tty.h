@@ -57,6 +57,12 @@ sixel_tty_parse_osc11_response(unsigned char *bgcolor,
                                size_t response_size);
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_parse_cpr_response(int *row,
+                             int *col,
+                             char const *response,
+                             size_t response_size);
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_tty_query_osc11_bgcolor(unsigned char *bgcolor, int timeout_ms);
 
 typedef int (*sixel_tty_query_stop_function)(void *context);
