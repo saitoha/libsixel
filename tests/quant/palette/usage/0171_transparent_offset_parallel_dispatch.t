@@ -27,8 +27,7 @@ serial_fallback_seen=0
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_THREADS=1 \
-    --env SIXEL_DITHER_PARALLEL_THREADS_MAX=1 \
-    -L builtin -p 16 -+ 3,3 -o "${serial_output}" "${input_image}" || {
+    -L builtin -d none -p 16 -+ 3,3 -o "${serial_output}" "${input_image}" || {
     echo "not ok 1 - transparent-offset serial encode failed"
     exit 0
 }
@@ -36,8 +35,10 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \
     --env SIXEL_LOG_PATH="${log_file}" \
     --env SIXEL_THREADS=4 \
-    --env SIXEL_DITHER_PARALLEL_THREADS_MAX=1 \
-    -L builtin -p 16 -+ 3,3 -o "${parallel_output}" "${input_image}" || {
+    --env SIXEL_DITHER_PARALLEL_THREADS_MAX=2 \
+    --env SIXEL_DITHER_PARALLEL_BAND_WIDTH=6 \
+    --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=0 \
+    -L builtin -d none -p 16 -+ 3,3 -o "${parallel_output}" "${input_image}" || {
     echo "not ok 1 - transparent-offset parallel encode failed"
     exit 0
 }

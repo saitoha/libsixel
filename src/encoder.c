@@ -3423,9 +3423,11 @@ sixel_encoder_normalize_frame_to_rgb888(
 {
     SIXELSTATUS status;
     sixel_frame_pixels_view_t view;
+    unsigned char const *pixels;
 
     status = SIXEL_FALSE;
     memset(&view, 0, sizeof(view));
+    pixels = NULL;
     if (encoder == NULL || frame == NULL || rgb_out == NULL ||
         rgb_size_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -3438,8 +3440,12 @@ sixel_encoder_normalize_frame_to_rgb888(
     if (SIXEL_FAILED(status)) {
         return status;
     }
+    pixels = view.pixels;
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(view.pixelformat)) {
+        pixels = (unsigned char const *)view.pixels_float32;
+    }
     status = sixel_encoder_normalize_pixels_to_rgb888(encoder->allocator,
-                                                      view.pixels,
+                                                      pixels,
                                                       view.width,
                                                       view.height,
                                                       view.pixelformat,

@@ -166,6 +166,8 @@ typedef struct sixel_parallel_context {
     int thread_count;
     int band_count;
     sixel_parallel_band_buffer_t *bands;
+    int *band_source_rows_total;
+    int *band_source_rows_ready;
     sixel_parallel_worker_state_t **workers;
     int worker_capacity;
     int worker_registered;
@@ -511,6 +513,8 @@ static SIXELSTATUS sixel_parallel_context_grow(sixel_parallel_context_t *ctx,
                                               int target_threads);
 static void sixel_parallel_submit_band(sixel_parallel_context_t *ctx,
                                        int band_index);
+static void
+sixel_parallel_submit_source_empty_bands(sixel_parallel_context_t *ctx);
 static SIXELSTATUS sixel_parallel_context_wait(sixel_parallel_context_t *ctx,
                                                int force_abort);
 static void sixel_parallel_palette_row_ready(void *priv, int row_index);
@@ -613,6 +617,10 @@ sixel_parallel_context_cleanup(sixel_parallel_context_t *ctx)
         free(ctx->bands);
         ctx->bands = NULL;
     }
+    free(ctx->band_source_rows_total);
+    ctx->band_source_rows_total = NULL;
+    free(ctx->band_source_rows_ready);
+    ctx->band_source_rows_ready = NULL;
     ctx->band_count = 0;
     if (ctx->pool != NULL) {
         ctx->pool->vtbl->unref(ctx->pool);
@@ -947,6 +955,75 @@ sixel_parallel_create_pool(sixel_thread_pool_t **pool,
     return status;
 }
 
+static void
+sixel_parallel_prepare_band_source_rows(sixel_parallel_context_t *ctx)
+{
+    int band_index;
+    int band_start;
+    int band_end;
+    int source_start;
+    int source_end;
+
+    if (ctx == NULL || ctx->band_source_rows_total == NULL ||
+            ctx->band_source_rows_ready == NULL) {
+        return;
+    }
+
+    /*
+     * PaletteApply reports readiness in source-image coordinates.  The encoder
+     * consumes fixed six-line bands in encoded-image coordinates, and a
+     * transparent offset shifts those two spaces apart.  Precomputing the
+     * source rows required by each encoded band lets the producer dispatch only
+     * after every row that band can read has actually been written.
+     */
+    for (band_index = 0; band_index < ctx->band_count; band_index++) {
+        band_start = band_index * 6;
+        band_end = ctx->encoded_height;
+        if (band_start <= ctx->encoded_height - 6) {
+            band_end = band_start + 6;
+        }
+
+        source_start = band_start - ctx->offset_top;
+        source_end = band_end - ctx->offset_top;
+        if (source_start < 0) {
+            source_start = 0;
+        }
+        if (source_start > ctx->height) {
+            source_start = ctx->height;
+        }
+        if (source_end < 0) {
+            source_end = 0;
+        }
+        if (source_end > ctx->height) {
+            source_end = ctx->height;
+        }
+
+        ctx->band_source_rows_total[band_index] = source_end - source_start;
+        ctx->band_source_rows_ready[band_index] = 0;
+    }
+}
+
+static void
+sixel_parallel_submit_source_empty_bands(sixel_parallel_context_t *ctx)
+{
+    int band_index;
+
+    if (ctx == NULL || ctx->band_source_rows_total == NULL) {
+        return;
+    }
+
+    /*
+     * A positive top offset can create leading bands that contain only
+     * transparent padding.  No PaletteApply row can ever close those bands, so
+     * enqueue them explicitly before waiting for source-row notifications.
+     */
+    for (band_index = 0; band_index < ctx->band_count; band_index++) {
+        if (ctx->band_source_rows_total[band_index] == 0) {
+            sixel_parallel_submit_band(ctx, band_index);
+        }
+    }
+}
+
 static SIXELSTATUS
 sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                              sixel_index_t *pixels,
@@ -1001,6 +1078,8 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     ctx->band_count = 0;
     ctx->workers = NULL;
     ctx->worker_capacity = 0;
+    ctx->band_source_rows_total = NULL;
+    ctx->band_source_rows_ready = NULL;
 
     nbands = sixel_count_sixel_bands(encoded_height);
     if (nbands <= 0) {
@@ -1044,6 +1123,18 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
         ctx->bands[i].dispatched = 0;
     }
     ctx->band_count = nbands;
+
+    ctx->band_source_rows_total = (int *)calloc((size_t)nbands,
+                                                sizeof(int));
+    if (ctx->band_source_rows_total == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    ctx->band_source_rows_ready = (int *)calloc((size_t)nbands,
+                                                sizeof(int));
+    if (ctx->band_source_rows_ready == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    sixel_parallel_prepare_band_source_rows(ctx);
 
     ctx->workers = (sixel_parallel_worker_state_t **)
         calloc((size_t)ctx->worker_capacity, sizeof(*ctx->workers));
@@ -1204,10 +1295,10 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
     sixel_timeline_logger_t *logger;
     int band_height;
     int band_index;
-    int first_band;
     int ready_row;
-    int prefix_band;
-    int band_to_submit;
+    int should_dispatch;
+    int rows_ready;
+    int rows_total;
 
     notifier = (sixel_parallel_row_notifier_t *)priv;
     if (notifier == NULL) {
@@ -1227,41 +1318,46 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
     }
 
     /*
-     * The producer reports source rows, while transparent-offset bands are
-     * laid out in encoded-image coordinates.  Bands wholly above the source
-     * image are ready as soon as the first source row is available.  A band
-     * touching source data is ready after its last encoded row is produced, or
-     * after the final source row closes a short tail band.
+     * Dither workers may complete source-row ranges out of order.  A shifted
+     * encoded band can also straddle two dither bands, so the last source row
+     * seen by one worker is not enough to prove the encoded band is complete.
+     * Count source-row arrivals per encoded six-line band and dispatch only
+     * when every source row for that encoded band is present.
      */
     ready_row = ctx->offset_top + row_index;
-    band_index = -1;
-    first_band = -1;
-    if (ctx->offset_top >= band_height && row_index == 0) {
-        prefix_band = (ctx->offset_top / band_height) - 1;
-        if (prefix_band > band_index) {
-            first_band = 0;
-            band_index = prefix_band;
-        }
-    }
-    if ((ready_row % band_height) == band_height - 1 ||
-            row_index == ctx->height - 1) {
-        prefix_band = ready_row / band_height;
-        if (prefix_band > band_index) {
-            if (first_band < 0) {
-                first_band = prefix_band;
-            }
-            band_index = prefix_band;
-        }
-    }
-
+    band_index = ready_row / band_height;
     if (band_index >= ctx->band_count) {
         band_index = ctx->band_count - 1;
     }
     if (band_index < 0) {
         return;
     }
-    if (first_band < 0) {
-        first_band = band_index;
+
+    should_dispatch = 0;
+    if (ctx->band_source_rows_total != NULL &&
+            ctx->band_source_rows_ready != NULL) {
+        if (ctx->mutex_ready) {
+            sixel_mutex_lock(&ctx->mutex);
+        }
+        rows_total = ctx->band_source_rows_total[band_index];
+        rows_ready = ctx->band_source_rows_ready[band_index];
+        if (rows_total > 0 && rows_ready < rows_total) {
+            rows_ready += 1;
+            ctx->band_source_rows_ready[band_index] = rows_ready;
+            if (rows_ready == rows_total) {
+                should_dispatch = 1;
+            }
+        }
+        if (ctx->mutex_ready) {
+            sixel_mutex_unlock(&ctx->mutex);
+        }
+    } else if ((ready_row % band_height) == band_height - 1 ||
+            row_index == ctx->height - 1) {
+        should_dispatch = 1;
+    }
+
+    if (!should_dispatch) {
+        return;
     }
 
     if (logger != NULL) {
@@ -1272,11 +1368,7 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
                           band_index);
     }
 
-    for (band_to_submit = first_band;
-            band_to_submit <= band_index;
-            band_to_submit++) {
-        sixel_parallel_submit_band(ctx, band_to_submit);
-    }
+    sixel_parallel_submit_band(ctx, band_index);
 }
 
 static SIXELSTATUS
@@ -1851,6 +1943,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
+    sixel_parallel_submit_source_empty_bands(&ctx);
 
     result = sixel_dither_apply_palette(dither, pixels, width, height);
     if (result == NULL) {
@@ -2069,6 +2162,7 @@ sixel_encode_body_ormode_pipeline(unsigned char *pixels,
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
+    sixel_parallel_submit_source_empty_bands(&ctx);
 
     result = sixel_dither_apply_palette(dither, pixels, width, height);
     if (result == NULL) {
