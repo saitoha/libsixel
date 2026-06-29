@@ -153,6 +153,10 @@ typedef struct sixel_parallel_context {
     sixel_index_t *pixels;
     int width;
     int height;
+    int encoded_width;
+    int encoded_height;
+    int offset_left;
+    int offset_top;
     int ncolors;
     int keycolor;
     unsigned char *palstate;
@@ -223,6 +227,7 @@ static void sixel_band_finish(sixel_encode_work_t *work,
                               sixel_band_state_t *state);
 static void sixel_band_clear_map(sixel_encode_work_t *work);
 static int sixel_output_has_transparent_offset(sixel_output_t const *output);
+static int sixel_count_sixel_bands(int height);
 static SIXELSTATUS
 sixel_output_compute_transparent_extent(sixel_output_t const *output,
                                         int width,
@@ -434,6 +439,23 @@ sixel_output_has_transparent_offset(sixel_output_t const *output)
 
     return output->transparent_offset_left != 0 ||
            output->transparent_offset_top != 0;
+}
+
+static int
+sixel_count_sixel_bands(int height)
+{
+    int bands;
+
+    if (height <= 0) {
+        return 0;
+    }
+
+    bands = height / 6;
+    if ((height % 6) != 0) {
+        bands += 1;
+    }
+
+    return bands;
 }
 
 static SIXELSTATUS
@@ -701,7 +723,7 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
 
     if (!sixel_parallel_context_is_ormode(ctx)) {
         status = sixel_encode_work_allocate(&state->work,
-                                            ctx->width,
+                                            ctx->encoded_width,
                                             ctx->ncolors,
                                             ctx->allocator);
         if (SIXEL_FAILED(status)) {
@@ -943,16 +965,30 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
 {
     SIXELSTATUS status;
     int nbands;
+    int encoded_width;
+    int encoded_height;
     int threads;
     int i;
 
     if (ctx == NULL || pixels == NULL || output == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    status = sixel_output_compute_transparent_extent(output,
+                                                     width,
+                                                     height,
+                                                     &encoded_width,
+                                                     &encoded_height);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
 
     ctx->pixels = pixels;
     ctx->width = width;
     ctx->height = height;
+    ctx->encoded_width = encoded_width;
+    ctx->encoded_height = encoded_height;
+    ctx->offset_left = output->transparent_offset_left;
+    ctx->offset_top = output->transparent_offset_top;
     ctx->ncolors = ncolors;
     ctx->keycolor = keycolor;
     ctx->palstate = palstate;
@@ -966,7 +1002,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     ctx->workers = NULL;
     ctx->worker_capacity = 0;
 
-    nbands = (height + 5) / 6;
+    nbands = sixel_count_sixel_bands(encoded_height);
     if (nbands <= 0) {
         return SIXEL_OK;
     }
@@ -1168,6 +1204,10 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
     sixel_timeline_logger_t *logger;
     int band_height;
     int band_index;
+    int first_band;
+    int ready_row;
+    int prefix_band;
+    int band_to_submit;
 
     notifier = (sixel_parallel_row_notifier_t *)priv;
     if (notifier == NULL) {
@@ -1178,24 +1218,50 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
     if (ctx == NULL || ctx->band_count <= 0 || ctx->height <= 0) {
         return;
     }
-    if (row_index < 0) {
+    if (row_index < 0 || row_index >= ctx->height) {
         return;
     }
     band_height = notifier->band_height;
     if (band_height < 1) {
         band_height = 6;
     }
-    if ((row_index % band_height) != band_height - 1
-            && row_index != ctx->height - 1) {
-        return;
+
+    /*
+     * The producer reports source rows, while transparent-offset bands are
+     * laid out in encoded-image coordinates.  Bands wholly above the source
+     * image are ready as soon as the first source row is available.  A band
+     * touching source data is ready after its last encoded row is produced, or
+     * after the final source row closes a short tail band.
+     */
+    ready_row = ctx->offset_top + row_index;
+    band_index = -1;
+    first_band = -1;
+    if (ctx->offset_top >= band_height && row_index == 0) {
+        prefix_band = (ctx->offset_top / band_height) - 1;
+        if (prefix_band > band_index) {
+            first_band = 0;
+            band_index = prefix_band;
+        }
+    }
+    if ((ready_row % band_height) == band_height - 1 ||
+            row_index == ctx->height - 1) {
+        prefix_band = ready_row / band_height;
+        if (prefix_band > band_index) {
+            if (first_band < 0) {
+                first_band = prefix_band;
+            }
+            band_index = prefix_band;
+        }
     }
 
-    band_index = row_index / band_height;
     if (band_index >= ctx->band_count) {
         band_index = ctx->band_count - 1;
     }
     if (band_index < 0) {
         return;
+    }
+    if (first_band < 0) {
+        first_band = band_index;
     }
 
     if (logger != NULL) {
@@ -1206,7 +1272,11 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
                           band_index);
     }
 
-    sixel_parallel_submit_band(ctx, band_index);
+    for (band_to_submit = first_band;
+            band_to_submit <= band_index;
+            band_to_submit++) {
+        sixel_parallel_submit_band(ctx, band_to_submit);
+    }
 }
 
 static SIXELSTATUS
@@ -1316,7 +1386,7 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
     sixel_parallel_worker_reset(state);
 
     band_start = band_index * 6;
-    band_height = ctx->height - band_start;
+    band_height = ctx->encoded_height - band_start;
     if (band_height > 6) {
         band_height = 6;
     }
@@ -1357,10 +1427,10 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
                                          ctx->pixels,
                                          ctx->width,
                                          ctx->height,
-                                         ctx->width,
+                                         ctx->encoded_width,
                                          absolute_row,
-                                         0,
-                                         0,
+                                         ctx->offset_left,
+                                         ctx->offset_top,
                                          ctx->ncolors,
                                          ctx->keycolor,
                                          ctx->palstate,
@@ -1373,7 +1443,7 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
     status = sixel_band_compose(&state->work,
                                 &state->band,
                                 state->output,
-                                ctx->width,
+                                ctx->encoded_width,
                                 ctx->ncolors,
                                 ctx->keycolor,
                                 ctx->allocator);
@@ -1554,11 +1624,23 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
     int threads;
     int i;
     int queue_depth;
+    int encoded_width;
+    int encoded_height;
     sixel_timeline_logger_t *logger;
 
     sixel_parallel_context_init(&ctx);
     sixel_timeline_logger_prepare_default(allocator, &logger);
-    nbands = (height + 5) / 6;
+    status = sixel_output_compute_transparent_extent(output,
+                                                     width,
+                                                     height,
+                                                     &encoded_width,
+                                                     &encoded_height);
+    if (SIXEL_FAILED(status)) {
+        sixel_timeline_logger_unref(logger);
+        return status;
+    }
+    (void)encoded_width;
+    nbands = sixel_count_sixel_bands(encoded_height);
     if (nbands <= 0) {
         sixel_timeline_logger_unref(logger);
         return SIXEL_OK;
@@ -1649,6 +1731,8 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     int dither_threads_budget;
     int worker_capacity;
     int boost_target;
+    int encoded_width;
+    int encoded_height;
     sixel_timeline_logger_t *logger;
     int owns_logger;
     sixel_parallel_row_notifier_t notifier;
@@ -1661,7 +1745,16 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     }
 
     threads = encode_threads;
-    nbands = (height + 5) / 6;
+    status = sixel_output_compute_transparent_extent(output,
+                                                     width,
+                                                     height,
+                                                     &encoded_width,
+                                                     &encoded_height);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    (void)encoded_width;
+    nbands = sixel_count_sixel_bands(encoded_height);
     if (threads <= 1 || nbands <= 1) {
         return SIXEL_RUNTIME_ERROR;
     }
@@ -1688,7 +1781,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     notifier.context = &ctx;
     notifier.logger = logger;
     notifier.band_height = 6;
-    notifier.image_height = height;
+    notifier.image_height = encoded_height;
     waited = 0;
     status = SIXEL_OK;
 
@@ -3550,10 +3643,9 @@ sixel_encode_body(
         int nbands;
         int threads;
 
-        nbands = (height + 5) / 6;
+        nbands = sixel_count_sixel_bands(encoded_height);
         threads = work.requested_threads;
-        if (nbands > 1 && threads > 1 &&
-            sixel_output_has_transparent_offset(output) == 0) {
+        if (nbands > 1 && threads > 1) {
             status = sixel_encode_body_parallel(pixels,
                                                 width,
                                                 height,
@@ -4263,15 +4355,14 @@ sixel_encode_dither(
              */
             pipeline_threads = sixel_threads_normalize(0);
         }
-        pipeline_nbands = (height + 5) / 6;
+        pipeline_nbands = sixel_count_sixel_bands(encoded_height);
         /*
          * Pipeline mode lets PaletteApply produce contiguous index rows while
          * band workers consume completed six-line slices. OR mode now has its
          * own band encoder, so it can share this producer/writer path without
          * dereferencing input_pixels on the caller side.
          */
-        if (pipeline_threads > 1 && pipeline_nbands > 1 &&
-                sixel_output_has_transparent_offset(output) == 0) {
+        if (pipeline_threads > 1 && pipeline_nbands > 1) {
             pipeline_active = 1;
             input_pixels = NULL;
         } else {
