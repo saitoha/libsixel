@@ -56,6 +56,12 @@ static int
 sixel_frame_colorspace_from_pixelformat(int pixelformat);
 static void
 sixel_frame_apply_pixelformat(sixel_frame_t *frame, int pixelformat);
+static void *
+sixel_frame_pixel_storage(sixel_frame_t const *frame);
+static void
+sixel_frame_release_owned_pixels(sixel_frame_t *frame);
+static void
+sixel_frame_release_owned_palette(sixel_frame_t *frame);
 static SIXELSTATUS
 sixel_frame_init_common(sixel_frame_t *frame,
                         void *pixels,
@@ -64,7 +70,9 @@ sixel_frame_init_common(sixel_frame_t *frame,
                         int pixelformat,
                         unsigned char *palette,
                         int ncolors,
-                        int is_float);
+                        int is_float,
+                        int owns_pixels,
+                        int owns_palette);
 static SIXELSTATUS
 sixel_frame_validate_size(char const *context,
                           int width,
@@ -265,6 +273,50 @@ sixel_frame_from_interface_const(sixel_frame_interface_t const *frame)
     return (sixel_frame_t const *)frame;
 }
 
+static void *
+sixel_frame_pixel_storage(sixel_frame_t const *frame)
+{
+    if (frame == NULL) {
+        return NULL;
+    }
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
+        return (void *)frame->pixels.f32ptr;
+    }
+
+    return (void *)frame->pixels.u8ptr;
+}
+
+static void
+sixel_frame_release_owned_pixels(sixel_frame_t *frame)
+{
+    void *pixels;
+
+    if (frame == NULL) {
+        return;
+    }
+
+    pixels = sixel_frame_pixel_storage(frame);
+    if (frame->owns_pixels != 0) {
+        sixel_allocator_free(frame->allocator, pixels);
+    }
+    frame->pixels.u8ptr = NULL;
+    frame->owns_pixels = 1;
+}
+
+static void
+sixel_frame_release_owned_palette(sixel_frame_t *frame)
+{
+    if (frame == NULL) {
+        return;
+    }
+
+    if (frame->owns_palette != 0) {
+        sixel_allocator_free(frame->allocator, frame->palette);
+    }
+    frame->palette = NULL;
+    frame->owns_palette = 1;
+}
+
 static void
 sixel_frame_vtbl_ref(sixel_frame_interface_t *frame)
 {
@@ -304,7 +356,9 @@ sixel_frame_vtbl_init_pixels(
                                      request->palette,
                                      request->ncolors,
                                      request->kind ==
-                                         SIXEL_FRAME_PIXELS_FLOAT32);
+                                         SIXEL_FRAME_PIXELS_FLOAT32,
+                                     1,
+                                     1);
     if (SIXEL_SUCCEEDED(status) && request->colorspace >= 0) {
         storage->colorspace = request->colorspace;
     }
@@ -789,6 +843,7 @@ sixel_frame_clone(sixel_frame_t const *frame,
         }
         memcpy(palette, view.palette, palette_bytes);
         clone->palette = palette;
+        clone->owns_palette = 1;
         palette = NULL;
     }
 
@@ -837,6 +892,7 @@ sixel_frame_clone(sixel_frame_t const *frame,
             } else {
                 clone->pixels.u8ptr = pixels;
             }
+            clone->owns_pixels = 1;
             pixels = NULL;
         }
     }
@@ -902,6 +958,13 @@ sixel_frame_new(
     (*ppframe)->ref = 1U;
     (*ppframe)->pixels.u8ptr = NULL;
     (*ppframe)->palette = NULL;
+    /*
+     * Most loader paths still assign freshly allocated storage directly into
+     * the private frame. Keep direct-assignment storage owned by default; the
+     * explicit borrowed initializer flips these flags for caller-owned memory.
+     */
+    (*ppframe)->owns_pixels = 1;
+    (*ppframe)->owns_palette = 1;
     (*ppframe)->width = 0;
     (*ppframe)->height = 0;
     (*ppframe)->ncolors = (-1);
@@ -981,8 +1044,8 @@ sixel_frame_destroy(sixel_frame_t /* in */ *frame)
 
     if (frame) {
         allocator = frame->allocator;
-        sixel_allocator_free(allocator, frame->pixels.u8ptr);
-        sixel_allocator_free(allocator, frame->palette);
+        sixel_frame_release_owned_pixels(frame);
+        sixel_frame_release_owned_palette(frame);
         sixel_allocator_free(allocator, frame->transparent_mask);
         sixel_allocator_free(allocator, frame);
         sixel_allocator_unref(allocator);
@@ -1034,12 +1097,20 @@ sixel_frame_init_common(
     int              pixelformat,
     unsigned char   *palette,
     int              ncolors,
-    int              is_float)
+    int              is_float,
+    int              owns_pixels,
+    int              owns_palette)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     size_t unused_pixel_total;
     size_t unused_byte_total;
     int unused_depth_bytes;
+
+    if (frame == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_init: frame is null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     sixel_frame_ref(frame);
 
@@ -1091,14 +1162,19 @@ sixel_frame_init_common(
     }
 
     if (is_float != 0) {
+        sixel_frame_release_owned_pixels(frame);
         frame->pixels.f32ptr = (float *)pixels;
     } else {
+        sixel_frame_release_owned_pixels(frame);
         frame->pixels.u8ptr = (unsigned char *)pixels;
     }
+    frame->owns_pixels = owns_pixels != 0 ? 1 : 0;
     frame->width = width;
     frame->height = height;
     sixel_frame_apply_pixelformat(frame, pixelformat);
+    sixel_frame_release_owned_palette(frame);
     frame->palette = palette;
+    frame->owns_palette = owns_palette != 0 ? 1 : 0;
     frame->ncolors = ncolors;
     frame->alpha_zero_is_transparent = 0;
     if (frame->transparent_mask != NULL) {
@@ -1132,7 +1208,33 @@ sixel_frame_init(
                                    pixelformat,
                                    palette,
                                    ncolors,
-                                   0);
+                                   0,
+                                   1,
+                                   1);
+}
+
+/* initialize frame object with caller-owned mutable pixel storage */
+SIXELAPI SIXELSTATUS
+sixel_frame_init_borrowed(
+    sixel_frame_t   /* in */ *frame,
+    void            /* in */ *pixels,
+    int             /* in */ width,
+    int             /* in */ height,
+    int             /* in */ pixelformat,
+    unsigned char   /* in */ *palette,
+    int             /* in */ ncolors)
+{
+    return sixel_frame_init_common(
+        frame,
+        pixels,
+        width,
+        height,
+        pixelformat,
+        palette,
+        ncolors,
+        SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ? 1 : 0,
+        0,
+        0);
 }
 
 /* get pixels */
@@ -1680,8 +1782,11 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             *dst++ = *(frame->palette + *p * 3 + 1);
             *dst++ = *(frame->palette + *p * 3 + 2);
         }
-        sixel_allocator_free(frame->allocator, raw_pixels);
+        if (frame->owns_pixels != 0) {
+            sixel_allocator_free(frame->allocator, raw_pixels);
+        }
         frame->pixels.u8ptr = normalized_pixels;
+        frame->owns_pixels = 1;
         sixel_frame_apply_pixelformat(
             frame,
             SIXEL_PIXELFORMAT_RGB888);
@@ -1704,8 +1809,11 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             *dst++ = frame->palette[*src * 3 + 1];
             *dst++ = frame->palette[*src * 3 + 2];
         }
-        sixel_allocator_free(frame->allocator, raw_pixels);
+        if (frame->owns_pixels != 0) {
+            sixel_allocator_free(frame->allocator, raw_pixels);
+        }
         frame->pixels.u8ptr = normalized_pixels;
+        frame->owns_pixels = 1;
         sixel_frame_apply_pixelformat(
             frame,
             SIXEL_PIXELFORMAT_RGB888);
@@ -1750,8 +1858,9 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             sixel_allocator_free(frame->allocator, normalized_pixels);
             goto end;
         }
-        sixel_allocator_free(frame->allocator, raw_pixels);
+        sixel_frame_release_owned_pixels(frame);
         frame->pixels.u8ptr = normalized_pixels;
+        frame->owns_pixels = 1;
         break;
     default:
         status = SIXEL_LOGIC_ERROR;
@@ -2117,8 +2226,11 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame)
             sixel_pixelformat_byte_to_float(float_pixelformat, 2, b8);
     }
 
-    sixel_allocator_free(frame->allocator, byte_pixels);
+    if (frame->owns_pixels != 0) {
+        sixel_allocator_free(frame->allocator, byte_pixels);
+    }
     frame->pixels.f32ptr = float_pixels;
+    frame->owns_pixels = 1;
     sixel_frame_apply_pixelformat(frame, float_pixelformat);
     return SIXEL_OK;
 }
@@ -2147,6 +2259,7 @@ sixel_frame_resize(
     size_t resized_mask_size;
     int unused_depth_bytes;
     int has_transparent;
+    int old_pixels_owned;
 
     sixel_frame_ref(frame);
 
@@ -2157,6 +2270,7 @@ sixel_frame_resize(
     resized_mask_size = 0u;
     unused_depth_bytes = 0;
     has_transparent = 0;
+    old_pixels_owned = 0;
 
     /* check parameters */
     if (width <= 0) {
@@ -2243,9 +2357,13 @@ sixel_frame_resize(
     }
 
     old_pixels = frame->pixels.u8ptr;
+    old_pixels_owned = frame->owns_pixels;
     frame->pixels.u8ptr = scaled_frame;
+    frame->owns_pixels = 1;
     scaled_frame = NULL;
-    sixel_allocator_free(frame->allocator, old_pixels);
+    if (old_pixels_owned != 0) {
+        sixel_allocator_free(frame->allocator, old_pixels);
+    }
     old_pixels = NULL;
     if (frame->transparent_mask != NULL) {
         sixel_allocator_free(frame->allocator, frame->transparent_mask);
@@ -2298,6 +2416,7 @@ sixel_frame_resize_float32(
     int target_pixelformat;
     size_t resized_mask_size;
     int has_transparent;
+    int old_pixels_owned;
 
     status = SIXEL_FALSE;
     scaled_frame = NULL;
@@ -2310,6 +2429,7 @@ sixel_frame_resize_float32(
     target_pixelformat = frame->pixelformat;
     resized_mask_size = 0u;
     has_transparent = 0;
+    old_pixels_owned = 0;
 
     sixel_frame_ref(frame);
 
@@ -2426,9 +2546,13 @@ sixel_frame_resize_float32(
     }
 
     old_pixels = frame->pixels.f32ptr;
+    old_pixels_owned = frame->owns_pixels;
     frame->pixels.f32ptr = scaled_frame;
+    frame->owns_pixels = 1;
     scaled_frame = NULL;
-    sixel_allocator_free(frame->allocator, old_pixels);
+    if (old_pixels_owned != 0) {
+        sixel_allocator_free(frame->allocator, old_pixels);
+    }
     old_pixels = NULL;
     if (frame->transparent_mask != NULL) {
         sixel_allocator_free(frame->allocator, frame->transparent_mask);
@@ -2609,12 +2733,14 @@ sixel_frame_clip(
     unsigned char *raw_pixels;
     int src_width;
     int src_height;
+    int raw_pixels_owned;
 
     sixel_frame_ref(frame);
 
     raw_pixels = frame->pixels.u8ptr;
     src_width = frame->width;
     src_height = frame->height;
+    raw_pixels_owned = frame->owns_pixels;
 
     /* check parameters */
     if (width <= 0) {
@@ -2662,8 +2788,11 @@ sixel_frame_clip(
             sixel_allocator_free(frame->allocator, normalized_pixels);
             goto end;
         }
-        sixel_allocator_free(frame->allocator, raw_pixels);
+        if (raw_pixels_owned != 0) {
+            sixel_allocator_free(frame->allocator, raw_pixels);
+        }
         frame->pixels.u8ptr = normalized_pixels;
+        frame->owns_pixels = 1;
         raw_pixels = normalized_pixels;
         break;
     default:

@@ -1233,6 +1233,8 @@ struct sixel_loader_manager_interface {
  * - Existing public sixel_frame_new() returns refcount=1 frame objects.
  * - init_pixels() takes ownership of request->pixels and request->palette,
  *   matching sixel_frame_init().
+ * - Public sixel_frame_init_borrowed() is a separate mutable-borrowed API
+ *   and is not exposed through this component request.
  * - set_transparency() takes ownership of request->transparent_mask.
  *
  * Encapsulation path:

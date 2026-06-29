@@ -27,6 +27,50 @@
  * IFrame.unref()
  */
 
+static unsigned char frame_borrowed_palette[] = {
+    0x00u, 0x00u, 0x00u,
+    0xffu, 0xffu, 0xffu
+};
+static unsigned char frame_borrowed_indexed_pixels[] = {
+    0x00u, 0x01u
+};
+static unsigned char frame_borrowed_rgb_pixels[] = {
+    0x10u, 0x20u, 0x30u,
+    0x40u, 0x50u, 0x60u
+};
+static int frame_borrowed_bad_free_count;
+
+static void *
+frame_borrowed_malloc(size_t size)
+{
+    return malloc(size);
+}
+
+static void *
+frame_borrowed_calloc(size_t count, size_t size)
+{
+    return calloc(count, size);
+}
+
+static void *
+frame_borrowed_realloc(void *ptr, size_t size)
+{
+    return realloc(ptr, size);
+}
+
+static void
+frame_borrowed_free(void *ptr)
+{
+    if (ptr == frame_borrowed_palette ||
+        ptr == frame_borrowed_indexed_pixels ||
+        ptr == frame_borrowed_rgb_pixels) {
+        ++frame_borrowed_bad_free_count;
+        return;
+    }
+
+    free(ptr);
+}
+
 static int
 test_frame_factory_creates_default_frame(void)
 {
@@ -104,6 +148,89 @@ end:
     return SIXEL_SUCCEEDED(status);
 }
 
+static int
+test_frame_borrowed_storage_contract(void)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *allocator;
+    sixel_frame_t *frame;
+
+    status = SIXEL_FALSE;
+    allocator = NULL;
+    frame = NULL;
+
+    frame_borrowed_bad_free_count = 0;
+    status = sixel_allocator_new(&allocator,
+                                 frame_borrowed_malloc,
+                                 frame_borrowed_calloc,
+                                 frame_borrowed_realloc,
+                                 frame_borrowed_free);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_frame_new(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_frame_init_borrowed(frame,
+                                       frame_borrowed_indexed_pixels,
+                                       2,
+                                       1,
+                                       SIXEL_PIXELFORMAT_PAL8,
+                                       frame_borrowed_palette,
+                                       2);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    sixel_frame_unref(frame);
+    frame = NULL;
+    if (frame_borrowed_bad_free_count != 0) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    status = sixel_frame_new(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_frame_init_borrowed(frame,
+                                       frame_borrowed_rgb_pixels,
+                                       2,
+                                       1,
+                                       SIXEL_PIXELFORMAT_RGB888,
+                                       NULL,
+                                       (-1));
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGBFLOAT32);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (sixel_frame_get_pixelformat(frame) != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    sixel_frame_unref(frame);
+    frame = NULL;
+    if (frame_borrowed_bad_free_count != 0) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    if (frame != NULL) {
+        sixel_frame_unref(frame);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
+    return SIXEL_SUCCEEDED(status);
+}
+
 int
 test_frame_0001_frame_factory(int argc, char **argv)
 {
@@ -112,6 +239,10 @@ test_frame_0001_frame_factory(int argc, char **argv)
 
     if (!test_frame_factory_creates_default_frame()) {
         fprintf(stderr, "frame factory create failed\n");
+        return EXIT_FAILURE;
+    }
+    if (!test_frame_borrowed_storage_contract()) {
+        fprintf(stderr, "frame borrowed storage contract failed\n");
         return EXIT_FAILURE;
     }
 

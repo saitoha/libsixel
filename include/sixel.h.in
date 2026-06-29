@@ -1446,6 +1446,26 @@ sixel_frame_init(
     int             /* in */ ncolors        /* number of palette colors or (-1) */
 );
 
+#define SIXEL_HAVE_FRAME_INIT_BORROWED 1
+/*
+ * Initialize a frame by borrowing mutable caller-owned storage.
+ *
+ * The frame will not free pixels or palette.  Keep both buffers alive until the
+ * frame is reinitialized or released.  Frame filters and encoders may update
+ * pixels in place; operations that need replacement storage detach to an
+ * internal frame-owned buffer.
+ */
+SIXELAPI SIXELSTATUS
+sixel_frame_init_borrowed(
+    sixel_frame_t   /* in */ *frame,        /* frame object to initialize */
+    void            /* in */ *pixels,       /* mutable caller-owned pixels */
+    int             /* in */ width,         /* pixel width of buffer */
+    int             /* in */ height,        /* pixel height of buffer */
+    int             /* in */ pixelformat,   /* pixelformat of buffer */
+    unsigned char   /* in */ *palette,      /* borrowed palette or NULL */
+    int             /* in */ ncolors        /* palette color count or (-1) */
+);
+
 /* get pixels */
 SIXELAPI unsigned char *
 sixel_frame_get_pixels(sixel_frame_t /* in */ *frame);  /* frame object */
