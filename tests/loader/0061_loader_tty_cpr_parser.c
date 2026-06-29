@@ -25,7 +25,7 @@ tty_cpr_0061_run_success_cases(void)
     static tty_cpr_0061_success_case_t const cases[] = {
         { "\033[12;34R", 12, 34 },
         { "noise\033[1;1Rtail", 1, 1 },
-        { "\2337;9R", 7, 9 }
+        { "\x9b" "7;9R", 7, 9 }
     };
     size_t index;
     size_t count;
