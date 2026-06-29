@@ -108,6 +108,31 @@ static struct sixel_tty_output_state tty_output_state = {0, 0, 0, 0};
 static char const g_tty_hide_cursor_seq[] = "\033[?25l";
 static char const g_tty_show_cursor_seq[] = "\033[?25h";
 
+/*
+ * OpenVMS/GNV can provide <termios.h> without tcgetattr()/tcsetattr() linker
+ * symbols. Keep all cbreak-mode code behind the function probes as well as
+ * the header probes so the final native LINK step has no unresolved symbols.
+ */
+#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY \
+    && HAVE_TCGETATTR && HAVE_TCSETATTR
+# define SIXEL_TTY_HAVE_TERMIOS_CBREAK 1
+#else
+# define SIXEL_TTY_HAVE_TERMIOS_CBREAK 0
+#endif
+
+/*
+ * Cursor position queries are only used by the pixel-height scroll path.
+ * Keep the helper and the call site behind the same capability macro so
+ * warning-clean builds do not see an unused static fallback on targets that
+ * cannot enter that path.
+ */
+#if SIXEL_TTY_HAVE_TERMIOS_CBREAK \
+    && !defined(__EMSCRIPTEN__) && defined(TIOCGWINSZ)
+# define SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY 1
+#else
+# define SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY 0
+#endif
+
 static int
 sixel_tty_term_supports_ansi(const char *term);
 
@@ -126,19 +151,9 @@ sixel_tty_parse_cpr_positive_int(char const *response,
                                  size_t *cursor,
                                  int *value);
 
+#if SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY
 static SIXELSTATUS
 sixel_tty_query_cursor_position(int fd, int timeout_ms, int *row, int *col);
-
-/*
- * OpenVMS/GNV can provide <termios.h> without tcgetattr()/tcsetattr() linker
- * symbols. Keep all cbreak-mode code behind the function probes as well as
- * the header probes so the final native LINK step has no unresolved symbols.
- */
-#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY \
-    && HAVE_TCGETATTR && HAVE_TCSETATTR
-# define SIXEL_TTY_HAVE_TERMIOS_CBREAK 1
-#else
-# define SIXEL_TTY_HAVE_TERMIOS_CBREAK 0
 #endif
 
 #if SIXEL_TTY_HAVE_TERMIOS_CBREAK
@@ -760,6 +775,7 @@ sixel_tty_parse_cpr_response(int *row,
     return SIXEL_FALSE;
 }
 
+#if SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY
 static SIXELSTATUS
 sixel_tty_query_cursor_position(int fd, int timeout_ms, int *row, int *col)
 {
@@ -840,6 +856,7 @@ sixel_tty_query_cursor_position(int fd, int timeout_ms, int *row, int *col)
     return SIXEL_NOT_IMPLEMENTED;
 #endif
 }
+#endif  /* SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY */
 
 #if SIXEL_TTY_HAVE_TERMIOS_CBREAK
 static int
@@ -1599,8 +1616,7 @@ sixel_tty_scroll(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
-#if SIXEL_TTY_HAVE_TERMIOS_CBREAK \
-    && !defined(__EMSCRIPTEN__) && defined(TIOCGWINSZ)
+#if SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY
     struct winsize size = {0, 0, 0, 0};
     struct termios old_termios;
     struct termios new_termios;
@@ -1738,7 +1754,7 @@ sixel_tty_scroll(
             "sixel_tty_scroll: f_write() failed.");
         goto end;
     }
-#else  /* mingw */
+#else  /* simple scroll fallback */
     (void) outfd;
     (void) height;
     (void) is_animation;
@@ -1749,13 +1765,12 @@ sixel_tty_scroll(
             "sixel_tty_scroll: f_write() failed.");
         goto end;
     }
-#endif  /* SIXEL_TTY_HAVE_TERMIOS_CBREAK && !defined(__EMSCRIPTEN__) */
+#endif  /* SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY */
 
     status = SIXEL_OK;
 
 end:
-#if SIXEL_TTY_HAVE_TERMIOS_CBREAK \
-    && !defined(__EMSCRIPTEN__) && defined(TIOCGWINSZ)
+#if SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY
     if (raw_active != 0) {
         restore_status = sixel_tty_restore(&old_termios);
         if (SIXEL_FAILED(restore_status) && SIXEL_SUCCEEDED(status)) {
