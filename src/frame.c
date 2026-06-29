@@ -62,6 +62,14 @@ static void
 sixel_frame_release_owned_pixels(sixel_frame_t *frame);
 static void
 sixel_frame_release_owned_palette(sixel_frame_t *frame);
+static void
+sixel_frame_release_replaced_pixels(sixel_frame_t *frame,
+                                    void *replacement,
+                                    int storage_owned);
+static void
+sixel_frame_release_replaced_palette(sixel_frame_t *frame,
+                                     unsigned char *replacement,
+                                     int storage_owned);
 static SIXELSTATUS
 sixel_frame_init_common(sixel_frame_t *frame,
                         void *pixels,
@@ -315,6 +323,63 @@ sixel_frame_release_owned_palette(sixel_frame_t *frame)
     }
     frame->palette = NULL;
     frame->owns_palette = 1;
+}
+
+static void
+sixel_frame_release_replaced_pixels(sixel_frame_t *frame,
+                                    void *replacement,
+                                    int storage_owned)
+{
+    void *pixels;
+
+    if (frame == NULL) {
+        return;
+    }
+
+    pixels = sixel_frame_pixel_storage(frame);
+    /*
+     * Some loader paths write newly allocated storage into the private frame
+     * first and then call init_pixels() with that same pointer to publish the
+     * metadata.  Treat an identical pointer as an ownership-state refresh, not
+     * as replaced storage, or the initializer would free the buffer it is about
+     * to keep using.
+     *
+     * For real replacement, the free decision belongs only to the old storage
+     * ownership bit.  The ownership of the incoming request is applied after
+     * the pointer has been installed.
+     */
+    if (pixels != replacement) {
+        if (storage_owned != 0) {
+            sixel_allocator_free(frame->allocator, pixels);
+        }
+        frame->pixels.u8ptr = NULL;
+        frame->owns_pixels = 1;
+    }
+}
+
+static void
+sixel_frame_release_replaced_palette(sixel_frame_t *frame,
+                                     unsigned char *replacement,
+                                     int storage_owned)
+{
+    if (frame == NULL) {
+        return;
+    }
+
+    /*
+     * Palette loaders commonly convert into frame->palette before routing the
+     * result through IFrame.init_pixels().  Preserve that just-installed
+     * palette when the request points back to the same storage.  When storage
+     * really is being replaced, free it only if the old ownership bit says the
+     * frame owns it.
+     */
+    if (frame->palette != replacement) {
+        if (storage_owned != 0) {
+            sixel_allocator_free(frame->allocator, frame->palette);
+        }
+        frame->palette = NULL;
+        frame->owns_palette = 1;
+    }
 }
 
 static void
@@ -1105,6 +1170,8 @@ sixel_frame_init_common(
     size_t unused_pixel_total;
     size_t unused_byte_total;
     int unused_depth_bytes;
+    int old_pixels_owned;
+    int old_palette_owned;
 
     if (frame == NULL) {
         sixel_helper_set_additional_message(
@@ -1117,6 +1184,8 @@ sixel_frame_init_common(
     unused_pixel_total = 0u;
     unused_byte_total = 0u;
     unused_depth_bytes = 0;
+    old_pixels_owned = 0;
+    old_palette_owned = 0;
 
     /* check parameters */
     if (width <= 0) {
@@ -1161,18 +1230,20 @@ sixel_frame_init_common(
         goto end;
     }
 
+    old_pixels_owned = frame->owns_pixels;
+    old_palette_owned = frame->owns_palette;
     if (is_float != 0) {
-        sixel_frame_release_owned_pixels(frame);
+        sixel_frame_release_replaced_pixels(frame, pixels, old_pixels_owned);
         frame->pixels.f32ptr = (float *)pixels;
     } else {
-        sixel_frame_release_owned_pixels(frame);
+        sixel_frame_release_replaced_pixels(frame, pixels, old_pixels_owned);
         frame->pixels.u8ptr = (unsigned char *)pixels;
     }
     frame->owns_pixels = owns_pixels != 0 ? 1 : 0;
     frame->width = width;
     frame->height = height;
     sixel_frame_apply_pixelformat(frame, pixelformat);
-    sixel_frame_release_owned_palette(frame);
+    sixel_frame_release_replaced_palette(frame, palette, old_palette_owned);
     frame->palette = palette;
     frame->owns_palette = owns_palette != 0 ? 1 : 0;
     frame->ncolors = ncolors;
