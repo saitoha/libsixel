@@ -175,6 +175,7 @@ final class Constants
     public const SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U';
     public const SIXEL_OPTFLAG_ORMODE = 'O';
     public const SIXEL_OPTFLAG_TRANSPARENT_POLICY = 'A';
+    public const SIXEL_OPTFLAG_TRANSPARENT_OFFSET = '+';
     public const SIXEL_OPTFLAG_6DELTA_THRESHOLD = 'Z';
     public const SIXEL_OPTFLAG_6DELTA_ERROR = 'Y';
     public const SIXEL_OPTFLAG_BGCOLOR = 'B';

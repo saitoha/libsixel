@@ -660,6 +660,8 @@ SIXEL_OPTFLAG_ORMODE           = 'O'  # -O, --ormode: output ormode sixel image
 SIXEL_OPTFLAG_TRANSPARENT_POLICY = 'A'  # -A POLICY, --transparent-policy=POLICY:
                                         #        select transparent pixel output
                                         #        handling.
+SIXEL_OPTFLAG_TRANSPARENT_OFFSET = '+'  # -+ ROWS, --transparent-offset=ROWS:
+                                        #        delay transparent rows.
 SIXEL_OPTFLAG_6DELTA_THRESHOLD = 'Z'  # -Z DELTA, --6delta-threshold=DELTA:
                                       #        set per-channel keep tolerance.
 SIXEL_OPTFLAG_6DELTA_ERROR     = 'Y'  # -Y MODE, --6delta-error=MODE:
