@@ -30,7 +30,7 @@ sixel_output=$(
 }
 
 case "${sixel_output}" in
-    "${esc}P0;1q"*)
+    "${esc}P0;0q"*)
         ;;
     *)
         echo "not ok" 1 - "falsey opt-in unexpectedly enabled relative resource"

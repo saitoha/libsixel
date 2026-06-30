@@ -703,6 +703,41 @@ static cli_option_help_t const g_option_help_table[] = {
         "    #rrrgggbbb #rrrrggggbbbb rgb:r/g/b rgb:rr/gg/bb rgb:rrr/ggg/bbb rgb:rrrr/gggg/bbbb\n"
     },
     {
+        'A',
+        "transparent-policy",
+        "-A TRANSPARENTPOLICY, --transparent-policy=TRANSPARENTPOLICY\n"
+        "    choose transparent output policy\n"
+        "      composite   -> composite alpha over background color\n"
+        "      background  -> emit transparent pixels with DCS P2=0 (default)\n"
+        "      keep        -> emit transparent pixels with DCS P2=1 for\n"
+        "                     terminals that preserve the previous\n"
+        "                     image plane\n"
+        "      transparent -> alias for background\n"
+    },
+    {
+        '+',
+        "transparent-offset",
+        "-+ LEFT,TOP, --transparent-offset=LEFT,TOP\n"
+        "    add transparent left/top pixel offset with DCS P2=1 image-plane\n"
+        "    reuse\n"
+        "    (0,0 disables the offset; incompatible with -O, -I, and -E size)\n"
+    },
+    {
+        'Z',
+        "6delta-threshold",
+        "-Z DELTA, --6delta-threshold=DELTA\n"
+        "    set RGB per-channel tolerance for 6delta encoding.\n"
+        "    DELTA must be 0..255 (default: 0).\n"
+    },
+    {
+        'Y',
+        "6delta-error",
+        "-Y MODE, --6delta-error=MODE\n"
+        "    choose 6delta kept-pixel error handling.\n"
+        "      diffuse -> diffuse error from the retained RGB (default)\n"
+        "      skip    -> skip diffusion on kept pixels for speed\n"
+    },
+    {
         'P',
         "penetrate",
         "-P, --penetrate\n"
@@ -982,6 +1017,18 @@ static cli_env_help_t const g_env_help_table[] = {
         "specify palette size (default 256). Overrides -p/--colors when set."
     },
     {
+        "SIXEL_6DELTA_THRESHOLD",
+        "set default RGB per-channel tolerance for 6delta encoding.\n"
+        "Accepts 0..255. Invalid values keep the built-in default 0.\n"
+        "Overridden by -Z/--6delta-threshold."
+    },
+    {
+        "SIXEL_6DELTA_ERROR",
+        "set default 6delta kept-pixel error handling.\n"
+        "Accepts diffuse or skip. Invalid values keep diffuse.\n"
+        "Overridden by -Y/--6delta-error."
+    },
+    {
         "SIXEL_FLOAT32_DITHER",
         "prefer the float32 quantization path. Any non-zero/true string\n"
         "enables it while 0, off, false, or no keep the 8-bit pipeline."
@@ -1166,10 +1213,12 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_TRANSPARENT_POLICY",
-        "control builtin non-PAL alpha normalization.\n"
-        "composite (default) and transparent both composite semi-alpha when\n"
-        "a background is available; transparent keeps alpha==0 source RGB.\n"
-        "Invalid or empty values fall back to composite."
+        "control alpha normalization and transparent SIXEL P2 handling.\n"
+        "composite bakes alpha into the background when available.\n"
+        "background/transparent keep alpha==0 as transparent and emit P2=0\n"
+        "(default).\n"
+        "keep keeps alpha==0 as transparent and emits P2=1 for previous\n"
+        "image-plane reuse."
     },
     {
         "SIXEL_LOADER_ORIENTATION",
@@ -1819,7 +1868,7 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:~:kil:T:t:ugvSn:PE:U:B:C:D@:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:~:kil:T:t:ugvSn:PE:U:B:A:+:Z:Y:C:D@:"
     "OVX:W:H%:1:2:3:";
 
 static int
@@ -2874,6 +2923,10 @@ img2sixel_main(int argc, char *argv[])
         {"clustering-colorspace", required_argument,  &long_opt, 'X'},
         {"working-colorspace",    required_argument,  &long_opt, 'W'},
         {"bgcolor",               required_argument,  &long_opt, 'B'},
+        {"transparent-policy",    required_argument,  &long_opt, 'A'},
+        {"transparent-offset",    required_argument,  &long_opt, '+'},
+        {"6delta-threshold",      required_argument,  &long_opt, 'Z'},
+        {"6delta-error",          required_argument,  &long_opt, 'Y'},
         {"complexion-score",      required_argument,  &long_opt, 'C'}, /* deprecated */
         {"pipe-mode",             no_argument,        &long_opt, 'D'}, /* deprecated */
         {"drcs",                  required_argument,  &long_opt, '@'},
@@ -3216,7 +3269,10 @@ unknown_option_error:
             "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"
             "                 [-3 shell] [-X clusteringcolorspace]\n"
             "                 [-W workingcolorspace] [-U outputcolorspace]\n"
-            "                 [-B bgcolor] [-o outfile] [filename ...]\n\n"
+            "                 [-B bgcolor] [-A transparentpolicy]\n"
+            "                 [-+ left,top]\n"
+            "                 [-Z delta]\n"
+            "                 [-o outfile] [filename ...]\n\n"
             "for more details, type: 'img2sixel -H'.\n\n");
     goto end;
 

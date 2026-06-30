@@ -161,6 +161,20 @@ struct sixel_dither {
     unsigned char const *pipeline_transparent_mask; /* alpha==0 pixels */
     size_t pipeline_transparent_mask_size; /* transparent mask length */
     int pipeline_transparent_keycolor; /* keycolor applied to mask hits */
+    unsigned char const *pipeline_accumulation_pixels; /* previous RGB888 */
+    size_t pipeline_accumulation_pixels_size; /* previous RGB byte length */
+    unsigned char const *pipeline_accumulation_valid_mask; /* valid pixels */
+    size_t pipeline_accumulation_valid_mask_size; /* valid mask length */
+    int pipeline_accumulation_width; /* previous frame width */
+    int pipeline_accumulation_height; /* previous frame height */
+    int pipeline_accumulation_keycolor; /* keycolor for previous hits */
+    unsigned int pipeline_6delta_threshold; /* per-channel keep threshold */
+    int pipeline_6delta_error_mode; /* kept-pixel error handling */
+    unsigned char *pipeline_accumulation_result_mask; /* encoded keeps */
+    size_t pipeline_accumulation_result_mask_size; /* result mask length */
+    unsigned char *pipeline_accumulation_result_rgb; /* encoded RGB plane */
+    size_t pipeline_accumulation_result_rgb_size; /* encoded RGB byte length */
+    int pipeline_accumulation_result_enabled; /* retain encoded RGB result */
     unsigned char *bluenoise_gradient_map; /* owned gradient-strength map */
     size_t bluenoise_gradient_map_size; /* gradient map byte length */
     int bluenoise_gradient_width; /* gradient map width */
@@ -224,6 +238,72 @@ sixel_dither_set_pipeline_transparent_mask_hint(
 void
 sixel_dither_clear_pipeline_transparent_mask_hint(
     sixel_dither_t *dither);
+
+SIXEL_INTERNAL_API void
+sixel_dither_set_pipeline_accumulation_buffer_hint(
+    sixel_dither_t *dither,
+    unsigned char const *pixels,
+    size_t pixels_size,
+    unsigned char const *valid_mask,
+    size_t valid_mask_size,
+    int width,
+    int height,
+    int keycolor,
+    unsigned int threshold,
+    int error_mode);
+
+SIXEL_INTERNAL_API int
+sixel_dither_pipeline_6delta_try_keep_rgb888(
+    sixel_dither_t *dither,
+    size_t index,
+    unsigned char const *rgb,
+    int record_result,
+    unsigned char const **accumulation_rgb_out,
+    int *keycolor_out);
+
+SIXEL_INTERNAL_API int
+sixel_dither_pipeline_6delta_error_mode(sixel_dither_t const *dither);
+
+void
+sixel_dither_clear_pipeline_accumulation_buffer_hint(
+    sixel_dither_t *dither);
+
+SIXEL_INTERNAL_API void
+sixel_dither_clear_pipeline_accumulation_result_mask(
+    sixel_dither_t *dither);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_set_pipeline_accumulation_result_mask(
+    sixel_dither_t *dither,
+    unsigned char *mask,
+    size_t mask_size);
+
+SIXEL_INTERNAL_API unsigned char const *
+sixel_dither_get_pipeline_accumulation_result_mask(
+    sixel_dither_t const *dither,
+    size_t *mask_size);
+
+SIXEL_INTERNAL_API void
+sixel_dither_clear_pipeline_accumulation_result_rgb(
+    sixel_dither_t *dither);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_set_pipeline_accumulation_result_rgb(
+    sixel_dither_t *dither,
+    sixel_index_t const *indexes,
+    size_t index_count,
+    unsigned char const *palette,
+    size_t palette_count);
+
+SIXEL_INTERNAL_API unsigned char const *
+sixel_dither_get_pipeline_accumulation_result_rgb(
+    sixel_dither_t const *dither,
+    size_t *rgb_size);
+
+SIXEL_INTERNAL_API void
+sixel_dither_set_pipeline_accumulation_result_enabled(
+    sixel_dither_t *dither,
+    int enabled);
 
 SIXEL_INTERNAL_API void
 sixel_dither_clear_bluenoise_gradient_map_hint(

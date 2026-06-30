@@ -118,6 +118,7 @@ sub attach_all {
     $ffi->attach(['sixel_encoder_ref' => 'Image::LibSIXEL::sixel_encoder_ref'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_encoder_unref' => 'Image::LibSIXEL::_sixel_encoder_unref'] => ['opaque'] => 'void');
     $ffi->attach(['sixel_encoder_set_cancel_flag' => 'Image::LibSIXEL::sixel_encoder_set_cancel_flag'] => ['opaque', 'opaque'] => 'int');
+    $ffi->attach(['sixel_encoder_set_accumulation_buffer' => 'Image::LibSIXEL::sixel_encoder_set_accumulation_buffer'] => ['opaque', 'opaque', 'int', 'int', 'int'] => 'int');
     $ffi->attach(['sixel_encoder_setopt' => 'Image::LibSIXEL::_sixel_encoder_setopt'] => ['opaque', 'int', 'string'] => 'int');
     $ffi->attach(['sixel_encoder_encode' => 'Image::LibSIXEL::_sixel_encoder_encode'] => ['opaque', 'string'] => 'int');
     $ffi->attach(['sixel_encoder_encode_bytes' => 'Image::LibSIXEL::sixel_encoder_encode_bytes'] => ['opaque', 'opaque', 'int', 'int', 'int', 'opaque', 'int'] => 'int');

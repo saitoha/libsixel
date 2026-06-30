@@ -446,6 +446,18 @@ load_dequantized_target_frame(char const *path,
         if (SIXEL_FAILED(status)) {
             goto error;
         }
+    } else if (dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
+        status = sixel_dequantize_k_undither_fast4(indexed_pixels,
+                                                   width,
+                                                   height,
+                                                   palette,
+                                                   ncolors,
+                                                   similarity_bias,
+                                                   allocator,
+                                                   &rgb_pixels);
+        if (SIXEL_FAILED(status)) {
+            goto error;
+        }
     } else {
         sixel_helper_set_additional_message(
             "target dequantize method is not supported.");
@@ -1171,11 +1183,6 @@ static sixel_option_choice_t const g_lsqa_compare_precision_choices[] = {
     { "float32", LSQA_COMPARE_PRECISION_FLOAT32 }
 };
 
-static sixel_option_choice_t const g_lsqa_dequantize_choices[] = {
-    { "none", SIXEL_DEQUANTIZE_NONE },
-    { "k_undither", SIXEL_DEQUANTIZE_K_UNDITHER }
-};
-
 static char const g_lsqa_compare_colorspace_detail[] =
     "compare-colorspace accepts reference, gamma, linear, oklab, "
     "cielab, or din99d.";
@@ -1184,7 +1191,8 @@ static char const g_lsqa_compare_precision_detail[] =
     "compare-precision accepts reference, 8bit, or float32.";
 
 static char const g_lsqa_dequantize_detail[] =
-    "dequantize accepts none or k_undither.";
+    "dequantize accepts none, k_undither, lso_undither:Vfs, "
+    "lso_undither:Vlight, or short forms l:Vf and l:Vl.";
 
 static void
 lsqa_copy_parse_detail(char *detail,
@@ -1540,14 +1548,34 @@ lsqa_parse_dequantize_method(char const *argument,
                              char *detail,
                              size_t detail_size)
 {
-    return lsqa_parse_choice_argument(argument,
-                                      g_lsqa_dequantize_choices,
-                                      sizeof(g_lsqa_dequantize_choices) /
-                                      sizeof(g_lsqa_dequantize_choices[0]),
-                                      g_lsqa_dequantize_detail,
-                                      out_method,
-                                      detail,
-                                      detail_size);
+    SIXELSTATUS status;
+    char const *detail_source;
+
+    if (detail != NULL && detail_size > 0u) {
+        detail[0] = '\0';
+    }
+    if (argument == NULL || argument[0] == '\0' || out_method == NULL) {
+        lsqa_copy_parse_detail(detail,
+                               detail_size,
+                               g_lsqa_dequantize_detail);
+        return -1;
+    }
+
+    status = sixel_option_parse_dequantize_argument(
+        argument,
+        out_method,
+        NULL,
+        0u);
+    if (SIXEL_FAILED(status)) {
+        detail_source = sixel_helper_get_additional_message();
+        if (detail_source == NULL || detail_source[0] == '\0') {
+            detail_source = g_lsqa_dequantize_detail;
+        }
+        lsqa_copy_parse_detail(detail, detail_size, detail_source);
+        return -1;
+    }
+
+    return 0;
 }
 
 static int
@@ -1946,9 +1974,14 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           dequantize target SIXEL input\n"
         "                           before comparison.\n"
         "                           METHOD is one of:\n"
-        "                             none        -> disable\n"
-        "                             k_undither  -> Kornelski's\n"
-        "                                            undither\n"
+        "                             none              -> disable\n"
+        "                             k_undither        -> Kornelski's\n"
+        "                                                  undither\n"
+        "                             lso_undither:Vfs\n"
+        "                             l:Vf              -> full FS undither\n"
+        "                             lso_undither:Vlight\n"
+        "                             l:Vl              -> light causal\n"
+        "                                                  undither\n"
     },
     {
         'S',

@@ -21,7 +21,7 @@
 #
 project('libsixel',
         'c',
-        version: '1.11.0-pre',
+        version: '1.11.1-pre1',
         meson_version: '>=0.59.0',
         license: 'MIT',
         default_options: [
@@ -848,6 +848,21 @@ if conf.has('HAVE_GETTIMEOFDAY')
                    args: ['-Werror=implicit-function-declaration'])
     conf.set('HAVE_GETTIMEOFDAY_TZ_TIMEZONE', 1)
   endif
+endif
+
+ssize_t_src = '''
+  #if !defined(_POSIX_C_SOURCE)
+  # define _POSIX_C_SOURCE 200809L
+  #endif
+  #include <sys/types.h>
+  int main(void) {
+    ssize_t value;
+    value = (ssize_t)0;
+    return (int)value;
+  }
+'''
+if cc.compiles(ssize_t_src, name: 'ssize_t')
+  conf.set('HAVE_SSIZE_T', 1)
 endif
 
 if conf.has('HAVE_SYS_TIME_H') and cc.compiles('''

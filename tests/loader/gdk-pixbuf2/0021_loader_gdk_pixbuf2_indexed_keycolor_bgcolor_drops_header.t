@@ -17,7 +17,7 @@ echo "1..1"
 set -v
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/pal8-trns-key0.png"
-keycolor_header="$(printf '\033P0;1q')"
+keycolor_header="$(printf '\033P0;0q')"
 output_text=''
 
 output_text="$(${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" \

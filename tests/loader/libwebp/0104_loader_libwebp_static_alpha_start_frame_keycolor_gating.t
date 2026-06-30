@@ -21,7 +21,7 @@ input_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-alpha-8x8-
 out_default="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-start-frame-default.six"
 out_start1="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-start-frame-1.six"
 out_start1_bg="${ARTIFACT_LOCAL_DIR}/webp-static-alpha-start-frame-1-bg.six"
-keycolor_header="$(printf '\033P0;1q')"
+keycolor_header="$(printf '\033P0;0q')"
 
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -Llibwebp:cms_engine=none! -S "${input_webp}" >"${out_default}" || {
     echo "not ok" 1 - "baseline static alpha decode failed"

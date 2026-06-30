@@ -435,6 +435,7 @@ typedef struct sixel_writer_image_header {
  * - dither_policy
  * - encode_policy
  * - ormode
+ * - transparent_policy
  * - gri_arg_limit
  * - body_run_state
  */
@@ -443,7 +444,9 @@ typedef struct sixel_writer_image_header {
  * IDL contract:
  * [component, refcounted]
  * [responsibility("write framed terminal SIXEL bytes to callback-backed output")]
- * [forbid_state("image_pixels", "palette", "dither_policy", "encode_policy", "ormode", "gri_arg_limit", "body_run_state")]
+ * [forbid_state("image_pixels", "palette", "dither_policy")]
+ * [forbid_state("encode_policy", "ormode", "transparent_policy")]
+ * [forbid_state("gri_arg_limit", "body_run_state")]
  * interface sixel_writer {
  *     [lifetime(retained)]
  *     void ref();
@@ -499,6 +502,9 @@ typedef struct sixel_encoder_core_options {
     int palette_type;
     int encode_policy;
     int ormode;
+    int transparent_policy;
+    int transparent_offset_left;
+    int transparent_offset_top;
     int pixelformat;
     int source_colorspace;
     int colorspace;
@@ -1227,6 +1233,8 @@ struct sixel_loader_manager_interface {
  * - Existing public sixel_frame_new() returns refcount=1 frame objects.
  * - init_pixels() takes ownership of request->pixels and request->palette,
  *   matching sixel_frame_init().
+ * - Public sixel_frame_init_borrowed() is a separate mutable-borrowed API
+ *   and is not exposed through this component request.
  * - set_transparency() takes ownership of request->transparent_mask.
  *
  * Encapsulation path:

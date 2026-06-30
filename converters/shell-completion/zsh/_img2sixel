@@ -163,6 +163,22 @@ _encodepolicy() {
     'size[encode to as small sixel sequence as possible]'
 }
 
+_transparentpolicy() {
+  _values \
+    'TRANSPARENTPOLICY' \
+    'composite[composite alpha over the background color]' \
+    'background[emit transparent pixels with DCS P2=0 (default)]' \
+    'keep[emit transparent pixels with DCS P2=1]' \
+    'transparent[alias for background]'
+}
+
+_6deltaerror() {
+  _values \
+    '6DELTAERROR' \
+    'diffuse[diffuse error from the retained RGB]' \
+    'skip[skip diffusion on kept pixels for speed]'
+}
+
 _cmsengine() {
   _values \
     'CMSENGINE' \
@@ -877,6 +893,10 @@ _arguments -S -s -A "-*" -S \
   {-b,--builtin-palette=}'[select built-in palette type]':builtinpalette:_builtinpalette \
   {-E,--encode-policy=}'[select encoding policy]':encodepolicy:_encodepolicy \
   {-B,--bgcolor=}'[select background color]' \
+  {-A,--transparent-policy=}'[select transparent output policy]':transparentpolicy:_transparentpolicy \
+  {-+,--transparent-offset=}'[add transparent left/top pixel offset]' \
+  {-Z,--6delta-threshold=}'[set RGB tolerance for 6delta encoding]' \
+  {-Y,--6delta-error=}'[choose 6delta kept-pixel error handling]':6deltaerror:_6deltaerror \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \

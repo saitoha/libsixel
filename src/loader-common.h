@@ -76,8 +76,17 @@ typedef struct sixel_loader_timeline_callback_state {
 #define SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_WINDOWS 1
 #define SIXEL_LOADER_BUILTIN_BMP_INFO40_MODE_OS2     2
 
-#define SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE  0
-#define SIXEL_LOADER_TRANSPARENT_POLICY_TRANSPARENT 1
+#define SIXEL_LOADER_TRANSPARENT_POLICY_COMPOSITE \
+    SIXEL_TRANSPARENT_POLICY_COMPOSITE
+#define SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND \
+    SIXEL_TRANSPARENT_POLICY_BACKGROUND
+#define SIXEL_LOADER_TRANSPARENT_POLICY_KEEP \
+    SIXEL_TRANSPARENT_POLICY_KEEP
+#define SIXEL_LOADER_TRANSPARENT_POLICY_TRANSPARENT \
+    SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND
+#define SIXEL_LOADER_TRANSPARENT_POLICY_PRESERVES_ALPHA(policy) \
+    ((policy) == SIXEL_LOADER_TRANSPARENT_POLICY_BACKGROUND || \
+     (policy) == SIXEL_LOADER_TRANSPARENT_POLICY_KEEP)
 
 #define SIXEL_LOADER_BACKGROUND_POLICY_FILE_FIRST     0
 #define SIXEL_LOADER_BACKGROUND_POLICY_EXPLICIT_FIRST 1
@@ -98,6 +107,10 @@ void sixel_helper_set_builtin_enable_cms(int enable);
  */
 SIXEL_INTERNAL_API void
 sixel_helper_set_loader_background_colorspace(int colorspace);
+SIXEL_INTERNAL_API int
+sixel_loader_parse_transparent_policy(char const *value, int *policy);
+SIXEL_INTERNAL_API void
+sixel_helper_set_loader_transparent_policy(int policy);
 SIXEL_INTERNAL_API int
 loader_background_colorspace(void);
 int loader_cms_prefer_8bit(void);

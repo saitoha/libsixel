@@ -207,6 +207,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0009_LOADER_WIC_PIXELFORMAT \
     -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
     -DBUILD_TEST_0010_FILTER_ENCODE \
+    -DBUILD_TEST_0011_FILTER_ENCODE_ACCUMULATION_BUFFER \
     -DBUILD_TEST_0001_ENCODER_CORE_FACTORY \
     -DBUILD_TEST_0002_ENCODER_CORE_ORMODE_BODY_FULL_BAND \
     -DBUILD_TEST_0003_ENCODER_CORE_ORMODE_BODY_TAIL_BAND \
@@ -233,6 +234,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0011_DECODER_KUNDITHER_SIMILARITY \
     -DBUILD_TEST_0012_DECODER_KUNDITHER_EDGE \
     -DBUILD_TEST_0013_DECODER_KUNDITHER_PARALLEL_MATCHES_SCALAR \
+    -DBUILD_TEST_0014_DECODER_KUNDITHER_FAST4_PARALLEL_MATCHES_SCALAR \
+    -DBUILD_TEST_0015_DECODER_KUNDITHER_FAST4_FUSED_MATCHES_SCALAR \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -265,6 +268,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0058_LOADER_GD_STATUS_POLICY \
     -DBUILD_TEST_0059_LOADER_GD_PIXELPOLICY_DETAIL \
     -DBUILD_TEST_0060_LOADER_BUILTIN_WEBP_ANIM_POLICY_LIMITS_PLAN \
+    -DBUILD_TEST_0061_LOADER_TTY_CPR_PARSER \
     -DBUILD_ABORTTRACE \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
@@ -301,6 +305,7 @@ test_runner_SOURCES = test_runner.c \
     processing/filter/0008_filter_load.c \
     processing/filter/0009_filter_dither.c \
     processing/filter/0010_filter_encode.c \
+    processing/filter/0011_filter_encode_accumulation_buffer.c \
     processing/encoder-core/0001_encoder_core_factory.c \
     processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
     processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
@@ -327,6 +332,8 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0011_decoder_kundither_similarity.c \
     processing/decoder/0012_decoder_kundither_edge.c \
     processing/decoder/0013_decoder_kundither_parallel_matches_scalar.c \
+    processing/decoder/0014_decoder_kundither_fast4_parallel_matches_scalar.c \
+    processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c \
     processing/decoder/kundither_test_common.h \
     processing/lookup/0001_lookup_policy.c \
     processing/dither/0001_dither_policy.c \
@@ -359,6 +366,7 @@ test_runner_SOURCES = test_runner.c \
     loader/0057_loader_gd_can_try_policy.c \
     loader/0058_loader_gd_status_policy.c \
     loader/0059_loader_gd_pixelpolicy_detail.c \
+    loader/0061_loader_tty_cpr_parser.c \
     loader/builtin/0060_loader_builtin_webp_anim_policy_limits_plan.c \
     loader/chunk_test_common.h \
     loader/pixelformat_test_common.h \

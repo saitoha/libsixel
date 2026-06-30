@@ -135,6 +135,10 @@ sixel_dither_apply_none_8bit(
     int use_transparent_fence;
     int is_transparent;
     size_t absolute_index;
+    unsigned char const *accumulation_pixel;
+    int accumulation_keycolor;
+    int is_6delta_keep;
+    int record_result;
 
     status = SIXEL_FALSE;
 
@@ -161,6 +165,10 @@ sixel_dither_apply_none_8bit(
     transparent_mask_size = 0U;
     transparent_keycolor = (-1);
     use_transparent_fence = 0;
+    accumulation_pixel = NULL;
+    accumulation_keycolor = (-1);
+    is_6delta_keep = 0;
+    record_result = 0;
     if (dither != NULL
             && dither->pipeline_transparent_mask != NULL
             && dither->pipeline_transparent_keycolor >= 0
@@ -182,9 +190,12 @@ sixel_dither_apply_none_8bit(
             pos = y * width + x;
             base = (size_t)pos * (size_t)depth;
             is_transparent = 0;
-            if (use_transparent_fence && absolute_y >= 0) {
+            absolute_index = 0U;
+            if (absolute_y >= 0) {
                 absolute_index = (size_t)absolute_y * (size_t)width
                     + (size_t)x;
+            }
+            if (use_transparent_fence && absolute_y >= 0) {
                 if (absolute_index < transparent_mask_size
                         && transparent_mask[absolute_index] != 0U) {
                     is_transparent = 1;
@@ -198,6 +209,24 @@ sixel_dither_apply_none_8bit(
             }
 
             source_pixel = data + base;
+            record_result = absolute_y >= output_start ? 1 : 0;
+            is_6delta_keep = 0;
+            if (absolute_y >= 0) {
+                is_6delta_keep =
+                    sixel_dither_pipeline_6delta_try_keep_rgb888(
+                        dither,
+                        absolute_index,
+                        source_pixel,
+                        record_result,
+                        &accumulation_pixel,
+                        &accumulation_keycolor);
+            }
+            if (is_6delta_keep != 0) {
+                if (record_result != 0) {
+                    result[pos] = (sixel_index_t)accumulation_keycolor;
+                }
+                continue;
+            }
             color_index = lookup_policy->vtbl->map_pixel(
                 lookup_policy,
                 source_pixel);

@@ -74,7 +74,7 @@ quicklook_core = static_library(
   'sixelquicklookcore',
   srcs,
   include_directories: [project_inc, include_directories('../src')],
-  c_args: common_c_args,
+  c_args: common_c_args + ['-DSIXEL_DECODE_PIXELS_NO_FAST4=1'],
   install: false)
 
 preview = executable(

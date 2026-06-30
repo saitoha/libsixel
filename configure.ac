@@ -3,11 +3,11 @@
 
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
-AC_INIT([libsixel], [1.11.0-pre], [saitoha@me.com])
+AC_INIT([libsixel], [1.11.1-pre1], [saitoha@me.com])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_REQUIRE_AUX_FILE([lso-tap-driver.sh.in])
 LS_LT_CURRENT=1
-LS_LT_REVISION=7
+LS_LT_REVISION=8
 LS_LT_AGE=0
 AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],

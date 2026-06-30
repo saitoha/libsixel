@@ -634,6 +634,24 @@ typedef struct builtin_loader_probe_options {
     int prefer_float32;
 } builtin_loader_probe_options_t;
 
+static void
+init_builtin_loader_probe_options(builtin_loader_probe_options_t *options)
+{
+    if (options == NULL) {
+        return;
+    }
+
+    /*
+     * Keep every optional setopt gate initialized here.  Many focused loader
+     * tests override only the fields they exercise, so a new option field must
+     * not make older probe callers pass indeterminate bytes into setopt.
+     */
+    memset(options, 0, sizeof(*options));
+    options->reqcolors = 256;
+    options->loop_control = SIXEL_LOOP_AUTO;
+    options->cms_engine = SIXEL_CMS_ENGINE_NONE;
+}
+
 static int
 run_builtin_loader_probe_case(char const *label,
                               char const *relative_path,

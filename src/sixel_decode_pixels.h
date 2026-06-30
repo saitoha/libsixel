@@ -33,6 +33,31 @@
 #include <sixel.h>
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_raw_with_options(unsigned char *p,
+                              int len,
+                              unsigned int decode_flags,
+                              unsigned char **pixels,
+                              int *pwidth,
+                              int *pheight,
+                              unsigned char **palette,
+                              int *ncolors,
+                              unsigned int *result_flags,
+                              sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_raw_with_options_mask(unsigned char *p,
+                                   int len,
+                                   unsigned int decode_flags,
+                                   unsigned char **pixels,
+                                   unsigned char **paint_mask,
+                                   int *pwidth,
+                                   int *pheight,
+                                   unsigned char **palette,
+                                   int *ncolors,
+                                   unsigned int *result_flags,
+                                   sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decode_direct_with_options(unsigned char *p,
                                  int len,
                                  unsigned int decode_flags,
@@ -41,6 +66,28 @@ sixel_decode_direct_with_options(unsigned char *p,
                                  int *pheight,
                                  unsigned int *result_flags,
                                  sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_kundither_fast4_with_options(unsigned char *p,
+                                          int len,
+                                          int direct_output,
+                                          int similarity_bias,
+                                          unsigned int decode_flags,
+                                          unsigned int *result_flags,
+                                          unsigned char **pixels,
+                                          int *pwidth,
+                                          int *pheight,
+                                          sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_pixels_finish_rgba(unsigned char **decoded,
+                                int width,
+                                int height,
+                                int pixelformat,
+                                unsigned char const *bg,
+                                unsigned int result_flags,
+                                sixel_decode_result_t *result,
+                                sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decode_pixels(unsigned char const *data,

@@ -61,6 +61,52 @@ sixel_dequantize_k_undither(unsigned char *indexed_pixels,
                             sixel_allocator_t *allocator,
                             unsigned char **output);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_k_undither_rgba(unsigned char *indexed_pixels,
+                                 unsigned char const *paint_mask,
+                                 int width,
+                                 int height,
+                                 unsigned char *palette,
+                                 int ncolors,
+                                 int similarity_bias,
+                                 int edge_strength,
+                                 sixel_allocator_t *allocator,
+                                 unsigned char **output);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_k_undither_fast4(unsigned char *indexed_pixels,
+                                  int width,
+                                  int height,
+                                  unsigned char *palette,
+                                  int ncolors,
+                                  int similarity_bias,
+                                  sixel_allocator_t *allocator,
+                                  unsigned char **output);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_k_undither_fast4_rgba(unsigned char *indexed_pixels,
+                                       unsigned char const *paint_mask,
+                                       int width,
+                                       int height,
+                                       unsigned char *palette,
+                                       int ncolors,
+                                       int similarity_bias,
+                                       sixel_allocator_t *allocator,
+                                       unsigned char **output);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_k_undither_fast4_rows(
+    unsigned char const *indexed_pixels,
+    int width,
+    int height,
+    unsigned char const *palette,
+    int ncolors,
+    int similarity_bias,
+    int y_start,
+    int y_end,
+    sixel_allocator_t *allocator,
+    unsigned char *rgb);
+
 
 #endif /* LIBSIXEL_DECODER_H */
 

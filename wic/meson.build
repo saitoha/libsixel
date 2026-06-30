@@ -48,6 +48,7 @@ endif
 
 wic_c_args = [
   '-DSIXEL_STATUS_HAVE_TTY_HELPERS=0',
+  '-DSIXEL_DECODE_PIXELS_NO_FAST4=1',
   '-DHAVE_CONFIG_H',
 ]
 wic_link_args = []

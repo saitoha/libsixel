@@ -20,7 +20,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 ls_lt_current = 1
-ls_lt_revision = 6
+ls_lt_revision = 8
 ls_lt_age = 0
 ls_lt_version = '@0@:@1@:@2@'.format(ls_lt_current, ls_lt_revision, ls_lt_age)
 inc_conf = configuration_data()

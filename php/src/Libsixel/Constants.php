@@ -114,6 +114,9 @@ final class Constants
     public const SIXEL_LOOP_FORCE = 1;
     public const SIXEL_LOOP_DISABLE = 2;
 
+    public const SIXEL_6DELTA_ERROR_DIFFUSE = 0;
+    public const SIXEL_6DELTA_ERROR_SKIP = 1;
+
     public const SIXEL_BUILTIN_MONO_DARK = 0x0;
     public const SIXEL_BUILTIN_MONO_LIGHT = 0x1;
     public const SIXEL_BUILTIN_XTERM16 = 0x2;
@@ -171,6 +174,10 @@ final class Constants
     public const SIXEL_OPTFLAG_WORKING_COLORSPACE = 'W';
     public const SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U';
     public const SIXEL_OPTFLAG_ORMODE = 'O';
+    public const SIXEL_OPTFLAG_TRANSPARENT_POLICY = 'A';
+    public const SIXEL_OPTFLAG_TRANSPARENT_OFFSET = '+';
+    public const SIXEL_OPTFLAG_6DELTA_THRESHOLD = 'Z';
+    public const SIXEL_OPTFLAG_6DELTA_ERROR = 'Y';
     public const SIXEL_OPTFLAG_BGCOLOR = 'B';
     public const SIXEL_OPTFLAG_PENETRATE = 'P';
     public const SIXEL_OPTFLAG_DRCS = '@';

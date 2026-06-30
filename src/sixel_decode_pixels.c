@@ -31,6 +31,7 @@
 
 #include <limits.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 #if HAVE_STDINT_H
 # include <stdint.h>
@@ -276,6 +277,77 @@ sixel_decode_pixels_convert(unsigned char *decoded,
     return status;
 }
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_pixels_finish_rgba(unsigned char **decoded,
+                                int width,
+                                int height,
+                                int pixelformat,
+                                unsigned char const *bg,
+                                unsigned int result_flags,
+                                sixel_decode_result_t *result,
+                                sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    unsigned char *converted;
+    unsigned char const default_bg[3] = { 0U, 0U, 0U };
+    unsigned char const *output_bg;
+    int depth;
+
+    converted = NULL;
+    output_bg = bg;
+    depth = 0;
+
+    if (decoded == NULL || *decoded == NULL || result == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (output_bg == NULL) {
+        output_bg = default_bg;
+    }
+
+    depth = sixel_decode_pixels_depth(pixelformat);
+    if (depth == 0) {
+        sixel_helper_set_additional_message(
+            "sixel_decode_pixels: unsupported output pixelformat.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    /* Guard against runaway inputs before exposing the buffer. */
+    if (width > SIXEL_DECODE_MAX_SIZE || height > SIXEL_DECODE_MAX_SIZE) {
+        sixel_helper_set_additional_message(
+            "sixel_decode_pixels: image exceeds 6000x6000 pixels.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    status = sixel_decode_pixels_convert(*decoded,
+                                         width,
+                                         height,
+                                         pixelformat,
+                                         output_bg,
+                                         &converted,
+                                         &result_flags,
+                                         allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    if (converted != *decoded) {
+        if (allocator != NULL) {
+            sixel_allocator_free(allocator, *decoded);
+        } else {
+            free(*decoded);
+        }
+    }
+    *decoded = NULL;
+
+    result->pixels = converted;
+    result->width = width;
+    result->height = height;
+    result->pixelformat = pixelformat;
+    result->stride = width * depth;
+    result->flags = result_flags;
+
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 sixel_decode_pixels_try(unsigned char *buffer,
                         size_t size,
@@ -387,7 +459,6 @@ sixel_decode_pixels(unsigned char const *data,
     sixel_allocator_t *work_allocator;
     unsigned char *workbuf;
     unsigned char *decoded;
-    unsigned char *converted;
     unsigned char const default_bg[3] = { 0U, 0U, 0U };
     unsigned char const *bg;
     unsigned int decode_flags;
@@ -401,7 +472,6 @@ sixel_decode_pixels(unsigned char const *data,
     work_allocator = allocator;
     workbuf = NULL;
     decoded = NULL;
-    converted = NULL;
     bg = default_bg;
     decode_flags = 0U;
     result_flags = 0U;
@@ -479,46 +549,23 @@ sixel_decode_pixels(unsigned char const *data,
         goto cleanup;
     }
 
-    /* Guard against runaway inputs before exposing the buffer. */
-    if (width > SIXEL_DECODE_MAX_SIZE || height > SIXEL_DECODE_MAX_SIZE) {
-        status = SIXEL_BAD_INPUT;
-        sixel_helper_set_additional_message(
-            "sixel_decode_pixels: image exceeds 6000x6000 pixels.");
-        goto cleanup;
-    }
-
-    status = sixel_decode_pixels_convert(decoded,
-                                         width,
-                                         height,
-                                         pixelformat,
-                                         bg,
-                                         &converted,
-                                         &result_flags,
-                                         work_allocator);
+    status = sixel_decode_pixels_finish_rgba(&decoded,
+                                             width,
+                                             height,
+                                             pixelformat,
+                                             bg,
+                                             result_flags,
+                                             result,
+                                             work_allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
-    if (converted == decoded) {
-        decoded = NULL;
-    }
-
-    result->pixels = converted;
-    result->width = width;
-    result->height = height;
-    result->pixelformat = pixelformat;
-    result->stride = width * depth;
-    result->flags = result_flags;
-    converted = NULL;
     status = SIXEL_OK;
 
 cleanup:
     if (decoded != NULL) {
         sixel_allocator_free(work_allocator, decoded);
         decoded = NULL;
-    }
-    if (converted != NULL) {
-        sixel_allocator_free(work_allocator, converted);
-        converted = NULL;
     }
     if (workbuf != NULL) {
         sixel_allocator_free(work_allocator, workbuf);

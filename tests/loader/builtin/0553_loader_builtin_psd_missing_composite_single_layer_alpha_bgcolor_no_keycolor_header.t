@@ -12,7 +12,7 @@ echo "1..1"
 set -v
 
 input_psd="${TOP_SRCDIR}/tests/data/inputs/formats/snake16_rgb8_alpha_missing_composite_single_layer.psd"
-keycolor_header="$(printf '\033P0;1q')"
+keycolor_header="$(printf '\033P0;0q')"
 output_bg=''
 status_bg=0
 

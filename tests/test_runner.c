@@ -96,6 +96,7 @@ int test_filter_0007_filter_fhedt(int argc, char **argv);
 int test_filter_0008_filter_load(int argc, char **argv);
 int test_filter_0009_filter_dither(int argc, char **argv);
 int test_filter_0010_filter_encode(int argc, char **argv);
+int test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
 int test_encoder_core_0002_encoder_core_ormode_body_full_band(int argc,
                                                               char **argv);
@@ -129,6 +130,9 @@ int test_decoder_0011_decoder_kundither_similarity(int argc, char **argv);
 int test_decoder_0012_decoder_kundither_edge(int argc, char **argv);
 int test_decoder_0013_decoder_kundither_parallel_matches_scalar(int argc,
                                                                 char **argv);
+int test_decoder_0014_kundither_fast4_matches_scalar(int argc, char **argv);
+int test_decoder_0015_decoder_kundither_fast4_fused_matches_scalar(int argc,
+                                                                   char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
 int test_lookup_0001_lookup_policy(int argc, char **argv);
 
@@ -220,6 +224,7 @@ int test_loader_0058_loader_gd_status_policy(int argc, char **argv);
 int test_loader_0059_loader_gd_pixelpolicy_detail(int argc, char **argv);
 int test_loader_0060_loader_builtin_webp_anim_policy_limits_plan(int argc,
                                                                   char **argv);
+int test_loader_0061_loader_tty_cpr_parser(int argc, char **argv);
 int test_loader_0020_loader_librsvg_detect_svg_like(int argc, char **argv);
 int test_loader_0021_loader_builtin_indexed_png_reqcolors_fallback(int argc,
                                                                     char **argv
@@ -258,6 +263,8 @@ static test_entry_t const test_entries[] = {
     { "filter/0008_filter_load", test_filter_0008_filter_load },
     { "filter/0009_filter_dither", test_filter_0009_filter_dither },
     { "filter/0010_filter_encode", test_filter_0010_filter_encode },
+    { "filter/0011_filter_encode_accumulation_buffer",
+      test_filter_0011_filter_encode_accumulation_buffer },
     { "security/0001_issue222_encoder_encode_bytes_packed_g1",
       test_security_0001_issue222_encoder_encode_bytes_packed_g1 },
     { "encoder-core/0001_encoder_core_factory",
@@ -310,6 +317,10 @@ static test_entry_t const test_entries[] = {
       test_decoder_0012_decoder_kundither_edge },
     { "decoder/0013_decoder_kundither_parallel_matches_scalar",
       test_decoder_0013_decoder_kundither_parallel_matches_scalar },
+    { "decoder/0014_decoder_kundither_fast4_parallel_matches_scalar",
+      test_decoder_0014_kundither_fast4_matches_scalar },
+    { "decoder/0015_decoder_kundither_fast4_fused_matches_scalar",
+      test_decoder_0015_decoder_kundither_fast4_fused_matches_scalar },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },
@@ -430,6 +441,8 @@ static test_entry_t const test_entries[] = {
       test_loader_0059_loader_gd_pixelpolicy_detail },
     { "loader/0060_loader_builtin_webp_anim_policy_limits_plan",
       test_loader_0060_loader_builtin_webp_anim_policy_limits_plan },
+    { "loader/0061_loader_tty_cpr_parser",
+      test_loader_0061_loader_tty_cpr_parser },
     { "loader/0020_loader_librsvg_detect_svg_like",
       test_loader_0020_loader_librsvg_detect_svg_like },
     { "loader/0021_loader_builtin_indexed_png_reqcolors_fallback",

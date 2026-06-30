@@ -71,7 +71,8 @@ typedef SSIZE_T ssize_t;
  * can omit ssize_t.  Keep the internal wrappers on the usual signed result
  * type when configure proves that libc did not provide it.
  */
-#if defined(HAVE_CONFIG_H) && !HAVE_SSIZE_T && !defined(_SSIZE_T_DEFINED)
+#if defined(LIBSIXEL_OPENVMS) && defined(HAVE_CONFIG_H) && !HAVE_SSIZE_T \
+    && !defined(_SSIZE_T_DEFINED)
 typedef long ssize_t;
 # define _SSIZE_T_DEFINED
 #endif

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test confirming default transparent SVG keeps the alpha SIXEL header.
+# TAP test confirming default transparent SVG emits the P2=0 SIXEL header.
 
 set -eux
 
@@ -32,13 +32,13 @@ test -n "${sixel_line-}" || {
     exit 0
 }
 case "${sixel_line}" in
-    "${esc}P0;1q"*)
+    "${esc}P0;0q"*)
         ;;
     *)
-        echo "not ok" 1 - "transparent SVG did not emit ESC P0;1q header"
+        echo "not ok" 1 - "transparent SVG did not emit ESC P0;0q header"
         exit 0
         ;;
 esac
 
-echo "ok" 1 - "default transparent SVG keeps alpha SIXEL header"
+echo "ok" 1 - "default transparent SVG emits P2=0 SIXEL header"
 exit 0

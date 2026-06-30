@@ -38,6 +38,8 @@ struct sixel_frame {
         float *f32ptr;              /* loaded pixel data (float32) */
     } pixels;
     unsigned char *palette;         /* loaded palette data */
+    int owns_pixels;                /* frame releases pixel storage */
+    int owns_palette;               /* frame releases palette storage */
     int width;                      /* frame width */
     int height;                     /* frame height */
     int ncolors;                    /* palette colors */

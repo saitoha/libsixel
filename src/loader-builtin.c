@@ -1248,9 +1248,8 @@ sixel_builtin_normalize_rgba8888_alpha_policy(
             has_zero_alpha = 1;
         }
         if (has_background != 0 &&
-            !(transparent_policy ==
-                  SIXEL_LOADER_TRANSPARENT_POLICY_TRANSPARENT &&
-              alpha_unit <= 0.0f) &&
+            !(SIXEL_LOADER_TRANSPARENT_POLICY_PRESERVES_ALPHA(
+                  transparent_policy) && alpha_unit <= 0.0f) &&
             alpha_unit < 1.0f) {
             inv_alpha = 1.0f - alpha_unit;
             for (channel = 0; channel < 3; ++channel) {

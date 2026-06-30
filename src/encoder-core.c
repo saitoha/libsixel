@@ -152,6 +152,9 @@ sixel_encoder_core_init_defaults(sixel_output_t *output,
     output->penetrate_multiplexer = 0;
     output->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
     output->ormode = 0;
+    output->transparent_policy = SIXEL_TRANSPARENT_POLICY_BACKGROUND;
+    output->transparent_offset_left = 0;
+    output->transparent_offset_top = 0;
     output->last_frame_time_usec = 0;
     output->allocator = allocator;
 }
@@ -209,6 +212,9 @@ sixel_encoder_core_vtbl_set_options(
     storage->palette_type = (unsigned char)options->palette_type;
     storage->encode_policy = options->encode_policy;
     storage->ormode = options->ormode;
+    storage->transparent_policy = options->transparent_policy;
+    storage->transparent_offset_left = options->transparent_offset_left;
+    storage->transparent_offset_top = options->transparent_offset_top;
     storage->pixelformat = options->pixelformat;
     storage->source_colorspace = options->source_colorspace;
     storage->colorspace = options->colorspace;
@@ -230,6 +236,9 @@ sixel_encoder_core_vtbl_get_options(sixel_encoder_core_t *output,
     options->palette_type = storage->palette_type;
     options->encode_policy = storage->encode_policy;
     options->ormode = storage->ormode;
+    options->transparent_policy = storage->transparent_policy;
+    options->transparent_offset_left = storage->transparent_offset_left;
+    options->transparent_offset_top = storage->transparent_offset_top;
     options->pixelformat = storage->pixelformat;
     options->source_colorspace = storage->source_colorspace;
     options->colorspace = storage->colorspace;
@@ -260,6 +269,9 @@ sixel_output_get_encoder_options(sixel_output_t *output,
     options->palette_type = output->palette_type;
     options->encode_policy = output->encode_policy;
     options->ormode = output->ormode;
+    options->transparent_policy = output->transparent_policy;
+    options->transparent_offset_left = output->transparent_offset_left;
+    options->transparent_offset_top = output->transparent_offset_top;
     options->pixelformat = output->pixelformat;
     options->source_colorspace = output->source_colorspace;
     options->colorspace = output->colorspace;
@@ -281,6 +293,9 @@ sixel_output_set_encoder_options(
     output->palette_type = (unsigned char)options->palette_type;
     output->encode_policy = options->encode_policy;
     output->ormode = options->ormode;
+    output->transparent_policy = options->transparent_policy;
+    output->transparent_offset_left = options->transparent_offset_left;
+    output->transparent_offset_top = options->transparent_offset_top;
     output->pixelformat = options->pixelformat;
     output->source_colorspace = options->source_colorspace;
     output->colorspace = options->colorspace;

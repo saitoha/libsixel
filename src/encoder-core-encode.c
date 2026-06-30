@@ -153,6 +153,10 @@ typedef struct sixel_parallel_context {
     sixel_index_t *pixels;
     int width;
     int height;
+    int encoded_width;
+    int encoded_height;
+    int offset_left;
+    int offset_top;
     int ncolors;
     int keycolor;
     unsigned char *palstate;
@@ -162,6 +166,8 @@ typedef struct sixel_parallel_context {
     int thread_count;
     int band_count;
     sixel_parallel_band_buffer_t *bands;
+    int *band_source_rows_total;
+    int *band_source_rows_ready;
     sixel_parallel_worker_state_t **workers;
     int worker_capacity;
     int worker_registered;
@@ -222,11 +228,23 @@ static void sixel_band_state_reset(sixel_band_state_t *state);
 static void sixel_band_finish(sixel_encode_work_t *work,
                               sixel_band_state_t *state);
 static void sixel_band_clear_map(sixel_encode_work_t *work);
+static int sixel_output_has_transparent_offset(sixel_output_t const *output);
+static int sixel_count_sixel_bands(int height);
+static SIXELSTATUS
+sixel_output_compute_transparent_extent(sixel_output_t const *output,
+                                        int width,
+                                        int height,
+                                        int *encoded_width,
+                                        int *encoded_height);
 static SIXELSTATUS sixel_band_classify_row(sixel_encode_work_t *work,
                                            sixel_band_state_t *state,
                                            sixel_index_t *pixels,
                                            int width,
+                                           int height,
+                                           int map_width,
                                            int absolute_row,
+                                           int offset_left,
+                                           int offset_top,
                                            int ncolors,
                                            int keycolor,
                                            unsigned char *palstate,
@@ -414,6 +432,63 @@ sixel_parallel_dither_configure(int height,
     config->encode_threads = encode_threads;
 }
 
+static int
+sixel_output_has_transparent_offset(sixel_output_t const *output)
+{
+    if (output == NULL) {
+        return 0;
+    }
+
+    return output->transparent_offset_left != 0 ||
+           output->transparent_offset_top != 0;
+}
+
+static int
+sixel_count_sixel_bands(int height)
+{
+    int bands;
+
+    if (height <= 0) {
+        return 0;
+    }
+
+    bands = height / 6;
+    if ((height % 6) != 0) {
+        bands += 1;
+    }
+
+    return bands;
+}
+
+static SIXELSTATUS
+sixel_output_compute_transparent_extent(sixel_output_t const *output,
+                                        int width,
+                                        int height,
+                                        int *encoded_width,
+                                        int *encoded_height)
+{
+    int left;
+    int top;
+
+    if (output == NULL || encoded_width == NULL ||
+        encoded_height == NULL || width < 1 || height < 1) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    left = output->transparent_offset_left;
+    top = output->transparent_offset_top;
+    if (left < 0 || top < 0 ||
+        left > INT_MAX - width || top > INT_MAX - height) {
+        sixel_helper_set_additional_message(
+            "transparent-offset makes encoded size overflow.");
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    *encoded_width = width + left;
+    *encoded_height = height + top;
+    return SIXEL_OK;
+}
+
 #if SIXEL_ENABLE_THREADS
 static int sixel_parallel_band_writer(char *data, int size, void *priv);
 static int sixel_parallel_worker_main(sixel_thread_pool_job_t job,
@@ -438,6 +513,8 @@ static SIXELSTATUS sixel_parallel_context_grow(sixel_parallel_context_t *ctx,
                                               int target_threads);
 static void sixel_parallel_submit_band(sixel_parallel_context_t *ctx,
                                        int band_index);
+static void
+sixel_parallel_submit_source_empty_bands(sixel_parallel_context_t *ctx);
 static SIXELSTATUS sixel_parallel_context_wait(sixel_parallel_context_t *ctx,
                                                int force_abort);
 static void sixel_parallel_palette_row_ready(void *priv, int row_index);
@@ -540,6 +617,10 @@ sixel_parallel_context_cleanup(sixel_parallel_context_t *ctx)
         free(ctx->bands);
         ctx->bands = NULL;
     }
+    free(ctx->band_source_rows_total);
+    ctx->band_source_rows_total = NULL;
+    free(ctx->band_source_rows_ready);
+    ctx->band_source_rows_ready = NULL;
     ctx->band_count = 0;
     if (ctx->pool != NULL) {
         ctx->pool->vtbl->unref(ctx->pool);
@@ -650,7 +731,7 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
 
     if (!sixel_parallel_context_is_ormode(ctx)) {
         status = sixel_encode_work_allocate(&state->work,
-                                            ctx->width,
+                                            ctx->encoded_width,
                                             ctx->ncolors,
                                             ctx->allocator);
         if (SIXEL_FAILED(status)) {
@@ -874,6 +955,75 @@ sixel_parallel_create_pool(sixel_thread_pool_t **pool,
     return status;
 }
 
+static void
+sixel_parallel_prepare_band_source_rows(sixel_parallel_context_t *ctx)
+{
+    int band_index;
+    int band_start;
+    int band_end;
+    int source_start;
+    int source_end;
+
+    if (ctx == NULL || ctx->band_source_rows_total == NULL ||
+            ctx->band_source_rows_ready == NULL) {
+        return;
+    }
+
+    /*
+     * PaletteApply reports readiness in source-image coordinates.  The encoder
+     * consumes fixed six-line bands in encoded-image coordinates, and a
+     * transparent offset shifts those two spaces apart.  Precomputing the
+     * source rows required by each encoded band lets the producer dispatch only
+     * after every row that band can read has actually been written.
+     */
+    for (band_index = 0; band_index < ctx->band_count; band_index++) {
+        band_start = band_index * 6;
+        band_end = ctx->encoded_height;
+        if (band_start <= ctx->encoded_height - 6) {
+            band_end = band_start + 6;
+        }
+
+        source_start = band_start - ctx->offset_top;
+        source_end = band_end - ctx->offset_top;
+        if (source_start < 0) {
+            source_start = 0;
+        }
+        if (source_start > ctx->height) {
+            source_start = ctx->height;
+        }
+        if (source_end < 0) {
+            source_end = 0;
+        }
+        if (source_end > ctx->height) {
+            source_end = ctx->height;
+        }
+
+        ctx->band_source_rows_total[band_index] = source_end - source_start;
+        ctx->band_source_rows_ready[band_index] = 0;
+    }
+}
+
+static void
+sixel_parallel_submit_source_empty_bands(sixel_parallel_context_t *ctx)
+{
+    int band_index;
+
+    if (ctx == NULL || ctx->band_source_rows_total == NULL) {
+        return;
+    }
+
+    /*
+     * A positive top offset can create leading bands that contain only
+     * transparent padding.  No PaletteApply row can ever close those bands, so
+     * enqueue them explicitly before waiting for source-row notifications.
+     */
+    for (band_index = 0; band_index < ctx->band_count; band_index++) {
+        if (ctx->band_source_rows_total[band_index] == 0) {
+            sixel_parallel_submit_band(ctx, band_index);
+        }
+    }
+}
+
 static SIXELSTATUS
 sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                              sixel_index_t *pixels,
@@ -892,16 +1042,30 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
 {
     SIXELSTATUS status;
     int nbands;
+    int encoded_width;
+    int encoded_height;
     int threads;
     int i;
 
     if (ctx == NULL || pixels == NULL || output == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+    status = sixel_output_compute_transparent_extent(output,
+                                                     width,
+                                                     height,
+                                                     &encoded_width,
+                                                     &encoded_height);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
 
     ctx->pixels = pixels;
     ctx->width = width;
     ctx->height = height;
+    ctx->encoded_width = encoded_width;
+    ctx->encoded_height = encoded_height;
+    ctx->offset_left = output->transparent_offset_left;
+    ctx->offset_top = output->transparent_offset_top;
     ctx->ncolors = ncolors;
     ctx->keycolor = keycolor;
     ctx->palstate = palstate;
@@ -914,8 +1078,10 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     ctx->band_count = 0;
     ctx->workers = NULL;
     ctx->worker_capacity = 0;
+    ctx->band_source_rows_total = NULL;
+    ctx->band_source_rows_ready = NULL;
 
-    nbands = (height + 5) / 6;
+    nbands = sixel_count_sixel_bands(encoded_height);
     if (nbands <= 0) {
         return SIXEL_OK;
     }
@@ -957,6 +1123,18 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
         ctx->bands[i].dispatched = 0;
     }
     ctx->band_count = nbands;
+
+    ctx->band_source_rows_total = (int *)calloc((size_t)nbands,
+                                                sizeof(int));
+    if (ctx->band_source_rows_total == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    ctx->band_source_rows_ready = (int *)calloc((size_t)nbands,
+                                                sizeof(int));
+    if (ctx->band_source_rows_ready == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    sixel_parallel_prepare_band_source_rows(ctx);
 
     ctx->workers = (sixel_parallel_worker_state_t **)
         calloc((size_t)ctx->worker_capacity, sizeof(*ctx->workers));
@@ -1117,6 +1295,10 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
     sixel_timeline_logger_t *logger;
     int band_height;
     int band_index;
+    int ready_row;
+    int should_dispatch;
+    int rows_ready;
+    int rows_total;
 
     notifier = (sixel_parallel_row_notifier_t *)priv;
     if (notifier == NULL) {
@@ -1127,23 +1309,54 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
     if (ctx == NULL || ctx->band_count <= 0 || ctx->height <= 0) {
         return;
     }
-    if (row_index < 0) {
+    if (row_index < 0 || row_index >= ctx->height) {
         return;
     }
     band_height = notifier->band_height;
     if (band_height < 1) {
         band_height = 6;
     }
-    if ((row_index % band_height) != band_height - 1
-            && row_index != ctx->height - 1) {
-        return;
-    }
 
-    band_index = row_index / band_height;
+    /*
+     * Dither workers may complete source-row ranges out of order.  A shifted
+     * encoded band can also straddle two dither bands, so the last source row
+     * seen by one worker is not enough to prove the encoded band is complete.
+     * Count source-row arrivals per encoded six-line band and dispatch only
+     * when every source row for that encoded band is present.
+     */
+    ready_row = ctx->offset_top + row_index;
+    band_index = ready_row / band_height;
     if (band_index >= ctx->band_count) {
         band_index = ctx->band_count - 1;
     }
     if (band_index < 0) {
+        return;
+    }
+
+    should_dispatch = 0;
+    if (ctx->band_source_rows_total != NULL &&
+            ctx->band_source_rows_ready != NULL) {
+        if (ctx->mutex_ready) {
+            sixel_mutex_lock(&ctx->mutex);
+        }
+        rows_total = ctx->band_source_rows_total[band_index];
+        rows_ready = ctx->band_source_rows_ready[band_index];
+        if (rows_total > 0 && rows_ready < rows_total) {
+            rows_ready += 1;
+            ctx->band_source_rows_ready[band_index] = rows_ready;
+            if (rows_ready == rows_total) {
+                should_dispatch = 1;
+            }
+        }
+        if (ctx->mutex_ready) {
+            sixel_mutex_unlock(&ctx->mutex);
+        }
+    } else if ((ready_row % band_height) == band_height - 1 ||
+            row_index == ctx->height - 1) {
+        should_dispatch = 1;
+    }
+
+    if (!should_dispatch) {
         return;
     }
 
@@ -1265,7 +1478,7 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
     sixel_parallel_worker_reset(state);
 
     band_start = band_index * 6;
-    band_height = ctx->height - band_start;
+    band_height = ctx->encoded_height - band_start;
     if (band_height > 6) {
         band_height = 6;
     }
@@ -1305,7 +1518,11 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
                                          &state->band,
                                          ctx->pixels,
                                          ctx->width,
+                                         ctx->height,
+                                         ctx->encoded_width,
                                          absolute_row,
+                                         ctx->offset_left,
+                                         ctx->offset_top,
                                          ctx->ncolors,
                                          ctx->keycolor,
                                          ctx->palstate,
@@ -1318,7 +1535,7 @@ sixel_parallel_worker_main(sixel_thread_pool_job_t job,
     status = sixel_band_compose(&state->work,
                                 &state->band,
                                 state->output,
-                                ctx->width,
+                                ctx->encoded_width,
                                 ctx->ncolors,
                                 ctx->keycolor,
                                 ctx->allocator);
@@ -1499,11 +1716,23 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
     int threads;
     int i;
     int queue_depth;
+    int encoded_width;
+    int encoded_height;
     sixel_timeline_logger_t *logger;
 
     sixel_parallel_context_init(&ctx);
     sixel_timeline_logger_prepare_default(allocator, &logger);
-    nbands = (height + 5) / 6;
+    status = sixel_output_compute_transparent_extent(output,
+                                                     width,
+                                                     height,
+                                                     &encoded_width,
+                                                     &encoded_height);
+    if (SIXEL_FAILED(status)) {
+        sixel_timeline_logger_unref(logger);
+        return status;
+    }
+    (void)encoded_width;
+    nbands = sixel_count_sixel_bands(encoded_height);
     if (nbands <= 0) {
         sixel_timeline_logger_unref(logger);
         return SIXEL_OK;
@@ -1594,6 +1823,8 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     int dither_threads_budget;
     int worker_capacity;
     int boost_target;
+    int encoded_width;
+    int encoded_height;
     sixel_timeline_logger_t *logger;
     int owns_logger;
     sixel_parallel_row_notifier_t notifier;
@@ -1606,7 +1837,16 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     }
 
     threads = encode_threads;
-    nbands = (height + 5) / 6;
+    status = sixel_output_compute_transparent_extent(output,
+                                                     width,
+                                                     height,
+                                                     &encoded_width,
+                                                     &encoded_height);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    (void)encoded_width;
+    nbands = sixel_count_sixel_bands(encoded_height);
     if (threads <= 1 || nbands <= 1) {
         return SIXEL_RUNTIME_ERROR;
     }
@@ -1633,7 +1873,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     notifier.context = &ctx;
     notifier.logger = logger;
     notifier.band_height = 6;
-    notifier.image_height = height;
+    notifier.image_height = encoded_height;
     waited = 0;
     status = SIXEL_OK;
 
@@ -1703,6 +1943,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
+    sixel_parallel_submit_source_empty_bands(&ctx);
 
     result = sixel_dither_apply_palette(dither, pixels, width, height);
     if (result == NULL) {
@@ -1712,6 +1953,17 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     if (result != indexes) {
         status = SIXEL_RUNTIME_ERROR;
         goto cleanup;
+    }
+    if (dither->pipeline_accumulation_result_enabled != 0) {
+        status = sixel_dither_set_pipeline_accumulation_result_rgb(
+            dither,
+            indexes,
+            pixel_count,
+            palette,
+            (size_t)dither->ncolors);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
     }
 
     /*
@@ -1741,6 +1993,7 @@ cleanup:
     dither->pipeline_transparent_mask = NULL;
     dither->pipeline_transparent_mask_size = 0;
     dither->pipeline_transparent_keycolor = (-1);
+    dither->pipeline_accumulation_result_enabled = 0;
     if (!waited && ctx.pool != NULL) {
         wait_status = sixel_parallel_context_wait(&ctx, status != SIXEL_OK);
         if (status == SIXEL_OK) {
@@ -1909,6 +2162,7 @@ sixel_encode_body_ormode_pipeline(unsigned char *pixels,
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
+    sixel_parallel_submit_source_empty_bands(&ctx);
 
     result = sixel_dither_apply_palette(dither, pixels, width, height);
     if (result == NULL) {
@@ -1918,6 +2172,17 @@ sixel_encode_body_ormode_pipeline(unsigned char *pixels,
     if (result != indexes) {
         status = SIXEL_RUNTIME_ERROR;
         goto cleanup;
+    }
+    if (dither->pipeline_accumulation_result_enabled != 0) {
+        status = sixel_dither_set_pipeline_accumulation_result_rgb(
+            dither,
+            indexes,
+            pixel_count,
+            palette,
+            (size_t)dither->ncolors);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
     }
 
     /*
@@ -1946,6 +2211,7 @@ cleanup:
     dither->pipeline_transparent_mask = NULL;
     dither->pipeline_transparent_mask_size = 0;
     dither->pipeline_transparent_keycolor = (-1);
+    dither->pipeline_accumulation_result_enabled = 0;
     if (!waited && ctx.pool != NULL) {
         wait_status = sixel_parallel_context_wait(&ctx, status != SIXEL_OK);
         if (status == SIXEL_OK) {
@@ -2442,17 +2708,33 @@ sixel_encode_header(int width, int height, int keycolor, sixel_output_t *output)
     if (output->ormode) {
         p[0] = 7;
         p[1] = 5;
-    } else if (keycolor >= 0) {
+    } else if (sixel_output_has_transparent_offset(output)) {
         /*
-         * When a transparent keycolor is in use, request transparent
-         * background mode so untouched pixels keep the terminal background.
+         * Transparent offset uses omitted zero cells as positional padding.
+         * It therefore needs P2=1 even when the source image has no keycolor.
          */
         p[1] = 1;
+    } else if (keycolor >= 0) {
+        if (output->transparent_policy == SIXEL_TRANSPARENT_POLICY_KEEP) {
+            /*
+             * P2=1 asks the terminal to keep the current image-plane pixel
+             * when a zero/transparent SIXEL cell is omitted.
+             */
+            p[1] = 1;
+        } else if (output->transparent_policy ==
+                   SIXEL_TRANSPARENT_POLICY_BACKGROUND) {
+            /*
+             * Spell out P2=0 for transparent output so the header carries
+             * the clear-to-background contract even when P2's default value
+             * would be equivalent.
+             */
+            pcount = 2;
+        }
     }
 
     output->pos = 0;
 
-    if (p[2] == 0) {
+    if (pcount == 3 && p[2] == 0) {
         pcount--;
         if (p[1] == 0) {
             pcount--;
@@ -3026,7 +3308,11 @@ sixel_band_classify_row(sixel_encode_work_t *work,
                         sixel_band_state_t *state,
                         sixel_index_t *pixels,
                         int width,
+                        int height,
+                        int map_width,
                         int absolute_row,
+                        int offset_left,
+                        int offset_top,
                         int ncolors,
                         int keycolor,
                         unsigned char *palstate,
@@ -3035,9 +3321,13 @@ sixel_band_classify_row(sixel_encode_work_t *work,
     SIXELSTATUS status = SIXEL_FALSE;
     int row_bit;
     int band_start;
+    int source_row;
+    int source_band_start;
+    int target_x;
     int pix;
     int x;
     int check_integer_overflow;
+    int source_index_base;
     char *map;
     unsigned char *active_colors;
     int *active_color_index;
@@ -3052,12 +3342,18 @@ sixel_band_classify_row(sixel_encode_work_t *work,
         if (encode_policy != SIXEL_ENCODEPOLICY_SIZE) {
             state->fillable = 0;
         } else if (palstate) {
+            source_band_start = band_start - offset_top;
             if (width > 0) {
-                pix = pixels[band_start * width];
-                if (pix >= ncolors) {
+                if (source_band_start < 0 ||
+                    source_band_start >= height) {
                     state->fillable = 0;
                 } else {
-                    state->fillable = 1;
+                    pix = pixels[source_band_start * width];
+                    if (pix >= ncolors) {
+                        state->fillable = 0;
+                    } else {
+                        state->fillable = 1;
+                    }
                 }
             } else {
                 state->fillable = 0;
@@ -3068,40 +3364,54 @@ sixel_band_classify_row(sixel_encode_work_t *work,
         state->active_color_count = 0;
     }
 
+    source_row = absolute_row - offset_top;
+    if (source_row < 0 || source_row >= height) {
+        state->row_in_band += 1;
+        return SIXEL_OK;
+    }
+    if (source_row > INT_MAX / width) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_body: integer overflow detected."
+            " (source_y > INT_MAX)");
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    source_index_base = source_row * width;
+
     for (x = 0; x < width; x++) {
-        if (absolute_row > INT_MAX / width) {
+        target_x = offset_left + x;
+        if (target_x < 0 || target_x >= map_width) {
             sixel_helper_set_additional_message(
-                "sixel_encode_body: integer overflow detected."
-                " (y > INT_MAX)");
+                "sixel_encode_body: transparent offset is out of range.");
             status = SIXEL_BAD_INTEGER_OVERFLOW;
             goto end;
         }
-        check_integer_overflow = absolute_row * width;
+        check_integer_overflow = source_index_base;
         if (check_integer_overflow > INT_MAX - x) {
             sixel_helper_set_additional_message(
                 "sixel_encode_body: integer overflow detected."
-                " (y * width > INT_MAX - x)");
+                " (source_y * width > INT_MAX - x)");
             status = SIXEL_BAD_INTEGER_OVERFLOW;
             goto end;
         }
         pix = pixels[check_integer_overflow + x];
         if (pix >= 0 && pix < ncolors && pix != keycolor) {
-            if (pix > INT_MAX / width) {
+            if (pix > INT_MAX / map_width) {
                 sixel_helper_set_additional_message(
                     "sixel_encode_body: integer overflow detected."
                     " (pix > INT_MAX / width)");
                 status = SIXEL_BAD_INTEGER_OVERFLOW;
                 goto end;
             }
-            check_integer_overflow = pix * width;
-            if (check_integer_overflow > INT_MAX - x) {
+            check_integer_overflow = pix * map_width;
+            if (check_integer_overflow > INT_MAX - target_x) {
                 sixel_helper_set_additional_message(
                     "sixel_encode_body: integer overflow detected."
                     " (pix * width > INT_MAX - x)");
                 status = SIXEL_BAD_INTEGER_OVERFLOW;
                 goto end;
             }
-            map[pix * width + x] |= (1 << row_bit);
+            map[check_integer_overflow + target_x] |= (1 << row_bit);
             if (active_colors != NULL && active_colors[pix] == 0) {
                 active_colors[pix] = 1;
                 if (state->active_color_count < ncolors
@@ -3372,6 +3682,10 @@ sixel_encode_body(
     int row_index;
     int absolute_row;
     int last_row_index;
+    int encoded_width;
+    int encoded_height;
+    int offset_left;
+    int offset_top;
     sixel_node_t *np;
     sixel_encode_work_t work;
     sixel_band_state_t band;
@@ -3394,6 +3708,17 @@ sixel_encode_body(
     }
     output->active_palette = (-1);
 
+    status = sixel_output_compute_transparent_extent(output,
+                                                     width,
+                                                     height,
+                                                     &encoded_width,
+                                                     &encoded_height);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    offset_left = output->transparent_offset_left;
+    offset_top = output->transparent_offset_top;
+
     logging_active = logger != NULL;
     job_index = 0;
 
@@ -3412,7 +3737,7 @@ sixel_encode_body(
         int nbands;
         int threads;
 
-        nbands = (height + 5) / 6;
+        nbands = sixel_count_sixel_bands(encoded_height);
         threads = work.requested_threads;
         if (nbands > 1 && threads > 1) {
             status = sixel_encode_body_parallel(pixels,
@@ -3442,7 +3767,7 @@ sixel_encode_body(
     }
 
     status = sixel_encode_work_allocate(&work,
-                                        width,
+                                        encoded_width,
                                         ncolors,
                                         allocator);
     if (SIXEL_FAILED(status)) {
@@ -3450,8 +3775,8 @@ sixel_encode_body(
     }
 
     band_start = 0;
-    while (band_start < height) {
-        band_height = height - band_start;
+    while (band_start < encoded_height) {
+        band_height = encoded_height - band_start;
         if (band_height > 6) {
             band_height = 6;
         }
@@ -3474,7 +3799,11 @@ sixel_encode_body(
                                              &band,
                                              pixels,
                                              width,
+                                             height,
+                                             encoded_width,
                                              absolute_row,
+                                             offset_left,
+                                             offset_top,
                                              ncolors,
                                              keycolor,
                                              palstate,
@@ -3487,7 +3816,7 @@ sixel_encode_body(
         status = sixel_band_compose(&work,
                                     &band,
                                     output,
-                                    width,
+                                    encoded_width,
                                     ncolors,
                                     keycolor,
                                     allocator);
@@ -3976,6 +4305,7 @@ sixel_encode_dither(
     size_t palette_float_bytes = 0U;
     size_t palette_channels = 0U;
     size_t palette_index = 0U;
+    size_t pixel_count = 0U;
     int palette_source_colorspace;
     int palette_float_pixelformat;
     int output_float_pixelformat;
@@ -3983,6 +4313,8 @@ sixel_encode_dither(
     int pipeline_active;
     int pipeline_threads = 0;  /* set to a deterministic default before use */
     int pipeline_nbands;
+    int encoded_width;
+    int encoded_height;
     sixel_parallel_dither_config_t dither_parallel;
     char const *band_env_text;
     sixel_palette_entries_view_t palette_view;
@@ -4001,6 +4333,43 @@ sixel_encode_dither(
     serial_logger = NULL;
 #endif  /* SIXEL_ENABLE_THREADS */
     palette_source_colorspace = SIXEL_COLORSPACE_GAMMA;
+    if (width <= 0 || height <= 0 ||
+        (size_t)width > SIZE_MAX / (size_t)height) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_dither: image size overflow.");
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    if (sixel_output_has_transparent_offset(output) != 0) {
+        if (output->ormode != 0) {
+            sixel_helper_set_additional_message(
+                "transparent-offset cannot be used with ormode.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (output->encode_policy == SIXEL_ENCODEPOLICY_SIZE) {
+            sixel_helper_set_additional_message(
+                "transparent-offset cannot be used with "
+                "encode-policy=size.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (output->transparent_policy != SIXEL_TRANSPARENT_POLICY_KEEP) {
+            sixel_helper_set_additional_message(
+                "transparent-offset requires transparent-policy=keep.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+    }
+    status = sixel_output_compute_transparent_extent(output,
+                                                     width,
+                                                     height,
+                                                     &encoded_width,
+                                                     &encoded_height);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    pixel_count = (size_t)width * (size_t)height;
     palette_float_pixelformat =
         sixel_palette_float_pixelformat_for_colorspace(
             palette_source_colorspace);
@@ -4080,7 +4449,7 @@ sixel_encode_dither(
              */
             pipeline_threads = sixel_threads_normalize(0);
         }
-        pipeline_nbands = (height + 5) / 6;
+        pipeline_nbands = sixel_count_sixel_bands(encoded_height);
         /*
          * Pipeline mode lets PaletteApply produce contiguous index rows while
          * band workers consume completed six-line slices. OR mode now has its
@@ -4294,7 +4663,23 @@ sixel_encode_dither(
         goto end;
     }
 
-    status = sixel_encode_header(width, height, dither->keycolor, output);
+    if (input_pixels != NULL &&
+            dither->pipeline_accumulation_result_enabled != 0) {
+        status = sixel_dither_set_pipeline_accumulation_result_rgb(
+            dither,
+            input_pixels,
+            pixel_count,
+            palette_entries,
+            palette_count);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
+    status = sixel_encode_header(encoded_width,
+                                 encoded_height,
+                                 dither->keycolor,
+                                 output);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -4383,6 +4768,12 @@ sixel_encoder_core_encode_dispatch(
     }
     if (request->width < 1 || request->height < 1) {
         return SIXEL_BAD_INPUT;
+    }
+    if (sixel_output_has_transparent_offset(request->output) != 0 &&
+        request->dither->quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
+        sixel_helper_set_additional_message(
+            "transparent-offset cannot be used with high-color output.");
+        return SIXEL_BAD_ARGUMENT;
     }
 
     (void)request->depth;

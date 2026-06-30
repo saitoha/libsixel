@@ -134,6 +134,10 @@ module Libsixel
     SIXEL_OPTFLAG_CLUSTERING_COLORSPACE = 'X' unless const_defined?(:SIXEL_OPTFLAG_CLUSTERING_COLORSPACE)
     SIXEL_OPTFLAG_WORKING_COLORSPACE = 'W' unless const_defined?(:SIXEL_OPTFLAG_WORKING_COLORSPACE)
     SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U' unless const_defined?(:SIXEL_OPTFLAG_OUTPUT_COLORSPACE)
+    SIXEL_OPTFLAG_TRANSPARENT_POLICY = 'A' unless const_defined?(:SIXEL_OPTFLAG_TRANSPARENT_POLICY)
+    SIXEL_OPTFLAG_TRANSPARENT_OFFSET = '+' unless const_defined?(:SIXEL_OPTFLAG_TRANSPARENT_OFFSET)
+    SIXEL_OPTFLAG_6DELTA_THRESHOLD = 'Z' unless const_defined?(:SIXEL_OPTFLAG_6DELTA_THRESHOLD)
+    SIXEL_OPTFLAG_6DELTA_ERROR = 'Y' unless const_defined?(:SIXEL_OPTFLAG_6DELTA_ERROR)
     SIXEL_OPTFLAG_LOADERS = 'L' unless const_defined?(:SIXEL_OPTFLAG_LOADERS)
     SIXEL_OPTFLAG_MAPFILE_OUTPUT = 'M' unless const_defined?(:SIXEL_OPTFLAG_MAPFILE_OUTPUT)
     SIXEL_OPTFLAG_QUANTIZE_MODEL = 'Q' unless const_defined?(:SIXEL_OPTFLAG_QUANTIZE_MODEL)
@@ -413,6 +417,7 @@ module Libsixel
     extern "void sixel_encoder_ref(void *)"
     extern "void sixel_encoder_unref(void *)"
     extern "int sixel_encoder_set_cancel_flag(void *, int)"
+    extern "int sixel_encoder_set_accumulation_buffer(void *, char *, int, int, int)"
     extern "int sixel_encoder_setopt(void *, int, char *)"
     extern "int sixel_encoder_encode(void *, char *)"
     extern "int sixel_encoder_encode_bytes(void *, char *, int, int, int, char *, int)"

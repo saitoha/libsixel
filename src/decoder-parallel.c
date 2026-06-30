@@ -36,6 +36,7 @@
 
 #include <sixel.h>
 
+#include "decoder.h"
 #include "decoder-parallel.h"
 #if SIXEL_ENABLE_THREADS
 # include "timeline-logger.h"
@@ -82,10 +83,13 @@ typedef struct sixel_decoder_worker_context {
     int local_written;
     int max_color_index;
     int result;
+    sixel_decoder_undither_context_t *undither;
+    int body_local_start;
 } sixel_decoder_worker_context_t;
 
 typedef struct sixel_decoder_local_chunk {
     unsigned char *data;
+    unsigned char *paint_mask;
     int start_row;
     int rows;
     struct sixel_decoder_local_chunk *next;
@@ -97,6 +101,7 @@ typedef struct sixel_local_buffer {
     sixel_decoder_local_chunk_t *cursor;
     int width;
     int pixel_size;
+    int keep_paint_mask;
 } sixel_local_buffer_t;
 
 typedef struct sixel_decoder_worker_chain {
@@ -106,6 +111,7 @@ typedef struct sixel_decoder_worker_chain {
     int *copy_ready;
     int thread_count;
     unsigned char *global_buffer;
+    unsigned char *global_mask;
     int global_capacity;
     int pixel_size;
     int abort_requested;
@@ -383,13 +389,15 @@ sixel_decoder_parallel_store_ormode_span(unsigned char *dst,
 static void
 sixel_local_buffer_init(sixel_local_buffer_t *buffer,
                         int width,
-                        int pixel_size)
+                        int pixel_size,
+                        int keep_paint_mask)
 {
     buffer->head = NULL;
     buffer->tail = NULL;
     buffer->cursor = NULL;
     buffer->width = width;
     buffer->pixel_size = pixel_size;
+    buffer->keep_paint_mask = keep_paint_mask != 0 ? 1 : 0;
 }
 
 static void
@@ -402,6 +410,7 @@ sixel_local_buffer_dispose(sixel_local_buffer_t *buffer)
         sixel_decoder_local_chunk_t *tmp;
 
         free(cursor->data);
+        free(cursor->paint_mask);
         tmp = cursor->next;
         free(cursor);
         cursor = tmp;
@@ -435,6 +444,15 @@ sixel_local_buffer_append(sixel_local_buffer_t *buffer,
     if (chunk->data == NULL) {
         free(chunk);
         return NULL;
+    }
+    if (buffer->keep_paint_mask) {
+        bytes = (size_t)(rows * buffer->width);
+        chunk->paint_mask = (unsigned char *)calloc(bytes, 1);
+        if (chunk->paint_mask == NULL) {
+            free(chunk->data);
+            free(chunk);
+            return NULL;
+        }
     }
 
     chunk->start_row = start_row;
@@ -488,6 +506,204 @@ sixel_local_buffer_reserve_row(sixel_local_buffer_t *buffer,
     return cursor;
 }
 
+static unsigned char *
+sixel_decoder_parallel_find_fast4_halo(unsigned char *anchor,
+                                       unsigned char *body)
+{
+    unsigned char *scan;
+
+    if (anchor == NULL || body == NULL || body <= anchor) {
+        return body;
+    }
+    if (body[-1] != '-') {
+        return body;
+    }
+
+    scan = body - 1;
+    while (scan > anchor) {
+        --scan;
+        if (*scan == '-') {
+            return scan + 1;
+        }
+    }
+
+    return anchor;
+}
+
+static int
+sixel_decoder_parallel_count_newlines(unsigned char const *begin,
+                                      unsigned char const *end)
+{
+    unsigned char const *scan;
+    int lines;
+
+    lines = 0;
+    scan = begin;
+    while (scan != NULL && scan < end) {
+        if (*scan == '-') {
+            lines += 1;
+        }
+        ++scan;
+    }
+
+    return lines;
+}
+
+#if !defined(SIXEL_DECODE_PIXELS_NO_FAST4)
+static int
+sixel_decoder_parallel_copy_local_rows(sixel_local_buffer_t *buffer,
+                                       unsigned char *indexed,
+                                       int rows)
+{
+    sixel_decoder_local_chunk_t *chunk;
+    int copy_rows;
+    size_t offset;
+    size_t bytes;
+
+    if (buffer == NULL || indexed == NULL || rows <= 0 ||
+            buffer->pixel_size != 1) {
+        return 0;
+    }
+
+    chunk = buffer->head;
+    while (chunk != NULL) {
+        copy_rows = chunk->rows;
+        if (chunk->start_row >= rows) {
+            copy_rows = 0;
+        } else if (chunk->start_row + copy_rows > rows) {
+            copy_rows = rows - chunk->start_row;
+        }
+        if (copy_rows > 0) {
+            offset = (size_t)chunk->start_row * (size_t)buffer->width;
+            bytes = (size_t)copy_rows * (size_t)buffer->width;
+            memcpy(indexed + offset, chunk->data, bytes);
+        }
+        chunk = chunk->next;
+    }
+
+    return 1;
+}
+
+static int
+sixel_decoder_parallel_write_fast4_rows(
+    sixel_decoder_worker_context_t *context,
+    sixel_local_buffer_t *buffer,
+    int row_offset,
+    int local_rows,
+    int max_color_index)
+{
+    sixel_decoder_undither_context_t *undither;
+    unsigned char *indexed;
+    unsigned char *rgb;
+    unsigned char *src;
+    unsigned char *dst;
+    size_t pixels;
+    size_t rgb_bytes;
+    size_t out_offset;
+    int body_start;
+    int y;
+    int x;
+    int width;
+    int height;
+    int global_y;
+    int status;
+    int active_ncolors;
+
+    if (context == NULL || buffer == NULL || context->undither == NULL) {
+        return (-1);
+    }
+
+    undither = context->undither;
+    width = context->width;
+    height = context->height;
+    body_start = context->body_local_start;
+    if (!undither->enabled || undither->pixels == NULL ||
+            undither->palette == NULL || width <= 0 || height <= 0 ||
+            local_rows <= body_start || body_start < 0) {
+        return 0;
+    }
+    if (row_offset + body_start >= height) {
+        return 0;
+    }
+    if (row_offset + local_rows > height) {
+        local_rows = height - row_offset;
+    }
+    if (local_rows <= body_start) {
+        return 0;
+    }
+
+    active_ncolors = undither->ncolors;
+    if (max_color_index >= 0 && active_ncolors < max_color_index + 1) {
+        active_ncolors = max_color_index + 1;
+    }
+    if (active_ncolors <= 0 || active_ncolors > undither->palette_size) {
+        return (-1);
+    }
+
+    pixels = (size_t)local_rows * (size_t)width;
+    if (pixels > ((size_t)-1 / 3u)) {
+        return (-1);
+    }
+    rgb_bytes = pixels * 3u;
+    indexed = (unsigned char *)calloc(pixels, 1);
+    rgb = (unsigned char *)calloc(rgb_bytes, 1);
+    if (indexed == NULL || rgb == NULL) {
+        free(indexed);
+        free(rgb);
+        return (-1);
+    }
+
+    if (!sixel_decoder_parallel_copy_local_rows(buffer, indexed,
+                                                local_rows)) {
+        free(indexed);
+        free(rgb);
+        return (-1);
+    }
+
+    status = sixel_dequantize_k_undither_fast4_rows(
+        indexed,
+        width,
+        local_rows,
+        undither->palette,
+        active_ncolors,
+        undither->similarity_bias,
+        body_start,
+        local_rows,
+        undither->allocator,
+        rgb);
+    if (SIXEL_FAILED(status)) {
+        free(indexed);
+        free(rgb);
+        return (-1);
+    }
+
+    for (y = body_start; y < local_rows; ++y) {
+        global_y = row_offset + y;
+        if (global_y < 0 || global_y >= height) {
+            continue;
+        }
+        src = rgb + (size_t)y * (size_t)width * 3u;
+        out_offset = (size_t)global_y * (size_t)width *
+            (size_t)undither->pixel_size;
+        dst = undither->pixels + out_offset;
+        if (undither->direct_output) {
+            for (x = 0; x < width; ++x) {
+                dst[x * 4 + 0] = src[x * 3 + 0];
+                dst[x * 4 + 1] = src[x * 3 + 1];
+                dst[x * 4 + 2] = src[x * 3 + 2];
+                dst[x * 4 + 3] = 255u;
+            }
+        } else {
+            memcpy(dst, src, (size_t)width * 3u);
+        }
+    }
+
+    free(indexed);
+    free(rgb);
+    return 0;
+}
+#endif
+
 /*
  * Worker entry for the fast sixel parser.  Each thread jumps to the next
  * '-' marker from its assigned offset, then walks tokens until the first
@@ -508,6 +724,8 @@ sixel_decoder_parallel_worker(void *arg)
     unsigned char *anchor = NULL;
     unsigned char *scan = NULL;
     unsigned char *cursor = NULL;
+    unsigned char *body_cursor = NULL;
+    unsigned char *decode_cursor = NULL;
     unsigned char *stop = NULL;
     unsigned char *limit = NULL;
     unsigned char *start = NULL;
@@ -542,6 +760,7 @@ sixel_decoder_parallel_worker(void *arg)
     int max_color_index = (-1);
     int span_max_index = (-1);
     int effective_repeat = 0;
+    int local_rows = 0;
     unsigned char ch;
 
     context = (sixel_decoder_worker_context_t *)arg;
@@ -579,7 +798,10 @@ sixel_decoder_parallel_worker(void *arg)
         context->result = status;
         return status;
     }
-    sixel_local_buffer_init(&local_buffer, width, pixel_size);
+    sixel_local_buffer_init(&local_buffer,
+                            width,
+                            pixel_size,
+                            chain->global_mask != NULL);
     if (context->payload_len <= 0) {
         context->result = status;
         return status;
@@ -659,6 +881,20 @@ sixel_decoder_parallel_worker(void *arg)
         status = (-1);
         context->result = status;
         return status;
+    }
+
+    body_cursor = cursor;
+    decode_cursor = body_cursor;
+    context->body_local_start = 0;
+    if (context->undither != NULL && context->undither->enabled) {
+        decode_cursor = sixel_decoder_parallel_find_fast4_halo(
+            anchor,
+            body_cursor);
+        context->body_local_start =
+            sixel_decoder_parallel_count_newlines(
+                decode_cursor,
+                body_cursor) * 6;
+        cursor = decode_cursor;
     }
 
     if (anchor != NULL && anchor < cursor) {
@@ -802,10 +1038,25 @@ sixel_decoder_parallel_worker(void *arg)
                         if (span_max_index > max_color_index) {
                             max_color_index = span_max_index;
                         }
+                        if (chunk_cursor->paint_mask != NULL) {
+                            memset(chunk_cursor->paint_mask +
+                                   (size_t)row_base,
+                                   0xff,
+                                   (size_t)effective_repeat);
+                        }
                     } else if (pixel_size == 1 && effective_repeat > 3) {
                         memset(chunk_cursor->data + (size_t)row_base,
                                color_index,
                                effective_repeat);
+                        if (chunk_cursor->paint_mask != NULL) {
+                            memset(chunk_cursor->paint_mask +
+                                   (size_t)row_base,
+                                   0xff,
+                                   (size_t)effective_repeat);
+                        }
+                        if (color_index > max_color_index) {
+                            max_color_index = color_index;
+                        }
                     } else {
                         for (r = 0; r < effective_repeat; ++r) {
                             sixel_decoder_parallel_store_pixel(
@@ -815,6 +1066,14 @@ sixel_decoder_parallel_worker(void *arg)
                                 depth,
                                 color_index,
                                 context->palette);
+                            if (chunk_cursor->paint_mask != NULL) {
+                                chunk_cursor->paint_mask[row_base + r] =
+                                    0xffu;
+                            }
+                        }
+                        if (pixel_size == 1 &&
+                                color_index > max_color_index) {
+                            max_color_index = color_index;
                         }
                     }
                     written += effective_repeat;
@@ -927,6 +1186,14 @@ sixel_decoder_parallel_worker(void *arg)
         cursor += 1;
     }
 
+    local_rows = pos_y + 6;
+    if (max_relative >= 0 && local_rows < (max_relative / width) + 1) {
+        local_rows = (max_relative / width) + 1;
+    }
+    if (local_rows < context->body_local_start) {
+        local_rows = context->body_local_start;
+    }
+
     copy_span = max_relative + 1;
     if (copy_span < 0) {
         copy_span = 0;
@@ -958,6 +1225,33 @@ sixel_decoder_parallel_worker(void *arg)
         context->result = status;
         return status;
     }
+
+#if !defined(SIXEL_DECODE_PIXELS_NO_FAST4)
+    if (context->undither != NULL && context->undither->enabled) {
+        status = sixel_decoder_parallel_write_fast4_rows(
+            context,
+            &local_buffer,
+            row_offset,
+            local_rows,
+            max_color_index);
+        if (status != 0) {
+            sixel_mutex_lock(&chain->mutex);
+            chain->abort_requested = 1;
+            sixel_cond_broadcast(&chain->cond);
+            sixel_mutex_unlock(&chain->mutex);
+            sixel_local_buffer_dispose(&local_buffer);
+            context->result = status;
+            return status;
+        }
+        sixel_local_buffer_dispose(&local_buffer);
+        context->local_buffer = NULL;
+        context->local_capacity = 0;
+        context->local_written = 0;
+        context->max_color_index = max_color_index;
+        context->result = status;
+        return status;
+    }
+#endif
 
     context->local_buffer = local_buffer.head != NULL ?
         local_buffer.head->data : NULL;
@@ -1045,6 +1339,15 @@ sixel_decoder_parallel_worker(void *arg)
                 memcpy(chain->global_buffer + chunk_offset,
                        chunk_cursor->data,
                        chunk_bytes);
+                if (chain->global_mask != NULL &&
+                        chunk_cursor->paint_mask != NULL) {
+                    chunk_bytes = (size_t)(rows * width);
+                    chunk_offset = (size_t)(row_offset +
+                        chunk_cursor->start_row) * (size_t)width;
+                    memcpy(chain->global_mask + chunk_offset,
+                           chunk_cursor->paint_mask,
+                           chunk_bytes);
+                }
             }
             chunk_cursor = chunk_cursor->next;
         }
@@ -1213,6 +1516,128 @@ sixel_decoder_parallel_resolve_threads(void)
     return threads;
 }
 
+#if SIXEL_ENABLE_THREADS
+static SIXELSTATUS
+sixel_decoder_parallel_prepare_undither(
+    sixel_decoder_undither_context_t *undither,
+    image_buffer_t const *image,
+    int const *source_palette,
+    int palette_limit)
+{
+#if defined(SIXEL_DECODE_PIXELS_NO_FAST4)
+    if (undither == NULL || !undither->enabled) {
+        return SIXEL_OK;
+    }
+    (void)image;
+    (void)source_palette;
+    (void)palette_limit;
+    /*
+     * Embedded decoder cores may link this file without decoder.c.  Report
+     * that fused fast4 is unavailable so the caller uses the serial path.
+     */
+    return SIXEL_FALSE;
+#else
+    unsigned char *dst;
+    size_t pixels;
+    size_t bytes;
+    size_t pixel_index;
+    int color;
+    int n;
+    int active_ncolors;
+    int palette_size;
+
+    if (undither == NULL || !undither->enabled) {
+        return SIXEL_OK;
+    }
+    if (image == NULL || source_palette == NULL ||
+            image->width <= 0 || image->height <= 0 ||
+            undither->allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (image->depth != 1U) {
+        return SIXEL_FALSE;
+    }
+    if ((size_t)image->width > ((size_t)-1 / (size_t)image->height)) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    active_ncolors = palette_limit;
+    if (active_ncolors <= 0 ||
+            active_ncolors > SIXEL_PALETTE_MAX_DECODER) {
+        active_ncolors = image->ncolors;
+    }
+    if (active_ncolors <= 0) {
+        active_ncolors = 1;
+    } else if (active_ncolors > SIXEL_PALETTE_MAX_DECODER) {
+        active_ncolors = SIXEL_PALETTE_MAX_DECODER;
+    }
+    /*
+     * image_buffer_init() starts indexed decodes at two colors, but SIXEL
+     * color selections may refer to the 256-color default palette without
+     * redefining entries.  Keep every fused worker on the same practical
+     * active palette floor so thread splits do not change similarity tests.
+     */
+    if (active_ncolors < 256) {
+        active_ncolors = 256;
+    }
+
+    palette_size = SIXEL_PALETTE_MAX_DECODER;
+    undither->ncolors = active_ncolors;
+    undither->palette_size = palette_size;
+    undither->pixel_size = undither->direct_output ? 4 : 3;
+
+    if ((size_t)palette_size > ((size_t)-1 / 3u)) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    undither->palette = (unsigned char *)calloc(
+        (size_t)palette_size * 3u,
+        1);
+    if (undither->palette == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (n = 0; n < palette_size; ++n) {
+        color = source_palette[n];
+        undither->palette[n * 3 + 0] =
+            (unsigned char)((color >> 16) & 0xff);
+        undither->palette[n * 3 + 1] =
+            (unsigned char)((color >> 8) & 0xff);
+        undither->palette[n * 3 + 2] =
+            (unsigned char)(color & 0xff);
+    }
+
+    pixels = (size_t)image->width * (size_t)image->height;
+    if (pixels > ((size_t)-1 / (size_t)undither->pixel_size)) {
+        free(undither->palette);
+        undither->palette = NULL;
+        return SIXEL_BAD_ALLOCATION;
+    }
+    bytes = pixels * (size_t)undither->pixel_size;
+    undither->pixels = (unsigned char *)sixel_allocator_malloc(
+        undither->allocator,
+        bytes);
+    if (undither->pixels == NULL) {
+        free(undither->palette);
+        undither->palette = NULL;
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    dst = undither->pixels;
+    for (pixel_index = 0u; pixel_index < pixels; ++pixel_index) {
+        dst[0] = undither->palette[0];
+        dst[1] = undither->palette[1];
+        dst[2] = undither->palette[2];
+        if (undither->direct_output) {
+            dst[3] = 255u;
+        }
+        dst += undither->pixel_size;
+    }
+
+    return SIXEL_OK;
+#endif
+}
+#endif
+
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decoder_parallel_request_start(int direct_mode,
                                      int ormode,
@@ -1224,10 +1649,13 @@ sixel_decoder_parallel_request_start(int direct_mode,
                                      int const *palette,
                                      sixel_timeline_logger_t *logger,
                                      unsigned int decode_flags,
-                                     int *painted_outside_raster)
+                                     int *painted_outside_raster,
+                                     sixel_decoder_undither_context_t
+                                         *undither)
 {
 #if SIXEL_ENABLE_THREADS
     SIXELSTATUS status;
+    SIXELSTATUS prepare_status;
     int threads;
     int payload_start;
     int payload_len;
@@ -1248,8 +1676,10 @@ sixel_decoder_parallel_request_start(int direct_mode,
     int palette_limit;
     int max_color_index;
     int trust_raster_size;
+    int undither_prepared;
 
     status = SIXEL_RUNTIME_ERROR;
+    prepare_status = SIXEL_OK;
     workers = NULL;
     contexts = NULL;
     copy_offsets = NULL;
@@ -1265,8 +1695,9 @@ sixel_decoder_parallel_request_start(int direct_mode,
     runtime_error = 0;
     sync_ready = 0;
     pixel_size = 4;
-    palette_limit = SIXEL_PALETTE_MAX_DECODER;
+    palette_limit = 0;
     max_color_index = (-1);
+    undither_prepared = 0;
     trust_raster_size = (decode_flags &
         SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE) != 0U;
     if (painted_outside_raster != NULL) {
@@ -1301,9 +1732,6 @@ sixel_decoder_parallel_request_start(int direct_mode,
     }
 
     palette_limit = image->ncolors;
-    if (palette_limit <= 0 || palette_limit > SIXEL_PALETTE_MAX_DECODER) {
-        palette_limit = SIXEL_PALETTE_MAX_DECODER;
-    }
 
     threads = sixel_decoder_parallel_resolve_threads();
     if (threads < 1) {
@@ -1315,6 +1743,23 @@ sixel_decoder_parallel_request_start(int direct_mode,
     if (threads < 2) {
         status = SIXEL_FALSE;
         goto cleanup;
+    }
+
+    prepare_status = sixel_decoder_parallel_prepare_undither(
+        undither,
+        image,
+        palette,
+        palette_limit);
+    if (prepare_status == SIXEL_FALSE) {
+        status = SIXEL_FALSE;
+        goto cleanup;
+    }
+    if (SIXEL_FAILED(prepare_status)) {
+        runtime_error = 1;
+        goto cleanup;
+    }
+    if (undither != NULL && undither->enabled && undither->pixels != NULL) {
+        undither_prepared = 1;
     }
 
     workers = (sixel_thread_t *)calloc((size_t)threads,
@@ -1340,6 +1785,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
     } else {
         chain.global_buffer = (unsigned char *)image->pixels.p;
     }
+    chain.global_mask = image->paint_mask;
     chain.pixel_size = pixel_size;
     chain.copy_offsets = copy_offsets;
     chain.copy_ready = copy_ready;
@@ -1408,6 +1854,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
         contexts[i].logger = logger;
         contexts[i].trust_raster_size = trust_raster_size;
         contexts[i].result = (-1);
+        contexts[i].undither = undither_prepared ? undither : NULL;
         status = sixel_thread_create(&workers[i],
                                      sixel_decoder_parallel_worker,
                                      &contexts[i]);
@@ -1453,6 +1900,14 @@ cleanup:
         sixel_mutex_destroy(&chain.mutex);
         sixel_cond_destroy(&chain.cond);
     }
+    if (undither != NULL) {
+        free(undither->palette);
+        undither->palette = NULL;
+        if (status != SIXEL_OK && undither->pixels != NULL) {
+            sixel_allocator_free(undither->allocator, undither->pixels);
+            undither->pixels = NULL;
+        }
+    }
 
     free(workers);
     free(contexts);
@@ -1473,6 +1928,7 @@ cleanup:
     (void)logger;
     (void)decode_flags;
     (void)painted_outside_raster;
+    (void)undither;
 
     return SIXEL_RUNTIME_ERROR;
 #endif

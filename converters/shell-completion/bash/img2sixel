@@ -757,6 +757,24 @@ _img2sixel()
                                    size' -- "$cur" ) )
         return 0
         ;;
+    -A|--transparent-policy)
+        COMPREPLY=( $( compgen -W 'composite \
+                                   background \
+                                   keep \
+                                   transparent' -- "$cur" ) )
+        return 0
+        ;;
+    -+|--transparent-offset)
+        return 0
+        ;;
+    -Z|--6delta-threshold)
+        return 0
+        ;;
+    -Y|--6delta-error)
+        COMPREPLY=( $( compgen -W 'diffuse \
+                                   skip' -- "$cur" ) )
+        return 0
+        ;;
     -L|--loaders)
         loader_prefix=${cur%,*}
         loader_cur=${cur##*,}
@@ -865,6 +883,10 @@ _img2sixel()
                                    -b --builtin-palette \
                                    -E --encode-policy \
                                    -B --bgcolor \
+                                   -A --transparent-policy \
+                                   -+ --transparent-offset \
+                                   -Z --6delta-threshold \
+                                   -Y --6delta-error \
                                    -P --penetrate \
                                    -D --pipe-mode \
                                    -v --verbose \

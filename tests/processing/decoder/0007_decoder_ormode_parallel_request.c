@@ -58,7 +58,7 @@ test_decoder_0007_decoder_ormode_parallel_request(int argc, char **argv)
     }
     memset(image, 0, sizeof(*image));
 
-    status = image_buffer_init(image, 2, 12, 0, 4, allocator);
+    status = image_buffer_init(image, 2, 12, 0, 4, 0, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -83,6 +83,7 @@ test_decoder_0007_decoder_ormode_parallel_request(int argc, char **argv)
         image->palette,
         NULL,
         0U,
+        NULL,
         NULL);
     if (status != SIXEL_OK) {
         fprintf(stderr, "OR-mode parallel request returned %04x\n", status);

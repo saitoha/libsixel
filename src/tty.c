@@ -74,6 +74,7 @@
 #include "compat_stub.h"
 #include "loader-common.h"
 #include "rgblookup.h"
+#include "timer.h"
 
 #if defined(_WIN32)
 # if !defined(UNICODE)
@@ -107,6 +108,31 @@ static struct sixel_tty_output_state tty_output_state = {0, 0, 0, 0};
 static char const g_tty_hide_cursor_seq[] = "\033[?25l";
 static char const g_tty_show_cursor_seq[] = "\033[?25h";
 
+/*
+ * OpenVMS/GNV can provide <termios.h> without tcgetattr()/tcsetattr() linker
+ * symbols. Keep all cbreak-mode code behind the function probes as well as
+ * the header probes so the final native LINK step has no unresolved symbols.
+ */
+#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY \
+    && HAVE_TCGETATTR && HAVE_TCSETATTR
+# define SIXEL_TTY_HAVE_TERMIOS_CBREAK 1
+#else
+# define SIXEL_TTY_HAVE_TERMIOS_CBREAK 0
+#endif
+
+/*
+ * Cursor position queries are only used by the pixel-height scroll path.
+ * Keep the helper and the call site behind the same capability macro so
+ * warning-clean builds do not see an unused static fallback on targets that
+ * cannot enter that path.
+ */
+#if SIXEL_TTY_HAVE_TERMIOS_CBREAK \
+    && !defined(__EMSCRIPTEN__) && defined(TIOCGWINSZ)
+# define SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY 1
+#else
+# define SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY 0
+#endif
+
 static int
 sixel_tty_term_supports_ansi(const char *term);
 
@@ -119,16 +145,15 @@ sixel_tty_strdup(char const *text);
 static SIXELSTATUS
 sixel_tty_wait_fd_readable(int fd, int usec, int *is_readable);
 
-/*
- * OpenVMS/GNV can provide <termios.h> without tcgetattr()/tcsetattr() linker
- * symbols. Keep all cbreak-mode code behind the function probes as well as
- * the header probes so the final native LINK step has no unresolved symbols.
- */
-#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY \
-    && HAVE_TCGETATTR && HAVE_TCSETATTR
-# define SIXEL_TTY_HAVE_TERMIOS_CBREAK 1
-#else
-# define SIXEL_TTY_HAVE_TERMIOS_CBREAK 0
+static int
+sixel_tty_parse_cpr_positive_int(char const *response,
+                                 size_t response_size,
+                                 size_t *cursor,
+                                 int *value);
+
+#if SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY
+static SIXELSTATUS
+sixel_tty_query_cursor_position(int fd, int timeout_ms, int *row, int *col);
 #endif
 
 #if SIXEL_TTY_HAVE_TERMIOS_CBREAK
@@ -641,6 +666,197 @@ sixel_tty_wait_fd_readable(int fd, int usec, int *is_readable)
 
     return status;
 }
+
+static int
+sixel_tty_parse_cpr_positive_int(char const *response,
+                                 size_t response_size,
+                                 size_t *cursor,
+                                 int *value)
+{
+    size_t pos;
+    int digit;
+    int parsed;
+    int saw_digit;
+
+    pos = 0u;
+    digit = 0;
+    parsed = 0;
+    saw_digit = 0;
+
+    if (response == NULL || cursor == NULL || value == NULL) {
+        return 0;
+    }
+
+    pos = *cursor;
+    while (pos < response_size) {
+        if (response[pos] < '0' || response[pos] > '9') {
+            break;
+        }
+        digit = response[pos] - '0';
+        if (parsed > (INT_MAX - digit) / 10) {
+            return 0;
+        }
+        parsed = parsed * 10 + digit;
+        saw_digit = 1;
+        ++pos;
+    }
+
+    if (saw_digit == 0 || parsed <= 0) {
+        return 0;
+    }
+
+    *cursor = pos;
+    *value = parsed;
+
+    return 1;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_tty_parse_cpr_response(int *row,
+                             int *col,
+                             char const *response,
+                             size_t response_size)
+{
+    size_t index;
+    size_t cursor;
+    int parsed_col;
+    int parsed_row;
+    unsigned char ch;
+
+    index = 0u;
+    cursor = 0u;
+    parsed_col = 0;
+    parsed_row = 0;
+    ch = 0u;
+
+    if (row == NULL || col == NULL || response == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    for (index = 0u; index < response_size; ++index) {
+        ch = (unsigned char)response[index];
+        if (ch == 0x1bu) {
+            if (index + 1u >= response_size ||
+                response[index + 1u] != '[') {
+                continue;
+            }
+            cursor = index + 2u;
+        } else if (ch == 0x9bu) {
+            cursor = index + 1u;
+        } else {
+            continue;
+        }
+
+        if (!sixel_tty_parse_cpr_positive_int(response,
+                                              response_size,
+                                              &cursor,
+                                              &parsed_row)) {
+            continue;
+        }
+        if (cursor >= response_size || response[cursor] != ';') {
+            continue;
+        }
+        ++cursor;
+        if (!sixel_tty_parse_cpr_positive_int(response,
+                                              response_size,
+                                              &cursor,
+                                              &parsed_col)) {
+            continue;
+        }
+        if (cursor >= response_size || response[cursor] != 'R') {
+            continue;
+        }
+
+        *row = parsed_row;
+        *col = parsed_col;
+        return SIXEL_OK;
+    }
+
+    return SIXEL_FALSE;
+}
+
+#if SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY
+static SIXELSTATUS
+sixel_tty_query_cursor_position(int fd, int timeout_ms, int *row, int *col)
+{
+#if HAVE_SYS_SELECT_H && HAVE_UNISTD_H && !defined(__EMSCRIPTEN__)
+    SIXELSTATUS status;
+    double deadline;
+    double now;
+    int readable;
+    int remaining_usec;
+    ssize_t read_size;
+    size_t response_size;
+    char response[64];
+
+    status = SIXEL_FALSE;
+    deadline = 0.0;
+    now = 0.0;
+    readable = 0;
+    remaining_usec = 0;
+    read_size = 0;
+    response_size = 0u;
+    response[0] = '\0';
+
+    if (fd < 0 || row == NULL || col == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (timeout_ms < 0) {
+        timeout_ms = 0;
+    }
+
+    deadline = sixel_timer_now() + (double)timeout_ms / 1000.0;
+    for (;;) {
+        now = sixel_timer_now();
+        remaining_usec = (int)((deadline - now) * 1000000.0);
+        if (remaining_usec < 0) {
+            remaining_usec = 0;
+        }
+
+        status = sixel_tty_wait_fd_readable(fd,
+                                            remaining_usec,
+                                            &readable);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (readable == 0) {
+            return SIXEL_FALSE;
+        }
+
+        read_size = read(fd,
+                         response + response_size,
+                         sizeof(response) - response_size);
+        if (read_size <= 0) {
+            return SIXEL_FALSE;
+        }
+        response_size += (size_t)read_size;
+
+        status = sixel_tty_parse_cpr_response(row,
+                                              col,
+                                              response,
+                                              response_size);
+        if (SIXEL_SUCCEEDED(status)) {
+            return status;
+        }
+        if (status != SIXEL_FALSE) {
+            return status;
+        }
+        if (response_size >= sizeof(response)) {
+            return SIXEL_FALSE;
+        }
+        if (sixel_timer_now() >= deadline) {
+            return SIXEL_FALSE;
+        }
+    }
+#else
+    (void)fd;
+    (void)timeout_ms;
+    (void)row;
+    (void)col;
+    return SIXEL_NOT_IMPLEMENTED;
+#endif
+}
+#endif  /* SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY */
 
 #if SIXEL_TTY_HAVE_TERMIOS_CBREAK
 static int
@@ -1400,17 +1616,21 @@ sixel_tty_scroll(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
-#if SIXEL_TTY_HAVE_TERMIOS_CBREAK \
-    && !defined(__EMSCRIPTEN__) && defined(TIOCGWINSZ)
+#if SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY
     struct winsize size = {0, 0, 0, 0};
     struct termios old_termios;
     struct termios new_termios;
+    SIXELSTATUS restore_status;
     int row = 0;
     int col = 0;
     int cellheight;
     int scroll;
+    int raw_active;
     char buffer[256];
     int result;
+
+    restore_status = SIXEL_FALSE;
+    raw_active = 0;
 
     /* confirm I/O file descriptors are tty devices */
     if (!sixel_compat_isatty(STDIN_FILENO)
@@ -1468,6 +1688,7 @@ sixel_tty_scroll(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    raw_active = 1;
 
     /* request cursor position report */
     nwrite = f_write("\033[6n", 4, priv);
@@ -1478,37 +1699,26 @@ sixel_tty_scroll(
         goto end;
     }
 
-    /* wait cursor position report */
-    if (SIXEL_FAILED(sixel_tty_wait_stdin(1000 * 1000))) { /* wait up to 1 sec */
-        /* If we can't get any response from the terminal,
-         * move cursor to (1, 1). */
-        nwrite = f_write("\033[H", 3, priv);
-        if (nwrite < 0) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message(
-                "sixel_tty_scroll: f_write() failed.");
-            goto end;
-        }
-        status = SIXEL_OK;
-        goto end;
-    }
-
-    /* scan cursor position report */
-    if (scanf("\033[%d;%dR", &row, &col) != 2) {
-        nwrite = f_write("\033[H", 3, priv);
-        if (nwrite < 0) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message(
-                "sixel_tty_scroll: f_write() failed.");
-            goto end;
-        }
-        status = SIXEL_OK;
-        goto end;
-    }
-
-    /* restore the terminal mode */
-    status = sixel_tty_restore(&old_termios);
+    /*
+     * Wait for a cursor position report with a hard deadline.  scanf() is
+     * intentionally not used here because a timeout, a partial CPR, or an
+     * unrelated byte in the terminal input stream must not leave stdin
+     * blocked in a format-string read.
+     */
+    status = sixel_tty_query_cursor_position(STDIN_FILENO, 1000, &row, &col);
     if (SIXEL_FAILED(status)) {
+        /*
+         * If we can't get any response from the terminal, move the cursor to
+         * (1, 1) as the historical fallback.
+         */
+        nwrite = f_write("\033[H", 3, priv);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "sixel_tty_scroll: f_write() failed.");
+            goto end;
+        }
+        status = SIXEL_OK;
         goto end;
     }
 
@@ -1544,7 +1754,7 @@ sixel_tty_scroll(
             "sixel_tty_scroll: f_write() failed.");
         goto end;
     }
-#else  /* mingw */
+#else  /* simple scroll fallback */
     (void) outfd;
     (void) height;
     (void) is_animation;
@@ -1555,11 +1765,19 @@ sixel_tty_scroll(
             "sixel_tty_scroll: f_write() failed.");
         goto end;
     }
-#endif  /* SIXEL_TTY_HAVE_TERMIOS_CBREAK && !defined(__EMSCRIPTEN__) */
+#endif  /* SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY */
 
     status = SIXEL_OK;
 
 end:
+#if SIXEL_TTY_HAVE_CURSOR_POSITION_QUERY
+    if (raw_active != 0) {
+        restore_status = sixel_tty_restore(&old_termios);
+        if (SIXEL_FAILED(restore_status) && SIXEL_SUCCEEDED(status)) {
+            status = restore_status;
+        }
+    }
+#endif
     return status;
 }
 

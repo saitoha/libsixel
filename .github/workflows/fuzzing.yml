@@ -84,6 +84,7 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+          bash .github/scripts/disable-hosted-runner-microsoft-apt-sources.sh
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             clang meson ninja-build autoconf automake libtool pkg-config make
@@ -357,6 +358,7 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+          bash .github/scripts/disable-hosted-runner-microsoft-apt-sources.sh
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             clang meson ninja-build autoconf automake libtool pkg-config make
@@ -547,6 +549,7 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+          bash .github/scripts/disable-hosted-runner-microsoft-apt-sources.sh
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             clang meson ninja-build autoconf automake libtool pkg-config make
@@ -714,6 +717,7 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+          bash .github/scripts/disable-hosted-runner-microsoft-apt-sources.sh
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             clang meson ninja-build autoconf automake libtool pkg-config make
@@ -924,6 +928,7 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
+          bash .github/scripts/disable-hosted-runner-microsoft-apt-sources.sh
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             afl++ clang meson ninja-build autoconf automake libtool pkg-config make

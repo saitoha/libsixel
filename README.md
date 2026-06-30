@@ -955,6 +955,32 @@ steps.
                              rgb:rr/gg/bb
                              rgb:rrr/ggg/bbb
                              rgb:rrrr/gggg/bbbb
+-A TRANSPARENTPOLICY, --transparent-policy=TRANSPARENTPOLICY
+                           choose transparent output policy
+                             composite   -> composite alpha over
+                                            background color
+                             background  -> emit transparent pixels
+                                            with DCS P2=0 (default)
+                             keep        -> emit transparent pixels
+                                            with DCS P2=1 for terminals
+                                            that preserve the previous
+                                            image plane
+                             transparent -> alias for background
+-+ LEFT,TOP, --transparent-offset=LEFT,TOP
+                           add transparent left/top pixel offset with
+                           DCS P2=1 image-plane reuse. 0,0 disables
+                           the offset. Incompatible with -O, -I, and
+                           -E size.
+-Z DELTA, --6delta-threshold=DELTA
+                           set RGB per-channel tolerance for
+                           6delta encoding. DELTA must be 0..255
+                           (default: 0).
+-Y MODE, --6delta-error=MODE
+                           choose 6delta kept-pixel error handling.
+                             diffuse -> diffuse error from the
+                                        retained RGB (default)
+                             skip    -> skip diffusion on kept pixels
+                                        for speed
 -P, --penetrate            [[deprecated]] penetrate GNU Screen
                            using DCS pass-through sequence
 -D, --pipe-mode            [[deprecated]] read source images from
@@ -1068,6 +1094,22 @@ SIXEL_LOADER_BACKGROUND_COLORSPACE
                            Accepts gamma (default) or linear.
                            Ignored when bgcolor comes from
                            SIXEL_LOADER_OSC11_BG_QUERY.
+SIXEL_TRANSPARENT_POLICY   control alpha normalization and
+                           transparent SIXEL P2 handling.
+                           composite bakes alpha into the
+                           background when available.
+                           background/transparent keep alpha==0
+                           as transparent and emit P2=0 (default).
+                           keep keeps alpha==0 as transparent and
+                           emits P2=1 for previous image-plane reuse.
+SIXEL_6DELTA_THRESHOLD     set default RGB per-channel tolerance for
+                           6delta encoding. Accepts 0..255.
+                           Invalid values keep the built-in default 0.
+                           overrided by -Z(--6delta-threshold) option.
+SIXEL_6DELTA_ERROR         set default 6delta kept-pixel error handling.
+                           Accepts diffuse or skip. Invalid values keep
+                           diffuse.
+                           overrided by -Y(--6delta-error) option.
 SIXEL_LOADER_ORIENTATION   default EXIF orientation handling for
                            libjpeg/libpng/libwebp loaders.
                            Accepts on/off (preferred) and 1/0 aliases.
@@ -1488,6 +1530,15 @@ SIXELAPI SIXELSTATUS
 sixel_encoder_set_cancel_flag(
     sixel_encoder_t /* in */ *encoder,
     int             /* in */ *cancel_flag);
+
+/* set previous image-plane buffer for transparent-policy=keep/P2=1 */
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_accumulation_buffer(
+    sixel_encoder_t     /* in */ *encoder,
+    unsigned char const /* in */ *pixels,
+    int                 /* in */ width,
+    int                 /* in */ height,
+    int                 /* in */ pixelformat);
 
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS

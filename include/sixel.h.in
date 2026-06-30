@@ -174,8 +174,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_FORMATTYPE_PALETTE   (1 << 7)
 
 /* method for dequantization */
-#define SIXEL_DEQUANTIZE_NONE            0x0  /* don't dequantize */
-#define SIXEL_DEQUANTIZE_K_UNDITHER      0x1  /* Kornel's undither */
+#define SIXEL_DEQUANTIZE_NONE              0x0  /* don't dequantize */
+#define SIXEL_DEQUANTIZE_K_UNDITHER        0x1  /* Kornel's undither */
+#define SIXEL_DEQUANTIZE_LSO_UNDITHER_VFS  0x1  /* full FS undither */
+/* LSO Vlight causal undither. */
+#define SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT 0x2
 
 /* quantize model */
 #define SIXEL_QUANTIZE_MODEL_AUTO        0x0
@@ -270,6 +273,19 @@ typedef int SIXELSTATUS;
 #define SIXEL_LOOP_AUTO            0   /* honer the setting of GIF header */
 #define SIXEL_LOOP_FORCE           1   /* always enable loop */
 #define SIXEL_LOOP_DISABLE         2   /* always disable loop */
+
+/* transparent output policy */
+#define SIXEL_TRANSPARENT_POLICY_COMPOSITE  0  /* composite over background */
+#define SIXEL_TRANSPARENT_POLICY_BACKGROUND 1  /* transparent, DCS P2=0/2 */
+#define SIXEL_TRANSPARENT_POLICY_KEEP       2  /* transparent, DCS P2=1 */
+#define SIXEL_TRANSPARENT_POLICY_P2_0 \
+    SIXEL_TRANSPARENT_POLICY_BACKGROUND
+#define SIXEL_TRANSPARENT_POLICY_P2_1 \
+    SIXEL_TRANSPARENT_POLICY_KEEP
+
+/* 6delta encoding error handling */
+#define SIXEL_6DELTA_ERROR_DIFFUSE 0  /* diffuse error from kept RGB */
+#define SIXEL_6DELTA_ERROR_SKIP    1  /* skip diffusion on kept pixels */
 
 /* setopt flags */
 #define SIXEL_OPTFLAG_INPUT             ('i')  /* -i, --input: specify input file name. */
@@ -678,6 +694,19 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_ORMODE            ('O')  /* -O, --ormode:
                                                   output ormode sixel image
                                                 */
+/* -A TRANSPARENTPOLICY */
+/* --transparent-policy=TRANSPARENTPOLICY */
+/* choose transparent output policy: composite, background, keep */
+#define SIXEL_OPTFLAG_TRANSPARENT_POLICY ('A')
+/* -+ LEFT,TOP, --transparent-offset=LEFT,TOP */
+/* add transparent left/top pixel offset for P2=1 image-plane reuse */
+#define SIXEL_OPTFLAG_TRANSPARENT_OFFSET ('+')
+/* -Z DELTA, --6delta-threshold=DELTA */
+/* set per-channel RGB tolerance for 6delta encoding early keep */
+#define SIXEL_OPTFLAG_6DELTA_THRESHOLD ('Z')
+/* -Y MODE, --6delta-error=MODE */
+/* choose 6delta kept-pixel error handling: diffuse or skip */
+#define SIXEL_OPTFLAG_6DELTA_ERROR     ('Y')
 #define SIXEL_OPTFLAG_BGCOLOR           ('B')  /* -B BGCOLOR, --bgcolor=BGCOLOR:
                                                   specify background color
                                                   BGCOLOR is represented by the
@@ -1417,6 +1446,26 @@ sixel_frame_init(
     int             /* in */ ncolors        /* number of palette colors or (-1) */
 );
 
+#define SIXEL_HAVE_FRAME_INIT_BORROWED 1
+/*
+ * Initialize a frame by borrowing mutable caller-owned storage.
+ *
+ * The frame will not free pixels or palette.  Keep both buffers alive until the
+ * frame is reinitialized or released.  Frame filters and encoders may update
+ * pixels in place; operations that need replacement storage detach to an
+ * internal frame-owned buffer.
+ */
+SIXELAPI SIXELSTATUS
+sixel_frame_init_borrowed(
+    sixel_frame_t   /* in */ *frame,        /* frame object to initialize */
+    void            /* in */ *pixels,       /* mutable caller-owned pixels */
+    int             /* in */ width,         /* pixel width of buffer */
+    int             /* in */ height,        /* pixel height of buffer */
+    int             /* in */ pixelformat,   /* pixelformat of buffer */
+    unsigned char   /* in */ *palette,      /* borrowed palette or NULL */
+    int             /* in */ ncolors        /* palette color count or (-1) */
+);
+
 /* get pixels */
 SIXELAPI unsigned char *
 sixel_frame_get_pixels(sixel_frame_t /* in */ *frame);  /* frame object */
@@ -1728,6 +1777,21 @@ sixel_encoder_set_cancel_callback(
     sixel_cancel_function /* in */ cancel_function,
     void                  /* in */ *cancel_context);
 
+/*
+ * Set the encoder accumulation buffer used by transparent-policy=keep
+ * differential encoding.  This is for P2=1 terminals that preserve the
+ * previous image plane; normal background transparency should use the default
+ * transparent-policy=background/P2=0 behavior.  The buffer is copied as
+ * RGB888.  Pass NULL for PIXELS to clear the retained accumulation buffer.
+ */
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_accumulation_buffer(
+    sixel_encoder_t     /* in */ *encoder,
+    unsigned char const /* in */ *pixels,
+    int                 /* in */ width,
+    int                 /* in */ height,
+    int                 /* in */ pixelformat);
+
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
@@ -1808,6 +1872,23 @@ sixel_decoder_setopt(
 SIXELAPI SIXELSTATUS
 sixel_decoder_decode(
     sixel_decoder_t /* in */ *decoder);
+
+/*
+ * Decode in-memory SIXEL bytes with sixel_decoder_setopt() state and return
+ * packed pixels.  The returned pixel buffer is allocated by the decoder's
+ * allocator.
+ */
+#define SIXEL_HAVE_DECODER_DECODE_PIXELS 1
+
+SIXELAPI SIXELSTATUS
+sixel_decoder_decode_pixels(
+    sixel_decoder_t /* in */ *decoder,
+    unsigned char const /* in */ *data,
+    size_t              /* in */ size,
+    sixel_decode_options_t const
+                        /* in */ *options,
+    sixel_decode_result_t
+                        /* out */ *result);
 
 #ifdef __cplusplus
 }

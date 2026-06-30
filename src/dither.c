@@ -1290,6 +1290,211 @@ sixel_dither_resolve_indexes(
     return status;
 }
 
+static int
+sixel_dither_rgb888_delta_within(unsigned char const *left,
+                                 unsigned char const *right,
+                                 unsigned int delta)
+{
+    int dr;
+    int dg;
+    int db;
+
+    dr = (int)left[0] - (int)right[0];
+    dg = (int)left[1] - (int)right[1];
+    db = (int)left[2] - (int)right[2];
+    if (dr < 0) {
+        dr = -dr;
+    }
+    if (dg < 0) {
+        dg = -dg;
+    }
+    if (db < 0) {
+        db = -db;
+    }
+
+    return (unsigned int)dr <= delta &&
+           (unsigned int)dg <= delta &&
+           (unsigned int)db <= delta ? 1 : 0;
+}
+
+static int
+sixel_dither_has_compatible_accumulation_hint(
+    sixel_dither_t const *dither,
+    int width,
+    int height,
+    size_t total_pixels)
+{
+    size_t expected_size;
+
+    expected_size = 0u;
+    if (dither == NULL || dither->pipeline_accumulation_pixels == NULL) {
+        return 0;
+    }
+    if (dither->pipeline_accumulation_keycolor < 0 ||
+        dither->pipeline_accumulation_keycolor >= SIXEL_PALETTE_MAX) {
+        return 0;
+    }
+    if (dither->pipeline_accumulation_width != width ||
+        dither->pipeline_accumulation_height != height) {
+        return 0;
+    }
+    if (total_pixels > SIZE_MAX / 3u) {
+        return 0;
+    }
+    expected_size = total_pixels * 3u;
+    if (dither->pipeline_accumulation_pixels_size < expected_size) {
+        return 0;
+    }
+    if (dither->pipeline_accumulation_valid_mask != NULL &&
+        dither->pipeline_accumulation_valid_mask_size < total_pixels) {
+        return 0;
+    }
+
+    return 1;
+}
+
+SIXEL_INTERNAL_API int
+sixel_dither_pipeline_6delta_try_keep_rgb888(
+    sixel_dither_t *dither,
+    size_t index,
+    unsigned char const *rgb,
+    int record_result,
+    unsigned char const **accumulation_rgb_out,
+    int *keycolor_out)
+{
+    unsigned char const *accumulation;
+    unsigned char const *valid_mask;
+    unsigned char const *accumulation_pixel;
+    size_t total_pixels;
+    int keycolor;
+    unsigned int threshold;
+
+    accumulation = NULL;
+    valid_mask = NULL;
+    accumulation_pixel = NULL;
+    total_pixels = 0u;
+    keycolor = (-1);
+    threshold = 0u;
+    if (accumulation_rgb_out != NULL) {
+        *accumulation_rgb_out = NULL;
+    }
+    if (keycolor_out != NULL) {
+        *keycolor_out = (-1);
+    }
+    if (dither == NULL || rgb == NULL) {
+        return 0;
+    }
+    if (dither->pipeline_accumulation_width <= 0 ||
+        dither->pipeline_accumulation_height <= 0) {
+        return 0;
+    }
+    total_pixels = (size_t)dither->pipeline_accumulation_width *
+        (size_t)dither->pipeline_accumulation_height;
+    if (!sixel_dither_has_compatible_accumulation_hint(
+            dither,
+            dither->pipeline_accumulation_width,
+            dither->pipeline_accumulation_height,
+            total_pixels)) {
+        return 0;
+    }
+    /*
+     * 6delta is an early keep gate.  When the desired RGB is already inside
+     * the caller's per-channel threshold, the policy can emit keycolor without
+     * paying for a nearest-palette lookup.  The dither policy decides whether
+     * to diffuse the resulting error or to skip it for speed.
+     */
+    accumulation = dither->pipeline_accumulation_pixels;
+    valid_mask = dither->pipeline_accumulation_valid_mask;
+    keycolor = dither->pipeline_accumulation_keycolor;
+    threshold = dither->pipeline_6delta_threshold;
+    if (index >= total_pixels) {
+        return 0;
+    }
+    if (valid_mask != NULL && valid_mask[index] == 0u) {
+        return 0;
+    }
+    accumulation_pixel = accumulation + index * 3u;
+    if (!sixel_dither_rgb888_delta_within(rgb,
+                                          accumulation_pixel,
+                                          threshold)) {
+        return 0;
+    }
+    if (record_result != 0 &&
+        dither->pipeline_accumulation_result_mask != NULL &&
+        dither->pipeline_accumulation_result_mask_size > index) {
+        dither->pipeline_accumulation_result_mask[index] = 1u;
+    }
+    if (accumulation_rgb_out != NULL) {
+        *accumulation_rgb_out = accumulation_pixel;
+    }
+    if (keycolor_out != NULL) {
+        *keycolor_out = keycolor;
+    }
+
+    return 1;
+}
+
+SIXEL_INTERNAL_API int
+sixel_dither_pipeline_6delta_error_mode(sixel_dither_t const *dither)
+{
+    if (dither == NULL) {
+        return SIXEL_6DELTA_ERROR_DIFFUSE;
+    }
+    if (dither->pipeline_6delta_error_mode == SIXEL_6DELTA_ERROR_SKIP) {
+        return SIXEL_6DELTA_ERROR_SKIP;
+    }
+
+    return SIXEL_6DELTA_ERROR_DIFFUSE;
+}
+
+static SIXELSTATUS
+sixel_dither_prepare_6delta_result_mask(
+    sixel_dither_t *dither,
+    unsigned char const *transparent_mask,
+    size_t transparent_mask_size,
+    size_t total_pixels)
+{
+    SIXELSTATUS status;
+    unsigned char *result_mask;
+
+    status = SIXEL_FALSE;
+    result_mask = NULL;
+    if (dither == NULL || dither->pipeline_accumulation_result_enabled == 0) {
+        return SIXEL_OK;
+    }
+    if (!sixel_dither_has_compatible_accumulation_hint(
+            dither,
+            dither->pipeline_accumulation_width,
+            dither->pipeline_accumulation_height,
+            total_pixels)) {
+        return SIXEL_OK;
+    }
+    result_mask = (unsigned char *)sixel_allocator_malloc(
+        dither->allocator,
+        total_pixels);
+    if (result_mask == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dither_prepare_6delta_result_mask: "
+            "mask allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    if (transparent_mask != NULL && transparent_mask_size >= total_pixels) {
+        memcpy(result_mask, transparent_mask, total_pixels);
+    } else {
+        memset(result_mask, 0, total_pixels);
+    }
+    status = sixel_dither_set_pipeline_accumulation_result_mask(
+        dither,
+        result_mask,
+        total_pixels);
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(dither->allocator, result_mask);
+        return status;
+    }
+
+    return SIXEL_OK;
+}
+
 
 /*
  * VT340 undocumented behavior regarding the color palette reported
@@ -1472,6 +1677,12 @@ sixel_dither_new(
     (*ppdither)->pipeline_image_width = 0;
     (*ppdither)->pipeline_image_height = 0;
     sixel_dither_clear_pipeline_transparent_mask_hint(*ppdither);
+    sixel_dither_clear_pipeline_accumulation_buffer_hint(*ppdither);
+    (*ppdither)->pipeline_accumulation_result_mask = NULL;
+    (*ppdither)->pipeline_accumulation_result_mask_size = 0U;
+    (*ppdither)->pipeline_accumulation_result_rgb = NULL;
+    (*ppdither)->pipeline_accumulation_result_rgb_size = 0U;
+    (*ppdither)->pipeline_accumulation_result_enabled = 0;
     (*ppdither)->bluenoise_gradient_map = NULL;
     (*ppdither)->bluenoise_gradient_map_size = 0U;
     (*ppdither)->bluenoise_gradient_width = 0;
@@ -1567,6 +1778,8 @@ sixel_dither_destroy(
             dither->palette->vtbl->unref(dither->palette);
             dither->palette = NULL;
         }
+        sixel_dither_clear_pipeline_accumulation_result_mask(dither);
+        sixel_dither_clear_pipeline_accumulation_result_rgb(dither);
         sixel_dither_clear_bluenoise_gradient_map_hint(dither);
         sixel_dither_interframe_state_dispose(dither);
         sixel_allocator_free(allocator, dither);
@@ -2394,6 +2607,244 @@ sixel_dither_set_pipeline_transparent_mask_hint(
     dither->pipeline_transparent_keycolor = keycolor;
 }
 
+void
+sixel_dither_clear_pipeline_accumulation_buffer_hint(
+    sixel_dither_t *dither)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    dither->pipeline_accumulation_pixels = NULL;
+    dither->pipeline_accumulation_pixels_size = 0u;
+    dither->pipeline_accumulation_valid_mask = NULL;
+    dither->pipeline_accumulation_valid_mask_size = 0u;
+    dither->pipeline_accumulation_width = 0;
+    dither->pipeline_accumulation_height = 0;
+    dither->pipeline_accumulation_keycolor = (-1);
+    dither->pipeline_6delta_threshold = 0u;
+    dither->pipeline_6delta_error_mode = SIXEL_6DELTA_ERROR_DIFFUSE;
+}
+
+SIXEL_INTERNAL_API void
+sixel_dither_clear_pipeline_accumulation_result_mask(
+    sixel_dither_t *dither)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    if (dither->pipeline_accumulation_result_mask != NULL &&
+            dither->allocator != NULL) {
+        sixel_allocator_free(dither->allocator,
+                             dither->pipeline_accumulation_result_mask);
+    }
+    dither->pipeline_accumulation_result_mask = NULL;
+    dither->pipeline_accumulation_result_mask_size = 0U;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_set_pipeline_accumulation_result_mask(
+    sixel_dither_t *dither,
+    unsigned char *mask,
+    size_t mask_size)
+{
+    if (dither == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_dither_clear_pipeline_accumulation_result_mask(dither);
+    if (mask == NULL || mask_size == 0U) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    dither->pipeline_accumulation_result_mask = mask;
+    dither->pipeline_accumulation_result_mask_size = mask_size;
+
+    return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API unsigned char const *
+sixel_dither_get_pipeline_accumulation_result_mask(
+    sixel_dither_t const *dither,
+    size_t *mask_size)
+{
+    if (mask_size != NULL) {
+        *mask_size = 0U;
+    }
+    if (dither == NULL ||
+            dither->pipeline_accumulation_result_mask == NULL ||
+            dither->pipeline_accumulation_result_mask_size == 0U) {
+        return NULL;
+    }
+    if (mask_size != NULL) {
+        *mask_size = dither->pipeline_accumulation_result_mask_size;
+    }
+
+    return dither->pipeline_accumulation_result_mask;
+}
+
+SIXEL_INTERNAL_API void
+sixel_dither_clear_pipeline_accumulation_result_rgb(
+    sixel_dither_t *dither)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    if (dither->pipeline_accumulation_result_rgb != NULL &&
+            dither->allocator != NULL) {
+        sixel_allocator_free(dither->allocator,
+                             dither->pipeline_accumulation_result_rgb);
+    }
+    dither->pipeline_accumulation_result_rgb = NULL;
+    dither->pipeline_accumulation_result_rgb_size = 0U;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dither_set_pipeline_accumulation_result_rgb(
+    sixel_dither_t *dither,
+    sixel_index_t const *indexes,
+    size_t index_count,
+    unsigned char const *palette,
+    size_t palette_count)
+{
+    unsigned char *rgb;
+    size_t rgb_size;
+    size_t index;
+    size_t color_index;
+
+    rgb = NULL;
+    rgb_size = 0U;
+    index = 0U;
+    color_index = 0U;
+    if (dither == NULL || indexes == NULL || palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (index_count == 0U || palette_count == 0U) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (index_count > SIZE_MAX / 3U) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    rgb_size = index_count * 3U;
+    rgb = (unsigned char *)sixel_allocator_malloc(dither->allocator,
+                                                  rgb_size);
+    if (rgb == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dither_set_pipeline_accumulation_result_rgb: "
+            "sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (index = 0U; index < index_count; ++index) {
+        color_index = (size_t)indexes[index];
+        if (color_index >= palette_count) {
+            color_index = 0U;
+        }
+        memcpy(rgb + index * 3U,
+               palette + color_index * 3U,
+               3U);
+    }
+
+    sixel_dither_clear_pipeline_accumulation_result_rgb(dither);
+    dither->pipeline_accumulation_result_rgb = rgb;
+    dither->pipeline_accumulation_result_rgb_size = rgb_size;
+
+    return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API unsigned char const *
+sixel_dither_get_pipeline_accumulation_result_rgb(
+    sixel_dither_t const *dither,
+    size_t *rgb_size)
+{
+    if (rgb_size != NULL) {
+        *rgb_size = 0U;
+    }
+    if (dither == NULL ||
+            dither->pipeline_accumulation_result_rgb == NULL ||
+            dither->pipeline_accumulation_result_rgb_size == 0U) {
+        return NULL;
+    }
+    if (rgb_size != NULL) {
+        *rgb_size = dither->pipeline_accumulation_result_rgb_size;
+    }
+
+    return dither->pipeline_accumulation_result_rgb;
+}
+
+SIXEL_INTERNAL_API void
+sixel_dither_set_pipeline_accumulation_result_enabled(
+    sixel_dither_t *dither,
+    int enabled)
+{
+    if (dither == NULL) {
+        return;
+    }
+
+    dither->pipeline_accumulation_result_enabled = enabled != 0 ? 1 : 0;
+}
+
+SIXEL_INTERNAL_API void
+sixel_dither_set_pipeline_accumulation_buffer_hint(
+    sixel_dither_t *dither,
+    unsigned char const *pixels,
+    size_t pixels_size,
+    unsigned char const *valid_mask,
+    size_t valid_mask_size,
+    int width,
+    int height,
+    int keycolor,
+    unsigned int threshold,
+    int error_mode)
+{
+    size_t expected_size;
+
+    expected_size = 0u;
+    if (dither == NULL) {
+        return;
+    }
+
+    sixel_dither_clear_pipeline_accumulation_buffer_hint(dither);
+    if (pixels == NULL || pixels_size == 0u || width <= 0 || height <= 0) {
+        return;
+    }
+    if (keycolor < 0 || keycolor >= SIXEL_PALETTE_MAX) {
+        return;
+    }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return;
+    }
+    expected_size = (size_t)width * (size_t)height;
+    if (expected_size > SIZE_MAX / 3u) {
+        return;
+    }
+    expected_size *= 3u;
+    if (pixels_size < expected_size) {
+        return;
+    }
+    if (valid_mask != NULL && valid_mask_size < (size_t)width *
+            (size_t)height) {
+        return;
+    }
+
+    dither->pipeline_accumulation_pixels = pixels;
+    dither->pipeline_accumulation_pixels_size = pixels_size;
+    dither->pipeline_accumulation_valid_mask = valid_mask;
+    dither->pipeline_accumulation_valid_mask_size = valid_mask_size;
+    dither->pipeline_accumulation_width = width;
+    dither->pipeline_accumulation_height = height;
+    dither->pipeline_accumulation_keycolor = keycolor;
+    dither->pipeline_6delta_threshold = threshold;
+    if (error_mode == SIXEL_6DELTA_ERROR_SKIP) {
+        dither->pipeline_6delta_error_mode = SIXEL_6DELTA_ERROR_SKIP;
+    } else {
+        dither->pipeline_6delta_error_mode = SIXEL_6DELTA_ERROR_DIFFUSE;
+    }
+}
+
 static void
 sixel_dither_interframe_state_init(sixel_dither_t *dither)
 {
@@ -2591,6 +3042,7 @@ sixel_dither_cleanup_apply_hints(sixel_dither_t *dither)
     dither->pipeline_image_width = 0;
     dither->pipeline_image_height = 0;
     sixel_dither_clear_pipeline_transparent_mask_hint(dither);
+    sixel_dither_clear_pipeline_accumulation_buffer_hint(dither);
     sixel_dither_clear_bluenoise_gradient_map_hint(dither);
     dither->pipeline_logger = NULL;
 }
@@ -2924,7 +3376,7 @@ sixel_dither_apply_palette_with_mode(
     unsigned char const *preset_transparent_mask;
     size_t preset_transparent_mask_size;
     int preset_transparent_keycolor;
-    int using_preset_transparent_mask = 0;
+    int transparent_mask_owned = 0;
     int apply_transparent_mask = 0;
     int keycolor_for_mask = (-1);
     size_t source_depth;
@@ -2961,6 +3413,8 @@ sixel_dither_apply_palette_with_mode(
     resolved_apply_mode =
         sixel_dither_interframe_resolve_apply_mode(apply_mode);
     sixel_dither_ref(dither);
+    sixel_dither_clear_pipeline_accumulation_result_mask(dither);
+    sixel_dither_clear_pipeline_accumulation_result_rgb(dither);
     if (resolved_apply_mode == SIXEL_DITHER_APPLY_CONSUME_INTERFRAME_STATE) {
         /*
          * Keep size-change resets observable in diagnostics even when
@@ -3066,7 +3520,7 @@ sixel_dither_apply_palette_with_mode(
         transparent_mask = (unsigned char *)preset_transparent_mask;
         keycolor_for_mask = preset_transparent_keycolor;
         apply_transparent_mask = 1;
-        using_preset_transparent_mask = 1;
+        transparent_mask_owned = 0;
     } else if (dither->keycolor >= 0
             && sixel_dither_pixelformat_has_alpha(source_pixelformat)
             && total_pixels > 0U) {
@@ -3087,6 +3541,7 @@ sixel_dither_apply_palette_with_mode(
             goto end;
         }
         memset(transparent_mask, 0, total_pixels);
+        transparent_mask_owned = 1;
         keycolor_for_mask = dither->keycolor;
         for (index = 0U; index < total_pixels; ++index) {
             if (sixel_dither_extract_alpha_u8(
@@ -3312,6 +3767,23 @@ sixel_dither_apply_palette_with_mode(
         palette_entry_capacity =
             entries_view.entries_size / (size_t)entries_view.depth;
     }
+    if (pipeline_pixelformat == SIXEL_PIXELFORMAT_RGB888) {
+        if (sixel_dither_has_compatible_accumulation_hint(dither,
+                                                          width,
+                                                          height,
+                                                          total_pixels) &&
+            keycolor_for_mask < 0) {
+            keycolor_for_mask = dither->pipeline_accumulation_keycolor;
+        }
+        status = sixel_dither_prepare_6delta_result_mask(
+            dither,
+            transparent_mask,
+            apply_transparent_mask != 0 ? total_pixels : 0u,
+            total_pixels);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
 #if SIXEL_ENABLE_THREADS
     shared_lut = sixel_dither_lookup_shared_instance_enabled(
         dither,
@@ -3495,7 +3967,7 @@ end:
          * Frame-owned preset masks are borrowed pointers and must not be
          * released here.
          */
-        if (transparent_mask != NULL && !using_preset_transparent_mask) {
+        if (transparent_mask != NULL && transparent_mask_owned != 0) {
             sixel_allocator_free(dither->allocator, transparent_mask);
         }
         sixel_dither_cleanup_apply_hints(dither);
