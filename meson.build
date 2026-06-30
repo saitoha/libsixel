@@ -21,7 +21,7 @@
 #
 project('libsixel',
         'c',
-        version: '1.11.0-pre',
+        version: '1.11.1-pre1',
         meson_version: '>=0.59.0',
         license: 'MIT',
         default_options: [
