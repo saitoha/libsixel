@@ -8,11 +8,33 @@ in_h, out_rb = ARGV
 
 text = File.read(in_h)
 
-lines = text.each_line
+logical_lines = []
+pending = +''
+text.each_line do |raw_line|
+  line = raw_line.chomp
+  if pending.empty?
+    pending = line
+  else
+    pending << ' ' << line.lstrip
+  end
+
+  # Public header constants sometimes use C preprocessor continuations to
+  # alias one macro to another.  Parse those as a single logical line so the
+  # resolver below can follow the alias instead of seeing a bare backslash.
+  if pending.end_with?('\\')
+    pending = pending[0...-1].rstrip
+    next
+  end
+
+  logical_lines << pending
+  pending = +''
+end
+logical_lines << pending unless pending.empty?
+
 defs = {}
 order = []
 
-lines.each do |line|
+logical_lines.each do |line|
   line = line.strip
   next unless line.start_with?('#define ')
   line = line.sub(/^#define\s+/, '')

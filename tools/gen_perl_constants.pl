@@ -14,9 +14,33 @@ if (@ARGV != 2) {
 my ($in_h, $out_pm) = @ARGV;
 
 open my $in, '<', $in_h or die "cannot open $in_h: $!\n";
+my @logical_lines;
+my $pending = '';
+while (my $raw_line = <$in>) {
+    chomp $raw_line;
+    if ($pending eq '') {
+        $pending = $raw_line;
+    } else {
+        $raw_line =~ s/^\s+//;
+        $pending .= ' ' . $raw_line;
+    }
+
+    # Public header constants can use C preprocessor continuations to alias
+    # one macro to another.  Join them before parsing so aliases resolve below.
+    if ($pending =~ s/\\\s*$//) {
+        $pending =~ s/\s+$//;
+        next;
+    }
+
+    push @logical_lines, $pending;
+    $pending = '';
+}
+push @logical_lines, $pending if $pending ne '';
+close $in;
+
 my %defs;
 my @order;
-while (my $line = <$in>) {
+for my $line (@logical_lines) {
     $line =~ s/^\s+|\s+$//g;
     next if $line !~ /^#define\s+/;
 
@@ -40,7 +64,6 @@ while (my $line = <$in>) {
     }
     $defs{$name} = $val;
 }
-close $in;
 
 my %resolved;
 for (1 .. 10) {

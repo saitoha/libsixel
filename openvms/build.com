@@ -396,10 +396,10 @@ $ OPEN /WRITE out 'output_file'
 $generate_loop:
 $ READ /END_OF_FILE=generate_done in line
 $ token = "@PACKAGE_VERSION@"
-$ value = "1.11.0-pre"
+$ value = "1.11.1-pre1"
 $ GOSUB replace_all
 $ token = "@LS_LTVERSION@"
-$ value = "1:6:0"
+$ value = "1:8:0"
 $ GOSUB replace_all
 $ token = "@attr_func_deprecated@"
 $ value = ""

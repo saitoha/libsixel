@@ -5333,13 +5333,26 @@ AC_CONFIG_FILES([Makefile
 # directory even when the feature is disabled at configure time.
 AC_CONFIG_FILES([amalgamation/Makefile])
 
-# Generate Ruby constants file from include/sixel.h when Ruby is enabled
+# Generate binding constants from the configured public header.  The source
+# copies are fallback inputs for source-package builders, so keep them in sync
+# with the configured version and ABI values instead of leaving @...@ tokens.
 AC_CONFIG_COMMANDS([rubyconstants], [
   if test "x$enable_ruby" != xno && test "x$RUBY" != x; then
-    echo "Generating ruby/lib/libsixel/constants.rb from include/sixel.h"
-    $RUBY tools/gen_ruby_constants.rb include/sixel.h ruby/lib/libsixel/constants.rb || exit 1
+    echo "Generating $srcdir/ruby/lib/libsixel/constants.rb from include/sixel.h"
+    "$RUBY" "$srcdir/tools/gen_ruby_constants.rb" \
+      include/sixel.h "$srcdir/ruby/lib/libsixel/constants.rb" || exit 1
   fi
-])
+], [enable_ruby=$enable_ruby
+RUBY=$RUBY])
+
+AC_CONFIG_COMMANDS([perlconstants], [
+  if test "x$enable_perl" != xno && test "x$PERL" != x; then
+    echo "Generating $srcdir/perl/lib/Image/LibSIXEL/Constants.pm from include/sixel.h"
+    "$PERL" "$srcdir/tools/gen_perl_constants.pl" \
+      include/sixel.h "$srcdir/perl/lib/Image/LibSIXEL/Constants.pm" || exit 1
+  fi
+], [enable_perl=$enable_perl
+PERL=$PERL])
 
 # GNV make 3.78.1 can hang while reading long Automake comments and
 # expanded tags prerequisites. The tags targets are developer conveniences,

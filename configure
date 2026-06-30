@@ -29535,8 +29535,12 @@ ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/s
 ac_config_files="$ac_config_files amalgamation/Makefile"
 
 
-# Generate Ruby constants file from include/sixel.h when Ruby is enabled
+# Generate binding constants from the configured public header.  The source
+# copies are fallback inputs for source-package builders, so keep them in sync
+# with the configured version and ABI values instead of leaving @...@ tokens.
 ac_config_commands="$ac_config_commands rubyconstants"
+
+ac_config_commands="$ac_config_commands perlconstants"
 
 # GNV make 3.78.1 can hang while reading long Automake comments and
 # expanded tags prerequisites. The tags targets are developer conveniences,
@@ -30362,6 +30366,10 @@ MKDIR_P='$MKDIR_P'
 AWK='$AWK'
 test -n "\$AWK" || AWK=awk
 sixel_openvms_mode='$sixel_openvms_mode'
+enable_ruby='$enable_ruby'
+RUBY='$RUBY'
+enable_perl='$enable_perl'
+PERL='$PERL'
 _ACEOF
 
 cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
@@ -30799,6 +30807,7 @@ do
     "wic/Makefile") CONFIG_FILES="$CONFIG_FILES wic/Makefile" ;;
     "amalgamation/Makefile") CONFIG_FILES="$CONFIG_FILES amalgamation/Makefile" ;;
     "rubyconstants") CONFIG_COMMANDS="$CONFIG_COMMANDS rubyconstants" ;;
+    "perlconstants") CONFIG_COMMANDS="$CONFIG_COMMANDS perlconstants" ;;
     "openvms-makefiles") CONFIG_COMMANDS="$CONFIG_COMMANDS openvms-makefiles" ;;
     "quicklook-extension/generated-resources/Host-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Host-Info.plist:quicklook-extension/Resources/Host-Info.plist.in" ;;
     "quicklook-extension/generated-resources/Preview-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Preview-Info.plist:quicklook-extension/Resources/Preview-Info.plist.in" ;;
@@ -32046,8 +32055,16 @@ ltmain=$ac_aux_dir/ltmain.sh
  ;;
     "rubyconstants":C)
   if test "x$enable_ruby" != xno && test "x$RUBY" != x; then
-    echo "Generating ruby/lib/libsixel/constants.rb from include/sixel.h"
-    $RUBY tools/gen_ruby_constants.rb include/sixel.h ruby/lib/libsixel/constants.rb || exit 1
+    echo "Generating $srcdir/ruby/lib/libsixel/constants.rb from include/sixel.h"
+    "$RUBY" "$srcdir/tools/gen_ruby_constants.rb" \
+      include/sixel.h "$srcdir/ruby/lib/libsixel/constants.rb" || exit 1
+  fi
+ ;;
+    "perlconstants":C)
+  if test "x$enable_perl" != xno && test "x$PERL" != x; then
+    echo "Generating $srcdir/perl/lib/Image/LibSIXEL/Constants.pm from include/sixel.h"
+    "$PERL" "$srcdir/tools/gen_perl_constants.pl" \
+      include/sixel.h "$srcdir/perl/lib/Image/LibSIXEL/Constants.pm" || exit 1
   fi
  ;;
     "openvms-makefiles":C)
