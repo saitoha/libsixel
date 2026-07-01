@@ -349,7 +349,7 @@ sixel_decode_pixels_finish_rgba(unsigned char **decoded,
 }
 
 static SIXELSTATUS
-sixel_decode_pixels_try(unsigned char *buffer,
+sixel_decode_pixels_try(unsigned char const *data,
                         size_t size,
                         unsigned int decode_flags,
                         unsigned char **out_pixels,
@@ -359,8 +359,9 @@ sixel_decode_pixels_try(unsigned char *buffer,
                         sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
+    unsigned char *buffer;
 
-    if (buffer == NULL || out_pixels == NULL || out_width == NULL ||
+    if (data == NULL || out_pixels == NULL || out_width == NULL ||
             out_height == NULL || result_flags == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -371,6 +372,12 @@ sixel_decode_pixels_try(unsigned char *buffer,
         return SIXEL_BAD_INPUT;
     }
 
+    /*
+     * The historical decoder entry points take mutable buffers, but the parser
+     * only reads input bytes.  Keep the public memory decoder zero-copy on the
+     * normal path and allocate a mutable work buffer only for terminator retry.
+     */
+    buffer = (unsigned char *)(void const *)data;
     status = sixel_decode_direct_with_options(buffer,
                                               (int)size,
                                               decode_flags,
@@ -384,36 +391,21 @@ sixel_decode_pixels_try(unsigned char *buffer,
 }
 
 static SIXELSTATUS
-sixel_decode_pixels_attempts(unsigned char *workbuf,
-                             size_t size,
-                             unsigned int decode_flags,
-                             unsigned char **out_pixels,
-                             int *out_width,
-                             int *out_height,
-                             unsigned int *result_flags,
-                             sixel_allocator_t *allocator)
+sixel_decode_pixels_terminated_attempts(unsigned char *workbuf,
+                                        size_t size,
+                                        unsigned int decode_flags,
+                                        unsigned char **out_pixels,
+                                        int *out_width,
+                                        int *out_height,
+                                        unsigned int *result_flags,
+                                        sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
-    unsigned int first_flags;
     unsigned int second_flags;
     unsigned int third_flags;
 
-    first_flags = 0U;
     second_flags = 0U;
     third_flags = 0U;
-
-    status = sixel_decode_pixels_try(workbuf,
-                                     size,
-                                     decode_flags,
-                                     out_pixels,
-                                     out_width,
-                                     out_height,
-                                     &first_flags,
-                                     allocator);
-    if (status == SIXEL_OK) {
-        *result_flags = first_flags;
-        return status;
-    }
 
     /* Retry with a synthetic BEL terminator for truncated streams. */
     workbuf[size] = 0x07U;
@@ -463,6 +455,7 @@ sixel_decode_pixels(unsigned char const *data,
     unsigned char const *bg;
     unsigned int decode_flags;
     unsigned int result_flags;
+    unsigned int first_flags;
     int width;
     int height;
     int pixelformat;
@@ -475,6 +468,7 @@ sixel_decode_pixels(unsigned char const *data,
     bg = default_bg;
     decode_flags = 0U;
     result_flags = 0U;
+    first_flags = 0U;
     width = 0;
     height = 0;
     pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
@@ -527,26 +521,38 @@ sixel_decode_pixels(unsigned char const *data,
         }
     }
 
-    workbuf = (unsigned char *)sixel_allocator_malloc(work_allocator,
-                                                      size + 2U);
-    if (workbuf == NULL) {
-        status = SIXEL_BAD_ALLOCATION;
-        sixel_helper_set_additional_message(
-            "sixel_decode_pixels: allocation failed for input copy.");
-        goto cleanup;
-    }
-    memcpy(workbuf, data, size);
+    status = sixel_decode_pixels_try(data,
+                                     size,
+                                     decode_flags,
+                                     &decoded,
+                                     &width,
+                                     &height,
+                                     &first_flags,
+                                     work_allocator);
+    if (status == SIXEL_OK) {
+        result_flags = first_flags;
+    } else {
+        workbuf = (unsigned char *)sixel_allocator_malloc(work_allocator,
+                                                          size + 2U);
+        if (workbuf == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "sixel_decode_pixels: allocation failed for input copy.");
+            goto cleanup;
+        }
+        memcpy(workbuf, data, size);
 
-    status = sixel_decode_pixels_attempts(workbuf,
-                                          size,
-                                          decode_flags,
-                                          &decoded,
-                                          &width,
-                                          &height,
-                                          &result_flags,
-                                          work_allocator);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
+        status = sixel_decode_pixels_terminated_attempts(workbuf,
+                                                         size,
+                                                         decode_flags,
+                                                         &decoded,
+                                                         &width,
+                                                         &height,
+                                                         &result_flags,
+                                                         work_allocator);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
     }
 
     status = sixel_decode_pixels_finish_rgba(&decoded,
