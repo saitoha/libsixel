@@ -78,9 +78,6 @@ typedef struct sixel_decoder_worker_context {
     sixel_timeline_logger_t *logger;
     int trust_raster_size;
     int painted_outside_raster;
-    unsigned char *local_buffer;
-    int local_capacity;
-    int local_written;
     int max_color_index;
     int result;
     sixel_decoder_undither_context_t *undither;
@@ -107,9 +104,9 @@ typedef struct sixel_local_buffer {
 typedef struct sixel_decoder_worker_chain {
     sixel_mutex_t mutex;
     sixel_cond_t cond;
-    int *copy_offsets;
-    int *copy_ready;
     int thread_count;
+    int decode_done;
+    int decode_failed;
     unsigned char *global_buffer;
     unsigned char *global_mask;
     int global_capacity;
@@ -549,6 +546,58 @@ sixel_decoder_parallel_count_newlines(unsigned char const *begin,
     return lines;
 }
 
+static void
+sixel_decoder_parallel_cancel_decode(sixel_decoder_worker_chain_t *chain)
+{
+    if (chain == NULL) {
+        return;
+    }
+
+    sixel_mutex_lock(&chain->mutex);
+    chain->decode_failed = 1;
+    chain->abort_requested = 1;
+    sixel_cond_broadcast(&chain->cond);
+    sixel_mutex_unlock(&chain->mutex);
+}
+
+static int
+sixel_decoder_parallel_finish_decode(sixel_decoder_worker_chain_t *chain,
+                                     int status)
+{
+    int publish_ready;
+
+    if (chain == NULL) {
+        return (-1);
+    }
+
+    publish_ready = 0;
+    sixel_mutex_lock(&chain->mutex);
+    chain->decode_done += 1;
+    if (status != 0) {
+        chain->decode_failed = 1;
+        chain->abort_requested = 1;
+    }
+    sixel_cond_broadcast(&chain->cond);
+
+    /*
+     * Non-fast4 workers publish into the shared image only after every
+     * worker has finished decoding successfully.  A failed worker marks the
+     * chain aborted and wakes peers so request_start() can return
+     * SIXEL_FALSE without dirtying the serial fallback image.
+     */
+    while (!chain->abort_requested &&
+            chain->decode_done < chain->thread_count) {
+        sixel_cond_wait(&chain->cond, &chain->mutex);
+    }
+    if (!chain->abort_requested && !chain->decode_failed &&
+            chain->decode_done >= chain->thread_count) {
+        publish_ready = 1;
+    }
+
+    sixel_mutex_unlock(&chain->mutex);
+    return publish_ready ? 0 : (-1);
+}
+
 #if !defined(SIXEL_DECODE_PIXELS_NO_FAST4)
 static int
 sixel_decoder_parallel_copy_local_rows(sixel_local_buffer_t *buffer,
@@ -744,9 +793,6 @@ sixel_decoder_parallel_worker(void *arg)
     int r = 0;
     int row_offset = 0;
     int line_count = 0;
-    int copy_offset = 0;
-    int copy_span = 0;
-    int next_offset = 0;
     int i;
     int fallback = 0;
     int status = (-1);
@@ -755,12 +801,13 @@ sixel_decoder_parallel_worker(void *arg)
     int pixel_size = 0;
     int depth = 0;
     int height = 0;
-    int chain_offset = 0;
     int starts_after_newline = 0;
     int max_color_index = (-1);
     int span_max_index = (-1);
     int effective_repeat = 0;
     int local_rows = 0;
+    int publish_start = 0;
+    int publish_end = 0;
     unsigned char ch;
 
     context = (sixel_decoder_worker_context_t *)arg;
@@ -781,12 +828,14 @@ sixel_decoder_parallel_worker(void *arg)
     logger = context->logger;
     anchor = context->anchor;
     if (context->input == NULL || context->length <= 0) {
+        sixel_decoder_parallel_finish_decode(chain, status);
         context->result = status;
         return status;
     }
 
     width = context->width;
     if (width <= 0) {
+        sixel_decoder_parallel_finish_decode(chain, status);
         context->result = status;
         return status;
     }
@@ -795,6 +844,7 @@ sixel_decoder_parallel_worker(void *arg)
     depth = context->depth;
     height = context->height;
     if (height <= 0) {
+        sixel_decoder_parallel_finish_decode(chain, status);
         context->result = status;
         return status;
     }
@@ -803,6 +853,7 @@ sixel_decoder_parallel_worker(void *arg)
                             pixel_size,
                             chain->global_mask != NULL);
     if (context->payload_len <= 0) {
+        sixel_decoder_parallel_finish_decode(chain, status);
         context->result = status;
         return status;
     }
@@ -810,12 +861,14 @@ sixel_decoder_parallel_worker(void *arg)
     start = context->input + context->start_offset;
     if (start < context->input ||
             start >= context->input + context->length) {
+        sixel_decoder_parallel_finish_decode(chain, status);
         context->result = status;
         return status;
     }
 
     assigned = context->end_offset - context->start_offset + 1;
     if (assigned <= 0) {
+        sixel_decoder_parallel_finish_decode(chain, status);
         context->result = status;
         return status;
     }
@@ -879,6 +932,7 @@ sixel_decoder_parallel_worker(void *arg)
     }
     if (context->index > 0 && cursor == start && !starts_after_newline) {
         status = (-1);
+        sixel_decoder_parallel_finish_decode(chain, status);
         context->result = status;
         return status;
     }
@@ -954,6 +1008,7 @@ sixel_decoder_parallel_worker(void *arg)
                                              0);
     if (chunk_cursor == NULL) {
         status = (-1);
+        sixel_decoder_parallel_finish_decode(chain, status);
         context->result = status;
         return status;
     }
@@ -1194,11 +1249,6 @@ sixel_decoder_parallel_worker(void *arg)
         local_rows = context->body_local_start;
     }
 
-    copy_span = max_relative + 1;
-    if (copy_span < 0) {
-        copy_span = 0;
-    }
-
     if (logger != NULL) {
         sixel_timeline_logger_logf(logger,
                           "decode",
@@ -1217,10 +1267,7 @@ sixel_decoder_parallel_worker(void *arg)
     }
 
     if (status != 0) {
-        sixel_mutex_lock(&chain->mutex);
-        chain->abort_requested = 1;
-        sixel_cond_broadcast(&chain->cond);
-        sixel_mutex_unlock(&chain->mutex);
+        sixel_decoder_parallel_finish_decode(chain, status);
         sixel_local_buffer_dispose(&local_buffer);
         context->result = status;
         return status;
@@ -1235,70 +1282,31 @@ sixel_decoder_parallel_worker(void *arg)
             local_rows,
             max_color_index);
         if (status != 0) {
-            sixel_mutex_lock(&chain->mutex);
-            chain->abort_requested = 1;
-            sixel_cond_broadcast(&chain->cond);
-            sixel_mutex_unlock(&chain->mutex);
+            sixel_decoder_parallel_cancel_decode(chain);
             sixel_local_buffer_dispose(&local_buffer);
             context->result = status;
             return status;
         }
         sixel_local_buffer_dispose(&local_buffer);
-        context->local_buffer = NULL;
-        context->local_capacity = 0;
-        context->local_written = 0;
         context->max_color_index = max_color_index;
         context->result = status;
         return status;
     }
 #endif
 
-    context->local_buffer = local_buffer.head != NULL ?
-        local_buffer.head->data : NULL;
-    context->local_capacity = capacity;
-    context->local_written = copy_span;
-
-    sixel_mutex_lock(&chain->mutex);
-    while (!chain->copy_ready[context->index] && !chain->abort_requested) {
-        sixel_cond_wait(&chain->cond, &chain->mutex);
-    }
-    if (chain->abort_requested) {
-        sixel_mutex_unlock(&chain->mutex);
+    status = sixel_decoder_parallel_finish_decode(chain, status);
+    if (status != 0) {
         sixel_local_buffer_dispose(&local_buffer);
-        context->local_buffer = NULL;
-        context->local_capacity = 0;
-        context->local_written = 0;
-        status = (-1);
-        context->result = status;
-        return status;
-    }
-    chain_offset = chain->copy_offsets[context->index];
-    copy_offset = chain_offset;
-    next_offset = copy_offset + copy_span;
-    context->local_written = copy_span;
-    if (context->index + 1 < chain->thread_count) {
-        chain->copy_offsets[context->index + 1] = next_offset;
-        chain->copy_ready[context->index + 1] = 1;
-    }
-    sixel_cond_broadcast(&chain->cond);
-    sixel_mutex_unlock(&chain->mutex);
-
-    if (copy_offset < 0 || chain->global_buffer == NULL) {
-        sixel_mutex_lock(&chain->mutex);
-        chain->abort_requested = 1;
-        sixel_cond_broadcast(&chain->cond);
-        sixel_mutex_unlock(&chain->mutex);
-        sixel_local_buffer_dispose(&local_buffer);
-        context->local_buffer = NULL;
-        context->local_capacity = 0;
-        context->local_written = 0;
         status = (-1);
         context->result = status;
         return status;
     }
 
+    if (max_relative >= 0) {
+        publish_start = (row_offset * width + min_relative) * pixel_size;
+        publish_end = (row_offset * width + max_relative + 1) * pixel_size;
+    }
     if (logger != NULL) {
-        /* Chain memcpy execution so the timeline shows the serialized copy */
         sixel_timeline_logger_logf(logger,
                           "copy",
                           "decoder",
@@ -1307,11 +1315,12 @@ sixel_decoder_parallel_worker(void *arg)
                           context->index,
                           0,
                           0,
-                          copy_offset,
-                          next_offset,
-                          "worker %d memcpy count=%d",
+                          publish_start,
+                          publish_end,
+                          "worker %d publish rows=%d..%d",
                           context->index,
-                          copy_span);
+                          row_offset + (min_relative / width),
+                          row_offset + (max_relative / width));
     }
 
     if (max_relative >= 0) {
@@ -1362,16 +1371,13 @@ sixel_decoder_parallel_worker(void *arg)
                           context->index,
                           0,
                           0,
-                          copy_offset,
-                          next_offset,
-                          "worker %d memcpy done", 
+                          publish_start,
+                          publish_end,
+                          "worker %d publish done",
                           context->index);
     }
 
     sixel_local_buffer_dispose(&local_buffer);
-    context->local_buffer = NULL;
-    context->local_capacity = 0;
-    context->local_written = 0;
 
     context->max_color_index = max_color_index;
     context->result = status;
@@ -1662,8 +1668,6 @@ sixel_decoder_parallel_request_start(int direct_mode,
     sixel_thread_t *workers;
     sixel_decoder_worker_context_t *contexts;
     sixel_decoder_worker_chain_t chain;
-    int *copy_offsets;
-    int *copy_ready;
     int global_capacity;
     int *spans;
     int i;
@@ -1682,8 +1686,6 @@ sixel_decoder_parallel_request_start(int direct_mode,
     prepare_status = SIXEL_OK;
     workers = NULL;
     contexts = NULL;
-    copy_offsets = NULL;
-    copy_ready = NULL;
     spans = NULL;
     threads = 0;
     payload_start = 0;
@@ -1767,10 +1769,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
     contexts = (sixel_decoder_worker_context_t *)calloc(
         (size_t)threads, sizeof(sixel_decoder_worker_context_t));
     spans = (int *)calloc((size_t)threads, sizeof(int));
-    copy_offsets = (int *)calloc((size_t)threads, sizeof(int));
-    copy_ready = (int *)calloc((size_t)threads, sizeof(int));
-    if (workers == NULL || contexts == NULL || spans == NULL ||
-            copy_offsets == NULL || copy_ready == NULL) {
+    if (workers == NULL || contexts == NULL || spans == NULL) {
         runtime_error = 1;
         goto cleanup;
     }
@@ -1785,16 +1784,16 @@ sixel_decoder_parallel_request_start(int direct_mode,
     } else {
         chain.global_buffer = (unsigned char *)image->pixels.p;
     }
+    if (chain.global_buffer == NULL) {
+        runtime_error = 1;
+        goto cleanup;
+    }
     chain.global_mask = image->paint_mask;
     chain.pixel_size = pixel_size;
-    chain.copy_offsets = copy_offsets;
-    chain.copy_ready = copy_ready;
     chain.thread_count = threads;
     chain.global_capacity = global_capacity;
     sixel_mutex_init(&chain.mutex);
     sixel_cond_init(&chain.cond);
-    chain.copy_ready[0] = 1;
-    chain.copy_offsets[0] = 0;
     sync_ready = 1;
 
     sixel_decoder_parallel_fill_spans(payload_len, threads, spans);
@@ -1859,7 +1858,8 @@ sixel_decoder_parallel_request_start(int direct_mode,
                                      sixel_decoder_parallel_worker,
                                      &contexts[i]);
         if (SIXEL_FAILED(status)) {
-            runtime_error = 1;
+            parallel_failed = 1;
+            sixel_decoder_parallel_cancel_decode(&chain);
             break;
         }
         created += 1;
@@ -1883,9 +1883,9 @@ sixel_decoder_parallel_request_start(int direct_mode,
         parallel_failed = 1;
     }
 
-    if (runtime_error || created < threads) {
+    if (runtime_error) {
         status = SIXEL_RUNTIME_ERROR;
-    } else if (parallel_failed) {
+    } else if (parallel_failed || created < threads) {
         status = SIXEL_FALSE;
     } else {
         if (ormode && max_color_index >= 0 &&
@@ -1912,8 +1912,6 @@ cleanup:
     free(workers);
     free(contexts);
     free(spans);
-    free(copy_offsets);
-    free(copy_ready);
 
     return status;
 #else

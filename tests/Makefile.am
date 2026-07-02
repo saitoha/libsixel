@@ -236,6 +236,8 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0013_DECODER_KUNDITHER_PARALLEL_MATCHES_SCALAR \
     -DBUILD_TEST_0014_DECODER_KUNDITHER_FAST4_PARALLEL_MATCHES_SCALAR \
     -DBUILD_TEST_0015_DECODER_KUNDITHER_FAST4_FUSED_MATCHES_SCALAR \
+    -DBUILD_TEST_0016_DECODER_PARALLEL_FALLBACK_KEEPS_IMAGE_CLEAN \
+    -DBUILD_TEST_0017_DECODER_PARALLEL_SPARSE_SPLIT_MATCHES_SERIAL \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -334,6 +336,8 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0013_decoder_kundither_parallel_matches_scalar.c \
     processing/decoder/0014_decoder_kundither_fast4_parallel_matches_scalar.c \
     processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c \
+    processing/decoder/0016_decoder_parallel_fallback_keeps_image_clean.c \
+    processing/decoder/0017_decoder_parallel_sparse_split_matches_serial.c \
     processing/decoder/kundither_test_common.h \
     processing/lookup/0001_lookup_policy.c \
     processing/dither/0001_dither_policy.c \
