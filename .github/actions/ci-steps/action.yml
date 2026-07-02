@@ -1066,10 +1066,13 @@ runs:
             # Haiku occasionally raises EINVAL from Python asyncio subprocess
             # creation in long meson test runs. Running slices keeps each mtest
             # process shorter-lived while preserving full test coverage.
-            meson test -C builddir --num-processes 1 --slice 1/4 --print-errorlogs
-            meson test -C builddir --num-processes 1 --slice 2/4 --print-errorlogs
-            meson test -C builddir --num-processes 1 --slice 3/4 --print-errorlogs
-            meson test -C builddir --num-processes 1 --slice 4/4 --print-errorlogs
+            slice=1
+            slice_count=16
+            while test "${slice}" -le "${slice_count}"; do
+              meson test -C builddir --no-rebuild --num-processes 1 \
+                --slice "${slice}/${slice_count}" --print-errorlogs
+              slice=$((slice + 1))
+            done
           else
             meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
           fi
