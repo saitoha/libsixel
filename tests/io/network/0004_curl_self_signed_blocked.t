@@ -64,7 +64,7 @@ test -s "${port_file}" && {
 }
 
 test -n "${server_port}" || {
-    kill -0 "${server_pid}" 2>/dev/null && kill "${server_pid}" 2>/dev/null || :
+    kill "${server_pid}" 2>/dev/null || :
     wait "${server_pid}" 2>/dev/null || :
     printf 'ok 1 - self-signed fetch blocked # SKIP failed to start HTTPS server\n'
     exit 0
@@ -74,7 +74,7 @@ verify_output="${ARTIFACT_LOCAL_DIR}/curl-verify"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "https://localhost:${server_port}/images/map8.six" \
     >"${verify_output}" && command_status=0 || command_status=$?
 
-kill -0 "${server_pid}" 2>/dev/null && kill "${server_pid}" 2>/dev/null || :
+kill "${server_pid}" 2>/dev/null || :
 wait "${server_pid}" 2>/dev/null || :
 
 # The HTTPS request must fail TLS verification when -k is omitted.

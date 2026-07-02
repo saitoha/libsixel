@@ -65,7 +65,7 @@ test -s "${port_file}" && {
 }
 
 test -n "${server_port}" || {
-    kill -0 "${server_pid}" 2>/dev/null && kill "${server_pid}" 2>/dev/null || :
+    kill "${server_pid}" 2>/dev/null || :
     wait "${server_pid}" 2>/dev/null || :
     printf 'ok 1 - self-signed fetch with -k # SKIP failed to start HTTPS server\n'
     exit 0
@@ -77,7 +77,7 @@ ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" -k \
     "https://localhost:${server_port}/images/map8.six" >/dev/null && \
     server_ok=0
 
-kill -0 "${server_pid}" 2>/dev/null && kill "${server_pid}" 2>/dev/null || :
+kill "${server_pid}" 2>/dev/null || :
 wait "${server_pid}" 2>/dev/null || :
 
 test ${server_ok} -eq 0 || {
