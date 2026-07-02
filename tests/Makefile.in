@@ -154,6 +154,8 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c \
 	processing/decoder/0016_decoder_parallel_fallback_keeps_image_clean.c \
 	processing/decoder/0017_decoder_parallel_sparse_split_matches_serial.c \
+	processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c \
+	processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c \
 	processing/decoder/kundither_test_common.h \
 	processing/lookup/0001_lookup_policy.c \
 	processing/dither/0001_dither_policy.c \
@@ -258,6 +260,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0016_decoder_parallel_fallback_keeps_image_clean.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0017_decoder_parallel_sparse_split_matches_serial.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	processing/decoder/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/lookup/test_runner-0001_lookup_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/dither/test_runner-0001_dither_policy.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/coregraphics/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
@@ -472,6 +476,8 @@ am__depfiles_remade =  \
 	processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0016_decoder_parallel_fallback_keeps_image_clean.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0017_decoder_parallel_sparse_split_matches_serial.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.Po \
+	processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Po \
 	processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po \
 	processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po \
 	processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po \
@@ -1197,6 +1203,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_DECODER_KUNDITHER_FAST4_FUSED_MATCHES_SCALAR \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_DECODER_PARALLEL_FALLBACK_KEEPS_IMAGE_CLEAN \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_DECODER_PARALLEL_SPARSE_SPLIT_MATCHES_SERIAL \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0018_DECODER_PARALLEL_DIRECT_SPARSE_PRESERVES_UNPAINTED \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0019_DECODER_PARALLEL_DIRECT_REPEAT_OVERFLOW_FALLBACK \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_LOOKUP_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_DITHER_POLICY \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -1321,6 +1329,8 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0015_decoder_kundither_fast4_fused_matches_scalar.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0016_decoder_parallel_fallback_keeps_image_clean.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0017_decoder_parallel_sparse_split_matches_serial.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/decoder/kundither_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/lookup/0001_lookup_policy.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/dither/0001_dither_policy.c \
@@ -2062,6 +2072,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0016_decoder_parallel_fallback_keeps_image_clean.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0017_decoder_parallel_sparse_split_matches_serial.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po@am__quote@ # am--include-marker
@@ -2746,6 +2758,34 @@ processing/decoder/test_runner-0017_decoder_parallel_sparse_split_matches_serial
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0017_decoder_parallel_sparse_split_matches_serial.c' object='processing/decoder/test_runner-0017_decoder_parallel_sparse_split_matches_serial.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0017_decoder_parallel_sparse_split_matches_serial.obj `if test -f 'processing/decoder/0017_decoder_parallel_sparse_split_matches_serial.c'; then $(CYGPATH_W) 'processing/decoder/0017_decoder_parallel_sparse_split_matches_serial.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0017_decoder_parallel_sparse_split_matches_serial.c'; fi`
+
+processing/decoder/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.o: processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.Tpo -c -o processing/decoder/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.o `test -f 'processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c' || echo '$(srcdir)/'`processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.Tpo processing/decoder/$(DEPDIR)/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c' object='processing/decoder/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.o `test -f 'processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c' || echo '$(srcdir)/'`processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c
+
+processing/decoder/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.obj: processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.Tpo -c -o processing/decoder/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.obj `if test -f 'processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c'; then $(CYGPATH_W) 'processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.Tpo processing/decoder/$(DEPDIR)/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c' object='processing/decoder/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.obj `if test -f 'processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c'; then $(CYGPATH_W) 'processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c'; fi`
+
+processing/decoder/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.o: processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.o -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Tpo -c -o processing/decoder/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.o `test -f 'processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c' || echo '$(srcdir)/'`processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Tpo processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c' object='processing/decoder/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.o `test -f 'processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c' || echo '$(srcdir)/'`processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c
+
+processing/decoder/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.obj: processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/decoder/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.obj -MD -MP -MF processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Tpo -c -o processing/decoder/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.obj `if test -f 'processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c'; then $(CYGPATH_W) 'processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Tpo processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c' object='processing/decoder/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o processing/decoder/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.obj `if test -f 'processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c'; then $(CYGPATH_W) 'processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c'; else $(CYGPATH_W) '$(srcdir)/processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c'; fi`
 
 processing/lookup/test_runner-0001_lookup_policy.o: processing/lookup/0001_lookup_policy.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/lookup/test_runner-0001_lookup_policy.o -MD -MP -MF processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Tpo -c -o processing/lookup/test_runner-0001_lookup_policy.o `test -f 'processing/lookup/0001_lookup_policy.c' || echo '$(srcdir)/'`processing/lookup/0001_lookup_policy.c
@@ -3996,6 +4036,8 @@ distclean: distclean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0016_decoder_parallel_fallback_keeps_image_clean.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0017_decoder_parallel_sparse_split_matches_serial.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po
@@ -4141,6 +4183,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0015_decoder_kundither_fast4_fused_matches_scalar.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0016_decoder_parallel_fallback_keeps_image_clean.Po
 	-rm -f processing/decoder/$(DEPDIR)/test_runner-0017_decoder_parallel_sparse_split_matches_serial.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0018_decoder_parallel_direct_sparse_preserves_unpainted.Po
+	-rm -f processing/decoder/$(DEPDIR)/test_runner-0019_decoder_parallel_direct_repeat_overflow_fallback.Po
 	-rm -f processing/lookup/$(DEPDIR)/test_runner-0001_lookup_policy.Po
 	-rm -f processing/sixel-writer/$(DEPDIR)/test_runner-0001_sixel_writer_factory.Po
 	-rm -f processing/threadpool/$(DEPDIR)/test_runner-0001_threadpool_service.Po

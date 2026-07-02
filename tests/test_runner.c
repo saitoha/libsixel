@@ -137,6 +137,14 @@ int test_decoder_0016_decoder_parallel_fallback_keeps_image_clean(int argc,
                                                                   char **argv);
 int test_decoder_0017_decoder_parallel_sparse_split_matches_serial(int argc,
                                                                    char **argv);
+int
+test_decoder_0018_decoder_parallel_direct_sparse_preserves_unpainted(
+    int argc,
+    char **argv);
+int
+test_decoder_0019_decoder_parallel_direct_repeat_overflow_fallback(
+    int argc,
+    char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
 int test_lookup_0001_lookup_policy(int argc, char **argv);
 
@@ -329,6 +337,10 @@ static test_entry_t const test_entries[] = {
       test_decoder_0016_decoder_parallel_fallback_keeps_image_clean },
     { "decoder/0017_decoder_parallel_sparse_split_matches_serial",
       test_decoder_0017_decoder_parallel_sparse_split_matches_serial },
+    { "decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted",
+      test_decoder_0018_decoder_parallel_direct_sparse_preserves_unpainted },
+    { "decoder/0019_decoder_parallel_direct_repeat_overflow_fallback",
+      test_decoder_0019_decoder_parallel_direct_repeat_overflow_fallback },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },
