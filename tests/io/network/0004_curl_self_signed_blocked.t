@@ -20,7 +20,7 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 server_port_base=4443
 max_port_attempts=5
 # Use nearby ports so the HTTPS server can start when the default is busy.
-port_file="${ARTIFACT_LOCAL_DIR}/server.port"
+port_file="${ARTIFACT_LOCAL_DIR}/server.$$.port"
 
 
 PYTHON=""
@@ -39,25 +39,21 @@ cert_dir="${TOP_SRCDIR}/tests/data/io/network/certs"
 server_script="${TOP_SRCDIR}/tests/data/io/network/https-server.py"
 server_root="${TOP_SRCDIR}"
 
-server_pid_file="${ARTIFACT_LOCAL_DIR}/curl-server-pid"
+# Keep this server as a direct child.  PID-file cleanup is fragile on
+# Git Bash/MSYS when Meson runs TAP tests in parallel, because a stale
+# PID can target an unrelated worker.
 (
     cd "${server_root}" || exit 1
-    "${PYTHON}" "${server_script}" \
+    exec "${PYTHON}" "${server_script}" \
         --host localhost \
         --port-base "${server_port_base}" \
         --max-port-attempts "${max_port_attempts}" \
         --port-file "${port_file}" \
         --cert-file "${cert_dir}/server.crt" \
         --key-file "${cert_dir}/server.key" \
-        --requests 5 &
-    echo $! >"${server_pid_file}"
-)
-server_pid=""
-IFS= read -r server_pid < "${server_pid_file}" || test -n "${server_pid}"
-test -n "${server_pid}" || {
-    printf 'ok 1 - self-signed fetch blocked # SKIP failed to read HTTPS server pid\n'
-    exit 0
-}
+        --requests 1
+) &
+server_pid=$!
 
 server_port=""
 while test ! -s "${port_file}"; do
@@ -68,8 +64,7 @@ test -s "${port_file}" && {
 }
 
 test -n "${server_port}" || {
-    kill "${server_pid}" 2>/dev/null || :
-    kill -9 "${server_pid}" 2>/dev/null || :
+    kill -0 "${server_pid}" 2>/dev/null && kill "${server_pid}" 2>/dev/null || :
     wait "${server_pid}" 2>/dev/null || :
     printf 'ok 1 - self-signed fetch blocked # SKIP failed to start HTTPS server\n'
     exit 0
@@ -79,8 +74,7 @@ verify_output="${ARTIFACT_LOCAL_DIR}/curl-verify"
 ${SIXEL_RUNTIME-} "${IMG2SIXEL_PATH}" "https://localhost:${server_port}/images/map8.six" \
     >"${verify_output}" && command_status=0 || command_status=$?
 
-kill "${server_pid}" 2>/dev/null || :
-kill -9 "${server_pid}" 2>/dev/null || :
+kill -0 "${server_pid}" 2>/dev/null && kill "${server_pid}" 2>/dev/null || :
 wait "${server_pid}" 2>/dev/null || :
 
 # The HTTPS request must fail TLS verification when -k is omitted.
