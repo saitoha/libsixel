@@ -29,7 +29,7 @@ static unsigned char g_direct_sparse_payload[] = {
 };
 
 int
-test_decoder_0018_decoder_parallel_direct_sparse_preserves_unpainted(
+test_decoder_0018_direct_sparse_unpainted(
     int argc,
     char **argv)
 {

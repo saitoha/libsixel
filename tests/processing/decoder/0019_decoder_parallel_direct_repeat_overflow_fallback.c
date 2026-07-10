@@ -85,7 +85,7 @@ direct_repeat_bytes_equal(unsigned char const *data,
 }
 
 int
-test_decoder_0019_decoder_parallel_direct_repeat_overflow_fallback(
+test_decoder_0019_direct_repeat_overflow(
     int argc,
     char **argv)
 {
