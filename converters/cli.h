@@ -92,4 +92,7 @@ cli_apply_env_assignment(char const *assignment,
                          char *error_buffer,
                          size_t error_buffer_size);
 
+int
+cli_apply_env_default(char const *name, char const *value);
+
 #endif  /* LIBSIXEL_CONVERTERS_CLI_H */

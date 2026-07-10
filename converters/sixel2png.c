@@ -165,6 +165,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           band parallelism. Use\n"
         "                           'auto' to match the\n"
         "                           hardware thread count.\n"
+        "                           sixel2png defaults to 'auto'\n"
+        "                           when SIXEL_THREADS is unset\n"
+        "                           or empty.\n"
     },
     {
         '%',
@@ -579,6 +582,18 @@ main(int argc, char *argv[])
             parsed_options[parsed_count - 1u].optopt_value,
             parsed_options[parsed_count - 1u].token);
         status = SIXEL_BAD_ARGUMENT;
+        goto error;
+    }
+
+    /*
+     * The sixel2png tool can own the process-level policy, so prefer hardware
+     * concurrency when the user has not supplied SIXEL_THREADS through the
+     * environment or --env.
+     */
+    if (cli_apply_env_default("SIXEL_THREADS", "auto") != 0) {
+        sixel_helper_set_additional_message(
+            "failed to set default environment variable 'SIXEL_THREADS'.");
+        status = SIXEL_RUNTIME_ERROR;
         goto error;
     }
 

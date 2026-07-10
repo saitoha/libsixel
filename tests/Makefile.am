@@ -221,6 +221,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0002_TIMELINE_PARALLEL_ENCODE_DECODE \
     -DBUILD_TEST_0003_TIMELINE_CLOCK_ORIGIN \
     -DBUILD_TEST_0001_THREADPOOL_SERVICE \
+    -DBUILD_TEST_0002_THREAD_DEFAULT_COUNTS \
     -DBUILD_TEST_0001_DECODER_PARALLEL_SPLIT_AFTER_NEWLINE \
     -DBUILD_TEST_0002_DECODER_ORMODE_RAW_OVERLAY \
     -DBUILD_TEST_0003_DECODER_ORMODE_WIDE_OVERLAY \
@@ -323,6 +324,7 @@ test_runner_SOURCES = test_runner.c \
     processing/timeline/0002_timeline_parallel_encode_decode.c \
     processing/timeline/0003_timeline_clock_origin.c \
     processing/threadpool/0001_threadpool_service.c \
+    processing/threadpool/0002_thread_default_counts.c \
     processing/decoder/0001_decoder_parallel_split_after_newline.c \
     processing/decoder/0002_decoder_ormode_raw_overlay.c \
     processing/decoder/0003_decoder_ormode_wide_overlay.c \

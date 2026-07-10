@@ -444,7 +444,8 @@ Options:
                           choose the encoder thread count. `auto`
                           matches the hardware thread count while
                           integers >=1 keep deterministic output
-                          ordering.
+                          ordering. img2sixel defaults to `auto`
+                          when SIXEL_THREADS is unset or empty.
 -., --precision=MODE
                           control quantization precision.
                             auto    -> honor the
@@ -1076,7 +1077,8 @@ SIXEL_ANIMATION_HIDE_CURSOR
 SIXEL_THREADS              override encoder thread count.
                            Accepts positive integers or the word
                            'auto' to match the hardware thread
-                           count.
+                           count. img2sixel sets empty/unset values
+                           to 'auto'.
 SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
                            defer RGBFLOAT32 colorspace fan-out
                            until the frame reaches this pixel

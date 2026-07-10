@@ -175,6 +175,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "-= COUNT, --threads=COUNT|auto\n"
         "    choose the encoder thread count. COUNT>=1 keeps deterministic order while values\n"
         "    above one enable band parallelism. Use 'auto' to match the hardware thread count.\n"
+        "    img2sixel defaults to 'auto' when SIXEL_THREADS is unset or\n"
+        "    empty.\n"
     },
     {
         '.',
@@ -1100,7 +1102,7 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_THREADS",
         "override encoder thread count.\n"
         "Accepts positive integers or the word 'auto' to match the\n"
-        "hardware thread count."
+        "hardware thread count. img2sixel sets empty/unset values to 'auto'."
     },
     {
         "SIXEL_DITHER_PIN_THREADS",
@@ -3091,6 +3093,18 @@ img2sixel_main(int argc, char *argv[])
         option_parse_failed = 1;
         status = SIXEL_BAD_ARGUMENT;
         goto unknown_option_error;
+    }
+
+    /*
+     * The img2sixel frontend is an interactive batch tool, so use hardware
+     * concurrency by default.  User environment and --env assignments were
+     * already applied above and continue to override this application default.
+     */
+    if (cli_apply_env_default("SIXEL_THREADS", "auto") != 0) {
+        sixel_helper_set_additional_message(
+            "failed to set default environment variable 'SIXEL_THREADS'.");
+        status = SIXEL_RUNTIME_ERROR;
+        goto error;
     }
 
     /*

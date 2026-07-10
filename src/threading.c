@@ -698,11 +698,16 @@ sixel_get_hw_threads(void)
 
 #endif /* SIXEL_USE_PTHREADS */
 
+#define SIXEL_PROCESSING_THREADS_DEFAULT 2
+
 /*
  * Thread configuration keeps the precedence rules centralized:
  *   1. Library callers may override via `sixel_set_threads`.
  *   2. Otherwise, `SIXEL_THREADS` from the environment is honored.
- *   3. Fallback defaults to single threaded execution.
+ *   3. Fallback gives encoder/dequantize paths a minimal two-stage pipeline.
+ *
+ * Direct SIXEL parsing has its own resolver in decoder-parallel.c so decoding
+ * can stay serial by default while image post-processing still gets two slots.
  */
 typedef struct sixel_thread_config_state {
     int requested_threads;
@@ -710,7 +715,7 @@ typedef struct sixel_thread_config_state {
 } sixel_thread_config_state_t;
 
 static sixel_thread_config_state_t g_thread_config = {
-    1,
+    SIXEL_PROCESSING_THREADS_DEFAULT,
     0
 };
 
@@ -844,6 +849,12 @@ sixel_threads_normalize(int requested)
 
 #if SIXEL_ENABLE_THREADS
 static int
+sixel_threads_resolve_default(void)
+{
+    return sixel_threads_normalize(SIXEL_PROCESSING_THREADS_DEFAULT);
+}
+
+static int
 sixel_threads_parse_env_value(char const *text, int *value)
 {
     long parsed;
@@ -886,14 +897,14 @@ sixel_threads_resolve_env(void)
 
     text = sixel_compat_getenv("SIXEL_THREADS");
     if (text == NULL || text[0] == '\0') {
-        return sixel_threads_normalize(0);
+        return sixel_threads_resolve_default();
     }
 
     if (sixel_threads_parse_env_value(text, &parsed)) {
         return parsed;
     }
 
-    return sixel_threads_normalize(0);
+    return sixel_threads_resolve_default();
 }
 #endif
 

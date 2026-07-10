@@ -4316,7 +4316,6 @@ sixel_encode_dither(
     int encoded_width;
     int encoded_height;
     sixel_parallel_dither_config_t dither_parallel;
-    char const *band_env_text;
     sixel_palette_entries_view_t palette_view;
     sixel_palette_float32_entries_view_t palette_float_view;
 #if SIXEL_ENABLE_THREADS
@@ -4437,18 +4436,6 @@ sixel_encode_dither(
     default:
         /* apply palette */
         pipeline_threads = sixel_threads_resolve();
-        band_env_text = sixel_compat_getenv(
-            "SIXEL_DITHER_PARALLEL_BAND_WIDTH");
-        if (pipeline_threads <= 1 && band_env_text != NULL
-                && band_env_text[0] != '\0') {
-            /*
-             * Parallel band dithering was explicitly requested via the
-             * environment.  When SIXEL_THREADS is absent, prefer hardware
-             * concurrency instead of silently running a single worker so
-             * that multiple dither jobs appear in the log.
-             */
-            pipeline_threads = sixel_threads_normalize(0);
-        }
         pipeline_nbands = sixel_count_sixel_bands(encoded_height);
         /*
          * Pipeline mode lets PaletteApply produce contiguous index rows while

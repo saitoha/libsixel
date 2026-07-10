@@ -115,6 +115,7 @@ int test_timeline_0001_timeline_logger_factory(int argc, char **argv);
 int test_timeline_0002_timeline_parallel_encode_decode(int argc, char **argv);
 int test_timeline_0003_timeline_clock_origin(int argc, char **argv);
 int test_threadpool_0001_threadpool_service(int argc, char **argv);
+int test_threadpool_0002_thread_default_counts(int argc, char **argv);
 int test_decoder_0001_decoder_parallel_split_after_newline(int argc,
                                                            char **argv);
 int test_decoder_0002_decoder_ormode_raw_overlay(int argc, char **argv);
@@ -303,6 +304,8 @@ static test_entry_t const test_entries[] = {
       test_timeline_0003_timeline_clock_origin },
     { "threadpool/0001_threadpool_service",
       test_threadpool_0001_threadpool_service },
+    { "threadpool/0002_thread_default_counts",
+      test_threadpool_0002_thread_default_counts },
     { "decoder/0001_decoder_parallel_split_after_newline",
       test_decoder_0001_decoder_parallel_split_after_newline },
     { "decoder/0002_decoder_ormode_raw_overlay",

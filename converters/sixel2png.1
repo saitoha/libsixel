@@ -95,6 +95,8 @@ The alpha channel starts at zero so untouched pixels remain transparent.
 Override the decoder worker count.  Provide a positive integer COUNT to
 keep deterministic band ordering while enabling multi-band parallelism.
 Use "auto" to match the detected hardware thread count.
+When SIXEL_THREADS is unset or empty, the sixel2png frontend defaults to
+"auto".
 .TP 5
 .B \-% KEY=VALUE, \--env=KEY=VALUE
 Set a process environment variable before decoding.
@@ -135,7 +137,7 @@ opt in explicitly.
 .br
 Override the decoder worker count using the same syntax as the
 \-=/\-\-threads option.  Accepts positive integers or "auto" to match the
-hardware thread count.
+hardware thread count. Empty or unset values make sixel2png use "auto".
 
 
 .SH "SEE ALSO"

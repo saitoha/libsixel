@@ -146,6 +146,39 @@ cli_setenv_portable(char const *name, char const *value)
 #endif
 }
 
+static int
+cli_env_has_nonempty_value(char const *name)
+{
+#if defined(_MSC_VER)
+    DWORD length;
+
+    if (name == NULL) {
+        return 0;
+    }
+
+    length = GetEnvironmentVariableA(name, NULL, 0);
+    return length > 1 ? 1 : 0;
+#else
+    char const *current;
+
+    current = NULL;
+    if (name != NULL) {
+        current = getenv(name);
+    }
+    return current != NULL && current[0] != '\0' ? 1 : 0;
+#endif
+}
+
+int
+cli_apply_env_default(char const *name, char const *value)
+{
+    if (cli_env_has_nonempty_value(name) != 0) {
+        return 0;
+    }
+
+    return cli_setenv_portable(name, value);
+}
+
 static size_t
 cli_safe_count(cli_option_help_t const *table, size_t count)
 {
