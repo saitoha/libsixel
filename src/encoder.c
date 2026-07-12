@@ -163,6 +163,13 @@
      * SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE)
 #define SIXEL_QUANTIZE_SCENE_PROBE_BYTES \
     (SIXEL_QUANTIZE_SCENE_PROBE_COUNT * 3)
+#define SIXEL_STICKY_SWAP_LIMIT_DEFAULT 2U
+#define SIXEL_STICKY_SWAP_LIMIT_MAX ((unsigned int)SIXEL_PALETTE_MAX)
+
+enum sixel_sticky_candidate {
+    SIXEL_STICKY_CANDIDATE_MEDOIDS = 0,
+    SIXEL_STICKY_CANDIDATE_HECKBERT = 1
+};
 
 #if defined(_MSC_VER)
 # define SIXEL_ENCODER_OVERRIDE_TLS_AVAILABLE 1
@@ -784,6 +791,36 @@ sixel_encoder_heckbert_quality_oversplit_factor(int reqcolors)
     return 1.4;
 }
 
+static int
+sixel_encoder_sticky_candidate_uses_heckbert(sixel_encoder_t const *encoder)
+{
+    if (encoder == NULL) {
+        return 0;
+    }
+    if (encoder->quantize_model != SIXEL_QUANTIZE_MODEL_STICKY) {
+        return 0;
+    }
+
+    return encoder->quantize_model_sticky_candidate
+        == SIXEL_STICKY_CANDIDATE_HECKBERT;
+}
+
+static int
+sixel_encoder_palette_quantize_model(sixel_encoder_t const *encoder)
+{
+    if (encoder == NULL) {
+        return SIXEL_QUANTIZE_MODEL_AUTO;
+    }
+    if (encoder->quantize_model != SIXEL_QUANTIZE_MODEL_STICKY) {
+        return encoder->quantize_model;
+    }
+    if (sixel_encoder_sticky_candidate_uses_heckbert(encoder)) {
+        return SIXEL_QUANTIZE_MODEL_MEDIANCUT;
+    }
+
+    return SIXEL_QUANTIZE_MODEL_KMEDOIDS;
+}
+
 /*
  * Quality profile uses a larger oversplit budget for small palettes so Ward
  * merge can recover local color islands.  Large palettes keep the factor
@@ -798,7 +835,7 @@ sixel_encoder_apply_heckbert_profile_defaults(sixel_encoder_t *encoder)
         return;
     }
     if (encoder->quantize_model != SIXEL_QUANTIZE_MODEL_MEDIANCUT
-            && encoder->quantize_model != SIXEL_QUANTIZE_MODEL_STICKY) {
+            && !sixel_encoder_sticky_candidate_uses_heckbert(encoder)) {
         return;
     }
 
@@ -1968,6 +2005,11 @@ static sixel_suboption_choice_t const g_option_choices_kmedoids_algo[] = {
     { "bandit", SIXEL_PALETTE_KMEDOIDS_ALGO_BANDITPAM }
 };
 
+static sixel_suboption_choice_t const g_option_choices_sticky_candidate[] = {
+    { "medoids", SIXEL_STICKY_CANDIDATE_MEDOIDS },
+    { "heckbert", SIXEL_STICKY_CANDIDATE_HECKBERT }
+};
+
 static sixel_suboption_choice_t const g_option_choices_kcenter_algo[] = {
     { "auto", SIXEL_PALETTE_KCENTER_ALGO_AUTO },
     { "fft", SIXEL_PALETTE_KCENTER_ALGO_FFT },
@@ -2123,6 +2165,23 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_sticky[] = {
         "scene_cut_threshold",
         NULL,
         SIXEL_PALETTE_SCENE_CUT_THRESHOLD_ENVVAR,
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    },
+    {
+        "candidate",
+        NULL,
+        "SIXEL_PALETTE_STICKY_CANDIDATE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_sticky_candidate,
+        sizeof(g_option_choices_sticky_candidate)
+        / sizeof(g_option_choices_sticky_candidate[0])
+    },
+    {
+        "swap_limit",
+        NULL,
+        "SIXEL_PALETTE_STICKY_SWAP_LIMIT",
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
@@ -4640,6 +4699,203 @@ sixel_encoder_restore_previous_palette(
     (void)palette->vtbl->init_entries_float32(palette, &float32_request);
 }
 
+static unsigned int
+sixel_encoder_palette_distance_sq(unsigned char const *left,
+                                  unsigned char const *right)
+{
+    int red;
+    int green;
+    int blue;
+
+    red = 0;
+    green = 0;
+    blue = 0;
+    if (left == NULL || right == NULL) {
+        return UINT_MAX;
+    }
+
+    red = (int)left[0] - (int)right[0];
+    green = (int)left[1] - (int)right[1];
+    blue = (int)left[2] - (int)right[2];
+
+    return (unsigned int)(red * red + green * green + blue * blue);
+}
+
+static unsigned int
+sixel_encoder_sticky_swap_limit(sixel_encoder_t const *encoder)
+{
+    unsigned int limit;
+
+    limit = SIXEL_STICKY_SWAP_LIMIT_DEFAULT;
+    if (encoder == NULL) {
+        return limit;
+    }
+
+    limit = encoder->quantize_model_sticky_swap_limit;
+    if (limit > SIXEL_STICKY_SWAP_LIMIT_MAX) {
+        limit = SIXEL_STICKY_SWAP_LIMIT_MAX;
+    }
+
+    return limit;
+}
+
+static void
+sixel_encoder_restore_limited_sticky_palette(
+    sixel_palette_t *palette,
+    unsigned char const *prev_palette,
+    float const *prev_palette_float,
+    unsigned int prev_count,
+    int prev_float_valid,
+    int prev_float_stride,
+    unsigned char const *candidate_palette,
+    unsigned int candidate_count,
+    unsigned int swap_limit)
+{
+    unsigned char merged[SIXEL_PALETTE_MAX * 3];
+    unsigned char used_slots[SIXEL_PALETTE_MAX];
+    unsigned char used_candidates[SIXEL_PALETTE_MAX];
+    unsigned int color_count;
+    unsigned int candidate_total;
+    unsigned int changes;
+    unsigned int candidate;
+    unsigned int slot;
+    unsigned int best_candidate;
+    unsigned int best_slot;
+    unsigned int nearest_slot;
+    unsigned int best_distance;
+    unsigned int nearest_any_distance;
+    unsigned int nearest_unused_distance;
+    unsigned int distance;
+    sixel_palette_entries_request_t entries_request;
+    sixel_palette_float32_entries_request_t float32_request;
+
+    color_count = prev_count;
+    candidate_total = candidate_count;
+    changes = 0U;
+    candidate = 0U;
+    slot = 0U;
+    best_candidate = UINT_MAX;
+    best_slot = UINT_MAX;
+    nearest_slot = UINT_MAX;
+    best_distance = 0U;
+    nearest_any_distance = UINT_MAX;
+    nearest_unused_distance = UINT_MAX;
+    distance = 0U;
+    memset(merged, 0, sizeof(merged));
+    memset(used_slots, 0, sizeof(used_slots));
+    memset(used_candidates, 0, sizeof(used_candidates));
+    memset(&entries_request, 0, sizeof(entries_request));
+    memset(&float32_request, 0, sizeof(float32_request));
+    if (swap_limit == 0U || candidate_palette == NULL) {
+        sixel_encoder_restore_previous_palette(palette,
+                                               prev_palette,
+                                               prev_palette_float,
+                                               prev_count,
+                                               prev_float_valid,
+                                               prev_float_stride);
+        return;
+    }
+    if (palette == NULL || prev_palette == NULL || prev_count == 0U
+            || palette->vtbl == NULL || palette->vtbl->init_entries == NULL) {
+        return;
+    }
+
+    if (color_count > (unsigned int)SIXEL_PALETTE_MAX) {
+        color_count = (unsigned int)SIXEL_PALETTE_MAX;
+    }
+    if (candidate_total > (unsigned int)SIXEL_PALETTE_MAX) {
+        candidate_total = (unsigned int)SIXEL_PALETTE_MAX;
+    }
+    if (candidate_total == 0U) {
+        sixel_encoder_restore_previous_palette(palette,
+                                               prev_palette,
+                                               prev_palette_float,
+                                               prev_count,
+                                               prev_float_valid,
+                                               prev_float_stride);
+        return;
+    }
+    if (swap_limit > color_count) {
+        swap_limit = color_count;
+    }
+    if (swap_limit > candidate_total) {
+        swap_limit = candidate_total;
+    }
+
+    memcpy(merged, prev_palette, (size_t)color_count * 3U);
+    while (changes < swap_limit) {
+        best_candidate = UINT_MAX;
+        best_slot = UINT_MAX;
+        best_distance = 0U;
+        for (candidate = 0U; candidate < candidate_total; ++candidate) {
+            if (used_candidates[candidate] != 0U) {
+                continue;
+            }
+            nearest_slot = UINT_MAX;
+            nearest_any_distance = UINT_MAX;
+            nearest_unused_distance = UINT_MAX;
+            for (slot = 0U; slot < color_count; ++slot) {
+                distance = sixel_encoder_palette_distance_sq(
+                    candidate_palette + (size_t)candidate * 3U,
+                    merged + (size_t)slot * 3U);
+                if (distance < nearest_any_distance) {
+                    nearest_any_distance = distance;
+                }
+                if (used_slots[slot] == 0U
+                        && distance < nearest_unused_distance) {
+                    nearest_unused_distance = distance;
+                    nearest_slot = slot;
+                }
+            }
+            if (nearest_slot != UINT_MAX
+                    && nearest_any_distance > best_distance) {
+                best_distance = nearest_any_distance;
+                best_candidate = candidate;
+                best_slot = nearest_slot;
+            }
+        }
+        if (best_slot == UINT_MAX || best_candidate == UINT_MAX
+                || best_distance == 0U) {
+            break;
+        }
+        memcpy(merged + (size_t)best_slot * 3U,
+               candidate_palette + (size_t)best_candidate * 3U,
+               3U);
+        used_slots[best_slot] = 1U;
+        used_candidates[best_candidate] = 1U;
+        ++changes;
+    }
+
+    if (changes == 0U) {
+        sixel_encoder_restore_previous_palette(palette,
+                                               prev_palette,
+                                               prev_palette_float,
+                                               prev_count,
+                                               prev_float_valid,
+                                               prev_float_stride);
+        return;
+    }
+
+    entries_request.entries = merged;
+    entries_request.colors = color_count;
+    entries_request.depth = 3;
+    if (SIXEL_FAILED(palette->vtbl->init_entries(palette,
+                                                 &entries_request))) {
+        return;
+    }
+    if (palette->vtbl->init_entries_float32 != NULL) {
+        /*
+         * Mixed byte palettes do not have a coherent float32 companion yet.
+         * Clear it so lookup code falls back to the byte entries instead of
+         * combining old float state with the newly capped byte palette.
+         */
+        float32_request.entries = NULL;
+        float32_request.colors = 0U;
+        float32_request.depth = 0;
+        (void)palette->vtbl->init_entries_float32(palette, &float32_request);
+    }
+}
+
 static SIXELSTATUS
 sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
                                             sixel_frame_t *frame,
@@ -4710,7 +4966,16 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
         palette->vtbl->get_entries_float32 == NULL ||
         palette->vtbl->get_metadata == NULL ||
         SIXEL_FAILED(palette->vtbl->get_entries(palette, &entries_view)) ||
-        entries_view.entries == NULL || entries_view.depth < 3) {
+        SIXEL_FAILED(palette->vtbl->get_metadata(palette, &metadata)) ||
+        entries_view.entries == NULL || entries_view.depth != 3) {
+        sixel_encoder_reset_quantize_animation_state(encoder);
+        return SIXEL_OK;
+    }
+    palette_count = metadata.entry_count;
+    if (palette_count > (unsigned int)SIXEL_PALETTE_MAX) {
+        palette_count = (unsigned int)SIXEL_PALETTE_MAX;
+    }
+    if (entries_view.entries_size < (size_t)palette_count * 3U) {
         sixel_encoder_reset_quantize_animation_state(encoder);
         return SIXEL_OK;
     }
@@ -4741,14 +5006,33 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     }
 
     if (scene_cut == 0) {
-        /* Keep palette stable until a scene cut is detected. */
-        sixel_encoder_restore_previous_palette(
-            palette,
-            encoder->quantize_animation_prev_palette,
-            encoder->quantize_animation_prev_palette_float,
-            encoder->quantize_animation_prev_palette_count,
-            encoder->quantize_animation_prev_palette_float_valid,
-            encoder->quantize_animation_prev_palette_float_stride);
+        if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY) {
+            /*
+             * Sticky now lets a small number of candidate colors enter
+             * between scene cuts.  This avoids all-at-once palette churn while
+             * still allowing medoids candidates to track gradual content
+             * changes.
+             */
+            sixel_encoder_restore_limited_sticky_palette(
+                palette,
+                encoder->quantize_animation_prev_palette,
+                encoder->quantize_animation_prev_palette_float,
+                encoder->quantize_animation_prev_palette_count,
+                encoder->quantize_animation_prev_palette_float_valid,
+                encoder->quantize_animation_prev_palette_float_stride,
+                entries_view.entries,
+                palette_count,
+                sixel_encoder_sticky_swap_limit(encoder));
+        } else {
+            /* Keep legacy animation palettes stable until a scene cut. */
+            sixel_encoder_restore_previous_palette(
+                palette,
+                encoder->quantize_animation_prev_palette,
+                encoder->quantize_animation_prev_palette_float,
+                encoder->quantize_animation_prev_palette_count,
+                encoder->quantize_animation_prev_palette_float_valid,
+                encoder->quantize_animation_prev_palette_float_stride);
+        }
     }
 
     memset(&entries_view, 0, sizeof(entries_view));
@@ -7640,6 +7924,7 @@ sixel_encoder_prepare_palette(
     int palette_reqcolors;
     int quantize_override_lock_acquired;
     int quantize_animation_enabled;
+    int effective_quantize_model;
     int effective_method_for_largest;
     int effective_final_merge_mode;
     int effective_merge_oversplit_override;
@@ -7665,6 +7950,7 @@ sixel_encoder_prepare_palette(
     palette_reqcolors = 0;
     quantize_override_lock_acquired = 0;
     quantize_animation_enabled = 0;
+    effective_quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
     effective_method_for_largest = SIXEL_LARGE_AUTO;
     effective_final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
     effective_merge_oversplit_override = 0;
@@ -7688,6 +7974,7 @@ sixel_encoder_prepare_palette(
     }
     quantize_animation_enabled =
         sixel_encoder_quantize_animation_enabled_for_frame(encoder, frame);
+    effective_quantize_model = sixel_encoder_palette_quantize_model(encoder);
 
     if ((sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE) != 0
             && quantize_animation_enabled != 0) {
@@ -7811,12 +8098,11 @@ sixel_encoder_prepare_palette(
         palette_reqcolors = encoder->reqcolors - 1;
     }
     effective_method_for_largest = SIXEL_LARGE_NORM;
-    if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
-            || encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY) {
+    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
         /*
          * Largest-axis selection only applies to the Heckbert median-cut
-         * palette builder. Sticky uses the same builder for scene-cut
-         * candidate palettes.
+         * palette builder. Sticky reaches this path only when the caller asks
+         * for the legacy Heckbert candidate.
          */
         effective_method_for_largest = encoder->method_for_largest;
     }
@@ -7829,8 +8115,7 @@ sixel_encoder_prepare_palette(
     effective_merge_lloyd = encoder->quantize_model_merge_lloyd;
     effective_lut_policy = encoder->lut_policy;
     effective_lut_policy_override = encoder->lut_policy_override;
-    if ((encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
-            || encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY)
+    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
             && encoder->quantize_model_heckbert_profile
                 == SIXEL_HECKBERT_PROFILE_QUALITY
             && effective_merge_oversplit_override == 0
@@ -7847,8 +8132,7 @@ sixel_encoder_prepare_palette(
             effective_merge_lloyd_override = 1;
         }
     }
-    if ((encoder->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
-            || encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY)
+    if (effective_quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
             && encoder->quantize_model_heckbert_profile
                 == SIXEL_HECKBERT_PROFILE_SPEED
             && effective_lut_policy_override == 0
@@ -7935,7 +8219,7 @@ sixel_encoder_prepare_palette(
         sixel_dither_unref(*dither);
         goto end;
     }
-    (*dither)->quantize_model = encoder->quantize_model;
+    (*dither)->quantize_model = effective_quantize_model;
 
     palette_pixels = sixel_frame_get_pixels(palette_frame);
     palette_pixelformat = sixel_frame_get_pixelformat(palette_frame);
@@ -9495,6 +9779,12 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_scene_cut_threshold_override = 0;
     (*ppencoder)->quantize_model_scene_cut_threshold
         = SIXEL_QUANTIZE_SCENE_CUT_THRESHOLD_DEFAULT;
+    (*ppencoder)->quantize_model_sticky_candidate_override = 0;
+    (*ppencoder)->quantize_model_sticky_candidate =
+        SIXEL_STICKY_CANDIDATE_MEDOIDS;
+    (*ppencoder)->quantize_model_sticky_swap_limit_override = 0;
+    (*ppencoder)->quantize_model_sticky_swap_limit =
+        SIXEL_STICKY_SWAP_LIMIT_DEFAULT;
     memset((*ppencoder)->quantize_animation_prev_palette,
            0,
            sizeof((*ppencoder)->quantize_animation_prev_palette));
@@ -10753,6 +11043,25 @@ sixel_encoder_validate_quantize_model_resolution(
             status = sixel_encoder_parse_quantize_scene_cut_threshold_text(
                 assignment->resolved_value_text,
                 &parsed_double);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "candidate") == 0) {
+            if (!sixel_encoder_resolve_suboption_choice_value(
+                    assignment,
+                    &resolved_choice)) {
+                sixel_helper_set_additional_message(
+                    "invalid -Q sticky candidate resolution.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+        } else if (key_name != NULL && strcmp(key_name, "swap_limit") == 0) {
+            status = sixel_encoder_parse_kmedoids_uint_text(
+                assignment->resolved_value_text,
+                1u,
+                SIXEL_STICKY_SWAP_LIMIT_MAX,
+                1,
+                "swap_limit",
+                &parsed_uint);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
@@ -12982,6 +13291,8 @@ sixel_encoder_setopt(
     int q_animation_mode;
     double q_scene_cut_threshold;
     int q_heckbert_profile;
+    int q_sticky_candidate;
+    unsigned int q_sticky_swap_limit;
     sixel_suboption_assignment_t const *q_assignment;
     char const *q_key;
     int q_model;
@@ -13065,6 +13376,8 @@ sixel_encoder_setopt(
     q_animation_mode = 0;
     q_scene_cut_threshold = 0.0;
     q_heckbert_profile = SIXEL_HECKBERT_PROFILE_COMPAT;
+    q_sticky_candidate = SIXEL_STICKY_CANDIDATE_MEDOIDS;
+    q_sticky_swap_limit = 0u;
     q_assignment = NULL;
     q_key = NULL;
     q_model = SIXEL_QUANTIZE_MODEL_AUTO;
@@ -13375,6 +13688,12 @@ sixel_encoder_setopt(
         encoder->quantize_model_merge_lloyd_override = 0;
         encoder->quantize_model_animation_mode_override = 0;
         encoder->quantize_model_scene_cut_threshold_override = 0;
+        encoder->quantize_model_sticky_candidate_override = 0;
+        encoder->quantize_model_sticky_candidate =
+            SIXEL_STICKY_CANDIDATE_MEDOIDS;
+        encoder->quantize_model_sticky_swap_limit_override = 0;
+        encoder->quantize_model_sticky_swap_limit =
+            SIXEL_STICKY_SWAP_LIMIT_DEFAULT;
         encoder->quantize_model_heckbert_profile
             = SIXEL_HECKBERT_PROFILE_COMPAT;
 
@@ -13408,6 +13727,32 @@ sixel_encoder_setopt(
                 encoder->quantize_model_scene_cut_threshold_override = 1;
                 encoder->quantize_model_scene_cut_threshold
                     = q_scene_cut_threshold;
+            } else if (q_key != NULL && strcmp(q_key, "candidate") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &q_sticky_candidate)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q sticky candidate resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_sticky_candidate_override = 1;
+                encoder->quantize_model_sticky_candidate = q_sticky_candidate;
+            } else if (q_key != NULL && strcmp(q_key, "swap_limit") == 0) {
+                status = sixel_encoder_parse_kmedoids_uint_text(
+                    q_assignment->resolved_value_text,
+                    1u,
+                    SIXEL_STICKY_SWAP_LIMIT_MAX,
+                    1,
+                    "swap_limit",
+                    &q_sticky_swap_limit);
+                if (SIXEL_FAILED(status)) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_sticky_swap_limit_override = 1;
+                encoder->quantize_model_sticky_swap_limit =
+                    q_sticky_swap_limit;
             } else if (q_key != NULL && strcmp(q_key, "inittype") == 0) {
                 if (!sixel_encoder_resolve_suboption_choice_value(
                         q_assignment,

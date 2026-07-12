@@ -417,6 +417,16 @@ typedef int SIXELSTATUS;
                                                   profile:
                                                     profile:
                                                       compat, speed, quality
+                                                  sticky accepts suboptions in:
+                                                    sticky:key=value
+                                                    [:key=value...]
+                                                  supported suboptions:
+                                                    candidate:
+                                                      medoids, heckbert
+                                                      (default medoids)
+                                                    swap_limit:
+                                                      0 or integer in
+                                                      1-256
                                                   kmeans accepts suboptions in:
                                                     kmeans:key=value[:key=value...]
                                                   supported suboptions:

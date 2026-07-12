@@ -22,11 +22,13 @@ heckbert_keys=$tmpdir/heckbert_keys.txt
 kmeans_keys=$tmpdir/kmeans_keys.txt
 kmedoids_keys=$tmpdir/kmedoids_keys.txt
 center_keys=$tmpdir/center_keys.txt
+sticky_keys=$tmpdir/sticky_keys.txt
 merge_only_pairs=$tmpdir/merge_only_pairs.tsv
 heckbert_pairs=$tmpdir/heckbert_pairs.tsv
 kmeans_pairs=$tmpdir/kmeans_pairs.tsv
 kmedoids_pairs=$tmpdir/kmedoids_pairs.tsv
 center_pairs=$tmpdir/center_pairs.tsv
+sticky_pairs=$tmpdir/sticky_pairs.tsv
 help_vars=$tmpdir/help_vars.txt
 missing=$tmpdir/missing.txt
 
@@ -96,7 +98,7 @@ extract_merge_pairs() {
                 key = token
             } else if (field_index == 3) {
                 if (key != "") {
-                    if (token ~ /^SIXEL_PALETTE_(ANIMATION_MODE|SCENE_CUT_THRESHOLD|OVERSPLIT_FACTOR|FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT)$/) {
+                    if (token ~ /^SIXEL_PALETTE_(ANIMATION_MODE|SCENE_CUT_THRESHOLD|OVERSPLIT_FACTOR|FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT|STICKY_CANDIDATE|STICKY_SWAP_LIMIT)$/) {
                         printf "%s\t%s\n", key, token
                         key = ""
                     }
@@ -135,15 +137,17 @@ extract_keys g_subkeys_quantize_model_heckbert > "$heckbert_keys"
 extract_keys g_subkeys_quantize_model_kmeans > "$kmeans_keys"
 extract_keys g_subkeys_quantize_model_kmedoids > "$kmedoids_keys"
 extract_keys g_subkeys_quantize_model_center > "$center_keys"
+extract_keys g_subkeys_quantize_model_sticky > "$sticky_keys"
 
 extract_merge_pairs g_subkeys_quantize_model_merge_only > "$merge_only_pairs"
 extract_merge_pairs g_subkeys_quantize_model_heckbert > "$heckbert_pairs"
 extract_merge_pairs g_subkeys_quantize_model_kmeans > "$kmeans_pairs"
 extract_merge_pairs g_subkeys_quantize_model_kmedoids > "$kmedoids_pairs"
 extract_merge_pairs g_subkeys_quantize_model_center > "$center_pairs"
+extract_merge_pairs g_subkeys_quantize_model_sticky > "$sticky_pairs"
 
 awk '
-/^[[:space:]]*"SIXEL_PALETTE_(ANIMATION_MODE|SCENE_CUT_THRESHOLD|OVERSPLIT_FACTOR|FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT)"/ {
+/^[[:space:]]*"SIXEL_PALETTE_(ANIMATION_MODE|SCENE_CUT_THRESHOLD|OVERSPLIT_FACTOR|FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT|STICKY_CANDIDATE|STICKY_SWAP_LIMIT)"/ {
     line = $0
     sub(/^[[:space:]]*"/, "", line)
     sub(/".*$/, "", line)
@@ -176,6 +180,19 @@ for key in animation_mode scene_cut_threshold merge merge_oversplit merge_lloyd;
     }
 done
 
+for key in scene_cut_threshold merge merge_oversplit merge_lloyd profile \
+        candidate swap_limit; do
+    grep -Fxq "$key" "$sticky_keys" || {
+        echo "# sticky block missing key: $key" >> "$missing"
+        status=1
+    }
+done
+
+grep -Fxq "animation_mode" "$sticky_keys" && {
+    echo "# sticky block must not re-enable animation_mode" >> "$missing"
+    status=1
+}
+
 for pair in \
     "animation_mode	SIXEL_PALETTE_ANIMATION_MODE" \
     "scene_cut_threshold	SIXEL_PALETTE_SCENE_CUT_THRESHOLD" \
@@ -203,9 +220,23 @@ for pair in \
     }
 done
 
+for pair in \
+    "scene_cut_threshold	SIXEL_PALETTE_SCENE_CUT_THRESHOLD" \
+    "merge_oversplit	SIXEL_PALETTE_OVERSPLIT_FACTOR" \
+    "merge_lloyd	SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT" \
+    "candidate	SIXEL_PALETTE_STICKY_CANDIDATE" \
+    "swap_limit	SIXEL_PALETTE_STICKY_SWAP_LIMIT"; do
+    grep -Fxq "$pair" "$sticky_pairs" || {
+        echo "# sticky block missing pair: $pair" >> "$missing"
+        status=1
+    }
+done
+
 for env_name in \
     SIXEL_PALETTE_ANIMATION_MODE \
     SIXEL_PALETTE_SCENE_CUT_THRESHOLD \
+    SIXEL_PALETTE_STICKY_CANDIDATE \
+    SIXEL_PALETTE_STICKY_SWAP_LIMIT \
     SIXEL_PALETTE_OVERSPLIT_FACTOR \
     SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT; do
     grep -Fxq "$env_name" "$help_vars" || {
@@ -238,6 +269,10 @@ in_block && /^[[:space:]]*};/ {
     want_heckbert = 1
     next
 }
+/^[[:space:]]*"sticky",[[:space:]]*$/ {
+    want_sticky = 1
+    next
+}
 want_auto && /g_subkeys_quantize_model_merge_only/ {
     auto_ok = 1
     want_auto = 0
@@ -246,14 +281,18 @@ want_heckbert && /g_subkeys_quantize_model_heckbert/ {
     heckbert_ok = 1
     want_heckbert = 0
 }
+want_sticky && /g_subkeys_quantize_model_sticky/ {
+    sticky_ok = 1
+    want_sticky = 0
+}
 END {
-    if (auto_ok && heckbert_ok) {
+    if (auto_ok && heckbert_ok && sticky_ok) {
         exit 0
     }
     exit 1
 }
 ' "$encoder_file" || {
-    echo "# schema mismatch: auto=merge-only and heckbert=heckbert-subkeys" \
+    echo "# schema mismatch: quantize subkey blocks are not wired correctly" \
         >> "$missing"
     status=1
 }

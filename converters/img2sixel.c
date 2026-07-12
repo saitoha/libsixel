@@ -365,6 +365,18 @@ static cli_option_help_t const g_option_help_table[] = {
         "          :merge=MODE (:GMODE) auto, none, ward\n"
         "          :merge_oversplit=FACTOR (:OFACTOR) 1.0-3.0\n"
         "          :merge_lloyd=COUNT (:LCOUNT) 0-30\n"
+        "      sticky  -> frame-to-frame stable solver. sub-option:\n"
+        "          :candidate=NAME choose candidate palette builder:\n"
+        "              medoids  -> use k-medoids candidates (default)\n"
+        "              heckbert -> use legacy Heckbert candidates\n"
+        "          :swap_limit=COUNT allow this many palette slot changes\n"
+        "          between non-scene-cut frames (0 or 1-256, default 2).\n"
+        "          :profile=NAME choose Heckbert fallback profile:\n"
+        "              compat, speed, quality\n"
+        "          :scene_cut_threshold=VALUE 0.0-1.0 default 0.20\n"
+        "          :merge=MODE (:GMODE) auto, none, ward\n"
+        "          :merge_oversplit=FACTOR (:OFACTOR) 1.0-3.0\n"
+        "          :merge_lloyd=COUNT (:LCOUNT) 0-30\n"
     },
     {
         'm',
@@ -1443,6 +1455,16 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_PALETTE_SCENE_CUT_THRESHOLD",
         "scene-cut sensitivity for animation_mode.\n"
         "Accepts 0.0-1.0 (default 0.20)."
+    },
+    {
+        "SIXEL_PALETTE_STICKY_CANDIDATE",
+        "choose sticky candidate palette builder. Accepts medoids or\n"
+        "heckbert (default medoids)."
+    },
+    {
+        "SIXEL_PALETTE_STICKY_SWAP_LIMIT",
+        "limit sticky palette slot changes between scene cuts. Accepts\n"
+        "0 or 1-256 (default 2)."
     },
     {
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",

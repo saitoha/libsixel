@@ -2115,13 +2115,12 @@ sixel_dither_initialize(
     sixel_dither_set_method_for_rep(dither, method_for_rep);
     sixel_dither_set_quality_mode(dither, quality_mode);
     /*
-     * Largest-axis heuristics belong to Heckbert median-cut. Sticky uses
-     * median-cut for scene-cut candidate palettes, so it keeps the same
-     * split-axis controls while preserving its user-facing model id.
+     * Largest-axis heuristics belong to Heckbert median-cut. Encoder-side
+     * sticky resolves to MEDIANCUT only for the legacy Heckbert candidate, so
+     * a direct STICKY request should not inherit split-axis controls.
      */
     method_for_largest_for_palette = SIXEL_LARGE_NORM;
-    if (dither->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT
-            || dither->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY) {
+    if (dither->quantize_model == SIXEL_QUANTIZE_MODEL_MEDIANCUT) {
         method_for_largest_for_palette = dither->method_for_largest;
     }
 

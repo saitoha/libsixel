@@ -219,6 +219,10 @@ struct sixel_encoder {
     int quantize_model_animation_mode;
     int quantize_model_scene_cut_threshold_override;
     double quantize_model_scene_cut_threshold;
+    int quantize_model_sticky_candidate_override;
+    int quantize_model_sticky_candidate;
+    int quantize_model_sticky_swap_limit_override;
+    unsigned int quantize_model_sticky_swap_limit;
     unsigned char quantize_animation_prev_palette[SIXEL_PALETTE_MAX * 3];
     float quantize_animation_prev_palette_float[SIXEL_PALETTE_MAX * 4];
     unsigned int quantize_animation_prev_palette_count;
