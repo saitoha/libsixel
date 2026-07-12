@@ -158,6 +158,9 @@
 
 #define SIXEL_STICKY_SWAP_LIMIT_DEFAULT 2U
 #define SIXEL_STICKY_SWAP_LIMIT_MAX ((unsigned int)SIXEL_PALETTE_MAX)
+#define SIXEL_STICKY_ACCENT_SCORE_THRESHOLD 4096U
+#define SIXEL_STICKY_ACCENT_MATCH_DISTANCE 4096U
+#define SIXEL_STICKY_ACCENT_SCORE_BONUS 65536U
 
 enum sixel_sticky_candidate {
     SIXEL_STICKY_CANDIDATE_MEDOIDS = 0,
@@ -4517,12 +4520,144 @@ sixel_encoder_fill_scene_probe_from_rgb(unsigned char const *source_pixels,
     }
 }
 
+static unsigned int
+sixel_encoder_palette_distance_sq(unsigned char const *left,
+                                  unsigned char const *right)
+{
+    int red;
+    int green;
+    int blue;
+
+    red = 0;
+    green = 0;
+    blue = 0;
+    if (left == NULL || right == NULL) {
+        return UINT_MAX;
+    }
+
+    red = (int)left[0] - (int)right[0];
+    green = (int)left[1] - (int)right[1];
+    blue = (int)left[2] - (int)right[2];
+
+    return (unsigned int)(red * red + green * green + blue * blue);
+}
+
+static void
+sixel_encoder_sticky_thumbnail_cell_bounds(int size,
+                                           unsigned int sample,
+                                           int *start_out,
+                                           int *end_out)
+{
+    int start;
+    int end;
+
+    start = 0;
+    end = 0;
+    if (size <= 0 || start_out == NULL || end_out == NULL) {
+        return;
+    }
+
+    start = (int)((uint64_t)sample * (uint64_t)size
+                  / SIXEL_STICKY_THUMBNAIL_GRID_SIDE);
+    end = (int)(((uint64_t)sample + 1U) * (uint64_t)size
+                / SIXEL_STICKY_THUMBNAIL_GRID_SIDE);
+    if (start >= size) {
+        start = size - 1;
+    }
+    if (end <= start) {
+        end = start + 1;
+    }
+    if (end > size) {
+        end = size;
+    }
+
+    *start_out = start;
+    *end_out = end;
+}
+
+static void
+sixel_encoder_sticky_thumbnail_surround_color(
+    unsigned char const thumbnail[],
+    unsigned int sample_x,
+    unsigned int sample_y,
+    unsigned char surround_out[])
+{
+    unsigned int neighbor_x;
+    unsigned int neighbor_y;
+    unsigned int x_min;
+    unsigned int x_max;
+    unsigned int y_min;
+    unsigned int y_max;
+    uint64_t red_sum;
+    uint64_t green_sum;
+    uint64_t blue_sum;
+    uint64_t count;
+    size_t thumbnail_index;
+
+    neighbor_x = 0U;
+    neighbor_y = 0U;
+    x_min = 0U;
+    x_max = 0U;
+    y_min = 0U;
+    y_max = 0U;
+    red_sum = 0U;
+    green_sum = 0U;
+    blue_sum = 0U;
+    count = 0U;
+    thumbnail_index = 0U;
+    if (thumbnail == NULL || surround_out == NULL) {
+        return;
+    }
+
+    x_min = sample_x == 0U ? 0U : sample_x - 1U;
+    y_min = sample_y == 0U ? 0U : sample_y - 1U;
+    x_max = sample_x + 1U;
+    y_max = sample_y + 1U;
+    if (x_max >= SIXEL_STICKY_THUMBNAIL_GRID_SIDE) {
+        x_max = SIXEL_STICKY_THUMBNAIL_GRID_SIDE - 1U;
+    }
+    if (y_max >= SIXEL_STICKY_THUMBNAIL_GRID_SIDE) {
+        y_max = SIXEL_STICKY_THUMBNAIL_GRID_SIDE - 1U;
+    }
+
+    for (neighbor_y = y_min; neighbor_y <= y_max; ++neighbor_y) {
+        for (neighbor_x = x_min; neighbor_x <= x_max; ++neighbor_x) {
+            if (neighbor_x == sample_x && neighbor_y == sample_y) {
+                continue;
+            }
+            thumbnail_index = ((size_t)neighbor_y
+                               * SIXEL_STICKY_THUMBNAIL_GRID_SIDE
+                               + (size_t)neighbor_x) * 3U;
+            red_sum += thumbnail[thumbnail_index + 0U];
+            green_sum += thumbnail[thumbnail_index + 1U];
+            blue_sum += thumbnail[thumbnail_index + 2U];
+            ++count;
+        }
+    }
+
+    if (count == 0U) {
+        thumbnail_index = ((size_t)sample_y
+                           * SIXEL_STICKY_THUMBNAIL_GRID_SIDE
+                           + (size_t)sample_x) * 3U;
+        surround_out[0] = thumbnail[thumbnail_index + 0U];
+        surround_out[1] = thumbnail[thumbnail_index + 1U];
+        surround_out[2] = thumbnail[thumbnail_index + 2U];
+        return;
+    }
+
+    surround_out[0] = (unsigned char)((red_sum + count / 2U) / count);
+    surround_out[1] = (unsigned char)((green_sum + count / 2U) / count);
+    surround_out[2] = (unsigned char)((blue_sum + count / 2U) / count);
+}
+
 static void
 sixel_encoder_fill_sticky_thumbnail_from_rgb(
     unsigned char const *source_pixels,
     int width,
     int height,
-    unsigned char thumbnail_out[])
+    unsigned char thumbnail_out[],
+    unsigned char accent_out[],
+    unsigned int accent_score_out[])
 {
     unsigned int sample_x;
     unsigned int sample_y;
@@ -4538,6 +4673,10 @@ sixel_encoder_fill_sticky_thumbnail_from_rgb(
     uint64_t count;
     size_t pixel_index;
     size_t thumbnail_index;
+    unsigned char surround_color[3];
+    unsigned int best_accent_score;
+    unsigned int accent_score;
+    size_t accent_index;
 
     sample_x = 0U;
     sample_y = 0U;
@@ -4553,6 +4692,10 @@ sixel_encoder_fill_sticky_thumbnail_from_rgb(
     count = 0U;
     pixel_index = 0U;
     thumbnail_index = 0U;
+    memset(surround_color, 0, sizeof(surround_color));
+    best_accent_score = 0U;
+    accent_score = 0U;
+    accent_index = 0U;
     if (source_pixels == NULL || width <= 0 || height <= 0
             || thumbnail_out == NULL) {
         return;
@@ -4565,34 +4708,16 @@ sixel_encoder_fill_sticky_thumbnail_from_rgb(
      */
     for (sample_y = 0U; sample_y < SIXEL_STICKY_THUMBNAIL_GRID_SIDE;
             ++sample_y) {
-        y0 = (int)((uint64_t)sample_y * (uint64_t)height
-             / SIXEL_STICKY_THUMBNAIL_GRID_SIDE);
-        y1 = (int)(((uint64_t)sample_y + 1U) * (uint64_t)height
-             / SIXEL_STICKY_THUMBNAIL_GRID_SIDE);
-        if (y0 >= height) {
-            y0 = height - 1;
-        }
-        if (y1 <= y0) {
-            y1 = y0 + 1;
-        }
-        if (y1 > height) {
-            y1 = height;
-        }
+        sixel_encoder_sticky_thumbnail_cell_bounds(height,
+                                                   sample_y,
+                                                   &y0,
+                                                   &y1);
         for (sample_x = 0U; sample_x < SIXEL_STICKY_THUMBNAIL_GRID_SIDE;
                 ++sample_x) {
-            x0 = (int)((uint64_t)sample_x * (uint64_t)width
-                 / SIXEL_STICKY_THUMBNAIL_GRID_SIDE);
-            x1 = (int)(((uint64_t)sample_x + 1U) * (uint64_t)width
-                 / SIXEL_STICKY_THUMBNAIL_GRID_SIDE);
-            if (x0 >= width) {
-                x0 = width - 1;
-            }
-            if (x1 <= x0) {
-                x1 = x0 + 1;
-            }
-            if (x1 > width) {
-                x1 = width;
-            }
+            sixel_encoder_sticky_thumbnail_cell_bounds(width,
+                                                       sample_x,
+                                                       &x0,
+                                                       &x1);
             red_sum = 0U;
             green_sum = 0U;
             blue_sum = 0U;
@@ -4616,6 +4741,59 @@ sixel_encoder_fill_sticky_thumbnail_from_rgb(
             thumbnail_index += 3U;
         }
     }
+
+    if (accent_out == NULL || accent_score_out == NULL) {
+        return;
+    }
+
+    /*
+     * Accent samples are measured against the neighboring thumbnail ring, not
+     * against the cell itself.  Thin controls such as a red playback progress
+     * bar may be a small minority inside one cell, but they still contrast with
+     * the surrounding UI background.
+     */
+    thumbnail_index = 0U;
+    for (sample_y = 0U; sample_y < SIXEL_STICKY_THUMBNAIL_GRID_SIDE;
+            ++sample_y) {
+        sixel_encoder_sticky_thumbnail_cell_bounds(height,
+                                                   sample_y,
+                                                   &y0,
+                                                   &y1);
+        for (sample_x = 0U; sample_x < SIXEL_STICKY_THUMBNAIL_GRID_SIDE;
+                ++sample_x) {
+            sixel_encoder_sticky_thumbnail_cell_bounds(width,
+                                                       sample_x,
+                                                       &x0,
+                                                       &x1);
+            sixel_encoder_sticky_thumbnail_surround_color(thumbnail_out,
+                                                          sample_x,
+                                                          sample_y,
+                                                          surround_color);
+            best_accent_score = 0U;
+            accent_index = ((size_t)y0 * (size_t)width + (size_t)x0) * 3U;
+            for (y = y0; y < y1; ++y) {
+                for (x = x0; x < x1; ++x) {
+                    pixel_index = ((size_t)y * (size_t)width
+                                  + (size_t)x) * 3U;
+                    accent_score = sixel_encoder_palette_distance_sq(
+                        source_pixels + pixel_index,
+                        surround_color);
+                    if (accent_score > best_accent_score) {
+                        best_accent_score = accent_score;
+                        accent_index = pixel_index;
+                    }
+                }
+            }
+            accent_out[thumbnail_index + 0U] =
+                source_pixels[accent_index + 0U];
+            accent_out[thumbnail_index + 1U] =
+                source_pixels[accent_index + 1U];
+            accent_out[thumbnail_index + 2U] =
+                source_pixels[accent_index + 2U];
+            accent_score_out[thumbnail_index / 3U] = best_accent_score;
+            thumbnail_index += 3U;
+        }
+    }
 }
 
 static SIXELSTATUS
@@ -4623,7 +4801,9 @@ sixel_encoder_collect_quantize_animation_samples(
     sixel_frame_t *frame,
     sixel_allocator_t *allocator,
     unsigned char probe_out[],
-    unsigned char thumbnail_out[])
+    unsigned char thumbnail_out[],
+    unsigned char accent_out[],
+    unsigned int accent_score_out[])
 {
     SIXELSTATUS status;
     unsigned char *normalized;
@@ -4708,7 +4888,9 @@ sixel_encoder_collect_quantize_animation_samples(
         sixel_encoder_fill_sticky_thumbnail_from_rgb(source_pixels,
                                                      width,
                                                      height,
-                                                     thumbnail_out);
+                                                     thumbnail_out,
+                                                     accent_out,
+                                                     accent_score_out);
     }
 
     if (normalized != NULL && allocator != NULL) {
@@ -4820,28 +5002,6 @@ sixel_encoder_restore_previous_palette(
 }
 
 static unsigned int
-sixel_encoder_palette_distance_sq(unsigned char const *left,
-                                  unsigned char const *right)
-{
-    int red;
-    int green;
-    int blue;
-
-    red = 0;
-    green = 0;
-    blue = 0;
-    if (left == NULL || right == NULL) {
-        return UINT_MAX;
-    }
-
-    red = (int)left[0] - (int)right[0];
-    green = (int)left[1] - (int)right[1];
-    blue = (int)left[2] - (int)right[2];
-
-    return (unsigned int)(red * red + green * green + blue * blue);
-}
-
-static unsigned int
 sixel_encoder_sticky_swap_limit(sixel_encoder_t const *encoder)
 {
     unsigned int limit;
@@ -4924,6 +5084,93 @@ sixel_encoder_sticky_thumbnail_novelty(
     return previous_distance - current_distance;
 }
 
+static unsigned int
+sixel_encoder_sticky_accent_distance_sq(
+    unsigned char const *color,
+    unsigned char const *current_accent,
+    unsigned int const *current_accent_score,
+    int current_accent_valid)
+{
+    unsigned int index;
+    unsigned int best_distance;
+    unsigned int distance;
+
+    index = 0U;
+    best_distance = UINT_MAX;
+    distance = 0U;
+    if (current_accent_valid == 0 || color == NULL
+            || current_accent == NULL || current_accent_score == NULL) {
+        return UINT_MAX;
+    }
+
+    for (index = 0U; index < SIXEL_STICKY_THUMBNAIL_COUNT; ++index) {
+        if (current_accent_score[index]
+                < SIXEL_STICKY_ACCENT_SCORE_THRESHOLD) {
+            continue;
+        }
+        distance = sixel_encoder_palette_distance_sq(
+            color,
+            current_accent + (size_t)index * 3U);
+        if (distance < best_distance) {
+            best_distance = distance;
+        }
+    }
+
+    return best_distance;
+}
+
+static unsigned int
+sixel_encoder_sticky_accent_bonus(
+    unsigned char const *color,
+    unsigned char const *current_accent,
+    unsigned int const *current_accent_score,
+    int current_accent_valid)
+{
+    unsigned int distance;
+
+    distance = sixel_encoder_sticky_accent_distance_sq(
+        color,
+        current_accent,
+        current_accent_score,
+        current_accent_valid);
+    if (distance > SIXEL_STICKY_ACCENT_MATCH_DISTANCE) {
+        return 0U;
+    }
+
+    return SIXEL_STICKY_ACCENT_SCORE_BONUS - distance;
+}
+
+static void
+sixel_encoder_mark_sticky_accent_slots(
+    unsigned char used_slots[],
+    unsigned char const *prev_palette,
+    unsigned int color_count,
+    unsigned char const *current_accent,
+    unsigned int const *current_accent_score,
+    int current_accent_valid)
+{
+    unsigned int slot;
+    unsigned int distance;
+
+    slot = 0U;
+    distance = 0U;
+    if (used_slots == NULL || prev_palette == NULL
+            || current_accent_valid == 0) {
+        return;
+    }
+
+    for (slot = 0U; slot < color_count; ++slot) {
+        distance = sixel_encoder_sticky_accent_distance_sq(
+            prev_palette + (size_t)slot * 3U,
+            current_accent,
+            current_accent_score,
+            current_accent_valid);
+        if (distance <= SIXEL_STICKY_ACCENT_MATCH_DISTANCE) {
+            used_slots[slot] = 1U;
+        }
+    }
+}
+
 static void
 sixel_encoder_restore_limited_sticky_palette(
     sixel_palette_t *palette,
@@ -4938,6 +5185,9 @@ sixel_encoder_restore_limited_sticky_palette(
     int prev_thumbnail_valid,
     unsigned char const *current_thumbnail,
     int current_thumbnail_valid,
+    unsigned char const *current_accent,
+    unsigned int const *current_accent_score,
+    int current_accent_valid,
     unsigned int swap_limit)
 {
     unsigned char merged[SIXEL_PALETTE_MAX * 3];
@@ -4956,6 +5206,7 @@ sixel_encoder_restore_limited_sticky_palette(
     unsigned int nearest_unused_distance;
     unsigned int distance;
     unsigned int novelty;
+    unsigned int accent_bonus;
     unsigned int candidate_score;
     unsigned int best_score;
     sixel_palette_entries_request_t entries_request;
@@ -4974,6 +5225,7 @@ sixel_encoder_restore_limited_sticky_palette(
     nearest_unused_distance = UINT_MAX;
     distance = 0U;
     novelty = 0U;
+    accent_bonus = 0U;
     candidate_score = 0U;
     best_score = 0U;
     memset(merged, 0, sizeof(merged));
@@ -5018,6 +5270,12 @@ sixel_encoder_restore_limited_sticky_palette(
     }
 
     memcpy(merged, prev_palette, (size_t)color_count * 3U);
+    sixel_encoder_mark_sticky_accent_slots(used_slots,
+                                           merged,
+                                           color_count,
+                                           current_accent,
+                                           current_accent_score,
+                                           current_accent_valid);
     while (changes < swap_limit) {
         best_candidate = UINT_MAX;
         best_slot = UINT_MAX;
@@ -5033,6 +5291,11 @@ sixel_encoder_restore_limited_sticky_palette(
                 prev_thumbnail_valid,
                 current_thumbnail,
                 current_thumbnail_valid);
+            accent_bonus = sixel_encoder_sticky_accent_bonus(
+                candidate_palette + (size_t)candidate * 3U,
+                current_accent,
+                current_accent_score,
+                current_accent_valid);
             nearest_slot = UINT_MAX;
             nearest_any_distance = UINT_MAX;
             nearest_unused_distance = UINT_MAX;
@@ -5049,7 +5312,10 @@ sixel_encoder_restore_limited_sticky_palette(
                     nearest_slot = slot;
                 }
             }
-            candidate_score = nearest_any_distance + novelty;
+            if (nearest_any_distance == 0U) {
+                continue;
+            }
+            candidate_score = nearest_any_distance + novelty + accent_bonus;
             if (nearest_slot != UINT_MAX
                     && (candidate_score > best_score
                         || (candidate_score == best_score
@@ -5127,7 +5393,10 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     sixel_palette_float32_entries_view_t float32_view;
     sixel_palette_metadata_t metadata;
     unsigned char current_sticky_thumbnail[SIXEL_STICKY_THUMBNAIL_BYTES];
+    unsigned char current_sticky_accent[SIXEL_STICKY_THUMBNAIL_BYTES];
+    unsigned int current_sticky_accent_score[SIXEL_STICKY_THUMBNAIL_COUNT];
     int current_sticky_thumbnail_valid;
+    int current_sticky_accent_valid;
 
     status = SIXEL_OK;
     palette = NULL;
@@ -5149,7 +5418,10 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     memset(&float32_view, 0, sizeof(float32_view));
     memset(&metadata, 0, sizeof(metadata));
     memset(current_sticky_thumbnail, 0, sizeof(current_sticky_thumbnail));
+    memset(current_sticky_accent, 0, sizeof(current_sticky_accent));
+    memset(current_sticky_accent_score, 0, sizeof(current_sticky_accent_score));
     current_sticky_thumbnail_valid = 0;
+    current_sticky_accent_valid = 0;
     if (encoder == NULL || frame == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -5196,12 +5468,19 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
         current_probe,
         encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY
             ? current_sticky_thumbnail
+            : NULL,
+        encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY
+            ? current_sticky_accent
+            : NULL,
+        encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY
+            ? current_sticky_accent_score
             : NULL);
     if (SIXEL_FAILED(status)) {
         return status;
     }
     if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY) {
         current_sticky_thumbnail_valid = 1;
+        current_sticky_accent_valid = 1;
     }
 
     width = sixel_frame_get_width(frame);
@@ -5243,6 +5522,9 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
                 encoder->quantize_animation_prev_sticky_thumbnail_valid,
                 current_sticky_thumbnail,
                 current_sticky_thumbnail_valid,
+                current_sticky_accent,
+                current_sticky_accent_score,
+                current_sticky_accent_valid,
                 sixel_encoder_sticky_swap_limit(encoder));
         } else {
             /* Keep legacy animation palettes stable until a scene cut. */
