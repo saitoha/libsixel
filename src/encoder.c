@@ -4926,6 +4926,134 @@ sixel_encoder_scene_probe_distance(unsigned char const *left,
     return diff_sum / (1020.0 * (double)SIXEL_QUANTIZE_SCENE_PROBE_BYTES);
 }
 
+static unsigned int
+sixel_encoder_palette_distance_abs(unsigned char const *left,
+                                   unsigned char const *right)
+{
+    int red;
+    int green;
+    int blue;
+
+    red = 0;
+    green = 0;
+    blue = 0;
+    if (left == NULL || right == NULL) {
+        return UINT_MAX;
+    }
+
+    red = (int)left[0] - (int)right[0];
+    green = (int)left[1] - (int)right[1];
+    blue = (int)left[2] - (int)right[2];
+    if (red < 0) {
+        red = -red;
+    }
+    if (green < 0) {
+        green = -green;
+    }
+    if (blue < 0) {
+        blue = -blue;
+    }
+
+    return (unsigned int)(red + green + blue);
+}
+
+static double
+sixel_encoder_sticky_thumbnail_palette_error(
+    unsigned char const *thumbnail,
+    int thumbnail_valid,
+    unsigned char const *palette,
+    unsigned int palette_count)
+{
+    unsigned int sample;
+    unsigned int entry;
+    unsigned int distance;
+    unsigned int best_distance;
+    double error_sum;
+
+    sample = 0U;
+    entry = 0U;
+    distance = 0U;
+    best_distance = UINT_MAX;
+    error_sum = 0.0;
+    if (thumbnail_valid == 0 || thumbnail == NULL || palette == NULL
+            || palette_count == 0U) {
+        return 1.0;
+    }
+    if (palette_count > (unsigned int)SIXEL_PALETTE_MAX) {
+        palette_count = (unsigned int)SIXEL_PALETTE_MAX;
+    }
+
+    for (sample = 0U; sample < SIXEL_STICKY_THUMBNAIL_COUNT; ++sample) {
+        best_distance = UINT_MAX;
+        for (entry = 0U; entry < palette_count; ++entry) {
+            distance = sixel_encoder_palette_distance_abs(
+                thumbnail + (size_t)sample * 3U,
+                palette + (size_t)entry * 3U);
+            if (distance < best_distance) {
+                best_distance = distance;
+            }
+        }
+        error_sum += (double)best_distance / (255.0 * 3.0);
+    }
+
+    return error_sum / (double)SIXEL_STICKY_THUMBNAIL_COUNT;
+}
+
+static double
+sixel_encoder_sticky_palette_fit_scene_score(
+    unsigned char const *prev_palette,
+    unsigned int prev_count,
+    unsigned char const *candidate_palette,
+    unsigned int candidate_count,
+    unsigned char const *current_thumbnail,
+    int current_thumbnail_valid,
+    double scene_cut_threshold)
+{
+    double prev_error;
+    double candidate_error;
+    double min_prev_error;
+
+    prev_error = 0.0;
+    candidate_error = 0.0;
+    min_prev_error = 0.0;
+    if (prev_palette == NULL || candidate_palette == NULL
+            || prev_count == 0U || candidate_count == 0U
+            || current_thumbnail_valid == 0 || current_thumbnail == NULL) {
+        return 0.0;
+    }
+
+    prev_error = sixel_encoder_sticky_thumbnail_palette_error(
+        current_thumbnail,
+        current_thumbnail_valid,
+        prev_palette,
+        prev_count);
+    candidate_error = sixel_encoder_sticky_thumbnail_palette_error(
+        current_thumbnail,
+        current_thumbnail_valid,
+        candidate_palette,
+        candidate_count);
+    if (prev_error <= candidate_error || prev_error <= 0.0) {
+        return 0.0;
+    }
+
+    /*
+     * The 8x8 scene probe sees broad frame changes, but sticky can fail on
+     * mostly-black UI frames where a local thumbnail/video region appears.
+     * Compare how well the previous palette and the fresh candidate palette
+     * cover the current 64x64 thumbnail; reset only when the candidate gives a
+     * substantial relative improvement and the previous palette is visibly
+     * mismatched.
+     */
+    min_prev_error = scene_cut_threshold > 0.0
+        ? scene_cut_threshold * 0.25
+        : 0.0;
+    if (prev_error < min_prev_error) {
+        return 0.0;
+    }
+
+    return (prev_error - candidate_error) / prev_error;
+}
+
 static void
 sixel_encoder_restore_previous_palette(
     sixel_palette_t *palette,
@@ -5380,6 +5508,7 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     double scene_cut_threshold;
     unsigned char current_probe[SIXEL_QUANTIZE_SCENE_PROBE_BYTES];
     double scene_score;
+    double sticky_scene_score;
     int scene_cut;
     int width;
     int height;
@@ -5405,6 +5534,7 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     scene_cut_threshold = SIXEL_QUANTIZE_SCENE_CUT_THRESHOLD_DEFAULT;
     memset(current_probe, 0, sizeof(current_probe));
     scene_score = 0.0;
+    sticky_scene_score = 0.0;
     scene_cut = 0;
     width = 0;
     height = 0;
@@ -5498,6 +5628,19 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
             encoder->quantize_animation_prev_probe);
         if (scene_score > scene_cut_threshold) {
             scene_cut = 1;
+        } else if (encoder->quantize_model == SIXEL_QUANTIZE_MODEL_STICKY) {
+            sticky_scene_score =
+                sixel_encoder_sticky_palette_fit_scene_score(
+                    encoder->quantize_animation_prev_palette,
+                    encoder->quantize_animation_prev_palette_count,
+                    entries_view.entries,
+                    palette_count,
+                    current_sticky_thumbnail,
+                    current_sticky_thumbnail_valid,
+                    scene_cut_threshold);
+            if (sticky_scene_score > scene_cut_threshold) {
+                scene_cut = 1;
+            }
         }
     }
 
