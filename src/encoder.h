@@ -249,6 +249,11 @@ struct sixel_encoder {
     unsigned char quantize_animation_prev_sticky_thumbnail[
         SIXEL_STICKY_THUMBNAIL_BYTES];
     int quantize_animation_prev_sticky_thumbnail_valid;
+    unsigned char quantize_animation_prev_sticky_accent[
+        SIXEL_STICKY_THUMBNAIL_BYTES];
+    unsigned int quantize_animation_prev_sticky_accent_score[
+        SIXEL_STICKY_THUMBNAIL_COUNT];
+    int quantize_animation_prev_sticky_accent_valid;
     int quantize_animation_prev_width;
     int quantize_animation_prev_height;
     int final_merge_mode;

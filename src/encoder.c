@@ -161,6 +161,7 @@
 #define SIXEL_STICKY_ACCENT_SCORE_THRESHOLD 4096U
 #define SIXEL_STICKY_ACCENT_MATCH_DISTANCE 4096U
 #define SIXEL_STICKY_ACCENT_SCORE_BONUS 65536U
+#define SIXEL_STICKY_TEMPORAL_ACCENT_SCORE_BONUS 131072U
 
 enum sixel_sticky_candidate {
     SIXEL_STICKY_CANDIDATE_MEDOIDS = 0,
@@ -4380,6 +4381,7 @@ sixel_encoder_reset_quantize_animation_state(sixel_encoder_t *encoder)
     encoder->quantize_animation_prev_palette_float_stride = 0;
     encoder->quantize_animation_prev_probe_valid = 0;
     encoder->quantize_animation_prev_sticky_thumbnail_valid = 0;
+    encoder->quantize_animation_prev_sticky_accent_valid = 0;
     encoder->quantize_animation_prev_width = 0;
     encoder->quantize_animation_prev_height = 0;
 }
@@ -5268,6 +5270,74 @@ sixel_encoder_sticky_accent_bonus(
     return SIXEL_STICKY_ACCENT_SCORE_BONUS - distance;
 }
 
+static unsigned int
+sixel_encoder_sticky_temporal_accent_bonus(
+    unsigned char const *color,
+    unsigned char const *prev_accent,
+    unsigned int const *prev_accent_score,
+    int prev_accent_valid,
+    unsigned char const *current_accent,
+    unsigned int const *current_accent_score,
+    int current_accent_valid)
+{
+    unsigned int index;
+    unsigned int color_distance;
+    unsigned int temporal_distance;
+    unsigned int color_fit;
+    unsigned int temporal_fit;
+    unsigned int bonus;
+    unsigned int best_bonus;
+
+    index = 0U;
+    color_distance = 0U;
+    temporal_distance = 0U;
+    color_fit = 0U;
+    temporal_fit = 0U;
+    bonus = 0U;
+    best_bonus = 0U;
+    if (color == NULL || prev_accent == NULL || prev_accent_score == NULL
+            || current_accent == NULL || current_accent_score == NULL
+            || prev_accent_valid == 0 || current_accent_valid == 0) {
+        return 0U;
+    }
+
+    for (index = 0U; index < SIXEL_STICKY_THUMBNAIL_COUNT; ++index) {
+        if (prev_accent_score[index]
+                < SIXEL_STICKY_ACCENT_SCORE_THRESHOLD
+                || current_accent_score[index]
+                < SIXEL_STICKY_ACCENT_SCORE_THRESHOLD) {
+            continue;
+        }
+        temporal_distance = sixel_encoder_palette_distance_sq(
+            prev_accent + (size_t)index * 3U,
+            current_accent + (size_t)index * 3U);
+        if (temporal_distance > SIXEL_STICKY_ACCENT_MATCH_DISTANCE) {
+            continue;
+        }
+        color_distance = sixel_encoder_palette_distance_sq(
+            color,
+            current_accent + (size_t)index * 3U);
+        if (color_distance > SIXEL_STICKY_ACCENT_MATCH_DISTANCE) {
+            continue;
+        }
+
+        /*
+         * Sticky should strongly prefer an accent that remains visible at the
+         * same thumbnail cell.  The current-frame gate prevents old colors
+         * from being protected after the local accent disappears.
+         */
+        color_fit = SIXEL_STICKY_ACCENT_MATCH_DISTANCE - color_distance;
+        temporal_fit = SIXEL_STICKY_ACCENT_MATCH_DISTANCE - temporal_distance;
+        bonus = SIXEL_STICKY_TEMPORAL_ACCENT_SCORE_BONUS
+              + color_fit + temporal_fit;
+        if (bonus > best_bonus) {
+            best_bonus = bonus;
+        }
+    }
+
+    return best_bonus;
+}
+
 static void
 sixel_encoder_mark_sticky_accent_slots(
     unsigned char used_slots[],
@@ -5311,6 +5381,9 @@ sixel_encoder_restore_limited_sticky_palette(
     unsigned int candidate_count,
     unsigned char const *prev_thumbnail,
     int prev_thumbnail_valid,
+    unsigned char const *prev_accent,
+    unsigned int const *prev_accent_score,
+    int prev_accent_valid,
     unsigned char const *current_thumbnail,
     int current_thumbnail_valid,
     unsigned char const *current_accent,
@@ -5335,6 +5408,7 @@ sixel_encoder_restore_limited_sticky_palette(
     unsigned int distance;
     unsigned int novelty;
     unsigned int accent_bonus;
+    unsigned int temporal_bonus;
     unsigned int candidate_score;
     unsigned int best_score;
     sixel_palette_entries_request_t entries_request;
@@ -5354,6 +5428,7 @@ sixel_encoder_restore_limited_sticky_palette(
     distance = 0U;
     novelty = 0U;
     accent_bonus = 0U;
+    temporal_bonus = 0U;
     candidate_score = 0U;
     best_score = 0U;
     memset(merged, 0, sizeof(merged));
@@ -5424,6 +5499,14 @@ sixel_encoder_restore_limited_sticky_palette(
                 current_accent,
                 current_accent_score,
                 current_accent_valid);
+            temporal_bonus = sixel_encoder_sticky_temporal_accent_bonus(
+                candidate_palette + (size_t)candidate * 3U,
+                prev_accent,
+                prev_accent_score,
+                prev_accent_valid,
+                current_accent,
+                current_accent_score,
+                current_accent_valid);
             nearest_slot = UINT_MAX;
             nearest_any_distance = UINT_MAX;
             nearest_unused_distance = UINT_MAX;
@@ -5443,7 +5526,10 @@ sixel_encoder_restore_limited_sticky_palette(
             if (nearest_any_distance == 0U) {
                 continue;
             }
-            candidate_score = nearest_any_distance + novelty + accent_bonus;
+            candidate_score = nearest_any_distance
+                            + novelty
+                            + accent_bonus
+                            + temporal_bonus;
             if (nearest_slot != UINT_MAX
                     && (candidate_score > best_score
                         || (candidate_score == best_score
@@ -5663,6 +5749,9 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
                 palette_count,
                 encoder->quantize_animation_prev_sticky_thumbnail,
                 encoder->quantize_animation_prev_sticky_thumbnail_valid,
+                encoder->quantize_animation_prev_sticky_accent,
+                encoder->quantize_animation_prev_sticky_accent_score,
+                encoder->quantize_animation_prev_sticky_accent_valid,
                 current_sticky_thumbnail,
                 current_sticky_thumbnail_valid,
                 current_sticky_accent,
@@ -5744,6 +5833,16 @@ sixel_encoder_apply_quantize_animation_mode(sixel_encoder_t *encoder,
     }
     encoder->quantize_animation_prev_sticky_thumbnail_valid
         = current_sticky_thumbnail_valid;
+    if (current_sticky_accent_valid != 0) {
+        memcpy(encoder->quantize_animation_prev_sticky_accent,
+               current_sticky_accent,
+               sizeof(current_sticky_accent));
+        memcpy(encoder->quantize_animation_prev_sticky_accent_score,
+               current_sticky_accent_score,
+               sizeof(current_sticky_accent_score));
+    }
+    encoder->quantize_animation_prev_sticky_accent_valid
+        = current_sticky_accent_valid;
     encoder->quantize_animation_prev_width = width;
     encoder->quantize_animation_prev_height = height;
 
@@ -10456,6 +10555,14 @@ sixel_encoder_new(
            0,
            sizeof((*ppencoder)->quantize_animation_prev_sticky_thumbnail));
     (*ppencoder)->quantize_animation_prev_sticky_thumbnail_valid = 0;
+    memset((*ppencoder)->quantize_animation_prev_sticky_accent,
+           0,
+           sizeof((*ppencoder)->quantize_animation_prev_sticky_accent));
+    memset((*ppencoder)->quantize_animation_prev_sticky_accent_score,
+           0,
+           sizeof(
+               (*ppencoder)->quantize_animation_prev_sticky_accent_score));
+    (*ppencoder)->quantize_animation_prev_sticky_accent_valid = 0;
     (*ppencoder)->quantize_animation_prev_width = 0;
     (*ppencoder)->quantize_animation_prev_height = 0;
     (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
