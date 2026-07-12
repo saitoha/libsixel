@@ -45,6 +45,20 @@ sixel_encoder_should_hide_animation_cursor(int is_multiframe,
 #define SIXEL_COLOR_OPTION_MAPFILE          3   /* use mapfile option */
 #define SIXEL_COLOR_OPTION_HIGHCOLOR        4   /* use highcolor option */
 
+#define SIXEL_QUANTIZE_SCENE_CUT_THRESHOLD_DEFAULT 0.20
+#define SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE 8
+#define SIXEL_QUANTIZE_SCENE_PROBE_COUNT \
+    (SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE \
+     * SIXEL_QUANTIZE_SCENE_PROBE_GRID_SIDE)
+#define SIXEL_QUANTIZE_SCENE_PROBE_BYTES \
+    (SIXEL_QUANTIZE_SCENE_PROBE_COUNT * 3)
+#define SIXEL_STICKY_THUMBNAIL_GRID_SIDE 64
+#define SIXEL_STICKY_THUMBNAIL_COUNT \
+    (SIXEL_STICKY_THUMBNAIL_GRID_SIDE \
+     * SIXEL_STICKY_THUMBNAIL_GRID_SIDE)
+#define SIXEL_STICKY_THUMBNAIL_BYTES \
+    (SIXEL_STICKY_THUMBNAIL_COUNT * 3)
+
 /* encoder object */
 struct sixel_encoder {
 
@@ -229,8 +243,12 @@ struct sixel_encoder {
     int quantize_animation_prev_palette_valid;
     int quantize_animation_prev_palette_float_valid;
     int quantize_animation_prev_palette_float_stride;
-    unsigned char quantize_animation_prev_probe[192];
+    unsigned char quantize_animation_prev_probe[
+        SIXEL_QUANTIZE_SCENE_PROBE_BYTES];
     int quantize_animation_prev_probe_valid;
+    unsigned char quantize_animation_prev_sticky_thumbnail[
+        SIXEL_STICKY_THUMBNAIL_BYTES];
+    int quantize_animation_prev_sticky_thumbnail_valid;
     int quantize_animation_prev_width;
     int quantize_animation_prev_height;
     int final_merge_mode;
