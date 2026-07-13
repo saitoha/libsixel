@@ -45,6 +45,14 @@ typedef struct sixel_gpu_palette_request {
     size_t transparent_mask_size;
     int transparent_keycolor;
     int has_6delta_accumulation;
+    unsigned char const *accumulation_pixels;
+    size_t accumulation_pixels_size;
+    unsigned char const *accumulation_valid_mask;
+    size_t accumulation_valid_mask_size;
+    int accumulation_keycolor;
+    unsigned int sixdelta_threshold;
+    unsigned char *accumulation_result_mask;
+    size_t accumulation_result_mask_size;
     int bluenoise_strength_override;
     float bluenoise_strength;
     int bluenoise_phase_override;

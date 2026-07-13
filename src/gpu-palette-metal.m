@@ -37,6 +37,12 @@ typedef struct sixel_gpu_metal_params {
     uint32_t has_transparent;
     uint32_t transparent_size;
     uint32_t transparent_keycolor;
+    uint32_t has_6delta;
+    uint32_t accumulation_pixel_count;
+    uint32_t accumulation_valid_mask_size;
+    uint32_t accumulation_keycolor;
+    uint32_t sixdelta_threshold;
+    uint32_t accumulation_result_mask_size;
     float bluenoise_strength;
     float bluenoise_gradient_factor;
     int32_t bluenoise_phase_x;
@@ -70,6 +76,12 @@ static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_metal_gradient_buffer =
     { nil, 0U };
 static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_metal_params_buffer =
     { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t
+    g_sixel_gpu_metal_accumulation_buffer = { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t
+    g_sixel_gpu_metal_accumulation_valid_buffer = { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t
+    g_sixel_gpu_metal_accumulation_result_buffer = { nil, 0U };
 static unsigned char g_sixel_gpu_metal_palette_shadow[
     SIXEL_PALETTE_MAX * 3U];
 static NSUInteger g_sixel_gpu_metal_palette_shadow_length = 0U;
@@ -89,6 +101,12 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    uint has_transparent;\n"
 "    uint transparent_size;\n"
 "    uint transparent_keycolor;\n"
+"    uint has_6delta;\n"
+"    uint accumulation_pixel_count;\n"
+"    uint accumulation_valid_mask_size;\n"
+"    uint accumulation_keycolor;\n"
+"    uint sixdelta_threshold;\n"
+"    uint accumulation_result_mask_size;\n"
 "    float bluenoise_strength;\n"
 "    float bluenoise_gradient_factor;\n"
 "    int bluenoise_phase_x;\n"
@@ -165,6 +183,9 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    device const uchar *blue_noise [[buffer(4)]],\n"
 "    device const uchar *gradient [[buffer(5)]],\n"
 "    constant Params& params [[buffer(6)]],\n"
+"    device const uchar *accumulation [[buffer(7)]],\n"
+"    device const uchar *accumulation_valid_mask [[buffer(8)]],\n"
+"    device uchar *accumulation_result_mask [[buffer(9)]],\n"
 "    uint gid [[thread_position_in_grid]])\n"
 "{\n"
 "    uint x;\n"
@@ -172,12 +193,18 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    uint best;\n"
 "    uint best_dist;\n"
 "    uchar q[3];\n"
+"    int dr;\n"
+"    int dg;\n"
+"    int db;\n"
 "    if (gid >= params.pixel_count) {\n"
 "        return;\n"
 "    }\n"
 "    if (params.has_transparent != 0u && gid < params.transparent_size &&\n"
 "        transparent_mask[gid] != 0u) {\n"
 "        result[gid] = uchar(params.transparent_keycolor);\n"
+"        if (gid < params.accumulation_result_mask_size) {\n"
+"            accumulation_result_mask[gid] = uchar(1);\n"
+"        }\n"
 "        return;\n"
 "    }\n"
 "    x = gid % params.width;\n"
@@ -185,6 +212,26 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    q[0] = pixels[gid * 3u + 0u];\n"
 "    q[1] = pixels[gid * 3u + 1u];\n"
 "    q[2] = pixels[gid * 3u + 2u];\n"
+"    if (params.has_6delta != 0u &&\n"
+"        gid < params.accumulation_pixel_count &&\n"
+"        (gid >= params.accumulation_valid_mask_size ||\n"
+"         accumulation_valid_mask[gid] != 0u)) {\n"
+"        dr = int(q[0]) - int(accumulation[gid * 3u + 0u]);\n"
+"        dg = int(q[1]) - int(accumulation[gid * 3u + 1u]);\n"
+"        db = int(q[2]) - int(accumulation[gid * 3u + 2u]);\n"
+"        dr = dr < 0 ? -dr : dr;\n"
+"        dg = dg < 0 ? -dg : dg;\n"
+"        db = db < 0 ? -db : db;\n"
+"        if (uint(dr) <= params.sixdelta_threshold &&\n"
+"            uint(dg) <= params.sixdelta_threshold &&\n"
+"            uint(db) <= params.sixdelta_threshold) {\n"
+"            result[gid] = uchar(params.accumulation_keycolor);\n"
+"            if (gid < params.accumulation_result_mask_size) {\n"
+"                accumulation_result_mask[gid] = uchar(1);\n"
+"            }\n"
+"            return;\n"
+"        }\n"
+"    }\n"
 "    if (params.mode == 1u) {\n"
 "        float weight = gradient_weight(gradient, params, x, y, gid);\n"
 "        for (uint d = 0u; d < 3u; ++d) {\n"
@@ -462,6 +509,22 @@ sixel_gpu_palette_metal_fill_params(
         params->transparent_keycolor =
             (uint32_t)request->transparent_keycolor;
     }
+    if (request->has_6delta_accumulation != 0 &&
+            request->accumulation_pixels != NULL &&
+            request->accumulation_keycolor >= 0 &&
+            request->accumulation_keycolor < SIXEL_PALETTE_MAX) {
+        params->has_6delta = 1U;
+        params->accumulation_pixel_count =
+            (uint32_t)(request->accumulation_pixels_size / 3U);
+        params->accumulation_valid_mask_size =
+            (uint32_t)request->accumulation_valid_mask_size;
+        params->accumulation_keycolor =
+            (uint32_t)request->accumulation_keycolor;
+        params->sixdelta_threshold =
+            (uint32_t)request->sixdelta_threshold;
+        params->accumulation_result_mask_size =
+            (uint32_t)request->accumulation_result_mask_size;
+    }
     params->bluenoise_strength = request->bluenoise_strength;
     params->bluenoise_gradient_factor = request->bluenoise_gradient_factor;
     params->bluenoise_phase_x = (int32_t)request->bluenoise_phase_x;
@@ -485,6 +548,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     id<MTLBuffer> blue_noise_buffer;
     id<MTLBuffer> gradient_buffer;
     id<MTLBuffer> params_buffer;
+    id<MTLBuffer> accumulation_buffer;
+    id<MTLBuffer> accumulation_valid_buffer;
+    id<MTLBuffer> accumulation_result_buffer;
     id<MTLCommandBuffer> command_buffer;
     id<MTLComputeCommandEncoder> encoder;
     NSUInteger threads_per_group;
@@ -494,6 +560,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     NSUInteger palette_length;
     NSUInteger transparent_length;
     NSUInteger gradient_length;
+    NSUInteger accumulation_length;
+    NSUInteger accumulation_valid_length;
+    NSUInteger accumulation_result_length;
     int locked;
 
     status = SIXEL_FALSE;
@@ -505,6 +574,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     blue_noise_buffer = nil;
     gradient_buffer = nil;
     params_buffer = nil;
+    accumulation_buffer = nil;
+    accumulation_valid_buffer = nil;
+    accumulation_result_buffer = nil;
     command_buffer = nil;
     encoder = nil;
     threads_per_group = 0U;
@@ -514,6 +586,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     palette_length = 0U;
     transparent_length = 0U;
     gradient_length = 0U;
+    accumulation_length = 0U;
+    accumulation_valid_length = 0U;
+    accumulation_result_length = 0U;
     locked = 0;
 
     if (request == NULL) {
@@ -540,6 +615,15 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             (NSUInteger)request->transparent_mask_size : 1U;
         gradient_length = request->bluenoise_gradient_map != NULL ?
             (NSUInteger)request->bluenoise_gradient_map_size : 1U;
+        accumulation_length =
+            request->has_6delta_accumulation != 0 ?
+            (NSUInteger)request->accumulation_pixels_size : 1U;
+        accumulation_valid_length =
+            request->accumulation_valid_mask != NULL ?
+            (NSUInteger)request->accumulation_valid_mask_size : 1U;
+        accumulation_result_length =
+            request->accumulation_result_mask != NULL ?
+            (NSUInteger)request->accumulation_result_mask_size : 1U;
 
         result_buffer = sixel_gpu_metal_ensure_buffer(
             &g_sixel_gpu_metal_result_buffer,
@@ -572,10 +656,36 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             &g_sixel_gpu_metal_params_buffer,
             &params,
             sizeof(params));
+        if (request->has_6delta_accumulation != 0) {
+            accumulation_buffer = sixel_gpu_metal_upload_buffer(
+                &g_sixel_gpu_metal_accumulation_buffer,
+                request->accumulation_pixels,
+                accumulation_length);
+        } else {
+            accumulation_buffer = g_sixel_gpu_metal_dummy_buffer;
+        }
+        if (request->accumulation_valid_mask != NULL) {
+            accumulation_valid_buffer = sixel_gpu_metal_upload_buffer(
+                &g_sixel_gpu_metal_accumulation_valid_buffer,
+                request->accumulation_valid_mask,
+                accumulation_valid_length);
+        } else {
+            accumulation_valid_buffer = g_sixel_gpu_metal_dummy_buffer;
+        }
+        if (request->accumulation_result_mask != NULL) {
+            accumulation_result_buffer = sixel_gpu_metal_upload_buffer(
+                &g_sixel_gpu_metal_accumulation_result_buffer,
+                request->accumulation_result_mask,
+                accumulation_result_length);
+        } else {
+            accumulation_result_buffer = g_sixel_gpu_metal_dummy_buffer;
+        }
         if (result_buffer == nil || pixel_buffer == nil ||
                 palette_buffer == nil || transparent_buffer == nil ||
                 blue_noise_buffer == nil || gradient_buffer == nil ||
-                params_buffer == nil) {
+                params_buffer == nil || accumulation_buffer == nil ||
+                accumulation_valid_buffer == nil ||
+                accumulation_result_buffer == nil) {
             sixel_helper_set_additional_message(
                 "gpu palette apply: Metal buffer allocation failed.");
             status = SIXEL_BAD_ALLOCATION;
@@ -599,6 +709,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
         [encoder setBuffer:blue_noise_buffer offset:0 atIndex:4];
         [encoder setBuffer:gradient_buffer offset:0 atIndex:5];
         [encoder setBuffer:params_buffer offset:0 atIndex:6];
+        [encoder setBuffer:accumulation_buffer offset:0 atIndex:7];
+        [encoder setBuffer:accumulation_valid_buffer offset:0 atIndex:8];
+        [encoder setBuffer:accumulation_result_buffer offset:0 atIndex:9];
 
         threads_per_group =
             [g_sixel_gpu_metal_pipeline maxTotalThreadsPerThreadgroup];
@@ -624,6 +737,11 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
         }
 
         memcpy(request->dest, [result_buffer contents], result_length);
+        if (request->accumulation_result_mask != NULL) {
+            memcpy(request->accumulation_result_mask,
+                   [accumulation_result_buffer contents],
+                   accumulation_result_length);
+        }
         status = SIXEL_OK;
 
     end:

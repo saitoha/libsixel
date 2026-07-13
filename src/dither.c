@@ -3824,10 +3824,29 @@ sixel_dither_apply_palette_with_mode(
             apply_transparent_mask != 0 ? total_pixels : 0U;
         gpu_request.transparent_keycolor = keycolor_for_mask;
         gpu_request.has_6delta_accumulation =
+            dither->method_for_diffuse == SIXEL_DIFFUSE_NONE &&
             sixel_dither_has_compatible_accumulation_hint(dither,
                                                           width,
                                                           height,
                                                           total_pixels);
+        if (gpu_request.has_6delta_accumulation != 0) {
+            gpu_request.accumulation_pixels =
+                dither->pipeline_accumulation_pixels;
+            gpu_request.accumulation_pixels_size =
+                dither->pipeline_accumulation_pixels_size;
+            gpu_request.accumulation_valid_mask =
+                dither->pipeline_accumulation_valid_mask;
+            gpu_request.accumulation_valid_mask_size =
+                dither->pipeline_accumulation_valid_mask_size;
+            gpu_request.accumulation_keycolor =
+                dither->pipeline_accumulation_keycolor;
+            gpu_request.sixdelta_threshold =
+                dither->pipeline_6delta_threshold;
+            gpu_request.accumulation_result_mask =
+                dither->pipeline_accumulation_result_mask;
+            gpu_request.accumulation_result_mask_size =
+                dither->pipeline_accumulation_result_mask_size;
+        }
         gpu_request.bluenoise_strength_override =
             dither->bluenoise_strength_override;
         gpu_request.bluenoise_strength = dither->bluenoise_strength;

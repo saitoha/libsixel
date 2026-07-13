@@ -9,6 +9,7 @@
 #endif
 
 #include <ctype.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -69,23 +70,48 @@ static int
 sixel_gpu_palette_accumulation_is_supported(
     sixel_gpu_palette_request_t const *request)
 {
+    size_t expected_size;
+
+    expected_size = 0U;
     if (request == NULL) {
         return 0;
     }
 
     /*
      * 6delta accumulation is a byte-size optimization layered on top of
-     * transparent-policy=keep.  The Metal palette kernel does not emit
-     * unchanged pixels as the transparent keycolor, nor does it publish the
-     * matching accumulation result mask.  Full-paint GPU output is still
-     * display-correct, but it can change the SIXEL body shape.  Keep AUTO on
-     * the CPU path for stable output, while FORCE explicitly opts into the
-     * GPU palette path and accepts the full-paint form.
+     * transparent-policy=keep.  The GPU path can participate only when the
+     * caller gives it the retained RGB plane and the optional result mask
+     * that the encoder later uses to keep the retained plane honest.
      */
     if (request->has_6delta_accumulation == 0) {
         return 1;
     }
-    return sixel_gpu_palette_policy_is_force(request->policy);
+    if (request->method_for_diffuse != SIXEL_DIFFUSE_NONE) {
+        return 0;
+    }
+    if (request->accumulation_pixels == NULL ||
+            request->accumulation_keycolor < 0 ||
+            request->accumulation_keycolor >= SIXEL_PALETTE_MAX ||
+            request->sixdelta_threshold > 255U) {
+        return 0;
+    }
+    if (request->pixel_count > SIZE_MAX / 3U) {
+        return 0;
+    }
+    expected_size = request->pixel_count * 3U;
+    if (request->accumulation_pixels_size < expected_size) {
+        return 0;
+    }
+    if (request->accumulation_valid_mask != NULL &&
+            request->accumulation_valid_mask_size < request->pixel_count) {
+        return 0;
+    }
+    if (request->accumulation_result_mask != NULL &&
+            request->accumulation_result_mask_size < request->pixel_count) {
+        return 0;
+    }
+
+    return 1;
 }
 
 static int
