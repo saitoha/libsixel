@@ -148,6 +148,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_LUT_POLICY_RBC     0x9  /* Random Ball Cover lookup */
 #define SIXEL_LUT_POLICY_MAHALANOBIS 0xa /* RBC + Mahalanobis pruning */
 
+/* GPU palette-apply policy */
+#define SIXEL_GPU_POLICY_OFF     0x0  /* keep CPU palette apply */
+#define SIXEL_GPU_POLICY_AUTO    0x1  /* probe GPU above internal threshold */
+#define SIXEL_GPU_POLICY_FORCE   0x2  /* require a supported GPU path */
+
 /* built-in dither */
 #define SIXEL_BUILTIN_MONO_DARK   0x0  /* monochrome terminal with dark background */
 #define SIXEL_BUILTIN_MONO_LIGHT  0x1  /* monochrome terminal with light background */
@@ -664,6 +669,15 @@ typedef int SIXELSTATUS;
                                                    eytzinger -> implicit
                                                                   binary tree
                                                                   lookup
+                                               */
+#define SIXEL_OPTFLAG_GPU_POLICY        ('G') /* -G GPUPOLICY,
+                                                 --gpu-policy=GPUPOLICY:
+                                                 choose palette-apply
+                                                 accelerator policy
+                                                   off   -> keep CPU path
+                                                   auto  -> use GPU only when
+                                                            available and large
+                                                   force -> require GPU path
                                                */
 #define SIXEL_OPTFLAG_CLUSTERING_COLORSPACE ('X')
     /* -X COLORSPACE */

@@ -17,6 +17,7 @@ begin
     name = match[1]
     next unless name.start_with?('SIXEL_LOADER_OPTION_',
                                  'SIXEL_LUT_POLICY_',
+                                 'SIXEL_GPU_POLICY_',
                                  'SIXEL_COLORSPACE_')
 
     expected << name

@@ -52,6 +52,7 @@
 #include <6cells.h>
 
 #include "factory.h"
+#include "gpu-palette.h"
 #include "lookup-policy.h"
 #include "dither-policy.h"
 #include "timer.h"
@@ -1658,6 +1659,7 @@ sixel_dither_new(
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->lut_policy_shared_instance_override = 0;
     (*ppdither)->lut_policy_shared_instance = 0;
+    (*ppdither)->gpu_policy = SIXEL_GPU_POLICY_OFF;
     (*ppdither)->lookup_policy = NULL;
     (*ppdither)->dither_policy = NULL;
     (*ppdither)->dither_policy_class_name = NULL;
@@ -3398,6 +3400,10 @@ sixel_dither_apply_palette_with_mode(
     sixel_palette_entries_request_t palette_entries_request;
     sixel_palette_entries_view_t entries_view;
     sixel_palette_float32_entries_view_t float32_view;
+    sixel_gpu_palette_request_t gpu_request;
+    SIXELSTATUS gpu_status;
+    int gpu_applied;
+    int row_index;
 #if SIXEL_ENABLE_THREADS
     int shared_lut;
 #endif  /* SIXEL_ENABLE_THREADS */
@@ -3452,6 +3458,7 @@ sixel_dither_apply_palette_with_mode(
     memset(&entries_view, 0, sizeof(entries_view));
     memset(&float32_view, 0, sizeof(float32_view));
     memset(&palette_entries_request, 0, sizeof(palette_entries_request));
+    memset(&gpu_request, 0, sizeof(gpu_request));
     status = palette->vtbl->get_entries(palette, &entries_view);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -3475,6 +3482,9 @@ sixel_dither_apply_palette_with_mode(
     preset_transparent_mask_size = 0u;
     preset_transparent_keycolor = (-1);
     parallel_active = dither->pipeline_parallel_active;
+    gpu_status = SIXEL_FALSE;
+    gpu_applied = 0;
+    row_index = 0;
 #if defined(__PCC__) || defined(__TINYC__)
     /*
      * pcc and TinyCC builds do not provide the thread-safety guarantees that
@@ -3784,11 +3794,91 @@ sixel_dither_apply_palette_with_mode(
             goto end;
         }
     }
+    if (pipeline_pixelformat == SIXEL_PIXELFORMAT_RGB888 &&
+            dither->gpu_policy != SIXEL_GPU_POLICY_OFF) {
+        memset(&gpu_request, 0, sizeof(gpu_request));
+        gpu_request.policy = dither->gpu_policy;
+        gpu_request.dest = dest;
+        gpu_request.pixels = input_pixels;
+        gpu_request.pixel_count = total_pixels;
+        gpu_request.width = width;
+        gpu_request.height = height;
+        gpu_request.pixelformat = pipeline_pixelformat;
+        gpu_request.palette = entries_view.entries;
+        gpu_request.palette_size = entries_view.entries_size;
+        gpu_request.palette_depth = entries_view.depth;
+        gpu_request.ncolors = dither->ncolors;
+        gpu_request.lut_policy = dither->lut_policy;
+        gpu_request.method_for_diffuse = dither->method_for_diffuse;
+        gpu_request.method_for_scan = method_for_scan;
+#if SIXEL_ENABLE_THREADS
+        gpu_request.has_parallel_bands =
+            parallel_active && parallel_threads > 1 &&
+            parallel_band_height > 0;
+#else
+        gpu_request.has_parallel_bands = 0;
+#endif  /* SIXEL_ENABLE_THREADS */
+        gpu_request.transparent_mask =
+            apply_transparent_mask != 0 ? transparent_mask : NULL;
+        gpu_request.transparent_mask_size =
+            apply_transparent_mask != 0 ? total_pixels : 0U;
+        gpu_request.transparent_keycolor = keycolor_for_mask;
+        gpu_request.has_6delta_accumulation =
+            sixel_dither_has_compatible_accumulation_hint(dither,
+                                                          width,
+                                                          height,
+                                                          total_pixels);
+        gpu_request.bluenoise_strength_override =
+            dither->bluenoise_strength_override;
+        gpu_request.bluenoise_strength = dither->bluenoise_strength;
+        gpu_request.bluenoise_phase_override =
+            dither->bluenoise_phase_override;
+        gpu_request.bluenoise_phase_x = dither->bluenoise_phase_x;
+        gpu_request.bluenoise_phase_y = dither->bluenoise_phase_y;
+        gpu_request.bluenoise_seed_override =
+            dither->bluenoise_seed_override;
+        gpu_request.bluenoise_seed = dither->bluenoise_seed;
+        gpu_request.bluenoise_channel_override =
+            dither->bluenoise_channel_override;
+        gpu_request.bluenoise_channel_rgb = dither->bluenoise_channel_rgb;
+        gpu_request.bluenoise_size_override =
+            dither->bluenoise_size_override;
+        gpu_request.bluenoise_size = dither->bluenoise_size;
+        gpu_request.bluenoise_gradient_factor_override =
+            dither->bluenoise_gradient_factor_override;
+        gpu_request.bluenoise_gradient_factor =
+            dither->bluenoise_gradient_factor;
+        gpu_request.bluenoise_gradient_map = dither->bluenoise_gradient_map;
+        gpu_request.bluenoise_gradient_map_size =
+            dither->bluenoise_gradient_map_size;
+        gpu_request.bluenoise_gradient_width =
+            dither->bluenoise_gradient_width;
+        gpu_request.bluenoise_gradient_height =
+            dither->bluenoise_gradient_height;
+        gpu_status = sixel_gpu_palette_apply(&gpu_request);
+        if (gpu_status == SIXEL_OK) {
+            gpu_applied = 1;
+            parallel_active = 0;
+            status = SIXEL_OK;
+            for (row_index = 0; row_index < height; ++row_index) {
+                sixel_dither_pipeline_row_notify(dither, row_index);
+            }
+        } else if (gpu_status != SIXEL_FALSE) {
+            status = gpu_status;
+            if (dest != NULL && dest_owned) {
+                sixel_allocator_free(dither->allocator, dest);
+            }
+            dest = NULL;
+            goto end;
+        } else {
+            status = SIXEL_OK;
+        }
+    }
 #if SIXEL_ENABLE_THREADS
     shared_lut = sixel_dither_lookup_shared_instance_enabled(
         dither,
         dither->lut_policy);
-    if (parallel_active && parallel_threads > 1
+    if (!gpu_applied && parallel_active && parallel_threads > 1
             && parallel_band_height > 0) {
         sixel_parallel_dither_plan_t plan;
         int adjusted_overlap;
@@ -3858,7 +3948,7 @@ sixel_dither_apply_palette_with_mode(
         ncolors = dither->ncolors;
     } else
 #endif
-    {
+    if (!gpu_applied) {
         resolve_request.result = dest;
         resolve_request.data = input_pixels;
         resolve_request.width = width;

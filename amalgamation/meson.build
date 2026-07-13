@@ -6,7 +6,8 @@ amalgamation_gen = find_program(join_paths(meson.project_source_root(),
 amalgamation_header_depends = [completion_embed]
 
 amalgamation_suffix = 'c'
-if have_objc and (have_quicklook_thumbnailing or have_clipboard_macos)
+if have_objc and (have_quicklook_thumbnailing or have_clipboard_macos or
+                  have_metal)
   amalgamation_suffix = 'm'
 endif
 
@@ -50,6 +51,8 @@ amalgamation_units = files(
   '../src/dither-policy-interframe.c',
   '../src/dither-policy-lso2.c',
   '../src/dither-common-pipeline.c',
+  '../src/gpu-palette.c',
+  '../src/gpu-palette-metal.m',
   '../src/timeline-logger.c',
   '../src/timeline-writer.c',
   '../src/colorspace.c',
@@ -156,6 +159,7 @@ amalgamation_headers = files(
   '../src/dither-policy-bluenoise.h',
   '../src/dither-policy-interframe.h',
   '../src/dither-common-pipeline.h',
+  '../src/gpu-palette.h',
   '../src/lookup-fhedt-8bit.h',
   '../src/lookup-fhedt-float32.h',
   '../src/lookup-vptree-8bit.h',

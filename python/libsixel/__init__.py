@@ -348,6 +348,10 @@ SIXEL_LUT_POLICY_VPTREE    = 0x8  # VP-tree palette lookup
 SIXEL_LUT_POLICY_RBC       = 0x9  # randomized ball cover lookup
 SIXEL_LUT_POLICY_MAHALANOBIS = 0xa  # Mahalanobis-aware lookup
 
+SIXEL_GPU_POLICY_OFF       = 0x0  # keep CPU palette apply
+SIXEL_GPU_POLICY_AUTO      = 0x1  # probe GPU above internal threshold
+SIXEL_GPU_POLICY_FORCE     = 0x2  # require a supported GPU path
+
 # method for re-sampling
 SIXEL_RES_NEAREST          = 0   # Use nearest neighbor method
 SIXEL_RES_GAUSSIAN         = 1   # Use guaussian filter
@@ -636,6 +640,13 @@ SIXEL_OPTFLAG_LUT_POLICY        = '~'  # -~ LOOKUPPOLICY,
                                       #                     via 3D EDT with
                                       #                     optional
                                       #                     refinement
+SIXEL_OPTFLAG_GPU_POLICY        = 'G'  # -G GPUPOLICY,
+                                      #   --gpu-policy=GPUPOLICY:
+                                      #        choose palette-apply accelerator
+                                      #          off   -> keep CPU path
+                                      #          auto  -> probe GPU above the
+                                      #                   internal threshold
+                                      #          force -> require GPU path
 SIXEL_OPTFLAG_CLUSTERING_COLORSPACE = 'X'  # -X COLORSPACE, --clustering-colorspace=COLORSPACE:
                                           #        select palette clustering space.
                                           #        ignored with fixed palette options (-b, -m, -e).

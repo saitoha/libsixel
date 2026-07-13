@@ -72,6 +72,9 @@ final class Constants
     public const SIXEL_LUT_POLICY_VPTREE = 0x8;
     public const SIXEL_LUT_POLICY_RBC = 0x9;
     public const SIXEL_LUT_POLICY_MAHALANOBIS = 0xa;
+    public const SIXEL_GPU_POLICY_OFF = 0x0;
+    public const SIXEL_GPU_POLICY_AUTO = 0x1;
+    public const SIXEL_GPU_POLICY_FORCE = 0x2;
 
     public const SIXEL_COLORSPACE_GAMMA = 0x0;
     public const SIXEL_COLORSPACE_LINEAR = 0x1;
@@ -170,6 +173,7 @@ final class Constants
     public const SIXEL_OPTFLAG_BUILTIN_PALETTE = 'b';
     public const SIXEL_OPTFLAG_ENCODE_POLICY = 'E';
     public const SIXEL_OPTFLAG_LUT_POLICY = '~';
+    public const SIXEL_OPTFLAG_GPU_POLICY = 'G';
     public const SIXEL_OPTFLAG_CLUSTERING_COLORSPACE = 'X';
     public const SIXEL_OPTFLAG_WORKING_COLORSPACE = 'W';
     public const SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U';

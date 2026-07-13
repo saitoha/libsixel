@@ -24,6 +24,7 @@ try {
         'SIXEL_OPTFLAG_',
         'SIXEL_LOADER_OPTION_',
         'SIXEL_LUT_POLICY_',
+        'SIXEL_GPU_POLICY_',
         'SIXEL_COLORSPACE_',
     ];
     foreach ($matches[1] as $name) {

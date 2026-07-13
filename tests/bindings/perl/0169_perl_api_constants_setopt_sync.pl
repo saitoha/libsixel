@@ -33,7 +33,7 @@ open $fh, '<', $header or die "cannot open $header: $!";
 while ($line = <$fh>) {
     if ($line =~ /^#define\s+(SIXEL_[A-Z0-9_]+)\s+/) {
         $name = $1;
-        next if $name !~ /^SIXEL_(?:LOADER_OPTION|LUT_POLICY|COLORSPACE)_/;
+        next if $name !~ /^SIXEL_(?:LOADER_OPTION|LUT_POLICY|GPU_POLICY|COLORSPACE)_/;
         next if $seen{$name};
         push @expected, $name;
         $seen{$name} = 1;

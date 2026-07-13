@@ -30,6 +30,7 @@ def test_0169_python_api_constants_setopt_sync() -> None:
     expected_prefixes = (
         "SIXEL_LOADER_OPTION_",
         "SIXEL_LUT_POLICY_",
+        "SIXEL_GPU_POLICY_",
         "SIXEL_COLORSPACE_",
     )
     expected = {

@@ -234,6 +234,7 @@ struct sixel_encoder {
     int lut_policy_override;
     int lut_policy_shared_instance_override;
     int lut_policy_shared_instance;
+    int gpu_policy;
     int sixel_reversible;
     int method_for_resampling;
     int loop_mode;

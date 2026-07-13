@@ -462,6 +462,7 @@ have_python = false
 have_wic = false
 have_wiccodec = false
 have_quicklook_extension = false
+have_metal = false
 quicklook_extension_frameworks = []
 quicklook_extension_register_frameworks = []
 quicklook_extension_message = 'no'
@@ -1600,6 +1601,45 @@ elif cg_opt.enabled()
   error('CoreGraphics support requires macOS')
 endif
 
+metal_opt = get_option('metal')
+if host_system == 'darwin'
+  if not metal_opt.disabled()
+    if not have_objc
+      if metal_opt.enabled()
+        error('Metal GPU palette apply requires an Objective-C compiler')
+      endif
+    else
+      metal_dep = dependency('appleframeworks',
+        modules: ['Metal', 'Foundation'],
+        required: metal_opt.enabled())
+      if metal_dep.found()
+        metal_probe = '''
+          #import <Foundation/Foundation.h>
+          #import <Metal/Metal.h>
+          int main(void)
+          {
+              @autoreleasepool {
+                  id<MTLDevice> device = MTLCreateSystemDefaultDevice();
+                  return device == nil ? 0 : 0;
+              }
+          }
+        '''
+        if objc.compiles(metal_probe, name: 'Metal palette apply probe',
+                         dependencies: metal_dep)
+          conf.set('HAVE_METAL', 1)
+          have_metal = true
+          deps += metal_dep
+          link_libs += metal_dep
+        elif metal_opt.enabled()
+          error('Metal GPU palette apply requested, but Metal probe failed')
+        endif
+      endif
+    endif
+  endif
+elif metal_opt.enabled()
+  error('Metal GPU palette apply requires macOS')
+endif
+
 quicklook_preview_opt = get_option('quicklook_preview')
 appkit_opt = get_option('appkit')
 have_quicklook_thumbnailing = false
@@ -2687,6 +2727,7 @@ message('       Thumbnailer command     : ' + thumbnailer_message)
 message('       libtiff                 : ' + tiff_message)
 message('       libwebp                 : ' + webp_message)
 message('       lcms2                   : ' + lcms2_message)
+message('       Metal palette apply     : ' + (have_metal ? 'yes' : 'no'))
 message('       Shebang template        : ' + shebang_message)
 message('       SIMD                    : ' + simd_message)
 message('       XGETBV probe            : ' + xsave_probe_message)

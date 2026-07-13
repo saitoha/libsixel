@@ -648,6 +648,16 @@ static cli_option_help_t const g_option_help_table[] = {
         "    CLI shared_instance overrides SIXEL_LOOKUP_*_SHARED_INSTANCE.\n"
     },
     {
+        'G',
+        "gpu-policy",
+        "-G GPUPOLICY, --gpu-policy=GPUPOLICY\n"
+        "    choose palette-apply accelerator policy:\n"
+        "      off   -> keep the CPU path (default)\n"
+        "      auto  -> probe GPU support and use it only above the threshold\n"
+        "      force -> require a supported GPU path and fail otherwise\n"
+        "    currently accelerates exact --lookup-policy=none palette apply\n"
+    },
+    {
         'l',
         "loop-control",
         "-l LOOPMODE, --loop-control=LOOPMODE\n"
@@ -1763,6 +1773,18 @@ static cli_env_help_t const g_env_help_table[] = {
         "eytzinger, fhedt, vptree, rbc, or mahalanobis; default is certlut)."
     },
     {
+        "SIXEL_GPU_POLICY",
+        "set default palette-apply accelerator policy. Accepts off, auto,\n"
+        "or force. Invalid values keep the built-in default off.\n"
+        "Overridden by -G/--gpu-policy. Currently accelerates exact\n"
+        "--lookup-policy=none palette apply."
+    },
+    {
+        "SIXEL_GPU_PALETTE_THRESHOLD",
+        "set the minimum pixel count for --gpu-policy=auto.\n"
+        "Invalid values keep the built-in default 262144."
+    },
+    {
         "SIXEL_LOOKUP_PACKING",
         "choose dense LUT packing for 5bit/6bit policies\n"
         "(`linear`, `morton`, or `hilbert`; default `linear`)."
@@ -1870,7 +1892,7 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:~:kil:T:t:ugvSn:PE:U:B:A:+:Z:Y:C:D@:"
+    "L:#:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:~:G:kil:T:t:ugvSn:PE:U:B:A:+:Z:Y:C:D@:"
     "OVX:W:H%:1:2:3:";
 
 static int
@@ -2907,6 +2929,7 @@ img2sixel_main(int argc, char *argv[])
         {"resampling",            required_argument,  &long_opt, 'r'},
         {"quality",               required_argument,  &long_opt, 'q'},
         {"lookup-policy",         required_argument,  &long_opt, '~'},
+        {"gpu-policy",            required_argument,  &long_opt, 'G'},
         {"palette-type",          required_argument,  &long_opt, 't'},
         {"insecure",              no_argument,        &long_opt, 'k'},
         {"invert",                no_argument,        &long_opt, 'i'},

@@ -300,6 +300,7 @@ test_runner_SOURCES = test_runner.c \
     cli/0029_cli_token_is_known_option.c \
     cli/0030_cli_option_requires_argument.c \
     cli/0031_cli_guard_missing_argument.c \
+    cli/0032_cli_gpu_policy_option.c \
     processing/filter/0001_filter_clip.c \
     processing/filter/0002_filter_sample.c \
     processing/filter/0003_filter_resize.c \

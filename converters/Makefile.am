@@ -58,6 +58,7 @@ AMALGAMATION_TOOL_CPPFLAGS = $(AM_CPPFLAGS) \
         $(WIC_CFLAGS) \
         $(COREGRAPHICS_CFLAGS) \
         $(QUICKLOOK_CFLAGS) \
+        $(METAL_CFLAGS) \
         $(CLIPBOARD_CFLAGS) \
         @THREAD_CFLAGS@
 if AMALGAMATION_NEEDS_OBJC
@@ -78,6 +79,7 @@ AMALGAMATION_TOOL_LIBS = -lm \
         $(WIC_LIBS) \
         $(COREGRAPHICS_LIBS) \
         $(QUICKLOOK_LIBS) \
+        $(METAL_LIBS) \
         $(CLIPBOARD_LIBS) \
         @THREAD_LIBS@
 

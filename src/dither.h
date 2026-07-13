@@ -140,6 +140,7 @@ struct sixel_dither {
     int lut_policy;                 /* histogram LUT policy */
     int lut_policy_shared_instance_override; /* CLI shared override flag */
     int lut_policy_shared_instance; /* parsed shared instance setting */
+    int gpu_policy;                 /* palette-apply accelerator policy */
     sixel_lookup_policy_interface_t *lookup_policy; /* prepared lookup cache */
     struct sixel_dither_policy_interface *dither_policy; /* apply strategy */
     char const *dither_policy_class_name; /* selected class id cache */

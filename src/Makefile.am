@@ -170,6 +170,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-policy-interframe.h \
                 $(srcdir)/dither-common-pipeline.c \
                 $(srcdir)/dither-common-pipeline.h \
+                $(srcdir)/gpu-palette.c \
+                $(srcdir)/gpu-palette.h \
                 $(srcdir)/bluenoise_64x64.h \
                 $(srcdir)/dither-interframe-method.c \
                 $(srcdir)/dither-interframe-method.h \
@@ -358,6 +360,10 @@ if HAVE_QUICKLOOK_THUMBNAILING
 libsixel_la_SOURCES += \
 $(srcdir)/quicklook_thumbnailing.m
 endif
+if HAVE_METAL
+libsixel_la_SOURCES += \
+$(srcdir)/gpu-palette-metal.m
+endif
 if HAVE_CLIPBOARD_MACOS_APPKIT
 libsixel_la_SOURCES += \
 $(srcdir)/clipboard_macos.m
@@ -385,6 +391,7 @@ libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(WIC_CFLAGS) \
                 $(COREGRAPHICS_CFLAGS) \
                 $(QUICKLOOK_CFLAGS) \
+                $(METAL_CFLAGS) \
                 $(CLIPBOARD_CFLAGS) \
                 @THREAD_CFLAGS@
 if BUILDING_ON_WINDOWS
@@ -411,6 +418,7 @@ libsixel_la_LIBADD = -lm \
                 $(WIC_LIBS) \
                 $(COREGRAPHICS_LIBS) \
                 $(QUICKLOOK_LIBS) \
+                $(METAL_LIBS) \
                 $(CLIPBOARD_LIBS) \
                 @THREAD_LIBS@
 

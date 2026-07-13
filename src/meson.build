@@ -91,6 +91,8 @@ srcs = [
   'dither-policy-interframe.c',
   'dither-policy-lso2.c',
   'dither-common-pipeline.c',
+  'gpu-palette.c',
+  'gpu-palette.h',
   'timeline-logger.c',
   'timeline-logger.h',
   'timeline-writer.c',
@@ -239,6 +241,7 @@ srcs = [
   'lookup-fhedt-float32.h',
   'lookup-vptree-8bit.h',
   'lookup-vptree-float32.h',
+  'gpu-palette.h',
   'dither-interframe-method.c',
   'dither-interframe-method.h',
   'dither-interframe-stbn-source.c',
@@ -270,6 +273,10 @@ srcs = [
   'path.h',
   'sixel_atomic.h',
 ]
+
+if have_metal
+  srcs += ['gpu-palette-metal.m']
+endif
 
 if have_quicklook_thumbnailing
   srcs += ['quicklook_thumbnailing.m']

@@ -32,6 +32,8 @@ option('gdk_pixbuf_loader', type: 'feature', value: 'disabled',
        description: 'Build gdk-pixbuf SIXEL loader module')
 option('gd', type: 'feature', value: 'disabled', description: 'Use GD image library')
 option('coregraphics', type: 'feature', value: 'auto', description: 'Use CoreGraphics framework')
+option('metal', type: 'feature', value: 'auto',
+       description: 'Use Metal framework for GPU palette apply')
 option('appkit', type: 'feature', value: 'enabled',
        description: 'Use AppKit clipboard backend on macOS')
 option('quicklook_preview', type: 'feature', value: 'auto', description: 'Use macOS Quick Look for preview extraction')

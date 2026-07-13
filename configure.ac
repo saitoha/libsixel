@@ -2044,6 +2044,13 @@ AC_ARG_WITH([coregraphics],
             [],
             [with_coregraphics=auto])
 
+AC_ARG_WITH([metal],
+            [AS_HELP_STRING([--with-metal],
+                            [whether to build with Metal GPU palette apply
+                             (default: auto)])],
+            [],
+            [with_metal=auto])
+
 AC_ARG_ENABLE([appkit],
               [AS_HELP_STRING([--disable-appkit],
                               [build the macOS clipboard backend without AppKit
@@ -3364,6 +3371,48 @@ fi
 AC_SUBST(COREGRAPHICS_CFLAGS)
 AC_SUBST(COREGRAPHICS_LIBS)
 
+METAL_LIBS=""
+METAL_CFLAGS=""
+have_metal=no
+case $host_os in
+  darwin*)
+    if test x$with_metal != xno; then
+        AC_LANG_PUSH([Objective C])
+        saved_LIBS="$LIBS"
+        LIBS="$LIBS -framework Metal -framework Foundation"
+        AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM([[#import <Foundation/Foundation.h>
+#import <Metal/Metal.h>]],
+                             [[@autoreleasepool {
+    id<MTLDevice> device = MTLCreateSystemDefaultDevice();
+    (void)device;
+}
+return 0;]])],
+            [have_metal=yes],
+            [have_metal=no])
+        LIBS="$saved_LIBS"
+        AC_LANG_POP([Objective C])
+        if test x$have_metal = xyes; then
+            AC_DEFINE(HAVE_METAL, 1,
+                      [whether Metal GPU palette apply is available])
+            METAL_LIBS="-framework Metal -framework Foundation"
+            METAL_CFLAGS=""
+            LIBS_PRIVATE="$LIBS_PRIVATE $METAL_LIBS"
+        elif test x$with_metal = xyes; then
+            AC_MSG_ERROR([unable to find Metal framework])
+        fi
+    fi
+    ;;
+  *)
+    if test x$with_metal = xyes; then
+        AC_MSG_ERROR([Metal GPU palette apply requires macOS])
+    fi
+    ;;
+esac
+AC_SUBST(METAL_CFLAGS)
+AC_SUBST(METAL_LIBS)
+AM_CONDITIONAL([HAVE_METAL], [test x$have_metal = xyes])
+
 QUICKLOOK_LIBS=""
 QUICKLOOK_CFLAGS=""
 have_quicklook_preview=no
@@ -3721,7 +3770,8 @@ esac
 AMALGAMATION_NEEDS_OBJC=no
 if test x$want_amalgamated_sources = xyes; then
     if test x$have_clipboard_macos_appkit = xyes \
-        || test x$have_quicklook_thumbnailing = xyes; then
+        || test x$have_quicklook_thumbnailing = xyes \
+        || test x$have_metal = xyes; then
         AMALGAMATION_NEEDS_OBJC=yes
     fi
 fi
@@ -5485,6 +5535,7 @@ echo "       pkg-config dir          : $pkgconfigdir"
 echo "       Bash completion dir     : $message_bashcompletiondir"
 echo "       Zsh completion dir      : $message_zshcompletiondir"
 echo "       QuickLook extension     : $message_quicklook_extension"
+echo "       Metal palette apply     : $have_metal"
 echo "       WIC codec               : $message_wiccodec"
 echo "       Register WIC DLL        : $message_register_dll"
 echo "       gdk-pixbuf SIXEL loader : $message_gdk_pixbuf_loader"

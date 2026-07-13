@@ -126,6 +126,14 @@ _lookuppolicy() {
     'mahalanobis[RBC pruning with Mahalanobis lower bounds]'
 }
 
+_gpupolicy() {
+  _values \
+    'GPUPOLICY' \
+    'off[keep the CPU palette-apply path]' \
+    'auto[probe GPU support and apply the internal size threshold]' \
+    'force[require a supported GPU palette-apply path]'
+}
+
 _looptype() {
   _values \
     'LOOPTYPE' \
@@ -887,6 +895,7 @@ _arguments -S -s -A "-*" -S \
   {-r,--resampling=}'[choose resampling filter used with -w or -h option]':resamplingtype:_resamplingtype \
   {-q,--quality=}'[select quality of color quanlization]':qualitytype:_qualitytype \
   {-~,--lookup-policy=}'[choose histogram lookup width and backend]':lookuppolicy:_lookuppolicy \
+  {-G,--gpu-policy=}'[choose palette-apply accelerator policy]':gpupolicy:_gpupolicy \
   {-l,--loop-control=}'[select loop control mode of GIF animation]':looptype:_looptype \
   {-T,--start-frame=}'[set animation start frame index for loaders]' \
   {-t,--palette-type=}'[select palette color space type]':palettetype:_palettetype \

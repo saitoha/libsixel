@@ -728,6 +728,12 @@ _img2sixel()
                                    mahalanobis' -- "$cur" ) )
         return 0
         ;;
+    -G|--gpu-policy)
+        COMPREPLY=( $( compgen -W 'off \
+                                   auto \
+                                   force' -- "$cur" ) )
+        return 0
+        ;;
     -l|--loop-control)
         COMPREPLY=( $( compgen -W 'auto \
                                    force \
@@ -877,6 +883,7 @@ _img2sixel()
                                    -r --resampling \
                                    -q --quality \
                                    -~ --lookup-policy \
+                                   -G --gpu-policy \
                                    -l --loop-control \
                                    -T --start-frame \
                                    -t --palette-type \
