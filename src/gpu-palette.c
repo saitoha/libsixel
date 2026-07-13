@@ -429,6 +429,61 @@ sixel_gpu_palette_has_engine(void)
 #endif
 }
 
+static int
+sixel_gpu_palette_policy_may_apply(int policy, size_t pixel_count)
+{
+    if (policy == SIXEL_GPU_POLICY_OFF) {
+        return 0;
+    }
+    if (sixel_gpu_palette_policy_is_force(policy)) {
+        return 1;
+    }
+    if (policy != SIXEL_GPU_POLICY_AUTO) {
+        return 0;
+    }
+    if (pixel_count < sixel_gpu_palette_auto_threshold()) {
+        return 0;
+    }
+
+    return sixel_gpu_palette_has_engine();
+}
+
+SIXEL_INTERNAL_API int
+sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
+                                            int lut_policy,
+                                            int method_for_diffuse,
+                                            int method_for_scan,
+                                            size_t pixel_count)
+{
+    int effective_scan;
+
+    effective_scan = SIXEL_SCAN_AUTO;
+    if (!sixel_gpu_palette_policy_may_apply(gpu_policy, pixel_count)) {
+        return 0;
+    }
+    if (sixel_gpu_palette_policy_is_force(gpu_policy)) {
+        return 1;
+    }
+    if (lut_policy != SIXEL_LUT_POLICY_NONE) {
+        return 0;
+    }
+    if (method_for_diffuse != SIXEL_DIFFUSE_NONE &&
+            method_for_diffuse != SIXEL_DIFFUSE_BLUENOISE_DITHER) {
+        return 0;
+    }
+
+    effective_scan = method_for_scan;
+    if (effective_scan == SIXEL_SCAN_AUTO) {
+        effective_scan = SIXEL_SCAN_RASTER;
+    }
+    if (effective_scan != SIXEL_SCAN_RASTER &&
+            effective_scan != SIXEL_SCAN_SERPENTINE) {
+        return 0;
+    }
+
+    return 1;
+}
+
 SIXELSTATUS
 sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request)
 {

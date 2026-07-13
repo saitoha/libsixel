@@ -75,6 +75,19 @@ typedef struct sixel_gpu_palette_request {
 SIXEL_INTERNAL_API SIXELSTATUS
 sixel_gpu_palette_apply(sixel_gpu_palette_request_t const *request);
 
+/*
+ * Return whether the GPU policy owns the palette-apply stage before CPU dither
+ * workers are scheduled.  FORCE claims the stage even when the final request
+ * shape may fail, because FORCE reports that error instead of falling back to
+ * the CPU path.
+ */
+SIXEL_INTERNAL_API int
+sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
+                                            int lut_policy,
+                                            int method_for_diffuse,
+                                            int method_for_scan,
+                                            size_t pixel_count);
+
 #ifdef __cplusplus
 }
 #endif

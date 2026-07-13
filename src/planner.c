@@ -37,6 +37,7 @@
 #include "compat_stub.h"
 #include "encoder.h"
 #include "frame.h"
+#include "gpu-palette.h"
 #include "planner.h"
 #include "pixelformat.h"
 #include "threading.h"
@@ -816,6 +817,8 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     char const *text;
     char *endptr;
     long parsed;
+    size_t pixel_count;
+    int width;
     int height;
     int nbands;
     int threads;
@@ -828,10 +831,13 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     int pin_threads;
     int pin_env_override;
     int ncolors;
+    int gpu_encode_only;
 
     text = NULL;
     endptr = NULL;
     parsed = 0;
+    pixel_count = 0U;
+    width = 0;
     height = 0;
     nbands = 0;
     threads = 0;
@@ -842,6 +848,7 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     queue_depth = 0;
     dither_env_override = 0;
     ncolors = SIXEL_PALETTE_MAX;
+    gpu_encode_only = 0;
 
     if (planner == NULL || encoder == NULL || frame == NULL) {
         return;
@@ -876,10 +883,15 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     (void)pin_env_override;
 
     height = sixel_frame_get_height(frame);
+    width = sixel_frame_get_width(frame);
     threads = planner->main_threads;
-    if (height <= 0 || threads <= 1) {
+    if (width <= 0 || height <= 0 || threads <= 1) {
         return;
     }
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        return;
+    }
+    pixel_count = (size_t)width * (size_t)height;
 
     nbands = (height + 5) / 6;
     planner->pipeline_bands = nbands;
@@ -920,56 +932,70 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
         encode_threads = 1;
         dither_threads = threads - encode_threads;
     }
-    if (dither_threads < 1) {
-        return;
-    }
-
-    text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH");
-    if (text != NULL && text[0] != '\0') {
-        errno = 0;
-        parsed = strtol(text, &endptr, 10);
-        if (endptr != text && errno != ERANGE && parsed > 0) {
-            if (parsed > INT_MAX) {
-                parsed = INT_MAX;
-            }
-            band_height = (int)parsed;
-        }
-    }
-    if (band_height <= 0) {
-        band_height = (height + dither_threads - 1) / dither_threads;
-    }
-    if (band_height < 6) {
+    gpu_encode_only =
+        sixel_gpu_palette_policy_claims_apply_stage(
+            encoder->gpu_policy,
+            encoder->lut_policy,
+            encoder->method_for_diffuse,
+            encoder->method_for_scan,
+            pixel_count);
+    if (gpu_encode_only != 0) {
+        dither_threads = 0;
+        encode_threads = threads;
         band_height = 6;
-    }
-    if ((band_height % 6) != 0) {
-        band_height = ((band_height + 5) / 6) * 6;
-    }
-
-    ncolors = encoder->reqcolors;
-    if (ncolors <= 0 || ncolors > SIXEL_PALETTE_MAX) {
-        ncolors = SIXEL_PALETTE_MAX;
-    }
-    text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_BAND_OVERWRAP");
-    if (ncolors <= 32) {
-        overlap = 6;
+        overlap = 0;
     } else {
-        overlap = 0;
-    }
-    if (text != NULL && text[0] != '\0') {
-        errno = 0;
-        parsed = strtol(text, &endptr, 10);
-        if (endptr != text && errno != ERANGE && parsed >= 0) {
-            if (parsed > INT_MAX) {
-                parsed = INT_MAX;
-            }
-            overlap = (int)parsed;
+        if (dither_threads < 1) {
+            return;
         }
-    }
-    if (overlap < 0) {
-        overlap = 0;
-    }
-    if (overlap > band_height / 2) {
-        overlap = band_height / 2;
+
+        text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH");
+        if (text != NULL && text[0] != '\0') {
+            errno = 0;
+            parsed = strtol(text, &endptr, 10);
+            if (endptr != text && errno != ERANGE && parsed > 0) {
+                if (parsed > INT_MAX) {
+                    parsed = INT_MAX;
+                }
+                band_height = (int)parsed;
+            }
+        }
+        if (band_height <= 0) {
+            band_height = (height + dither_threads - 1) / dither_threads;
+        }
+        if (band_height < 6) {
+            band_height = 6;
+        }
+        if ((band_height % 6) != 0) {
+            band_height = ((band_height + 5) / 6) * 6;
+        }
+
+        ncolors = encoder->reqcolors;
+        if (ncolors <= 0 || ncolors > SIXEL_PALETTE_MAX) {
+            ncolors = SIXEL_PALETTE_MAX;
+        }
+        text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_BAND_OVERWRAP");
+        if (ncolors <= 32) {
+            overlap = 6;
+        } else {
+            overlap = 0;
+        }
+        if (text != NULL && text[0] != '\0') {
+            errno = 0;
+            parsed = strtol(text, &endptr, 10);
+            if (endptr != text && errno != ERANGE && parsed >= 0) {
+                if (parsed > INT_MAX) {
+                    parsed = INT_MAX;
+                }
+                overlap = (int)parsed;
+            }
+        }
+        if (overlap < 0) {
+            overlap = 0;
+        }
+        if (overlap > band_height / 2) {
+            overlap = band_height / 2;
+        }
     }
 
     queue_depth = threads * 3;

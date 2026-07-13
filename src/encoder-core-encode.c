@@ -69,6 +69,7 @@
 #include "timeline-logger.h"
 #include "threading.h"
 #include "encoder-core-highcolor.h"
+#include "gpu-palette.h"
 #if SIXEL_ENABLE_THREADS
 # include "sixel_atomic.h"
 # include <6cells.h>
@@ -4465,6 +4466,24 @@ sixel_encode_dither(
                                         dither->pipeline_pin_threads,
                                         &dither_parallel);
         if (dither_parallel.enabled) {
+            if (sixel_gpu_palette_policy_claims_apply_stage(
+                    dither->gpu_policy,
+                    dither->lut_policy,
+                    dither->method_for_diffuse,
+                    dither->method_for_scan,
+                    pixel_count)) {
+                /*
+                 * GPU PaletteApply produces the whole index plane after a
+                 * command-buffer wait, not a stream of CPU dither bands.
+                 * Keep all CPU workers on the encode side so the first band
+                 * can start with the full worker budget once the GPU result is
+                 * visible.
+                 */
+                dither_parallel.dither_threads = 0;
+                dither_parallel.encode_threads = pipeline_threads;
+                dither_parallel.band_height = 6;
+                dither_parallel.overlap = 0;
+            }
             dither->pipeline_parallel_active = 1;
             dither->pipeline_band_height = dither_parallel.band_height;
             dither->pipeline_band_overlap = dither_parallel.overlap;
