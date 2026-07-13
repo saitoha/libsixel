@@ -47,10 +47,33 @@ typedef struct sixel_gpu_metal_params {
     uint32_t gradient_height;
 } sixel_gpu_metal_params_t;
 
+typedef struct sixel_gpu_metal_cached_buffer {
+    id<MTLBuffer> buffer;
+    NSUInteger capacity;
+} sixel_gpu_metal_cached_buffer_t;
+
 static pthread_mutex_t g_sixel_gpu_metal_lock = PTHREAD_MUTEX_INITIALIZER;
 static id<MTLDevice> g_sixel_gpu_metal_device = nil;
 static id<MTLCommandQueue> g_sixel_gpu_metal_queue = nil;
 static id<MTLComputePipelineState> g_sixel_gpu_metal_pipeline = nil;
+static id<MTLBuffer> g_sixel_gpu_metal_blue_noise_buffer = nil;
+static id<MTLBuffer> g_sixel_gpu_metal_dummy_buffer = nil;
+static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_metal_result_buffer =
+    { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_metal_pixel_buffer =
+    { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_metal_palette_buffer =
+    { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_metal_transparent_buffer =
+    { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_metal_gradient_buffer =
+    { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_metal_params_buffer =
+    { nil, 0U };
+static unsigned char g_sixel_gpu_metal_palette_shadow[
+    SIXEL_PALETTE_MAX * 3U];
+static NSUInteger g_sixel_gpu_metal_palette_shadow_length = 0U;
+static int g_sixel_gpu_metal_palette_shadow_valid = 0;
 static int g_sixel_gpu_metal_probe_done = 0;
 static int g_sixel_gpu_metal_available = 0;
 
@@ -244,6 +267,92 @@ sixel_gpu_palette_metal_create_source(void)
     return source;
 }
 
+static id<MTLBuffer>
+sixel_gpu_metal_ensure_buffer(sixel_gpu_metal_cached_buffer_t *cache,
+                              NSUInteger length)
+{
+    NSUInteger requested_length;
+
+    requested_length = length > 0U ? length : 1U;
+    if (cache == NULL || g_sixel_gpu_metal_device == nil) {
+        return nil;
+    }
+    if (cache->buffer != nil && cache->capacity >= requested_length) {
+        return cache->buffer;
+    }
+    if (cache->buffer != nil) {
+        [cache->buffer release];
+        cache->buffer = nil;
+        cache->capacity = 0U;
+    }
+
+    cache->buffer =
+        [g_sixel_gpu_metal_device
+            newBufferWithLength:requested_length
+                        options:MTLResourceStorageModeShared];
+    if (cache->buffer == nil) {
+        return nil;
+    }
+    cache->capacity = requested_length;
+    return cache->buffer;
+}
+
+static id<MTLBuffer>
+sixel_gpu_metal_upload_buffer(sixel_gpu_metal_cached_buffer_t *cache,
+                              void const *bytes,
+                              NSUInteger length)
+{
+    id<MTLBuffer> buffer;
+
+    buffer = sixel_gpu_metal_ensure_buffer(cache, length);
+    if (buffer == nil) {
+        return nil;
+    }
+    if (bytes != NULL && length > 0U) {
+        memcpy([buffer contents], bytes, length);
+    }
+    return buffer;
+}
+
+static id<MTLBuffer>
+sixel_gpu_metal_upload_palette(void const *bytes, NSUInteger length)
+{
+    id<MTLBuffer> buffer;
+    int force_upload;
+
+    buffer = nil;
+    force_upload =
+        g_sixel_gpu_metal_palette_buffer.buffer == nil ||
+        g_sixel_gpu_metal_palette_buffer.capacity < length;
+    buffer = sixel_gpu_metal_ensure_buffer(
+        &g_sixel_gpu_metal_palette_buffer,
+        length);
+    if (buffer == nil) {
+        return nil;
+    }
+    if (bytes == NULL || length == 0U) {
+        return buffer;
+    }
+    if (!force_upload &&
+        g_sixel_gpu_metal_palette_shadow_valid != 0 &&
+        g_sixel_gpu_metal_palette_shadow_length == length &&
+        length <= (NSUInteger)sizeof(g_sixel_gpu_metal_palette_shadow) &&
+        memcmp(g_sixel_gpu_metal_palette_shadow, bytes, length) == 0) {
+        return buffer;
+    }
+
+    memcpy([buffer contents], bytes, length);
+    if (length <= (NSUInteger)sizeof(g_sixel_gpu_metal_palette_shadow)) {
+        memcpy(g_sixel_gpu_metal_palette_shadow, bytes, length);
+        g_sixel_gpu_metal_palette_shadow_length = length;
+        g_sixel_gpu_metal_palette_shadow_valid = 1;
+    } else {
+        g_sixel_gpu_metal_palette_shadow_valid = 0;
+        g_sixel_gpu_metal_palette_shadow_length = 0U;
+    }
+    return buffer;
+}
+
 static int
 sixel_gpu_palette_metal_prepare_locked(void)
 {
@@ -251,11 +360,13 @@ sixel_gpu_palette_metal_prepare_locked(void)
     NSString *source;
     id<MTLLibrary> library;
     id<MTLFunction> function;
+    unsigned char dummy;
 
     error = nil;
     source = nil;
     library = nil;
     function = nil;
+    dummy = 0U;
     if (g_sixel_gpu_metal_probe_done != 0) {
         return g_sixel_gpu_metal_available;
     }
@@ -294,6 +405,22 @@ sixel_gpu_palette_metal_prepare_locked(void)
     [function release];
     function = nil;
     if (g_sixel_gpu_metal_pipeline == nil) {
+        return 0;
+    }
+    g_sixel_gpu_metal_blue_noise_buffer =
+        [g_sixel_gpu_metal_device
+            newBufferWithBytes:sixel_bn64
+                        length:sizeof(sixel_bn64)
+                       options:MTLResourceStorageModeShared];
+    if (g_sixel_gpu_metal_blue_noise_buffer == nil) {
+        return 0;
+    }
+    g_sixel_gpu_metal_dummy_buffer =
+        [g_sixel_gpu_metal_device
+            newBufferWithBytes:&dummy
+                        length:1U
+                       options:MTLResourceStorageModeShared];
+    if (g_sixel_gpu_metal_dummy_buffer == nil) {
         return 0;
     }
 
@@ -367,7 +494,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     NSUInteger palette_length;
     NSUInteger transparent_length;
     NSUInteger gradient_length;
-    unsigned char dummy;
+    int locked;
 
     status = SIXEL_FALSE;
     memset(&params, 0, sizeof(params));
@@ -387,7 +514,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     palette_length = 0U;
     transparent_length = 0U;
     gradient_length = 0U;
-    dummy = 0U;
+    locked = 0;
 
     if (request == NULL) {
         sixel_helper_set_additional_message(
@@ -396,7 +523,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     }
 
     @autoreleasepool {
-        if (!sixel_gpu_palette_metal_is_available()) {
+        (void)pthread_mutex_lock(&g_sixel_gpu_metal_lock);
+        locked = 1;
+        if (!sixel_gpu_palette_metal_prepare_locked()) {
             sixel_helper_set_additional_message(
                 "gpu palette apply: Metal is not available.");
             status = SIXEL_FEATURE_ERROR;
@@ -412,38 +541,37 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
         gradient_length = request->bluenoise_gradient_map != NULL ?
             (NSUInteger)request->bluenoise_gradient_map_size : 1U;
 
-        result_buffer =
-            [g_sixel_gpu_metal_device newBufferWithLength:result_length
-                                                   options:MTLResourceStorageModeShared];
-        pixel_buffer =
-            [g_sixel_gpu_metal_device newBufferWithBytes:request->pixels
-                                                   length:pixel_length
-                                                  options:MTLResourceStorageModeShared];
+        result_buffer = sixel_gpu_metal_ensure_buffer(
+            &g_sixel_gpu_metal_result_buffer,
+            result_length);
+        pixel_buffer = sixel_gpu_metal_upload_buffer(
+            &g_sixel_gpu_metal_pixel_buffer,
+            request->pixels,
+            pixel_length);
         palette_buffer =
-            [g_sixel_gpu_metal_device newBufferWithBytes:request->palette
-                                                   length:palette_length
-                                                  options:MTLResourceStorageModeShared];
-        transparent_buffer =
-            [g_sixel_gpu_metal_device
-                newBufferWithBytes:request->transparent_mask != NULL ?
-                    request->transparent_mask : &dummy
-                           length:transparent_length
-                          options:MTLResourceStorageModeShared];
-        blue_noise_buffer =
-            [g_sixel_gpu_metal_device newBufferWithBytes:sixel_bn64
-                                                   length:sizeof(sixel_bn64)
-                                                  options:MTLResourceStorageModeShared];
-        gradient_buffer =
-            [g_sixel_gpu_metal_device
-                newBufferWithBytes:request->bluenoise_gradient_map != NULL ?
-                    request->bluenoise_gradient_map : &dummy
-                           length:gradient_length
-                          options:MTLResourceStorageModeShared];
+            sixel_gpu_metal_upload_palette(request->palette, palette_length);
+        if (request->transparent_mask != NULL) {
+            transparent_buffer = sixel_gpu_metal_upload_buffer(
+                &g_sixel_gpu_metal_transparent_buffer,
+                request->transparent_mask,
+                transparent_length);
+        } else {
+            transparent_buffer = g_sixel_gpu_metal_dummy_buffer;
+        }
+        blue_noise_buffer = g_sixel_gpu_metal_blue_noise_buffer;
+        if (request->bluenoise_gradient_map != NULL) {
+            gradient_buffer = sixel_gpu_metal_upload_buffer(
+                &g_sixel_gpu_metal_gradient_buffer,
+                request->bluenoise_gradient_map,
+                gradient_length);
+        } else {
+            gradient_buffer = g_sixel_gpu_metal_dummy_buffer;
+        }
         sixel_gpu_palette_metal_fill_params(&params, request);
-        params_buffer =
-            [g_sixel_gpu_metal_device newBufferWithBytes:&params
-                                                   length:sizeof(params)
-                                                  options:MTLResourceStorageModeShared];
+        params_buffer = sixel_gpu_metal_upload_buffer(
+            &g_sixel_gpu_metal_params_buffer,
+            &params,
+            sizeof(params));
         if (result_buffer == nil || pixel_buffer == nil ||
                 palette_buffer == nil || transparent_buffer == nil ||
                 blue_noise_buffer == nil || gradient_buffer == nil ||
@@ -499,13 +627,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
         status = SIXEL_OK;
 
     end:
-        [result_buffer release];
-        [pixel_buffer release];
-        [palette_buffer release];
-        [transparent_buffer release];
-        [blue_noise_buffer release];
-        [gradient_buffer release];
-        [params_buffer release];
+        if (locked != 0) {
+            (void)pthread_mutex_unlock(&g_sixel_gpu_metal_lock);
+        }
     }
 
     return status;
