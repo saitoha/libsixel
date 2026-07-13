@@ -362,6 +362,23 @@ sixel_gpu_metal_upload_buffer(sixel_gpu_metal_cached_buffer_t *cache,
 }
 
 static id<MTLBuffer>
+sixel_gpu_metal_wrap_dest_buffer(void *bytes, NSUInteger length)
+{
+    NSUInteger requested_length;
+
+    requested_length = length > 0U ? length : 1U;
+    if (bytes == NULL || g_sixel_gpu_metal_device == nil) {
+        return nil;
+    }
+
+    return [g_sixel_gpu_metal_device
+        newBufferWithBytesNoCopy:bytes
+                           length:requested_length
+                          options:MTLResourceStorageModeShared
+                      deallocator:nil];
+}
+
+static id<MTLBuffer>
 sixel_gpu_metal_upload_palette(void const *bytes, NSUInteger length)
 {
     id<MTLBuffer> buffer;
@@ -563,6 +580,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     NSUInteger accumulation_length;
     NSUInteger accumulation_valid_length;
     NSUInteger accumulation_result_length;
+    int result_buffer_direct;
     int locked;
 
     status = SIXEL_FALSE;
@@ -589,6 +607,7 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     accumulation_length = 0U;
     accumulation_valid_length = 0U;
     accumulation_result_length = 0U;
+    result_buffer_direct = 0;
     locked = 0;
 
     if (request == NULL) {
@@ -625,9 +644,15 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             request->accumulation_result_mask != NULL ?
             (NSUInteger)request->accumulation_result_mask_size : 1U;
 
-        result_buffer = sixel_gpu_metal_ensure_buffer(
-            &g_sixel_gpu_metal_result_buffer,
-            result_length);
+        result_buffer =
+            sixel_gpu_metal_wrap_dest_buffer(request->dest, result_length);
+        if (result_buffer != nil) {
+            result_buffer_direct = 1;
+        } else {
+            result_buffer = sixel_gpu_metal_ensure_buffer(
+                &g_sixel_gpu_metal_result_buffer,
+                result_length);
+        }
         pixel_buffer = sixel_gpu_metal_upload_buffer(
             &g_sixel_gpu_metal_pixel_buffer,
             request->pixels,
@@ -736,7 +761,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             goto end;
         }
 
-        memcpy(request->dest, [result_buffer contents], result_length);
+        if (result_buffer_direct == 0) {
+            memcpy(request->dest, [result_buffer contents], result_length);
+        }
         if (request->accumulation_result_mask != NULL) {
             memcpy(request->accumulation_result_mask,
                    [accumulation_result_buffer contents],
@@ -745,6 +772,10 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
         status = SIXEL_OK;
 
     end:
+        if (result_buffer_direct != 0 && result_buffer != nil) {
+            [result_buffer release];
+            result_buffer = nil;
+        }
         if (locked != 0) {
             (void)pthread_mutex_unlock(&g_sixel_gpu_metal_lock);
         }
