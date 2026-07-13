@@ -66,6 +66,29 @@ sixel_gpu_palette_lut_policy_is_supported(
 }
 
 static int
+sixel_gpu_palette_accumulation_is_supported(
+    sixel_gpu_palette_request_t const *request)
+{
+    if (request == NULL) {
+        return 0;
+    }
+
+    /*
+     * 6delta accumulation is a byte-size optimization layered on top of
+     * transparent-policy=keep.  The Metal palette kernel does not emit
+     * unchanged pixels as the transparent keycolor, nor does it publish the
+     * matching accumulation result mask.  Full-paint GPU output is still
+     * display-correct, but it can change the SIXEL body shape.  Keep AUTO on
+     * the CPU path for stable output, while FORCE explicitly opts into the
+     * GPU palette path and accepts the full-paint form.
+     */
+    if (request->has_6delta_accumulation == 0) {
+        return 1;
+    }
+    return sixel_gpu_palette_policy_is_force(request->policy);
+}
+
+static int
 sixel_gpu_palette_parse_float_env(char const *text, float *out_value)
 {
     char *endptr;
@@ -340,7 +363,7 @@ sixel_gpu_palette_request_is_supported(
             request->transparent_mask_size < request->pixel_count) {
         return 0;
     }
-    if (request->has_6delta_accumulation != 0) {
+    if (!sixel_gpu_palette_accumulation_is_supported(request)) {
         return 0;
     }
 
