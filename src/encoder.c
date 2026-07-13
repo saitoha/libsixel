@@ -3795,6 +3795,7 @@ sixel_encoder_update_accumulation_from_frame(
     size_t index;
     int old_buffer_matches;
     int keep_previous;
+    int encoded_rgb_ready;
 
     status = SIXEL_FALSE;
     current_rgb = NULL;
@@ -3810,6 +3811,7 @@ sixel_encoder_update_accumulation_from_frame(
     index = 0u;
     old_buffer_matches = 0;
     keep_previous = 0;
+    encoded_rgb_ready = 0;
 
     /*
      * The RGB retained plane exists only for 6delta.  Plain P2=1
@@ -3822,11 +3824,13 @@ sixel_encoder_update_accumulation_from_frame(
         return SIXEL_OK;
     }
 
-    status = sixel_encoder_normalize_frame_to_rgb888(encoder,
-                                                     frame,
-                                                     &view,
-                                                     &current_rgb,
-                                                     &current_size);
+    status = sixel_encoder_frame_get_pixels_view(frame, &view);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_encoder_compute_rgb888_buffer_bytes(view.width,
+                                                       view.height,
+                                                       &current_size);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -3846,6 +3850,23 @@ sixel_encoder_update_accumulation_from_frame(
     encoded_rgb = sixel_dither_get_pipeline_accumulation_result_rgb(
         dither,
         &encoded_rgb_size);
+    encoded_rgb_ready =
+        encoded_rgb != NULL && encoded_rgb_size >= current_size ? 1 : 0;
+    if (encoded_rgb_ready == 0) {
+        status = sixel_encoder_normalize_frame_to_rgb888(encoder,
+                                                         frame,
+                                                         &view,
+                                                         &current_rgb,
+                                                         &current_size);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        pixel_count = current_size / 3u;
+        if (pixel_count == 0u) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+    }
 
     old_buffer_matches =
         encoder->accumulation_pixels != NULL &&
@@ -3859,7 +3880,18 @@ sixel_encoder_update_accumulation_from_frame(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
-        if (encoded_rgb != NULL && encoded_rgb_size >= current_size) {
+        if (encoded_rgb_ready != 0) {
+            current_rgb = (unsigned char *)sixel_allocator_malloc(
+                encoder->allocator,
+                current_size);
+            if (current_rgb == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_update_accumulation_from_frame: "
+                    "sixel_allocator_malloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            memcpy(current_rgb, encoded_rgb, current_size);
             for (index = 0u; index < pixel_count; ++index) {
                 keep_previous =
                     (encoded_mask != NULL &&
@@ -3871,11 +3903,6 @@ sixel_encoder_update_accumulation_from_frame(
                     sixel_encoder_frame_alpha_covers_pixel(&transparency,
                                                            &view,
                                                            index);
-                if (keep_previous == 0) {
-                    memcpy(current_rgb + index * 3u,
-                           encoded_rgb + index * 3u,
-                           3u);
-                }
                 encoder->accumulation_valid_mask[index] =
                     keep_previous == 0 ? 1u : 0u;
             }
@@ -3936,9 +3963,10 @@ sixel_encoder_update_accumulation_from_frame(
                                                    &view,
                                                    index);
         if (keep_previous == 0) {
-            update_rgb = current_rgb + index * 3u;
-            if (encoded_rgb != NULL && encoded_rgb_size >= current_size) {
+            if (encoded_rgb_ready != 0) {
                 update_rgb = encoded_rgb + index * 3u;
+            } else {
+                update_rgb = current_rgb + index * 3u;
             }
             memcpy(encoder->accumulation_pixels + index * 3u,
                    update_rgb,

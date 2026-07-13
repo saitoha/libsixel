@@ -174,8 +174,10 @@ struct sixel_dither {
     int pipeline_6delta_error_mode; /* kept-pixel error handling */
     unsigned char *pipeline_accumulation_result_mask; /* encoded keeps */
     size_t pipeline_accumulation_result_mask_size; /* result mask length */
+    size_t pipeline_accumulation_result_mask_capacity; /* mask bytes */
     unsigned char *pipeline_accumulation_result_rgb; /* encoded RGB plane */
     size_t pipeline_accumulation_result_rgb_size; /* encoded RGB byte length */
+    size_t pipeline_accumulation_result_rgb_capacity; /* RGB bytes */
     int pipeline_accumulation_result_enabled; /* retain RGB for 6delta */
     unsigned char *bluenoise_gradient_map; /* owned gradient-strength map */
     size_t bluenoise_gradient_map_size; /* gradient map byte length */
