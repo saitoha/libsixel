@@ -44,6 +44,28 @@ sixel_gpu_palette_policy_is_force(int policy)
 }
 
 static int
+sixel_gpu_palette_lut_policy_is_supported(
+    sixel_gpu_palette_request_t const *request)
+{
+    if (request == NULL) {
+        return 0;
+    }
+
+    /*
+     * The Metal kernel performs an exact direct palette scan, so it does not
+     * need any of the CPU LUT implementations.  Keep AUTO conservative:
+     * threshold-based GPU selection should not silently change output when the
+     * caller requested 5bit, 6bit, or another CPU lookup policy.  FORCE is an
+     * explicit request to use the GPU path, so treat the requested lookup
+     * policy as a CPU implementation detail and bypass it.
+     */
+    if (request->lut_policy == SIXEL_LUT_POLICY_NONE) {
+        return 1;
+    }
+    return sixel_gpu_palette_policy_is_force(request->policy);
+}
+
+static int
 sixel_gpu_palette_parse_float_env(char const *text, float *out_value)
 {
     char *endptr;
@@ -297,7 +319,7 @@ sixel_gpu_palette_request_is_supported(
             request->palette_depth != 3) {
         return 0;
     }
-    if (request->lut_policy != SIXEL_LUT_POLICY_NONE) {
+    if (!sixel_gpu_palette_lut_policy_is_supported(request)) {
         return 0;
     }
     required_palette_size =
@@ -308,10 +330,6 @@ sixel_gpu_palette_request_is_supported(
     if (request->method_for_diffuse != SIXEL_DIFFUSE_NONE &&
             request->method_for_diffuse !=
             SIXEL_DIFFUSE_BLUENOISE_DITHER) {
-        return 0;
-    }
-    if (request->method_for_diffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER &&
-            request->has_parallel_bands != 0) {
         return 0;
     }
     if (request->method_for_scan != SIXEL_SCAN_RASTER &&
