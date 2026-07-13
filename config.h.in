@@ -370,6 +370,9 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* whether Metal GPU palette apply is available */
+#undef HAVE_METAL
+
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
 

@@ -663,6 +663,8 @@ HAVE_WIC_FALSE
 HAVE_WIC_TRUE
 HAVE_COREGRAPHICS_FALSE
 HAVE_COREGRAPHICS_TRUE
+HAVE_METAL_FALSE
+HAVE_METAL_TRUE
 HAVE_PNG_FALSE
 HAVE_PNG_TRUE
 HAVE_JPEG_FALSE
@@ -760,6 +762,8 @@ HAVE_QUICKLOOK_THUMBNAILING_FALSE
 HAVE_QUICKLOOK_THUMBNAILING_TRUE
 QUICKLOOK_LIBS
 QUICKLOOK_CFLAGS
+METAL_LIBS
+METAL_CFLAGS
 COREGRAPHICS_LIBS
 COREGRAPHICS_CFLAGS
 ENABLE_GDK_PIXBUF_LOADER_FALSE
@@ -1026,6 +1030,7 @@ with_gdk_pixbuf2
 enable_gdk_pixbuf_loader
 with_gd
 with_coregraphics
+with_metal
 enable_appkit
 enable_quicklook_extension
 enable_quicklook_preview
@@ -1856,6 +1861,8 @@ Optional Packages:
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
   --with-gd               whether to build with gd (default: no)
   --with-coregraphics     whether to build with CoreGraphics (default: auto)
+  --with-metal            whether to build with Metal GPU palette apply
+                          (default: auto)
   --with-libcurl          whether to build with libcurl (default: auto)
   --with-libfetch         whether to build with libfetch (default: auto)
   --with-jpeg             whether to build with libjpeg (default: auto)
@@ -18228,6 +18235,16 @@ esac
 fi
 
 
+# Check whether --with-metal was given.
+if test ${with_metal+y}
+then :
+  withval=$with_metal;
+else case e in #(
+  e) with_metal=auto ;;
+esac
+fi
+
+
 # Check whether --enable-appkit was given.
 if test ${enable_appkit+y}
 then :
@@ -23015,6 +23032,82 @@ printf "%s\n" "#define HAVE_COREGRAPHICS 1" >>confdefs.h
     elif test x$with_coregraphics = xyes; then
         as_fn_error $? "unable to find CoreGraphics" "$LINENO" 5
     fi
+fi
+
+
+
+METAL_LIBS=""
+METAL_CFLAGS=""
+have_metal=no
+case $host_os in
+  darwin*)
+    if test x$with_metal != xno; then
+        ac_ext=m
+ac_cpp='$OBJCPP $CPPFLAGS'
+ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_objc_compiler_gnu
+
+        saved_LIBS="$LIBS"
+        LIBS="$LIBS -framework Metal -framework Foundation"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#import <Foundation/Foundation.h>
+#import <Metal/Metal.h>
+int
+main (void)
+{
+@autoreleasepool {
+    id<MTLDevice> device = MTLCreateSystemDefaultDevice();
+    (void)device;
+}
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_objc_try_link "$LINENO"
+then :
+  have_metal=yes
+else case e in #(
+  e) have_metal=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        LIBS="$saved_LIBS"
+        ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+        if test x$have_metal = xyes; then
+
+printf "%s\n" "#define HAVE_METAL 1" >>confdefs.h
+
+            METAL_LIBS="-framework Metal -framework Foundation"
+            METAL_CFLAGS=""
+            LIBS_PRIVATE="$LIBS_PRIVATE $METAL_LIBS"
+        elif test x$with_metal = xyes; then
+            as_fn_error $? "unable to find Metal framework" "$LINENO" 5
+        fi
+    fi
+    ;;
+  *)
+    if test x$with_metal = xyes; then
+        as_fn_error $? "Metal GPU palette apply requires macOS" "$LINENO" 5
+    fi
+    ;;
+esac
+
+
+ if test x$have_metal = xyes; then
+  HAVE_METAL_TRUE=
+  HAVE_METAL_FALSE='#'
+else
+  HAVE_METAL_TRUE='#'
+  HAVE_METAL_FALSE=
 fi
 
 
@@ -29799,6 +29892,10 @@ if test -z "${ENABLE_GDK_PIXBUF_LOADER_TRUE}" && test -z "${ENABLE_GDK_PIXBUF_LO
   as_fn_error $? "conditional \"ENABLE_GDK_PIXBUF_LOADER\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${HAVE_METAL_TRUE}" && test -z "${HAVE_METAL_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_METAL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${HAVE_QUICKLOOK_THUMBNAILING_TRUE}" && test -z "${HAVE_QUICKLOOK_THUMBNAILING_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_QUICKLOOK_THUMBNAILING\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -32383,6 +32480,7 @@ echo "       pkg-config dir          : $pkgconfigdir"
 echo "       Bash completion dir     : $message_bashcompletiondir"
 echo "       Zsh completion dir      : $message_zshcompletiondir"
 echo "       QuickLook extension     : $message_quicklook_extension"
+echo "       Metal palette apply     : $have_metal"
 echo "       WIC codec               : $message_wiccodec"
 echo "       Register WIC DLL        : $message_register_dll"
 echo "       gdk-pixbuf SIXEL loader : $message_gdk_pixbuf_loader"

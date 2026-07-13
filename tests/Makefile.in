@@ -113,6 +113,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	cli/0029_cli_token_is_known_option.c \
 	cli/0030_cli_option_requires_argument.c \
 	cli/0031_cli_guard_missing_argument.c \
+	cli/0032_cli_gpu_policy_option.c \
 	processing/filter/0001_filter_clip.c \
 	processing/filter/0002_filter_sample.c \
 	processing/filter/0003_filter_resize.c \
@@ -220,6 +221,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0029_cli_token_is_known_option.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0030_cli_option_requires_argument.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0031_cli_guard_missing_argument.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0032_cli_gpu_policy_option.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0001_filter_clip.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0002_filter_sample.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0003_filter_resize.$(OBJEXT) \
@@ -397,6 +399,7 @@ am__depfiles_remade =  \
 	cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po \
 	cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po \
 	cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po \
+	cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po \
 	cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po \
 	diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po \
@@ -1292,6 +1295,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0029_cli_token_is_known_option.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0030_cli_option_requires_argument.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0031_cli_guard_missing_argument.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    cli/0032_cli_gpu_policy_option.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0001_filter_clip.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0002_filter_sample.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    processing/filter/0003_filter_resize.c \
@@ -1544,6 +1548,8 @@ cli/test_runner-0029_cli_token_is_known_option.$(OBJEXT):  \
 cli/test_runner-0030_cli_option_requires_argument.$(OBJEXT):  \
 	cli/$(am__dirstamp) cli/$(DEPDIR)/$(am__dirstamp)
 cli/test_runner-0031_cli_guard_missing_argument.$(OBJEXT):  \
+	cli/$(am__dirstamp) cli/$(DEPDIR)/$(am__dirstamp)
+cli/test_runner-0032_cli_gpu_policy_option.$(OBJEXT):  \
 	cli/$(am__dirstamp) cli/$(DEPDIR)/$(am__dirstamp)
 processing/filter/$(am__dirstamp):
 	@$(MKDIR_P) processing/filter
@@ -1996,6 +2002,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po@am__quote@ # am--include-marker
@@ -2189,6 +2196,20 @@ cli/test_runner-0031_cli_guard_missing_argument.obj: cli/0031_cli_guard_missing_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0031_cli_guard_missing_argument.c' object='cli/test_runner-0031_cli_guard_missing_argument.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0031_cli_guard_missing_argument.obj `if test -f 'cli/0031_cli_guard_missing_argument.c'; then $(CYGPATH_W) 'cli/0031_cli_guard_missing_argument.c'; else $(CYGPATH_W) '$(srcdir)/cli/0031_cli_guard_missing_argument.c'; fi`
+
+cli/test_runner-0032_cli_gpu_policy_option.o: cli/0032_cli_gpu_policy_option.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0032_cli_gpu_policy_option.o -MD -MP -MF cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Tpo -c -o cli/test_runner-0032_cli_gpu_policy_option.o `test -f 'cli/0032_cli_gpu_policy_option.c' || echo '$(srcdir)/'`cli/0032_cli_gpu_policy_option.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Tpo cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0032_cli_gpu_policy_option.c' object='cli/test_runner-0032_cli_gpu_policy_option.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0032_cli_gpu_policy_option.o `test -f 'cli/0032_cli_gpu_policy_option.c' || echo '$(srcdir)/'`cli/0032_cli_gpu_policy_option.c
+
+cli/test_runner-0032_cli_gpu_policy_option.obj: cli/0032_cli_gpu_policy_option.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0032_cli_gpu_policy_option.obj -MD -MP -MF cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Tpo -c -o cli/test_runner-0032_cli_gpu_policy_option.obj `if test -f 'cli/0032_cli_gpu_policy_option.c'; then $(CYGPATH_W) 'cli/0032_cli_gpu_policy_option.c'; else $(CYGPATH_W) '$(srcdir)/cli/0032_cli_gpu_policy_option.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Tpo cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/0032_cli_gpu_policy_option.c' object='cli/test_runner-0032_cli_gpu_policy_option.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o cli/test_runner-0032_cli_gpu_policy_option.obj `if test -f 'cli/0032_cli_gpu_policy_option.c'; then $(CYGPATH_W) 'cli/0032_cli_gpu_policy_option.c'; else $(CYGPATH_W) '$(srcdir)/cli/0032_cli_gpu_policy_option.c'; fi`
 
 processing/filter/test_runner-0001_filter_clip.o: processing/filter/0001_filter_clip.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT processing/filter/test_runner-0001_filter_clip.o -MD -MP -MF processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Tpo -c -o processing/filter/test_runner-0001_filter_clip.o `test -f 'processing/filter/0001_filter_clip.c' || echo '$(srcdir)/'`processing/filter/0001_filter_clip.c
@@ -3974,6 +3995,7 @@ distclean: distclean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po
+	-rm -f cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po
@@ -4122,6 +4144,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po
+	-rm -f cli/$(DEPDIR)/test_runner-0032_cli_gpu_policy_option.Po
 	-rm -f cli/aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0001_icc_builtin_rgb_gray_v4_paths.Po
 	-rm -f diagnostics/icc/$(DEPDIR)/test_runner-0002_icc_builtin_mab_mba_a2b0_paths.Po
