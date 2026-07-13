@@ -738,8 +738,8 @@ static cli_option_help_t const g_option_help_table[] = {
         'Z',
         "6delta-threshold",
         "-Z DELTA, --6delta-threshold=DELTA\n"
-        "    set RGB per-channel tolerance for 6delta encoding.\n"
-        "    DELTA must be 0..255 (default: 0).\n"
+        "    enable 6delta encoding and set RGB per-channel tolerance.\n"
+        "    DELTA must be 0..255 (default: disabled).\n"
     },
     {
         'Y',
@@ -1030,8 +1030,9 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_6DELTA_THRESHOLD",
-        "set default RGB per-channel tolerance for 6delta encoding.\n"
-        "Accepts 0..255. Invalid values keep the built-in default 0.\n"
+        "enable 6delta encoding and set the default RGB per-channel\n"
+        "tolerance.\n"
+        "Accepts 0..255. Invalid values keep the built-in default disabled.\n"
         "Overridden by -Z/--6delta-threshold."
     },
     {

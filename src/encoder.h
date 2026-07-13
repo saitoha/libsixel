@@ -280,6 +280,7 @@ struct sixel_encoder {
     int accumulation_width;
     int accumulation_height;
     int accumulation_pixelformat;
+    int sixdelta_enabled;
     unsigned int sixdelta_threshold;
     int sixdelta_error_mode;
     int accumulation_valid;

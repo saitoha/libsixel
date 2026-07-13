@@ -1,11 +1,10 @@
 #!/bin/sh
 # TAP test covering forced GPU bluenoise with transparent keep accumulation.
 #
-# transparent-policy=keep seeds an encoder-side retained plane after the first
-# frame.  The second frame therefore carries a 6delta accumulation hint into
-# palette application.  FORCE mode must still be able to exercise the GPU path
-# for terminal video clients that prefer full-paint GPU output over CPU
-# fallback.
+# transparent-policy=keep with transparent-offset emits P2=1 padding without
+# needing a 6delta retained RGB plane.  FORCE mode must still be able to
+# exercise the GPU path for terminal video clients that prefer full-paint GPU
+# output over CPU fallback.
 
 set -eux
 

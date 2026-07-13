@@ -280,6 +280,7 @@ test_accumulation_buffer_respects_delta_threshold(void)
         1,
         1,
         0,
+        1,
         4u,
         SIXEL_6DELTA_ERROR_DIFFUSE);
 
@@ -299,6 +300,7 @@ test_accumulation_buffer_respects_delta_threshold(void)
         1,
         1,
         0,
+        1,
         5u,
         SIXEL_6DELTA_ERROR_DIFFUSE);
 

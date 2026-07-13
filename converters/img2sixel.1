@@ -780,8 +780,8 @@ add transparent left/top pixel offset with DCS P2=1 image-plane reuse.
 \fB-E size\fP.
 .TP 5
 .B \-Z \fIDELTA\fP, \-\-6delta\-threshold=\fIDELTA\fP
-set RGB per-channel tolerance for 6delta encoding.
-DELTA must be 0..255 (default: 0).
+enable 6delta encoding and set RGB per-channel tolerance.
+DELTA must be 0..255 (default: disabled).
 .TP 5
 .B \-Y \fIMODE\fP, \-\-6delta\-error=\fIMODE\fP
 choose 6delta kept-pixel error handling.
@@ -1318,8 +1318,8 @@ image-plane reuse.
 .TP 5
 .B SIXEL_6DELTA_THRESHOLD
 .br
-set default RGB per-channel tolerance for 6delta encoding.
-accepts 0..255. invalid values keep the built-in default 0.
+enable 6delta encoding and set the default RGB per-channel tolerance.
+accepts 0..255. invalid values keep the built-in default disabled.
 overrided by \fB-Z\fP/\fB--6delta-threshold\fP.
 .TP 5
 .B SIXEL_6DELTA_ERROR

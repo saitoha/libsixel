@@ -101,6 +101,10 @@ accumulation_test_6delta_env_defaults(void)
         fprintf(stderr, "6delta env threshold was not applied\n");
         goto end;
     }
+    if (encoder->sixdelta_enabled == 0) {
+        fprintf(stderr, "6delta env threshold did not enable 6delta\n");
+        goto end;
+    }
     if (encoder->sixdelta_error_mode != SIXEL_6DELTA_ERROR_SKIP) {
         fprintf(stderr, "6delta env error mode was not applied\n");
         goto end;
@@ -124,6 +128,10 @@ accumulation_test_6delta_env_defaults(void)
     }
     if (encoder->sixdelta_threshold != 0u) {
         fprintf(stderr, "invalid 6delta threshold env changed default\n");
+        goto end;
+    }
+    if (encoder->sixdelta_enabled != 0) {
+        fprintf(stderr, "invalid 6delta threshold env enabled 6delta\n");
         goto end;
     }
     if (encoder->sixdelta_error_mode != SIXEL_6DELTA_ERROR_DIFFUSE) {
@@ -708,6 +716,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     int changed_index;
     int full_size;
     int accumulation_size;
+    int accumulation_6delta0_size;
     int auto_first_size;
     int auto_second_size;
     int near_without_delta_size;
@@ -731,6 +740,7 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
     changed_index = 0;
     full_size = 0;
     accumulation_size = 0;
+    accumulation_6delta0_size = 0;
     auto_first_size = 0;
     auto_second_size = 0;
     near_without_delta_size = 0;
@@ -809,15 +819,40 @@ test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv)
         fprintf(stderr, "non-accumulation encode unexpectedly used P2=1\n");
         goto end;
     }
-    if (accumulation_has_keep_header == 0) {
-        fprintf(stderr, "accumulation encode did not use P2=1\n");
+    if (accumulation_has_keep_header != 0) {
+        fprintf(stderr,
+                "default accumulation unexpectedly used P2=1\n");
         goto end;
     }
-    if (accumulation_size >= full_size) {
+    if (accumulation_size < full_size) {
         fprintf(stderr,
-                "accumulation output not smaller (%d >= %d)\n",
+                "default accumulation unexpectedly used 6delta "
+                "(%d < %d)\n",
                 accumulation_size,
                 full_size);
+        goto end;
+    }
+    status = accumulation_encode(allocator,
+                                 previous,
+                                 current,
+                                 "0",
+                                 &accumulation_6delta0_size,
+                                 &accumulation_has_keep_header);
+    if (SIXEL_FAILED(status)) {
+        fprintf(stderr, "zero-threshold 6delta encode failed: %04x\n",
+                status);
+        goto end;
+    }
+    if (accumulation_has_keep_header == 0) {
+        fprintf(stderr, "zero-threshold 6delta did not use P2=1\n");
+        goto end;
+    }
+    if (accumulation_6delta0_size >= accumulation_size) {
+        fprintf(stderr,
+                "explicit zero-threshold 6delta did not reduce output "
+                "(%d >= %d)\n",
+                accumulation_6delta0_size,
+                accumulation_size);
         goto end;
     }
     status = accumulation_encode_sequence(allocator,

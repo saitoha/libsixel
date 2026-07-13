@@ -1385,6 +1385,9 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
     if (dither == NULL || rgb == NULL) {
         return 0;
     }
+    if (dither->pipeline_6delta_enabled == 0) {
+        return 0;
+    }
     if (dither->pipeline_accumulation_width <= 0 ||
         dither->pipeline_accumulation_height <= 0) {
         return 0;
@@ -1449,7 +1452,7 @@ sixel_dither_pipeline_6delta_error_mode(sixel_dither_t const *dither)
 }
 
 static SIXELSTATUS
-sixel_dither_prepare_6delta_result_mask(
+sixel_dither_prepare_accumulation_result_mask(
     sixel_dither_t *dither,
     unsigned char const *transparent_mask,
     size_t transparent_mask_size,
@@ -1475,7 +1478,7 @@ sixel_dither_prepare_6delta_result_mask(
         total_pixels);
     if (result_mask == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_dither_prepare_6delta_result_mask: "
+            "sixel_dither_prepare_accumulation_result_mask: "
             "mask allocation failed.");
         return SIXEL_BAD_ALLOCATION;
     }
@@ -2624,6 +2627,7 @@ sixel_dither_clear_pipeline_accumulation_buffer_hint(
     dither->pipeline_accumulation_width = 0;
     dither->pipeline_accumulation_height = 0;
     dither->pipeline_accumulation_keycolor = (-1);
+    dither->pipeline_6delta_enabled = 0;
     dither->pipeline_6delta_threshold = 0u;
     dither->pipeline_6delta_error_mode = SIXEL_6DELTA_ERROR_DIFFUSE;
 }
@@ -2799,6 +2803,7 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
     int width,
     int height,
     int keycolor,
+    int sixdelta_enabled,
     unsigned int threshold,
     int error_mode)
 {
@@ -2839,6 +2844,7 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
     dither->pipeline_accumulation_width = width;
     dither->pipeline_accumulation_height = height;
     dither->pipeline_accumulation_keycolor = keycolor;
+    dither->pipeline_6delta_enabled = sixdelta_enabled != 0 ? 1 : 0;
     dither->pipeline_6delta_threshold = threshold;
     if (error_mode == SIXEL_6DELTA_ERROR_SKIP) {
         dither->pipeline_6delta_error_mode = SIXEL_6DELTA_ERROR_SKIP;
@@ -3785,7 +3791,7 @@ sixel_dither_apply_palette_with_mode(
             keycolor_for_mask < 0) {
             keycolor_for_mask = dither->pipeline_accumulation_keycolor;
         }
-        status = sixel_dither_prepare_6delta_result_mask(
+        status = sixel_dither_prepare_accumulation_result_mask(
             dither,
             transparent_mask,
             apply_transparent_mask != 0 ? total_pixels : 0u,
@@ -3824,6 +3830,7 @@ sixel_dither_apply_palette_with_mode(
             apply_transparent_mask != 0 ? total_pixels : 0U;
         gpu_request.transparent_keycolor = keycolor_for_mask;
         gpu_request.has_6delta_accumulation =
+            dither->pipeline_6delta_enabled != 0 &&
             dither->method_for_diffuse == SIXEL_DIFFUSE_NONE &&
             sixel_dither_has_compatible_accumulation_hint(dither,
                                                           width,

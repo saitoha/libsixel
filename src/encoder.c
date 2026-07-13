@@ -351,7 +351,7 @@ static int sixel_encoder_frame_preserves_alpha_key(
 static int sixel_encoder_frame_get_transparent_mask_pixels(
     sixel_frame_t const *frame,
     size_t *pixel_count_out);
-static int sixel_encoder_accumulation_reserves_alpha_key(
+static int sixel_encoder_6delta_reserves_alpha_key(
     sixel_encoder_t const *encoder);
 static SIXELSTATUS sixel_encoder_bind_transparent_mask(
     sixel_encoder_t *encoder,
@@ -3498,19 +3498,24 @@ sixel_encoder_pixel_alpha_is_zero(unsigned char const *pixels,
 }
 
 static int
-sixel_encoder_accumulation_policy_requested(sixel_encoder_t const *encoder)
+sixel_encoder_6delta_accumulation_requested(
+    sixel_encoder_t const *encoder)
 {
     if (encoder == NULL) {
         return 0;
     }
+    if (encoder->sixdelta_enabled == 0) {
+        return 0;
+    }
+
     return sixel_encoder_resolve_transparent_policy(encoder)
         == SIXEL_TRANSPARENT_POLICY_KEEP ? 1 : 0;
 }
 
 static int
-sixel_encoder_accumulation_policy_enabled(sixel_encoder_t const *encoder)
+sixel_encoder_6delta_accumulation_active(sixel_encoder_t const *encoder)
 {
-    if (sixel_encoder_accumulation_policy_requested(encoder) == 0) {
+    if (sixel_encoder_6delta_accumulation_requested(encoder) == 0) {
         return 0;
     }
 
@@ -3518,10 +3523,10 @@ sixel_encoder_accumulation_policy_enabled(sixel_encoder_t const *encoder)
 }
 
 static int
-sixel_encoder_accumulation_reserves_alpha_key(
+sixel_encoder_6delta_reserves_alpha_key(
     sixel_encoder_t const *encoder)
 {
-    return sixel_encoder_accumulation_policy_enabled(encoder);
+    return sixel_encoder_6delta_accumulation_active(encoder);
 }
 
 static SIXELSTATUS
@@ -3635,7 +3640,7 @@ sixel_encoder_bind_transparent_mask(
     size_t rgb_size;
     size_t pixel_count;
     size_t index;
-    int accumulation_active;
+    int sixdelta_active;
     int alpha_covers;
     int frame_mask_covers;
     int mask_has_hit;
@@ -3646,7 +3651,7 @@ sixel_encoder_bind_transparent_mask(
     rgb_size = 0u;
     pixel_count = 0u;
     index = 0u;
-    accumulation_active = 0;
+    sixdelta_active = 0;
     alpha_covers = 0;
     frame_mask_covers = 0;
     mask_has_hit = 0;
@@ -3657,7 +3662,7 @@ sixel_encoder_bind_transparent_mask(
     sixel_dither_clear_pipeline_accumulation_buffer_hint(dither);
     sixel_dither_set_pipeline_accumulation_result_enabled(
         dither,
-        sixel_encoder_accumulation_policy_requested(encoder));
+        sixel_encoder_6delta_accumulation_requested(encoder));
 
     /*
      * Reuse frame-owned masks unless accumulation mode needs a combined mask.
@@ -3688,8 +3693,8 @@ sixel_encoder_bind_transparent_mask(
         return status;
     }
 
-    accumulation_active =
-        sixel_encoder_accumulation_policy_enabled(encoder) &&
+    sixdelta_active =
+        sixel_encoder_6delta_accumulation_active(encoder) &&
         encoder->accumulation_width == view.width &&
         encoder->accumulation_height == view.height &&
         encoder->accumulation_pixels != NULL &&
@@ -3697,7 +3702,7 @@ sixel_encoder_bind_transparent_mask(
         encoder->accumulation_valid_mask != NULL &&
         encoder->accumulation_valid_mask_size >= pixel_count;
 
-    if (!accumulation_active) {
+    if (!sixdelta_active) {
         if (sixel_encoder_frame_get_transparent_mask_pixels(frame,
                                                             &pixel_count)) {
             sixel_dither_set_pipeline_transparent_mask_hint(
@@ -3720,6 +3725,7 @@ sixel_encoder_bind_transparent_mask(
             encoder->accumulation_width,
             encoder->accumulation_height,
             dither->keycolor,
+            encoder->sixdelta_enabled,
             encoder->sixdelta_threshold,
             encoder->sixdelta_error_mode);
         return SIXEL_OK;
@@ -3762,6 +3768,7 @@ sixel_encoder_bind_transparent_mask(
         encoder->accumulation_width,
         encoder->accumulation_height,
         dither->keycolor,
+        encoder->sixdelta_enabled,
         encoder->sixdelta_threshold,
         encoder->sixdelta_error_mode);
     status = SIXEL_OK;
@@ -3805,12 +3812,13 @@ sixel_encoder_update_accumulation_from_frame(
     keep_previous = 0;
 
     /*
-     * transparent-policy=keep makes the first successful frame seed the
-     * retained image plane.  A caller can still pre-seed it explicitly via
-     * sixel_encoder_set_accumulation_buffer().
+     * The RGB retained plane exists only for 6delta.  Plain P2=1
+     * transparency is a terminal-side composition rule: it needs a keycolor
+     * in the emitted frame, but it does not need libsixel to remember the
+     * previously displayed RGB plane.
      */
     if (encoder == NULL || frame == NULL ||
-        sixel_encoder_accumulation_policy_requested(encoder) == 0) {
+        sixel_encoder_6delta_accumulation_requested(encoder) == 0) {
         return SIXEL_OK;
     }
 
@@ -6830,7 +6838,7 @@ sixel_encoder_palette_job_thread(void *priv)
         preserve_alpha_key =
             sixel_encoder_transparent_policy_preserves_alpha(job->encoder) &&
             (sixel_encoder_frame_preserves_alpha_key(job->sample_frame) ||
-             sixel_encoder_accumulation_reserves_alpha_key(job->encoder));
+             sixel_encoder_6delta_reserves_alpha_key(job->encoder));
         if (!preserve_alpha_key) {
             status = sixel_frame_set_pixelformat(job->sample_frame,
                                                  job->target_pixelformat);
@@ -7817,7 +7825,7 @@ sixel_encoder_prepare_palette(
         encoder->reqcolors > 1
         && sixel_encoder_transparent_policy_preserves_alpha(encoder)
         && (sixel_encoder_frame_preserves_alpha_key(frame)
-            || sixel_encoder_accumulation_reserves_alpha_key(encoder));
+            || sixel_encoder_6delta_reserves_alpha_key(encoder));
     palette_reqcolors = encoder->reqcolors;
     if (reserve_alpha_key) {
         palette_reqcolors = encoder->reqcolors - 1;
@@ -9580,6 +9588,7 @@ sixel_encoder_new(
     (*ppencoder)->accumulation_width    = 0;
     (*ppencoder)->accumulation_height   = 0;
     (*ppencoder)->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    (*ppencoder)->sixdelta_enabled      = 0;
     (*ppencoder)->sixdelta_threshold    = 0u;
     (*ppencoder)->sixdelta_error_mode   = SIXEL_6DELTA_ERROR_DIFFUSE;
     (*ppencoder)->accumulation_valid    = 0;
@@ -9695,6 +9704,7 @@ sixel_encoder_new(
             errno != ERANGE &&
             parsed_6delta_threshold >= 0L &&
             parsed_6delta_threshold <= 255L) {
+            (*ppencoder)->sixdelta_enabled = 1;
             (*ppencoder)->sixdelta_threshold =
                 (unsigned int)parsed_6delta_threshold;
         }
@@ -12323,6 +12333,7 @@ sixel_encoder_apply_6delta_threshold_option(
             "6delta threshold must be an integer in range 0..255.");
         return SIXEL_BAD_ARGUMENT;
     }
+    encoder->sixdelta_enabled = 1;
     encoder->sixdelta_threshold = (unsigned int)parsed_value;
     return SIXEL_OK;
 }
