@@ -236,7 +236,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-policy-bluenoise.h \
 	$(srcdir)/dither-policy-interframe.h \
 	$(srcdir)/dither-common-pipeline.c \
-	$(srcdir)/dither-common-pipeline.h $(srcdir)/bluenoise_64x64.h \
+	$(srcdir)/dither-common-pipeline.h $(srcdir)/gpu-dequant.c \
+	$(srcdir)/gpu-dequant.h $(srcdir)/bluenoise_64x64.h \
 	$(srcdir)/dither-interframe-method.c \
 	$(srcdir)/dither-interframe-method.h \
 	$(srcdir)/dither-interframe-stbn-source.c \
@@ -478,6 +479,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-probe.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel_decode_pixels.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel_atomic_fallback.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-dequant.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-gpu-palette.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_1) \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_metal) \
@@ -593,6 +595,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo \
 	./$(DEPDIR)/libsixel_la-fromwebp.Plo \
+	./$(DEPDIR)/libsixel_la-gpu-dequant.Plo \
 	./$(DEPDIR)/libsixel_la-gpu-palette-metal.Plo \
 	./$(DEPDIR)/libsixel_la-gpu-palette.Plo \
 	./$(DEPDIR)/libsixel_la-icc-apply.Plo \
@@ -1278,6 +1281,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/classid-service.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/rgblookup.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lso2.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-dequant.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/gpu-palette.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__append_metal) \
@@ -1581,6 +1586,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromwebp.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-dequant.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-palette-metal.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-gpu-palette.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-icc-apply.Plo@am__quote@ # am--include-marker
@@ -2190,6 +2196,13 @@ libsixel_la-filter-palette.lo: filter-palette.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-palette.c' object='libsixel_la-filter-palette.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-palette.lo `test -f 'filter-palette.c' || echo '$(srcdir)/'`filter-palette.c
+
+libsixel_la-gpu-dequant.lo: gpu-dequant.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-dequant.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-dequant.Tpo -c -o libsixel_la-gpu-dequant.lo `test -f 'gpu-dequant.c' || echo '$(srcdir)/'`gpu-dequant.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-gpu-dequant.Tpo $(DEPDIR)/libsixel_la-gpu-dequant.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gpu-dequant.c' object='libsixel_la-gpu-dequant.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-gpu-dequant.lo `test -f 'gpu-dequant.c' || echo '$(srcdir)/'`gpu-dequant.c
 
 libsixel_la-gpu-palette.lo: gpu-palette.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-gpu-palette.lo -MD -MP -MF $(DEPDIR)/libsixel_la-gpu-palette.Tpo -c -o libsixel_la-gpu-palette.lo `test -f 'gpu-palette.c' || echo '$(srcdir)/'`gpu-palette.c
@@ -2991,6 +3004,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-dequant.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
@@ -3180,6 +3194,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp-vp8l.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromwebp.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-gpu-dequant.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-apply.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-icc-parse.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo

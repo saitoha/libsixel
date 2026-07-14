@@ -269,6 +269,8 @@ srcs = [
   'dither-policy-x-dither.h',
   'dither-policy-bluenoise.h',
   'dither-policy-interframe.h',
+  'gpu-dequant.c',
+  'gpu-dequant.h',
   'options.h',
   'path.h',
   'sixel_atomic.h',

@@ -384,6 +384,8 @@ sixel_decode_pixels_try(unsigned char const *data,
                                               out_pixels,
                                               out_width,
                                               out_height,
+                                              NULL,
+                                              NULL,
                                               result_flags,
                                               allocator);
 

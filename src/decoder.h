@@ -37,6 +37,7 @@ struct sixel_decoder {
     int dequantize_method;
     int dequantize_similarity_bias;
     int dequantize_edge_strength;
+    int gpu_policy;
     int thumbnail_size;
     int direct_color;
     sixel_allocator_t *allocator;

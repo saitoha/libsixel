@@ -64,6 +64,8 @@ sixel_decode_direct_with_options(unsigned char *p,
                                  unsigned char **pixels,
                                  int *pwidth,
                                  int *pheight,
+                                 unsigned char **palette,
+                                 int *ncolors,
                                  unsigned int *result_flags,
                                  sixel_allocator_t *allocator);
 

@@ -21,6 +21,7 @@
 #include <sixel.h>
 
 #include "bluenoise_64x64.h"
+#include "gpu-dequant.h"
 #include "gpu-palette.h"
 
 enum {
@@ -53,6 +54,14 @@ typedef struct sixel_gpu_metal_params {
     uint32_t gradient_height;
 } sixel_gpu_metal_params_t;
 
+typedef struct sixel_gpu_metal_dequant_params {
+    uint32_t pixel_count;
+    uint32_t width;
+    uint32_t height;
+    uint32_t ncolors;
+    int32_t similarity_bias;
+} sixel_gpu_metal_dequant_params_t;
+
 typedef struct sixel_gpu_metal_cached_buffer {
     id<MTLBuffer> buffer;
     NSUInteger capacity;
@@ -62,6 +71,7 @@ static pthread_mutex_t g_sixel_gpu_metal_lock = PTHREAD_MUTEX_INITIALIZER;
 static id<MTLDevice> g_sixel_gpu_metal_device = nil;
 static id<MTLCommandQueue> g_sixel_gpu_metal_queue = nil;
 static id<MTLComputePipelineState> g_sixel_gpu_metal_pipeline = nil;
+static id<MTLComputePipelineState> g_sixel_gpu_metal_dequant_pipeline = nil;
 static id<MTLBuffer> g_sixel_gpu_metal_blue_noise_buffer = nil;
 static id<MTLBuffer> g_sixel_gpu_metal_dummy_buffer = nil;
 static sixel_gpu_metal_cached_buffer_t g_sixel_gpu_metal_result_buffer =
@@ -82,6 +92,12 @@ static sixel_gpu_metal_cached_buffer_t
     g_sixel_gpu_metal_accumulation_valid_buffer = { nil, 0U };
 static sixel_gpu_metal_cached_buffer_t
     g_sixel_gpu_metal_accumulation_result_buffer = { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t
+    g_sixel_gpu_metal_dequant_result_buffer = { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t
+    g_sixel_gpu_metal_dequant_rgba_buffer = { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t
+    g_sixel_gpu_metal_dequant_params_buffer = { nil, 0U };
 static unsigned char g_sixel_gpu_metal_palette_shadow[
     SIXEL_PALETTE_MAX * 3U];
 static NSUInteger g_sixel_gpu_metal_palette_shadow_length = 0U;
@@ -258,6 +274,162 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    }\n"
 "    result[gid] = uchar(best);\n"
 "}\n",
+"struct DequantParams {\n"
+"    uint pixel_count;\n"
+"    uint width;\n"
+"    uint height;\n"
+"    uint ncolors;\n"
+"    int similarity_bias;\n"
+"};\n"
+"static uint dequant_color_diff(uchar3 a, uchar3 b)\n"
+"{\n"
+"    int dr = int(a.x) - int(b.x);\n"
+"    int dg = int(a.y) - int(b.y);\n"
+"    int db = int(a.z) - int(b.z);\n"
+"    return uint(dr * dr + dg * dg + db * db);\n"
+"}\n"
+"static bool dequant_same_color(uchar3 a, uchar3 b)\n"
+"{\n"
+"    return all(a == b);\n"
+"}\n"
+"static uint dequant_similarity_weight(device const uchar *palette,\n"
+"                                      constant DequantParams& params,\n"
+"                                      uchar3 center,\n"
+"                                      uchar3 neighbor)\n"
+"{\n"
+"    uchar3 avg;\n"
+"    uint distance;\n"
+"    uint base_distance;\n"
+"    uint min_diff = 0xffffffffu;\n"
+"    int bias;\n"
+"    if (dequant_same_color(center, neighbor)) {\n"
+"        return 7u;\n"
+"    }\n"
+"    avg = uchar3(uchar((uint(center.x) + uint(neighbor.x)) >> 1),\n"
+"                 uchar((uint(center.y) + uint(neighbor.y)) >> 1),\n"
+"                 uchar((uint(center.z) + uint(neighbor.z)) >> 1));\n"
+"    distance = dequant_color_diff(avg, center);\n"
+"    bias = params.similarity_bias < 1 ? 1 : params.similarity_bias;\n"
+"    base_distance = (distance * uint(bias) + 50u) / 100u;\n"
+"    if (base_distance == 0u) {\n"
+"        base_distance = 1u;\n"
+"    }\n"
+"    for (uint i = 0u; i < params.ncolors; ++i) {\n"
+"        uchar3 p = uchar3(palette[i * 3u + 0u],\n"
+"                          palette[i * 3u + 1u],\n"
+"                          palette[i * 3u + 2u]);\n"
+"        uint diff;\n"
+"        if (dequant_same_color(p, center) ||\n"
+"            dequant_same_color(p, neighbor)) {\n"
+"            continue;\n"
+"        }\n"
+"        diff = dequant_color_diff(avg, p);\n"
+"        if (diff < min_diff) {\n"
+"            min_diff = diff;\n"
+"        }\n"
+"    }\n"
+"    if (min_diff == 0xffffffffu) {\n"
+"        min_diff = base_distance * 2u;\n"
+"    }\n"
+"    if (min_diff >= base_distance * 2u) {\n"
+"        return 5u;\n"
+"    }\n"
+"    if (min_diff >= base_distance) {\n"
+"        return 8u;\n"
+"    }\n"
+"    if (min_diff * 6u >= base_distance * 5u) {\n"
+"        return 7u;\n"
+"    }\n"
+"    if (min_diff * 4u >= base_distance * 3u) {\n"
+"        return 7u;\n"
+"    }\n"
+"    if (min_diff * 3u >= base_distance * 2u) {\n"
+"        return 5u;\n"
+"    }\n"
+"    if (min_diff * 5u >= base_distance * 3u) {\n"
+"        return 7u;\n"
+"    }\n"
+"    if (min_diff * 2u >= base_distance) {\n"
+"        return 4u;\n"
+"    }\n"
+"    if (min_diff * 3u >= base_distance) {\n"
+"        return 2u;\n"
+"    }\n"
+"    return 0u;\n"
+"}\n"
+"static void dequant_store_zero(device uchar *result, uint gid)\n"
+"{\n"
+"    result[gid * 4u + 0u] = uchar(0);\n"
+"    result[gid * 4u + 1u] = uchar(0);\n"
+"    result[gid * 4u + 2u] = uchar(0);\n"
+"    result[gid * 4u + 3u] = uchar(0);\n"
+"}\n"
+"kernel void sixel_gpu_dequant_fast4_rgba(\n"
+"    device uchar *result [[buffer(0)]],\n"
+"    device const uchar *rgba [[buffer(1)]],\n"
+"    device const uchar *palette [[buffer(2)]],\n"
+"    constant DequantParams& params [[buffer(3)]],\n"
+"    uint gid [[thread_position_in_grid]])\n"
+"{\n"
+"    const int2 offsets[4] = {\n"
+"        int2(-1, -1), int2(0, -1), int2(1, -1), int2(-1, 0)\n"
+"    };\n"
+"    uint x;\n"
+"    uint y;\n"
+"    uchar3 center_color;\n"
+"    uint accum_r;\n"
+"    uint accum_g;\n"
+"    uint accum_b;\n"
+"    uint total;\n"
+"    if (gid >= params.pixel_count) {\n"
+"        return;\n"
+"    }\n"
+"    if (rgba[gid * 4u + 3u] == 0u) {\n"
+"        dequant_store_zero(result, gid);\n"
+"        return;\n"
+"    }\n"
+"    x = gid % params.width;\n"
+"    y = gid / params.width;\n"
+"    center_color = uchar3(rgba[gid * 4u + 0u], rgba[gid * 4u + 1u],\n"
+"                          rgba[gid * 4u + 2u]);\n"
+"    accum_r = uint(center_color.x) * 8u;\n"
+"    accum_g = uint(center_color.y) * 8u;\n"
+"    accum_b = uint(center_color.z) * 8u;\n"
+"    total = 8u;\n"
+"    for (uint n = 0u; n < 4u; ++n) {\n"
+"        int nx = int(x) + offsets[n].x;\n"
+"        int ny = int(y) + offsets[n].y;\n"
+"        uint pos;\n"
+"        uchar3 neighbor_color;\n"
+"        uint weight;\n"
+"        if (nx < 0 || ny < 0 || nx >= int(params.width) ||\n"
+"            ny >= int(params.height)) {\n"
+"            continue;\n"
+"        }\n"
+"        pos = uint(ny) * params.width + uint(nx);\n"
+"        if (rgba[pos * 4u + 3u] == 0u) {\n"
+"            continue;\n"
+"        }\n"
+"        neighbor_color = uchar3(rgba[pos * 4u + 0u],\n"
+"                                rgba[pos * 4u + 1u],\n"
+"                                rgba[pos * 4u + 2u]);\n"
+"        weight = dequant_similarity_weight(palette,\n"
+"                                           params,\n"
+"                                           center_color,\n"
+"                                           neighbor_color);\n"
+"        if (weight == 0u) {\n"
+"            continue;\n"
+"        }\n"
+"        accum_r += uint(neighbor_color.x) * weight;\n"
+"        accum_g += uint(neighbor_color.y) * weight;\n"
+"        accum_b += uint(neighbor_color.z) * weight;\n"
+"        total += weight;\n"
+"    }\n"
+"    result[gid * 4u + 0u] = uchar(accum_r / total);\n"
+"    result[gid * 4u + 1u] = uchar(accum_g / total);\n"
+"    result[gid * 4u + 2u] = uchar(accum_b / total);\n"
+"    result[gid * 4u + 3u] = uchar(255);\n"
+"}\n",
 NULL
 };
 
@@ -424,12 +596,14 @@ sixel_gpu_palette_metal_prepare_locked(void)
     NSString *source;
     id<MTLLibrary> library;
     id<MTLFunction> function;
+    id<MTLFunction> dequant_function;
     unsigned char dummy;
 
     error = nil;
     source = nil;
     library = nil;
     function = nil;
+    dequant_function = nil;
     dummy = 0U;
     if (g_sixel_gpu_metal_probe_done != 0) {
         return g_sixel_gpu_metal_available;
@@ -458,9 +632,15 @@ sixel_gpu_palette_metal_prepare_locked(void)
         return 0;
     }
     function = [library newFunctionWithName:@"sixel_gpu_palette_apply"];
-    [library release];
-    library = nil;
+    dequant_function =
+        [library newFunctionWithName:@"sixel_gpu_dequant_fast4_rgba"];
     if (function == nil) {
+        [library release];
+        return 0;
+    }
+    if (dequant_function == nil) {
+        [function release];
+        [library release];
         return 0;
     }
     g_sixel_gpu_metal_pipeline =
@@ -469,6 +649,19 @@ sixel_gpu_palette_metal_prepare_locked(void)
     [function release];
     function = nil;
     if (g_sixel_gpu_metal_pipeline == nil) {
+        [dequant_function release];
+        [library release];
+        return 0;
+    }
+    g_sixel_gpu_metal_dequant_pipeline =
+        [g_sixel_gpu_metal_device
+            newComputePipelineStateWithFunction:dequant_function
+                                          error:&error];
+    [dequant_function release];
+    dequant_function = nil;
+    [library release];
+    library = nil;
+    if (g_sixel_gpu_metal_dequant_pipeline == nil) {
         return 0;
     }
     g_sixel_gpu_metal_blue_noise_buffer =
@@ -768,6 +961,181 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             memcpy(request->accumulation_result_mask,
                    [accumulation_result_buffer contents],
                    accumulation_result_length);
+        }
+        status = SIXEL_OK;
+
+    end:
+        if (result_buffer_direct != 0 && result_buffer != nil) {
+            [result_buffer release];
+            result_buffer = nil;
+        }
+        if (locked != 0) {
+            (void)pthread_mutex_unlock(&g_sixel_gpu_metal_lock);
+        }
+    }
+
+    return status;
+}
+
+int
+sixel_gpu_dequant_metal_is_available(void)
+{
+    int available;
+
+    available = 0;
+    (void)pthread_mutex_lock(&g_sixel_gpu_metal_lock);
+    available = sixel_gpu_palette_metal_prepare_locked();
+    (void)pthread_mutex_unlock(&g_sixel_gpu_metal_lock);
+
+    return available;
+}
+
+static void
+sixel_gpu_dequant_metal_fill_params(
+    sixel_gpu_metal_dequant_params_t *params,
+    sixel_gpu_dequant_request_t const *request)
+{
+    int bias;
+
+    bias = request->similarity_bias;
+    if (bias < 1) {
+        bias = 1;
+    }
+    params->pixel_count = (uint32_t)request->pixel_count;
+    params->width = (uint32_t)request->width;
+    params->height = (uint32_t)request->height;
+    params->ncolors = (uint32_t)request->ncolors;
+    params->similarity_bias = (int32_t)bias;
+}
+
+SIXELSTATUS
+sixel_gpu_dequant_metal_fast4_rgba(
+    sixel_gpu_dequant_request_t const *request)
+{
+    SIXELSTATUS status;
+    sixel_gpu_metal_dequant_params_t params;
+    id<MTLBuffer> result_buffer;
+    id<MTLBuffer> rgba_buffer;
+    id<MTLBuffer> palette_buffer;
+    id<MTLBuffer> params_buffer;
+    id<MTLCommandBuffer> command_buffer;
+    id<MTLComputeCommandEncoder> encoder;
+    NSUInteger threads_per_group;
+    NSUInteger groups;
+    NSUInteger result_length;
+    NSUInteger rgba_length;
+    NSUInteger palette_length;
+    int result_buffer_direct;
+    int locked;
+
+    status = SIXEL_FALSE;
+    memset(&params, 0, sizeof(params));
+    result_buffer = nil;
+    rgba_buffer = nil;
+    palette_buffer = nil;
+    params_buffer = nil;
+    command_buffer = nil;
+    encoder = nil;
+    threads_per_group = 0U;
+    groups = 0U;
+    result_length = 0U;
+    rgba_length = 0U;
+    palette_length = 0U;
+    result_buffer_direct = 0;
+    locked = 0;
+
+    if (request == NULL) {
+        sixel_helper_set_additional_message(
+            "gpu dequant: Metal request is null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    @autoreleasepool {
+        (void)pthread_mutex_lock(&g_sixel_gpu_metal_lock);
+        locked = 1;
+        if (!sixel_gpu_palette_metal_prepare_locked()) {
+            sixel_helper_set_additional_message(
+                "gpu dequant: Metal is not available.");
+            status = SIXEL_FEATURE_ERROR;
+            goto end;
+        }
+
+        result_length = (NSUInteger)request->pixel_count * 4U;
+        rgba_length = (NSUInteger)request->pixel_count * 4U;
+        palette_length = (NSUInteger)request->ncolors * 3U;
+
+        result_buffer =
+            sixel_gpu_metal_wrap_dest_buffer(request->dest, result_length);
+        if (result_buffer != nil) {
+            result_buffer_direct = 1;
+        } else {
+            result_buffer = sixel_gpu_metal_ensure_buffer(
+                &g_sixel_gpu_metal_dequant_result_buffer,
+                result_length);
+        }
+        rgba_buffer = sixel_gpu_metal_upload_buffer(
+            &g_sixel_gpu_metal_dequant_rgba_buffer,
+            request->rgba,
+            rgba_length);
+        palette_buffer =
+            sixel_gpu_metal_upload_palette(request->palette, palette_length);
+        sixel_gpu_dequant_metal_fill_params(&params, request);
+        params_buffer = sixel_gpu_metal_upload_buffer(
+            &g_sixel_gpu_metal_dequant_params_buffer,
+            &params,
+            sizeof(params));
+
+        if (result_buffer == nil || rgba_buffer == nil ||
+                palette_buffer == nil || params_buffer == nil) {
+            sixel_helper_set_additional_message(
+                "gpu dequant: Metal buffer allocation failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+
+        command_buffer = [g_sixel_gpu_metal_queue commandBuffer];
+        encoder = [command_buffer computeCommandEncoder];
+        if (command_buffer == nil || encoder == nil) {
+            sixel_helper_set_additional_message(
+                "gpu dequant: Metal command encoder creation failed.");
+            status = SIXEL_RUNTIME_ERROR;
+            goto end;
+        }
+
+        [encoder setComputePipelineState:g_sixel_gpu_metal_dequant_pipeline];
+        [encoder setBuffer:result_buffer offset:0 atIndex:0];
+        [encoder setBuffer:rgba_buffer offset:0 atIndex:1];
+        [encoder setBuffer:palette_buffer offset:0 atIndex:2];
+        [encoder setBuffer:params_buffer offset:0 atIndex:3];
+
+        threads_per_group =
+            [g_sixel_gpu_metal_dequant_pipeline
+                maxTotalThreadsPerThreadgroup];
+        if (threads_per_group > 256U) {
+            threads_per_group = 256U;
+        }
+        if (threads_per_group == 0U) {
+            threads_per_group = 1U;
+        }
+        groups = ((NSUInteger)request->pixel_count + threads_per_group - 1U) /
+            threads_per_group;
+        [encoder dispatchThreadgroups:MTLSizeMake(groups, 1U, 1U)
+                threadsPerThreadgroup:MTLSizeMake(threads_per_group,
+                                                  1U,
+                                                  1U)];
+        [encoder endEncoding];
+        [command_buffer commit];
+        [command_buffer waitUntilCompleted];
+        if ([command_buffer status] != MTLCommandBufferStatusCompleted) {
+            sixel_gpu_palette_metal_set_message(
+                "gpu dequant: Metal command failed",
+                [command_buffer error]);
+            status = SIXEL_RUNTIME_ERROR;
+            goto end;
+        }
+
+        if (result_buffer_direct == 0) {
+            memcpy(request->dest, [result_buffer contents], result_length);
         }
         status = SIXEL_OK;
 

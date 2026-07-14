@@ -170,6 +170,17 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           or empty.\n"
     },
     {
+        'G',
+        "gpu-policy",
+        "-G GPUPOLICY, --gpu-policy=GPUPOLICY\n"
+        "                           choose decoder GPU accelerator\n"
+        "                           policy. GPUPOLICY is one of:\n"
+        "                             off   -> keep CPU path\n"
+        "                             auto  -> use GPU only when\n"
+        "                                      available and large\n"
+        "                             force -> require GPU path\n"
+    },
+    {
         '%',
         "env",
         "-% KEY=VALUE, --env=KEY=VALUE\n"
@@ -198,7 +209,7 @@ sixel2png_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_sixel2png_optstring[] = "i:o:d:S:e:s:=:%:DVH";
+static char const g_sixel2png_optstring[] = "i:o:d:S:e:s:=:G:%:DVH";
 
 typedef struct sixel2png_parsed_option {
     int code;
@@ -490,6 +501,7 @@ main(int argc, char *argv[])
         {"edge",             required_argument,  NULL, 'e'},
         {"direct",           no_argument,        NULL, 'D'},
         {"threads",          required_argument,  NULL, '='},
+        {"gpu-policy",       required_argument,  NULL, 'G'},
         {"env",              required_argument,  NULL, '%'},
         {"version",          no_argument,        NULL, 'V'},
         {"help",             no_argument,        NULL, 'H'},

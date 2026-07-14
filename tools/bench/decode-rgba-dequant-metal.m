@@ -660,6 +660,8 @@ decode_direct_once(bench_image_t *image, sixel_allocator_t *allocator)
                                               &rgba,
                                               &width,
                                               &height,
+                                              NULL,
+                                              NULL,
                                               &result_flags,
                                               allocator);
     free(work);
@@ -796,6 +798,8 @@ bench_decode_direct(bench_image_t const *image,
                                                   &rgba,
                                                   &width,
                                                   &height,
+                                                  NULL,
+                                                  NULL,
                                                   &result_flags,
                                                   allocator);
         total += now_ms() - start;

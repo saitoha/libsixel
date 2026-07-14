@@ -61,6 +61,7 @@
 #include "frame-factory.h"
 #include "clipboard.h"
 #include "compat_stub.h"
+#include "gpu-dequant.h"
 #include "path.h"
 #include "options.h"
 #include "cpu.h"
@@ -73,6 +74,14 @@
 # include <arm_neon.h>
 # define SIXEL_KUNDITHER_USE_NEON 1
 #endif
+
+#define SIXEL_DECODER_GPU_POLICY_ENVVAR "SIXEL_GPU_POLICY"
+
+static sixel_option_choice_t const g_decoder_gpu_policy_choices[] = {
+    { "off", SIXEL_GPU_POLICY_OFF },
+    { "auto", SIXEL_GPU_POLICY_AUTO },
+    { "force", SIXEL_GPU_POLICY_FORCE }
+};
 
 static void
 decoder_clipboard_select_format(char *dest,
@@ -415,6 +424,44 @@ strdup_with_allocator(
     return p;
 }
 
+static SIXELSTATUS
+sixel_decoder_parse_gpu_policy_argument(char const *value,
+                                        int *policy)
+{
+    sixel_option_choice_result_t match_result;
+    char match_detail[256];
+    int match_value;
+
+    match_value = SIXEL_GPU_POLICY_OFF;
+    match_detail[0] = '\0';
+    match_result = sixel_option_match_choice(
+        value,
+        g_decoder_gpu_policy_choices,
+        sizeof(g_decoder_gpu_policy_choices) /
+        sizeof(g_decoder_gpu_policy_choices[0]),
+        &match_value,
+        match_detail,
+        sizeof(match_detail));
+    if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+        *policy = match_value;
+        return SIXEL_OK;
+    }
+    if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+        sixel_option_report_ambiguous_prefix(
+            value,
+            match_detail,
+            match_detail,
+            sizeof(match_detail));
+        return SIXEL_BAD_ARGUMENT;
+    }
+    sixel_option_report_invalid_choice(
+        "cannot parse gpu policy option.",
+        match_detail,
+        match_detail,
+        sizeof(match_detail));
+    return SIXEL_BAD_ARGUMENT;
+}
+
 
 /* create decoder object */
 SIXELAPI SIXELSTATUS
@@ -424,6 +471,9 @@ sixel_decoder_new(
                                                   default allocator */
 {
     SIXELSTATUS status = SIXEL_FALSE;
+    char const *env_gpu_policy;
+    char match_detail[256];
+    int env_match_value;
 
     if (allocator == NULL) {
         status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -450,6 +500,7 @@ sixel_decoder_new(
     (*ppdecoder)->dequantize_method = SIXEL_DEQUANTIZE_NONE;
     (*ppdecoder)->dequantize_similarity_bias = 100;
     (*ppdecoder)->dequantize_edge_strength = 0;
+    (*ppdecoder)->gpu_policy = SIXEL_GPU_POLICY_OFF;
     (*ppdecoder)->thumbnail_size = 0;
     (*ppdecoder)->direct_color = 0;
     (*ppdecoder)->clipboard_input_active = 0;
@@ -465,6 +516,26 @@ sixel_decoder_new(
         status = SIXEL_BAD_ALLOCATION;
         sixel_allocator_unref(allocator);
         goto end;
+    }
+
+    /*
+     * Keep decoder GPU acceleration opt-in.  Bad environment values are
+     * ignored so an inherited process environment cannot make decoder_new()
+     * fail before the caller has a chance to set explicit options.
+     */
+    env_gpu_policy = sixel_compat_getenv(SIXEL_DECODER_GPU_POLICY_ENVVAR);
+    if (env_gpu_policy != NULL) {
+        match_detail[0] = '\0';
+        if (sixel_option_match_choice(
+                env_gpu_policy,
+                g_decoder_gpu_policy_choices,
+                sizeof(g_decoder_gpu_policy_choices) /
+                sizeof(g_decoder_gpu_policy_choices[0]),
+                &env_match_value,
+                match_detail,
+                sizeof(match_detail)) == SIXEL_OPTION_CHOICE_MATCH) {
+            (*ppdecoder)->gpu_policy = env_match_value;
+        }
     }
 
     status = SIXEL_OK;
@@ -2551,6 +2622,15 @@ sixel_decoder_setopt(
         }
         break;
 
+    case SIXEL_OPTFLAG_GPU_POLICY:  /* G */
+        status = sixel_decoder_parse_gpu_policy_argument(
+            value,
+            &decoder->gpu_policy);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        break;
+
     case '?':
     default:
         status = SIXEL_BAD_ARGUMENT;
@@ -2617,6 +2697,106 @@ sixel_decoder_promote_rgb888_to_rgba8888(unsigned char **out_pixels,
 }
 
 static SIXELSTATUS
+sixel_decoder_decode_pixels_gpu_fast4_try(
+    sixel_decoder_t *decoder,
+    unsigned char const *data,
+    size_t size,
+    unsigned int decode_flags,
+    unsigned char **out_pixels,
+    int *out_width,
+    int *out_height,
+    unsigned int *result_flags)
+{
+    SIXELSTATUS status;
+    sixel_gpu_dequant_request_t request;
+    unsigned char *direct_pixels;
+    unsigned char *palette;
+    unsigned char *dequant_pixels;
+    unsigned char *buffer;
+    size_t pixel_count;
+    int ncolors;
+
+    status = SIXEL_FALSE;
+    direct_pixels = NULL;
+    palette = NULL;
+    dequant_pixels = NULL;
+    buffer = NULL;
+    pixel_count = 0U;
+    ncolors = 0;
+    memset(&request, 0, sizeof(request));
+
+    if (decoder->dequantize_method !=
+            SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT ||
+            decoder->gpu_policy == SIXEL_GPU_POLICY_OFF) {
+        return SIXEL_FALSE;
+    }
+
+    buffer = (unsigned char *)(void const *)data;
+    status = sixel_decode_direct_with_options(
+        buffer,
+        (int)size,
+        decode_flags,
+        &direct_pixels,
+        out_width,
+        out_height,
+        &palette,
+        &ncolors,
+        result_flags,
+        decoder->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    if (*out_width <= 0 || *out_height <= 0) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if ((size_t)*out_width > ((size_t)-1 / (size_t)*out_height)) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    pixel_count = (size_t)*out_width * (size_t)*out_height;
+    if (pixel_count > ((size_t)-1 / 4U)) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    dequant_pixels = (unsigned char *)sixel_allocator_malloc(
+        decoder->allocator,
+        pixel_count * 4U);
+    if (dequant_pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decoder_decode_pixels: GPU dequant allocation failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    request.policy = decoder->gpu_policy;
+    request.dest = dequant_pixels;
+    request.rgba = direct_pixels;
+    request.pixel_count = pixel_count;
+    request.width = *out_width;
+    request.height = *out_height;
+    request.pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    request.palette = palette;
+    request.palette_size = (size_t)ncolors * 3U;
+    request.palette_depth = 3;
+    request.ncolors = ncolors;
+    request.similarity_bias = decoder->dequantize_similarity_bias;
+    status = sixel_gpu_dequant_fast4_rgba(&request);
+    if (status == SIXEL_OK) {
+        *out_pixels = dequant_pixels;
+        dequant_pixels = NULL;
+        goto end;
+    }
+
+end:
+    sixel_allocator_free(decoder->allocator, direct_pixels);
+    sixel_allocator_free(decoder->allocator, palette);
+    sixel_allocator_free(decoder->allocator, dequant_pixels);
+    return status;
+}
+
+static SIXELSTATUS
 sixel_decoder_decode_pixels_dequant_try(
     sixel_decoder_t *decoder,
     unsigned char const *data,
@@ -2663,6 +2843,28 @@ sixel_decoder_decode_pixels_dequant_try(
         sixel_helper_set_additional_message(
             "sixel_decoder_decode_pixels: invalid dequantize method.");
         return SIXEL_BAD_ARGUMENT;
+    }
+    if (decoder->gpu_policy == SIXEL_GPU_POLICY_FORCE &&
+            decoder->dequantize_method !=
+            SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
+        sixel_helper_set_additional_message(
+            "sixel_decoder_decode_pixels: GPU dequant supports fast4 only.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_decoder_decode_pixels_gpu_fast4_try(decoder,
+                                                       data,
+                                                       size,
+                                                       decode_flags,
+                                                       out_pixels,
+                                                       out_width,
+                                                       out_height,
+                                                       result_flags);
+    if (status == SIXEL_OK) {
+        return SIXEL_OK;
+    }
+    if (status != SIXEL_FALSE) {
+        goto end;
     }
 
     /*
@@ -2937,6 +3139,7 @@ sixel_decoder_decode(
     SIXELSTATUS clipboard_output_status;
     sixel_timeline_logger_t *logger;
     int logger_prepared;
+    unsigned int gpu_result_flags;
 
     sixel_decoder_ref(decoder);
 
@@ -2957,6 +3160,7 @@ sixel_decoder_decode(
     clipboard_output_status = SIXEL_OK;
     input_fp = NULL;
     logger = NULL;
+    gpu_result_flags = 0U;
     (void)sixel_timeline_logger_prepare_env(decoder->allocator, &logger);
     logger_prepared = logger != NULL;
 
@@ -3053,31 +3257,84 @@ sixel_decoder_decode(
 
     ncolors = 0;
 
+    if (decoder->gpu_policy == SIXEL_GPU_POLICY_FORCE &&
+            decoder->dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER) {
+        sixel_helper_set_additional_message(
+            "sixel_decoder_decode: GPU dequant supports fast4 only.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
     if (decoder->dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
-        if (logger_prepared) {
-            sixel_timeline_logger_logf(logger,
-                              "decoder",
-                              "undither_fast4",
-                              "start",
-                              0);
+        /*
+         * The decoder GPU dequantizer consumes the direct RGBA image that the
+         * SIXEL parser already knows how to produce.  The legacy frame API can
+         * still ask for RGB fast4 output, so keep that case on the historical
+         * CPU path instead of silently handing an RGBA buffer to an RGB frame.
+         */
+        if (decoder->direct_color != 0 &&
+                decoder->gpu_policy != SIXEL_GPU_POLICY_OFF) {
+            if (logger_prepared) {
+                sixel_timeline_logger_logf(logger,
+                                  "decoder",
+                                  "undither_fast4_gpu",
+                                  "start",
+                                  0);
+            }
+            status = sixel_decoder_decode_pixels_gpu_fast4_try(
+                decoder,
+                raw_data,
+                (size_t)raw_len,
+                0U,
+                &fast4_pixels,
+                &sx,
+                &sy,
+                &gpu_result_flags);
+            if (logger_prepared && status != SIXEL_FALSE) {
+                sixel_timeline_logger_logf(
+                    logger,
+                    "decoder",
+                    "undither_fast4_gpu",
+                    SIXEL_FAILED(status) ? "abort" : "finish",
+                    0);
+            }
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
         }
-        status = sixel_decode_kundither_fast4_with_options(
-            raw_data,
-            raw_len,
-            decoder->direct_color != 0,
-            decoder->dequantize_similarity_bias,
-            0U,
-            NULL,
-            &fast4_pixels,
-            &sx,
-            &sy,
-            decoder->allocator);
-        if (logger_prepared) {
-            sixel_timeline_logger_logf(logger,
-                              "decoder",
-                              "undither_fast4",
-                              SIXEL_FAILED(status) ? "abort" : "finish",
-                              0);
+        if (fast4_pixels == NULL) {
+            if (decoder->gpu_policy == SIXEL_GPU_POLICY_FORCE) {
+                sixel_helper_set_additional_message(
+                    "sixel_decoder_decode: GPU fast4 requires direct RGBA "
+                    "output.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+            if (logger_prepared) {
+                sixel_timeline_logger_logf(logger,
+                                  "decoder",
+                                  "undither_fast4",
+                                  "start",
+                                  0);
+            }
+            status = sixel_decode_kundither_fast4_with_options(
+                raw_data,
+                raw_len,
+                decoder->direct_color != 0,
+                decoder->dequantize_similarity_bias,
+                0U,
+                NULL,
+                &fast4_pixels,
+                &sx,
+                &sy,
+                decoder->allocator);
+            if (logger_prepared) {
+                sixel_timeline_logger_logf(logger,
+                                  "decoder",
+                                  "undither_fast4",
+                                  SIXEL_FAILED(status) ? "abort" : "finish",
+                                  0);
+            }
         }
     } else if (decoder->direct_color != 0 &&
             decoder->dequantize_method == SIXEL_DEQUANTIZE_NONE) {

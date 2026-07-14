@@ -2360,15 +2360,28 @@ sixel_decode_direct_with_options(
     unsigned char      **pixels,
     int                 *pwidth,
     int                 *pheight,
+    unsigned char      **palette,
+    int                 *ncolors,
     unsigned int        *result_flags,
     sixel_allocator_t   *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     parser_context_t context;
     image_buffer_t *image = NULL;
+    int alloc_size;
+    int n;
 
     if (result_flags != NULL) {
         *result_flags = 0U;
+    }
+    if (pixels != NULL) {
+        *pixels = NULL;
+    }
+    if (palette != NULL) {
+        *palette = NULL;
+    }
+    if (ncolors != NULL) {
+        *ncolors = 0;
     }
 
     if (allocator) {
@@ -2412,7 +2425,6 @@ sixel_decode_direct_with_options(
 
     *pwidth = image->width;
     *pheight = image->height;
-    *pixels = image->pixels.in_bytes;
     if (result_flags != NULL && context.painted_outside_raster) {
         *result_flags |= SIXEL_DECODE_PIXELS_RESULT_PAINT_OUTSIDE_RASTER;
         if ((decode_flags &
@@ -2420,6 +2432,28 @@ sixel_decode_direct_with_options(
             *result_flags |= SIXEL_DECODE_PIXELS_RESULT_CLIPPED_TO_RASTER;
         }
     }
+    if (palette != NULL && ncolors != NULL) {
+        *ncolors = alloc_size = image->ncolors;
+        if (alloc_size < SIXEL_PALETTE_MAX_DECODER) {
+            alloc_size = SIXEL_PALETTE_MAX_DECODER;
+        }
+        *palette = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            (size_t)alloc_size * 3u);
+        if (*palette == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_decode_direct: palette allocation failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto error;
+        }
+        for (n = 0; n < alloc_size; ++n) {
+            (*palette)[n * 3 + 0] = image->palette[n] >> 16 & 0xff;
+            (*palette)[n * 3 + 1] = image->palette[n] >> 8 & 0xff;
+            (*palette)[n * 3 + 2] = image->palette[n] & 0xff;
+        }
+    }
+    *pixels = image->pixels.in_bytes;
+    image->pixels.p = NULL;
 
     status = SIXEL_OK;
     goto end;
@@ -2458,6 +2492,8 @@ sixel_decode_direct(
                                             pixels,
                                             pwidth,
                                             pheight,
+                                            NULL,
+                                            NULL,
                                             NULL,
                                             allocator);
 }

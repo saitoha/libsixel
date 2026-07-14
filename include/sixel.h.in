@@ -672,8 +672,8 @@ typedef int SIXELSTATUS;
                                                */
 #define SIXEL_OPTFLAG_GPU_POLICY        ('G') /* -G GPUPOLICY,
                                                  --gpu-policy=GPUPOLICY:
-                                                 choose palette-apply
-                                                 accelerator policy
+                                                 choose GPU accelerator
+                                                 policy
                                                    off   -> keep CPU path
                                                    auto  -> use GPU only when
                                                             available and large

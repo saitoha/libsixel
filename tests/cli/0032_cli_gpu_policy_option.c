@@ -1,5 +1,5 @@
 /*
- * Test harness for --gpu-policy parsing through the public encoder option.
+ * Test harness for --gpu-policy parsing through public options.
  */
 
 #include <stdio.h>
@@ -24,6 +24,7 @@ test_cli_0032_cli_gpu_policy_option(int argc, char **argv)
         { NULL, 0 }
     };
     sixel_encoder_t *encoder;
+    sixel_decoder_t *decoder;
     SIXELSTATUS status;
     size_t index;
     int failed;
@@ -32,9 +33,16 @@ test_cli_0032_cli_gpu_policy_option(int argc, char **argv)
     (void) argv;
 
     encoder = NULL;
+    decoder = NULL;
     status = sixel_encoder_new(&encoder, NULL);
     if (SIXEL_FAILED(status) || encoder == NULL) {
         fprintf(stderr, "failed to create encoder\n");
+        return EXIT_FAILURE;
+    }
+    status = sixel_decoder_new(&decoder, NULL);
+    if (SIXEL_FAILED(status) || decoder == NULL) {
+        fprintf(stderr, "failed to create decoder\n");
+        sixel_encoder_unref(encoder);
         return EXIT_FAILURE;
     }
 
@@ -51,8 +59,25 @@ test_cli_0032_cli_gpu_policy_option(int argc, char **argv)
             fprintf(stderr, "case %zu: value should fail\n", index + 1u);
             failed = 1;
         }
+
+        status = sixel_decoder_setopt(decoder,
+                                      SIXEL_OPTFLAG_GPU_POLICY,
+                                      cases[index].value);
+        if (cases[index].should_pass != 0 && SIXEL_FAILED(status)) {
+            fprintf(stderr,
+                    "case %zu: decoder value should pass\n",
+                    index + 1u);
+            failed = 1;
+        } else if (cases[index].should_pass == 0 &&
+                   SIXEL_SUCCEEDED(status)) {
+            fprintf(stderr,
+                    "case %zu: decoder value should fail\n",
+                    index + 1u);
+            failed = 1;
+        }
     }
 
+    sixel_decoder_unref(decoder);
     sixel_encoder_unref(encoder);
     return failed == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }
