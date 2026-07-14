@@ -88,6 +88,8 @@
     ("runtime error: clipboard payload unavailable")
 #define SIXEL_MESSAGE_LOADER_FAILED         \
     ("runtime error: unable to decode input with available loaders")
+#define SIXEL_MESSAGE_TIMEOUT               \
+    ("runtime error: operation timed out")
 #define SIXEL_MESSAGE_RUNTIME_ERROR         ("runtime error")
 #define SIXEL_MESSAGE_LOGIC_ERROR           ("logic error")
 #define SIXEL_MESSAGE_NOT_IMPLEMENTED       ("feature error: not implemented")
@@ -810,6 +812,9 @@ sixel_helper_format_error(
                 break;
             case SIXEL_BAD_INTEGER_OVERFLOW:
                 error_string = SIXEL_MESSAGE_BAD_INTEGER_OVERFLOW;
+                break;
+            case SIXEL_TIMEOUT:
+                error_string = SIXEL_MESSAGE_TIMEOUT;
                 break;
             default:
                 error_string = SIXEL_MESSAGE_RUNTIME_ERROR;
