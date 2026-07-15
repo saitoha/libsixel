@@ -754,7 +754,8 @@ _img2sixel()
                                    gray1 \
                                    gray2 \
                                    gray4 \
-                                   gray8 ' -- "$cur" ) )
+                                   gray8 \
+                                   oklch-lattice256 ' -- "$cur" ) )
         return 0
         ;;
     -E|--encode-policy)

@@ -1538,7 +1538,8 @@ static sixel_option_choice_t const g_option_choices_builtin_palette[] = {
     { "gray1", SIXEL_BUILTIN_G1 },
     { "gray2", SIXEL_BUILTIN_G2 },
     { "gray4", SIXEL_BUILTIN_G4 },
-    { "gray8", SIXEL_BUILTIN_G8 }
+    { "gray8", SIXEL_BUILTIN_G8 },
+    { "oklch-lattice256", SIXEL_BUILTIN_OKLCH_LATTICE256 }
 };
 
 static sixel_suboption_choice_t const g_option_choices_stbn_source[] = {

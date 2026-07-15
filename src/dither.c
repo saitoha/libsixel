@@ -54,6 +54,7 @@
 #include "factory.h"
 #include "gpu-palette.h"
 #include "lookup-policy.h"
+#include "oklch-lattice256.h"
 #include "dither-policy.h"
 #include "timer.h"
 #include "dither-common-pipeline.h"
@@ -1945,6 +1946,11 @@ sixel_dither_get(
     case SIXEL_BUILTIN_XTERM256:
         ncolors = 256;
         palette = (unsigned char *)pal_xterm256;
+        keycolor = (-1);
+        break;
+    case SIXEL_BUILTIN_OKLCH_LATTICE256:
+        ncolors = 256;
+        palette = (unsigned char *)pal_oklch_lattice256;
         keycolor = (-1);
         break;
     case SIXEL_BUILTIN_VT340_MONO:

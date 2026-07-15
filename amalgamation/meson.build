@@ -143,6 +143,7 @@ amalgamation_headers = files(
   '../src/palette-factory.h',
   '../src/palette-private.h',
   '../src/dither.h',
+  '../src/oklch-lattice256.h',
   '../src/dither-policy.h',
   '../src/dither-policy-none.h',
   '../src/dither-policy-fs.h',

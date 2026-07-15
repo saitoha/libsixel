@@ -208,6 +208,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette.c $(srcdir)/palette-factory.h \
 	$(srcdir)/palette.h $(srcdir)/palette-private.h \
 	$(srcdir)/dither.c $(srcdir)/dither.h \
+	$(srcdir)/oklch-lattice256.h \
 	$(srcdir)/dither-policy.c $(srcdir)/dither-policy.h \
 	$(srcdir)/dither-policy-none.c $(srcdir)/dither-policy-fs.c \
 	$(srcdir)/dither-policy-atkinson.c \
@@ -1070,6 +1071,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-private.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/oklch-lattice256.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-policy-none.c \
@@ -1289,8 +1291,10 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__append_2) $(am__append_3) \
 @WANT_AMALGAMATED_LIB_FALSE@	$(am__append_4)
 @WANT_AMALGAMATED_LIB_TRUE@libsixel_la_SOURCES = $(srcdir)/dither.c \
-@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither.h $(am__append_2) \
-@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_3) $(am__append_4)
+@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/dither.h \
+@WANT_AMALGAMATED_LIB_TRUE@	$(srcdir)/oklch-lattice256.h \
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_2) $(am__append_3) \
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_4)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir)/include \
                 -I$(top_srcdir) $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)

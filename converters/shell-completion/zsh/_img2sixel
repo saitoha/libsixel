@@ -160,7 +160,8 @@ _builtinpalette() {
     'gray1[1bit grayscale map]' \
     'gray2[2bit grayscale map]' \
     'gray4[4bit grayscale map]' \
-    'gray8[8bit grayscale map]'
+    'gray8[8bit grayscale map]' \
+    'oklch-lattice256[OKLCh lattice 256color map]'
 }
 
 _encodepolicy() {

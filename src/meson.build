@@ -75,6 +75,7 @@ srcs = [
   'lookup-vptree-8bit.c',
   'lookup-vptree-float32.c',
   'dither.c',
+  'oklch-lattice256.h',
   'dither-policy.c',
   'dither-policy-none.c',
   'dither-policy-fs.c',

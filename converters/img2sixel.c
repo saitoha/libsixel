@@ -695,6 +695,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "      gray2      -> 2bit grayscale map\n"
         "      gray4      -> 4bit grayscale map\n"
         "      gray8      -> 8bit grayscale map\n"
+        "      oklch-lattice256 -> OKLCh lattice 256color map\n"
         "    This option is mutually exclusive with -m, -e, and -I. Repeating\n"
         "    -b is allowed; the last built-in palette wins.\n"
     },

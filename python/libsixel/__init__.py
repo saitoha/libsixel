@@ -274,6 +274,7 @@ SIXEL_BUILTIN_G1          = 0x6  # 1bit grayscale
 SIXEL_BUILTIN_G2          = 0x7  # 2bit grayscale
 SIXEL_BUILTIN_G4          = 0x8  # 4bit grayscale
 SIXEL_BUILTIN_G8          = 0x9  # 8bit grayscale
+SIXEL_BUILTIN_OKLCH_LATTICE256 = 0xa  # OKLCh lattice 256color
 
 # offset value of pixelFormat
 SIXEL_FORMATTYPE_COLOR     = (0)
@@ -616,6 +617,8 @@ SIXEL_OPTFLAG_BUILTIN_PALETTE  = 'b'  # -b BUILTINPALETTE, --builtin-palette=BUI
                                       #          gray2      -> 2bit grayscale map
                                       #          gray4      -> 4bit grayscale map
                                       #          gray8      -> 8bit grayscale map
+                                      #          oklch-lattice256
+                                      #                     -> OKLCh lattice 256color map
 
 SIXEL_OPTFLAG_ENCODE_POLICY    = 'E'  # -E ENCODEPOLICY, --encode-policy=ENCODEPOLICY:
                                       #        select encoding policy

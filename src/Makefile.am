@@ -52,7 +52,8 @@ if WANT_AMALGAMATED_LIB
 libsixel_la_SOURCES =
 libsixel_la_SOURCES += \
                 $(srcdir)/dither.c \
-                $(srcdir)/dither.h
+                $(srcdir)/dither.h \
+                $(srcdir)/oklch-lattice256.h
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
@@ -138,6 +139,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/palette-private.h \
                 $(srcdir)/dither.c \
                 $(srcdir)/dither.h \
+                $(srcdir)/oklch-lattice256.h \
                 $(srcdir)/dither-policy.c \
                 $(srcdir)/dither-policy.h \
                 $(srcdir)/dither-policy-none.c \

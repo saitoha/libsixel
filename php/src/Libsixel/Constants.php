@@ -130,6 +130,7 @@ final class Constants
     public const SIXEL_BUILTIN_G2 = 0x7;
     public const SIXEL_BUILTIN_G4 = 0x8;
     public const SIXEL_BUILTIN_G8 = 0x9;
+    public const SIXEL_BUILTIN_OKLCH_LATTICE256 = 0xa;
 
     // setopt option flags.
     public const SIXEL_OPTFLAG_INPUT = 'i';
