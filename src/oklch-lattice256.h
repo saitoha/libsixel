@@ -3,6 +3,24 @@
  *
  * Copyright (c) 2026 libsixel developers. See AUTHORS.
  *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
  * This palette is a corpus-independent OKLCh lattice encoded as RGB888.
  * It keeps runtime palette application in ordinary RGB while giving the
  * fixed palette a perceptual lightness, hue, and chroma distribution.
@@ -15,7 +33,19 @@
 #ifndef SIXEL_OKLCH_LATTICE256_H
 #define SIXEL_OKLCH_LATTICE256_H
 
-static const unsigned char pal_oklch_lattice256[] = {
+#if defined(__GNUC__) || defined(__clang__)
+# define SIXEL_OKLCH_LATTICE256_UNUSED __attribute__((unused))
+#else
+# define SIXEL_OKLCH_LATTICE256_UNUSED
+#endif
+
+/*
+ * Split-amalgamation builds can include this header in generated sources that
+ * do not use the palette directly, while dither.c still needs a private static
+ * table.
+ */
+static const unsigned char pal_oklch_lattice256[]
+    SIXEL_OKLCH_LATTICE256_UNUSED = {
     0x00, 0x00, 0x00,  /*   0 gray L=0.000000 */
     0x01, 0x01, 0x01,  /*   1 gray L=0.032258 */
     0x02, 0x02, 0x02,  /*   2 gray L=0.064516 */
@@ -274,4 +304,15 @@ static const unsigned char pal_oklch_lattice256[] = {
     0xfb, 0xc4, 0xea,  /* 255 h=337.50 L=0.880000 c=0.88 */
 };
 
+#undef SIXEL_OKLCH_LATTICE256_UNUSED
+
 #endif  /* SIXEL_OKLCH_LATTICE256_H */
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */

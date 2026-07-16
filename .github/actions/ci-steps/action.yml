@@ -69,11 +69,36 @@ runs:
           done
         }
 
+        prefer_https_ubuntu_sources() {
+          local source
+          local -a ubuntu_sources
+
+          # Ubuntu arm64 jobs use ports.ubuntu.com.  Prefer HTTPS and IPv4 so
+          # transient hosted-runner IPv6 routing failures do not strand apt on
+          # unreachable http://ports.ubuntu.com endpoints.
+          mapfile -t ubuntu_sources < <(
+            sudo grep -rlE 'http://(archive|ports|security)\.ubuntu\.com' \
+              /etc/apt/sources.list /etc/apt/sources.list.d 2>/dev/null \
+              || true
+          )
+          for source in "${ubuntu_sources[@]}"; do
+            if [ -f "$source" ]; then
+              echo "Switching Ubuntu apt source to HTTPS: $source"
+              sudo sed -i \
+                -e 's#http://archive.ubuntu.com/ubuntu#https://archive.ubuntu.com/ubuntu#g' \
+                -e 's#http://ports.ubuntu.com/ubuntu-ports#https://ports.ubuntu.com/ubuntu-ports#g' \
+                -e 's#http://security.ubuntu.com/ubuntu#https://security.ubuntu.com/ubuntu#g' \
+                "$source"
+            fi
+          done
+        }
+
         retry_apt_update() {
           local attempt
 
           for attempt in 1 2 3; do
-            if sudo apt-get -o Acquire::Retries=3 update 2>&1 | tee "$apt_log"; then
+            if sudo apt-get -o Acquire::Retries=3 \
+                -o Acquire::ForceIPv4=true update 2>&1 | tee "$apt_log"; then
               return 0
             fi
             if grep -Eq 'packages\.microsoft\.com.*(403|Forbidden|no longer signed)' "$apt_log"; then
@@ -88,7 +113,8 @@ runs:
           local attempt
 
           for attempt in 1 2 3; do
-            if sudo apt-get -o Acquire::Retries=3 install -y \
+            if sudo apt-get -o Acquire::Retries=3 \
+                -o Acquire::ForceIPv4=true install -y \
                 --no-install-recommends ${{ fromJSON(inputs.matrix_json).extra_packages || '' }}; then
               return 0
             fi
@@ -98,6 +124,7 @@ runs:
           return 1
         }
 
+        prefer_https_ubuntu_sources
         retry_apt_update
         retry_apt_install
 

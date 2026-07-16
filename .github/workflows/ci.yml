@@ -4574,6 +4574,7 @@ jobs:
               --without-lcms2
               --without-libcurl
               --without-coregraphics
+              --without-metal
               --disable-quicklook-extension
               --disable-quicklook-preview
               --disable-appkit
@@ -4598,6 +4599,7 @@ jobs:
               -Dlcms2=disabled
               -Dcurl=disabled
               -Dcoregraphics=disabled
+              -Dmetal=disabled
               -Dquicklook_extension=disabled
               -Dquicklook_preview=disabled
               -Dappkit=disabled
@@ -4626,6 +4628,7 @@ jobs:
               --without-lcms2
               --without-libcurl
               --without-coregraphics
+              --without-metal
               --disable-quicklook-extension
               --disable-quicklook-preview
               --disable-appkit
@@ -4650,6 +4653,7 @@ jobs:
               -Dlcms2=disabled
               -Dcurl=disabled
               -Dcoregraphics=disabled
+              -Dmetal=disabled
               -Dquicklook_extension=disabled
               -Dquicklook_preview=disabled
               -Dappkit=disabled

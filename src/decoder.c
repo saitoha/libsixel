@@ -3141,6 +3141,8 @@ sixel_decoder_decode(
     int logger_prepared;
     unsigned int gpu_result_flags;
 
+    sx = 0;
+    sy = 0;
     sixel_decoder_ref(decoder);
 
     frame = NULL;

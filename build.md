@@ -130,6 +130,7 @@ or provide the desired directory path explicitly.
 | `--enable-amalgamated-lib` | `no` | Build `libsixel` from the amalgamated translation unit. |
 | `--enable-amalgamated-tools` | `no` | Build CLI tools from the amalgamated translation unit. |
 | `--with-coregraphics[=auto]` | `auto` | Use CoreGraphics for macOS-only rendering helpers. |
+| `--with-metal[=auto]` | `auto` | Use Metal for macOS-only GPU helpers. |
 | `--with-libcurl[=auto]` | `auto` | Link against libcurl to enable network transfers. |
 | `--with-libfetch[=auto]` | `auto` | Link against libfetch to enable network transfers. |
 | `--with-jpeg[=auto]` | `auto` | Link against libjpeg to decode JPEG input. |
@@ -334,6 +335,7 @@ meson setup builddir
 | `-Dgdk_pixbuf_loader=` | feature, `disabled` | Build the gdk-pixbuf SIXEL loader module. |
 | `-Dgd=` | feature, `disabled` | Enable helpers based on the GD image library. |
 | `-Dcoregraphics=` | feature, `auto` | Use the CoreGraphics framework on macOS. |
+| `-Dmetal=` | feature, `auto` | Use the Metal framework for macOS GPU helpers. |
 | `-Dappkit=` | feature, `enabled` | Control AppKit clipboard backend support on macOS. |
 | `-Dquicklook_extension=` | feature, `auto` | Build the macOS Quick Look extension bundle. |
 | `-Dquicklook_preview=` | feature, `auto` | Use macOS Quick Look to render previews for non-image inputs. |

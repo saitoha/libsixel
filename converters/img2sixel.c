@@ -1787,6 +1787,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "Invalid values keep the built-in default 262144."
     },
     {
+        "SIXEL_GPU_DEQUANT_THRESHOLD",
+        "set the minimum pixel count for GPU dequant auto policy.\n"
+        "Invalid values keep the built-in default 262144."
+    },
+    {
         "SIXEL_LOOKUP_PACKING",
         "choose dense LUT packing for 5bit/6bit policies\n"
         "(`linear`, `morton`, or `hilbert`; default `linear`)."

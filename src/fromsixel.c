@@ -1854,6 +1854,21 @@ sixel_decode_raw_with_options_internal(
     if (paint_mask != NULL) {
         *paint_mask = NULL;
     }
+    if (pixels != NULL) {
+        *pixels = NULL;
+    }
+    if (palette != NULL) {
+        *palette = NULL;
+    }
+    if (ncolors != NULL) {
+        *ncolors = 0;
+    }
+    if (pixels == NULL || pwidth == NULL || pheight == NULL ||
+            palette == NULL || ncolors == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decode_raw: output argument is null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     if (allocator) {
         sixel_allocator_ref(allocator);
@@ -1898,11 +1913,11 @@ sixel_decode_raw_with_options_internal(
     *palette = (unsigned char *)sixel_allocator_malloc(
         allocator,
         (size_t)(alloc_size * 3));
-    if (palette == NULL) {
+    if (*palette == NULL) {
         sixel_allocator_free(allocator, image->pixels.p);
         image->pixels.p = NULL;
         sixel_helper_set_additional_message(
-            "sixel_deocde_raw: sixel_allocator_malloc() failed.");
+            "sixel_decode_raw: palette allocation failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto error;
     }
@@ -2382,6 +2397,11 @@ sixel_decode_direct_with_options(
     }
     if (ncolors != NULL) {
         *ncolors = 0;
+    }
+    if (pixels == NULL || pwidth == NULL || pheight == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_decode_direct: output argument is null.");
+        return SIXEL_BAD_ARGUMENT;
     }
 
     if (allocator) {
