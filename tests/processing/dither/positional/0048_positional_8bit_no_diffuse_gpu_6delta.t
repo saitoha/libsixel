@@ -28,8 +28,12 @@ test -d "${ARTIFACT_LOCAL_DIR}" || mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 helper_src="${ARTIFACT_LOCAL_DIR}/gpu-6delta-accumulation.c"
 helper_bin="${ARTIFACT_LOCAL_DIR}/gpu-6delta-accumulation${SIXEL_BIN_EXT-}"
-runtime_dyld_path="${TOP_BUILDDIR}/src/.libs"
-runtime_ld_path="${TOP_BUILDDIR}/src/.libs"
+link_libdir="${LIBSIXEL_LIBDIR-${TOP_BUILDDIR}/src/.libs}"
+
+test -d "${link_libdir}" || link_libdir="${TOP_BUILDDIR}/src"
+
+runtime_dyld_path="${link_libdir}"
+runtime_ld_path="${link_libdir}"
 
 test -z "${DYLD_LIBRARY_PATH+x}" || {
     runtime_dyld_path="${runtime_dyld_path}:${DYLD_LIBRARY_PATH}"
@@ -179,16 +183,16 @@ EOF_C
         -I"${TOP_SRCDIR}" \
         -o "${helper_bin}" \
         "${helper_src}" \
-        -L"${TOP_BUILDDIR}/src/.libs" \
+        -L"${link_libdir}" \
         -lsixel \
-        "-Wl,-rpath,${TOP_BUILDDIR}/src/.libs" || {
+        "-Wl,-rpath,${link_libdir}" || {
     echo "not ok" 1 - "GPU 6delta helper build failed"
     exit 0
 }
 
 DYLD_LIBRARY_PATH="${runtime_dyld_path}" \
 LD_LIBRARY_PATH="${runtime_ld_path}" \
-${SIXEL_RUNTIME-} "${helper_bin}" || {
+${SIXEL_RUNTIME-} "${helper_bin}" >/dev/null || {
     echo "not ok" 1 - "GPU 6delta accumulation result mismatch"
     exit 0
 }

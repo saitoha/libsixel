@@ -3881,6 +3881,14 @@ sixel_encoder_update_accumulation_from_frame(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        if (encoder->accumulation_valid_mask == NULL ||
+                encoder->accumulation_valid_mask_size < pixel_count) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_update_accumulation_from_frame: "
+                "accumulation valid mask is unavailable.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
         if (encoded_rgb_ready != 0) {
             current_rgb = (unsigned char *)sixel_allocator_malloc(
                 encoder->allocator,
@@ -3938,6 +3946,14 @@ sixel_encoder_update_accumulation_from_frame(
         status = sixel_encoder_ensure_accumulation_valid_mask(encoder,
                                                               pixel_count);
         if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        if (encoder->accumulation_valid_mask == NULL ||
+                encoder->accumulation_valid_mask_size < pixel_count) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_update_accumulation_from_frame: "
+                "accumulation valid mask is unavailable.");
+            status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
         memset(encoder->accumulation_valid_mask, 1, pixel_count);
@@ -9993,6 +10009,14 @@ sixel_encoder_set_accumulation_buffer(
         encoder,
         rgb_size / 3u);
     if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (encoder->accumulation_valid_mask == NULL ||
+            encoder->accumulation_valid_mask_size < rgb_size / 3u) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_set_accumulation_buffer: "
+            "accumulation valid mask is unavailable.");
+        status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
     memset(encoder->accumulation_valid_mask, 1, rgb_size / 3u);

@@ -16,22 +16,24 @@
 int
 test_status_0001_status_timeout(int argc, char **argv)
 {
+    SIXELSTATUS status;
     char const *message;
     int failed;
 
     (void)argc;
     (void)argv;
 
+    status = SIXEL_TIMEOUT;
     failed = 0;
-    if (SIXEL_TIMEOUT != (SIXEL_RUNTIME_ERROR | 0x0008)) {
+    if (status != (SIXEL_RUNTIME_ERROR | 0x0008)) {
         fprintf(stderr, "SIXEL_TIMEOUT has an unexpected value\n");
         failed = 1;
     }
-    if (!SIXEL_FAILED(SIXEL_TIMEOUT)) {
+    if (!SIXEL_FAILED(status)) {
         fprintf(stderr, "SIXEL_TIMEOUT must be a failed status\n");
         failed = 1;
     }
-    message = sixel_helper_format_error(SIXEL_TIMEOUT);
+    message = sixel_helper_format_error(status);
     if (message == NULL ||
             strcmp(message, "runtime error: operation timed out") != 0) {
         fprintf(stderr, "SIXEL_TIMEOUT has an unexpected message\n");
