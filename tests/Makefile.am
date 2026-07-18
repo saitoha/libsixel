@@ -107,6 +107,7 @@ TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
         $(WIC_CFLAGS) \
         $(COREGRAPHICS_CFLAGS) \
         $(QUICKLOOK_CFLAGS) \
+        $(METAL_CFLAGS) \
         $(CLIPBOARD_CFLAGS) \
         @THREAD_CFLAGS@ \
         $(MAYBE_COVERAGE)
@@ -132,6 +133,7 @@ TESTS_COMMON_LDADD_VAL = -lm \
         $(WIC_LIBS) \
         $(COREGRAPHICS_LIBS) \
         $(QUICKLOOK_LIBS) \
+        $(METAL_LIBS) \
         $(CLIPBOARD_LIBS) \
         $(ABORTTRACE_LIBS) \
         @THREAD_LIBS@
@@ -162,6 +164,7 @@ TESTS_AMALGAMATION_LDADD_COMMON = -lm \
         $(WIC_LIBS) \
         $(COREGRAPHICS_LIBS) \
         $(QUICKLOOK_LIBS) \
+        $(METAL_LIBS) \
         $(CLIPBOARD_LIBS) \
         $(ABORTTRACE_LIBS) \
         @THREAD_LIBS@
@@ -427,6 +430,7 @@ test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) \
         $(WIC_LIBS) \
         $(COREGRAPHICS_LIBS) \
         $(QUICKLOOK_LIBS) \
+        $(METAL_LIBS) \
         $(CLIPBOARD_LIBS) \
         $(ABORTTRACE_LIBS) \
         @THREAD_LIBS@

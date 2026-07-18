@@ -45,6 +45,9 @@ MAYBE_MSVC_DLL_DRIVER_FLAG = -XCClinker -LD
 endif
 
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.*
+DISTCLEANFILES = \
+                $(DEPDIR)/libsixel_la-gpu-palette.Plo \
+                $(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
 
 lib_LTLIBRARIES = libsixel.la
 

@@ -2404,12 +2404,18 @@ sixel_decoder_parallel_request_start(int direct_mode,
         if (!runtime_error && !parallel_failed && created == threads) {
             max_color_index = (-1);
             created = 0;
-            paint_released = 0;
+            paint_released = 1;
             sixel_mutex_lock(&chain.mutex);
             chain.abort_requested = 0;
-            chain.paint_released = 0;
+            chain.paint_released = 1;
+            sixel_cond_broadcast(&chain.cond);
             sixel_mutex_unlock(&chain.mutex);
 
+            /*
+             * The direct paint pass writes into the shared destination image.
+             * Keep the validation scan parallel, then serialize painting so
+             * overlapping spans preserve parser order without data races.
+             */
             for (i = 0; i < threads; ++i) {
                 contexts[i].result = (-1);
                 contexts[i].runtime_error = 0;
@@ -2426,17 +2432,6 @@ sixel_decoder_parallel_request_start(int direct_mode,
                     break;
                 }
                 created += 1;
-            }
-
-            if (!parallel_failed && created == threads) {
-                sixel_mutex_lock(&chain.mutex);
-                chain.paint_released = 1;
-                paint_released = 1;
-                sixel_cond_broadcast(&chain.cond);
-                sixel_mutex_unlock(&chain.mutex);
-            }
-
-            for (i = 0; i < created; ++i) {
                 sixel_thread_join(&workers[i]);
                 if (contexts[i].result != 0) {
                     parallel_failed = 1;

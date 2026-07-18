@@ -997,6 +997,9 @@ zshcompletiondir = @zshcompletiondir@
 # misparsed as '-L<path>' during libtool argument scanning.
 @USING_CL_TRUE@MAYBE_MSVC_DLL_DRIVER_FLAG = -XCClinker -LD
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* $(am__append_5)
+DISTCLEANFILES = $(DEPDIR)/libsixel_la-gpu-palette.Plo \
+                $(DEPDIR)/libsixel_la-gpu-palette-metal.Plo
+
 lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@libsixel_la_SOURCES = $(srcdir)/output.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/output.h \
@@ -2916,6 +2919,7 @@ clean-generic:
 
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
+	-$(am__rm_f) $(DISTCLEANFILES)
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
