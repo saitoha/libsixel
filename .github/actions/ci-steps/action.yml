@@ -474,8 +474,27 @@ runs:
       shell: bash
       run: |
         set -exv
-        git clone --depth 1 https://github.com/emscripten-core/emsdk.git
-        sh emsdk/emsdk install latest
+        for attempt in 1 2 3; do
+          rm -rf emsdk
+          if git clone --depth 1 https://github.com/emscripten-core/emsdk.git; then
+            break
+          fi
+          if [ "$attempt" -eq 3 ]; then
+            echo "Failed to clone emsdk after ${attempt} attempts." >&2
+            exit 1
+          fi
+          sleep $((attempt * 10))
+        done
+        for attempt in 1 2 3; do
+          if sh emsdk/emsdk install latest; then
+            break
+          fi
+          if [ "$attempt" -eq 3 ]; then
+            echo "Failed to install emsdk after ${attempt} attempts." >&2
+            exit 1
+          fi
+          sleep $((attempt * 10))
+        done
         sh emsdk/emsdk activate latest
         # Add both emscripten frontend tools and bundled LLVM utilities.
         echo "$PWD/emsdk/upstream/emscripten" >> "$GITHUB_PATH"
