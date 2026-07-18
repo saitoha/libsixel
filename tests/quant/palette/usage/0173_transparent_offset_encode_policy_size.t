@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify encode-policy=size allows transparent-offset padding.
+# Verify encode-policy=size clips transparent-offset fill to partial bands.
 
 set -eux
 
@@ -37,5 +37,21 @@ case "${output}" in
         ;;
 esac
 
-echo "ok 1 - encode-policy=size allows transparent-offset padding"
+case "${output}" in
+    *"!6w"*) ;;
+    *)
+        echo "not ok 1 - transparent-offset size did not clip top band fill"
+        exit 0
+        ;;
+esac
+
+case "${output}" in
+    *"!6~"*) ;;
+    *)
+        echo "not ok 1 - transparent-offset size lost full lower band fill"
+        exit 0
+        ;;
+esac
+
+echo "ok 1 - encode-policy=size clips transparent-offset partial-band fill"
 exit 0

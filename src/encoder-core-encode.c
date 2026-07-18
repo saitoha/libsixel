@@ -112,6 +112,12 @@ typedef struct sixel_encode_work {
 typedef struct sixel_band_state {
     int row_in_band;
     int fillable;
+    /*
+     * Size-policy fill must cover only source-backed rows.  row_in_band also
+     * counts transparent offset padding, so using it directly would paint the
+     * virtual top padding in a partial band.
+     */
+    int fill_mask;
     int active_color_count;
 } sixel_band_state_t;
 
@@ -3218,6 +3224,7 @@ sixel_band_state_reset(sixel_band_state_t *state)
 {
     state->row_in_band = 0;
     state->fillable = 0;
+    state->fill_mask = 0;
     state->active_color_count = 0;
 }
 
@@ -3344,9 +3351,11 @@ sixel_band_classify_row(sixel_encode_work_t *work,
             state->fillable = 0;
         } else if (palstate) {
             source_band_start = band_start - offset_top;
+            if (source_band_start < 0) {
+                source_band_start = 0;
+            }
             if (width > 0) {
-                if (source_band_start < 0 ||
-                    source_band_start >= height) {
+                if (source_band_start >= height) {
                     state->fillable = 0;
                 } else {
                     pix = pixels[source_band_start * width];
@@ -3370,6 +3379,7 @@ sixel_band_classify_row(sixel_encode_work_t *work,
         state->row_in_band += 1;
         return SIXEL_OK;
     }
+    state->fill_mask |= (1 << row_bit);
     if (source_row > INT_MAX / width) {
         sixel_helper_set_additional_message(
             "sixel_encode_body: integer overflow detected."
@@ -3611,7 +3621,7 @@ sixel_band_emit(sixel_encode_work_t *work,
 
         if (state->fillable) {
             memset(np->map + np->sx,
-                   (1 << state->row_in_band) - 1,
+                   state->fill_mask,
                    (size_t)(np->mx - np->sx));
         }
         status = sixel_put_node(output,
@@ -3634,7 +3644,7 @@ sixel_band_emit(sixel_encode_work_t *work,
 
             if (state->fillable) {
                 memset(np->map + np->sx,
-                       (1 << state->row_in_band) - 1,
+                       state->fill_mask,
                        (size_t)(np->mx - np->sx));
             }
             status = sixel_put_node(output,
@@ -3784,6 +3794,7 @@ sixel_encode_body(
 
         band.row_in_band = 0;
         band.fillable = 0;
+        band.fill_mask = 0;
         band.active_color_count = 0;
 
         if (logging_active) {
