@@ -915,6 +915,96 @@ end:
     return status;
 }
 
+static SIXELSTATUS
+parser_context_enter_decsixel(parser_context_t *context,
+                              image_buffer_t *image,
+                              sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    int scaled_pan;
+    int scaled_pad;
+
+    status = SIXEL_FALSE;
+    scaled_pan = 0;
+    scaled_pad = 0;
+
+    if (context->nparams > 0) {
+        /* Pn1 */
+        switch (context->params[0]) {
+        case 0:
+        case 1:
+            context->attributed_pad = 2;
+            break;
+        case 2:
+            context->attributed_pad = 5;
+            break;
+        case 3:
+        case 4:
+            context->attributed_pad = 4;
+            break;
+        case 5:
+        case 6:
+            context->attributed_pad = 3;
+            break;
+        case 7:
+        case 8:
+            context->attributed_pad = 2;
+            break;
+        case 9:
+            context->attributed_pad = 1;
+            break;
+        default:
+            context->attributed_pad = 2;
+            break;
+        }
+    }
+
+    if (parser_context_is_ormode_request(context)) {
+        context->ormode = 1;
+        status = image_buffer_enable_ormode(image, allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
+    if (context->nparams > 2) {
+        /* Pn3 */
+        if (context->params[2] == 0) {
+            context->params[2] = 10;
+        }
+
+        status = safe_multiply_by_params_div10(context->attributed_pan,
+                                               context->params[2],
+                                               &scaled_pan);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        status = safe_multiply_by_params_div10(context->attributed_pad,
+                                               context->params[2],
+                                               &scaled_pad);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        context->attributed_pan = scaled_pan;
+        context->attributed_pad = scaled_pad;
+        if (context->attributed_pan <= 0) {
+            context->attributed_pan = 1;
+        }
+        if (context->attributed_pad <= 0) {
+            context->attributed_pad = 1;
+        }
+    }
+
+    context->nparams = 0;
+    context->state = PS_DECSIXEL;
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
 
 /* convert sixel data into indexed pixel bytes and palette data */
 SIXELAPI SIXELSTATUS
@@ -1036,81 +1126,12 @@ sixel_decode_raw_impl(
                 if (context->param >= 0 && context->nparams < DECSIXEL_PARAMS_MAX) {
                     context->params[context->nparams++] = context->param;
                 }
-                if (context->nparams > 0) {
-                    /* Pn1 */
-                    switch (context->params[0]) {
-                    case 0:
-                    case 1:
-                        context->attributed_pad = 2;
-                        break;
-                    case 2:
-                        context->attributed_pad = 5;
-                        break;
-                    case 3:
-                    case 4:
-                        context->attributed_pad = 4;
-                        break;
-                    case 5:
-                    case 6:
-                        context->attributed_pad = 3;
-                        break;
-                    case 7:
-                    case 8:
-                        context->attributed_pad = 2;
-                        break;
-                    case 9:
-                        context->attributed_pad = 1;
-                        break;
-                    default:
-                        context->attributed_pad = 2;
-                        break;
-                    }
+                status = parser_context_enter_decsixel(context,
+                                                       image,
+                                                       allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
                 }
-
-                if (parser_context_is_ormode_request(context)) {
-                    context->ormode = 1;
-                    status = image_buffer_enable_ormode(image, allocator);
-                    if (SIXEL_FAILED(status)) {
-                        goto end;
-                    }
-                }
-
-                if (context->nparams > 2) {
-                    /* Pn3 */
-                    int scaled_pan;
-                    int scaled_pad;
-
-                    if (context->params[2] == 0) {
-                        context->params[2] = 10;
-                    }
-
-                    status = safe_multiply_by_params_div10(
-                        context->attributed_pan,
-                        context->params[2],
-                        &scaled_pan);
-                    if (SIXEL_FAILED(status)) {
-                        goto end;
-                    }
-
-                    status = safe_multiply_by_params_div10(
-                        context->attributed_pad,
-                        context->params[2],
-                        &scaled_pad);
-                    if (SIXEL_FAILED(status)) {
-                        goto end;
-                    }
-
-                    context->attributed_pan = scaled_pan;
-                    context->attributed_pad = scaled_pad;
-                    if (context->attributed_pan <= 0) {
-                        context->attributed_pan = 1;
-                    }
-                    if (context->attributed_pad <= 0) {
-                        context->attributed_pad = 1;
-                    }
-                }
-                context->nparams = 0;
-                context->state = PS_DECSIXEL;
                 p++;
                 break;
             default:
@@ -1705,11 +1726,16 @@ sixel_decode_image(
     parser_context_t  *context,
     sixel_allocator_t *allocator,
     unsigned int       decode_flags,
-    sixel_decoder_undither_context_t *undither)
+    sixel_decoder_undither_context_t *undither,
+    int                body_only,
+    int const         *body_params,
+    size_t             body_nparams)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_timeline_logger_t *logger;
     int logger_prepared;
+    size_t i;
+    size_t nparams;
 
     image->pixels.p = NULL;
     image->paint_mask = NULL;
@@ -1717,6 +1743,8 @@ sixel_decode_image(
 
     logger = NULL;
     logger_prepared = 0;
+    i = 0U;
+    nparams = body_nparams;
     (void)sixel_timeline_logger_prepare_env(allocator, &logger);
     logger_prepared = logger != NULL;
     if (logger_prepared) {
@@ -1775,6 +1803,33 @@ sixel_decode_image(
                                allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
+    }
+
+    if (body_only) {
+        if (nparams > 0U && body_params == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_decode_image: DCS q params are null.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (nparams > DECSIXEL_PARAMS_MAX) {
+            nparams = DECSIXEL_PARAMS_MAX;
+        }
+        for (i = 0U; i < nparams; i++) {
+            if (body_params[i] < 0) {
+                sixel_helper_set_additional_message(
+                    "sixel_decode_image: DCS q parameter is negative.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+            context->params[i] = body_params[i];
+        }
+        context->nparams = (int)nparams;
+        context->param = -1;
+        status = parser_context_enter_decsixel(context, image, allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     status = sixel_decode_raw_impl(p,
@@ -1900,7 +1955,10 @@ sixel_decode_raw_with_options_internal(
                                 &context,
                                 allocator,
                                 decode_flags,
-                                NULL);
+                                NULL,
+                                0,
+                                NULL,
+                                0U);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -2172,7 +2230,10 @@ sixel_decode_kundither_fast4_with_options(unsigned char *p,
                                 &context,
                                 allocator,
                                 decode_flags,
-                                &undither);
+                                &undither,
+                                0,
+                                NULL,
+                                0U);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -2311,7 +2372,10 @@ sixel_decode_wide(
                                 &context,
                                 allocator,
                                 0U,
-                                NULL);
+                                NULL,
+                                0,
+                                NULL,
+                                0U);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -2367,11 +2431,14 @@ end:
 }
 
 
-SIXEL_INTERNAL_API SIXELSTATUS
-sixel_decode_direct_with_options(
+static SIXELSTATUS
+sixel_decode_direct_context_with_options(
     unsigned char       *p,
     int                  len,
     unsigned int         decode_flags,
+    int                  body_only,
+    int const           *body_params,
+    size_t               body_nparams,
     unsigned char      **pixels,
     int                 *pwidth,
     int                 *pheight,
@@ -2434,7 +2501,10 @@ sixel_decode_direct_with_options(
                                 &context,
                                 allocator,
                                 decode_flags,
-                                NULL);
+                                NULL,
+                                body_only,
+                                body_params,
+                                body_nparams);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -2494,6 +2564,64 @@ end:
     free(image);
     sixel_allocator_unref(allocator);
     return status;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_direct_with_options(
+    unsigned char       *p,
+    int                  len,
+    unsigned int         decode_flags,
+    unsigned char      **pixels,
+    int                 *pwidth,
+    int                 *pheight,
+    unsigned char      **palette,
+    int                 *ncolors,
+    unsigned int        *result_flags,
+    sixel_allocator_t   *allocator)
+{
+    return sixel_decode_direct_context_with_options(p,
+                                                    len,
+                                                    decode_flags,
+                                                    0,
+                                                    NULL,
+                                                    0U,
+                                                    pixels,
+                                                    pwidth,
+                                                    pheight,
+                                                    palette,
+                                                    ncolors,
+                                                    result_flags,
+                                                    allocator);
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_direct_body_with_options(
+    unsigned char       *p,
+    int                  len,
+    unsigned int         decode_flags,
+    int const           *params,
+    size_t               nparams,
+    unsigned char      **pixels,
+    int                 *pwidth,
+    int                 *pheight,
+    unsigned char      **palette,
+    int                 *ncolors,
+    unsigned int        *result_flags,
+    sixel_allocator_t   *allocator)
+{
+    return sixel_decode_direct_context_with_options(p,
+                                                    len,
+                                                    decode_flags,
+                                                    1,
+                                                    params,
+                                                    nparams,
+                                                    pixels,
+                                                    pwidth,
+                                                    pheight,
+                                                    palette,
+                                                    ncolors,
+                                                    result_flags,
+                                                    allocator);
 }
 
 

@@ -1871,6 +1871,12 @@ packed format such as `RGB888`, `XRGB8888`, `RGBX8888`, `XBGR8888`, or
 `BGRX8888`.  RGB and X formats are composited against
 `sixel_decode_options_t.bgcolor`, and X bytes are filled with `0xff`.
 
+`sixel_decode_pixels_body` is the zero-copy variant for terminal parsers that
+already split a DECSIXEL control string into `DCS P1;P2;P3 q`, body bytes, and
+the string terminator.  Its `params` argument is the normalized DCS q parameter
+list; raster attributes and color-register parameters that occur after `q`
+remain encoded in the body byte stream.
+
 The option flags are:
 
 - `SIXEL_DECODE_PIXELS_OPTION_TRUST_RASTER_SIZE`: trust the width and height

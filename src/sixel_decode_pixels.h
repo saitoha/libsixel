@@ -70,6 +70,20 @@ sixel_decode_direct_with_options(unsigned char *p,
                                  sixel_allocator_t *allocator);
 
 SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_direct_body_with_options(unsigned char *p,
+                                      int len,
+                                      unsigned int decode_flags,
+                                      int const *params,
+                                      size_t nparams,
+                                      unsigned char **pixels,
+                                      int *pwidth,
+                                      int *pheight,
+                                      unsigned char **palette,
+                                      int *ncolors,
+                                      unsigned int *result_flags,
+                                      sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
 sixel_decode_kundither_fast4_with_options(unsigned char *p,
                                           int len,
                                           int direct_output,
@@ -97,6 +111,15 @@ sixel_decode_pixels(unsigned char const *data,
                     sixel_decode_options_t const *options,
                     sixel_decode_result_t *result,
                     sixel_allocator_t *allocator);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_decode_pixels_body(unsigned char const *body,
+                         size_t body_size,
+                         int const *params,
+                         size_t nparams,
+                         sixel_decode_options_t const *options,
+                         sixel_decode_result_t *result,
+                         sixel_allocator_t *allocator);
 
 #endif /* SIXEL_DECODE_PIXELS_H */
 

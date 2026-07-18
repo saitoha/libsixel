@@ -57,6 +57,7 @@ sub attach_all {
     $ffi->attach(['sixel_decode_raw' => 'Image::LibSIXEL::sixel_decode_raw'] => ['opaque', 'int', 'opaque*', 'opaque', 'opaque', 'opaque*', 'opaque', 'opaque'] => 'int');
     $ffi->attach(['sixel_decode_direct' => 'Image::LibSIXEL::sixel_decode_direct'] => ['opaque', 'int', 'opaque*', 'opaque', 'opaque', 'opaque'] => 'int');
     $ffi->attach(['sixel_decode_pixels' => 'Image::LibSIXEL::sixel_decode_pixels'] => ['opaque', 'int', 'opaque', 'opaque', 'opaque'] => 'int');
+    $ffi->attach(['sixel_decode_pixels_body' => 'Image::LibSIXEL::sixel_decode_pixels_body'] => ['opaque', 'int', 'opaque', 'int', 'opaque', 'opaque', 'opaque'] => 'int');
     $ffi->attach(['sixel_decode' => 'Image::LibSIXEL::sixel_decode'] => ['opaque', 'int', 'opaque*', 'opaque', 'opaque', 'opaque*', 'opaque', 'int'] => 'int');
     $ffi->attach(['sixel_tty_init_output_device' => 'Image::LibSIXEL::sixel_tty_init_output_device'] => ['int'] => 'void');
     $ffi->attach(['sixel_helper_set_additional_message' => 'Image::LibSIXEL::sixel_helper_set_additional_message'] => ['string'] => 'void');

@@ -245,6 +245,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0017_DECODER_PARALLEL_SPARSE_SPLIT_MATCHES_SERIAL \
     -DBUILD_TEST_0018_DECODER_PARALLEL_DIRECT_SPARSE_PRESERVES_UNPAINTED \
     -DBUILD_TEST_0019_DECODER_PARALLEL_DIRECT_REPEAT_OVERFLOW_FALLBACK \
+    -DBUILD_TEST_0020_DECODER_PIXELS_BODY_API \
     -DBUILD_TEST_0001_LOOKUP_POLICY \
     -DBUILD_TEST_0001_DITHER_POLICY \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
@@ -350,6 +351,7 @@ test_runner_SOURCES = test_runner.c \
     processing/decoder/0017_decoder_parallel_sparse_split_matches_serial.c \
     processing/decoder/0018_decoder_parallel_direct_sparse_preserves_unpainted.c \
     processing/decoder/0019_decoder_parallel_direct_repeat_overflow_fallback.c \
+    processing/decoder/0020_decoder_pixels_body_api.c \
     processing/decoder/kundither_test_common.h \
     processing/lookup/0001_lookup_policy.c \
     processing/dither/0001_dither_policy.c \

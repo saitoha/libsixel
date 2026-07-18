@@ -1311,6 +1311,25 @@ sixel_decode_pixels(unsigned char const /* in */ *data,
                                         /* out */ *result,
                     sixel_allocator_t   /* in */ *allocator);
 
+/*
+ * Decode a DECSIXEL body after the caller has already consumed the DCS
+ * introducer, DCS q parameters, q final byte, and string terminator.  params is
+ * the normalized integer list from "DCS P1;P2;P3 q"; raster and color
+ * parameters that live inside the body remain encoded in body bytes.
+ */
+#define SIXEL_HAVE_DECODE_PIXELS_BODY 1
+
+SIXELAPI SIXELSTATUS
+sixel_decode_pixels_body(unsigned char const /* in */ *body,
+                         size_t              /* in */ body_size,
+                         int const           /* in */ *params,
+                         size_t              /* in */ nparams,
+                         sixel_decode_options_t const
+                                             /* in */ *options,
+                         sixel_decode_result_t
+                                             /* out */ *result,
+                         sixel_allocator_t   /* in */ *allocator);
+
 SIXELAPI @attr_func_deprecated@ SIXELSTATUS
 sixel_decode(
     unsigned char            /* in */  *sixels,    /* sixel bytes */

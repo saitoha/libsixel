@@ -586,6 +586,131 @@ cleanup:
     return status;
 }
 
+SIXELAPI SIXELSTATUS
+sixel_decode_pixels_body(unsigned char const *body,
+                         size_t body_size,
+                         int const *params,
+                         size_t nparams,
+                         sixel_decode_options_t const *options,
+                         sixel_decode_result_t *result,
+                         sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    sixel_allocator_t *work_allocator;
+    unsigned char *decoded;
+    unsigned char *buffer;
+    unsigned char empty_body;
+    unsigned char const default_bg[3] = { 0U, 0U, 0U };
+    unsigned char const *bg;
+    unsigned int decode_flags;
+    unsigned int result_flags;
+    int width;
+    int height;
+    int pixelformat;
+    int depth;
+
+    status = SIXEL_FALSE;
+    work_allocator = allocator;
+    decoded = NULL;
+    buffer = NULL;
+    empty_body = 0U;
+    bg = default_bg;
+    decode_flags = 0U;
+    result_flags = 0U;
+    width = 0;
+    height = 0;
+    pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    depth = 0;
+
+    if ((body == NULL && body_size != 0U) || result == NULL ||
+            (params == NULL && nparams != 0U)) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    result->pixels = NULL;
+    result->width = 0;
+    result->height = 0;
+    result->pixelformat = 0;
+    result->stride = 0;
+    result->flags = 0U;
+
+    if (options != NULL) {
+        decode_flags = options->flags;
+        if (options->preferred_pixelformat != 0) {
+            pixelformat = options->preferred_pixelformat;
+        }
+        bg = options->bgcolor;
+    }
+
+    depth = sixel_decode_pixels_depth(pixelformat);
+    if (depth == 0) {
+        sixel_helper_set_additional_message(
+            "sixel_decode_pixels_body: unsupported output pixelformat.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (body_size > (size_t)INT_MAX) {
+        sixel_helper_set_additional_message(
+            "sixel_decode_pixels_body: invalid input size.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    if (work_allocator != NULL) {
+        sixel_allocator_ref(work_allocator);
+    } else {
+        status = sixel_allocator_new(&work_allocator,
+                                     NULL,
+                                     NULL,
+                                     NULL,
+                                     NULL);
+        if (SIXEL_FAILED(status)) {
+            work_allocator = NULL;
+            goto cleanup;
+        }
+    }
+
+    buffer = body_size == 0U ? &empty_body : (unsigned char *)(void const *)body;
+    status = sixel_decode_direct_body_with_options(buffer,
+                                                   (int)body_size,
+                                                   decode_flags,
+                                                   params,
+                                                   nparams,
+                                                   &decoded,
+                                                   &width,
+                                                   &height,
+                                                   NULL,
+                                                   NULL,
+                                                   &result_flags,
+                                                   work_allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_decode_pixels_finish_rgba(&decoded,
+                                             width,
+                                             height,
+                                             pixelformat,
+                                             bg,
+                                             result_flags,
+                                             result,
+                                             work_allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+    status = SIXEL_OK;
+
+cleanup:
+    if (decoded != NULL) {
+        sixel_allocator_free(work_allocator, decoded);
+        decoded = NULL;
+    }
+    if (work_allocator != NULL) {
+        sixel_allocator_unref(work_allocator);
+    }
+
+    return status;
+}
+
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */
