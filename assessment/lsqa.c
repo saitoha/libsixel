@@ -356,6 +356,7 @@ load_dequantized_target_frame(char const *path,
                               int dequantize_method,
                               int similarity_bias,
                               int edge_strength,
+                              int selective_blur_threshold,
                               sixel_frame_t **out_frame)
 {
     SIXELSTATUS status;
@@ -455,6 +456,18 @@ load_dequantized_target_frame(char const *path,
                                                    similarity_bias,
                                                    allocator,
                                                    &rgb_pixels);
+        if (SIXEL_FAILED(status)) {
+            goto error;
+        }
+    } else if (dequantize_method == SIXEL_DEQUANTIZE_SELECTIVE_BLUR) {
+        status = sixel_dequantize_selective_blur(indexed_pixels,
+                                                 width,
+                                                 height,
+                                                 palette,
+                                                 ncolors,
+                                                 selective_blur_threshold,
+                                                 allocator,
+                                                 &rgb_pixels);
         if (SIXEL_FAILED(status)) {
             goto error;
         }
@@ -1192,7 +1205,8 @@ static char const g_lsqa_compare_precision_detail[] =
 
 static char const g_lsqa_dequantize_detail[] =
     "dequantize accepts none, k_undither, lso_undither:Vfs, "
-    "lso_undither:Vlight, or short forms l:Vf and l:Vl.";
+    "lso_undither:Vlight, selective_blur:threshold=N, "
+    "or short forms l:Vf, l:Vl, and s:TN.";
 
 static void
 lsqa_copy_parse_detail(char *detail,
@@ -1545,6 +1559,7 @@ lsqa_parse_compare_precision(char const *argument,
 static int
 lsqa_parse_dequantize_method(char const *argument,
                              int *out_method,
+                             int *out_selective_blur_threshold,
                              char *detail,
                              size_t detail_size)
 {
@@ -1561,9 +1576,10 @@ lsqa_parse_dequantize_method(char const *argument,
         return -1;
     }
 
-    status = sixel_option_parse_dequantize_argument(
+    status = sixel_option_parse_dequantize_argument_with_options(
         argument,
         out_method,
+        out_selective_blur_threshold,
         NULL,
         0u);
     if (SIXEL_FAILED(status)) {
@@ -1733,6 +1749,7 @@ typedef struct Options {
     int dequantize_method;
     int dequantize_similarity_bias;
     int dequantize_edge_strength;
+    int dequantize_selective_blur_threshold;
     const char *loader_order;
     int grayscale_specified;
     int compare_colorspace_specified;
@@ -1982,6 +1999,11 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             lso_undither:Vlight\n"
         "                             l:Vl              -> light causal\n"
         "                                                  undither\n"
+        "                             selective_blur:threshold=24\n"
+        "                                               -> selective\n"
+        "                                                  3x3 blur\n"
+        "                             s:T24             -> compact\n"
+        "                                                  3x3 blur\n"
     },
     {
         'S',
@@ -2584,6 +2606,8 @@ parse_args(int argc, char **argv, Options *opts)
     opts->dequantize_method = SIXEL_DEQUANTIZE_NONE;
     opts->dequantize_similarity_bias = 100;
     opts->dequantize_edge_strength = 0;
+    opts->dequantize_selective_blur_threshold =
+        SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_DEFAULT;
     opts->loader_order = NULL;
     opts->grayscale_specified = 0;
     opts->compare_colorspace_specified = 0;
@@ -2741,6 +2765,7 @@ parse_args(int argc, char **argv, Options *opts)
             if (lsqa_parse_dequantize_method(
                         optarg,
                         &opts->dequantize_method,
+                        &opts->dequantize_selective_blur_threshold,
                         detail_buffer,
                         sizeof(detail_buffer)) != 0) {
                 lsqa_report_invalid_argument(
@@ -2979,6 +3004,7 @@ main(int argc, char **argv)
                     opts.dequantize_method,
                     opts.dequantize_similarity_bias,
                     opts.dequantize_edge_strength,
+                    opts.dequantize_selective_blur_threshold,
                     &out_frame) != 0) {
             sixel_frame_unref(ref_frame);
             sixel_allocator_unref(allocator);

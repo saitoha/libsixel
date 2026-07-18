@@ -71,6 +71,13 @@ Use a light causal undithering variant designed for parallel decode.
 .TP 5
 .B l:Vl
 Alias for lso_undither:Vlight.
+.TP 5
+.B selective_blur:threshold=24
+Use selective 3x3 binomial blur.  The threshold is an RGB distance in the
+range 0..441.
+.TP 5
+.B s:T24
+Compact form of selective_blur:threshold=24.
 .RE
 .TP 5
 .B \-S

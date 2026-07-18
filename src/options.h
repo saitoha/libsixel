@@ -37,6 +37,9 @@
 #define SIXEL_OPTION_ENV_FUZZY_SUGGESTIONS  "SIXEL_OPTION_FUZZY_SUGGESTIONS"
 #define SIXEL_OPTION_ENV_PATH_SUGGESTIONS   "SIXEL_OPTION_PATH_SUGGESTIONS"
 
+#define SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_DEFAULT 24
+#define SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_MAX 441
+
 /*
  * The choice descriptor couples the textual prefix with the integral
  * payload stored by the caller.  The helper functions only inspect the
@@ -175,6 +178,14 @@ SIXEL_INTERNAL_API SIXELSTATUS
 sixel_option_parse_dequantize_argument(
     char const *argument,
     int *method,
+    char *diagnostic,
+    size_t diagnostic_size);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_option_parse_dequantize_argument_with_options(
+    char const *argument,
+    int *method,
+    int *selective_blur_threshold,
     char *diagnostic,
     size_t diagnostic_size);
 

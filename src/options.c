@@ -122,6 +122,18 @@ g_sixel_option_dequantize_lso_subkeys[] = {
     }
 };
 
+static sixel_suboption_key_t const
+g_sixel_option_dequantize_selective_blur_subkeys[] = {
+    {
+        "threshold",
+        "T",
+        NULL,
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    }
+};
+
 static sixel_option_value_schema_t const
 g_sixel_option_dequantize_values[] = {
     { "none", SIXEL_DEQUANTIZE_NONE, NULL, 0u },
@@ -132,6 +144,13 @@ g_sixel_option_dequantize_values[] = {
         g_sixel_option_dequantize_lso_subkeys,
         sizeof(g_sixel_option_dequantize_lso_subkeys)
         / sizeof(g_sixel_option_dequantize_lso_subkeys[0])
+    },
+    {
+        "selective_blur",
+        SIXEL_DEQUANTIZE_SELECTIVE_BLUR,
+        g_sixel_option_dequantize_selective_blur_subkeys,
+        sizeof(g_sixel_option_dequantize_selective_blur_subkeys)
+        / sizeof(g_sixel_option_dequantize_selective_blur_subkeys[0])
     }
 };
 
@@ -1069,10 +1088,41 @@ sixel_option_free_argument_resolution(
     sixel_option_reset_argument_resolution(resolution);
 }
 
+static SIXELSTATUS
+sixel_option_parse_dequantize_selective_blur_threshold(char const *text,
+                                                       int *threshold)
+{
+    long parsed_value;
+    char *endptr;
+
+    parsed_value = 0L;
+    endptr = NULL;
+    if (text == NULL || text[0] == '\0' || threshold == NULL) {
+        sixel_helper_set_additional_message(
+            "selective_blur threshold must be an integer in range 0..441.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    errno = 0;
+    parsed_value = strtol(text, &endptr, 10);
+    if (endptr == text || *endptr != '\0' || errno == ERANGE ||
+            parsed_value < 0L ||
+            parsed_value >
+                SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_MAX) {
+        sixel_helper_set_additional_message(
+            "selective_blur threshold must be an integer in range 0..441.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *threshold = (int)parsed_value;
+    return SIXEL_OK;
+}
+
 SIXEL_INTERNAL_API SIXELSTATUS
-sixel_option_parse_dequantize_argument(
+sixel_option_parse_dequantize_argument_with_options(
     char const *argument,
     int *method,
+    int *selective_blur_threshold,
     char *diagnostic,
     size_t diagnostic_size)
 {
@@ -1080,10 +1130,15 @@ sixel_option_parse_dequantize_argument(
     sixel_option_argument_resolution_t resolution;
     sixel_suboption_assignment_t const *assignment;
     int parsed_method;
+    int parsed_threshold;
+    size_t index;
 
     status = SIXEL_OK;
     assignment = NULL;
     parsed_method = SIXEL_DEQUANTIZE_NONE;
+    parsed_threshold =
+        SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_DEFAULT;
+    index = 0u;
     memset(&resolution, 0, sizeof(resolution));
 
     if (diagnostic != NULL && diagnostic_size > 0u) {
@@ -1124,6 +1179,20 @@ sixel_option_parse_dequantize_argument(
             status = SIXEL_BAD_ARGUMENT;
             goto cleanup;
         }
+    } else if (parsed_method == SIXEL_DEQUANTIZE_SELECTIVE_BLUR) {
+        while (index < resolution.assignment_count) {
+            assignment = &resolution.assignments[index];
+            if (strcmp(assignment->key_def->name, "threshold") == 0) {
+                status =
+                    sixel_option_parse_dequantize_selective_blur_threshold(
+                        assignment->resolved_value_text,
+                        &parsed_threshold);
+                if (SIXEL_FAILED(status)) {
+                    goto cleanup;
+                }
+            }
+            ++index;
+        }
     } else if (resolution.assignment_count != 0u) {
         sixel_helper_set_additional_message(
             "this dequantize method does not accept suboptions.");
@@ -1132,10 +1201,28 @@ sixel_option_parse_dequantize_argument(
     }
 
     *method = parsed_method;
+    if (selective_blur_threshold != NULL) {
+        *selective_blur_threshold = parsed_threshold;
+    }
 
 cleanup:
     sixel_option_free_argument_resolution(&resolution);
     return status;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_option_parse_dequantize_argument(
+    char const *argument,
+    int *method,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    return sixel_option_parse_dequantize_argument_with_options(
+        argument,
+        method,
+        NULL,
+        diagnostic,
+        diagnostic_size);
 }
 
 SIXELSTATUS

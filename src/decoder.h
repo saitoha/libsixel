@@ -37,6 +37,7 @@ struct sixel_decoder {
     int dequantize_method;
     int dequantize_similarity_bias;
     int dequantize_edge_strength;
+    int dequantize_selective_blur_threshold;
     int gpu_policy;
     int thumbnail_size;
     int direct_color;
@@ -108,6 +109,26 @@ sixel_dequantize_k_undither_fast4_rows(
     sixel_allocator_t *allocator,
     unsigned char *rgb);
 
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_selective_blur(unsigned char *indexed_pixels,
+                                int width,
+                                int height,
+                                unsigned char *palette,
+                                int ncolors,
+                                int threshold,
+                                sixel_allocator_t *allocator,
+                                unsigned char **output);
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_selective_blur_rgba(unsigned char *indexed_pixels,
+                                     unsigned char const *paint_mask,
+                                     int width,
+                                     int height,
+                                     unsigned char *palette,
+                                     int ncolors,
+                                     int threshold,
+                                     sixel_allocator_t *allocator,
+                                     unsigned char **output);
 
 #endif /* LIBSIXEL_DECODER_H */
 

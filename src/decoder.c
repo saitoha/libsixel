@@ -500,6 +500,8 @@ sixel_decoder_new(
     (*ppdecoder)->dequantize_method = SIXEL_DEQUANTIZE_NONE;
     (*ppdecoder)->dequantize_similarity_bias = 100;
     (*ppdecoder)->dequantize_edge_strength = 0;
+    (*ppdecoder)->dequantize_selective_blur_threshold =
+        SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_DEFAULT;
     (*ppdecoder)->gpu_policy = SIXEL_GPU_POLICY_OFF;
     (*ppdecoder)->thumbnail_size = 0;
     (*ppdecoder)->direct_color = 0;
@@ -645,6 +647,12 @@ static const int g_kundither_neighbor_offsets[8][4] = {
 static const int g_kundither_fast4_neighbor_offsets[4][4] = {
     {-1, -1,  10, 16}, {0, -1, 16, 16}, {1, -1,   6, 16},
     {-1,  0,  11, 16}
+};
+
+static const int g_selective_blur_neighbor_offsets[8][3] = {
+    {-1, -1, 1}, {0, -1, 2}, {1, -1, 1},
+    {-1,  0, 2},             {1,  0, 2},
+    {-1,  1, 1}, {0,  1, 2}, {1,  1, 1}
 };
 
 static SIXELSTATUS
@@ -2418,6 +2426,226 @@ sixel_dequantize_k_undither_fast4(unsigned char *indexed_pixels,
     *output = rgb;
     return SIXEL_OK;
 }
+
+static unsigned int
+sixel_selective_blur_color_diff(unsigned char const *a,
+                                unsigned char const *b)
+{
+    int dr;
+    int dg;
+    int db;
+
+    dr = (int)a[0] - (int)b[0];
+    dg = (int)a[1] - (int)b[1];
+    db = (int)a[2] - (int)b[2];
+    return (unsigned int)(dr * dr + dg * dg + db * db);
+}
+
+static SIXELSTATUS
+sixel_dequantize_selective_blur_common(
+    unsigned char *indexed_pixels,
+    unsigned char const *paint_mask,
+    int width,
+    int height,
+    unsigned char *palette,
+    int ncolors,
+    int threshold,
+    int pixel_size,
+    sixel_allocator_t *allocator,
+    unsigned char **output)
+{
+    unsigned char *pixels;
+    unsigned char const *center_color;
+    unsigned char const *neighbor_color;
+    size_t num_pixels;
+    size_t pixel_pos;
+    size_t neighbor_pos;
+    size_t out_index;
+    unsigned int threshold_squared;
+    unsigned int accum_r;
+    unsigned int accum_g;
+    unsigned int accum_b;
+    unsigned int total_weight;
+    int palette_index;
+    int neighbor_index;
+    int neighbor;
+    int weight;
+    int x;
+    int y;
+    int nx;
+    int ny;
+
+    pixels = NULL;
+    center_color = NULL;
+    neighbor_color = NULL;
+    num_pixels = 0u;
+    pixel_pos = 0u;
+    neighbor_pos = 0u;
+    out_index = 0u;
+    threshold_squared = 0u;
+    accum_r = 0u;
+    accum_g = 0u;
+    accum_b = 0u;
+    total_weight = 0u;
+    palette_index = 0;
+    neighbor_index = 0;
+    neighbor = 0;
+    weight = 0;
+    x = 0;
+    y = 0;
+    nx = 0;
+    ny = 0;
+
+    if (indexed_pixels == NULL || width <= 0 || height <= 0 ||
+            palette == NULL || ncolors <= 0 || output == NULL ||
+            pixel_size < 3 || pixel_size > 4 ||
+            threshold < 0 ||
+            threshold >
+                SIXEL_DEQUANTIZE_SELECTIVE_BLUR_THRESHOLD_MAX) {
+        return SIXEL_BAD_INPUT;
+    }
+    if ((size_t)width > ((size_t)-1 / (size_t)height)) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    num_pixels = (size_t)width * (size_t)height;
+    if (num_pixels > ((size_t)-1 / (size_t)pixel_size)) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    pixels = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        num_pixels * (size_t)pixel_size);
+    if (pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_dequantize_selective_blur: "
+            "sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    threshold_squared = (unsigned int)(threshold * threshold);
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < width; ++x) {
+            pixel_pos = (size_t)y * (size_t)width + (size_t)x;
+            out_index = pixel_pos * (size_t)pixel_size;
+            if (paint_mask != NULL && paint_mask[pixel_pos] == 0U) {
+                pixels[out_index + 0u] = 0u;
+                pixels[out_index + 1u] = 0u;
+                pixels[out_index + 2u] = 0u;
+                if (pixel_size == 4) {
+                    pixels[out_index + 3u] = 0u;
+                }
+                continue;
+            }
+
+            palette_index = indexed_pixels[pixel_pos];
+            if (palette_index < 0 || palette_index >= ncolors) {
+                palette_index = 0;
+            }
+            center_color = palette + palette_index * 3;
+            accum_r = (unsigned int)center_color[0] * 4u;
+            accum_g = (unsigned int)center_color[1] * 4u;
+            accum_b = (unsigned int)center_color[2] * 4u;
+            total_weight = 4u;
+
+            /*
+             * This is an ImageMagick-style selective blur target, not a
+             * palette-aware inverse dither.  It keeps the GPU-friendly shape:
+             * only center/neighbor RGB distance gates the fixed 3x3 binomial
+             * kernel, so runtime does not grow with palette size.
+             */
+            for (neighbor = 0; neighbor < 8; ++neighbor) {
+                nx = x + g_selective_blur_neighbor_offsets[neighbor][0];
+                ny = y + g_selective_blur_neighbor_offsets[neighbor][1];
+                weight = g_selective_blur_neighbor_offsets[neighbor][2];
+                if (nx < 0 || nx >= width || ny < 0 || ny >= height) {
+                    continue;
+                }
+
+                neighbor_pos = (size_t)ny * (size_t)width + (size_t)nx;
+                if (paint_mask != NULL && paint_mask[neighbor_pos] == 0U) {
+                    continue;
+                }
+                neighbor_index = indexed_pixels[neighbor_pos];
+                if (neighbor_index < 0 || neighbor_index >= ncolors) {
+                    continue;
+                }
+
+                neighbor_color = palette + neighbor_index * 3;
+                if (sixel_selective_blur_color_diff(center_color,
+                                                    neighbor_color)
+                        > threshold_squared) {
+                    continue;
+                }
+
+                accum_r += (unsigned int)neighbor_color[0] *
+                    (unsigned int)weight;
+                accum_g += (unsigned int)neighbor_color[1] *
+                    (unsigned int)weight;
+                accum_b += (unsigned int)neighbor_color[2] *
+                    (unsigned int)weight;
+                total_weight += (unsigned int)weight;
+            }
+
+            pixels[out_index + 0u] =
+                (unsigned char)(accum_r / total_weight);
+            pixels[out_index + 1u] =
+                (unsigned char)(accum_g / total_weight);
+            pixels[out_index + 2u] =
+                (unsigned char)(accum_b / total_weight);
+            if (pixel_size == 4) {
+                pixels[out_index + 3u] = 0xffu;
+            }
+        }
+    }
+
+    *output = pixels;
+    return SIXEL_OK;
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_selective_blur(unsigned char *indexed_pixels,
+                                int width,
+                                int height,
+                                unsigned char *palette,
+                                int ncolors,
+                                int threshold,
+                                sixel_allocator_t *allocator,
+                                unsigned char **output)
+{
+    return sixel_dequantize_selective_blur_common(indexed_pixels,
+                                                  NULL,
+                                                  width,
+                                                  height,
+                                                  palette,
+                                                  ncolors,
+                                                  threshold,
+                                                  3,
+                                                  allocator,
+                                                  output);
+}
+
+SIXEL_INTERNAL_API SIXELSTATUS
+sixel_dequantize_selective_blur_rgba(unsigned char *indexed_pixels,
+                                     unsigned char const *paint_mask,
+                                     int width,
+                                     int height,
+                                     unsigned char *palette,
+                                     int ncolors,
+                                     int threshold,
+                                     sixel_allocator_t *allocator,
+                                     unsigned char **output)
+{
+    return sixel_dequantize_selective_blur_common(indexed_pixels,
+                                                  paint_mask,
+                                                  width,
+                                                  height,
+                                                  palette,
+                                                  ncolors,
+                                                  threshold,
+                                                  4,
+                                                  allocator,
+                                                  output);
+}
 /* set an option flag to decoder object */
 SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
@@ -2557,9 +2785,10 @@ sixel_decoder_setopt(
             goto end;
         }
 
-        status = sixel_option_parse_dequantize_argument(
+        status = sixel_option_parse_dequantize_argument_with_options(
             value,
             &decoder->dequantize_method,
+            &decoder->dequantize_selective_blur_threshold,
             NULL,
             0u);
         if (SIXEL_FAILED(status)) {
@@ -2837,7 +3066,8 @@ sixel_decoder_decode_pixels_dequant_try(
         return SIXEL_BAD_INPUT;
     }
 
-    if (decoder->dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
+    if (decoder->dequantize_method == SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT ||
+            decoder->dequantize_method == SIXEL_DEQUANTIZE_SELECTIVE_BLUR) {
         /* handled below after the one-pass indexed decode */
     } else if (decoder->dequantize_method != SIXEL_DEQUANTIZE_K_UNDITHER) {
         sixel_helper_set_additional_message(
@@ -2897,6 +3127,18 @@ sixel_decoder_decode_pixels_dequant_try(
             palette,
             ncolors,
             decoder->dequantize_similarity_bias,
+            decoder->allocator,
+            &rgba_pixels);
+    } else if (decoder->dequantize_method ==
+            SIXEL_DEQUANTIZE_SELECTIVE_BLUR) {
+        status = sixel_dequantize_selective_blur_rgba(
+            indexed_pixels,
+            paint_mask,
+            *out_width,
+            *out_height,
+            palette,
+            ncolors,
+            decoder->dequantize_selective_blur_threshold,
             decoder->allocator,
             &rgba_pixels);
     } else {
@@ -3260,7 +3502,9 @@ sixel_decoder_decode(
     ncolors = 0;
 
     if (decoder->gpu_policy == SIXEL_GPU_POLICY_FORCE &&
-            decoder->dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER) {
+            decoder->dequantize_method != SIXEL_DEQUANTIZE_NONE &&
+            decoder->dequantize_method !=
+                SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT) {
         sixel_helper_set_additional_message(
             "sixel_decoder_decode: GPU dequant supports fast4 only.");
         status = SIXEL_BAD_ARGUMENT;
@@ -3436,6 +3680,70 @@ sixel_decoder_decode(
                 sixel_timeline_logger_logf(logger,
                                   "decoder",
                                   "undither",
+                                  "finish",
+                                  0);
+            }
+            if (decoder->direct_color != 0) {
+                output_pixels = direct_pixels;
+                output_palette = NULL;
+                output_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+            } else {
+                output_pixels = rgb_pixels;
+                output_palette = NULL;
+                output_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            }
+        } else if (decoder->dequantize_method ==
+                SIXEL_DEQUANTIZE_SELECTIVE_BLUR) {
+            if (logger_prepared) {
+                sixel_timeline_logger_logf(logger,
+                                  "decoder",
+                                  "selective_blur",
+                                  "start",
+                                  0);
+            }
+            status = sixel_dequantize_selective_blur(
+                indexed_pixels,
+                sx,
+                sy,
+                palette,
+                ncolors,
+                decoder->dequantize_selective_blur_threshold,
+                decoder->allocator,
+                &rgb_pixels);
+            if (SIXEL_FAILED(status)) {
+                if (logger_prepared) {
+                    sixel_timeline_logger_logf(
+                        logger,
+                        "decoder",
+                        "selective_blur",
+                        "abort",
+                        0);
+                }
+                goto end;
+            }
+            if (decoder->direct_color != 0) {
+                status = sixel_decoder_promote_rgb888_to_rgba8888(
+                    &direct_pixels,
+                    rgb_pixels,
+                    sx,
+                    sy,
+                    decoder->allocator);
+                if (SIXEL_FAILED(status)) {
+                    if (logger_prepared) {
+                        sixel_timeline_logger_logf(
+                            logger,
+                            "decoder",
+                            "selective_blur",
+                            "abort",
+                            0);
+                    }
+                    goto end;
+                }
+            }
+            if (logger_prepared) {
+                sixel_timeline_logger_logf(logger,
+                                  "decoder",
+                                  "selective_blur",
                                   "finish",
                                   0);
             }

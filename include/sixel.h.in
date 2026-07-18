@@ -186,6 +186,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_DEQUANTIZE_LSO_UNDITHER_VFS  0x1  /* full FS undither */
 /* LSO Vlight causal undither. */
 #define SIXEL_DEQUANTIZE_LSO_UNDITHER_VLIGHT 0x2
+/* Selective 3x3 binomial blur. */
+#define SIXEL_DEQUANTIZE_SELECTIVE_BLUR    0x3
 
 /* quantize model */
 #define SIXEL_QUANTIZE_MODEL_AUTO        0x0

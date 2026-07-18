@@ -40,7 +40,9 @@ static decoder_pixels_format_case_t const g_output_format_cases[] = {
 static char const *const g_output_format_dequantize_cases[] = {
     "k_undither",
     "lso_undither:Vlight",
-    "lso_undither:Vfs"
+    "lso_undither:Vfs",
+    "selective_blur:threshold=24",
+    "s:T24"
 };
 
 static int

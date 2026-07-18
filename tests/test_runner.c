@@ -147,6 +147,7 @@ test_decoder_0019_direct_repeat_overflow(
     int argc,
     char **argv);
 int test_decoder_0020_decoder_pixels_body_api(int argc, char **argv);
+int test_decoder_0021_decoder_selective_blur_threshold(int argc, char **argv);
 int test_dither_0001_dither_policy(int argc, char **argv);
 int test_lookup_0001_lookup_policy(int argc, char **argv);
 
@@ -349,6 +350,8 @@ static test_entry_t const test_entries[] = {
       test_decoder_0019_direct_repeat_overflow },
     { "decoder/0020_decoder_pixels_body_api",
       test_decoder_0020_decoder_pixels_body_api },
+    { "decoder/0021_decoder_selective_blur_threshold",
+      test_decoder_0021_decoder_selective_blur_threshold },
     { "dither/0001_dither_policy", test_dither_0001_dither_policy },
     { "lookup/0001_lookup_policy",
       test_lookup_0001_lookup_policy },
