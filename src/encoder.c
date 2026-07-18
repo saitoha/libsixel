@@ -7582,11 +7582,6 @@ sixel_encoder_validate_transparent_offset(sixel_encoder_t const *encoder)
             "transparent-offset cannot be used with high-color output.");
         return SIXEL_BAD_ARGUMENT;
     }
-    if (encoder->encode_policy == SIXEL_ENCODEPOLICY_SIZE) {
-        sixel_helper_set_additional_message(
-            "transparent-offset cannot be used with encode-policy=size.");
-        return SIXEL_BAD_ARGUMENT;
-    }
     if (encoder->transparent_policy_override != 0 &&
         encoder->transparent_policy != SIXEL_TRANSPARENT_POLICY_KEEP) {
         sixel_helper_set_additional_message(

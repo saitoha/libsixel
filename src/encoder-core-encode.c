@@ -4347,13 +4347,6 @@ sixel_encode_dither(
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
-        if (output->encode_policy == SIXEL_ENCODEPOLICY_SIZE) {
-            sixel_helper_set_additional_message(
-                "transparent-offset cannot be used with "
-                "encode-policy=size.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
         if (output->transparent_policy != SIXEL_TRANSPARENT_POLICY_KEEP) {
             sixel_helper_set_additional_message(
                 "transparent-offset requires transparent-policy=keep.");

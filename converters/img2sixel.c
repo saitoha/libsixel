@@ -733,7 +733,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "-+ LEFT,TOP, --transparent-offset=LEFT,TOP\n"
         "    add transparent left/top pixel offset with DCS P2=1 image-plane\n"
         "    reuse\n"
-        "    (0,0 disables the offset; incompatible with -O, -I, and -E size)\n"
+        "    (0,0 disables the offset; incompatible with -O and -I)\n"
     },
     {
         'Z',
