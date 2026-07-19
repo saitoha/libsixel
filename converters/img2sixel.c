@@ -655,7 +655,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "      off   -> keep the CPU path (default)\n"
         "      auto  -> probe GPU support and use it only above the threshold\n"
         "      force -> require a supported GPU path and fail otherwise\n"
-        "    currently accelerates exact --lookup-policy=none palette apply\n"
+        "    accelerates exact --lookup-policy=none and one-dimensional\n"
+        "    --lookup-policy=eytzinger palette apply\n"
     },
     {
         'l',

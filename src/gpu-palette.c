@@ -71,14 +71,13 @@ sixel_gpu_palette_lut_policy_is_supported(
     }
 
     /*
-     * The Metal kernel performs an exact direct palette scan, so it does not
-     * need any of the CPU LUT implementations.  Keep AUTO conservative:
-     * threshold-based GPU selection should not silently change output when the
-     * caller requested 5bit, 6bit, or another CPU lookup policy.  FORCE is an
-     * explicit request to use the GPU path, so treat the requested lookup
-     * policy as a CPU implementation detail and bypass it.
+     * The Metal kernel has two explicit lookup modes.  NONE keeps the exact
+     * direct scan, while EYTZINGER uses the one-dimensional projected search.
+     * Keep AUTO conservative for all other CPU lookup policies because the
+     * GPU path does not reproduce their output semantics.
      */
-    if (request->lut_policy == SIXEL_LUT_POLICY_NONE) {
+    if (request->lut_policy == SIXEL_LUT_POLICY_NONE ||
+            request->lut_policy == SIXEL_LUT_POLICY_EYTZINGER) {
         return 1;
     }
     return sixel_gpu_palette_policy_is_force(request->policy);
@@ -482,7 +481,8 @@ sixel_gpu_palette_policy_claims_apply_stage(int gpu_policy,
     if (sixel_gpu_palette_policy_is_force(gpu_policy)) {
         return 1;
     }
-    if (lut_policy != SIXEL_LUT_POLICY_NONE) {
+    if (lut_policy != SIXEL_LUT_POLICY_NONE &&
+            lut_policy != SIXEL_LUT_POLICY_EYTZINGER) {
         return 0;
     }
     if (method_for_diffuse != SIXEL_DIFFUSE_NONE &&

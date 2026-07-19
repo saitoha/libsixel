@@ -33,6 +33,7 @@
 
 #include <pthread.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -44,7 +45,10 @@
 
 enum {
     SIXEL_GPU_METAL_MODE_NONE = 0,
-    SIXEL_GPU_METAL_MODE_BLUENOISE = 1
+    SIXEL_GPU_METAL_MODE_BLUENOISE = 1,
+    SIXEL_GPU_METAL_LOOKUP_DIRECT = 0,
+    SIXEL_GPU_METAL_LOOKUP_EYTZINGER = 1,
+    SIXEL_GPU_METAL_EYTZINGER_KEY_MAX = 255 * 3
 };
 
 typedef struct sixel_gpu_metal_params {
@@ -52,6 +56,7 @@ typedef struct sixel_gpu_metal_params {
     uint32_t width;
     uint32_t height;
     uint32_t ncolors;
+    uint32_t lookup_mode;
     uint32_t mode;
     uint32_t has_transparent;
     uint32_t transparent_size;
@@ -79,6 +84,27 @@ typedef struct sixel_gpu_metal_dequant_params {
     uint32_t ncolors;
     int32_t similarity_bias;
 } sixel_gpu_metal_dequant_params_t;
+
+/*
+ * The GPU lookup uses the same one-dimensional projection as the CPU
+ * Eytzinger policy.  The sorted projection and its integer-key lower-bound
+ * table are kept separate so each pixel can start at a rank without walking
+ * a divergent tree.
+ */
+typedef struct sixel_gpu_metal_eytzinger_entry {
+    float key;
+    uint32_t palette_index;
+} sixel_gpu_metal_eytzinger_entry_t;
+
+typedef struct sixel_gpu_metal_eytzinger_params {
+    uint32_t count;
+    uint32_t window;
+} sixel_gpu_metal_eytzinger_params_t;
+
+typedef struct sixel_gpu_metal_eytzinger_pair {
+    float key;
+    uint32_t palette_index;
+} sixel_gpu_metal_eytzinger_pair_t;
 
 typedef struct sixel_gpu_metal_cached_buffer {
     id<MTLBuffer> buffer;
@@ -116,6 +142,12 @@ static sixel_gpu_metal_cached_buffer_t
     g_sixel_gpu_metal_dequant_rgba_buffer = { nil, 0U };
 static sixel_gpu_metal_cached_buffer_t
     g_sixel_gpu_metal_dequant_params_buffer = { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t
+    g_sixel_gpu_metal_eytzinger_sorted_buffer = { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t
+    g_sixel_gpu_metal_eytzinger_rank_buffer = { nil, 0U };
+static sixel_gpu_metal_cached_buffer_t
+    g_sixel_gpu_metal_eytzinger_params_buffer = { nil, 0U };
 static unsigned char g_sixel_gpu_metal_palette_shadow[
     SIXEL_PALETTE_MAX * 3U];
 static NSUInteger g_sixel_gpu_metal_palette_shadow_length = 0U;
@@ -131,6 +163,7 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    uint width;\n"
 "    uint height;\n"
 "    uint ncolors;\n"
+"    uint lookup_mode;\n"
 "    uint mode;\n"
 "    uint has_transparent;\n"
 "    uint transparent_size;\n"
@@ -149,6 +182,14 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    uint gradient_size;\n"
 "    uint gradient_width;\n"
 "    uint gradient_height;\n"
+"};\n"
+"struct EytzingerEntry {\n"
+"    float key;\n"
+"    uint palette_index;\n"
+"};\n"
+"struct EytzingerParams {\n"
+"    uint count;\n"
+"    uint window;\n"
 "};\n"
 "static float bn_sample(device const uchar *blue_noise, int x, int y)\n"
 "{\n"
@@ -209,10 +250,100 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    attenuated = clamp(attenuated, 0.0f, 1.0f);\n"
 "    return 1.0f - attenuated;\n"
 "}\n",
+"static uint palette_distance(\n"
+"    constant uchar *palette,\n"
+"    uchar3 q,\n"
+"    uint palette_index)\n"
+"{\n"
+"    int dr = int(q.x) - int(palette[palette_index * 3u + 0u]);\n"
+"    int dg = int(q.y) - int(palette[palette_index * 3u + 1u]);\n"
+"    int db = int(q.z) - int(palette[palette_index * 3u + 2u]);\n"
+"    return uint(dr * dr + dg * dg + db * db);\n"
+"}\n"
+"static void update_palette_best(\n"
+"    constant uchar *palette,\n"
+"    uchar3 q,\n"
+"    uint palette_index,\n"
+"    thread uint& best,\n"
+"    thread uint& best_dist)\n"
+"{\n"
+"    uint dist = palette_distance(palette, q, palette_index);\n"
+"    if (dist < best_dist) {\n"
+"        best_dist = dist;\n"
+"        best = palette_index;\n"
+"    }\n"
+"}\n"
+"static uint eytzinger_palette_lookup(\n"
+"    constant uchar *palette,\n"
+"    constant EytzingerEntry *sorted,\n"
+"    constant uint *rank_lut,\n"
+"    constant EytzingerParams& params,\n"
+"    uchar3 q)\n"
+"{\n"
+"    float key;\n"
+"    uint rank;\n"
+"    uint best;\n"
+"    uint best_dist;\n"
+"    uint left;\n"
+"    uint right;\n"
+"    uint step;\n"
+"    uint candidate;\n"
+"    float key_diff;\n"
+"    float bound;\n"
+"    bool left_open;\n"
+"    bool right_open;\n"
+"    key = float(q.x) + float(q.y) + float(q.z);\n"
+"    rank = rank_lut[uint(key)];\n"
+"    best = sorted[rank].palette_index;\n"
+"    best_dist = palette_distance(palette, q, best);\n"
+"    left = rank;\n"
+"    right = rank;\n"
+"    left_open = true;\n"
+"    right_open = true;\n"
+"    for (step = 0u; step < params.window; ++step) {\n"
+"        bound = float(best_dist);\n"
+"        if (left_open) {\n"
+"            if (left == 0u) {\n"
+"                left_open = false;\n"
+"            } else {\n"
+"                candidate = left - 1u;\n"
+"                key_diff = key - sorted[candidate].key;\n"
+"                if (key_diff * key_diff <= bound) {\n"
+"                    update_palette_best(palette, q,\n"
+"                                        sorted[candidate].palette_index,\n"
+"                                        best,\n"
+"                                        best_dist);\n"
+"                    left = candidate;\n"
+"                } else {\n"
+"                    left_open = false;\n"
+"                }\n"
+"            }\n"
+"        }\n"
+"        bound = float(best_dist);\n"
+"        if (right_open) {\n"
+"            if (right + 1u >= params.count) {\n"
+"                right_open = false;\n"
+"            } else {\n"
+"                candidate = right + 1u;\n"
+"                key_diff = key - sorted[candidate].key;\n"
+"                if (key_diff * key_diff <= bound) {\n"
+"                    update_palette_best(palette, q,\n"
+"                                        sorted[candidate].palette_index,\n"
+"                                        best,\n"
+"                                        best_dist);\n"
+"                    right = candidate;\n"
+"                } else {\n"
+"                    right_open = false;\n"
+"                }\n"
+"            }\n"
+"        }\n"
+"    }\n"
+"    return best;\n"
+"}\n",
 "kernel void sixel_gpu_palette_apply(\n"
 "    device uchar *result [[buffer(0)]],\n"
 "    device const uchar *pixels [[buffer(1)]],\n"
-"    device const uchar *palette [[buffer(2)]],\n"
+"    constant uchar *palette [[buffer(2)]],\n"
 "    device const uchar *transparent_mask [[buffer(3)]],\n"
 "    device const uchar *blue_noise [[buffer(4)]],\n"
 "    device const uchar *gradient [[buffer(5)]],\n"
@@ -220,6 +351,9 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "    device const uchar *accumulation [[buffer(7)]],\n"
 "    device const uchar *accumulation_valid_mask [[buffer(8)]],\n"
 "    device uchar *accumulation_result_mask [[buffer(9)]],\n"
+"    constant EytzingerEntry *eytzinger_sorted [[buffer(11)]],\n"
+"    constant uint *eytzinger_rank [[buffer(10)]],\n"
+"    constant EytzingerParams& eytzinger_params [[buffer(12)]],\n"
 "    uint gid [[thread_position_in_grid]])\n"
 "{\n"
 "    uint x;\n"
@@ -278,16 +412,23 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "            q[d] = uchar(val);\n"
 "        }\n"
 "    }\n"
-"    best = 0u;\n"
-"    best_dist = 0xffffffffu;\n"
-"    for (uint i = 0u; i < params.ncolors; ++i) {\n"
-"        int dr = int(q[0]) - int(palette[i * 3u + 0u]);\n"
-"        int dg = int(q[1]) - int(palette[i * 3u + 1u]);\n"
-"        int db = int(q[2]) - int(palette[i * 3u + 2u]);\n"
-"        uint dist = uint(dr * dr + dg * dg + db * db);\n"
-"        if (dist < best_dist) {\n"
-"            best_dist = dist;\n"
-"            best = i;\n"
+"    if (params.lookup_mode == 1u) {\n"
+"        best = eytzinger_palette_lookup(palette,\n"
+"                                        eytzinger_sorted,\n"
+"                                        eytzinger_rank,\n"
+"                                        eytzinger_params,\n"
+"                                        uchar3(q[0], q[1], q[2]));\n"
+"    } else {\n"
+"        best = 0u;\n"
+"        best_dist = 0xffffffffu;\n"
+"        for (uint i = 0u; i < params.ncolors; ++i) {\n"
+"            uint dist = palette_distance(palette,\n"
+"                                         uchar3(q[0], q[1], q[2]),\n"
+"                                         i);\n"
+"            if (dist < best_dist) {\n"
+"                best_dist = dist;\n"
+"                best = i;\n"
+"            }\n"
 "        }\n"
 "    }\n"
 "    result[gid] = uchar(best);\n"
@@ -450,6 +591,73 @@ static char const * const g_sixel_gpu_metal_source_chunks[] = {
 "}\n",
 NULL
 };
+
+static int
+sixel_gpu_metal_eytzinger_compare(void const *left, void const *right)
+{
+    sixel_gpu_metal_eytzinger_pair_t const *a;
+    sixel_gpu_metal_eytzinger_pair_t const *b;
+
+    a = (sixel_gpu_metal_eytzinger_pair_t const *)left;
+    b = (sixel_gpu_metal_eytzinger_pair_t const *)right;
+    if (a->key < b->key) {
+        return -1;
+    }
+    if (a->key > b->key) {
+        return 1;
+    }
+    return 0;
+}
+
+static void
+sixel_gpu_metal_eytzinger_build(
+    unsigned char const *palette,
+    int ncolors,
+    sixel_gpu_metal_eytzinger_entry_t *sorted,
+    uint32_t *rank_lut,
+    sixel_gpu_metal_eytzinger_params_t *params)
+{
+    sixel_gpu_metal_eytzinger_pair_t pairs[SIXEL_PALETTE_MAX];
+    int index;
+    int key;
+    int rank;
+
+    memset(sorted,
+           0,
+           (size_t)SIXEL_PALETTE_MAX
+           * sizeof(sixel_gpu_metal_eytzinger_entry_t));
+    memset(rank_lut,
+           0,
+           (size_t)(SIXEL_GPU_METAL_EYTZINGER_KEY_MAX + 1)
+           * sizeof(rank_lut[0]));
+    memset(params, 0, sizeof(*params));
+    for (index = 0; index < ncolors; ++index) {
+        pairs[index].key = (float)palette[index * 3 + 0]
+                         + (float)palette[index * 3 + 1]
+                         + (float)palette[index * 3 + 2];
+        pairs[index].palette_index = (uint32_t)index;
+    }
+    qsort(pairs,
+          (size_t)ncolors,
+          sizeof(pairs[0]),
+          sixel_gpu_metal_eytzinger_compare);
+    for (index = 0; index < ncolors; ++index) {
+        sorted[index].key = pairs[index].key;
+        sorted[index].palette_index = pairs[index].palette_index;
+    }
+    for (key = 0; key <= SIXEL_GPU_METAL_EYTZINGER_KEY_MAX; ++key) {
+        rank = ncolors - 1;
+        for (index = 0; index < ncolors; ++index) {
+            if ((float)key <= sorted[index].key) {
+                rank = index;
+                break;
+            }
+        }
+        rank_lut[key] = (uint32_t)rank;
+    }
+    params->count = (uint32_t)ncolors;
+    params->window = 6U;
+}
 
 static void
 sixel_gpu_palette_metal_set_message(char const *prefix, NSError *error)
@@ -725,6 +933,8 @@ sixel_gpu_palette_metal_fill_params(
     params->width = (uint32_t)request->width;
     params->height = (uint32_t)request->height;
     params->ncolors = (uint32_t)request->ncolors;
+    params->lookup_mode = request->lut_policy == SIXEL_LUT_POLICY_EYTZINGER ?
+        SIXEL_GPU_METAL_LOOKUP_EYTZINGER : SIXEL_GPU_METAL_LOOKUP_DIRECT;
     params->mode =
         request->method_for_diffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER ?
         SIXEL_GPU_METAL_MODE_BLUENOISE :
@@ -779,8 +989,16 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     id<MTLBuffer> accumulation_buffer;
     id<MTLBuffer> accumulation_valid_buffer;
     id<MTLBuffer> accumulation_result_buffer;
+    id<MTLBuffer> eytzinger_rank_buffer;
+    id<MTLBuffer> eytzinger_sorted_buffer;
+    id<MTLBuffer> eytzinger_params_buffer;
     id<MTLCommandBuffer> command_buffer;
     id<MTLComputeCommandEncoder> encoder;
+    sixel_gpu_metal_eytzinger_entry_t eytzinger_sorted[
+        SIXEL_PALETTE_MAX];
+    uint32_t eytzinger_rank[
+        SIXEL_GPU_METAL_EYTZINGER_KEY_MAX + 1];
+    sixel_gpu_metal_eytzinger_params_t eytzinger_params;
     NSUInteger threads_per_group;
     NSUInteger groups;
     NSUInteger result_length;
@@ -791,6 +1009,8 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     NSUInteger accumulation_length;
     NSUInteger accumulation_valid_length;
     NSUInteger accumulation_result_length;
+    NSUInteger eytzinger_sorted_length;
+    NSUInteger eytzinger_rank_length;
     int result_buffer_direct;
     int locked;
 
@@ -806,8 +1026,14 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     accumulation_buffer = nil;
     accumulation_valid_buffer = nil;
     accumulation_result_buffer = nil;
+    eytzinger_rank_buffer = nil;
+    eytzinger_sorted_buffer = nil;
+    eytzinger_params_buffer = nil;
     command_buffer = nil;
     encoder = nil;
+    memset(eytzinger_sorted, 0, sizeof(eytzinger_sorted));
+    memset(eytzinger_rank, 0, sizeof(eytzinger_rank));
+    memset(&eytzinger_params, 0, sizeof(eytzinger_params));
     threads_per_group = 0U;
     groups = 0U;
     result_length = 0U;
@@ -818,6 +1044,8 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
     accumulation_length = 0U;
     accumulation_valid_length = 0U;
     accumulation_result_length = 0U;
+    eytzinger_sorted_length = 0U;
+    eytzinger_rank_length = 0U;
     result_buffer_direct = 0;
     locked = 0;
 
@@ -841,6 +1069,21 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             (NSUInteger)sizeof(sixel_index_t);
         pixel_length = (NSUInteger)request->pixel_count * 3U;
         palette_length = (NSUInteger)request->ncolors * 3U;
+        eytzinger_sorted_buffer = g_sixel_gpu_metal_dummy_buffer;
+        eytzinger_rank_buffer = g_sixel_gpu_metal_dummy_buffer;
+        eytzinger_params_buffer = g_sixel_gpu_metal_dummy_buffer;
+        if (request->lut_policy == SIXEL_LUT_POLICY_EYTZINGER) {
+            sixel_gpu_metal_eytzinger_build(request->palette,
+                                            request->ncolors,
+                                            eytzinger_sorted,
+                                            eytzinger_rank,
+                                            &eytzinger_params);
+            eytzinger_sorted_length = (NSUInteger)request->ncolors
+                * sizeof(eytzinger_sorted[0]);
+            eytzinger_rank_length = (NSUInteger)(
+                SIXEL_GPU_METAL_EYTZINGER_KEY_MAX + 1)
+                * sizeof(eytzinger_rank[0]);
+        }
         transparent_length = request->transparent_mask != NULL ?
             (NSUInteger)request->transparent_mask_size : 1U;
         gradient_length = request->bluenoise_gradient_map != NULL ?
@@ -892,6 +1135,20 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
             &g_sixel_gpu_metal_params_buffer,
             &params,
             sizeof(params));
+        if (request->lut_policy == SIXEL_LUT_POLICY_EYTZINGER) {
+            eytzinger_sorted_buffer = sixel_gpu_metal_upload_buffer(
+                &g_sixel_gpu_metal_eytzinger_sorted_buffer,
+                eytzinger_sorted,
+                eytzinger_sorted_length);
+            eytzinger_rank_buffer = sixel_gpu_metal_upload_buffer(
+                &g_sixel_gpu_metal_eytzinger_rank_buffer,
+                eytzinger_rank,
+                eytzinger_rank_length);
+            eytzinger_params_buffer = sixel_gpu_metal_upload_buffer(
+                &g_sixel_gpu_metal_eytzinger_params_buffer,
+                &eytzinger_params,
+                sizeof(eytzinger_params));
+        }
         if (request->has_6delta_accumulation != 0) {
             accumulation_buffer = sixel_gpu_metal_upload_buffer(
                 &g_sixel_gpu_metal_accumulation_buffer,
@@ -921,7 +1178,10 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
                 blue_noise_buffer == nil || gradient_buffer == nil ||
                 params_buffer == nil || accumulation_buffer == nil ||
                 accumulation_valid_buffer == nil ||
-                accumulation_result_buffer == nil) {
+                accumulation_result_buffer == nil ||
+                eytzinger_rank_buffer == nil ||
+                eytzinger_sorted_buffer == nil ||
+                eytzinger_params_buffer == nil) {
             sixel_helper_set_additional_message(
                 "gpu palette apply: Metal buffer allocation failed.");
             status = SIXEL_BAD_ALLOCATION;
@@ -948,6 +1208,9 @@ sixel_gpu_palette_metal_apply(sixel_gpu_palette_request_t const *request)
         [encoder setBuffer:accumulation_buffer offset:0 atIndex:7];
         [encoder setBuffer:accumulation_valid_buffer offset:0 atIndex:8];
         [encoder setBuffer:accumulation_result_buffer offset:0 atIndex:9];
+        [encoder setBuffer:eytzinger_rank_buffer offset:0 atIndex:10];
+        [encoder setBuffer:eytzinger_sorted_buffer offset:0 atIndex:11];
+        [encoder setBuffer:eytzinger_params_buffer offset:0 atIndex:12];
 
         threads_per_group =
             [g_sixel_gpu_metal_pipeline maxTotalThreadsPerThreadgroup];
