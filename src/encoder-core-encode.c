@@ -4335,6 +4335,8 @@ sixel_encode_dither(
     int logger_owned = 0;
 #endif  /* SIXEL_ENABLE_THREADS */
     sixel_timeline_logger_t *logger = NULL;
+    SIXELSTATUS close_status;
+    int image_started;
 
     if (output == NULL || dither == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -4343,6 +4345,8 @@ sixel_encode_dither(
 #if SIXEL_ENABLE_THREADS
     serial_logger = NULL;
 #endif  /* SIXEL_ENABLE_THREADS */
+    close_status = SIXEL_FALSE;
+    image_started = 0;
     palette_source_colorspace = SIXEL_COLORSPACE_GAMMA;
     if (width <= 0 || height <= 0 ||
         (size_t)width > SIZE_MAX / (size_t)height) {
@@ -4693,6 +4697,7 @@ sixel_encode_dither(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    image_started = 1;
 
     if (pipeline_active) {
         if (output->ormode) {
@@ -4747,8 +4752,18 @@ sixel_encode_dither(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    image_started = 0;
 
 end:
+    if (image_started != 0 && SIXEL_FAILED(status)) {
+        /*
+         * Keep terminals from staying in DCS/SIXEL string state after a
+         * late body error.  The original failure remains authoritative; the
+         * best-effort close is only a stream recovery guard.
+         */
+        close_status = sixel_output_end_image(output);
+        (void)close_status;
+    }
 #if SIXEL_ENABLE_THREADS
     if (logger_owned) {
         dither->pipeline_logger = NULL;
