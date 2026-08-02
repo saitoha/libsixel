@@ -1965,7 +1965,12 @@ sixel_decode_raw_with_options_internal(
 
     *ncolors = alloc_size = image->ncolors;
     if (alloc_size < SIXEL_PALETTE_MAX_DECODER) {
-        /* memory access range should be 0 <= 255 */
+        /*
+         * Keep the returned palette backed by the decoder's full default
+         * table for internal writers that still inspect byte-valued raw
+         * pixels. The public color range remains [0, *ncolors); larger pixel
+         * values are transparent/unpainted sentinels, not palette entries.
+         */
         alloc_size = SIXEL_PALETTE_MAX_DECODER;
     }
     *palette = (unsigned char *)sixel_allocator_malloc(
@@ -2694,6 +2699,10 @@ sixel_decode(unsigned char              /* in */   *p,
      * The old private path used depth 0, which bypassed those invariants and
      * could leave palette-index 0 ambiguous for callers that still use this
      * compatibility function.
+     *
+     * This wrapper returns a compact palette with only the public color range.
+     * Pixel values outside [0, *ncolors) keep the raw transparent/unpainted
+     * sentinel meaning and must not be used to index that palette.
      */
     status = sixel_decode_raw(p,
                               len,

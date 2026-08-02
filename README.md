@@ -1845,10 +1845,17 @@ sixel_output_set_encode_policy(
 
 ### SIXEL to indexed bitmap
 
-`sixel_decode` function converts SIXEL into indexed bitmap bytes with its palette.
+`sixel_decode_raw` function converts SIXEL into indexed bitmap bytes with its
+palette.
 
 ```
-/* convert sixel data into indexed pixel bytes and palette data */
+/*
+ * Convert sixel data into indexed pixel bytes and palette data.
+ *
+ * A decoded pixel value in [0, *ncolors) is a palette index. A value greater
+ * than or equal to *ncolors is a transparent/unpainted pixel and must not be
+ * used to index palette.
+ */
 SIXELAPI SIXELSTATUS
 sixel_decode_raw(
     unsigned char       /* in */  *p,           /* sixel bytes */
@@ -1860,6 +1867,10 @@ sixel_decode_raw(
     int                 /* out */ *ncolors,     /* palette size (<= 256) */
     sixel_allocator_t   /* in */  *allocator);  /* allocator object */
 ```
+
+The deprecated `sixel_decode` compatibility API returns the same indexed pixel
+contract.  Pixel values greater than or equal to `*ncolors` are transparent or
+unpainted pixels, not valid indexes into `palette`.
 
 ### SIXEL to packed pixels
 
