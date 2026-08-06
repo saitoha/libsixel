@@ -92,7 +92,16 @@ sixel_palette_cover_anchor_rgb888(
     unsigned int  /* in */      entry_count,
     int           /* in */      depth);
 
-/* Non-zero unless SIXEL_PALETTE_COVER=0 disables anchoring. */
+/*
+ * Override anchoring from the encoder so it can be driven as a quantize model
+ * suboption (-Q MODEL:cover=on|off).  ENABLED selects the override, VALUE
+ * turns anchoring on or off.  Clearing the override falls back to the
+ * environment and then to the default.
+ */
+SIXEL_INTERNAL_API void
+sixel_set_palette_cover_override(int enabled, int value);
+
+/* Resolved setting: override first, then SIXEL_PALETTE_COVER, then on. */
 SIXEL_INTERNAL_API int
 sixel_palette_cover_repair_enabled(void);
 

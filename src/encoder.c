@@ -101,6 +101,7 @@
 #include "palette-kcenter.h"
 #include "palette-kmeans.h"
 #include "palette-kmedoids.h"
+#include "palette-common-cover.h"
 #include "palette-common-merge.h"
 #include "pixelformat.h"
 #include "clipboard.h"
@@ -2010,6 +2011,15 @@ static sixel_suboption_choice_t const g_option_choices_kcenter_swap_update[] = {
     { "incremental", SIXEL_PALETTE_KCENTER_SWAP_UPDATE_INCREMENTAL }
 };
 
+/*
+ * Gamut-corner anchoring.  Offered on every quantize model because the pass
+ * runs after whichever solver produced the palette, not inside one of them.
+ */
+static sixel_suboption_choice_t const g_option_choices_palette_cover[] = {
+    { "off", 0 },
+    { "on", 1 }
+};
+
 static sixel_suboption_choice_t const g_option_choices_quantize_merge[] = {
     { "auto", SIXEL_FINAL_MERGE_AUTO },
     { "none", SIXEL_FINAL_MERGE_NONE },
@@ -2064,6 +2074,15 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_merge_only[] = {
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
+    },
+    {
+        "cover",
+        NULL,
+        "SIXEL_PALETTE_COVER",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover,
+        sizeof(g_option_choices_palette_cover)
+        / sizeof(g_option_choices_palette_cover[0])
     }
 };
 
@@ -2117,6 +2136,15 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_heckbert[] = {
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
+    },
+    {
+        "cover",
+        NULL,
+        "SIXEL_PALETTE_COVER",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover,
+        sizeof(g_option_choices_palette_cover)
+        / sizeof(g_option_choices_palette_cover[0])
     }
 };
 
@@ -2162,6 +2190,15 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_sticky[] = {
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
+    },
+    {
+        "cover",
+        NULL,
+        "SIXEL_PALETTE_COVER",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover,
+        sizeof(g_option_choices_palette_cover)
+        / sizeof(g_option_choices_palette_cover[0])
     }
 };
 
@@ -2348,6 +2385,15 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
+    },
+    {
+        "cover",
+        NULL,
+        "SIXEL_PALETTE_COVER",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover,
+        sizeof(g_option_choices_palette_cover)
+        / sizeof(g_option_choices_palette_cover[0])
     }
 };
 
@@ -2530,6 +2576,15 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
+    },
+    {
+        "cover",
+        NULL,
+        "SIXEL_PALETTE_COVER",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover,
+        sizeof(g_option_choices_palette_cover)
+        / sizeof(g_option_choices_palette_cover[0])
     }
 };
 
@@ -2741,6 +2796,15 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_center[] = {
         SIXEL_SUBOPTION_VALUE_FREE,
         NULL,
         0u
+    },
+    {
+        "cover",
+        NULL,
+        "SIXEL_PALETTE_COVER",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover,
+        sizeof(g_option_choices_palette_cover)
+        / sizeof(g_option_choices_palette_cover[0])
     }
 };
 
@@ -8229,6 +8293,9 @@ sixel_encoder_prepare_palette(
     sixel_set_kmedoids_auction_shortlist_override(
         encoder->quantize_model_kmedoids_auction_shortlist_override,
         encoder->quantize_model_kmedoids_auction_shortlist);
+    sixel_set_palette_cover_override(
+        encoder->quantize_model_cover_override,
+        encoder->quantize_model_cover);
     sixel_set_kcenter_algo_override(
         encoder->quantize_model_kcenter_algo_override,
         (sixel_kcenter_algo_t)encoder->quantize_model_kcenter_algo);
@@ -8331,6 +8398,7 @@ sixel_encoder_prepare_palette(
     sixel_set_kmeans_feedback_interval_override(0, 1u);
     sixel_set_final_merge_target_factor_override(0, 1.81);
     sixel_set_final_merge_lloyd_iterations_override(0, 3u);
+    sixel_set_palette_cover_override(0, 1);
     sixel_set_kmedoids_algo_override(
         0,
         SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO);
@@ -9667,6 +9735,8 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_merge_oversplit = 1.81;
     (*ppencoder)->quantize_model_merge_lloyd_override = 0;
     (*ppencoder)->quantize_model_merge_lloyd = 3u;
+    (*ppencoder)->quantize_model_cover_override = 0;
+    (*ppencoder)->quantize_model_cover      = 1;
     (*ppencoder)->quantize_model_animation_mode_override = 0;
     (*ppencoder)->quantize_model_animation_mode = 0;
     (*ppencoder)->quantize_model_scene_cut_threshold_override = 0;
@@ -13686,6 +13756,7 @@ sixel_encoder_setopt(
         encoder->quantize_model_merge_override = 0;
         encoder->quantize_model_merge_oversplit_override = 0;
         encoder->quantize_model_merge_lloyd_override = 0;
+        encoder->quantize_model_cover_override = 0;
         encoder->quantize_model_animation_mode_override = 0;
         encoder->quantize_model_scene_cut_threshold_override = 0;
         encoder->quantize_model_heckbert_profile
@@ -14366,6 +14437,17 @@ sixel_encoder_setopt(
                 encoder->quantize_model_kmedoids_auction_shortlist_override = 1;
                 encoder->quantize_model_kmedoids_auction_shortlist
                     = q_auction_shortlist;
+            } else if (q_key != NULL && strcmp(q_key, "cover") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q cover resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_cover_override = 1;
+                encoder->quantize_model_cover = match_value;
             } else if (q_key != NULL && strcmp(q_key, "merge") == 0) {
                 if (!sixel_encoder_resolve_suboption_choice_value(
                         q_assignment,

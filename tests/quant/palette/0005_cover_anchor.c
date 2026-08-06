@@ -251,6 +251,47 @@ cover_check_spread_palette(void)
     return 1;
 }
 
+/*
+ * -Q MODEL:cover=on|off reaches the pass through this override, and has to win
+ * over the environment: an explicit option is a stronger statement than an
+ * inherited variable.
+ */
+static int
+cover_check_override(void)
+{
+    int ok;
+
+    ok = 0;
+    if (sixel_compat_setenv("SIXEL_PALETTE_COVER", "0") != 0) {
+        return 0;
+    }
+    if (sixel_palette_cover_repair_enabled() != 0) {
+        fprintf(stderr, "environment did not disable anchoring\n");
+        goto end;
+    }
+    sixel_set_palette_cover_override(1, 1);
+    if (sixel_palette_cover_repair_enabled() == 0) {
+        fprintf(stderr, "override did not win over the environment\n");
+        goto end;
+    }
+    sixel_set_palette_cover_override(1, 0);
+    if (sixel_palette_cover_repair_enabled() != 0) {
+        fprintf(stderr, "override could not disable anchoring\n");
+        goto end;
+    }
+    sixel_set_palette_cover_override(0, 1);
+    if (sixel_palette_cover_repair_enabled() != 0) {
+        fprintf(stderr, "clearing the override did not fall back to env\n");
+        goto end;
+    }
+    ok = 1;
+
+end:
+    sixel_set_palette_cover_override(0, 1);
+    (void)sixel_compat_setenv("SIXEL_PALETTE_COVER", "1");
+    return ok;
+}
+
 int
 test_palette_0005_cover_anchor(int argc, char **argv)
 {
@@ -292,6 +333,9 @@ test_palette_0005_cover_anchor(int argc, char **argv)
     cover_fill_inset(pixels);
 
     if (!cover_check_spread_palette()) {
+        goto end;
+    }
+    if (!cover_check_override()) {
         goto end;
     }
 

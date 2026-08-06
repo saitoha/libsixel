@@ -215,6 +215,12 @@ struct sixel_encoder {
     double quantize_model_merge_oversplit;
     int quantize_model_merge_lloyd_override;
     unsigned int quantize_model_merge_lloyd;
+    /*
+     * Gamut-corner anchoring, reachable as -Q MODEL:cover=on|off.  It applies
+     * to whichever solver ran, so it is stored once rather than per model.
+     */
+    int quantize_model_cover_override;
+    int quantize_model_cover;
     int quantize_model_animation_mode_override;
     int quantize_model_animation_mode;
     int quantize_model_scene_cut_threshold_override;

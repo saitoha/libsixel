@@ -53,11 +53,33 @@ sixel_palette_cover_anchors[SIXEL_PALETTE_COVER_ANCHOR_COUNT][3] = {
     { 0xffu, 0xffu, 0xffu }
 };
 
+/*
+ * Encoder-supplied override.  File scope matches how the other palette
+ * suboptions reach their solvers: the encoder sets it while applying quantize
+ * model options and clears it once the frame is done.
+ */
+static int g_sixel_palette_cover_override_enabled;
+static int g_sixel_palette_cover_override_value;
+
+SIXEL_INTERNAL_API void
+sixel_set_palette_cover_override(int enabled, int value)
+{
+    g_sixel_palette_cover_override_enabled = enabled != 0 ? 1 : 0;
+    g_sixel_palette_cover_override_value = value != 0 ? 1 : 0;
+}
+
 SIXEL_INTERNAL_API int
 sixel_palette_cover_repair_enabled(void)
 {
     char const *value;
 
+    if (g_sixel_palette_cover_override_enabled != 0) {
+        return g_sixel_palette_cover_override_value;
+    }
+    /*
+     * The environment stays available for callers that build a palette
+     * directly rather than through the encoder's option layer.
+     */
     value = getenv("SIXEL_PALETTE_COVER");
     if (value != NULL && value[0] == '0' && value[1] == '\0') {
         return 0;
