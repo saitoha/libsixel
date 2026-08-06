@@ -62,6 +62,7 @@
 # include <stdio.h>
 #endif
 
+#include "palette-common-cover.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-heckbert.h"
@@ -1413,6 +1414,20 @@ after_quantizer:
     status = SIXEL_OK;
 
 success:
+    /*
+     * Covering repair runs after every solver.  Colors that sit on the edge of
+     * the gamut cannot be recovered by error diffusion when the palette does
+     * not enclose them -- the diffused error points out of the cube and the
+     * clamp discards it -- so a saturated UI element renders flat and wrong no
+     * matter how the solver was tuned.  Repair is a no-op when the palette
+     * already encloses the image.
+     */
+    if (SIXEL_SUCCEEDED(status) && storage->entries != NULL
+            && storage->entries_float32 == NULL) {
+        (void)sixel_palette_cover_anchor_rgb888(storage->entries,
+                                                ncolors,
+                                                (int)depth);
+    }
     storage->entry_count = ncolors;
     storage->original_colors = origcolors;
     storage->depth = (int)depth;

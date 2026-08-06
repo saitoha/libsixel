@@ -122,6 +122,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/factory.h \
                 $(srcdir)/palette-heckbert.c \
                 $(srcdir)/palette-heckbert.h \
+                $(srcdir)/palette-common-cover.c \
+                $(srcdir)/palette-common-cover.h \
                 $(srcdir)/palette-common-merge.c \
                 $(srcdir)/palette-common-merge.h \
                 $(srcdir)/palette-common-snap.c \
