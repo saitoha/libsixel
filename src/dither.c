@@ -1355,10 +1355,69 @@ sixel_dither_has_compatible_accumulation_hint(
     return 1;
 }
 
+/*
+ * Map a frame-local coordinate onto the retained plane.  Returns 0 when the
+ * frame is not fully inside the plane, which disables the keep gate instead of
+ * comparing against unrelated pixels.
+ */
+static int
+sixel_dither_accumulation_plane_index(
+    sixel_dither_t const *dither,
+    int x,
+    int y,
+    size_t *plane_index_out)
+{
+    int plane_x;
+    int plane_y;
+
+    if (dither == NULL || plane_index_out == NULL) {
+        return 0;
+    }
+    if (x < 0 || y < 0) {
+        return 0;
+    }
+    if (dither->pipeline_accumulation_frame_width > 0 &&
+        x >= dither->pipeline_accumulation_frame_width) {
+        return 0;
+    }
+    if (dither->pipeline_accumulation_frame_height > 0 &&
+        y >= dither->pipeline_accumulation_frame_height) {
+        return 0;
+    }
+    if (dither->pipeline_accumulation_origin_x < 0 ||
+        dither->pipeline_accumulation_origin_y < 0) {
+        return 0;
+    }
+    /*
+     * Compare against the remaining plane extent rather than adding first, so
+     * the bounds test cannot overflow for any origin the caller supplied.
+     */
+    if (dither->pipeline_accumulation_origin_x >=
+            dither->pipeline_accumulation_width ||
+        dither->pipeline_accumulation_origin_y >=
+            dither->pipeline_accumulation_height) {
+        return 0;
+    }
+    if (x >= dither->pipeline_accumulation_width -
+            dither->pipeline_accumulation_origin_x ||
+        y >= dither->pipeline_accumulation_height -
+            dither->pipeline_accumulation_origin_y) {
+        return 0;
+    }
+    plane_x = dither->pipeline_accumulation_origin_x + x;
+    plane_y = dither->pipeline_accumulation_origin_y + y;
+    *plane_index_out = (size_t)plane_y *
+        (size_t)dither->pipeline_accumulation_width + (size_t)plane_x;
+
+    return 1;
+}
+
 SIXEL_INTERNAL_API int
 sixel_dither_pipeline_6delta_try_keep_rgb888(
     sixel_dither_t *dither,
     size_t index,
+    int x,
+    int y,
     unsigned char const *rgb,
     int record_result,
     unsigned char const **accumulation_rgb_out,
@@ -1368,6 +1427,7 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
     unsigned char const *valid_mask;
     unsigned char const *accumulation_pixel;
     size_t total_pixels;
+    size_t plane_index;
     int keycolor;
     unsigned int threshold;
 
@@ -1375,6 +1435,7 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
     valid_mask = NULL;
     accumulation_pixel = NULL;
     total_pixels = 0u;
+    plane_index = 0u;
     keycolor = (-1);
     threshold = 0u;
     if (accumulation_rgb_out != NULL) {
@@ -1407,18 +1468,25 @@ sixel_dither_pipeline_6delta_try_keep_rgb888(
      * the caller's per-channel threshold, the policy can emit keycolor without
      * paying for a nearest-palette lookup.  The dither policy decides whether
      * to diffuse the resulting error or to skip it for speed.
+     *
+     * The retained plane is addressed in plane coordinates, not frame
+     * coordinates: a damage rectangle that moves between frames still lands on
+     * the pixels the terminal shows at the same screen position.
      */
     accumulation = dither->pipeline_accumulation_pixels;
     valid_mask = dither->pipeline_accumulation_valid_mask;
     keycolor = dither->pipeline_accumulation_keycolor;
     threshold = dither->pipeline_6delta_threshold;
-    if (index >= total_pixels) {
+    if (!sixel_dither_accumulation_plane_index(dither, x, y, &plane_index)) {
         return 0;
     }
-    if (valid_mask != NULL && valid_mask[index] == 0u) {
+    if (plane_index >= total_pixels) {
         return 0;
     }
-    accumulation_pixel = accumulation + index * 3u;
+    if (valid_mask != NULL && valid_mask[plane_index] == 0u) {
+        return 0;
+    }
+    accumulation_pixel = accumulation + plane_index * 3u;
     if (!sixel_dither_rgb888_delta_within(rgb,
                                           accumulation_pixel,
                                           threshold)) {
@@ -2725,6 +2793,10 @@ sixel_dither_clear_pipeline_accumulation_buffer_hint(
     dither->pipeline_accumulation_valid_mask_size = 0u;
     dither->pipeline_accumulation_width = 0;
     dither->pipeline_accumulation_height = 0;
+    dither->pipeline_accumulation_origin_x = 0;
+    dither->pipeline_accumulation_origin_y = 0;
+    dither->pipeline_accumulation_frame_width = 0;
+    dither->pipeline_accumulation_frame_height = 0;
     dither->pipeline_accumulation_keycolor = (-1);
     dither->pipeline_6delta_enabled = 0;
     dither->pipeline_6delta_threshold = 0u;
@@ -2886,6 +2958,10 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
     size_t valid_mask_size,
     int width,
     int height,
+    int origin_x,
+    int origin_y,
+    int frame_width,
+    int frame_height,
     int keycolor,
     int sixdelta_enabled,
     unsigned int threshold,
@@ -2903,6 +2979,21 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
         return;
     }
     if (keycolor < 0 || keycolor >= SIXEL_PALETTE_MAX) {
+        return;
+    }
+    if (origin_x < 0 || origin_y < 0 || frame_width <= 0 ||
+        frame_height <= 0) {
+        return;
+    }
+    /*
+     * Refuse a frame that does not fit inside the plane instead of silently
+     * clipping it: a partially mapped frame would keep pixels against
+     * unrelated plane content.
+     */
+    if (origin_x >= width || origin_y >= height) {
+        return;
+    }
+    if (frame_width > width - origin_x || frame_height > height - origin_y) {
         return;
     }
     if ((size_t)width > SIZE_MAX / (size_t)height) {
@@ -2927,6 +3018,10 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
     dither->pipeline_accumulation_valid_mask_size = valid_mask_size;
     dither->pipeline_accumulation_width = width;
     dither->pipeline_accumulation_height = height;
+    dither->pipeline_accumulation_origin_x = origin_x;
+    dither->pipeline_accumulation_origin_y = origin_y;
+    dither->pipeline_accumulation_frame_width = frame_width;
+    dither->pipeline_accumulation_frame_height = frame_height;
     dither->pipeline_accumulation_keycolor = keycolor;
     dither->pipeline_6delta_enabled = sixdelta_enabled != 0 ? 1 : 0;
     dither->pipeline_6delta_threshold = threshold;
@@ -3913,6 +4008,12 @@ sixel_dither_apply_palette_with_mode(
         gpu_request.transparent_mask_size =
             apply_transparent_mask != 0 ? total_pixels : 0U;
         gpu_request.transparent_keycolor = keycolor_for_mask;
+        gpu_request.sixdelta_enabled = dither->pipeline_6delta_enabled != 0;
+        /*
+         * Passing the frame extents here also requires the retained plane to
+         * be exactly this frame, which is what the GPU kernel assumes when it
+         * indexes the plane by frame pixel index.
+         */
         gpu_request.has_6delta_accumulation =
             dither->pipeline_6delta_enabled != 0 &&
             dither->method_for_diffuse == SIXEL_DIFFUSE_NONE &&

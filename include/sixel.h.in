@@ -1833,6 +1833,9 @@ sixel_encoder_set_cancel_callback(
  * only consulted after 6delta is explicitly enabled, for example with
  * --6delta-threshold.  The buffer is copied as RGB888.  Pass NULL for PIXELS
  * to clear the retained 6delta buffer.
+ *
+ * The supplied buffer becomes the retained plane, so it also defines the plane
+ * geometry that sixel_encoder_set_6delta_plane_size() would otherwise declare.
  */
 SIXELAPI SIXELSTATUS
 sixel_encoder_set_accumulation_buffer(
@@ -1841,6 +1844,49 @@ sixel_encoder_set_accumulation_buffer(
     int                 /* in */ width,
     int                 /* in */ height,
     int                 /* in */ pixelformat);
+
+#define SIXEL_HAVE_ENCODER_6DELTA_PLANE 1
+
+/*
+ * Declare the size of the surface that 6delta keeps history for.  By default
+ * the retained plane is exactly the frame being encoded, which means a caller
+ * that encodes a different sub-rectangle each frame gets no keeps at all.
+ * Callers that repaint parts of a larger, persistent surface -- a remote
+ * desktop sending damage rectangles, for example -- should declare that whole
+ * surface here once and then place each frame with
+ * sixel_encoder_set_6delta_plane_origin().
+ *
+ * Changing the size discards the retained plane.  Passing 0 for both extents
+ * restores the default "plane == frame" behaviour.
+ */
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_6delta_plane_size(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ width,
+    int             /* in */ height);
+
+/*
+ * Place the next encoded frame at X,Y inside the declared plane.  The origin
+ * persists until changed, so a caller that always encodes the full plane never
+ * has to call this.  A frame that does not fit inside the plane at this origin
+ * is encoded without any 6delta keep, and discards the retained plane.
+ */
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_6delta_plane_origin(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ x,
+    int             /* in */ y);
+
+/*
+ * Discard the retained plane without changing its declared size.  Call this
+ * whenever something outside libsixel repaints the surface -- a scroll, a
+ * resize, an overlay drawn by the application -- because the retained plane no
+ * longer describes what the terminal shows.  The next frame is then emitted in
+ * full instead of keeping pixels against stale history.
+ */
+SIXELAPI SIXELSTATUS
+sixel_encoder_invalidate_6delta_plane(
+    sixel_encoder_t /* in */ *encoder);
 
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS

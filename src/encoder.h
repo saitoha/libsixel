@@ -283,6 +283,17 @@ struct sixel_encoder {
     int sixdelta_enabled;
     unsigned int sixdelta_threshold;
     int sixdelta_error_mode;
+    /*
+     * 6delta retains one plane for the whole displayed surface.  When the
+     * caller declares a plane larger than the encoded frame, each frame is
+     * placed at sixdelta_origin_* inside it, so a damage rectangle that moves
+     * between frames still compares against what the terminal shows at the
+     * same screen position.  A zero plane size means "plane == frame".
+     */
+    int sixdelta_plane_width;
+    int sixdelta_plane_height;
+    int sixdelta_origin_x;
+    int sixdelta_origin_y;
     int accumulation_valid;
     int pipe_mode;
     int verbose;

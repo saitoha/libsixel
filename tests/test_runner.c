@@ -97,6 +97,7 @@ int test_filter_0008_filter_load(int argc, char **argv);
 int test_filter_0009_filter_dither(int argc, char **argv);
 int test_filter_0010_filter_encode(int argc, char **argv);
 int test_filter_0011_filter_encode_accumulation_buffer(int argc, char **argv);
+int test_filter_0012_filter_encode_6delta_plane(int argc, char **argv);
 int test_encoder_core_0001_encoder_core_factory(int argc, char **argv);
 int test_encoder_core_0002_encoder_core_ormode_body_full_band(int argc,
                                                               char **argv);
@@ -282,6 +283,8 @@ static test_entry_t const test_entries[] = {
     { "filter/0010_filter_encode", test_filter_0010_filter_encode },
     { "filter/0011_filter_encode_accumulation_buffer",
       test_filter_0011_filter_encode_accumulation_buffer },
+    { "filter/0012_filter_encode_6delta_plane",
+      test_filter_0012_filter_encode_6delta_plane },
     { "security/0001_issue222_encoder_encode_bytes_packed_g1",
       test_security_0001_issue222_encoder_encode_bytes_packed_g1 },
     { "encoder-core/0001_encoder_core_factory",

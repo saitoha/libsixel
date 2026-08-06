@@ -125,6 +125,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	processing/filter/0009_filter_dither.c \
 	processing/filter/0010_filter_encode.c \
 	processing/filter/0011_filter_encode_accumulation_buffer.c \
+	processing/filter/0012_filter_encode_6delta_plane.c \
 	processing/encoder-core/0001_encoder_core_factory.c \
 	processing/encoder-core/0002_encoder_core_ormode_body_full_band.c \
 	processing/encoder-core/0003_encoder_core_ormode_body_tail_band.c \
@@ -236,6 +237,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0009_filter_dither.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0010_filter_encode.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/filter/test_runner-0011_filter_encode_accumulation_buffer.$(OBJEXT) \
+	processing/filter/test_runner-0012_filter_encode_6delta_plane.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0001_encoder_core_factory.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0002_encoder_core_ormode_body_full_band.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	processing/encoder-core/test_runner-0003_encoder_core_ormode_body_tail_band.$(OBJEXT) \
@@ -470,6 +472,7 @@ am__depfiles_remade =  \
 	processing/filter/$(DEPDIR)/test_runner-0009_filter_dither.Po \
 	processing/filter/$(DEPDIR)/test_runner-0010_filter_encode.Po \
 	processing/filter/$(DEPDIR)/test_runner-0011_filter_encode_accumulation_buffer.Po \
+	processing/filter/$(DEPDIR)/test_runner-0012_filter_encode_6delta_plane.Po \
 	processing/frame/$(DEPDIR)/test_runner-0001_frame_factory.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0001_decoder_parallel_split_after_newline.Po \
 	processing/decoder/$(DEPDIR)/test_runner-0002_decoder_ormode_raw_overlay.Po \

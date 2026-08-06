@@ -162,12 +162,16 @@ struct sixel_dither {
     unsigned char const *pipeline_transparent_mask; /* alpha==0 pixels */
     size_t pipeline_transparent_mask_size; /* transparent mask length */
     int pipeline_transparent_keycolor; /* keycolor applied to mask hits */
-    unsigned char const *pipeline_accumulation_pixels; /* previous RGB888 */
-    size_t pipeline_accumulation_pixels_size; /* previous RGB byte length */
+    unsigned char const *pipeline_accumulation_pixels; /* retained RGB888 */
+    size_t pipeline_accumulation_pixels_size; /* retained RGB byte length */
     unsigned char const *pipeline_accumulation_valid_mask; /* valid pixels */
     size_t pipeline_accumulation_valid_mask_size; /* valid mask length */
-    int pipeline_accumulation_width; /* previous frame width */
-    int pipeline_accumulation_height; /* previous frame height */
+    int pipeline_accumulation_width; /* retained plane width */
+    int pipeline_accumulation_height; /* retained plane height */
+    int pipeline_accumulation_origin_x; /* frame origin inside the plane */
+    int pipeline_accumulation_origin_y; /* frame origin inside the plane */
+    int pipeline_accumulation_frame_width; /* encoded frame width */
+    int pipeline_accumulation_frame_height; /* encoded frame height */
     int pipeline_accumulation_keycolor; /* keycolor for previous hits */
     int pipeline_6delta_enabled; /* non-zero enables early keep */
     unsigned int pipeline_6delta_threshold; /* per-channel keep threshold */
@@ -243,6 +247,13 @@ void
 sixel_dither_clear_pipeline_transparent_mask_hint(
     sixel_dither_t *dither);
 
+/*
+ * WIDTH/HEIGHT describe the retained plane, which may be larger than the
+ * frame being encoded.  ORIGIN_X/ORIGIN_Y place the frame inside that plane so
+ * a moving damage rectangle still compares against the pixels the terminal
+ * shows at the same screen position.  FRAME_WIDTH/FRAME_HEIGHT are the encoded
+ * frame extents used to map frame coordinates onto the plane.
+ */
 SIXEL_INTERNAL_API void
 sixel_dither_set_pipeline_accumulation_buffer_hint(
     sixel_dither_t *dither,
@@ -252,15 +263,25 @@ sixel_dither_set_pipeline_accumulation_buffer_hint(
     size_t valid_mask_size,
     int width,
     int height,
+    int origin_x,
+    int origin_y,
+    int frame_width,
+    int frame_height,
     int keycolor,
     int sixdelta_enabled,
     unsigned int threshold,
     int error_mode);
 
+/*
+ * INDEX addresses the frame-local result mask, while X/Y are frame-local
+ * coordinates translated onto the retained plane by the stored origin.
+ */
 SIXEL_INTERNAL_API int
 sixel_dither_pipeline_6delta_try_keep_rgb888(
     sixel_dither_t *dither,
     size_t index,
+    int x,
+    int y,
     unsigned char const *rgb,
     int record_result,
     unsigned char const **accumulation_rgb_out,

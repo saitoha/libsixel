@@ -3421,51 +3421,6 @@ fail:
     return status;
 }
 
-static SIXELSTATUS
-sixel_encoder_normalize_frame_to_rgb888(
-    sixel_encoder_t *encoder,
-    sixel_frame_t const *frame,
-    sixel_frame_pixels_view_t *view_out,
-    unsigned char **rgb_out,
-    size_t *rgb_size_out)
-{
-    SIXELSTATUS status;
-    sixel_frame_pixels_view_t view;
-    unsigned char const *pixels;
-
-    status = SIXEL_FALSE;
-    memset(&view, 0, sizeof(view));
-    pixels = NULL;
-    if (encoder == NULL || frame == NULL || rgb_out == NULL ||
-        rgb_size_out == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (view_out != NULL) {
-        memset(view_out, 0, sizeof(*view_out));
-    }
-
-    status = sixel_encoder_frame_get_pixels_view(frame, &view);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    pixels = view.pixels;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(view.pixelformat)) {
-        pixels = (unsigned char const *)view.pixels_float32;
-    }
-    status = sixel_encoder_normalize_pixels_to_rgb888(encoder->allocator,
-                                                      pixels,
-                                                      view.width,
-                                                      view.height,
-                                                      view.pixelformat,
-                                                      rgb_out,
-                                                      rgb_size_out);
-    if (SIXEL_SUCCEEDED(status) && view_out != NULL) {
-        *view_out = view;
-    }
-
-    return status;
-}
-
 static int
 sixel_encoder_pixel_alpha_is_zero(unsigned char const *pixels,
                                   int pixelformat,
@@ -3629,6 +3584,88 @@ sixel_encoder_frame_alpha_covers_pixel(
                                              index);
 }
 
+/*
+ * Resolve the retained plane geometry for a frame of VIEW_WIDTH x VIEW_HEIGHT.
+ * Callers that never declare a plane keep the historical behaviour, where the
+ * plane is exactly the frame and the origin is the top-left corner.  Returns 0
+ * when the declared plane cannot host the frame at the requested origin; the
+ * caller then encodes the frame without any 6delta keep rather than comparing
+ * against unrelated plane pixels.
+ */
+static int
+sixel_encoder_resolve_6delta_plane(
+    sixel_encoder_t const *encoder,
+    int view_width,
+    int view_height,
+    int *plane_width_out,
+    int *plane_height_out,
+    int *origin_x_out,
+    int *origin_y_out)
+{
+    int plane_width;
+    int plane_height;
+    int origin_x;
+    int origin_y;
+
+    if (encoder == NULL || view_width <= 0 || view_height <= 0) {
+        return 0;
+    }
+    plane_width = encoder->sixdelta_plane_width;
+    plane_height = encoder->sixdelta_plane_height;
+    origin_x = encoder->sixdelta_origin_x;
+    origin_y = encoder->sixdelta_origin_y;
+    if (plane_width <= 0 || plane_height <= 0) {
+        plane_width = view_width;
+        plane_height = view_height;
+        origin_x = 0;
+        origin_y = 0;
+    }
+    if (origin_x < 0 || origin_y < 0) {
+        return 0;
+    }
+    if (origin_x >= plane_width || origin_y >= plane_height) {
+        return 0;
+    }
+    if (view_width > plane_width - origin_x ||
+        view_height > plane_height - origin_y) {
+        return 0;
+    }
+    if (plane_width_out != NULL) {
+        *plane_width_out = plane_width;
+    }
+    if (plane_height_out != NULL) {
+        *plane_height_out = plane_height;
+    }
+    if (origin_x_out != NULL) {
+        *origin_x_out = origin_x;
+    }
+    if (origin_y_out != NULL) {
+        *origin_y_out = origin_y;
+    }
+
+    return 1;
+}
+
+/* Byte length of an RGB888 plane, or 0 when the extents overflow. */
+static size_t
+sixel_encoder_6delta_plane_rgb_bytes(int plane_width, int plane_height)
+{
+    size_t pixel_count;
+
+    if (plane_width <= 0 || plane_height <= 0) {
+        return 0u;
+    }
+    if ((size_t)plane_width > SIZE_MAX / (size_t)plane_height) {
+        return 0u;
+    }
+    pixel_count = (size_t)plane_width * (size_t)plane_height;
+    if (pixel_count > SIZE_MAX / 3u) {
+        return 0u;
+    }
+
+    return pixel_count * 3u;
+}
+
 static SIXELSTATUS
 sixel_encoder_bind_transparent_mask(
     sixel_encoder_t *encoder,
@@ -3638,9 +3675,14 @@ sixel_encoder_bind_transparent_mask(
     SIXELSTATUS status;
     sixel_frame_pixels_view_t view;
     sixel_frame_transparency_t transparency;
-    size_t rgb_size;
     size_t pixel_count;
+    size_t plane_rgb_size;
+    size_t plane_pixel_count;
     size_t index;
+    int plane_width;
+    int plane_height;
+    int origin_x;
+    int origin_y;
     int sixdelta_active;
     int alpha_covers;
     int frame_mask_covers;
@@ -3649,9 +3691,14 @@ sixel_encoder_bind_transparent_mask(
     status = SIXEL_FALSE;
     memset(&view, 0, sizeof(view));
     memset(&transparency, 0, sizeof(transparency));
-    rgb_size = 0u;
     pixel_count = 0u;
+    plane_rgb_size = 0u;
+    plane_pixel_count = 0u;
     index = 0u;
+    plane_width = 0;
+    plane_height = 0;
+    origin_x = 0;
+    origin_y = 0;
     sixdelta_active = 0;
     alpha_covers = 0;
     frame_mask_covers = 0;
@@ -3688,20 +3735,38 @@ sixel_encoder_bind_transparent_mask(
     if (pixel_count > SIZE_MAX / 3u) {
         return SIXEL_BAD_ARGUMENT;
     }
-    rgb_size = pixel_count * 3u;
     status = sixel_encoder_frame_get_transparency(frame, &transparency);
     if (SIXEL_FAILED(status)) {
         return status;
     }
 
+    /*
+     * The retained plane is compared by plane geometry, not by frame geometry:
+     * a smaller damage rectangle placed inside a declared plane is a valid
+     * 6delta frame as long as it fits.
+     */
     sixdelta_active =
         sixel_encoder_6delta_accumulation_active(encoder) &&
-        encoder->accumulation_width == view.width &&
-        encoder->accumulation_height == view.height &&
-        encoder->accumulation_pixels != NULL &&
-        encoder->accumulation_pixels_size >= rgb_size &&
-        encoder->accumulation_valid_mask != NULL &&
-        encoder->accumulation_valid_mask_size >= pixel_count;
+        sixel_encoder_resolve_6delta_plane(encoder,
+                                           view.width,
+                                           view.height,
+                                           &plane_width,
+                                           &plane_height,
+                                           &origin_x,
+                                           &origin_y);
+    if (sixdelta_active) {
+        plane_rgb_size = sixel_encoder_6delta_plane_rgb_bytes(plane_width,
+                                                              plane_height);
+        plane_pixel_count = plane_rgb_size / 3u;
+        sixdelta_active =
+            plane_rgb_size != 0u &&
+            encoder->accumulation_width == plane_width &&
+            encoder->accumulation_height == plane_height &&
+            encoder->accumulation_pixels != NULL &&
+            encoder->accumulation_pixels_size >= plane_rgb_size &&
+            encoder->accumulation_valid_mask != NULL &&
+            encoder->accumulation_valid_mask_size >= plane_pixel_count;
+    }
 
     if (!sixdelta_active) {
         if (sixel_encoder_frame_get_transparent_mask_pixels(frame,
@@ -3723,8 +3788,12 @@ sixel_encoder_bind_transparent_mask(
             encoder->accumulation_pixels_size,
             encoder->accumulation_valid_mask,
             encoder->accumulation_valid_mask_size,
-            encoder->accumulation_width,
-            encoder->accumulation_height,
+            plane_width,
+            plane_height,
+            origin_x,
+            origin_y,
+            view.width,
+            view.height,
             dither->keycolor,
             encoder->sixdelta_enabled,
             encoder->sixdelta_threshold,
@@ -3766,14 +3835,68 @@ sixel_encoder_bind_transparent_mask(
         encoder->accumulation_pixels_size,
         encoder->accumulation_valid_mask,
         encoder->accumulation_valid_mask_size,
-        encoder->accumulation_width,
-        encoder->accumulation_height,
+        plane_width,
+        plane_height,
+        origin_x,
+        origin_y,
+        view.width,
+        view.height,
         dither->keycolor,
         encoder->sixdelta_enabled,
         encoder->sixdelta_threshold,
         encoder->sixdelta_error_mode);
     status = SIXEL_OK;
     return status;
+}
+
+/*
+ * Grow or reset the retained plane so it matches PLANE_WIDTH x PLANE_HEIGHT.
+ * A fresh plane starts fully invalid: pixels the terminal has never been sent
+ * must not be kept, and only the frames encoded afterwards mark them valid.
+ */
+static SIXELSTATUS
+sixel_encoder_reset_6delta_plane(sixel_encoder_t *encoder,
+                                 int plane_width,
+                                 int plane_height)
+{
+    SIXELSTATUS status;
+    unsigned char *plane;
+    size_t plane_rgb_size;
+    size_t plane_pixel_count;
+
+    status = SIXEL_FALSE;
+    plane = NULL;
+    plane_rgb_size = sixel_encoder_6delta_plane_rgb_bytes(plane_width,
+                                                          plane_height);
+    if (encoder == NULL || plane_rgb_size == 0u) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    plane_pixel_count = plane_rgb_size / 3u;
+
+    status = sixel_encoder_ensure_accumulation_valid_mask(encoder,
+                                                          plane_pixel_count);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    plane = (unsigned char *)sixel_allocator_malloc(encoder->allocator,
+                                                    plane_rgb_size);
+    if (plane == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_reset_6delta_plane: "
+            "sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    memset(plane, 0, plane_rgb_size);
+    memset(encoder->accumulation_valid_mask, 0, plane_pixel_count);
+
+    sixel_allocator_free(encoder->allocator, encoder->accumulation_pixels);
+    encoder->accumulation_pixels = plane;
+    encoder->accumulation_pixels_size = plane_rgb_size;
+    encoder->accumulation_width = plane_width;
+    encoder->accumulation_height = plane_height;
+    encoder->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+
+    return SIXEL_OK;
 }
 
 static SIXELSTATUS
@@ -3791,10 +3914,20 @@ sixel_encoder_update_accumulation_from_frame(
     sixel_frame_transparency_t transparency;
     size_t current_size;
     size_t pixel_count;
+    size_t plane_rgb_size;
+    size_t plane_pixel_count;
     size_t encoded_mask_size;
     size_t encoded_rgb_size;
     size_t index;
-    int old_buffer_matches;
+    size_t plane_index;
+    size_t plane_row_base;
+    int plane_width;
+    int plane_height;
+    int origin_x;
+    int origin_y;
+    int row;
+    int column;
+    int plane_matches;
     int keep_previous;
     int encoded_rgb_ready;
 
@@ -3807,10 +3940,20 @@ sixel_encoder_update_accumulation_from_frame(
     memset(&transparency, 0, sizeof(transparency));
     current_size = 0u;
     pixel_count = 0u;
+    plane_rgb_size = 0u;
+    plane_pixel_count = 0u;
     encoded_mask_size = 0u;
     encoded_rgb_size = 0u;
     index = 0u;
-    old_buffer_matches = 0;
+    plane_index = 0u;
+    plane_row_base = 0u;
+    plane_width = 0;
+    plane_height = 0;
+    origin_x = 0;
+    origin_y = 0;
+    row = 0;
+    column = 0;
+    plane_matches = 0;
     keep_previous = 0;
     encoded_rgb_ready = 0;
 
@@ -3841,6 +3984,31 @@ sixel_encoder_update_accumulation_from_frame(
         goto end;
     }
 
+    /*
+     * A frame that does not fit the declared plane cannot describe what the
+     * terminal shows, so drop the whole plane rather than recording a
+     * misaligned update that later frames would keep against.
+     */
+    if (!sixel_encoder_resolve_6delta_plane(encoder,
+                                            view.width,
+                                            view.height,
+                                            &plane_width,
+                                            &plane_height,
+                                            &origin_x,
+                                            &origin_y)) {
+        sixel_encoder_invalidate_6delta_plane(encoder);
+        status = SIXEL_OK;
+        goto end;
+    }
+    plane_rgb_size = sixel_encoder_6delta_plane_rgb_bytes(plane_width,
+                                                          plane_height);
+    if (plane_rgb_size == 0u) {
+        sixel_encoder_invalidate_6delta_plane(encoder);
+        status = SIXEL_OK;
+        goto end;
+    }
+    plane_pixel_count = plane_rgb_size / 3u;
+
     status = sixel_encoder_frame_get_transparency(frame, &transparency);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -3854,143 +4022,89 @@ sixel_encoder_update_accumulation_from_frame(
     encoded_rgb_ready =
         encoded_rgb != NULL && encoded_rgb_size >= current_size ? 1 : 0;
     if (encoded_rgb_ready == 0) {
-        status = sixel_encoder_normalize_frame_to_rgb888(encoder,
-                                                         frame,
-                                                         &view,
-                                                         &current_rgb,
-                                                         &current_size);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        pixel_count = current_size / 3u;
-        if (pixel_count == 0u) {
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
-    }
-
-    old_buffer_matches =
-        encoder->accumulation_pixels != NULL &&
-        encoder->accumulation_width == view.width &&
-        encoder->accumulation_height == view.height &&
-        encoder->accumulation_pixels_size == current_size;
-
-    if (!old_buffer_matches) {
-        status = sixel_encoder_ensure_accumulation_valid_mask(encoder,
-                                                              pixel_count);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        if (encoder->accumulation_valid_mask == NULL ||
-                encoder->accumulation_valid_mask_size < pixel_count) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_update_accumulation_from_frame: "
-                "accumulation valid mask is unavailable.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        if (encoded_rgb_ready != 0) {
-            current_rgb = (unsigned char *)sixel_allocator_malloc(
-                encoder->allocator,
-                current_size);
-            if (current_rgb == NULL) {
-                sixel_helper_set_additional_message(
-                    "sixel_encoder_update_accumulation_from_frame: "
-                    "sixel_allocator_malloc() failed.");
-                status = SIXEL_BAD_ALLOCATION;
-                goto end;
-            }
-            memcpy(current_rgb, encoded_rgb, current_size);
-            for (index = 0u; index < pixel_count; ++index) {
-                keep_previous =
-                    (encoded_mask != NULL &&
-                     encoded_mask_size >= pixel_count &&
-                     encoded_mask[index] != 0U) ||
-                    sixel_encoder_frame_mask_covers_pixel(&transparency,
-                                                          pixel_count,
-                                                          index) ||
-                    sixel_encoder_frame_alpha_covers_pixel(&transparency,
-                                                           &view,
-                                                           index);
-                encoder->accumulation_valid_mask[index] =
-                    keep_previous == 0 ? 1u : 0u;
-            }
-        } else {
-            for (index = 0u; index < pixel_count; ++index) {
-                keep_previous =
-                    sixel_encoder_frame_mask_covers_pixel(&transparency,
-                                                          pixel_count,
-                                                          index) ||
-                    sixel_encoder_frame_alpha_covers_pixel(&transparency,
-                                                           &view,
-                                                           index);
-                encoder->accumulation_valid_mask[index] =
-                    keep_previous == 0 ? 1u : 0u;
-            }
-        }
-        sixel_allocator_free(encoder->allocator,
-                             encoder->accumulation_pixels);
-        encoder->accumulation_pixels = current_rgb;
-        encoder->accumulation_pixels_size = current_size;
-        encoder->accumulation_width = view.width;
-        encoder->accumulation_height = view.height;
-        encoder->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-        encoder->accumulation_valid = 1;
-        current_rgb = NULL;
+        /*
+         * Without the dither stage's emitted colours there is nothing
+         * trustworthy to advance the plane to.  Seeding it from the source RGB
+         * would make the next frame compare source against source and keep
+         * everything, freezing the display on a stale image.
+         */
+        sixel_encoder_invalidate_6delta_plane(encoder);
         status = SIXEL_OK;
         goto end;
     }
 
+    plane_matches =
+        encoder->accumulation_pixels != NULL &&
+        encoder->accumulation_valid != 0 &&
+        encoder->accumulation_width == plane_width &&
+        encoder->accumulation_height == plane_height &&
+        encoder->accumulation_pixels_size == plane_rgb_size;
+
+    if (!plane_matches) {
+        status = sixel_encoder_reset_6delta_plane(encoder,
+                                                  plane_width,
+                                                  plane_height);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
     if (encoder->accumulation_valid_mask == NULL ||
-            encoder->accumulation_valid_mask_size < pixel_count) {
-        status = sixel_encoder_ensure_accumulation_valid_mask(encoder,
-                                                              pixel_count);
+            encoder->accumulation_valid_mask_size < plane_pixel_count) {
+        status = sixel_encoder_ensure_accumulation_valid_mask(
+            encoder,
+            plane_pixel_count);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
         if (encoder->accumulation_valid_mask == NULL ||
-                encoder->accumulation_valid_mask_size < pixel_count) {
+                encoder->accumulation_valid_mask_size < plane_pixel_count) {
             sixel_helper_set_additional_message(
                 "sixel_encoder_update_accumulation_from_frame: "
                 "accumulation valid mask is unavailable.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        memset(encoder->accumulation_valid_mask, 1, pixel_count);
+        memset(encoder->accumulation_valid_mask, 0, plane_pixel_count);
     }
 
-    for (index = 0u; index < pixel_count; ++index) {
-        /*
-         * Retained accumulation must describe the image plane that a P2=1
-         * terminal will actually show after this frame.  The dither stage may
-         * add transparent pixels after palette lookup, so prefer its final
-         * mask when it is available.  Painted pixels must advance to the
-         * quantized palette RGB that was emitted, not the pre-quantized source
-         * RGB, otherwise the next frame compares against a color the terminal
-         * never displayed.
-         */
-        keep_previous =
-            (encoded_mask != NULL &&
-             encoded_mask_size >= pixel_count &&
-             encoded_mask[index] != 0U) ||
-            sixel_encoder_frame_mask_covers_pixel(&transparency,
-                                                  pixel_count,
-                                                  index) ||
-            sixel_encoder_frame_alpha_covers_pixel(&transparency,
-                                                   &view,
-                                                   index);
-        if (keep_previous == 0) {
-            if (encoded_rgb_ready != 0) {
-                update_rgb = encoded_rgb + index * 3u;
-            } else {
-                update_rgb = current_rgb + index * 3u;
+    /*
+     * Retained accumulation must describe the image plane that a P2=1
+     * terminal will actually show after this frame.  The dither stage may
+     * add transparent pixels after palette lookup, so prefer its final
+     * mask when it is available.  Painted pixels must advance to the
+     * quantized palette RGB that was emitted, not the pre-quantized source
+     * RGB, otherwise the next frame compares against a color the terminal
+     * never displayed.  Pixels outside this frame keep whatever the plane
+     * already holds.
+     */
+    for (row = 0; row < view.height; ++row) {
+        plane_row_base = (size_t)(origin_y + row) * (size_t)plane_width
+            + (size_t)origin_x;
+        for (column = 0; column < view.width; ++column) {
+            index = (size_t)row * (size_t)view.width + (size_t)column;
+            plane_index = plane_row_base + (size_t)column;
+            keep_previous =
+                (encoded_mask != NULL &&
+                 encoded_mask_size >= pixel_count &&
+                 encoded_mask[index] != 0U) ||
+                sixel_encoder_frame_mask_covers_pixel(&transparency,
+                                                      pixel_count,
+                                                      index) ||
+                sixel_encoder_frame_alpha_covers_pixel(&transparency,
+                                                       &view,
+                                                       index);
+            if (keep_previous != 0) {
+                continue;
             }
-            memcpy(encoder->accumulation_pixels + index * 3u,
+            update_rgb = encoded_rgb + index * 3u;
+            memcpy(encoder->accumulation_pixels + plane_index * 3u,
                    update_rgb,
                    3u);
-            encoder->accumulation_valid_mask[index] = 1u;
+            encoder->accumulation_valid_mask[plane_index] = 1u;
         }
     }
+    encoder->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    encoder->accumulation_valid = 1;
     status = SIXEL_OK;
 
 end:
@@ -9631,6 +9745,10 @@ sixel_encoder_new(
     (*ppencoder)->sixdelta_enabled      = 0;
     (*ppencoder)->sixdelta_threshold    = 0u;
     (*ppencoder)->sixdelta_error_mode   = SIXEL_6DELTA_ERROR_DIFFUSE;
+    (*ppencoder)->sixdelta_plane_width  = 0;
+    (*ppencoder)->sixdelta_plane_height = 0;
+    (*ppencoder)->sixdelta_origin_x     = 0;
+    (*ppencoder)->sixdelta_origin_y     = 0;
     (*ppencoder)->accumulation_valid    = 0;
     (*ppencoder)->pipe_mode             = 0;
     (*ppencoder)->bgcolor               = NULL;
@@ -9950,6 +10068,98 @@ end:
 }
 
 SIXELAPI SIXELSTATUS
+sixel_encoder_set_6delta_plane_size(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ width,
+    int             /* in */ height)
+{
+    if (encoder == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_set_6delta_plane_size: encoder is null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (width < 0 || height < 0) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_set_6delta_plane_size: "
+            "plane extents must not be negative.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if ((width == 0) != (height == 0)) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_set_6delta_plane_size: "
+            "pass zero for both extents to restore the default plane.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (width != 0 &&
+            sixel_encoder_6delta_plane_rgb_bytes(width, height) == 0u) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_set_6delta_plane_size: plane is too large.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (encoder->sixdelta_plane_width == width &&
+        encoder->sixdelta_plane_height == height) {
+        return SIXEL_OK;
+    }
+    encoder->sixdelta_plane_width = width;
+    encoder->sixdelta_plane_height = height;
+
+    return sixel_encoder_invalidate_6delta_plane(encoder);
+}
+
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_set_6delta_plane_origin(
+    sixel_encoder_t /* in */ *encoder,
+    int             /* in */ x,
+    int             /* in */ y)
+{
+    if (encoder == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_set_6delta_plane_origin: encoder is null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (x < 0 || y < 0) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_set_6delta_plane_origin: "
+            "origin must not be negative.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    encoder->sixdelta_origin_x = x;
+    encoder->sixdelta_origin_y = y;
+
+    return SIXEL_OK;
+}
+
+
+SIXELAPI SIXELSTATUS
+sixel_encoder_invalidate_6delta_plane(
+    sixel_encoder_t /* in */ *encoder)
+{
+    if (encoder == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_invalidate_6delta_plane: encoder is null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_allocator_free(encoder->allocator, encoder->accumulation_pixels);
+    encoder->accumulation_pixels = NULL;
+    encoder->accumulation_pixels_size = 0u;
+    encoder->accumulation_width = 0;
+    encoder->accumulation_height = 0;
+    encoder->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    encoder->accumulation_valid = 0;
+    if (encoder->accumulation_valid_mask != NULL &&
+            encoder->accumulation_valid_mask_size > 0u) {
+        memset(encoder->accumulation_valid_mask,
+               0,
+               encoder->accumulation_valid_mask_size);
+    }
+
+    return SIXEL_OK;
+}
+
+
+SIXELAPI SIXELSTATUS
 sixel_encoder_set_accumulation_buffer(
     sixel_encoder_t     /* in */ *encoder,
     unsigned char const /* in */ *pixels,
@@ -10023,6 +10233,13 @@ sixel_encoder_set_accumulation_buffer(
     encoder->accumulation_height = height;
     encoder->accumulation_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     encoder->accumulation_valid = 1;
+    /*
+     * The supplied buffer is the retained plane, so it also defines the plane
+     * geometry.  Otherwise a previously declared plane size would immediately
+     * invalidate the buffer the caller just seeded.
+     */
+    encoder->sixdelta_plane_width = width;
+    encoder->sixdelta_plane_height = height;
     rgb = NULL;
     status = SIXEL_OK;
 

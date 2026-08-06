@@ -216,6 +216,8 @@ sixel_dither_apply_none_8bit(
                     sixel_dither_pipeline_6delta_try_keep_rgb888(
                         dither,
                         absolute_index,
+                        x,
+                        absolute_y,
                         source_pixel,
                         record_result,
                         &accumulation_pixel,

@@ -63,6 +63,13 @@ typedef struct sixel_gpu_palette_request {
     unsigned char const *transparent_mask;
     size_t transparent_mask_size;
     int transparent_keycolor;
+    /*
+     * sixdelta_enabled says the caller wants 6delta keeps for this frame;
+     * has_6delta_accumulation says this request can actually produce them.
+     * The two differ when the retained plane is larger than the frame, because
+     * the GPU kernel addresses the plane by frame pixel index.
+     */
+    int sixdelta_enabled;
     int has_6delta_accumulation;
     unsigned char const *accumulation_pixels;
     size_t accumulation_pixels_size;
