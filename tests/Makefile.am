@@ -395,6 +395,7 @@ test_runner_SOURCES = test_runner.c \
     quant/palette/0002_kmedoids_constraints.c \
     quant/palette/0003_kcenter_constraints.c \
     quant/palette/0004_palette_factory.c \
+    quant/palette/0005_cover_anchor.c \
     diagnostics/probe/0001_probe_parse.c \
     diagnostics/status/0001_status_timeout.c \
     diagnostics/icc/0001_icc_builtin_rgb_gray_v4_paths.c \
