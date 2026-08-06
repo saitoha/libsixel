@@ -43,11 +43,15 @@ extern "C" {
 #define SIXEL_PALETTE_COVER_NEAR_SQ (24 * 24 * 3)
 
 /*
- * An anchor is funded by merging the closest pair of entries.  Past this
- * squared distance the pair is no longer a near-duplicate, so the merge would
- * cost visible error and anchoring stops instead of pressing on.
+ * An anchor is funded by merging the closest pair of entries, and that only
+ * pays off while the pair is closer together than the anchor is to the whole
+ * palette: the merge costs about the distance between the pair, the anchor
+ * buys about the distance it closes.  Comparing the two directly makes the
+ * budget scale with the palette instead of assuming one.  A fixed threshold
+ * cannot: k-center deliberately spreads its entries, so any constant tuned for
+ * a median-cut palette rejects every merge and leaves it unanchored.
  */
-#define SIXEL_PALETTE_COVER_MERGE_SQ (12 * 12 * 3)
+#define SIXEL_PALETTE_COVER_MERGE_MARGIN 2u
 
 /*
  * Anchor a finished palette to the gamut corners.

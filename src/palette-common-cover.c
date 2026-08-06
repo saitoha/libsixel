@@ -144,11 +144,10 @@ sixel_palette_cover_free_slot(unsigned char *entries,
     }
 
     /*
-     * Stop once the cheapest merge stops being cheap.  A palette holding
-     * near-duplicates gives up a slot for almost nothing, while one whose
-     * entries are already well spread would pay real error for every anchor.
-     * This is what keeps the cost adaptive instead of charging every image a
-     * flat eighth of its palette.
+     * Only merge while it costs less than the anchor gains.  A palette holding
+     * near-duplicates gives up a slot for almost nothing; one whose entries are
+     * already spread as far apart as the gap being closed has nothing cheap to
+     * give, and anchoring it would trade error for error.
      */
     if (best_distance > merge_budget_sq) {
         return -1;
@@ -171,6 +170,7 @@ sixel_palette_cover_anchor_rgb888(unsigned char *entries,
 {
     unsigned int index;
     unsigned int placed;
+    unsigned int gap;
     int slot;
 
     if (entries == NULL) {
@@ -202,17 +202,25 @@ sixel_palette_cover_anchor_rgb888(unsigned char *entries,
          * enclosed, and the test depends only on the palette, so it cannot
          * make the anchor set flicker from frame to frame on its own.
          */
-        if (sixel_palette_cover_nearest_sq(anchor, entries, entry_count, depth)
-                <= (unsigned int)SIXEL_PALETTE_COVER_NEAR_SQ) {
+        gap = sixel_palette_cover_nearest_sq(anchor,
+                                             entries,
+                                             entry_count,
+                                             depth);
+        if (gap <= (unsigned int)SIXEL_PALETTE_COVER_NEAR_SQ) {
             continue;
         }
         slot = sixel_palette_cover_free_slot(
             entries,
             entry_count,
             depth,
-            (unsigned int)SIXEL_PALETTE_COVER_MERGE_SQ);
+            gap / SIXEL_PALETTE_COVER_MERGE_MARGIN);
+        /*
+         * Nothing cheap enough for this anchor does not mean nothing cheap
+         * enough for the next: the anchors are ordered, not ranked, so keep
+         * going rather than abandoning the remaining corners.
+         */
         if (slot < 0) {
-            break;
+            continue;
         }
         memcpy(entries + (size_t)slot * (size_t)depth, anchor, 3u);
         placed++;
