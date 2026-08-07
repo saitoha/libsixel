@@ -132,6 +132,14 @@ struct sixel_dither {
     int quality_mode;               /* quality of histogram */
     int requested_quality_mode;     /* original quality mode request */
     int keycolor;                   /* background color */
+    /*
+     * Non-zero when keycolor names an entry appended solely to carry
+     * transparency rather than a color the image uses.  Such an entry must
+     * never win a nearest-color lookup: a pixel that resolved to it would be
+     * emitted as the transparent index, and a P2=1 terminal would leave
+     * whatever it happened to be showing there.
+     */
+    int keycolor_reserved;
     unsigned char transparent_bgcolor[3]; /* keycolor compositing backdrop */
     int transparent_bgcolor_valid;  /* non-zero when backdrop is configured */
     int pixelformat;                /* pixelformat for internal processing */

@@ -7848,6 +7848,13 @@ sixel_encoder_attach_alpha_keycolor(sixel_encoder_t *encoder,
                                                       &float32_request);
     dither->ncolors = (int)(base_colors + 1U);
     dither->keycolor = (int)key_index;
+    /*
+     * The appended entry exists only to carry transparency.  Mark it so the
+     * nearest-color lookup skips it; its RGB is black by default, and without
+     * this every black or near-black pixel resolves to the key and is emitted
+     * transparent, leaving the terminal showing whatever was there before.
+     */
+    dither->keycolor_reserved = 1;
 
     return SIXEL_OK;
 }

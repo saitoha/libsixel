@@ -1292,6 +1292,28 @@ sixel_dither_resolve_indexes(
     return status;
 }
 
+/*
+ * Number of palette entries the nearest-color lookup may choose from.  A
+ * reserved transparency key sits at the end of the palette and is excluded:
+ * it is not a color the image contains, and letting it win would silently
+ * turn those pixels transparent.  The key entry stays in the palette so the
+ * encoder can still emit it.
+ */
+static int
+sixel_dither_lookup_ncolors(sixel_dither_t const *dither)
+{
+    if (dither == NULL) {
+        return 0;
+    }
+    if (dither->keycolor_reserved != 0
+            && dither->keycolor == dither->ncolors - 1
+            && dither->ncolors > 1) {
+        return dither->ncolors - 1;
+    }
+
+    return dither->ncolors;
+}
+
 static int
 sixel_dither_rgb888_delta_within(unsigned char const *left,
                                  unsigned char const *right,
@@ -1775,6 +1797,7 @@ sixel_dither_new(
     (*ppdither)->ncolors = ncolors;
     (*ppdither)->origcolors = (-1);
     (*ppdither)->keycolor = (-1);
+    (*ppdither)->keycolor_reserved = 0;
     sixel_dither_clear_transparent_bgcolor_hint(*ppdither);
     (*ppdither)->optimized = 0;
     (*ppdither)->bodyonly = 0;
@@ -4142,7 +4165,7 @@ sixel_dither_apply_palette_with_mode(
         plan.method_for_scan = method_for_scan;
         plan.lut_policy = dither->lut_policy;
         plan.lookup_shared_instance_enabled = shared_lut;
-        plan.reqcolor = dither->ncolors;
+        plan.reqcolor = sixel_dither_lookup_ncolors(dither);
         plan.pixelformat = pipeline_pixelformat;
         plan.dither_policy = dither_policy;
         /* Carry the pipeline pinning preference as a strict 0/1 flag. */
@@ -4166,7 +4189,7 @@ sixel_dither_apply_palette_with_mode(
         resolve_request.height = height;
         resolve_request.depth = 3;
         resolve_request.palette = palette;
-        resolve_request.reqcolor = dither->ncolors;
+        resolve_request.reqcolor = sixel_dither_lookup_ncolors(dither);
         resolve_request.method_for_scan = method_for_scan;
         resolve_request.foptimize = dither->optimized;
         resolve_request.lut_policy = dither->lut_policy;
