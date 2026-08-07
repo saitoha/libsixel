@@ -67,6 +67,17 @@ cover_fill_inset(unsigned char *pixels)
     }
 }
 
+static void
+cover_set_override(int enabled, int policy, int grow)
+{
+    sixel_palette_cover_options_t options;
+
+    options.policy = policy;
+    options.grow = grow;
+    options.mode = SIXEL_PALETTE_COVER_MODE_HARD;
+    sixel_set_palette_cover_override(enabled, &options);
+}
+
 static unsigned int
 cover_distance_sq(unsigned char const *a, unsigned char const *b)
 {
@@ -107,7 +118,8 @@ cover_build_palette(int model,
                     unsigned char const *pixels,
                     sixel_allocator_t *allocator,
                     unsigned char *palette_out,
-                    unsigned int *ncolors_out)
+                    unsigned int *ncolors_out,
+                    unsigned int palette_out_max)
 {
     SIXELSTATUS status;
     sixel_dither_t *dither;
@@ -144,7 +156,7 @@ cover_build_palette(int model,
             || view.entry_count == 0u) {
         goto end;
     }
-    if (view.entry_count > COVER_COLORS) {
+    if (view.entry_count > palette_out_max) {
         goto end;
     }
     memcpy(palette_out, view.entries, (size_t)view.entry_count * 3u);
@@ -158,6 +170,47 @@ end:
     return ok;
 }
 
+/* Anchor classes, for asserting which set a policy actually bought. */
+static unsigned char const cover_corner_list[8][3] = {
+    { 0x00u, 0x00u, 0x00u }, { 0xffu, 0x00u, 0x00u },
+    { 0x00u, 0xffu, 0x00u }, { 0x00u, 0x00u, 0xffu },
+    { 0xffu, 0xffu, 0x00u }, { 0xffu, 0x00u, 0xffu },
+    { 0x00u, 0xffu, 0xffu }, { 0xffu, 0xffu, 0xffu }
+};
+static unsigned char const cover_face_list[6][3] = {
+    { 0x00u, 0x80u, 0x80u }, { 0xffu, 0x80u, 0x80u },
+    { 0x80u, 0x00u, 0x80u }, { 0x80u, 0xffu, 0x80u },
+    { 0x80u, 0x80u, 0x00u }, { 0x80u, 0x80u, 0xffu }
+};
+static unsigned char const cover_edge_list[12][3] = {
+    { 0x80u, 0x00u, 0x00u }, { 0x80u, 0xffu, 0x00u },
+    { 0x80u, 0x00u, 0xffu }, { 0x80u, 0xffu, 0xffu },
+    { 0x00u, 0x80u, 0x00u }, { 0xffu, 0x80u, 0x00u },
+    { 0x00u, 0x80u, 0xffu }, { 0xffu, 0x80u, 0xffu },
+    { 0x00u, 0x00u, 0x80u }, { 0xffu, 0x00u, 0x80u },
+    { 0x00u, 0xffu, 0x80u }, { 0xffu, 0xffu, 0x80u }
+};
+
+static unsigned int
+cover_count_reached(unsigned char const (*anchors)[3],
+                    unsigned int anchor_count,
+                    unsigned char const *palette,
+                    unsigned int ncolors)
+{
+    unsigned int reached;
+    unsigned int index;
+
+    reached = 0u;
+    for (index = 0u; index < anchor_count; ++index) {
+        if (cover_nearest_sq(anchors[index], palette, ncolors)
+                <= (unsigned int)SIXEL_PALETTE_COVER_NEAR_SQ) {
+            reached++;
+        }
+    }
+
+    return reached;
+}
+
 /*
  * Count corners the palette reaches.  The tolerance is deliberately loose:
  * what matters is that a corner is reachable, not that the entry sits exactly
@@ -167,24 +220,7 @@ static unsigned int
 cover_count_reached_corners(unsigned char const *palette,
                             unsigned int ncolors)
 {
-    static unsigned char const corners[8][3] = {
-        { 0x00u, 0x00u, 0x00u }, { 0xffu, 0x00u, 0x00u },
-        { 0x00u, 0xffu, 0x00u }, { 0x00u, 0x00u, 0xffu },
-        { 0xffu, 0xffu, 0x00u }, { 0xffu, 0x00u, 0xffu },
-        { 0x00u, 0xffu, 0xffu }, { 0xffu, 0xffu, 0xffu }
-    };
-    unsigned int reached;
-    unsigned int index;
-
-    reached = 0u;
-    for (index = 0u; index < 8u; ++index) {
-        if (cover_nearest_sq(corners[index], palette, ncolors)
-                <= (unsigned int)SIXEL_PALETTE_COVER_NEAR_SQ) {
-            reached++;
-        }
-    }
-
-    return reached;
+    return cover_count_reached(cover_corner_list, 8u, palette, ncolors);
 }
 
 /*
@@ -252,6 +288,146 @@ cover_check_spread_palette(void)
 }
 
 /*
+ * The ladder is corners -> faces -> edges, which is not the geometric order.
+ * It is the measured one: with the palette frozen and each set funded by the
+ * same merge, anchoring the face centers leaves 9% of probe colors unreachable
+ * by diffusion while anchoring the twelve edge midpoints instead costs six
+ * more slots and leaves 26%.  An anchor table reordered back to the geometric
+ * hierarchy would still pass every corner assertion below, so pin the rungs.
+ */
+static int
+cover_check_ladder(void)
+{
+    static struct { int policy; unsigned int total; char const *name; } const
+    rungs[] = {
+        { SIXEL_PALETTE_COVER_OFF,     0u,  "off"     },
+        { SIXEL_PALETTE_COVER_CORNERS, 8u,  "corners" },
+        { SIXEL_PALETTE_COVER_FACES,   14u, "faces"   },
+        { SIXEL_PALETTE_COVER_EDGES,   26u, "edges"   }
+    };
+    unsigned char empty[3] = { 0x80u, 0x80u, 0x80u };
+    unsigned char out[SIXEL_PALETTE_COVER_ANCHOR_MAX * 3u];
+    size_t index;
+
+    for (index = 0u; index < sizeof(rungs) / sizeof(rungs[0]); ++index) {
+        unsigned int got;
+
+        /*
+         * One mid-gray entry reaches no anchor but the face centers nearest
+         * it, so ask against a palette of it and count what comes back.
+         */
+        got = sixel_palette_cover_missing_anchors(
+            empty, 1u, 3, rungs[index].policy,
+            out, SIXEL_PALETTE_COVER_ANCHOR_MAX);
+        if (got != rungs[index].total) {
+            fprintf(stderr,
+                    "cover=%s asked for %u anchors, got %u\n",
+                    rungs[index].name, rungs[index].total, got);
+            return 0;
+        }
+    }
+
+    /*
+     * The faces rung must contain the corners and the face centers and no
+     * edge midpoint -- that is the whole point of the reordering.
+     */
+    {
+        unsigned int got;
+
+        got = sixel_palette_cover_missing_anchors(
+            empty, 1u, 3, SIXEL_PALETTE_COVER_FACES,
+            out, SIXEL_PALETTE_COVER_ANCHOR_MAX);
+        if (cover_count_reached(cover_corner_list, 8u, out, got) != 8u
+                || cover_count_reached(cover_face_list, 6u, out, got) != 6u
+                || cover_count_reached(cover_edge_list, 12u, out, got) != 0u) {
+            fprintf(stderr,
+                    "cover=faces is not corners+face centers: "
+                    "%u corners, %u faces, %u edges\n",
+                    cover_count_reached(cover_corner_list, 8u, out, got),
+                    cover_count_reached(cover_face_list, 6u, out, got),
+                    cover_count_reached(cover_edge_list, 12u, out, got));
+            return 0;
+        }
+    }
+
+    /* auto spends more of the palette on anchors as the palette grows. */
+    if (sixel_palette_cover_resolve_policy(SIXEL_PALETTE_COVER_AUTO, 16u)
+            != SIXEL_PALETTE_COVER_OFF
+        || sixel_palette_cover_resolve_policy(SIXEL_PALETTE_COVER_AUTO, 32u)
+            != SIXEL_PALETTE_COVER_CORNERS
+        || sixel_palette_cover_resolve_policy(SIXEL_PALETTE_COVER_AUTO, 64u)
+            != SIXEL_PALETTE_COVER_FACES
+        || sixel_palette_cover_resolve_policy(SIXEL_PALETTE_COVER_AUTO, 256u)
+            != SIXEL_PALETTE_COVER_EDGES) {
+        fprintf(stderr, "auto did not climb the ladder with palette size\n");
+        return 0;
+    }
+    /* An explicit policy is never rewritten by size. */
+    if (sixel_palette_cover_resolve_policy(SIXEL_PALETTE_COVER_CORNERS, 256u)
+            != SIXEL_PALETTE_COVER_CORNERS) {
+        fprintf(stderr, "auto resolution overrode an explicit policy\n");
+        return 0;
+    }
+
+    return 1;
+}
+
+/*
+ * cover_grow=on buys anchors with new slots instead of merging for them, so
+ * the palette ends up larger than requested.  It is opt-in for exactly that
+ * reason: a caller who named a color count because that is all their terminal
+ * has must not be handed extra registers.
+ */
+static int
+cover_check_grow(unsigned char const *pixels, sixel_allocator_t *allocator)
+{
+    unsigned char palette[SIXEL_PALETTE_MAX * 3];
+    unsigned int merged;
+    unsigned int grown;
+    int ok;
+
+    ok = 0;
+    cover_set_override(1, SIXEL_PALETTE_COVER_FACES, 0);
+    if (!cover_build_palette(SIXEL_QUANTIZE_MODEL_MEDIANCUT, pixels,
+                             allocator, palette, &merged, SIXEL_PALETTE_MAX)) {
+        fprintf(stderr, "merged palette build failed\n");
+        goto end;
+    }
+    if (merged != COVER_COLORS) {
+        fprintf(stderr,
+                "cover_grow=off changed the palette size to %u\n", merged);
+        goto end;
+    }
+
+    cover_set_override(1, SIXEL_PALETTE_COVER_FACES, 1);
+    if (!cover_build_palette(SIXEL_QUANTIZE_MODEL_MEDIANCUT, pixels,
+                             allocator, palette, &grown, SIXEL_PALETTE_MAX)) {
+        fprintf(stderr, "grown palette build failed\n");
+        goto end;
+    }
+    if (grown <= merged) {
+        fprintf(stderr,
+                "cover_grow=on did not grow the palette (%u -> %u)\n",
+                merged, grown);
+        goto end;
+    }
+    if (grown > COVER_COLORS + SIXEL_PALETTE_COVER_ANCHOR_MAX) {
+        fprintf(stderr, "cover_grow=on overshot: %u entries\n", grown);
+        goto end;
+    }
+    if (cover_count_reached(cover_corner_list, 8u, palette, grown) != 8u
+            || cover_count_reached(cover_face_list, 6u, palette, grown) != 6u) {
+        fprintf(stderr, "grown palette did not reach the faces rung\n");
+        goto end;
+    }
+    ok = 1;
+
+end:
+    cover_set_override(0, SIXEL_PALETTE_COVER_AUTO, 0);
+    return ok;
+}
+
+/*
  * -Q MODEL:cover=on|off reaches the pass through this override, and has to win
  * over the environment: an explicit option is a stronger statement than an
  * inherited variable.
@@ -269,17 +445,17 @@ cover_check_override(void)
         fprintf(stderr, "environment did not disable anchoring\n");
         goto end;
     }
-    sixel_set_palette_cover_override(1, 1);
+    cover_set_override(1, SIXEL_PALETTE_COVER_CORNERS, 0);
     if (sixel_palette_cover_repair_enabled() == 0) {
         fprintf(stderr, "override did not win over the environment\n");
         goto end;
     }
-    sixel_set_palette_cover_override(1, 0);
+    cover_set_override(1, SIXEL_PALETTE_COVER_OFF, 0);
     if (sixel_palette_cover_repair_enabled() != 0) {
         fprintf(stderr, "override could not disable anchoring\n");
         goto end;
     }
-    sixel_set_palette_cover_override(0, 1);
+    cover_set_override(0, SIXEL_PALETTE_COVER_AUTO, 0);
     if (sixel_palette_cover_repair_enabled() != 0) {
         fprintf(stderr, "clearing the override did not fall back to env\n");
         goto end;
@@ -287,7 +463,7 @@ cover_check_override(void)
     ok = 1;
 
 end:
-    sixel_set_palette_cover_override(0, 1);
+    cover_set_override(0, SIXEL_PALETTE_COVER_AUTO, 0);
     (void)sixel_compat_setenv("SIXEL_PALETTE_COVER", "1");
     return ok;
 }
@@ -338,6 +514,12 @@ test_palette_0005_cover_anchor(int argc, char **argv)
     if (!cover_check_override()) {
         goto end;
     }
+    if (!cover_check_ladder()) {
+        goto end;
+    }
+    if (!cover_check_grow(pixels, allocator)) {
+        goto end;
+    }
 
     for (index = 0u; index < sizeof(models) / sizeof(models[0]); ++index) {
         /*
@@ -349,7 +531,7 @@ test_palette_0005_cover_anchor(int argc, char **argv)
             goto end;
         }
         if (!cover_build_palette(models[index], pixels, allocator,
-                                 palette, &ncolors)) {
+                                 palette, &ncolors, COVER_COLORS)) {
             fprintf(stderr, "%s: palette build failed\n", names[index]);
             goto end;
         }
@@ -368,7 +550,7 @@ test_palette_0005_cover_anchor(int argc, char **argv)
             goto end;
         }
         if (!cover_build_palette(models[index], pixels, allocator,
-                                 palette, &ncolors)) {
+                                 palette, &ncolors, COVER_COLORS)) {
             fprintf(stderr, "%s: anchored palette build failed\n",
                     names[index]);
             goto end;

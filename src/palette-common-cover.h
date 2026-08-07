@@ -33,8 +33,71 @@
 extern "C" {
 #endif
 
-/* The eight corners of the RGB cube. */
-#define SIXEL_PALETTE_COVER_ANCHOR_COUNT 8u
+/*
+ * Anchor sets, in increasing order of coverage.  Each contains the previous.
+ *
+ * Error diffusion reproduces a color the palette lacks by mixing entries that
+ * the nearest-color lookup actually selects, and it either finds that mixture
+ * or it does not: measured on a frozen palette, the residual error of a flat
+ * patch is bimodal, sitting either at zero or at the full distance to the
+ * nearest entry, with almost nothing in between.  The second case is diffusion
+ * never happening at all -- the pixel resolves to one entry and stays there.
+ *
+ * Percentage of probe colors stuck that way, palette held fixed at 64 entries
+ * and each set funded by the same merge, so only the choice of anchors differs:
+ *
+ *                        interior  face  edge  corner   all
+ *   no anchors               86%   100%  100%    100%   96%
+ *   corners       (8)        34%    74%   15%     12%   47%
+ *   + face centres (14)       0%    12%   15%     12%    9%
+ *   + edge mids    (26)       0%     4%   10%     12%    5%
+ *
+ * The face centres are what matter, and they are why this ladder is not the
+ * geometric one: anchoring the twelve edge midpoints instead costs six more
+ * slots and leaves 26% stuck, because a color with one channel pinned at 0 or
+ * 255 needs partners that share that extreme.  The clamp means error in a
+ * pinned channel can only push inward, so an edge color can alternate between
+ * its two adjacent corners and converge, but a face is two-dimensional and its
+ * four corners are too far to be selected -- the lookup takes an entry just
+ * inside the face and the region locks onto it.  Only a partner on that same
+ * face breaks the lock.
+ *
+ * The corner column does not move because one of the eight probes is a blind
+ * spot no anchor set reaches; anchoring cannot help a color that already is a
+ * palette entry.
+ */
+#define SIXEL_PALETTE_COVER_OFF     0  /* no anchoring */
+#define SIXEL_PALETTE_COVER_CORNERS 1  /* 8 cube corners */
+#define SIXEL_PALETTE_COVER_FACES   2  /* + 6 face centres = 14 */
+#define SIXEL_PALETTE_COVER_EDGES   3  /* + 12 edge midpoints = 26 */
+#define SIXEL_PALETTE_COVER_AUTO    4  /* choose by palette size */
+
+#define SIXEL_PALETTE_COVER_ANCHOR_MAX 26u
+
+/*
+ * How the anchors are chosen.
+ *
+ * HARD places the fixed lattice above and nothing else.  It cannot miss a
+ * region of the cube, and it cannot know which regions the image actually
+ * uses -- the palette is built from a ~4096-pixel subsample, so by the time
+ * anchoring runs the content is no longer available to look at.
+ *
+ * SOFT is reserved for the opposite trade: choose the anchors from the image
+ * itself -- the histogram, or a thumbnail -- so that a color the image leans
+ * on is protected even when it sits nowhere near a lattice point, and lattice
+ * points the image never approaches cost nothing.  It is not implemented; the
+ * option layer rejects it rather than quietly running HARD, so that a
+ * configuration asking for it does not change meaning when it lands.
+ */
+#define SIXEL_PALETTE_COVER_MODE_HARD 0
+#define SIXEL_PALETTE_COVER_MODE_SOFT 1
+
+/* Anchoring options, resolved from the override, then env, then defaults. */
+typedef struct sixel_palette_cover_options {
+    int policy;  /* SIXEL_PALETTE_COVER_*      */
+    int grow;    /* anchors may exceed -p N    */
+    int mode;    /* SIXEL_PALETTE_COVER_MODE_* */
+} sixel_palette_cover_options_t;
 
 /*
  * An anchor closer than this to an existing entry is already reachable, so
@@ -43,48 +106,44 @@ extern "C" {
 #define SIXEL_PALETTE_COVER_NEAR_SQ (24 * 24 * 3)
 
 /*
- * An anchor is funded by merging the closest pair of entries, and that only
- * pays off while the pair is closer together than the anchor is to the whole
- * palette: the merge costs about the distance between the pair, the anchor
- * buys about the distance it closes.  Comparing the two directly makes the
- * budget scale with the palette instead of assuming one.  A fixed threshold
- * cannot: k-center deliberately spreads its entries, so any constant tuned for
- * a median-cut palette rejects every merge and leaves it unanchored.
+ * An anchor funded by merging only pays off while the closest pair is nearer
+ * to each other than the anchor is to the palette: the merge costs about the
+ * distance between the pair, the anchor buys about the distance it closes.
+ * Comparing the two makes the budget scale with whatever spread the solver
+ * chose, which a fixed threshold cannot -- k-center deliberately spreads its
+ * entries, so any constant tuned for a median-cut palette rejects every merge.
  */
 #define SIXEL_PALETTE_COVER_MERGE_MARGIN 2u
 
 /*
- * Anchor a finished palette to the gamut corners.
+ * Resolve SIXEL_PALETTE_COVER_AUTO for a palette of ENTRY_COUNT colors.
  *
- * Error diffusion reproduces a color the palette lacks by mixing entries that
- * surround it, and that works for anything strictly inside the palette hull:
- * a flat (200,60,40) region renders as (203,61,42) even when no entry is
- * close.  It breaks down at the edge of the gamut.  There the diffused error
- * points out of the RGB cube, the diffusion step clamps it away, and every
- * pixel of the region makes the identical wrong choice -- a saturated scrub
- * bar or status indicator comes out flat and wrong, and shifts color whenever
- * the surrounding image moves the cluster it was folded into.
- *
- * The solvers cannot fix this by tuning.  They minimize total error, so a
- * region worth a fraction of a percent of the image is always cheaper to
- * merge away than to keep.  Nor can a content-adaptive rescue work here: the
- * solvers see a sample of a few thousand pixels, in which such a region is
- * indistinguishable from noise.
- *
- * So the corners are placed from a fixed list rather than earned from the
- * image.  Each is funded by merging the closest pair of existing entries, so
- * what it costs is a near-duplicate; anchors the palette already reaches are
- * skipped, and anchoring stops once even the cheapest merge would cost real
- * error.  Because the list does not depend on image content, the anchor set is
- * the same from frame to frame, which matters as much as the color itself: an
- * anchor that came and went would reintroduce the flicker it exists to remove.
- *
- * Removing the diffusion clamp instead does not work, and was measured: with
- * no entry near the color the rendered result is unchanged -- no distribution
- * of palette entries can average outside their hull -- while the accumulated
- * error grows past ten times full scale and smears into neighbouring regions.
- *
- * ENTRIES is updated in place and ENTRY_COUNT does not change.  RGB888 only.
+ * The anchors cost a fixed number of slots, so their relative price falls as
+ * the palette grows.  Measured against photographs at 64 colors, the full set
+ * costs up to 13% more local error, while at 128 and 256 it was consistently
+ * better than not anchoring at all.  The face set is roughly half that price
+ * for most of the benefit, so it is what the middle of the range gets.
+ */
+SIXEL_INTERNAL_API int
+sixel_palette_cover_resolve_policy(int policy, unsigned int entry_count);
+
+/*
+ * Collect the anchors of POLICY that ENTRY_COUNT colors do not already reach,
+ * writing them to OUT as RGB triples.  Returns how many were written.
+ */
+SIXEL_INTERNAL_API unsigned int
+sixel_palette_cover_missing_anchors(
+    unsigned char const /* in */  *entries,
+    unsigned int        /* in */   entry_count,
+    int                 /* in */   depth,
+    int                 /* in */   policy,
+    unsigned char       /* out */ *out,
+    unsigned int        /* in */   out_max);
+
+/*
+ * Anchor a finished palette in place, funding each anchor by merging the
+ * closest pair of existing entries.  ENTRY_COUNT does not change, so a caller
+ * that asked for N colors still gets N.  RGB888 only.
  */
 SIXELAPI SIXELSTATUS
 sixel_palette_cover_anchor_rgb888(
@@ -94,14 +153,27 @@ sixel_palette_cover_anchor_rgb888(
 
 /*
  * Override anchoring from the encoder so it can be driven as a quantize model
- * suboption (-Q MODEL:cover=on|off).  ENABLED selects the override, VALUE
- * turns anchoring on or off.  Clearing the override falls back to the
- * environment and then to the default.
+ * suboption.  Clearing the override (ENABLED zero) falls back to the
+ * environment and then to the defaults.  OPTIONS may be NULL when clearing.
  */
 SIXEL_INTERNAL_API void
-sixel_set_palette_cover_override(int enabled, int value);
+sixel_set_palette_cover_override(
+    int                                  /* in */  enabled,
+    sixel_palette_cover_options_t const  /* in */ *options);
 
-/* Resolved setting: override first, then SIXEL_PALETTE_COVER, then on. */
+/* Resolved policy: override first, then SIXEL_PALETTE_COVER, then auto. */
+SIXEL_INTERNAL_API int
+sixel_palette_cover_policy(void);
+
+/* Non-zero when anchors may push the palette past the requested count. */
+SIXEL_INTERNAL_API int
+sixel_palette_cover_grow_enabled(void);
+
+/* Resolved mode.  Only SIXEL_PALETTE_COVER_MODE_HARD is implemented. */
+SIXEL_INTERNAL_API int
+sixel_palette_cover_mode(void);
+
+/* Convenience: policy resolves to something other than off. */
 SIXEL_INTERNAL_API int
 sixel_palette_cover_repair_enabled(void);
 

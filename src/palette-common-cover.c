@@ -37,55 +37,147 @@
 #include "palette-common-cover.h"
 
 /*
- * The eight corners of the RGB cube.  Error diffusion fails exactly at the
- * gamut boundary, so these are the colors worth guaranteeing; everything
- * strictly inside the palette hull is reachable by dithering already.
+ * The anchor points, ordered so that a prefix of the table is a complete
+ * anchor set: the eight cube corners, then the six face centres, then the
+ * twelve edge midpoints.  Faces come before edges because that is the order
+ * measurement puts them in -- see the table in the header.
  */
 static unsigned char const
-sixel_palette_cover_anchors[SIXEL_PALETTE_COVER_ANCHOR_COUNT][3] = {
-    { 0x00u, 0x00u, 0x00u },
-    { 0xffu, 0x00u, 0x00u },
-    { 0x00u, 0xffu, 0x00u },
-    { 0x00u, 0x00u, 0xffu },
-    { 0xffu, 0xffu, 0x00u },
-    { 0xffu, 0x00u, 0xffu },
-    { 0x00u, 0xffu, 0xffu },
-    { 0xffu, 0xffu, 0xffu }
+sixel_palette_cover_anchors[SIXEL_PALETTE_COVER_ANCHOR_MAX][3] = {
+    { 0x00u, 0x00u, 0x00u }, { 0xffu, 0x00u, 0x00u },
+    { 0x00u, 0xffu, 0x00u }, { 0x00u, 0x00u, 0xffu },
+    { 0xffu, 0xffu, 0x00u }, { 0xffu, 0x00u, 0xffu },
+    { 0x00u, 0xffu, 0xffu }, { 0xffu, 0xffu, 0xffu },
+
+    { 0x00u, 0x80u, 0x80u }, { 0xffu, 0x80u, 0x80u },
+    { 0x80u, 0x00u, 0x80u }, { 0x80u, 0xffu, 0x80u },
+    { 0x80u, 0x80u, 0x00u }, { 0x80u, 0x80u, 0xffu },
+
+    { 0x80u, 0x00u, 0x00u }, { 0x80u, 0xffu, 0x00u },
+    { 0x80u, 0x00u, 0xffu }, { 0x80u, 0xffu, 0xffu },
+    { 0x00u, 0x80u, 0x00u }, { 0xffu, 0x80u, 0x00u },
+    { 0x00u, 0x80u, 0xffu }, { 0xffu, 0x80u, 0xffu },
+    { 0x00u, 0x00u, 0x80u }, { 0xffu, 0x00u, 0x80u },
+    { 0x00u, 0xffu, 0x80u }, { 0xffu, 0xffu, 0x80u }
 };
 
-/*
- * Encoder-supplied override.  File scope matches how the other palette
- * suboptions reach their solvers: the encoder sets it while applying quantize
- * model options and clears it once the frame is done.
- */
 static int g_sixel_palette_cover_override_enabled;
-static int g_sixel_palette_cover_override_value;
+static sixel_palette_cover_options_t g_sixel_palette_cover_override;
 
 SIXEL_INTERNAL_API void
-sixel_set_palette_cover_override(int enabled, int value)
+sixel_set_palette_cover_override(int enabled,
+                                 sixel_palette_cover_options_t const *options)
 {
-    g_sixel_palette_cover_override_enabled = enabled != 0 ? 1 : 0;
-    g_sixel_palette_cover_override_value = value != 0 ? 1 : 0;
+    g_sixel_palette_cover_override_enabled =
+        enabled != 0 && options != NULL ? 1 : 0;
+    if (options != NULL) {
+        g_sixel_palette_cover_override = *options;
+    } else {
+        g_sixel_palette_cover_override.policy = SIXEL_PALETTE_COVER_AUTO;
+        g_sixel_palette_cover_override.grow = 0;
+        g_sixel_palette_cover_override.mode = SIXEL_PALETTE_COVER_MODE_HARD;
+    }
 }
 
 SIXEL_INTERNAL_API int
-sixel_palette_cover_repair_enabled(void)
+sixel_palette_cover_mode(void)
+{
+    /*
+     * Soft anchoring does not exist yet, so every channel that cannot report
+     * an error resolves to hard.  The option layer refuses it outright, which
+     * is where a user who asks for it finds out.
+     */
+    return SIXEL_PALETTE_COVER_MODE_HARD;
+}
+
+SIXEL_INTERNAL_API int
+sixel_palette_cover_policy(void)
 {
     char const *value;
 
     if (g_sixel_palette_cover_override_enabled != 0) {
-        return g_sixel_palette_cover_override_value;
+        return g_sixel_palette_cover_override.policy;
     }
     /*
      * The environment stays available for callers that build a palette
      * directly rather than through the encoder's option layer.
      */
     value = getenv("SIXEL_PALETTE_COVER");
-    if (value != NULL && value[0] == '0' && value[1] == '\0') {
-        return 0;
+    if (value == NULL) {
+        return SIXEL_PALETTE_COVER_AUTO;
+    }
+    if (strcmp(value, "0") == 0 || strcmp(value, "off") == 0) {
+        return SIXEL_PALETTE_COVER_OFF;
+    }
+    if (strcmp(value, "corners") == 0) {
+        return SIXEL_PALETTE_COVER_CORNERS;
+    }
+    if (strcmp(value, "edges") == 0) {
+        return SIXEL_PALETTE_COVER_EDGES;
+    }
+    if (strcmp(value, "faces") == 0) {
+        return SIXEL_PALETTE_COVER_FACES;
     }
 
-    return 1;
+    return SIXEL_PALETTE_COVER_AUTO;
+}
+
+SIXEL_INTERNAL_API int
+sixel_palette_cover_grow_enabled(void)
+{
+    char const *value;
+
+    if (g_sixel_palette_cover_override_enabled != 0) {
+        return g_sixel_palette_cover_override.grow;
+    }
+    value = getenv("SIXEL_PALETTE_COVER_GROW");
+
+    return value != NULL && strcmp(value, "0") != 0 ? 1 : 0;
+}
+
+SIXEL_INTERNAL_API int
+sixel_palette_cover_repair_enabled(void)
+{
+    return sixel_palette_cover_policy() != SIXEL_PALETTE_COVER_OFF;
+}
+
+SIXEL_INTERNAL_API int
+sixel_palette_cover_resolve_policy(int policy, unsigned int entry_count)
+{
+    if (policy != SIXEL_PALETTE_COVER_AUTO) {
+        return policy;
+    }
+    /*
+     * Below 32 colors even the corners would claim a quarter of the palette,
+     * and an image rendered in that few colors has bigger problems than an
+     * unreachable face.
+     */
+    if (entry_count < 32u) {
+        return SIXEL_PALETTE_COVER_OFF;
+    }
+    if (entry_count < 64u) {
+        return SIXEL_PALETTE_COVER_CORNERS;
+    }
+    if (entry_count < 256u) {
+        return SIXEL_PALETTE_COVER_FACES;
+    }
+
+    return SIXEL_PALETTE_COVER_EDGES;
+}
+
+static unsigned int
+sixel_palette_cover_anchor_count(int policy)
+{
+    switch (policy) {
+    case SIXEL_PALETTE_COVER_CORNERS:
+        return 8u;
+    case SIXEL_PALETTE_COVER_FACES:
+        return 14u;
+    case SIXEL_PALETTE_COVER_EDGES:
+        return SIXEL_PALETTE_COVER_ANCHOR_MAX;
+    default:
+        return 0u;
+    }
 }
 
 static unsigned int
@@ -123,6 +215,44 @@ sixel_palette_cover_nearest_sq(unsigned char const *rgb,
     }
 
     return best;
+}
+
+SIXEL_INTERNAL_API unsigned int
+sixel_palette_cover_missing_anchors(unsigned char const *entries,
+                                    unsigned int entry_count,
+                                    int depth,
+                                    int policy,
+                                    unsigned char *out,
+                                    unsigned int out_max)
+{
+    unsigned int wanted;
+    unsigned int index;
+    unsigned int found;
+
+    found = 0u;
+    if (entries == NULL || out == NULL || depth != 3) {
+        return 0u;
+    }
+    wanted = sixel_palette_cover_anchor_count(
+        sixel_palette_cover_resolve_policy(policy, entry_count));
+    for (index = 0u; index < wanted && found < out_max; ++index) {
+        unsigned char const *anchor;
+
+        anchor = sixel_palette_cover_anchors[index];
+        /*
+         * Skip an anchor the palette already reaches.  The test depends only
+         * on the palette, so it cannot make the anchor set flicker from frame
+         * to frame on its own.
+         */
+        if (sixel_palette_cover_nearest_sq(anchor, entries, entry_count, depth)
+                <= (unsigned int)SIXEL_PALETTE_COVER_NEAR_SQ) {
+            continue;
+        }
+        memcpy(out + (size_t)found * 3u, anchor, 3u);
+        found++;
+    }
+
+    return found;
 }
 
 /*
@@ -166,10 +296,9 @@ sixel_palette_cover_free_slot(unsigned char *entries,
     }
 
     /*
-     * Only merge while it costs less than the anchor gains.  A palette holding
-     * near-duplicates gives up a slot for almost nothing; one whose entries are
-     * already spread as far apart as the gap being closed has nothing cheap to
-     * give, and anchoring it would trade error for error.
+     * Only merge while it costs less than the anchor gains.  A palette whose
+     * entries are already spread as far apart as the gap being closed has
+     * nothing cheap to give, and anchoring it would trade error for error.
      */
     if (best_distance > merge_budget_sq) {
         return -1;
@@ -190,8 +319,9 @@ sixel_palette_cover_anchor_rgb888(unsigned char *entries,
                                   unsigned int entry_count,
                                   int depth)
 {
+    unsigned char wanted[SIXEL_PALETTE_COVER_ANCHOR_MAX * 3u];
+    unsigned int count;
     unsigned int index;
-    unsigned int placed;
     unsigned int gap;
     int slot;
 
@@ -201,29 +331,19 @@ sixel_palette_cover_anchor_rgb888(unsigned char *entries,
     if (depth != 3) {
         return SIXEL_OK;
     }
-    /*
-     * Below this the palette is too small to give up a quarter of itself, and
-     * an image rendered in a handful of colors has bigger problems than an
-     * unreachable corner.
-     */
-    if (entry_count < SIXEL_PALETTE_COVER_ANCHOR_COUNT * 4u) {
-        return SIXEL_OK;
-    }
-    if (!sixel_palette_cover_repair_enabled()) {
-        return SIXEL_OK;
-    }
+    count = sixel_palette_cover_missing_anchors(
+        entries,
+        entry_count,
+        depth,
+        sixel_palette_cover_policy(),
+        wanted,
+        SIXEL_PALETTE_COVER_ANCHOR_MAX);
 
-    placed = 0u;
-    for (index = 0u; index < SIXEL_PALETTE_COVER_ANCHOR_COUNT; ++index) {
+    for (index = 0u; index < count; ++index) {
         unsigned char const *anchor;
 
-        anchor = sixel_palette_cover_anchors[index];
-        /*
-         * Skip an anchor the palette already reaches.  This is a pure budget
-         * saving: an entry that close changes nothing about which colors are
-         * enclosed, and the test depends only on the palette, so it cannot
-         * make the anchor set flicker from frame to frame on its own.
-         */
+        anchor = wanted + (size_t)index * 3u;
+        /* Re-measure: an earlier anchor may already have covered this one. */
         gap = sixel_palette_cover_nearest_sq(anchor,
                                              entries,
                                              entry_count,
@@ -238,16 +358,13 @@ sixel_palette_cover_anchor_rgb888(unsigned char *entries,
             gap / SIXEL_PALETTE_COVER_MERGE_MARGIN);
         /*
          * Nothing cheap enough for this anchor does not mean nothing cheap
-         * enough for the next: the anchors are ordered, not ranked, so keep
-         * going rather than abandoning the remaining corners.
+         * enough for the next: the anchors are a list, not a ranking.
          */
         if (slot < 0) {
             continue;
         }
         memcpy(entries + (size_t)slot * (size_t)depth, anchor, 3u);
-        placed++;
     }
-    (void)placed;
 
     return SIXEL_OK;
 }

@@ -2016,8 +2016,23 @@ static sixel_suboption_choice_t const g_option_choices_kcenter_swap_update[] = {
  * runs after whichever solver produced the palette, not inside one of them.
  */
 static sixel_suboption_choice_t const g_option_choices_palette_cover[] = {
+    { "off", SIXEL_PALETTE_COVER_OFF },
+    { "corners", SIXEL_PALETTE_COVER_CORNERS },
+    { "faces", SIXEL_PALETTE_COVER_FACES },
+    { "edges", SIXEL_PALETTE_COVER_EDGES },
+    { "all", SIXEL_PALETTE_COVER_EDGES },
+    { "auto", SIXEL_PALETTE_COVER_AUTO },
+    { "on", SIXEL_PALETTE_COVER_AUTO }
+};
+
+static sixel_suboption_choice_t const g_option_choices_palette_cover_grow[] = {
     { "off", 0 },
     { "on", 1 }
+};
+
+static sixel_suboption_choice_t const g_option_choices_palette_cover_mode[] = {
+    { "hard", SIXEL_PALETTE_COVER_MODE_HARD },
+    { "soft", SIXEL_PALETTE_COVER_MODE_SOFT }
 };
 
 static sixel_suboption_choice_t const g_option_choices_quantize_merge[] = {
@@ -2083,6 +2098,24 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_merge_only[] = {
         g_option_choices_palette_cover,
         sizeof(g_option_choices_palette_cover)
         / sizeof(g_option_choices_palette_cover[0])
+    },
+    {
+        "cover_grow",
+        NULL,
+        "SIXEL_PALETTE_COVER_GROW",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover_grow,
+        sizeof(g_option_choices_palette_cover_grow)
+        / sizeof(g_option_choices_palette_cover_grow[0])
+    },
+    {
+        "cover_mode",
+        NULL,
+        "SIXEL_PALETTE_COVER_MODE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover_mode,
+        sizeof(g_option_choices_palette_cover_mode)
+        / sizeof(g_option_choices_palette_cover_mode[0])
     }
 };
 
@@ -2145,6 +2178,24 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_heckbert[] = {
         g_option_choices_palette_cover,
         sizeof(g_option_choices_palette_cover)
         / sizeof(g_option_choices_palette_cover[0])
+    },
+    {
+        "cover_grow",
+        NULL,
+        "SIXEL_PALETTE_COVER_GROW",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover_grow,
+        sizeof(g_option_choices_palette_cover_grow)
+        / sizeof(g_option_choices_palette_cover_grow[0])
+    },
+    {
+        "cover_mode",
+        NULL,
+        "SIXEL_PALETTE_COVER_MODE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover_mode,
+        sizeof(g_option_choices_palette_cover_mode)
+        / sizeof(g_option_choices_palette_cover_mode[0])
     }
 };
 
@@ -2199,6 +2250,24 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_sticky[] = {
         g_option_choices_palette_cover,
         sizeof(g_option_choices_palette_cover)
         / sizeof(g_option_choices_palette_cover[0])
+    },
+    {
+        "cover_grow",
+        NULL,
+        "SIXEL_PALETTE_COVER_GROW",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover_grow,
+        sizeof(g_option_choices_palette_cover_grow)
+        / sizeof(g_option_choices_palette_cover_grow[0])
+    },
+    {
+        "cover_mode",
+        NULL,
+        "SIXEL_PALETTE_COVER_MODE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover_mode,
+        sizeof(g_option_choices_palette_cover_mode)
+        / sizeof(g_option_choices_palette_cover_mode[0])
     }
 };
 
@@ -2394,6 +2463,24 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
         g_option_choices_palette_cover,
         sizeof(g_option_choices_palette_cover)
         / sizeof(g_option_choices_palette_cover[0])
+    },
+    {
+        "cover_grow",
+        NULL,
+        "SIXEL_PALETTE_COVER_GROW",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover_grow,
+        sizeof(g_option_choices_palette_cover_grow)
+        / sizeof(g_option_choices_palette_cover_grow[0])
+    },
+    {
+        "cover_mode",
+        NULL,
+        "SIXEL_PALETTE_COVER_MODE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover_mode,
+        sizeof(g_option_choices_palette_cover_mode)
+        / sizeof(g_option_choices_palette_cover_mode[0])
     }
 };
 
@@ -2585,6 +2672,24 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_kmedoids[] = {
         g_option_choices_palette_cover,
         sizeof(g_option_choices_palette_cover)
         / sizeof(g_option_choices_palette_cover[0])
+    },
+    {
+        "cover_grow",
+        NULL,
+        "SIXEL_PALETTE_COVER_GROW",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover_grow,
+        sizeof(g_option_choices_palette_cover_grow)
+        / sizeof(g_option_choices_palette_cover_grow[0])
+    },
+    {
+        "cover_mode",
+        NULL,
+        "SIXEL_PALETTE_COVER_MODE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover_mode,
+        sizeof(g_option_choices_palette_cover_mode)
+        / sizeof(g_option_choices_palette_cover_mode[0])
     }
 };
 
@@ -2805,6 +2910,24 @@ static sixel_suboption_key_t const g_subkeys_quantize_model_center[] = {
         g_option_choices_palette_cover,
         sizeof(g_option_choices_palette_cover)
         / sizeof(g_option_choices_palette_cover[0])
+    },
+    {
+        "cover_grow",
+        NULL,
+        "SIXEL_PALETTE_COVER_GROW",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover_grow,
+        sizeof(g_option_choices_palette_cover_grow)
+        / sizeof(g_option_choices_palette_cover_grow[0])
+    },
+    {
+        "cover_mode",
+        NULL,
+        "SIXEL_PALETTE_COVER_MODE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_palette_cover_mode,
+        sizeof(g_option_choices_palette_cover_mode)
+        / sizeof(g_option_choices_palette_cover_mode[0])
     }
 };
 
@@ -8300,9 +8423,20 @@ sixel_encoder_prepare_palette(
     sixel_set_kmedoids_auction_shortlist_override(
         encoder->quantize_model_kmedoids_auction_shortlist_override,
         encoder->quantize_model_kmedoids_auction_shortlist);
-    sixel_set_palette_cover_override(
-        encoder->quantize_model_cover_override,
-        encoder->quantize_model_cover);
+    {
+        sixel_palette_cover_options_t cover_options;
+
+        cover_options.policy = encoder->quantize_model_cover_override
+            ? encoder->quantize_model_cover
+            : SIXEL_PALETTE_COVER_AUTO;
+        cover_options.grow = encoder->quantize_model_cover_grow;
+        cover_options.mode = encoder->quantize_model_cover_mode;
+        sixel_set_palette_cover_override(
+            encoder->quantize_model_cover_override
+                || encoder->quantize_model_cover_grow_override
+                || encoder->quantize_model_cover_mode_override,
+            &cover_options);
+    }
     sixel_set_kcenter_algo_override(
         encoder->quantize_model_kcenter_algo_override,
         (sixel_kcenter_algo_t)encoder->quantize_model_kcenter_algo);
@@ -8405,7 +8539,7 @@ sixel_encoder_prepare_palette(
     sixel_set_kmeans_feedback_interval_override(0, 1u);
     sixel_set_final_merge_target_factor_override(0, 1.81);
     sixel_set_final_merge_lloyd_iterations_override(0, 3u);
-    sixel_set_palette_cover_override(0, 1);
+    sixel_set_palette_cover_override(0, NULL);
     sixel_set_kmedoids_algo_override(
         0,
         SIXEL_PALETTE_KMEDOIDS_ALGO_AUTO);
@@ -9743,7 +9877,11 @@ sixel_encoder_new(
     (*ppencoder)->quantize_model_merge_lloyd_override = 0;
     (*ppencoder)->quantize_model_merge_lloyd = 3u;
     (*ppencoder)->quantize_model_cover_override = 0;
-    (*ppencoder)->quantize_model_cover      = 1;
+    (*ppencoder)->quantize_model_cover_grow_override = 0;
+    (*ppencoder)->quantize_model_cover_grow = 0;
+    (*ppencoder)->quantize_model_cover_mode_override = 0;
+    (*ppencoder)->quantize_model_cover_mode = SIXEL_PALETTE_COVER_MODE_HARD;
+    (*ppencoder)->quantize_model_cover      = SIXEL_PALETTE_COVER_AUTO;
     (*ppencoder)->quantize_model_animation_mode_override = 0;
     (*ppencoder)->quantize_model_animation_mode = 0;
     (*ppencoder)->quantize_model_scene_cut_threshold_override = 0;
@@ -13764,6 +13902,8 @@ sixel_encoder_setopt(
         encoder->quantize_model_merge_oversplit_override = 0;
         encoder->quantize_model_merge_lloyd_override = 0;
         encoder->quantize_model_cover_override = 0;
+        encoder->quantize_model_cover_grow_override = 0;
+        encoder->quantize_model_cover_mode_override = 0;
         encoder->quantize_model_animation_mode_override = 0;
         encoder->quantize_model_scene_cut_threshold_override = 0;
         encoder->quantize_model_heckbert_profile
@@ -14444,6 +14584,40 @@ sixel_encoder_setopt(
                 encoder->quantize_model_kmedoids_auction_shortlist_override = 1;
                 encoder->quantize_model_kmedoids_auction_shortlist
                     = q_auction_shortlist;
+            } else if (q_key != NULL && strcmp(q_key, "cover_mode") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q cover_mode resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                if (match_value == SIXEL_PALETTE_COVER_MODE_SOFT) {
+                    /*
+                     * Refuse rather than fall back to hard: a configuration
+                     * that asks for soft must not silently change meaning the
+                     * day soft is implemented.
+                     */
+                    sixel_helper_set_additional_message(
+                        "-Q cover_mode=soft is not implemented yet; "
+                        "only cover_mode=hard is available.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_cover_mode_override = 1;
+                encoder->quantize_model_cover_mode = match_value;
+            } else if (q_key != NULL && strcmp(q_key, "cover_grow") == 0) {
+                if (!sixel_encoder_resolve_suboption_choice_value(
+                        q_assignment,
+                        &match_value)) {
+                    sixel_helper_set_additional_message(
+                        "invalid -Q cover_grow resolution.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_cover_grow_override = 1;
+                encoder->quantize_model_cover_grow = match_value;
             } else if (q_key != NULL && strcmp(q_key, "cover") == 0) {
                 if (!sixel_encoder_resolve_suboption_choice_value(
                         q_assignment,

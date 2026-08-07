@@ -1424,9 +1424,53 @@ success:
      */
     if (SIXEL_SUCCEEDED(status) && storage->entries != NULL
             && storage->entries_float32 == NULL) {
-        (void)sixel_palette_cover_anchor_rgb888(storage->entries,
-                                                ncolors,
-                                                (int)depth);
+        if (sixel_palette_cover_grow_enabled()
+                && ncolors < (unsigned int)SIXEL_PALETTE_MAX) {
+            /*
+             * Growing spends no existing entry, so the anchors cost nothing in
+             * quality -- but it hands back more colors than the caller asked
+             * for, which is only safe when they opted in.  A caller that named
+             * a color count because that is all their terminal has must not be
+             * handed extra registers.
+             */
+            unsigned char extra[SIXEL_PALETTE_COVER_ANCHOR_MAX * 3u];
+            unsigned int room;
+            unsigned int added;
+
+            room = (unsigned int)SIXEL_PALETTE_MAX - ncolors;
+            if (room > SIXEL_PALETTE_COVER_ANCHOR_MAX) {
+                room = SIXEL_PALETTE_COVER_ANCHOR_MAX;
+            }
+            added = sixel_palette_cover_missing_anchors(
+                storage->entries,
+                ncolors,
+                (int)depth,
+                sixel_palette_cover_policy(),
+                extra,
+                room);
+            if (added > 0u
+                    && SIXEL_SUCCEEDED(sixel_palette_resize_entries(
+                           palette, ncolors + added, depth, work_allocator))
+                    && storage->entries != NULL) {
+                unsigned int i;
+
+                for (i = 0u; i < added; ++i) {
+                    memcpy(storage->entries
+                               + (size_t)(ncolors + i) * (size_t)depth,
+                           extra + (size_t)i * 3u,
+                           3u);
+                }
+                ncolors += added;
+            } else {
+                (void)sixel_palette_cover_anchor_rgb888(storage->entries,
+                                                        ncolors,
+                                                        (int)depth);
+            }
+        } else {
+            (void)sixel_palette_cover_anchor_rgb888(storage->entries,
+                                                    ncolors,
+                                                    (int)depth);
+        }
     }
     storage->entry_count = ncolors;
     storage->original_colors = origcolors;
